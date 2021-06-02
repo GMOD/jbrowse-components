@@ -8,6 +8,8 @@ import { http as httpFR, https as httpsFR } from 'follow-redirects'
 import { createGunzip } from 'zlib'
 import { resolve } from 'path'
 import { type } from 'os'
+import { COPYFILE_FICLONE_FORCE } from 'constants'
+import { getFileInfo } from 'prettier'
 
 type trackConfig = {
   trackId: string
@@ -31,6 +33,7 @@ export default class TextIndex extends JBrowseCommand {
     '$ jbrowse text-index',
     '$ jbrowse text-index --tracks=track1,track2,track3',
     '$ jbrowse text-index --individual --tracks=my_track_id',
+    '$ jbrowse text-index ... --location=my_file_path',
   ]
 
   static flags = {
@@ -39,7 +42,10 @@ export default class TextIndex extends JBrowseCommand {
       description: `Specify the tracks to index, formatted as comma separated trackIds`,
     }),
     individual: flags.boolean({
-      description: 'Only make a single-track text index for the given track',
+      description: `Only make a single-track text index for the given track`,
+    }),
+    location: flags.string({
+      description: `Establish a location for the output files`
     }),
   }
 
@@ -48,23 +54,43 @@ export default class TextIndex extends JBrowseCommand {
   // appropriate file parser to be indexed
   async run() {
     const { flags: runFlags } = this.parse(TextIndex)
+    let fileDirectory: string = ""
+    //FUTURE: command to set a default location 
 
     if (runFlags.individual) {
       if (runFlags.tracks) {
+
+        if(runFlags.location){
+          const fileDirectory: string = runFlags.location;
+        }else{
+          fileDirectory = './products/jbrowse-cli/test/data/'
+        }
+
         const trackIds: string = runFlags.tracks
         if (trackIds.split(',').length > 1) {
           this.error(
             'Error, --individual flag only allows one track to be indexed',
           )
         } else {
-          this.log(
-            `TODO: implement individual indexing for this track: ${runFlags.tracks}`,
-          )
+          const trackArr: Array<string> = [trackIds]
+          const indexConfig = await this.getIndexingConfigurations(trackArr, null)
+          const indexAttributes: Array<string> = indexConfig[0].attributes
+
+          const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
+
+          this.indexDriver(uri, false, indexAttributes, fileDirectory)
         }
       } else {
         this.error('Error, please specify a track to index.')
       }
     } else if (runFlags.tracks) {
+
+      if(runFlags.location){
+          const fileDirectory: string = runFlags.location;
+      }else{
+          fileDirectory = './products/jbrowse-cli/test/data/'
+      }
+        
       const trackIds: Array<string> = runFlags.tracks.split(',')
 
       const configurationsList = this.getIndexingConfigurations(
@@ -75,7 +101,13 @@ export default class TextIndex extends JBrowseCommand {
       this.log(
         `TODO: implement aggregate text indexing for these tracks: ${trackIds}`,
       )
-    } else {
+    }else { // aggregate index all in the config so far
+      
+      if(runFlags.location){
+        fileDirectory = runFlags.location;
+      }else{
+        fileDirectory = './products/jbrowse-cli/test/data/'
+      }
       // For testing:
       // const gff3FileLocation: string = "./test/data/au9_scaffold_subset_sync.gff3"
       // const gff3FileLocation: string = 'https://github.com/GMOD/jbrowse-components/blob/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz?raw=true'
@@ -118,7 +150,7 @@ export default class TextIndex extends JBrowseCommand {
 
       const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
       //const uri: string = './test/data/two_records.gff3'
-      this.indexDriver(uri, false, indexAttributes)
+      this.indexDriver(uri, false, indexAttributes, fileDirectory)
     }
   }
 
@@ -148,6 +180,7 @@ export default class TextIndex extends JBrowseCommand {
     uris: string | Array<string>,
     isTest: boolean,
     attributesArr: Array<string>,
+    outLocation: string,
   ) {
     // For loop for each uri in the uri array
     if (typeof uris === 'string') uris = [uris] // turn uris string into an array of one string
@@ -201,7 +234,7 @@ export default class TextIndex extends JBrowseCommand {
       })
     }
 
-    return this.runIxIxx(aggregateStream, isTest)
+    return this.runIxIxx(aggregateStream, isTest, outLocation)
   }
 
   // Take in the local file path, check if the it is gzipped or not,
@@ -418,7 +451,7 @@ export default class TextIndex extends JBrowseCommand {
   // Given a readStream of data, indexes the stream into .ix and .ixx files using ixIxx.
   // The ixIxx executable is required on the system path for users, however tests use a local copy.
   // Returns a promise around ixIxx completing (or erroring).
-  runIxIxx(readStream: ReadStream | PassThrough, isTest: boolean) {
+  runIxIxx(readStream: ReadStream | PassThrough, isTest: boolean, outLocation: string) {
     const ixFileName: string = 'out.ix'
     const ixxFileName: string = 'out.ixx'
 
@@ -429,16 +462,18 @@ export default class TextIndex extends JBrowseCommand {
       ixProcess = spawn(
         'cat | ./products/jbrowse-cli/test/ixIxx /dev/stdin',
         [
-          './products/jbrowse-cli/test/data/out.ix',
-          './products/jbrowse-cli/test/data/out.ixx',
+          outLocation + 'out.ix', // this is where we would change the output
+          outLocation + 'out.ixx',
         ],
         { shell: true },
       )
     // Otherwise require user to have ixIxx in their system path.
     else
-      ixProcess = spawn('cat | ixIxx /dev/stdin', [ixFileName, ixxFileName], {
-        shell: true,
-      })
+        ixProcess = spawn('cat | ixIxx /dev/stdin', [ixFileName, ixxFileName], {
+          shell: true,
+        })
+
+    
 
     // Pass the readStream as stdin into ixProcess.
     readStream.pipe(ixProcess.stdin)
