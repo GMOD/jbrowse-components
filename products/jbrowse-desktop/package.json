@@ -100,12 +100,14 @@
       "artifactName": "jbrowse-desktop-${version}-win.${ext}"
     },
     "linux": {
+      "executableName": "jbrowse-desktop",
       "target": "AppImage",
-      "artifactName": "jbrowse-desktop-${version}-linux.${ext}",
-      "executableName": "jbrowse-desktop"
+      "artifactName": "jbrowse-desktop-${version}-linux.${ext}"
     },
     "mac": {
       "category": "public.app-category.utilities",
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
       "target": "dmg",
       "artifactName": "jbrowse-desktop-${version}-mac.${ext}"
     },
