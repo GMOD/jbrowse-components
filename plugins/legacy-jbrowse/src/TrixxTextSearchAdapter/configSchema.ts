@@ -1,13 +1,12 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 export default ConfigurationSchema(
-  'JBrowse1TextSearchAdapter',
+  'TrixxTextSearchAdapter',
   {
-    // metadata about tracks and assemblies covered by text search adapter
     namesIndexLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/volvox/names' },
-      description: 'the location of the JBrowse1 names index data directory',
+      description: 'the location of the trixx text index',
     },
     tracks: {
       type: 'stringArray',

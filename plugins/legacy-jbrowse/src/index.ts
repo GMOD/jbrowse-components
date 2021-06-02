@@ -8,6 +8,11 @@ import {
   AdapterClass as JBrowse1TextSearchAdapterClass,
   configSchema as jbrowse1AdapterConfigSchema,
 } from './JBrowse1TextSeachAdapter'
+
+import {
+  AdapterClass as TrixxTextSearchAdapterClass,
+  configSchema as trixxAdapterConfigSchema,
+} from './TrixxTextSearchAdapter'
 import {
   configSchema as jbrowse1ConfigSchema,
   modelFactory as jbrowse1ModelFactory,
@@ -34,6 +39,16 @@ export default class LegacyJBrowsePlugin extends Plugin {
           configSchema: jbrowse1AdapterConfigSchema,
           AdapterClass: JBrowse1TextSearchAdapterClass,
           description: 'A JBrowse 1 text search adapter',
+        }),
+    )
+
+    pluginManager.addTextSearchAdapterType(
+      () =>
+        new TextSearchAdapterType({
+          name: 'TrixxTextSearchAdapter',
+          configSchema: trixxAdapterConfigSchema,
+          AdapterClass: TrixxTextSearchAdapterClass,
+          description: 'Trixx adapter',
         }),
     )
 

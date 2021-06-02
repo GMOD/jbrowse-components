@@ -64,6 +64,14 @@
       "assemblies": ["volvox", "volvox2"]
     },
     {
+      "type": "TrixxTextSearchAdapter",
+      "textSearchAdapterId": "TrixxTextSearchAdapter",
+      "namesIndexLocation": {
+        "uri": "names/"
+      },
+      "assemblies": ["volvox", "volvox2"]
+    },
+    {
       "type": "JBrowse1TextSearchAdapter",
       "textSearchAdapterId": "AdapterWithoutAssemblies",
       "namesIndexLocation": {
