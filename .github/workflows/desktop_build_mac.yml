@@ -15,7 +15,7 @@ jobs:
         uses: bahmutov/npm-install@v1
       - name: Install build deps
         run: |
-          sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+          brew install pkg-config cairo pango libpng jpeg giflib librsvg
       - name: Build app
         run: |
           yarn build-electron:mac
