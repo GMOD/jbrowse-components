@@ -76,7 +76,7 @@ describe('indexGff3', () => {
     const indexConfig = await textIndex.getIndexingConfigurations(trackIds, { target: 'products/jbrowse-cli' })
     const indexAttributes: Array<string> = indexConfig[0].attributes;
 
-    await textIndex.handleLocalGff3(gff3FileLocation, false,  isTest, indexAttributes);
+    textIndex.handleLocalGff3(gff3FileLocation, false);
     const ixdata = JSON.stringify(readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'}))
     expect(ixdata).toMatchSnapshot()
     const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
@@ -171,7 +171,7 @@ describe('getIndexingConfigurations', () => {
     const indexAttributes: Array<string> = indexConfig[0].attributes;
     const uri: string = './products/jbrowse-cli/' + indexConfig[0].indexingConfiguration.gffLocation.uri;
 
-    await textIndex.handleLocalGff3(uri, true, true, indexAttributes)
+    textIndex.handleLocalGff3(uri, true)
 
     const ixdata = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
     const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
