@@ -194,7 +194,7 @@ export default class TextIndex extends JBrowseCommand {
       const gffTranform = new Transform({
         objectMode: true,
         transform: (chunk, _encoding, done) => {
-          chunk.forEach((record: RecordData) => {
+          chunk.forEach((record: any) => {
             this.recurseFeatures(record, gff3Stream, attributesArr)
             done()
           })
@@ -360,7 +360,7 @@ export default class TextIndex extends JBrowseCommand {
   // the desired attributes in the form of a JSON object. It is then
   // pushed to gff3Stream in proper indexing format.
   async recurseFeatures(
-    record: RecordData,
+    record: any,
     gff3Stream: ReadStream | Transform,
     attributesArr: Array<string>
   ) {
@@ -376,9 +376,9 @@ export default class TextIndex extends JBrowseCommand {
       // string
   
   
-      let getAndPushRecord = (subRecord) => {
+      let getAndPushRecord = (subRecord: any) => {
   
-        let recordObj = {};
+        let recordObj: any = {};
         let attrString: string = "";
   
         for (let attr of attributesArr) {
