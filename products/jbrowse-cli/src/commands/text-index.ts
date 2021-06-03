@@ -150,7 +150,7 @@ export default class TextIndex extends JBrowseCommand {
 
       const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
       //const uri: string = './test/data/two_records.gff3'
-      this.indexDriver(uri, false, indexAttributes, fileDirectory)
+      this.indexDriver(uri, true, indexAttributes, fileDirectory)
     }
   }
 
@@ -462,7 +462,9 @@ export default class TextIndex extends JBrowseCommand {
     
 
     // Pass the readStream as stdin into ixProcess.
-    readStream.pipe(ixProcess.stdin)
+    readStream.pipe(ixProcess.stdin).on('error', (e) => {
+      console.log(`Error writing data to ixIxx. ${e}`)
+    })
 
     // End the ixProcess stdin when the stream is done.
     readStream.on('end', () => {
@@ -483,16 +485,20 @@ export default class TextIndex extends JBrowseCommand {
           )
           return code
         } else {
-          reject('fail')
-          this.error(`ixIxx exited with code: ${code}`)
+          reject(`ixIxx exited with code: ${code}`)
         }
       })
 
       // Hook up the reject from promise on error
       ixProcess.stderr.on('data', data => {
-        reject('fail')
-        this.error(`Error with ixIxx: ${data}`)
+        reject(`Error with ixIxx: ${data}`)
       })
+    }).catch((errorData) => {
+      // Catch any promise rejection errors with running ixIxx here.
+
+      // TODO: parse errorData for "not found", then provide a more readable error 
+      //        saying that the user needs to have ixIxx in their system path.
+      console.log(errorData)
     })
 
     return promise
