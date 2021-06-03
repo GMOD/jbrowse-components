@@ -41,7 +41,7 @@ jobs:
           # apply provisioning profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
-        - name: Install build deps
+      - name: Install build deps
         run: |
           brew install pkg-config cairo pango libpng jpeg giflib librsvg
       - name: Build app
