@@ -1,3 +1,4 @@
+// test
 require('dotenv').config()
 const { notarize } = require('electron-notarize')
 
