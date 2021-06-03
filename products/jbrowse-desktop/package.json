@@ -106,8 +106,6 @@
     },
     "mac": {
       "category": "public.app-category.utilities",
-      "entitlements": "entitlements.mac.plist",
-      "entitlementsInherit": "entitlements.mac.plist",
       "target": "dmg",
       "artifactName": "jbrowse-desktop-${version}-mac.${ext}"
     },
