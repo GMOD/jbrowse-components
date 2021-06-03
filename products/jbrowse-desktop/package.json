@@ -115,8 +115,7 @@
     ],
     "directories": {
       "buildResources": "assets/"
-    },
-    "afterSign": "scripts/notarize.js"
+    }
   },
   "private": true
 }
