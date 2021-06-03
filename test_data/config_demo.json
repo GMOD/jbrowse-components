@@ -12,6 +12,10 @@
     {
       "name": "UCSC",
       "url": "https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js"
+    },
+    {
+      "name": "Sample",
+      "url": "test_data/sample_plugin.js"
     }
   ],
   "assemblies": [

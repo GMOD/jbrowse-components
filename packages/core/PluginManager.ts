@@ -210,8 +210,10 @@ export default class PluginManager {
     if (this.configured) {
       throw new Error('JBrowse already configured, cannot add plugins')
     }
-    const [plugin, metadata = {}] =
-      load instanceof Plugin ? [load, {}] : [load.plugin, load.metadata]
+
+    const [plugin, metadata = {}] = load.plugin
+      ? [load.plugin, load.metadata]
+      : [load, {}]
 
     if (this.plugins.includes(plugin)) {
       throw new Error('plugin already installed')

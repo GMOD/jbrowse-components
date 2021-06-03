@@ -220,7 +220,7 @@ const SessionLoader = types
         const pluginLoader = new PluginLoader(config.plugins)
         pluginLoader.installGlobalReExports(window)
         const runtimePlugins = await pluginLoader.load()
-        self.setRuntimePlugins([...runtimePlugins])
+        self.setRuntimePlugins(runtimePlugins)
       } catch (e) {
         console.error(e)
         self.setConfigError(e)
