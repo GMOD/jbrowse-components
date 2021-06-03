@@ -55,16 +55,17 @@ export default class TextIndex extends JBrowseCommand {
   // appropriate file parser to be indexed
   async run() {
     const { flags: runFlags } = this.parse(TextIndex)
-    let fileDirectory: string = ""
+
+    //NOTE: tests will always output to ./products/jbrowse-cli/test/data/
+    //this is only valid for non-tests
+    let fileDirectory: string = './test/data/' 
     //FUTURE: command to set a default location 
 
     if (runFlags.individual) {
       if (runFlags.tracks) {
 
         if(runFlags.location){
-          const fileDirectory: string = runFlags.location;
-        }else{
-          fileDirectory = './products/jbrowse-cli/test/data/'
+          fileDirectory = runFlags.location;
         }
 
         const trackIds: string = runFlags.tracks
@@ -87,9 +88,7 @@ export default class TextIndex extends JBrowseCommand {
     } else if (runFlags.tracks) {
 
       if(runFlags.location){
-          const fileDirectory: string = runFlags.location;
-      }else{
-          fileDirectory = './products/jbrowse-cli/test/data/'
+        fileDirectory = runFlags.location;
       }
         
       const trackIds: Array<string> = runFlags.tracks.split(',')
@@ -105,9 +104,7 @@ export default class TextIndex extends JBrowseCommand {
     }else { // aggregate index all in the config so far
       
       if(runFlags.location){
-        fileDirectory = runFlags.location;
-      }else{
-        fileDirectory = './products/jbrowse-cli/test/data/'
+        fileDirectory = runFlags.location
       }
       // For testing:
       // const gff3FileLocation: string = "./test/data/au9_scaffold_subset_sync.gff3"
@@ -137,7 +134,7 @@ export default class TextIndex extends JBrowseCommand {
           attributes: ['Name', 'ID', 'seq_id', 'start', 'end'],
           indexingConfiguration: {
             gffLocation: {
-              uri: './test/au9_scaffold_subset_sync.gff3',
+              uri: './test/data/au9_scaffold_subset_sync.gff3',
             },
             gzipped: true,
             indexingAdapter: 'GFF3',
@@ -148,9 +145,9 @@ export default class TextIndex extends JBrowseCommand {
 
       const indexAttributes: Array<string> = testObjs[0].attributes
 
-      const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
-      //const uri: string = './test/data/two_records.gff3'
-      this.indexDriver(uri, true, indexAttributes, fileDirectory)
+      //const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
+      const uri: string = testObjs[0].indexingConfiguration.gffLocation.uri;
+      this.indexDriver(uri, false, indexAttributes, fileDirectory)
     }
   }
 
@@ -448,14 +445,14 @@ export default class TextIndex extends JBrowseCommand {
       ixProcess = spawn(
         'cat | ./products/jbrowse-cli/test/ixIxx /dev/stdin',
         [
-          outLocation + 'out.ix', // this is where we would change the output
-          outLocation + 'out.ixx',
+          "./products/jbrowse-cli/test/data/out.ix",
+          "./products/jbrowse-cli/test/data/out.ixx",
         ],
         { shell: true },
       )
     // Otherwise require user to have ixIxx in their system path.
     else
-        ixProcess = spawn('cat | ixIxx /dev/stdin', [ixFileName, ixxFileName], {
+        ixProcess = spawn('cat | ixIxx /dev/stdin', [outLocation + ixFileName, outLocation + ixxFileName], {
           shell: true,
         })
 
@@ -494,11 +491,14 @@ export default class TextIndex extends JBrowseCommand {
         reject(`Error with ixIxx: ${data}`)
       })
     }).catch((errorData) => {
+
       // Catch any promise rejection errors with running ixIxx here.
 
-      // TODO: parse errorData for "not found", then provide a more readable error 
-      //        saying that the user needs to have ixIxx in their system path.
-      console.log(errorData)
+      if(errorData.includes("not found")){
+        console.error("ixIxx was not found in your system.")
+      }else{
+        console.log(errorData)
+      }
     })
 
     return promise
