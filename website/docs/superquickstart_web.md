@@ -93,7 +93,9 @@ jbrowse add-track peach.sorted.gff.gz -a peach --load copy --out /var/www/html/j
 
 ## Load the synteny "track" from a PAF file. Note the order matters here for
 ## the --assemblyNames parameter. If minimap2 is run like `minimap2 grape.fa
-## peach.fa` then you load --assemblyNames peach,grape
+## peach.fa` then you load --assemblyNames peach,grape. the order is reversed
+## because the syntax is minimap2 ref.fa query.fa on the CLI and query (left side
+## of PAF) and target (right hand side) in PAF output file
 jbrowse add-track peach_vs_grape.paf --assemblyNames peach,grape --out load copy
 
 
