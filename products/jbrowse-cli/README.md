@@ -416,14 +416,16 @@ USAGE
   $ jbrowse text-index
 
 OPTIONS
-  -h, --help       show CLI help
-  --individual     Only make a single-track text index for the given track
-  --tracks=tracks  Specify the tracks to index, formatted as comma separated trackIds
+  -h, --help           show CLI help
+  --individual         Only make a single-track text index for the given track
+  --location=location  Establish a location for the output files
+  --tracks=tracks      Specify the tracks to index, formatted as comma separated trackIds
 
 EXAMPLES
   $ jbrowse text-index
   $ jbrowse text-index --tracks=track1,track2,track3
   $ jbrowse text-index --individual --tracks=my_track_id
+  $ jbrowse text-index ... --location=my_file_path
 ```
 
 _See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.0/products/jbrowse-cli/src/commands/text-index.ts)_

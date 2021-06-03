@@ -184,6 +184,7 @@ describe('getIndexingConfigurations', () => {
 
 // parsing multiple local GZ file
 describe('aggregateIndexing', () => {
+  let dir: string = './products/jbrowse-cli/test/data/'
   const testObjs = [
     {
       attributes: ['Name', 'ID', 'seq_id', 'start', 'end'],
@@ -194,7 +195,7 @@ describe('aggregateIndexing', () => {
     const trackIds: Array<string> = ["./products/jbrowse-cli/test/data/volvox.sort.gff3.gz"] // add another one
     const indexAttributes: Array<string> = testObjs[0].attributes
 
-    await textIndex.indexDriver(trackIds, true, indexAttributes)
+    await textIndex.indexDriver(trackIds, true, indexAttributes, dir)
     
     const ixdata = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
     const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
@@ -205,6 +206,7 @@ describe('aggregateIndexing', () => {
 
 // multiple gff3 file
 describe('aggregateIndexing', () => {
+  let dir: string = './products/jbrowse-cli/test/data/'
   const testObjs = [
     {
       attributes: ['Name', 'ID', 'seq_id', 'start', 'end'],
@@ -219,7 +221,7 @@ describe('aggregateIndexing', () => {
     
     const indexAttributes: Array<string> = testObjs[0].attributes
 
-    await textIndex.indexDriver(trackIds, true, indexAttributes)
+    await textIndex.indexDriver(trackIds, true, indexAttributes, dir)
     
     const ixdata = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
     const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
@@ -230,6 +232,7 @@ describe('aggregateIndexing', () => {
 
 // multiple URLS
 describe('aggregateIndexing', () => {
+  let dir: string = './products/jbrowse-cli/test/data/'
   const testObjs = [
     {
       attributes: ['Name', 'ID', 'seq_id', 'start', 'end'],
@@ -242,7 +245,7 @@ describe('aggregateIndexing', () => {
     
     const indexAttributes: Array<string> = testObjs[0].attributes
 
-    await textIndex.indexDriver(trackIds, true, indexAttributes)
+    await textIndex.indexDriver(trackIds, true, indexAttributes, dir)
     
     const ixdata = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
     const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
@@ -253,6 +256,7 @@ describe('aggregateIndexing', () => {
 
 // combination
 describe('aggregateIndexing', () => {
+  let dir: string = './products/jbrowse-cli/test/data/'
   const testObjs = [
     {
       attributes: ['Name', 'ID', 'seq_id', 'start', 'end'],
@@ -267,7 +271,7 @@ describe('aggregateIndexing', () => {
     
     const indexAttributes: Array<string> = testObjs[0].attributes
 
-    await textIndex.indexDriver(trackIds, true, indexAttributes)
+    await textIndex.indexDriver(trackIds, true, indexAttributes, dir)
     
     const ixdata = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
     const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
@@ -278,6 +282,7 @@ describe('aggregateIndexing', () => {
 
 // duplicate data
 describe('aggregateIndexing', () => {
+  let dir: string = './products/jbrowse-cli/test/data/'
   const testObjs = [
     {
       attributes: ['Name', 'ID', 'seq_id', 'start', 'end'],
@@ -291,7 +296,7 @@ describe('aggregateIndexing', () => {
     
     const indexAttributes: Array<string> = testObjs[0].attributes
 
-    await textIndex.indexDriver(trackIds, true, indexAttributes)
+    await textIndex.indexDriver(trackIds, true, indexAttributes, dir)
     
     const ixdata = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
     const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
