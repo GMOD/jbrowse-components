@@ -35,7 +35,6 @@ export default class TrixxTextSearchAdapter
    * limit of results to return, searchType...preffix | full | exact", etc.
    */
   async searchIndex(args: BaseArgs) {
-    console.log("hello")
     return []
   }
 
