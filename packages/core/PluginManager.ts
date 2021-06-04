@@ -15,6 +15,7 @@ import ViewType from './pluggableElementTypes/ViewType'
 import WidgetType from './pluggableElementTypes/WidgetType'
 import ConnectionType from './pluggableElementTypes/ConnectionType'
 import RpcMethodType from './pluggableElementTypes/RpcMethodType'
+import InternetAccountType from './pluggableElementTypes/InternetAccountType'
 
 import {
   ConfigurationSchema,
@@ -76,6 +77,7 @@ type PluggableElementTypeGroup =
   | 'view'
   | 'widget'
   | 'rpc method'
+  | 'internet account'
 
 /** internal class that holds the info for a certain element type */
 class TypeRecord<ElementClass extends PluggableElementBase> {
@@ -182,6 +184,11 @@ export default class PluginManager {
 
   rpcMethods = new TypeRecord('RpcMethodType', RpcMethodType)
 
+  internetAccountTypes = new TypeRecord(
+    'InternetAccountType',
+    InternetAccountType,
+  )
+
   configured = false
 
   rootModel?: AbstractRootModel
@@ -280,6 +287,8 @@ export default class PluginManager {
         return this.viewTypes
       case 'rpc method':
         return this.rpcMethods
+      case 'internet account':
+        return this.internetAccountTypes
       default:
         throw new Error(`invalid element type '${groupName}'`)
     }
@@ -451,6 +460,10 @@ export default class PluginManager {
     return this.rpcMethods.get(methodName)
   }
 
+  getInternetAccountType(internetAccountName: string): InternetAccountType {
+    return this.internetAccountTypes.get(internetAccountName)
+  }
+
   addRendererType(
     creationCallback: (pluginManager: PluginManager) => RendererType,
   ): this {
@@ -529,5 +542,11 @@ export default class PluginManager {
     creationCallback: (pluginManager: PluginManager) => RpcMethodType,
   ): this {
     return this.addElementType('rpc method', creationCallback)
+  }
+
+  addInternetAccountType(
+    creationCallback: (pluginManager: PluginManager) => TrackType,
+  ): this {
+    return this.addElementType('internet account', creationCallback)
   }
 }
