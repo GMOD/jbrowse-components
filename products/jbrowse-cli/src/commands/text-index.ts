@@ -4,7 +4,11 @@ import { ReadStream, createReadStream, promises } from 'fs'
 import { Transform, PassThrough } from 'stream'
 import gff from '@gmod/gff'
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
-import { FollowResponse, http as httpFR, https as httpsFR } from 'follow-redirects'
+import {
+  FollowResponse,
+  http as httpFR,
+  https as httpsFR,
+} from 'follow-redirects'
 import { createGunzip, Gunzip } from 'zlib'
 import { resolve } from 'path'
 import { type } from 'os'
@@ -46,7 +50,7 @@ export default class TextIndex extends JBrowseCommand {
       description: `Only make a single-track text index for the given track`,
     }),
     location: flags.string({
-      description: `Establish a location for the output files`
+      description: `Establish a location for the output files`,
     }),
   }
 
@@ -58,14 +62,13 @@ export default class TextIndex extends JBrowseCommand {
 
     //NOTE: tests will always output to ./products/jbrowse-cli/test/data/
     //this is only valid for non-tests
-    let fileDirectory: string = './test/data/' 
-    //FUTURE: command to set a default location 
+    let fileDirectory: string = './test/data/'
+    //FUTURE: command to set a default location
 
     if (runFlags.individual) {
       if (runFlags.tracks) {
-
-        if(runFlags.location){
-          fileDirectory = runFlags.location;
+        if (runFlags.location) {
+          fileDirectory = runFlags.location
         }
 
         const trackIds: string = runFlags.tracks
@@ -75,10 +78,14 @@ export default class TextIndex extends JBrowseCommand {
           )
         } else {
           const trackArr: Array<string> = [trackIds]
-          const indexConfig = await this.getIndexingConfigurations(trackArr, null)
+          const indexConfig = await this.getIndexingConfigurations(
+            trackArr,
+            null,
+          )
           const indexAttributes: Array<string> = indexConfig[0].attributes
 
-          const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
+          const uri: string =
+            indexConfig[0].indexingConfiguration.gffLocation.uri
 
           this.indexDriver(uri, false, indexAttributes, fileDirectory)
         }
@@ -86,11 +93,10 @@ export default class TextIndex extends JBrowseCommand {
         this.error('Error, please specify a track to index.')
       }
     } else if (runFlags.tracks) {
-
-      if(runFlags.location){
-        fileDirectory = runFlags.location;
+      if (runFlags.location) {
+        fileDirectory = runFlags.location
       }
-        
+
       const trackIds: Array<string> = runFlags.tracks.split(',')
 
       const configurationsList = this.getIndexingConfigurations(
@@ -101,9 +107,10 @@ export default class TextIndex extends JBrowseCommand {
       this.log(
         `TODO: implement aggregate text indexing for these tracks: ${trackIds}`,
       )
-    }else { // aggregate index all in the config so far
-      
-      if(runFlags.location){
+    } else {
+      // aggregate index all in the config so far
+
+      if (runFlags.location) {
         fileDirectory = runFlags.location
       }
       // For testing:
@@ -136,7 +143,7 @@ export default class TextIndex extends JBrowseCommand {
       const indexAttributes: Array<string> = testObjs[0].attributes
 
       //const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
-      const uri: string = testObjs[0].indexingConfiguration.gffLocation.uri;
+      const uri: string = testObjs[0].indexingConfiguration.gffLocation.uri
       this.indexDriver(uri, false, indexAttributes, fileDirectory)
     }
   }
@@ -147,7 +154,7 @@ export default class TextIndex extends JBrowseCommand {
   //                                      ------> handleGff3UrlWithGz()---\
   //                                    /                                  parseGff3Stream()
   //                                  / --------> handleGff3UrlNoGz()-----/                 \
-  //                                /                                                        \      
+  //                                /                                                        \
   //               -----> handleURL()                                                         \
   //              |                                                                            \
   // indexDriver()                                                                          returns ----> indexDriver() -------> runIxIxx --------> output .ix and .ixx files
@@ -156,9 +163,8 @@ export default class TextIndex extends JBrowseCommand {
   //                                      \                                                 /
   //                                       \ -----> parseLocalGZip() ---\                 /
   //                                        \                            parseGff3Stream()
-  //                                         --------------------------/   
+  //                                         --------------------------/
   //
-
 
   // This function takes a list of uris, as well as which attributes to index,
   // and indexes them all into one aggregate index.
@@ -188,7 +194,7 @@ export default class TextIndex extends JBrowseCommand {
         },
       })
 
-      let gff3Stream: ReadStream | Transform;
+      let gff3Stream: ReadStream | Transform
       // If it is a URL, we want to await the http request.
       if (this.isURL(uri)) {
         gff3Stream = await this.handleGff3Url(uri, uri.includes('.gz'))
@@ -219,10 +225,7 @@ export default class TextIndex extends JBrowseCommand {
   // Take in the local file path, check if the it is gzipped or not,
   // then passes it into the correct file handler.
   // Returns a @gmod/gff stream.
-  handleLocalGff3(
-    gff3LocalIn: string,
-    isGZ: boolean,
-  ) {
+  handleLocalGff3(gff3LocalIn: string, isGZ: boolean) {
     let gff3ReadStream: ReadStream = createReadStream(gff3LocalIn)
     if (!isGZ) return this.parseGff3Stream(gff3ReadStream)
     else return this.handleLocalGzip(gff3ReadStream)
@@ -231,10 +234,7 @@ export default class TextIndex extends JBrowseCommand {
   // Method for handing off the parsing of a gff3 file URL.
   // Calls the proper parser depending on if it is gzipped or not.
   // Returns a @gmod/gff stream.
-  async handleGff3Url(
-    urlIn: string,
-    isGZ: boolean,
-  ) : Promise<ReadStream> {
+  async handleGff3Url(urlIn: string, isGZ: boolean): Promise<ReadStream> {
     if (!isGZ) return this.handleGff3UrlNoGz(urlIn)
     else return this.handleGff3UrlWithGz(urlIn)
   }
@@ -335,7 +335,9 @@ export default class TextIndex extends JBrowseCommand {
   // Function that takes in a gff3 readstream and parses through
   // it and retrieves the needed attributes and information.
   // Returns a @gmod/gff stream.
-  parseGff3Stream(gff3In: ReadStream | (IncomingMessage & FollowResponse) | Gunzip) {
+  parseGff3Stream(
+    gff3In: ReadStream | (IncomingMessage & FollowResponse) | Gunzip,
+  ) {
     let gff3Stream: ReadStream = gff3In.pipe(
       gff.parseStream({ parseSequences: false }),
     )
@@ -349,10 +351,8 @@ export default class TextIndex extends JBrowseCommand {
   async recurseFeatures(
     record: any,
     gff3Stream: ReadStream | Transform,
-    attributesArr: Array<string>
+    attributesArr: Array<string>,
   ) {
-    
-  
     // check if the attributes array is undefined
     // breaks out of loop if it is (end of recursion)
     if (attributesArr) {
@@ -361,61 +361,61 @@ export default class TextIndex extends JBrowseCommand {
       // user wants to search by. If it contains it,
       // it adds it to the record object and attributes
       // string
-  
-  
+
       let getAndPushRecord = (subRecord: any) => {
-  
-        let recordObj: any = {};
-        let attrString: string = "";
-  
+        let recordObj: any = {}
+        let attrString: string = ''
+
         for (let attr of attributesArr) {
-          if (subRecord[attr]) { // Check to see if the attr exists for the record
-            recordObj[attr] = subRecord[attr];
-            attrString += " " + recordObj[attr];
-          } else if (subRecord.attributes && subRecord.attributes[attr]) { // Name and ID are in the attributes object, so check there too
-            recordObj[attr] = subRecord.attributes[attr];
-            attrString += " " + recordObj[attr];
+          if (subRecord[attr]) {
+            // Check to see if the attr exists for the record
+            recordObj[attr] = subRecord[attr]
+            attrString += ' ' + recordObj[attr]
+          } else if (subRecord.attributes && subRecord.attributes[attr]) {
+            // Name and ID are in the attributes object, so check there too
+            recordObj[attr] = subRecord.attributes[attr]
+            attrString += ' ' + recordObj[attr]
           }
         }
-  
+
         // encodes the record object so that it can be used by ixIxx
         // appends the attributes that we are indexing by to the end
         // of the string before pushing to ixIxx
-        let buff = Buffer.from(JSON.stringify(recordObj), "utf-8");
-        let str: string = `${buff.toString("base64")}`;
-        str += attrString + "\n";
-  
-        gff3Stream.push(str);
+        let buff = Buffer.from(JSON.stringify(recordObj), 'utf-8')
+        let str: string = `${buff.toString('base64')}`
+        str += attrString + '\n'
+
+        gff3Stream.push(str)
       }
-  
-      
+
       if (Array.isArray(record)) {
         for (const r of record) {
           getAndPushRecord(r)
         }
-      }
-      else {
+      } else {
         getAndPushRecord(record)
       }
-  
-  
-    } else {  
-      return;
+    } else {
+      return
     }
-  
+
     // recurses through each record to get child features and
     // parses their attributes as well.
-  
+
     if (record.child_features || record[0].child_features) {
-      if(Array.isArray(record)){
-          for (const r of record) {
-            for (let i = 0; i < record[0].child_features.length; i++) {
-              this.recurseFeatures(r.child_features[i], gff3Stream, attributesArr);
-            }
+      if (Array.isArray(record)) {
+        for (const r of record) {
+          for (let i = 0; i < record[0].child_features.length; i++) {
+            this.recurseFeatures(r.child_features[i], gff3Stream, attributesArr)
           }
-      }else{
-        for(let i = 0; i < record['child_features'].length; i++){
-          this.recurseFeatures(record.child_features[i], gff3Stream, attributesArr);
+        }
+      } else {
+        for (let i = 0; i < record['child_features'].length; i++) {
+          this.recurseFeatures(
+            record.child_features[i],
+            gff3Stream,
+            attributesArr,
+          )
         }
       }
     }
@@ -424,7 +424,11 @@ export default class TextIndex extends JBrowseCommand {
   // Given a readStream of data, indexes the stream into .ix and .ixx files using ixIxx.
   // The ixIxx executable is required on the system path for users, however tests use a local copy.
   // Returns a promise around ixIxx completing (or erroring).
-  runIxIxx(readStream: ReadStream | PassThrough, isTest: boolean, outLocation: string) {
+  runIxIxx(
+    readStream: ReadStream | PassThrough,
+    isTest: boolean,
+    outLocation: string,
+  ) {
     const ixFileName: string = 'out.ix'
     const ixxFileName: string = 'out.ixx'
 
@@ -435,21 +439,23 @@ export default class TextIndex extends JBrowseCommand {
       ixProcess = spawn(
         'cat | ./products/jbrowse-cli/test/ixIxx /dev/stdin',
         [
-          "./products/jbrowse-cli/test/data/out.ix",
-          "./products/jbrowse-cli/test/data/out.ixx",
+          './products/jbrowse-cli/test/data/out.ix',
+          './products/jbrowse-cli/test/data/out.ixx',
         ],
         { shell: true },
       )
     // Otherwise require user to have ixIxx in their system path.
     else
-        ixProcess = spawn('cat | ixIxx /dev/stdin', [outLocation + ixFileName, outLocation + ixxFileName], {
+      ixProcess = spawn(
+        'cat | ixIxx /dev/stdin',
+        [outLocation + ixFileName, outLocation + ixxFileName],
+        {
           shell: true,
-        })
-
-    
+        },
+      )
 
     // Pass the readStream as stdin into ixProcess.
-    readStream.pipe(ixProcess.stdin).on('error', (e) => {
+    readStream.pipe(ixProcess.stdin).on('error', e => {
       console.log(`Error writing data to ixIxx. ${e}`)
     })
 
@@ -480,13 +486,12 @@ export default class TextIndex extends JBrowseCommand {
       ixProcess.stderr.on('data', data => {
         reject(`Error with ixIxx: ${data}`)
       })
-    }).catch((errorData) => {
-
+    }).catch(errorData => {
       // Catch any promise rejection errors with running ixIxx here.
 
-      if(errorData.includes("not found")){
-        console.error("ixIxx was not found in your system.")
-      }else{
+      if (errorData.includes('not found')) {
+        console.error('ixIxx was not found in your system.')
+      } else {
         console.log(errorData)
       }
     })
