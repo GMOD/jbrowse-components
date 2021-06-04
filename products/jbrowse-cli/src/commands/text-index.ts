@@ -112,16 +112,6 @@ export default class TextIndex extends JBrowseCommand {
       // const gff3FileLocation = 'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3'
       // const gff3FileLocation = 'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/Ensembl_Mus_musculus.NCBIM37.67.pep.all_vs_UMD3.1.gff3.gz'
 
-      // Check if the file is a URL, then index it.
-      /*if (this.isURL(gff3FileLocation))
-        this.parseGff3Url(gff3FileLocation, false, false)
-      else
-        this.parseLocalGff3(gff3FileLocation, false, false)*/
-
-      // this.log(
-      //   'TODO: index all locally configured tracks into an aggregate, equivalent to --tracks (all_track_ids) ',
-      // )
-
       // repeats_hg19
       // gff3tabix_genes
 
