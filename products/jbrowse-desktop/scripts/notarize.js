@@ -3,7 +3,7 @@ const { notarize } = require('electron-notarize')
 
 exports.default = async function notarizing(context) {
   const { electronPlatformName, appOutDir } = context
-  if (electronPlatformName !== 'darwin') {
+  if (!process.env.GITHUB_ACTIONS || electronPlatformName !== 'darwin') {
     return
   }
 
