@@ -65,7 +65,7 @@
     },
     {
       "type": "TrixxTextSearchAdapter",
-      "textSearchAdapterId": "TrixxTextSearchAdapter",
+      "textSearchAdapterId": "TrixxAdapter",
       "namesIndexLocation": {
         "uri": "names/"
       },
