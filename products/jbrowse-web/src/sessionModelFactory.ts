@@ -106,9 +106,6 @@ export default function sessionModelFactory(
       get rpcManager() {
         return getParent(self).jbrowse.rpcManager as RpcManager
       },
-      get textSearchManager() {
-        return getParent(self).textSearchManager // may want to add type to this
-      },
       get configuration() {
         return getParent(self).jbrowse.configuration
       },

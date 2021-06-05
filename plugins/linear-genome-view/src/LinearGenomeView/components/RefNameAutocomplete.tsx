@@ -50,12 +50,16 @@ const useStyles = makeStyles(() => ({
   },
 }))
 
-async function fetchResults(self: LinearGenomeViewModel, query: string) {
+async function fetchResults(
+  self: LinearGenomeViewModel,
+  query: string,
+  assemblyName: string,
+) {
   const session = getSession(self)
   const { pluginManager } = getEnv(session)
   const { rankSearchResults } = self
   const { textSearchManager } = pluginManager.rootModel
-  const searchScope = self.searchScope
+  const searchScope = self.searchScope(assemblyName)
   const args = {
     queryString: query,
     searchType: 'prefix',
@@ -119,8 +123,12 @@ function RefNameAutocomplete({
     ;(async () => {
       try {
         let results: BaseResult[] = []
-        if (debouncedSearch && debouncedSearch !== '') {
-          const searchResults = await fetchResults(model, debouncedSearch)
+        if (debouncedSearch && debouncedSearch !== '' && assemblyName) {
+          const searchResults = await fetchResults(
+            model,
+            debouncedSearch,
+            assemblyName,
+          )
           results = results.concat(searchResults)
         }
         if (results.length > 0 && active) {
@@ -144,10 +152,10 @@ function RefNameAutocomplete({
     return () => {
       active = false
     }
-  }, [debouncedSearch, model])
+  }, [assemblyName, debouncedSearch, model])
 
   function onChange(selectedOption: Option | string) {
-    if (selectedOption) {
+    if (selectedOption && assemblyName) {
       if (typeof selectedOption === 'string') {
         // handles string inputs on keyPress enter
         const newResult = new BaseResult({

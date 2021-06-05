@@ -19,7 +19,7 @@ interface BaseArgs {
 
 interface Scope {
   aggregate: boolean
-  assemblyNames: Array<string>
+  assemblyName: string
   openedTracks?: Array<string>
 }
 
@@ -82,28 +82,25 @@ export default (pluginManager: PluginManager) => {
         }
       })
       // get adapters that cover assemblies
-      const rootTextSearchAdapters = this.getAdaptersWithAssemblies(
-        scope.assemblyNames,
+      const rootTextSearchAdapters = this.getAdaptersWithAssembly(
+        scope.assemblyName,
         textSearchAdapters,
       )
-      trackTextSearchAdapters = this.getAdaptersWithAssemblies(
-        scope.assemblyNames,
+      trackTextSearchAdapters = this.getAdaptersWithAssembly(
+        scope.assemblyName,
         trackTextSearchAdapters,
       )
       return rootTextSearchAdapters.concat(trackTextSearchAdapters)
     }
 
-    getAdaptersWithAssemblies(
-      scopeAssemblyNames: Array<string>,
+    getAdaptersWithAssembly(
+      scopeAssemblyName: string,
       adapterList: AnyConfigurationModel[],
     ) {
       const adaptersWithAssemblies = adapterList.filter(
         (adapterConfig: AnyConfigurationModel) => {
           const adapterAssemblies = readConfObject(adapterConfig, 'assemblies')
-          const intersection = adapterAssemblies.filter((assembly: string) =>
-            scopeAssemblyNames.includes(assembly),
-          )
-          return intersection.length > 0
+          return adapterAssemblies.includes(scopeAssemblyName)
         },
       )
       return adaptersWithAssemblies

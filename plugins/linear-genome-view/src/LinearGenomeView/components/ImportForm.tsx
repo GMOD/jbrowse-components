@@ -48,7 +48,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const hasError = Boolean(error)
   const assemblyName = assemblyNames[selectedAssemblyIdx]
   const displayName = assemblyName && !error ? selectedAssemblyIdx : ''
-  const searchScope = model.searchScope
+  const searchScope = model.searchScope(assemblyName)
   useEffect(() => {
     let done = false
     ;(async () => {
