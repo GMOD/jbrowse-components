@@ -63,12 +63,8 @@ describe('indexGff3', () => {
     })
     const indexAttributes: Array<string> = indexConfig[0].attributes
 
-    await textIndex.handleLocalGff3(
-      gff3FileLocation,
-      true,
-      isTest,
-      indexAttributes,
-    )
+    textIndex.handleLocalGff3(gff3FileLocation, true)
+    
     const ixdata = JSON.stringify(
       readFileSync('./products/jbrowse-cli/test/data/out.ix', {
         encoding: 'utf8',
