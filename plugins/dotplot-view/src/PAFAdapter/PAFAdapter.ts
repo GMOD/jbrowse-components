@@ -24,7 +24,7 @@ interface PafRecord {
     blockLen: number
     mappingQual: number
     numMatches: number
-    strand: string
+    strand: number
   }
 }
 
@@ -91,7 +91,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
           extra: {
             numMatches: +numMatches,
             blockLen: +blockLen,
-            strand,
+            strand: strand === '-' ? -1 : 1,
             mappingQual: +mappingQual,
             ...rest,
           },
