@@ -239,7 +239,6 @@ describe('valid file tests', () => {
     autocomplete.focus()
     fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
     fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
-    // console.log((await screen.findAllByText('ctgB'))[0])
     const option = (await screen.findAllByText('ctgB'))[0]
     fireEvent.click(option)
     fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
