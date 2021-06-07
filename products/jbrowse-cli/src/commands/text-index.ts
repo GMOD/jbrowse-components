@@ -114,10 +114,10 @@ export default class TextIndex extends JBrowseCommand {
         fileDirectory = runFlags.location
       }
       // For testing:
-      // const gff3FileLocation: string = "./test/data/au9_scaffold_subset_sync.gff3"
-      // const gff3FileLocation: string = 'https://github.com/GMOD/jbrowse-components/blob/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz?raw=true'
-      // const gff3FileLocation = 'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3'
-      // const gff3FileLocation = 'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/Ensembl_Mus_musculus.NCBIM37.67.pep.all_vs_UMD3.1.gff3.gz'
+      // const uri: string = "./test/data/au9_scaffold_subset_sync.gff3"
+      // const uri: string = 'https://github.com/GMOD/jbrowse-components/blob/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz?raw=true'
+      // const uri = 'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3'
+      // const uri = 'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/Ensembl_Mus_musculus.NCBIM37.67.pep.all_vs_UMD3.1.gff3.gz'
 
       // repeats_hg19
       // gff3tabix_genes
@@ -128,7 +128,7 @@ export default class TextIndex extends JBrowseCommand {
 
       const testObjs = [
         {
-          attributes: ['Name', 'ID', 'seq_id', 'start', 'end'],
+          attributes: ['Name', 'ID', 'seq_id', 'start', 'end', 'type'],
           indexingConfiguration: {
             gffLocation: {
               uri: './test/data/au9_scaffold_subset_sync.gff3',
@@ -143,7 +143,10 @@ export default class TextIndex extends JBrowseCommand {
       const indexAttributes: Array<string> = testObjs[0].attributes
 
       //const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
-      const uri: string = testObjs[0].indexingConfiguration.gffLocation.uri
+      // const uri: string = testObjs[0].indexingConfiguration.gffLocation.uri
+      const uri = ['./test/data/volvox.sort.gff3.gz', 'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/RefSeq_UMD3.1.1_multitype_genes.gff3.gz', 'TAIR_GFF3_ssrs.gff']
+      // const uri = 'Spliced_Junctions_clustered.gff'    // This one is giving a parsing error
+      // const uri = 'TAIR_GFF3_ssrs.gff'
       this.indexDriver(uri, false, indexAttributes, fileDirectory)
     }
   }
@@ -367,8 +370,15 @@ export default class TextIndex extends JBrowseCommand {
         let attrString: string = ''
 
         for (let attr of attributesArr) {
+
+          // Currently do not index start or end values for searching, but do include the attributes in search results.
+          // TODO: consider not using 'start' or 'end, and instead allow the user to customize
+          //        searchTermAttributes vs. searchResultAttributes in the config.json
+          if (attr == 'start' || attr == 'end')
+            continue
+
+          // Check to see if the attr exists for the record
           if (subRecord[attr]) {
-            // Check to see if the attr exists for the record
             recordObj[attr] = subRecord[attr]
             attrString += ' ' + recordObj[attr]
           } else if (subRecord.attributes && subRecord.attributes[attr]) {
