@@ -4,7 +4,7 @@
 
 import { setup } from '../testUtil'
 import TextIndex from './text-index'
-import { createReadStream, readFileSync } from 'fs'
+import { readFileSync } from 'fs'
 
 // Base text index command
 // Test throwing an error if --tracks and no track ids provided
@@ -52,7 +52,6 @@ describe('indexGff3', () => {
 describe('indexGff3', () => {
   const gff3FileLocation =
     './products/jbrowse-cli/test/data/volvox.sort.gff3.gz'
-  let isTest = true
   it(`Index local gzipped gff3 file into out.ix and out.ixx`, async () => {
     let textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
@@ -63,8 +62,8 @@ describe('indexGff3', () => {
     })
     const indexAttributes: Array<string> = indexConfig[0].attributes
 
-    textIndex.handleLocalGff3(gff3FileLocation, true)
-    
+    await textIndex.indexDriver(gff3FileLocation, true, indexAttributes, null)
+
     const ixdata = JSON.stringify(
       readFileSync('./products/jbrowse-cli/test/data/out.ix', {
         encoding: 'utf8',
@@ -86,8 +85,8 @@ describe('indexGff3', () => {
 describe('indexGff3', () => {
   const gff3FileLocation =
     './products/jbrowse-cli/test/data/au9_scaffold_subset_sync.gff3'
-  let isTest = true
-  it(`Index non-GZ local gff3 file into out.ix and out.ixx`, async () => {
+
+    it(`Index non-GZ local gff3 file into out.ix and out.ixx`, async () => {
     let textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
 
@@ -97,7 +96,8 @@ describe('indexGff3', () => {
     })
     const indexAttributes: Array<string> = indexConfig[0].attributes
 
-    textIndex.handleLocalGff3(gff3FileLocation, false)
+    await textIndex.indexDriver(gff3FileLocation, true, indexAttributes, null)
+
     const ixdata = JSON.stringify(
       readFileSync('./products/jbrowse-cli/test/data/out.ix', {
         encoding: 'utf8',
@@ -119,7 +119,6 @@ describe('indexGff3', () => {
 describe('indexGff3', () => {
   const gff3FileLocation =
     'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3'
-  let isTest: boolean = true
   it(`Index non-GZ remote https gff3 file into out.ix and out.ixx`, async () => {
     let textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
@@ -130,7 +129,8 @@ describe('indexGff3', () => {
     })
     const indexAttributes: Array<string> = indexConfig[0].attributes
 
-    await textIndex.handleGff3Url(gff3FileLocation, false)
+    await textIndex.indexDriver(gff3FileLocation, true, indexAttributes, null)
+
     const ixdata = JSON.stringify(
       readFileSync('./products/jbrowse-cli/test/data/out.ix', {
         encoding: 'utf8',
@@ -152,7 +152,6 @@ describe('indexGff3', () => {
 describe('indexGff3', () => {
   const gff3FileLocation =
     'https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz'
-  let isTest = true
   it(`Index remote https gzipped gff3 file into out.ix and out.ixx`, async () => {
     let textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
@@ -163,8 +162,8 @@ describe('indexGff3', () => {
     })
     const indexAttributes: Array<string> = indexConfig[0].attributes
 
-    let promise = textIndex.handleGff3Url(gff3FileLocation, true)
-    await promise
+    await textIndex.indexDriver(gff3FileLocation, true, indexAttributes, null)
+
     const ixdata = JSON.stringify(
       readFileSync('./products/jbrowse-cli/test/data/out.ix', {
         encoding: 'utf8',
@@ -184,37 +183,36 @@ describe('indexGff3', () => {
 
 // Test for remote http gzipped file
 // NOTE: This tests a big file and takes 20+ seconds. Jest would timeout and error, so this test is commented out.
-describe('indexGff3', () => {
-  const gff3FileLocation =
-    'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/RefSeq_UMD3.1.1_multitype_genes.gff3.gz'
-  let isTest = true
-  it(`Index remote http gzipped gff3 file into out.ix and out.ixx`, async () => {
-    let textIndex = new TextIndex([], null)
-    textIndex.log = jest.fn()
+// describe('indexGff3', () => {
+//   const gff3FileLocation =
+//     'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/RefSeq_UMD3.1.1_multitype_genes.gff3.gz'
+//   it(`Index remote http gzipped gff3 file into out.ix and out.ixx`, async () => {
+//     let textIndex = new TextIndex([], null)
+//     textIndex.log = jest.fn()
 
-    const trackIds: Array<string> = ['gff3tabix_genes']
-    const indexConfig = await textIndex.getIndexingConfigurations(trackIds, {
-      target: 'products/jbrowse-cli',
-    })
-    const indexAttributes: Array<string> = indexConfig[0].attributes
+//     const trackIds: Array<string> = ['gff3tabix_genes']
+//     const indexConfig = await textIndex.getIndexingConfigurations(trackIds, {
+//       target: 'products/jbrowse-cli',
+//     })
+//     const indexAttributes: Array<string> = indexConfig[0].attributes
 
-    await textIndex.handleGff3Url(gff3FileLocation, true)
-    const ixdata = JSON.stringify(
-      readFileSync('./products/jbrowse-cli/test/data/out.ix', {
-        encoding: 'utf8',
-        flag: 'r',
-      }),
-    )
-    expect(ixdata).toMatchSnapshot()
-    const ixxData = JSON.stringify(
-      readFileSync('./products/jbrowse-cli/test/data/out.ixx', {
-        encoding: 'utf8',
-        flag: 'r',
-      }),
-    )
-    expect(ixxData).toMatchSnapshot()
-  })
-})
+//     await textIndex.indexDriver([gff3FileLocation], true, indexAttributes, null);
+//     const ixdata = JSON.stringify(
+//       readFileSync('./products/jbrowse-cli/test/data/out.ix', {
+//         encoding: 'utf8',
+//         flag: 'r',
+//       }),
+//     )
+//     expect(ixdata).toMatchSnapshot()
+//     const ixxData = JSON.stringify(
+//       readFileSync('./products/jbrowse-cli/test/data/out.ixx', {
+//         encoding: 'utf8',
+//         flag: 'r',
+//       }),
+//     )
+//     expect(ixxData).toMatchSnapshot()
+//   })
+// })
 
 // Test for remote http non-gzipped file
 // test goes here but I'm not having any luck finding a non-gzipped http file link.
@@ -246,7 +244,7 @@ describe('getIndexingConfigurations', () => {
       './products/jbrowse-cli/' +
       indexConfig[0].indexingConfiguration.gffLocation.uri
 
-    textIndex.handleLocalGff3(uri, true)
+    await textIndex.indexDriver([uri], true, indexAttributes, null);
 
     const ixdata = JSON.stringify(
       readFileSync('./products/jbrowse-cli/test/data/out.ix', {
@@ -265,7 +263,8 @@ describe('getIndexingConfigurations', () => {
   })
 })
 
-// tests for aggregate Indexing
+
+// Tests for aggregate Indexing:
 
 // parsing multiple local GZ file
 describe('aggregateIndexing', () => {
