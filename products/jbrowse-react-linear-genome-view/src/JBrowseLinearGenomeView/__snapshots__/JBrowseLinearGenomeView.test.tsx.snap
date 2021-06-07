@@ -6,7 +6,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
 >
   <div
     class="MuiPaper-root makeStyles-viewContainer MuiPaper-elevation12 MuiPaper-rounded"
-    style="padding: 0px 8px 8px;"
+    style="padding: 0px 4px 4px;"
   >
     <div
       style="display: flex;"
@@ -15,7 +15,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
         aria-controls="view-menu"
         aria-haspopup="true"
         aria-label="more"
-        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconRoot MuiIconButton-edgeStart"
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-iconRoot MuiIconButton-sizeSmall MuiIconButton-edgeStart"
         data-testid="view_menu_icon"
         tabindex="0"
         type="button"
@@ -25,7 +25,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root makeStyles-icon"
+            class="MuiSvgIcon-root makeStyles-icon MuiSvgIcon-fontSizeSmall"
             focusable="false"
             viewBox="0 0 24 24"
           >
@@ -161,16 +161,16 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
               width="100%"
             >
               <polygon
-                fill="rgba(121, 134, 203, 0.3)"
+                fill="rgba(66, 119, 127, 0.3)"
                 points="0,48,801,48,267,0,0,0"
-                stroke="rgba(121, 134, 203, 0.8)"
+                stroke="rgba(66, 119, 127, 0.8)"
               />
             </svg>
             <div
               class="makeStyles-headerBar"
             >
               <button
-                class="MuiButtonBase-root MuiButton-root MuiButton-text makeStyles-toggleButton MuiButton-textSecondary"
+                class="MuiButtonBase-root MuiButton-root MuiButton-text makeStyles-toggleButton MuiButton-textSecondary MuiButton-textSizeSmall MuiButton-sizeSmall"
                 tabindex="0"
                 title="Open track selector"
                 type="button"
@@ -181,7 +181,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 >
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root makeStyles-buttonSpacer"
+                    class="MuiSvgIcon-root makeStyles-buttonSpacer MuiSvgIcon-fontSizeSmall"
                     focusable="false"
                     viewBox="0 0 24 24"
                   >
@@ -201,7 +201,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 class="MuiFormGroup-root makeStyles-headerForm MuiFormGroup-row"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
                   tabindex="0"
                   type="button"
                 >
@@ -210,7 +210,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
                       focusable="false"
                       viewBox="0 0 24 24"
                     >
@@ -224,7 +224,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   />
                 </button>
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
                   tabindex="0"
                   type="button"
                 >
@@ -233,7 +233,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
                       focusable="false"
                       viewBox="0 0 24 24"
                     >
@@ -253,11 +253,11 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   role="combobox"
                 >
                   <div
-                    class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
+                    class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-marginDense MuiFormControl-fullWidth"
                     style="margin: 7px; min-width: 175px;"
                   >
                     <div
-                      class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
+                      class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd MuiInputBase-marginDense MuiOutlinedInput-marginDense"
                       style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
                     >
                       <input
@@ -265,7 +265,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         aria-invalid="false"
                         autocapitalize="none"
                         autocomplete="off"
-                        class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
+                        class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
                         id="refNameAutocomplete-test_view"
                         placeholder="Search for location"
                         spellcheck="false"
@@ -273,13 +273,13 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         value="ctgA:1..40"
                       />
                       <div
-                        class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
+                        class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-marginDense"
                         style="margin-right: 7px;"
                         title="Search for features or navigate to a location using syntax \\"chr1:1-100\\" or \\"chr1:1..100\\""
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
                           focusable="false"
                           viewBox="0 0 24 24"
                         >
@@ -318,7 +318,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 class="makeStyles-container"
               >
                 <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall"
                   data-testid="zoom_out"
                   tabindex="0"
                   type="button"
@@ -328,7 +328,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
                       focusable="false"
                       viewBox="0 0 24 24"
                     >
@@ -368,7 +368,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   />
                 </span>
                 <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall"
                   data-testid="zoom_in"
                   tabindex="0"
                   type="button"
@@ -378,7 +378,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
                       focusable="false"
                       viewBox="0 0 24 24"
                     >
@@ -752,7 +752,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
               >
                 <svg
                   aria-hidden="true"
-                  class="MuiSvgIcon-root makeStyles-dragHandleIcon"
+                  class="MuiSvgIcon-root makeStyles-dragHandleIcon MuiSvgIcon-fontSizeSmall"
                   focusable="false"
                   viewBox="0 0 24 24"
                 >
@@ -762,7 +762,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 </svg>
               </span>
               <button
-                class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+                class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary MuiIconButton-sizeSmall"
                 tabindex="0"
                 title="close this track"
                 type="button"
@@ -772,7 +772,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 >
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
                     focusable="false"
                     viewBox="0 0 24 24"
                   >
@@ -793,7 +793,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
               <button
                 aria-controls="simple-menu"
                 aria-haspopup="true"
-                class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+                class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary MuiIconButton-sizeSmall"
                 data-testid="track_menu_icon"
                 tabindex="0"
                 type="button"
@@ -803,7 +803,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 >
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
                     focusable="false"
                     viewBox="0 0 24 24"
                   >

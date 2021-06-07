@@ -155,7 +155,7 @@ function calculateUTRs(cds: Feat[], exons: Feat[]) {
 
   const threeUTRs = [
     { start: lastCds.end, end: lastCdsExon.end },
-    ...exons.slice(lastCdsIdx),
+    ...exons.slice(lastCdsIdx + 1),
   ].map(elt => ({ ...elt, type: 'three_prime_UTR' }))
 
   return [...fiveUTRs, ...threeUTRs]
