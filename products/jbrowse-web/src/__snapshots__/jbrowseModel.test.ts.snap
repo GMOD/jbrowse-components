@@ -3758,6 +3758,10 @@ Object {
         },
       ],
       "name": "Single exon gene",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "single_exon_gene",
       "type": "FeatureTrack",
     },
