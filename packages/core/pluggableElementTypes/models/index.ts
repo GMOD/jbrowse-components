@@ -7,6 +7,11 @@ export type {
   BaseDisplayModel,
   BaseDisplayStateModel,
 } from './BaseDisplayModel'
+export { InternetAccount } from './InternetAccountModel'
+export type {
+  BaseInternetAccountModel,
+  BaseInternetAccountStateModel,
+} from './InternetAccountModel'
 export { createBaseTrackModel } from './BaseTrackModel'
 export type { BaseTrackModel, BaseTrackStateModel } from './BaseTrackModel'
 export { createBaseTrackConfig } from './baseTrackConfig'
