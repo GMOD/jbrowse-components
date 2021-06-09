@@ -5,7 +5,7 @@ import path from 'path'
 import meta from '../../test_data/names/meta.json'
 import first from '../../test_data/names/0.json'
 import last from '../../test_data/names/f.json'
-import Adapter from './JBrowse1TextSearchAdater'
+import Adapter from './JBrowse1TextSearchAdapter'
 import configSchema from './configSchema'
 
 test('adapter can fetch files from names index', async () => {
