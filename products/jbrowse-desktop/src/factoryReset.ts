@@ -1,6 +1,7 @@
+import electron from 'electron'
+
 export default async function factoryReset() {
-  const { electronBetterIpc = {} } = window
-  const { ipcRenderer } = electronBetterIpc
+  const { ipcRenderer } = electron
   if (ipcRenderer) {
     await ipcRenderer.invoke('reset')
     window.location.reload()

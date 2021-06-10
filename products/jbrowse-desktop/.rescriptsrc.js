@@ -1,4 +1,5 @@
 module.exports = [
-  './rescripts/yarnWorkspacesRescript.js',
-  './rescripts/webpackRescript.js',
+  './rescripts/yarnWorkspacesRescript',
+  './rescripts/workerLoaderRescript',
+  './rescripts/webpackRescript',
 ]

@@ -30,8 +30,10 @@ import {
 } from '@jbrowse/core/ui/NewSessionCards'
 import RecentSessionCard from '@jbrowse/core/ui/RecentSessionCard'
 import FactoryResetDialog from '@jbrowse/core/ui/FactoryResetDialog'
+import electron from 'electron'
 
-const blankIpc = { invoke: () => {} }
+const { ipcRenderer } = electron
+
 const useStyles = makeStyles(theme => ({
   newSession: {
     backgroundColor: theme.palette.grey['300'],
@@ -53,7 +55,6 @@ const DeleteSessionDialog = ({
   sessionToDelete?: string
   onClose: (arg0: boolean) => void
 }) => {
-  const ipcRenderer = window.electronBetterIpc.ipcRenderer || blankIpc
   const [deleteSession, setDeleteSession] = useState(false)
   useEffect(() => {
     ;(async () => {
@@ -69,7 +70,7 @@ const DeleteSessionDialog = ({
         })
       }
     })()
-  }, [deleteSession, ipcRenderer, onClose, sessionToDelete])
+  }, [deleteSession, onClose, sessionToDelete])
 
   return (
     <Dialog open={!!sessionToDelete} onClose={() => onClose(false)}>
@@ -105,7 +106,6 @@ const RenameSessionDialog = ({
   sessionToRename?: string
   onClose: (arg0: boolean) => void
 }) => {
-  const ipcRenderer = window.electronBetterIpc.ipcRenderer || blankIpc
   const [newSessionName, setNewSessionName] = useState('')
   const [renameSession, setRenameSession] = useState(false)
   useEffect(() => {
@@ -126,7 +126,7 @@ const RenameSessionDialog = ({
         })
       }
     })()
-  }, [ipcRenderer, newSessionName, onClose, renameSession, sessionToRename])
+  }, [newSessionName, onClose, renameSession, sessionToRename])
 
   return (
     <Dialog open={!!sessionToRename} onClose={() => onClose(false)}>
@@ -176,7 +176,6 @@ export default function StartScreen({
   bypass: boolean
   onFactoryReset: Function
 }) {
-  const ipcRenderer = window.electronBetterIpc.ipcRenderer || blankIpc
   const [sessions, setSessions] = useState<Record<string, any> | undefined>()
   const [sessionToDelete, setSessionToDelete] = useState<string | undefined>()
   const [sessionToRename, setSessionToRename] = useState<string | undefined>()
@@ -218,7 +217,7 @@ export default function StartScreen({
         })
       }
     })()
-  }, [bypass, ipcRenderer, root, sessionToLoad, sortedSessions])
+  }, [bypass, root, sessionToLoad, sortedSessions])
 
   useEffect(() => {
     ;(async () => {
@@ -235,7 +234,7 @@ export default function StartScreen({
         })
       }
     })()
-  }, [ipcRenderer, updateSessionsList])
+  }, [updateSessionsList])
 
   if (!sessions) {
     return (

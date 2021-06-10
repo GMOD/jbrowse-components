@@ -1,6 +1,5 @@
-import { LocalFile, BlobFile, GenericFilehandle } from 'generic-filehandle'
-import ElectronLocalFile from './ElectronLocalFile'
-import ElectronRemoteFile from './ElectronRemoteFile'
+import { BlobFile, GenericFilehandle } from 'generic-filehandle'
+import LocalFile from './LocalFile'
 import { openUrl as rangeFetcherOpenUrl } from './rangeFetcher'
 import {
   FileLocation,
@@ -11,14 +10,8 @@ import {
 import { getBlob } from '../tracks'
 import { isElectron } from '../../util'
 
-declare global {
-  interface Window {
-    electron?: import('electron').AllElectron
-  }
-}
-
 export const openUrl = (arg: string) => {
-  return isElectron ? new ElectronRemoteFile(arg) : rangeFetcherOpenUrl(arg)
+  return rangeFetcherOpenUrl(arg)
 }
 
 function isUriLocation(location: FileLocation): location is UriLocation {
@@ -39,24 +32,19 @@ export function openLocation(location: FileLocation): GenericFilehandle {
   if (!location) {
     throw new Error('must provide a location to openLocation')
   }
-  if (isElectron) {
-    if (isUriLocation(location)) {
-      return new ElectronRemoteFile(location.uri)
-    }
-    if (isLocalPathLocation(location)) {
-      return new ElectronLocalFile(location.localPath)
-    }
-  } else {
-    if (isUriLocation(location)) {
-      return openUrl(
-        location.baseUri
-          ? new URL(location.uri, location.baseUri).href
-          : location.uri,
-      )
-    }
-    if (isLocalPathLocation(location)) {
+  if (isLocalPathLocation(location)) {
+    if (isElectron || typeof jest !== 'undefined') {
       return new LocalFile(location.localPath)
+    } else {
+      throw new Error("can't use local files in the browser")
     }
+  }
+  if (isUriLocation(location)) {
+    return openUrl(
+      location.baseUri
+        ? new URL(location.uri, location.baseUri).href
+        : location.uri,
+    )
   }
   if (isBlobLocation(location)) {
     // special case where blob is not directly stored on the model, use a getter
