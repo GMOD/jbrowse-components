@@ -100,7 +100,7 @@ export default (pluginManager: PluginManager) => {
       const adaptersWithAssemblies = adapterList.filter(
         (adapterConfig: AnyConfigurationModel) => {
           const adapterAssemblies = readConfObject(adapterConfig, 'assemblies')
-          return adapterAssemblies.includes(scopeAssemblyName)
+          return adapterAssemblies?.includes(scopeAssemblyName)
         },
       )
       return adaptersWithAssemblies

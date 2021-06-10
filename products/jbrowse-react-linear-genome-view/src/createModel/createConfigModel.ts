@@ -25,6 +25,9 @@ export default function createConfigModel(
       connections: types.array(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),
+      textSearchAdapters: types.array(
+        pluginManager.pluggableConfigSchemaType('text search adapter'),
+      ),
       plugins: types.frozen(),
     })
     .views(self => ({
