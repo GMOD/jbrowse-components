@@ -64,11 +64,9 @@ async function fetchResults(
     queryString: query,
     searchType: 'prefix',
   }
-  const searchResults = await textSearchManager.search(
-    args,
-    searchScope,
-    rankSearchResults,
-  )
+  const searchResults =
+    (await textSearchManager?.search(args, searchScope, rankSearchResults)) ||
+    []
   return searchResults
 }
 function RefNameAutocomplete({

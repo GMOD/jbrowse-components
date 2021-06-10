@@ -87,14 +87,15 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       // region visible, xref #1703
       model.showAllRegions()
     } else {
-      const results = await textSearchManager.search(
-        {
-          queryString: input.toLocaleLowerCase(),
-          searchType: 'exact',
-        },
-        searchScope,
-        rankSearchResults,
-      )
+      const results =
+        (await textSearchManager?.search(
+          {
+            queryString: input.toLocaleLowerCase(),
+            searchType: 'exact',
+          },
+          searchScope,
+          rankSearchResults,
+        )) || []
       if (results.length > 0) {
         model.setSearchResults(results, input.toLocaleLowerCase())
       } else {
