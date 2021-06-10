@@ -9,20 +9,13 @@ import {
   BlobLocation,
 } from '../types'
 import { getBlob } from '../tracks'
+import { isElectron } from '../../util'
 
 declare global {
   interface Window {
     electron?: import('electron').AllElectron
   }
 }
-
-// this is recommended in a later comment in https://github.com/electron/electron/issues/2288
-// for detecting electron in a renderer process, which is the one that has node enabled for us
-// const isElectron = process.versions.electron
-// const i2 = process.versions.hasOwnProperty('electron')
-const isElectron = /electron/i.test(
-  typeof navigator !== 'undefined' ? navigator.userAgent : '',
-)
 
 export const openUrl = (arg: string) => {
   return isElectron ? new ElectronRemoteFile(arg) : rangeFetcherOpenUrl(arg)

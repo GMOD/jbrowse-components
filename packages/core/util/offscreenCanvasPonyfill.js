@@ -2,14 +2,12 @@
 import React from 'react'
 import Path from 'svg-path-generator'
 import Color from 'color'
+import { isElectron } from '../util'
 
 // This is a ponyfill for the HTML5 OffscreenCanvas API.
 export let createCanvas
 export let createImageBitmap
 export let ImageBitmapType
-
-// sniff environments
-const isElectron = typeof window !== 'undefined' && Boolean(window.electron)
 
 const weHave = {
   realOffscreenCanvas:
