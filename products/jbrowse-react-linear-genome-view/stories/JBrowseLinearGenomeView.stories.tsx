@@ -50,7 +50,6 @@ export const OneLinearGenomeView = () => {
     assembly,
     tracks,
     defaultSession,
-    textSearchAdapters,
     // use 1-based coordinates for locstring
     location: 'ctgA:1105..1221',
     onChange: patch => {
@@ -248,6 +247,21 @@ export const WithPlugins = () => {
   return <JBrowseLinearGenomeView viewState={state} />
 }
 
+export const WithTextSearching = () => {
+  const state = createViewState({
+    assembly,
+    tracks,
+    defaultSession,
+    textSearchAdapters,
+    // use 1-based coordinates for locstring
+    location: 'ctgA:1105..1221',
+    onChange: patch => {
+      // eslint-disable-next-line no-console
+      console.log('patch', patch)
+    },
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
 export const CustomTheme = () => {
   const state = createViewState({
     assembly,

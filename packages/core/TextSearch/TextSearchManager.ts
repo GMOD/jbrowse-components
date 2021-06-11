@@ -9,7 +9,7 @@ import { searchType, BaseTextSearchAdapter } from '../data_adapters/BaseAdapter'
 import { readConfObject } from '../configuration'
 import TextSearchAdapterType from '../pluggableElementTypes/TextSearchAdapterType'
 
-interface BaseArgs {
+export interface BaseArgs {
   searchType: searchType
   queryString: string
   signal?: AbortSignal
@@ -17,7 +17,7 @@ interface BaseArgs {
   pageNumber?: number
 }
 
-interface Scope {
+export interface Scope {
   aggregate: boolean
   assemblyName: string
   openedTracks?: Array<string>
