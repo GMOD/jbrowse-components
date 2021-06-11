@@ -44,5 +44,5 @@
     "mobx-state-tree": "3.14.1",
     "rxjs": "^6.0.0"
   },
-  "private": true
+  "private": false
 }
