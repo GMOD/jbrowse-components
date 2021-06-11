@@ -9,6 +9,23 @@ import { autorun, when } from 'mobx'
 import { addDisposer, getSnapshot, Instance, types } from 'mobx-state-tree'
 import { getContainingTrack } from '@jbrowse/core/util'
 
+// Notes go here:
+// instead of laying out the abstractions first,
+// just create a menu item that is 'Open Dropbox'
+// and have the onclick handle all the the oauth logic
+// to get the access_token to see what abstractions we would need
+
+// can authorize and get access token
+// adding track to session is technically adding wrong link, it is adding a share link
+// while to access the track contents, it must fetch with the Bearer access token and get a temporary link
+// which can be used to load
+
+// if chooser is first,
+// put a menu item to open dropbox or open google drive
+// similar to igv where the menu item action is that it opens the chooser
+// and the user selects a file, where that file will be put into the track selector
+// or maybe in the 'Add track' flow, add an option for add from dropbox/google drive
+// or maybe its just part of the file selector flow (such as import form or sv inspector import form)
 const stateModelFactory = (pluginManager: PluginManager) => {
   return (
     types

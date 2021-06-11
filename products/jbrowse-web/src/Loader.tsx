@@ -478,6 +478,15 @@ const Renderer = observer(
     const [pm, setPluginManager] = useState<PluginManager>()
     const [error, setError] = useState('')
     const [snapshotError, setSnapshotError] = useState('')
+
+    useEffect(() => {
+      window.addEventListener('message', event => {
+        if (pm && event.data.code) {
+          // @ts-ignore
+          pm.rootModel?.exchangeTokenForAccessToken(event.data.code)
+        }
+      })
+    }, [pm])
     // only create the pluginManager/rootModel "on mount"
     useEffect(() => {
       try {

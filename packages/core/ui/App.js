@@ -101,6 +101,7 @@ const App = observer(({ session, HeaderButtons }) => {
       session.renameCurrentSession(newName)
     }
   }
+
   return (
     <div
       className={classes.root}

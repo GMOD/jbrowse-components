@@ -42,11 +42,13 @@ const FileLocationEditor = observer(
     setLocation: (param: FileLocation) => void
     name?: string
     description?: string
+    oauthAccessToken?: string
   }) => {
     const { location, name, description } = props
     const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'
     const [fileOrUrlState, setFileOrUrlState] = useState(fileOrUrl)
 
+    console.log(props.oauthAccessToken)
     return (
       <>
         <InputLabel shrink htmlFor="callback-editor">
@@ -73,6 +75,25 @@ const FileLocationEditor = observer(
                 URL
               </ToggleButton>
             </ToggleButtonGroup>
+            <Button
+              onClick={() => {
+                const data = {
+                  client_id: 'wyngfdvw0ntnj5b',
+                  redirect_uri: 'http://localhost:3000',
+                  response_type: 'code',
+                }
+
+                const params = Object.entries(data)
+                  .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
+                  .join('&')
+
+                const url = `https://www.dropbox.com/oauth2/authorize?${params}`
+                const options = `width=500,height=600,left=0,top=0`
+                return window.open(url, 'Authorization', options)
+              }}
+            >
+              Dropbox
+            </Button>
           </Grid>
           <Grid item>
             {fileOrUrlState === 'url' ? (

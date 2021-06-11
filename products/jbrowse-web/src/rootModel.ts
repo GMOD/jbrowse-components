@@ -134,6 +134,7 @@ export default function RootModel(
       savedSessionsVolatile: observable.map({}),
       pluginManager,
       error: undefined as undefined | Error,
+      dropboxToken: '',
     }))
     .views(self => ({
       get savedSessions() {
@@ -222,6 +223,33 @@ export default function RootModel(
             { delay: 400 },
           ),
         )
+      },
+      async exchangeTokenForAccessToken(token: string) {
+        const data = {
+          code: token,
+          grant_type: 'authorization_code',
+          client_id: 'wyngfdvw0ntnj5b',
+          client_secret: 'o1qarh66eu1m48y',
+          redirect_uri: 'http://localhost:3000',
+        }
+
+        const params = Object.entries(data)
+          .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
+          .join('&')
+
+        const response = await fetch('https://api.dropbox.com/oauth2/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: params,
+        })
+
+        const accessToken = await response.json()
+        this.setDropboxAccessToken(accessToken.access_token)
+      },
+      async setDropboxAccessToken(token: string) {
+        self.dropboxToken = token
       },
       setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
         const oldSession = self.session
