@@ -118,7 +118,7 @@ export interface ResultsDeserialized extends FeatureResultsDeserialized {
   layout: PrecomputedLayout<string>
 }
 
-export default class BoxRendererType extends FeatureRendererType {
+export class BoxRendererType extends FeatureRendererType {
   sessions: { [sessionId: string]: LayoutSession } = {}
 
   getWorkerSession(props: LayoutSessionProps & { sessionId: string }) {

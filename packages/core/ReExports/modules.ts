@@ -62,7 +62,7 @@ import WidgetType from '../pluggableElementTypes/WidgetType'
 import * as pluggableElementTypeModels from '../pluggableElementTypes/models'
 import ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType'
 import CircularChordRendererType from '../pluggableElementTypes/renderers/CircularChordRendererType'
-import BoxRendererType from '../pluggableElementTypes/renderers/BoxRendererType'
+import * as BoxRendererType from '../pluggableElementTypes/renderers/BoxRendererType'
 
 import * as Configuration from '../configuration'
 import Plugin from '../Plugin'

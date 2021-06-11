@@ -1,4 +1,5 @@
-import BoxRendererType, {
+import {
+  BoxRendererType,
   LayoutSession,
 } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import MultiLayout from '@jbrowse/core/util/layouts/MultiLayout'

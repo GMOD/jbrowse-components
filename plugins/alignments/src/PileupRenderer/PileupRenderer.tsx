@@ -1,6 +1,7 @@
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { toArray } from 'rxjs/operators'
-import BoxRendererType, {
+import {
+  BoxRendererType,
   RenderArgs,
   RenderArgsSerialized,
   RenderArgsDeserialized as BoxRenderArgsDeserialized,
