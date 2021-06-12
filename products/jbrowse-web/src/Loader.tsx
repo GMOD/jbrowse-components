@@ -481,9 +481,15 @@ const Renderer = observer(
 
     useEffect(() => {
       window.addEventListener('message', event => {
-        if (pm && event.data.code) {
-          // @ts-ignore
-          pm.rootModel?.exchangeTokenForAccessToken(event.data.code)
+        if (pm) {
+          if (event.data.code) {
+            // @ts-ignore
+            pm.rootModel?.exchangeTokenForAccessToken(event.data.code)
+          } else if (event.data.token) {
+            // @ts-ignore
+            pm.rootModel?.setGoogleAccessToken(event.data.token)
+            console.log(event.data.token)
+          }
         }
       })
     }, [pm])

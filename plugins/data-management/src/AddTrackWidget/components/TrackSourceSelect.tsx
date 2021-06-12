@@ -26,6 +26,7 @@ function TrackSourceSelect({ model }: { model: AddTrackModel }) {
           description=""
           location={model.trackData}
           setLocation={model.setTrackData}
+          setName={model.setTrackName}
           oauthAccessToken={rootModel.dropboxToken}
         />
         <FileSelector

@@ -135,6 +135,7 @@ export default function RootModel(
       pluginManager,
       error: undefined as undefined | Error,
       dropboxToken: '',
+      googleToken: '',
     }))
     .views(self => ({
       get savedSessions() {
@@ -250,6 +251,9 @@ export default function RootModel(
       },
       async setDropboxAccessToken(token: string) {
         self.dropboxToken = token
+      },
+      async setGoogleAccessToken(token: string) {
+        self.googleToken = token
       },
       setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
         const oldSession = self.session

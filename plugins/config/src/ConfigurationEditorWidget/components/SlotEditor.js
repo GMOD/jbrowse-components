@@ -335,7 +335,6 @@ const stringEnumEditor = observer(({ slot, slotSchema }) => {
 })
 
 const FileSelectorWrapper = observer(({ slot }) => {
-  console.log('here')
   return (
     <FileSelector
       location={slot.value}
