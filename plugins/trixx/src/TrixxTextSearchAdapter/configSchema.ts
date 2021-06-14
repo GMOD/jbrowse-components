@@ -3,10 +3,15 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 export default ConfigurationSchema(
   'TrixxTextSearchAdapter',
   {
-    namesIndexLocation: {
+    ixFilePath: {
       type: 'fileLocation',
-      defaultValue: { uri: '/volvox/names' },
-      description: 'the location of the trixx text index',
+      defaultValue: { uri: 'out.ix' },
+      description: 'the location of the trixx ix file',
+    },
+    ixxFilePath: {
+      type: 'fileLocation',
+      defaultValue: { uri: 'out.ixx' },
+      description: 'the location of the trixx ixx file',
     },
     tracks: {
       type: 'stringArray',

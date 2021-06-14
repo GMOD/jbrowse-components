@@ -66,8 +66,11 @@
     {
       "type": "TrixxTextSearchAdapter",
       "textSearchAdapterId": "TrixxAdapter",
-      "namesIndexLocation": {
-        "uri": "names/"
+      "ixFilePath": {
+        "uri": "out.ix"
+      },
+      "ixxFilePath": {
+        "uri": "out.ixx"
       },
       "assemblies": ["volvox", "volvox2"]
     },

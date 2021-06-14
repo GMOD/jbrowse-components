@@ -43,5 +43,8 @@
     "prop-types": "^15.0.0",
     "react": ">=16.8.0"
   },
-  "private": true
+  "private": true,
+  "dependencies": {
+    "@gmod/trix": "^0.2.0"
+  }
 }
