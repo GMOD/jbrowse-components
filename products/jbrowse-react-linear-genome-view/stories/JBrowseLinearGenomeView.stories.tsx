@@ -44,7 +44,7 @@ const longReadsSession = {
   ...defaultSession,
   view: volvoxSession.session.views[0],
 }
-const textSearchAdapters = volvoxConfig.textSearchAdapters
+const aggregateTextSearchAdapters = volvoxConfig.aggregateTextSearchAdapters
 export const OneLinearGenomeView = () => {
   const state = createViewState({
     assembly,
@@ -252,7 +252,7 @@ export const WithTextSearching = () => {
     assembly,
     tracks,
     defaultSession,
-    textSearchAdapters,
+    aggregateTextSearchAdapters,
     // use 1-based coordinates for locstring
     location: 'ctgA:1105..1221',
     onChange: patch => {

@@ -72,7 +72,7 @@ export default (pluginManager: PluginManager) => {
       // only return track text search adapters that cover relevant tracks,
       // for now only returning text search adapters that cover configured assemblies)
       // root level adapters and track adapters
-      const { textSearchAdapters, tracks } = pluginManager.rootModel
+      const { aggregateTextSearchAdapters, tracks } = pluginManager.rootModel
         ?.jbrowse as any
       let trackTextSearchAdapters: AnyConfigurationModel[] = []
       tracks.forEach((trackConfig: AnyConfigurationModel) => {
@@ -84,7 +84,7 @@ export default (pluginManager: PluginManager) => {
       // get adapters that cover assemblies
       const rootTextSearchAdapters = this.getAdaptersWithAssembly(
         searchScope.assemblyName,
-        textSearchAdapters,
+        aggregateTextSearchAdapters,
       )
       trackTextSearchAdapters = this.getAdaptersWithAssembly(
         searchScope.assemblyName,

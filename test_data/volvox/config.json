@@ -48,7 +48,7 @@
       }
     }
   ],
-  "textSearchAdapters": [
+  "aggregateTextSearchAdapters": [
     {
       "type": "JBrowse1TextSearchAdapter",
       "textSearchAdapterId": "JBrowse1GenerateNamesAdapter",

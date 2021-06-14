@@ -25,7 +25,7 @@ export default function createConfigModel(
       connections: types.array(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),
-      textSearchAdapters: types.array(
+      aggregateTextSearchAdapters: types.array(
         pluginManager.pluggableConfigSchemaType('text search adapter'),
       ),
       plugins: types.frozen(),
