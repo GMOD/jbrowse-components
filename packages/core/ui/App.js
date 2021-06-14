@@ -9,6 +9,7 @@ import EditableTypography from './EditableTypography'
 import { LogoFull } from './Logo'
 import Snackbar from './Snackbar'
 import ViewContainer from './ViewContainer'
+import { readConfObject } from '../configuration'
 
 const useStyles = makeStyles(theme => ({
   '@global': {
@@ -89,7 +90,17 @@ const App = observer(({ session, HeaderButtons }) => {
     name,
     menus,
     views,
+    configuration,
   } = session
+
+  function renderLogo() {
+    const logoPath = readConfObject(configuration, 'logoPath')
+    if (logoPath.uri === '') {
+      return <LogoFull variant="white" />
+    } else {
+      return <img src={logoPath.uri} alt="Custom logo" />
+    }
+  }
 
   function handleNameChange(newName) {
     if (savedSessionNames && savedSessionNames.includes(newName)) {
@@ -101,6 +112,7 @@ const App = observer(({ session, HeaderButtons }) => {
       session.renameCurrentSession(newName)
     }
   }
+
   return (
     <div
       className={classes.root}
@@ -145,9 +157,7 @@ const App = observer(({ session, HeaderButtons }) => {
               </Tooltip>
               {HeaderButtons}
               <div className={classes.grow} />
-              <div style={{ width: 150, maxHeight: 48 }}>
-                <LogoFull variant="white" />
-              </div>
+              <div style={{ width: 150, maxHeight: 48 }}>{renderLogo()}</div>
             </Toolbar>
           </AppBar>
         </div>
