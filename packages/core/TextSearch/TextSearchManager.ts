@@ -18,9 +18,9 @@ export interface BaseArgs {
 }
 
 export interface SearchScope {
-  aggregate: boolean
+  includeAggregateIndexes: boolean
   assemblyName: string
-  openedTracks?: Array<string>
+  tracks?: Array<string>
 }
 
 export default (pluginManager: PluginManager) => {

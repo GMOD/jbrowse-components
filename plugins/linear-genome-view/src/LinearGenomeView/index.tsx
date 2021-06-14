@@ -281,8 +281,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       searchScope(assemblyName: string) {
         return {
           assemblyName,
-          aggregate: true,
-          openedTracks: self.tracks,
+          includeAggregateIndexes: true,
+          tracks: self.tracks,
         }
       },
       parentRegion(assemblyName: string, refName: string) {
