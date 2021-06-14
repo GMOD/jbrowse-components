@@ -89,7 +89,7 @@
       "name": "volvox structural variant test",
       "category": ["VCF"],
       "assemblyNames": ["volvox"],
-      "attributes": ["Name", "ID", "Description"],
+      "textSearchIndexingAttributes": ["Name", "ID", "Description"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
