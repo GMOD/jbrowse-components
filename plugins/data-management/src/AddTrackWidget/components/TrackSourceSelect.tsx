@@ -27,7 +27,9 @@ function TrackSourceSelect({ model }: { model: AddTrackModel }) {
           location={model.trackData}
           setLocation={model.setTrackData}
           setName={model.setTrackName}
-          oauthAccessToken={rootModel.dropboxToken}
+          oauthAccessTokenDropbox={rootModel.dropboxToken}
+          oauthAccessTokenGoogle={rootModel.googleToken}
+          setCodeVerifierPKCE={rootModel.setCodeVerifierPKCE}
         />
         <FileSelector
           name="Index file"

@@ -488,7 +488,6 @@ const Renderer = observer(
           } else if (event.data.token) {
             // @ts-ignore
             pm.rootModel?.setGoogleAccessToken(event.data.token)
-            console.log(event.data.token)
           }
         }
       })

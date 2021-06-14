@@ -10,8 +10,10 @@ const initialTimeStamp = Date.now()
 
 // google
 if (window && window.location.href.includes('access_token')) {
-  const queryString = window.location.search
-  const token = window.location.href.split('access_token=')[1]
+  const fixedQueryString = window.location.href.replace('#', '?')
+  const queryStringSearch = new URL(fixedQueryString).search
+  const urlParams = new URLSearchParams(queryStringSearch)
+  const token = urlParams.get('access_token')
   const parent = window.opener
   if (token && parent) {
     parent.postMessage({ token: token }, 'http://localhost:3000')

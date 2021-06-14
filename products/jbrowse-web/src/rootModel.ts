@@ -136,6 +136,7 @@ export default function RootModel(
       error: undefined as undefined | Error,
       dropboxToken: '',
       googleToken: '',
+      codeVerifierPKCE: '',
     }))
     .views(self => ({
       get savedSessions() {
@@ -226,11 +227,12 @@ export default function RootModel(
         )
       },
       async exchangeTokenForAccessToken(token: string) {
+        console.log(self.codeVerifierPKCE)
         const data = {
           code: token,
           grant_type: 'authorization_code',
           client_id: 'wyngfdvw0ntnj5b',
-          client_secret: 'o1qarh66eu1m48y',
+          code_verifier: self.codeVerifierPKCE,
           redirect_uri: 'http://localhost:3000',
         }
 
@@ -249,11 +251,14 @@ export default function RootModel(
         const accessToken = await response.json()
         this.setDropboxAccessToken(accessToken.access_token)
       },
-      async setDropboxAccessToken(token: string) {
+      setDropboxAccessToken(token: string) {
         self.dropboxToken = token
       },
-      async setGoogleAccessToken(token: string) {
+      setGoogleAccessToken(token: string) {
         self.googleToken = token
+      },
+      setCodeVerifierPKCE(code: string) {
+        self.codeVerifierPKCE = code
       },
       setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
         const oldSession = self.session

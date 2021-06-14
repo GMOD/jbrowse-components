@@ -21,6 +21,8 @@ import {
   BlobLocation,
 } from '../util/types'
 import { getBlob, storeBlobLocation } from '../util/tracks'
+import { session } from 'electron'
+import crypto from 'crypto'
 
 function isUriLocation(location: FileLocation): location is UriLocation {
   return 'uri' in location
@@ -37,10 +39,10 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
 }
 
 const fetchMetadataFromOauth = async (
-  oauthAccessToken: string,
-  shareLink: string,
+  oauthAccessTokenDropbox: string,
+  queryUrl: string,
 ) => {
-  if (!shareLink) {
+  if (!queryUrl) {
     return
   }
   const response = await fetch(
@@ -48,11 +50,11 @@ const fetchMetadataFromOauth = async (
     {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${oauthAccessToken}`,
+        Authorization: `Bearer ${oauthAccessTokenDropbox}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        url: shareLink,
+        url: queryUrl,
       }),
     },
   )
@@ -60,7 +62,7 @@ const fetchMetadataFromOauth = async (
   return metadata
 }
 const fetchTempLinkFromOauth = async (
-  oauthAccessToken: string,
+  oauthAccessTokenDropbox: string,
   metadata: {
     id: string
   },
@@ -73,7 +75,7 @@ const fetchTempLinkFromOauth = async (
     {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${oauthAccessToken}`,
+        Authorization: `Bearer ${oauthAccessTokenDropbox}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ path: metadata.id }),
@@ -84,6 +86,29 @@ const fetchTempLinkFromOauth = async (
   return file.link
 }
 
+function getGoogleDriveIdFromUrl(url: string) {
+  return url.match(/[-\w]{25,}/)
+}
+
+async function fetchDownloadURLFromOauth(
+  oauthAccessTokenGoogle: string,
+  queryUrl: string,
+) {
+  const urlId = getGoogleDriveIdFromUrl(queryUrl)
+  const response = await fetch(
+    `https://www.googleapis.com/drive/v2/files/${urlId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${oauthAccessTokenGoogle}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    },
+  )
+
+  const fileMetadata = await response.json()
+  return fileMetadata
+}
+
 const FileLocationEditor = observer(
   (props: {
     location?: FileLocation
@@ -91,9 +116,11 @@ const FileLocationEditor = observer(
     setName?: (str: string) => void
     name?: string
     description?: string
-    oauthAccessToken?: string
+    oauthAccessTokenDropbox?: string
+    oauthAccessTokenGoogle?: string
+    setCodeVerifierPKCE?: (param: string) => void
   }) => {
-    const { location, name, description } = props
+    const { location, name, description, setCodeVerifierPKCE } = props
     const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'
     const [fileOrUrlState, setFileOrUrlState] = useState(fileOrUrl)
 
@@ -125,10 +152,29 @@ const FileLocationEditor = observer(
             </ToggleButtonGroup>
             <Button
               onClick={() => {
+                const base64Encode = (buf: Buffer) => {
+                  return buf
+                    .toString('base64')
+                    .replace(/\+/g, '-')
+                    .replace(/\//g, '_')
+                    .replace(/=/g, '')
+                }
+                const codeVerifier = base64Encode(crypto.randomBytes(32))
+                const sha256 = (str: string) => {
+                  return crypto.createHash('sha256').update(str).digest()
+                }
+                const codeChallenge = base64Encode(sha256(codeVerifier))
+
                 const data = {
                   client_id: 'wyngfdvw0ntnj5b',
                   redirect_uri: 'http://localhost:3000',
                   response_type: 'code',
+                  code_challenge: codeChallenge,
+                  code_challenge_method: 'S256',
+                }
+
+                if (setCodeVerifierPKCE) {
+                  setCodeVerifierPKCE(codeVerifier)
                 }
 
                 const params = Object.entries(data)
@@ -182,9 +228,16 @@ const UrlChooser = (props: {
   location?: FileLocation
   setLocation: Function
   setName?: Function
-  oauthAccessToken?: string
+  oauthAccessTokenDropbox?: string
+  oauthAccessTokenGoogle?: string
 }) => {
-  const { location, setLocation, setName, oauthAccessToken } = props
+  const {
+    location,
+    setLocation,
+    setName,
+    oauthAccessTokenDropbox,
+    oauthAccessTokenGoogle,
+  } = props
 
   function isOauth() {
     if (
@@ -203,19 +256,33 @@ const UrlChooser = (props: {
       inputProps={{ 'data-testid': 'urlInput' }}
       defaultValue={location && isUriLocation(location) ? location.uri : ''}
       onChange={async event => {
-        if (oauthAccessToken) {
-          // need better conditional, oauthAccessToken gets checked too late
+        if (oauthAccessTokenDropbox && event.target.value.includes('dropbox')) {
+          // need better conditional, oauthAccessTokenDropbox gets checked too late
           const metadata = await fetchMetadataFromOauth(
-            oauthAccessToken,
+            oauthAccessTokenDropbox,
             event.target.value,
           )
           const oauthUri = await fetchTempLinkFromOauth(
-            oauthAccessToken,
+            oauthAccessTokenDropbox,
             metadata,
           )
+          console.log('dropbox success', oauthUri)
           setLocation({ uri: oauthUri })
           if (setName) {
             setName(metadata.name)
+          }
+        } else if (
+          oauthAccessTokenGoogle &&
+          event.target.value.includes('google')
+        ) {
+          const metadata = await fetchDownloadURLFromOauth(
+            oauthAccessTokenGoogle,
+            event.target.value,
+          )
+          console.log('google success', metadata)
+          setLocation({ uri: metadata.downloadUrl })
+          if (setName) {
+            setName(metadata.title)
           }
         } else {
           setLocation({ uri: event.target.value })
