@@ -9,6 +9,7 @@ import {
   http as httpFR,
   https as httpsFR,
 } from 'follow-redirects'
+import { compress } from 'shorter'
 import { createGunzip, Gunzip } from 'zlib'
 import { resolve } from 'path'
 import { type } from 'os'
@@ -143,9 +144,8 @@ export default class TextIndex extends JBrowseCommand {
       const indexAttributes: Array<string> = testObjs[0].attributes
 
       //const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
-      // const uri: string = testObjs[0].indexingConfiguration.gffLocation.uri
-      const uri = ['./test/data/volvox.sort.gff3.gz', 'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/RefSeq_UMD3.1.1_multitype_genes.gff3.gz']
-      // const uri = ['./test/data/volvox.sort.gff3.gz', 'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/RefSeq_UMD3.1.1_multitype_genes.gff3.gz', 'TAIR_GFF3_ssrs.gff']
+       const uri: string = testObjs[0].indexingConfiguration.gffLocation.uri
+      //const uri = ['./test/data/volvox.sort.gff3.gz', 'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/RefSeq_UMD3.1.1_multitype_genes.gff3.gz', 'TAIR_GFF3_ssrs.gff']
       // const uri = 'Spliced_Junctions_clustered.gff'    // This one is giving a parsing error
       // const uri = 'TAIR_GFF3_ssrs.gff'
       this.indexDriver(uri, false, indexAttributes, fileDirectory)
@@ -367,7 +367,7 @@ export default class TextIndex extends JBrowseCommand {
       // string
 
       let getAndPushRecord = (subRecord: any) => {
-        let arr: Array<string> = []
+        let recordObj: any = {}
         let attrString: string = ''
 
         for (let attr of attributesArr) {
@@ -375,28 +375,34 @@ export default class TextIndex extends JBrowseCommand {
           // Currently do not index start or end values for searching, but do include the attributes in search results.
           // TODO: consider not using 'start' or 'end, and instead allow the user to customize
           //        searchTermAttributes vs. searchResultAttributes in the config.json
-          
+          if (attr == 'start' || attr == 'end')
+            continue
+
           // Check to see if the attr exists for the record
           if (subRecord[attr]) {
-            arr.push(subRecord[attr])
-            if (!(attr == 'start' || attr == 'end'))
-              attrString += ' ' + subRecord[attr]
-
+            recordObj[attr] = subRecord[attr]
+            attrString += ' ' + recordObj[attr]
           } else if (subRecord.attributes && subRecord.attributes[attr]) {
             // Name and ID are in the attributes object, so check there too
-            arr.push(subRecord.attributes[attr])
-            if (!(attr == 'start' || attr == 'end'))
-              attrString += ' ' + subRecord.attributes[attr]
+            recordObj[attr] = subRecord.attributes[attr]
+            attrString += ' ' + recordObj[attr]
           }
         }
-
 
         // encodes the record object so that it can be used by ixIxx
         // appends the attributes that we are indexing by to the end
         // of the string before pushing to ixIxx
-        let buff = Buffer.from(JSON.stringify(arr), 'utf-8')
-        let str: string = `${buff.toString('base64')}`
+        let buff = Buffer.from(JSON.stringify(recordObj), 'utf-8')
+        let str: string = buff.toString() 
         str += attrString + '\n'
+
+        // replace the separator characters with 
+        // percent encoding characters
+        str = str.replace(/,/g, '%2C')
+        str = str.replace(/\s/, '%20')
+
+        //encoding using shorter before pushing
+        str = compress(str)
 
         gff3Stream.push(str)
       }
