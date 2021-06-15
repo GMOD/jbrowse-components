@@ -110,7 +110,7 @@ function GenecDNA(props: {
 
       {chunks.map((chunk, index) => {
         const intron = sequence.slice(chunk.end, chunks[index + 1]?.start)
-        return (
+        return index < chunks.length - 2 ? (
           <React.Fragment key={JSON.stringify(chunk)}>
             <span
               style={{ background: chunk.type === 'CDS' ? cdsColor : utrColor }}
@@ -125,7 +125,7 @@ function GenecDNA(props: {
               </span>
             ) : null}
           </React.Fragment>
-        )
+        ) : null
       })}
 
       {downstream ? (
