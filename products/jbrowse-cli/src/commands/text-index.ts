@@ -129,7 +129,7 @@ export default class TextIndex extends JBrowseCommand {
 
       const testObjs = [
         {
-          attributes: ['Name', 'ID', 'seq_id', 'start', 'end', 'type'],
+          attributes: ['Name', 'ID', 'seq_id', 'type'],
           indexingConfiguration: {
             gffLocation: {
               uri: './test/data/au9_scaffold_subset_sync.gff3',
@@ -392,17 +392,15 @@ export default class TextIndex extends JBrowseCommand {
         // encodes the record object so that it can be used by ixIxx
         // appends the attributes that we are indexing by to the end
         // of the string before pushing to ixIxx
-        let buff = Buffer.from(JSON.stringify(recordObj), 'utf-8')
-        let str: string = buff.toString() 
+        let buff =  compress(Buffer.from(JSON.stringify(recordObj)))// compress(JSON.stringify(recordObj))
+
+        let str: string = buff.toString('base64')
         str += attrString + '\n'
 
         // replace the separator characters with 
         // percent encoding characters
         str = str.replace(/,/g, '%2C')
         str = str.replace(/\s/, '%20')
-
-        //encoding using shorter before pushing
-        str = compress(str)
 
         gff3Stream.push(str)
       }
