@@ -4,11 +4,9 @@ import { readConfObject } from '../configuration'
 import rpcConfigSchema from './configSchema'
 import WebWorkerRpcDriver from './WebWorkerRpcDriver'
 import MainThreadRpcDriver from './MainThreadRpcDriver'
-import ElectronRpcDriver from './ElectronRpcDriver'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
-import { PluginDefinition } from '../PluginLoader'
 
-type DriverClass = WebWorkerRpcDriver | MainThreadRpcDriver | ElectronRpcDriver
+type DriverClass = WebWorkerRpcDriver | MainThreadRpcDriver
 type BackendConfigurations = {
   WebWorkerRpcDriver?: Omit<
     ConstructorParameters<typeof WebWorkerRpcDriver>[0],
@@ -18,15 +16,10 @@ type BackendConfigurations = {
     ConstructorParameters<typeof MainThreadRpcDriver>[0],
     'config'
   >
-  ElectronRpcDriver?: Omit<
-    ConstructorParameters<typeof ElectronRpcDriver>[0],
-    'config'
-  >
 }
 const DriverClasses = {
   WebWorkerRpcDriver,
   MainThreadRpcDriver,
-  ElectronRpcDriver,
 }
 
 export default class RpcManager {

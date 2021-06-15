@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { readConfObject } from '../configuration'
+import { isElectron } from '../util'
 
 interface AnalyticsObj {
   [key: string]: any
@@ -50,7 +51,7 @@ export async function writeAWSAnalytics(
     'win-h': window.innerHeight,
     'win-w': window.innerWidth,
 
-    electron: typeof window !== 'undefined' && Boolean(window.electron),
+    electron: isElectron,
     loadTime: (Date.now() - initialTimeStamp) / 1000,
     jb2: true,
   }
@@ -83,7 +84,7 @@ export async function writeGAAnalytics(
   const stats: AnalyticsObj = {
     'tracks-count': rootModel.jbrowse.tracks.length, // this is all possible tracks
     ver: rootModel.version,
-    electron: typeof window !== 'undefined' && Boolean(window.electron),
+    electron: isElectron,
     loadTime: Date.now() - initialTimeStamp,
     pluginNames:
       rootModel.jbrowse.plugins?.map((plugin: any) => plugin.name) || '',
