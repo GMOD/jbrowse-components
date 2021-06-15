@@ -34,6 +34,7 @@ import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
+import StarIcon from '@material-ui/icons/Star'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import LabelIcon from '@material-ui/icons/Label'
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
@@ -661,6 +662,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
+
+      activateBookmarkWidget() {
+        const session = getSession(self)
+        if (isSessionModelWithWidgets(session)) {
+          const selector = session.addWidget(
+            'GridBookmarkWidget',
+            'GridBookmark',
+            { view: self },
+          )
+          session.showWidget(selector)
+          return selector
+        }
+
+        throw new Error('Could not open bookmark widget')
+      },
+
       navToLocString(locString: string, optAssemblyName?: string) {
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
@@ -1221,6 +1238,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
               label: 'Horizontally flip',
               icon: SyncAltIcon,
               onClick: self.horizontallyFlip,
+            },
+            {
+              label: 'Open bookmark widget',
+              icon: StarIcon,
+              onClick: self.activateBookmarkWidget,
             },
             {
               label: 'Show all regions in assembly',
