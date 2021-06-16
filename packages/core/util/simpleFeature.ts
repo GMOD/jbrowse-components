@@ -128,13 +128,17 @@ export default class SimpleFeature implements Feature {
       this.subfeatures = this.data.subfeatures?.map(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (f: any, i: number) =>
-          new SimpleFeature({
-            id: f.uniqueId || `${id}-${i}`,
-            strand: f.strand || this.data.strand,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            data: f as Record<string, any>,
-            parent: this,
-          }),
+          typeof f.get !== 'function'
+            ? new SimpleFeature({
+                id: f.uniqueId || `${id}-${i}`,
+                data: {
+                  strand: this.data.strand,
+                  ...f,
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                } as Record<string, any>,
+                parent: this,
+              })
+            : f,
       )
     }
   }
