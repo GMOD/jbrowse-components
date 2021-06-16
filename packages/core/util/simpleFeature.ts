@@ -130,6 +130,7 @@ export default class SimpleFeature implements Feature {
         (f: any, i: number) =>
           new SimpleFeature({
             id: f.uniqueId || `${id}-${i}`,
+            strand: f.strand || this.data.strand,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             data: f as Record<string, any>,
             parent: this,
