@@ -1,3 +1,4 @@
+import clone from 'clone'
 /**
  * Abstract feature object
  */
@@ -96,10 +97,11 @@ export default class SimpleFeature implements Feature {
    * which will be inflated to more instances of this class.
    */
   public constructor(args: SimpleFeatureArgs | SimpleFeatureSerialized) {
+    args = clone(args)
     if (isSimpleFeatureSerialized(args)) {
-      this.data = args
+      this.data = clone(args)
     } else {
-      this.data = args.data || {}
+      this.data = clone(args.data || {})
       // load handle from args.parent (not args.data.parent)
       // this reason is because if args is an object, it likely isn't properly loaded with
       // parent as a Feature reference (probably a raw parent ID or something instead)
