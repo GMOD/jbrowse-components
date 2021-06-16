@@ -6,7 +6,11 @@ import {
   InputLabel,
   TextField,
   Typography,
+  Select,
+  MenuItem,
+  IconButton,
 } from '@material-ui/core'
+import CheckIcon from '@material-ui/icons/Check'
 import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab'
 import { observer } from 'mobx-react'
 import { isElectron } from '../util'
@@ -120,9 +124,16 @@ const FileLocationEditor = observer(
     oauthAccessTokenGoogle?: string
     setCodeVerifierPKCE?: (param: string) => void
   }) => {
-    const { location, name, description, setCodeVerifierPKCE } = props
+    const {
+      location,
+      name,
+      description,
+      oauthAccessTokenDropbox,
+      oauthAccessTokenGoogle,
+      setCodeVerifierPKCE,
+    } = props
     const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'
-    const [fileOrUrlState, setFileOrUrlState] = useState(fileOrUrl)
+    const [mode, setMode] = useState('url')
 
     return (
       <>
@@ -130,91 +141,102 @@ const FileLocationEditor = observer(
           {name}
         </InputLabel>
         <Grid container spacing={1} direction="row" alignItems="center">
+          {mode === 'dropbox_url' && (
+            <Grid item style={{ width: '100%' }}>
+              <Button
+                color="primary"
+                variant="contained"
+                disabled={!!oauthAccessTokenDropbox}
+                onClick={() => {
+                  const base64Encode = (buf: Buffer) => {
+                    return buf
+                      .toString('base64')
+                      .replace(/\+/g, '-')
+                      .replace(/\//g, '_')
+                      .replace(/=/g, '')
+                  }
+                  const codeVerifier = base64Encode(crypto.randomBytes(32))
+                  const sha256 = (str: string) => {
+                    return crypto.createHash('sha256').update(str).digest()
+                  }
+                  const codeChallenge = base64Encode(sha256(codeVerifier))
+
+                  const data = {
+                    client_id: 'wyngfdvw0ntnj5b',
+                    redirect_uri: 'http://localhost:3000',
+                    response_type: 'code',
+                    code_challenge: codeChallenge,
+                    code_challenge_method: 'S256',
+                  }
+
+                  if (setCodeVerifierPKCE) {
+                    setCodeVerifierPKCE(codeVerifier)
+                  }
+
+                  const params = Object.entries(data)
+                    .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
+                    .join('&')
+
+                  const url = `https://www.dropbox.com/oauth2/authorize?${params}`
+                  const options = `width=500,height=600,left=0,top=0`
+                  return window.open(url, 'Authorization', options)
+                }}
+                startIcon={oauthAccessTokenDropbox ? <CheckIcon /> : null}
+              >
+                {!oauthAccessTokenDropbox
+                  ? `Authorize Dropbox`
+                  : `Dropbox Authorized`}
+              </Button>
+            </Grid>
+          )}
+          {mode === 'google_url' && (
+            <Grid item style={{ width: '100%' }}>
+              <Button
+                color="primary"
+                variant="contained"
+                disabled={!!oauthAccessTokenGoogle}
+                onClick={() => {
+                  const data = {
+                    client_id:
+                      '20156747540-bes2tq75790efrskmb5pa3hupujgenb2.apps.googleusercontent.com',
+                    redirect_uri: 'http://localhost:3000',
+                    response_type: 'token',
+                    scope: 'https://www.googleapis.com/auth/drive',
+                  }
+
+                  const params = Object.entries(data)
+                    .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
+                    .join('&')
+
+                  const url = `https://accounts.google.com/o/oauth2/v2/auth?${params}`
+                  const options = `width=500,height=600,left=0,top=0`
+                  return window.open(url, 'Authorization', options)
+                }}
+                startIcon={oauthAccessTokenGoogle ? <CheckIcon /> : null}
+              >
+                {!oauthAccessTokenDropbox
+                  ? `Authorize Google`
+                  : `Google Authorized`}
+              </Button>
+            </Grid>
+          )}
           <Grid item>
-            <ToggleButtonGroup
-              value={fileOrUrlState}
-              exclusive
-              onChange={(_, newValue) => {
-                if (newValue === 'url') {
-                  setFileOrUrlState('url')
-                } else {
-                  setFileOrUrlState('file')
-                }
-              }}
-              aria-label="file or url picker"
+            <Select
+              value={mode}
+              onChange={event => setMode(event.target.value as string)}
+              style={{ paddingTop: 4 }}
             >
-              <ToggleButton value="file" aria-label="local file">
-                File
-              </ToggleButton>
-              <ToggleButton value="url" aria-label="url">
-                URL
-              </ToggleButton>
-            </ToggleButtonGroup>
-            <Button
-              onClick={() => {
-                const base64Encode = (buf: Buffer) => {
-                  return buf
-                    .toString('base64')
-                    .replace(/\+/g, '-')
-                    .replace(/\//g, '_')
-                    .replace(/=/g, '')
-                }
-                const codeVerifier = base64Encode(crypto.randomBytes(32))
-                const sha256 = (str: string) => {
-                  return crypto.createHash('sha256').update(str).digest()
-                }
-                const codeChallenge = base64Encode(sha256(codeVerifier))
-
-                const data = {
-                  client_id: 'wyngfdvw0ntnj5b',
-                  redirect_uri: 'http://localhost:3000',
-                  response_type: 'code',
-                  code_challenge: codeChallenge,
-                  code_challenge_method: 'S256',
-                }
-
-                if (setCodeVerifierPKCE) {
-                  setCodeVerifierPKCE(codeVerifier)
-                }
-
-                const params = Object.entries(data)
-                  .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
-                  .join('&')
-
-                const url = `https://www.dropbox.com/oauth2/authorize?${params}`
-                const options = `width=500,height=600,left=0,top=0`
-                return window.open(url, 'Authorization', options)
-              }}
-            >
-              Dropbox
-            </Button>
-            <Button
-              onClick={() => {
-                const data = {
-                  client_id:
-                    '20156747540-bes2tq75790efrskmb5pa3hupujgenb2.apps.googleusercontent.com',
-                  redirect_uri: 'http://localhost:3000',
-                  response_type: 'token',
-                  scope: 'https://www.googleapis.com/auth/drive',
-                }
-
-                const params = Object.entries(data)
-                  .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
-                  .join('&')
-
-                const url = `https://accounts.google.com/o/oauth2/v2/auth?${params}`
-                const options = `width=500,height=600,left=0,top=0`
-                return window.open(url, 'Authorization', options)
-              }}
-            >
-              Google
-            </Button>
+              <MenuItem value="file">File</MenuItem>
+              <MenuItem value="url">URL</MenuItem>
+              <MenuItem value="dropbox_url">Dropbox URL</MenuItem>
+              <MenuItem value="google_url">Google URL</MenuItem>
+            </Select>
           </Grid>
           <Grid item>
-            {fileOrUrlState === 'url' ? (
-              <UrlChooser {...props} />
-            ) : (
+            {mode === 'file' ? (
               <LocalFileChooser {...props} />
+            ) : (
+              <UrlChooser {...props} mode={mode} />
             )}
           </Grid>
         </Grid>
@@ -230,6 +252,7 @@ const UrlChooser = (props: {
   setName?: Function
   oauthAccessTokenDropbox?: string
   oauthAccessTokenGoogle?: string
+  mode: string
 }) => {
   const {
     location,
@@ -237,18 +260,8 @@ const UrlChooser = (props: {
     setName,
     oauthAccessTokenDropbox,
     oauthAccessTokenGoogle,
+    mode,
   } = props
-
-  function isOauth() {
-    if (
-      location &&
-      isUriLocation(location) &&
-      (location.uri.includes('dropbox') || location.uri.includes('google'))
-    ) {
-      return true
-    }
-    return false
-  }
 
   return (
     <TextField
@@ -256,8 +269,11 @@ const UrlChooser = (props: {
       inputProps={{ 'data-testid': 'urlInput' }}
       defaultValue={location && isUriLocation(location) ? location.uri : ''}
       onChange={async event => {
-        if (oauthAccessTokenDropbox && event.target.value.includes('dropbox')) {
-          // need better conditional, oauthAccessTokenDropbox gets checked too late
+        if (
+          oauthAccessTokenDropbox &&
+          mode === 'dropbox_url' &&
+          event.target.value.includes('dropbox')
+        ) {
           const metadata = await fetchMetadataFromOauth(
             oauthAccessTokenDropbox,
             event.target.value,
@@ -266,13 +282,14 @@ const UrlChooser = (props: {
             oauthAccessTokenDropbox,
             metadata,
           )
-          console.log('dropbox success', oauthUri)
+          console.log('dropbox success', metadata)
           setLocation({ uri: oauthUri })
           if (setName) {
             setName(metadata.name)
           }
         } else if (
           oauthAccessTokenGoogle &&
+          mode === 'google_url' &&
           event.target.value.includes('google')
         ) {
           const metadata = await fetchDownloadURLFromOauth(

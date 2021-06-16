@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import React from 'react'
 import { AddTrackModel } from '../model'
 import { getRoot } from 'mobx-state-tree'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -36,10 +37,14 @@ function TrackSourceSelect({ model }: { model: AddTrackModel }) {
           description="Automatically inferred from the URL if not supplied"
           location={model.indexTrackData}
           setLocation={model.setIndexTrackData}
+          setName={model.setTrackName}
+          oauthAccessTokenDropbox={rootModel.dropboxToken}
+          oauthAccessTokenGoogle={rootModel.googleToken}
+          setCodeVerifierPKCE={rootModel.setCodeVerifierPKCE}
         />
       </Paper>
     </div>
   )
 }
 
-export default TrackSourceSelect
+export default observer(TrackSourceSelect)

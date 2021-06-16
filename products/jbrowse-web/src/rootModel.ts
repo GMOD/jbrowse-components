@@ -227,7 +227,6 @@ export default function RootModel(
         )
       },
       async exchangeTokenForAccessToken(token: string) {
-        console.log(self.codeVerifierPKCE)
         const data = {
           code: token,
           grant_type: 'authorization_code',
