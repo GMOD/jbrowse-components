@@ -45,6 +45,10 @@ export default function JBrowseWeb(
           defaultValue: false,
         },
         theme: { type: 'frozen', defaultValue: {} },
+        logoPath: {
+          type: 'fileLocation',
+          defaultValue: { uri: '' },
+        },
         ...pluginManager.pluginConfigurationSchemas(),
       }),
       plugins: types.array(types.frozen()),
