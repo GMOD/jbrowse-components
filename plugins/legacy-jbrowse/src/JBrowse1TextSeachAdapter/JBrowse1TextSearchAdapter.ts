@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BaseTextSearchAdapter,
   BaseArgs,
@@ -13,6 +12,11 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import MyConfigSchema from './configSchema'
 import HttpMap from './HttpMap'
 
+export interface TooManyHits {
+  name: string
+  hitLimit: number
+}
+export type NamesIndexRecord = string | Array<string | number>
 export default class JBrowse1TextSearchAdapter
   extends BaseAdapter
   implements BaseTextSearchAdapter {
@@ -44,9 +48,10 @@ export default class JBrowse1TextSearchAdapter
    * @param query - string query
    */
   async loadIndexFile(query: string) {
-    const bucketContents: Record<string, any> = await this.httpMap.getBucket(
-      query,
-    )
+    const bucketContents: Record<
+      string,
+      Record<string, Array<NamesIndexRecord | TooManyHits>>
+    > = await this.httpMap.getBucket(query)
     return bucketContents
   }
 
@@ -60,7 +65,7 @@ export default class JBrowse1TextSearchAdapter
     const tracks = this.tracksNames
       ? this.tracksNames
       : await this.httpMap.getTrackNames()
-    const entries: Record<string, any> = await this.loadIndexFile(queryString)
+    const entries = await this.loadIndexFile(queryString)
     if (entries !== {} && entries[queryString]) {
       // note: defaults to exact if no searchType is provided
       return this.formatResults(
@@ -70,18 +75,20 @@ export default class JBrowse1TextSearchAdapter
     }
     return []
   }
-
-  formatResults(results: Array<any>, tracksNames: string[]) {
+  formatResults(
+    results: Array<NamesIndexRecord | TooManyHits>,
+    tracksNames: string[],
+  ) {
     if (results.length === 0) {
       return []
     }
     const formattedResults = results.map(result => {
-      if (result && typeof result === 'object' && result.length > 1) {
-        const name: string = result[0]
-        const trackIndex: number = result[1]
-        const refName: string = result[3]
-        const start: number = result[4]
-        const end: number = result[5]
+      if (result && Array.isArray(result)) {
+        const name = result[0] as string
+        const trackIndex = result[1] as number
+        const refName = result[3] as string
+        const start = result[4] as number
+        const end = result[5] as number
         const locstring = `${refName || name}:${start}-${end}`
         const formattedResult = new LocStringResult({
           locString: locstring,
@@ -93,12 +100,11 @@ export default class JBrowse1TextSearchAdapter
         return formattedResult
       }
       // {"name":"too many matches","hitLimit":1}
-      const defaultLabel =
-        typeof result === 'object' && result.name ? result.name : result
+      const defaultLabel = typeof result === 'object' ? result.name : result
       const defaultResult = new BaseResult({
         label: defaultLabel,
         matchedAttribute: 'name',
-        matchedObject: result,
+        matchedObject: { result: result },
       })
       return defaultResult
     })
