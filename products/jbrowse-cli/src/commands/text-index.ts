@@ -11,11 +11,7 @@ import {
 } from 'follow-redirects'
 import { compress } from 'shorter'
 import { createGunzip, Gunzip } from 'zlib'
-import { resolve } from 'path'
-import { type } from 'os'
 import { IncomingMessage } from 'http'
-import { COPYFILE_FICLONE_FORCE } from 'constants'
-import { getFileInfo } from 'prettier'
 
 type trackConfig = {
   trackId: string
@@ -86,7 +82,7 @@ export default class TextIndex extends JBrowseCommand {
           const indexAttributes: Array<string> = indexConfig[0].attributes
 
           const uri: string =
-            indexConfig[0].indexingConfiguration.gffLocation.uri
+            indexConfig[0].indexingConfiguration?.gffLocation.uri
 
           this.indexDriver(uri, false, indexAttributes, fileDirectory)
         }
@@ -392,7 +388,7 @@ export default class TextIndex extends JBrowseCommand {
         // encodes the record object so that it can be used by ixIxx
         // appends the attributes that we are indexing by to the end
         // of the string before pushing to ixIxx
-        let buff =  compress(Buffer.from(JSON.stringify(recordObj)))// compress(JSON.stringify(recordObj))
+        let buff =  compress(Buffer.from(JSON.stringify(recordObj)))
 
         let str: string = buff.toString('base64')
         str += attrString + '\n'
@@ -533,7 +529,7 @@ export default class TextIndex extends JBrowseCommand {
       )
     }
     const configurations = trackIds.map(trackId => {
-      const currentTrack = config.tracks.find(
+      const currentTrack = config.tracks?.find(
         track => trackId === track.trackId,
       )
       if (currentTrack) {
@@ -546,7 +542,7 @@ export default class TextIndex extends JBrowseCommand {
               gzipped: true,
               gffLocation: adapter?.gffGzLocation,
             },
-            attributes: adapter?.attributes,
+            attributes: attributes,
           }
         }
       } else {
