@@ -1,4 +1,3 @@
-import clone from 'clone'
 /**
  * Abstract feature object
  */
@@ -86,6 +85,8 @@ export default class SimpleFeature implements Feature {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private data: Record<string, any>
 
+  private subfeatures?: SimpleFeature[]
+
   private parentHandle?: Feature
 
   private uniqueId: string
@@ -97,11 +98,10 @@ export default class SimpleFeature implements Feature {
    * which will be inflated to more instances of this class.
    */
   public constructor(args: SimpleFeatureArgs | SimpleFeatureSerialized) {
-    args = clone(args)
     if (isSimpleFeatureSerialized(args)) {
-      this.data = clone(args)
+      this.data = args
     } else {
-      this.data = clone(args.data || {})
+      this.data = args.data || {}
       // load handle from args.parent (not args.data.parent)
       // this reason is because if args is an object, it likely isn't properly loaded with
       // parent as a Feature reference (probably a raw parent ID or something instead)
@@ -124,20 +124,17 @@ export default class SimpleFeature implements Feature {
       )
     }
 
-    // inflate any subfeatures that are not already feature objects
-    const { subfeatures } = this.data
-    if (subfeatures) {
-      for (let i = 0; i < subfeatures.length; i += 1) {
-        if (typeof subfeatures[i].get !== 'function') {
-          subfeatures[i].strand = subfeatures[i].strand || this.data.strand
-          subfeatures[i] = new SimpleFeature({
-            id: subfeatures[i].uniqueId || `${id}-${i}`,
+    if (this.data.subfeatures) {
+      this.subfeatures = this.data.subfeatures?.map(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (f: any, i: number) =>
+          new SimpleFeature({
+            id: f.uniqueId || `${id}-${i}`,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            data: subfeatures[i] as Record<string, any>,
+            data: f as Record<string, any>,
             parent: this,
-          })
-        }
-      }
+          }),
+      )
     }
   }
 
@@ -147,7 +144,7 @@ export default class SimpleFeature implements Feature {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public get(name: string): any {
-    return this.data[name]
+    return name === 'subfeatures' ? this.subfeatures : this.data[name]
   }
 
   /**
