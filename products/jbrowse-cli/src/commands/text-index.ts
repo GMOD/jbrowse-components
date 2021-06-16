@@ -14,6 +14,8 @@ import { createGunzip, Gunzip } from 'zlib'
 import { IncomingMessage } from 'http'
 
 type trackConfig = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  adapter: any
   trackId: string
   indexingConfiguration: {
     indexingAdapter: string
@@ -57,10 +59,10 @@ export default class TextIndex extends JBrowseCommand {
   async run() {
     const { flags: runFlags } = this.parse(TextIndex)
 
-    //NOTE: tests will always output to ./products/jbrowse-cli/test/data/
-    //this is only valid for non-tests
-    let fileDirectory: string = './test/data/'
-    //FUTURE: command to set a default location
+    // NOTE: tests will always output to ./products/jbrowse-cli/test/data/
+    // this is only valid for non-tests
+    let fileDirectory = './test/data/'
+    // FUTURE: command to set a default location
 
     if (runFlags.individual) {
       if (runFlags.tracks) {
@@ -139,9 +141,9 @@ export default class TextIndex extends JBrowseCommand {
 
       const indexAttributes: Array<string> = testObjs[0].attributes
 
-      //const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
-       const uri: string = testObjs[0].indexingConfiguration.gffLocation.uri
-      //const uri = ['./test/data/volvox.sort.gff3.gz', 'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/RefSeq_UMD3.1.1_multitype_genes.gff3.gz', 'TAIR_GFF3_ssrs.gff']
+      // const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
+      const uri: string = testObjs[0].indexingConfiguration.gffLocation.uri
+      // const uri = ['./test/data/volvox.sort.gff3.gz', 'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/RefSeq_UMD3.1.1_multitype_genes.gff3.gz', 'TAIR_GFF3_ssrs.gff']
       // const uri = 'Spliced_Junctions_clustered.gff'    // This one is giving a parsing error
       // const uri = 'TAIR_GFF3_ssrs.gff'
       this.indexDriver(uri, false, indexAttributes, fileDirectory)
@@ -176,7 +178,9 @@ export default class TextIndex extends JBrowseCommand {
     outLocation: string,
   ) {
     // For loop for each uri in the uri array
-    if (typeof uris === 'string') uris = [uris] // turn uris string into an array of one string
+    if (typeof uris === 'string') {
+      uris = [uris]
+    } // turn uris string into an array of one string
 
     let aggregateStream = new PassThrough()
     let numStreamsFlowing = uris.length
@@ -187,6 +191,7 @@ export default class TextIndex extends JBrowseCommand {
       const gffTranform = new Transform({
         objectMode: true,
         transform: (chunk, _encoding, done) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           chunk.forEach((record: any) => {
             this.recurseFeatures(record, gff3Stream, attributesArr)
             done()
@@ -213,9 +218,14 @@ export default class TextIndex extends JBrowseCommand {
       // If a stream ends we have two options:
       //  1) it is the last stream, so end the aggregate stream.
       //  2) it is not the last stream, so add a '\n' to separate streams for the indexer.
+
+      // eslint-disable-next-line no-loop-func
       gff3Stream.once('end', () => {
-        if (--numStreamsFlowing === 0) aggregateStream.end()
-        else aggregateStream.push('\n')
+        if (--numStreamsFlowing === 0) {
+          aggregateStream.end()
+        } else {
+          aggregateStream.push('\n')
+        }
       })
     }
 
@@ -226,17 +236,23 @@ export default class TextIndex extends JBrowseCommand {
   // then passes it into the correct file handler.
   // Returns a @gmod/gff stream.
   handleLocalGff3(gff3LocalIn: string, isGZ: boolean) {
-    let gff3ReadStream: ReadStream = createReadStream(gff3LocalIn)
-    if (!isGZ) return this.parseGff3Stream(gff3ReadStream)
-    else return this.handleLocalGzip(gff3ReadStream)
+    const gff3ReadStream: ReadStream = createReadStream(gff3LocalIn)
+    if (!isGZ) {
+      return this.parseGff3Stream(gff3ReadStream)
+    } else {
+      return this.handleLocalGzip(gff3ReadStream)
+    }
   }
 
   // Method for handing off the parsing of a gff3 file URL.
   // Calls the proper parser depending on if it is gzipped or not.
   // Returns a @gmod/gff stream.
   async handleGff3Url(urlIn: string, isGZ: boolean): Promise<ReadStream> {
-    if (!isGZ) return this.handleGff3UrlNoGz(urlIn)
-    else return this.handleGff3UrlWithGz(urlIn)
+    if (!isGZ) {
+      return this.handleGff3UrlNoGz(urlIn)
+    } else {
+      return this.handleGff3UrlWithGz(urlIn)
+    }
   }
 
   // Grabs the remote file from urlIn, then pipe it directly to parseGff3Stream()
@@ -245,7 +261,7 @@ export default class TextIndex extends JBrowseCommand {
   handleGff3UrlNoGz(urlIn: string) {
     const newUrl = new URL(urlIn)
 
-    let promise = new Promise<ReadStream>((resolve, reject) => {
+    const promise = new Promise<ReadStream>((resolve, reject) => {
       if (newUrl.protocol === 'https:') {
         httpsFR
           .get(urlIn, (response: IncomingMessage & FollowResponse) => {
@@ -254,8 +270,11 @@ export default class TextIndex extends JBrowseCommand {
           })
           .on('error', (e: NodeJS.ErrnoException) => {
             reject('fail')
-            if (e.code === 'ENOTFOUND') this.error('Bad file url')
-            else this.error('Other error: ', e)
+            if (e.code === 'ENOTFOUND') {
+              this.error('Bad file url')
+            } else {
+              this.error('Other error: ', e)
+            }
           })
       } else {
         httpFR
@@ -265,8 +284,11 @@ export default class TextIndex extends JBrowseCommand {
           })
           .on('error', (e: NodeJS.ErrnoException) => {
             reject('fail')
-            if (e.code === 'ENOTFOUND') this.error('Bad file url')
-            else this.error('Other error: ', e)
+            if (e.code === 'ENOTFOUND') {
+              this.error('Bad file url')
+            } else {
+              this.error('Other error: ', e)
+            }
           })
       }
     }) // End of promise
@@ -281,7 +303,7 @@ export default class TextIndex extends JBrowseCommand {
     const unzip = createGunzip()
     const newUrl = new URL(urlIn)
 
-    let promise = new Promise<ReadStream>((resolve, reject) => {
+    const promise = new Promise<ReadStream>((resolve, reject) => {
       if (newUrl.protocol === 'https:') {
         httpsFR
           .get(urlIn, (response: IncomingMessage & FollowResponse) => {
@@ -290,8 +312,11 @@ export default class TextIndex extends JBrowseCommand {
           })
           .on('error', (e: NodeJS.ErrnoException) => {
             reject('fail')
-            if (e.code === 'ENOTFOUND') this.error('Bad file url')
-            else this.error('Other error: ', e)
+            if (e.code === 'ENOTFOUND') {
+              this.error('Bad file url')
+            } else {
+              this.error('Other error: ', e)
+            }
           })
       } else {
         httpFR
@@ -301,8 +326,11 @@ export default class TextIndex extends JBrowseCommand {
           })
           .on('error', (e: NodeJS.ErrnoException) => {
             reject('fail')
-            if (e.code === 'ENOTFOUND') this.error('Bad file url')
-            else this.error('Other error: ', e)
+            if (e.code === 'ENOTFOUND') {
+              this.error('Bad file url')
+            } else {
+              this.error('Other error: ', e)
+            }
           })
       }
     }) // End of promise
@@ -338,7 +366,7 @@ export default class TextIndex extends JBrowseCommand {
   parseGff3Stream(
     gff3In: ReadStream | (IncomingMessage & FollowResponse) | Gunzip,
   ) {
-    let gff3Stream: ReadStream = gff3In.pipe(
+    const gff3Stream: ReadStream = gff3In.pipe(
       gff.parseStream({ parseSequences: false }),
     )
 
@@ -349,6 +377,7 @@ export default class TextIndex extends JBrowseCommand {
   // the desired attributes in the form of a JSON object. It is then
   // pushed to gff3Stream in proper indexing format.
   async recurseFeatures(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     record: any,
     gff3Stream: ReadStream | Transform,
     attributesArr: Array<string>,
@@ -362,17 +391,19 @@ export default class TextIndex extends JBrowseCommand {
       // it adds it to the record object and attributes
       // string
 
-      let getAndPushRecord = (subRecord: any) => {
-        let recordObj: any = {}
-        let attrString: string = ''
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const getAndPushRecord = (subRecord: any) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const recordObj: any = {}
+        let attrString = ''
 
-        for (let attr of attributesArr) {
-
+        for (const attr of attributesArr) {
           // Currently do not index start or end values for searching, but do include the attributes in search results.
           // TODO: consider not using 'start' or 'end, and instead allow the user to customize
           //        searchTermAttributes vs. searchResultAttributes in the config.json
-          if (attr == 'start' || attr == 'end')
+          if (attr === 'start' || attr === 'end') {
             continue
+          }
 
           // Check to see if the attr exists for the record
           if (subRecord[attr]) {
@@ -388,12 +419,12 @@ export default class TextIndex extends JBrowseCommand {
         // encodes the record object so that it can be used by ixIxx
         // appends the attributes that we are indexing by to the end
         // of the string before pushing to ixIxx
-        let buff =  compress(Buffer.from(JSON.stringify(recordObj)))
+        const buff = compress(Buffer.from(JSON.stringify(recordObj)))
 
         let str: string = buff.toString('base64')
         str += attrString + '\n'
 
-        // replace the separator characters with 
+        // replace the separator characters with
         // percent encoding characters
         str = str.replace(/,/g, '%2C')
         str = str.replace(/\s/, '%20')
@@ -442,12 +473,12 @@ export default class TextIndex extends JBrowseCommand {
     isTest: boolean,
     outLocation: string,
   ) {
-    const ixFileName: string = 'out.ix'
-    const ixxFileName: string = 'out.ixx'
+    const ixFileName = 'out.ix'
+    const ixxFileName = 'out.ixx'
 
     let ixProcess: ChildProcessWithoutNullStreams
 
-    if (isTest)
+    if (isTest) {
       // If this is a test, output to test/data/ directory, and use the local version of ixIxx.
       ixProcess = spawn(
         'cat | ./products/jbrowse-cli/test/ixIxx /dev/stdin',
@@ -457,8 +488,9 @@ export default class TextIndex extends JBrowseCommand {
         ],
         { shell: true },
       )
+    }
     // Otherwise require user to have ixIxx in their system path.
-    else
+    else {
       ixProcess = spawn(
         'cat | ixIxx /dev/stdin',
         [outLocation + ixFileName, outLocation + ixxFileName],
@@ -466,10 +498,11 @@ export default class TextIndex extends JBrowseCommand {
           shell: true,
         },
       )
+    }
 
     // Pass the readStream as stdin into ixProcess.
     readStream.pipe(ixProcess.stdin).on('error', e => {
-      console.log(`Error writing data to ixIxx. ${e}`)
+      console.error(`Error writing data to ixIxx. ${e}`)
     })
 
     // End the ixProcess stdin when the stream is done.
@@ -481,9 +514,9 @@ export default class TextIndex extends JBrowseCommand {
       this.log(`Output from ixIxx: ${data}`)
     })
 
-    let promise = new Promise((resolve, reject) => {
+    const promise = new Promise((resolve, reject) => {
       ixProcess.on('close', code => {
-        if (code == 0) {
+        if (code === 0) {
           resolve('Success!')
           // Code should = 0 for success
           this.log(
@@ -505,7 +538,7 @@ export default class TextIndex extends JBrowseCommand {
       if (errorData.includes('not found')) {
         console.error('ixIxx was not found in your system.')
       } else {
-        console.log(errorData)
+        console.error(errorData)
       }
     })
 
@@ -517,6 +550,7 @@ export default class TextIndex extends JBrowseCommand {
   // Params:
   //  trackIds: array of string ids for tracks to index
   //  runFlags: specify if there is a target ouput location for the indexing
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getIndexingConfigurations(trackIds: Array<string>, runFlags: any) {
     // are we planning to have target and output flags on this command?
     const output = runFlags?.target || runFlags?.out || '.'
