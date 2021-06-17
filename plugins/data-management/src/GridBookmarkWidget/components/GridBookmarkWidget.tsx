@@ -20,7 +20,15 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
     { field: 'chrom', headerName: 'chrom', width: 100 },
     { field: 'start', headerName: 'start', width: 100 },
     { field: 'end', headerName: 'end', width: 100 },
-    { field: 'navLink', headerName: 'link', width: 100 },
+    {
+      field: 'navLink',
+      headerName: 'link',
+      width: 100,
+      renderCell: (params: GridCellParams) => {
+        const { value } = params
+        return <Link>{value}</Link>
+      },
+    },
   ]
 
   const rows = [
