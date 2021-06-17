@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Button,
   Grid,
@@ -62,6 +62,10 @@ const fetchMetadataFromOauth = async (
       }),
     },
   )
+  if (!response.ok) {
+    const errorText = await response.text()
+    return { error: errorText }
+  }
   const metadata = await response.json()
   return metadata
 }
@@ -85,7 +89,10 @@ const fetchTempLinkFromOauth = async (
       body: JSON.stringify({ path: metadata.id }),
     },
   )
-
+  if (!fileResponse.ok) {
+    const errorText = await fileResponse.text()
+    return { error: errorText }
+  }
   const file = await fileResponse.json()
   return file.link
 }
@@ -201,7 +208,7 @@ const FileLocationEditor = observer(
                       '20156747540-bes2tq75790efrskmb5pa3hupujgenb2.apps.googleusercontent.com',
                     redirect_uri: 'http://localhost:3000',
                     response_type: 'token',
-                    scope: 'https://www.googleapis.com/auth/drive',
+                    scope: 'https://www.googleapis.com/auth/drive.readonly',
                   }
 
                   const params = Object.entries(data)
@@ -263,12 +270,16 @@ const UrlChooser = (props: {
     mode,
   } = props
 
+  const [backgroundColor, setBackgroundColor] = useState('none')
+
   return (
     <TextField
       fullWidth
       inputProps={{ 'data-testid': 'urlInput' }}
       defaultValue={location && isUriLocation(location) ? location.uri : ''}
+      style={{ background: backgroundColor }}
       onChange={async event => {
+        setBackgroundColor('none')
         if (
           oauthAccessTokenDropbox &&
           mode === 'dropbox_url' &&
@@ -278,11 +289,19 @@ const UrlChooser = (props: {
             oauthAccessTokenDropbox,
             event.target.value,
           )
+          if (metadata.error) {
+            setBackgroundColor('#FFCCCC')
+            return
+          }
           const oauthUri = await fetchTempLinkFromOauth(
             oauthAccessTokenDropbox,
             metadata,
           )
-          console.log('dropbox success', metadata)
+          if (oauthUri.error) {
+            setBackgroundColor('#FFCCCC')
+            return
+          }
+          setBackgroundColor('#E6F4EA')
           setLocation({ uri: oauthUri })
           if (setName) {
             setName(metadata.name)
@@ -292,12 +311,21 @@ const UrlChooser = (props: {
           mode === 'google_url' &&
           event.target.value.includes('google')
         ) {
+          // need to fetch with Auth Headers
           const metadata = await fetchDownloadURLFromOauth(
             oauthAccessTokenGoogle,
             event.target.value,
           )
-          console.log('google success', metadata)
-          setLocation({ uri: metadata.downloadUrl })
+          if (metadata.error) {
+            setBackgroundColor('#FFCCCC')
+            return
+          }
+          setBackgroundColor('#E6F4EA')
+          console.log(metadata)
+          setLocation({
+            uri: metadata.downloadUrl,
+            authToken: `Bearer ${oauthAccessTokenGoogle}`,
+          })
           if (setName) {
             setName(metadata.title)
           }

@@ -119,8 +119,11 @@ export function clearCache() {
   globalRangeCache.reset()
 }
 
-export function openUrl(url: string): GenericFilehandle {
+export function openUrl(url: string, headers?: HeadersInit): GenericFilehandle {
   return new RemoteFile(String(url), {
-    fetch: globalCacheFetch,
+    // fetch: globalCacheFetch,
+    overrides: {
+      headers: headers || {},
+    },
   })
 }

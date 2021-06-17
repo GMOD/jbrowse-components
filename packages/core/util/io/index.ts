@@ -24,8 +24,10 @@ const isElectron = /electron/i.test(
   typeof navigator !== 'undefined' ? navigator.userAgent : '',
 )
 
-export const openUrl = (arg: string) => {
-  return isElectron ? new ElectronRemoteFile(arg) : rangeFetcherOpenUrl(arg)
+export const openUrl = (arg: string, headers?: HeadersInit) => {
+  return isElectron
+    ? new ElectronRemoteFile(arg)
+    : rangeFetcherOpenUrl(arg, headers)
 }
 
 function isUriLocation(location: FileLocation): location is UriLocation {
@@ -59,6 +61,8 @@ export function openLocation(location: FileLocation): GenericFilehandle {
         location.baseUri
           ? new URL(location.uri, location.baseUri).href
           : location.uri,
+
+        { Authorization: `${location.authToken}` },
       )
     }
     if (isLocalPathLocation(location)) {
