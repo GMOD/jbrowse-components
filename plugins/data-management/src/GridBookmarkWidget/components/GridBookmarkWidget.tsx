@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 
-import { makeStyles, Typography } from '@material-ui/core'
-import { DataGrid } from '@material-ui/data-grid'
+import { makeStyles, Typography, Link } from '@material-ui/core'
+import { DataGrid, GridCellParams } from '@material-ui/data-grid'
 
 import { GridBookmarkModel } from '../model'
 
@@ -15,6 +15,7 @@ const useStyles = makeStyles(theme => ({
 
 function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
   const classes = useStyles()
+  const { bookmarkArray } = model
 
   const columns = [
     { field: 'chrom', headerName: 'chrom', width: 100 },
@@ -43,9 +44,8 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
 
   return (
     <div className={classes.container}>
-      <Typography>Grid bookmark widget</Typography>
       <div style={{ height: 400, width: '100%' }}>
-        <DataGrid rows={rows} columns={columns} />
+        <DataGrid rows={bookmarkArray} columns={columns} />
       </div>
     </div>
   )
