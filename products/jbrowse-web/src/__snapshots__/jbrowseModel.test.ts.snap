@@ -2,6 +2,7 @@
 
 exports[`JBrowse model creates with empty snapshot 1`] = `
 Object {
+  "aggregateTextSearchAdapters": Array [],
   "assemblies": Array [],
   "configuration": Object {
     "rpc": Object {
@@ -23,6 +24,43 @@ Object {
 
 exports[`JBrowse model creates with non-empty snapshot 1`] = `
 Object {
+  "aggregateTextSearchAdapters": Array [
+    Object {
+      "assemblies": Array [
+        "volvox",
+        "volvox2",
+      ],
+      "namesIndexLocation": Object {
+        "uri": "names/",
+      },
+      "textSearchAdapterId": "JBrowse1GenerateNamesAdapter",
+      "tracks": Array [
+        "bedtabix_genes",
+        "volvox_test_vcf",
+        "gff3tabix_genes",
+        "volvox_filtered_vcf",
+      ],
+      "type": "JBrowse1TextSearchAdapter",
+    },
+    Object {
+      "namesIndexLocation": Object {
+        "uri": "names/",
+      },
+      "textSearchAdapterId": "AdapterWithoutAssemblies",
+      "type": "JBrowse1TextSearchAdapter",
+    },
+    Object {
+      "assemblies": Array [
+        "volvox3",
+        "volvox4",
+      ],
+      "namesIndexLocation": Object {
+        "uri": "names/",
+      },
+      "textSearchAdapterId": "AdapterWithDiffAssemblies",
+      "type": "JBrowse1TextSearchAdapter",
+    },
+  ],
   "assemblies": Array [
     Object {
       "aliases": Array [
@@ -175,6 +213,16 @@ Object {
         },
       ],
       "name": "volvox structural variant test",
+      "textSearchAdapter": Object {
+        "assemblies": Array [
+          "NonExistantAssembly",
+        ],
+        "namesIndexLocation": Object {
+          "uri": "names/",
+        },
+        "textSearchAdapterId": "TrackAdapter",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_sv_test",
       "type": "VariantTrack",
     },
@@ -213,6 +261,10 @@ Object {
         },
       ],
       "name": "volvox structural variant test w/renamed refs",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_sv_test_renamed",
       "type": "VariantTrack",
     },
@@ -287,6 +339,10 @@ Object {
         },
       ],
       "name": "volvox-sorted.cram (contigA, default display)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_cram_alignments",
       "type": "AlignmentsTrack",
     },
@@ -364,6 +420,10 @@ Object {
         "source": "We generated 150bp paired end reads from a <i>Volvox mythicus</i>, an imaginary species, for this jbrowse demo",
       },
       "name": "volvox-sorted.cram (contigA, LinearPileupDisplay)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_cram_pileup",
       "type": "AlignmentsTrack",
     },
@@ -438,6 +498,10 @@ Object {
         },
       ],
       "name": "volvox-sorted.cram (contigA, LinearSNPCoverageDisplay)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_cram_snpcoverage",
       "type": "AlignmentsTrack",
     },
@@ -512,6 +576,10 @@ Object {
         },
       ],
       "name": "volvox-sorted.cram (ctgA, default display)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_cram_alignments_ctga",
       "type": "AlignmentsTrack",
     },
@@ -586,6 +654,10 @@ Object {
         },
       ],
       "name": "volvox-sorted.cram (ctgA, LinearPileupDisplay)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_cram_pileup_ctga",
       "type": "AlignmentsTrack",
     },
@@ -660,6 +732,10 @@ Object {
         },
       ],
       "name": "volvox-sorted.cram (ctgA, LinearSNPCoverageDisplay)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_cram_snpcoverage_ctga",
       "type": "AlignmentsTrack",
     },
@@ -732,6 +808,10 @@ Object {
         },
       ],
       "name": "volvox-sorted.bam (ctgA, svg)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_alignments",
       "type": "AlignmentsTrack",
     },
@@ -802,6 +882,10 @@ Object {
         },
       ],
       "name": "volvox-sorted.bam (contigA LinearSNPCoverageDisplay)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_bam_snpcoverage",
       "type": "AlignmentsTrack",
     },
@@ -872,6 +956,10 @@ Object {
         },
       ],
       "name": "volvox-sorted.bam (contigA LinearPileupDisplay)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_bam_pileup",
       "type": "AlignmentsTrack",
     },
@@ -942,6 +1030,10 @@ Object {
         },
       ],
       "name": "volvox-sorted.bam (ctgA, canvas)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_alignments_pileup_coverage",
       "type": "AlignmentsTrack",
     },
@@ -1013,6 +1105,10 @@ Object {
         },
       ],
       "name": "volvox-sorted.bam (contigA, svg)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_bam_altname",
       "type": "AlignmentsTrack",
     },
@@ -1084,6 +1180,10 @@ Object {
         },
       ],
       "name": "volvox-sorted.bam (small max height)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_bam_small_max_height",
       "type": "AlignmentsTrack",
     },
@@ -1122,6 +1222,10 @@ Object {
         },
       ],
       "name": "volvox 1000genomes vcf",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_test_vcf",
       "type": "VariantTrack",
     },
@@ -1148,6 +1252,10 @@ Object {
         },
       ],
       "name": "nclist with long names/descriptions",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "nclist_long_names",
       "type": "FeatureTrack",
     },
@@ -1218,6 +1326,10 @@ Object {
         },
       ],
       "name": "volvox-sorted.bam (bam nonexist 404)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_alignments_bam_nonexist",
       "type": "AlignmentsTrack",
     },
@@ -1288,6 +1400,10 @@ Object {
         },
       ],
       "name": "volvox-sorted.bam (bai nonexist 404)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_alignments_bai_nonexist",
       "type": "AlignmentsTrack",
     },
@@ -1323,6 +1439,10 @@ Object {
         },
       ],
       "name": "wiggle_track 404",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_bigwig_nonexist",
       "type": "QuantitativeTrack",
     },
@@ -1358,6 +1478,10 @@ Object {
         },
       ],
       "name": "wiggle_track xyplot",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_microarray",
       "type": "QuantitativeTrack",
     },
@@ -1394,6 +1518,10 @@ Object {
         },
       ],
       "name": "wiggle_track lineplot",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_microarray_line",
       "type": "QuantitativeTrack",
     },
@@ -1430,6 +1558,10 @@ Object {
         },
       ],
       "name": "wiggle_track density",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_microarray_density",
       "type": "QuantitativeTrack",
     },
@@ -1465,6 +1597,10 @@ Object {
         },
       ],
       "name": "wiggle_track density (altname)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_microarray_density_altname",
       "type": "QuantitativeTrack",
     },
@@ -1537,6 +1673,10 @@ Object {
         },
       ],
       "name": "FromConfig Track (defaults to LinearLollipopDisplay)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "lollipop_track",
       "type": "FeatureTrack",
     },
@@ -1609,6 +1749,10 @@ Object {
         },
       ],
       "name": "FromConfig Track (defaults to LinearFilteringDisplay)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "filtering_track",
       "type": "FeatureTrack",
     },
@@ -1679,6 +1823,10 @@ Object {
         },
       ],
       "name": "volvox-long reads with SV",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox-long-reads-sv-bam",
       "type": "AlignmentsTrack",
     },
@@ -1753,6 +1901,10 @@ Object {
         },
       ],
       "name": "volvox-long reads with SV (cram)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox-long-reads-sv-cram",
       "type": "AlignmentsTrack",
     },
@@ -1827,6 +1979,10 @@ Object {
         },
       ],
       "name": "volvox-long reads (cram)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox-long-reads-cram",
       "type": "AlignmentsTrack",
     },
@@ -1897,6 +2053,10 @@ Object {
         },
       ],
       "name": "volvox-long reads",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox-long-reads-bam",
       "type": "AlignmentsTrack",
     },
@@ -1971,6 +2131,10 @@ Object {
         },
       ],
       "name": "volvox-samspec (cram)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_samspec_cram",
       "type": "AlignmentsTrack",
     },
@@ -2041,6 +2205,10 @@ Object {
         },
       ],
       "name": "volvox-samspec",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_samspec",
       "type": "AlignmentsTrack",
     },
@@ -2115,6 +2283,10 @@ Object {
         },
       ],
       "name": "volvox-sv (cram)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_sv_cram",
       "type": "AlignmentsTrack",
     },
@@ -2185,6 +2357,10 @@ Object {
         },
       ],
       "name": "volvox-sv",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_sv",
       "type": "AlignmentsTrack",
     },
@@ -2216,6 +2392,10 @@ Object {
         },
       ],
       "name": "GFF3Tabix genes",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "gff3tabix_genes",
       "type": "FeatureTrack",
     },
@@ -2290,6 +2470,10 @@ Object {
         },
       ],
       "name": "volvox-sorted.cram",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_cram",
       "type": "AlignmentsTrack",
     },
@@ -2360,6 +2544,10 @@ Object {
         },
       ],
       "name": "volvox-sorted.bam",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_bam",
       "type": "AlignmentsTrack",
     },
@@ -2398,6 +2586,10 @@ Object {
         },
       ],
       "name": "volvox filtered vcf",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_filtered_vcf",
       "type": "VariantTrack",
     },
@@ -2436,6 +2628,10 @@ Object {
         },
       ],
       "name": "volvox filtered vcf (with assembly alias)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_filtered_vcf_assembly_alias",
       "type": "VariantTrack",
     },
@@ -2462,6 +2658,10 @@ Object {
         },
       ],
       "name": "BigBed genes",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "bigbed_genes",
       "type": "FeatureTrack",
     },
@@ -2493,6 +2693,10 @@ Object {
         },
       ],
       "name": "BedTabix genes",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "bedtabix_genes",
       "type": "FeatureTrack",
     },
@@ -2529,6 +2733,10 @@ Object {
         },
       ],
       "name": "Volvox microarray",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "LrM3WWJR0tj",
       "type": "QuantitativeTrack",
     },
@@ -2547,7 +2755,7 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "EA_0Jp4oPKg-LinearBasicDisplay",
+          "displayId": "Genes-LinearBasicDisplay",
           "renderer": Object {
             "type": "SvgFeatureRenderer",
           },
@@ -2555,7 +2763,11 @@ Object {
         },
       ],
       "name": "NCList genes",
-      "trackId": "EA_0Jp4oPKg",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
+      "trackId": "Genes",
       "type": "FeatureTrack",
     },
     Object {
@@ -2591,6 +2803,10 @@ Object {
         },
       ],
       "name": "Volvox microarray",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "VUyE25kYsQo",
       "type": "QuantitativeTrack",
     },
@@ -2626,6 +2842,10 @@ Object {
         },
       ],
       "name": "Volvox microarray",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "24eGIUSM86l",
       "type": "QuantitativeTrack",
     },
@@ -2662,6 +2882,10 @@ Object {
         },
       ],
       "name": "Volvox microarray - negative",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "oMVFQozR9NO",
       "type": "QuantitativeTrack",
     },
@@ -2697,6 +2921,10 @@ Object {
         },
       ],
       "name": "Volvox microarray - negative",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "1at1sLO1Gsl",
       "type": "QuantitativeTrack",
     },
@@ -2733,6 +2961,10 @@ Object {
         },
       ],
       "name": "Volvox microarray with +/- values",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "wiggle_track_posneg",
       "type": "QuantitativeTrack",
     },
@@ -2769,6 +3001,10 @@ Object {
         },
       ],
       "name": "Volvox microarray with +/- fractional values",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "wiggle_track_fractional_posneg",
       "type": "QuantitativeTrack",
     },
@@ -2804,6 +3040,10 @@ Object {
         },
       ],
       "name": "Volvox microarray with +/- values",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "jdYHuGnpAc_",
       "type": "QuantitativeTrack",
     },
@@ -2840,6 +3080,10 @@ Object {
         },
       ],
       "name": "Volvox - BAM coverage",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "p7FU-K6WqS_",
       "type": "QuantitativeTrack",
     },
@@ -2874,6 +3118,10 @@ Object {
         },
       ],
       "name": "Volvox - BAM coverage",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "pOOtg9wxcUC",
       "type": "QuantitativeTrack",
     },
@@ -2916,6 +3164,10 @@ Object {
         },
       ],
       "name": "volvox_fake_synteny",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_fake_synteny",
       "type": "SyntenyTrack",
     },
@@ -2992,6 +3244,10 @@ Object {
         },
       ],
       "name": "volvox-rg (read groups, bam)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox-rg",
       "type": "AlignmentsTrack",
     },
@@ -3066,6 +3322,10 @@ Object {
         },
       ],
       "name": "volvox-rg (read groups, cram)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox-rg-cram",
       "type": "AlignmentsTrack",
     },
@@ -3100,6 +3360,10 @@ Object {
         },
       ],
       "name": "wiggle_track (wrong assembly error)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "volvox_wrong_assembly",
       "type": "QuantitativeTrack",
     },
@@ -3139,6 +3403,10 @@ Object {
         },
       ],
       "name": "volvox filtered vcf (green snp, purple indel)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "variant_colors",
       "type": "VariantTrack",
     },
@@ -3215,6 +3483,10 @@ Object {
         },
       ],
       "name": "MM-chebi-volvox",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "MM-chebi-volvox",
       "type": "AlignmentsTrack",
     },
@@ -3291,6 +3563,10 @@ Object {
         },
       ],
       "name": "MM-double-volvox",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "MM-double-volvox",
       "type": "AlignmentsTrack",
     },
@@ -3367,6 +3643,10 @@ Object {
         },
       ],
       "name": "MM-multi-volvox",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "MM-multi-volvox",
       "type": "AlignmentsTrack",
     },
@@ -3443,6 +3723,10 @@ Object {
         },
       ],
       "name": "MM-orient-volvox",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "MM-orient-volvox",
       "type": "AlignmentsTrack",
     },
@@ -3474,6 +3758,10 @@ Object {
         },
       ],
       "name": "Single exon gene",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
       "trackId": "single_exon_gene",
       "type": "FeatureTrack",
     },

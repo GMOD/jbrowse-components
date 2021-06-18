@@ -8,6 +8,7 @@ import {
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
 import assemblyManager from '../../assemblyManager'
+import textSearchManager from '../../TextSearch/TextSearchManager'
 import { MenuItem } from '../../ui'
 import {
   NoAssemblyRegion as MUNoAssemblyRegion,
@@ -41,7 +42,7 @@ export function isViewContainer(
 export type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
 
 export type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
-
+export type TextSearchManager = Instance<ReturnType<typeof textSearchManager>>
 export interface BasePlugin {
   version?: string
   name: string
@@ -80,6 +81,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   getTrackActionMenuItems?: Function
   addAssembly?: Function
   removeAssembly?: Function
+  textSearchManager?: TextSearchManager
   connections: AnyConfigurationModel[]
   deleteConnection?: Function
   sessionConnections?: AnyConfigurationModel[]

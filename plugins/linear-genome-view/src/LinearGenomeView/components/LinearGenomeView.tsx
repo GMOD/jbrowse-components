@@ -20,6 +20,7 @@ import TracksContainer from './TracksContainer'
 import ImportForm from './ImportForm'
 import MiniControls from './MiniControls'
 import SequenceDialog from './SequenceDialog'
+import SearchResultsDialog from './SearchResultsDialog'
 import Ruler from './Ruler'
 
 type LGV = Instance<LinearGenomeViewStateModel>
@@ -52,6 +53,14 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
           model={model}
           handleClose={() => {
             model.setOffsets(undefined, undefined)
+          }}
+        />
+      ) : null}
+      {model.isSearchDialogDisplayed ? (
+        <SearchResultsDialog
+          model={model}
+          handleClose={() => {
+            model.setSearchResults(undefined, undefined)
           }}
         />
       ) : null}

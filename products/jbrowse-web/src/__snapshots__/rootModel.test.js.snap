@@ -146,6 +146,10 @@ Object {
       "type": "LinearBasicDisplay",
     },
   ],
+  "textSearchAdapter": Object {
+    "textSearchAdapterId": "placeholderId",
+    "type": "JBrowse1TextSearchAdapter",
+  },
   "trackId": "trackId0",
   "type": "FeatureTrack",
 }
