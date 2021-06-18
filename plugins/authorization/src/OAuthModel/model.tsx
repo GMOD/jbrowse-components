@@ -3,6 +3,7 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { OAuthInternetAccountConfigModel } from './configSchema'
 import { MenuItem } from '@jbrowse/core/ui'
 import deepEqual from 'fast-deep-equal'
 import { autorun, when } from 'mobx'
@@ -26,7 +27,15 @@ import { getContainingTrack } from '@jbrowse/core/util'
 // and the user selects a file, where that file will be put into the track selector
 // or maybe in the 'Add track' flow, add an option for add from dropbox/google drive
 // or maybe its just part of the file selector flow (such as import form or sv inspector import form)
-const stateModelFactory = (pluginManager: PluginManager) => {
+
+// make a new core plugin called authentication
+// put OAuthModel file there, plugin would have implementation of Oauth, HTTPBasic, etc
+// need to edit the current openLocation, move it to action on rootModel
+// new openLocation: check if any of the handleLocations return true, then call that openLocation
+const stateModelFactory = (
+  pluginManager: PluginManager,
+  configSchema: OAuthInternetAccountConfigModel,
+) => {
   return (
     types
       .compose(
@@ -45,6 +54,8 @@ const stateModelFactory = (pluginManager: PluginManager) => {
       // if above returns true then do the oauth flow as openLocation to get the correct headers
       .views(self => ({
         handlesLocation(location: Location): boolean {
+          // this will probably look at something in the config which indicates that it is an OAuth pathway,
+          // also look at location, if location is set to need authentication it would reutrn true
           if (
             location.href.includes('google') ||
             location.href.includes('dropbox')

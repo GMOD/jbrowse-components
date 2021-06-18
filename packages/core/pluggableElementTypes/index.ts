@@ -6,6 +6,7 @@ import TrackType from './TrackType'
 import DisplayType from './DisplayType'
 import ViewType from './ViewType'
 import RpcMethodType from './RpcMethodType'
+import InternetAccountType from './InternetAccountType'
 
 export type PluggableElementType =
   | AdapterType
@@ -16,6 +17,7 @@ export type PluggableElementType =
   | DisplayType
   | ViewType
   | RpcMethodType
+  | InternetAccountType
 
 export type PluggableElementMember =
   | keyof AdapterType
@@ -26,3 +28,4 @@ export type PluggableElementMember =
   | keyof DisplayType
   | keyof ViewType
   | keyof RpcMethodType
+  | keyof InternetAccountType

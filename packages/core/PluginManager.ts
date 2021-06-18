@@ -545,7 +545,7 @@ export default class PluginManager {
   }
 
   addInternetAccountType(
-    creationCallback: (pluginManager: PluginManager) => TrackType,
+    creationCallback: (pluginManager: PluginManager) => InternetAccountType,
   ): this {
     return this.addElementType('internet account', creationCallback)
   }
