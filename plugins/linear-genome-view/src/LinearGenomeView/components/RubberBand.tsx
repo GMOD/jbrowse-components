@@ -13,7 +13,7 @@ import Typography from '@material-ui/core/Typography'
 import ZoomInIcon from '@material-ui/icons/ZoomIn'
 
 import { getSession, stringify } from '@jbrowse/core/util'
-import { LinearGenomeViewStateModel } from '..'
+import { LinearGenomeViewStateModel, BpOffset } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -183,7 +183,7 @@ function RubberBand({
     model.moveTo(leftOffset, rightOffset)
   }
 
-  function getSequence() {
+  function computeOffsets() {
     if (startX === undefined || anchorPosition === undefined) {
       return
     }
@@ -195,7 +195,28 @@ function RubberBand({
     }
     const leftOffset = model.pxToBp(leftPx)
     const rightOffset = model.pxToBp(rightPx)
+
+    return { leftOffset, rightOffset }
+  }
+
+  function getSequence() {
+    const { leftOffset, rightOffset } = computeOffsets() as {
+      leftOffset: BpOffset
+      rightOffset: BpOffset
+    }
     model.setOffsets(leftOffset, rightOffset)
+  }
+
+  function bookmarkSelectedRegion() {
+    const { leftOffset, rightOffset } = computeOffsets() as {
+      leftOffset: BpOffset
+      rightOffset: BpOffset
+    }
+    const selectedRegions = model.getSelectedRegions(leftOffset, rightOffset)
+    const firstRegion = selectedRegions[0]
+    const session = getSession(model)
+    // @ts-ignore
+    session.addBookmark(firstRegion)
   }
 
   function handleClose() {
@@ -235,26 +256,7 @@ function RubberBand({
     {
       label: 'Bookmark region',
       onClick: () => {
-        const session = getSession(model)
-
-        if (startX === undefined || anchorPosition === undefined) {
-          return
-        }
-        let leftPx = startX
-        let rightPx = anchorPosition.offsetX
-        if (rightPx < leftPx) {
-          ;[leftPx, rightPx] = [rightPx, leftPx]
-        }
-        const leftOffset = model.pxToBp(leftPx)
-        const rightOffset = model.pxToBp(rightPx)
-        const selectedRegions = model.getSelectedRegions(
-          leftOffset,
-          rightOffset,
-        )
-        const firstRegion = selectedRegions[0]
-
-        // @ts-ignore
-        session.addBookmark(firstRegion)
+        bookmarkSelectedRegion()
       },
     },
   ]
