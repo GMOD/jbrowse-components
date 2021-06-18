@@ -35,7 +35,7 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
   return (
     <div className={classes.container}>
       <div style={{ height: 400, width: '100%' }}>
-        <DataGrid rows={model.bookmarkArray} columns={columns} />
+        <DataGrid rows={model.bookmarkArray.toJS()} columns={columns} />
       </div>
     </div>
   )
