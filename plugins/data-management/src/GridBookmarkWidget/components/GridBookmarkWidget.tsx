@@ -1,9 +1,11 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-
 import { makeStyles, Link } from '@material-ui/core'
 import { DataGrid, GridCellParams } from '@material-ui/data-grid'
+
+import { getSession } from '@jbrowse/core/util'
+import { Region } from '@jbrowse/core/util/types'
 
 import { GridBookmarkModel } from '../model'
 
@@ -15,6 +17,14 @@ const useStyles = makeStyles(theme => ({
 
 function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
   const classes = useStyles()
+
+  // @ts-ignore
+  const { bookmarkedRegions } = getSession(model)
+  const bookmarkRows = bookmarkedRegions.toJS().map((region: Region) => ({
+    ...region,
+    id: region.key,
+    chrom: region.refName,
+  }))
 
   const columns = [
     { field: 'chrom', headerName: 'chrom', width: 100 },
@@ -35,7 +45,7 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
   return (
     <div className={classes.container}>
       <div style={{ height: 400, width: '100%' }}>
-        <DataGrid rows={model.bookmarkArray.toJS()} columns={columns} />
+        <DataGrid rows={bookmarkRows} columns={columns} />
       </div>
     </div>
   )
