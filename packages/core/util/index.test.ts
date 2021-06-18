@@ -87,7 +87,6 @@ describe('assembleLocString', () => {
   test("assemble 'chr1:1..100'", () => {
     expect(assembleLocString(location)).toEqual('chr1:1..100')
   })
-
   test('test empty assemblyName', () => {
     const location = '{}chr1:1..100'
     expect(() => {

@@ -48,7 +48,7 @@
       }
     }
   ],
-  "textSearchAdapters": [
+  "aggregateTextSearchAdapters": [
     {
       "type": "JBrowse1TextSearchAdapter",
       "textSearchAdapterId": "JBrowse1GenerateNamesAdapter",
@@ -100,7 +100,7 @@
       "name": "volvox structural variant test",
       "category": ["VCF"],
       "assemblyNames": ["volvox"],
-      "attributes": ["Name", "ID", "Description"],
+      "textSearchIndexingAttributes": ["Name", "ID", "Description"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -1401,6 +1401,25 @@
           "twoBitLocation": {
             "uri": "volvox.2bit"
           }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "single_exon_gene",
+      "category": ["Miscellaneous"],
+      "name": "Single exon gene",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "single_exon_gene.sorted.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "single_exon_gene.sorted.gff.gz.tbi"
+          },
+          "indexType": "TBI"
         }
       }
     }

@@ -134,14 +134,15 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
         // region visible, xref #1703
         model.showAllRegions()
       } else {
-        const results = await textSearchManager.search(
-          {
-            queryString: newRegionValue.toLocaleLowerCase(),
-            searchType: 'exact',
-          },
-          searchScope,
-          rankSearchResults,
-        )
+        const results =
+          (await textSearchManager?.search(
+            {
+              queryString: newRegionValue.toLocaleLowerCase(),
+              searchType: 'exact',
+            },
+            searchScope,
+            rankSearchResults,
+          )) || []
         // distinguishes between locstrings and search strings
         if (results.length > 0) {
           model.setSearchResults(results, newRegionValue.toLocaleLowerCase())

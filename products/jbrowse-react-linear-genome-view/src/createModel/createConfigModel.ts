@@ -18,11 +18,15 @@ export default function createConfigModel(
           type: 'number',
           defaultValue: 2,
         },
+        theme: { type: 'frozen', defaultValue: {} },
       }),
       assembly: assemblyConfigSchemasType,
       tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
       connections: types.array(
         pluginManager.pluggableConfigSchemaType('connection'),
+      ),
+      aggregateTextSearchAdapters: types.array(
+        pluginManager.pluggableConfigSchemaType('text search adapter'),
       ),
       plugins: types.frozen(),
     })

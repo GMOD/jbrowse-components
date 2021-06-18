@@ -1,4 +1,3 @@
-/* eslint curly:error*/
 import {
   addDisposer,
   cast,
@@ -127,9 +126,9 @@ export default function RootModel(
       version: types.maybe(types.string),
       isAssemblyEditing: false,
       isDefaultSessionEditing: false,
-      pluginsUpdated: false,
     })
     .volatile(self => ({
+      pluginsUpdated: false,
       rpcManager: new RpcManager(
         pluginManager,
         self.jbrowse.configuration.rpc,

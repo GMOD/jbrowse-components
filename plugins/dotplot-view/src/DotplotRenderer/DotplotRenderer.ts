@@ -42,8 +42,9 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const db1 = hview.dynamicBlocks.contentBlocks[0].offsetPx
     const db2 = vview.dynamicBlocks.contentBlocks[0].offsetPx
     ;(hview.features || []).forEach(feature => {
-      const start = feature.get('start')
-      const end = feature.get('end')
+      let start = feature.get('start')
+      let end = feature.get('end')
+      const strand = feature.get('strand')
       const refName = feature.get('refName')
       const mate = feature.get('mate')
       const mateRef = mate.refName
@@ -52,6 +53,9 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const color = readConfObject(config, 'color', { feature })
       ctx.fillStyle = color
       ctx.strokeStyle = color
+      if (strand === -1) {
+        ;[end, start] = [start, end]
+      }
       const b10 = hview.bpToPx({ refName, coord: start })
       const b20 = hview.bpToPx({ refName, coord: end })
       const e10 = vview.bpToPx({ refName: mateRef, coord: mate.start })

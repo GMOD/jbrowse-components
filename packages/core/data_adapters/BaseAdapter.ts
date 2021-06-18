@@ -22,10 +22,10 @@ export interface BaseOptions {
   [key: string]: unknown
 }
 
-export type searchType = 'full' | 'prefix' | 'exact'
+export type SearchType = 'full' | 'prefix' | 'exact'
 
 export interface BaseArgs {
-  searchType?: searchType
+  searchType?: SearchType
   queryString: string
   signal?: AbortSignal
   limit?: number

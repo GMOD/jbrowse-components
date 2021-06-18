@@ -1,5 +1,5 @@
 import TextSearchAdapterType from '../pluggableElementTypes/TextSearchAdapterType'
-import { searchType } from '../data_adapters/BaseAdapter'
+import { SearchType } from '../data_adapters/BaseAdapter'
 
 export interface BaseResultArgs {
   label: string
@@ -12,7 +12,7 @@ export interface BaseResultArgs {
 
   textSearchAdapter?: TextSearchAdapterType
 
-  relevance?: searchType
+  relevance?: SearchType
 
   locString?: string
 
@@ -33,7 +33,7 @@ export default class BaseResult {
 
   textSearchAdapter?: TextSearchAdapterType
 
-  relevance?: searchType
+  relevance?: SearchType
 
   trackId?: string
 

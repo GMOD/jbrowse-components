@@ -69,14 +69,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   }, [assemblyManager, assemblyName])
 
   function setSelectedValue(selectedOption: BaseResult) {
-    let newValue = selectedOption.getLabel()
-    if (selectedOption instanceof RefSequenceResult) {
-      newValue = selectedOption.getLocation()
-    }
-    if (selectedOption instanceof LocStringResult) {
-      newValue = selectedOption.getLocation()
-    }
-    setSelectedRegion(newValue)
+    setSelectedRegion(selectedOption.getLocation())
   }
 
   async function handleSelectedRegion(input: string) {
@@ -87,14 +80,15 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       // region visible, xref #1703
       model.showAllRegions()
     } else {
-      const results = await textSearchManager.search(
-        {
-          queryString: input.toLocaleLowerCase(),
-          searchType: 'exact',
-        },
-        searchScope,
-        rankSearchResults,
-      )
+      const results =
+        (await textSearchManager?.search(
+          {
+            queryString: input.toLocaleLowerCase(),
+            searchType: 'exact',
+          },
+          searchScope,
+          rankSearchResults,
+        )) || []
       if (results.length > 0) {
         model.setSearchResults(results, input.toLocaleLowerCase())
       } else {

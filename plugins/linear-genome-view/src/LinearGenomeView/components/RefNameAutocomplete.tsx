@@ -64,11 +64,9 @@ async function fetchResults(
     queryString: query,
     searchType: 'prefix',
   }
-  const searchResults = await textSearchManager.search(
-    args,
-    searchScope,
-    rankSearchResults,
-  )
+  const searchResults =
+    (await textSearchManager?.search(args, searchScope, rankSearchResults)) ||
+    []
   return searchResults
 }
 function RefNameAutocomplete({
@@ -152,7 +150,7 @@ function RefNameAutocomplete({
     return () => {
       active = false
     }
-  }, [debouncedSearch, assemblyName, model])
+  }, [assemblyName, debouncedSearch, model])
 
   function onChange(selectedOption: Option | string) {
     if (selectedOption && assemblyName) {

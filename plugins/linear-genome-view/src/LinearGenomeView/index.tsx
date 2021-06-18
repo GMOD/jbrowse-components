@@ -281,8 +281,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       searchScope(assemblyName: string) {
         return {
           assemblyName,
-          aggregate: true,
-          openedTracks: self.tracks,
+          includeAggregateIndexes: true,
+          tracks: self.tracks,
         }
       },
       parentRegion(assemblyName: string, refName: string) {
@@ -437,6 +437,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       rankSearchResults(results: BaseResult[]) {
+        // order of rank
         const openTrackIds = self.tracks.map(
           track => track.configuration.trackId,
         )
@@ -565,7 +566,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         this.scrollTo(self.totalBp / self.bpPerPx - self.offsetPx - self.width)
       },
 
-      showTrack(trackId: string, initialSnapshot = {}) {
+      showTrack(
+        trackId: string,
+        initialSnapshot = {},
+        displayInitialSnapshot = {},
+      ) {
         const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
           'track',
         )
@@ -594,7 +599,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ...initialSnapshot,
           type: configuration.type,
           configuration,
-          displays: [{ type: displayConf.type, configuration: displayConf }],
+          displays: [
+            {
+              type: displayConf.type,
+              configuration: displayConf,
+              ...displayInitialSnapshot,
+            },
+          ],
         })
         self.tracks.push(track)
         return track

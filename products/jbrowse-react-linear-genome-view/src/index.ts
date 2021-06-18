@@ -1,5 +1,4 @@
-export { createJBrowseTheme } from '@jbrowse/core/ui'
-export { ThemeProvider } from '@material-ui/core/styles'
+export { createJBrowseTheme, ThemeProvider } from './deprecations'
 export { default as JBrowseLinearGenomeView } from './JBrowseLinearGenomeView'
 export { default as createModel } from './createModel'
 export { default as createViewState } from './createViewState'

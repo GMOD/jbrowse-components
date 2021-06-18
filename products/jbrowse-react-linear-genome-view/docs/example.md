@@ -7,12 +7,8 @@ import React from 'react'
 import 'fontsource-roboto'
 import {
   createViewState,
-  createJBrowseTheme,
   JBrowseLinearGenomeView,
-  ThemeProvider,
 } from '@jbrowse/react-linear-genome-view'
-
-const theme = createJBrowseTheme()
 
 const assembly = {
   name: 'GRCh38',
@@ -108,11 +104,7 @@ function View() {
     location: '10:29,838,737..29,838,819',
     defaultSession,
   })
-  return (
-    <ThemeProvider theme={theme}>
-      <JBrowseLinearGenomeView viewState={state} />
-    </ThemeProvider>
-  )
+  return <JBrowseLinearGenomeView viewState={state} />
 }
 
 export default View

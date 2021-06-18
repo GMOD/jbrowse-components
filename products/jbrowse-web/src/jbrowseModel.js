@@ -45,6 +45,10 @@ export default function JBrowseWeb(
           defaultValue: false,
         },
         theme: { type: 'frozen', defaultValue: {} },
+        logoPath: {
+          type: 'fileLocation',
+          defaultValue: { uri: '' },
+        },
         ...pluginManager.pluginConfigurationSchemas(),
       }),
       plugins: types.array(types.frozen()),
@@ -52,7 +56,7 @@ export default function JBrowseWeb(
       // track configuration is an array of track config schemas. multiple
       // instances of a track can exist that use the same configuration
       tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
-      textSearchAdapters: types.array(
+      aggregateTextSearchAdapters: types.array(
         pluginManager.pluggableConfigSchemaType('text search adapter'),
       ),
       connections: types.array(

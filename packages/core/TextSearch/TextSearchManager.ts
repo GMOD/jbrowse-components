@@ -5,22 +5,22 @@ import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 import PluginManager from '../PluginManager'
 import QuickLRU from '../util/QuickLRU'
-import { searchType, BaseTextSearchAdapter } from '../data_adapters/BaseAdapter'
+import { SearchType, BaseTextSearchAdapter } from '../data_adapters/BaseAdapter'
 import { readConfObject } from '../configuration'
 import TextSearchAdapterType from '../pluggableElementTypes/TextSearchAdapterType'
 
-interface BaseArgs {
-  searchType: searchType
+export interface BaseArgs {
+  searchType: SearchType
   queryString: string
   signal?: AbortSignal
   limit?: number
   pageNumber?: number
 }
 
-interface Scope {
-  aggregate: boolean
+export interface SearchScope {
+  includeAggregateIndexes: boolean
   assemblyName: string
-  openedTracks?: Array<string>
+  tracks?: Array<string>
 }
 
 export default (pluginManager: PluginManager) => {
@@ -39,10 +39,10 @@ export default (pluginManager: PluginManager) => {
     /**
      * Instantiate/initialize list of relevant adapters
      */
-    loadTextSearchAdapters(scope: Scope) {
+    loadTextSearchAdapters(searchScope: SearchScope) {
       const adaptersToUse: BaseTextSearchAdapter[] = []
       // initialize relevant adapters
-      this.relevantAdapters(scope).forEach(
+      this.relevantAdapters(searchScope).forEach(
         (adapterConfig: AnyConfigurationModel) => {
           const adapterId = readConfObject(adapterConfig, 'textSearchAdapterId')
           if (this.adapterCache.has(adapterId)) {
@@ -67,12 +67,12 @@ export default (pluginManager: PluginManager) => {
      * Returns list of relevant text search adapters to use
      * @param args - search options/arguments include: search query
      */
-    relevantAdapters(scope: Scope) {
+    relevantAdapters(searchScope: SearchScope) {
       // Note: (in the future we can add a condition to check if not aggregate
       // only return track text search adapters that cover relevant tracks,
       // for now only returning text search adapters that cover configured assemblies)
       // root level adapters and track adapters
-      const { textSearchAdapters, tracks } = pluginManager.rootModel
+      const { aggregateTextSearchAdapters, tracks } = pluginManager.rootModel
         ?.jbrowse as any
       let trackTextSearchAdapters: AnyConfigurationModel[] = []
       tracks.forEach((trackConfig: AnyConfigurationModel) => {
@@ -83,24 +83,24 @@ export default (pluginManager: PluginManager) => {
       })
       // get adapters that cover assemblies
       const rootTextSearchAdapters = this.getAdaptersWithAssembly(
-        scope.assemblyName,
-        textSearchAdapters,
+        searchScope.assemblyName,
+        aggregateTextSearchAdapters,
       )
       trackTextSearchAdapters = this.getAdaptersWithAssembly(
-        scope.assemblyName,
+        searchScope.assemblyName,
         trackTextSearchAdapters,
       )
       return rootTextSearchAdapters.concat(trackTextSearchAdapters)
     }
 
     getAdaptersWithAssembly(
-      scopeAssemblyName: string,
+      searchScopeAssemblyName: string,
       adapterList: AnyConfigurationModel[],
     ) {
       const adaptersWithAssemblies = adapterList.filter(
         (adapterConfig: AnyConfigurationModel) => {
           const adapterAssemblies = readConfObject(adapterConfig, 'assemblies')
-          return adapterAssemblies.includes(scopeAssemblyName)
+          return adapterAssemblies?.includes(searchScopeAssemblyName)
         },
       )
       return adaptersWithAssemblies
@@ -113,11 +113,11 @@ export default (pluginManager: PluginManager) => {
      */
     async search(
       args: BaseArgs,
-      scope: Scope,
+      searchScope: SearchScope,
       rankSearchResults: (results: BaseResult[]) => BaseResult[],
     ) {
       // determine list of relevant adapters based on scope
-      this.textSearchAdapters = this.loadTextSearchAdapters(scope)
+      this.textSearchAdapters = this.loadTextSearchAdapters(searchScope)
       const results: Array<BaseResult[]> = await Promise.all(
         this.textSearchAdapters.map(async adapter => {
           // search with given search args

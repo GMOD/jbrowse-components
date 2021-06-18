@@ -1,0 +1,85 @@
+{
+  "configuration": {
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
+    }
+  },
+  "assemblies": [
+    {
+      "name": "volvox",
+      "aliases": ["vvx"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "FromConfigAdapter",
+          "features": [
+            {
+              "refName": "ctgA",
+              "uniqueId": "alias1",
+              "aliases": ["A", "contigA"]
+            },
+            {
+              "refName": "ctgB",
+              "uniqueId": "alias2",
+              "aliases": ["B", "contigB"]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "track1",
+      "name": "Track1",
+      "assemblyNames": ["volvox"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "FromConfigAdapter",
+        "features": [
+          {
+            "refName": "ctgA",
+            "uniqueId": "feat1",
+            "start": 200,
+            "end": 750,
+            "name": "Feature1",
+            "subfeatures": [
+              {
+                "uniqueId": "feat2",
+                "start": 225,
+                "end": 300,
+                "name": "Feature2"
+              },
+              {
+                "uniqueId": "feat3",
+                "start": 400,
+                "end": 600,
+                "name": "Feature3"
+              }
+            ]
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "track1-display1",
+          "configuration": "track1-display1",
+          "renderer": {
+            "type": "SvgFeatureRenderer"
+          }
+        }
+      ]
+    }
+  ]
+}
