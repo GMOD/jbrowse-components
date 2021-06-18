@@ -60,13 +60,13 @@
         "gffGzLocation": {
           "uri": "test/data/volvox.sort.gff3.gz"
         },
-        "attributes": ["ID", "start", "end"],
         "index": {
           "location": {
             "uri": "volvox.sort.gff3.gz.tbi"
           }
         }
-      }
+      },
+      "attributes": ["ID", "start", "end"]
     },
     {
       "type": "FeatureTrack",
