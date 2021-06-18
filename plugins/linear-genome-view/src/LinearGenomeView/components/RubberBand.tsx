@@ -235,9 +235,7 @@ function RubberBand({
     {
       label: 'Bookmark region',
       onClick: () => {
-        // @ts-ignore
-        const { widgets } = getSession(model)
-        const bookmarkWidget = widgets.get('GridBookmark')
+        const session = getSession(model)
 
         if (startX === undefined || anchorPosition === undefined) {
           return
@@ -255,7 +253,8 @@ function RubberBand({
         )
         const firstRegion = selectedRegions[0]
 
-        bookmarkWidget.addBookmark(firstRegion)
+        // @ts-ignore
+        session.addBookmark(firstRegion)
       },
     },
   ]
