@@ -14,6 +14,7 @@ import {
   JBrowsePlugin,
   DialogComponentType,
 } from '@jbrowse/core/util/types'
+import { Region as RegionModel } from '@jbrowse/core/util/types/mst'
 import { getContainingView } from '@jbrowse/core/util'
 import { observable } from 'mobx'
 import {
@@ -82,6 +83,7 @@ export default function sessionModelFactory(
       sessionAssemblies: types.array(assemblyConfigSchemasType),
       sessionPlugins: types.array(types.frozen()),
       minimized: types.optional(types.boolean, false),
+      bookmarkedRegions: types.array(RegionModel),
     })
     .volatile((/* self */) => ({
       /**
@@ -195,6 +197,9 @@ export default function sessionModelFactory(
 
       addAssembly(assemblyConfig: AnyConfigurationModel) {
         self.sessionAssemblies.push(assemblyConfig)
+      },
+      addBookmark(region: Region) {
+        self.bookmarkedRegions.push(region)
       },
       addSessionPlugin(plugin: JBrowsePlugin) {
         if (self.sessionPlugins.find(p => p.name === plugin.name)) {
