@@ -1,12 +1,15 @@
 import { types, Instance } from 'mobx-state-tree'
+
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import { Region } from '@jbrowse/core/util/types'
 
 const BookmarkedRegion = types.model('BookmarkedRegion', {
   chrom: types.string,
   start: types.number,
   end: types.number,
-  locString: types.string,
+  assemblyName: types.string,
+  id: types.string,
 })
 
 export default function f(pluginManager: PluginManager) {
@@ -19,7 +22,15 @@ export default function f(pluginManager: PluginManager) {
       ),
       bookmarkArray: types.array(BookmarkedRegion),
     })
-    .actions(self => ({}))
+    .actions(self => ({
+      addBookmark(region: Region) {
+        const { refName: chrom, start, end, assemblyName, key } = region
+        // console.log({ chrom, start, end, assembly, locString })
+        const id = key as string
+        self.bookmarkArray.push({ chrom, start, end, assemblyName, id })
+        console.log(self.bookmarkArray)
+      },
+    }))
 }
 
 export type GridBookmarkStateModel = ReturnType<typeof f>
