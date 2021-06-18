@@ -12,7 +12,7 @@ import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import ZoomInIcon from '@material-ui/icons/ZoomIn'
 
-import { stringify } from '@jbrowse/core/util'
+import { getSession, stringify } from '@jbrowse/core/util'
 import { LinearGenomeViewStateModel } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
@@ -230,6 +230,32 @@ function RubberBand({
       onClick: () => {
         getSequence()
         handleClose()
+      },
+    },
+    {
+      label: 'Bookmark region',
+      onClick: () => {
+        // @ts-ignore
+        const { widgets } = getSession(model)
+        const bookmarkWidget = widgets.get('GridBookmark')
+
+        if (startX === undefined || anchorPosition === undefined) {
+          return
+        }
+        let leftPx = startX
+        let rightPx = anchorPosition.offsetX
+        if (rightPx < leftPx) {
+          ;[leftPx, rightPx] = [rightPx, leftPx]
+        }
+        const leftOffset = model.pxToBp(leftPx)
+        const rightOffset = model.pxToBp(rightPx)
+        const selectedRegions = model.getSelectedRegions(
+          leftOffset,
+          rightOffset,
+        )
+        const firstRegion = selectedRegions[0]
+
+        bookmarkWidget.addBookmark(firstRegion)
       },
     },
   ]
