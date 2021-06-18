@@ -324,6 +324,7 @@ const UrlChooser = (props: {
           console.log(metadata)
           setLocation({
             uri: metadata.downloadUrl,
+            authHeader: 'Authorization',
             authToken: `Bearer ${oauthAccessTokenGoogle}`,
           })
           if (setName) {

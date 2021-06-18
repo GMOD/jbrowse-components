@@ -57,12 +57,15 @@ export function openLocation(location: FileLocation): GenericFilehandle {
     }
   } else {
     if (isUriLocation(location)) {
+      //@ts-ignore
+      const optionalHeaders = location.authHeader && location.authToken ? { [location.authHeader]: `${location.authToken}` } : undefined
+
       return openUrl(
+        //@ts-ignore
         location.baseUri
           ? new URL(location.uri, location.baseUri).href
           : location.uri,
-
-        { Authorization: `${location.authToken}` },
+          optionalHeaders
       )
     }
     if (isLocalPathLocation(location)) {
