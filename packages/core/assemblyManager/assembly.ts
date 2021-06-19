@@ -145,7 +145,7 @@ export default function assemblyFactory(
   return types
     .model({
       configuration: types.safeReference(assemblyConfigType),
-      regions: types.maybe(types.array(MSTRegion)),
+      regions: types.frozen(),
       refNameAliases: types.maybe(types.map(types.string)),
     })
     .views(self => ({
@@ -233,7 +233,7 @@ export default function assemblyFactory(
         }
       },
       setRegions(regions: Region[]) {
-        self.regions = cast(regions)
+        self.regions = regions
       },
       setRefNameAliases(refNameAliases: RefNameAliases) {
         self.refNameAliases = cast(refNameAliases)

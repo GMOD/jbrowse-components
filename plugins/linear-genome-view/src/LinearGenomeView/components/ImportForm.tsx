@@ -55,7 +55,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       if (assemblyName) {
         const assembly = await assemblyManager.waitForAssembly(assemblyName)
         if (assembly && assembly.regions) {
-          const regions = getSnapshot(assembly.regions)
+          const regions = assembly.regions
           if (!done && regions) {
             setSelectedRegion(regions[0].refName)
             setAssemblyRegions(regions)
