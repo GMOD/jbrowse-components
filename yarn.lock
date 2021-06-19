@@ -1846,6 +1846,11 @@
     long "^4.0.0"
     quick-lru "^2.0.0"
 
+"@gmod/trix@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-0.2.0.tgz#df9f927278cc55cad27b11b3bc7fd6b0253073e2"
+  integrity sha512-AvrkRvlTNyjepFOJ3zgOI6/TJpJQ2rpZf3O4dkFlVVBHKVQWzifRXTQsixhcKpz498kc+J38XP4jiWkbqgUtIg==
+
 "@gmod/twobit@^1.1.10":
   version "1.1.10"
   resolved "https://registry.yarnpkg.com/@gmod/twobit/-/twobit-1.1.10.tgz#bc618c167d373c98f010ca327351529d3d16e2fe"
@@ -4363,6 +4368,13 @@
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@types/file-saver/-/file-saver-2.0.1.tgz#e18eb8b069e442f7b956d313f4fadd3ef887354e"
   integrity sha512-g1QUuhYVVAamfCifK7oB7G3aIl4BbOyzDOqVyUfEr4tfBKrXfeH+M+Tg7HKCXSrbzxYdhyCP7z9WbKo0R2hBCw==
+
+"@types/follow-redirects@^1.13.0":
+  version "1.13.0"
+  resolved "https://registry.yarnpkg.com/@types/follow-redirects/-/follow-redirects-1.13.0.tgz#82d3767050314ddb44606576e6bf4fcfee5f4d05"
+  integrity sha512-VPGDD77WMB+da4l1vdfGYM1k9ZjtPyY8EHisvc33QUcwCf/stt/5M1P/ZOPhpnjPgBwJX/xuo3X3wFVp0rutTA==
+  dependencies:
+    "@types/node" "*"
 
 "@types/fs-extra@^9.0.1":
   version "9.0.1"
@@ -10646,6 +10658,11 @@ follow-redirects@^1.0.0:
   dependencies:
     debug "^3.0.0"
 
+follow-redirects@^1.14.1:
+  version "1.14.1"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.14.1.tgz#d9114ded0a1cfdd334e164e6662ad02bfd91ff43"
+  integrity sha512-HWqDgT7ZEkqRzBvc2s64vSZ/hfOceEol3ac/7tKwzuvEyWx3/4UegXh5oBOIotkGsObyk3xznnSRVADBgWSQVg==
+
 fontsource-roboto@3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/fontsource-roboto/-/fontsource-roboto-3.0.3.tgz#99c312babeabce22b3e933b3edf2951d4508f4f7"
@@ -15359,6 +15376,11 @@ mz@^2.4.0, mz@^2.5.0:
     object-assign "^4.0.1"
     thenify-all "^1.0.0"
 
+nan@^2.11.0:
+  version "2.14.2"
+  resolved "https://registry.yarnpkg.com/nan/-/nan-2.14.2.tgz#f5376400695168f4cc694ac9393d0c9585eeea19"
+  integrity sha512-M2ufzIiINKCuDfBSAUr1vWQ+vuVcA9kqx8JJUsbQi6yf1uGRyb7HfpdfUr5qLXf3B/t8dPvcjhKMmlfnP47EzQ==
+
 nan@^2.12.1, nan@^2.13.2, nan@^2.14.0:
   version "2.14.1"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.14.1.tgz#d7be34dfa3105b91494c3147089315eff8874b01"
@@ -19554,6 +19576,13 @@ shellwords@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/shellwords/-/shellwords-0.1.1.tgz#d6b9181c1a48d397324c84871efbcfc73fc0654b"
   integrity sha512-vFwSUfQvqybiICwZY5+DAWIPLKsWO31Q91JSKl3UYv+K5c2QRPzn0qzec6QPu1Qc9eHYItiP3NdJqNVqetYAww==
+
+shorter@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/shorter/-/shorter-0.3.1.tgz#d937234eeff0a58df4b9d46fa12623e8c9f92817"
+  integrity sha512-sjrss6SOboe/Ql7cowgZswsBtWxQMeP7Mogkxn+/WTRB40zINp/42hLESWG+yngx1hwZbv8IZFIVdyJ9w+K3+A==
+  dependencies:
+    nan "^2.11.0"
 
 shortid@^2.2.13, shortid@^2.2.15:
   version "2.2.15"

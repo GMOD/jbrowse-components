@@ -81,10 +81,10 @@ export default class TextIndex extends JBrowseCommand {
             trackArr,
             null,
           )
-          const indexAttributes: Array<string> = indexConfig[0].attributes
+          const indexAttributes = indexConfig[0]?.attributes || []
 
-          const uri: string =
-            indexConfig[0].indexingConfiguration?.gffLocation.uri
+          const uri =
+            indexConfig[0].indexingConfiguration?.gffLocation.uri || ''
 
           this.indexDriver(uri, false, indexAttributes, fileDirectory)
         }
@@ -567,7 +567,7 @@ export default class TextIndex extends JBrowseCommand {
         track => trackId === track.trackId,
       )
       if (currentTrack) {
-        const { adapter, attributes } = currentTrack
+        const { adapter, textSearchIndexingAttributes } = currentTrack
         if (adapter.type === 'Gff3TabixAdapter') {
           return {
             trackId,
@@ -576,7 +576,7 @@ export default class TextIndex extends JBrowseCommand {
               gzipped: true,
               gffLocation: adapter?.gffGzLocation,
             },
-            attributes: attributes,
+            attributes: textSearchIndexingAttributes,
           }
         }
       } else {

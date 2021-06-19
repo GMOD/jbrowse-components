@@ -56,13 +56,13 @@ describe('indexGff3', () => {
     const textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
 
-    const trackIds: Array<string> = ['gff3tabix_genes']
+    const trackIds = ['gff3tabix_genes']
     const indexConfig = await textIndex.getIndexingConfigurations(trackIds, {
       target: 'products/jbrowse-cli',
     })
-    const indexAttributes: Array<string> = indexConfig[0].attributes
+    const indexAttributes = indexConfig[0]?.attributes || []
 
-    await textIndex.indexDriver(gff3FileLocation, true, indexAttributes, null)
+    await textIndex.indexDriver(gff3FileLocation, true, indexAttributes, '')
 
     const ixdata = JSON.stringify(
       readFileSync('./products/jbrowse-cli/test/data/out.ix', {
@@ -90,13 +90,13 @@ describe('indexGff3', () => {
     const textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
 
-    const trackIds: Array<string> = ['gff3tabix_genes']
+    const trackIds = ['gff3tabix_genes']
     const indexConfig = await textIndex.getIndexingConfigurations(trackIds, {
       target: 'products/jbrowse-cli',
     })
-    const indexAttributes: Array<string> = indexConfig[0].attributes
+    const indexAttributes = indexConfig[0]?.attributes || []
 
-    await textIndex.indexDriver(gff3FileLocation, true, indexAttributes, null)
+    await textIndex.indexDriver(gff3FileLocation, true, indexAttributes, '')
 
     const ixdata = JSON.stringify(
       readFileSync('./products/jbrowse-cli/test/data/out.ix', {
@@ -123,13 +123,13 @@ describe('indexGff3', () => {
     const textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
 
-    const trackIds: Array<string> = ['gff3tabix_genes']
+    const trackIds = ['gff3tabix_genes']
     const indexConfig = await textIndex.getIndexingConfigurations(trackIds, {
       target: 'products/jbrowse-cli',
     })
-    const indexAttributes: Array<string> = indexConfig[0].attributes
+    const indexAttributes = indexConfig[0]?.attributes || []
 
-    await textIndex.indexDriver(gff3FileLocation, true, indexAttributes, null)
+    await textIndex.indexDriver(gff3FileLocation, true, indexAttributes, '')
 
     const ixdata = JSON.stringify(
       readFileSync('./products/jbrowse-cli/test/data/out.ix', {
@@ -156,13 +156,13 @@ describe('indexGff3', () => {
     const textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
 
-    const trackIds: Array<string> = ['gff3tabix_genes']
+    const trackIds = ['gff3tabix_genes']
     const indexConfig = await textIndex.getIndexingConfigurations(trackIds, {
       target: 'products/jbrowse-cli',
     })
-    const indexAttributes: Array<string> = indexConfig[0].attributes
+    const indexAttributes = indexConfig[0]?.attributes || []
 
-    await textIndex.indexDriver(gff3FileLocation, true, indexAttributes, null)
+    await textIndex.indexDriver(gff3FileLocation, true, indexAttributes, '')
 
     const ixdata = JSON.stringify(
       readFileSync('./products/jbrowse-cli/test/data/out.ix', {
@@ -190,11 +190,11 @@ describe('indexGff3', () => {
 //     let textIndex = new TextIndex([], null)
 //     textIndex.log = jest.fn()
 
-//     const trackIds: Array<string> = ['gff3tabix_genes']
+//     const trackIds = ['gff3tabix_genes']
 //     const indexConfig = await textIndex.getIndexingConfigurations(trackIds, {
 //       target: 'products/jbrowse-cli',
 //     })
-//     const indexAttributes: Array<string> = indexConfig[0].attributes
+//     const indexAttributes = indexConfig[0]?.attributes || []
 
 //     await textIndex.indexDriver([gff3FileLocation], true, indexAttributes, null);
 //     const ixdata = JSON.stringify(
@@ -221,11 +221,11 @@ describe('indexGff3', () => {
 describe('getIndexingConfigurations', () => {
   it(`Get the configuration for ['gff3tabix_genes']`, async () => {
     const textIndex = new TextIndex([], null)
-    const trackIds: Array<string> = ['gff3tabix_genes']
+    const trackIds = ['gff3tabix_genes']
     const indexConfig = await textIndex.getIndexingConfigurations(trackIds, {
       target: 'products/jbrowse-cli',
     })
-    const uri = indexConfig[0].indexingConfiguration.gffLocation.uri
+    const uri = indexConfig[0].indexingConfiguration?.gffLocation.uri || ''
     expect(indexConfig).toMatchSnapshot()
     expect(uri).toMatchSnapshot()
   })
@@ -235,16 +235,15 @@ describe('getIndexingConfigurations', () => {
 describe('getIndexingConfigurations', () => {
   it(`Gets the configurations for ['gff3tabix_genes] and indexes it`, async () => {
     const textIndex = new TextIndex([], null)
-    const trackIds: Array<string> = ['gff3tabix_genes']
+    const trackIds = ['gff3tabix_genes']
     const indexConfig = await textIndex.getIndexingConfigurations(trackIds, {
       target: 'products/jbrowse-cli',
     })
-    const indexAttributes: Array<string> = indexConfig[0].attributes
-    const uri: string =
-      './products/jbrowse-cli/' +
-      indexConfig[0].indexingConfiguration.gffLocation.uri
+    const indexAttributes = indexConfig[0]?.attributes || []
+    const gffUri = indexConfig[0].indexingConfiguration?.gffLocation.uri || ''
+    const uri = './products/jbrowse-cli/' + gffUri
 
-    await textIndex.indexDriver([uri], true, indexAttributes, null)
+    await textIndex.indexDriver([uri], true, indexAttributes, '')
 
     const ixdata = JSON.stringify(
       readFileSync('./products/jbrowse-cli/test/data/out.ix', {
@@ -275,10 +274,8 @@ describe('aggregateIndexing', () => {
   ]
   it(`Parses local GZ file using custom configuration`, async () => {
     const textIndex = new TextIndex([], null)
-    const trackIds: Array<string> = [
-      './products/jbrowse-cli/test/data/volvox.sort.gff3.gz',
-    ] // add another one
-    const indexAttributes: Array<string> = testObjs[0].attributes
+    const trackIds = ['./products/jbrowse-cli/test/data/volvox.sort.gff3.gz'] // add another one
+    const indexAttributes = testObjs[0]?.attributes || []
 
     await textIndex.indexDriver(trackIds, true, indexAttributes, dir)
 
@@ -309,7 +306,7 @@ describe('aggregateIndexing', () => {
   ]
   it(`Parses local gff3 file using custom configuration`, async () => {
     const textIndex = new TextIndex([], null)
-    const trackIds: Array<string> = [
+    const trackIds = [
       './products/jbrowse-cli/test/data/au9_scaffold_subset_sync.gff3',
       './products/jbrowse-cli/test/data/three_records.gff3',
       './products/jbrowse-cli/test/data/two_records.gff3',
@@ -317,7 +314,7 @@ describe('aggregateIndexing', () => {
     // TODO: two_records and three_records come from au9_scaffold, so this is all duplicate data, which would make for a good test,
     //          but this one whould probably be changed.
 
-    const indexAttributes: Array<string> = testObjs[0].attributes
+    const indexAttributes = testObjs[0].attributes
 
     await textIndex.indexDriver(trackIds, true, indexAttributes, dir)
 
@@ -348,12 +345,12 @@ describe('aggregateIndexing', () => {
   ]
   it(`Parses URL gff3 file using custom configuration`, async () => {
     const textIndex = new TextIndex([], null)
-    const trackIds: Array<string> = [
+    const trackIds = [
       'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3',
       'https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz',
     ]
 
-    const indexAttributes: Array<string> = testObjs[0].attributes
+    const indexAttributes = testObjs[0]?.attributes || []
 
     await textIndex.indexDriver(trackIds, true, indexAttributes, dir)
 
@@ -384,14 +381,14 @@ describe('aggregateIndexing', () => {
   ]
   it(`Parses all the different kinds of index files`, async () => {
     const textIndex = new TextIndex([], null)
-    const trackIds: Array<string> = [
+    const trackIds = [
       'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3',
       './products/jbrowse-cli/test/data/au9_scaffold_subset_sync.gff3',
       'https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz',
       './products/jbrowse-cli/test/data/volvox.sort.gff3.gz',
     ]
 
-    const indexAttributes: Array<string> = testObjs[0].attributes
+    const indexAttributes = testObjs[0]?.attributes || []
 
     await textIndex.indexDriver(trackIds, true, indexAttributes, dir)
 
@@ -422,14 +419,14 @@ describe('aggregateIndexing', () => {
   ]
   it(`Parses local gff3 file using custom configuration`, async () => {
     const textIndex = new TextIndex([], null)
-    const trackIds: Array<string> = [
+    const trackIds = [
       './products/jbrowse-cli/test/data/au9_scaffold_subset_sync.gff3',
       './products/jbrowse-cli/test/data/three_records.gff3',
       './products/jbrowse-cli/test/data/two_records.gff3',
     ]
     // two_records and three_records come from au9_scaffold, so this is all duplicate data.
 
-    const indexAttributes: Array<string> = testObjs[0].attributes
+    const indexAttributes = testObjs[0]?.attributes
 
     await textIndex.indexDriver(trackIds, true, indexAttributes, dir)
 
