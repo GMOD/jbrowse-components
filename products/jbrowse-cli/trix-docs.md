@@ -24,7 +24,7 @@ searchTerm4 value2,2
 searchTerm5 value3,2
 ```
 
-The `.ix`  plaintext file is sorted in alphanumeric order, where each line is a search term, followed by values. Each value has a comma followed by a *line-level-location* which represents where the search term exists in the line of the input file. For example, `searchTerm5 value3,2` means that `searchTerm5` is the second word on the line for `value3` in the input file. Also notice how much repetition there is with the data in the `.ix` file.
+The `.ix` plaintext file is sorted in alphanumeric order, where each line is a search term, followed by values. Each value has a comma followed by a _line-level-location_ which represents where the search term exists in the line of the input file. For example, `searchTerm5 value3,2` means that `searchTerm5` is the second word on the line for `value3` in the input file. Also notice how much repetition there is with the data in the `.ix` file.
 
 The output of the `.ixx` file is as follows:
 
@@ -77,7 +77,7 @@ In more detail:
 
 ## Known Problems and How to Fix Them:
 
-→ ix searches really fast (5 ms for a GB test). But the downside is that it is pretty space inefficient with the `.ix` file (1-5x larger than the file to index). This isn't the end of the world, because the .ix files can be hosted remotely, and then the client only has to have the .`ixx` file to do the search and make a request for the specific chunk needed from the remote `.ix` file. From what I've seen this is about 5000 lines or 300 KB of data on average. 
+→ ix searches really fast (5 ms for a GB test). But the downside is that it is pretty space inefficient with the `.ix` file (1-5x larger than the file to index). This isn't the end of the world, because the .ix files can be hosted remotely, and then the client only has to have the .`ixx` file to do the search and make a request for the specific chunk needed from the remote `.ix` file. From what I've seen this is about 5000 lines or 300 KB of data on average.
 
 - One way to reduce space is to store line items as arrays instead of a json string. This would save 20-30% space since the identifiers are not included in the string (which is worth doing)
 - Ideally the data needs to be compressed instead of just converting it to base 64, but this can cause problems because Trix treats commas and spaces as separator keys. Consider converting commas and spaces to other non-used characters such as semi-colons and backticks? Then use [https://www.npmjs.com/package/shorter](https://www.npmjs.com/package/shorter) to compress data. Re-writing `ixIxx` and altering `trixSearch` could also fix this.
