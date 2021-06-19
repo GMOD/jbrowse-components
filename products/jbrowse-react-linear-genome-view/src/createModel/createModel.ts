@@ -4,6 +4,7 @@ import assemblyManagerFactory, {
 import { PluginConstructor } from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import TextSearchManagerF from '@jbrowse/core/TextSearch/TextSearchManager'
 import { cast, getSnapshot, Instance, SnapshotIn, types } from 'mobx-state-tree'
 import corePlugins from '../corePlugins'
 import createConfigModel from './createConfigModel'
@@ -26,6 +27,7 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
     assemblyConfigSchemasType,
     pluginManager,
   )
+  const TextSearchManager = pluginManager.load(TextSearchManagerF)
   const rootModel = types
     .model('ReactLinearGenomeView', {
       config: createConfigModel(pluginManager, assemblyConfigSchemasType),
@@ -57,6 +59,7 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
       rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
         MainThreadRpcDriver: {},
       }),
+      textSearchManager: new TextSearchManager(),
     }))
   return { model: rootModel, pluginManager }
 }

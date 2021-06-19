@@ -52,8 +52,10 @@ export default function RootModel(pluginManager: PluginManager) {
       savedSessionNames: types.maybe(types.array(types.string)),
       version: types.maybe(types.string),
       isAssemblyEditing: false,
-      pluginsUpdated: true,
     })
+    .volatile(() => ({
+      pluginsUpdated: false,
+    }))
     .actions(self => ({
       setSavedSessionNames(sessionNames: string[]) {
         self.savedSessionNames = cast(sessionNames)

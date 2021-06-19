@@ -1,13 +1,13 @@
+import React, { useState } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import Button from '@material-ui/core/Button'
-import Paper from '@material-ui/core/Paper'
-import { makeStyles } from '@material-ui/core/styles'
+import { storeBlobLocation } from '@jbrowse/core/util/tracks'
+import { Button, Paper, Typography, makeStyles } from '@material-ui/core'
 import { fade } from '@material-ui/core/styles/colorManipulator'
-import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import React, { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
+
+// icons
 import CloudUploadIcon from '@material-ui/icons/CloudUpload'
 import ErrorIcon from '@material-ui/icons/Error'
 
@@ -97,7 +97,7 @@ function ImportSession(props) {
         return
       }
       const [file] = acceptedFiles
-      const fileHandle = openLocation({ blob: file })
+      const fileHandle = openLocation(storeBlobLocation({ blob: file }))
       let sessionText
       try {
         sessionText = await fileHandle.readFile('utf8')

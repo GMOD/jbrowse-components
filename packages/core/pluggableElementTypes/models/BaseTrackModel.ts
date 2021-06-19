@@ -48,6 +48,10 @@ export function createBaseTrackModel(
         return getConf(self, 'name')
       },
 
+      get textSearchAdapter() {
+        return getConf(self, 'textSearchAdapter')
+      },
+
       /**
        * the PluggableElementType for the currently defined adapter
        */

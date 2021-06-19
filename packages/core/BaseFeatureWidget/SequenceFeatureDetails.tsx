@@ -110,7 +110,7 @@ function GenecDNA(props: {
 
       {chunks.map((chunk, index) => {
         const intron = sequence.slice(chunk.end, chunks[index + 1]?.start)
-        return (
+        return index < chunks.length - 2 ? (
           <React.Fragment key={JSON.stringify(chunk)}>
             <span
               style={{ background: chunk.type === 'CDS' ? cdsColor : utrColor }}
@@ -125,7 +125,7 @@ function GenecDNA(props: {
               </span>
             ) : null}
           </React.Fragment>
-        )
+        ) : null
       })}
 
       {downstream ? (
@@ -155,7 +155,7 @@ function calculateUTRs(cds: Feat[], exons: Feat[]) {
 
   const threeUTRs = [
     { start: lastCds.end, end: lastCdsExon.end },
-    ...exons.slice(lastCdsIdx),
+    ...exons.slice(lastCdsIdx + 1),
   ].map(elt => ({ ...elt, type: 'three_prime_UTR' }))
 
   return [...fiveUTRs, ...threeUTRs]

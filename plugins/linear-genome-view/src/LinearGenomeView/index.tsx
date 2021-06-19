@@ -15,6 +15,7 @@ import {
   springAnimate,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
@@ -132,6 +133,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
+      searchResults: undefined as undefined | BaseResult[],
+      searchQuery: undefined as undefined | string,
     }))
     .views(self => ({
       get width(): number {
@@ -169,6 +172,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       get isSeqDialogDisplayed() {
         return self.leftOffset && self.rightOffset
+      },
+      get isSearchDialogDisplayed() {
+        return self.searchResults !== undefined
       },
       get scaleBarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
@@ -272,6 +278,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return [
           ...new Set(self.displayedRegions.map(region => region.assemblyName)),
         ]
+      },
+      searchScope(assemblyName: string) {
+        return {
+          assemblyName,
+          includeAggregateIndexes: true,
+          tracks: self.tracks,
+        }
       },
       parentRegion(assemblyName: string, refName: string) {
         return this.displayedParentRegions.find(
@@ -424,6 +437,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return self.tracks.find(t => t.configuration.trackId === id)
       },
 
+      rankSearchResults(results: BaseResult[]) {
+        // order of rank
+        const openTrackIds = self.tracks.map(
+          track => track.configuration.trackId,
+        )
+        results.forEach(result => {
+          if (openTrackIds !== []) {
+            if (openTrackIds.includes(result.trackId)) {
+              result.updateScore(result.getScore() + 1)
+            }
+          }
+        })
+        return results
+      },
+
       // modifies view menu action onClick to apply to all tracks of same type
       rewriteOnClicks(trackType: string, viewMenuActions: MenuItem[]) {
         viewMenuActions.forEach((action: MenuItem) => {
@@ -514,6 +542,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // sets offsets used in the get sequence dialog
         self.leftOffset = left
         self.rightOffset = right
+      },
+
+      setSearchResults(
+        results: BaseResult[] | undefined,
+        query: string | undefined,
+      ) {
+        self.searchResults = results
+        self.searchQuery = query
       },
 
       setNewView(bpPerPx: number, offsetPx: number) {

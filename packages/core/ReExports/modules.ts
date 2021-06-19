@@ -60,12 +60,14 @@ import TrackType from '../pluggableElementTypes/TrackType'
 import WidgetType from '../pluggableElementTypes/WidgetType'
 
 import * as pluggableElementTypeModels from '../pluggableElementTypes/models'
-import ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType'
+import * as ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType'
 import CircularChordRendererType from '../pluggableElementTypes/renderers/CircularChordRendererType'
-import BoxRendererType from '../pluggableElementTypes/renderers/BoxRendererType'
+import * as BoxRendererType from '../pluggableElementTypes/renderers/BoxRendererType'
+import * as FeatureRendererType from '../pluggableElementTypes/renderers/FeatureRendererType'
+import * as RendererType from '../pluggableElementTypes/renderers/RendererType'
 
 import * as Configuration from '../configuration'
-import Plugin from '../Plugin'
+import * as Plugin from '../Plugin'
 import * as coreUi from '../ui'
 import * as coreUtil from '../util'
 import * as coreColor from '../util/color'
@@ -143,6 +145,8 @@ const libs = {
   '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType': ServerSideRendererType,
   '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType': CircularChordRendererType,
   '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType': BoxRendererType,
+  '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType': FeatureRendererType,
+  '@jbrowse/core/pluggableElementTypes/renderers/RendererType': RendererType,
   '@jbrowse/core/configuration': Configuration,
   '@jbrowse/core/util/types/mst': mstTypes,
   '@jbrowse/core/ui': coreUi,

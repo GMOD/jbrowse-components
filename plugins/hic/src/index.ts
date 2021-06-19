@@ -75,11 +75,11 @@ export default class HicPlugin extends Plugin {
   }
 
   configure(pluginManager: PluginManager) {
-    pluginManager.jexl.addTransform('alpha', (color: Color, value: number) =>
+    pluginManager.jexl.addFunction('alpha', (color: Color, value: number) =>
       color.alpha(value),
     )
-    pluginManager.jexl.addTransform('hsl', (color: Color) => color.hsl())
-    pluginManager.jexl.addTransform('colorString', (color: Color) =>
+    pluginManager.jexl.addFunction('hsl', (color: Color) => color.hsl())
+    pluginManager.jexl.addFunction('colorString', (color: Color) =>
       color.string(),
     )
   }

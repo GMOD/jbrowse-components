@@ -1,32 +1,38 @@
+import {
+  addDisposer,
+  cast,
+  getSnapshot,
+  getParent,
+  getType,
+  getPropertyMembers,
+  getChildType,
+  IAnyStateTreeNode,
+  IAnyType,
+  Instance,
+  isArrayType,
+  isModelType,
+  isReferenceType,
+  isValidReference,
+  isMapType,
+  SnapshotIn,
+  types,
+} from 'mobx-state-tree'
+import { observable, autorun } from 'mobx'
+// jbrowse
 import assemblyManagerFactory, {
   assemblyConfigSchemas as AssemblyConfigSchemasFactory,
 } from '@jbrowse/core/assemblyManager'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { MenuItem } from '@jbrowse/core/ui'
+import TextSearchManagerF from '@jbrowse/core/TextSearch/TextSearchManager'
 import { AbstractSessionModel } from '@jbrowse/core/util'
+// material ui
+import { MenuItem } from '@jbrowse/core/ui'
 import AddIcon from '@material-ui/icons/Add'
 import SettingsIcon from '@material-ui/icons/Settings'
 import AppsIcon from '@material-ui/icons/Apps'
-import {
-  addDisposer,
-  cast,
-  getSnapshot,
-  SnapshotIn,
-  types,
-  IAnyStateTreeNode,
-  Instance,
-  getType,
-  isArrayType,
-  isModelType,
-  isReferenceType,
-  isValidReference,
-  getPropertyMembers,
-  isMapType,
-  getChildType,
-  IAnyType,
-} from 'mobx-state-tree'
-import { observable, autorun } from 'mobx'
+
+// other
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
 // @ts-ignore
@@ -106,6 +112,7 @@ export default function RootModel(
     assemblyConfigSchemasType,
     pluginManager,
   )
+  const TextSearchManager = pluginManager.load(TextSearchManagerF)
   return types
     .model('Root', {
       jbrowse: jbrowseWebFactory(
@@ -119,9 +126,9 @@ export default function RootModel(
       version: types.maybe(types.string),
       isAssemblyEditing: false,
       isDefaultSessionEditing: false,
-      pluginsUpdated: false,
     })
     .volatile(self => ({
+      pluginsUpdated: false,
       rpcManager: new RpcManager(
         pluginManager,
         self.jbrowse.configuration.rpc,
@@ -131,6 +138,7 @@ export default function RootModel(
         },
       ),
       savedSessionsVolatile: observable.map({}),
+      textSearchManager: new TextSearchManager(),
       pluginManager,
       error: undefined as undefined | Error,
     }))
@@ -537,5 +545,3 @@ export function createTestSession(snapshot = {}, adminMode = false) {
   pluginManager.configure()
   return root.session as AbstractSessionModel
 }
-
-export type RootModelInstance = Instance<ReturnType<typeof RootModel>>

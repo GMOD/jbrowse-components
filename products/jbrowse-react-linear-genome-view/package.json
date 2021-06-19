@@ -42,6 +42,7 @@
     "@jbrowse/plugin-config": "^1.3.0",
     "@jbrowse/plugin-data-management": "^1.3.0",
     "@jbrowse/plugin-gff3": "^1.3.0",
+    "@jbrowse/plugin-legacy-jbrowse": "^1.3.0",
     "@jbrowse/plugin-linear-genome-view": "^1.3.0",
     "@jbrowse/plugin-sequence": "^1.3.0",
     "@jbrowse/plugin-svg": "^1.3.0",

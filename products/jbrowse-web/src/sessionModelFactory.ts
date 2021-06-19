@@ -32,7 +32,6 @@ import {
   Instance,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'

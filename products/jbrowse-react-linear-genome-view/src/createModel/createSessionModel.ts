@@ -80,6 +80,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       get tracks() {
         return getParent<any>(self).config.tracks
       },
+      get aggregateTextSearchAdapters() {
+        return getParent(self).config.aggregateTextSearchAdapters
+      },
       get connections() {
         return getParent<any>(self).config.connections
       },

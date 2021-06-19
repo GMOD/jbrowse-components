@@ -353,6 +353,9 @@ export function parseLocStringOneBased(
     throw new Error(`invalid location string: "${locString}"`)
   }
   const [, , assemblyName, location] = assemblyMatch
+  if (!assemblyName && location.startsWith('{}')) {
+    throw new Error(`no assembly name was provided in location "${location}"`)
+  }
   const lastColonIdx = location.lastIndexOf(':')
   if (lastColonIdx === -1) {
     if (isValidRefName(location, assemblyName)) {

@@ -44,5 +44,7 @@
     "mobx-state-tree": "^5.0.1",
     "rxjs": "^6.0.0"
   },
-  "private": true
+  "publishConfig": {
+    "access": "public"
+  }
 }
