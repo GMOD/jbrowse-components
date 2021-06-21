@@ -766,7 +766,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             region => region.refName === canonicalRefName,
           )
           if (newDisplayedRegion) {
-            this.setDisplayedRegions([getSnapshot(newDisplayedRegion)])
+            this.setDisplayedRegions([newDisplayedRegion])
           } else {
             throw new Error(
               `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,

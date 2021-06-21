@@ -145,7 +145,15 @@ export default function assemblyFactory(
   return types
     .model({
       configuration: types.safeReference(assemblyConfigType),
-      regions: types.frozen(),
+      regions: types.frozen<
+        | {
+            start: number
+            end: number
+            refName: string
+            assemblyName: string
+          }[]
+        | undefined
+      >(),
       refNameAliases: types.maybe(types.map(types.string)),
     })
     .views(self => ({
