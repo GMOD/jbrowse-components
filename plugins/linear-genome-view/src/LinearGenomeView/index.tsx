@@ -95,27 +95,31 @@ export const RESIZE_HANDLE_HEIGHT = 3
 export const INTER_REGION_PADDING_WIDTH = 2
 
 export function stateModelFactory(pluginManager: PluginManager) {
-  const model = types
-    .model('LinearGenomeView', {
-      id: ElementId,
-      type: types.literal('LinearGenomeView'),
-      offsetPx: 0,
-      bpPerPx: 1,
-      displayedRegions: types.array(MUIRegion),
-      // we use an array for the tracks because the tracks are displayed in a specific
-      // order that we need to keep.
-      tracks: types.array(
-        pluginManager.pluggableMstType('track', 'stateModel'),
-      ),
-      hideHeader: false,
-      hideHeaderOverview: false,
-      trackSelectorType: types.optional(
-        types.enumeration(['hierarchical']),
-        'hierarchical',
-      ),
-      trackLabels: 'overlapping' as 'overlapping' | 'hidden' | 'offset',
-      showCenterLine: false,
-    })
+  return types
+    .compose(
+      BaseViewModel,
+      types.model('LinearGenomeView', {
+        id: ElementId,
+        type: types.literal('LinearGenomeView'),
+        offsetPx: 0,
+        bpPerPx: 1,
+        displayedRegions: types.array(MUIRegion),
+
+        // we use an array for the tracks because the tracks are displayed in a
+        // specific order that we need to keep.
+        tracks: types.array(
+          pluginManager.pluggableMstType('track', 'stateModel'),
+        ),
+        hideHeader: false,
+        hideHeaderOverview: false,
+        trackSelectorType: types.optional(
+          types.enumeration(['hierarchical']),
+          'hierarchical',
+        ),
+        trackLabels: 'overlapping' as 'overlapping' | 'hidden' | 'offset',
+        showCenterLine: false,
+      }),
+    )
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
       minimumBlockWidth: 3,
@@ -332,7 +336,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const region = self.displayedRegions[0]
           const offset = bp
           return {
-            ...region,
+            ...getSnapshot(region),
             oob: true,
             coord: region.reversed
               ? Math.floor(region.end - offset) + 1
@@ -351,7 +355,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const offset = bp - bpSoFar
           if (len + bpSoFar > bp && bpSoFar <= bp) {
             return {
-              ...region,
+              ...getSnapshot(region),
               oob: false,
               offset,
               coord: region.reversed
@@ -379,7 +383,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const len = region.end - region.start
           const offset = bp - bpSoFar + len
           return {
-            ...region,
+            ...getSnapshot(region),
             oob: true,
             offset,
             coord: region.reversed
@@ -646,15 +650,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.showCenterLine = !self.showCenterLine
       },
 
-      setDisplayedRegions(
-        regions: {
-          start: number
-          end: number
-          refName: string
-          assemblyName: string
-          reversed?: boolean
-        }[],
-      ) {
+      setDisplayedRegions(regions: Region[]) {
         self.displayedRegions = cast(regions)
         self.zoomTo(self.bpPerPx)
       },
@@ -1376,8 +1372,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         saveAs(blob, 'image.svg')
       },
     }))
-
-  return types.compose(BaseViewModel, model)
 }
 
 export { renderToSvg }

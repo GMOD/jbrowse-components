@@ -391,5 +391,3 @@ async function loadAssemblyReaction(
   return { adapterRegionsWithAssembly, refNameAliases }
 }
 export type Assembly = Instance<ReturnType<typeof assemblyFactory>>
-
-export type AssemblyRegions = Assembly['regions']

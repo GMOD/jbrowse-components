@@ -736,8 +736,6 @@ describe('Get Sequence for selected displayed regions', () => {
     model.setDisplayedRegions([
       { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 800 },
     ])
-    expect(model.displayedParentRegions.length).toEqual(1)
-    expect(model.displayedParentRegionsLength).toEqual(50001)
     model.setOffsets(
       {
         refName: 'ctgA',
