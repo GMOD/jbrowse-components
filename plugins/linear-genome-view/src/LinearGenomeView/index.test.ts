@@ -53,9 +53,25 @@ function initialize() {
   stubManager.configure()
 
   const Assembly = types
-    .model({
-      regions: types.array(Region),
-    })
+    .model({})
+    .volatile(() => ({
+      regions: [
+        {
+          assemblyName: 'volvox',
+          start: 0,
+          end: 50001,
+          refName: 'ctgA',
+          reversed: false,
+        },
+        {
+          assemblyName: 'volvox',
+          start: 0,
+          end: 6079,
+          refName: 'ctgB',
+          reversed: false,
+        },
+      ],
+    }))
     .views(() => ({
       getCanonicalRefName(refName: string) {
         if (refName === 'contigA') {
@@ -79,29 +95,7 @@ function initialize() {
       },
     }))
     .volatile((/* self */) => ({
-      assemblyManager: new Map([
-        [
-          'volvox',
-          Assembly.create({
-            regions: [
-              {
-                assemblyName: 'volvox',
-                start: 0,
-                end: 50001,
-                refName: 'ctgA',
-                reversed: false,
-              },
-              {
-                assemblyName: 'volvox',
-                start: 0,
-                end: 6079,
-                refName: 'ctgB',
-                reversed: false,
-              },
-            ],
-          }),
-        ],
-      ]),
+      assemblyManager: new Map([['volvox', Assembly.create({})]]),
     }))
 
   return { Session, LinearGenomeModel, Assembly }
@@ -941,16 +935,10 @@ describe('Get Sequence for selected displayed regions', () => {
 test('navToLocString with human assembly', () => {
   const { LinearGenomeModel } = initialize()
   const HumanAssembly = types
-    .model({
-      regions: types.frozen<
-        {
-          start: number
-          end: number
-          refName: string
-          assemblyName: string
-        }[]
-      >(),
-    })
+    .model({})
+    .volatile(() => ({
+      regions: hg38DisplayedRegions,
+    }))
     .views(() => ({
       getCanonicalRefName(refName: string) {
         return refName.replace('chr', '')

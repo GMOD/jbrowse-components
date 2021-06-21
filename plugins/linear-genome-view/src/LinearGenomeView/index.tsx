@@ -232,7 +232,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const { assemblyManager } = getSession(self)
         self.displayedRegions.forEach(({ refName, assemblyName }) => {
           const assembly = assemblyManager.get(assemblyName)
-          const r = assembly && (assembly.regions as Region[])
+          const r = assembly?.regions
           if (r) {
             const wholeSequence = r.find(
               sequence => sequence.refName === refName,

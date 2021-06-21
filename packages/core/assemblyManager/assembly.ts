@@ -145,17 +145,18 @@ export default function assemblyFactory(
   return types
     .model({
       configuration: types.safeReference(assemblyConfigType),
-      regions: types.frozen<
+    })
+    .volatile(() => ({
+      regions: undefined as
         | {
             start: number
             end: number
             refName: string
             assemblyName: string
           }[]
-        | undefined
-      >(),
-      refNameAliases: types.frozen<{ [key: string]: string } | undefined>(),
-    })
+        | undefined,
+      refNameAliases: undefined as { [key: string]: string } | undefined,
+    }))
     .views(self => ({
       get initialized() {
         return Boolean(self.refNameAliases)
@@ -390,3 +391,5 @@ async function loadAssemblyReaction(
   return { adapterRegionsWithAssembly, refNameAliases }
 }
 export type Assembly = Instance<ReturnType<typeof assemblyFactory>>
+
+export type AssemblyRegions = Assembly['regions']
