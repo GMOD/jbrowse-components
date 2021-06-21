@@ -154,7 +154,7 @@ export default function assemblyFactory(
           }[]
         | undefined
       >(),
-      refNameAliases: types.maybe(types.map(types.string)),
+      refNameAliases: types.frozen<{ [key: string]: string } | undefined>(),
     })
     .views(self => ({
       get initialized() {
@@ -182,7 +182,7 @@ export default function assemblyFactory(
         if (!self.refNameAliases) {
           return undefined
         }
-        return Array.from(self.refNameAliases.keys())
+        return Object.keys(self.refNameAliases.keys)
       },
       get rpcManager() {
         return getParent(self, 2).rpcManager
@@ -205,7 +205,7 @@ export default function assemblyFactory(
             'aliases not loaded, we expect them to be loaded before getCanonicalRefName can be called',
           )
         }
-        return self.refNameAliases.get(refName)
+        return self.refNameAliases[refName]
       },
       getRefNameColor(refName: string) {
         const idx = self.refNames?.findIndex(r => r === refName)
@@ -244,7 +244,7 @@ export default function assemblyFactory(
         self.regions = regions
       },
       setRefNameAliases(refNameAliases: RefNameAliases) {
-        self.refNameAliases = cast(refNameAliases)
+        self.refNameAliases = refNameAliases
       },
       afterAttach() {
         makeAbortableReaction(
