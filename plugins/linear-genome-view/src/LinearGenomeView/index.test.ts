@@ -942,7 +942,14 @@ test('navToLocString with human assembly', () => {
   const { LinearGenomeModel } = initialize()
   const HumanAssembly = types
     .model({
-      regions: types.array(Region),
+      regions: types.frozen<
+        {
+          start: number
+          end: number
+          refName: string
+          assemblyName: string
+        }[]
+      >(),
     })
     .views(() => ({
       getCanonicalRefName(refName: string) {

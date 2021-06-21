@@ -45,9 +45,7 @@ function defaultOnChordClick(feature, chordTrack, pluginManager) {
 const SvInspectorViewF = pluginManager => {
   const { jbrequire } = pluginManager
   const { autorun, reaction } = pluginManager.lib.mobx
-  const { types, getParent, addDisposer, getSnapshot } = pluginManager.lib[
-    'mobx-state-tree'
-  ]
+  const { types, getParent, addDisposer } = pluginManager.lib['mobx-state-tree']
   const { BaseViewModel } = jbrequire(
     '@jbrowse/core/pluggableElementTypes/models',
   )

@@ -363,7 +363,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const region = self.displayedRegions[0]
           const offset = bp
           return {
-            ...getSnapshot(region),
+            ...region,
             oob: true,
             coord: region.reversed
               ? Math.floor(region.end - offset) + 1
@@ -382,7 +382,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const offset = bp - bpSoFar
           if (len + bpSoFar > bp && bpSoFar <= bp) {
             return {
-              ...getSnapshot(region),
+              ...region,
               oob: false,
               offset,
               coord: region.reversed
@@ -410,7 +410,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const len = region.end - region.start
           const offset = bp - bpSoFar + len
           return {
-            ...getSnapshot(region),
+            ...region,
             oob: true,
             offset,
             coord: region.reversed
@@ -1162,7 +1162,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         const assembly = assemblyManager.get(assemblyName)
         if (assembly) {
-          const { regions } = getSnapshot(assembly)
+          const { regions } = assembly
           if (regions) {
             this.setDisplayedRegions(regions)
             self.zoomTo(self.maxBpPerPx)

@@ -1,3 +1,6 @@
+import React, { useState } from 'react'
+import { observer } from 'mobx-react'
+
 import ZoomOut from '@material-ui/icons/ZoomOut'
 import ZoomIn from '@material-ui/icons/ZoomIn'
 import RotateLeft from '@material-ui/icons/RotateLeft'
@@ -5,10 +8,6 @@ import RotateRight from '@material-ui/icons/RotateRight'
 import LockOutline from '@material-ui/icons/LockOutlined'
 import LockOpen from '@material-ui/icons/LockOpen'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-
-import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
-import React, { useState } from 'react'
 
 // material-ui stuff
 import {
