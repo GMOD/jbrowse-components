@@ -87,6 +87,15 @@ describe('assembleLocString', () => {
   test("assemble 'chr1:1..100'", () => {
     expect(assembleLocString(location)).toEqual('chr1:1..100')
   })
+  test('test empty assemblyName', () => {
+    const location = '{}chr1:1..100'
+    expect(() => {
+      parseLocString(
+        location,
+        refName => refName === 'chr1' || refName === 'chr2',
+      )
+    }).toThrow(`no assembly name was provided in location "${location}"`)
+  })
   test("assemble and parse 'chr1:1..100'", () => {
     expect(
       parseLocString(

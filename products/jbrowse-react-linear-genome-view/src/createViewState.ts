@@ -10,6 +10,7 @@ type SessionSnapshot = SnapshotIn<ReturnType<typeof createSessionModel>>
 type ConfigSnapshot = SnapshotIn<ReturnType<typeof createConfigModel>>
 type Assembly = ConfigSnapshot['assembly']
 type Tracks = ConfigSnapshot['tracks']
+type AggregateTextSearchAdapters = ConfigSnapshot['aggregateTextSearchAdapters']
 
 interface Location {
   refName: string
@@ -21,6 +22,7 @@ interface Location {
 interface ViewStateOptions {
   assembly: Assembly
   tracks: Tracks
+  aggregateTextSearchAdapters?: AggregateTextSearchAdapters
   configuration?: Record<string, unknown>
   plugins?: PluginConstructor[]
   location?: string | Location
@@ -29,7 +31,15 @@ interface ViewStateOptions {
 }
 
 export default function createViewState(opts: ViewStateOptions) {
-  const { assembly, tracks, configuration, plugins, location, onChange } = opts
+  const {
+    assembly,
+    tracks,
+    configuration,
+    aggregateTextSearchAdapters,
+    plugins,
+    location,
+    onChange,
+  } = opts
   const { model, pluginManager } = createModel(plugins || [])
   let { defaultSession } = opts
   if (!defaultSession) {
@@ -46,6 +56,7 @@ export default function createViewState(opts: ViewStateOptions) {
       configuration,
       assembly,
       tracks,
+      aggregateTextSearchAdapters,
       defaultSession,
     },
     assemblyManager: {},

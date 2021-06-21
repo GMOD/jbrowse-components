@@ -1,0 +1,26 @@
+{
+  "compress": 0,
+  "track_names": [
+    "CDS",
+    "ChromHMM",
+    "Clones",
+    "EST",
+    "ExampleFeatures",
+    "Genes",
+    "Motifs",
+    "NameTest",
+    "ReadingFrame",
+    "Transcript",
+    "malformed_alignments",
+    "snps",
+    "volvox_filtered_vcf",
+    "gff3tabix_genes",
+    "volvox_gff3_tabix_html",
+    "volvox_gvcf_test",
+    "volvox_test_vcf",
+    "bedtabix_genes"
+  ],
+  "lowercase_keys": 1,
+  "hash_bits": "4",
+  "format": "json"
+}

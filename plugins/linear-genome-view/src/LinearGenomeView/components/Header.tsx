@@ -1,13 +1,14 @@
-import { Region } from '@jbrowse/core/util/types'
 import { getSession } from '@jbrowse/core/util'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import Button from '@material-ui/core/Button'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import FormGroup from '@material-ui/core/FormGroup'
 import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
-import React, { useCallback } from 'react'
+import { Instance, getEnv, getSnapshot } from 'mobx-state-tree'
+import React from 'react'
+
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
@@ -108,35 +109,63 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const theme = useTheme()
   const session = getSession(model)
-  const { coarseDynamicBlocks: contentBlocks, displayedRegions } = model
-
-  const setDisplayedRegion = useCallback(
-    (newRegionValue: string | undefined) => {
-      try {
-        if (newRegionValue) {
-          const newRegion: Region | undefined = model.displayedRegions.find(
-            region => newRegionValue === region.refName,
-          )
-          // navigate to region or if region not found try navigating to
-          // locstring. note: we use showAllRegions after setDisplayedRegions
-          // to make the entire region visible, xref #1703
-          if (newRegion) {
-            model.setDisplayedRegions([newRegion])
-
-            model.showAllRegions()
-          } else {
-            newRegionValue && model.navToLocString(newRegionValue)
+  const { assemblyManager } = session
+  const { pluginManager } = getEnv(session)
+  const { textSearchManager } = pluginManager.rootModel
+  const {
+    coarseDynamicBlocks: contentBlocks,
+    displayedRegions,
+    rankSearchResults,
+  } = model
+  const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
+  const assembly = assemblyName && assemblyManager.get(assemblyName)
+  const regions = (assembly && assembly.regions) || []
+  const searchScope = model.searchScope(assemblyName)
+  async function setDisplayedRegion(result: BaseResult) {
+    if (result) {
+      const newRegionValue = result.getLocation()
+      // need to fix finding region
+      const newRegion = regions.find(
+        region => newRegionValue === region.refName,
+      )
+      if (newRegion) {
+        model.setDisplayedRegions([getSnapshot(newRegion)])
+        // we use showAllRegions after setDisplayedRegions to make the entire
+        // region visible, xref #1703
+        model.showAllRegions()
+      } else {
+        const results =
+          (await textSearchManager?.search(
+            {
+              queryString: newRegionValue.toLocaleLowerCase(),
+              searchType: 'exact',
+            },
+            searchScope,
+            rankSearchResults,
+          )) || []
+        // distinguishes between locstrings and search strings
+        if (results.length > 0) {
+          model.setSearchResults(results, newRegionValue.toLocaleLowerCase())
+        } else {
+          try {
+            model.navToLocString(newRegionValue)
+          } catch (e) {
+            if (
+              `${e}` === `Error: Unknown reference sequence "${newRegionValue}"`
+            ) {
+              model.setSearchResults(
+                results,
+                newRegionValue.toLocaleLowerCase(),
+              )
+            } else {
+              console.warn(e)
+              session.notify(`${e}`, 'warning')
+            }
           }
         }
-      } catch (e) {
-        console.warn(e)
-        session.notify(`${e}`, 'warning')
       }
-    },
-    [model, session],
-  )
-
-  const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
+    }
+  }
 
   const controls = (
     <div className={classes.headerBar}>
