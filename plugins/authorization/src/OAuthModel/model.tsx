@@ -1,5 +1,9 @@
 // will move later, just putting here tempimport React from 'react'
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -56,20 +60,21 @@ const stateModelFactory = (
         handlesLocation(location: Location): boolean {
           // this will probably look at something in the config which indicates that it is an OAuth pathway,
           // also look at location, if location is set to need authentication it would reutrn true
-          if (
-            location.href.includes('google') ||
-            location.href.includes('dropbox')
-          ) {
-            return true
-          }
-          return false
+          return getConf(self, 'needsAuthentication')
+        },
+
+        get authEndpoint() {
+          return getConf(self, 'authEndpoint')
+        },
+
+        get tokenEndpoint() {
+          return getConf(self, 'tokenEndpoint')
+        },
+
+        get PKCEToken() {
+          return getConf(self, 'PKCEToken')
         },
       }))
-      // for the popup window logic:
-      // add a fake route, see if url is jbrowse/authorized, then render static page of app that shows "success" before closing
-      // so that yo ucan get the code in the url without having to render all of jbrowse web
-      // jbrowse/authorizd has the logic to close the popup window and send the postmessage to the parent
-      // the window.listener will be in the onCreate action of this model
       .actions(self => ({
         useEndpointForAuthorization(
           clientID: string,
@@ -94,14 +99,16 @@ const stateModelFactory = (
         },
         async exchangeAuthorizationForAccessToken(
           clientID: string,
-          clientSecret: string,
+          PKCECode: string,
+          redirectURI?: string,
         ) {
           const code = '' // get code from somewhere stored in the session
           const data = {
             code: code,
             grant_type: 'authorization_code',
             client_id: clientID,
-            client_secret: clientSecret,
+            code_verifier: PKCECode,
+            redirect_uri: redirectURI ? redirectURI : window.location.hostname,
           }
           const params = Object.entries(data)
             .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
@@ -116,6 +123,19 @@ const stateModelFactory = (
 
           const token = await response.json()
           return token
+        },
+        async openLocation(location: Location) {
+          const clientID = getConf(self, 'clientID')
+          if (self.authEndpoint) {
+            this.useEndpointForAuthorization(clientID)
+            if (self.tokenEndpoint /* && codeExists */) {
+              const token = await this.exchangeAuthorizationForAccessToken(
+                clientID,
+                self.PKCEToken,
+              )
+              // set token somewhere
+            }
+          }
         },
       }))
   )

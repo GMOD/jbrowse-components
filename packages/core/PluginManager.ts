@@ -166,6 +166,7 @@ export default class PluginManager {
     'view',
     'widget',
     'rpc method',
+    'internet account',
   )
 
   rendererTypes = new TypeRecord('RendererType', RendererType)

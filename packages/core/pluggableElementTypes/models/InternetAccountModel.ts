@@ -42,14 +42,6 @@ export const InternetAccount = types
       return getConf(self, 'name')
     },
 
-    get authEndpoint() {
-      return getConf(self, 'authEndpoint')
-    },
-
-    get tokenEndpoint() {
-      return getConf(self, 'tokenEndpoint')
-    },
-
     handlesLocation(location: Location): boolean {
       return true
     },

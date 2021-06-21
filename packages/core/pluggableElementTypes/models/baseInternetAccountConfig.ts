@@ -15,16 +15,6 @@ export function createInternetAccountConfig(pluginManager: PluginManager) {
       type: 'string',
       defaultValue: '',
     },
-    authEndpoint: {
-      description: 'the authorization code endpoint of the internet account',
-      type: 'stringArray',
-      defaultValue: [],
-    },
-    tokenEndpoint: {
-      description: 'the token endpoint of the internet account',
-      type: 'stringArray',
-      defaultValue: [],
-    },
     metadata: {
       type: 'frozen',
       description: 'anything to add about this internet account',
