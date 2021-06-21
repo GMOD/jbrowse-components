@@ -179,8 +179,7 @@ const ImportForm = observer(({ model }) => {
   const { assemblyNames, assemblyManager } = getSession(model)
   const assemblyError = assemblyNames.length ? '' : 'No configured assemblies'
   const assembly = assemblyManager.get(assemblyNames[selectedAssemblyIdx])
-  const regions =
-    assembly && assembly.regions ? getSnapshot(assembly.regions) : []
+  const regions = assembly?.regions || []
 
   function onAssemblyChange(event) {
     setSelectedAssemblyIdx(Number(event.target.value))

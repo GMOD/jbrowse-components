@@ -233,12 +233,7 @@ const SvInspectorViewF = pluginManager => {
               if (assemblyName) {
                 const assembly = session.assemblyManager.get(assemblyName)
                 if (assembly) {
-                  let { regions: assemblyRegions } = assembly
-                  if (!assemblyRegions) {
-                    assemblyRegions = []
-                  } else {
-                    assemblyRegions = getSnapshot(assemblyRegions)
-                  }
+                  const { regions: assemblyRegions = [] } = assembly
                   if (onlyDisplayRelevantRegionsInCircularView) {
                     if (tracks.length === 1) {
                       const {
