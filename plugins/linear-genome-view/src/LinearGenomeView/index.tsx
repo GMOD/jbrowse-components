@@ -227,32 +227,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const leftPadding = 10
         return this.displayedRegionsTotalPx - leftPadding
       },
-      get displayedParentRegions() {
-        const wholeRefSeqs = [] as Region[]
-        const { assemblyManager } = getSession(self)
-        self.displayedRegions.forEach(({ refName, assemblyName }) => {
-          const assembly = assemblyManager.get(assemblyName)
-          const r = assembly?.regions
-          if (r) {
-            const wholeSequence = r.find(
-              sequence => sequence.refName === refName,
-            )
-            const alreadyExists = wholeRefSeqs.find(
-              sequence => sequence.refName === refName,
-            )
-            if (wholeSequence && !alreadyExists) {
-              wholeRefSeqs.push(wholeSequence)
-            }
-          }
-        })
-        return wholeRefSeqs
-      },
 
-      get displayedParentRegionsLength() {
-        return this.displayedParentRegions
-          .map(a => a.end - a.start)
-          .reduce((a, b) => a + b, 0)
-      },
       get minOffset() {
         // objectively determined to keep the linear genome on the main screen
         const rightPadding = 30
@@ -285,13 +260,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           tracks: self.tracks,
         }
       },
-      parentRegion(assemblyName: string, refName: string) {
-        return this.displayedParentRegions.find(
-          parentRegion =>
-            parentRegion.assemblyName === assemblyName &&
-            parentRegion.refName === refName,
-        )
-      },
+
       /**
        * @param refName - refName of the displayedRegion
        * @param coord - coordinate at the displayed Region
@@ -677,7 +646,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.showCenterLine = !self.showCenterLine
       },
 
-      setDisplayedRegions(regions: Region[]) {
+      setDisplayedRegions(
+        regions: {
+          start: number
+          end: number
+          refName: string
+          assemblyName: string
+          reversed?: boolean
+        }[],
+      ) {
         self.displayedRegions = cast(regions)
         self.zoomTo(self.bpPerPx)
       },
