@@ -9,7 +9,6 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import VcfFeature from '../VcfTabixAdapter/VcfFeature'
-
 import VCF from '@gmod/vcf'
 
 const readVcf = (f: string) => {
@@ -26,10 +25,8 @@ const readVcf = (f: string) => {
   return { header: header.join('\n'), lines: rest }
 }
 
-export default class SegmentCNVAdapter extends BaseFeatureDataAdapter {
+export default class VcfAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
-
-  public config: any
 
   private setupP?: Promise<Feature[]>
 
@@ -42,11 +39,12 @@ export default class SegmentCNVAdapter extends BaseFeatureDataAdapter {
       this.config,
       'vcfLocation',
     ) as FileLocation
-    const entireFileText = (await openLocation(vcfLocation).readFile(
+
+    const fileText = (await openLocation(vcfLocation).readFile(
       'utf8',
     )) as string
 
-    const { header, lines } = readVcf(entireFileText)
+    const { header, lines } = readVcf(fileText)
 
     const parser = new VCF({ header: header })
 
