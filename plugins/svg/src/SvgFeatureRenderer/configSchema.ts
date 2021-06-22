@@ -67,6 +67,12 @@ export default ConfigurationSchema(
         defaultValue: 13,
         contextVariable: ['feature'],
       },
+      justify: {
+        type: 'string',
+        description: 'label position with respect to overall feature (left, right, start, end, or center)',
+        defaultValue: 'left',
+        contextVariable: ['feature'],
+      }
     }),
     displayMode: {
       type: 'stringEnum',

@@ -18,6 +18,7 @@ function FeatureGlyph(props) {
     fontHeight,
     allowedWidthExpansion,
     reversed,
+    labelJustify,
   } = props
 
   const featureLayout = rootLayout.getSubRecord(String(feature.id()))
@@ -40,6 +41,8 @@ function FeatureGlyph(props) {
         text={name}
         x={rootLayout.getSubRecord('nameLabel').absolute.left}
         y={rootLayout.getSubRecord('nameLabel').absolute.top}
+        width={rootLayout.getSubRecord('nameLabel').width}
+        labelJustify={labelJustify}
         color={readConfObject(config, ['labels', 'nameColor'], { feature })}
         fontHeight={fontHeight}
         reversed={reversed}

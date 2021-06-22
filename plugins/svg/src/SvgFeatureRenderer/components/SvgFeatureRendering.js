@@ -36,10 +36,12 @@ function RenderedFeatureGlyph(props) {
   let description
   let fontHeight
   let expansion
+  let labelJustify
   if (labelsAllowed) {
     const showLabels = readConfObject(config, 'showLabels')
     fontHeight = readConfObject(config, ['labels', 'fontSize'], { feature })
     expansion = readConfObject(config, 'maxFeatureGlyphExpansion') || 0
+    labelJustify = readConfObject(config, ['labels', 'justify'], { feature }) || 'left'
     name = readConfObject(config, ['labels', 'name'], { feature }) || ''
     shouldShowName = /\S/.test(name) && showLabels
 
@@ -54,9 +56,33 @@ function RenderedFeatureGlyph(props) {
       nameWidth = Math.round(
         Math.min(String(name).length * fontWidth, rootLayout.width + expansion),
       )
+
+      let deltaX = 0;
+      if (reversed) {
+        switch (labelJustify) {
+          case 'center':
+            deltaX = rootLayout.width/2 - nameWidth/2
+            break
+          case 'right':
+          case 'start':
+            deltaX = rootLayout.width - nameWidth
+            break
+        }
+      } else {
+        switch (labelJustify) {
+          case 'center':
+            deltaX = rootLayout.width/2 - nameWidth/2
+            break
+          case 'right':
+          case 'end':
+            deltaX = rootLayout.width - nameWidth
+            break
+        }
+      }
+
       rootLayout.addChild(
         'nameLabel',
-        0,
+        deltaX,
         featureLayout.bottom + textVerticalPadding,
         nameWidth,
         fontHeight,
@@ -84,16 +110,30 @@ function RenderedFeatureGlyph(props) {
     }
   }
 
+  let startBp
+  let endBp
+  if (reversed) {
+    startBp = feature.get('end') - rootLayout.right * bpPerPx
+    endBp = feature.get('end') - rootLayout.left * bpPerPx
+  } else {
+    startBp = feature.get('start') + rootLayout.left * bpPerPx
+    endBp = feature.get('start') + rootLayout.right * bpPerPx
+  }
+
   const topPx = layout.addRect(
     feature.id(),
-    feature.get('start'),
-    feature.get('start') + rootLayout.width * bpPerPx,
+    startBp,
+    endBp,
     rootLayout.height,
   )
+
   if (topPx === null) {
     return null
   }
-  rootLayout.move(startPx, topPx)
+  // FIXME: This is a hack, SceneGraph may need to be refactored so that the
+  // nodes do not identify their x, y origin (with respect to their parent's coordinate space)
+  // with the left, top bounding box values of their children.
+  rootLayout.move(startPx - rootLayout.left, topPx - rootLayout.top)
 
   return (
     <FeatureGlyph
@@ -110,6 +150,7 @@ function RenderedFeatureGlyph(props) {
       fontHeight={fontHeight}
       allowedWidthExpansion={expansion}
       reversed={region.reversed}
+      labelJustify={labelJustify}
       {...props}
     />
   )

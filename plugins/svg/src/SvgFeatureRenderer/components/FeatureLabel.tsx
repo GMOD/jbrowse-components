@@ -4,6 +4,8 @@ export default function Label(props: {
   text: string
   x: number
   y: number
+  width: number
+  labelJustify: string
   color?: string
   fontHeight?: number
   featureWidth?: number
@@ -15,6 +17,8 @@ export default function Label(props: {
     text,
     x,
     y,
+    width,
+    labelJustify,
     color = 'black',
     fontHeight = 13,
     featureWidth,
@@ -29,9 +33,38 @@ export default function Label(props: {
       ? featureWidth + allowedWidthExpansion
       : Infinity
 
+  let deltaX = 0
+  let anchor = 'start'
+  if (reversed) {
+    switch (labelJustify) {
+      case 'center':
+        deltaX = width / 2 
+        anchor = 'middle'
+        break
+      case 'right':
+      case 'start':
+        deltaX = width
+        anchor = 'end'
+        break
+    }
+  } else {
+    switch (labelJustify) {
+      case 'center':
+        deltaX = width / 2 
+        anchor = 'middle'
+        break
+      case 'right':
+      case 'end':
+        deltaX = width
+        anchor = 'end'
+        break
+    }
+  }
+
   return (
     <text
-      x={reversed ? x + (featureWidth || 0) - fontWidth * text.length : x}
+      textAnchor={anchor}
+      x={x + deltaX}
       y={y + fontHeight}
       style={{ fontSize: fontHeight, fill: color, cursor: 'default' }}
     >
