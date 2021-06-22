@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import Trix from '@gmod/trix'
 import {
   BaseTextSearchAdapter,
@@ -16,11 +15,11 @@ import fetch from 'node-fetch'
 
 import MyConfigSchema from './configSchema'
 
-export default class TrixxTextSearchAdapter
+export default class TrixTextSearchAdapter
   extends BaseAdapter
   implements BaseTextSearchAdapter {
   /*
-  Trixx text search adapter
+  Trix text search adapter
    */
   ixUrl: string
 

@@ -1,7 +1,7 @@
 {
-  "name": "@jbrowse/plugin-trixx",
+  "name": "@jbrowse/plugin-trix",
   "version": "1.0.0",
-  "description": "JBrowse 2 trixx",
+  "description": "JBrowse 2 trix text search adapter",
   "keywords": [
     "jbrowse",
     "jbrowse2"
@@ -12,13 +12,13 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/GMOD/jbrowse-components.git",
-    "directory": "plugins/trixx"
+    "directory": "plugins/trix"
   },
   "author": "JBrowse Team",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/plugin-trixx.esm.js",
+  "distModule": "dist/plugin-trix.esm.js",
   "module": "",
   "files": [
     "dist",
@@ -27,7 +27,7 @@
   "scripts": {
     "start": "tsdx watch --verbose --noClean",
     "build": "tsdx build",
-    "test": "cd ../..; jest plugins/trixx",
+    "test": "cd ../..; jest plugins/trix",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",

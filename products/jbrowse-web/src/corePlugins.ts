@@ -21,7 +21,7 @@ import Wiggle from '@jbrowse/plugin-wiggle'
 import SpreadsheetViewPlugin from '@jbrowse/plugin-spreadsheet-view'
 import SvInspectorPlugin from '@jbrowse/plugin-sv-inspector'
 import HicPlugin from '@jbrowse/plugin-hic'
-import TrixxPlugin from '@jbrowse/plugin-trixx'
+import TrixPlugin from '@jbrowse/plugin-trix'
 
 const corePlugins = [
   SVG,
@@ -47,7 +47,7 @@ const corePlugins = [
   SvInspectorPlugin,
   BreakpointSplitView,
   HicPlugin,
-  TrixxPlugin,
+  TrixPlugin,
 ]
 
 export default corePlugins

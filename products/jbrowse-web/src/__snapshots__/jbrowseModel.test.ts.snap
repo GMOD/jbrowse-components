@@ -43,6 +43,14 @@ Object {
       "type": "JBrowse1TextSearchAdapter",
     },
     Object {
+      "assemblies": Array [
+        "volvox",
+        "volvox2",
+      ],
+      "textSearchAdapterId": "TrixAdapter",
+      "type": "TrixTextSearchAdapter",
+    },
+    Object {
       "namesIndexLocation": Object {
         "uri": "names/",
       },

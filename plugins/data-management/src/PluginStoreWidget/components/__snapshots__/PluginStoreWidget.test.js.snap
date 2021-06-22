@@ -612,7 +612,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <p
                     class="MuiTypography-root MuiTypography-body1"
                   >
-                    TrixxPlugin
+                    TrixPlugin
                   </p>
                 </li>
               </ul>

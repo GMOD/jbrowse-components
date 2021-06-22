@@ -64,8 +64,8 @@
       "assemblies": ["volvox", "volvox2"]
     },
     {
-      "type": "TrixxTextSearchAdapter",
-      "textSearchAdapterId": "TrixxAdapter",
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "TrixAdapter",
       "ixFilePath": {
         "uri": "out.ix"
       },

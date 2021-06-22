@@ -4,21 +4,21 @@ import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
-  AdapterClass as TrixxTextSearchAdapterClass,
-  configSchema as trixxAdapterConfigSchema,
-} from './TrixxTextSearchAdapter'
+  AdapterClass as TrixTextSearchAdapterClass,
+  configSchema as trixAdapterConfigSchema,
+} from './TrixTextSearchAdapter'
 
 export default class extends Plugin {
-  name = 'TrixxPlugin'
+  name = 'TrixPlugin'
 
   install(pluginManager: PluginManager) {
     pluginManager.addTextSearchAdapterType(
       () =>
         new TextSearchAdapterType({
-          name: 'TrixxTextSearchAdapter',
-          configSchema: trixxAdapterConfigSchema,
-          AdapterClass: TrixxTextSearchAdapterClass,
-          description: 'Trixx adapter',
+          name: 'TrixTextSearchAdapter',
+          configSchema: trixAdapterConfigSchema,
+          AdapterClass: TrixTextSearchAdapterClass,
+          description: 'Trix adapter',
         }),
     )
   }
