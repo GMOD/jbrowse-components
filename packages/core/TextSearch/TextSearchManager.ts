@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /*  text-searching controller */
 import BaseResult from './BaseResults'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
@@ -72,7 +71,7 @@ export default (pluginManager: PluginManager) => {
       // only return track text search adapters that cover relevant tracks,
       // for now only returning text search adapters that cover configured assemblies)
       // root level adapters and track adapters
-      const { aggregateTextSearchAdapters, tracks } = pluginManager.rootModel
+      const { aggregateTextSearchAdapters, tracks } = pluginManager.rootModel // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ?.jbrowse as any
       let trackTextSearchAdapters: AnyConfigurationModel[] = []
       tracks.forEach((trackConfig: AnyConfigurationModel) => {
