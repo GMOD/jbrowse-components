@@ -10,6 +10,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import VcfFeature from '../VcfTabixAdapter/VcfFeature'
 import VCF from '@gmod/vcf'
+import {unzip} from '@gmod/bgzf-filehandle'
 
 const readVcf = (f: string) => {
   const lines = f.split('\n')
@@ -40,11 +41,11 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       'vcfLocation',
     ) as FileLocation
 
-    const fileText = (await openLocation(vcfLocation).readFile(
-      'utf8',
-    )) as string
+    const compressedText = (await openLocation(vcfLocation).readFile()) as Uint8Array
 
-    const { header, lines } = readVcf(fileText)
+    const decompressedText = new TextDecoder().decode(await unzip(compressedText))
+
+    const { header, lines } = readVcf(decompressedText)
 
     const parser = new VCF({ header: header })
 
@@ -67,7 +68,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
   public async getRefNames(_: BaseOptions = {}) {
     const l = []
     for (let i = 0; i < 23; i++) {
-      l.push('' + i)
+      l.push('chr' + i)
     }
     return l
   }
