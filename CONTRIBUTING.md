@@ -164,6 +164,7 @@ This package provides the "alignments" related features including
 Provides variant features including
 
 - VCF tabix parser
+- VCF non-tabix parser
 - VariantFeatureWidget
 - VariantTrack that is basically just a normal track, but has logic to popup
   the VariantFeatureWidget on feature click
