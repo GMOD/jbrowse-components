@@ -1,7 +1,7 @@
 {
-  "name": "@jbrowse/plugin-authorization",
+  "name": "@jbrowse/plugin-authentication",
   "version": "1.3.0",
-  "description": "JBrowse 2 Authorization",
+  "description": "JBrowse 2 Authentication",
   "keywords": [
     "jbrowse",
     "jbrowse2"
@@ -12,13 +12,13 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/GMOD/jbrowse-components.git",
-    "directory": "plugins/authorization"
+    "directory": "plugins/authentication"
   },
   "author": "JBrowse Team",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/plugin-authorization.esm.js",
+  "distModule": "dist/plugin-authentication.esm.js",
   "module": "",
   "files": [
     "dist",
@@ -27,7 +27,7 @@
   "scripts": {
     "start": "tsdx watch --verbose --noClean",
     "build": "tsdx build",
-    "test": "cd ../..; jest plugins/authorization",
+    "test": "cd ../..; jest plugins/authentication",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",

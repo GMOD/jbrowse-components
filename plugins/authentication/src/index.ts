@@ -11,8 +11,8 @@ import {
   modelFactory as OAuthInternetAccountModelFactory,
 } from './OAuthModel'
 
-export default class AuthorizationPlugin extends Plugin {
-  name = 'AuthorizationPlugin'
+export default class AuthenticationPlugin extends Plugin {
+  name = 'AuthenticationPlugin'
 
   install(pluginManager: PluginManager) {
     pluginManager.addInternetAccountType(() => {

@@ -52,6 +52,7 @@ const stateModelFactory = (
       )
       .volatile(() => ({
         authorizationCode: '',
+        accessToken: '',
       }))
       // handleslocation will have to look at config and see what domain it's pointing at
       // i.e if google drive oauth, handlesLocation looks at self.config.endpoint and see if it is the associated endpoint
@@ -134,12 +135,15 @@ const stateModelFactory = (
                 self.PKCEToken,
               )
               // set token somewhere
+              self.setLoggedIn(true)
             }
           }
         },
       }))
   )
 }
+// will probably add an aftercreate that checks sessionStorage for existence of a valid token that is still working,
+// if so use that as the token and mark yourself logged in
 
 export default stateModelFactory
 export type AlignmentsDisplayStateModel = ReturnType<typeof stateModelFactory>

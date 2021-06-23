@@ -37,6 +37,9 @@ export const InternetAccount = types
     id: ElementId,
     type: types.string,
   })
+  .volatile(() => ({
+    loggedIn: false,
+  }))
   .views(self => ({
     get name() {
       return getConf(self, 'name')
@@ -57,6 +60,9 @@ export const InternetAccount = types
   .actions(self => ({
     openLocation(location: Location): GenericFilehandle {
       return new RemoteFile(String(location))
+    },
+    setLoggedIn(bool: boolean) {
+      self.loggedIn = bool
     },
   }))
 
