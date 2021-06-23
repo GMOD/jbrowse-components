@@ -132,7 +132,7 @@ function RefNameAutocomplete({
   }, [regions])
 
   options =
-    regions.length > 100 ? options.slice(0, 100).concat(limitOption) : options
+    options.length > 100 ? options.slice(0, 100).concat(limitOption) : options
   // assembly and regions have loaded
   const loaded = regions.length !== 0 && assemblyName
   useEffect(() => {
@@ -207,9 +207,7 @@ function RefNameAutocomplete({
         setCurrentSearch('')
         setSearchOptions([])
       }}
-      options={
-        searchOptions.length === 0 ? options.concat(limitOption) : searchOptions
-      }
+      options={searchOptions.length === 0 ? options : searchOptions}
       groupBy={option => String(option.group)}
       filterOptions={(possibleOptions, params) => {
         return filter(possibleOptions, params)
