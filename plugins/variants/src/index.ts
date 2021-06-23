@@ -45,7 +45,7 @@ export default class VariantsPlugin extends Plugin {
           configSchema: vcfAdapterConfigSchema,
           getAdapterClass: () =>
             import('./VcfAdapter/VcfAdapter').then(r => r.default),
-        })
+        }),
     )
 
     pluginManager.addRendererType(() =>
