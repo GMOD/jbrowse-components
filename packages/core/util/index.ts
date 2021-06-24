@@ -29,6 +29,8 @@ export * from './types'
 export * from './aborting'
 export * from './when'
 
+export * from './offscreenCanvasPonyfill'
+
 if (!Object.fromEntries) {
   // @ts-ignore
   fromEntries.shim()

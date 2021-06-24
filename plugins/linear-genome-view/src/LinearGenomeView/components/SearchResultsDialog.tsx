@@ -76,7 +76,7 @@ export default function SearchResultsDialog({
         region => location === region.refName,
       )
       if (newRegion) {
-        model.setDisplayedRegions([getSnapshot(newRegion)])
+        model.setDisplayedRegions([newRegion])
         // we use showAllRegions after setDisplayedRegions to make the entire
         // region visible, xref #1703
         model.showAllRegions()
