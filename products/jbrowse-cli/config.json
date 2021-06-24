@@ -66,7 +66,7 @@
           }
         }
       },
-      "attributes": ["ID", "start", "end"]
+      "textSearchIndexingAttributes": ["ID", "start", "end"]
     },
     {
       "type": "FeatureTrack",

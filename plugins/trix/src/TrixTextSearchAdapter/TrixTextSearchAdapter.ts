@@ -65,7 +65,6 @@ export default class TrixTextSearchAdapter
       buff = Buffer.from(data, 'base64')
       searchResults.push(buff.toString('utf-8'))
     })
-
     // console.log(`Num of Results: ${searchResults.length}`)
     // console.log(`${searchResults}`)
     // console.log('formated', this.formatResults(searchResults))
@@ -73,6 +72,7 @@ export default class TrixTextSearchAdapter
     return this.formatResults(searchResults)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formatResults(results: Array<any>) {
     if (results.length === 0) {
       return []
