@@ -221,7 +221,7 @@ function RefNameAutocomplete({
           ...InputProps,
           endAdornment: (
             <>
-              {false ? (
+              {regions.length === 0 && searchOptions.length === 0 ? (
                 <CircularProgress color="inherit" size={20} />
               ) : (
                 <Tooltip
