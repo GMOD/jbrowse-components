@@ -43,8 +43,14 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
     let fileContents = (await openLocation(vcfLocation).readFile()) as string
 
-    // @ts-ignore
-    if (fileContents[0] === 31 && fileContents[1] === 139 && fileContents[2] === 8) { // eslint-disable-line
+    if (
+      typeof fileContents[0] === 'number' &&
+      fileContents[0] === 31 &&
+      typeof fileContents[1] === 'number' &&
+      fileContents[1] === 139 &&
+      typeof fileContents[2] === 'number' &&
+      fileContents[2] === 8
+    ) {
       fileContents = new TextDecoder().decode(await unzip(fileContents))
     }
 
