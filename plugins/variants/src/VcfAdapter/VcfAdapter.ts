@@ -41,15 +41,11 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       'vcfLocation',
     ) as FileLocation
 
-    var fileContents = (await openLocation(
-      vcfLocation,
-    ).readFile()) as string
+    let fileContents = (await openLocation(vcfLocation).readFile()) as string
 
     // @ts-ignore
-    if (fileContents[0] == 31 && fileContents[1] == 139 && fileContents[2] == 8) {
-      fileContents = new TextDecoder().decode(
-        await unzip(fileContents),
-      )
+    if (fileContents[0] === 31 && fileContents[1] === 139 && fileContents[2] === 8) { // eslint-disable-line
+      fileContents = new TextDecoder().decode(await unzip(fileContents))
     }
 
     const { header, lines } = readVcf(fileContents)
