@@ -41,15 +41,18 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       'vcfLocation',
     ) as FileLocation
 
-    const compressedText = (await openLocation(
+    var fileContents = (await openLocation(
       vcfLocation,
-    ).readFile()) as Uint8Array
+    ).readFile()) as string
 
-    const decompressedText = new TextDecoder().decode(
-      await unzip(compressedText),
-    )
+    // @ts-ignore
+    if (fileContents[0] == 31 && fileContents[1] == 139 && fileContents[2] == 8) {
+      fileContents = new TextDecoder().decode(
+        await unzip(fileContents),
+      )
+    }
 
-    const { header, lines } = readVcf(decompressedText)
+    const { header, lines } = readVcf(fileContents)
 
     const parser = new VCF({ header: header })
 
