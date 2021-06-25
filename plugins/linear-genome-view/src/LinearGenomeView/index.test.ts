@@ -1,6 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import { Region } from '@jbrowse/core/util/types/mst'
 import {
   createBaseTrackConfig,
   createBaseTrackModel,

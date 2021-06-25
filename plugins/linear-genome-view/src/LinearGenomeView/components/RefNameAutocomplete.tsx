@@ -87,7 +87,6 @@ function RefNameAutocomplete({
 }) {
   const classes = useStyles()
   const session = getSession(model)
-  const { pluginManager } = getEnv(session)
   const [open, setOpen] = useState(false)
   const [, setError] = useState<Error>()
   const [currentSearch, setCurrentSearch] = useState('')

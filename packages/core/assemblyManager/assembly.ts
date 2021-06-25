@@ -1,5 +1,5 @@
 import jsonStableStringify from 'json-stable-stringify'
-import { cast, getParent, IAnyType, types, Instance } from 'mobx-state-tree'
+import { getParent, IAnyType, types, Instance } from 'mobx-state-tree'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import { readConfObject } from '../configuration'
 import {
@@ -8,7 +8,6 @@ import {
 } from '../data_adapters/BaseAdapter'
 import PluginManager from '../PluginManager'
 import { Region } from '../util/types'
-import { Region as MSTRegion } from '../util/types/mst'
 import { makeAbortableReaction, when } from '../util'
 import QuickLRU from '../util/QuickLRU'
 

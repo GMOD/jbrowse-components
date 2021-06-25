@@ -23,6 +23,8 @@ describe('JBrowseWebSessionModel', () => {
       { name: 'testSession' },
       { pluginManager },
     )
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, ...rest } = getSnapshot(session)
     expect(rest).toMatchSnapshot()
   })

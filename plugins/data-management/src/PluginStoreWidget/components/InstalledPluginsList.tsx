@@ -5,8 +5,6 @@ import List from '@material-ui/core/List'
 import Typography from '@material-ui/core/Typography'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BasePlugin } from '@jbrowse/core/util/types'
-
 import { PluginStoreModel } from '../model'
 import InstalledPlugin from './InstalledPlugin'
 
