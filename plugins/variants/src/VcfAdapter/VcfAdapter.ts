@@ -15,15 +15,18 @@ import { unzip } from '@gmod/bgzf-filehandle'
 const readVcf = (f: string) => {
   const lines = f.split('\n')
   const header: string[] = []
+  const refNames: string[] = []
   const rest: string[] = []
   lines.forEach(line => {
-    if (line.startsWith('#')) {
+    if (line.startsWith('##contig')) {
+      refNames.push(line.split('##contig=<ID=')[1].split(',')[0])
+    } else if (line.startsWith('#')) {
       header.push(line)
     } else if (line) {
       rest.push(line)
     }
   })
-  return { header: header.join('\n'), lines: rest }
+  return { header: header.join('\n'), lines: rest, refNames }
 }
 
 export default class VcfAdapter extends BaseFeatureDataAdapter {
@@ -35,13 +38,13 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
     super(config)
   }
 
-  public async getLines() {
+  private async decodeFileContents() {
     const vcfLocation = readConfObject(
       this.config,
       'vcfLocation',
     ) as FileLocation
 
-    let fileContents = (await openLocation(vcfLocation).readFile()) as string
+    let fileContents = await openLocation(vcfLocation).readFile()
 
     if (
       typeof fileContents[0] === 'number' &&
@@ -52,9 +55,15 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       fileContents[2] === 8
     ) {
       fileContents = new TextDecoder().decode(await unzip(fileContents))
+    } else {
+      fileContents = fileContents.toString()
     }
 
-    const { header, lines } = readVcf(fileContents)
+    return readVcf(fileContents)
+  }
+
+  public async getLines() {
+    const { header, lines } = await this.decodeFileContents()
 
     const parser = new VCF({ header: header })
 
@@ -75,11 +84,8 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
   }
 
   public async getRefNames(_: BaseOptions = {}) {
-    const l = []
-    for (let i = 0; i < 23; i++) {
-      l.push('chr' + i)
-    }
-    return l
+    const { refNames } = await this.decodeFileContents()
+    return refNames
   }
 
   public getFeatures(region: Region, opts: BaseOptions = {}) {
