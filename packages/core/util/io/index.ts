@@ -50,18 +50,26 @@ export function openLocation(location: FileLocation): GenericFilehandle {
   }
   if (isElectron) {
     if (isUriLocation(location)) {
+      if (!location.uri) {
+        throw new Error('No URI provided')
+      }
       return new ElectronRemoteFile(location.uri)
     }
     if (isLocalPathLocation(location)) {
+      if (!location.localPath) {
+        throw new Error('No local path provided')
+      }
       return new ElectronLocalFile(location.localPath)
     }
   } else {
     if (isUriLocation(location)) {
+      if (!location.uri) {
+        throw new Error('No URI provided')
+      }
       const optionalHeaders =
         location.authHeader && location.authToken
           ? { [location.authHeader]: `${location.authToken}` }
           : undefined
-
       return openUrl(
         location.baseUri
           ? new URL(location.uri, location.baseUri).href
@@ -70,6 +78,9 @@ export function openLocation(location: FileLocation): GenericFilehandle {
       )
     }
     if (isLocalPathLocation(location)) {
+      if (!location.localPath) {
+        throw new Error('No local path provided')
+      }
       return new LocalFile(location.localPath)
     }
   }

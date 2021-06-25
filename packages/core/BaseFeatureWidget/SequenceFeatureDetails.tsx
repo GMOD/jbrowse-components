@@ -108,25 +108,29 @@ function GenecDNA(props: {
         <span style={{ background: updownstreamColor }}>{upstream}</span>
       ) : null}
 
-      {chunks.map((chunk, index) => {
-        const intron = sequence.slice(chunk.end, chunks[index + 1]?.start)
-        return index < chunks.length - 2 ? (
-          <React.Fragment key={JSON.stringify(chunk)}>
-            <span
-              style={{ background: chunk.type === 'CDS' ? cdsColor : utrColor }}
-            >
-              {sequence.slice(chunk.start, chunk.end)}
-            </span>
-            {includeIntrons ? (
-              <span style={{ background: intronColor }}>
-                {collapseIntron && intron.length > 20
-                  ? `${intron.slice(0, 10)}...${intron.slice(-10)}`
-                  : intron}
+      {chunks
+        .filter(f => f.start !== f.end)
+        .map((chunk, index) => {
+          const intron = sequence.slice(chunk.end, chunks[index + 1]?.start)
+          return (
+            <React.Fragment key={JSON.stringify(chunk)}>
+              <span
+                style={{
+                  background: chunk.type === 'CDS' ? cdsColor : utrColor,
+                }}
+              >
+                {sequence.slice(chunk.start, chunk.end)}
               </span>
-            ) : null}
-          </React.Fragment>
-        ) : null
-      })}
+              {includeIntrons && index < chunks.length - 1 ? (
+                <span style={{ background: intronColor }}>
+                  {collapseIntron && intron.length > 20
+                    ? `${intron.slice(0, 10)}...${intron.slice(-10)}`
+                    : intron}
+                </span>
+              ) : null}
+            </React.Fragment>
+          )
+        })}
 
       {downstream ? (
         <span style={{ background: updownstreamColor }}>{downstream}</span>
