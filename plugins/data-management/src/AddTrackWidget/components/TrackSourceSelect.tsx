@@ -5,6 +5,7 @@ import React from 'react'
 import { AddTrackModel } from '../model'
 import { getRoot } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -19,6 +20,10 @@ const useStyles = makeStyles(theme => ({
 function TrackSourceSelect({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
   const rootModel = getRoot(model)
+  const internetAccountConfigs = readConfObject(
+    rootModel.jbrowse,
+    'internetAccounts',
+  )
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
@@ -28,9 +33,8 @@ function TrackSourceSelect({ model }: { model: AddTrackModel }) {
           location={model.trackData}
           setLocation={model.setTrackData}
           setName={model.setTrackName}
-          oauthAccessTokenDropbox={rootModel.dropboxToken}
-          oauthAccessTokenGoogle={rootModel.googleToken}
-          setCodeVerifierPKCE={rootModel.setCodeVerifierPKCE}
+          internetAccounts={rootModel.internetAccounts}
+          internetAccountConfigs={internetAccountConfigs}
         />
         <FileSelector
           name="Index file"
@@ -38,9 +42,8 @@ function TrackSourceSelect({ model }: { model: AddTrackModel }) {
           location={model.indexTrackData}
           setLocation={model.setIndexTrackData}
           setName={model.setTrackName}
-          oauthAccessTokenDropbox={rootModel.dropboxToken}
-          oauthAccessTokenGoogle={rootModel.googleToken}
-          setCodeVerifierPKCE={rootModel.setCodeVerifierPKCE}
+          internetAccounts={rootModel.internetAccounts}
+          internetAccountConfigs={internetAccountConfigs}
         />
       </Paper>
     </div>

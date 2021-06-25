@@ -40,6 +40,8 @@ import jbrowseWebFactory from './jbrowseModel'
 import RenderWorker from './rpc.worker'
 import sessionModelFactory from './sessionModelFactory'
 
+import { openLocation } from '@jbrowse/core/util/io'
+
 // attempts to remove undefined references from the given MST model. can only actually
 // remove them from arrays and maps. throws MST undefined ref error if it encounters
 // undefined refs in model properties
@@ -146,9 +148,6 @@ export default function RootModel(
         textSearchManager: new TextSearchManager(),
         pluginManager,
         error: undefined as undefined | Error,
-        dropboxToken: '',
-        googleToken: '',
-        codeVerifierPKCE: '',
       }))
       .views(self => ({
         get savedSessions() {
@@ -247,39 +246,6 @@ export default function RootModel(
               })
             }),
           )
-        },
-        async exchangeTokenForAccessToken(token: string) {
-          const data = {
-            code: token,
-            grant_type: 'authorization_code',
-            client_id: 'wyngfdvw0ntnj5b',
-            code_verifier: self.codeVerifierPKCE,
-            redirect_uri: 'http://localhost:3000',
-          }
-
-          const params = Object.entries(data)
-            .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
-            .join('&')
-
-          const response = await fetch('https://api.dropbox.com/oauth2/token', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: params,
-          })
-
-          const accessToken = await response.json()
-          this.setDropboxAccessToken(accessToken.access_token)
-        },
-        setDropboxAccessToken(token: string) {
-          self.dropboxToken = token
-        },
-        setGoogleAccessToken(token: string) {
-          self.googleToken = token
-        },
-        setCodeVerifierPKCE(code: string) {
-          self.codeVerifierPKCE = code
         },
         setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
           const oldSession = self.session
@@ -418,6 +384,9 @@ export default function RootModel(
             const handleResult = account.handlesLocation()
             if (handleResult) {
               return account.openLocation(location)
+            } else {
+              // @ts-ignore
+              openLocation(location)
             }
           })
         },

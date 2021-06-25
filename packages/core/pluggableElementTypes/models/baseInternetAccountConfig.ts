@@ -10,18 +10,18 @@ export function createInternetAccountConfig(pluginManager: PluginManager) {
       name: {
         description: 'descriptive name of the internet acount',
         type: 'string',
-        defaultValue: 'OAuth',
+        defaultValue: '',
       },
       description: {
         description: 'a description of the internet account',
         type: 'string',
         defaultValue: '',
       },
-      metadata: {
-        type: 'frozen',
-        description: 'anything to add about this internet account',
-        defaultValue: {},
-      },
+      //   metadata: {
+      //     type: 'frozen',
+      //     description: 'anything to add about this internet account',
+      //     defaultValue: {},
+      //   },
     },
     { explicitIdentifier: 'internetAccountId' },
   )

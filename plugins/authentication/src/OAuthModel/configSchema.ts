@@ -10,23 +10,38 @@ function OAuthConfigFactory(pluginManager: PluginManager) {
     {
       authEndpoint: {
         description: 'the authorization code endpoint of the internet account',
-        type: 'stringArray',
-        defaultValue: [],
+        type: 'string',
+        defaultValue: '',
       },
       tokenEndpoint: {
         description: 'the token endpoint of the internet account',
-        type: 'stringArray',
-        defaultValue: [],
+        type: 'string',
+        defaultValue: '',
       },
       needsAuthentication: {
         description: 'boolean to indicate if the endpoint needs authorization',
         type: 'boolean',
-        defaultValue: true,
+        defaultValue: false,
       },
-      clientID: {
+      needsPKCE: {
+        description: 'boolean to indicate if the endpoint needs a PKCE code',
+        type: 'boolean',
+        defaultValue: false,
+      },
+      clientId: {
         description: 'id for the OAuth application',
-        type: 'stringArray',
-        defaultValue: [],
+        type: 'string',
+        defaultValue: '',
+      },
+      scopes: {
+        description: 'optional scopes for the authorization call',
+        type: 'string',
+        defaultValue: '',
+      },
+      responseType: {
+        description: 'the type of response from the authorization endpoint',
+        type: 'string',
+        defaultValue: 'code',
       },
     },
     {

@@ -28,6 +28,10 @@ import { getBlob, storeBlobLocation } from '../util/tracks'
 import { session } from 'electron'
 import crypto from 'crypto'
 
+interface Account {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any
+}
 function isUriLocation(location: FileLocation): location is UriLocation {
   return 'uri' in location
 }
@@ -125,19 +129,17 @@ const FileLocationEditor = observer(
     location?: FileLocation
     setLocation: (param: FileLocation) => void
     setName?: (str: string) => void
+    internetAccounts?: Account[]
+    internetAccountConfigs?: Account[]
     name?: string
     description?: string
-    oauthAccessTokenDropbox?: string
-    oauthAccessTokenGoogle?: string
-    setCodeVerifierPKCE?: (param: string) => void
   }) => {
     const {
       location,
       name,
       description,
-      oauthAccessTokenDropbox,
-      oauthAccessTokenGoogle,
-      setCodeVerifierPKCE,
+      internetAccounts,
+      internetAccountConfigs,
     } = props
     const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'
     const [mode, setMode] = useState('url')
@@ -148,85 +150,42 @@ const FileLocationEditor = observer(
           {name}
         </InputLabel>
         <Grid container spacing={1} direction="row" alignItems="center">
-          {mode === 'dropbox_url' && (
-            <Grid item style={{ width: '100%' }}>
-              <Button
-                color="primary"
-                variant="contained"
-                disabled={!!oauthAccessTokenDropbox}
-                onClick={() => {
-                  const base64Encode = (buf: Buffer) => {
-                    return buf
-                      .toString('base64')
-                      .replace(/\+/g, '-')
-                      .replace(/\//g, '_')
-                      .replace(/=/g, '')
-                  }
-                  const codeVerifier = base64Encode(crypto.randomBytes(32))
-                  const sha256 = (str: string) => {
-                    return crypto.createHash('sha256').update(str).digest()
-                  }
-                  const codeChallenge = base64Encode(sha256(codeVerifier))
+          {internetAccounts?.map((account, idx) => {
+            const currentConfig = internetAccountConfigs
+              ? internetAccountConfigs[idx]
+              : {}
 
-                  const data = {
-                    client_id: 'wyngfdvw0ntnj5b',
-                    redirect_uri: 'http://localhost:3000',
-                    response_type: 'code',
-                    code_challenge: codeChallenge,
-                    code_challenge_method: 'S256',
-                  }
-
-                  if (setCodeVerifierPKCE) {
-                    setCodeVerifierPKCE(codeVerifier)
-                  }
-
-                  const params = Object.entries(data)
-                    .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
-                    .join('&')
-
-                  const url = `https://www.dropbox.com/oauth2/authorize?${params}`
-                  const options = `width=500,height=600,left=0,top=0`
-                  return window.open(url, 'Authorization', options)
-                }}
-                startIcon={oauthAccessTokenDropbox ? <CheckIcon /> : null}
+            const existingToken = sessionStorage.getItem(
+              `${currentConfig.internetAccountId}-token`,
+            )
+            return currentConfig.internetAccountId === mode ? (
+              <Grid
+                item
+                style={{ width: '100%' }}
+                key={currentConfig.internetAccountId}
               >
-                {!oauthAccessTokenDropbox
-                  ? `Authorize Dropbox`
-                  : `Dropbox Authorized`}
-              </Button>
-            </Grid>
-          )}
-          {mode === 'google_url' && (
-            <Grid item style={{ width: '100%' }}>
-              <Button
-                color="primary"
-                variant="contained"
-                disabled={!!oauthAccessTokenGoogle}
-                onClick={() => {
-                  const data = {
-                    client_id:
-                      '20156747540-bes2tq75790efrskmb5pa3hupujgenb2.apps.googleusercontent.com',
-                    redirect_uri: 'http://localhost:3000',
-                    response_type: 'token',
-                    scope: 'https://www.googleapis.com/auth/drive.readonly',
+                <Button
+                  color="primary"
+                  variant="contained"
+                  disabled={!!existingToken}
+                  onClick={() => {
+                    account.useEndpointForAuthorization(currentConfig)
+                  }}
+                  startIcon={
+                    sessionStorage.getItem(
+                      `${currentConfig.internetAccountId}-token`,
+                    ) ? (
+                      <CheckIcon />
+                    ) : null
                   }
-
-                  const params = Object.entries(data)
-                    .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
-                    .join('&')
-
-                  const url = `https://accounts.google.com/o/oauth2/v2/auth?${params}`
-                  const options = `width=500,height=600,left=0,top=0`
-                  return window.open(url, 'Authorization', options)
-                }}
-                startIcon={oauthAccessTokenGoogle ? <CheckIcon /> : null}
-              >
-                {!oauthAccessTokenDropbox
-                  ? `Authorize Google`
-                  : `Google Authorized`}
-              </Button>
-            </Grid>
-          )}
+                >
+                  {!existingToken
+                    ? `Authorize ${currentConfig.name}`
+                    : `Authorized ${currentConfig.name}`}
+                </Button>
+              </Grid>
+            ) : null
+          })}
           <Grid item>
             <Select
               value={mode}
@@ -235,8 +194,8 @@ const FileLocationEditor = observer(
             >
               <MenuItem value="file">File</MenuItem>
               <MenuItem value="url">URL</MenuItem>
-              <MenuItem value="dropbox_url">Dropbox URL</MenuItem>
-              <MenuItem value="google_url">Google URL</MenuItem>
+              <MenuItem value="dropboxOAuth">Dropbox URL</MenuItem>
+              <MenuItem value="googleOAuth">Google URL</MenuItem>
             </Select>
           </Grid>
           <Grid item>
@@ -257,18 +216,10 @@ const UrlChooser = (props: {
   location?: FileLocation
   setLocation: Function
   setName?: Function
-  oauthAccessTokenDropbox?: string
-  oauthAccessTokenGoogle?: string
+  oauthAccessToken?: string
   mode: string
 }) => {
-  const {
-    location,
-    setLocation,
-    setName,
-    oauthAccessTokenDropbox,
-    oauthAccessTokenGoogle,
-    mode,
-  } = props
+  const { location, setLocation, setName, oauthAccessToken, mode } = props
 
   const [backgroundColor, setBackgroundColor] = useState('none')
 
@@ -281,12 +232,12 @@ const UrlChooser = (props: {
       onChange={async event => {
         setBackgroundColor('none')
         if (
-          oauthAccessTokenDropbox &&
-          mode === 'dropbox_url' &&
+          oauthAccessToken &&
+          mode === 'dropboxOAuth' &&
           event.target.value.includes('dropbox')
         ) {
           const metadata = await fetchMetadataFromOauth(
-            oauthAccessTokenDropbox,
+            oauthAccessToken,
             event.target.value,
           )
           if (metadata.error) {
@@ -294,7 +245,7 @@ const UrlChooser = (props: {
             return
           }
           const oauthUri = await fetchTempLinkFromOauth(
-            oauthAccessTokenDropbox,
+            oauthAccessToken,
             metadata,
           )
           if (oauthUri.error) {
@@ -307,13 +258,13 @@ const UrlChooser = (props: {
             setName(metadata.name)
           }
         } else if (
-          oauthAccessTokenGoogle &&
-          mode === 'google_url' &&
+          oauthAccessToken &&
+          mode === 'googleOAuth' &&
           event.target.value.includes('google')
         ) {
           // need to fetch with Auth Headers
           const metadata = await fetchDownloadURLFromOauth(
-            oauthAccessTokenGoogle,
+            oauthAccessToken,
             event.target.value,
           )
           if (metadata.error) {
@@ -325,7 +276,7 @@ const UrlChooser = (props: {
           setLocation({
             uri: metadata.downloadUrl,
             authHeader: 'Authorization',
-            authToken: `Bearer ${oauthAccessTokenGoogle}`,
+            authToken: `Bearer ${oauthAccessToken}`,
           })
           if (setName) {
             setName(metadata.title)

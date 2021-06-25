@@ -4,15 +4,13 @@ import {
   getConf,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { getRoot } from 'mobx-state-tree'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { OAuthInternetAccountConfigModel } from './configSchema'
-import { MenuItem } from '@jbrowse/core/ui'
-import deepEqual from 'fast-deep-equal'
-import { autorun, when } from 'mobx'
+import crypto from 'crypto'
 import { addDisposer, getSnapshot, Instance, types } from 'mobx-state-tree'
-import { getContainingTrack } from '@jbrowse/core/util'
 
 // Notes go here:
 // instead of laying out the abstractions first,
@@ -36,6 +34,12 @@ import { getContainingTrack } from '@jbrowse/core/util'
 // put OAuthModel file there, plugin would have implementation of Oauth, HTTPBasic, etc
 // need to edit the current openLocation, move it to action on rootModel
 // new openLocation: check if any of the handleLocations return true, then call that openLocation
+
+interface Account {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any
+}
+
 const stateModelFactory = (
   pluginManager: PluginManager,
   configSchema: OAuthInternetAccountConfigModel,
@@ -43,16 +47,18 @@ const stateModelFactory = (
   return (
     types
       .compose(
-        'OAuthInternetType',
+        'OAuthInternetAccount',
         InternetAccount,
         types.model({
           id: 'OAuth',
-          type: types.literal('OAuthInternetType'),
+          type: types.literal('OAuthInternetAccount'),
         }),
       )
       .volatile(() => ({
         authorizationCode: '',
         accessToken: '',
+        currentTypeAuthorizing: '',
+        codeVerifierPKCE: '',
       }))
       // handleslocation will have to look at config and see what domain it's pointing at
       // i.e if google drive oauth, handlesLocation looks at self.config.endpoint and see if it is the associated endpoint
@@ -61,83 +67,119 @@ const stateModelFactory = (
         handlesLocation(location: Location): boolean {
           // this will probably look at something in the config which indicates that it is an OAuth pathway,
           // also look at location, if location is set to need authentication it would reutrn true
-          return getConf(self, 'needsAuthentication')
-        },
-
-        get authEndpoint() {
-          return getConf(self, 'authEndpoint')
-        },
-
-        get tokenEndpoint() {
-          return getConf(self, 'tokenEndpoint')
-        },
-
-        get PKCEToken() {
-          return getConf(self, 'PKCEToken')
+          return readConfObject(getRoot(self), 'needsAuthentication')
         },
       }))
       .actions(self => ({
-        useEndpointForAuthorization(
-          clientID: string,
-          redirectURI?: string,
-          additionalData?: { [key: string]: string | number },
-        ) {
+        useEndpointForAuthorization(account: Account) {
           const data = {
-            client_id: clientID,
-            redirect_uri: redirectURI ? redirectURI : window.location.hostname,
-            response_type: 'code',
-            ...additionalData,
+            client_id: account.clientId,
+            redirect_uri: 'http://localhost:3000',
+            response_type: account.responseType || 'code',
+          }
+
+          this.setCurrentTypeAuthorizing(account.internetAccountId)
+
+          if (account.scopes) {
+            // @ts-ignore
+            data.scope = account.scopes
+          }
+
+          if (account.needsPKCE) {
+            const base64Encode = (buf: Buffer) => {
+              return buf
+                .toString('base64')
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=/g, '')
+            }
+            const codeVerifier = base64Encode(crypto.randomBytes(32))
+            const sha256 = (str: string) => {
+              return crypto.createHash('sha256').update(str).digest()
+            }
+            const codeChallenge = base64Encode(sha256(codeVerifier))
+            // @ts-ignore
+            data.code_challenge = codeChallenge
+            // @ts-ignore
+            data.code_challenge_method = 'S256'
+
+            this.setCodeVerifierPKCE(codeVerifier)
           }
 
           const params = Object.entries(data)
             .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
             .join('&')
-          const authorizationUrl = `${self.authEndpoint}/${params}`
-          return window.open(authorizationUrl, 'Authorization') // add options for popup location if needed
+
+          const url = `${account.authEndpoint}?${params}`
+          const options = `width=500,height=600,left=0,top=0`
+          return window.open(url, 'Authorization', options)
         },
         setAuthorizationCode(code: string) {
           self.authorizationCode = code
         },
-        async exchangeAuthorizationForAccessToken(
-          clientID: string,
-          PKCECode: string,
-          redirectURI?: string,
-        ) {
-          const code = '' // get code from somewhere stored in the session
-          const data = {
-            code: code,
-            grant_type: 'authorization_code',
-            client_id: clientID,
-            code_verifier: PKCECode,
-            redirect_uri: redirectURI ? redirectURI : window.location.hostname,
-          }
-          const params = Object.entries(data)
-            .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
-            .join('&')
-          const response = await fetch(self.tokenEndpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-encoded',
-            },
-            body: params,
-          })
+        setCurrentTypeAuthorizing(type: string) {
+          self.currentTypeAuthorizing = type
+        },
+        setCodeVerifierPKCE(codeVerifier: string) {
+          self.codeVerifierPKCE = codeVerifier
+        },
+        setAccessToken(token: string) {
+          self.accessToken = token
+          console.log(token)
+        },
+        async exchangeAuthorizationForAccessToken(token: string) {
+          const internetAccounts: Account[] = readConfObject(
+            getRoot(self).jbrowse,
+            'internetAccounts',
+          )
+          const account = internetAccounts.find(
+            account =>
+              account.internetAccountId === self.currentTypeAuthorizing,
+          )
+          if (account) {
+            const data = {
+              code: token,
+              grant_type: 'authorization_code',
+              client_id: account.clientId,
+              code_verifier: self.codeVerifierPKCE,
+              redirect_uri: 'http://localhost:3000',
+            }
 
-          const token = await response.json()
-          return token
+            const params = Object.entries(data)
+              .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
+              .join('&')
+
+            const response = await fetch(`${account.tokenEndpoint}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: params,
+            })
+
+            const accessToken = await response.json()
+            this.setAccessToken(accessToken.access_token)
+            sessionStorage.setItem(
+              `${account.internetAccountId}-token`,
+              accessToken.access_token,
+            )
+            this.setCurrentTypeAuthorizing('')
+          }
         },
         async openLocation(location: Location) {
-          const clientID = getConf(self, 'clientID')
-          if (self.authEndpoint) {
-            this.useEndpointForAuthorization(clientID)
-            if (self.tokenEndpoint /* && codeExists */) {
-              const token = await this.exchangeAuthorizationForAccessToken(
-                clientID,
-                self.PKCEToken,
-              )
-              // set token somewhere
-              self.setLoggedIn(true)
-            }
-          }
+          // const clientId = getConf(self, 'clientId')
+          // if (self.authEndpoint) {
+          //   this.useEndpointForAuthorization(clientId)
+          //   if (self.tokenEndpoint /* && codeExists */) {
+          //     const token = await this.exchangeAuthorizationForAccessToken(
+          //       clientId,
+          //       self.PKCEToken,
+          //     )
+          //     // set token somewhere
+          //     self.setLoggedIn(true)
+          //   }
+          // }
+          return 'hello'
         },
       }))
   )

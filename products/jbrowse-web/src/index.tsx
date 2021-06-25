@@ -8,7 +8,7 @@ serviceWorker.register()
 const Main = lazy(() => import('./Loader'))
 const initialTimeStamp = Date.now()
 
-// google
+// Pop-up logic for OAuth Flow
 if (window && window.location.href.includes('access_token')) {
   const fixedQueryString = window.location.href.replace('#', '?')
   const queryStringSearch = new URL(fixedQueryString).search
@@ -21,7 +21,6 @@ if (window && window.location.href.includes('access_token')) {
   }
 }
 
-// dropbox
 if (window && window.location.href.includes('code')) {
   const queryString = window.location.search
   const urlParams = new URLSearchParams(queryString)

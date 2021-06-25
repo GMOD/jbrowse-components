@@ -484,10 +484,18 @@ const Renderer = observer(
         if (pm) {
           if (event.data.code) {
             // @ts-ignore
-            pm.rootModel?.exchangeTokenForAccessToken(event.data.code)
+            pm.rootModel?.internetAccounts.forEach(account => {
+              if (account.currentTypeAuthorizing) {
+                account.exchangeAuthorizationForAccessToken(event.data.code)
+              }
+            })
           } else if (event.data.token) {
             // @ts-ignore
-            pm.rootModel?.setGoogleAccessToken(event.data.token)
+            pm.rootModel?.internetAccounts.forEach(account => {
+              if (account.currentTypeAuthorizing) {
+                account.setAccessToken(event.data.token)
+              }
+            })
           }
         }
       })
