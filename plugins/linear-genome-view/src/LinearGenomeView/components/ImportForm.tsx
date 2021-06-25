@@ -42,7 +42,9 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const { textSearchManager } = pluginManager.rootModel
   const { rankSearchResults } = model
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
-  const [selectedRegion, setSelectedRegion] = useState<string | undefined>('')
+  const [selectedRegion, setSelectedRegion] = useState<string | undefined>(
+    undefined,
+  )
   const [assemblyRegions, setAssemblyRegions] = useState<Region[]>([])
   const error = !assemblyNames.length ? 'No configured assemblies' : ''
   const hasError = Boolean(error)
@@ -143,7 +145,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
           </Grid>
           <Grid item>
             {assemblyName ? (
-              selectedRegion && model.volatileWidth ? (
+              selectedRegion !== undefined && model.volatileWidth ? (
                 <RefNameAutocomplete
                   model={model}
                   assemblyName={

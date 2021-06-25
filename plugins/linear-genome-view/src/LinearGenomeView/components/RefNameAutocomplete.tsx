@@ -42,6 +42,7 @@ const filter = createFilterOptions<Option>({
   trim: true,
   matchFrom: 'start',
   ignoreCase: true,
+  limit: 101,
 })
 const helperSearchText = `Search for features or navigate to a location using syntax "chr1:1-100" or "chr1:1..100"`
 const useStyles = makeStyles(() => ({
@@ -99,7 +100,23 @@ function RefNameAutocomplete({
     return (assembly && assembly.regions) || []
   }, [assembly])
   // default options for dropdown
-  const options: Array<Option> = useMemo(() => {
+  const limitOption: Array<Option> = [
+    {
+      group: 'reference sequence',
+      result: new BaseResult({
+        refName: '',
+        label: '',
+        renderingComponent: (
+          <Tooltip
+            title={'Displaying first 100 refNames. Search for more results'}
+          >
+            <Typography noWrap>{'more results...'}</Typography>
+          </Tooltip>
+        ),
+      }),
+    },
+  ]
+  let options: Array<Option> = useMemo(() => {
     const defaultOptions = regions.map(option => {
       const defaultOption: Option = {
         group: 'reference sequence',
@@ -113,8 +130,11 @@ function RefNameAutocomplete({
     })
     return defaultOptions
   }, [regions])
+
+  options =
+    options.length > 100 ? options.slice(0, 100).concat(limitOption) : options
   // assembly and regions have loaded
-  const loaded = regions.length !== 0 && options.length !== 0
+  const loaded = regions.length !== 0 && assemblyName
   useEffect(() => {
     let active = true
 
@@ -177,7 +197,7 @@ function RefNameAutocomplete({
       includeInputInList
       clearOnBlur
       selectOnFocus
-      disabled={!assemblyName || !loaded}
+      disabled={!assemblyName}
       style={style}
       value={coarseVisibleLocStrings || value || ''}
       open={open}
@@ -201,7 +221,7 @@ function RefNameAutocomplete({
           ...InputProps,
           endAdornment: (
             <>
-              {!loaded ? (
+              {regions.length === 0 && searchOptions.length === 0 ? (
                 <CircularProgress color="inherit" size={20} />
               ) : (
                 <Tooltip
