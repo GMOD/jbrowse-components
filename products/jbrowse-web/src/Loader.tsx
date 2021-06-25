@@ -14,7 +14,7 @@ import {
   QueryParamProvider,
   useQueryParam,
 } from 'use-query-params'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { types, addDisposer, Instance, SnapshotOut } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import { FatalErrorDialog } from '@jbrowse/core/ui'

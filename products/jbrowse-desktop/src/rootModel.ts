@@ -1,19 +1,14 @@
 import assemblyManagerFactory, {
   assemblyConfigSchemas as AssemblyConfigSchemasFactory,
 } from '@jbrowse/core/assemblyManager'
-import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { MenuItem } from '@jbrowse/core/ui'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { MenuItem } from '@jbrowse/core/ui'
 import AddIcon from '@material-ui/icons/Add'
 import SettingsIcon from '@material-ui/icons/Settings'
 import AppsIcon from '@material-ui/icons/Apps'
-import {
-  cast,
-  getParent,
-  getSnapshot,
-  SnapshotIn,
-  types,
-} from 'mobx-state-tree'
+import { cast, getParent, getSnapshot, types } from 'mobx-state-tree'
+import type { SnapshotIn } from 'mobx-state-tree'
 import JBrowseDesktop from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
 

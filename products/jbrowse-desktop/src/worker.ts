@@ -4,7 +4,8 @@ import { remoteAbortRpcHandler } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { isAbortException } from '@jbrowse/core/util'
 import { useStaticRendering } from 'mobx-react'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import PluginLoader from '@jbrowse/core/PluginLoader'
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import corePlugins from './corePlugins'
 
 const { electron, electronBetterIpc } = window
