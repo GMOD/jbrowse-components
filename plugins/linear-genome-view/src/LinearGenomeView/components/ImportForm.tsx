@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
-import { getSnapshot, getEnv } from 'mobx-state-tree'
+import { getEnv } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
-import BaseResult, {
-  RefSequenceResult,
-  LocStringResult,
-} from '@jbrowse/core/TextSearch/BaseResults'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 // material ui
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
@@ -42,9 +39,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const { textSearchManager } = pluginManager.rootModel
   const { rankSearchResults } = model
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
-  const [selectedRegion, setSelectedRegion] = useState<string | undefined>(
-    undefined,
-  )
+  const [selectedRegion, setSelectedRegion] = useState<string>('')
   const [assemblyRegions, setAssemblyRegions] = useState<Region[]>([])
   const error = !assemblyNames.length ? 'No configured assemblies' : ''
   const hasError = Boolean(error)
@@ -145,26 +140,22 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
           </Grid>
           <Grid item>
             {assemblyName ? (
-              selectedRegion !== undefined && model.volatileWidth ? (
+              selectedRegion && model.volatileWidth ? (
                 <RefNameAutocomplete
                   model={model}
                   assemblyName={
                     error ? undefined : assemblyNames[selectedAssemblyIdx]
                   }
                   value={selectedRegion}
-                  onSelect={option => {
-                    setSelectedValue(option)
-                  }}
+                  onSelect={option => setSelectedValue(option)}
                   TextFieldProps={{
                     margin: 'normal',
                     variant: 'outlined',
                     className: classes.importFormEntry,
                     helperText: 'Enter a sequence or locstring',
                     onBlur: event => {
-                      if ((event.target as HTMLInputElement).value !== '') {
-                        setSelectedRegion(
-                          (event.target as HTMLInputElement).value,
-                        )
+                      if (event.target.value !== '') {
+                        setSelectedRegion(event.target.value)
                       }
                     },
                     onKeyPress: event => {

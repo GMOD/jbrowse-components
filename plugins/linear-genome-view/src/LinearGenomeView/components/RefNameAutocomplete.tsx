@@ -87,7 +87,6 @@ function RefNameAutocomplete({
 }) {
   const classes = useStyles()
   const session = getSession(model)
-  const { pluginManager } = getEnv(session)
   const [open, setOpen] = useState(false)
   const [, setError] = useState<Error>()
   const [currentSearch, setCurrentSearch] = useState('')
@@ -96,45 +95,41 @@ function RefNameAutocomplete({
   const { assemblyManager } = session
   const { coarseVisibleLocStrings } = model
   const assembly = assemblyName && assemblyManager.get(assemblyName)
-  const regions: Region[] = useMemo(() => {
-    return (assembly && assembly.regions) || []
-  }, [assembly])
-  // default options for dropdown
-  const limitOption: Array<Option> = [
-    {
+  const regions: Region[] = assembly?.regions || []
+
+  const options: Option[] = useMemo(() => {
+    const opts = regions.map(option => ({
       group: 'reference sequence',
-      result: new BaseResult({
-        refName: '',
-        label: '',
-        renderingComponent: (
-          <Tooltip
-            title={'Displaying first 100 refNames. Search for more results'}
-          >
-            <Typography noWrap>{'more results...'}</Typography>
-          </Tooltip>
-        ),
+      result: new RefSequenceResult({
+        refName: option.refName,
+        label: option.refName,
+        matchedAttribute: 'refName',
       }),
-    },
-  ]
-  let options: Array<Option> = useMemo(() => {
-    const defaultOptions = regions.map(option => {
-      const defaultOption: Option = {
-        group: 'reference sequence',
-        result: new RefSequenceResult({
-          refName: option.refName,
-          label: option.refName,
-          matchedAttribute: 'refName',
-        }),
-      }
-      return defaultOption
-    })
-    return defaultOptions
+    }))
+
+    return opts.length > 100
+      ? [
+          ...opts.slice(0, 100),
+          {
+            group: 'reference sequence',
+            result: new BaseResult({
+              refName: '',
+              label: '',
+              renderingComponent: (
+                <Tooltip
+                  title={
+                    'Displaying first 100 refNames. Search for more results'
+                  }
+                >
+                  <Typography noWrap>{'more results...'}</Typography>
+                </Tooltip>
+              ),
+            }),
+          },
+        ]
+      : opts
   }, [regions])
 
-  options =
-    options.length > 100 ? options.slice(0, 100).concat(limitOption) : options
-  // assembly and regions have loaded
-  const loaded = regions.length !== 0 && assemblyName
   useEffect(() => {
     let active = true
 
