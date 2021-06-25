@@ -39,14 +39,12 @@ export default (pluginManager: PluginManager) => {
      * Instantiate/initialize list of relevant adapters
      */
     loadTextSearchAdapters(searchScope: SearchScope) {
-      const adaptersToUse: BaseTextSearchAdapter[] = []
-      // initialize relevant adapters
-      this.relevantAdapters(searchScope).forEach(
+      return this.relevantAdapters(searchScope).map(
         (adapterConfig: AnyConfigurationModel) => {
           const adapterId = readConfObject(adapterConfig, 'textSearchAdapterId')
           if (this.adapterCache.has(adapterId)) {
             const adapterFromCache = this.adapterCache.get(adapterId)
-            adaptersToUse.push(adapterFromCache)
+            return adapterFromCache
           } else {
             const textSearchAdapterType = pluginManager.getTextSearchAdapterType(
               adapterConfig.type,
@@ -55,11 +53,10 @@ export default (pluginManager: PluginManager) => {
               adapterConfig,
             ) as BaseTextSearchAdapter
             this.adapterCache.set(adapterId, textSearchAdapter)
-            adaptersToUse.push(textSearchAdapter)
+            return textSearchAdapter
           }
         },
       )
-      return adaptersToUse
     }
 
     /**
@@ -71,25 +68,24 @@ export default (pluginManager: PluginManager) => {
       // only return track text search adapters that cover relevant tracks,
       // for now only returning text search adapters that cover configured assemblies)
       // root level adapters and track adapters
-      const { aggregateTextSearchAdapters, tracks } = pluginManager.rootModel // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ?.jbrowse as any
-      let trackTextSearchAdapters: AnyConfigurationModel[] = []
-      tracks.forEach((trackConfig: AnyConfigurationModel) => {
-        const trackTextSearchAdapter = trackConfig.textSearchAdapter
-        if (trackTextSearchAdapter.textSearchAdapterId !== 'placeholderId') {
-          trackTextSearchAdapters.push(trackTextSearchAdapter)
-        }
-      })
+      const { aggregateTextSearchAdapters, tracks } = pluginManager.rootModel
+        ?.jbrowse as any // eslint-disable-line @typescript-eslint/no-explicit-any
+
+      const trackTextSearchAdapters = (tracks as AnyConfigurationModel[])
+        .map(trackConfig => trackConfig.textSearchAdapter)
+        .filter(adapter => adapter.textSearchAdapterId !== 'placeholderId')
+
       // get adapters that cover assemblies
       const rootTextSearchAdapters = this.getAdaptersWithAssembly(
         searchScope.assemblyName,
         aggregateTextSearchAdapters,
       )
-      trackTextSearchAdapters = this.getAdaptersWithAssembly(
-        searchScope.assemblyName,
-        trackTextSearchAdapters,
+      return rootTextSearchAdapters.concat(
+        this.getAdaptersWithAssembly(
+          searchScope.assemblyName,
+          trackTextSearchAdapters,
+        ),
       )
-      return rootTextSearchAdapters.concat(trackTextSearchAdapters)
     }
 
     getAdaptersWithAssembly(
@@ -108,7 +104,7 @@ export default (pluginManager: PluginManager) => {
     /**
      * Returns list of relevant results given a search query and options
      * @param args - search options/arguments include: search query
-     * limit of results to return, searchType...preffix | full | exact", etc.
+     * limit of results to return, searchType...prefix | full | exact", etc.
      */
     async search(
       args: BaseArgs,
@@ -117,24 +113,17 @@ export default (pluginManager: PluginManager) => {
     ) {
       // determine list of relevant adapters based on scope
       this.textSearchAdapters = this.loadTextSearchAdapters(searchScope)
-      const results: Array<BaseResult[]> = await Promise.all(
-        this.textSearchAdapters.map(async adapter => {
-          // search with given search args
-          const currentResults: BaseResult[] = await adapter.searchIndex(args)
-          return currentResults
+      const results = await Promise.all(
+        this.textSearchAdapters.map(adapter => {
+          return adapter.searchIndex(args)
         }),
       )
 
       // aggregate and return relevant results
-      const relevantResults = this.sortResults(
-        results.flat(),
-        rankSearchResults,
+      return this.sortResults(results.flat(), rankSearchResults).slice(
+        0,
+        args.limit,
       )
-
-      if (args.limit && relevantResults.length > 0) {
-        return relevantResults.slice(0, args.limit)
-      }
-      return relevantResults
     }
 
     /**
@@ -153,15 +142,7 @@ export default (pluginManager: PluginManager) => {
       )
       // sort results based on score
       const sortedScoredResults = rankSearchResults(sortedResults).sort(
-        function (result1: BaseResult, result2: BaseResult) {
-          if (result1.getScore() < result2.getScore()) {
-            return 1
-          }
-          if (result1.getScore() > result2.getScore()) {
-            return -1
-          }
-          return 0
-        },
+        (result1, result2) => result2.getScore() - result1.getScore(),
       )
       return sortedScoredResults
     }
