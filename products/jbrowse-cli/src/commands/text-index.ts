@@ -9,9 +9,10 @@ import {
   http as httpFR,
   https as httpsFR,
 } from 'follow-redirects'
-import { compress } from 'shorter'
+import { compress } from 'lzutf8'
 import { createGunzip, Gunzip } from 'zlib'
 import { IncomingMessage } from 'http'
+import path from 'path'
 
 type trackConfig = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -77,10 +78,9 @@ export default class TextIndex extends JBrowseCommand {
           )
         } else {
           const trackArr: Array<string> = [trackIds]
-          const indexConfig = await this.getIndexingConfigurations(
-            trackArr,
-            null,
-          )
+          const indexConfig = await this.getIndexingConfigurations(trackArr, {
+            target: path.join(__dirname, '..', '..'),
+          })
           const indexAttributes = indexConfig[0]?.attributes || []
 
           const uri =
@@ -122,12 +122,15 @@ export default class TextIndex extends JBrowseCommand {
       // gff3tabix_genes
 
       const trackIds: Array<string> = ['gff3tabix_genes']
-      const indexConfig = await this.getIndexingConfigurations(trackIds, null)
-      // const indexAttributes: Array<string> = indexConfig[0].attributes;
+      const indexConfig = await this.getIndexingConfigurations(
+        trackIds,
+        runFlags,
+      )
+      const indexAttributes = indexConfig[0]?.attributes || []
 
       const testObjs = [
         {
-          attributes: ['Name', 'ID', 'seq_id', 'type'],
+          trackId: 'gff3tabix_genes',
           indexingConfiguration: {
             gffLocation: {
               uri: './test/data/au9_scaffold_subset_sync.gff3',
@@ -135,14 +138,16 @@ export default class TextIndex extends JBrowseCommand {
             gzipped: true,
             indexingAdapter: 'GFF3',
           },
-          trackId: 'gff3tabix_genes',
+          attributes: ['ID', 'start', 'end'],
         },
       ]
 
-      const indexAttributes: Array<string> = testObjs[0].attributes
+      // const indexAttributes: Array<string> = testObjs[0].attributes
 
       // const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
-      const uri: string = testObjs[0].indexingConfiguration.gffLocation.uri
+      const uri: string =
+        indexConfig[0]?.indexingConfiguration?.gffLocation.uri || ''
+
       // const uri = ['./test/data/volvox.sort.gff3.gz', 'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/RefSeq_UMD3.1.1_multitype_genes.gff3.gz', 'TAIR_GFF3_ssrs.gff']
       // const uri = 'Spliced_Junctions_clustered.gff'    // This one is giving a parsing error
       // const uri = 'TAIR_GFF3_ssrs.gff'
@@ -401,9 +406,9 @@ export default class TextIndex extends JBrowseCommand {
           // Currently do not index start or end values for searching, but do include the attributes in search results.
           // TODO: consider not using 'start' or 'end, and instead allow the user to customize
           //        searchTermAttributes vs. searchResultAttributes in the config.json
-          if (attr === 'start' || attr === 'end') {
+          /* if (attr === 'start' || attr === 'end') {
             continue
-          }
+          }*/
 
           // Check to see if the attr exists for the record
           if (subRecord[attr]) {
@@ -419,9 +424,11 @@ export default class TextIndex extends JBrowseCommand {
         // encodes the record object so that it can be used by ixIxx
         // appends the attributes that we are indexing by to the end
         // of the string before pushing to ixIxx
-        const buff = compress(Buffer.from(JSON.stringify(recordObj)))
+        const buff = compress(Buffer.from(JSON.stringify(recordObj)), {
+          outputEncoding: 'Base64',
+        })
 
-        let str: string = buff.toString('base64')
+        let str: string = buff.toString()
         str += attrString + '\n'
 
         // replace the separator characters with
@@ -525,6 +532,7 @@ export default class TextIndex extends JBrowseCommand {
           return code
         } else {
           reject(`ixIxx exited with code: ${code}`)
+          return code
         }
       })
 

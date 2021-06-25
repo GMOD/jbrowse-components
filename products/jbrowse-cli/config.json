@@ -66,8 +66,66 @@
           }
         }
       },
-      "textSearchIndexingAttributes": ["ID", "start", "end"]
+      "textSearchIndexingAttributes": ["Name", "ID", "seq_id", "type"]
     },
+    {
+      "type": "FeatureTrack",
+      "trackId": "online_gff3tabix_genes",
+      "assemblyNames": ["volvox"],
+      "name": "Online GFF3Tabix genes",
+      "category": ["Miscellaneous"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz.tbi"
+          }
+        }
+      },
+      "textSearchIndexingAttributes": ["Name", "ID", "seq_id", "type"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "au9_scaffold",
+      "assemblyNames": ["volvox"],
+      "name": "AU9 Scaffold",
+      "category": ["Miscellaneous"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "test/data/au9_scaffold_subset_sync.gff3"
+        },
+        "index": {
+          "location": {
+            "uri": "au9_scaffold_subset_sync.gff3.tbi"
+          }
+        }
+      },
+      "textSearchIndexingAttributes": ["Name", "ID", "seq_id", "type"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "online_au9_scaffold",
+      "assemblyNames": ["volvox"],
+      "name": "Online AU9 Scaffold",
+      "category": ["Miscellaneous"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3"
+        },
+        "index": {
+          "location": {
+            "uri": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3.tbi"
+          }
+        }
+      },
+      "textSearchIndexingAttributes": ["Name", "ID", "seq_id", "type"]
+    },
+
     {
       "type": "FeatureTrack",
       "trackId": "EA_0Jp4oPKg",
