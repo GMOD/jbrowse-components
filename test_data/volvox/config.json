@@ -1450,7 +1450,7 @@
       "name": "GoogleOAuth",
       "description": "OAuth Info for Google Drive",
       "authEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
-      "needsAuthentication": true,
+      "needsAuthorization": true,
       "clientId": "20156747540-bes2tq75790efrskmb5pa3hupujgenb2.apps.googleusercontent.com",
       "scopes": "https://www.googleapis.com/auth/drive.readonly",
       "responseType": "token"
@@ -1462,7 +1462,7 @@
       "description": "OAuth Info for Dropbox",
       "authEndpoint": "https://www.dropbox.com/oauth2/authorize",
       "tokenEndpoint": "https://api.dropbox.com/oauth2/token",
-      "needsAuthentication": true,
+      "needsAuthorization": true,
       "needsPKCE": true,
       "clientId": "wyngfdvw0ntnj5b"
     }

@@ -18,7 +18,7 @@ function OAuthConfigFactory(pluginManager: PluginManager) {
         type: 'string',
         defaultValue: '',
       },
-      needsAuthentication: {
+      needsAuthorization: {
         description: 'boolean to indicate if the endpoint needs authorization',
         type: 'boolean',
         defaultValue: false,

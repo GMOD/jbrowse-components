@@ -25,8 +25,6 @@ import {
   BlobLocation,
 } from '../util/types'
 import { getBlob, storeBlobLocation } from '../util/tracks'
-import { session } from 'electron'
-import crypto from 'crypto'
 
 interface Account {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -130,19 +128,13 @@ const FileLocationEditor = observer(
     setLocation: (param: FileLocation) => void
     setName?: (str: string) => void
     internetAccounts?: Account[]
-    internetAccountConfigs?: Account[]
     name?: string
     description?: string
   }) => {
-    const {
-      location,
-      name,
-      description,
-      internetAccounts,
-      internetAccountConfigs,
-    } = props
+    const { location, name, description, internetAccounts } = props
     const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'
-    const [mode, setMode] = useState('url')
+    const [fileOrUrlState, setFileOrUrlState] = useState(fileOrUrl)
+    const [currentInternetAccount, setCurrentInternetAccount] = useState('')
 
     return (
       <>
@@ -150,59 +142,32 @@ const FileLocationEditor = observer(
           {name}
         </InputLabel>
         <Grid container spacing={1} direction="row" alignItems="center">
-          {internetAccounts?.map((account, idx) => {
-            const currentConfig = internetAccountConfigs
-              ? internetAccountConfigs[idx]
-              : {}
-
-            const existingToken = sessionStorage.getItem(
-              `${currentConfig.internetAccountId}-token`,
-            )
-            return currentConfig.internetAccountId === mode ? (
-              <Grid
-                item
-                style={{ width: '100%' }}
-                key={currentConfig.internetAccountId}
-              >
-                <Button
-                  color="primary"
-                  variant="contained"
-                  disabled={!!existingToken}
-                  onClick={() => {
-                    account.useEndpointForAuthorization(currentConfig)
-                  }}
-                  startIcon={
-                    sessionStorage.getItem(
-                      `${currentConfig.internetAccountId}-token`,
-                    ) ? (
-                      <CheckIcon />
-                    ) : null
-                  }
-                >
-                  {!existingToken
-                    ? `Authorize ${currentConfig.name}`
-                    : `Authorized ${currentConfig.name}`}
-                </Button>
-              </Grid>
-            ) : null
-          })}
           <Grid item>
-            <Select
-              value={mode}
-              onChange={event => setMode(event.target.value as string)}
-              style={{ paddingTop: 4 }}
+            <ToggleButtonGroup
+              value={fileOrUrlState}
+              exclusive
+              onChange={(_, newValue) => {
+                if (newValue === 'url') {
+                  setFileOrUrlState('url')
+                } else {
+                  setFileOrUrlState('file')
+                }
+              }}
+              aria-label="file or url picker"
             >
-              <MenuItem value="file">File</MenuItem>
-              <MenuItem value="url">URL</MenuItem>
-              <MenuItem value="dropboxOAuth">Dropbox URL</MenuItem>
-              <MenuItem value="googleOAuth">Google URL</MenuItem>
-            </Select>
+              <ToggleButton value="file" aria-label="local file">
+                File
+              </ToggleButton>
+              <ToggleButton value="url" aria-label="url">
+                URL
+              </ToggleButton>
+            </ToggleButtonGroup>
           </Grid>
           <Grid item>
-            {mode === 'file' ? (
-              <LocalFileChooser {...props} />
+            {fileOrUrlState === 'url' ? (
+              <UrlChooser {...props} />
             ) : (
-              <UrlChooser {...props} mode={mode} />
+              <LocalFileChooser {...props} />
             )}
           </Grid>
         </Grid>
@@ -216,76 +181,57 @@ const UrlChooser = (props: {
   location?: FileLocation
   setLocation: Function
   setName?: Function
-  oauthAccessToken?: string
-  mode: string
+  internetAccounts?: Account[]
 }) => {
-  const { location, setLocation, setName, oauthAccessToken, mode } = props
-
-  const [backgroundColor, setBackgroundColor] = useState('none')
+  const { location, setLocation, setName, internetAccounts } = props
+  const [currentUrl, setCurrentUrl] = useState('')
+  const [currentInternetAccount, setCurrentInternetAccount] = useState('')
 
   return (
-    <TextField
-      fullWidth
-      inputProps={{ 'data-testid': 'urlInput' }}
-      defaultValue={location && isUriLocation(location) ? location.uri : ''}
-      style={{ background: backgroundColor }}
-      onChange={async event => {
-        setBackgroundColor('none')
-        if (
-          oauthAccessToken &&
-          mode === 'dropboxOAuth' &&
-          event.target.value.includes('dropbox')
-        ) {
-          const metadata = await fetchMetadataFromOauth(
-            oauthAccessToken,
-            event.target.value,
-          )
-          if (metadata.error) {
-            setBackgroundColor('#FFCCCC')
-            return
-          }
-          const oauthUri = await fetchTempLinkFromOauth(
-            oauthAccessToken,
-            metadata,
-          )
-          if (oauthUri.error) {
-            setBackgroundColor('#FFCCCC')
-            return
-          }
-          setBackgroundColor('#E6F4EA')
-          setLocation({ uri: oauthUri })
-          if (setName) {
-            setName(metadata.name)
-          }
-        } else if (
-          oauthAccessToken &&
-          mode === 'googleOAuth' &&
-          event.target.value.includes('google')
-        ) {
-          // need to fetch with Auth Headers
-          const metadata = await fetchDownloadURLFromOauth(
-            oauthAccessToken,
-            event.target.value,
-          )
-          if (metadata.error) {
-            setBackgroundColor('#FFCCCC')
-            return
-          }
-          setBackgroundColor('#E6F4EA')
-          console.log(metadata)
-          setLocation({
-            uri: metadata.downloadUrl,
-            authHeader: 'Authorization',
-            authToken: `Bearer ${oauthAccessToken}`,
-          })
-          if (setName) {
-            setName(metadata.title)
-          }
-        } else {
+    <>
+      <TextField
+        fullWidth
+        inputProps={{ 'data-testid': 'urlInput' }}
+        defaultValue={location && isUriLocation(location) ? location.uri : ''}
+        onChange={event => {
+          setCurrentUrl(event.target.value)
           setLocation({ uri: event.target.value })
-        }
-      }}
-    />
+        }}
+      />
+      {currentUrl !== '' && internetAccounts && (
+        <div>
+          <label htmlFor="internetAccountSelect">Select Internet Account</label>
+          <Select
+            id="internetAccountSelect"
+            value={currentInternetAccount}
+            onChange={event => {
+              setCurrentInternetAccount(event.target.value as string)
+              const account = internetAccounts.find(
+                account => account.internetAccountId === event.target.value,
+              )
+              if (account && account.openLocation) {
+                account.openLocation()
+              }
+            }}
+          >
+            {internetAccounts?.map(account => {
+              if (account.handlesLocation()) {
+                return (
+                  <MenuItem
+                    key={account.internetAccountId}
+                    value={account.internetAccountId}
+                  >
+                    {account.name}
+                  </MenuItem>
+                )
+              } else {
+                return null
+              }
+            })}
+          </Select>
+        </div>
+      )}
+    </>
   )
 }
 

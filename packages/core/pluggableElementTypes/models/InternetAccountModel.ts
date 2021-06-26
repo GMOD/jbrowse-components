@@ -45,6 +45,10 @@ export const InternetAccount = types
       return getConf(self, 'name')
     },
 
+    get internetAccountId() {
+      return getConf(self, 'internetAccountId')
+    },
+
     handlesLocation(location: Location): boolean {
       return true
     },
