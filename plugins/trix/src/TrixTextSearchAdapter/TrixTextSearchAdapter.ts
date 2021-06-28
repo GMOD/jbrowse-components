@@ -11,6 +11,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { isElectron } from '@jbrowse/core/util'
 import { Instance } from 'mobx-state-tree'
 import { LocalFile, RemoteFile } from 'generic-filehandle'
+import { decompress } from 'lzutf8'
 import fetch from 'node-fetch'
 
 import MyConfigSchema from './configSchema'
@@ -62,8 +63,11 @@ export default class TrixTextSearchAdapter
     const results = await this.trixJs.search(queryString)
 
     results.forEach(data => {
-      buff = Buffer.from(data, 'base64')
-      searchResults.push(buff.toString('utf-8'))
+      buff = decompress(Buffer.from(data, 'base64'), {
+        outputEncoding: 'Buffer',
+      })
+      const stringBuffer = buff.toString()
+      searchResults.push(stringBuffer)
     })
     // console.log(`Num of Results: ${searchResults.length}`)
     // console.log(`${searchResults}`)
