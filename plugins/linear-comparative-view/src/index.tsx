@@ -254,7 +254,7 @@ function WindowSizeDlg(props: {
             clipPos: saClipPos,
             CIGAR: saCigar,
             assemblyName: trackAssembly,
-            strand: saStrandNormalized,
+            strand: 1, // saStrandNormalized,
             uniqueId: `${feature.id()}_SA${index}`,
             mate: {
               start: saClipPos,
@@ -266,6 +266,7 @@ function WindowSizeDlg(props: {
 
       const feat = feature.toJSON()
       feat.clipPos = clipPos
+      feat.strand = 1
 
       feat.mate = {
         refName: readName,

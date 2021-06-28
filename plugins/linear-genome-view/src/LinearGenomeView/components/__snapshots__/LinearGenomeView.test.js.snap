@@ -194,6 +194,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                 <div
                   class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
                   style="margin-right: 7px;"
+                  title="Search for features or navigate to a location using syntax \\"chr1:1-100\\" or \\"chr1:1..100\\""
                 >
                   <svg
                     aria-hidden="true"
@@ -563,172 +564,175 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
 `;
 
 exports[`<LinearGenomeView /> renders setup wizard 1`] = `
-<div
-  class="MuiContainer-root makeStyles-importFormContainer MuiContainer-maxWidthLg"
->
+<div>
   <div
-    class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center MuiGrid-justify-xs-center"
+    class="MuiContainer-root makeStyles-importFormContainer MuiContainer-maxWidthLg"
   >
     <div
-      class="MuiGrid-root MuiGrid-item"
+      class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center MuiGrid-justify-xs-center"
     >
       <div
-        class="MuiFormControl-root MuiTextField-root makeStyles-importFormEntry MuiFormControl-marginNormal"
-      >
-        <label
-          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-filled"
-          data-shrink="true"
-        >
-          Assembly
-        </label>
-        <div
-          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl"
-        >
-          <div
-            aria-haspopup="listbox"
-            class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input"
-            role="button"
-            tabindex="0"
-          >
-            volMyt1
-          </div>
-          <input
-            aria-hidden="true"
-            class="MuiSelect-nativeInput"
-            tabindex="-1"
-            value="0"
-          />
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root MuiSelect-icon MuiSelect-iconOutlined"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M7 10l5 5 5-5z"
-            />
-          </svg>
-          <fieldset
-            aria-hidden="true"
-            class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
-          >
-            <legend
-              class="PrivateNotchedOutline-legendLabelled PrivateNotchedOutline-legendNotched"
-            >
-              <span>
-                Assembly
-              </span>
-            </legend>
-          </fieldset>
-        </div>
-        <p
-          class="MuiFormHelperText-root MuiFormHelperText-contained MuiFormHelperText-filled"
-        >
-          Select assembly to view
-        </p>
-      </div>
-    </div>
-    <div
-      class="MuiGrid-root MuiGrid-item"
-    >
-      <div
-        aria-expanded="false"
-        class="MuiAutocomplete-root"
-        data-testid="autocomplete"
-        role="combobox"
+        class="MuiGrid-root MuiGrid-item"
       >
         <div
-          class="MuiFormControl-root MuiTextField-root makeStyles-importFormEntry MuiFormControl-marginNormal MuiFormControl-fullWidth"
+          class="MuiFormControl-root MuiTextField-root makeStyles-importFormEntry MuiFormControl-marginNormal"
         >
-          <div
-            class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
+          <label
+            class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-filled"
+            data-shrink="true"
           >
-            <input
-              aria-autocomplete="list"
-              aria-describedby="refNameAutocomplete-lgv-helper-text"
-              aria-invalid="false"
-              autocapitalize="none"
-              autocomplete="off"
-              class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
-              id="refNameAutocomplete-lgv"
-              placeholder="Search for location"
-              spellcheck="false"
-              type="text"
-              value="ctgA"
-            />
+            Assembly
+          </label>
+          <div
+            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl"
+          >
             <div
-              class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
-              style="margin-right: 7px;"
+              aria-haspopup="listbox"
+              class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input"
+              role="button"
+              tabindex="0"
             >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
-                />
-              </svg>
+              volMyt1
             </div>
-            <div
-              class="MuiAutocomplete-endAdornment"
+            <input
+              aria-hidden="true"
+              class="MuiSelect-nativeInput"
+              tabindex="-1"
+              value="0"
             />
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSelect-icon MuiSelect-iconOutlined"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M7 10l5 5 5-5z"
+              />
+            </svg>
             <fieldset
               aria-hidden="true"
               class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
-              style="padding-left: 8px;"
             >
               <legend
-                class="PrivateNotchedOutline-legend"
-                style="width: 0.01px;"
+                class="PrivateNotchedOutline-legendLabelled PrivateNotchedOutline-legendNotched"
               >
                 <span>
-                  ​
+                  Assembly
                 </span>
               </legend>
             </fieldset>
           </div>
           <p
             class="MuiFormHelperText-root MuiFormHelperText-contained MuiFormHelperText-filled"
-            id="refNameAutocomplete-lgv-helper-text"
           >
-            Enter a sequence or locstring
+            Select assembly to view
           </p>
         </div>
       </div>
-    </div>
-    <div
-      class="MuiGrid-root MuiGrid-item"
-    >
-      <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button MuiButton-containedPrimary"
-        tabindex="0"
-        type="button"
+      <div
+        class="MuiGrid-root MuiGrid-item"
       >
-        <span
-          class="MuiButton-label"
+        <div
+          aria-expanded="false"
+          class="MuiAutocomplete-root"
+          data-testid="autocomplete"
+          role="combobox"
         >
-          Open
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-      <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button MuiButton-containedSecondary"
-        tabindex="0"
-        type="button"
+          <div
+            class="MuiFormControl-root MuiTextField-root makeStyles-importFormEntry MuiFormControl-marginNormal MuiFormControl-fullWidth"
+          >
+            <div
+              class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
+            >
+              <input
+                aria-autocomplete="list"
+                aria-describedby="refNameAutocomplete-lgv-helper-text"
+                aria-invalid="false"
+                autocapitalize="none"
+                autocomplete="off"
+                class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
+                id="refNameAutocomplete-lgv"
+                placeholder="Search for location"
+                spellcheck="false"
+                type="text"
+                value="ctgA"
+              />
+              <div
+                class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
+                style="margin-right: 7px;"
+                title="Search for features or navigate to a location using syntax \\"chr1:1-100\\" or \\"chr1:1..100\\""
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                  />
+                </svg>
+              </div>
+              <div
+                class="MuiAutocomplete-endAdornment"
+              />
+              <fieldset
+                aria-hidden="true"
+                class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+                style="padding-left: 8px;"
+              >
+                <legend
+                  class="PrivateNotchedOutline-legend"
+                  style="width: 0.01px;"
+                >
+                  <span>
+                    ​
+                  </span>
+                </legend>
+              </fieldset>
+            </div>
+            <p
+              class="MuiFormHelperText-root MuiFormHelperText-contained MuiFormHelperText-filled"
+              id="refNameAutocomplete-lgv-helper-text"
+            >
+              Enter a sequence or locstring
+            </p>
+          </div>
+        </div>
+      </div>
+      <div
+        class="MuiGrid-root MuiGrid-item"
       >
-        <span
-          class="MuiButton-label"
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button MuiButton-containedPrimary"
+          tabindex="0"
+          type="button"
         >
-          Show all regions in assembly
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
+          <span
+            class="MuiButton-label"
+          >
+            Open
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button MuiButton-containedSecondary"
+          tabindex="0"
+          type="button"
+        >
+          <span
+            class="MuiButton-label"
+          >
+            Show all regions in assembly
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -942,6 +946,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 <div
                   class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
                   style="margin-right: 7px;"
+                  title="Search for features or navigate to a location using syntax \\"chr1:1-100\\" or \\"chr1:1..100\\""
                 >
                   <svg
                     aria-hidden="true"

@@ -14,6 +14,7 @@ import {
   springAnimate,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
@@ -95,27 +96,31 @@ export const RESIZE_HANDLE_HEIGHT = 3
 export const INTER_REGION_PADDING_WIDTH = 2
 
 export function stateModelFactory(pluginManager: PluginManager) {
-  const model = types
-    .model('LinearGenomeView', {
-      id: ElementId,
-      type: types.literal('LinearGenomeView'),
-      offsetPx: 0,
-      bpPerPx: 1,
-      displayedRegions: types.array(MUIRegion),
-      // we use an array for the tracks because the tracks are displayed in a specific
-      // order that we need to keep.
-      tracks: types.array(
-        pluginManager.pluggableMstType('track', 'stateModel'),
-      ),
-      hideHeader: false,
-      hideHeaderOverview: false,
-      trackSelectorType: types.optional(
-        types.enumeration(['hierarchical']),
-        'hierarchical',
-      ),
-      trackLabels: 'overlapping' as 'overlapping' | 'hidden' | 'offset',
-      showCenterLine: false,
-    })
+  return types
+    .compose(
+      BaseViewModel,
+      types.model('LinearGenomeView', {
+        id: ElementId,
+        type: types.literal('LinearGenomeView'),
+        offsetPx: 0,
+        bpPerPx: 1,
+        displayedRegions: types.array(MUIRegion),
+
+        // we use an array for the tracks because the tracks are displayed in a
+        // specific order that we need to keep.
+        tracks: types.array(
+          pluginManager.pluggableMstType('track', 'stateModel'),
+        ),
+        hideHeader: false,
+        hideHeaderOverview: false,
+        trackSelectorType: types.optional(
+          types.enumeration(['hierarchical']),
+          'hierarchical',
+        ),
+        trackLabels: 'overlapping' as 'overlapping' | 'hidden' | 'offset',
+        showCenterLine: false,
+      }),
+    )
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
       minimumBlockWidth: 3,
@@ -132,6 +137,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
+      searchResults: undefined as undefined | BaseResult[],
+      searchQuery: undefined as undefined | string,
     }))
     .views(self => ({
       get width(): number {
@@ -169,6 +176,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       get isSeqDialogDisplayed() {
         return self.leftOffset && self.rightOffset
+      },
+      get isSearchDialogDisplayed() {
+        return self.searchResults !== undefined
       },
       get scaleBarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
@@ -222,32 +232,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const leftPadding = 10
         return this.displayedRegionsTotalPx - leftPadding
       },
-      get displayedParentRegions() {
-        const wholeRefSeqs = [] as Region[]
-        const { assemblyManager } = getSession(self)
-        self.displayedRegions.forEach(({ refName, assemblyName }) => {
-          const assembly = assemblyManager.get(assemblyName)
-          const r = assembly && (assembly.regions as Region[])
-          if (r) {
-            const wholeSequence = r.find(
-              sequence => sequence.refName === refName,
-            )
-            const alreadyExists = wholeRefSeqs.find(
-              sequence => sequence.refName === refName,
-            )
-            if (wholeSequence && !alreadyExists) {
-              wholeRefSeqs.push(wholeSequence)
-            }
-          }
-        })
-        return wholeRefSeqs
-      },
 
-      get displayedParentRegionsLength() {
-        return this.displayedParentRegions
-          .map(a => a.end - a.start)
-          .reduce((a, b) => a + b, 0)
-      },
       get minOffset() {
         // objectively determined to keep the linear genome on the main screen
         const rightPadding = 30
@@ -273,13 +258,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ...new Set(self.displayedRegions.map(region => region.assemblyName)),
         ]
       },
-      parentRegion(assemblyName: string, refName: string) {
-        return this.displayedParentRegions.find(
-          parentRegion =>
-            parentRegion.assemblyName === assemblyName &&
-            parentRegion.refName === refName,
-        )
+      searchScope(assemblyName: string) {
+        return {
+          assemblyName,
+          includeAggregateIndexes: true,
+          tracks: self.tracks,
+        }
       },
+
       /**
        * @param refName - refName of the displayedRegion
        * @param coord - coordinate at the displayed Region
@@ -424,6 +410,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return self.tracks.find(t => t.configuration.trackId === id)
       },
 
+      rankSearchResults(results: BaseResult[]) {
+        // order of rank
+        const openTrackIds = self.tracks.map(
+          track => track.configuration.trackId,
+        )
+        results.forEach(result => {
+          if (openTrackIds !== []) {
+            if (openTrackIds.includes(result.trackId)) {
+              result.updateScore(result.getScore() + 1)
+            }
+          }
+        })
+        return results
+      },
+
       // modifies view menu action onClick to apply to all tracks of same type
       rewriteOnClicks(trackType: string, viewMenuActions: MenuItem[]) {
         viewMenuActions.forEach((action: MenuItem) => {
@@ -514,6 +515,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // sets offsets used in the get sequence dialog
         self.leftOffset = left
         self.rightOffset = right
+      },
+
+      setSearchResults(
+        results: BaseResult[] | undefined,
+        query: string | undefined,
+      ) {
+        self.searchResults = results
+        self.searchQuery = query
       },
 
       setNewView(bpPerPx: number, offsetPx: number) {
@@ -747,7 +756,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             region => region.refName === canonicalRefName,
           )
           if (newDisplayedRegion) {
-            this.setDisplayedRegions([getSnapshot(newDisplayedRegion)])
+            this.setDisplayedRegions([newDisplayedRegion])
           } else {
             throw new Error(
               `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
@@ -1143,7 +1152,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         const assembly = assemblyManager.get(assemblyName)
         if (assembly) {
-          const { regions } = getSnapshot(assembly)
+          const { regions } = assembly
           if (regions) {
             this.setDisplayedRegions(regions)
             self.zoomTo(self.maxBpPerPx)
@@ -1385,8 +1394,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         saveAs(blob, 'image.svg')
       },
     }))
-
-  return types.compose(BaseViewModel, model)
 }
 
 export { renderToSvg }

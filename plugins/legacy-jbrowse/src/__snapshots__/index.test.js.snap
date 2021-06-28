@@ -5,3 +5,13 @@ Object {
   "type": "NCListAdapter",
 }
 `;
+
+exports[`test creating a text search adapter 1`] = `
+Object {
+  "namesIndexLocation": Object {
+    "uri": "names/",
+  },
+  "textSearchAdapterId": "JBrowse1GenerateNamesAdapterTest",
+  "type": "JBrowse1TextSearchAdapter",
+}
+`;
