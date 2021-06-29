@@ -198,7 +198,14 @@ export default function sessionModelFactory(
         self.sessionAssemblies.push(assemblyConfig)
       },
       addBookmark(region: Region) {
-        self.bookmarkedRegions.push(region)
+        const regionLocString = `${region.refName}:${region.start}..${region.end}`
+        const index = self.bookmarkedRegions.findIndex(b => {
+          const bLocString = `${b.refName}:${b.start}..${b.end}`
+          return bLocString === regionLocString
+        })
+        if (index === -1) {
+          self.bookmarkedRegions.push(region)
+        }
       },
       addSessionPlugin(plugin: JBrowsePlugin) {
         if (self.sessionPlugins.find(p => p.name === plugin.name)) {
