@@ -5,7 +5,11 @@ import Loading from './Loading'
 const Main = lazy(() => import('./Loader'))
 const initialTimeStamp = Date.now()
 
+// pull query string out, can check for specific query param
+
 // Pop-up logic for OAuth Flow
+// if urlParams.has('access_token')
+// check how many keys, if no keys try getting rid of hash
 if (window && window.location.href.includes('access_token')) {
   const fixedQueryString = window.location.href.replace('#', '?')
   const queryStringSearch = new URL(fixedQueryString).search
@@ -27,6 +31,11 @@ if (window && window.location.href.includes('code')) {
     parent.postMessage({ code: code }, 'http://localhost:3000')
     window.close()
   }
+}
+
+// TODOAUTH prob need a better condition to close a failed auth loop
+if (window && window.location.href.includes('access_denied')) {
+  window.close()
 }
 
 ReactDOM.render(

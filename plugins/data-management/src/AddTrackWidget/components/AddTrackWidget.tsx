@@ -14,6 +14,7 @@ import { observer } from 'mobx-react'
 import ConfirmTrack from './ConfirmTrack'
 import TrackSourceSelect from './TrackSourceSelect'
 import { AddTrackModel } from '../model'
+import { getRoot } from 'mobx-state-tree'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -40,6 +41,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
   const [activeStep, setActiveStep] = useState(0)
   const classes = useStyles()
   const session = getSession(model)
+  const rootModel = getRoot(model)
   const { assembly, trackAdapter, trackData, trackName, trackType } = model
 
   function getStepContent(step: number) {
@@ -53,10 +55,34 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
     }
   }
 
-  function handleNext() {
+  async function handleNext() {
     if (activeStep !== steps.length - 1) {
       setActiveStep(activeStep + 1)
+
+      const internetAccounts = rootModel.internetAccounts
+      const account = internetAccounts.find(
+        (account: any) => account.selected === true,
+      )
+      if (account) {
+        account.openLocation()
+      }
+      // await account.accessToken !== ''
+      // if (account && account.accessToken && trackData && 'uri' in trackData) {
+      //   console.log('here')
+      //   const fileUri = await account.fetchFile(trackData.uri)
+      //   model.setTrackData({ uri: fileUri })
+      // }
       return
+    }
+
+    const internetAccounts = rootModel.internetAccounts
+    const account = internetAccounts.find(
+      (account: any) => account.selected === true,
+    )
+    if (account && account.accessToken && trackData && 'uri' in trackData) {
+      const fileUri = await account.fetchFile(trackData.uri)
+      model.setTrackData({ uri: fileUri })
+      console.log(model.trackAdapter)
     }
 
     const trackId = `${trackName
@@ -74,7 +100,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
       name: trackName,
       assemblyNames: [assembly],
       adapter: {
-        ...trackAdapter,
+        ...model.trackAdapter,
         sequenceAdapter: getConf(assemblyInstance, ['sequence', 'adapter']),
       },
     })

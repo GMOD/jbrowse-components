@@ -40,6 +40,15 @@ interface Account {
   [key: string]: any
 }
 
+interface OAuthData {
+  client_id: string
+  redirect_uri: string
+  response_type: 'token' | 'code'
+  scope?: string
+  code_challenge?: string
+  code_challenge_method?: string
+}
+
 const stateModelFactory = (
   pluginManager: PluginManager,
   configSchema: OAuthInternetAccountConfigModel,
@@ -60,6 +69,7 @@ const stateModelFactory = (
         accessToken: '',
         currentTypeAuthorizing: '',
         codeVerifierPKCE: '',
+        selected: false,
       }))
       // handleslocation will have to look at config and see what domain it's pointing at
       // i.e if google drive oauth, handlesLocation looks at self.config.endpoint and see if it is the associated endpoint
@@ -71,31 +81,96 @@ const stateModelFactory = (
           const accountConfig = readConfObject(self.configuration)
           const validDomains = accountConfig.validDomains
           return (
-            accountConfig.needsAuthorization &&
-            (validDomains.length === 0 ||
-              validDomains.some((domain: string) =>
-                location?.href.includes(domain),
-              ))
+            // accountConfig.needsAuthorization &&
+            validDomains.length === 0 ||
+            validDomains.some((domain: string) =>
+              location?.href.includes(domain),
+            )
           )
+        },
+
+        get accountConfig() {
+          return readConfObject(self.configuration)
         },
       }))
       .actions(self => ({
+        async fetchFile(location: string) {
+          if (!location || !self.accessToken) {
+            return
+          }
+          switch (self.accountConfig.internetAccountId) {
+            case 'dropboxOAuth': {
+              const response = await fetch(
+                'https://api.dropboxapi.com/2/sharing/get_shared_link_metadata',
+                {
+                  method: 'POST',
+                  headers: {
+                    Authorization: `Bearer ${self.accessToken}`,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    url: location,
+                  }),
+                },
+              )
+              if (!response.ok) {
+                const errorText = await response.text()
+                return { error: errorText }
+              }
+              const metadata = await response.json()
+              if (metadata) {
+                const fileResponse = await fetch(
+                  'https://api.dropboxapi.com/2/files/get_temporary_link',
+                  {
+                    method: 'POST',
+                    headers: {
+                      Authorization: `Bearer ${self.accessToken}`,
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ path: metadata.id }),
+                  },
+                )
+                if (!fileResponse.ok) {
+                  const errorText = await fileResponse.text()
+                  return { error: errorText }
+                }
+                const file = await fileResponse.json()
+                return file.link
+              }
+              break
+            }
+            case 'googleOAuth': {
+              const urlId = location.match(/[-\w]{25,}/)
+
+              const response = await fetch(
+                `https://www.googleapis.com/drive/v2/files/${urlId}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${self.accessToken}`,
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                  },
+                },
+              )
+
+              const fileMetadata = await response.json()
+              return fileMetadata.downloadUrl
+            }
+          }
+        },
         async useEndpointForAuthorization() {
-          const accountConfig = readConfObject(self.configuration)
-          const data = {
-            client_id: accountConfig.clientId,
+          const data: OAuthData = {
+            client_id: self.accountConfig.clientId,
             redirect_uri: 'http://localhost:3000',
-            response_type: accountConfig.responseType || 'code',
+            response_type: self.accountConfig.responseType || 'code',
           }
 
-          this.setCurrentTypeAuthorizing(accountConfig.internetAccountId)
+          this.setCurrentTypeAuthorizing(self.accountConfig.internetAccountId)
 
-          if (accountConfig.scopes) {
-            // @ts-ignore
-            data.scope = accountConfig.scopes
+          if (self.accountConfig.scopes) {
+            data.scope = self.accountConfig.scopes
           }
 
-          if (accountConfig.needsPKCE) {
+          if (self.accountConfig.needsPKCE) {
             const base64Encode = (buf: Buffer) => {
               return buf
                 .toString('base64')
@@ -108,9 +183,7 @@ const stateModelFactory = (
               return crypto.createHash('sha256').update(str).digest()
             }
             const codeChallenge = base64Encode(sha256(codeVerifier))
-            // @ts-ignore
             data.code_challenge = codeChallenge
-            // @ts-ignore
             data.code_challenge_method = 'S256'
 
             this.setCodeVerifierPKCE(codeVerifier)
@@ -120,7 +193,7 @@ const stateModelFactory = (
             .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
             .join('&')
 
-          const url = `${accountConfig.authEndpoint}?${params}`
+          const url = `${self.accountConfig.authEndpoint}?${params}`
           const options = `width=500,height=600,left=0,top=0`
           return window.open(url, 'Authorization', options)
         },
@@ -133,17 +206,21 @@ const stateModelFactory = (
         setCodeVerifierPKCE(codeVerifier: string) {
           self.codeVerifierPKCE = codeVerifier
         },
+        setSelected(bool: boolean) {
+          self.selected = bool
+        },
         setAccessToken(token: string) {
           self.accessToken = token
+          this.setCurrentTypeAuthorizing('')
+
           console.log(token)
         },
         async exchangeAuthorizationForAccessToken(token: string) {
-          const accountConfig = readConfObject(self.configuration)
-          if (accountConfig) {
+          if (self.accountConfig) {
             const data = {
               code: token,
               grant_type: 'authorization_code',
-              client_id: accountConfig.clientId,
+              client_id: self.accountConfig.clientId,
               code_verifier: self.codeVerifierPKCE,
               redirect_uri: 'http://localhost:3000',
             }
@@ -152,21 +229,23 @@ const stateModelFactory = (
               .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
               .join('&')
 
-            const response = await fetch(`${accountConfig.tokenEndpoint}`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+            const response = await fetch(
+              `${self.accountConfig.tokenEndpoint}`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: params,
               },
-              body: params,
-            })
+            )
 
             const accessToken = await response.json()
             this.setAccessToken(accessToken.access_token)
             sessionStorage.setItem(
-              `${accountConfig.internetAccountId}-token`,
+              `${self.accountConfig.internetAccountId}-token`,
               accessToken.access_token,
             )
-            this.setCurrentTypeAuthorizing('')
           }
         },
         async openLocation(location: Location) {
