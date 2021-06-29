@@ -952,6 +952,19 @@
     },
     {
       "type": "VariantTrack",
+      "trackId": "volvox_filtered_vcf_plaintext",
+      "name": "volvox filtered vcf (plaintext)",
+      "assemblyNames": ["volvox"],
+      "category": ["VCF"],
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "volvox.filtered.vcf"
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
       "trackId": "volvox_filtered_vcf_assembly_alias",
       "name": "volvox filtered vcf (with assembly alias)",
       "assemblyNames": ["vvx"],
