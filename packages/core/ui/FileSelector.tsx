@@ -134,7 +134,7 @@ const FileLocationEditor = observer(
     const { location, name, description, internetAccounts } = props
     const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'
     const [fileOrUrlState, setFileOrUrlState] = useState(fileOrUrl)
-    const [currentInternetAccount, setCurrentInternetAccount] = useState('')
+    const [currentInternetAccount, setCurrentInternetAccount] = useState('none')
 
     return (
       <>
@@ -214,17 +214,24 @@ const UrlChooser = (props: {
               }
             }}
           >
+            <MenuItem value="">None</MenuItem>
             {internetAccounts?.map(account => {
-              if (account.handlesLocation()) {
-                return (
-                  <MenuItem
-                    key={account.internetAccountId}
-                    value={account.internetAccountId}
-                  >
-                    {account.name}
-                  </MenuItem>
-                )
-              } else {
+              let url
+              try {
+                url = new URL(currentUrl)
+                if (account.handlesLocation(url)) {
+                  return (
+                    <MenuItem
+                      key={account.internetAccountId}
+                      value={account.internetAccountId}
+                    >
+                      {account.name}
+                    </MenuItem>
+                  )
+                } else {
+                  return null
+                }
+              } catch (error) {
                 return null
               }
             })}

@@ -38,6 +38,12 @@ function OAuthConfigFactory(pluginManager: PluginManager) {
         type: 'string',
         defaultValue: '',
       },
+      validDomains: {
+        description:
+          'array of valid domains the url can contain to use this account. Empty = all domains',
+        type: 'stringArray',
+        defaultValue: [],
+      },
       responseType: {
         description: 'the type of response from the authorization endpoint',
         type: 'string',

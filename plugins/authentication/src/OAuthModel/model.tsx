@@ -69,7 +69,14 @@ const stateModelFactory = (
           // this will probably look at something in the config which indicates that it is an OAuth pathway,
           // also look at location, if location is set to need authentication it would reutrn true
           const accountConfig = readConfObject(self.configuration)
-          return accountConfig.needsAuthorization
+          const validDomains = accountConfig.validDomains
+          return (
+            accountConfig.needsAuthorization &&
+            (validDomains.length === 0 ||
+              validDomains.some((domain: string) =>
+                location?.href.includes(domain),
+              ))
+          )
         },
       }))
       .actions(self => ({
