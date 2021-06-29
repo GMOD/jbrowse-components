@@ -2,7 +2,6 @@ import { types, Instance } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { Region } from '@jbrowse/core/util/types'
 
 export default function f(pluginManager: PluginManager) {
   return types.model('GridBookmarkModel', {
