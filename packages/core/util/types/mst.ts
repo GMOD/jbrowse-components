@@ -37,7 +37,6 @@ export const Region = types.compose(
   NoAssemblyRegion,
   types.model({
     assemblyName: types.string,
-    key: types.optional(types.string, ''),
   }),
 )
 
