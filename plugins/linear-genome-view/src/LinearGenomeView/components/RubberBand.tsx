@@ -11,6 +11,7 @@ import Popover from '@material-ui/core/Popover'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import ZoomInIcon from '@material-ui/icons/ZoomIn'
+import BookmarkIcon from '@material-ui/icons/Bookmark'
 
 import { getSession, stringify } from '@jbrowse/core/util'
 import { LinearGenomeViewStateModel, BpOffset } from '..'
@@ -255,6 +256,7 @@ function RubberBand({
     },
     {
       label: 'Bookmark region',
+      icon: BookmarkIcon,
       onClick: () => {
         bookmarkSelectedRegion()
       },
