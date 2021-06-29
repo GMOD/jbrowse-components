@@ -17,7 +17,7 @@ export default function f(pluginManager: PluginManager) {
       async afterCreate() {
         const session = getSession(self)
         // @ts-ignore
-        session.updateDrawerWidth(550)
+        session.updateDrawerWidth(575)
       },
     }))
 }

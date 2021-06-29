@@ -223,6 +223,15 @@ export default function sessionModelFactory(
           self.sessionAssemblies.splice(index, 1)
         }
       },
+      removeBookmark(locString: string) {
+        const index = self.bookmarkedRegions.findIndex(b => {
+          const bLocString = `${b.refName}:${b.start}..${b.end}`
+          return bLocString === locString
+        })
+        if (index !== -1) {
+          self.bookmarkedRegions.splice(index, 1)
+        }
+      },
       removeSessionPlugin(pluginName: string) {
         const index = self.sessionPlugins.findIndex(
           plugin => `${plugin.name}Plugin` === pluginName,
