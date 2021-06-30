@@ -131,10 +131,8 @@ export default function RootModel(pluginManager: PluginManager) {
             {
               label: 'Open assembly manager',
               icon: SettingsIcon,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick: (session: any) => {
-                const rootModel = getParent(session)
-                rootModel.setAssemblyEditing(true)
+              onClick: () => {
+                self.setAssemblyEditing(true)
               },
             },
           ],

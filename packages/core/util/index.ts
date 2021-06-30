@@ -7,12 +7,14 @@ import {
   hasParent,
   addDisposer,
   isStateTreeNode,
+  Instance,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import { inflate, deflate } from 'pako'
 import fromEntries from 'object.fromentries'
 import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
+import { Region as IRegion } from './types/mst'
 import { Feature } from './simpleFeature'
 import {
   TypeTestedByPredicate,
@@ -729,6 +731,7 @@ export function makeAbortableReaction<T, U, V>(
           data,
           thisInProgress.signal,
           self,
+          // @ts-ignore
           mobxReactionHandle,
         )
         checkAbortSignal(thisInProgress.signal)
@@ -755,10 +758,10 @@ export function makeAbortableReaction<T, U, V>(
 
 export function renameRegionIfNeeded(
   refNameMap: Record<string, string>,
-  region: Region,
+  region: Region | Instance<typeof IRegion>,
 ): Region & { originalRefName?: string } {
   if (isStateTreeNode(region) && !isAlive(region)) {
-    return region
+    return getSnapshot(region)
   }
   if (region && refNameMap && refNameMap[region.refName]) {
     // clone the region so we don't modify it

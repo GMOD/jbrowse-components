@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { reaction } from 'mobx'
 import {
   addDisposer,
@@ -32,16 +33,16 @@ export default function assemblyManagerFactory(
         // name is the explicit identifier and can be accessed without getConf,
         // hence the union with {name:string}
         return [
-          ...getParent(self).jbrowse.assemblies,
-          ...(getParent(self).session.sessionAssemblies || []),
+          ...getParent<any>(self).jbrowse.assemblies,
+          ...(getParent<any>(self).session.sessionAssemblies || []),
         ] as (AnyConfigurationModel & { name: string })[]
       },
 
       get rpcManager() {
-        return getParent(self).rpcManager
+        return getParent<any>(self).rpcManager
       },
       get pluginManager() {
-        return getParent(self).pluginManager
+        return getParent<any>(self).pluginManager
       },
       get allPossibleRefNames() {
         let refNames: string[] = []

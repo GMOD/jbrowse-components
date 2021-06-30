@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { readConfObject } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { MenuItem } from '@jbrowse/core/ui'
@@ -104,7 +105,6 @@ const SpreadsheetViewModelF = (pluginManager: PluginManager) => {
 
       get assembly() {
         if (self.spreadsheet && self.spreadsheet.assemblyName) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const assemblies = getSession(self).assemblies as any[]
           const assembly = (assemblies || []).find(
             asm =>
@@ -163,7 +163,7 @@ const SpreadsheetViewModelF = (pluginManager: PluginManager) => {
       },
 
       closeView() {
-        getParent(self, 2).removeView(self)
+        getParent<any>(self, 2).removeView(self)
       },
     }))
 

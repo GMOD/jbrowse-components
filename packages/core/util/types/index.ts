@@ -11,8 +11,6 @@ import assemblyManager from '../../assemblyManager'
 import textSearchManager from '../../TextSearch/TextSearchManager'
 import { MenuItem } from '../../ui'
 import {
-  NoAssemblyRegion as MUNoAssemblyRegion,
-  Region as MUIRegion,
   LocalPathLocation as MULocalPathLocation,
   UriLocation as MUUriLocation,
   BlobLocation as MUBlobLocation,
@@ -263,10 +261,18 @@ export function isAbstractMenuManager(
 // See https://mobx-state-tree.js.org/tips/typescript#using-a-mst-type-at-design-time
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-export interface NoAssemblyRegion
-  extends SnapshotIn<typeof MUNoAssemblyRegion> {}
+// if you change this, please cross-reference with ./mst.ts
+export interface NoAssemblyRegion {
+  start: number
+  end: number
+  refName: string
+  reversed?: boolean
+}
 
-export interface Region extends SnapshotIn<typeof MUIRegion> {}
+// if you change this, please cross-reference with ./mst.ts
+export interface Region extends NoAssemblyRegion {
+  assemblyName: string
+}
 
 export interface LocalPathLocation
   extends SnapshotIn<typeof MULocalPathLocation> {}

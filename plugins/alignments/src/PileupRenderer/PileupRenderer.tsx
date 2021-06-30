@@ -62,7 +62,7 @@ export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
     assemblyName: string
     tag?: string
   }
-  showSoftClip: boolean
+  showSoftClip?: boolean
   highResolutionScaling: number
 }
 
@@ -79,6 +79,10 @@ interface LayoutRecord {
   rightPx: number
   topPx: number
   heightPx: number
+}
+
+interface RenderArgsAugmented extends RenderArgsDeserialized {
+  showSoftClip?: boolean
 }
 
 const alignmentColoring: { [key: string]: string } = {
@@ -185,7 +189,7 @@ export default class PileupRenderer extends BoxRendererType {
   // expands region for clipping to use. possible improvement: use average read
   // size to set the heuristic maxClippingSize expansion (e.g. short reads
   // don't have to expand a softclipping size a lot, but long reads might)
-  getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
+  getExpandedRegion(region: Region, renderArgs: RenderArgsAugmented) {
     const { config, showSoftClip } = renderArgs
 
     const maxClippingSize = readConfObject(config, 'maxClippingSize')

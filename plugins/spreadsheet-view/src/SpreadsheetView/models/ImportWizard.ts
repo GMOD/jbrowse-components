@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getSession } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
 
@@ -42,7 +43,6 @@ export default (pluginManager: PluginManager) => {
     })
     .volatile(() => ({
       fileTypes,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       fileSource: undefined as any,
       error: undefined as Error | undefined,
       loading: false,
@@ -58,13 +58,15 @@ export default (pluginManager: PluginManager) => {
         )
       },
       get canCancel() {
-        return getParent(self).readyToDisplay
+        return getParent<any>(self).readyToDisplay
       },
       get assemblyChoices() {
-        return getRoot(self).jbrowse.assemblies
+        return getRoot<any>(self).jbrowse.assemblies
       },
       get selectedAssemblyName() {
-        const asm = getRoot(self).jbrowse.assemblies[self.selectedAssemblyIdx]
+        const asm = getRoot<any>(self).jbrowse.assemblies[
+          self.selectedAssemblyIdx
+        ]
         if (asm) {
           return readConfObject(asm, 'name')
         }
@@ -143,7 +145,7 @@ export default (pluginManager: PluginManager) => {
 
       cancelButton() {
         self.error = undefined
-        getParent(self).setDisplayMode()
+        getParent<any>(self).setDisplayMode()
       },
 
       // fetch and parse the file, make a new Spreadsheet model for it,
@@ -186,7 +188,7 @@ export default (pluginManager: PluginManager) => {
             .then(buffer => typeParser(buffer as Buffer, self))
             .then(spreadsheet => {
               this.setLoaded()
-              getParent(self).displaySpreadsheet(spreadsheet)
+              getParent<any>(self).displaySpreadsheet(spreadsheet)
             })
             .catch(this.setError)
         } catch (error) {

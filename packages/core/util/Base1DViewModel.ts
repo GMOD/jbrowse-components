@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, cast, getSnapshot, Instance } from 'mobx-state-tree'
 import { clamp } from './index'
 import { Feature } from './simpleFeature'
@@ -128,7 +129,8 @@ const Base1DView = types
         const region = self.displayedRegions[0]
         const offset = bp
         return {
-          ...getSnapshot(region),
+          // has to be as type `any` or get error
+          ...(getSnapshot(region) as any),
           oob: true,
           coord: region.reversed
             ? Math.floor(region.end - offset) + 1

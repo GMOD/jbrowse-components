@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
@@ -29,6 +30,7 @@ import {
   getRoot,
   resolveIdentifier,
   addDisposer,
+  IAnyModelType,
 } from 'mobx-state-tree'
 
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
@@ -130,7 +132,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // which is basically like an onLoad
       afterDisplayedRegionsSetCallbacks: [] as Function[],
       scaleFactor: 1,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       trackRefs: {} as { [key: string]: any },
       coarseDynamicBlocks: [] as BaseBlock[],
       coarseTotalBp: 0,
@@ -336,7 +337,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const region = self.displayedRegions[0]
           const offset = bp
           return {
-            ...getSnapshot(region),
+            ...(getSnapshot(region) as any),
             oob: true,
             coord: region.reversed
               ? Math.floor(region.end - offset) + 1
@@ -355,7 +356,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const offset = bp - bpSoFar
           if (len + bpSoFar > bp && bpSoFar <= bp) {
             return {
-              ...getSnapshot(region),
+              ...(getSnapshot(region) as any),
               oob: false,
               offset,
               coord: region.reversed
@@ -548,7 +549,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           'track',
         )
         const configuration = resolveIdentifier(
-          trackConfigSchema,
+          trackConfigSchema as IAnyModelType,
           getRoot(self),
           trackId,
         )
@@ -589,7 +590,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           'track',
         )
         const configuration = resolveIdentifier(
-          trackConfigSchema,
+          trackConfigSchema as IAnyModelType,
           getRoot(self),
           trackId,
         )

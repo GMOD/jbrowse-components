@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import shortid from 'shortid'
 import { types } from 'mobx-state-tree'
 import propTypes from 'prop-types'
@@ -19,6 +20,7 @@ export const PropTypes = {
   }),
 }
 
+// if you change this, please cross-reference with ./index.ts
 export const NoAssemblyRegion = types
   .model('NoAssemblyRegion', {
     refName: types.string,
@@ -32,6 +34,7 @@ export const NoAssemblyRegion = types
     },
   }))
 
+// if you change this, please cross-reference with ./index.ts
 export const Region = types.compose(
   'Region',
   NoAssemblyRegion,
@@ -56,10 +59,13 @@ export const UriLocationRaw = types.model('UriLocation', {
 
 export const UriLocation = types.snapshotProcessor(UriLocationRaw, {
   postProcessor: snap => {
-    const { baseUri, ...rest } = snap
+    // this has to be type `any` otherwise get error
+    // Exported variable 'libs' has or is using name '$nonEmptyObject' from external module "/home/cdiesh/src/jbrowse-components/node_modules/mobx-state-tree/dist/types/complex-types/model" but cannot be named.
+    const { baseUri, ...rest } = snap as any
     if (!baseUri) {
       return rest
     }
+
     return snap
   },
 })

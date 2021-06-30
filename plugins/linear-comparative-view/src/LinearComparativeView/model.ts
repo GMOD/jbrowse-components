@@ -21,6 +21,7 @@ import {
   cast,
   ISerializedActionCall,
   getRoot,
+  IAnyModelType,
 } from 'mobx-state-tree'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
@@ -146,7 +147,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       closeView() {
-        getParent(self, 2).removeView(self)
+        getParent<any>(self, 2).removeView(self)
       },
 
       setHeaderHeight(height: number) {
@@ -194,7 +195,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           'track',
         )
         const configuration = resolveIdentifier(
-          trackConfigSchema,
+          trackConfigSchema as IAnyModelType,
           getRoot(self),
           trackId,
         )
@@ -228,7 +229,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           'track',
         )
         const configuration = resolveIdentifier(
-          trackConfigSchema,
+          trackConfigSchema as IAnyModelType,
           getRoot(self),
           trackId,
         )
