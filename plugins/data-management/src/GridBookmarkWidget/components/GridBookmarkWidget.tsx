@@ -1,9 +1,8 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 
-import { makeStyles, Link, IconButton } from '@material-ui/core'
+import { makeStyles, Link } from '@material-ui/core'
 import { DataGrid, GridCellParams } from '@material-ui/data-grid'
-import DeleteIcon from '@material-ui/icons/Delete'
 
 import { getSession } from '@jbrowse/core/util'
 import { AbstractViewModel, Region } from '@jbrowse/core/util/types'
@@ -25,7 +24,7 @@ function navToBookmark(locString: string, views: AbstractViewModel[]) {
   }
 }
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 12,
   },
