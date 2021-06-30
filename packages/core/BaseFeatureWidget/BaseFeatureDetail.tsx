@@ -135,11 +135,13 @@ const FieldName = ({
   return description ? (
     <Tooltip title={description} placement="left">
       <div className={clsx(classes.fieldDescription, classes.fieldName)}>
-        {val}
+        <Typography>{val}</Typography>
       </div>
     </Tooltip>
   ) : (
-    <div className={classes.fieldName}>{val}</div>
+    <div className={classes.fieldName}>
+      <Typography>{val}</Typography>
+    </div>
   )
 }
 
@@ -150,9 +152,11 @@ const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
       {React.isValidElement(value) ? (
         value
       ) : (
-        <SanitizedHTML
-          html={isObject(value) ? JSON.stringify(value) : String(value)}
-        />
+        <Typography>
+          <SanitizedHTML
+            html={isObject(value) ? JSON.stringify(value) : String(value)}
+          />
+        </Typography>
       )}
     </div>
   )
@@ -250,12 +254,12 @@ function CoreDetails(props: BaseProps) {
   ]
   return (
     <>
-      {coreRenderedDetails.map(key => {
-        const value = displayedDetails[key.toLowerCase()]
-        return value !== null && value !== undefined ? (
+      {coreRenderedDetails
+        .map(key => [key, displayedDetails[key.toLowerCase()]])
+        .filter(([, value]) => value !== null && value !== undefined)
+        .map(([key, value]) => (
           <SimpleValue key={key} name={key} value={value} />
-        ) : null
-      })}
+        ))}
     </>
   )
 }
@@ -473,10 +477,10 @@ export const FeatureDetails = (props: {
 
   return (
     <BaseCard title={title}>
-      <div>Core details</div>
+      <Typography>Core details</Typography>
       <CoreDetails {...props} />
       <Divider />
-      <div>Attributes</div>
+      <Typography>Attributes</Typography>
       <Attributes
         attributes={feature}
         {...props}
