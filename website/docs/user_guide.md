@@ -497,7 +497,7 @@ feature. The options include:
 Some of the params such as 500bp and 10bp are arbitrarily chosen, if you are
 interested in adjusting these parameters let us know
 
-<Figure caption="The sequence for the upstream and downstream, exons, and intron sequences shown in the feature details" src="/img/feature_details_sequence.png" />
+<Figure caption="The sequence for the upstream and downstream, exons, and intron sequences shown in the feature details" src="/img/feature_detail_sequence.png" />
 
 ## Using the plugin store
 
