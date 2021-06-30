@@ -1,6 +1,6 @@
 import { flags } from '@oclif/command'
 import JBrowseCommand, { Config } from '../base'
-import { ReadStream, createReadStream, promises } from 'fs'
+import fs, { ReadStream, createReadStream, promises } from 'fs'
 import { Transform, PassThrough } from 'stream'
 import gff from '@gmod/gff'
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
@@ -13,6 +13,7 @@ import { compress } from 'lzutf8'
 import { createGunzip, Gunzip } from 'zlib'
 import { IncomingMessage } from 'http'
 import path from 'path'
+import { getFileInfo } from 'prettier'
 
 type trackConfig = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,13 +33,15 @@ export default class TextIndex extends JBrowseCommand {
   // @ts-ignore
   target: string
 
-  static description = 'Make a single-track text index for the given track.'
+  static description = 'Make a text-indexing file for any given track(s).'
 
   static examples = [
     '$ jbrowse text-index',
     '$ jbrowse text-index --tracks=track1,track2,track3',
     '$ jbrowse text-index --individual --tracks=my_track_id',
-    '$ jbrowse text-index ... --location=my_file_path',
+    '$ jbrowse text-index ... --location=out_location_directory',
+    '$ jbrowse text-index ... --target=path_to_configuration_file',
+    '$ jbrowse text-index ... --out=path_to_configuration_file',
   ]
 
   static flags = {
@@ -52,6 +55,13 @@ export default class TextIndex extends JBrowseCommand {
     location: flags.string({
       description: `Establish a location for the output files`,
     }),
+    target: flags.string({
+      description:
+        'Path to config file in JB2 installation directory to read from.',
+    }),
+    out: flags.string({
+      description: 'Synonym for target',
+    }),
   }
 
   // Called when running the terminal command. Parses the given flags
@@ -60,10 +70,11 @@ export default class TextIndex extends JBrowseCommand {
   async run() {
     const { flags: runFlags } = this.parse(TextIndex)
 
-    // NOTE: tests will always output to ./products/jbrowse-cli/test/data/
-    // this is only valid for non-tests
-    let fileDirectory = './test/data/'
-    // FUTURE: command to set a default location
+    const configPath: string = path.join(__dirname, '..', '..', 'config.json')
+    const output = runFlags?.target || runFlags?.out || configPath || '.'
+    const isDir = (await promises.lstat(output)).isDirectory()
+    this.target = isDir ? `${output}/config.json` : output
+    let fileDirectory: string = path.join(__dirname)
 
     if (runFlags.individual) {
       if (runFlags.tracks) {
@@ -71,22 +82,26 @@ export default class TextIndex extends JBrowseCommand {
           fileDirectory = runFlags.location
         }
 
-        const trackIds: string = runFlags.tracks
-        if (trackIds.split(',').length > 1) {
+        const trackIds: Array<string> = runFlags.tracks?.split(',')
+        if (trackIds.length > 1) {
           this.error(
             'Error, --individual flag only allows one track to be indexed',
           )
         } else {
-          const trackArr: Array<string> = [trackIds]
-          const indexConfig = await this.getIndexingConfigurations(trackArr, {
-            target: path.join(__dirname, '..', '..'),
-          })
+          const indexConfig = await this.getIndexingConfigurations(
+            trackIds,
+            this.target,
+          )
           const indexAttributes = indexConfig[0]?.attributes || []
-
           const uri =
             indexConfig[0].indexingConfiguration?.gffLocation.uri || ''
 
-          this.indexDriver(uri, false, indexAttributes, fileDirectory)
+          this.indexDriver(
+            uri,
+            false,
+            indexAttributes,
+            fileDirectory,
+          ).catch(err => this.error(err))
         }
       } else {
         this.error('Error, please specify a track to index.')
@@ -97,61 +112,48 @@ export default class TextIndex extends JBrowseCommand {
       }
 
       const trackIds: Array<string> = runFlags.tracks.split(',')
-
-      const configurationsList = this.getIndexingConfigurations(
+      const uris: Array<string> = []
+      const indexConfig = await this.getIndexingConfigurations(
         trackIds,
-        runFlags,
+        this.target,
       )
 
-      this.log(
-        `TODO: implement aggregate text indexing for these tracks: ${trackIds}`,
+      for (const x in indexConfig) {
+        uris.push(indexConfig[x]?.indexingConfiguration?.gffLocation.uri || '')
+      }
+      const indexAttributes = indexConfig[0]?.attributes || []
+
+      this.indexDriver(uris, false, indexAttributes, fileDirectory).catch(err =>
+        this.error(err),
       )
     } else {
       // aggregate index all in the config so far
-
       if (runFlags.location) {
         fileDirectory = runFlags.location
       }
-      // For testing:
-      // const uri: string = "./test/data/au9_scaffold_subset_sync.gff3"
-      // const uri: string = 'https://github.com/GMOD/jbrowse-components/blob/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz?raw=true'
-      // const uri = 'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3'
-      // const uri = 'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/Ensembl_Mus_musculus.NCBIM37.67.pep.all_vs_UMD3.1.gff3.gz'
 
-      // repeats_hg19
-      // gff3tabix_genes
-
-      const trackIds: Array<string> = ['gff3tabix_genes']
+      // const trackIds: Array<string> = ['gff3tabix_genes'] // change to get all configured tracks
+      const uris: Array<string> = []
       const indexConfig = await this.getIndexingConfigurations(
-        trackIds,
-        runFlags,
+        [],
+        this.target,
+        true,
       )
       const indexAttributes = indexConfig[0]?.attributes || []
 
-      const testObjs = [
-        {
-          trackId: 'gff3tabix_genes',
-          indexingConfiguration: {
-            gffLocation: {
-              uri: './test/data/au9_scaffold_subset_sync.gff3',
-            },
-            gzipped: true,
-            indexingAdapter: 'GFF3',
-          },
-          attributes: ['ID', 'start', 'end'],
-        },
-      ]
+      for (const x in indexConfig) {
+        if (indexConfig[x]?.indexingConfiguration?.gffLocation.uri) {
+          uris.push(
+            indexConfig[x]?.indexingConfiguration?.gffLocation.uri || '',
+          )
+        } else {
+          continue
+        }
+      }
 
-      // const indexAttributes: Array<string> = testObjs[0].attributes
-
-      // const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
-      const uri: string =
-        indexConfig[0]?.indexingConfiguration?.gffLocation.uri || ''
-
-      // const uri = ['./test/data/volvox.sort.gff3.gz', 'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/RefSeq_UMD3.1.1_multitype_genes.gff3.gz', 'TAIR_GFF3_ssrs.gff']
-      // const uri = 'Spliced_Junctions_clustered.gff'    // This one is giving a parsing error
-      // const uri = 'TAIR_GFF3_ssrs.gff'
-      this.indexDriver(uri, false, indexAttributes, fileDirectory)
+      this.indexDriver(uris, false, indexAttributes, fileDirectory).catch(err =>
+        this.error(err),
+      )
     }
   }
 
@@ -403,13 +405,6 @@ export default class TextIndex extends JBrowseCommand {
         let attrString = ''
 
         for (const attr of attributesArr) {
-          // Currently do not index start or end values for searching, but do include the attributes in search results.
-          // TODO: consider not using 'start' or 'end, and instead allow the user to customize
-          //        searchTermAttributes vs. searchResultAttributes in the config.json
-          /* if (attr === 'start' || attr === 'end') {
-            continue
-          }*/
-
           // Check to see if the attr exists for the record
           if (subRecord[attr]) {
             recordObj[attr] = subRecord[attr]
@@ -430,11 +425,6 @@ export default class TextIndex extends JBrowseCommand {
 
         let str: string = buff.toString()
         str += attrString + '\n'
-
-        // replace the separator characters with
-        // percent encoding characters
-        str = str.replace(/,/g, '%2C')
-        str = str.replace(/\s/, '%20')
 
         gff3Stream.push(str)
       }
@@ -500,7 +490,7 @@ export default class TextIndex extends JBrowseCommand {
     else {
       ixProcess = spawn(
         'cat | ixIxx /dev/stdin',
-        [outLocation + ixFileName, outLocation + ixxFileName],
+        [outLocation + '/' + ixFileName, outLocation + '/' + ixxFileName],
         {
           shell: true,
         },
@@ -509,7 +499,7 @@ export default class TextIndex extends JBrowseCommand {
 
     // Pass the readStream as stdin into ixProcess.
     readStream.pipe(ixProcess.stdin).on('error', e => {
-      console.error(`Error writing data to ixIxx. ${e}`)
+      this.error(`Error writing data to ixIxx. ${e}`)
     })
 
     // End the ixProcess stdin when the stream is done.
@@ -544,9 +534,9 @@ export default class TextIndex extends JBrowseCommand {
       // Catch any promise rejection errors with running ixIxx here.
 
       if (errorData.includes('not found')) {
-        console.error('ixIxx was not found in your system.')
+        this.error('ixIxx was not found in your system.')
       } else {
-        console.error(errorData)
+        this.error(errorData)
       }
     })
 
@@ -558,42 +548,57 @@ export default class TextIndex extends JBrowseCommand {
   // Params:
   //  trackIds: array of string ids for tracks to index
   //  runFlags: specify if there is a target ouput location for the indexing
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async getIndexingConfigurations(trackIds: Array<string>, runFlags: any) {
+  async getIndexingConfigurations(
+    trackIds: Array<string>,
+    configPath: string,
+    aggregate = false,
+  ) {
     // are we planning to have target and output flags on this command?
-    const output = runFlags?.target || runFlags?.out || '.'
-    const isDir = (await promises.lstat(output)).isDirectory()
-    this.target = isDir ? `${output}/config.json` : output
-    const config: Config = await this.readJsonFile(this.target)
-    if (!config.tracks) {
-      this.error(
-        'Error, no tracks found in config.json. Please add a track before indexing.',
-      )
-    }
-    const configurations = trackIds.map(trackId => {
-      const currentTrack = config.tracks?.find(
-        track => trackId === track.trackId,
-      )
-      if (currentTrack) {
-        const { adapter, textSearchIndexingAttributes } = currentTrack
-        if (adapter.type === 'Gff3TabixAdapter') {
-          return {
-            trackId,
-            indexingConfiguration: {
-              indexingAdapter: 'GFF3',
-              gzipped: true,
-              gffLocation: adapter?.gffGzLocation,
-            },
-            attributes: textSearchIndexingAttributes,
-          }
-        }
-      } else {
+    try {
+      const isFile = (await promises.lstat(configPath)).isFile()
+      const config: Config = await this.readJsonFile(configPath)
+      if (!config.tracks) {
         this.error(
-          `Track not found in config.json for trackId ${trackId}, please add track configuration before indexing.`,
+          'Error, no tracks found in config.json. Please add a track before indexing.',
         )
       }
-      return {}
-    })
-    return configurations
+      let trackIdsToIndex: Array<string> = []
+      if (aggregate) {
+        trackIdsToIndex = config.tracks.map(track => track.trackId)
+      } else {
+        trackIdsToIndex = trackIds
+      }
+      const configurations = trackIdsToIndex.map(trackId => {
+        const currentTrack = config.tracks?.find(
+          track => trackId === track.trackId,
+        )
+        if (currentTrack) {
+          const { adapter, textSearchIndexingAttributes } = currentTrack
+          if (adapter.type === 'Gff3TabixAdapter') {
+            return {
+              trackId,
+              indexingConfiguration: {
+                indexingAdapter: 'GFF3',
+                gzipped: true,
+                gffLocation: adapter?.gffGzLocation,
+              },
+              attributes: textSearchIndexingAttributes,
+            }
+          }
+        } else {
+          this.error(
+            `Track not found in config.json for trackId ${trackId}, please add track configuration before indexing.`,
+          )
+        }
+        return {}
+      })
+      return configurations
+    } catch (e) {
+      if (e.code === 'ENOENT') {
+        this.error('config.json not found in this directory')
+      }
+      this.error(`Error: ${e}`)
+    }
+    return []
   }
 }
