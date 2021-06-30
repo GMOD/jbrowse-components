@@ -19,9 +19,9 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
+import HelpIcon from '@material-ui/icons/Help'
 import SearchIcon from '@material-ui/icons/Search'
 import { InputAdornment } from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles'
 import Autocomplete, {
   createFilterOptions,
 } from '@material-ui/lab/Autocomplete'
@@ -30,7 +30,7 @@ import { LinearGenomeViewModel } from '..'
 
 /**
  *  Option interface used to format results to display in dropdown
- *  of the materila ui interface
+ *  of the material ui interface
  */
 export interface Option {
   group: string
@@ -44,12 +44,6 @@ const filter = createFilterOptions<Option>({
   ignoreCase: true,
   limit: 101,
 })
-const helperSearchText = `Search for features or navigate to a location using syntax "chr1:1-100" or "chr1:1..100"`
-const useStyles = makeStyles(() => ({
-  customWidth: {
-    maxWidth: 150,
-  },
-}))
 
 async function fetchResults(
   self: LinearGenomeViewModel,
@@ -70,6 +64,40 @@ async function fetchResults(
     []
   return searchResults
 }
+
+function HelperText() {
+  return (
+    <>
+      <Typography variant="body2" paragraph>
+        You can search for sequence names or any indexed identifiers. Only the
+        first 100 matching results are displayed, so you can enter more search
+        text to narrow you results
+      </Typography>
+      <Typography variant="body2" paragraph>
+        You can also enter a specific location to navigate to, such as
+        <ul>
+          <li>
+            <code>chr1:500..1500</code>
+            <br />
+            Navigates to sequence <code>chr1</code>, bases 500 to 1500
+          </li>
+          <li>
+            <code>chr1:500</code>
+            <br />
+            Navigates to sequence <code>chr1</code>, with base 500 centered at
+            maximum zoom level
+          </li>
+          <li>
+            <code>chr1</code>
+            <br />
+            Navigates so that all of <code>chr1</code> is visible
+          </li>
+        </ul>
+      </Typography>
+    </>
+  )
+}
+
 function RefNameAutocomplete({
   model,
   onSelect,
@@ -85,9 +113,7 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
-  const classes = useStyles()
   const session = getSession(model)
-  const { pluginManager } = getEnv(session)
   const [open, setOpen] = useState(false)
   const [, setError] = useState<Error>()
   const [currentSearch, setCurrentSearch] = useState('')
@@ -219,19 +245,24 @@ function RefNameAutocomplete({
         const TextFieldInputProps = {
           ...params.InputProps,
           ...InputProps,
+          startAdornment: (
+            <InputAdornment position="start" style={{ marginLeft: 7 }}>
+              <SearchIcon />
+            </InputAdornment>
+          ),
           endAdornment: (
             <>
               {regions.length === 0 && searchOptions.length === 0 ? (
                 <CircularProgress color="inherit" size={20} />
               ) : (
                 <Tooltip
-                  title={helperSearchText}
+                  title={<HelperText />}
                   leaveDelay={300}
-                  placement="top"
-                  classes={{ tooltip: classes.customWidth }}
+                  placement="right-start"
+                  arrow
                 >
                   <InputAdornment position="end" style={{ marginRight: 7 }}>
-                    <SearchIcon />
+                    <HelpIcon color="action" />
                   </InputAdornment>
                 </Tooltip>
               )}
