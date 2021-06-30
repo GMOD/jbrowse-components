@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
-import { getSnapshot, getEnv } from 'mobx-state-tree'
+import { getEnv } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
-import BaseResult, {
-  RefSequenceResult,
-  LocStringResult,
-} from '@jbrowse/core/TextSearch/BaseResults'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 // material ui
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'

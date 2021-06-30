@@ -184,7 +184,7 @@ export default function RootModel(
         addDisposer(
           self,
           autorun(() => {
-            for (const [_, val] of self.savedSessionsVolatile.entries()) {
+            for (const [, val] of self.savedSessionsVolatile.entries()) {
               try {
                 const key = self.localStorageId(val.name)
                 localStorage.setItem(key, JSON.stringify({ session: val }))

@@ -6,7 +6,6 @@ import PluginManager from '../PluginManager'
 import QuickLRU from '../util/QuickLRU'
 import { SearchType, BaseTextSearchAdapter } from '../data_adapters/BaseAdapter'
 import { readConfObject } from '../configuration'
-import TextSearchAdapterType from '../pluggableElementTypes/TextSearchAdapterType'
 
 export interface BaseArgs {
   searchType: SearchType

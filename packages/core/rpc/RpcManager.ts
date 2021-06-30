@@ -6,7 +6,6 @@ import WebWorkerRpcDriver from './WebWorkerRpcDriver'
 import MainThreadRpcDriver from './MainThreadRpcDriver'
 import ElectronRpcDriver from './ElectronRpcDriver'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
-import { PluginDefinition } from '../PluginLoader'
 
 type DriverClass = WebWorkerRpcDriver | MainThreadRpcDriver | ElectronRpcDriver
 type BackendConfigurations = {
