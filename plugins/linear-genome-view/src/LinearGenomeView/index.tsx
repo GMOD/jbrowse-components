@@ -39,6 +39,8 @@ import StarIcon from '@material-ui/icons/Star'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import LabelIcon from '@material-ui/icons/Label'
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
+import BookmarkIcon from '@material-ui/icons/Bookmark'
+import BookmarksIcon from '@material-ui/icons/Bookmarks'
 import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { saveAs } from 'file-saver'
@@ -687,6 +689,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
         throw new Error('Could not open bookmark widget')
       },
 
+      bookmarkCurrentRegion() {
+        const selectedRegions = this.getSelectedRegions(
+          self.leftOffset,
+          self.rightOffset,
+        )
+        const firstRegion = selectedRegions[0]
+        const session = getSession(self)
+        // @ts-ignore
+        session.addBookmark(firstRegion)
+      },
+
       navToLocString(locString: string, optAssemblyName?: string) {
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
@@ -1249,10 +1262,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
               onClick: self.horizontallyFlip,
             },
             {
+              label: 'Bookmark current region',
+              icon: BookmarkIcon,
+              onClick: self.bookmarkCurrentRegion,
+            },
+            {
               label: 'Open bookmark widget',
-              icon: StarIcon,
+              icon: BookmarksIcon,
               onClick: self.activateBookmarkWidget,
             },
+            { type: 'divider' },
             {
               label: 'Show all regions in assembly',
               icon: VisibilityIcon,
@@ -1265,7 +1284,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
               checked: self.showCenterLine,
               onClick: self.toggleCenterLine,
             },
-            { type: 'divider' },
             {
               label: 'Show header',
               icon: VisibilityIcon,
