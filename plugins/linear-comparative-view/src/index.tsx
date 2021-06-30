@@ -239,7 +239,7 @@ function WindowSizeDlg(props: {
       const supplementaryAlignments = SA.split(';')
         .filter(aln => !!aln)
         .map((aln, index) => {
-          const [saRef, saStart /* saStrand*/, , saCigar] = aln.split(',')
+          const [saRef, saStart, , saCigar] = aln.split(',')
           const saLengthOnRef = getLengthOnRef(saCigar)
           const saLength = getLength(saCigar)
           const saLengthSansClipping = getLengthSansClipping(saCigar)

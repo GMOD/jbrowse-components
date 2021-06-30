@@ -132,8 +132,6 @@ function RefNameAutocomplete({
 
   options =
     options.length > 100 ? options.slice(0, 100).concat(limitOption) : options
-  // assembly and regions have loaded
-  // const loaded = regions.length !== 0 && assemblyName
   useEffect(() => {
     let active = true
 

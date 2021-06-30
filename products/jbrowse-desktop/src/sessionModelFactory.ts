@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import {
   readConfObject,
   isConfigurationModel,
 } from '@jbrowse/core/configuration'
-import type {
+import {
   Region,
   NotificationLevel,
   TrackViewModel,
@@ -18,14 +18,15 @@ import {
   getParent,
   getSnapshot,
   getType,
+  IAnyStateTreeNode,
   isAlive,
   isModelType,
   isReferenceType,
+  SnapshotIn,
   types,
   walk,
 } from 'mobx-state-tree'
-import type { SnapshotIn, IAnyStateTreeNode } from 'mobx-state-tree'
-import type PluginManager from '@jbrowse/core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'
