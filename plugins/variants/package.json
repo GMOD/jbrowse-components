@@ -35,6 +35,7 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
+    "@gmod/bgzf-filehandle": "^1.3.4",
     "@gmod/tabix": "^1.5.0",
     "@gmod/vcf": "^4.0.3",
     "@material-ui/data-grid": "^4.0.0-alpha.27",

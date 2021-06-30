@@ -2595,6 +2595,43 @@ Object {
     },
     Object {
       "adapter": Object {
+        "type": "VcfAdapter",
+        "vcfLocation": Object {
+          "uri": "volvox.filtered.vcf",
+        },
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "VCF",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox_filtered_vcf_plaintext-ChordVariantDisplay",
+          "renderer": Object {
+            "type": "StructuralVariantChordRenderer",
+          },
+          "type": "ChordVariantDisplay",
+        },
+        Object {
+          "displayId": "volvox_filtered_vcf_plaintext-LinearVariantDisplay",
+          "renderer": Object {
+            "type": "SvgFeatureRenderer",
+          },
+          "type": "LinearVariantDisplay",
+        },
+      ],
+      "name": "volvox filtered vcf (plaintext)",
+      "textSearchAdapter": Object {
+        "textSearchAdapterId": "placeholderId",
+        "type": "JBrowse1TextSearchAdapter",
+      },
+      "trackId": "volvox_filtered_vcf_plaintext",
+      "type": "VariantTrack",
+    },
+    Object {
+      "adapter": Object {
         "index": Object {
           "location": Object {
             "uri": "volvox.filtered.vcf.gz.tbi",
