@@ -31,13 +31,13 @@ interface RowState<T> {
   min: number
   max: number
   offset: number
-  bits: (Record<string, T> | boolean | undefined)[]
+  bits: (Record<string, T> | string | undefined)[]
 }
 // a single row in the layout
 class LayoutRow<T> {
   private padding: number
 
-  private allFilled?: Record<string, T> | boolean
+  private allFilled?: Record<string, T> | string
 
   private widthLimit: number
 
@@ -60,11 +60,11 @@ class LayoutRow<T> {
   //   console.log(`r${this.rowNumber}: ${msg}`)
   // }
 
-  setAllFilled(data: Record<string, T> | boolean): void {
+  setAllFilled(data: Record<string, T> | string): void {
     this.allFilled = data
   }
 
-  getItemAt(x: number): Record<string, T> | boolean | undefined {
+  getItemAt(x: number): Record<string, T> | string | undefined {
     if (this.allFilled) {
       return this.allFilled
     }
@@ -128,7 +128,7 @@ class LayoutRow<T> {
     // this.log(`initialize ${this.rowState.min} - ${this.rowState.max} (${this.rowState.bits.length})`)
   }
 
-  addRect(rect: Rectangle<T>, data: Record<string, T> | boolean): void {
+  addRect(rect: Rectangle<T>, data: Record<string, T> | string): void {
     const left = rect.l
     const right = rect.r + this.padding // only padding on the right
     if (!this.rowState) {
@@ -466,7 +466,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       return
     }
 
-    const data = rect.data || rect.id || true
+    const data = rect.data || rect.id
     const { bitmap } = this
     const yEnd = rect.top + rect.h
     if (rect.r - rect.l > maxFeaturePitchWidth) {
@@ -507,7 +507,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     return this.rectangles.has(id)
   }
 
-  getByCoord(x: number, y: number): Record<string, T> | boolean | undefined {
+  getByCoord(x: number, y: number): Record<string, T> | string | undefined {
     const pY = Math.floor(y / this.pitchY)
     const row = this.bitmap[pY]
     if (!row) {
@@ -517,10 +517,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     return row.getItemAt(pX)
   }
 
-  getByID(id: string): (Record<string, T> | boolean) | undefined {
+  getByID(id: string): (Record<string, T> | string) | undefined {
     const r = this.rectangles.get(id)
     if (r) {
-      return r.data || true
+      return r.data || r.id
     }
     return undefined
   }

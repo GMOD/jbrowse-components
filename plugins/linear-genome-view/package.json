@@ -43,7 +43,6 @@
     "is-object": "^1.0.1",
     "json-stable-stringify": "^1.0.1",
     "normalize-wheel": "^1.0.1",
-    "rbush": "^3.0.1",
     "react-sizeme": "^2.6.7"
   },
   "peerDependencies": {
