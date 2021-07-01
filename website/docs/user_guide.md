@@ -130,16 +130,11 @@ dialog
 
 ### Editing track configs
 
-Currently, in order to edit a track config, you have to make a copy of the track
+As a non-admin user, in order to edit a track config, you have to make a copy
+of the track. This will copy it to your "session tracks", which you can edit
+freely
 
-<Figure caption="Screenshot showing how to copy a track. In order to edit detailed configuration of a track, we require that you first make a copy of it, which can be done via the track menu" src="/img/copy_track.png" />
-
-After you have copied the track, you can edit the track settings
-
-<Figure caption="After copying a track, which puts it in your 'session tracks', you can then edit the track settings, and you have full control over your session tracks" src="/img/session_track_settings.png" />
-
-Your new track is a "session track" and can be shared with other
-users with the "Share" button
+<Figure caption="Screenshot showing the procedure to copy the track before being able to edit the settings" src="/img/edit_track_settings.png" />
 
 #### Rubberband selection
 
