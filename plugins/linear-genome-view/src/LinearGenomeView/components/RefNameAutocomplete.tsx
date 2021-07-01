@@ -40,7 +40,6 @@ export interface Option {
 // filters for options to display in dropdown
 const filter = createFilterOptions<Option>({
   trim: true,
-  matchFrom: 'start',
   ignoreCase: true,
 })
 const helperSearchText = `Search for features or navigate to a location using syntax "chr1:1-100" or "chr1:1..100"`
@@ -190,7 +189,8 @@ function RefNameAutocomplete({
       options={searchOptions.length === 0 ? options : searchOptions}
       groupBy={option => String(option.group)}
       filterOptions={(possibleOptions, params) => {
-        return filter(possibleOptions, params)
+        // filter(possibleOptions, params)
+        return possibleOptions.slice(0, 100)
       }}
       ListboxProps={{ style: { maxHeight: 250 } }}
       onChange={(_, selectedOption) => onChange(selectedOption)}
@@ -243,14 +243,14 @@ function RefNameAutocomplete({
             return component
           }
         }
-        if (currentSearch !== '' && inputValue.length <= rendering.length) {
-          return (
-            <Typography noWrap>
-              <b>{rendering.slice(0, inputValue.length)}</b>
-              {rendering.slice(inputValue.length)}
-            </Typography>
-          )
-        }
+        // if (currentSearch !== '' && inputValue.length <= rendering.length) {
+        //  return (
+        //    <Typography noWrap>
+        //      <b>{rendering.slice(0, inputValue.length)}</b>
+        //      {rendering.slice(inputValue.length)}
+        //    </Typography>
+        //  )
+        // }
         return <Typography noWrap>{rendering}</Typography>
       }}
       getOptionLabel={option => {
