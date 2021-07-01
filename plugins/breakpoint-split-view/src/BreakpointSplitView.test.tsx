@@ -23,13 +23,19 @@ const getView = () => {
       type: 'FakeTrack',
       configuration: types.frozen(),
       displays: types.array(
-        types.model('FakeDisplay', {
-          type: 'FakeDisplay',
-          displayId: 'FakeDisplay',
-          configuration: types.frozen(),
-          features: types.frozen(),
-          layoutFeatures: types.frozen(),
-        }),
+        types
+          .model('FakeDisplay', {
+            type: 'FakeDisplay',
+            displayId: 'FakeDisplay',
+            configuration: types.frozen(),
+            layoutFeatures: types.frozen(),
+            features: types.frozen(),
+          })
+          .views(self => ({
+            getFeatureByID(id: string) {
+              return self.layoutFeatures[id]
+            },
+          })),
       ),
     })
     .actions(self => ({
@@ -37,11 +43,9 @@ const getView = () => {
         self.displays[0].features = new Map(
           Object.entries(self.displays[0].features),
         )
-        self.displays[0].layoutFeatures = new Map(
-          Object.entries(self.displays[0].layoutFeatures),
-        )
       },
     }))
+
   stubManager.addViewType(
     () =>
       new ViewType({
