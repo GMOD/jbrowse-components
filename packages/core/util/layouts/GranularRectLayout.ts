@@ -1,4 +1,3 @@
-import { ObservableMap } from 'mobx'
 import { objectFromEntries } from '../index'
 import {
   RectTuple,
@@ -319,7 +318,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private bitmap: LayoutRow<T>[]
 
-  private rectangles: ObservableMap<string, Rectangle<T>>
+  private rectangles: Map<string, Rectangle<T>>
 
   public maxHeightReached: boolean
 
@@ -329,6 +328,12 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private pTotalHeight: number
 
+  /*
+   *
+   * pitchX - layout grid pitch in the X direction
+   * pitchY - layout grid pitch in the Y direction
+   * maxHeight - maximum layout height, default Infinity (no max)
+   */
   constructor({
     pitchX = 10,
     pitchY = 10,
@@ -336,11 +341,8 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     hardRowLimit = 3000,
     displayMode = 'normal',
   }: {
-    /** layout grid pitch in the X direction */
     pitchX?: number
-    /** layout grid pitch in the Y direction */
     pitchY?: number
-    /** maximum layout height, default Infinity (no max) */
     maxHeight?: number
     displayMode?: string
     hardRowLimit?: number
@@ -358,7 +360,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     }
 
     this.bitmap = []
-    this.rectangles = new ObservableMap()
+    this.rectangles = new Map()
     this.maxHeight = Math.ceil(maxHeight / this.pitchY)
     this.pTotalHeight = 0 // total height, in units of bitmap squares (px/pitchY)
   }
@@ -375,14 +377,14 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     data?: Record<string, T>,
   ): number | null {
     // if we have already laid it out, return its layout
-    // console.log(`${this.id} add ${id}`)
     const storedRec = this.rectangles.get(id)
     if (storedRec) {
       if (storedRec.top === null) {
         return null
       }
 
-      // add it to the bitmap again, since that bitmap range may have been discarded
+      // add it to the bitmap again, since that bitmap range may have been
+      // discarded
       this.addRectToBitmap(storedRec)
       return storedRec.top * this.pitchY
     }
@@ -391,13 +393,11 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     const pRight = Math.floor(right / this.pitchX)
     const pHeight = Math.ceil(height / this.pitchY)
 
-    // const midX = Math.floor((pLeft + pRight) / 2)
     const rectangle: Rectangle<T> = {
       id,
       l: pLeft,
       r: pRight,
       top: null,
-      // mX: midX,
       h: pHeight,
       originalHeight: height,
       data,
@@ -423,7 +423,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     this.addRectToBitmap(rectangle)
     this.rectangles.set(id, rectangle)
     this.pTotalHeight = Math.max(this.pTotalHeight || 0, top + pHeight)
-    // console.log(`G2 ${data.get('name')} ${top}`)
     return top * this.pitchY
   }
 
@@ -467,7 +466,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       return
     }
 
-    const data = rect.data || true
+    const data = rect.data || rect.id || true
     const { bitmap } = this
     const yEnd = rect.top + rect.h
     if (rect.r - rect.l > maxFeaturePitchWidth) {
