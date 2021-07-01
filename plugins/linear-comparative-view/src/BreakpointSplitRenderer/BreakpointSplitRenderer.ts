@@ -49,12 +49,6 @@ function instantiateTrackLayoutFeatures(views: ReducedLinearGenomeView[]) {
     })
   })
   return views
-  // return views.map(view => {
-  //   console.log(view)
-  //   // view.tracks = []
-  //   console.log(view.tracks)
-  //   return stateModelFactory(pluginManager).create(view)
-  // })
 }
 
 function* generateLayoutMatches(

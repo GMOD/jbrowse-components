@@ -155,6 +155,16 @@ export const BaseLinearDisplay = types
         return layoutMaps
       },
 
+      get layoutFeatures() {
+        const layoutMaps = new Map<string, Map<string, LayoutRecord>>()
+        for (const block of self.blockState.values()) {
+          if (block && block.layout && block.layout.rectangles) {
+            layoutMaps.set(block.key, block.layout.getRectangles())
+          }
+        }
+        return layoutMaps
+      },
+
       getFeatureOverlapping(blockKey: string, x: number, y: number) {
         return self.blockState.get(blockKey)?.layout?.getByCoord(x, y)
       },
