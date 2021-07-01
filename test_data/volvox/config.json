@@ -69,9 +69,7 @@
       "textSearchAdapterId": "AdapterWithoutAssemblies",
       "namesIndexLocation": {
         "uri": "names/"
-      },
-      "tracks": [],
-      "assemblies": []
+      }
     },
     {
       "type": "JBrowse1TextSearchAdapter",
@@ -79,7 +77,6 @@
       "namesIndexLocation": {
         "uri": "names/"
       },
-      "tracks": [],
       "assemblies": ["volvox3", "volvox4"]
     }
   ],
@@ -90,7 +87,6 @@
       "name": "volvox structural variant test",
       "category": ["VCF"],
       "assemblyNames": ["volvox"],
-      "textSearchIndexingAttributes": ["Name", "ID", "Description"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -108,7 +104,6 @@
         "namesIndexLocation": {
           "uri": "names/"
         },
-        "tracks": [],
         "assemblies": ["NonExistantAssembly"]
       }
     },
@@ -1009,7 +1004,6 @@
           "uri": "volvox-bed12.bed.gz"
         },
         "index": {
-          "type": "TBI",
           "location": {
             "uri": "volvox-bed12.bed.gz.tbi"
           }
@@ -1423,8 +1417,7 @@
         "index": {
           "location": {
             "uri": "single_exon_gene.sorted.gff.gz.tbi"
-          },
-          "indexType": "TBI"
+          }
         }
       }
     }
