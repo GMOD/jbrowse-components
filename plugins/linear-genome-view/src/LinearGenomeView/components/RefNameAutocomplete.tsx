@@ -13,6 +13,7 @@ import { Region } from '@jbrowse/core/util/types'
 import { getSession, useDebounce } from '@jbrowse/core/util' // useDebounce
 import BaseResult, {
   RefSequenceResult,
+  LocStringResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
 // material ui
 import CircularProgress from '@material-ui/core/CircularProgress'
@@ -33,16 +34,15 @@ import { LinearGenomeViewModel } from '..'
  *  of the materila ui interface
  */
 export interface Option {
-  group: string
   result: BaseResult
 }
 
 // filters for options to display in dropdown
 const filter = createFilterOptions<Option>({
   trim: true,
-  matchFrom: 'start',
+  // matchFrom: 'start',
   ignoreCase: true,
-  limit: 101,
+  limit: 100,
 })
 const helperSearchText = `Search for features or navigate to a location using syntax "chr1:1-100" or "chr1:1..100"`
 const useStyles = makeStyles(() => ({
@@ -99,26 +99,9 @@ function RefNameAutocomplete({
     return (assembly && assembly.regions) || []
   }, [assembly])
   // default options for dropdown
-  const limitOption: Array<Option> = [
-    {
-      group: 'reference sequence',
-      result: new BaseResult({
-        refName: '',
-        label: '',
-        renderingComponent: (
-          <Tooltip
-            title={'Displaying first 100 refNames. Search for more results'}
-          >
-            <Typography noWrap>{'more results...'}</Typography>
-          </Tooltip>
-        ),
-      }),
-    },
-  ]
-  let options: Array<Option> = useMemo(() => {
+  const options: Array<Option> = useMemo(() => {
     const defaultOptions = regions.map(option => {
       const defaultOption: Option = {
-        group: 'reference sequence',
         result: new RefSequenceResult({
           refName: option.refName,
           label: option.refName,
@@ -130,8 +113,6 @@ function RefNameAutocomplete({
     return defaultOptions
   }, [regions])
 
-  options =
-    options.length > 100 ? options.slice(0, 100).concat(limitOption) : options
   useEffect(() => {
     let active = true
 
@@ -149,7 +130,6 @@ function RefNameAutocomplete({
         if (results.length > 0 && active) {
           const adapterResults: Option[] = results.map(result => {
             const newOption: Option = {
-              group: 'text search results',
               result,
             }
             return newOption
@@ -179,7 +159,14 @@ function RefNameAutocomplete({
         onSelect(newResult)
       } else {
         const { result } = selectedOption
-        onSelect(result)
+        if (result?.matchedAttribute === 'more results...') {
+          session.notify(
+            `More than 100 results, please refine the search`,
+            'warning',
+          )
+        } else {
+          onSelect(result)
+        }
       }
     }
   }
@@ -205,9 +192,21 @@ function RefNameAutocomplete({
         setSearchOptions([])
       }}
       options={searchOptions.length === 0 ? options : searchOptions}
-      groupBy={option => String(option.group)}
       filterOptions={(possibleOptions, params) => {
-        return filter(possibleOptions, params)
+        const limitOption = [
+          {
+            result: new LocStringResult({
+              label: currentSearch || coarseVisibleLocStrings || value,
+              locString: currentSearch || coarseVisibleLocStrings || value,
+              matchedAttribute: 'more results...',
+              renderingComponent: (
+                <Typography noWrap>{'more results...'}</Typography>
+              ),
+            }),
+          },
+        ]
+        const filtered = filter(possibleOptions, params)
+        return filtered.length >= 100 ? filtered.concat(limitOption) : filtered
       }}
       ListboxProps={{ style: { maxHeight: 250 } }}
       onChange={(_, selectedOption) => onChange(selectedOption)}
@@ -259,14 +258,6 @@ function RefNameAutocomplete({
           if (React.isValidElement(component)) {
             return component
           }
-        }
-        if (currentSearch !== '' && inputValue.length <= rendering.length) {
-          return (
-            <Typography noWrap>
-              <b>{rendering.slice(0, inputValue.length)}</b>
-              {rendering.slice(inputValue.length)}
-            </Typography>
-          )
         }
         return <Typography noWrap>{rendering}</Typography>
       }}
