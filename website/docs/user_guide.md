@@ -111,6 +111,23 @@ All this stuff gets included in the session
 This means you can share links with your custom tracks with other users,
 without being a JBrowse admin!
 
+### Track menu
+
+Users can access track-specific functions by using the track menu, which is
+accessible from the track selecter itself ("..." icon) or on the track label
+(vertical "..."). Some functions are only available when the track is open e.g.
+from the track label, but more basic options like "About track" are available
+from the track menu on the track selector.
+
+<Figure caption="Screenshot showing how to open the track menu (both in the track selector area and in the track label area of the linear genome view), and an example of a VCF track with it's track menu open" src="/img/track_menu.png" />
+
+### About track dialog
+
+Using the track menu as described above, you can access the "About track"
+dialog
+
+<Figure caption="Screenshot of the 'About track' dialog for a CRAM file, showing the full CRAM file header and config info. Having the full header of a BAM/CRAM file available is helpful to easily check what genome it was aligned to for example." src="/img/about_track.png"/>
+
 ### Editing track configs
 
 Currently, in order to edit a track config, you have to make a copy of the track
