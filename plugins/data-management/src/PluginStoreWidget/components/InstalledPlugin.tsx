@@ -19,7 +19,7 @@ import CloseIcon from '@material-ui/icons/Close'
 import LockIcon from '@material-ui/icons/Lock'
 
 import { getSession } from '@jbrowse/core/util'
-import type { BasePlugin } from '@jbrowse/core/util/types'
+import { BasePlugin } from '@jbrowse/core/util/types'
 import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
 import { PluginStoreModel } from '../model'
 
