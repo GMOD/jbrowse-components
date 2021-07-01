@@ -182,7 +182,7 @@ export default function assemblyFactory(
         if (!self.refNameAliases) {
           return undefined
         }
-        return Object.keys(self.refNameAliases.keys)
+        return Object.keys(self.refNameAliases)
       },
       get rpcManager() {
         return getParent(self, 2).rpcManager
