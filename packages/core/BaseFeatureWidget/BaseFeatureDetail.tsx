@@ -135,12 +135,12 @@ const FieldName = ({
   return description ? (
     <Tooltip title={description} placement="left">
       <div className={clsx(classes.fieldDescription, classes.fieldName)}>
-        <Typography>{val}</Typography>
+        <Typography variant="body2">{val}</Typography>
       </div>
     </Tooltip>
   ) : (
     <div className={classes.fieldName}>
-      <Typography>{val}</Typography>
+      <Typography variant="body2">{val}</Typography>
     </div>
   )
 }
@@ -152,7 +152,7 @@ const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
       {React.isValidElement(value) ? (
         value
       ) : (
-        <Typography>
+        <Typography variant="body2">
           <SanitizedHTML
             html={isObject(value) ? JSON.stringify(value) : String(value)}
           />
@@ -486,6 +486,7 @@ export const FeatureDetails = (props: {
         {...props}
         omit={[...omit, ...coreDetails]}
       />
+
       {sequenceTypes.includes(feature.type) ? (
         <ErrorBoundary
           FallbackComponent={({ error }) => (
@@ -497,7 +498,8 @@ export const FeatureDetails = (props: {
           <SequenceFeatureDetails {...props} />
         </ErrorBoundary>
       ) : null}
-      {subfeatures && subfeatures.length ? (
+
+      {subfeatures?.length ? (
         <BaseCard
           title="Subfeatures"
           defaultExpanded={!sequenceTypes.includes(feature.type)}

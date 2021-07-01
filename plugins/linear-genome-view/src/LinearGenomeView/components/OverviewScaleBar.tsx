@@ -273,9 +273,10 @@ const ScaleBar = observer(
 
               {/* the number labels drawn in overview scale bar*/}
               {tickLabels.map((tickLabel, labelIdx) => (
-                <div
+                <Typography
                   key={`${JSON.stringify(seq)}-${tickLabel}-${labelIdx}`}
                   className={classes.scaleBarLabel}
+                  variant="body2"
                   style={{
                     left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
                     pointerEvents: 'none',
@@ -283,7 +284,7 @@ const ScaleBar = observer(
                   }}
                 >
                   {tickLabel.toLocaleString('en-US')}
-                </div>
+                </Typography>
               ))}
             </div>
           )
