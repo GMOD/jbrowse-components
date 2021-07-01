@@ -70,6 +70,10 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
     return this.rbush.collides(rect) ? this.rbush.search(rect)[0].name : []
   }
 
+  getByID(id: string) {
+    return this.rectangles.get(id)
+  }
+
   addRectToBitmap(_rect: Rectangle<T>, _data: Record<string, T>): void {
     throw new Error('Method not implemented.')
   }

@@ -168,6 +168,17 @@ export const BaseLinearDisplay = types
       getFeatureOverlapping(blockKey: string, x: number, y: number) {
         return self.blockState.get(blockKey)?.layout?.getByCoord(x, y)
       },
+
+      getFeatureByID(id: string) {
+        let ret
+        self.blockState.forEach(block => {
+          const val = block?.layout?.getByID(id)
+          if (val) {
+            ret = val
+          }
+        })
+        return ret
+      },
     }
   })
   .actions(self => ({

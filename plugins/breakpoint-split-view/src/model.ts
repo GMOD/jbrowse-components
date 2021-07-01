@@ -230,7 +230,7 @@ export default function stateModelFactory(pluginManager: any) {
         const tracks = this.getMatchedTracks(trackConfigId)
 
         const calc = (track: any, feat: Feature) =>
-          track.displays[0].layoutFeatures.get(feat.id())
+          track.displays[0].getFeatureByID(feat.id())
 
         return features.map(c =>
           c.map(feature => {

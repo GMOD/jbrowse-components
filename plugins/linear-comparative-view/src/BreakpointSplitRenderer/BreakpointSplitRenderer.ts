@@ -64,7 +64,7 @@ function* generateLayoutMatches(
           track && !middle
             ? // prettier-ignore
               // @ts-ignore
-              track.layoutFeatures.get(String(feature.id()))
+              track.features.get(String(feature.id()))
             : ([feature.get('start'), 0, feature.get('end'), 0] as LayoutRecord)
         return {
           feature,
