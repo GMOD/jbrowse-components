@@ -80,7 +80,11 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
       <DownloadBookmarks model={model} />
       <ClearBookmarks model={model} />
       <div style={{ height: 800, width: '100%' }}>
-        <DataGrid rows={bookmarkRows} columns={columns} />
+        <DataGrid
+          rows={bookmarkRows}
+          columns={columns}
+          disableSelectionOnClick
+        />
       </div>
     </div>
   )
