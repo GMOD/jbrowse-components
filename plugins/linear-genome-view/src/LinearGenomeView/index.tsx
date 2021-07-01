@@ -38,6 +38,7 @@ import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import LabelIcon from '@material-ui/icons/Label'
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
+import PhotoCameraIcon from '@material-ui/icons/PhotoCamera'
 import BookmarkIcon from '@material-ui/icons/Bookmark'
 import BookmarksIcon from '@material-ui/icons/Bookmarks'
 import clone from 'clone'
@@ -1244,6 +1245,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             },
             {
               label: 'Export SVG',
+              icon: PhotoCameraIcon,
               onClick: () => {
                 getSession(self).setDialogComponent(ExportSvgDlg, {
                   model: self,
