@@ -94,10 +94,8 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
     <>
       {shown ? (
         <div className={classes.loading}>
-          <Typography>
-            <div className={classes.dots}>
-              {status ? `${status}` : 'Loading'}
-            </div>
+          <Typography className={classes.dots} variant="body2">
+            {status ? `${status}` : 'Loading'}
           </Typography>
         </div>
       ) : null}
@@ -112,12 +110,12 @@ function BlockMessage({
 }) {
   const classes = useStyles()
 
-  return typeof messageContent === 'string' ? (
+  return React.isValidElement(messageContent) ? (
+    <div className={classes.blockReactNodeMessage}>{messageContent}</div>
+  ) : (
     <Typography variant="body2" className={classes.blockMessage}>
       {messageContent}
     </Typography>
-  ) : (
-    <div className={classes.blockReactNodeMessage}>{messageContent}</div>
   )
 }
 

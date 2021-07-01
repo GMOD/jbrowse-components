@@ -121,7 +121,7 @@ export function BaseCard({
   )
 }
 
-const FieldName = ({
+export const FieldName = ({
   description,
   name,
   prefix = [],
@@ -145,23 +145,31 @@ const FieldName = ({
   )
 }
 
-const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
+export const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
   const classes = useStyles()
   return (
     <div className={classes.fieldValue}>
-      {React.isValidElement(value) ? (
-        value
-      ) : (
-        <Typography variant="body2">
+      <Typography
+        component={({ children, ...rest }) => {
+          // use a div instead of <p> to avoid nesting SanitizedHTML <div>
+          // contents in a <p>
+          return <div {...rest}>{children}</div>
+        }}
+        variant="body2"
+      >
+        {React.isValidElement(value) ? (
+          value
+        ) : (
           <SanitizedHTML
             html={isObject(value) ? JSON.stringify(value) : String(value)}
           />
-        </Typography>
-      )}
+        )}
+      </Typography>
     </div>
   )
 }
-const SimpleValue = ({
+
+export const SimpleValue = ({
   name,
   value,
   description,

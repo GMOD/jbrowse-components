@@ -315,21 +315,17 @@ function OverviewScaleBar({
   const scale =
     model.totalBp / (width - (displayedRegions.length - 1) * wholeSeqSpacer)
 
-  if (!displayedRegions.length) {
-    return (
-      <>
-        <div className={classes.scaleBar}>
-          <LinearProgress
-            variant="indeterminate"
-            style={{ marginTop: 4, width: '100%' }}
-          />
-        </div>
-        <div>{children}</div>
-      </>
-    )
-  }
-
-  return (
+  return !displayedRegions.length ? (
+    <>
+      <div className={classes.scaleBar}>
+        <LinearProgress
+          variant="indeterminate"
+          style={{ marginTop: 4, width: '100%' }}
+        />
+      </div>
+      <div>{children}</div>
+    </>
+  ) : (
     <div>
       <OverviewRubberBand
         model={model}

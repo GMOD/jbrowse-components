@@ -58,22 +58,32 @@ exports[`open up a widget 1`] = `
           <div
             class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
           >
-            <div>
+            <p
+              class="MuiTypography-root MuiTypography-body1"
+            >
               Core details
-            </div>
+            </p>
             <div
               class="makeStyles-field"
             >
               <div
                 class="makeStyles-fieldName"
               >
-                Position
+                <p
+                  class="MuiTypography-root MuiTypography-body2"
+                >
+                  Position
+                </p>
               </div>
               <div
                 class="makeStyles-fieldValue"
               >
-                <div>
-                  ctgA:3..102 (+)
+                <div
+                  class="MuiTypography-root MuiTypography-body2"
+                >
+                  <div>
+                    ctgA:3..102 (+)
+                  </div>
                 </div>
               </div>
             </div>
@@ -83,35 +93,53 @@ exports[`open up a widget 1`] = `
               <div
                 class="makeStyles-fieldName"
               >
-                Length
+                <p
+                  class="MuiTypography-root MuiTypography-body2"
+                >
+                  Length
+                </p>
               </div>
               <div
                 class="makeStyles-fieldValue"
               >
-                <div>
-                  100
+                <div
+                  class="MuiTypography-root MuiTypography-body2"
+                >
+                  <div>
+                    100
+                  </div>
                 </div>
               </div>
             </div>
             <hr
               class="MuiDivider-root"
             />
-            <div>
+            <p
+              class="MuiTypography-root MuiTypography-body1"
+            >
               Attributes
-            </div>
+            </p>
             <div
               class="makeStyles-field"
             >
               <div
                 class="makeStyles-fieldName"
               >
-                score
+                <p
+                  class="MuiTypography-root MuiTypography-body2"
+                >
+                  score
+                </p>
               </div>
               <div
                 class="makeStyles-fieldValue"
               >
-                <div>
-                  37
+                <div
+                  class="MuiTypography-root MuiTypography-body2"
+                >
+                  <div>
+                    37
+                  </div>
                 </div>
               </div>
             </div>

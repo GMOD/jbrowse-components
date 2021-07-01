@@ -65,22 +65,32 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
             <div
               class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
             >
-              <div>
+              <p
+                class="MuiTypography-root MuiTypography-body1"
+              >
                 Core details
-              </div>
+              </p>
               <div
                 class="makeStyles-field"
               >
                 <div
                   class="makeStyles-fieldName"
                 >
-                  Position
+                  <p
+                    class="MuiTypography-root MuiTypography-body2"
+                  >
+                    Position
+                  </p>
                 </div>
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div>
-                    ctgA:177..177 
+                  <div
+                    class="MuiTypography-root MuiTypography-body2"
+                  >
+                    <div>
+                      ctgA:177..177 
+                    </div>
                   </div>
                 </div>
               </div>
@@ -90,13 +100,21 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 <div
                   class="makeStyles-fieldName"
                 >
-                  Name
+                  <p
+                    class="MuiTypography-root MuiTypography-body2"
+                  >
+                    Name
+                  </p>
                 </div>
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div>
-                    rs123
+                  <div
+                    class="MuiTypography-root MuiTypography-body2"
+                  >
+                    <div>
+                      rs123
+                    </div>
                   </div>
                 </div>
               </div>
@@ -106,22 +124,32 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 <div
                   class="makeStyles-fieldName"
                 >
-                  Length
+                  <p
+                    class="MuiTypography-root MuiTypography-body2"
+                  >
+                    Length
+                  </p>
                 </div>
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div>
-                    1
+                  <div
+                    class="MuiTypography-root MuiTypography-body2"
+                  >
+                    <div>
+                      1
+                    </div>
                   </div>
                 </div>
               </div>
               <hr
                 class="MuiDivider-root"
               />
-              <div>
+              <p
+                class="MuiTypography-root MuiTypography-body1"
+              >
                 Attributes
-              </div>
+              </p>
               <div
                 class="makeStyles-field"
               >
@@ -129,13 +157,21 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   class="makeStyles-fieldDescription makeStyles-fieldName"
                   title="reference base(s): Each base must be one of A,C,G,T,N (case insensitive)."
                 >
-                  REF
+                  <p
+                    class="MuiTypography-root MuiTypography-body2"
+                  >
+                    REF
+                  </p>
                 </div>
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div>
-                    A
+                  <div
+                    class="MuiTypography-root MuiTypography-body2"
+                  >
+                    <div>
+                      A
+                    </div>
                   </div>
                 </div>
               </div>
@@ -146,13 +182,21 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   class="makeStyles-fieldDescription makeStyles-fieldName"
                   title=" alternate base(s): Comma-separated list of alternate non-reference alleles"
                 >
-                  ALT
+                  <p
+                    class="MuiTypography-root MuiTypography-body2"
+                  >
+                    ALT
+                  </p>
                 </div>
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div>
-                    &lt;TRA&gt;
+                  <div
+                    class="MuiTypography-root MuiTypography-body2"
+                  >
+                    <div>
+                      &lt;TRA&gt;
+                    </div>
                   </div>
                 </div>
               </div>
@@ -163,13 +207,21 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   class="makeStyles-fieldDescription makeStyles-fieldName"
                   title="quality: Phred-scaled quality score for the assertion made in ALT"
                 >
-                  QUAL
+                  <p
+                    class="MuiTypography-root MuiTypography-body2"
+                  >
+                    QUAL
+                  </p>
                 </div>
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div>
-                    10.4
+                  <div
+                    class="MuiTypography-root MuiTypography-body2"
+                  >
+                    <div>
+                      10.4
+                    </div>
                   </div>
                 </div>
               </div>
@@ -179,13 +231,21 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 <div
                   class="makeStyles-fieldName"
                 >
-                  INFO.MQ
+                  <p
+                    class="MuiTypography-root MuiTypography-body2"
+                  >
+                    INFO.MQ
+                  </p>
                 </div>
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div>
-                    5
+                  <div
+                    class="MuiTypography-root MuiTypography-body2"
+                  >
+                    <div>
+                      5
+                    </div>
                   </div>
                 </div>
               </div>
