@@ -106,6 +106,7 @@ Object {
   "name": "assembly1",
   "sequence": Object {
     "adapter": Object {
+      "adapterId": "sequenceConfigAdapterId",
       "features": Array [
         Object {
           "end": 10,

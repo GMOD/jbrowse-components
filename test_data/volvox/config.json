@@ -19,6 +19,7 @@
       "refNameAliases": {
         "adapter": {
           "type": "FromConfigAdapter",
+          "adapterId": "W6DyPGJ0UU",
           "features": [
             {
               "refName": "ctgA",
@@ -600,6 +601,7 @@
       "category": ["Miscellaneous"],
       "adapter": {
         "type": "FromConfigAdapter",
+        "adapterId": "Xvg1McRUAP",
         "features": [
           {
             "uniqueId": "one",
@@ -661,6 +663,7 @@
       "category": ["Miscellaneous"],
       "adapter": {
         "type": "FromConfigAdapter",
+        "adapterId": "DvufUT5OYV",
         "features": [
           {
             "uniqueId": "one",

@@ -39,7 +39,7 @@ export interface ConfigurationSchemaDefinition {
 interface ConfigurationSchemaOptions {
   explicitlyTyped?: boolean
   explicitIdentifier?: string
-  implicitIdentifier?: string
+  implicitIdentifier?: string | boolean
   baseConfiguration?: AnyConfigurationSchemaType
 
   actions?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
