@@ -70,6 +70,7 @@ const stateModelFactory = (
         currentTypeAuthorizing: '',
         codeVerifierPKCE: '',
         selected: false,
+        expireTime: 0,
       }))
       // handleslocation will have to look at config and see what domain it's pointing at
       // i.e if google drive oauth, handlesLocation looks at self.config.endpoint and see if it is the associated endpoint
@@ -78,19 +79,13 @@ const stateModelFactory = (
         handlesLocation(location?: Location): boolean {
           // this will probably look at something in the config which indicates that it is an OAuth pathway,
           // also look at location, if location is set to need authentication it would reutrn true
-          const accountConfig = readConfObject(self.configuration)
-          const validDomains = accountConfig.validDomains
+          const validDomains = self.accountConfig.validDomains
           return (
-            // accountConfig.needsAuthorization &&
             validDomains.length === 0 ||
             validDomains.some((domain: string) =>
               location?.href.includes(domain),
             )
           )
-        },
-
-        get accountConfig() {
-          return readConfObject(self.configuration)
         },
       }))
       .actions(self => ({
@@ -209,11 +204,23 @@ const stateModelFactory = (
         setSelected(bool: boolean) {
           self.selected = bool
         },
-        setAccessToken(token: string) {
+        setAccessTokenInfo(
+          token: string,
+          expireTime: number,
+          generateNew = false,
+        ) {
           self.accessToken = token
-          this.setCurrentTypeAuthorizing('')
+          self.expireTime = expireTime
 
-          console.log(token)
+          const tokenExpirationFromNow = Date.now() + expireTime * 1000
+          if (generateNew) {
+            sessionStorage.setItem(
+              `${self.accountConfig.internetAccountId}-token-${tokenExpirationFromNow}`,
+              token,
+            )
+          }
+
+          this.setCurrentTypeAuthorizing('')
         },
         async exchangeAuthorizationForAccessToken(token: string) {
           if (self.accountConfig) {
@@ -241,10 +248,10 @@ const stateModelFactory = (
             )
 
             const accessToken = await response.json()
-            this.setAccessToken(accessToken.access_token)
-            sessionStorage.setItem(
-              `${self.accountConfig.internetAccountId}-token`,
+            this.setAccessTokenInfo(
               accessToken.access_token,
+              accessToken.expires_in,
+              true,
             )
           }
         },

@@ -15,10 +15,14 @@ if (window && window.location.href.includes('access_token')) {
   const queryStringSearch = new URL(fixedQueryString).search
   const urlParams = new URLSearchParams(queryStringSearch)
   const token = urlParams.get('access_token')
+  const expireTime = urlParams.get('expires_in')
   const parent = window.opener
   if (token && parent) {
-    parent.postMessage({ token: token }, 'http://localhost:3000')
-    window.close()
+    parent.postMessage(
+      { token: token, expireTime: expireTime },
+      parent.location.origin,
+    )
+    // window.close()
   }
 }
 
@@ -28,7 +32,7 @@ if (window && window.location.href.includes('code')) {
   const code = urlParams.get('code')
   const parent = window.opener
   if (code && parent) {
-    parent.postMessage({ code: code }, 'http://localhost:3000')
+    parent.postMessage({ code: code }, parent.location.origin)
     window.close()
   }
 }

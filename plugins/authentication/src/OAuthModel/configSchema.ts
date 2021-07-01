@@ -2,7 +2,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { createInternetAccountConfig } from '@jbrowse/core/pluggableElementTypes/models'
-import { boolean } from 'mobx-state-tree/dist/internal'
 
 function OAuthConfigFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(

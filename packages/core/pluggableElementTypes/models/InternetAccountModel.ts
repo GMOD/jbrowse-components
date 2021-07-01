@@ -7,7 +7,7 @@ import {
   types,
   getEnv,
 } from 'mobx-state-tree'
-import { getConf } from '../../configuration'
+import { getConf, readConfObject } from '../../configuration'
 import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
@@ -47,6 +47,11 @@ export const InternetAccount = types
 
     get internetAccountId() {
       return getConf(self, 'internetAccountId')
+    },
+
+    get accountConfig() {
+      // @ts-ignore
+      return readConfObject(self.configuration)
     },
 
     handlesLocation(location: Location): boolean {

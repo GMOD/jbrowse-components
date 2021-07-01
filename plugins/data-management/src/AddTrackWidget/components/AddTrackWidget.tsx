@@ -16,6 +16,11 @@ import TrackSourceSelect from './TrackSourceSelect'
 import { AddTrackModel } from '../model'
 import { getRoot } from 'mobx-state-tree'
 
+interface Account {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any
+}
+
 const useStyles = makeStyles(theme => ({
   root: {
     marginTop: theme.spacing(1),
@@ -61,10 +66,24 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
 
       const internetAccounts = rootModel.internetAccounts
       const account = internetAccounts.find(
-        (account: any) => account.selected === true,
+        (account: Account) => account.selected === true,
       )
       if (account) {
-        account.openLocation()
+        Object.keys(sessionStorage).forEach(key => {
+          if (key.startsWith(account.internetAccountId)) {
+            const tokenExpirationTime = parseFloat(key.split('-')[2])
+            if (tokenExpirationTime >= Date.now()) {
+              account.setAccessTokenInfo(sessionStorage.getItem(key))
+            } else {
+              // garbage collects any expired tokens
+              sessionStorage.removeItem(key)
+            }
+          }
+        })
+
+        if (!account.accessToken) {
+          account.openLocation()
+        }
       }
       // await account.accessToken !== ''
       // if (account && account.accessToken && trackData && 'uri' in trackData) {
@@ -77,7 +96,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
 
     const internetAccounts = rootModel.internetAccounts
     const account = internetAccounts.find(
-      (account: any) => account.selected === true,
+      (account: Account) => account.selected === true,
     )
     if (account && account.accessToken && trackData && 'uri' in trackData) {
       const fileUri = await account.fetchFile(trackData.uri)

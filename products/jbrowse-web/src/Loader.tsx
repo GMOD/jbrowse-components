@@ -493,7 +493,11 @@ const Renderer = observer(
             // @ts-ignore
             pm.rootModel?.internetAccounts.forEach(account => {
               if (account.currentTypeAuthorizing) {
-                account.setAccessToken(event.data.token)
+                account.setAccessTokenInfo(
+                  event.data.token,
+                  event.data.expireTime,
+                  true,
+                )
               }
             })
           }
