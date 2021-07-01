@@ -138,13 +138,13 @@ freely
 
 #### Rubberband selection
 
-The scale bars accept a click and drag action to select a region
+The scale bars accept a click-and-drag action to select a region. Rubberband selection can be performed on both the main (lower) and overview (upper) scale bars.
 
 <!--
 https://s3.amazonaws.com/jbrowse.org/code/jb2/main/index.html?config=test_data%2Fvolvox%2Fconfig.json&session=share-6_PDCGXnZY&password=sufpR
 -->
 
-<Figure caption="Rubberband selection can be performed on both the region and overview scale bars" src="/img/rubberband.png" />
+<Figure caption="Screenshot of rubberbanding both the main and overview scalebars. The main scalebar produces extra options on selection, e.g. Zoom to region, Get sequence, etc." src="/img/rubberband.png" />
 
 #### Track label positioning
 
