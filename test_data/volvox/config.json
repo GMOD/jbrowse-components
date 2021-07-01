@@ -1465,6 +1465,7 @@
       "tokenEndpoint": "https://api.dropbox.com/oauth2/token",
       "needsAuthorization": true,
       "needsPKCE": true,
+      "hasRefreshToken": true,
       "clientId": "wyngfdvw0ntnj5b",
       "validDomains": [
         "addtodropbox.com",
@@ -1475,6 +1476,12 @@
         "dropbox.tech",
         "getdropbox.com"
       ]
+    },
+    {
+      "type": "ExternalTokenInternetAccount",
+      "internetAccountId": "GDCExternalToken",
+      "name": "GDC",
+      "description": "GDC External Token"
     }
   ]
 }

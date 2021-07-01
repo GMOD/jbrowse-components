@@ -17,6 +17,12 @@ export function createInternetAccountConfig(pluginManager: PluginManager) {
         type: 'string',
         defaultValue: '',
       },
+      authHeader: {
+        description:
+          'the auth header to use during fetch, defaults to Authorization if not provided',
+        type: 'string',
+        defaultValue: 'Authorization',
+      },
       //   metadata: {
       //     type: 'frozen',
       //     description: 'anything to add about this internet account',

@@ -7,12 +7,6 @@ function ExternalTokenConfigFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'ExternalTokenInternetAccount',
     {
-      externalToken: {
-        description:
-          'the token used to access any resources using this account',
-        type: 'string',
-        defaultValue: '',
-      },
       validDomains: {
         description:
           'array of valid domains the url can contain to use this account. Empty = all domains',

@@ -66,10 +66,25 @@ export function openLocation(location: FileLocation): GenericFilehandle {
       if (!location.uri) {
         throw new Error('No URI provided')
       }
-      const optionalHeaders =
-        location.authHeader && location.authToken
-          ? { [location.authHeader]: `${location.authToken}` }
-          : undefined
+      let optionalHeaders = undefined
+      if (location.authHeader && location.authTokenReference) {
+        // const matchingAccessToken = Object.entries(sessionStorage).map(
+        //   entry => {
+        //     const [key, value] = entry
+        //     if (key.includes(location.authTokenReference as string)) {
+        //       return value
+        //     } else {
+        //       return undefined
+        //     }
+        //   },
+        // )
+        const matchingAccessToken = location.authTokenReference
+        if (matchingAccessToken) {
+          optionalHeaders = {
+            [location.authHeader]: `Bearer ${matchingAccessToken}`,
+          }
+        }
+      }
       return openUrl(
         location.baseUri
           ? new URL(location.uri, location.baseUri).href

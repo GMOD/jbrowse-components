@@ -22,7 +22,7 @@ if (window && window.location.href.includes('access_token')) {
       { token: token, expireTime: expireTime },
       parent.location.origin,
     )
-    // window.close()
+    window.close()
   }
 }
 

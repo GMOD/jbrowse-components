@@ -39,6 +39,7 @@ export const InternetAccount = types
   })
   .volatile(() => ({
     loggedIn: false,
+    selected: false,
   }))
   .views(self => ({
     get name() {
@@ -72,6 +73,9 @@ export const InternetAccount = types
     },
     setLoggedIn(bool: boolean) {
       self.loggedIn = bool
+    },
+    setSelected(bool: boolean) {
+      self.selected = bool
     },
   }))
 

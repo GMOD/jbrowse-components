@@ -48,6 +48,11 @@ function OAuthConfigFactory(pluginManager: PluginManager) {
         type: 'string',
         defaultValue: 'code',
       },
+      hasRefreshToken: {
+        description: 'true if the endpoint can supply a refresh token',
+        type: 'boolean',
+        defaultValue: false,
+      },
     },
     {
       baseConfiguration: createInternetAccountConfig(pluginManager),

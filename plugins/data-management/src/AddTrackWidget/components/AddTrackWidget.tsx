@@ -77,6 +77,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
             } else {
               // garbage collects any expired tokens
               sessionStorage.removeItem(key)
+              account.setAccessTokenInfo('')
             }
           }
         })
@@ -100,7 +101,11 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
     )
     if (account && account.accessToken && trackData && 'uri' in trackData) {
       const fileUri = await account.fetchFile(trackData.uri)
-      model.setTrackData({ uri: fileUri })
+      model.setTrackData({
+        uri: fileUri,
+        authHeader: account.accountConfig?.authHeader || 'Authorization',
+        authTokenReference: account.accessToken, // account.internetAccountId,
+      })
       console.log(model.trackAdapter)
     }
 

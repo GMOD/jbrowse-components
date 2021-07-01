@@ -47,6 +47,7 @@ interface OAuthData {
   scope?: string
   code_challenge?: string
   code_challenge_method?: string
+  token_access_type?: string
 }
 
 const stateModelFactory = (
@@ -67,9 +68,9 @@ const stateModelFactory = (
       .volatile(() => ({
         authorizationCode: '',
         accessToken: '',
+        refreshToken: '',
         currentTypeAuthorizing: '',
         codeVerifierPKCE: '',
-        selected: false,
         expireTime: 0,
       }))
       // handleslocation will have to look at config and see what domain it's pointing at
@@ -79,7 +80,7 @@ const stateModelFactory = (
         handlesLocation(location?: Location): boolean {
           // this will probably look at something in the config which indicates that it is an OAuth pathway,
           // also look at location, if location is set to need authentication it would reutrn true
-          const validDomains = self.accountConfig.validDomains
+          const validDomains = self.accountConfig.validDomains || []
           return (
             validDomains.length === 0 ||
             validDomains.some((domain: string) =>
@@ -184,6 +185,10 @@ const stateModelFactory = (
             this.setCodeVerifierPKCE(codeVerifier)
           }
 
+          if (self.accountConfig.hasRefreshToken) {
+            data.token_access_type = 'offline'
+          }
+
           const params = Object.entries(data)
             .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
             .join('&')
@@ -201,14 +206,10 @@ const stateModelFactory = (
         setCodeVerifierPKCE(codeVerifier: string) {
           self.codeVerifierPKCE = codeVerifier
         },
-        setSelected(bool: boolean) {
-          self.selected = bool
+        setRefreshToken(token: string) {
+          self.refreshToken = token
         },
-        setAccessTokenInfo(
-          token: string,
-          expireTime: number,
-          generateNew = false,
-        ) {
+        setAccessTokenInfo(token: string, expireTime = 0, generateNew = false) {
           self.accessToken = token
           self.expireTime = expireTime
 
@@ -253,6 +254,9 @@ const stateModelFactory = (
               accessToken.expires_in,
               true,
             )
+            if (accessToken.refreshToken) {
+              this.setRefreshToken(accessToken.refreshToken)
+            }
           }
         },
         async openLocation(location: Location) {
