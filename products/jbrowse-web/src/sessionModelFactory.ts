@@ -232,6 +232,9 @@ export default function sessionModelFactory(
           self.bookmarkedRegions.splice(index, 1)
         }
       },
+      clearAllBookmarks() {
+        self.bookmarkedRegions.clear()
+      },
       removeSessionPlugin(pluginName: string) {
         const index = self.sessionPlugins.findIndex(
           plugin => `${plugin.name}Plugin` === pluginName,

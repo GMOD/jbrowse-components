@@ -12,6 +12,7 @@ import { NavigableViewModel } from '../types'
 
 import DeleteBookmark from './DeleteBookmark'
 import DownloadBookmarks from './DownloadBookmarks'
+import ClearBookmarks from './ClearBookmarks'
 
 function navToBookmark(locString: string, views: AbstractViewModel[]) {
   const lgv = views.find(
@@ -77,6 +78,7 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
   return (
     <div className={classes.container}>
       <DownloadBookmarks model={model} />
+      <ClearBookmarks model={model} />
       <div style={{ height: 800, width: '100%' }}>
         <DataGrid rows={bookmarkRows} columns={columns} />
       </div>
