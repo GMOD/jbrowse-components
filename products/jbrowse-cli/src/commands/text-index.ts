@@ -1,6 +1,6 @@
 import { flags } from '@oclif/command'
 import JBrowseCommand, { Config } from '../base'
-import fs, { ReadStream, createReadStream, promises } from 'fs'
+import { ReadStream, createReadStream, promises } from 'fs'
 import { Transform, PassThrough } from 'stream'
 import gff from '@gmod/gff'
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
@@ -13,21 +13,6 @@ import { compress } from 'lzutf8'
 import { createGunzip, Gunzip } from 'zlib'
 import { IncomingMessage } from 'http'
 import path from 'path'
-import { getFileInfo } from 'prettier'
-
-type trackConfig = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  adapter: any
-  trackId: string
-  indexingConfiguration: {
-    indexingAdapter: string
-    gzipped: boolean
-    gffLocation: {
-      uri: string
-    }
-  }
-  attributes: Array<String>
-}
 
 export default class TextIndex extends JBrowseCommand {
   // @ts-ignore
@@ -96,7 +81,7 @@ export default class TextIndex extends JBrowseCommand {
           const uri =
             indexConfig[0].indexingConfiguration?.gffLocation.uri || ''
 
-          this.indexDriver(
+          await this.indexDriver(
             uri,
             false,
             indexAttributes,
@@ -123,16 +108,18 @@ export default class TextIndex extends JBrowseCommand {
       }
       const indexAttributes = indexConfig[0]?.attributes || []
 
-      this.indexDriver(uris, false, indexAttributes, fileDirectory).catch(err =>
-        this.error(err),
-      )
+      await this.indexDriver(
+        uris,
+        false,
+        indexAttributes,
+        fileDirectory,
+      ).catch(err => this.error(err))
     } else {
       // aggregate index all in the config so far
       if (runFlags.location) {
         fileDirectory = runFlags.location
       }
 
-      // const trackIds: Array<string> = ['gff3tabix_genes'] // change to get all configured tracks
       const uris: Array<string> = []
       const indexConfig = await this.getIndexingConfigurations(
         [],
@@ -151,9 +138,12 @@ export default class TextIndex extends JBrowseCommand {
         }
       }
 
-      this.indexDriver(uris, false, indexAttributes, fileDirectory).catch(err =>
-        this.error(err),
-      )
+      await this.indexDriver(
+        uris,
+        false,
+        indexAttributes,
+        fileDirectory,
+      ).catch(err => this.error(err))
     }
   }
 
