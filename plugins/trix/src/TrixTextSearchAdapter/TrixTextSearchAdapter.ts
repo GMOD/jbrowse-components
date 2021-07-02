@@ -4,15 +4,11 @@ import {
   BaseArgs,
   BaseAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import BaseResult, {
-  LocStringResult,
-} from '@jbrowse/core/TextSearch/BaseResults'
+import { LocStringResult } from '@jbrowse/core/TextSearch/BaseResults'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { isElectron } from '@jbrowse/core/util'
 import { Instance } from 'mobx-state-tree'
-import { LocalFile, RemoteFile } from 'generic-filehandle'
+import { RemoteFile } from 'generic-filehandle'
 import { decompress } from 'lzutf8'
-import fetch from 'node-fetch'
 
 import MyConfigSchema from './configSchema'
 
@@ -83,7 +79,7 @@ export default class TrixTextSearchAdapter
     }
     // {"Name":["au9.g1002"],"ID":["au9.g1002"],"seq_id":"Group1.36","start":176975,"end":180744}
     const formattedResults = results.map(result => {
-      const { Name, ID, seq_id, start, end } = JSON.parse(result)
+      const { Name, seq_id, start, end } = JSON.parse(result)
       const locString = `${seq_id}:${start}-${end}`
       return new LocStringResult({
         locString,
