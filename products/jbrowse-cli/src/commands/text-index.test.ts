@@ -82,7 +82,7 @@ describe('nongz file', () => {
       `--target=${configPath}`,
       `--location=${outLoc}`,
     ])
-    .it('Indexes a local non-gz gff3 file', async ctx => {
+    .it('Indexes a local non-gz gff3 file', async () => {
       const ixdata = JSON.stringify(
         readFileSync(ixLoc, {
           encoding: 'utf8',
@@ -133,7 +133,7 @@ describe('gz file', () => {
       `--target=${configPath}`,
       `--location=${outLoc}`,
     ])
-    .it('Indexes a local gz gff3 file', async ctx => {
+    .it('Indexes a local gz gff3 file', async () => {
       const ixdata = JSON.stringify(
         readFileSync(ixLoc, {
           encoding: 'utf8',
@@ -172,7 +172,7 @@ describe('text-index tracks', () => {
       `--target=${configPath}`,
       `--location=${outLoc}`,
     ])
-    .it('Indexes a remote gz gff3 file', async ctx => {
+    .it('Indexes a remote gz gff3 file', async () => {
       const ixdata = JSON.stringify(
         readFileSync(ixLoc, {
           encoding: 'utf8',
@@ -212,7 +212,7 @@ describe('text-index tracks', () => {
       `--target=${configPath}`,
       `--location=${outLoc}`,
     ])
-    .it('Indexes a remote non-gz gff3 file', async ctx => {
+    .it('Indexes a remote non-gz gff3 file', async () => {
       const ixdata = JSON.stringify(
         readFileSync(ixLoc, {
           encoding: 'utf8',
@@ -275,7 +275,7 @@ describe('text-index tracks', () => {
       `--target=${configPath}`,
       `--location=${outLoc}`,
     ])
-    .it('Indexes multiple local gff3 files', async ctx => {
+    .it('Indexes multiple local gff3 files', async () => {
       const ixdata = JSON.stringify(
         readFileSync(ixLoc, {
           encoding: 'utf8',
@@ -313,7 +313,7 @@ describe('text-index tracks', () => {
       `--target=${configPath}`,
       `--location=${outLoc}`,
     ])
-    .it('Indexes multiple remote gff3 file', async ctx => {
+    .it('Indexes multiple remote gff3 file', async () => {
       const ixdata = JSON.stringify(
         readFileSync(ixLoc, {
           encoding: 'utf8',
@@ -363,7 +363,7 @@ describe('text-index tracks', () => {
       `--target=${configPath}`,
       `--location=${outLoc}`,
     ])
-    .it('Indexes a remote and a local file', async ctx => {
+    .it('Indexes a remote and a local file', async () => {
       const ixdata = JSON.stringify(
         readFileSync(ixLoc, {
           encoding: 'utf8',

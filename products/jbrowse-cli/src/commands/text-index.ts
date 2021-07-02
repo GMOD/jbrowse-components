@@ -115,7 +115,6 @@ export default class TextIndex extends JBrowseCommand {
         fileDirectory,
       ).catch(err => this.error(err))
     } else {
-      // aggregate index all in the config so far
       if (runFlags.location) {
         fileDirectory = runFlags.location
       }
@@ -545,7 +544,6 @@ export default class TextIndex extends JBrowseCommand {
   ) {
     // are we planning to have target and output flags on this command?
     try {
-      const isFile = (await promises.lstat(configPath)).isFile()
       const config: Config = await this.readJsonFile(configPath)
       if (!config.tracks) {
         this.error(
