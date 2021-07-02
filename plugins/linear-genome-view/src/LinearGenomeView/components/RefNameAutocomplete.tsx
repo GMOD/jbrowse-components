@@ -189,8 +189,7 @@ function RefNameAutocomplete({
       options={searchOptions.length === 0 ? options : searchOptions}
       groupBy={option => String(option.group)}
       filterOptions={(possibleOptions, params) => {
-        // filter(possibleOptions, params)
-        return possibleOptions.slice(0, 100)
+        return filter(possibleOptions, params)
       }}
       ListboxProps={{ style: { maxHeight: 250 } }}
       onChange={(_, selectedOption) => onChange(selectedOption)}
@@ -233,7 +232,7 @@ function RefNameAutocomplete({
           />
         )
       }}
-      renderOption={(option, { inputValue }) => {
+      renderOption={option => {
         const { result } = option
         const rendering = result.getLabel()
         // if renderingComponent is provided render that
@@ -243,14 +242,6 @@ function RefNameAutocomplete({
             return component
           }
         }
-        // if (currentSearch !== '' && inputValue.length <= rendering.length) {
-        //  return (
-        //    <Typography noWrap>
-        //      <b>{rendering.slice(0, inputValue.length)}</b>
-        //      {rendering.slice(inputValue.length)}
-        //    </Typography>
-        //  )
-        // }
         return <Typography noWrap>{rendering}</Typography>
       }}
       getOptionLabel={option => {
