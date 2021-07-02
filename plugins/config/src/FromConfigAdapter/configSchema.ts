@@ -12,7 +12,7 @@ export const configSchema = ConfigurationSchema(
       defaultValue: 'SimpleFeature',
     },
   },
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, implicitIdentifier: 'adapterId' },
 )
 
 export const regionsConfigSchema = ConfigurationSchema(
@@ -27,7 +27,7 @@ export const regionsConfigSchema = ConfigurationSchema(
       defaultValue: 'SimpleFeature',
     },
   },
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, implicitIdentifier: 'adapterId' },
 )
 
 export const sequenceConfigSchema = ConfigurationSchema(
@@ -42,5 +42,5 @@ export const sequenceConfigSchema = ConfigurationSchema(
       defaultValue: 'SimpleFeature',
     },
   },
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, implicitIdentifier: 'adapterId' },
 )

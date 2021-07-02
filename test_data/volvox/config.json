@@ -19,6 +19,7 @@
       "refNameAliases": {
         "adapter": {
           "type": "FromConfigAdapter",
+          "adapterId": "W6DyPGJ0UU",
           "features": [
             {
               "refName": "ctgA",
@@ -68,9 +69,7 @@
       "textSearchAdapterId": "AdapterWithoutAssemblies",
       "namesIndexLocation": {
         "uri": "names/"
-      },
-      "tracks": [],
-      "assemblies": []
+      }
     },
     {
       "type": "JBrowse1TextSearchAdapter",
@@ -78,7 +77,6 @@
       "namesIndexLocation": {
         "uri": "names/"
       },
-      "tracks": [],
       "assemblies": ["volvox3", "volvox4"]
     }
   ],
@@ -89,7 +87,6 @@
       "name": "volvox structural variant test",
       "category": ["VCF"],
       "assemblyNames": ["volvox"],
-      "textSearchIndexingAttributes": ["Name", "ID", "Description"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -107,7 +104,6 @@
         "namesIndexLocation": {
           "uri": "names/"
         },
-        "tracks": [],
         "assemblies": ["NonExistantAssembly"]
       }
     },
@@ -600,6 +596,7 @@
       "category": ["Miscellaneous"],
       "adapter": {
         "type": "FromConfigAdapter",
+        "adapterId": "Xvg1McRUAP",
         "features": [
           {
             "uniqueId": "one",
@@ -661,6 +658,7 @@
       "category": ["Miscellaneous"],
       "adapter": {
         "type": "FromConfigAdapter",
+        "adapterId": "DvufUT5OYV",
         "features": [
           {
             "uniqueId": "one",
@@ -1006,7 +1004,6 @@
           "uri": "volvox-bed12.bed.gz"
         },
         "index": {
-          "type": "TBI",
           "location": {
             "uri": "volvox-bed12.bed.gz.tbi"
           }
@@ -1420,8 +1417,7 @@
         "index": {
           "location": {
             "uri": "single_exon_gene.sorted.gff.gz.tbi"
-          },
-          "indexType": "TBI"
+          }
         }
       }
     }
