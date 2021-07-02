@@ -235,6 +235,10 @@ export default class VCFFeature implements Feature {
       ]
     }
 
+    if (alt.includes('<')) {
+      return ['sv', alt]
+    }
+
     if (ref.length <= alt.length) {
       return ['insertion', this._makeDescriptionString('insertion', ref, alt)]
     }
