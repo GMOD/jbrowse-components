@@ -18,11 +18,9 @@ import BaseResult, {
 // material ui
 import CircularProgress from '@material-ui/core/CircularProgress'
 import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
-import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import SearchIcon from '@material-ui/icons/Search'
 import { InputAdornment } from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles'
 import Autocomplete, {
   createFilterOptions,
 } from '@material-ui/lab/Autocomplete'
@@ -45,11 +43,6 @@ const filter = createFilterOptions<Option>({
   ignoreCase: true,
   limit: 100,
 })
-const useStyles = makeStyles(() => ({
-  customWidth: {
-    maxWidth: 150,
-  },
-}))
 
 async function fetchResults(
   self: LinearGenomeViewModel,
@@ -85,7 +78,6 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
-  const classes = useStyles()
   const session = getSession(model)
   const [open, setOpen] = useState(false)
   const [, setError] = useState<Error>()
