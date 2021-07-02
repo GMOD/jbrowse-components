@@ -34,6 +34,7 @@ import { LinearGenomeViewModel } from '..'
  *  of the materila ui interface
  */
 export interface Option {
+  group?: string
   result: BaseResult
 }
 
@@ -44,7 +45,6 @@ const filter = createFilterOptions<Option>({
   ignoreCase: true,
   limit: 100,
 })
-const helperSearchText = `Search for features or navigate to a location using syntax "chr1:1-100" or "chr1:1..100"`
 const useStyles = makeStyles(() => ({
   customWidth: {
     maxWidth: 150,
@@ -158,8 +158,8 @@ function RefNameAutocomplete({
         })
         onSelect(newResult)
       } else {
-        const { result } = selectedOption
-        if (result?.matchedAttribute === 'more results...') {
+        const { result, group } = selectedOption
+        if (group === 'limitOption') {
           session.notify(
             `More than 100 results, please refine the search`,
             'warning',
@@ -193,20 +193,26 @@ function RefNameAutocomplete({
       }}
       options={searchOptions.length === 0 ? options : searchOptions}
       filterOptions={(possibleOptions, params) => {
-        const limitOption = [
-          {
-            result: new LocStringResult({
-              label: currentSearch || coarseVisibleLocStrings || value,
-              locString: currentSearch || coarseVisibleLocStrings || value,
-              matchedAttribute: 'more results...',
-              renderingComponent: (
-                <Typography noWrap>{'more results...'}</Typography>
-              ),
-            }),
-          },
-        ]
         const filtered = filter(possibleOptions, params)
-        return filtered.length >= 100 ? filtered.concat(limitOption) : filtered
+        if (currentSearch || coarseVisibleLocStrings || value) {
+          const limitOption = [
+            {
+              group: 'limitOption',
+              result: new LocStringResult({
+                label: currentSearch || coarseVisibleLocStrings || value || '',
+                locString:
+                  currentSearch || coarseVisibleLocStrings || value || '',
+                renderingComponent: (
+                  <Typography noWrap>{'more results...'}</Typography>
+                ),
+              }),
+            },
+          ]
+          return filtered.length >= 100
+            ? filtered.concat(limitOption)
+            : filtered
+        }
+        return filtered
       }}
       ListboxProps={{ style: { maxHeight: 250 } }}
       onChange={(_, selectedOption) => onChange(selectedOption)}
@@ -220,16 +226,9 @@ function RefNameAutocomplete({
               {regions.length === 0 && searchOptions.length === 0 ? (
                 <CircularProgress color="inherit" size={20} />
               ) : (
-                <Tooltip
-                  title={helperSearchText}
-                  leaveDelay={300}
-                  placement="top"
-                  classes={{ tooltip: classes.customWidth }}
-                >
-                  <InputAdornment position="end" style={{ marginRight: 7 }}>
-                    <SearchIcon />
-                  </InputAdornment>
-                </Tooltip>
+                <InputAdornment position="end" style={{ marginRight: 7 }}>
+                  <SearchIcon />
+                </InputAdornment>
               )}
               {params.InputProps.endAdornment}
             </>
@@ -249,7 +248,7 @@ function RefNameAutocomplete({
           />
         )
       }}
-      renderOption={(option, { inputValue }) => {
+      renderOption={option => {
         const { result } = option
         const rendering = result.getLabel()
         // if renderingComponent is provided render that
