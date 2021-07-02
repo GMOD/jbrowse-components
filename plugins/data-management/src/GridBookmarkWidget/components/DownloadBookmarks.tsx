@@ -104,6 +104,7 @@ function DownloadBookmarks({ model }: { model: GridBookmarkModel }) {
             <div className={classes.flexContainer}>
               <Select
                 className={classes.flexItem}
+                data-testid="selectFileType"
                 value={fileType}
                 onChange={handleChange}
               >
@@ -112,6 +113,7 @@ function DownloadBookmarks({ model }: { model: GridBookmarkModel }) {
               </Select>
               <Button
                 className={classes.flexItem}
+                data-testid="dialogDownload"
                 variant="contained"
                 color="primary"
                 startIcon={<GetAppIcon />}

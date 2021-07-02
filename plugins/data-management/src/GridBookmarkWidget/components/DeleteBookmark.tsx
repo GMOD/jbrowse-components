@@ -42,7 +42,11 @@ function DeleteBookmark({
 
   return (
     <>
-      <IconButton aria-label="delete" onClick={() => setDialogOpen(true)}>
+      <IconButton
+        data-testid="deleteBookmark"
+        aria-label="delete"
+        onClick={() => setDialogOpen(true)}
+      >
         <DeleteIcon />
       </IconButton>
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
