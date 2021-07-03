@@ -176,25 +176,12 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               style="margin: 7px; min-width: 175px;"
             >
               <div
-                class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
+                class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
                 style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
               >
-                <input
-                  aria-autocomplete="list"
-                  aria-invalid="false"
-                  autocapitalize="none"
-                  autocomplete="off"
-                  class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
-                  id="refNameAutocomplete-lgv"
-                  placeholder="Search for location"
-                  spellcheck="false"
-                  type="text"
-                  value="ctgA:1..100"
-                />
                 <div
-                  class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
-                  style="margin-right: 7px;"
-                  title="Search for features or navigate to a location using syntax \\"chr1:1-100\\" or \\"chr1:1..100\\""
+                  class="MuiInputAdornment-root MuiInputAdornment-positionStart"
+                  style="margin-left: 7px;"
                 >
                   <svg
                     aria-hidden="true"
@@ -204,6 +191,33 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                   >
                     <path
                       d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                    />
+                  </svg>
+                </div>
+                <input
+                  aria-autocomplete="list"
+                  aria-invalid="false"
+                  autocapitalize="none"
+                  autocomplete="off"
+                  class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
+                  id="refNameAutocomplete-lgv"
+                  placeholder="Search for location"
+                  spellcheck="false"
+                  type="text"
+                  value="ctgA:1..100"
+                />
+                <div
+                  class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
+                  style="margin-right: 7px;"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-colorAction"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"
                     />
                   </svg>
                 </div>
@@ -643,25 +657,11 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
             class="MuiFormControl-root MuiTextField-root makeStyles-importFormEntry MuiFormControl-marginNormal MuiFormControl-fullWidth"
           >
             <div
-              class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
+              class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
             >
-              <input
-                aria-autocomplete="list"
-                aria-describedby="refNameAutocomplete-lgv-helper-text"
-                aria-invalid="false"
-                autocapitalize="none"
-                autocomplete="off"
-                class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
-                id="refNameAutocomplete-lgv"
-                placeholder="Search for location"
-                spellcheck="false"
-                type="text"
-                value="ctgA"
-              />
               <div
-                class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
-                style="margin-right: 7px;"
-                title="Search for features or navigate to a location using syntax \\"chr1:1-100\\" or \\"chr1:1..100\\""
+                class="MuiInputAdornment-root MuiInputAdornment-positionStart"
+                style="margin-left: 7px;"
               >
                 <svg
                   aria-hidden="true"
@@ -671,6 +671,34 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
                 >
                   <path
                     d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                  />
+                </svg>
+              </div>
+              <input
+                aria-autocomplete="list"
+                aria-describedby="refNameAutocomplete-lgv-helper-text"
+                aria-invalid="false"
+                autocapitalize="none"
+                autocomplete="off"
+                class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
+                id="refNameAutocomplete-lgv"
+                placeholder="Search for location"
+                spellcheck="false"
+                type="text"
+                value="ctgA"
+              />
+              <div
+                class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
+                style="margin-right: 7px;"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-colorAction"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"
                   />
                 </svg>
               </div>
@@ -928,25 +956,12 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               style="margin: 7px; min-width: 175px;"
             >
               <div
-                class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
+                class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
                 style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
               >
-                <input
-                  aria-autocomplete="list"
-                  aria-invalid="false"
-                  autocapitalize="none"
-                  autocomplete="off"
-                  class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
-                  id="refNameAutocomplete-lgv"
-                  placeholder="Search for location"
-                  spellcheck="false"
-                  type="text"
-                  value="ctgA:1..100;ctgB:1,001..1,698"
-                />
                 <div
-                  class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
-                  style="margin-right: 7px;"
-                  title="Search for features or navigate to a location using syntax \\"chr1:1-100\\" or \\"chr1:1..100\\""
+                  class="MuiInputAdornment-root MuiInputAdornment-positionStart"
+                  style="margin-left: 7px;"
                 >
                   <svg
                     aria-hidden="true"
@@ -956,6 +971,33 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                   >
                     <path
                       d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                    />
+                  </svg>
+                </div>
+                <input
+                  aria-autocomplete="list"
+                  aria-invalid="false"
+                  autocapitalize="none"
+                  autocomplete="off"
+                  class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
+                  id="refNameAutocomplete-lgv"
+                  placeholder="Search for location"
+                  spellcheck="false"
+                  type="text"
+                  value="ctgA:1..100;ctgB:1,001..1,698"
+                />
+                <div
+                  class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
+                  style="margin-right: 7px;"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-colorAction"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"
                     />
                   </svg>
                 </div>
