@@ -32,7 +32,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private maxHeight: number
 
-  private rbush: RBush<any>
+  private rbush: RBush<{ id: string }>
 
   private pTotalHeight: number
 
@@ -43,7 +43,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   } = {}) {
     this.maxHeightReached = false
     this.rbush = new RBush()
-
     this.rectangles = new Map()
     this.maxHeight = Math.ceil(maxHeight)
     this.pTotalHeight = 0 // total height, in units of bitmap squares (px/pitchY)
@@ -89,12 +88,11 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     }
     this.rbush.insert(record)
     this.rectangles.set(id, record)
-
-    this.pTotalHeight = Math.max(this.pTotalHeight || 0, currHeight)
+    this.pTotalHeight = Math.max(this.pTotalHeight, currHeight)
     return currHeight
   }
 
-  collides(r: Rectangle<T>, top: number) {
+  collides() {
     return false
   }
 
@@ -102,7 +100,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
    *  Given a range of X coordinates, deletes all data dealing with
    *  the features.
    */
-  discardRange(left: number, right: number): void {}
+  discardRange(): void {}
 
   hasSeen(id: string): boolean {
     return this.rectangles.has(id)
@@ -110,7 +108,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   getByCoord(x: number, y: number): Record<string, T> | string | undefined {
     const rect = { minX: x, minY: y, maxX: x + 1, maxY: y + 1 }
-    return this.rbush.collides(rect) ? this.rbush.search(rect)[0].name : []
+    console.log('here')
+    return this.rbush.collides(rect)
+      ? this.rbush.search(rect)[0].name
+      : undefined
   }
 
   getByID(id: string): RectTuple | undefined {
@@ -138,8 +139,8 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     const maxHeightReached = false
     for (const [id, rect] of this.rectangles.entries()) {
       const { minX, maxX, minY, maxY } = rect
-      // add +/- pitchX to avoid resolution causing errors
-      if (segmentsIntersect(region.start, region.end, minX, maxX)) {
+      const { start, end } = region
+      if (segmentsIntersect(start, end, minX, maxX)) {
         regionRectangles[id] = [minX, minY, maxX, maxY]
       }
     }
