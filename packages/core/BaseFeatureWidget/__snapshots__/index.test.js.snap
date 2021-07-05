@@ -69,11 +69,7 @@ exports[`open up a widget 1`] = `
               <div
                 class="makeStyles-fieldName"
               >
-                <p
-                  class="MuiTypography-root MuiTypography-body2"
-                >
-                  Position
-                </p>
+                Position
               </div>
               <div
                 class="makeStyles-fieldValue"
@@ -89,11 +85,7 @@ exports[`open up a widget 1`] = `
               <div
                 class="makeStyles-fieldName"
               >
-                <p
-                  class="MuiTypography-root MuiTypography-body2"
-                >
-                  Length
-                </p>
+                Length
               </div>
               <div
                 class="makeStyles-fieldValue"
@@ -117,11 +109,7 @@ exports[`open up a widget 1`] = `
               <div
                 class="makeStyles-fieldName"
               >
-                <p
-                  class="MuiTypography-root MuiTypography-body2"
-                >
-                  score
-                </p>
+                score
               </div>
               <div
                 class="makeStyles-fieldValue"

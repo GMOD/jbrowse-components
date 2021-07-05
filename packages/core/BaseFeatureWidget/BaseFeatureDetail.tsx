@@ -135,13 +135,11 @@ export const FieldName = ({
   return description ? (
     <Tooltip title={description} placement="left">
       <div className={clsx(classes.fieldDescription, classes.fieldName)}>
-        <Typography variant="body2">{val}</Typography>
+        {val}
       </div>
     </Tooltip>
   ) : (
-    <div className={classes.fieldName}>
-      <Typography variant="body2">{val}</Typography>
-    </div>
+    <div className={classes.fieldName}>{val}</div>
   )
 }
 

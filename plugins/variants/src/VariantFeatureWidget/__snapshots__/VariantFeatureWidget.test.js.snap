@@ -76,11 +76,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 <div
                   class="makeStyles-fieldName"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    Position
-                  </p>
+                  Position
                 </div>
                 <div
                   class="makeStyles-fieldValue"
@@ -96,11 +92,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 <div
                   class="makeStyles-fieldName"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    Name
-                  </p>
+                  Name
                 </div>
                 <div
                   class="makeStyles-fieldValue"
@@ -116,11 +108,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 <div
                   class="makeStyles-fieldName"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    Length
-                  </p>
+                  Length
                 </div>
                 <div
                   class="makeStyles-fieldValue"
@@ -145,11 +133,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   class="makeStyles-fieldDescription makeStyles-fieldName"
                   title="reference base(s): Each base must be one of A,C,G,T,N (case insensitive)."
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    REF
-                  </p>
+                  REF
                 </div>
                 <div
                   class="makeStyles-fieldValue"
@@ -166,11 +150,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   class="makeStyles-fieldDescription makeStyles-fieldName"
                   title=" alternate base(s): Comma-separated list of alternate non-reference alleles"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    ALT
-                  </p>
+                  ALT
                 </div>
                 <div
                   class="makeStyles-fieldValue"
@@ -187,11 +167,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   class="makeStyles-fieldDescription makeStyles-fieldName"
                   title="quality: Phred-scaled quality score for the assertion made in ALT"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    QUAL
-                  </p>
+                  QUAL
                 </div>
                 <div
                   class="makeStyles-fieldValue"
@@ -207,11 +183,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 <div
                   class="makeStyles-fieldName"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    INFO.MQ
-                  </p>
+                  INFO.MQ
                 </div>
                 <div
                   class="makeStyles-fieldValue"
