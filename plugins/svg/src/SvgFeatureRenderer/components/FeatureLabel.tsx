@@ -1,4 +1,5 @@
 import React from 'react'
+import { measureText } from '@jbrowse/core/util'
 
 export default function Label(props: {
   text: string
@@ -17,7 +18,7 @@ export default function Label(props: {
     y,
     color = 'black',
     fontHeight = 13,
-    featureWidth,
+    featureWidth = 0,
     reversed,
     allowedWidthExpansion,
     fontWidthScaleFactor = 0.6,
@@ -29,13 +30,15 @@ export default function Label(props: {
       ? featureWidth + allowedWidthExpansion
       : Infinity
 
+  const measuredTextWidth = measureText(text, fontHeight)
+
   return (
     <text
-      x={reversed ? x + (featureWidth || 0) - fontWidth * text.length : x}
+      x={reversed ? x + featureWidth - measuredTextWidth : x}
       y={y + fontHeight}
       style={{ fontSize: fontHeight, fill: color, cursor: 'default' }}
     >
-      {fontWidth * text.length > totalWidth
+      {measuredTextWidth > totalWidth
         ? `${text.slice(0, totalWidth / fontWidth)}...`
         : text}
     </text>
