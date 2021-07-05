@@ -93,7 +93,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 <div
                   class="makeStyles-scaleBar"
                 >
-<<<<<<< HEAD
                   <div
                     class="makeStyles-scaleBarVisibleRegion"
                     style="width: 267px; left: 0px;"
@@ -112,91 +111,47 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     >
                       ctgA
                     </p>
-                    <div
-                      class="makeStyles-scaleBarLabel"
+                    <p
+                      class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                       style="left: 133.33333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
                     >
                       20
-                    </div>
-                    <div
-                      class="makeStyles-scaleBarLabel"
+                    </p>
+                    <p
+                      class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                       style="left: 266.6666666666667px; pointer-events: none; color: rgb(153, 102, 0);"
                     >
                       40
-                    </div>
-                    <div
-                      class="makeStyles-scaleBarLabel"
+                    </p>
+                    <p
+                      class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                       style="left: 400px; pointer-events: none; color: rgb(153, 102, 0);"
                     >
                       60
-                    </div>
-                    <div
-                      class="makeStyles-scaleBarLabel"
+                    </p>
+                    <p
+                      class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                       style="left: 533.3333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
                     >
                       80
-                    </div>
-                    <div
-                      class="makeStyles-scaleBarLabel"
+                    </p>
+                    <p
+                      class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                       style="left: 666.6666666666667px; pointer-events: none; color: rgb(153, 102, 0);"
                     >
                       100
-                    </div>
-                    <div
-                      class="makeStyles-scaleBarLabel"
+                    </p>
+                    <p
+                      class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                       style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
                     >
                       120
-                    </div>
+                    </p>
                   </div>
                   <div
                     class="makeStyles-scaleBarContig"
                     style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
                   />
-=======
-                  <p
-                    class="MuiTypography-root makeStyles-scaleBarRefName MuiTypography-body1"
-                    style="color: rgb(153, 102, 0);"
-                  >
-                    ctgA
-                  </p>
-                  <p
-                    class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
-                    style="left: 133.33333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
-                  >
-                    20
-                  </p>
-                  <p
-                    class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
-                    style="left: 266.6666666666667px; pointer-events: none; color: rgb(153, 102, 0);"
-                  >
-                    40
-                  </p>
-                  <p
-                    class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
-                    style="left: 400px; pointer-events: none; color: rgb(153, 102, 0);"
-                  >
-                    60
-                  </p>
-                  <p
-                    class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
-                    style="left: 533.3333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
-                  >
-                    80
-                  </p>
-                  <p
-                    class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
-                    style="left: 666.6666666666667px; pointer-events: none; color: rgb(153, 102, 0);"
-                  >
-                    100
-                  </p>
-                  <p
-                    class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
-                    style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
-                  >
-                    120
-                  </p>
->>>>>>> 27747efc7... Update snaps, fix issue with making SanitizedHTML wrapped in a
                 </div>
               </div>
             </div>

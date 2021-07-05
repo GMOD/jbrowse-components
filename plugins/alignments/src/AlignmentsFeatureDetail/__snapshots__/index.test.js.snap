@@ -85,12 +85,8 @@ exports[`open up a widget 1`] = `
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    <div>
-                      ctgA:3..102 (+)
-                    </div>
+                  <div>
+                    ctgA:3..102 (+)
                   </div>
                 </div>
               </div>
@@ -109,12 +105,8 @@ exports[`open up a widget 1`] = `
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    <div>
-                      ctgA_3_555_0:0:0_2:0:0_102d
-                    </div>
+                  <div>
+                    ctgA_3_555_0:0:0_2:0:0_102d
                   </div>
                 </div>
               </div>
@@ -133,12 +125,8 @@ exports[`open up a widget 1`] = `
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    <div>
-                      100
-                    </div>
+                  <div>
+                    100
                   </div>
                 </div>
               </div>
@@ -157,12 +145,8 @@ exports[`open up a widget 1`] = `
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    <div>
-                      match
-                    </div>
+                  <div>
+                    match
                   </div>
                 </div>
               </div>
@@ -189,12 +173,8 @@ exports[`open up a widget 1`] = `
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    <div>
-                      TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
-                    </div>
+                  <div>
+                    TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
                   </div>
                 </div>
               </div>
@@ -213,12 +193,8 @@ exports[`open up a widget 1`] = `
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    <div>
-                      37
-                    </div>
+                  <div>
+                    37
                   </div>
                 </div>
               </div>
@@ -237,22 +213,18 @@ exports[`open up a widget 1`] = `
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div
-                    class="MuiTypography-root MuiTypography-body2"
+                  <button
+                    type="button"
                   >
-                    <button
-                      type="button"
-                    >
-                      Copy
-                    </button>
-                    <button
-                      type="button"
-                    >
-                      Show more
-                    </button>
-                    <div>
-                      17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 1...
-                    </div>
+                    Copy
+                  </button>
+                  <button
+                    type="button"
+                  >
+                    Show more
+                  </button>
+                  <div>
+                    17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 1...
                   </div>
                 </div>
               </div>
@@ -271,12 +243,8 @@ exports[`open up a widget 1`] = `
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    <div>
-                      37
-                    </div>
+                  <div>
+                    37
                   </div>
                 </div>
               </div>
@@ -295,12 +263,8 @@ exports[`open up a widget 1`] = `
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    <div>
-                      100M
-                    </div>
+                  <div>
+                    100M
                   </div>
                 </div>
               </div>
@@ -319,12 +283,8 @@ exports[`open up a widget 1`] = `
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    <div>
-                      100
-                    </div>
+                  <div>
+                    100
                   </div>
                 </div>
               </div>
@@ -343,12 +303,8 @@ exports[`open up a widget 1`] = `
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    <div>
-                      0
-                    </div>
+                  <div>
+                    0
                   </div>
                 </div>
               </div>
@@ -367,12 +323,8 @@ exports[`open up a widget 1`] = `
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    <div>
-                      100
-                    </div>
+                  <div>
+                    100
                   </div>
                 </div>
               </div>

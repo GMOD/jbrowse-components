@@ -149,22 +149,13 @@ export const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
   const classes = useStyles()
   return (
     <div className={classes.fieldValue}>
-      <Typography
-        component={({ children, ...rest }) => {
-          // use a div instead of <p> to avoid nesting SanitizedHTML <div>
-          // contents in a <p>
-          return <div {...rest}>{children}</div>
-        }}
-        variant="body2"
-      >
-        {React.isValidElement(value) ? (
-          value
-        ) : (
-          <SanitizedHTML
-            html={isObject(value) ? JSON.stringify(value) : String(value)}
-          />
-        )}
-      </Typography>
+      {React.isValidElement(value) ? (
+        value
+      ) : (
+        <SanitizedHTML
+          html={isObject(value) ? JSON.stringify(value) : String(value)}
+        />
+      )}
     </div>
   )
 }

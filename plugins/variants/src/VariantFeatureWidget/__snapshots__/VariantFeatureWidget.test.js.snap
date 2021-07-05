@@ -85,12 +85,8 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    <div>
-                      ctgA:177..177 
-                    </div>
+                  <div>
+                    ctgA:177..177 
                   </div>
                 </div>
               </div>
@@ -109,12 +105,8 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    <div>
-                      rs123
-                    </div>
+                  <div>
+                    rs123
                   </div>
                 </div>
               </div>
@@ -133,12 +125,8 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    <div>
-                      1
-                    </div>
+                  <div>
+                    1
                   </div>
                 </div>
               </div>
@@ -166,12 +154,8 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    <div>
-                      A
-                    </div>
+                  <div>
+                    A
                   </div>
                 </div>
               </div>
@@ -191,12 +175,8 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    <div>
-                      &lt;TRA&gt;
-                    </div>
+                  <div>
+                    &lt;TRA&gt;
                   </div>
                 </div>
               </div>
@@ -216,12 +196,8 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    <div>
-                      10.4
-                    </div>
+                  <div>
+                    10.4
                   </div>
                 </div>
               </div>
@@ -240,12 +216,8 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 <div
                   class="makeStyles-fieldValue"
                 >
-                  <div
-                    class="MuiTypography-root MuiTypography-body2"
-                  >
-                    <div>
-                      5
-                    </div>
+                  <div>
+                    5
                   </div>
                 </div>
               </div>

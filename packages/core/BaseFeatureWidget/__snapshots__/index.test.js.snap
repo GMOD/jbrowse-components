@@ -78,12 +78,8 @@ exports[`open up a widget 1`] = `
               <div
                 class="makeStyles-fieldValue"
               >
-                <div
-                  class="MuiTypography-root MuiTypography-body2"
-                >
-                  <div>
-                    ctgA:3..102 (+)
-                  </div>
+                <div>
+                  ctgA:3..102 (+)
                 </div>
               </div>
             </div>
@@ -102,12 +98,8 @@ exports[`open up a widget 1`] = `
               <div
                 class="makeStyles-fieldValue"
               >
-                <div
-                  class="MuiTypography-root MuiTypography-body2"
-                >
-                  <div>
-                    100
-                  </div>
+                <div>
+                  100
                 </div>
               </div>
             </div>
@@ -134,12 +126,8 @@ exports[`open up a widget 1`] = `
               <div
                 class="makeStyles-fieldValue"
               >
-                <div
-                  class="MuiTypography-root MuiTypography-body2"
-                >
-                  <div>
-                    37
-                  </div>
+                <div>
+                  37
                 </div>
               </div>
             </div>
