@@ -17,44 +17,31 @@ function segmentsIntersect(
 }
 
 export default class GranularRectLayout<T> implements BaseLayout<T> {
-  private hardRowLimit: number
-
   private rectangles: Map<
     string,
-    Rectangle<{
+    {
       minY: number
       maxY: number
       minX: number
       maxX: number
       id: string
-    }>
+    }
   >
 
   public maxHeightReached: boolean
 
   private maxHeight: number
 
-  private displayMode: string
-
   private rbush: RBush<any>
 
   private pTotalHeight: number
 
-  /*
-   * maxHeight - maximum layout height, default Infinity (no max)
-   */
   constructor({
     maxHeight = 10000,
-    hardRowLimit = 3000,
-    displayMode = 'normal',
   }: {
     maxHeight?: number
-    displayMode?: string
-    hardRowLimit?: number
   } = {}) {
-    this.hardRowLimit = hardRowLimit
     this.maxHeightReached = false
-    this.displayMode = displayMode
     this.rbush = new RBush()
 
     this.rectangles = new Map()
@@ -89,10 +76,8 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       }) &&
       currHeight <= this.maxHeight
     ) {
-      currHeight += height
+      currHeight += 3
     }
-
-    currHeight = currHeight
 
     const record = {
       minX: left,
@@ -107,6 +92,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
     this.pTotalHeight = Math.max(this.pTotalHeight || 0, currHeight)
     return currHeight
+  }
+
+  collides(r: Rectangle<T>, top: number) {
+    return false
   }
 
   /**
@@ -125,10 +114,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   }
 
   getByID(id: string): RectTuple | undefined {
-    const r = this.rectangles.get(id)
-    if (r) {
-      const t = r.top as number
-      return [r.l, t, r.r, t + r.originalHeight]
+    const rect = this.rectangles.get(id)
+    if (rect) {
+      const { minX, maxX, minY, maxY } = rect
+      return [minX, minY, maxX, maxY]
     }
 
     return undefined
@@ -142,17 +131,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   get totalHeight() {
     return this.getTotalHeight()
-  }
-
-  getRectangles(): Map<string, RectTuple> {
-    return new Map(
-      Array.from(this.rectangles.entries()).map(([id, rect]) => {
-        const { l, r, originalHeight, top } = rect
-        const t = top || 0
-        const b = t + originalHeight
-        return [id, [l, t, r, b]] // left, top, right, bottom
-      }),
-    )
   }
 
   serializeRegion(region: { start: number; end: number }): SerializedLayout {
@@ -173,10 +151,13 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     }
   }
 
+  getRectangles() {
+    return {}
+  }
+
   toJSON(): SerializedLayout {
-    const rectangles = objectFromEntries(this.getRectangles())
     return {
-      rectangles,
+      rectangles: {},
       totalHeight: this.getTotalHeight(),
       maxHeightReached: this.maxHeightReached,
     }
