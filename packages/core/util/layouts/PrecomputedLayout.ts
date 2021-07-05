@@ -26,7 +26,6 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
 
   constructor({ rectangles, totalHeight, maxHeightReached }: SerializedLayout) {
     this.rectangles = new Map(Object.entries(rectangles))
-    // rectangles is of the form "featureId": [leftPx, topPx, rightPx, bottomPx]
     this.totalHeight = totalHeight
     this.maxHeightReached = maxHeightReached
     this.rbush = new RBush()
@@ -67,7 +66,9 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
 
   getByCoord(x: number, y: number) {
     const rect = { minX: x, minY: y, maxX: x + 1, maxY: y + 1 }
-    return this.rbush.collides(rect) ? this.rbush.search(rect)[0].name : []
+    return this.rbush.collides(rect)
+      ? this.rbush.search(rect)[0].name
+      : undefined
   }
 
   getByID(id: string) {
