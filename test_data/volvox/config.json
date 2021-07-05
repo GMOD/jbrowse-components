@@ -1424,7 +1424,7 @@
     {
       "type": "VariantTrack",
       "trackId": "volvox.inv.vcf",
-      "name": "volvox.inv.vcf",
+      "name": "volvox inversions",
       "category": ["VCF"],
       "assemblyNames": ["volvox"],
       "adapter": {
@@ -1472,4 +1472,3 @@
     }
   }
 }
-

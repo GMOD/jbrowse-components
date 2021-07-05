@@ -2282,6 +2282,38 @@ Object {
       "trackId": "single_exon_gene",
       "type": "FeatureTrack",
     },
+    Object {
+      "adapter": Object {
+        "index": Object {
+          "location": Object {
+            "uri": "volvox.inv.vcf.gz.tbi",
+          },
+        },
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": Object {
+          "uri": "volvox.inv.vcf.gz",
+        },
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "VCF",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox.inv.vcf-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
+        },
+        Object {
+          "displayId": "volvox.inv.vcf-LinearVariantDisplay",
+          "type": "LinearVariantDisplay",
+        },
+      ],
+      "name": "volvox inversions",
+      "trackId": "volvox.inv.vcf",
+      "type": "VariantTrack",
+    },
   ],
 }
 `;
