@@ -78,19 +78,22 @@ export default class VCFFeature implements Feature {
     return this._id
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dataFromVariant(variant: any): FeatureData {
+  dataFromVariant(variant: {
+    REF: string
+    POS: number
+    ALT: (string | Breakend)[]
+    CHROM: string
+    INFO: any // eslint-disable-line @typescript-eslint/no-explicit-any
+    ID: string[]
+  }): FeatureData {
     const { REF, ALT, POS, CHROM, INFO, ID } = variant
     const start = POS - 1
     const [SO_term, description] = this._getSOTermAndDescription(REF, ALT)
-    const isTRA = ALT && ALT.some((f: string | Breakend) => f === '<TRA>')
-    const isSymbolic =
-      ALT &&
-      ALT.some(
-        (f: string | Breakend) =>
-          typeof f === 'string' && f.indexOf('<') !== -1,
-      )
-    const featureData: FeatureData = {
+    const isTRA = ALT?.some(f => f === '<TRA>')
+    const isSymbolic = ALT?.some(
+      f => typeof f === 'string' && f.indexOf('<') !== -1,
+    )
+    return {
       refName: CHROM,
       start,
       end: isSymbolic && INFO.END && !isTRA ? +INFO.END[0] : start + REF.length,
@@ -99,8 +102,6 @@ export default class VCFFeature implements Feature {
       name: ID ? ID[0] : undefined,
       aliases: ID && ID.length > 1 ? variant.ID.slice(1) : undefined,
     }
-
-    return featureData
   }
 
   /**
@@ -108,7 +109,7 @@ export default class VCFFeature implements Feature {
    */
   _getSOTermAndDescription(
     ref: string,
-    alt: string[],
+    alt: (string | Breakend)[],
   ): [string, string] | [undefined, undefined] {
     // it's just a remark if there are no alternate alleles
     if (!alt || alt === []) {
@@ -175,10 +176,7 @@ export default class VCFFeature implements Feature {
   ): [string, string] | [undefined, undefined] {
     // not a symbolic ALT if doesn't begin with '<', so we'll have no definition
     if (typeof alt === 'object') {
-      return [
-        'breakend',
-        'A VCF breakend defines one end of a point of structural variation',
-      ]
+      return ['breakend', alt.toString()]
     }
 
     if (typeof alt === 'string' && !alt.startsWith('<')) {
@@ -209,6 +207,7 @@ export default class VCFFeature implements Feature {
         `<${modAlt.slice(0, modAlt.length - 1).join(':')}>`,
       )
     }
+
     // no parent
     return [undefined, undefined]
   }
@@ -220,11 +219,17 @@ export default class VCFFeature implements Feature {
     if (typeof alt === 'object') {
       return ['breakend', this._makeDescriptionString('breakend', ref, alt)]
     }
+
     if (ref.length === 1 && alt.length === 1) {
       // use SNV because SO definition of SNP says abundance must be at
       // least 1% in population, and can't be sure we meet that
       return ['SNV', this._makeDescriptionString('SNV', ref, alt)]
     }
+
+    if (alt.includes('<')) {
+      return ['sv', alt]
+    }
+
     if (ref.length === alt.length) {
       if (ref.split('').reverse().join('') === alt) {
         return ['inversion', this._makeDescriptionString('inversion', ref, alt)]
@@ -233,10 +238,6 @@ export default class VCFFeature implements Feature {
         'substitution',
         this._makeDescriptionString('substitution', ref, alt),
       ]
-    }
-
-    if (alt.includes('<')) {
-      return ['sv', alt]
     }
 
     if (ref.length <= alt.length) {
