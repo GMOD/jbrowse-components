@@ -120,6 +120,7 @@ export default class VCFFeature implements Feature {
     let descriptions: Set<string> = new Set()
     alt.forEach(a => {
       let [soTerm, description] = this._getSOAndDescFromAltDefs(ref, a)
+
       if (!soTerm) {
         ;[soTerm, description] = this._getSOAndDescByExamination(ref, a)
       }
@@ -128,27 +129,28 @@ export default class VCFFeature implements Feature {
         descriptions.add(description)
       }
     })
+
     // Combine descriptions like ["SNV G -> A", "SNV G -> T"] to ["SNV G -> A,T"]
     if (descriptions.size > 1) {
-      const prefixes: Set<string> = new Set()
-      descriptions.forEach(desc => {
-        const prefix = /(\w+? \w+? -> )(?:<)\w+(?:>)/.exec(desc)
-        if (prefix && prefix[1]) {
-          prefixes.add(prefix[1])
-        } else {
-          prefixes.add(desc)
-        }
+      const prefixes = new Set(
+        [...descriptions].map(desc => {
+          const prefix = desc.split('->')
+          return prefix[1] ? prefix[0] : desc
+        }),
+      )
+
+      const new_descs = [...prefixes].map(prefix => {
+        const suffixes = [...descriptions]
+          .map(desc => {
+            const pref = desc.split('->')
+            return pref[1] && pref[0] === prefix ? pref[1] : ''
+          })
+          .filter(f => !!f)
+        return suffixes.length
+          ? prefix + ' -> ' + suffixes.join(',')
+          : [...descriptions].join(',')
       })
-      const new_descs: string[] = []
-      ;[...prefixes].forEach((prefix: string) => {
-        const suffixes: string[] = []
-        ;[...descriptions].forEach((desc: string) => {
-          if (desc.startsWith(prefix)) {
-            suffixes.push(desc.slice(prefix.length))
-          }
-        })
-        new_descs.push(prefix + suffixes.join(','))
-      })
+
       descriptions = new Set(new_descs)
     }
     if (soTerms.size) {
@@ -183,8 +185,6 @@ export default class VCFFeature implements Feature {
       return [undefined, undefined]
     }
 
-    alt = alt.replace(/^<|>$/g, '') // trim off < and >
-
     // look for a definition with an SO type for this
     let soTerm = VCFFeature._altTypeToSO[alt]
     // if no SO term but ALT is in metadata, assume sequence_variant
@@ -192,11 +192,11 @@ export default class VCFFeature implements Feature {
       soTerm = 'sequence_variant'
     }
     if (soTerm) {
-      const metaDescription = this.parser.getMetadata('ALT', alt, 'Description')
-      const description = metaDescription
-        ? `${alt} - ${metaDescription}`
-        : this._makeDescriptionString(soTerm, ref, alt)
-      return [soTerm, description]
+      // const metaDescription = this.parser.getMetadata('ALT', alt, 'Description')
+      // const description = metaDescription
+      //   ? `${alt} - ${metaDescription}`
+      //   : this._makeDescriptionString(soTerm, ref, alt)
+      return [soTerm, alt]
     }
 
     // try to look for a definition for a parent term if we can
