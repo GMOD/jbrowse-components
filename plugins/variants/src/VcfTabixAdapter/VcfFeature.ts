@@ -142,12 +142,13 @@ export default class VCFFeature implements Feature {
       const new_descs = [...prefixes].map(prefix => {
         const suffixes = [...descriptions]
           .map(desc => {
-            const pref = desc.split('->')
+            const pref = desc.split('-> ')
             return pref[1] && pref[0] === prefix ? pref[1] : ''
           })
           .filter(f => !!f)
+
         return suffixes.length
-          ? prefix + ' -> ' + suffixes.join(',')
+          ? prefix + '-> ' + suffixes.join(',')
           : [...descriptions].join(',')
       })
 
