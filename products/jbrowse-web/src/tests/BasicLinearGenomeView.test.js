@@ -327,7 +327,7 @@ describe('valid file tests', () => {
     fireEvent.click(await findByText('ctgA:200..240'))
     const newRegion = state.session.views[0].getSelectedRegions(
       state.session.views[0].leftOffset,
-      state.session.views[0].leftOffset,
+      state.session.views[0].rightOffset,
     )[0]
     expect(newRegion.key).toEqual('{volvox}ctgA:200.004..240.004-0')
   })
