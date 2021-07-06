@@ -694,7 +694,7 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
               class="MuiFormHelperText-root MuiFormHelperText-contained MuiFormHelperText-filled"
               id="refNameAutocomplete-lgv-helper-text"
             >
-              Enter a sequence or locstring
+              Enter a sequence or location
             </p>
           </div>
         </div>

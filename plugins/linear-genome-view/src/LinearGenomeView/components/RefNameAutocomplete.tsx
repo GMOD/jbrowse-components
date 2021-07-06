@@ -82,7 +82,7 @@ function RefNameAutocomplete({
   const [open, setOpen] = useState(false)
   const [, setError] = useState<Error>()
   const [currentSearch, setCurrentSearch] = useState('')
-  const debouncedSearch = useDebounce(currentSearch, 350)
+  const debouncedSearch = useDebounce(currentSearch, 300)
   const [searchOptions, setSearchOptions] = useState<Option[]>([])
   const { assemblyManager } = session
   const { coarseVisibleLocStrings } = model
@@ -91,9 +91,9 @@ function RefNameAutocomplete({
     return (assembly && assembly.regions) || []
   }, [assembly])
   // default options for dropdown
-  const options: Array<Option> = useMemo(() => {
+  const options: Option[] = useMemo(() => {
     const defaultOptions = regions.map(option => {
-      const defaultOption: Option = {
+      const defaultOption = {
         result: new RefSequenceResult({
           refName: option.refName,
           label: option.refName,
@@ -121,10 +121,7 @@ function RefNameAutocomplete({
         }
         if (results.length > 0 && active) {
           const adapterResults: Option[] = results.map(result => {
-            const newOption: Option = {
-              result,
-            }
-            return newOption
+            return { result }
           })
           setSearchOptions(adapterResults)
         }
