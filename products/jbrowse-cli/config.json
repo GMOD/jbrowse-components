@@ -58,7 +58,7 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "au9_scaffold_subset_sync.gff3"
+          "uri": "test/data/au9_scaffold_subset_sync.gff3"
         },
         "index": {
           "location": {
@@ -77,7 +77,7 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "volvox.sort.gff3.gz"
+          "uri": "test/data/volvox.sort.gff3.gz"
         },
         "index": {
           "location": {
