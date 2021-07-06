@@ -8,14 +8,7 @@ import path from 'path'
 import { readFile } from 'fs-extra'
 
 const fsPromises = fs.promises
-const configPath = path.join(
-  __dirname,
-  '..',
-  '..',
-  'test',
-  'data',
-  'test_config.json',
-)
+const configPath = path.join(__dirname, '..', '..', 'config.json')
 const outLoc = path.join(__dirname, '..', '..', 'test', 'data')
 const ixLoc = path.join(__dirname, '..', '..', 'test', 'data', 'out.ix')
 const ixxLoc = path.join(__dirname, '..', '..', 'test', 'data', 'out.ixx')
@@ -50,7 +43,7 @@ describe('textIndexCommandErrors', () => {
 })
 
 // Non-Gzipped File
-describe('nongz file', () => {
+describe('text-index tracks', () => {
   setup
     .do(async ctx => {
       const gff3File = path.join(
@@ -101,7 +94,7 @@ describe('nongz file', () => {
 })
 
 // Gzipped File
-describe('gz file', () => {
+describe('text-index tracks', () => {
   setup
     .do(async ctx => {
       const gff3File = path.join(
