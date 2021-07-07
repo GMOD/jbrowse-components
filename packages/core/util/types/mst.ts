@@ -53,6 +53,7 @@ export const UriLocationRaw = types.model('UriLocation', {
   uri: types.string, // TODO: refine
   authHeader: types.maybe(types.string),
   authTokenReference: types.maybe(types.string),
+  baseAuthUri: types.maybe(types.string),
   baseUri: types.maybe(types.string),
 })
 

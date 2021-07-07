@@ -11,6 +11,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { OAuthInternetAccountConfigModel } from './configSchema'
 import crypto from 'crypto'
 import { addDisposer, getSnapshot, Instance, types } from 'mobx-state-tree'
+import { openLocation } from '@jbrowse/core/util/io'
 
 // Notes go here:
 // instead of laying out the abstractions first,
@@ -81,14 +82,106 @@ const stateModelFactory = (
           // this will probably look at something in the config which indicates that it is an OAuth pathway,
           // also look at location, if location is set to need authentication it would reutrn true
           const validDomains = self.accountConfig.validDomains || []
-          return (
-            validDomains.length === 0 ||
-            validDomains.some((domain: string) =>
-              location?.href.includes(domain),
-            )
+          return validDomains.some((domain: string) =>
+            location?.href.includes(domain),
           )
         },
       }))
+      .actions(self => ({
+        setCurrentTypeAuthorizing(type: string) {
+          self.currentTypeAuthorizing = type
+        },
+        setCodeVerifierPKCE(codeVerifier: string) {
+          self.codeVerifierPKCE = codeVerifier
+        },
+        async useEndpointForAuthorization() {
+          const data: OAuthData = {
+            client_id: self.accountConfig.clientId,
+            redirect_uri: 'http://localhost:3000',
+            response_type: self.accountConfig.responseType || 'code',
+          }
+
+          this.setCurrentTypeAuthorizing(self.accountConfig.internetAccountId)
+
+          if (self.accountConfig.scopes) {
+            data.scope = self.accountConfig.scopes
+          }
+
+          if (self.accountConfig.needsPKCE) {
+            const base64Encode = (buf: Buffer) => {
+              return buf
+                .toString('base64')
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=/g, '')
+            }
+            const codeVerifier = base64Encode(crypto.randomBytes(32))
+            const sha256 = (str: string) => {
+              return crypto.createHash('sha256').update(str).digest()
+            }
+            const codeChallenge = base64Encode(sha256(codeVerifier))
+            data.code_challenge = codeChallenge
+            data.code_challenge_method = 'S256'
+
+            this.setCodeVerifierPKCE(codeVerifier)
+          }
+
+          if (self.accountConfig.hasRefreshToken) {
+            data.token_access_type = 'offline'
+          }
+
+          const params = Object.entries(data)
+            .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
+            .join('&')
+
+          const url = `${self.accountConfig.authEndpoint}?${params}`
+          const options = `width=500,height=600,left=0,top=0`
+          return window.open(url, 'Authorization', options)
+        },
+      }))
+      .actions(self => {
+        let location: Location | undefined = undefined
+        let resolve: Function | undefined = undefined
+        return {
+          setAccessTokenInfo(
+            token: string,
+            expireTime = 0,
+            generateNew = false,
+          ) {
+            self.accessToken = token
+            self.expireTime = expireTime
+
+            const tokenExpirationFromNow = Date.now() + expireTime * 1000
+            if (generateNew) {
+              sessionStorage.setItem(
+                `${self.accountConfig.internetAccountId}-token-${tokenExpirationFromNow}`,
+                token,
+              )
+            }
+
+            self.setCurrentTypeAuthorizing('')
+            // TODO need to set up the uri so that it is the correct link, will probably need to 
+            // do fetchfile stuff and get the correct link
+            // @ts-ignore
+            resolve(
+              openLocation({
+                uri: 'https://example.com',
+                authHeader: 'Authorization',
+                authTokenReference: self.accessToken,
+              }),
+            )
+            resolve = undefined
+            location = undefined
+          },
+          async openLocation(l: Location) {
+            location = l
+            return new Promise(r => {
+              self.useEndpointForAuthorization()
+              resolve = r
+            })
+          },
+        }
+      })
       .actions(self => ({
         async fetchFile(location: string) {
           if (!location || !self.accessToken) {
@@ -153,76 +246,26 @@ const stateModelFactory = (
             }
           }
         },
-        async useEndpointForAuthorization() {
-          const data: OAuthData = {
-            client_id: self.accountConfig.clientId,
-            redirect_uri: 'http://localhost:3000',
-            response_type: self.accountConfig.responseType || 'code',
-          }
-
-          this.setCurrentTypeAuthorizing(self.accountConfig.internetAccountId)
-
-          if (self.accountConfig.scopes) {
-            data.scope = self.accountConfig.scopes
-          }
-
-          if (self.accountConfig.needsPKCE) {
-            const base64Encode = (buf: Buffer) => {
-              return buf
-                .toString('base64')
-                .replace(/\+/g, '-')
-                .replace(/\//g, '_')
-                .replace(/=/g, '')
-            }
-            const codeVerifier = base64Encode(crypto.randomBytes(32))
-            const sha256 = (str: string) => {
-              return crypto.createHash('sha256').update(str).digest()
-            }
-            const codeChallenge = base64Encode(sha256(codeVerifier))
-            data.code_challenge = codeChallenge
-            data.code_challenge_method = 'S256'
-
-            this.setCodeVerifierPKCE(codeVerifier)
-          }
-
-          if (self.accountConfig.hasRefreshToken) {
-            data.token_access_type = 'offline'
-          }
-
-          const params = Object.entries(data)
-            .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
-            .join('&')
-
-          const url = `${self.accountConfig.authEndpoint}?${params}`
-          const options = `width=500,height=600,left=0,top=0`
-          return window.open(url, 'Authorization', options)
-        },
         setAuthorizationCode(code: string) {
           self.authorizationCode = code
-        },
-        setCurrentTypeAuthorizing(type: string) {
-          self.currentTypeAuthorizing = type
-        },
-        setCodeVerifierPKCE(codeVerifier: string) {
-          self.codeVerifierPKCE = codeVerifier
         },
         setRefreshToken(token: string) {
           self.refreshToken = token
         },
-        setAccessTokenInfo(token: string, expireTime = 0, generateNew = false) {
-          self.accessToken = token
-          self.expireTime = expireTime
+        // setAccessTokenInfo(token: string, expireTime = 0, generateNew = false) {
+        //   self.accessToken = token
+        //   self.expireTime = expireTime
 
-          const tokenExpirationFromNow = Date.now() + expireTime * 1000
-          if (generateNew) {
-            sessionStorage.setItem(
-              `${self.accountConfig.internetAccountId}-token-${tokenExpirationFromNow}`,
-              token,
-            )
-          }
+        //   const tokenExpirationFromNow = Date.now() + expireTime * 1000
+        //   if (generateNew) {
+        //     sessionStorage.setItem(
+        //       `${self.accountConfig.internetAccountId}-token-${tokenExpirationFromNow}`,
+        //       token,
+        //     )
+        //   }
 
-          this.setCurrentTypeAuthorizing('')
-        },
+        //   self.setCurrentTypeAuthorizing('')
+        // },
         async exchangeAuthorizationForAccessToken(token: string) {
           if (self.accountConfig) {
             const data = {
@@ -249,7 +292,7 @@ const stateModelFactory = (
             )
 
             const accessToken = await response.json()
-            this.setAccessTokenInfo(
+            self.setAccessTokenInfo(
               accessToken.access_token,
               accessToken.expires_in,
               true,
@@ -259,10 +302,33 @@ const stateModelFactory = (
             }
           }
         },
-        async openLocation(location: Location) {
-          const startFlow = await this.useEndpointForAuthorization()
-          return startFlow
-        },
+        // async openLocation(location: Location) {
+        //   return new Promise(resolve => {
+        //     this.useEndpointForAuthorization()
+        //     resolve(
+        //       openLocation({
+        //         uri: 'https://example.com',
+        //         authHeader: 'Authorization',
+        //         authTokenReference: self.accessToken,
+        //       }),
+        //     )
+        //   })
+        // },
+        // ideally it would be:
+        // something calls the rootmodel's open location
+        // rootmodel chooses open location from one of the internet accoutns, say its this open location
+        // then:
+        // return a promise from openLocation like return new Promise(resolve => {
+        //   authStuff(resolve)
+        // })
+        // resolve(utilOpenLocation({uri: 'something', /* other stuff */}))
+        // auth stuff is starting the auth workflow
+        // once auth stuff is done, call resolve on the promise with the file handle
+        // call util openLocation with authHeader, authToken and reutnr that
+        // start auth workflow
+        // the workflow waits on a promise to resolve
+
+        // check src/apollofetch.tsx
       }))
   )
 }

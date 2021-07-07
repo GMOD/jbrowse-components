@@ -380,15 +380,18 @@ export default function RootModel(
           self.error = error
         },
         openLocation(location: Location) {
-          self.jbrowse.internetAccounts.forEach(account => {
-            const handleResult = account.handlesLocation()
+          let accountToUse = undefined
+          self.internetAccounts.forEach(account => {
+            const handleResult = account.handlesLocation(location)
             if (handleResult) {
-              return account.openLocation(location)
-            } else {
-              // @ts-ignore
-              openLocation(location)
+              accountToUse = account
             }
           })
+          return accountToUse
+            ? // @ts-ignore
+              accountToUse.openLocation(location)
+            : // @ts-ignore
+              openLocation(location)
         },
       }))
       .volatile(self => ({

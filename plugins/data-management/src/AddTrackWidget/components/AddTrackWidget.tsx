@@ -16,11 +16,6 @@ import TrackSourceSelect from './TrackSourceSelect'
 import { AddTrackModel } from '../model'
 import { getRoot } from 'mobx-state-tree'
 
-interface Account {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
-}
-
 const useStyles = makeStyles(theme => ({
   root: {
     marginTop: theme.spacing(1),
@@ -46,8 +41,8 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
   const [activeStep, setActiveStep] = useState(0)
   const classes = useStyles()
   const session = getSession(model)
-  const rootModel = getRoot(model)
   const { assembly, trackAdapter, trackData, trackName, trackType } = model
+  const rootModel = getRoot(model)
 
   function getStepContent(step: number) {
     switch (step) {
@@ -64,49 +59,11 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
     if (activeStep !== steps.length - 1) {
       setActiveStep(activeStep + 1)
 
-      const internetAccounts = rootModel.internetAccounts
-      const account = internetAccounts.find(
-        (account: Account) => account.selected === true,
+      const p = await rootModel.openLocation(
+        new URL((trackData as any).baseAuthUri),
       )
-      if (account) {
-        Object.keys(sessionStorage).forEach(key => {
-          if (key.startsWith(account.internetAccountId)) {
-            const tokenExpirationTime = parseFloat(key.split('-')[2])
-            if (tokenExpirationTime >= Date.now()) {
-              account.setAccessTokenInfo(sessionStorage.getItem(key))
-            } else {
-              // garbage collects any expired tokens
-              sessionStorage.removeItem(key)
-              account.setAccessTokenInfo('')
-            }
-          }
-        })
-
-        if (!account.accessToken) {
-          account.openLocation()
-        }
-      }
-      // await account.accessToken !== ''
-      // if (account && account.accessToken && trackData && 'uri' in trackData) {
-      //   console.log('here')
-      //   const fileUri = await account.fetchFile(trackData.uri)
-      //   model.setTrackData({ uri: fileUri })
-      // }
+      console.log(p)
       return
-    }
-
-    const internetAccounts = rootModel.internetAccounts
-    const account = internetAccounts.find(
-      (account: Account) => account.selected === true,
-    )
-    if (account && account.accessToken && trackData && 'uri' in trackData) {
-      const fileUri = await account.fetchFile(trackData.uri)
-      model.setTrackData({
-        uri: fileUri,
-        authHeader: account.accountConfig?.authHeader || 'Authorization',
-        authTokenReference: account.accessToken, // account.internetAccountId,
-      })
-      console.log(model.trackAdapter)
     }
 
     const trackId = `${trackName
@@ -124,7 +81,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
       name: trackName,
       assemblyNames: [assembly],
       adapter: {
-        ...model.trackAdapter,
+        ...trackAdapter,
         sequenceAdapter: getConf(assemblyInstance, ['sequence', 'adapter']),
       },
     })
