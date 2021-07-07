@@ -1420,6 +1420,25 @@
           }
         }
       }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox.inv.vcf",
+      "name": "volvox inversions",
+      "category": ["VCF"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.inv.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.inv.vcf.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      }
     }
   ],
   "defaultSession": {
