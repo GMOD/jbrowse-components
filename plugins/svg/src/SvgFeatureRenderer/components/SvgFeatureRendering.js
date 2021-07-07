@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { PropTypes as CommonPropTypes } from '@jbrowse/core/util/types/mst'
-import { bpToPx } from '@jbrowse/core/util'
+import { bpToPx, measureText } from '@jbrowse/core/util'
 import SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
@@ -9,10 +9,11 @@ import FeatureGlyph from './FeatureGlyph'
 import SvgOverlay from './SvgOverlay'
 import { chooseGlyphComponent, layOut } from './util'
 
-const fontWidthScaleFactor = 0.6
 const renderingStyle = {
   position: 'relative',
 }
+
+const padding = 2
 
 function RenderedFeatureGlyph(props) {
   const { feature, bpPerPx, region, config, displayMode, layout } = props
@@ -46,14 +47,14 @@ function RenderedFeatureGlyph(props) {
     description =
       readConfObject(config, ['labels', 'description'], { feature }) || ''
     shouldShowDescription = /\S/.test(description) && showLabels
-    const fontWidth = fontHeight * fontWidthScaleFactor
     const textVerticalPadding = 2
 
     let nameWidth = 0
     if (shouldShowName) {
-      nameWidth = Math.round(
-        Math.min(String(name).length * fontWidth, rootLayout.width + expansion),
-      )
+      nameWidth =
+        Math.round(
+          Math.min(measureText(name, fontHeight), rootLayout.width + expansion),
+        ) + padding
       rootLayout.addChild(
         'nameLabel',
         0,
@@ -68,12 +69,13 @@ function RenderedFeatureGlyph(props) {
       const aboveLayout = shouldShowName
         ? rootLayout.getSubRecord('nameLabel')
         : featureLayout
-      descriptionWidth = Math.round(
-        Math.min(
-          String(description).length * fontWidth,
-          rootLayout.width + expansion,
-        ),
-      )
+      descriptionWidth =
+        Math.round(
+          Math.min(
+            measureText(description, fontHeight),
+            rootLayout.width + expansion,
+          ),
+        ) + padding
       rootLayout.addChild(
         'descriptionLabel',
         0,
