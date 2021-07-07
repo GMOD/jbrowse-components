@@ -27,6 +27,7 @@ export default class TextIndex extends JBrowseCommand {
     '$ jbrowse text-index ... --location=out_location_directory',
     '$ jbrowse text-index ... --target=path_to_configuration_file',
     '$ jbrowse text-index ... --out=path_to_configuration_file',
+    '$ jbrowse text-index ... --test=boolean',
   ]
 
   static flags = {
@@ -47,6 +48,9 @@ export default class TextIndex extends JBrowseCommand {
     out: flags.string({
       description: 'Synonym for target',
     }),
+    test: flags.boolean({
+      description: 'Determines which version of ixIxx to use',
+    }),
   }
 
   // Called when running the terminal command. Parses the given flags
@@ -54,9 +58,9 @@ export default class TextIndex extends JBrowseCommand {
   // appropriate file parser to be indexed
   async run() {
     const { flags: runFlags } = this.parse(TextIndex)
-
     const configPath: string = path.join(__dirname, '..', '..', 'config.json')
     const output = runFlags?.target || runFlags?.out || configPath || '.'
+    const test = runFlags?.test || false
     const isDir = (await promises.lstat(output)).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
     let fileDirectory: string = path.join(__dirname)
@@ -81,12 +85,7 @@ export default class TextIndex extends JBrowseCommand {
           const uri =
             indexConfig[0].indexingConfiguration?.gffLocation.uri || ''
 
-          await this.indexDriver(
-            uri,
-            false,
-            indexAttributes,
-            fileDirectory,
-          ).catch(err => this.error(err))
+          await this.indexDriver(uri, test, indexAttributes, fileDirectory)
         }
       } else {
         this.error('Error, please specify a track to index.')
@@ -108,12 +107,7 @@ export default class TextIndex extends JBrowseCommand {
       }
       const indexAttributes = indexConfig[0]?.attributes || []
 
-      await this.indexDriver(
-        uris,
-        false,
-        indexAttributes,
-        fileDirectory,
-      ).catch(err => this.error(err))
+      await this.indexDriver(uris, test, indexAttributes, fileDirectory)
     } else {
       if (runFlags.location) {
         fileDirectory = runFlags.location
@@ -137,12 +131,7 @@ export default class TextIndex extends JBrowseCommand {
         }
       }
 
-      await this.indexDriver(
-        uris,
-        false,
-        indexAttributes,
-        fileDirectory,
-      ).catch(err => this.error(err))
+      await this.indexDriver(uris, test, indexAttributes, fileDirectory)
     }
   }
 
@@ -467,10 +456,10 @@ export default class TextIndex extends JBrowseCommand {
     if (isTest) {
       // If this is a test, output to test/data/ directory, and use the local version of ixIxx.
       ixProcess = spawn(
-        'cat | ./products/jbrowse-cli/test/ixIxx /dev/stdin',
+        `cat | ${path.join(__dirname, '..', '..', 'test', 'ixIxx')} /dev/stdin`,
         [
-          './products/jbrowse-cli/test/data/out.ix',
-          './products/jbrowse-cli/test/data/out.ixx',
+          `${path.join(__dirname, '..', '..', 'test', 'data', 'out.ix')}`,
+          `${path.join(__dirname, '..', '..', 'test', 'data', 'out.ixx')}`,
         ],
         { shell: true },
       )

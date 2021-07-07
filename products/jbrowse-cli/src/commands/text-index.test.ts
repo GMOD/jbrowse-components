@@ -16,6 +16,7 @@ const configPath = path.join(
   'data',
   'indexing_config.json',
 )
+const ixIxxPath = path.join(__dirname, '..', '..', 'test', 'ixIxx')
 const outLoc = path.join(__dirname, '..', '..', 'test', 'data')
 const ixLoc = path.join(__dirname, '..', '..', 'test', 'data', 'out.ix')
 const ixxLoc = path.join(__dirname, '..', '..', 'test', 'data', 'out.ixx')
@@ -73,6 +74,7 @@ describe('text-index', () => {
         path.join(ctx.dir, 'test_config.json'),
         path.join(ctx.dir, 'config.json'),
       )
+      await fsPromises.copyFile(ixIxxPath, path.join(ctx.dir, 'ixIxx'))
       await readFile(path.join(ctx.dir, 'config.json'), 'utf8')
     })
     .command([
@@ -81,6 +83,7 @@ describe('text-index', () => {
       '--tracks=au9_scaffold',
       `--target=${path.join('config.json')}`,
       `--location=${outLoc}`,
+      `--test`,
     ])
     .it('Indexes a local non-gz gff3 file', async () => {
       const ixdata = JSON.stringify(
@@ -124,7 +127,8 @@ describe('text-index tracks', () => {
         path.join(ctx.dir, 'test_config.json'),
         path.join(ctx.dir, 'config.json'),
       )
-      readFileSync(path.join(ctx.dir, 'config.json'), 'utf8')
+      await fsPromises.copyFile(ixIxxPath, path.join(ctx.dir, 'ixIxx'))
+      await readFile(path.join(ctx.dir, 'config.json'), 'utf8')
     })
     .command([
       'text-index',
@@ -132,6 +136,7 @@ describe('text-index tracks', () => {
       '--tracks=gff3tabix_genes',
       `--target=${path.join('config.json')}`,
       `--location=${outLoc}`,
+      `--test`,
     ])
     .it('Indexes a local gz gff3 file', async () => {
       const ixdata = JSON.stringify(
@@ -163,7 +168,8 @@ describe('text-index tracks', () => {
         path.join(ctx.dir, 'test_config.json'),
         path.join(ctx.dir, 'config.json'),
       )
-      readFileSync(path.join(ctx.dir, 'config.json'), 'utf8')
+      await fsPromises.copyFile(ixIxxPath, path.join(ctx.dir, 'ixIxx'))
+      await readFile(path.join(ctx.dir, 'config.json'), 'utf8')
     })
     .command([
       'text-index',
@@ -171,6 +177,7 @@ describe('text-index tracks', () => {
       '--tracks=online_gff3tabix_genes',
       `--target=${path.join('config.json')}`,
       `--location=${outLoc}`,
+      `--test`,
     ])
     .it('Indexes a remote gz gff3 file', async () => {
       const ixdata = JSON.stringify(
@@ -203,7 +210,8 @@ describe('text-index tracks', () => {
         path.join(ctx.dir, 'test_config.json'),
         path.join(ctx.dir, 'config.json'),
       )
-      readFileSync(path.join(ctx.dir, 'config.json'), 'utf8')
+      await fsPromises.copyFile(ixIxxPath, path.join(ctx.dir, 'ixIxx'))
+      await readFile(path.join(ctx.dir, 'config.json'), 'utf8')
     })
     .command([
       'text-index',
@@ -211,6 +219,7 @@ describe('text-index tracks', () => {
       '--tracks=online_au9_scaffold',
       `--target=${path.join('config.json')}`,
       `--location=${outLoc}`,
+      `--test`,
     ])
     .it('Indexes a remote non-gz gff3 file', async () => {
       const ixdata = JSON.stringify(
@@ -267,13 +276,15 @@ describe('text-index tracks', () => {
         path.join(ctx.dir, 'test_config.json'),
         path.join(ctx.dir, 'config.json'),
       )
-      readFileSync(path.join(ctx.dir, 'config.json'), 'utf8')
+      await fsPromises.copyFile(ixIxxPath, path.join(ctx.dir, 'ixIxx'))
+      await readFile(path.join(ctx.dir, 'config.json'), 'utf8')
     })
     .command([
       'text-index',
       '--tracks=gff3tabix_genes,au9_scaffold',
       `--target=${path.join('config.json')}`,
       `--location=${outLoc}`,
+      `--test`,
     ])
     .it('Indexes multiple local gff3 files', async () => {
       const ixdata = JSON.stringify(
@@ -305,13 +316,15 @@ describe('text-index tracks', () => {
         path.join(ctx.dir, 'test_config.json'),
         path.join(ctx.dir, 'config.json'),
       )
-      readFileSync(path.join(ctx.dir, 'config.json'), 'utf8')
+      await fsPromises.copyFile(ixIxxPath, path.join(ctx.dir, 'ixIxx'))
+      await readFile(path.join(ctx.dir, 'config.json'), 'utf8')
     })
     .command([
       'text-index',
       '--tracks=online_gff3tabix_genes,online_au9_scaffold',
       `--target=${path.join('config.json')}`,
       `--location=${outLoc}`,
+      `--test`,
     ])
     .it('Indexes multiple remote gff3 file', async () => {
       const ixdata = JSON.stringify(
@@ -355,13 +368,15 @@ describe('text-index tracks', () => {
         path.join(ctx.dir, 'test_config.json'),
         path.join(ctx.dir, 'config.json'),
       )
-      readFileSync(path.join(ctx.dir, 'config.json'), 'utf8')
+      await fsPromises.copyFile(ixIxxPath, path.join(ctx.dir, 'ixIxx'))
+      await readFile(path.join(ctx.dir, 'config.json'), 'utf8')
     })
     .command([
       'text-index',
       '--tracks=gff3tabix_genes,online_au9_scaffold',
       `--target=${path.join('config.json')}`,
       `--location=${outLoc}`,
+      `--test`,
     ])
     .it('Indexes a remote and a local file', async () => {
       const ixdata = JSON.stringify(
@@ -419,7 +434,8 @@ describe('text-index tracks', () => {
         path.join(ctx.dir, 'test_config.json'),
         path.join(ctx.dir, 'config.json'),
       )
-      await readFileSync(path.join(ctx.dir, 'config.json'), 'utf8')
+      await fsPromises.copyFile(ixIxxPath, path.join(ctx.dir, 'ixIxx'))
+      await readFile(path.join(ctx.dir, 'config.json'), 'utf8')
     })
     .command(['text-index', `--target=${path.join('config.json')}`, `--location=${outLoc}`])
     .it('Indexes multiple local gff3 files', async ctx => {

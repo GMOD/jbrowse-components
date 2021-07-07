@@ -421,6 +421,7 @@ OPTIONS
   --location=location  Establish a location for the output files
   --out=out            Synonym for target
   --target=target      Path to config file in JB2 installation directory to read from.
+  --test               Determines which version of ixIxx to use
   --tracks=tracks      Specify the tracks to index, formatted as comma separated trackIds
 
 EXAMPLES
@@ -430,6 +431,7 @@ EXAMPLES
   $ jbrowse text-index ... --location=out_location_directory
   $ jbrowse text-index ... --target=path_to_configuration_file
   $ jbrowse text-index ... --out=path_to_configuration_file
+  $ jbrowse text-index ... --test=boolean
 ```
 
 _See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.0/products/jbrowse-cli/src/commands/text-index.ts)_
