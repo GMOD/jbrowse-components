@@ -1,12 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-
-import List from '@material-ui/core/List'
-import Typography from '@material-ui/core/Typography'
-
-import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BasePlugin } from '@jbrowse/core/util/types'
-
+import { List, Typography } from '@material-ui/core'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { PluginStoreModel } from '../model'
 import InstalledPlugin from './InstalledPlugin'
 

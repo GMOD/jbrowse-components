@@ -65,9 +65,11 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
             <div
               class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
             >
-              <div>
+              <p
+                class="MuiTypography-root MuiTypography-body1"
+              >
                 Core details
-              </div>
+              </p>
               <div
                 class="makeStyles-field"
               >
@@ -119,9 +121,11 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
               <hr
                 class="MuiDivider-root"
               />
-              <div>
+              <p
+                class="MuiTypography-root MuiTypography-body1"
+              >
                 Attributes
-              </div>
+              </p>
               <div
                 class="makeStyles-field"
               >

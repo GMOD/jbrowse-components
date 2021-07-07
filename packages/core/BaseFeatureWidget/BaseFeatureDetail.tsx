@@ -121,7 +121,7 @@ export function BaseCard({
   )
 }
 
-const FieldName = ({
+export const FieldName = ({
   description,
   name,
   prefix = [],
@@ -143,7 +143,7 @@ const FieldName = ({
   )
 }
 
-const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
+export const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
   const classes = useStyles()
   return (
     <div className={classes.fieldValue}>
@@ -157,7 +157,8 @@ const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
     </div>
   )
 }
-const SimpleValue = ({
+
+export const SimpleValue = ({
   name,
   value,
   description,
@@ -250,12 +251,12 @@ function CoreDetails(props: BaseProps) {
   ]
   return (
     <>
-      {coreRenderedDetails.map(key => {
-        const value = displayedDetails[key.toLowerCase()]
-        return value !== null && value !== undefined ? (
+      {coreRenderedDetails
+        .map(key => [key, displayedDetails[key.toLowerCase()]])
+        .filter(([, value]) => value !== null && value !== undefined)
+        .map(([key, value]) => (
           <SimpleValue key={key} name={key} value={value} />
-        ) : null
-      })}
+        ))}
     </>
   )
 }
@@ -473,15 +474,16 @@ export const FeatureDetails = (props: {
 
   return (
     <BaseCard title={title}>
-      <div>Core details</div>
+      <Typography>Core details</Typography>
       <CoreDetails {...props} />
       <Divider />
-      <div>Attributes</div>
+      <Typography>Attributes</Typography>
       <Attributes
         attributes={feature}
         {...props}
         omit={[...omit, ...coreDetails]}
       />
+
       {sequenceTypes.includes(feature.type) ? (
         <ErrorBoundary
           FallbackComponent={({ error }) => (
@@ -493,7 +495,8 @@ export const FeatureDetails = (props: {
           <SequenceFeatureDetails {...props} />
         </ErrorBoundary>
       ) : null}
-      {subfeatures && subfeatures.length ? (
+
+      {subfeatures?.length ? (
         <BaseCard
           title="Subfeatures"
           defaultExpanded={!sequenceTypes.includes(feature.type)}
