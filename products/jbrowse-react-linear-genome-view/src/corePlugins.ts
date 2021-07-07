@@ -8,7 +8,6 @@ import Sequence from '@jbrowse/plugin-sequence'
 import SVG from '@jbrowse/plugin-svg'
 import Variants from '@jbrowse/plugin-variants'
 import Wiggle from '@jbrowse/plugin-wiggle'
-import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 
 const corePlugins = [
   SVG,
@@ -21,7 +20,6 @@ const corePlugins = [
   Sequence,
   Variants,
   Wiggle,
-  LegacyJBrowse,
 ]
 
 export default corePlugins
