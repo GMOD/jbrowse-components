@@ -1,8 +1,4 @@
-import BaseResult, {
-  LocStringResult,
-  RefSequenceResult,
-  BaseResultArgs,
-} from './BaseResults'
+import BaseResult, { LocStringResult, RefSequenceResult } from './BaseResults'
 
 test('create BaseResult', () => {
   const baseResult = new BaseResult({

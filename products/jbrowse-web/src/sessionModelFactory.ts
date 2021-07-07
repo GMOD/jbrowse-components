@@ -716,6 +716,7 @@ export default function sessionModelFactory(
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>
 export type SessionModel = Instance<SessionStateModel>
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function z(x: Instance<SessionStateModel>): AbstractSessionModel {
   // this function's sole purpose is to get typescript to check
   // that the session model implements all of AbstractSessionModel

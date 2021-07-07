@@ -52,7 +52,7 @@ export default (pluginManager: PluginManager) => {
         return (
           !self.error &&
           self.fileSource &&
-          (self.fileSource.blob ||
+          (self.fileSource.blobId ||
             self.fileSource.localPath ||
             self.fileSource.uri)
         )
@@ -75,7 +75,7 @@ export default (pluginManager: PluginManager) => {
         return (
           self.fileSource.uri ||
           self.fileSource.localPath ||
-          (self.fileSource.blob && self.fileSource.blob.name)
+          (self.fileSource.blobId && self.fileSource.name)
         )
       },
 

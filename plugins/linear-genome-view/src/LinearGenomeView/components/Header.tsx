@@ -6,7 +6,7 @@ import { fade } from '@material-ui/core/styles/colorManipulator'
 import FormGroup from '@material-ui/core/FormGroup'
 import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
-import { Instance, getEnv, getSnapshot } from 'mobx-state-tree'
+import { Instance, getEnv } from 'mobx-state-tree'
 import React from 'react'
 
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -129,7 +129,7 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
         region => newRegionValue === region.refName,
       )
       if (newRegion) {
-        model.setDisplayedRegions([getSnapshot(newRegion)])
+        model.setDisplayedRegions([newRegion])
         // we use showAllRegions after setDisplayedRegions to make the entire
         // region visible, xref #1703
         model.showAllRegions()
@@ -148,7 +148,7 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
           model.setSearchResults(results, newRegionValue.toLocaleLowerCase())
         } else {
           try {
-            model.navToLocString(newRegionValue)
+            newRegionValue !== '' && model.navToLocString(newRegionValue)
           } catch (e) {
             if (
               `${e}` === `Error: Unknown reference sequence "${newRegionValue}"`

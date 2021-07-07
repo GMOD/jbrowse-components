@@ -19,6 +19,7 @@
       "refNameAliases": {
         "adapter": {
           "type": "FromConfigAdapter",
+          "adapterId": "W6DyPGJ0UU",
           "features": [
             {
               "refName": "ctgA",
@@ -79,9 +80,7 @@
       "textSearchAdapterId": "AdapterWithoutAssemblies",
       "namesIndexLocation": {
         "uri": "names/"
-      },
-      "tracks": [],
-      "assemblies": []
+      }
     },
     {
       "type": "JBrowse1TextSearchAdapter",
@@ -89,7 +88,6 @@
       "namesIndexLocation": {
         "uri": "names/"
       },
-      "tracks": [],
       "assemblies": ["volvox3", "volvox4"]
     }
   ],
@@ -117,7 +115,6 @@
         "namesIndexLocation": {
           "uri": "names/"
         },
-        "tracks": [],
         "assemblies": ["NonExistantAssembly"]
       }
     },
@@ -610,6 +607,7 @@
       "category": ["Miscellaneous"],
       "adapter": {
         "type": "FromConfigAdapter",
+        "adapterId": "Xvg1McRUAP",
         "features": [
           {
             "uniqueId": "one",
@@ -671,6 +669,7 @@
       "category": ["Miscellaneous"],
       "adapter": {
         "type": "FromConfigAdapter",
+        "adapterId": "DvufUT5OYV",
         "features": [
           {
             "uniqueId": "one",
@@ -962,6 +961,19 @@
     },
     {
       "type": "VariantTrack",
+      "trackId": "volvox_filtered_vcf_plaintext",
+      "name": "volvox filtered vcf (plaintext)",
+      "assemblyNames": ["volvox"],
+      "category": ["VCF"],
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "volvox.filtered.vcf"
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
       "trackId": "volvox_filtered_vcf_assembly_alias",
       "name": "volvox filtered vcf (with assembly alias)",
       "assemblyNames": ["vvx"],
@@ -1003,7 +1015,6 @@
           "uri": "volvox-bed12.bed.gz"
         },
         "index": {
-          "type": "TBI",
           "location": {
             "uri": "volvox-bed12.bed.gz.tbi"
           }
@@ -1417,6 +1428,24 @@
         "index": {
           "location": {
             "uri": "single_exon_gene.sorted.gff.gz.tbi"
+          }
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox.inv.vcf",
+      "name": "volvox inversions",
+      "category": ["VCF"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.inv.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.inv.vcf.gz.tbi"
           },
           "indexType": "TBI"
         }

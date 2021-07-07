@@ -28,22 +28,22 @@ describe('<StartScreen />', () => {
 test('Add New Session', async () => {
   const pluginManager = getPluginManager()
   const root = pluginManager.rootModel
-  const { findByTestId, findByText } = render(
+  const { findByText } = render(
     <StartScreen root={root} onFactoryReset={factoryReset} />,
   )
   await findByText('Start a new session')
-  fireEvent.click(await findByTestId('emptySession'))
+  fireEvent.click(await findByText('Empty'))
   expect(root.session).toBeTruthy()
 })
 
 test('Add New LGV Session', async () => {
   const pluginManager = getPluginManager()
   const root = pluginManager.rootModel
-  const { findByTestId, findByText } = render(
+  const { findByText } = render(
     <StartScreen root={root} onFactoryReset={factoryReset} />,
   )
   await findByText('Start a new session')
-  fireEvent.click(await findByTestId('emptyLGVSession'))
+  fireEvent.click(await findByText('Linear Genome View'))
   expect(root.session).toBeTruthy()
   expect(root.session.views.length).toBeGreaterThan(0)
 })
@@ -51,11 +51,11 @@ test('Add New LGV Session', async () => {
 test('Add New SV Inspector Session', async () => {
   const pluginManager = getPluginManager()
   const root = pluginManager.rootModel
-  const { findByTestId, findByText } = render(
+  const { findByText } = render(
     <StartScreen root={root} onFactoryReset={factoryReset} />,
   )
   await findByText('Start a new session')
-  fireEvent.click(await findByTestId('emptySVSession'))
+  fireEvent.click(await findByText('Structural Variant Inspector'))
   expect(root.session).toBeTruthy()
   expect(root.session.views.length).toBeGreaterThan(0)
 })

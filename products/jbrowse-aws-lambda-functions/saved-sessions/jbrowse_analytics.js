@@ -62,7 +62,7 @@ function recordStats(event, context, done) {
 
 exports.handler = (event, context, callback) => {
   // console.log('Received event:', JSON.stringify(event, null, 2));
-  const done = (err, res) =>
+  const done = err =>
     callback(null, {
       statusCode: err ? '400' : '200',
       body: err
