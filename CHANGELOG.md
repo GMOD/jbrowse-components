@@ -1,3 +1,40 @@
+## 1.3.2 (2021-07-07)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                           | Download                                                        |
+| --------------------------------- | --------------------------------------------------------------- |
+| @jbrowse/core                     | https://www.npmjs.com/package/@jbrowse/core                     |
+| @jbrowse/plugin-circular-view     | https://www.npmjs.com/package/@jbrowse/plugin-circular-view     |
+| @jbrowse/plugin-spreadsheet-view  |                                                                 |
+| @jbrowse/plugin-sv-inspector      |                                                                 |
+| @jbrowse/plugin-svg               | https://www.npmjs.com/package/@jbrowse/plugin-svg               |
+| @jbrowse/plugin-variants          | https://www.npmjs.com/package/@jbrowse/plugin-variants          |
+| @jbrowse/desktop                  |                                                                 |
+| @jbrowse/react-linear-genome-view | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view |
+| @jbrowse/web                      |                                                                 |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- Other
+  - [#2100](https://github.com/GMOD/jbrowse-components/pull/2100) Improve descriptions on VCF SVs ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#2106](https://github.com/GMOD/jbrowse-components/pull/2106) Use more accurate estimator for feature label widths ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- [#2109](https://github.com/GMOD/jbrowse-components/pull/2109) Make sure to wait for assembly to load before downloading canonical refnames in SV inspector ([@cmdcolin](https://github.com/cmdcolin))
+- [#2111](https://github.com/GMOD/jbrowse-components/pull/2111) Fix "Can't resolve '@jbrowse/plugin-legacy-jbrowse'" in `@jbrowse/react-linear-genome-view` ([@garrettjstevens](https://github.com/garrettjstevens))
+
+#### Committers: 2
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+
 ## 1.3.1 (2021-07-06)
 
 <details><summary>Packages in this release</summary>
