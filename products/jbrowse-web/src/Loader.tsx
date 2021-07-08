@@ -485,14 +485,14 @@ const Renderer = observer(
           if (event.data.code) {
             // @ts-ignore
             pm.rootModel?.internetAccounts.forEach(account => {
-              if (account.currentTypeAuthorizing) {
+              if (account.selected) {
                 account.exchangeAuthorizationForAccessToken(event.data.code)
               }
             })
           } else if (event.data.token) {
             // @ts-ignore
             pm.rootModel?.internetAccounts.forEach(account => {
-              if (account.currentTypeAuthorizing) {
+              if (account.selected) {
                 account.setAccessTokenInfo(
                   event.data.token,
                   event.data.expireTime,

@@ -70,7 +70,6 @@ const stateModelFactory = (
         authorizationCode: '',
         accessToken: '',
         refreshToken: '',
-        currentTypeAuthorizing: '',
         codeVerifierPKCE: '',
         expireTime: 0,
       }))
@@ -88,9 +87,6 @@ const stateModelFactory = (
         },
       }))
       .actions(self => ({
-        setCurrentTypeAuthorizing(type: string) {
-          self.currentTypeAuthorizing = type
-        },
         setCodeVerifierPKCE(codeVerifier: string) {
           self.codeVerifierPKCE = codeVerifier
         },
@@ -100,8 +96,6 @@ const stateModelFactory = (
             redirect_uri: 'http://localhost:3000',
             response_type: self.accountConfig.responseType || 'code',
           }
-
-          this.setCurrentTypeAuthorizing(self.accountConfig.internetAccountId)
 
           if (self.accountConfig.scopes) {
             data.scope = self.accountConfig.scopes
@@ -138,51 +132,6 @@ const stateModelFactory = (
           const options = `width=500,height=600,left=0,top=0`
           return window.open(url, 'Authorization', options)
         },
-      }))
-      .actions(self => {
-        let location: Location | undefined = undefined
-        let resolve: Function | undefined = undefined
-        return {
-          setAccessTokenInfo(
-            token: string,
-            expireTime = 0,
-            generateNew = false,
-          ) {
-            self.accessToken = token
-            self.expireTime = expireTime
-
-            const tokenExpirationFromNow = Date.now() + expireTime * 1000
-            if (generateNew) {
-              sessionStorage.setItem(
-                `${self.accountConfig.internetAccountId}-token-${tokenExpirationFromNow}`,
-                token,
-              )
-            }
-
-            self.setCurrentTypeAuthorizing('')
-            // TODO need to set up the uri so that it is the correct link, will probably need to 
-            // do fetchfile stuff and get the correct link
-            // @ts-ignore
-            resolve(
-              openLocation({
-                uri: 'https://example.com',
-                authHeader: 'Authorization',
-                authTokenReference: self.accessToken,
-              }),
-            )
-            resolve = undefined
-            location = undefined
-          },
-          async openLocation(l: Location) {
-            location = l
-            return new Promise(r => {
-              self.useEndpointForAuthorization()
-              resolve = r
-            })
-          },
-        }
-      })
-      .actions(self => ({
         async fetchFile(location: string) {
           if (!location || !self.accessToken) {
             return
@@ -246,6 +195,75 @@ const stateModelFactory = (
             }
           }
         },
+      }))
+      .actions(self => {
+        let location: Location | undefined = undefined
+        let resolve: Function | undefined = undefined
+        return {
+          async setAccessTokenInfo(
+            token: string,
+            expireTime = 0,
+            generateNew = false,
+          ) {
+            self.accessToken = token
+            self.expireTime = expireTime
+
+            const tokenExpirationFromNow = Date.now() + expireTime * 1000
+            if (generateNew) {
+              sessionStorage.setItem(
+                `${self.accountConfig.internetAccountId}-token-${tokenExpirationFromNow}`,
+                token,
+              )
+            }
+
+            self.setSelected(false)
+            const fileUrl = await self.fetchFile((location as Location).href)
+            // TODO need to set up the uri so that it is the correct link, will probably need to
+            // do fetchfile stuff and get the correct link
+            console.log(resolve)
+            // @ts-ignore
+            resolve(
+              openLocation({
+                uri: fileUrl,
+                baseAuthUri: location?.href,
+                authHeader: 'Authorization',
+                authTokenReference: self.accountConfig.internetAccountId,
+              }),
+            )
+            resolve = undefined
+            location = undefined
+          },
+          async openLocation(l: Location) {
+            location = l
+            return new Promise(async r => {
+              let hasStoredToken = false
+              // Object.keys(sessionStorage).forEach(async key => {})
+
+              for (const key of Object.keys(sessionStorage)) {
+                if (key.startsWith(self.accountConfig.internetAccountId)) {
+                  const tokenExpirationTime = parseFloat(key.split('-')[2])
+                  if (tokenExpirationTime >= Date.now()) {
+                    resolve = r
+                    await this.setAccessTokenInfo(
+                      sessionStorage.getItem(key) as string,
+                    )
+                    hasStoredToken = true
+                  } else {
+                    sessionStorage.removeItem(key)
+                    hasStoredToken = false
+                  }
+                }
+              }
+
+              if (!hasStoredToken) {
+                self.useEndpointForAuthorization()
+                resolve = r
+              }
+            })
+          },
+        }
+      })
+      .actions(self => ({
         setAuthorizationCode(code: string) {
           self.authorizationCode = code
         },

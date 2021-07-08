@@ -3,6 +3,7 @@ import { objectHash } from './index'
 import { PreFileLocation, FileLocation } from './types'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { readConfObject } from '../configuration'
+import { keys } from 'mobx'
 
 /* utility functions for use by track models and so forth */
 
@@ -70,6 +71,16 @@ let blobMap: { [key: string]: File } = {}
 // get a specific blob
 export function getBlob(id: string) {
   return blobMap[id]
+}
+
+// get a specific access token
+export function getAccessToken(id: string) {
+  for (const key of Object.keys(sessionStorage)) {
+    if (key.includes(id)) {
+      return sessionStorage.getItem(key)
+    }
+  }
+  return null
 }
 
 // used to export entire context to webworker

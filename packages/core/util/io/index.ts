@@ -8,7 +8,7 @@ import {
   UriLocation,
   BlobLocation,
 } from '../types'
-import { getBlob } from '../tracks'
+import { getBlob, getAccessToken } from '../tracks'
 
 declare global {
   interface Window {
@@ -68,20 +68,10 @@ export function openLocation(location: FileLocation): GenericFilehandle {
       }
       let optionalHeaders = undefined
       if (location.authHeader && location.authTokenReference) {
-        // const matchingAccessToken = Object.entries(sessionStorage).map(
-        //   entry => {
-        //     const [key, value] = entry
-        //     if (key.includes(location.authTokenReference as string)) {
-        //       return value
-        //     } else {
-        //       return undefined
-        //     }
-        //   },
-        // )
-        const matchingAccessToken = location.authTokenReference
-        if (matchingAccessToken) {
+        const token = getAccessToken(location.authTokenReference as string)
+        if (token) {
           optionalHeaders = {
-            [location.authHeader]: `Bearer ${matchingAccessToken}`,
+            [location.authHeader]: `Bearer ${token}`,
           }
         }
       }
@@ -99,6 +89,7 @@ export function openLocation(location: FileLocation): GenericFilehandle {
       return new LocalFile(location.localPath)
     }
   }
+  // TODOAUTH pass across tokens like you pass the blob file
   if (isBlobLocation(location)) {
     // special case where blob is not directly stored on the model, use a getter
     const blob = getBlob(location.blobId)
