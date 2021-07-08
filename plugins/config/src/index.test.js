@@ -34,6 +34,7 @@ describe('Config editing', () => {
     const adapter = pluginManager.getAdapterType('FromConfigAdapter')
     const config = adapter.configSchema.create({
       type: 'FromConfigAdapter',
+      adapterId: 'testFromConfigAdapterId',
     })
     expect(getSnapshot(config)).toMatchSnapshot()
   })

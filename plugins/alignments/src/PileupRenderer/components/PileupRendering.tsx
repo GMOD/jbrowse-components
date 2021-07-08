@@ -151,12 +151,11 @@ function PileupRendering(props: {
     const px = region.reversed ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
 
-    const feats = displayModel.getFeatureOverlapping(
+    const featIdUnderMouse = displayModel.getFeatureOverlapping(
       blockKey,
       clientBp,
       offsetY,
     )
-    const featIdUnderMouse = feats.length ? feats[0].name : undefined
 
     if (onMouseMove) {
       onMouseMove(event, featIdUnderMouse)

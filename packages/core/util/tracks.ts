@@ -308,6 +308,7 @@ export function guessTrackType(adapterType: string): string {
     BigWigAdapter: 'QuantitativeTrack',
     IndexedFastaAdapter: 'ReferenceSequenceTrack',
     TwoBitAdapter: 'ReferenceSequenceTrack',
+    VcfAdapter: 'VariantTrack',
     VcfTabixAdapter: 'VariantTrack',
     HicAdapter: 'HicTrack',
     PAFAdapter: 'SyntenyTrack',

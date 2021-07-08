@@ -273,9 +273,10 @@ const ScaleBar = observer(
 
               {/* the number labels drawn in overview scale bar*/}
               {tickLabels.map((tickLabel, labelIdx) => (
-                <div
+                <Typography
                   key={`${JSON.stringify(seq)}-${tickLabel}-${labelIdx}`}
                   className={classes.scaleBarLabel}
+                  variant="body2"
                   style={{
                     left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
                     pointerEvents: 'none',
@@ -283,7 +284,7 @@ const ScaleBar = observer(
                   }}
                 >
                   {tickLabel.toLocaleString('en-US')}
-                </div>
+                </Typography>
               ))}
             </div>
           )
@@ -314,21 +315,17 @@ function OverviewScaleBar({
   const scale =
     model.totalBp / (width - (displayedRegions.length - 1) * wholeSeqSpacer)
 
-  if (!displayedRegions.length) {
-    return (
-      <>
-        <div className={classes.scaleBar}>
-          <LinearProgress
-            variant="indeterminate"
-            style={{ marginTop: 4, width: '100%' }}
-          />
-        </div>
-        <div>{children}</div>
-      </>
-    )
-  }
-
-  return (
+  return !displayedRegions.length ? (
+    <>
+      <div className={classes.scaleBar}>
+        <LinearProgress
+          variant="indeterminate"
+          style={{ marginTop: 4, width: '100%' }}
+        />
+      </div>
+      <div>{children}</div>
+    </>
+  ) : (
     <div>
       <OverviewRubberBand
         model={model}

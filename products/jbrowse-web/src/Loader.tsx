@@ -17,7 +17,6 @@ import {
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { types, addDisposer, Instance, SnapshotOut } from 'mobx-state-tree'
 import { autorun } from 'mobx'
-import { PluginConstructor } from '@jbrowse/core/Plugin'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import 'fontsource-roboto'
 import 'requestidlecallback-polyfill'

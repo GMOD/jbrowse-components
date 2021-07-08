@@ -190,7 +190,7 @@ export default function RootModel(
         addDisposer(
           self,
           autorun(() => {
-            for (const [_, val] of self.savedSessionsVolatile.entries()) {
+            for (const [, val] of self.savedSessionsVolatile.entries()) {
               try {
                 const key = self.localStorageId(val.name)
                 localStorage.setItem(key, JSON.stringify({ session: val }))
@@ -226,7 +226,6 @@ export default function RootModel(
                   }),
                 )
                 if (self.pluginsUpdated) {
-                  this.setPluginsUpdated(false)
                   // reload app to get a fresh plugin manager
                   window.location.reload()
                 }
@@ -256,9 +255,6 @@ export default function RootModel(
             self.session = oldSession
             throw error
           }
-        }
-        if (oldSession) {
-          this.setPluginsUpdated(true)
         }
       },
       initializeInternetAccount(

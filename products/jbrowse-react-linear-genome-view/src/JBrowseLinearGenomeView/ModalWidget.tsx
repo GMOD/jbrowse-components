@@ -10,6 +10,7 @@ import {
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { SessionModel } from '../createModel/createSessionModel'
+import ScopedCssBaseline from '@material-ui/core/ScopedCssBaseline'
 
 const useStyles = makeStyles({
   paper: {
@@ -43,14 +44,16 @@ const ModalWidgetContents = observer(
         </AppBar>
         {visibleWidget && ReactComponent ? (
           <Suspense fallback={<div>Loading...</div>}>
-            <ReactComponent
-              model={visibleWidget}
-              session={session}
-              overrideDimensions={{
-                height: (window.innerHeight * 5) / 8,
-                width: 800,
-              }}
-            />
+            <ScopedCssBaseline>
+              <ReactComponent
+                model={visibleWidget}
+                session={session}
+                overrideDimensions={{
+                  height: (window.innerHeight * 5) / 8,
+                  width: 800,
+                }}
+              />
+            </ScopedCssBaseline>
           </Suspense>
         ) : null}
       </>

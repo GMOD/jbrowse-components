@@ -67,7 +67,7 @@ the monorepo to NPM and trigger the creation of a release on GitHub. To run this
 script:
 
 - Ensure that there is an announcement file for this release in
-  `website/release_announcement_drafts/<tag>.md` containing a an overview of the
+  `website/release_announcement_drafts/<tag>.md` containing an overview of the
   major features and bugfixes in the release, with as many nice screenshots or
   movies as possible. The release script will automatically add download and
   detailed changelog information to this post. You can see examples of the
@@ -164,6 +164,7 @@ This package provides the "alignments" related features including
 Provides variant features including
 
 - VCF tabix parser
+- VCF non-tabix parser
 - VariantFeatureWidget
 - VariantTrack that is basically just a normal track, but has logic to popup
   the VariantFeatureWidget on feature click
