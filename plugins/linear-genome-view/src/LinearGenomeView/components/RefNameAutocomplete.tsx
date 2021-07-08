@@ -13,12 +13,12 @@ import { Region } from '@jbrowse/core/util/types'
 import { getSession, useDebounce } from '@jbrowse/core/util' // useDebounce
 import BaseResult, {
   RefSequenceResult,
-  LocStringResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
 // material ui
 import CircularProgress from '@material-ui/core/CircularProgress'
 import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
+import Tooltip from '@material-ui/core/Tooltip'
 import SearchIcon from '@material-ui/icons/Search'
 import { InputAdornment } from '@material-ui/core'
 import Autocomplete, {
@@ -39,7 +39,6 @@ export interface Option {
 // filters for options to display in dropdown
 const filter = createFilterOptions<Option>({
   trim: true,
-  // matchFrom: 'start',
   ignoreCase: true,
   limit: 100,
 })
@@ -90,17 +89,15 @@ function RefNameAutocomplete({
   const regions: Region[] = useMemo(() => {
     return (assembly && assembly.regions) || []
   }, [assembly])
-  // default options for dropdown
   const options: Option[] = useMemo(() => {
     const defaultOptions = regions.map(option => {
-      const defaultOption = {
+      return {
         result: new RefSequenceResult({
           refName: option.refName,
           label: option.refName,
           matchedAttribute: 'refName',
         }),
       }
-      return defaultOption
     })
     return defaultOptions
   }, [regions])
@@ -147,15 +144,8 @@ function RefNameAutocomplete({
         })
         onSelect(newResult)
       } else {
-        const { result, group } = selectedOption
-        if (group === 'limitOption') {
-          session.notify(
-            `More than 100 results, please refine the search`,
-            'warning',
-          )
-        } else {
-          onSelect(result)
-        }
+        const { result } = selectedOption
+        onSelect(result)
       }
     }
   }
@@ -181,27 +171,26 @@ function RefNameAutocomplete({
         setSearchOptions([])
       }}
       options={searchOptions.length === 0 ? options : searchOptions}
+      getOptionDisabled={option => option?.group === 'limitOption'}
       filterOptions={(possibleOptions, params) => {
         const filtered = filter(possibleOptions, params)
-        if (currentSearch || coarseVisibleLocStrings || value) {
-          const limitOption = [
-            {
-              group: 'limitOption',
-              result: new LocStringResult({
-                label: currentSearch || coarseVisibleLocStrings || value || '',
-                locString:
-                  currentSearch || coarseVisibleLocStrings || value || '',
-                renderingComponent: (
-                  <Typography noWrap>{'more results...'}</Typography>
-                ),
-              }),
-            },
-          ]
-          return filtered.length >= 100
-            ? filtered.concat(limitOption)
-            : filtered
-        }
-        return filtered
+        return filtered.length >= 100
+          ? filtered.concat([
+              {
+                group: 'limitOption',
+                result: new BaseResult({
+                  label: 'keep typing for more results',
+                  renderingComponent: (
+                    <Tooltip title="keep typing for more results">
+                      <Typography noWrap>
+                        {'keep typing for more results'}
+                      </Typography>
+                    </Tooltip>
+                  ),
+                }),
+              },
+            ])
+          : filtered
       }}
       ListboxProps={{ style: { maxHeight: 250 } }}
       onChange={(_, selectedOption) => onChange(selectedOption)}

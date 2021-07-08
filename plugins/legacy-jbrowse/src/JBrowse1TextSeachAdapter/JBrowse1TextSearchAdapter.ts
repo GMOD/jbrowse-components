@@ -58,7 +58,7 @@ export default class JBrowse1TextSearchAdapter
   /**
    * Returns list of results
    * @param args - search options/arguments include: search query
-   * limit of results to return, SearchType...preffix | full | exact", etc.
+   * limit of results to return, SearchType...prefix | full | exact", etc.
    */
   async searchIndex(args: BaseArgs) {
     const { searchType, queryString } = args
