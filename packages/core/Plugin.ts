@@ -15,6 +15,8 @@ export default abstract class Plugin {
 
   configure(_pluginManager: PluginManager): void {}
 
+  extendSession?: Function
+
   configurationSchema: AnyConfigurationSchemaType | undefined = undefined
 }
 

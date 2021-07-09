@@ -51,7 +51,7 @@ export default function sessionModelFactory(
   assemblyConfigSchemasType = types.frozen(), // if not using sessionAssemblies
 ) {
   const minDrawerWidth = 128
-  const sessionModel = types
+  let sessionModel = types
     .model('JBrowseWebSessionModel', {
       id: types.optional(types.identifier, shortid()),
       name: types.string,
@@ -694,6 +694,12 @@ export default function sessionModelFactory(
         ]
       },
     }))
+
+  pluginManager.plugins.forEach(plugin => {
+    if (plugin.extendSession) {
+      sessionModel = plugin.extendSession(sessionModel)
+    }
+  })
 
   return types.snapshotProcessor(sessionModel, {
     // @ts-ignore
