@@ -9,7 +9,6 @@ import {
   http as httpFR,
   https as httpsFR,
 } from 'follow-redirects'
-import { compress } from 'lzutf8'
 import { createGunzip, Gunzip } from 'zlib'
 import { IncomingMessage } from 'http'
 import path from 'path'
@@ -397,9 +396,7 @@ export default class TextIndex extends JBrowseCommand {
         // encodes the record object so that it can be used by ixIxx
         // appends the attributes that we are indexing by to the end
         // of the string before pushing to ixIxx
-        const buff = compress(Buffer.from(JSON.stringify(recordObj)), {
-          outputEncoding: 'Base64',
-        })
+        const buff = Buffer.from(JSON.stringify(recordObj))
 
         let str: string = buff.toString()
         str += attrString + '\n'
