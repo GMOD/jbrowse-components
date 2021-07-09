@@ -33,7 +33,7 @@ import { LinearGenomeViewModel } from '..'
  *  of the materila ui interface
  */
 export interface Option {
-  group: string
+  group?: string
   result: BaseResult
 }
 
