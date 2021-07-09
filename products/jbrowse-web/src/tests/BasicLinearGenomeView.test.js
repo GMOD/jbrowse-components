@@ -211,7 +211,8 @@ describe('valid file tests', () => {
     fireEvent.change(inputBox, {
       target: { value: 'apple2' },
     })
-    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
+    // fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
+    // fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
     fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
     // test search results dialog opening
     await screen.findByText('Search Results')

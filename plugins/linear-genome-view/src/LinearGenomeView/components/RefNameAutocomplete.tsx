@@ -33,14 +33,13 @@ import { LinearGenomeViewModel } from '..'
  *  of the materila ui interface
  */
 export interface Option {
-  group: string
+  group?: string
   result: BaseResult
 }
 
 // filters for options to display in dropdown
 const filter = createFilterOptions<Option>({
   trim: true,
-  matchFrom: 'start',
   ignoreCase: true,
   limit: 101,
 })
@@ -101,7 +100,6 @@ function RefNameAutocomplete({
   // default options for dropdown
   const limitOption: Array<Option> = [
     {
-      group: 'reference sequence',
       result: new BaseResult({
         refName: '',
         label: '',
@@ -118,7 +116,6 @@ function RefNameAutocomplete({
   let options: Array<Option> = useMemo(() => {
     const defaultOptions = regions.map(option => {
       const defaultOption: Option = {
-        group: 'reference sequence',
         result: new RefSequenceResult({
           refName: option.refName,
           label: option.refName,
@@ -149,7 +146,6 @@ function RefNameAutocomplete({
         if (results.length > 0 && active) {
           const adapterResults: Option[] = results.map(result => {
             const newOption: Option = {
-              group: 'text search results',
               result,
             }
             return newOption
@@ -205,7 +201,6 @@ function RefNameAutocomplete({
         setSearchOptions([])
       }}
       options={searchOptions.length === 0 ? options : searchOptions}
-      groupBy={option => String(option.group)}
       filterOptions={(possibleOptions, params) => {
         return filter(possibleOptions, params)
       }}
@@ -250,7 +245,7 @@ function RefNameAutocomplete({
           />
         )
       }}
-      renderOption={(option, { inputValue }) => {
+      renderOption={option => {
         const { result } = option
         const rendering = result.getLabel()
         // if renderingComponent is provided render that
@@ -259,14 +254,6 @@ function RefNameAutocomplete({
           if (React.isValidElement(component)) {
             return component
           }
-        }
-        if (currentSearch !== '' && inputValue.length <= rendering.length) {
-          return (
-            <Typography noWrap>
-              <b>{rendering.slice(0, inputValue.length)}</b>
-              {rendering.slice(inputValue.length)}
-            </Typography>
-          )
         }
         return <Typography noWrap>{rendering}</Typography>
       }}

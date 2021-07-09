@@ -1846,6 +1846,11 @@
     long "^4.0.0"
     quick-lru "^2.0.0"
 
+"@gmod/trix@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-0.2.0.tgz#df9f927278cc55cad27b11b3bc7fd6b0253073e2"
+  integrity sha512-AvrkRvlTNyjepFOJ3zgOI6/TJpJQ2rpZf3O4dkFlVVBHKVQWzifRXTQsixhcKpz498kc+J38XP4jiWkbqgUtIg==
+
 "@gmod/twobit@^1.1.10":
   version "1.1.10"
   resolved "https://registry.yarnpkg.com/@gmod/twobit/-/twobit-1.1.10.tgz#bc618c167d373c98f010ca327351529d3d16e2fe"
@@ -4363,6 +4368,13 @@
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@types/file-saver/-/file-saver-2.0.1.tgz#e18eb8b069e442f7b956d313f4fadd3ef887354e"
   integrity sha512-g1QUuhYVVAamfCifK7oB7G3aIl4BbOyzDOqVyUfEr4tfBKrXfeH+M+Tg7HKCXSrbzxYdhyCP7z9WbKo0R2hBCw==
+
+"@types/follow-redirects@^1.13.0":
+  version "1.13.0"
+  resolved "https://registry.yarnpkg.com/@types/follow-redirects/-/follow-redirects-1.13.0.tgz#82d3767050314ddb44606576e6bf4fcfee5f4d05"
+  integrity sha512-VPGDD77WMB+da4l1vdfGYM1k9ZjtPyY8EHisvc33QUcwCf/stt/5M1P/ZOPhpnjPgBwJX/xuo3X3wFVp0rutTA==
+  dependencies:
+    "@types/node" "*"
 
 "@types/fs-extra@^9.0.1":
   version "9.0.1"
@@ -10600,6 +10612,11 @@ follow-redirects@^1.0.0:
   dependencies:
     debug "^3.0.0"
 
+follow-redirects@^1.14.1:
+  version "1.14.1"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.14.1.tgz#d9114ded0a1cfdd334e164e6662ad02bfd91ff43"
+  integrity sha512-HWqDgT7ZEkqRzBvc2s64vSZ/hfOceEol3ac/7tKwzuvEyWx3/4UegXh5oBOIotkGsObyk3xznnSRVADBgWSQVg==
+
 fontsource-roboto@3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/fontsource-roboto/-/fontsource-roboto-3.0.3.tgz#99c312babeabce22b3e933b3edf2951d4508f4f7"
@@ -14530,6 +14547,13 @@ lz-string@^1.4.4:
   version "1.4.4"
   resolved "https://registry.yarnpkg.com/lz-string/-/lz-string-1.4.4.tgz#c0d8eaf36059f705796e1e344811cf4c498d3a26"
   integrity sha1-wNjq82BZ9wV5bh40SBHPTEmNOiY=
+
+lzutf8@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/lzutf8/-/lzutf8-0.6.0.tgz#ddfced3aa9959be68cc46d12c609e64d41e710f8"
+  integrity sha512-Ji0WsBU3OIA/c/RHd/vvHbda+WnbnXREpE1xHgdoyy601dQn3ZFlkDtGKDh/AtFpbO1+3YFL01KqJrD7NYuWHg==
+  dependencies:
+    readable-stream "^3.6.0"
 
 macos-release@^2.2.0:
   version "2.3.0"

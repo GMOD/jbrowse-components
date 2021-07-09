@@ -12,6 +12,10 @@ export interface UriLocation {
   uri: string
 }
 
+export interface Gff3TabixAdapter {
+  type: 'Gff3TabixAdapter'
+  gffGzLocation: UriLocation
+}
 export interface IndexedFastaAdapter {
   type: 'IndexedFastaAdapter'
   fastaLocation: UriLocation
@@ -72,6 +76,9 @@ export interface Assembly {
 export interface Track {
   trackId: string
   name: string
+
+  adapter: Gff3TabixAdapter
+  textSearchIndexingAttributes: Array<string>
 }
 
 export interface Config {
