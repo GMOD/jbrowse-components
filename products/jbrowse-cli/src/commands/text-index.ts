@@ -1,16 +1,16 @@
 import { flags } from '@oclif/command'
+import { Readable } from 'stream'
 import JBrowseCommand, { Config } from '../base'
 import { ixIxxStream } from 'ixixx'
-import { ReadStream, createReadStream, promises } from 'fs'
+import { ReadStream, createWriteStream, createReadStream, promises } from 'fs'
 import { Transform, PassThrough } from 'stream'
 import gff from '@gmod/gff'
 import {
-  FollowResponse,
   http as httpFR,
   https as httpsFR,
 } from 'follow-redirects'
-import { createGunzip, Gunzip } from 'zlib'
-import { IncomingMessage } from 'http'
+import { createGunzip } from 'zlib'
+import tmp from 'tmp'
 import path from 'path'
 
 export default class TextIndex extends JBrowseCommand {
@@ -158,7 +158,7 @@ export default class TextIndex extends JBrowseCommand {
     //  For each uri, we parse the file and add it to aggregateStream.
     for (const uri of uris) {
       // Generate transform function parses an @gmod/gff stream.
-      const gffTranform = new Transform({
+      const gffTransform = new Transform({
         objectMode: true,
         transform: (chunk, _encoding, done) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -172,13 +172,15 @@ export default class TextIndex extends JBrowseCommand {
       let gff3Stream: ReadStream | Transform
       // If it is a URL, we want to await the http request.
       if (this.isURL(uri)) {
-        gff3Stream = await this.handleGff3Url(uri, uri.includes('.gz'))
-        gff3Stream = gff3Stream.pipe(gffTranform)
+        gff3Stream = (await this.handleGff3Url(uri, uri.includes('.gz'))).pipe(
+          gffTransform,
+        )
       }
       // If it is local, there is no need to await.
       else {
-        gff3Stream = this.handleLocalGff3(uri, uri.includes('.gz'))
-        gff3Stream = gff3Stream.pipe(gffTranform)
+        gff3Stream = this.handleLocalGff3(uri, uri.includes('.gz')).pipe(
+          gffTransform,
+        )
       }
 
       // Add gff3Stream to aggregateStream, and DO NOT send 'end' event on completion,
@@ -231,39 +233,21 @@ export default class TextIndex extends JBrowseCommand {
   handleGff3UrlNoGz(urlIn: string) {
     const newUrl = new URL(urlIn)
 
-    const promise = new Promise<ReadStream>((resolve, reject) => {
-      if (newUrl.protocol === 'https:') {
-        httpsFR
-          .get(urlIn, (response: IncomingMessage & FollowResponse) => {
-            const parseStream = this.parseGff3Stream(response)
-            resolve(parseStream)
-          })
-          .on('error', (e: NodeJS.ErrnoException) => {
-            reject('fail')
-            if (e.code === 'ENOTFOUND') {
-              this.error('Bad file url')
-            } else {
-              this.error('Other error: ', e)
-            }
-          })
-      } else {
-        httpFR
-          .get(urlIn, (response: IncomingMessage & FollowResponse) => {
-            const parseStream = this.parseGff3Stream(response)
-            resolve(parseStream)
-          })
-          .on('error', (e: NodeJS.ErrnoException) => {
-            reject('fail')
-            if (e.code === 'ENOTFOUND') {
-              this.error('Bad file url')
-            } else {
-              this.error('Other error: ', e)
-            }
-          })
-      }
-    }) // End of promise
-
-    return promise
+    return new Promise<ReadStream>((resolve, reject) => {
+      ;(newUrl.protocol === 'https:' ? httpsFR : httpFR)
+        .get(urlIn, response => {
+          const parseStream = this.parseGff3Stream(response)
+          resolve(parseStream)
+        })
+        .on('error', (e: NodeJS.ErrnoException) => {
+          reject('fail')
+          if (e.code === 'ENOTFOUND') {
+            this.error('Bad file url')
+          } else {
+            this.error('Other error: ', e)
+          }
+        })
+    })
   }
 
   // Grab the remote file from urlIn, then unzip it before
@@ -273,38 +257,20 @@ export default class TextIndex extends JBrowseCommand {
     const unzip = createGunzip()
     const newUrl = new URL(urlIn)
 
-    const promise = new Promise<ReadStream>((resolve, reject) => {
-      if (newUrl.protocol === 'https:') {
-        httpsFR
-          .get(urlIn, (response: IncomingMessage & FollowResponse) => {
-            const parseStream = this.parseGff3Stream(response.pipe(unzip))
-            resolve(parseStream)
-          })
-          .on('error', (e: NodeJS.ErrnoException) => {
-            reject('fail')
-            if (e.code === 'ENOTFOUND') {
-              this.error('Bad file url')
-            } else {
-              this.error('Other error: ', e)
-            }
-          })
-      } else {
-        httpFR
-          .get(urlIn, (response: IncomingMessage & FollowResponse) => {
-            const parseStream = this.parseGff3Stream(response.pipe(unzip))
-            resolve(parseStream)
-          })
-          .on('error', (e: NodeJS.ErrnoException) => {
-            reject('fail')
-            if (e.code === 'ENOTFOUND') {
-              this.error('Bad file url')
-            } else {
-              this.error('Other error: ', e)
-            }
-          })
-      }
-    }) // End of promise
-    return promise
+    return new Promise<ReadStream>((resolve, reject) => {
+      ;(newUrl.protocol === 'https:' ? httpsFR : httpFR)
+        .get(urlIn, response => {
+          resolve(this.parseGff3Stream(response.pipe(unzip)))
+        })
+        .on('error', (e: NodeJS.ErrnoException) => {
+          reject('fail')
+          if (e.code === 'ENOTFOUND') {
+            this.error('Bad file url')
+          } else {
+            this.error('Other error: ', e)
+          }
+        })
+    })
   }
 
   // Checks if the passed in string is a valid URL.
@@ -333,23 +299,17 @@ export default class TextIndex extends JBrowseCommand {
   // Function that takes in a gff3 readstream and parses through
   // it and retrieves the needed attributes and information.
   // Returns a @gmod/gff stream.
-  parseGff3Stream(
-    gff3In: ReadStream | (IncomingMessage & FollowResponse) | Gunzip,
-  ) {
-    const gff3Stream: ReadStream = gff3In.pipe(
-      gff.parseStream({ parseSequences: false }),
-    )
-
-    return gff3Stream
+  parseGff3Stream(gff3In: Readable) {
+    return gff3In.pipe(gff.parseStream({ parseSequences: false }))
   }
 
   // Recursively goes through every record in the gff3 file and gets
   // the desired attributes in the form of a JSON object. It is then
   // pushed to gff3Stream in proper indexing format.
-  async recurseFeatures(
+  recurseFeatures(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     record: any,
-    gff3Stream: ReadStream | Transform,
+    gff3Stream: Readable,
     attributesArr: Array<string>,
   ) {
     // check if the attributes array is undefined
@@ -427,10 +387,11 @@ export default class TextIndex extends JBrowseCommand {
     }
   }
 
-  // Given a readStream of data, indexes the stream into .ix and .ixx files using ixIxx.
-  // The ixIxx executable is required on the system path for users, however tests use a local copy.
-  // Returns a promise around ixIxx completing (or erroring).
-  runIxIxx(readStream: ReadStream, outLocation: string) {
+  // Given a readStream of data, indexes the stream into .ix and .ixx files
+  // using ixIxx.  The ixIxx executable is required on the system path for
+  // users, however tests use a local copy.  Returns a promise around ixIxx
+  // completing (or erroring).
+  runIxIxx(readStream: Readable, outLocation: string) {
     const ixFilename = 'out.ix'
     const ixxFilename = 'out.ixx'
 
@@ -443,7 +404,7 @@ export default class TextIndex extends JBrowseCommand {
   //  trackIds: array of string ids for tracks to index
   //  runFlags: specify if there is a target ouput location for the indexing
   async getIndexingConfigurations(
-    trackIds: Array<string>,
+    trackIds: string[],
     configPath: string,
     aggregate = false,
   ) {
@@ -455,12 +416,10 @@ export default class TextIndex extends JBrowseCommand {
           'Error, no tracks found in config.json. Please add a track before indexing.',
         )
       }
-      let trackIdsToIndex: Array<string> = []
-      if (aggregate) {
-        trackIdsToIndex = config.tracks.map(track => track.trackId)
-      } else {
-        trackIdsToIndex = trackIds
-      }
+      const trackIdsToIndex = aggregate
+        ? config.tracks.map(track => track.trackId)
+        : trackIds
+
       const configurations = trackIdsToIndex.map(trackId => {
         const currentTrack = config.tracks?.find(
           track => trackId === track.trackId,
