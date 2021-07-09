@@ -66,15 +66,10 @@ describe('<PluginStoreWidget />', () => {
     )
     await findByText('multiple sequence alignment browser plugin for JBrowse 2')
     fireEvent.click(getByText('Add custom plugin'))
-    fireEvent.change(getByLabelText('Plugin name'), {
-      target: {
-        value: 'MsaView',
-      },
-    })
     fireEvent.change(getByLabelText('Plugin URL'), {
       target: {
         value:
-          'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js',
+          'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.esm.js',
       },
     })
     fireEvent.click(getByText('Add plugin'))
@@ -85,9 +80,8 @@ describe('<PluginStoreWidget />', () => {
 
     expect(getSnapshot(getParent(session)).jbrowse.plugins).toEqual([
       {
-        name: 'MsaView',
         url:
-          'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js',
+          'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.esm.js',
       },
     ])
   })

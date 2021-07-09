@@ -18,6 +18,7 @@ import {
 import CloseIcon from '@material-ui/icons/Close'
 import LockIcon from '@material-ui/icons/Lock'
 
+import PluginManager from '@jbrowse/core/PluginManager'
 import { getSession } from '@jbrowse/core/util'
 import { BasePlugin } from '@jbrowse/core/util/types'
 import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
@@ -99,9 +100,11 @@ function PluginDialog({
 function InstalledPlugin({
   plugin,
   model,
+  pluginManager,
 }: {
   plugin: BasePlugin
   model: PluginStoreModel
+  pluginManager: PluginManager
 }) {
   const [dialogPlugin, setDialogPlugin] = useState<string>()
 
@@ -123,10 +126,12 @@ function InstalledPlugin({
           plugin={dialogPlugin}
           onClose={name => {
             if (name) {
+              const pluginMetadata = pluginManager.pluginMetadata[plugin.name]
+              const pluginUrl = pluginMetadata.url
               if (adminMode) {
-                jbrowse.removePlugin(plugin.name)
+                jbrowse.removePlugin(pluginUrl)
               } else if (isSessionWithSessionPlugins(session)) {
-                session.removeSessionPlugin(plugin.name)
+                session.removeSessionPlugin(pluginUrl)
               }
             }
             setDialogPlugin(undefined)

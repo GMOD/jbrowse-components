@@ -174,7 +174,7 @@ export default function JBrowseWeb(
         self.defaultSession = newDefault
       },
       addPlugin(plugin) {
-        self.plugins = [...self.plugins, plugin]
+        self.plugins.push(plugin)
         const rootModel = getRoot(self)
         rootModel.setPluginsUpdated(true)
       },

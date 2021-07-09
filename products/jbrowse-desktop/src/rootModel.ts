@@ -55,6 +55,7 @@ export default function RootModel(pluginManager: PluginManager) {
     })
     .volatile(() => ({
       pluginsUpdated: false,
+      pluginManager,
     }))
     .actions(self => ({
       setSavedSessionNames(sessionNames: string[]) {

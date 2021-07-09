@@ -67,7 +67,7 @@ import * as FeatureRendererType from '../pluggableElementTypes/renderers/Feature
 import * as RendererType from '../pluggableElementTypes/renderers/RendererType'
 
 import * as Configuration from '../configuration'
-import * as Plugin from '../Plugin'
+import Plugin from '../Plugin'
 import * as coreUi from '../ui'
 import * as coreUtil from '../util'
 import * as coreColor from '../util/color'

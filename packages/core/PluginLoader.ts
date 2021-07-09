@@ -1,5 +1,4 @@
 /* eslint-disable no-restricted-globals */
-import url from 'url'
 import domLoadScript from 'load-script2'
 
 import { PluginConstructor } from './Plugin'
@@ -61,12 +60,14 @@ export default class PluginLoader {
   }
 
   async loadPlugin(definition: PluginDefinition): Promise<PluginConstructor> {
-    const parsedUrl = url.parse(definition.url)
-    if (
-      !parsedUrl.protocol ||
-      parsedUrl.protocol === 'http:' ||
-      parsedUrl.protocol === 'https:'
-    ) {
+    const parsedUrl = new URL(definition.url)
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      throw new Error(
+        `cannot load plugins using protocol "${parsedUrl.protocol}"`,
+      )
+    }
+    let plugin
+    if (definition.name) {
       await this.loadScript(definition.url)
       const moduleName = definition.name
       const umdName = `JBrowsePlugin${moduleName}`
@@ -77,18 +78,18 @@ export default class PluginLoader {
         (typeof global === 'object' && global.global === global && global) ||
         this
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const plugin = (scope as any)[umdName] as { default: PluginConstructor }
+      plugin = (scope as any)[umdName] as { default: PluginConstructor }
       if (!plugin) {
         throw new Error(
           `plugin ${moduleName} failed to load, ${scope.constructor.name}.${umdName} is undefined`,
         )
       }
-
-      return plugin.default
+    } else {
+      plugin = (await import(/* webpackIgnore: true */ parsedUrl.href)) as {
+        default: PluginConstructor
+      }
     }
-    throw new Error(
-      `cannot load plugins using protocol "${parsedUrl.protocol}"`,
-    )
+    return plugin.default
   }
 
   installGlobalReExports(target: WindowOrWorkerGlobalScope | NodeJS.Global) {

@@ -36,23 +36,17 @@ function CustomPluginForm({
   model: PluginStoreModel
 }) {
   const classes = useStyles()
-  const [formInput, setFormInput] = useState({
-    name: '',
-    url: '',
-  })
+  const [pluginUrl, setPluginUrl] = useState<string>()
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setFormInput({
-      ...formInput,
-      [event.target.name]: event.target.value,
-    })
+    setPluginUrl(event.target.value)
   }
 
   const rootModel = getRoot(model)
   const { jbrowse } = rootModel
 
   const handleSubmit = () => {
-    jbrowse.addPlugin({ name: formInput.name, url: formInput.url })
+    jbrowse.addPlugin({ url: pluginUrl })
   }
 
   return (
@@ -69,20 +63,11 @@ function CustomPluginForm({
 
       <div className={classes.dialogContainer}>
         <TextField
-          id="name-input"
-          name="name"
-          label="Plugin name"
-          variant="outlined"
-          value={formInput.name}
-          onChange={handleChange}
-          multiline
-        />
-        <TextField
           id="url-input"
           name="url"
           label="Plugin URL"
           variant="outlined"
-          value={formInput.url}
+          value={pluginUrl}
           onChange={handleChange}
           multiline
         />
@@ -91,6 +76,7 @@ function CustomPluginForm({
           color="primary"
           style={{ marginTop: '1.5rem' }}
           onClick={handleSubmit}
+          disabled={!pluginUrl}
         >
           Add plugin
         </Button>
