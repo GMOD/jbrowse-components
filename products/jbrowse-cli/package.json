@@ -57,7 +57,8 @@
     "node-fetch": "^2.6.0",
     "pako": "^1.0.11",
     "tslib": "^1",
-    "unzipper": "^0.10.11"
+    "unzipper": "^0.10.11",
+    "ixixx": "^1.0.0"
   },
   "devDependencies": {
     "@types/follow-redirects": "^1.13.0",

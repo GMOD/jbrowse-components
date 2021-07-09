@@ -1,9 +1,9 @@
 import { flags } from '@oclif/command'
 import JBrowseCommand, { Config } from '../base'
+import { ixIxxStream } from 'ixixx'
 import { ReadStream, createReadStream, promises } from 'fs'
 import { Transform, PassThrough } from 'stream'
 import gff from '@gmod/gff'
-import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import {
   FollowResponse,
   http as httpFR,
@@ -47,9 +47,6 @@ export default class TextIndex extends JBrowseCommand {
     out: flags.string({
       description: 'Synonym for target',
     }),
-    test: flags.boolean({
-      description: 'Determines which version of ixIxx to use',
-    }),
   }
 
   // Called when running the terminal command. Parses the given flags
@@ -60,7 +57,6 @@ export default class TextIndex extends JBrowseCommand {
     const { flags: runFlags } = this.parse(TextIndex)
     const configPath: string = path.join(__dirname, '..', '..', 'config.json')
     const output = runFlags?.target || runFlags?.out || configPath || '.'
-    const test = runFlags?.test || false
     const isDir = (await promises.lstat(output)).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
     const fileDirectory = runFlags?.location || path.join(__dirname)
@@ -83,7 +79,7 @@ export default class TextIndex extends JBrowseCommand {
           const uri =
             indexConfig[0].indexingConfiguration?.gffLocation.uri || ''
 
-          await this.indexDriver(uri, test, indexAttributes, fileDirectory)
+          await this.indexDriver(uri, indexAttributes, fileDirectory)
         }
       } else {
         this.error('Error, please specify a track to index.')
@@ -101,7 +97,7 @@ export default class TextIndex extends JBrowseCommand {
       }
       const indexAttributes = defaultAttributes
 
-      await this.indexDriver(uris, test, indexAttributes, fileDirectory)
+      await this.indexDriver(uris, indexAttributes, fileDirectory)
     } else {
       const uris: Array<string> = []
       const indexConfig = await this.getIndexingConfigurations(
@@ -121,7 +117,7 @@ export default class TextIndex extends JBrowseCommand {
         }
       }
 
-      await this.indexDriver(uris, test, indexAttributes, fileDirectory)
+      await this.indexDriver(uris, indexAttributes, fileDirectory)
     }
   }
 
@@ -148,7 +144,6 @@ export default class TextIndex extends JBrowseCommand {
   // Returns a promise of the indexing child process completing.
   async indexDriver(
     uris: string | Array<string>,
-    isTest: boolean,
     attributesArr: Array<string>,
     outLocation: string,
   ) {
@@ -204,7 +199,7 @@ export default class TextIndex extends JBrowseCommand {
       })
     }
 
-    return this.runIxIxx(aggregateStream, isTest, outLocation)
+    return this.runIxIxx(aggregateStream, outLocation)
   }
 
   // Take in the local file path, check if the it is gzipped or not,
@@ -435,85 +430,11 @@ export default class TextIndex extends JBrowseCommand {
   // Given a readStream of data, indexes the stream into .ix and .ixx files using ixIxx.
   // The ixIxx executable is required on the system path for users, however tests use a local copy.
   // Returns a promise around ixIxx completing (or erroring).
-  runIxIxx(
-    readStream: ReadStream | PassThrough,
-    isTest: boolean,
-    outLocation: string,
-  ) {
-    const ixFileName = 'out.ix'
-    const ixxFileName = 'out.ixx'
+  runIxIxx(readStream: ReadStream, outLocation: string) {
+    const ixFilename = 'out.ix'
+    const ixxFilename = 'out.ixx'
 
-    let ixProcess: ChildProcessWithoutNullStreams
-
-    if (isTest) {
-      // If this is a test, output to test/data/ directory, and use the local version of ixIxx.
-      ixProcess = spawn(
-        `cat | ${path.join(__dirname, '..', '..', 'test', 'ixIxx')} /dev/stdin`,
-        [
-          `${path.join(__dirname, '..', '..', 'test', 'data', 'out.ix')}`,
-          `${path.join(__dirname, '..', '..', 'test', 'data', 'out.ixx')}`,
-        ],
-        { shell: true },
-      )
-    }
-    // Otherwise require user to have ixIxx in their system path.
-    else {
-      ixProcess = spawn(
-        'cat | ixIxx /dev/stdin',
-        [
-          `${path.join(outLocation, ixFileName)}`,
-          `${path.join(outLocation, ixxFileName)}`,
-        ],
-        {
-          shell: true,
-        },
-      )
-    }
-
-    // Pass the readStream as stdin into ixProcess.
-    readStream.pipe(ixProcess.stdin).on('error', e => {
-      this.error(`Error writing data to ixIxx. ${e}`)
-    })
-
-    // End the ixProcess stdin when the stream is done.
-    readStream.on('end', () => {
-      ixProcess.stdin.end()
-    })
-
-    ixProcess.stdout.on('data', data => {
-      this.log(`Output from ixIxx: ${data}`)
-    })
-
-    const promise = new Promise((resolve, reject) => {
-      ixProcess.on('close', code => {
-        if (code === 0) {
-          resolve('Success!')
-          // Code should = 0 for success
-          this.log(
-            `Indexing done! Check ${ixFileName} and ${ixxFileName} files for output.`,
-          )
-          return code
-        } else {
-          reject(`ixIxx exited with code: ${code}`)
-          return code
-        }
-      })
-
-      // Hook up the reject from promise on error
-      ixProcess.stderr.on('data', data => {
-        reject(`Error with ixIxx: ${data}`)
-      })
-    }).catch(errorData => {
-      // Catch any promise rejection errors with running ixIxx here.
-
-      if (errorData.includes('not found')) {
-        this.error('ixIxx was not found in your system.')
-      } else {
-        this.error(errorData)
-      }
-    })
-
-    return promise
+    return ixIxxStream(readStream, ixFilename, ixxFilename)
   }
 
   // Function that takes in an array of tracks and returns an array of
