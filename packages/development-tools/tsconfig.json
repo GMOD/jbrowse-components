@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "outDir": "dist/",
+    // node 10 target: https://github.com/microsoft/TypeScript/wiki/Node-Target-Mapping#node-10
+    "lib": ["es2018"],
+    "module": "commonjs",
+    "target": "es2018"
+  },
+  "include": ["src"]
+}

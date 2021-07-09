@@ -4,12 +4,8 @@ const spawn = require('cross-spawn')
 const path = require('path')
 
 function main() {
-  const devTools = require.resolve('@jbrowse/development-tools')
   const patchPackage = require.resolve('patch-package')
-  const patchDir = path.relative(
-    '',
-    path.join(path.dirname(devTools), 'patches/'),
-  )
+  const patchDir = path.relative('', path.join(__dirname, 'patches'))
   const { signal, status } = spawn.sync(
     'node',
     [patchPackage, '--patch-dir', patchDir],
