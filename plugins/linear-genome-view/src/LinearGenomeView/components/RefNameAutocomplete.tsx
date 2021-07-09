@@ -100,7 +100,6 @@ function RefNameAutocomplete({
   // default options for dropdown
   const limitOption: Array<Option> = [
     {
-      group: 'reference sequence',
       result: new BaseResult({
         refName: '',
         label: '',
@@ -117,7 +116,6 @@ function RefNameAutocomplete({
   let options: Array<Option> = useMemo(() => {
     const defaultOptions = regions.map(option => {
       const defaultOption: Option = {
-        group: 'reference sequence',
         result: new RefSequenceResult({
           refName: option.refName,
           label: option.refName,
@@ -148,7 +146,6 @@ function RefNameAutocomplete({
         if (results.length > 0 && active) {
           const adapterResults: Option[] = results.map(result => {
             const newOption: Option = {
-              group: 'text search results',
               result,
             }
             return newOption
@@ -204,7 +201,6 @@ function RefNameAutocomplete({
         setSearchOptions([])
       }}
       options={searchOptions.length === 0 ? options : searchOptions}
-      groupBy={option => String(option.group)}
       filterOptions={(possibleOptions, params) => {
         return filter(possibleOptions, params)
       }}
