@@ -3,9 +3,10 @@ import PluggableElementBase from './PluggableElementBase'
 import {
   setBlobMap,
   getBlobMap,
+  getAccessToken,
   setInternetAccountMap,
   getTokensFromStorage,
-  searchInArgs,
+  searchOrReplaceInArgs,
 } from '../util/tracks'
 
 import {
@@ -28,30 +29,39 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
   async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
     const blobMap = getBlobMap()
-    const internetAccountMap = getTokensFromStorage()
+    let internetAccountMap = getTokensFromStorage()
 
-    const id = searchInArgs(args, 'internetAccountId')
-
-    // googleOAuth
-
-    // if (args.adapterConfig) {
-    // recursively check all keys for internetAccountId
-    // if no internetaccount do nothing,
-    // check if that internetAccountId exists in the map, if it doesnt do below
-    // return this as a promise that doesnt resolve until the token is fetch
-    // account's openLocation idealy would be called from here
-    // can use this.pluginManager.rootModel.internetAccount to call the correct open location
-    // }
-
-    // return new Promise(async r => {
-    //   const fileUrl = await account.openLocation()
-    //    call getTokensFromStorage()
-    //   add fileUrl to adapterConfig correctly
-    //   resolve({
-    //   ..args, blobMap, internetAccountMap
-    //    })
-    // })
-    // check args for internetAccountIds, then getTokenMap, make sure that internetACcountId has a token
+    if (args.hasOwnProperty('adapterConfig')) {
+      const adapterConfig = searchOrReplaceInArgs(args, 'adapterConfig')
+      const id = searchOrReplaceInArgs(adapterConfig, 'internetAccountId')
+      if (id) {
+        const token = internetAccountMap[id]
+        // @ts-ignore
+        const account = this.pluginManager.rootModel?.internetAccounts.find(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (acc: any) => {
+            return acc.internetAccountId === id
+          },
+        )
+        const uri = searchOrReplaceInArgs(adapterConfig, 'uri')
+        if (account && uri) {
+          if (!token) {
+            return new Promise(async resolve => {
+              const file = await account.openLocation(new URL(uri))
+              const editedArgs = JSON.parse(JSON.stringify(args))
+              searchOrReplaceInArgs(editedArgs, 'uri', file)
+              internetAccountMap = getTokensFromStorage()
+              resolve({ ...editedArgs, blobMap, internetAccountMap })
+            })
+          } else {
+            const file = await account.fetchFile(uri, token)
+            const editedArgs = JSON.parse(JSON.stringify(args))
+            searchOrReplaceInArgs(editedArgs, 'uri', file)
+            return { ...editedArgs, blobMap, internetAccountMap }
+          }
+        }
+      }
+    }
     return { ...args, blobMap, internetAccountMap }
   }
 

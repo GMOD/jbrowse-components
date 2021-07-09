@@ -58,8 +58,6 @@ export const UriLocationRaw = types.model('UriLocation', {
   baseUri: types.maybe(types.string),
 })
 
-// TODOAUTH: here goes the logic to process the internetACcount information
-// if its in the track config
 export const UriLocation = types.snapshotProcessor(UriLocationRaw, {
   postProcessor: snap => {
     const { baseUri, ...rest } = snap

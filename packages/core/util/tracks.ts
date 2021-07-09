@@ -3,7 +3,6 @@ import { objectHash } from './index'
 import { PreFileLocation, FileLocation } from './types'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { readConfObject } from '../configuration'
-import { keys } from 'mobx'
 
 /* utility functions for use by track models and so forth */
 
@@ -120,18 +119,23 @@ export function setInternetAccountMap(map: { [key: string]: string }) {
   internetAccountMap = map
 }
 
-// search through arg object for a specific key
-export function searchInArgs(
+// search through arg object for a specific key, optionally replace key with string passed
+export function searchOrReplaceInArgs(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   obj: { [key: string]: any },
   key: string,
-): string | undefined {
+  replace?: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any {
   for (const property in obj) {
     if (obj.hasOwnProperty(property)) {
       if (property === key) {
+        if (replace) {
+          obj[key] = replace
+        }
         return obj[key]
       } else if (typeof obj[property] === 'object') {
-        return searchInArgs(obj[property], key)
+        return searchOrReplaceInArgs(obj[property], key, replace)
       }
     }
   }

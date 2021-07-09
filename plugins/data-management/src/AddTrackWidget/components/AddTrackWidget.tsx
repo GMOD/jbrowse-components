@@ -61,10 +61,10 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
     if (activeStep !== steps.length - 1) {
       setActiveStep(activeStep + 1)
 
-      const oauthFile = await rootModel.openLocation(
-        new URL((trackData as UriLocation).uri),
-      )
-      setOAuthFile(oauthFile)
+      // const oauthFile = await rootModel.openLocation(
+      //   new URL((trackData as UriLocation).uri),
+      // )
+      // setOAuthFile(oauthFile)
       return
     }
 
@@ -76,15 +76,15 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
 
     const assemblyInstance = session.assemblyManager.get(assembly)
 
-    if (oauthFile && trackData) {
-      const baseAuthUri = (trackData as UriLocation).uri
-      model.setTrackData({
-        uri: oauthFile,
-        baseAuthUri,
-        internetAccountId: (trackData as UriLocation).internetAccountId,
-        authHeader: 'Authorization',
-      })
-    }
+    // if (oauthFile && trackData) {
+    //   const baseAuthUri = (trackData as UriLocation).uri
+    //   model.setTrackData({
+    //     uri: oauthFile,
+    //     baseAuthUri,
+    //     internetAccountId: (trackData as UriLocation).internetAccountId,
+    //     authHeader: 'Authorization',
+    //   })
+    // }
 
     // @ts-ignore
     session.addTrackConf({

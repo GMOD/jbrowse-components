@@ -14,15 +14,6 @@ import { addDisposer, getSnapshot, Instance, types } from 'mobx-state-tree'
 import { openLocation } from '@jbrowse/core/util/io'
 
 // Notes go here:
-// instead of laying out the abstractions first,
-// just create a menu item that is 'Open Dropbox'
-// and have the onclick handle all the the oauth logic
-// to get the access_token to see what abstractions we would need
-
-// can authorize and get access token
-// adding track to session is technically adding wrong link, it is adding a share link
-// while to access the track contents, it must fetch with the Bearer access token and get a temporary link
-// which can be used to load
 
 // if chooser is first,
 // put a menu item to open dropbox or open google drive
@@ -33,8 +24,6 @@ import { openLocation } from '@jbrowse/core/util/io'
 
 // make a new core plugin called authentication
 // put OAuthModel file there, plugin would have implementation of Oauth, HTTPBasic, etc
-// need to edit the current openLocation, move it to action on rootModel
-// new openLocation: check if any of the handleLocations return true, then call that openLocation
 
 interface Account {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -91,6 +80,7 @@ const stateModelFactory = (
           self.codeVerifierPKCE = codeVerifier
         },
         async useEndpointForAuthorization() {
+          self.setSelected(true)
           const data: OAuthData = {
             client_id: self.accountConfig.clientId,
             redirect_uri: 'http://localhost:3000',
@@ -132,8 +122,9 @@ const stateModelFactory = (
           const options = `width=500,height=600,left=0,top=0`
           return window.open(url, 'Authorization', options)
         },
-        async fetchFile(location: string) {
-          if (!location || !self.accessToken) {
+        async fetchFile(location: string, existingToken?: string) {
+          const accessToken = existingToken ? existingToken : self.accessToken
+          if (!location || !accessToken) {
             return
           }
           switch (self.accountConfig.internetAccountId) {
@@ -143,7 +134,7 @@ const stateModelFactory = (
                 {
                   method: 'POST',
                   headers: {
-                    Authorization: `Bearer ${self.accessToken}`,
+                    Authorization: `Bearer ${accessToken}`,
                     'Content-Type': 'application/json',
                   },
                   body: JSON.stringify({
@@ -162,7 +153,7 @@ const stateModelFactory = (
                   {
                     method: 'POST',
                     headers: {
-                      Authorization: `Bearer ${self.accessToken}`,
+                      Authorization: `Bearer ${accessToken}`,
                       'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({ path: metadata.id }),
@@ -184,7 +175,7 @@ const stateModelFactory = (
                 `https://www.googleapis.com/drive/v2/files/${urlId}`,
                 {
                   headers: {
-                    Authorization: `Bearer ${self.accessToken}`,
+                    Authorization: `Bearer ${accessToken}`,
                     'Content-Type': 'application/x-www-form-urlencoded',
                   },
                 },
@@ -217,17 +208,8 @@ const stateModelFactory = (
             }
 
             const fileUrl = await self.fetchFile((location as Location).href)
-            self.setSelected(false)
             // @ts-ignore
-            resolve(
-              fileUrl,
-              // openLocation({
-              //   uri: fileUrl,
-              //   baseAuthUri: location?.href,
-              //   authHeader: 'Authorization',
-              //   authTokenReference: self.accountConfig.internetAccountId,
-              // }),
-            )
+            resolve(fileUrl)
             resolve = undefined
             location = undefined
           },
@@ -235,7 +217,6 @@ const stateModelFactory = (
             location = l
             return new Promise(async r => {
               let hasStoredToken = false
-              // Object.keys(sessionStorage).forEach(async key => {})
 
               for (const key of Object.keys(sessionStorage)) {
                 if (key.startsWith(self.accountConfig.internetAccountId)) {

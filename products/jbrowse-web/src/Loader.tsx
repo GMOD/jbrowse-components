@@ -486,6 +486,7 @@ const Renderer = observer(
             pm.rootModel?.internetAccounts.forEach(account => {
               if (account.selected) {
                 account.exchangeAuthorizationForAccessToken(event.data.code)
+                account.setSelected(false)
               }
             })
           } else if (event.data.token) {
@@ -497,6 +498,7 @@ const Renderer = observer(
                   event.data.expireTime,
                   true,
                 )
+                account.setSelected(false)
               }
             })
           }

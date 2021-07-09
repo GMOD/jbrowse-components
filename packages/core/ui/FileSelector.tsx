@@ -204,15 +204,9 @@ const UrlChooser = (props: {
             value={currentInternetAccount}
             onChange={event => {
               setCurrentInternetAccount(event.target.value as string)
-              internetAccounts.forEach(account => {
-                if (account.internetAccountId === event.target.value) {
-                  account.setSelected(true)
-                } else {
-                  account.setSelected(false)
-                }
-              })
               setLocation({
                 uri: currentUrl,
+                baseAuthUri: currentUrl,
                 internetAccountId: event.target.value,
                 authHeader: 'Authorization',
               })
