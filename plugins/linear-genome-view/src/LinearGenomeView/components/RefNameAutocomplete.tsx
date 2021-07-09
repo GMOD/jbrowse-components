@@ -94,10 +94,10 @@ function RefNameAutocomplete({
   const [searchOptions, setSearchOptions] = useState<Option[]>([])
   const { assemblyManager } = session
   const { coarseVisibleLocStrings } = model
-  const assembly = assemblyName && assemblyManager.get(assemblyName)
-  const regions: Region[] = useMemo(() => {
-    return (assembly && assembly.regions) || []
-  }, [assembly])
+  const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const regions: Region[] = assembly?.regions || []
   // default options for dropdown
   const limitOption: Array<Option> = [
     {
