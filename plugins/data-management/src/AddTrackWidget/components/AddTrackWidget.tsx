@@ -15,6 +15,7 @@ import ConfirmTrack from './ConfirmTrack'
 import TrackSourceSelect from './TrackSourceSelect'
 import { AddTrackModel } from '../model'
 import { getRoot } from 'mobx-state-tree'
+import { UriLocation } from '@jbrowse/core/util/types'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -39,6 +40,7 @@ const steps = ['Enter track data', 'Confirm track type']
 
 function AddTrackWidget({ model }: { model: AddTrackModel }) {
   const [activeStep, setActiveStep] = useState(0)
+  const [oauthFile, setOAuthFile] = useState('')
   const classes = useStyles()
   const session = getSession(model)
   const { assembly, trackAdapter, trackData, trackName, trackType } = model
@@ -59,10 +61,10 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
     if (activeStep !== steps.length - 1) {
       setActiveStep(activeStep + 1)
 
-      const p = await rootModel.openLocation(
-        new URL((trackData as any).baseAuthUri),
+      const oauthFile = await rootModel.openLocation(
+        new URL((trackData as UriLocation).uri),
       )
-      console.log(p)
+      setOAuthFile(oauthFile)
       return
     }
 
@@ -74,6 +76,16 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
 
     const assemblyInstance = session.assemblyManager.get(assembly)
 
+    if (oauthFile && trackData) {
+      const baseAuthUri = (trackData as UriLocation).uri
+      model.setTrackData({
+        uri: oauthFile,
+        baseAuthUri,
+        internetAccountId: (trackData as UriLocation).internetAccountId,
+        authHeader: 'Authorization',
+      })
+    }
+
     // @ts-ignore
     session.addTrackConf({
       trackId,
@@ -81,7 +93,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
       name: trackName,
       assemblyNames: [assembly],
       adapter: {
-        ...trackAdapter,
+        ...model.trackAdapter,
         sequenceAdapter: getConf(assemblyInstance, ['sequence', 'adapter']),
       },
     })

@@ -44,6 +44,7 @@ export const LocalPathLocation = types.model('LocalPathLocation', {
   localPath: types.string, // TODO: refine
 })
 
+// like how blobId is used to get a blob map
 export const BlobLocation = types.model('BlobLocation', {
   name: types.string, // TODO: refine
   blobId: types.string,
@@ -52,7 +53,7 @@ export const BlobLocation = types.model('BlobLocation', {
 export const UriLocationRaw = types.model('UriLocation', {
   uri: types.string, // TODO: refine
   authHeader: types.maybe(types.string),
-  authTokenReference: types.maybe(types.string),
+  internetAccountId: types.maybe(types.string),
   baseAuthUri: types.maybe(types.string),
   baseUri: types.maybe(types.string),
 })

@@ -67,8 +67,8 @@ export function openLocation(location: FileLocation): GenericFilehandle {
         throw new Error('No URI provided')
       }
       let optionalHeaders = undefined
-      if (location.authHeader && location.authTokenReference) {
-        const token = getAccessToken(location.authTokenReference as string)
+      if (location.authHeader && location.internetAccountId) {
+        const token = getAccessToken(location.internetAccountId)
         if (token) {
           optionalHeaders = {
             [location.authHeader]: `Bearer ${token}`,
@@ -89,7 +89,6 @@ export function openLocation(location: FileLocation): GenericFilehandle {
       return new LocalFile(location.localPath)
     }
   }
-  // TODOAUTH pass across tokens like you pass the blob file
   if (isBlobLocation(location)) {
     // special case where blob is not directly stored on the model, use a getter
     const blob = getBlob(location.blobId)

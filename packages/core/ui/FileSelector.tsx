@@ -211,9 +211,11 @@ const UrlChooser = (props: {
                   account.setSelected(false)
                 }
               })
-              event.target.value
-                ? setLocation({ uri: '', baseAuthUri: currentUrl })
-                : setLocation({ uri: currentUrl, baseAuthUri: '' })
+              setLocation({
+                uri: currentUrl,
+                internetAccountId: event.target.value,
+                authHeader: 'Authorization',
+              })
             }}
           >
             <MenuItem value="">None</MenuItem>

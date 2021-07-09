@@ -68,19 +68,11 @@ export const UNSUPPORTED = 'UNSUPPORTED'
 
 let blobMap: { [key: string]: File } = {}
 
+let internetAccountMap: { [key: string]: string } = {}
+
 // get a specific blob
 export function getBlob(id: string) {
   return blobMap[id]
-}
-
-// get a specific access token
-export function getAccessToken(id: string) {
-  for (const key of Object.keys(sessionStorage)) {
-    if (key.includes(id)) {
-      return sessionStorage.getItem(key)
-    }
-  }
-  return null
 }
 
 // used to export entire context to webworker
@@ -104,6 +96,46 @@ export function storeBlobLocation(location: PreFileLocation) {
     return { name: location?.blob.name, blobId }
   }
   return location
+}
+
+// get a specific access token
+export function getAccessToken(id: string) {
+  return internetAccountMap[id]
+}
+
+// put tokens from session storage into a map
+export function getTokensFromStorage() {
+  const keyMap: Record<string, string> = {}
+  Object.entries(sessionStorage).forEach(entry => {
+    const [key, value] = entry
+    if (key.includes('token')) {
+      keyMap[key.split('-')[0]] = value
+    }
+  })
+  return keyMap
+}
+
+// used in new contexts like webworkers, similar to blobmap
+export function setInternetAccountMap(map: { [key: string]: string }) {
+  internetAccountMap = map
+}
+
+// search through arg object for a specific key
+export function searchInArgs(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  obj: { [key: string]: any },
+  key: string,
+): string | undefined {
+  for (const property in obj) {
+    if (obj.hasOwnProperty(property)) {
+      if (property === key) {
+        return obj[key]
+      } else if (typeof obj[property] === 'object') {
+        return searchInArgs(obj[property], key)
+      }
+    }
+  }
+  return
 }
 
 export function guessAdapter(

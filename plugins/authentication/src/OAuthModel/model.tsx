@@ -216,19 +216,17 @@ const stateModelFactory = (
               )
             }
 
-            self.setSelected(false)
             const fileUrl = await self.fetchFile((location as Location).href)
-            // TODO need to set up the uri so that it is the correct link, will probably need to
-            // do fetchfile stuff and get the correct link
-            console.log(resolve)
+            self.setSelected(false)
             // @ts-ignore
             resolve(
-              openLocation({
-                uri: fileUrl,
-                baseAuthUri: location?.href,
-                authHeader: 'Authorization',
-                authTokenReference: self.accountConfig.internetAccountId,
-              }),
+              fileUrl,
+              // openLocation({
+              //   uri: fileUrl,
+              //   baseAuthUri: location?.href,
+              //   authHeader: 'Authorization',
+              //   authTokenReference: self.accountConfig.internetAccountId,
+              // }),
             )
             resolve = undefined
             location = undefined
@@ -268,7 +266,17 @@ const stateModelFactory = (
           self.authorizationCode = code
         },
         setRefreshToken(token: string) {
-          self.refreshToken = token
+          const refreshTokenKey = `${self.accountConfig.internetAccountId}-refreshToken`
+          const existingToken = localStorage.getItem(refreshTokenKey)
+          if (!existingToken) {
+            self.refreshToken = token
+            localStorage.setItem(
+              `${self.accountConfig.internetAccountId}-refreshToken`,
+              token,
+            )
+          } else {
+            self.refreshToken = existingToken
+          }
         },
         // setAccessTokenInfo(token: string, expireTime = 0, generateNew = false) {
         //   self.accessToken = token
