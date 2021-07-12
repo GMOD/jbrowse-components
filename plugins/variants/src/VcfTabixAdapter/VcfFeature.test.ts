@@ -53,3 +53,66 @@ test('try DEL feature with END info field valid', () => {
   expect(f.get('start')).toEqual(99)
   expect(f.get('end')).toEqual(1000)
 })
+
+describe('test SV description', () => {
+  it('multiple SVs', () => {
+    const parser = new VcfParser({
+      header: `#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam`,
+    })
+    const line = `chr1\t100\trs123\tR\t<INVDUP>,<INV>\t29\tPASS\tEND=1000;SVTYPE=DEL`
+
+    const variant = parser.parseLine(line)
+
+    const f = new VcfFeature({
+      parser,
+      variant,
+      id: 'myuniqueid',
+    })
+    expect(f.get('description')).toEqual('<INVDUP>,<INV>')
+  })
+  it('BND', () => {
+    const parser = new VcfParser({
+      header: `#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam`,
+    })
+    const line = `chr1\t100\trs123\tR\tG[ctgA:34200[\t29\tPASS\tEND=1000;SVTYPE=BND`
+
+    const variant = parser.parseLine(line)
+
+    const f = new VcfFeature({
+      parser,
+      variant,
+      id: 'myuniqueid',
+    })
+    expect(f.get('description')).toEqual('G[ctgA:34200[')
+  })
+  it('multiple BND', () => {
+    const parser = new VcfParser({
+      header: `#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam`,
+    })
+    const line = `chr1\t100\trs123\tR\tG[ctgA:34200[,G[ctgA:44200[\t29\tPASS\tEND=1000;SVTYPE=BND`
+
+    const variant = parser.parseLine(line)
+
+    const f = new VcfFeature({
+      parser,
+      variant,
+      id: 'myuniqueid',
+    })
+    expect(f.get('description')).toEqual('G[ctgA:34200[,G[ctgA:44200[')
+  })
+  it('multiple SNV', () => {
+    const parser = new VcfParser({
+      header: `#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tBAMs/caudaus.sorted.sam`,
+    })
+    const line = `chr1\t100\trs123\tG\tA,C\t29\tPASS\tHELLO=world`
+
+    const variant = parser.parseLine(line)
+
+    const f = new VcfFeature({
+      parser,
+      variant,
+      id: 'myuniqueid',
+    })
+    expect(f.get('description')).toEqual('SNV G -> A,C')
+  })
+})

@@ -58,9 +58,11 @@ exports[`open up a widget 1`] = `
           <div
             class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
           >
-            <div>
+            <p
+              class="MuiTypography-root MuiTypography-body1"
+            >
               Core details
-            </div>
+            </p>
             <div
               class="makeStyles-field"
             >
@@ -96,9 +98,11 @@ exports[`open up a widget 1`] = `
             <hr
               class="MuiDivider-root"
             />
-            <div>
+            <p
+              class="MuiTypography-root MuiTypography-body1"
+            >
               Attributes
-            </div>
+            </p>
             <div
               class="makeStyles-field"
             >

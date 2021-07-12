@@ -58,7 +58,7 @@ export function stateModelFactory(configSchema: any) {
     )
     .views(self => ({
       get rendererTypeName() {
-        return getConf(self, 'renderer').type
+        return getConf(self, ['renderer', 'type'])
       },
       get renderProps() {
         return {

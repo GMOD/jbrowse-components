@@ -219,7 +219,7 @@ const SvInspectorViewF = pluginManager => {
         addDisposer(
           self,
           autorun(
-            () => {
+            async () => {
               const {
                 assemblyName,
                 onlyDisplayRelevantRegionsInCircularView,
@@ -229,15 +229,16 @@ const SvInspectorViewF = pluginManager => {
               const { tracks } = circularView
               const session = getSession(self)
               if (assemblyName) {
-                const assembly = session.assemblyManager.get(assemblyName)
+                const assembly = await session.assemblyManager.waitForAssembly(
+                  assemblyName,
+                )
                 if (assembly) {
-                  const { regions: assemblyRegions = [] } = assembly
+                  const {
+                    getCanonicalRefName,
+                    regions: assemblyRegions = [],
+                  } = assembly
                   if (onlyDisplayRelevantRegionsInCircularView) {
                     if (tracks.length === 1) {
-                      const {
-                        getCanonicalRefName,
-                      } = session.assemblyManager.get(assemblyName)
-
                       featuresRefNamesP
                         .then(featureRefNames => {
                           // canonicalize the store's ref names if necessary
