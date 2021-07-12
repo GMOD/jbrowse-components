@@ -696,11 +696,7 @@ export default function sessionModelFactory(
     }))
 
   pluginManager.plugins.forEach(plugin => {
-    // @ts-ignore
-    if (plugin.extendSession) {
-      // @ts-ignore
-      sessionModel = plugin.extendSession(sessionModel)
-    }
+    sessionModel = plugin.extendSession(sessionModel)
   })
 
   return types.snapshotProcessor(sessionModel, {
