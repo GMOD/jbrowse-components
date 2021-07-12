@@ -182,9 +182,7 @@ function RefNameAutocomplete({
                   label: 'keep typing for more results',
                   renderingComponent: (
                     <Tooltip title="keep typing for more results">
-                      <Typography noWrap>
-                        {'keep typing for more results'}
-                      </Typography>
+                      <Typography>{'keep typing for more results'}</Typography>
                     </Tooltip>
                   ),
                 }),
