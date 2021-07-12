@@ -18,7 +18,6 @@ import BaseResult, {
 import CircularProgress from '@material-ui/core/CircularProgress'
 import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
-import Tooltip from '@material-ui/core/Tooltip'
 import SearchIcon from '@material-ui/icons/Search'
 import { InputAdornment } from '@material-ui/core'
 import Autocomplete, {
@@ -181,9 +180,7 @@ function RefNameAutocomplete({
                 result: new BaseResult({
                   label: 'keep typing for more results',
                   renderingComponent: (
-                    <Tooltip title="keep typing for more results">
-                      <Typography>{'keep typing for more results'}</Typography>
-                    </Tooltip>
+                    <Typography>{'keep typing for more results'}</Typography>
                   ),
                 }),
               },
