@@ -30,6 +30,7 @@ import {
   types,
   walk,
   Instance,
+  IAnyModelType,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
@@ -51,7 +52,7 @@ export default function sessionModelFactory(
   assemblyConfigSchemasType = types.frozen(), // if not using sessionAssemblies
 ) {
   const minDrawerWidth = 128
-  const sessionModel = types
+  let sessionModel = types
     .model('JBrowseWebSessionModel', {
       id: types.optional(types.identifier, shortid()),
       name: types.string,
@@ -694,6 +695,11 @@ export default function sessionModelFactory(
         ]
       },
     }))
+
+  sessionModel = pluginManager.evaluateExtensionPoint(
+    'Core-extendSessionModel',
+    sessionModel,
+  ) as IAnyModelType
 
   return types.snapshotProcessor(sessionModel, {
     // @ts-ignore

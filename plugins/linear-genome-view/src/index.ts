@@ -32,6 +32,7 @@ import {
   configSchema as linearBasicDisplayConfigSchemaFactory,
   modelFactory as linearBasicDisplayModelFactory,
 } from './LinearBasicDisplay'
+import { IAnyModelType, types } from 'mobx-state-tree'
 
 export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'
@@ -116,6 +117,19 @@ export default class LinearGenomeViewPlugin extends Plugin {
             () => import('./LinearGenomeView/components/LinearGenomeView'),
           ),
         }),
+    )
+
+    pluginManager.addToExtensionPoint(
+      'Core-extendSessionModel',
+      sessionModel => {
+        console.log('foopy')
+        return types.compose(
+          sessionModel as IAnyModelType,
+          types.model('HelloWorld', {
+            foopy: types.optional(types.string, 'lol'),
+          }),
+        )
+      },
     )
   }
 
