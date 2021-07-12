@@ -189,8 +189,12 @@ export class CoreRender extends RpcMethodType {
       ? await renameRegionsIfNeeded(assemblyManager, args)
       : args
 
+    const superArgs = (await super.serializeArguments(
+      renamedArgs,
+      rpcDriverClassName,
+    )) as RenderArgs
     if (rpcDriverClassName === 'MainThreadRpcDriver') {
-      return renamedArgs
+      return superArgs
     }
 
     const { rendererType } = args
@@ -200,7 +204,7 @@ export class CoreRender extends RpcMethodType {
       this.pluginManager.getRendererType(rendererType),
     )
 
-    return RendererType.serializeArgsInClient(renamedArgs)
+    return RendererType.serializeArgsInClient(superArgs)
   }
 
   async execute(

@@ -141,7 +141,6 @@ const blockState = types
         renderInProgress = undefined
       },
       reload() {
-        console.log('in reload', self)
         self.renderInProgress = undefined
         self.filled = false
         self.reactElement = undefined

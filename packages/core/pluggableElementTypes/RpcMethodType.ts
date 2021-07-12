@@ -3,10 +3,10 @@ import PluggableElementBase from './PluggableElementBase'
 import {
   setBlobMap,
   getBlobMap,
-  getAccessToken,
   setInternetAccountMap,
   getTokensFromStorage,
   searchOrReplaceInArgs,
+  removeTokenFromStorage,
 } from '../util/tracks'
 
 import {
@@ -44,10 +44,18 @@ export default abstract class RpcMethodType extends PluggableElementBase {
           },
         )
         const uri = searchOrReplaceInArgs(adapterConfig, 'uri')
+
         if (account && uri) {
           if (!token) {
             return new Promise(async resolve => {
               const file = await account.openLocation(new URL(uri))
+              if (file.error) {
+                removeTokenFromStorage(id, internetAccountMap)
+                if (account.accountConfig.hasRefreshToken) {
+                  await account.exchangeRefreshForAccessToken()
+                  internetAccountMap = getTokensFromStorage()
+                }
+              }
               const editedArgs = JSON.parse(JSON.stringify(args))
               searchOrReplaceInArgs(editedArgs, 'uri', file)
               internetAccountMap = getTokensFromStorage()
@@ -55,6 +63,15 @@ export default abstract class RpcMethodType extends PluggableElementBase {
             })
           } else {
             const file = await account.fetchFile(uri, token)
+            // ASK ABOUT THIS: this only works because serialized arguments is called so many times
+            // wouldnt work if only called once
+            if (file.error) {
+              removeTokenFromStorage(id, internetAccountMap)
+              if (account.accountConfig.hasRefreshToken) {
+                await account.exchangeRefreshForAccessToken()
+                internetAccountMap = getTokensFromStorage()
+              }
+            }
             const editedArgs = JSON.parse(JSON.stringify(args))
             searchOrReplaceInArgs(editedArgs, 'uri', file)
             return { ...editedArgs, blobMap, internetAccountMap }

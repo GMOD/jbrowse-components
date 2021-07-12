@@ -35,8 +35,12 @@ export default class ComparativeRender extends RpcMethodType {
       ? await renameRegionsIfNeeded(assemblyManager, args)
       : args
 
+    const superArgs = (await super.serializeArguments(
+      renamedArgs,
+      rpcDriverClassName,
+    )) as RenderArgs
     if (rpcDriverClassName === 'MainThreadRpcDriver') {
-      return renamedArgs
+      return superArgs
     }
 
     const { rendererType } = args
@@ -49,7 +53,7 @@ export default class ComparativeRender extends RpcMethodType {
       )
     }
 
-    return RendererType.serializeArgsInClient(renamedArgs)
+    return RendererType.serializeArgsInClient(superArgs)
   }
 
   async execute(

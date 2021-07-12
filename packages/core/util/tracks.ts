@@ -114,6 +114,21 @@ export function getTokensFromStorage() {
   return keyMap
 }
 
+// delete token from session storage and map
+export function removeTokenFromStorage(
+  id: string,
+  keyMap: Record<string, string>,
+) {
+  const expiredTokenKey = Object.keys(sessionStorage).find(key => {
+    return key.split('-')[0] === id
+  })
+  if (expiredTokenKey) {
+    sessionStorage.removeItem(expiredTokenKey)
+    delete keyMap[id]
+  }
+  return keyMap
+}
+
 // used in new contexts like webworkers, similar to blobmap
 export function setInternetAccountMap(map: { [key: string]: string }) {
   internetAccountMap = map
@@ -135,7 +150,14 @@ export function searchOrReplaceInArgs(
         }
         return obj[key]
       } else if (typeof obj[property] === 'object') {
-        return searchOrReplaceInArgs(obj[property], key, replace)
+        if (Array.isArray(obj[property])) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          obj[property].forEach((p: any) => {
+            return searchOrReplaceInArgs(p, key, replace)
+          })
+        } else {
+          return searchOrReplaceInArgs(obj[property], key, replace)
+        }
       }
     }
   }

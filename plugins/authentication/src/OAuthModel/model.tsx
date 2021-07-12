@@ -1,17 +1,10 @@
 // will move later, just putting here tempimport React from 'react'
-import {
-  ConfigurationReference,
-  getConf,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { getRoot } from 'mobx-state-tree'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { OAuthInternetAccountConfigModel } from './configSchema'
 import crypto from 'crypto'
-import { addDisposer, getSnapshot, Instance, types } from 'mobx-state-tree'
-import { openLocation } from '@jbrowse/core/util/io'
+import { Instance, types } from 'mobx-state-tree'
 
 // Notes go here:
 
@@ -304,9 +297,47 @@ const stateModelFactory = (
               accessToken.expires_in,
               true,
             )
-            if (accessToken.refreshToken) {
-              this.setRefreshToken(accessToken.refreshToken)
+            if (accessToken.refresh_token) {
+              this.setRefreshToken(accessToken.refresh_token)
             }
+          }
+        },
+        async exchangeRefreshForAccessToken() {
+          const foundRefreshToken = Object.keys(localStorage).find(key => {
+            return (
+              key === `${self.accountConfig.internetAccountId}-refreshToken`
+            )
+          })
+          if (foundRefreshToken && self.accountConfig) {
+            const data = {
+              grant_type: 'refresh_token',
+              refresh_token: foundRefreshToken,
+              client_id: self.accountConfig.clientId,
+              code_verifier: self.codeVerifierPKCE,
+              redirect_uri: 'http://localhost:3000',
+            }
+
+            const params = Object.entries(data)
+              .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
+              .join('&')
+
+            const response = await fetch(
+              `${self.accountConfig.tokenEndpoint}`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: params,
+              },
+            )
+
+            const accessToken = await response.json()
+            self.setAccessTokenInfo(
+              accessToken.access_token,
+              accessToken.expires_in,
+              true,
+            )
           }
         },
         // async openLocation(location: Location) {
