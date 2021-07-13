@@ -14,7 +14,6 @@ import {
 import CloseIcon from '@material-ui/icons/Close'
 import GetAppIcon from '@material-ui/icons/GetApp'
 
-import { getSession } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 
 import { GridBookmarkModel } from '../model'
