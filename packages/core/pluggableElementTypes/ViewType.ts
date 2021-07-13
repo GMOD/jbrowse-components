@@ -33,6 +33,13 @@ export default class ViewType extends PluggableElementBase {
     }
   }
 
+  extendStateModel(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    extension: (extension: any) => { views?: {}; actions?: {}; state?: {} },
+  ) {
+    this.stateModel.extend(extension)
+  }
+
   addDisplayType(display: DisplayType) {
     this.displayTypes.push(display)
   }

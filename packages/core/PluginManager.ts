@@ -248,6 +248,7 @@ export default class PluginManager {
     // see elementCreationSchedule above for the creation order
     this.elementCreationSchedule.run()
     delete this.elementCreationSchedule
+    this.plugins.forEach(plugin => plugin.extendPlugins(this))
     return this
   }
 
