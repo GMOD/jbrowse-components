@@ -12,8 +12,6 @@ import {
 import DeleteIcon from '@material-ui/icons/Delete'
 import CloseIcon from '@material-ui/icons/Close'
 
-import { getSession } from '@jbrowse/core/util'
-
 import { GridBookmarkModel } from '../model'
 
 const useStyles = makeStyles(() => ({
@@ -37,8 +35,7 @@ function DeleteBookmark({
   const classes = useStyles()
   const [dialogOpen, setDialogOpen] = useState(false)
 
-  // @ts-ignore
-  const { removeBookmark } = getSession(model)
+  const { removeBookmark } = model
 
   return (
     <>

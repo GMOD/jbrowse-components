@@ -77,8 +77,7 @@ function DownloadBookmarks({ model }: { model: GridBookmarkModel }) {
     setFileType(event.target.value as string)
   }
 
-  // @ts-ignore
-  const { bookmarkedRegions } = getSession(model)
+  const { bookmarkedRegions } = model
 
   return (
     <>

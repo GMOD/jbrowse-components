@@ -34,8 +34,7 @@ function ClearBookmarks({ model }: { model: GridBookmarkModel }) {
   const classes = useStyles()
   const [dialogOpen, setDialogOpen] = useState(false)
 
-  // @ts-ignore
-  const { clearAllBookmarks } = getSession(model)
+  const { clearAllBookmarks } = model
 
   return (
     <>

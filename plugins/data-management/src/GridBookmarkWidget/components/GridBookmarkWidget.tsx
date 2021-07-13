@@ -34,8 +34,8 @@ const useStyles = makeStyles(() => ({
 
 function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
   const classes = useStyles()
-  // @ts-ignore
-  const { bookmarkedRegions, views } = getSession(model)
+  const { views } = getSession(model)
+  const { bookmarkedRegions } = model
   const bookmarkRows = bookmarkedRegions.toJS().map((region: Region) => ({
     ...region,
     id: `${region.refName}:${region.start}..${region.end}`,

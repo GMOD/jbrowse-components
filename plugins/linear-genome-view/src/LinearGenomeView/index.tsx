@@ -695,9 +695,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self.rightOffset,
         )
         const firstRegion = selectedRegions[0]
-        const session = getSession(self)
         // @ts-ignore
-        session.addBookmark(firstRegion)
+        const { widgets } = getSession(self)
+        const bookmarkWidget = widgets.get('GridBookmark')
+        bookmarkWidget.addBookmark(firstRegion)
       },
 
       navToLocString(locString: string, optAssemblyName?: string) {
