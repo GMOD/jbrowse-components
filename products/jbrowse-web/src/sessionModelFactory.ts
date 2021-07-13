@@ -82,7 +82,6 @@ export default function sessionModelFactory(
       sessionAssemblies: types.array(assemblyConfigSchemasType),
       sessionPlugins: types.array(types.frozen()),
       minimized: types.optional(types.boolean, false),
-      bookmarkedRegions: types.array(RegionModel),
     })
     .volatile((/* self */) => ({
       /**
@@ -197,16 +196,6 @@ export default function sessionModelFactory(
       addAssembly(assemblyConfig: AnyConfigurationModel) {
         self.sessionAssemblies.push(assemblyConfig)
       },
-      addBookmark(region: Region) {
-        const regionLocString = `${region.refName}:${region.start}..${region.end}`
-        const index = self.bookmarkedRegions.findIndex(b => {
-          const bLocString = `${b.refName}:${b.start}..${b.end}`
-          return bLocString === regionLocString
-        })
-        if (index === -1) {
-          self.bookmarkedRegions.push(region)
-        }
-      },
       addSessionPlugin(plugin: JBrowsePlugin) {
         if (self.sessionPlugins.find(p => p.name === plugin.name)) {
           throw new Error('session plugin cannot be installed twice')
@@ -222,18 +211,6 @@ export default function sessionModelFactory(
         if (index !== -1) {
           self.sessionAssemblies.splice(index, 1)
         }
-      },
-      removeBookmark(locString: string) {
-        const index = self.bookmarkedRegions.findIndex(b => {
-          const bLocString = `${b.refName}:${b.start}..${b.end}`
-          return bLocString === locString
-        })
-        if (index !== -1) {
-          self.bookmarkedRegions.splice(index, 1)
-        }
-      },
-      clearAllBookmarks() {
-        self.bookmarkedRegions.clear()
       },
       removeSessionPlugin(pluginUrl: string) {
         const index = self.sessionPlugins.findIndex(
