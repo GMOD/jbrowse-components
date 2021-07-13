@@ -203,13 +203,20 @@ const ArrayValue = ({
         )
       ) : value.every(val => isObject(val)) ? (
         value.map((val, i) => (
-          <Attributes attributes={val} prefix={[...prefix, name + '-' + i]} />
+          <Attributes
+            key={JSON.stringify(val) + '-' + i}
+            attributes={val}
+            prefix={[...prefix, name + '-' + i]}
+          />
         ))
       ) : (
         <div className={classes.field}>
           <FieldName prefix={prefix} description={description} name={name} />
           {value.map((val, i) => (
-            <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
+            <div
+              key={JSON.stringify(val) + '-' + i}
+              className={classes.fieldSubvalue}
+            >
               <BasicValue value={val} />
             </div>
           ))}
