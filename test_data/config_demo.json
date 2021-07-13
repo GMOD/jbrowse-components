@@ -3163,6 +3163,180 @@
           "uri": "https://jbrowse.org/genomes/GRCh38/methylation/modified_bases.5mC.bb"
         }
       }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "truthset_somaticSVs_COLO829",
+      "name": "truthset_somaticSVs_COLO829",
+      "description": "Source https://github.com/UMCUGenetics/COLO829_somaticSV",
+      "category": ["COLO829"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/truthset_somaticSVs_COLO829.vcf"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "colo829.normal.ngmlr.sorted",
+      "name": "COLO829 MinION normal",
+      "category": ["COLO829"],
+      "assemblyNames": ["hg19"],
+      "description": "https://www.ebi.ac.uk/ena/browser/view/PRJEB27698",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR275/ERR2752451/colo829.normal.ngmlr.sorted.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR275/ERR2752451/colo829.normal.ngmlr.sorted.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "colo829.tumor.ngmlr.sorted.merged",
+      "name": "COLO829 MinION tumor",
+      "category": ["COLO829"],
+      "assemblyNames": ["hg19"],
+      "description": "https://www.ebi.ac.uk/ena/browser/view/PRJEB27698",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR275/ERR2752452/colo829.tumor.ngmlr.sorted.merged.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR275/ERR2752452/colo829.tumor.ngmlr.sorted.merged.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "hg19.COLO_829N",
+      "name": "COLO829 Sequel normal",
+      "category": ["COLO829"],
+      "assemblyNames": ["hg19"],
+      "description": "https://www.ebi.ac.uk/ena/browser/view/PRJEB27698",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR280/ERR2808247/hg19.COLO_829N.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR280/ERR2808247/hg19.COLO_829N.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "COLO829R_dedup.realigned",
+      "name": "COLO829 HiSeq normal",
+      "category": ["COLO829"],
+      "assemblyNames": ["hg19"],
+      "description": "https://www.ebi.ac.uk/ena/browser/view/PRJEB27698",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR275/ERR2752449/COLO829R_dedup.realigned.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR275/ERR2752449/COLO829R_dedup.realigned.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "COLO829T_dedup.realigned",
+      "name": "COLO829 HiSeq tumor",
+      "category": ["COLO829"],
+      "assemblyNames": ["hg19"],
+      "description": "https://www.ebi.ac.uk/ena/browser/view/PRJEB27698",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR275/ERR2752450/COLO829T_dedup.realigned.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.sra.ebi.ac.uk/vol1/run/ERR275/ERR2752450/COLO829T_dedup.realigned.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
     }
   ],
   "connections": [],
