@@ -662,7 +662,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             const selector = session.addWidget(
               'HierarchicalTrackSelectorWidget',
               'hierarchicalTrackSelector',
-              { view: self },
+              { view: self.id },
             )
             session.showWidget(selector)
             return selector
@@ -1202,7 +1202,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
-        get menuItems(): MenuItem[] {
+        menuItems(): MenuItem[] {
           const menuItems: MenuItem[] = [
             {
               label: 'Return to import form',

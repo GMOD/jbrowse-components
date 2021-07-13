@@ -11,7 +11,7 @@ const BaseViewModel = types
     width: 800,
   }))
   .views((/* self */) => ({
-    get menuItems(): MenuItem[] {
+    menuItems(): MenuItem[] {
       return []
     },
   }))
