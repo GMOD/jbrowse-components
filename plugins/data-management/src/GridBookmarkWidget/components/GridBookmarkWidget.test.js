@@ -44,7 +44,7 @@ describe('<GridBookmarkWidget />', () => {
   })
 
   it('renders bookmarks correctly', async () => {
-    session.addBookmark({
+    model.addBookmark({
       refName: 'chr1',
       start: 1,
       end: 12,
@@ -57,7 +57,7 @@ describe('<GridBookmarkWidget />', () => {
   })
 
   it('deletes individual bookmarks correctly', async () => {
-    session.addBookmark({
+    model.addBookmark({
       refName: 'chr1',
       start: 1,
       end: 12,
@@ -75,7 +75,7 @@ describe('<GridBookmarkWidget />', () => {
   })
 
   it('clears all bookmarks correctly', async () => {
-    session.addBookmark({
+    model.addBookmark({
       refName: 'chr1',
       start: 1,
       end: 12,
@@ -91,7 +91,7 @@ describe('<GridBookmarkWidget />', () => {
   })
 
   it('downloads a BED file correctly', async () => {
-    session.addBookmark({
+    model.addBookmark({
       refName: 'chr1',
       start: 1,
       end: 12,
@@ -112,7 +112,7 @@ describe('<GridBookmarkWidget />', () => {
   })
 
   it('downloads a TSV file correctly', async () => {
-    session.addBookmark({
+    model.addBookmark({
       refName: 'chr1',
       start: 1,
       end: 12,
