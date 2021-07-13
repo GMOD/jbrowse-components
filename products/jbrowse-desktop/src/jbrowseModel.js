@@ -154,7 +154,7 @@ export default function JBrowseDesktop(
         return self.tracks.splice(idx, 1)
       },
       addPlugin(plugin) {
-        self.plugins = [...self.plugins, plugin]
+        self.plugins.push(plugin)
         const rootModel = getParent(self)
         rootModel.setPluginsUpdated(true)
       },
