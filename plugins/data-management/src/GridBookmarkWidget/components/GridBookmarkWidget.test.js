@@ -51,9 +51,9 @@ describe('<GridBookmarkWidget />', () => {
       assemblyName: 'hg19',
     })
 
-    const { container } = render(<GridBookmarkWidget model={model} />)
+    const { findByText } = render(<GridBookmarkWidget model={model} />)
 
-    expect(container.firstChild).toMatchSnapshot()
+    expect(findByText('chr1:1-12')).toBeTruthy()
   })
 
   it('deletes individual bookmarks correctly', async () => {
