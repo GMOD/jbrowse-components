@@ -27,6 +27,10 @@ import {
   stateModelFactory as PluginStoreStateModelFactory,
   configSchema as PluginStoreConfigSchema,
 } from './PluginStoreWidget'
+import {
+  stateModelFactory as GridBookmarkStateModelFactory,
+  configSchema as GridBookmarkConfigSchema,
+} from './GridBookmarkWidget'
 
 const SetDefaultSession = lazy(() => import('./SetDefaultSession'))
 
@@ -88,6 +92,18 @@ export default class extends Plugin {
         stateModel: AddConnectionStateModel,
         ReactComponent: lazy(
           () => import('./AddConnectionWidget/components/AddConnectionWidget'),
+        ),
+      })
+    })
+
+    pluginManager.addWidgetType(() => {
+      return new WidgetType({
+        name: 'GridBookmarkWidget',
+        heading: 'Bookmarked regions',
+        configSchema: GridBookmarkConfigSchema,
+        stateModel: GridBookmarkStateModelFactory(pluginManager),
+        ReactComponent: lazy(
+          () => import('./GridBookmarkWidget/components/GridBookmarkWidget'),
         ),
       })
     })

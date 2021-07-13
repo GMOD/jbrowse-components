@@ -11,9 +11,10 @@ import Popover from '@material-ui/core/Popover'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import ZoomInIcon from '@material-ui/icons/ZoomIn'
+import BookmarkIcon from '@material-ui/icons/Bookmark'
 
-import { stringify } from '@jbrowse/core/util'
-import { LinearGenomeViewStateModel } from '..'
+import { getSession, stringify } from '@jbrowse/core/util'
+import { LinearGenomeViewStateModel, BpOffset } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -183,7 +184,7 @@ function RubberBand({
     model.moveTo(leftOffset, rightOffset)
   }
 
-  function getSequence() {
+  function computeOffsets() {
     if (startX === undefined || anchorPosition === undefined) {
       return
     }
@@ -195,7 +196,28 @@ function RubberBand({
     }
     const leftOffset = model.pxToBp(leftPx)
     const rightOffset = model.pxToBp(rightPx)
+
+    return { leftOffset, rightOffset }
+  }
+
+  function getSequence() {
+    const { leftOffset, rightOffset } = computeOffsets() as {
+      leftOffset: BpOffset
+      rightOffset: BpOffset
+    }
     model.setOffsets(leftOffset, rightOffset)
+  }
+
+  function bookmarkSelectedRegion() {
+    const { leftOffset, rightOffset } = computeOffsets() as {
+      leftOffset: BpOffset
+      rightOffset: BpOffset
+    }
+    const selectedRegions = model.getSelectedRegions(leftOffset, rightOffset)
+    const firstRegion = selectedRegions[0]
+    const session = getSession(model)
+    // @ts-ignore
+    session.addBookmark(firstRegion)
   }
 
   function handleClose() {
@@ -230,6 +252,13 @@ function RubberBand({
       onClick: () => {
         getSequence()
         handleClose()
+      },
+    },
+    {
+      label: 'Bookmark region',
+      icon: BookmarkIcon,
+      onClick: () => {
+        bookmarkSelectedRegion()
       },
     },
   ]
