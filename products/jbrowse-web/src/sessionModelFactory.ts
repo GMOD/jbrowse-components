@@ -211,9 +211,9 @@ export default function sessionModelFactory(
           self.sessionAssemblies.splice(index, 1)
         }
       },
-      removeSessionPlugin(pluginName: string) {
+      removeSessionPlugin(pluginUrl: string) {
         const index = self.sessionPlugins.findIndex(
-          plugin => `${plugin.name}Plugin` === pluginName,
+          plugin => plugin.url === pluginUrl,
         )
         if (index !== -1) {
           self.sessionPlugins.splice(index, 1)
