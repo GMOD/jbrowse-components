@@ -1,4 +1,4 @@
-/* eslint-disable no-restricted-globals, no-console, react-hooks/rules-of-hooks */
+/* eslint-disable no-restricted-globals, react-hooks/rules-of-hooks */
 import './workerPolyfill'
 
 import RpcServer from '@librpc/web'
@@ -54,7 +54,6 @@ async function getPluginManager() {
   return pluginManager
 }
 
-const logBuffer: [string, ...unknown[]][] = []
 interface WrappedFuncArgs {
   rpcDriverClassName: string
   channel: string

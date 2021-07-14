@@ -787,23 +787,19 @@ export async function renameRegionsIfNeeded<
     statusCallback?: Function
   }
 >(assemblyManager: AssemblyManager, args: ARGTYPE) {
-  const { assemblyName, regions, adapterConfig } = args
+  const { assemblyName, regions = [], adapterConfig } = args
   if (!args.sessionId) {
     throw new Error('sessionId is required')
-  }
-  const newArgs: ARGTYPE = {
-    ...args,
-    regions: [...(args.regions || [])],
   }
 
   if (assemblyName) {
     const refNameMap = await assemblyManager.getRefNameMapForAdapter(
       adapterConfig,
       assemblyName,
-      newArgs,
+      args,
     )
 
-    if (refNameMap && regions && newArgs.regions) {
+    if (refNameMap && regions && regions) {
       return {
         ...args,
         regions: regions.map(region =>
@@ -811,8 +807,10 @@ export async function renameRegionsIfNeeded<
         ),
       }
     }
+  } else {
+    console.warn('no assembly name provided, unable to do refname renaming')
   }
-  return newArgs
+  return args
 }
 
 export function minmax(a: number, b: number) {
