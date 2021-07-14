@@ -13,7 +13,6 @@ import {
 import {
   getParentRenderProps,
   getRpcSessionId,
-  getTrackAssemblyNames,
 } from '@jbrowse/core/util/tracks'
 import {
   BaseLinearDisplay,
