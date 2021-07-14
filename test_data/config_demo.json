@@ -3167,8 +3167,9 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "modbam_test.reference",
-      "name": "modbam_test.reference",
-      "assemblyNames": ["hg19"],
+      "name": "Nanopolish modbam_test.reference 20:10000000",
+      "assemblyNames": ["hg38"],
+      "category": ["Methylation"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -3183,22 +3184,24 @@
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
           }
         }
       }
     },
+
     {
       "type": "AlignmentsTrack",
       "trackId": "modbam_test.read",
-      "name": "modbam_test.read",
-      "assemblyNames": ["hg19"],
+      "name": "Nanopolish modbam_test.read 20:10000000",
+      "category": ["Methylation"],
+      "assemblyNames": ["hg38"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
@@ -3213,13 +3216,13 @@
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
           }
         }
       }
