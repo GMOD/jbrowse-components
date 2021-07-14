@@ -158,7 +158,7 @@ export const BaseLinearDisplay = types
         return self.blockState.get(blockKey)?.layout?.getByCoord(x, y)
       },
 
-      getFeatureByID(id: string) {
+      getFeatureByID(id: string): [number, number, number, number] | undefined {
         let ret
         self.blockState.forEach(block => {
           const val = block?.layout?.getByID(id)
