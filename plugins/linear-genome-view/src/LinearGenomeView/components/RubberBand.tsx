@@ -217,7 +217,11 @@ function RubberBand({
     const firstRegion = selectedRegions[0]
     // @ts-ignore
     const { widgets } = getSession(model)
-    const bookmarkWidget = widgets.get('GridBookmark')
+    let bookmarkWidget = widgets.get('GridBookmark')
+    if (!bookmarkWidget) {
+      model.activateBookmarkWidget()
+      bookmarkWidget = widgets.get('GridBookmark')
+    }
     bookmarkWidget.addBookmark(firstRegion)
   }
 

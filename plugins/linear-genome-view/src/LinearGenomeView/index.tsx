@@ -697,7 +697,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const firstRegion = selectedRegions[0]
         // @ts-ignore
         const { widgets } = getSession(self)
-        const bookmarkWidget = widgets.get('GridBookmark')
+        let bookmarkWidget = widgets.get('GridBookmark')
+        if (!bookmarkWidget) {
+          this.activateBookmarkWidget()
+          bookmarkWidget = widgets.get('GridBookmark')
+        }
         bookmarkWidget.addBookmark(firstRegion)
       },
 
