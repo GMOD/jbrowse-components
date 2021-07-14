@@ -804,8 +804,11 @@ export async function renameRegionsIfNeeded<
     )
 
     if (refNameMap && regions && newArgs.regions) {
-      for (let i = 0; i < regions.length; i += 1) {
-        newArgs.regions[i] = renameRegionIfNeeded(refNameMap, regions[i])
+      return {
+        ...args,
+        regions: regions.map(region =>
+          renameRegionIfNeeded(refNameMap, region),
+        ),
       }
     }
   }

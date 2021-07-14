@@ -55,21 +55,6 @@ async function getPluginManager() {
 }
 
 const logBuffer: [string, ...unknown[]][] = []
-function flushLog() {
-  if (logBuffer.length) {
-    for (const l of logBuffer) {
-      const [head, ...rest] = l
-      if (head === 'rpc-error') {
-        console.error(head, ...rest)
-      } else {
-        console.log(head, ...rest)
-      }
-    }
-    logBuffer.length = 0
-  }
-}
-setInterval(flushLog, 1000)
-
 interface WrappedFuncArgs {
   rpcDriverClassName: string
   channel: string
@@ -103,8 +88,7 @@ function wrapForRpc(
         if (isAbortException(error)) {
           // logBuffer.push(['rpc-abort', myId, funcName, args])
         } else {
-          logBuffer.push(['rpc-error', myId, funcName, error])
-          flushLog()
+          console.error('rpc-error', myId, funcName, error)
         }
         throw error
       })
