@@ -478,33 +478,6 @@ const Renderer = observer(
     const [error, setError] = useState('')
     const [snapshotError, setSnapshotError] = useState('')
 
-    useEffect(() => {
-      window.addEventListener('message', event => {
-        if (pm) {
-          if (event.data.code) {
-            // @ts-ignore
-            pm.rootModel?.internetAccounts.forEach(account => {
-              if (account.selected) {
-                account.exchangeAuthorizationForAccessToken(event.data.code)
-                account.setSelected(false)
-              }
-            })
-          } else if (event.data.token) {
-            // @ts-ignore
-            pm.rootModel?.internetAccounts.forEach(account => {
-              if (account.selected) {
-                account.setAccessTokenInfo(
-                  event.data.token,
-                  event.data.expireTime,
-                  true,
-                )
-                account.setSelected(false)
-              }
-            })
-          }
-        }
-      })
-    }, [pm])
     // only create the pluginManager/rootModel "on mount"
     useEffect(() => {
       try {

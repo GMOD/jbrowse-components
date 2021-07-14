@@ -66,10 +66,6 @@ export function openLocation(location: FileLocation): GenericFilehandle {
       if (!location.uri) {
         throw new Error('No URI provided')
       }
-      // current issue: there are two open location calls
-      // one from coreRPCMethods, one from wiggle/pileup etc rpcmethods
-      // corerpcmethods has the correct adapter information with modified uri from RpcMethodTypes
-      // rpcmethods has the wrong adapter information, but gets called 2nd so tries to open from that information
       let optionalHeaders = undefined
       if (location.authHeader && location.internetAccountId) {
         const token = getAccessToken(location.internetAccountId)

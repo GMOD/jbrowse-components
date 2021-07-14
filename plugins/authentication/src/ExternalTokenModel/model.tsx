@@ -1,15 +1,9 @@
 // will move later, just putting here tempimport React from 'react'
-import {
-  ConfigurationReference,
-  getConf,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { getRoot } from 'mobx-state-tree'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ExternalTokenInternetAccountConfigModel } from './configSchema'
-import { addDisposer, getSnapshot, Instance, types } from 'mobx-state-tree'
+import { Instance, types } from 'mobx-state-tree'
 import React, { useState } from 'react'
 import Button from '@material-ui/core/Button'
 import { makeStyles } from '@material-ui/core/styles'
@@ -81,6 +75,7 @@ const stateModelFactory = (
         // open a dialog box that has a text field for pasting a token
         // something like
         // <DialogBoxExternal setExternalToken={this.setExternalToken}
+        // could do window.prompt, so similar flow to window.open, can get info from the prompt
         return (
           <ExternalTokenEntryForm
             internetAccountId={self.internetAccountId}

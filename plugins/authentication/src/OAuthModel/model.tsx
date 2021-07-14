@@ -54,6 +54,7 @@ const stateModelFactory = (
         refreshToken: '',
         codeVerifierPKCE: '',
         expireTime: 0,
+        errorMessage: '',
       }))
       // handleslocation will have to look at config and see what domain it's pointing at
       // i.e if google drive oauth, handlesLocation looks at self.config.endpoint and see if it is the associated endpoint
@@ -72,8 +73,10 @@ const stateModelFactory = (
         setCodeVerifierPKCE(codeVerifier: string) {
           self.codeVerifierPKCE = codeVerifier
         },
+        setErrorMessage(message: string) {
+          self.errorMessage = message
+        },
         async useEndpointForAuthorization() {
-          self.setSelected(true)
           const data: OAuthData = {
             client_id: self.accountConfig.clientId,
             redirect_uri: 'http://localhost:3000',
@@ -113,7 +116,12 @@ const stateModelFactory = (
 
           const url = `${self.accountConfig.authEndpoint}?${params}`
           const options = `width=500,height=600,left=0,top=0`
-          return window.open(url, 'Authorization', options)
+          return window.open(
+            url,
+            `JBrowseAuthWindow-${self.accountConfig.internetAccountId}`,
+            options,
+          )
+          // could have a temporary listener to have a reference for each internet account
         },
         async fetchFile(location: string, existingToken?: string) {
           const accessToken = existingToken ? existingToken : self.accessToken
@@ -182,7 +190,8 @@ const stateModelFactory = (
       }))
       .actions(self => {
         let location: Location | undefined = undefined
-        let resolve: Function | undefined = undefined
+        let resolve: Function = () => {}
+        let reject: Function = () => {}
         return {
           async setAccessTokenInfo(
             token: string,
@@ -201,14 +210,18 @@ const stateModelFactory = (
             }
 
             const fileUrl = await self.fetchFile((location as Location).href)
-            // @ts-ignore
             resolve(fileUrl)
-            resolve = undefined
             location = undefined
+            resolve = () => {}
+            reject = () => {}
           },
+          // have not a resolve, but a promise for completion of inflight oauth flow
+          // check if promise is there for inflight oauth flow, will chain on that and await on that promise to finish
+          // before starting itself, have an action called getAccessToken, is async and takes care of if there is flow i chain on to that logic
+          // so keep a promise for the tokens which is a state that you keep
           async openLocation(l: Location) {
             location = l
-            return new Promise(async r => {
+            return new Promise(async (r, x) => {
               let hasStoredToken = false
 
               for (const key of Object.keys(sessionStorage)) {
@@ -216,6 +229,7 @@ const stateModelFactory = (
                   const tokenExpirationTime = parseFloat(key.split('-')[2])
                   if (tokenExpirationTime >= Date.now()) {
                     resolve = r
+                    reject = x
                     await this.setAccessTokenInfo(
                       sessionStorage.getItem(key) as string,
                     )
@@ -228,150 +242,150 @@ const stateModelFactory = (
               }
 
               if (!hasStoredToken) {
+                this.addMessageChannel()
                 self.useEndpointForAuthorization()
                 resolve = r
+                reject = x
+              }
+            })
+          },
+
+          setAuthorizationCode(code: string) {
+            self.authorizationCode = code
+          },
+          setRefreshToken(token: string) {
+            const refreshTokenKey = `${self.accountConfig.internetAccountId}-refreshToken`
+            const existingToken = localStorage.getItem(refreshTokenKey)
+            if (!existingToken) {
+              self.refreshToken = token
+              localStorage.setItem(
+                `${self.accountConfig.internetAccountId}-refreshToken`,
+                token,
+              )
+            } else {
+              self.refreshToken = existingToken
+            }
+          },
+          async exchangeAuthorizationForAccessToken(token: string) {
+            if (self.accountConfig) {
+              const data = {
+                code: token,
+                grant_type: 'authorization_code',
+                client_id: self.accountConfig.clientId,
+                code_verifier: self.codeVerifierPKCE,
+                redirect_uri: 'http://localhost:3000',
+              }
+
+              const params = Object.entries(data)
+                .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
+                .join('&')
+
+              const response = await fetch(
+                `${self.accountConfig.tokenEndpoint}`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                  },
+                  body: params,
+                },
+              )
+
+              const accessToken = await response.json()
+              this.setAccessTokenInfo(
+                accessToken.access_token,
+                accessToken.expires_in,
+                true,
+              )
+              if (accessToken.refresh_token) {
+                this.setRefreshToken(accessToken.refresh_token)
+              }
+            }
+          },
+          async exchangeRefreshForAccessToken() {
+            const foundRefreshToken = Object.keys(localStorage).find(key => {
+              return (
+                key === `${self.accountConfig.internetAccountId}-refreshToken`
+              )
+            })
+            if (foundRefreshToken && self.accountConfig) {
+              const data = {
+                grant_type: 'refresh_token',
+                refresh_token: foundRefreshToken,
+                client_id: self.accountConfig.clientId,
+                code_verifier: self.codeVerifierPKCE,
+                redirect_uri: 'http://localhost:3000',
+              }
+
+              const params = Object.entries(data)
+                .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
+                .join('&')
+
+              const response = await fetch(
+                `${self.accountConfig.tokenEndpoint}`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                  },
+                  body: params,
+                },
+              )
+
+              const accessToken = await response.json()
+              this.setAccessTokenInfo(
+                accessToken.access_token,
+                accessToken.expires_in,
+                true,
+              )
+            }
+          },
+          // TODOAUTH clean up this channel on resolve or reject
+          addMessageChannel() {
+            // try and move it to the internet account state model
+            window.addEventListener('message', event => {
+              if (
+                event.data.name ===
+                `JBrowseAuthWindow-${self.accountConfig.internetAccountId}`
+              ) {
+                if (event.data.redirectUri.includes('access_token')) {
+                  const fixedQueryString = event.data.redirectUri.replace(
+                    '#',
+                    '?',
+                  )
+                  const queryStringSearch = new URL(fixedQueryString).search
+                  const urlParams = new URLSearchParams(queryStringSearch)
+                  const token = urlParams.get('access_token')
+                  const expireTime = urlParams.get('expires_in')
+                  if (!token || !expireTime) {
+                    self.setErrorMessage('Error fetching token')
+                    return reject(self.errorMessage)
+                  }
+                  this.setAccessTokenInfo(token, parseFloat(expireTime), true)
+                }
+                if (event.data.redirectUri.includes('code')) {
+                  const queryString = new URL(event.data.redirectUri).search
+                  const urlParams = new URLSearchParams(queryString)
+                  const code = urlParams.get('code')
+                  if (!code) {
+                    self.setErrorMessage('Error fetching code')
+                    return reject(self.errorMessage)
+                  }
+                  this.exchangeAuthorizationForAccessToken(code)
+                }
+                if (event.data.redirectUri.includes('access_denied')) {
+                  self.setErrorMessage('User cancelled OAuth flow')
+                  if (reject) {
+                    return reject(self.errorMessage)
+                  }
+                }
               }
             })
           },
         }
       })
-      .actions(self => ({
-        setAuthorizationCode(code: string) {
-          self.authorizationCode = code
-        },
-        setRefreshToken(token: string) {
-          const refreshTokenKey = `${self.accountConfig.internetAccountId}-refreshToken`
-          const existingToken = localStorage.getItem(refreshTokenKey)
-          if (!existingToken) {
-            self.refreshToken = token
-            localStorage.setItem(
-              `${self.accountConfig.internetAccountId}-refreshToken`,
-              token,
-            )
-          } else {
-            self.refreshToken = existingToken
-          }
-        },
-        // setAccessTokenInfo(token: string, expireTime = 0, generateNew = false) {
-        //   self.accessToken = token
-        //   self.expireTime = expireTime
-
-        //   const tokenExpirationFromNow = Date.now() + expireTime * 1000
-        //   if (generateNew) {
-        //     sessionStorage.setItem(
-        //       `${self.accountConfig.internetAccountId}-token-${tokenExpirationFromNow}`,
-        //       token,
-        //     )
-        //   }
-
-        //   self.setCurrentTypeAuthorizing('')
-        // },
-        async exchangeAuthorizationForAccessToken(token: string) {
-          if (self.accountConfig) {
-            const data = {
-              code: token,
-              grant_type: 'authorization_code',
-              client_id: self.accountConfig.clientId,
-              code_verifier: self.codeVerifierPKCE,
-              redirect_uri: 'http://localhost:3000',
-            }
-
-            const params = Object.entries(data)
-              .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
-              .join('&')
-
-            const response = await fetch(
-              `${self.accountConfig.tokenEndpoint}`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: params,
-              },
-            )
-
-            const accessToken = await response.json()
-            self.setAccessTokenInfo(
-              accessToken.access_token,
-              accessToken.expires_in,
-              true,
-            )
-            if (accessToken.refresh_token) {
-              this.setRefreshToken(accessToken.refresh_token)
-            }
-          }
-        },
-        async exchangeRefreshForAccessToken() {
-          const foundRefreshToken = Object.keys(localStorage).find(key => {
-            return (
-              key === `${self.accountConfig.internetAccountId}-refreshToken`
-            )
-          })
-          if (foundRefreshToken && self.accountConfig) {
-            const data = {
-              grant_type: 'refresh_token',
-              refresh_token: foundRefreshToken,
-              client_id: self.accountConfig.clientId,
-              code_verifier: self.codeVerifierPKCE,
-              redirect_uri: 'http://localhost:3000',
-            }
-
-            const params = Object.entries(data)
-              .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
-              .join('&')
-
-            const response = await fetch(
-              `${self.accountConfig.tokenEndpoint}`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: params,
-              },
-            )
-
-            const accessToken = await response.json()
-            self.setAccessTokenInfo(
-              accessToken.access_token,
-              accessToken.expires_in,
-              true,
-            )
-          }
-        },
-        // async openLocation(location: Location) {
-        //   return new Promise(resolve => {
-        //     this.useEndpointForAuthorization()
-        //     resolve(
-        //       openLocation({
-        //         uri: 'https://example.com',
-        //         authHeader: 'Authorization',
-        //         authTokenReference: self.accessToken,
-        //       }),
-        //     )
-        //   })
-        // },
-        // ideally it would be:
-        // something calls the rootmodel's open location
-        // rootmodel chooses open location from one of the internet accoutns, say its this open location
-        // then:
-        // return a promise from openLocation like return new Promise(resolve => {
-        //   authStuff(resolve)
-        // })
-        // resolve(utilOpenLocation({uri: 'something', /* other stuff */}))
-        // auth stuff is starting the auth workflow
-        // once auth stuff is done, call resolve on the promise with the file handle
-        // call util openLocation with authHeader, authToken and reutnr that
-        // start auth workflow
-        // the workflow waits on a promise to resolve
-
-        // check src/apollofetch.tsx
-      }))
   )
 }
-// will probably add an aftercreate that checks sessionStorage for existence of a valid token that is still working,
-// if so use that as the token and mark yourself logged in
 
 export default stateModelFactory
 export type AlignmentsDisplayStateModel = ReturnType<typeof stateModelFactory>

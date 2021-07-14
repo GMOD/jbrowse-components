@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import {
   Button,
   Grid,
@@ -8,9 +8,7 @@ import {
   Typography,
   Select,
   MenuItem,
-  IconButton,
 } from '@material-ui/core'
-import CheckIcon from '@material-ui/icons/Check'
 import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab'
 import { observer } from 'mobx-react'
 import { isElectron } from '../util'
@@ -40,84 +38,6 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
   return 'blobId' in location
 }
 
-const fetchMetadataFromOauth = async (
-  oauthAccessTokenDropbox: string,
-  queryUrl: string,
-) => {
-  if (!queryUrl) {
-    return
-  }
-  const response = await fetch(
-    'https://api.dropboxapi.com/2/sharing/get_shared_link_metadata',
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${oauthAccessTokenDropbox}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url: queryUrl,
-      }),
-    },
-  )
-  if (!response.ok) {
-    const errorText = await response.text()
-    return { error: errorText }
-  }
-  const metadata = await response.json()
-  return metadata
-}
-const fetchTempLinkFromOauth = async (
-  oauthAccessTokenDropbox: string,
-  metadata: {
-    id: string
-  },
-) => {
-  if (!metadata) {
-    return
-  }
-  const fileResponse = await fetch(
-    'https://api.dropboxapi.com/2/files/get_temporary_link',
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${oauthAccessTokenDropbox}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ path: metadata.id }),
-    },
-  )
-  if (!fileResponse.ok) {
-    const errorText = await fileResponse.text()
-    return { error: errorText }
-  }
-  const file = await fileResponse.json()
-  return file.link
-}
-
-function getGoogleDriveIdFromUrl(url: string) {
-  return url.match(/[-\w]{25,}/)
-}
-
-async function fetchDownloadURLFromOauth(
-  oauthAccessTokenGoogle: string,
-  queryUrl: string,
-) {
-  const urlId = getGoogleDriveIdFromUrl(queryUrl)
-  const response = await fetch(
-    `https://www.googleapis.com/drive/v2/files/${urlId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${oauthAccessTokenGoogle}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    },
-  )
-
-  const fileMetadata = await response.json()
-  return fileMetadata
-}
-
 const FileLocationEditor = observer(
   (props: {
     location?: FileLocation
@@ -127,7 +47,7 @@ const FileLocationEditor = observer(
     name?: string
     description?: string
   }) => {
-    const { location, name, description, internetAccounts } = props
+    const { location, name, description } = props
     const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'
     const [fileOrUrlState, setFileOrUrlState] = useState(fileOrUrl)
 
@@ -175,10 +95,9 @@ const FileLocationEditor = observer(
 const UrlChooser = (props: {
   location?: FileLocation
   setLocation: Function
-  setName?: Function
   internetAccounts?: Account[]
 }) => {
-  const { location, setLocation, setName, internetAccounts } = props
+  const { location, setLocation, internetAccounts } = props
   const [currentUrl, setCurrentUrl] = useState('')
   const [currentInternetAccount, setCurrentInternetAccount] = useState('')
 

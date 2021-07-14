@@ -1,30 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { transaction } from 'mobx'
-import {
-  getRoot,
-  Instance,
-  resolveIdentifier,
-  types,
-  getEnv,
-} from 'mobx-state-tree'
+import { Instance, types } from 'mobx-state-tree'
 import { getConf, readConfObject } from '../../configuration'
-import {
-  AnyConfigurationSchemaType,
-  ConfigurationReference,
-} from '../../configuration/configurationSchema'
 import PluginManager from '../../PluginManager'
 import { MenuItem } from '../../ui'
-import { getContainingView, getSession } from '../../util'
-import { isSessionModelWithConfigEditing } from '../../util/types'
 import { ElementId } from '../../util/types/mst'
-import {
-  Fetcher,
-  FilehandleOptions,
-  GenericFilehandle,
-  PolyfilledResponse,
-  Stats,
-  RemoteFile,
-} from 'generic-filehandle'
+import { GenericFilehandle, RemoteFile } from 'generic-filehandle'
 
 // these MST models only exist for tracks that are *shown*.
 // they should contain only UI state for the track, and have
@@ -39,7 +19,6 @@ export const InternetAccount = types
   })
   .volatile(() => ({
     loggedIn: false,
-    selected: false,
   }))
   .views(self => ({
     get name() {
@@ -73,9 +52,6 @@ export const InternetAccount = types
     },
     setLoggedIn(bool: boolean) {
       self.loggedIn = bool
-    },
-    setSelected(bool: boolean) {
-      self.selected = bool
     },
   }))
 
