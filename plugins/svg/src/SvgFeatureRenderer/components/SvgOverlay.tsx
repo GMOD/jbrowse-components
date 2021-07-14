@@ -8,7 +8,7 @@ type LayoutRecord = [number, number, number, number]
 interface SvgOverlayProps {
   region: Region
   displayModel: {
-    blockLayoutFeatures: Map<string, Map<string, LayoutRecord>>
+    getFeatureByID: (arg0: string) => LayoutRecord
     selectedFeatureId?: string
     featureIdUnderMouse?: string
     contextMenuFeature?: SimpleFeature
@@ -112,10 +112,7 @@ function SvgOverlay({
     featureIdUnderMouse,
     contextMenuFeature,
   } = displayModel
-  // const blockLayout = blockLayoutFeatures?.get(blockKey)
-  // if (!blockLayout) {
-  //   return null
-  // }
+
   const mouseoverFeatureId = featureIdUnderMouse || contextMenuFeature?.id()
 
   function onFeatureMouseDown(
@@ -239,7 +236,7 @@ function SvgOverlay({
       ) : null}
       {selectedFeatureId ? (
         <OverlayRect
-          rect={blockLayout.get(selectedFeatureId)}
+          rect={displayModel.getFeatureByID?.(selectedFeatureId)}
           region={region}
           bpPerPx={bpPerPx}
           stroke="#00b8ff"
