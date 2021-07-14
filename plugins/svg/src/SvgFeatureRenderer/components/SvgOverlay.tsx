@@ -100,22 +100,22 @@ function OverlayRect({
 }
 
 function SvgOverlay({
-  displayModel: {
-    blockLayoutFeatures,
-    selectedFeatureId,
-    featureIdUnderMouse,
-    contextMenuFeature,
-  },
+  displayModel,
   blockKey,
   region,
   bpPerPx,
   movedDuringLastMouseDown,
   ...handlers
 }: SvgOverlayProps) {
-  const blockLayout = blockLayoutFeatures?.get(blockKey)
-  if (!blockLayout) {
-    return null
-  }
+  const {
+    selectedFeatureId,
+    featureIdUnderMouse,
+    contextMenuFeature,
+  } = displayModel
+  // const blockLayout = blockLayoutFeatures?.get(blockKey)
+  // if (!blockLayout) {
+  //   return null
+  // }
   const mouseoverFeatureId = featureIdUnderMouse || contextMenuFeature?.id()
 
   function onFeatureMouseDown(
@@ -218,7 +218,7 @@ function SvgOverlay({
     <>
       {mouseoverFeatureId ? (
         <OverlayRect
-          rect={blockLayout.get(mouseoverFeatureId)}
+          rect={displayModel.getFeatureByID?.(mouseoverFeatureId)}
           region={region}
           bpPerPx={bpPerPx}
           fill="#000"
