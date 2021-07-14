@@ -677,13 +677,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
       activateBookmarkWidget() {
         const session = getSession(self)
         if (isSessionModelWithWidgets(session)) {
-          const selector = session.addWidget(
-            'GridBookmarkWidget',
-            'GridBookmark',
-            { view: self },
-          )
-          session.showWidget(selector)
-          return selector
+          // @ts-ignore
+          let bookmarkWidget = session.widgets.get('GridBookmark')
+          if (!bookmarkWidget) {
+            bookmarkWidget = session.addWidget(
+              'GridBookmarkWidget',
+              'GridBookmark',
+              { view: self },
+            )
+          }
+
+          session.showWidget(bookmarkWidget)
+          return bookmarkWidget
         }
 
         throw new Error('Could not open bookmark widget')
