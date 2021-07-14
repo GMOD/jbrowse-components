@@ -12,6 +12,10 @@
     {
       "name": "UCSC",
       "url": "https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js"
+    },
+    {
+      "name": "CIVIC",
+      "url": "https://unpkg.com/jbrowse-plugin-civic/dist/jbrowse-plugin-civic.umd.production.min.js"
     }
   ],
   "assemblies": [
