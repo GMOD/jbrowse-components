@@ -1,7 +1,10 @@
 import { BlockSet } from '@jbrowse/core/util/blockTypes'
 
 import { getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import {
+  getRpcSessionId,
+  getTrackAssemblyNames,
+} from '@jbrowse/core/util/tracks'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
@@ -33,7 +36,9 @@ export async function getUniqueTagValues(
 }
 
 export async function getUniqueModificationValues(
-  self: IAnyStateTreeNode,
+  self: IAnyStateTreeNode & {
+    parentTrack: IAnyStateTreeNode & { configuration: AnyConfigurationModel }
+  },
   adapterConfig: AnyConfigurationModel,
   colorScheme: { type: string; tag?: string },
   blocks: BlockSet,
@@ -53,6 +58,7 @@ export async function getUniqueModificationValues(
       tag: colorScheme.tag,
       sessionId,
       regions: blocks.contentBlocks,
+      assemblyName: getTrackAssemblyNames(self.parentTrack)[0],
       ...opts,
     },
   )
