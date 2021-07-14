@@ -13,7 +13,6 @@ import {
 import {
   getParentRenderProps,
   getRpcSessionId,
-  getTrackAssemblyNames,
 } from '@jbrowse/core/util/tracks'
 import {
   BaseLinearDisplay,
@@ -512,19 +511,14 @@ const stateModelFactory = (
             'WiggleGetMultiRegionStats',
             {
               ...params,
-              assemblyName: getTrackAssemblyNames(self.parentTrack)[0],
-              regions: JSON.parse(
-                JSON.stringify(
-                  dynamicBlocks.contentBlocks.map(region => {
-                    const { start, end } = region
-                    return {
-                      ...region,
-                      start: Math.floor(start),
-                      end: Math.ceil(end),
-                    }
-                  }),
-                ),
-              ),
+              regions: dynamicBlocks.contentBlocks.map(region => {
+                const { start, end } = region
+                return {
+                  ...region,
+                  start: Math.floor(start),
+                  end: Math.ceil(end),
+                }
+              }),
               bpPerPx,
             },
           )) as FeatureStats

@@ -78,12 +78,7 @@ export default function assemblyManagerFactory(
         assemblyName: string,
         opts: { signal?: AbortSignal; sessionId: string },
       ) {
-        await when(() => Boolean(self.get(assemblyName)), {
-          signal: opts.signal,
-          name: 'when assembly ready',
-        })
-
-        const assembly = self.get(assemblyName)
+        const assembly = await this.waitForAssembly(assemblyName)
         if (assembly) {
           return assembly.getRefNameMapForAdapter(adapterConf, opts)
         }
@@ -94,11 +89,7 @@ export default function assemblyManagerFactory(
         assemblyName: string,
         opts: { signal?: AbortSignal; sessionId: string },
       ) {
-        await when(() => Boolean(self.get(assemblyName)), {
-          signal: opts.signal,
-          name: 'when assembly ready',
-        })
-        const assembly = self.get(assemblyName)
+        const assembly = await this.waitForAssembly(assemblyName)
         if (assembly) {
           return assembly.getReverseRefNameMapForAdapter(adapterConf, opts)
         }
