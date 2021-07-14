@@ -38,9 +38,9 @@ export default class PluginLoader {
     this.definitions = JSON.parse(JSON.stringify(pluginDefinitions))
   }
 
-  loadScript(scriptUrl: string): Promise<void> {
+  loadScript(scriptUrl: string, args: any): Promise<void> {
     if (document && document.getElementsByTagName) {
-      return domLoadScript(scriptUrl)
+      return domLoadScript(scriptUrl, args)
     }
     // @ts-ignore
     if (self && self.importScripts) {
@@ -67,7 +67,7 @@ export default class PluginLoader {
       parsedUrl.protocol === 'http:' ||
       parsedUrl.protocol === 'https:'
     ) {
-      await this.loadScript(definition.url)
+      await this.loadScript(definition.url, { type: 'module' })
       const moduleName = definition.name
       const umdName = `JBrowsePlugin${moduleName}`
       // Based on window-or-global
@@ -84,7 +84,7 @@ export default class PluginLoader {
         )
       }
 
-      return plugin.default
+      return plugin.default || plugin
     }
     throw new Error(
       `cannot load plugins using protocol "${parsedUrl.protocol}"`,
