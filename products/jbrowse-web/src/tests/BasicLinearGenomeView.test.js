@@ -135,7 +135,9 @@ describe('valid file tests', () => {
     fireEvent.mouseUp(rubberBandComponent, { clientX: 250, clientY: 0 })
     const bookmarkMenuItem = await findByText('Bookmark region')
     fireEvent.click(bookmarkMenuItem)
-    expect(state.session.bookmarkedRegions[0].assemblyName).toEqual('volvox')
+    const { widgets } = state.session
+    const bookmarkWidget = widgets.get('GridBookmark')
+    expect(bookmarkWidget.bookmarkedRegions[0].assemblyName).toEqual('volvox')
   })
 
   it('click and drag to reorder tracks', async () => {
@@ -302,28 +304,41 @@ describe('valid file tests', () => {
     const viewMenu = await findByTestId('view_menu_icon')
     fireEvent.click(viewMenu)
     fireEvent.click(await findByText('Bookmark current region'))
-    expect(state.session.bookmarkedRegions[0].start).toEqual(100)
-    expect(state.session.bookmarkedRegions[0].end).toEqual(140)
+    const { widgets } = state.session
+    const bookmarkWidget = widgets.get('GridBookmark')
+    expect(bookmarkWidget.bookmarkedRegions[0].start).toEqual(100)
+    expect(bookmarkWidget.bookmarkedRegions[0].end).toEqual(140)
   })
 
   it('navigates to bookmarked region from widget', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    state.session.addBookmark({
+
+    const { findByTestId, findByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+
+    // need this to complete before we can try to navigate
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+    await findByTestId(
+      'trackRenderingContainer-integration_test-volvox_alignments',
+      {},
+      { timeout: 10000 },
+    )
+
+    const viewMenu = await findByTestId('view_menu_icon')
+    fireEvent.click(viewMenu)
+    fireEvent.click(await findByText('Open bookmark widget'))
+
+    const { widgets } = state.session
+    const bookmarkWidget = widgets.get('GridBookmark')
+    bookmarkWidget.addBookmark({
       start: 200,
       end: 240,
       refName: 'ctgA',
       assemblyName: 'volvox',
     })
-    const { findByTestId, findByText } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
-    // need this to complete before we can try to navigate
-    await findByTestId('htsTrackEntry-volvox_alignments')
 
-    const viewMenu = await findByTestId('view_menu_icon')
-    fireEvent.click(viewMenu)
-    fireEvent.click(await findByText('Open bookmark widget'))
     fireEvent.click(await findByText('ctgA:200..240'))
     const newRegion = state.session.views[0].getSelectedRegions(
       state.session.views[0].leftOffset,
