@@ -96,17 +96,17 @@
     "productName": "JBrowse 2",
     "copyright": "Copyright © 2019",
     "win": {
-      "target": "zip",
+      "target": "nsis",
       "artifactName": "jbrowse-desktop-${version}-win.${ext}"
     },
     "linux": {
-      "target": "zip",
-      "artifactName": "jbrowse-desktop-${version}-linux.${ext}",
-      "executableName": "jbrowse-desktop"
+      "executableName": "jbrowse-desktop",
+      "target": "AppImage",
+      "artifactName": "jbrowse-desktop-${version}-linux.${ext}"
     },
     "mac": {
       "category": "public.app-category.utilities",
-      "target": "zip",
+      "target": "dmg",
       "artifactName": "jbrowse-desktop-${version}-mac.${ext}"
     },
     "files": [
@@ -115,7 +115,8 @@
     ],
     "directories": {
       "buildResources": "assets/"
-    }
+    },
+    "afterSign": "scripts/notarize.js"
   },
   "private": true
 }
