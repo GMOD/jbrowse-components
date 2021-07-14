@@ -58,7 +58,6 @@ export async function getUniqueModificationValues(
       tag: colorScheme.tag,
       sessionId,
       regions: blocks.contentBlocks,
-      assemblyName: getTrackAssemblyNames(self.parentTrack)[0],
       ...opts,
     },
   )
