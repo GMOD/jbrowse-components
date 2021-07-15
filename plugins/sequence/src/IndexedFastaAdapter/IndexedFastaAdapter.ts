@@ -2,6 +2,7 @@ import { IndexedFasta } from '@gmod/indexedfasta'
 import {
   BaseFeatureDataAdapter,
   SequenceAdapter,
+  BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { FileLocation, NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -19,10 +20,10 @@ export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
     cache: new LRU({ maxSize: 200 }),
     fill: async (
       args: { refName: string; start: number; end: number },
-      // abortSignal?: AbortSignal,
+      signal?: AbortSignal,
     ) => {
       const { refName, start, end } = args
-      return this.fasta.getSequence(refName, start, end)
+      return this.fasta.getSequence(refName, start, end, { ...args, signal })
     },
   })
 
@@ -44,14 +45,14 @@ export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
     this.fasta = new IndexedFasta(fastaOpts)
   }
 
-  public getRefNames() {
-    return this.fasta.getSequenceNames()
+  public getRefNames(opts: BaseOptions) {
+    return this.fasta.getSequenceNames(opts)
   }
 
-  public async getRegions(): Promise<NoAssemblyRegion[]> {
-    const seqSizes = await this.fasta.getSequenceSizes()
+  public async getRegions(opts: BaseOptions): Promise<NoAssemblyRegion[]> {
+    const seqSizes = await this.fasta.getSequenceSizes(opts)
     return Object.keys(seqSizes).map(
-      (refName: string): NoAssemblyRegion => ({
+      (refName): NoAssemblyRegion => ({
         refName,
         start: 0,
         end: seqSizes[refName],
@@ -64,9 +65,10 @@ export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
    * @param param -
    * @returns Observable of Feature objects in the region
    */
-  public getFeatures({ refName, start, end }: NoAssemblyRegion) {
+  public getFeatures(region: NoAssemblyRegion, opts: BaseOptions) {
+    const { refName, start, end } = region
     return ObservableCreate<Feature>(async observer => {
-      const size = await this.fasta.getSequenceSize(refName)
+      const size = await this.fasta.getSequenceSize(refName, opts)
       const regionEnd = size !== undefined ? Math.min(size, end) : end
       const chunks = []
       const chunkSize = 128000
@@ -79,7 +81,7 @@ export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
           start: chunkStart,
           end: chunkStart + chunkSize,
         }
-        chunks.push(this.seqCache.get(JSON.stringify(r), r))
+        chunks.push(this.seqCache.get(JSON.stringify(r), r, opts.signal))
       }
       const seq = (await Promise.all(chunks))
         .join('')

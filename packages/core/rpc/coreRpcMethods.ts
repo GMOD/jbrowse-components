@@ -105,9 +105,7 @@ export class CoreGetFeatures extends RpcMethodType {
   name = 'CoreGetFeatures'
 
   async deserializeReturn(feats: SimpleFeatureSerialized[]) {
-    return feats.map(feat => {
-      return new SimpleFeature(feat)
-    })
+    return feats.map(feat => new SimpleFeature(feat))
   }
 
   async execute(
@@ -124,7 +122,7 @@ export class CoreGetFeatures extends RpcMethodType {
       args,
       rpcDriverClassName,
     )
-    const { sessionId, adapterConfig, region, opts } = deserializedArgs
+    const { signal, sessionId, adapterConfig, region, opts } = deserializedArgs
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
@@ -133,7 +131,7 @@ export class CoreGetFeatures extends RpcMethodType {
     if (!isFeatureAdapter(dataAdapter)) {
       return []
     }
-    const ret = dataAdapter.getFeatures(region, opts)
+    const ret = dataAdapter.getFeatures(region, { ...opts, signal })
     const r = await ret.pipe(toArray()).toPromise()
     return r.map(f => f.toJSON())
   }
