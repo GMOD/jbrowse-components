@@ -137,28 +137,11 @@ export const BaseLinearDisplay = types
           : undefined
       },
 
-      /**
-       * returns per-base block layouts as the data structure
-       * `Map<blockKey, Map<featureId, LayoutRecord>>`
-       *
-       * this per-block is needed to avoid cross-contamination of
-       * layouts across blocks especially when building the rtree
-       */
-      get blockLayoutFeatures() {
-        const layoutMaps = new Map<string, Map<string, LayoutRecord>>()
-        for (const block of self.blockState.values()) {
-          if (block && block.layout && block.layout.rectangles) {
-            layoutMaps.set(block.key, block.layout.getRectangles())
-          }
-        }
-        return layoutMaps
-      },
-
       getFeatureOverlapping(blockKey: string, x: number, y: number) {
         return self.blockState.get(blockKey)?.layout?.getByCoord(x, y)
       },
 
-      getFeatureByID(id: string) {
+      getFeatureByID(id: string): [number, number, number, number] | undefined {
         let ret
         self.blockState.forEach(block => {
           const val = block?.layout?.getByID(id)

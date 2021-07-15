@@ -1015,12 +1015,8 @@ test('processed transcript (exons + impliedUTR)', () => {
   expect(container.firstChild).toMatchSnapshot()
 })
 
+// hacks existence of getFeatureByID
 test('svg selected', () => {
-  const blockLayoutFeatures = new Map()
-  const layout = new Map()
-  layout.set('one', [0, 0, 10, 10])
-  blockLayoutFeatures.set('block1', layout)
-
   const { container } = render(
     <svg>
       <SvgOverlay
@@ -1029,7 +1025,9 @@ test('svg selected', () => {
         blockKey="block1"
         region={{ refName: 'zonk', start: 0, end: 1000 }}
         displayModel={{
-          blockLayoutFeatures,
+          getFeatureByID: () => {
+            return [0, 0, 10, 10]
+          },
           featureIdUnderMouse: 'one',
           selectedFeatureId: 'one',
         }}
