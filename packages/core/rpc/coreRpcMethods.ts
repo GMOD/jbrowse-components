@@ -113,10 +113,10 @@ export class CoreGetFeatures extends RpcMethodType {
   async execute(
     args: {
       sessionId: string
-      signal: RemoteAbortSignal
       region: Region
       adapterConfig: {}
-      opts?: { signal?: AbortSignal }
+      signal?: RemoteAbortSignal
+      opts?: any
     },
     rpcDriverClassName: string,
   ) {
@@ -124,7 +124,7 @@ export class CoreGetFeatures extends RpcMethodType {
       args,
       rpcDriverClassName,
     )
-    const { sessionId, adapterConfig, region,opts } = deserializedArgs
+    const { sessionId, adapterConfig, region, opts } = deserializedArgs
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,

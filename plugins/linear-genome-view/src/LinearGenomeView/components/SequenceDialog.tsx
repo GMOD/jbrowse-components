@@ -50,9 +50,7 @@ const useStyles = makeStyles(theme => ({
 async function fetchSequence(
   model: LinearGenomeViewModel,
   selectedRegions: Region[],
-  opts: {
-    signal?: AbortSignal
-  },
+  signal?: AbortSignal,
 ) {
   const session = getSession(model)
   const { leftOffset, rightOffset } = model
@@ -82,7 +80,7 @@ async function fetchSequence(
         adapterConfig,
         region,
         sessionId,
-        opts,
+        signal,
       }),
     ),
   )) as Feature[][]
@@ -173,8 +171,10 @@ function SequenceDialog({
       maxWidth="xl"
       open
       onClose={handleClose}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
     >
-      <DialogTitle>
+      <DialogTitle id="alert-dialog-title">
         Reference sequence
         {handleClose ? (
           <IconButton
