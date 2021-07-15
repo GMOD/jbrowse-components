@@ -665,7 +665,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             const selector = session.addWidget(
               'HierarchicalTrackSelectorWidget',
               'hierarchicalTrackSelector',
-              { view: self.id },
+              { view: self },
             )
             session.showWidget(selector)
             return selector

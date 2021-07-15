@@ -195,6 +195,8 @@ export default class PluginManager {
 
   rootModel?: AbstractRootModel
 
+  extensions: [string, (pluggableElement: PluggableElementType) => void][] = []
+
   constructor(initialPlugins: (Plugin | PluginLoadRecord)[] = []) {
     // add the core plugin
     this.addPlugin({ plugin: new CorePlugin(), metadata: { isCore: true } })
@@ -248,7 +250,6 @@ export default class PluginManager {
     // see elementCreationSchedule above for the creation order
     this.elementCreationSchedule.run()
     delete this.elementCreationSchedule
-    this.plugins.forEach(plugin => plugin.extendPlugins(this))
     return this
   }
 
@@ -319,6 +320,12 @@ export default class PluginManager {
           `${groupName} ${newElement.name} already registered, cannot register it again`,
         )
       }
+
+      this.extensions.forEach(([pluggableName, extension]) => {
+        if (pluggableName === newElement.name) {
+          extension(newElement)
+        }
+      })
 
       typeRecord.add(newElement.name, newElement)
     })
@@ -551,5 +558,12 @@ export default class PluginManager {
     creationCallback: (pluginManager: PluginManager) => RpcMethodType,
   ): this {
     return this.addElementType('rpc method', creationCallback)
+  }
+
+  extendPluggable(
+    pluginName: string,
+    extensionCallback: (pluggableElement: PluggableElementType) => void,
+  ) {
+    this.extensions.push([pluginName, extensionCallback])
   }
 }

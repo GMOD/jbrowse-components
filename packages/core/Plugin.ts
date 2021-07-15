@@ -13,8 +13,6 @@ export default abstract class Plugin {
 
   install(_pluginManager: PluginManager): void {}
 
-  extendPlugins(_pluginManager: PluginManager): void {}
-
   configure(_pluginManager: PluginManager): void {}
 
   configurationSchema: AnyConfigurationSchemaType | undefined = undefined
