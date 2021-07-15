@@ -8,7 +8,6 @@ import { LocStringResult } from '@jbrowse/core/TextSearch/BaseResults'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { Instance } from 'mobx-state-tree'
 import { RemoteFile } from 'generic-filehandle'
-import { decompress } from 'lzutf8'
 
 import MyConfigSchema from './configSchema'
 
@@ -59,9 +58,7 @@ export default class TrixTextSearchAdapter
     const results = await this.trixJs.search(queryString)
 
     results.forEach(data => {
-      buff = decompress(Buffer.from(data, 'base64'), {
-        outputEncoding: 'Buffer',
-      })
+      buff = Buffer.from(data, 'base64')
       const stringBuffer = buff.toString()
       searchResults.push(stringBuffer)
     })
