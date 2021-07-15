@@ -31,8 +31,8 @@ function PileupRendering(props: {
     selectedFeatureId,
     featureIdUnderMouse,
     contextMenuFeature,
-    blockLayoutFeatures,
-  } = displayModel || {}
+  } = displayModel
+
   const [region] = regions
   const highlightOverlayCanvas = useRef<HTMLCanvasElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
@@ -49,15 +49,11 @@ function PileupRendering(props: {
       return
     }
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    let rect
-    let blockLayout
-
-    if (
-      selectedFeatureId &&
-      (blockLayout = blockLayoutFeatures.get(blockKey)) &&
-      (rect = blockLayout.get(selectedFeatureId))
-    ) {
-      const [leftBp, topPx, rightBp, bottomPx] = rect
+    const selectedRect = selectedFeatureId
+      ? displayModel.getFeatureByID?.(selectedFeatureId)
+      : undefined
+    if (selectedRect) {
+      const [leftBp, topPx, rightBp, bottomPx] = selectedRect
       const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
       const rectTop = Math.round(topPx)
       const rectHeight = Math.round(bottomPx - topPx)
@@ -75,12 +71,11 @@ function PileupRendering(props: {
       ctx.clearRect(leftPx, rectTop, rightPx - leftPx, rectHeight)
     }
     const highlightedFeature = featureIdUnderMouse || contextMenuFeature?.id()
-    if (
-      highlightedFeature &&
-      (blockLayout = blockLayoutFeatures.get(blockKey)) &&
-      (rect = blockLayout.get(highlightedFeature))
-    ) {
-      const [leftBp, topPx, rightBp, bottomPx] = rect
+    const highlightedRect = highlightedFeature
+      ? displayModel.getFeatureByID?.(highlightedFeature)
+      : undefined
+    if (highlightedRect) {
+      const [leftBp, topPx, rightBp, bottomPx] = highlightedRect
       const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
       const rectTop = Math.round(topPx)
       const rectHeight = Math.round(bottomPx - topPx)
@@ -91,10 +86,9 @@ function PileupRendering(props: {
     bpPerPx,
     region,
     selectedFeatureId,
+    displayModel,
     featureIdUnderMouse,
     contextMenuFeature,
-    blockKey,
-    blockLayoutFeatures,
   ])
 
   function onMouseDown(event: MouseEvent) {
