@@ -111,28 +111,40 @@ All this stuff gets included in the session
 This means you can share links with your custom tracks with other users,
 without being a JBrowse admin!
 
+### Track menu
+
+Users can access track-specific functions by using the track menu, which is
+accessible from the track selecter itself ("..." icon) or on the track label
+(vertical "..."). Some functions are only available when the track is open e.g.
+from the track label, but more basic options like "About track" are available
+from the track menu on the track selector.
+
+<Figure caption="Screenshot showing how to open the track menu (both in the track selector area and in the track label area of the linear genome view), and an example of a VCF track with it's track menu open" src="/img/track_menu.png" />
+
+### About track dialog
+
+Using the track menu as described above, you can access the "About track"
+dialog
+
+<Figure caption="Screenshot of the 'About track' dialog for a CRAM file, showing the full CRAM file header and config info. Having the full header of a BAM/CRAM file available is helpful to easily check what genome it was aligned to for example." src="/img/about_track.png"/>
+
 ### Editing track configs
 
-Currently, in order to edit a track config, you have to make a copy of the track
+As a non-admin user, in order to edit a track config, you have to make a copy
+of the track. This will copy it to your "session tracks", which you can edit
+freely
 
-<Figure caption="Screenshot showing how to copy a track. In order to edit detailed configuration of a track, we require that you first make a copy of it, which can be done via the track menu" src="/img/copy_track.png" />
-
-After you have copied the track, you can edit the track settings
-
-<Figure caption="After copying a track, which puts it in your 'session tracks', you can then edit the track settings, and you have full control over your session tracks" src="/img/session_track_settings.png" />
-
-Your new track is a "session track" and can be shared with other
-users with the "Share" button
+<Figure caption="Screenshot showing the procedure to copy the track before being able to edit the settings" src="/img/edit_track_settings.png" />
 
 #### Rubberband selection
 
-The scale bars accept a click and drag action to select a region
+The scale bars accept a click-and-drag action to select a region. Rubberband selection can be performed on both the main (lower) and overview (upper) scale bars.
 
 <!--
 https://s3.amazonaws.com/jbrowse.org/code/jb2/main/index.html?config=test_data%2Fvolvox%2Fconfig.json&session=share-6_PDCGXnZY&password=sufpR
 -->
 
-<Figure caption="Rubberband selection can be performed on both the region and overview scale bars" src="/img/rubberband.png" />
+<Figure caption="Screenshot of rubberbanding both the main and overview scalebars. The main scalebar produces extra options on selection, e.g. Zoom to region, Get sequence, etc." src="/img/rubberband.png" />
 
 #### Track label positioning
 
@@ -250,7 +262,7 @@ specific base-pair mutation at the position crossing the center line (which is
    track label
 2. Select 'Sort by'->'Base pair'
 
-<Figure caption="Illustrating the pileup re-ordering that happens when turning on the 'Sort by'->'Base pair'. The sorting is done by specifically what letter of each read underlies the current center line position (the center line is 1bp wide, so sorted by that exact letter)" src="/img/alignments_center_line.png" />
+<Figure caption="Illustrating the pileup re-ordering that happens when turning on the 'Sort by'->'Base pair'. The sorting is done by specifically what letter of each read underlies the current center line position (the center line is 1bp wide, so sorted by that exact letter)" src="/img/alignments_sort_by_base.png" />
 
 ### Sort, color and filter by tag
 
@@ -497,7 +509,7 @@ feature. The options include:
 Some of the params such as 500bp and 10bp are arbitrarily chosen, if you are
 interested in adjusting these parameters let us know
 
-<Figure caption="The sequence for the upstream and downstream, exons, and intron sequences shown in the feature details" src="/img/feature_details_sequence.png" />
+<Figure caption="The sequence for the upstream and downstream, exons, and intron sequences shown in the feature details" src="/img/feature_detail_sequence.png" />
 
 ## Using the plugin store
 

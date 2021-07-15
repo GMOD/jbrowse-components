@@ -172,7 +172,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                       if (assembly) {
                         const { regions } = assembly
                         if (regions && regions.length) {
-                          const regionsSnapshot = getSnapshot(regions)
+                          const regionsSnapshot = regions
                           if (regionsSnapshot) {
                             transaction(() => {
                               views[index].setDisplayedRegions(regionsSnapshot)

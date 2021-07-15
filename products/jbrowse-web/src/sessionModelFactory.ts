@@ -210,9 +210,9 @@ export default function sessionModelFactory(
           self.sessionAssemblies.splice(index, 1)
         }
       },
-      removeSessionPlugin(pluginName: string) {
+      removeSessionPlugin(pluginUrl: string) {
         const index = self.sessionPlugins.findIndex(
-          plugin => `${plugin.name}Plugin` === pluginName,
+          plugin => plugin.url === pluginUrl,
         )
         if (index !== -1) {
           self.sessionPlugins.splice(index, 1)
@@ -715,6 +715,7 @@ export default function sessionModelFactory(
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>
 export type SessionModel = Instance<SessionStateModel>
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function z(x: Instance<SessionStateModel>): AbstractSessionModel {
   // this function's sole purpose is to get typescript to check
   // that the session model implements all of AbstractSessionModel

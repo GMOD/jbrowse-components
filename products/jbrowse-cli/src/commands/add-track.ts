@@ -305,7 +305,7 @@ export default class AddTrack extends JBrowseCommand {
           filePaths.map(async filePath => {
             const dest = destinationFn(configDirectory, filePath)
             try {
-              if (force) {
+              if (force && fs.existsSync(dest)) {
                 await fsPromises.unlink(dest)
               }
             } catch (e) {
@@ -325,7 +325,7 @@ export default class AddTrack extends JBrowseCommand {
           filePaths.map(async filePath => {
             const dest = destinationFn(configDirectory, filePath)
             try {
-              if (force) {
+              if (force && fs.existsSync(dest)) {
                 await fsPromises.unlink(dest)
               }
             } catch (e) {
@@ -341,7 +341,7 @@ export default class AddTrack extends JBrowseCommand {
           filePaths.map(async filePath => {
             const dest = destinationFn(configDirectory, filePath)
             try {
-              if (force) {
+              if (force && fs.existsSync(dest)) {
                 await fsPromises.unlink(dest)
               }
             } catch (e) {
@@ -547,7 +547,8 @@ export default class AddTrack extends JBrowseCommand {
 
     if (/\.vcf$/i.test(fileName)) {
       return {
-        type: 'UNSUPPORTED',
+        type: 'VcfAdapter',
+        vcfLocation: makeLocation(fileName),
       }
     }
 

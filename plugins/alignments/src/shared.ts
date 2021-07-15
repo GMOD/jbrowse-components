@@ -33,7 +33,9 @@ export async function getUniqueTagValues(
 }
 
 export async function getUniqueModificationValues(
-  self: IAnyStateTreeNode,
+  self: IAnyStateTreeNode & {
+    parentTrack: IAnyStateTreeNode & { configuration: AnyConfigurationModel }
+  },
   adapterConfig: AnyConfigurationModel,
   colorScheme: { type: string; tag?: string },
   blocks: BlockSet,

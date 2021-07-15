@@ -3,17 +3,20 @@ import { observer } from 'mobx-react'
 import { getEnv, getParent } from 'mobx-state-tree'
 
 import { makeStyles } from '@material-ui/core/styles'
-import Link from '@material-ui/core/Link'
-import Typography from '@material-ui/core/Typography'
-import Card from '@material-ui/core/Card'
-import CardActions from '@material-ui/core/CardActions'
-import CardContent from '@material-ui/core/CardContent'
-import Button from '@material-ui/core/Button'
+import {
+  Card,
+  CardActions,
+  CardContent,
+  Button,
+  Link,
+  Typography,
+} from '@material-ui/core'
 
 import PersonIcon from '@material-ui/icons/Person'
 import AddIcon from '@material-ui/icons/Add'
 import CheckIcon from '@material-ui/icons/Check'
 
+import PluginManager from '@jbrowse/core/PluginManager'
 import { getSession } from '@jbrowse/core/util'
 import type { JBrowsePlugin } from '@jbrowse/core/util/types'
 import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
@@ -49,8 +52,12 @@ function PluginCard({
 }) {
   const classes = useStyles()
   const session = getSession(model)
-  const { pluginManager } = getEnv(model)
-  const isInstalled = pluginManager.hasPlugin(`${plugin.name}Plugin`)
+  const { pluginManager } = getEnv(model) as { pluginManager: PluginManager }
+  const isInstalled = Boolean(
+    pluginManager.runtimePluginDefinitions.find(
+      pluginDefinition => pluginDefinition.url === plugin.url,
+    ),
+  )
   const [tempDisabled, setTempDisabled] = useState(false)
   const disableButton = isInstalled || tempDisabled
 

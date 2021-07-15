@@ -1,21 +1,26 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { getSnapshot, getParent } from 'mobx-state-tree'
+import { getParent } from 'mobx-state-tree'
 
 import { makeStyles } from '@material-ui/core/styles'
-import ListItem from '@material-ui/core/ListItem'
-import Typography from '@material-ui/core/Typography'
-import Dialog from '@material-ui/core/Dialog'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import Button from '@material-ui/core/Button'
-import Tooltip from '@material-ui/core/Tooltip'
+import {
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogActions,
+  DialogContent,
+  IconButton,
+  ListItem,
+  Tooltip,
+  Typography,
+} from '@material-ui/core'
 
-import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 import LockIcon from '@material-ui/icons/Lock'
 
+import PluginManager from '@jbrowse/core/PluginManager'
 import { getSession } from '@jbrowse/core/util'
-import type { BasePlugin } from '@jbrowse/core/util/types'
+import { BasePlugin } from '@jbrowse/core/util/types'
 import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
 import { PluginStoreModel } from '../model'
 
@@ -41,22 +46,74 @@ function LockedPlugin() {
   )
 }
 
+function PluginDialog({
+  onClose,
+  plugin,
+}: {
+  plugin: string
+  onClose: (s?: string) => void
+}) {
+  const classes = useStyles()
+  return (
+    <Dialog open onClose={() => onClose()}>
+      <DialogTitle>
+        <IconButton
+          className={classes.closeDialog}
+          aria-label="close-dialog"
+          onClick={() => onClose()}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent>
+        <Typography>
+          Please confirm that you want to remove {plugin}:
+        </Typography>
+        <DialogActions>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              // avoid showing runtime plugin warning
+              window.setTimeout(() => {
+                onClose(plugin)
+              }, 500)
+            }}
+          >
+            Confirm
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => {
+              onClose()
+            }}
+          >
+            Cancel
+          </Button>
+        </DialogActions>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 function InstalledPlugin({
   plugin,
   model,
+  pluginManager,
 }: {
   plugin: BasePlugin
   model: PluginStoreModel
+  pluginManager: PluginManager
 }) {
-  const classes = useStyles()
-
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [dialogPlugin, setDialogPlugin] = useState<string>()
 
   const session = getSession(model)
-  const sessionSnapShot = getSnapshot(session)
-  const { sessionPlugins } = sessionSnapShot
+
+  // @ts-ignore
+  const { sessionPlugins } = session
   const isSessionPlugin = sessionPlugins?.some(
-    (p: BasePlugin) => `${p.name}Plugin` === plugin.name,
+    (p: BasePlugin) => pluginManager.pluginMetadata[plugin.name].url === p.url,
   )
 
   const rootModel = getParent(model, 3)
@@ -64,12 +121,29 @@ function InstalledPlugin({
 
   return (
     <>
+      {dialogPlugin ? (
+        <PluginDialog
+          plugin={dialogPlugin}
+          onClose={name => {
+            if (name) {
+              const pluginMetadata = pluginManager.pluginMetadata[plugin.name]
+              const pluginUrl = pluginMetadata.url
+              if (adminMode) {
+                jbrowse.removePlugin(pluginUrl)
+              } else if (isSessionWithSessionPlugins(session)) {
+                session.removeSessionPlugin(pluginUrl)
+              }
+            }
+            setDialogPlugin(undefined)
+          }}
+        />
+      ) : null}
       <ListItem key={plugin.name}>
         {adminMode || isSessionPlugin ? (
           <IconButton
             aria-label="removePlugin"
             data-testid={`removePlugin-${plugin.name}`}
-            onClick={() => setDialogOpen(true)}
+            onClick={() => setDialogPlugin(plugin.name)}
           >
             <CloseIcon />
           </IconButton>
@@ -78,44 +152,6 @@ function InstalledPlugin({
         )}
         <Typography>{plugin.name}</Typography>
       </ListItem>
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-        <DialogTitle>
-          <IconButton
-            className={classes.closeDialog}
-            aria-label="close-dialog"
-            onClick={() => setDialogOpen(false)}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <div className={classes.dialogContainer}>
-          <>
-            <Typography>
-              Please confirm that you want to remove {plugin.name}:
-            </Typography>
-            <br />
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => {
-                  setDialogOpen(false)
-                  // avoid showing runtime plugin warning
-                  window.setTimeout(() => {
-                    if (adminMode) {
-                      jbrowse.removePlugin(plugin.name)
-                    } else if (isSessionWithSessionPlugins(session)) {
-                      session.removeSessionPlugin(plugin.name)
-                    }
-                  }, 500)
-                }}
-              >
-                Confirm
-              </Button>
-            </div>
-          </>
-        </div>
-      </Dialog>
     </>
   )
 }

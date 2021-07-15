@@ -17,11 +17,9 @@ import BaseResult, {
 // material ui
 import CircularProgress from '@material-ui/core/CircularProgress'
 import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
-import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import SearchIcon from '@material-ui/icons/Search'
 import { InputAdornment } from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles'
 import Autocomplete, {
   createFilterOptions,
 } from '@material-ui/lab/Autocomplete'
@@ -33,22 +31,16 @@ import { LinearGenomeViewModel } from '..'
  *  of the materila ui interface
  */
 export interface Option {
-  group: string
+  group?: string
   result: BaseResult
 }
 
 // filters for options to display in dropdown
 const filter = createFilterOptions<Option>({
   trim: true,
-  matchFrom: 'start',
   ignoreCase: true,
+  limit: 100,
 })
-const helperSearchText = `Search for features or navigate to a location using syntax "chr1:1-100" or "chr1:1..100"`
-const useStyles = makeStyles(() => ({
-  customWidth: {
-    maxWidth: 150,
-  },
-}))
 
 async function fetchResults(
   self: LinearGenomeViewModel,
@@ -84,37 +76,32 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
-  const classes = useStyles()
   const session = getSession(model)
-  const { pluginManager } = getEnv(session)
   const [open, setOpen] = useState(false)
   const [, setError] = useState<Error>()
   const [currentSearch, setCurrentSearch] = useState('')
-  const debouncedSearch = useDebounce(currentSearch, 350)
+  const debouncedSearch = useDebounce(currentSearch, 300)
   const [searchOptions, setSearchOptions] = useState<Option[]>([])
   const { assemblyManager } = session
   const { coarseVisibleLocStrings } = model
-  const assembly = assemblyName && assemblyManager.get(assemblyName)
-  const regions: Region[] = useMemo(() => {
-    return (assembly && assembly.regions) || []
-  }, [assembly])
-  // default options for dropdown
-  const options: Array<Option> = useMemo(() => {
+  const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const regions: Region[] = assembly?.regions || []
+
+  const options: Option[] = useMemo(() => {
     const defaultOptions = regions.map(option => {
-      const defaultOption: Option = {
-        group: 'reference sequence',
+      return {
         result: new RefSequenceResult({
           refName: option.refName,
           label: option.refName,
           matchedAttribute: 'refName',
         }),
       }
-      return defaultOption
     })
     return defaultOptions
   }, [regions])
-  // assembly and regions have loaded
-  const loaded = regions.length !== 0 && options.length !== 0
+
   useEffect(() => {
     let active = true
 
@@ -131,11 +118,7 @@ function RefNameAutocomplete({
         }
         if (results.length > 0 && active) {
           const adapterResults: Option[] = results.map(result => {
-            const newOption: Option = {
-              group: 'text search results',
-              result,
-            }
-            return newOption
+            return { result }
           })
           setSearchOptions(adapterResults)
         }
@@ -177,7 +160,7 @@ function RefNameAutocomplete({
       includeInputInList
       clearOnBlur
       selectOnFocus
-      disabled={!assemblyName || !loaded}
+      disabled={!assemblyName}
       style={style}
       value={coarseVisibleLocStrings || value || ''}
       open={open}
@@ -188,9 +171,22 @@ function RefNameAutocomplete({
         setSearchOptions([])
       }}
       options={searchOptions.length === 0 ? options : searchOptions}
-      groupBy={option => String(option.group)}
+      getOptionDisabled={option => option?.group === 'limitOption'}
       filterOptions={(possibleOptions, params) => {
-        return filter(possibleOptions, params)
+        const filtered = filter(possibleOptions, params)
+        return filtered.length >= 100
+          ? filtered.concat([
+              {
+                group: 'limitOption',
+                result: new BaseResult({
+                  label: 'keep typing for more results',
+                  renderingComponent: (
+                    <Typography>{'keep typing for more results'}</Typography>
+                  ),
+                }),
+              },
+            ])
+          : filtered
       }}
       ListboxProps={{ style: { maxHeight: 250 } }}
       onChange={(_, selectedOption) => onChange(selectedOption)}
@@ -201,19 +197,12 @@ function RefNameAutocomplete({
           ...InputProps,
           endAdornment: (
             <>
-              {!loaded ? (
+              {regions.length === 0 && searchOptions.length === 0 ? (
                 <CircularProgress color="inherit" size={20} />
               ) : (
-                <Tooltip
-                  title={helperSearchText}
-                  leaveDelay={300}
-                  placement="top"
-                  classes={{ tooltip: classes.customWidth }}
-                >
-                  <InputAdornment position="end" style={{ marginRight: 7 }}>
-                    <SearchIcon />
-                  </InputAdornment>
-                </Tooltip>
+                <InputAdornment position="end" style={{ marginRight: 7 }}>
+                  <SearchIcon />
+                </InputAdornment>
               )}
               {params.InputProps.endAdornment}
             </>
@@ -233,7 +222,7 @@ function RefNameAutocomplete({
           />
         )
       }}
-      renderOption={(option, { inputValue }) => {
+      renderOption={option => {
         const { result } = option
         const rendering = result.getLabel()
         // if renderingComponent is provided render that
@@ -242,14 +231,6 @@ function RefNameAutocomplete({
           if (React.isValidElement(component)) {
             return component
           }
-        }
-        if (currentSearch !== '' && inputValue.length <= rendering.length) {
-          return (
-            <Typography noWrap>
-              <b>{rendering.slice(0, inputValue.length)}</b>
-              {rendering.slice(inputValue.length)}
-            </Typography>
-          )
         }
         return <Typography noWrap>{rendering}</Typography>
       }}

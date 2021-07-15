@@ -1,7 +1,6 @@
 import {
   isStateTreeNode,
   Instance,
-  SnapshotOut,
   SnapshotIn,
   IAnyStateTreeNode,
 } from 'mobx-state-tree'

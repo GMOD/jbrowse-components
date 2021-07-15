@@ -36,10 +36,22 @@ export default function JBrowseDesktop(
           type: 'boolean',
           defaultValue: false,
         },
+        featureDetails: ConfigurationSchema('FeatureDetails', {
+          sequenceTypes: {
+            type: 'stringArray',
+            defaultValue: ['mRNA', 'transcript'],
+          },
+        }),
         disableAnalytics: {
           type: 'boolean',
           defaultValue: false,
         },
+        theme: { type: 'frozen', defaultValue: {} },
+        logoPath: {
+          type: 'fileLocation',
+          defaultValue: { uri: '' },
+        },
+        ...pluginManager.pluginConfigurationSchemas(),
       }),
       plugins: types.array(types.frozen()),
       assemblies: types.array(assemblyConfigSchemasType),
@@ -146,10 +158,8 @@ export default function JBrowseDesktop(
         const rootModel = getParent(self)
         rootModel.setPluginsUpdated(true)
       },
-      removePlugin(pluginName) {
-        self.plugins = self.plugins.filter(
-          plugin => `${plugin.name}Plugin` !== pluginName,
-        )
+      removePlugin(pluginUrl) {
+        self.plugins = self.plugins.filter(plugin => plugin.url !== pluginUrl)
         const rootModel = getParent(self)
         rootModel.setPluginsUpdated(true)
       },

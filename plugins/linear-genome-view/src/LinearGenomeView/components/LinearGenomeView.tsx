@@ -146,11 +146,9 @@ function ScaleBar({ model, fontSize }: { model: LGV; fontSize: number }) {
 function SVGRuler({
   model,
   fontSize,
-  rulerHeight,
   width,
 }: {
   model: LGV
-  rulerHeight: number
   fontSize: number
   width: number
 }) {
@@ -226,12 +224,7 @@ const SVGHeader = ({ model }: { model: LGV }) => {
         <ScaleBar model={model} fontSize={fontSize} />
       </g>
       <g transform={`translate(0 ${rulerHeight})`}>
-        <SVGRuler
-          model={model}
-          fontSize={fontSize}
-          rulerHeight={rulerHeight}
-          width={width}
-        />
+        <SVGRuler model={model} fontSize={fontSize} width={width} />
       </g>
     </g>
   )

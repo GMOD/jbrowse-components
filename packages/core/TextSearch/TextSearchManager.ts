@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /*  text-searching controller */
 import BaseResult from './BaseResults'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
@@ -7,7 +6,6 @@ import PluginManager from '../PluginManager'
 import QuickLRU from '../util/QuickLRU'
 import { SearchType, BaseTextSearchAdapter } from '../data_adapters/BaseAdapter'
 import { readConfObject } from '../configuration'
-import TextSearchAdapterType from '../pluggableElementTypes/TextSearchAdapterType'
 
 export interface BaseArgs {
   searchType: SearchType
@@ -72,7 +70,7 @@ export default (pluginManager: PluginManager) => {
       // only return track text search adapters that cover relevant tracks,
       // for now only returning text search adapters that cover configured assemblies)
       // root level adapters and track adapters
-      const { aggregateTextSearchAdapters, tracks } = pluginManager.rootModel
+      const { aggregateTextSearchAdapters, tracks } = pluginManager.rootModel // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ?.jbrowse as any
       let trackTextSearchAdapters: AnyConfigurationModel[] = []
       tracks.forEach((trackConfig: AnyConfigurationModel) => {
@@ -109,7 +107,7 @@ export default (pluginManager: PluginManager) => {
     /**
      * Returns list of relevant results given a search query and options
      * @param args - search options/arguments include: search query
-     * limit of results to return, searchType...preffix | full | exact", etc.
+     * limit of results to return, searchType...prefix | full | exact", etc.
      */
     async search(
       args: BaseArgs,

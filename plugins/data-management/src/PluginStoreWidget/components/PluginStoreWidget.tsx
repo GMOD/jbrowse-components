@@ -17,7 +17,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import ClearIcon from '@material-ui/icons/Clear'
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined'
 
-import type { JBrowsePlugin, BasePlugin } from '@jbrowse/core/util/types'
+import type { JBrowsePlugin } from '@jbrowse/core/util/types'
 
 import { getSession, isElectron } from '@jbrowse/core/util'
 import InstalledPluginsList from './InstalledPluginsList'
@@ -54,7 +54,8 @@ const useStyles = makeStyles(theme => ({
 
 function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
   const classes = useStyles()
-  const [pluginArray, setPluginArray] = useState([])
+  const [pluginArray, setPluginArray] = useState<JBrowsePlugin[]>([])
+  const [error, setError] = useState<Error>()
   const [customPluginFormOpen, setCustomPluginFormOpen] = useState(false)
   const { adminMode } = getSession(model)
   const { pluginManager } = getEnv(model)
@@ -63,15 +64,19 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
     let killed = false
 
     ;(async () => {
-      const fetchResult = await fetch(
-        'https://jbrowse.org/plugin-store/plugins.json',
-      )
-      if (!fetchResult.ok) {
-        throw new Error('Failed to fetch plugin data')
-      }
-      const array = await fetchResult.json()
-      if (!killed) {
-        setPluginArray(array.plugins)
+      try {
+        const fetchResult = await fetch(
+          'https://jbrowse.org/plugin-store/plugins.json',
+        )
+        if (!fetchResult.ok) {
+          throw new Error('Failed to fetch plugin data')
+        }
+        const array = await fetchResult.json()
+        if (!killed) {
+          setPluginArray(array.plugins)
+        }
+      } catch (e) {
+        setError(e)
       }
     })()
 
@@ -145,20 +150,26 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
         >
           <Typography variant="h5">Available plugins</Typography>
         </AccordionSummary>
-        {pluginArray
-          .filter((plugin: BasePlugin) => {
-            return plugin.name
-              .toLowerCase()
-              .includes(model.filterText.toLowerCase())
-          })
-          .map(plugin => (
-            <PluginCard
-              key={(plugin as JBrowsePlugin).name}
-              plugin={plugin}
-              model={model}
-              adminMode={!!adminMode}
-            />
-          ))}
+        {error ? (
+          <Typography color="error">{`${error}`}</Typography>
+        ) : pluginArray.length ? (
+          pluginArray
+            .filter(plugin =>
+              plugin.name
+                .toLowerCase()
+                .includes(model.filterText.toLowerCase()),
+            )
+            .map(plugin => (
+              <PluginCard
+                key={(plugin as JBrowsePlugin).name}
+                plugin={plugin}
+                model={model}
+                adminMode={!!adminMode}
+              />
+            ))
+        ) : (
+          <Typography>Loading...</Typography>
+        )}
       </Accordion>
     </div>
   )

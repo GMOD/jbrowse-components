@@ -54,7 +54,12 @@ function NewSessionCard({
       >
         <CardMedia className={classes.media} image={image} />
       </Card>
-      <Typography variant="subtitle2" className={classes.name}>
+      <Typography
+        variant="subtitle2"
+        className={classes.name}
+        style={{ cursor: 'pointer' }}
+        onClick={onClick}
+      >
         {name}
       </Typography>
     </Container>

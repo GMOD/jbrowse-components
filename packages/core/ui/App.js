@@ -78,6 +78,16 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+const Logo = observer(({ session }) => {
+  const { configuration } = session
+  const logoPath = readConfObject(configuration, 'logoPath')
+  if (!logoPath?.uri) {
+    return <LogoFull variant="white" />
+  } else {
+    return <img src={logoPath.uri} alt="Custom logo" />
+  }
+})
+
 const App = observer(({ session, HeaderButtons }) => {
   const classes = useStyles()
   const { pluginManager } = getEnv(session)
@@ -90,17 +100,7 @@ const App = observer(({ session, HeaderButtons }) => {
     name,
     menus,
     views,
-    configuration,
   } = session
-
-  function renderLogo() {
-    const logoPath = readConfObject(configuration, 'logoPath')
-    if (logoPath.uri === '') {
-      return <LogoFull variant="white" />
-    } else {
-      return <img src={logoPath.uri} alt="Custom logo" />
-    }
-  }
 
   function handleNameChange(newName) {
     if (savedSessionNames && savedSessionNames.includes(newName)) {
@@ -157,7 +157,9 @@ const App = observer(({ session, HeaderButtons }) => {
               </Tooltip>
               {HeaderButtons}
               <div className={classes.grow} />
-              <div style={{ width: 150, maxHeight: 48 }}>{renderLogo()}</div>
+              <div style={{ width: 150, maxHeight: 48 }}>
+                <Logo session={session} />
+              </div>
             </Toolbar>
           </AppBar>
         </div>

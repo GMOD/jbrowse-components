@@ -32,9 +32,13 @@ export default function assemblyManagerFactory(
       get assemblyList() {
         // name is the explicit identifier and can be accessed without getConf,
         // hence the union with {name:string}
+        const {
+          jbrowse: { assemblies },
+          session: { sessionAssemblies = [] },
+        } = getParent<any>(self)
         return [
-          ...getParent<any>(self).jbrowse.assemblies,
-          ...(getParent<any>(self).session.sessionAssemblies || []),
+          ...assemblies,
+          ...sessionAssemblies,
         ] as (AnyConfigurationModel & { name: string })[]
       },
 
