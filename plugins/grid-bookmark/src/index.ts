@@ -1,7 +1,15 @@
 import { lazy } from 'react'
+
+import BookmarkIcon from '@material-ui/icons/Bookmark'
+import BookmarksIcon from '@material-ui/icons/Bookmarks'
+
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { getSession } from '@jbrowse/core/util'
+import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+import { isSessionModelWithWidgets } from '@jbrowse/core/util'
 
 import {
   stateModelFactory as GridBookmarkStateModelFactory,
@@ -23,7 +31,77 @@ export default class extends Plugin {
         ),
       })
     })
+
+    pluginManager.extendPluggable('LinearGenomeView', LinearGenomeView => {
+      const { stateModel } = LinearGenomeView as ViewType
+      const newStateModel = stateModel.extend((self: LinearGenomeViewModel) => {
+        const superMenuItems = self.menuItems
+        return {
+          actions: {
+            activateBookmarkWidget() {
+              const session = getSession(self)
+              if (isSessionModelWithWidgets(session)) {
+                // @ts-ignore
+                let bookmarkWidget = session.widgets.get('GridBookmark')
+                if (!bookmarkWidget) {
+                  bookmarkWidget = session.addWidget(
+                    'GridBookmarkWidget',
+                    'GridBookmark',
+                    { view: self },
+                  )
+                }
+
+                session.showWidget(bookmarkWidget)
+                return bookmarkWidget
+              }
+
+              throw new Error('Could not open bookmark widget')
+            },
+
+            bookmarkCurrentRegion() {
+              const selectedRegions = self.getSelectedRegions(
+                self.leftOffset,
+                self.rightOffset,
+              )
+              const firstRegion = selectedRegions[0]
+              // @ts-ignore
+              const { widgets } = getSession(self)
+              let bookmarkWidget = widgets.get('GridBookmark')
+              if (!bookmarkWidget) {
+                this.activateBookmarkWidget()
+                bookmarkWidget = widgets.get('GridBookmark')
+              }
+              bookmarkWidget.addBookmark(firstRegion)
+            },
+          },
+          views: {
+            menuItems() {
+              const menuItems = superMenuItems()
+              menuItems.push(
+                { type: 'divider' },
+                {
+                  label: 'Open bookmark widget',
+                  icon: BookmarksIcon,
+                  // @ts-ignore
+                  onClick: self.activateBookmarkWidget,
+                },
+                {
+                  label: 'Bookmark current region',
+                  icon: BookmarkIcon,
+                  // @ts-ignore
+                  onClick: self.bookmarkCurrentRegion,
+                },
+              )
+              return menuItems
+            },
+          },
+        }
+      })
+
+      ;(LinearGenomeView as ViewType).stateModel = newStateModel
+    })
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   configure(pluginManager: PluginManager) {}
 }
