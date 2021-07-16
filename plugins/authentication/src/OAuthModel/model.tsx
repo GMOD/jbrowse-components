@@ -5,6 +5,12 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { OAuthInternetAccountConfigModel } from './configSchema'
 import crypto from 'crypto'
 import { Instance, types } from 'mobx-state-tree'
+import {
+  setInternetAccountMap,
+  getTokensFromStorage,
+  searchOrReplaceInArgs,
+  removeTokenFromStorage,
+} from '@jbrowse/core/util/tracks'
 
 // Notes go here:
 
@@ -123,70 +129,6 @@ const stateModelFactory = (
           )
           // could have a temporary listener to have a reference for each internet account
         },
-        async fetchFile(location: string, existingToken?: string) {
-          const accessToken = existingToken ? existingToken : self.accessToken
-          if (!location || !accessToken) {
-            return
-          }
-          switch (self.accountConfig.internetAccountId) {
-            case 'dropboxOAuth': {
-              const response = await fetch(
-                'https://api.dropboxapi.com/2/sharing/get_shared_link_metadata',
-                {
-                  method: 'POST',
-                  headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    url: location,
-                  }),
-                },
-              )
-              if (!response.ok) {
-                const errorText = await response.text()
-                return { error: errorText }
-              }
-              const metadata = await response.json()
-              if (metadata) {
-                const fileResponse = await fetch(
-                  'https://api.dropboxapi.com/2/files/get_temporary_link',
-                  {
-                    method: 'POST',
-                    headers: {
-                      Authorization: `Bearer ${accessToken}`,
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ path: metadata.id }),
-                  },
-                )
-                if (!fileResponse.ok) {
-                  const errorText = await fileResponse.text()
-                  return { error: errorText }
-                }
-                const file = await fileResponse.json()
-                return file.link
-              }
-              break
-            }
-            case 'googleOAuth': {
-              const urlId = location.match(/[-\w]{25,}/)
-
-              const response = await fetch(
-                `https://www.googleapis.com/drive/v2/files/${urlId}`,
-                {
-                  headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                  },
-                },
-              )
-
-              const fileMetadata = await response.json()
-              return fileMetadata.downloadUrl
-            }
-          }
-        },
       }))
       .actions(self => {
         let location: Location | undefined = undefined
@@ -209,8 +151,9 @@ const stateModelFactory = (
               )
             }
 
-            const fileUrl = await self.fetchFile((location as Location).href)
+            const fileUrl = await this.fetchFile((location as Location).href)
             resolve(fileUrl)
+            this.deleteMessageChannel()
             location = undefined
             resolve = () => {}
             reject = () => {}
@@ -340,47 +283,138 @@ const stateModelFactory = (
               )
             }
           },
-          // TODOAUTH clean up this channel on resolve or reject
-          addMessageChannel() {
-            // try and move it to the internet account state model
-            window.addEventListener('message', event => {
-              if (
-                event.data.name ===
-                `JBrowseAuthWindow-${self.accountConfig.internetAccountId}`
-              ) {
-                if (event.data.redirectUri.includes('access_token')) {
-                  const fixedQueryString = event.data.redirectUri.replace(
-                    '#',
-                    '?',
+          async fetchFile(location: string, existingToken?: string) {
+            const accessToken = existingToken ? existingToken : self.accessToken
+            if (!location || !accessToken) {
+              return
+            }
+            switch (self.accountConfig.internetAccountId) {
+              case 'dropboxOAuth': {
+                const response = await fetch(
+                  'https://api.dropboxapi.com/2/sharing/get_shared_link_metadata',
+                  {
+                    method: 'POST',
+                    headers: {
+                      Authorization: `Bearer ${accessToken}`,
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      url: location,
+                    }),
+                  },
+                )
+                if (!response.ok) {
+                  const errorText = await response.text()
+                  return { error: errorText }
+                }
+                const metadata = await response.json()
+                if (metadata) {
+                  const fileResponse = await fetch(
+                    'https://api.dropboxapi.com/2/files/get_temporary_link',
+                    {
+                      method: 'POST',
+                      headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({ path: metadata.id }),
+                    },
                   )
-                  const queryStringSearch = new URL(fixedQueryString).search
-                  const urlParams = new URLSearchParams(queryStringSearch)
-                  const token = urlParams.get('access_token')
-                  const expireTime = urlParams.get('expires_in')
-                  if (!token || !expireTime) {
-                    self.setErrorMessage('Error fetching token')
-                    return reject(self.errorMessage)
+                  if (!fileResponse.ok) {
+                    const errorText = await fileResponse.text()
+                    return { error: errorText }
                   }
-                  this.setAccessTokenInfo(token, parseFloat(expireTime), true)
+                  const file = await fileResponse.json()
+                  return file.link
                 }
-                if (event.data.redirectUri.includes('code')) {
-                  const queryString = new URL(event.data.redirectUri).search
-                  const urlParams = new URLSearchParams(queryString)
-                  const code = urlParams.get('code')
-                  if (!code) {
-                    self.setErrorMessage('Error fetching code')
-                    return reject(self.errorMessage)
-                  }
-                  this.exchangeAuthorizationForAccessToken(code)
+                break
+              }
+              case 'googleOAuth': {
+                const urlId = location.match(/[-\w]{25,}/)
+
+                const response = await fetch(
+                  `https://www.googleapis.com/drive/v2/files/${urlId}`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${accessToken}`,
+                      'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                  },
+                )
+
+                const fileMetadata = await response.json()
+                return fileMetadata.downloadUrl
+              }
+            }
+          },
+          addMessageChannel() {
+            window.addEventListener('message', this.finishOAuthWindow)
+          },
+          deleteMessageChannel() {
+            window.removeEventListener('message', this.finishOAuthWindow)
+          },
+          finishOAuthWindow(event: MessageEvent) {
+            if (
+              event.data.name ===
+              `JBrowseAuthWindow-${self.accountConfig.internetAccountId}`
+            ) {
+              if (event.data.redirectUri.includes('access_token')) {
+                const fixedQueryString = event.data.redirectUri.replace(
+                  '#',
+                  '?',
+                )
+                const queryStringSearch = new URL(fixedQueryString).search
+                const urlParams = new URLSearchParams(queryStringSearch)
+                const token = urlParams.get('access_token')
+                const expireTime = urlParams.get('expires_in')
+                if (!token || !expireTime) {
+                  self.setErrorMessage('Error fetching token')
+                  return reject(self.errorMessage)
                 }
-                if (event.data.redirectUri.includes('access_denied')) {
-                  self.setErrorMessage('User cancelled OAuth flow')
-                  if (reject) {
-                    return reject(self.errorMessage)
-                  }
+                this.setAccessTokenInfo(token, parseFloat(expireTime), true)
+              }
+              if (event.data.redirectUri.includes('code')) {
+                const queryString = new URL(event.data.redirectUri).search
+                const urlParams = new URLSearchParams(queryString)
+                const code = urlParams.get('code')
+                if (!code) {
+                  self.setErrorMessage('Error fetching code')
+                  return reject(self.errorMessage)
+                }
+                this.exchangeAuthorizationForAccessToken(code)
+              }
+              if (event.data.redirectUri.includes('access_denied')) {
+                self.setErrorMessage('User cancelled OAuth flow')
+                if (reject) {
+                  return reject(self.errorMessage)
                 }
               }
-            })
+            }
+          },
+          async handleRpcMethodCall(
+            location: Location,
+            internetAccountMap: Record<string, string>,
+            args: {},
+          ) {
+            const token =
+              internetAccountMap[self.accountConfig.internetAccountId]
+            const file = !token
+              ? await this.openLocation(location)
+              : await this.fetchFile(location.href, token)
+            if (file) {
+              const editedArgs = JSON.parse(JSON.stringify(args))
+              searchOrReplaceInArgs(editedArgs, 'uri', file)
+              return editedArgs
+            } else {
+              await this.handleError(internetAccountMap)
+            }
+          },
+          async handleError(internetAccountMap: Record<string, string>) {
+            removeTokenFromStorage(
+              self.accountConfig.internetAccountId,
+              internetAccountMap,
+            )
+            await this.exchangeRefreshForAccessToken()
           },
         }
       })

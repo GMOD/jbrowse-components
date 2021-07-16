@@ -40,8 +40,6 @@ import jbrowseWebFactory from './jbrowseModel'
 import RenderWorker from './rpc.worker'
 import sessionModelFactory from './sessionModelFactory'
 
-import { openLocation } from '@jbrowse/core/util/io'
-
 // attempts to remove undefined references from the given MST model. can only actually
 // remove them from arrays and maps. throws MST undefined ref error if it encounters
 // undefined refs in model properties
@@ -366,7 +364,11 @@ export default function RootModel(
       setError(error?: Error) {
         self.error = error
       },
-      openLocation(location: Location) {
+      async findAppropriateInternetAccount(
+        location: Location,
+        internetAccountMap: Record<string, string>,
+        args: {},
+      ) {
         let accountToUse = undefined
         self.internetAccounts.forEach(account => {
           const handleResult = account.handlesLocation(location)
@@ -376,9 +378,12 @@ export default function RootModel(
         })
         return accountToUse
           ? // @ts-ignore
-            accountToUse.openLocation(location)
-          : // @ts-ignore
-            openLocation(location)
+            await accountToUse.handleRpcMethodCall(
+              location,
+              internetAccountMap,
+              args,
+            )
+          : null
       },
     }))
     .volatile(self => ({

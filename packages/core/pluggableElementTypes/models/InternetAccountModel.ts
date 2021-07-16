@@ -19,6 +19,7 @@ export const InternetAccount = types
   })
   .volatile(() => ({
     loggedIn: false,
+    internetAccountMap: {},
   }))
   .views(self => ({
     get name() {
@@ -52,6 +53,29 @@ export const InternetAccount = types
     },
     setLoggedIn(bool: boolean) {
       self.loggedIn = bool
+    },
+    getTokensFromStorage() {
+      const keyMap: Record<string, string> = {}
+      Object.entries(sessionStorage).forEach(entry => {
+        const [key, value] = entry
+        if (key.includes('token')) {
+          keyMap[key.split('-')[0]] = value
+        }
+      })
+      return keyMap
+    },
+    removeTokenFromStorage(id: string, keyMap: Record<string, string>) {
+      const expiredTokenKey = Object.keys(sessionStorage).find(key => {
+        return key.split('-')[0] === id
+      })
+      if (expiredTokenKey) {
+        sessionStorage.removeItem(expiredTokenKey)
+        delete keyMap[id]
+      }
+      return keyMap
+    },
+    setInternetAccountMap(map: { [key: string]: string }) {
+      self.internetAccountMap = map
     },
   }))
 

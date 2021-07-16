@@ -135,6 +135,7 @@ export function setInternetAccountMap(map: { [key: string]: string }) {
 }
 
 // search through arg object for a specific key, optionally replace key with string passed
+// can move this to util/index.ts
 export function searchOrReplaceInArgs(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   obj: { [key: string]: any },

@@ -6,7 +6,6 @@ import {
   setInternetAccountMap,
   getTokensFromStorage,
   searchOrReplaceInArgs,
-  removeTokenFromStorage,
 } from '../util/tracks'
 
 import {
@@ -32,51 +31,16 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     let internetAccountMap = getTokensFromStorage()
 
     if (args.hasOwnProperty('adapterConfig')) {
-      const adapterConfig = searchOrReplaceInArgs(args, 'adapterConfig')
-      const id = searchOrReplaceInArgs(adapterConfig, 'internetAccountId')
-      if (id) {
-        const token = internetAccountMap[id]
+      // @ts-ignore
+      const editedArgs = await this.pluginManager.rootModel?.findAppropriateInternetAccount(
         // @ts-ignore
-        const account = this.pluginManager.rootModel?.internetAccounts.find(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (acc: any) => {
-            return acc.internetAccountId === id
-          },
-        )
-        const uri = searchOrReplaceInArgs(adapterConfig, 'uri')
-
-        if (account && uri) {
-          if (!token) {
-            return new Promise(async resolve => {
-              const file = await account.openLocation(new URL(uri))
-              if (file.error) {
-                removeTokenFromStorage(id, internetAccountMap)
-                if (account.accountConfig.hasRefreshToken) {
-                  await account.exchangeRefreshForAccessToken()
-                  internetAccountMap = getTokensFromStorage()
-                }
-              }
-              const editedArgs = JSON.parse(JSON.stringify(args))
-              searchOrReplaceInArgs(editedArgs, 'uri', file)
-              internetAccountMap = getTokensFromStorage()
-              resolve({ ...editedArgs, blobMap, internetAccountMap })
-            })
-          } else {
-            const file = await account.fetchFile(uri, token)
-            // ASK ABOUT THIS: this only works because serialized arguments is called so many times
-            // wouldnt work if only called once
-            if (file.error) {
-              removeTokenFromStorage(id, internetAccountMap)
-              if (account.accountConfig.hasRefreshToken) {
-                await account.exchangeRefreshForAccessToken()
-                internetAccountMap = getTokensFromStorage()
-              }
-            }
-            const editedArgs = JSON.parse(JSON.stringify(args))
-            searchOrReplaceInArgs(editedArgs, 'uri', file)
-            return { ...editedArgs, blobMap, internetAccountMap }
-          }
-        }
+        new URL(searchOrReplaceInArgs(args.adapterConfig, 'uri')),
+        internetAccountMap,
+        args,
+      )
+      if (editedArgs) {
+        internetAccountMap = getTokensFromStorage()
+        return { ...editedArgs, blobMap, internetAccountMap }
       }
     }
     return { ...args, blobMap, internetAccountMap }
