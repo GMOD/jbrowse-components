@@ -4,13 +4,8 @@ import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { OAuthInternetAccountConfigModel } from './configSchema'
 import crypto from 'crypto'
-import { Instance, types } from 'mobx-state-tree'
-import {
-  setInternetAccountMap,
-  getTokensFromStorage,
-  searchOrReplaceInArgs,
-  removeTokenFromStorage,
-} from '@jbrowse/core/util/tracks'
+import { Instance, types, getRoot } from 'mobx-state-tree'
+import { searchOrReplaceInArgs } from '@jbrowse/core/util/tracks'
 
 // Notes go here:
 
@@ -127,7 +122,6 @@ const stateModelFactory = (
             `JBrowseAuthWindow-${self.accountConfig.internetAccountId}`,
             options,
           )
-          // could have a temporary listener to have a reference for each internet account
         },
       }))
       .actions(self => {
@@ -144,15 +138,19 @@ const stateModelFactory = (
             self.expireTime = expireTime
 
             const tokenExpirationFromNow = Date.now() + expireTime * 1000
-            if (generateNew) {
+            if (generateNew && token) {
               sessionStorage.setItem(
                 `${self.accountConfig.internetAccountId}-token-${tokenExpirationFromNow}`,
                 token,
               )
             }
 
-            const fileUrl = await this.fetchFile((location as Location).href)
-            resolve(fileUrl)
+            if (!location) {
+              reject()
+            } else {
+              const fileUrl = await this.fetchFile((location as Location).href)
+              resolve(fileUrl)
+            }
             this.deleteMessageChannel()
             location = undefined
             resolve = () => {}
@@ -254,10 +252,8 @@ const stateModelFactory = (
             if (foundRefreshToken && self.accountConfig) {
               const data = {
                 grant_type: 'refresh_token',
-                refresh_token: foundRefreshToken,
+                refresh_token: localStorage.getItem(foundRefreshToken),
                 client_id: self.accountConfig.clientId,
-                code_verifier: self.codeVerifierPKCE,
-                redirect_uri: 'http://localhost:3000',
               }
 
               const params = Object.entries(data)
@@ -281,6 +277,7 @@ const stateModelFactory = (
                 accessToken.expires_in,
                 true,
               )
+              return accessToken
             }
           },
           async fetchFile(location: string, existingToken?: string) {
@@ -402,15 +399,17 @@ const stateModelFactory = (
               ? await this.openLocation(location)
               : await this.fetchFile(location.href, token)
             if (file) {
+              if (file.error) {
+                await this.handleError(internetAccountMap)
+              }
               const editedArgs = JSON.parse(JSON.stringify(args))
               searchOrReplaceInArgs(editedArgs, 'uri', file)
               return editedArgs
-            } else {
-              await this.handleError(internetAccountMap)
             }
           },
           async handleError(internetAccountMap: Record<string, string>) {
-            removeTokenFromStorage(
+            const rootModel = getRoot(self)
+            rootModel.removeTokenFromStorage(
               self.accountConfig.internetAccountId,
               internetAccountMap,
             )

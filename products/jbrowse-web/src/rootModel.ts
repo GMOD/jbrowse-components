@@ -385,6 +385,29 @@ export default function RootModel(
             )
           : null
       },
+      // put tokens from session storage into a map
+      getTokensFromStorage() {
+        const keyMap: Record<string, string> = {}
+        Object.entries(sessionStorage).forEach(entry => {
+          const [key, value] = entry
+          if (key.includes('token')) {
+            keyMap[key.split('-')[0]] = value
+          }
+        })
+        return keyMap
+      },
+
+      // delete token from session storage and map
+      removeTokenFromStorage(id: string, keyMap: Record<string, string>) {
+        const expiredTokenKey = Object.keys(sessionStorage).find(key => {
+          return key.split('-')[0] === id
+        })
+        if (expiredTokenKey) {
+          sessionStorage.removeItem(expiredTokenKey)
+          delete keyMap[id]
+        }
+        return keyMap
+      },
     }))
     .volatile(self => ({
       history: {},

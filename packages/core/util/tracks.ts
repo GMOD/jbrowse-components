@@ -67,7 +67,7 @@ export const UNSUPPORTED = 'UNSUPPORTED'
 
 let blobMap: { [key: string]: File } = {}
 
-let internetAccountMap: { [key: string]: string } = {}
+let additionalInfoMap: { [key: string]: string } = {}
 
 // get a specific blob
 export function getBlob(id: string) {
@@ -98,40 +98,40 @@ export function storeBlobLocation(location: PreFileLocation) {
 }
 
 // get a specific access token
-export function getAccessToken(id: string) {
-  return internetAccountMap[id]
+export function getAdditionalInfo(id: string) {
+  return additionalInfoMap[id]
 }
 
-// put tokens from session storage into a map
-export function getTokensFromStorage() {
-  const keyMap: Record<string, string> = {}
-  Object.entries(sessionStorage).forEach(entry => {
-    const [key, value] = entry
-    if (key.includes('token')) {
-      keyMap[key.split('-')[0]] = value
-    }
-  })
-  return keyMap
-}
+// // put tokens from session storage into a map
+// export function getTokensFromStorage() {
+//   const keyMap: Record<string, string> = {}
+//   Object.entries(sessionStorage).forEach(entry => {
+//     const [key, value] = entry
+//     if (key.includes('token')) {
+//       keyMap[key.split('-')[0]] = value
+//     }
+//   })
+//   return keyMap
+// }
 
-// delete token from session storage and map
-export function removeTokenFromStorage(
-  id: string,
-  keyMap: Record<string, string>,
-) {
-  const expiredTokenKey = Object.keys(sessionStorage).find(key => {
-    return key.split('-')[0] === id
-  })
-  if (expiredTokenKey) {
-    sessionStorage.removeItem(expiredTokenKey)
-    delete keyMap[id]
-  }
-  return keyMap
-}
+// // delete token from session storage and map
+// export function removeTokenFromStorage(
+//   id: string,
+//   keyMap: Record<string, string>,
+// ) {
+//   const expiredTokenKey = Object.keys(sessionStorage).find(key => {
+//     return key.split('-')[0] === id
+//   })
+//   if (expiredTokenKey) {
+//     sessionStorage.removeItem(expiredTokenKey)
+//     delete keyMap[id]
+//   }
+//   return keyMap
+// }
 
 // used in new contexts like webworkers, similar to blobmap
-export function setInternetAccountMap(map: { [key: string]: string }) {
-  internetAccountMap = map
+export function setAdditionalInfoMap(map: { [key: string]: string }) {
+  additionalInfoMap = map
 }
 
 // search through arg object for a specific key, optionally replace key with string passed

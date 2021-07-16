@@ -3,8 +3,7 @@ import PluggableElementBase from './PluggableElementBase'
 import {
   setBlobMap,
   getBlobMap,
-  setInternetAccountMap,
-  getTokensFromStorage,
+  setAdditionalInfoMap,
   searchOrReplaceInArgs,
 } from '../util/tracks'
 
@@ -28,36 +27,36 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
   async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
     const blobMap = getBlobMap()
-    let internetAccountMap = getTokensFromStorage()
+    const rootModel: any = this.pluginManager.rootModel
+    let additionalInfoMap = rootModel?.getTokensFromStorage()
 
     if (args.hasOwnProperty('adapterConfig')) {
-      // @ts-ignore
-      const editedArgs = await this.pluginManager.rootModel?.findAppropriateInternetAccount(
+      const modifiedArgs = await rootModel?.findAppropriateInternetAccount(
         // @ts-ignore
         new URL(searchOrReplaceInArgs(args.adapterConfig, 'uri')),
-        internetAccountMap,
+        additionalInfoMap,
         args,
       )
-      if (editedArgs) {
-        internetAccountMap = getTokensFromStorage()
-        return { ...editedArgs, blobMap, internetAccountMap }
+      if (modifiedArgs) {
+        additionalInfoMap = rootModel?.getTokensFromStorage()
+        return { ...modifiedArgs, blobMap, additionalInfoMap }
       }
     }
-    return { ...args, blobMap, internetAccountMap }
+    return { ...args, blobMap, additionalInfoMap }
   }
 
   async deserializeArguments<
     SERIALIZED extends {
       signal?: RemoteAbortSignal
       blobMap?: Record<string, File>
-      internetAccountMap?: Record<string, string>
+      additionalInfoMap?: Record<string, string>
     }
   >(serializedArgs: SERIALIZED, _rpcDriverClassName: string) {
     if (serializedArgs.blobMap) {
       setBlobMap(serializedArgs.blobMap)
     }
-    if (serializedArgs.internetAccountMap) {
-      setInternetAccountMap(serializedArgs.internetAccountMap)
+    if (serializedArgs.additionalInfoMap) {
+      setAdditionalInfoMap(serializedArgs.additionalInfoMap)
     }
     const { signal } = serializedArgs
     if (signal && isRemoteAbortSignal(signal)) {
