@@ -56,20 +56,17 @@ export default class TextIndex extends JBrowseCommand {
   // and tracks associated. Gets their information and sends it to the
   // appropriate file parser to be indexed
   async run() {
+    const defaultAttributes = ['Name', 'description', 'Note', 'ID', 'type']
     const { flags: runFlags } = this.parse(TextIndex)
     const configPath: string = path.join(__dirname, '..', '..', 'config.json')
     const output = runFlags?.target || runFlags?.out || configPath || '.'
     const test = runFlags?.test || false
     const isDir = (await promises.lstat(output)).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
-    let fileDirectory: string = path.join(__dirname)
+    const fileDirectory = runFlags?.location || path.join(__dirname)
 
     if (runFlags.individual) {
       if (runFlags.tracks) {
-        if (runFlags.location) {
-          fileDirectory = runFlags.location
-        }
-
         const trackIds: Array<string> = runFlags.tracks?.split(',')
         if (trackIds.length > 1) {
           this.error(
@@ -80,7 +77,9 @@ export default class TextIndex extends JBrowseCommand {
             trackIds,
             this.target,
           )
-          const indexAttributes = indexConfig[0]?.attributes || []
+          const indexAttributes =
+            indexConfig[0]?.attributes || defaultAttributes
+
           const uri =
             indexConfig[0].indexingConfiguration?.gffLocation.uri || ''
 
@@ -90,10 +89,6 @@ export default class TextIndex extends JBrowseCommand {
         this.error('Error, please specify a track to index.')
       }
     } else if (runFlags.tracks) {
-      if (runFlags.location) {
-        fileDirectory = runFlags.location
-      }
-
       const trackIds: Array<string> = runFlags.tracks.split(',')
       const uris: Array<string> = []
       const indexConfig = await this.getIndexingConfigurations(
@@ -104,21 +99,17 @@ export default class TextIndex extends JBrowseCommand {
       for (const x in indexConfig) {
         uris.push(indexConfig[x]?.indexingConfiguration?.gffLocation.uri || '')
       }
-      const indexAttributes = indexConfig[0]?.attributes || []
+      const indexAttributes = defaultAttributes
 
       await this.indexDriver(uris, test, indexAttributes, fileDirectory)
     } else {
-      if (runFlags.location) {
-        fileDirectory = runFlags.location
-      }
-
       const uris: Array<string> = []
       const indexConfig = await this.getIndexingConfigurations(
         [],
         this.target,
         true,
       )
-      const indexAttributes = indexConfig[0]?.attributes || []
+      const indexAttributes = defaultAttributes
 
       for (const x in indexConfig) {
         if (indexConfig[x]?.indexingConfiguration?.gffLocation.uri) {
@@ -377,8 +368,12 @@ export default class TextIndex extends JBrowseCommand {
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const getAndPushRecord = (subRecord: any) => {
+        const locStr = `${subRecord['seq_id']};${subRecord['start']}..${subRecord['end']}`
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const recordObj: any = {}
+        const recordObj: any = {
+          locstring: `${locStr}`,
+        }
         let attrString = ''
 
         for (const attr of attributesArr) {
@@ -398,8 +393,8 @@ export default class TextIndex extends JBrowseCommand {
         // of the string before pushing to ixIxx
         const buff = Buffer.from(JSON.stringify(recordObj))
 
-        let str: string = buff.toString()
-        str += attrString + '\n'
+        let str: string = buff.toString('base64')
+        str += attrString + locStr + '\n'
 
         gff3Stream.push(str)
       }
@@ -465,7 +460,10 @@ export default class TextIndex extends JBrowseCommand {
     else {
       ixProcess = spawn(
         'cat | ixIxx /dev/stdin',
-        [outLocation + '/' + ixFileName, outLocation + '/' + ixxFileName],
+        [
+          `${path.join(outLocation, ixFileName)}`,
+          `${path.join(outLocation, ixxFileName)}`,
+        ],
         {
           shell: true,
         },

@@ -66,7 +66,7 @@
           }
         }
       },
-      "textSearchIndexingAttributes": ["Name", "ID", "seq_id", "type"]
+      "textSearchIndexingAttributes": ["Name", "ID", "type"]
     },
     {
       "type": "FeatureTrack",
@@ -85,7 +85,7 @@
           }
         }
       },
-      "textSearchIndexingAttributes": ["Name", "ID", "seq_id", "type"]
+      "textSearchIndexingAttributes": ["Name", "ID", "type"]
     },
     {
       "type": "FeatureTrack",
@@ -104,7 +104,7 @@
           }
         }
       },
-      "textSearchIndexingAttributes": ["Name", "ID", "seq_id", "type"]
+      "textSearchIndexingAttributes": ["Name", "ID", "type"]
     },
     {
       "type": "FeatureTrack",
@@ -123,7 +123,7 @@
           }
         }
       },
-      "textSearchIndexingAttributes": ["Name", "ID", "seq_id", "type"]
+      "textSearchIndexingAttributes": ["Name", "ID", "type"]
     },
     {
       "type": "FeatureTrack",
@@ -142,7 +142,7 @@
           }
         }
       },
-      "textSearchIndexingAttributes": ["Name", "ID", "seq_id", "type"]
+      "textSearchIndexingAttributes": ["Name", "ID", "type"]
     },
     {
       "type": "FeatureTrack",
