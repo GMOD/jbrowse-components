@@ -2,30 +2,13 @@ import BaseResult, {
   LocStringResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
 import path from 'path'
-import outIx from '../../test_data/out.ix'
-import outIxx from '../../test_data/out.ixx'
 import Adapter from './TrixTextSearchAdapter'
 import configSchema from './configSchema'
 
 test('adapter can fetch output files', async () => {
-  function mockFetch(url: string): Promise<Response> {
-    let response = {}
-    if (url.includes('out.ix')) {
-      response = outIx
-    }
-    if (url.includes('out.ixx')) {
-      response = outIxx
-    }
-    return Promise.resolve(new Response(JSON.stringify(response)))
-  }
-
   const rootTemplate = path
-    .join(__dirname, '..', '..', '..', '..', 'test_data', 'volvox')
+    .join(__dirname, '..', '..', 'test_data')
     .replace(/\\/g, '\\\\')
-
-  const spy = jest.spyOn(global, 'fetch')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  spy.mockImplementation(mockFetch as any)
 
   const urlPath = decodeURI(new URL(`file://${rootTemplate}`).href)
   const args = {
