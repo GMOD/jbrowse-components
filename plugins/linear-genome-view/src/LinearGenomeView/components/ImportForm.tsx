@@ -142,26 +142,22 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
           </Grid>
           <Grid item>
             {assemblyName ? (
-              selectedRegion !== undefined && model.volatileWidth ? (
+              selectedRegion && model.volatileWidth ? (
                 <RefNameAutocomplete
                   model={model}
                   assemblyName={
                     error ? undefined : assemblyNames[selectedAssemblyIdx]
                   }
                   value={selectedRegion}
-                  onSelect={option => {
-                    setSelectedValue(option)
-                  }}
+                  onSelect={option => setSelectedValue(option)}
                   TextFieldProps={{
                     margin: 'normal',
                     variant: 'outlined',
                     className: classes.importFormEntry,
-                    helperText: 'Enter a sequence or locstring',
+                    helperText: 'Enter a sequence or location',
                     onBlur: event => {
-                      if ((event.target as HTMLInputElement).value !== '') {
-                        setSelectedRegion(
-                          (event.target as HTMLInputElement).value,
-                        )
+                      if (event.target.value !== '') {
+                        setSelectedRegion(event.target.value)
                       }
                     },
                     onKeyPress: event => {

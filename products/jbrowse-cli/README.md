@@ -40,7 +40,9 @@ It is likely preferable in most cases to install the tools first however
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
 - [`jbrowse set-default-session`](#jbrowse-set-default-session)
-- [`jbrowse text-index`](#jbrowse-text-index)
+  <<<<<<< HEAD
+- # [`jbrowse text-index`](#jbrowse-text-index)
+  > > > > > > > c2aa05372b61eb1af97c3bba14bc92aeae7114b9
 - [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
 
 ## `jbrowse add-assembly SEQUENCE`
