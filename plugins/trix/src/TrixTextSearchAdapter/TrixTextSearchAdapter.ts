@@ -51,7 +51,6 @@ export default class TrixTextSearchAdapter
    * limit of results to return, searchType...preffix | full | exact", etc.
    */
   async searchIndex(args: BaseArgs) {
-    // console.log('=============== Trix ============')
     const { queryString } = args
     let buff
     const searchResults: Array<string> = []
@@ -62,10 +61,6 @@ export default class TrixTextSearchAdapter
       const stringBuffer = buff.toString()
       searchResults.push(stringBuffer)
     })
-    // console.log(`Num of Results: ${searchResults.length}`)
-    // console.log(`${searchResults}`)
-    // console.log('formated', this.formatResults(searchResults))
-    // console.log('=============================')
     return this.formatResults(searchResults)
   }
 
@@ -74,10 +69,10 @@ export default class TrixTextSearchAdapter
     if (results.length === 0) {
       return []
     }
-    // {"Name":["au9.g1002"],"ID":["au9.g1002"],"seq_id":"Group1.36","start":176975,"end":180744}
+    // Example: {"locstring":"ctgB;1659..1984","Name":["f07"],"Note":["This is an example"],"type":"remark"}
     const formattedResults = results.map(result => {
-      const { Name, seq_id, start, end } = JSON.parse(result)
-      const locString = `${seq_id}:${start}-${end}`
+      const { Name, locstring } = JSON.parse(result)
+      const locString = locstring.replace(/;/g, ':')
       return new LocStringResult({
         locString,
         label: Name[0],
