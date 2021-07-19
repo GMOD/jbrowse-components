@@ -327,7 +327,7 @@ export default class TextIndex extends JBrowseCommand {
     const ixFilename = path.join(outLocation, 'out.ix')
     const ixxFilename = path.join(outLocation, 'out.ixx')
 
-    return ixIxxStream(readStream as any, ixFilename, ixxFilename)
+    return ixIxxStream(readStream, ixFilename, ixxFilename)
   }
 
   // Function that takes in an array of tracks and returns an array of
