@@ -3,7 +3,6 @@
 exports[`JBrowseWebSessionModel creates with no parent and just a name 1`] = `
 Object {
   "activeWidgets": Object {},
-  "bookmarkedRegions": Array [],
   "connectionInstances": Array [],
   "drawerWidth": 384,
   "margin": 0,
