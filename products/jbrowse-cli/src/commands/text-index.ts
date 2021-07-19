@@ -2,13 +2,10 @@ import { flags } from '@oclif/command'
 import { Readable } from 'stream'
 import JBrowseCommand, { Config } from '../base'
 import { ixIxxStream } from 'ixixx'
-import { ReadStream, createWriteStream, createReadStream, promises } from 'fs'
+import { createReadStream, promises } from 'fs'
 import { Transform, PassThrough } from 'stream'
 import gff from '@gmod/gff'
-import {
-  http as httpFR,
-  https as httpsFR,
-} from 'follow-redirects'
+import { http as httpFR, https as httpsFR } from 'follow-redirects'
 import { createGunzip } from 'zlib'
 import tmp from 'tmp'
 import path from 'path'
@@ -37,9 +34,6 @@ export default class TextIndex extends JBrowseCommand {
     individual: flags.boolean({
       description: `Only make a single-track text index for the given track`,
     }),
-    location: flags.string({
-      description: `Establish a location for the output files`,
-    }),
     target: flags.string({
       description:
         'Path to config file in JB2 installation directory to read from.',
@@ -49,76 +43,27 @@ export default class TextIndex extends JBrowseCommand {
     }),
   }
 
-  // Called when running the terminal command. Parses the given flags
-  // and tracks associated. Gets their information and sends it to the
-  // appropriate file parser to be indexed
+  // Called when running the terminal command. Parses the given flags and
+  // tracks associated. Gets their information and sends it to the appropriate
+  // file parser to be indexed
   async run() {
     const defaultAttributes = ['Name', 'description', 'Note', 'ID', 'type']
     const { flags: runFlags } = this.parse(TextIndex)
-    const configPath: string = path.join(__dirname, '..', '..', 'config.json')
-    const output = runFlags?.target || runFlags?.out || configPath || '.'
-    const isDir = (await promises.lstat(output)).isDirectory()
-    this.target = isDir ? `${output}/config.json` : output
-    const fileDirectory = runFlags?.location || path.join(__dirname)
+    const outdir = runFlags.target || runFlags.out || '.'
+    const isDir = (await promises.lstat(outdir)).isDirectory()
+    this.target = isDir ? `${outdir}/config.json` : outdir
 
-    if (runFlags.individual) {
-      if (runFlags.tracks) {
-        const trackIds: Array<string> = runFlags.tracks?.split(',')
-        if (trackIds.length > 1) {
-          this.error(
-            'Error, --individual flag only allows one track to be indexed',
-          )
-        } else {
-          const indexConfig = await this.getIndexingConfigurations(
-            trackIds,
-            this.target,
-          )
-          const indexAttributes =
-            indexConfig[0]?.attributes || defaultAttributes
+    const indexConfig = await this.getIndexingConfigurations(
+      [],
+      this.target,
+      true,
+    )
 
-          const uri =
-            indexConfig[0].indexingConfiguration?.gffLocation.uri || ''
+    const uris = indexConfig
+      .map(entry => entry?.indexingConfiguration?.gffLocation.uri || '')
+      .filter(f => !!f)
 
-          await this.indexDriver(uri, indexAttributes, fileDirectory)
-        }
-      } else {
-        this.error('Error, please specify a track to index.')
-      }
-    } else if (runFlags.tracks) {
-      const trackIds: Array<string> = runFlags.tracks.split(',')
-      const uris: Array<string> = []
-      const indexConfig = await this.getIndexingConfigurations(
-        trackIds,
-        this.target,
-      )
-
-      for (const x in indexConfig) {
-        uris.push(indexConfig[x]?.indexingConfiguration?.gffLocation.uri || '')
-      }
-      const indexAttributes = defaultAttributes
-
-      await this.indexDriver(uris, indexAttributes, fileDirectory)
-    } else {
-      const uris: Array<string> = []
-      const indexConfig = await this.getIndexingConfigurations(
-        [],
-        this.target,
-        true,
-      )
-      const indexAttributes = defaultAttributes
-
-      for (const x in indexConfig) {
-        if (indexConfig[x]?.indexingConfiguration?.gffLocation.uri) {
-          uris.push(
-            indexConfig[x]?.indexingConfiguration?.gffLocation.uri || '',
-          )
-        } else {
-          continue
-        }
-      }
-
-      await this.indexDriver(uris, indexAttributes, fileDirectory)
-    }
+    await this.indexDriver(uris, defaultAttributes, outdir)
   }
 
   // Diagram of function call flow:
@@ -169,22 +114,18 @@ export default class TextIndex extends JBrowseCommand {
         },
       })
 
-      let gff3Stream: ReadStream | Transform
-      // If it is a URL, we want to await the http request.
-      if (this.isURL(uri)) {
-        gff3Stream = (await this.handleGff3Url(uri, uri.includes('.gz'))).pipe(
-          gffTransform,
-        )
-      }
-      // If it is local, there is no need to await.
-      else {
-        gff3Stream = this.handleLocalGff3(uri, uri.includes('.gz')).pipe(
-          gffTransform,
-        )
-      }
+      const gff3Stream = (
+        await (this.isURL(uri)
+          ? this.handleGff3Url(uri, uri.includes('.gz'))
+          : this.handleLocalGff3(
+              path.join(outLocation, uri),
+              uri.includes('.gz'),
+            ))
+      ).pipe(gffTransform)
 
-      // Add gff3Stream to aggregateStream, and DO NOT send 'end' event on completion,
-      // otherwise this would stop all streams from piping to the aggregate before completion.
+      // Add gff3Stream to aggregateStream, and DO NOT send 'end' event on
+      // completion, otherwise this would stop all streams from piping to the
+      // aggregate before completion.
       aggregateStream = gff3Stream.pipe(aggregateStream, { end: false })
 
       // If a stream ends we have two options:
@@ -208,7 +149,7 @@ export default class TextIndex extends JBrowseCommand {
   // then passes it into the correct file handler.
   // Returns a @gmod/gff stream.
   handleLocalGff3(gff3LocalIn: string, isGZ: boolean) {
-    const gff3ReadStream: ReadStream = createReadStream(gff3LocalIn)
+    const gff3ReadStream = createReadStream(gff3LocalIn)
     if (!isGZ) {
       return this.parseGff3Stream(gff3ReadStream)
     } else {
@@ -219,7 +160,7 @@ export default class TextIndex extends JBrowseCommand {
   // Method for handing off the parsing of a gff3 file URL.
   // Calls the proper parser depending on if it is gzipped or not.
   // Returns a @gmod/gff stream.
-  async handleGff3Url(urlIn: string, isGZ: boolean): Promise<ReadStream> {
+  async handleGff3Url(urlIn: string, isGZ: boolean): Promise<Readable> {
     if (!isGZ) {
       return this.handleGff3UrlNoGz(urlIn)
     } else {
@@ -233,7 +174,7 @@ export default class TextIndex extends JBrowseCommand {
   handleGff3UrlNoGz(urlIn: string) {
     const newUrl = new URL(urlIn)
 
-    return new Promise<ReadStream>((resolve, reject) => {
+    return new Promise<Readable>((resolve, reject) => {
       ;(newUrl.protocol === 'https:' ? httpsFR : httpFR)
         .get(urlIn, response => {
           const parseStream = this.parseGff3Stream(response)
@@ -257,7 +198,7 @@ export default class TextIndex extends JBrowseCommand {
     const unzip = createGunzip()
     const newUrl = new URL(urlIn)
 
-    return new Promise<ReadStream>((resolve, reject) => {
+    return new Promise<Readable>((resolve, reject) => {
       ;(newUrl.protocol === 'https:' ? httpsFR : httpFR)
         .get(urlIn, response => {
           resolve(this.parseGff3Stream(response.pipe(unzip)))
@@ -290,7 +231,7 @@ export default class TextIndex extends JBrowseCommand {
   // Handles local gZipped files by unzipping them
   // then passing them into the parseGff3()
   // Returns a @gmod/gff stream.
-  handleLocalGzip(file: ReadStream) {
+  handleLocalGzip(file: Readable) {
     const unzip = createGunzip()
     const gZipRead = file.pipe(unzip)
     return this.parseGff3Stream(gZipRead)
@@ -392,10 +333,10 @@ export default class TextIndex extends JBrowseCommand {
   // users, however tests use a local copy.  Returns a promise around ixIxx
   // completing (or erroring).
   runIxIxx(readStream: Readable, outLocation: string) {
-    const ixFilename = 'out.ix'
-    const ixxFilename = 'out.ixx'
+    const ixFilename = path.join(outLocation, 'out.ix')
+    const ixxFilename = path.join(outLocation, 'out.ixx')
 
-    return ixIxxStream(readStream, ixFilename, ixxFilename)
+    return ixIxxStream(readStream as any, ixFilename, ixxFilename)
   }
 
   // Function that takes in an array of tracks and returns an array of
