@@ -13998,10 +13998,10 @@ iterate-value@^1.0.0:
     es-get-iterator "^1.0.2"
     iterate-iterator "^1.0.1"
 
-ixixx@^1.0.0:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/ixixx/-/ixixx-1.0.2.tgz#2058fa1ad0aeec96ba85ec7a1fb4e917d8a094b3"
-  integrity sha512-G86iHoa+yeG1gzSVpoMKAynL9cnpZr9rs7wPyZ8vqm8mRQIufJXPJcwgy2Fhw9MEKkEGo6vBoMFOxOBztk8IQw==
+ixixx@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/ixixx/-/ixixx-1.0.3.tgz#4c21420e7efb5bd2034e32d07ba9e9bc9dbc3fa9"
+  integrity sha512-ysJUPeXhUzDbGJq7NvtFJwWueL5Ej/73EXcL7UGihmsMMT4juqad4nNFNHjUWpaCCB89T8DmFpes+ndYpFBdjQ==
 
 jake@^10.6.1:
   version "10.7.1"
