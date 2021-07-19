@@ -82,6 +82,7 @@
     "@types/set-value": "^2.0.0",
     "@types/shortid": "^0.0.29",
     "@types/string-template": "^1.0.2",
+    "@types/tmp": "^0.2.1",
     "@types/unzipper": "^0.10.3",
     "babel-loader": "8.1.0",
     "babel-plugin-inline-import-data-uri": "^1.0.1",
