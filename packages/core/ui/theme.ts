@@ -1,9 +1,7 @@
 import { blue, green, red, amber } from '@material-ui/core/colors'
-import { createMuiTheme, ThemeOptions } from '@material-ui/core/styles'
+import { ThemeOptions, createTheme } from '@material-ui/core/styles'
 import { PaletteOptions } from '@material-ui/core/styles/createPalette'
 import deepmerge from 'deepmerge'
-
-const refTheme = createMuiTheme()
 
 // use this if we ever want to add some top-level thing to the theme
 // declare module '@material-ui/core/styles/createMuiTheme' {
@@ -46,6 +44,8 @@ const midnight = '#0D233F'
 const grape = '#721E63'
 const forest = '#135560'
 const mandarin = '#FFB11D'
+
+const refTheme = createTheme()
 
 export const jbrowseDefaultPalette = {
   // type: 'dark',
@@ -199,7 +199,7 @@ export const jbrowseBaseTheme: ThemeOptions = {
 
 export function createJBrowseTheme(theme?: ThemeOptions) {
   if (!theme) {
-    return createMuiTheme(jbrowseBaseTheme)
+    return createTheme(jbrowseBaseTheme)
   }
   if (theme.palette?.tertiary) {
     theme = {
@@ -227,5 +227,5 @@ export function createJBrowseTheme(theme?: ThemeOptions) {
       theme.overrides || {},
     ),
   }
-  return createMuiTheme(deepmerge(jbrowseBaseTheme, theme))
+  return createTheme(deepmerge(jbrowseBaseTheme, theme))
 }
