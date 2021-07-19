@@ -48,11 +48,11 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   }
   return (
     <div style={{ position: 'relative' }}>
-      {model.isSeqDialogDisplayed ? (
+      {model.seqDialogDisplayed ? (
         <SequenceDialog
           model={model}
           handleClose={() => {
-            model.setOffsets(undefined, undefined)
+            model.setSequenceDialogOpen(false)
           }}
         />
       ) : null}

@@ -139,6 +139,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       rightOffset: undefined as undefined | BpOffset,
       searchResults: undefined as undefined | BaseResult[],
       searchQuery: undefined as undefined | string,
+      seqDialogDisplayed: false,
     }))
     .views(self => ({
       get width(): number {
@@ -173,9 +174,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       get hasDisplayedRegions() {
         return self.displayedRegions.length > 0
-      },
-      get isSeqDialogDisplayed() {
-        return self.leftOffset && self.rightOffset
       },
       get isSearchDialogDisplayed() {
         return self.searchResults !== undefined
@@ -523,6 +521,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       ) {
         self.searchResults = results
         self.searchQuery = query
+      },
+
+      setSequenceDialogOpen(open: boolean) {
+        self.seqDialogDisplayed = open
       },
 
       setNewView(bpPerPx: number, offsetPx: number) {

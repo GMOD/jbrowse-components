@@ -244,14 +244,7 @@ function SequenceDialog({
         >
           Download FASTA
         </Button>
-        <Button
-          onClick={() => {
-            handleClose()
-            model.setOffsets(undefined, undefined)
-          }}
-          color="primary"
-          autoFocus
-        >
+        <Button onClick={handleClose} color="primary" autoFocus>
           Close
         </Button>
       </DialogActions>

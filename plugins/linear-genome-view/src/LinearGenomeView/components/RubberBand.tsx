@@ -206,6 +206,7 @@ function RubberBand({
       rightOffset: BpOffset
     }
     model.setOffsets(leftOffset, rightOffset)
+    model.setSequenceDialogOpen(true)
   }
 
   function bookmarkSelectedRegion() {
