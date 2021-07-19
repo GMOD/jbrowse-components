@@ -2,7 +2,7 @@ import { flags } from '@oclif/command'
 import { Readable } from 'stream'
 import JBrowseCommand, { Config } from '../base'
 import { ixIxxStream } from 'ixixx'
-import { createReadStream, promises } from 'fs'
+import fs from 'fs'
 import { Transform, PassThrough } from 'stream'
 import gff from '@gmod/gff'
 import { http as httpFR, https as httpsFR } from 'follow-redirects'
@@ -50,7 +50,7 @@ export default class TextIndex extends JBrowseCommand {
     const defaultAttributes = ['Name', 'description', 'Note', 'ID', 'type']
     const { flags: runFlags } = this.parse(TextIndex)
     const outdir = runFlags.target || runFlags.out || '.'
-    const isDir = (await promises.lstat(outdir)).isDirectory()
+    const isDir = (await fs.promises.lstat(outdir)).isDirectory()
     this.target = isDir ? `${outdir}/config.json` : outdir
 
     const indexConfig = await this.getIndexingConfigurations(
@@ -64,6 +64,21 @@ export default class TextIndex extends JBrowseCommand {
       .filter(f => !!f)
 
     await this.indexDriver(uris, defaultAttributes, outdir)
+    const json = JSON.parse(fs.readFileSync(this.target, 'utf8'))
+    json.aggregateTextSearchAdapters = [
+      {
+        type: 'TrixTextSearchAdapter',
+        textSearchAdapterId: 'TrixAdapter',
+        ixFilePath: {
+          uri: 'out.ix',
+        },
+        ixxFilePath: {
+          uri: 'out.ixx',
+        },
+        assemblies: json.assemblies.map(a => a.name),
+      },
+    ]
+    fs.writeFileSync(this.target, JSON.stringify(json, 0, 2))
   }
 
   // Diagram of function call flow:
@@ -149,7 +164,7 @@ export default class TextIndex extends JBrowseCommand {
   // then passes it into the correct file handler.
   // Returns a @gmod/gff stream.
   handleLocalGff3(gff3LocalIn: string, isGZ: boolean) {
-    const gff3ReadStream = createReadStream(gff3LocalIn)
+    const gff3ReadStream = fs.createReadStream(gff3LocalIn)
     if (!isGZ) {
       return this.parseGff3Stream(gff3ReadStream)
     } else {
