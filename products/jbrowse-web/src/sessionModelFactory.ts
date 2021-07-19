@@ -14,7 +14,6 @@ import {
   JBrowsePlugin,
   DialogComponentType,
 } from '@jbrowse/core/util/types'
-import { Region as RegionModel } from '@jbrowse/core/util/types/mst'
 import { getContainingView } from '@jbrowse/core/util'
 import { observable } from 'mobx'
 import {

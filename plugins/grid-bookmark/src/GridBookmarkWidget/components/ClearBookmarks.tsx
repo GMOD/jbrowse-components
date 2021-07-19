@@ -12,8 +12,6 @@ import {
 import ClearAllIcon from '@material-ui/icons/ClearAll'
 import CloseIcon from '@material-ui/icons/Close'
 
-import { getSession } from '@jbrowse/core/util'
-
 import { GridBookmarkModel } from '../model'
 
 const useStyles = makeStyles(() => ({
