@@ -36,6 +36,7 @@ export default class extends Plugin {
       const { stateModel } = LinearGenomeView as ViewType
       const newStateModel = stateModel.extend((self: LinearGenomeViewModel) => {
         const superMenuItems = self.menuItems
+        const superRubberBandMenuItems = self.rubberBandMenuItems
         return {
           actions: {
             activateBookmarkWidget() {
@@ -93,6 +94,32 @@ export default class extends Plugin {
                 },
               )
               return menuItems
+            },
+
+            rubberBandMenuItems() {
+              const rubberBandMenuItems = superRubberBandMenuItems()
+              rubberBandMenuItems.push({
+                label: 'Bookmark region',
+                icon: BookmarkIcon,
+                onClick: () => {
+                  const { leftOffset, rightOffset } = self
+                  const selectedRegions = self.getSelectedRegions(
+                    leftOffset,
+                    rightOffset,
+                  )
+                  const firstRegion = selectedRegions[0]
+                  // @ts-ignore
+                  const { widgets } = getSession(self)
+                  let bookmarkWidget = widgets.get('GridBookmark')
+                  if (!bookmarkWidget) {
+                    // @ts-ignore
+                    self.activateBookmarkWidget()
+                    bookmarkWidget = widgets.get('GridBookmark')
+                  }
+                  bookmarkWidget.addBookmark(firstRegion)
+                },
+              })
+              return rubberBandMenuItems
             },
           },
         }
