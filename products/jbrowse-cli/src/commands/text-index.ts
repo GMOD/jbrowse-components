@@ -153,7 +153,7 @@ export default class TextIndex extends JBrowseCommand {
     if (!isGZ) {
       return this.parseGff3Stream(gff3ReadStream)
     } else {
-      return this.handleLocalGzip(gff3ReadStream)
+      return this.parseGff3Stream(gff3ReadStream.pipe(createGunzip()))
     }
   }
 
@@ -226,15 +226,6 @@ export default class TextIndex extends JBrowseCommand {
     }
 
     return url.protocol === 'http:' || url.protocol === 'https:'
-  }
-
-  // Handles local gZipped files by unzipping them
-  // then passing them into the parseGff3()
-  // Returns a @gmod/gff stream.
-  handleLocalGzip(file: Readable) {
-    const unzip = createGunzip()
-    const gZipRead = file.pipe(unzip)
-    return this.parseGff3Stream(gZipRead)
   }
 
   // Function that takes in a gff3 readstream and parses through
