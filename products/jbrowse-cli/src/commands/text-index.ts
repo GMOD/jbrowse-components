@@ -383,6 +383,5 @@ export default class TextIndex extends JBrowseCommand {
       }
       this.error(`Error: ${e}`)
     }
-    return []
   }
 }
