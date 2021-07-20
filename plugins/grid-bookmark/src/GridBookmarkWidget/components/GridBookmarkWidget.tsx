@@ -2,7 +2,11 @@ import React from 'react'
 import { observer } from 'mobx-react'
 
 import { makeStyles, Link } from '@material-ui/core'
-import { DataGrid, GridCellParams } from '@material-ui/data-grid'
+import {
+  DataGrid,
+  GridCellParams,
+  GridEditCellPropsParams,
+} from '@material-ui/data-grid'
 
 import { getSession } from '@jbrowse/core/util'
 import { AbstractViewModel, Region } from '@jbrowse/core/util/types'
@@ -35,18 +39,31 @@ const useStyles = makeStyles(() => ({
 function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
   const classes = useStyles()
   const { views } = getSession(model)
-  const { bookmarkedRegions } = model
+  const { bookmarkedRegions, updateBookmarkLabel } = model
   const bookmarkRows = bookmarkedRegions.toJS().map((region: Region) => ({
     ...region,
     id: `${region.refName}:${region.start}..${region.end}`,
     delete: `${region.refName}:${region.start}..${region.end}`,
   }))
 
+  const handleEditCellChangeCommitted = React.useCallback(
+    ({ id, props }: GridEditCellPropsParams) => {
+      const data = props
+      const { value } = data
+      bookmarkRows.forEach(row => {
+        if (row.id === id) {
+          updateBookmarkLabel(id, value as string)
+        }
+      })
+    },
+    [bookmarkRows, updateBookmarkLabel],
+  )
+
   const columns = [
     {
       field: 'id',
       headerName: 'bookmark link',
-      width: 300,
+      width: 200,
       renderCell: (params: GridCellParams) => {
         const { value } = params
         return (
@@ -59,6 +76,11 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
           </Link>
         )
       },
+    },
+    {
+      field: 'label',
+      width: 110,
+      editable: true,
     },
     {
       field: 'delete',
@@ -78,6 +100,7 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
         <DataGrid
           rows={bookmarkRows}
           columns={columns}
+          onEditCellChangeCommitted={handleEditCellChangeCommitted}
           disableSelectionOnClick
         />
       </div>

@@ -5,6 +5,11 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import { Region as RegionModel } from '@jbrowse/core/util/types/mst'
 import { Region } from '@jbrowse/core/util/types'
 
+const LabeledRegionModel = types.compose(
+  RegionModel,
+  types.model('Label', { label: '' }),
+)
+
 export default function f(pluginManager: PluginManager) {
   return types
     .model('GridBookmarkModel', {
@@ -13,7 +18,7 @@ export default function f(pluginManager: PluginManager) {
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
-      bookmarkedRegions: types.array(RegionModel),
+      bookmarkedRegions: types.array(LabeledRegionModel),
     })
     .actions(self => ({
       addBookmark(region: Region) {
@@ -37,6 +42,15 @@ export default function f(pluginManager: PluginManager) {
       },
       clearAllBookmarks() {
         self.bookmarkedRegions.clear()
+      },
+      updateBookmarkLabel(locString: string, label: string) {
+        const index = self.bookmarkedRegions.findIndex(b => {
+          const bLocString = `${b.refName}:${b.start}..${b.end}`
+          return bLocString === locString
+        })
+        if (index !== -1) {
+          self.bookmarkedRegions[index].label = label
+        }
       },
     }))
 }
