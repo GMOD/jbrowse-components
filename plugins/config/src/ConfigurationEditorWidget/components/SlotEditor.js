@@ -76,7 +76,7 @@ const StringArrayEditor = observer(({ slot }) => {
               onChange={evt => slot.setAtIndex(idx, evt.target.value)}
               InputProps={{
                 endAdornment: (
-                  <InputAdornment>
+                  <InputAdornment position="end">
                     <IconButton
                       color="secondary"
                       onClick={() => slot.removeAtIndex(idx)}
@@ -96,7 +96,7 @@ const StringArrayEditor = observer(({ slot }) => {
             onChange={event => setValue(event.target.value)}
             InputProps={{
               endAdornment: (
-                <InputAdornment>
+                <InputAdornment position="end">
                   <IconButton
                     onClick={() => {
                       slot.add(value)
@@ -171,7 +171,7 @@ const StringArrayMapEditor = observer(({ slot }) => {
               onChange={event => setValue(event.target.value)}
               InputProps={{
                 endAdornment: (
-                  <InputAdornment>
+                  <InputAdornment position="end">
                     <IconButton
                       disabled={value === ''}
                       onClick={() => {
@@ -231,7 +231,7 @@ const NumberMapEditor = observer(({ slot }) => {
               onChange={event => setValue(event.target.value)}
               InputProps={{
                 endAdornment: (
-                  <InputAdornment>
+                  <InputAdornment position="end">
                     <IconButton
                       disabled={value === ''}
                       onClick={() => {
