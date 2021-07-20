@@ -168,5 +168,18 @@
     "activeWidgets": {
       "hierarchicalTrackSelector": "hierarchicalTrackSelector"
     }
-  }
+  },
+  "aggregateTextSearchAdapters": [
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "TrixAdapter",
+      "ixFilePath": {
+        "uri": "out.ix"
+      },
+      "ixxFilePath": {
+        "uri": "out.ixx"
+      },
+      "assemblies": ["volvox", "volvox2"]
+    }
+  ]
 }
