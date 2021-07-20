@@ -7,23 +7,21 @@ import { Transform, PassThrough } from 'stream'
 import gff from '@gmod/gff'
 import { http as httpFR, https as httpsFR } from 'follow-redirects'
 import { createGunzip } from 'zlib'
-import tmp from 'tmp'
 import path from 'path'
 
 export default class TextIndex extends JBrowseCommand {
-  // @ts-ignore
-  target: string
+  target = ''
 
   static description = 'Make a text-indexing file for any given track(s).'
 
   static examples = [
+    "# indexes all tracks that it can find in the current directory's config.json",
     '$ jbrowse text-index',
+    "# indexes specific trackIds that it can find in the current directory's config.json",
     '$ jbrowse text-index --tracks=track1,track2,track3',
-    '$ jbrowse text-index --individual --tracks=my_track_id',
-    '$ jbrowse text-index ... --location=out_location_directory',
-    '$ jbrowse text-index ... --target=path_to_configuration_file',
-    '$ jbrowse text-index ... --out=path_to_configuration_file',
-    '$ jbrowse text-index ... --test=boolean',
+    "# indexes all tracks in a directory's config.json or in a specific config file",
+    '$ jbrowse text-index --out /path/to/jb2/',
+    '$ jbrowse text-index --out /path/to/jb2/some_alt_config.json',
   ]
 
   static flags = {
@@ -45,21 +43,19 @@ export default class TextIndex extends JBrowseCommand {
   // file parser to be indexed
   async run() {
     const defaultAttributes = ['Name', 'description', 'Note', 'ID']
-    const { flags: runFlags } = this.parse(TextIndex)
-    const outdir = runFlags.target || runFlags.out || '.'
+    const { flags } = this.parse(TextIndex)
+    const outdir = flags.target || flags.out || '.'
     const isDir = (await fs.promises.lstat(outdir)).isDirectory()
     this.target = isDir ? `${outdir}/config.json` : outdir
 
-    const indexConfig = await this.getConfig(
-      this.target,
-      runFlags.tracks?.split(','),
-    )
+    const configDirectory = path.dirname(this.target)
+    const config = await this.getConfig(this.target, flags.tracks?.split(','))
 
-    const uris = indexConfig
+    const uris = config
       .map(entry => entry?.indexingConfiguration?.gffLocation.uri)
       .filter((f): f is string => !!f)
 
-    await this.indexDriver(uris, defaultAttributes, outdir)
+    await this.indexDriver(uris, defaultAttributes, configDirectory)
     const json = JSON.parse(fs.readFileSync(this.target, 'utf8'))
     json.aggregateTextSearchAdapters = [
       {
@@ -98,11 +94,7 @@ export default class TextIndex extends JBrowseCommand {
   // This function takes a list of uris, as well as which attributes to index,
   // and indexes them all into one aggregate index.
   // Returns a promise of the indexing child process completing.
-  async indexDriver(
-    uris: string | Array<string>,
-    attributesArr: Array<string>,
-    outLocation: string,
-  ) {
+  async indexDriver(uris: string[], attributes: string[], outLocation: string) {
     // For loop for each uri in the uri array
     if (typeof uris === 'string') {
       uris = [uris]
@@ -119,7 +111,7 @@ export default class TextIndex extends JBrowseCommand {
         transform: (chunk, _encoding, done) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           chunk.forEach((record: any) => {
-            this.recurseFeatures(record, gff3Stream, attributesArr)
+            this.recurseFeatures(record, gff3Stream, attributes)
             done()
           })
         },
@@ -250,7 +242,7 @@ export default class TextIndex extends JBrowseCommand {
   // the desired attributes in the form of a JSON object. It is then
   // pushed to gff3Stream in proper indexing format.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  recurseFeatures(record: any, gff3Stream: Readable, attributesArr: string[]) {
+  recurseFeatures(record: any, gff3Stream: Readable, attributes: string[]) {
     // goes through the attributes array and checks if the record contains the
     // attribute that the user wants to search by. If it contains it, it adds
     // it to the record object and attributes string
@@ -265,7 +257,7 @@ export default class TextIndex extends JBrowseCommand {
       }
       const attrs = []
 
-      for (const attr of attributesArr) {
+      for (const attr of attributes) {
         if (subRecord[attr]) {
           recordObj[attr] = subRecord[attr]
           attrs.push(recordObj[attr].toString())
@@ -296,16 +288,12 @@ export default class TextIndex extends JBrowseCommand {
       if (Array.isArray(record)) {
         for (const r of record) {
           for (let i = 0; i < record[0].child_features.length; i++) {
-            this.recurseFeatures(r.child_features[i], gff3Stream, attributesArr)
+            this.recurseFeatures(r.child_features[i], gff3Stream, attributes)
           }
         }
       } else {
         for (let i = 0; i < record['child_features'].length; i++) {
-          this.recurseFeatures(
-            record.child_features[i],
-            gff3Stream,
-            attributesArr,
-          )
+          this.recurseFeatures(record.child_features[i], gff3Stream, attributes)
         }
       }
     }
@@ -324,11 +312,7 @@ export default class TextIndex extends JBrowseCommand {
 
   // Function that takes in an array of tracks and returns an array of
   // identifiers stating what will be indexed.
-  // Params:
-  //  trackIds: array of string ids for tracks to index
-  //  runFlags: specify if there is a target ouput location for the indexing
   async getConfig(configPath: string, trackIds?: string[]) {
-    // are we planning to have target and output flags on this command?
     const config: Config = await this.readJsonFile(configPath)
     if (!config.tracks) {
       this.error(
