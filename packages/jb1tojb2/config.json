@@ -1,0 +1,180 @@
+[
+  {
+    "type": "FeatureTrack",
+    "name": "Reference sequence (Unsupported)",
+    "description": "Support not yet implemented for \"StaticChunked (http://localhost//seq/{refseq_dirpath}/{refseq}-)\"",
+    "category": [
+      "Reference sequence"
+    ],
+    "trackId": "-577933394"
+  },
+  {
+    "trackId": "1808998287",
+    "name": "HTMLFeatures - Example Features",
+    "category": [
+      "Miscellaneous"
+    ],
+    "type": "FeatureTrack",
+    "adapter": {
+      "type": "NCListAdapter",
+      "rootUrlTemplate": {
+        "uri": "http://localhost//tracks/ExampleFeatures/{refseq}/trackData.json"
+      }
+    }
+  },
+  {
+    "trackId": "892214716",
+    "name": "HTMLFeatures - Name test track has a really long track label",
+    "category": [
+      "Miscellaneous"
+    ],
+    "type": "FeatureTrack",
+    "adapter": {
+      "type": "NCListAdapter",
+      "rootUrlTemplate": {
+        "uri": "http://localhost//tracks/NameTest/{refseq}/trackData.json"
+      }
+    }
+  },
+  {
+    "trackId": "-499978426",
+    "name": "HTMLFeatures - SNPs",
+    "category": [
+      "Miscellaneous"
+    ],
+    "type": "FeatureTrack",
+    "adapter": {
+      "type": "NCListAdapter",
+      "rootUrlTemplate": {
+        "uri": "http://localhost//tracks/snps/{refseq}/trackData.json"
+      }
+    }
+  },
+  {
+    "trackId": "-1833071907",
+    "name": "HTMLFeatures - Example motifs",
+    "category": [
+      "Miscellaneous"
+    ],
+    "type": "FeatureTrack",
+    "adapter": {
+      "type": "NCListAdapter",
+      "rootUrlTemplate": {
+        "uri": "http://localhost//tracks/Motifs/{refseq}/trackData.json"
+      }
+    }
+  },
+  {
+    "trackId": "-1100574089",
+    "name": "HTMLFeatures - Features with right-click menus",
+    "description": "Features with extensively customized right-click menus, and with their colors set at random by a JavaScript callback.",
+    "category": [
+      "Miscellaneous"
+    ],
+    "type": "FeatureTrack",
+    "adapter": {
+      "type": "NCListAdapter",
+      "rootUrlTemplate": {
+        "uri": "http://localhost//tracks/malformed_alignments/{refseq}/trackData.json"
+      }
+    }
+  },
+  {
+    "trackId": "295180645",
+    "name": "CanvasFeatures - Protein-coding genes",
+    "category": [
+      "Transcripts"
+    ],
+    "type": "FeatureTrack",
+    "adapter": {
+      "type": "NCListAdapter",
+      "rootUrlTemplate": {
+        "uri": "http://localhost//tracks/Genes/{refseq}/trackData.json"
+      }
+    }
+  },
+  {
+    "trackId": "2000703085",
+    "name": "HTMLFeatures - mRNAs",
+    "category": [
+      "Transcripts"
+    ],
+    "type": "FeatureTrack",
+    "adapter": {
+      "type": "NCListAdapter",
+      "rootUrlTemplate": {
+        "uri": "http://localhost//tracks/ReadingFrame/{refseq}/trackData.json"
+      }
+    }
+  },
+  {
+    "trackId": "419698741",
+    "name": "CanvasFeatures - mixed mRNAs and CDSs",
+    "category": [
+      "Transcripts"
+    ],
+    "type": "FeatureTrack",
+    "adapter": {
+      "type": "NCListAdapter",
+      "rootUrlTemplate": {
+        "uri": "http://localhost//tracks/CDS/{refseq}/trackData.json"
+      }
+    }
+  },
+  {
+    "trackId": "-422758689",
+    "name": "CanvasFeatures - transcripts",
+    "category": [
+      "Transcripts"
+    ],
+    "type": "FeatureTrack",
+    "adapter": {
+      "type": "NCListAdapter",
+      "rootUrlTemplate": {
+        "uri": "http://localhost//tracks/Transcript/{refseq}/trackData.json"
+      }
+    }
+  },
+  {
+    "trackId": "-1860081918",
+    "name": "HTMLFeatures - Fingerprinted BACs",
+    "category": [
+      "Miscellaneous"
+    ],
+    "type": "FeatureTrack",
+    "adapter": {
+      "type": "NCListAdapter",
+      "rootUrlTemplate": {
+        "uri": "http://localhost//tracks/Clones/{refseq}/trackData.json"
+      }
+    }
+  },
+  {
+    "trackId": "-323203548",
+    "name": "HTMLFeatures - ESTs",
+    "category": [
+      "Miscellaneous"
+    ],
+    "type": "FeatureTrack",
+    "adapter": {
+      "type": "NCListAdapter",
+      "rootUrlTemplate": {
+        "uri": "http://localhost//tracks/EST/{refseq}/trackData.json"
+      }
+    }
+  },
+  {
+    "trackId": "-2053991680",
+    "name": "ChromHMM",
+    "category": [
+      "Miscellaneous"
+    ],
+    "type": "FeatureTrack",
+    "adapter": {
+      "type": "NCListAdapter",
+      "rootUrlTemplate": {
+        "uri": "http://localhost//tracks/ChromHMM/{refseq}/trackData.json"
+      }
+    }
+  }
+]

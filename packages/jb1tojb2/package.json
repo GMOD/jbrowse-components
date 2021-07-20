@@ -1,0 +1,15 @@
+{
+  "name": "jb1tojb2",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "bin": {
+    "jb1tojb2": "./dist/bin.js"
+  },
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "tsc",
+    "preversion": "npm run build",
+    "postversion": "git push --follow-tags"
+  }
+}
