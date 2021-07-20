@@ -132,14 +132,20 @@ const UrlChooser = (props: {
           if (event.target.value === '') {
             setCurrentInternetAccount('')
           }
-          if (currentInternetAccount === 'autoDetect') {
-            const internetAccountId = autoDetectInternetAccount(
-              event.target.value,
-            )
-            setLocation({ internetAccountId: internetAccountId })
-            console.log(internetAccountId)
+          if (currentInternetAccount) {
+            const internetAccountId =
+              currentInternetAccount === 'autoDetect'
+                ? autoDetectInternetAccount(event.target.value)
+                : currentInternetAccount
+            setLocation({
+              uri: event.target.value,
+              baseAuthUri: event.target.value,
+              internetAccountId: internetAccountId,
+              authHeader: 'Authorization',
+            })
+          } else {
+            setLocation({ uri: event.target.value })
           }
-          setLocation({ uri: event.target.value })
         }}
       />
       {currentUrl !== '' && internetAccounts && (
