@@ -38,7 +38,6 @@ export default class TextIndex extends JBrowseCommand {
       char: 'a',
       description:
         'Specify the assembl(ies) to create an index for. If unspecified, creates an index for each assembly in the config',
-      default: '',
     }),
   }
 
@@ -55,7 +54,7 @@ export default class TextIndex extends JBrowseCommand {
     const configDirectory = path.dirname(target)
     const config: Config = JSON.parse(fs.readFileSync(target, 'utf8'))
     const assembliesToIndex =
-      flags.assemblies.split(',') || config.assemblies?.map(a => a.name)
+      flags.assemblies?.split(',') || config.assemblies?.map(a => a.name) || []
     const adapters = config.aggregateTextSearchAdapters || []
     for (const asm of assembliesToIndex) {
       const config = await this.getConfig(target, asm, flags.tracks?.split(','))
@@ -64,6 +63,7 @@ export default class TextIndex extends JBrowseCommand {
         .filter((f): f is string => !!f)
 
       await this.indexDriver(uris, defaultAttributes, configDirectory, asm)
+
       adapters.push({
         type: 'TrixTextSearchAdapter',
         textSearchAdapterId: 'TrixAdapter',
