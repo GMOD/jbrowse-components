@@ -16,7 +16,7 @@ describe('HierarchicalTrackSelector widget', () => {
     const model = firstView.activateTrackSelector()
 
     const { container } = render(
-      <ThemeProvider theme={createMuiTheme()}>
+      <ThemeProvider theme={createTheme()}>
         <HierarchicalTrackSelector model={model} />
       </ThemeProvider>,
     )
@@ -71,7 +71,7 @@ describe('HierarchicalTrackSelector widget', () => {
     const model = firstView.activateTrackSelector()
 
     const { container, findByTestId } = render(
-      <ThemeProvider theme={createMuiTheme()}>
+      <ThemeProvider theme={createTheme()}>
         <HierarchicalTrackSelector model={model} />
       </ThemeProvider>,
     )
@@ -132,7 +132,7 @@ describe('HierarchicalTrackSelector widget', () => {
     const model = firstView.activateTrackSelector()
 
     const { container, findByTestId } = render(
-      <ThemeProvider theme={createMuiTheme()}>
+      <ThemeProvider theme={createTheme()}>
         <HierarchicalTrackSelector model={model} />
       </ThemeProvider>,
     )
