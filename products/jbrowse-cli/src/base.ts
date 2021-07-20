@@ -76,7 +76,7 @@ export interface Assembly {
 export interface Track {
   trackId: string
   name: string
-
+  assemblyNames: string[]
   adapter: Gff3TabixAdapter
   textSearchIndexingAttributes: Array<string>
 }
@@ -84,6 +84,7 @@ export interface Track {
 export interface Config {
   assemblies?: Assembly[]
   configuration?: {}
+  aggregateTextSearchAdapters?: any[]
   connections?: unknown[]
   defaultSession?: {}
   tracks?: Track[]
