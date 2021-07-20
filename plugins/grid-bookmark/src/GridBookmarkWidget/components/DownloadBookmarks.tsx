@@ -14,23 +14,29 @@ import {
 import CloseIcon from '@material-ui/icons/Close'
 import GetAppIcon from '@material-ui/icons/GetApp'
 
-import { Region } from '@jbrowse/core/util/types'
-
 import { GridBookmarkModel } from '../model'
+import { LabeledRegion } from '../types'
 
-function downloadBookmarkFile(bookmarkedRegions: Region[], fileFormat: string) {
+function downloadBookmarkFile(
+  bookmarkedRegions: LabeledRegion[],
+  fileFormat: string,
+) {
   const fileHeader =
     fileFormat === 'TSV'
-      ? 'chrom\tstart\tend\tassembly_name\tcoord_range\n'
+      ? 'chrom\tstart\tend\tlabel\tassembly_name\tcoord_range\n'
       : ''
 
   const fileContents = bookmarkedRegions
     .map(b => {
+      const { label } = b
+      const labelVal = label === '' ? 'NA' : label
+      const locString = `${b.refName}:${b.start}..${b.end}`
+      const bedVal = `${b.refName}\t${b.start}\t${b.end}\t${labelVal}`
+
       if (fileFormat === 'BED') {
-        return `${b.refName}\t${b.start}\t${b.end}\n`
+        return `${bedVal}\n`
       } else {
-        const locString = `${b.refName}:${b.start}..${b.end}`
-        return `${b.refName}\t${b.start}\t${b.end}\t${b.assemblyName}\t${locString}\n`
+        return `${bedVal}\t${b.assemblyName}\t${locString}\n`
       }
     })
     .reduce((a, b) => a + b, fileHeader)
