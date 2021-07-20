@@ -157,9 +157,11 @@ export default class ServerSideRenderer extends RendererType {
    * @param args - render args
    */
   async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
-    return rpcManager.call(args.sessionId, 'CoreRender', args) as Promise<
-      ResultsSerialized
-    >
+    return rpcManager.call(
+      args.sessionId,
+      'CoreRender',
+      args,
+    ) as Promise<ResultsSerialized>
   }
 
   /**
