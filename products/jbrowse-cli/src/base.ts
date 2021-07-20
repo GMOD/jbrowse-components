@@ -113,7 +113,7 @@ export default abstract class JBrowseCommand extends Command {
     } catch (error) {
       this.error(error instanceof Error ? error : error.message, {
         suggestions: [
-          `Make sure the file "${location}" exists`,
+          `Make sure the file "${location}" exists or use --out to point to a directory with a config.json`,
           'Run `jbrowse add-assembly` to create a config file',
         ],
         exit: 40,

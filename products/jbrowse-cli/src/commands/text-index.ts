@@ -60,7 +60,7 @@ export default class TextIndex extends JBrowseCommand {
     )
 
     const uris = indexConfig
-      .map(entry => entry?.indexingConfiguration?.gffLocation.uri || '')
+      .map(entry => entry?.indexingConfiguration?.gffLocation.uri)
       .filter(f => !!f)
 
     await this.indexDriver(uris, defaultAttributes, outdir)
@@ -75,10 +75,10 @@ export default class TextIndex extends JBrowseCommand {
         ixxFilePath: {
           uri: 'out.ixx',
         },
-        assemblies: json.assemblies.map(a => a.name),
+        assemblies: json.assemblies.map((a: { name: string }) => a.name),
       },
     ]
-    fs.writeFileSync(this.target, JSON.stringify(json, 0, 2))
+    fs.writeFileSync(this.target, JSON.stringify(json, null, 2))
   }
 
   // Diagram of function call flow:
@@ -253,20 +253,14 @@ export default class TextIndex extends JBrowseCommand {
   // Recursively goes through every record in the gff3 file and gets
   // the desired attributes in the form of a JSON object. It is then
   // pushed to gff3Stream in proper indexing format.
-  recurseFeatures(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    record: any,
-    gff3Stream: Readable,
-    attributesArr: Array<string>,
-  ) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  recurseFeatures(record: any, gff3Stream: Readable, attributesArr: string[]) {
     // check if the attributes array is undefined
     // breaks out of loop if it is (end of recursion)
     if (attributesArr) {
-      // goes through the attributes array and checks
-      // if the record contains the attribute that the
-      // user wants to search by. If it contains it,
-      // it adds it to the record object and attributes
-      // string
+      // goes through the attributes array and checks if the record contains
+      // the attribute that the user wants to search by. If it contains it, it
+      // adds it to the record object and attributes string
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const getAndPushRecord = (subRecord: any) => {
@@ -356,47 +350,40 @@ export default class TextIndex extends JBrowseCommand {
     aggregate = false,
   ) {
     // are we planning to have target and output flags on this command?
-    try {
-      const config: Config = await this.readJsonFile(configPath)
-      if (!config.tracks) {
-        this.error(
-          'Error, no tracks found in config.json. Please add a track before indexing.',
-        )
-      }
-      const trackIdsToIndex = aggregate
-        ? config.tracks.map(track => track.trackId)
-        : trackIds
-
-      const configurations = trackIdsToIndex.map(trackId => {
-        const currentTrack = config.tracks?.find(
-          track => trackId === track.trackId,
-        )
-        if (currentTrack) {
-          const { adapter, textSearchIndexingAttributes } = currentTrack
-          if (adapter.type === 'Gff3TabixAdapter') {
-            return {
-              trackId,
-              indexingConfiguration: {
-                indexingAdapter: 'GFF3',
-                gzipped: true,
-                gffLocation: adapter?.gffGzLocation,
-              },
-              attributes: textSearchIndexingAttributes,
-            }
-          }
-        } else {
-          this.error(
-            `Track not found in config.json for trackId ${trackId}, please add track configuration before indexing.`,
-          )
-        }
-        return {}
-      })
-      return configurations
-    } catch (e) {
-      if (e.code === 'ENOENT') {
-        this.error('config.json not found in this directory')
-      }
-      this.error(`Error: ${e}`)
+    const config: Config = await this.readJsonFile(configPath)
+    if (!config.tracks) {
+      this.error(
+        'Error, no tracks found in config.json. Please add a track before indexing.',
+      )
     }
+    const trackIdsToIndex = aggregate
+      ? config.tracks.map(track => track.trackId)
+      : trackIds
+
+    const configurations = trackIdsToIndex.map(trackId => {
+      const currentTrack = config.tracks?.find(
+        track => trackId === track.trackId,
+      )
+      if (currentTrack) {
+        const { adapter, textSearchIndexingAttributes } = currentTrack
+        if (adapter.type === 'Gff3TabixAdapter') {
+          return {
+            trackId,
+            indexingConfiguration: {
+              indexingAdapter: 'GFF3',
+              gzipped: true,
+              gffLocation: adapter?.gffGzLocation,
+            },
+            attributes: textSearchIndexingAttributes,
+          }
+        }
+      } else {
+        this.error(
+          `Track not found in config.json for trackId ${trackId}, please add track configuration before indexing.`,
+        )
+      }
+      return {}
+    })
+    return configurations
   }
 }
