@@ -1,5 +1,5 @@
 import { createTestSession } from '@jbrowse/web/src/rootModel'
-import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles'
+import { createTheme, ThemeProvider } from '@material-ui/core/styles'
 import { cleanup, render } from '@testing-library/react'
 import React from 'react'
 import HierarchicalTrackSelector from './HierarchicalTrackSelector'

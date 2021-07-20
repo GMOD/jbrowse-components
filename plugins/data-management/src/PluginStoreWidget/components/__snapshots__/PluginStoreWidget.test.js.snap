@@ -93,7 +93,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
       </div>
     </div>
     <div
-      class="MuiCollapse-container MuiCollapse-entered"
+      class="MuiCollapse-root MuiCollapse-entered"
       style="min-height: 0px;"
     >
       <div
@@ -645,7 +645,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
       </div>
     </div>
     <div
-      class="MuiCollapse-container MuiCollapse-entered"
+      class="MuiCollapse-root MuiCollapse-entered"
       style="min-height: 0px;"
     >
       <div

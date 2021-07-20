@@ -5,7 +5,7 @@ import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import IconButton from '@material-ui/core/IconButton'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
-import { fade } from '@material-ui/core/styles/colorManipulator'
+import { alpha } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import DragIcon from '@material-ui/icons/DragIndicator'
@@ -19,7 +19,7 @@ import { LinearGenomeViewStateModel } from '..'
 
 const useStyles = makeStyles(theme => ({
   root: {
-    background: fade(theme.palette.background.paper, 0.8),
+    background: alpha(theme.palette.background.paper, 0.8),
     '&:hover': {
       background: theme.palette.background.paper,
     },

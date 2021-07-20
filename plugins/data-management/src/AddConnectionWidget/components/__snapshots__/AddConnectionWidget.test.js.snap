@@ -52,7 +52,7 @@ exports[`<AddConnectionWidget /> renders 1`] = `
         icon="1"
       >
         <div
-          class="MuiCollapse-container MuiStepContent-transition MuiCollapse-entered"
+          class="MuiCollapse-root MuiStepContent-transition MuiCollapse-entered"
           style="min-height: 0px;"
         >
           <div

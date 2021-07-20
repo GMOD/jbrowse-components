@@ -3,7 +3,7 @@ import { getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { storeBlobLocation } from '@jbrowse/core/util/tracks'
 import { Button, Paper, Typography, makeStyles } from '@material-ui/core'
-import { fade } from '@material-ui/core/styles/colorManipulator'
+import { alpha } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { useDropzone } from 'react-dropzone'
 
@@ -37,7 +37,10 @@ const useStyles = makeStyles(theme => ({
     }),
     borderStyle: 'dashed',
     backgroundColor: styledBy('isDragActive', {
-      true: fade(theme.palette.text.primary, theme.palette.action.hoverOpacity),
+      true: alpha(
+        theme.palette.text.primary,
+        theme.palette.action.hoverOpacity,
+      ),
       false: theme.palette.background.default,
     }),
     outline: 'none',
