@@ -92,7 +92,7 @@ export const useStyles = makeStyles(theme => ({
   },
 
   accordionBorder: {
-    marginTop: '4px',
+    margin: theme.spacing(1),
     border: '1px solid #444',
   },
 }))

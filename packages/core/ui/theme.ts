@@ -143,28 +143,31 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
         color: generatedPalette.tertiary.main,
       },
     },
+    MuiAccordion: {
+      root: {
+        width: '100%',
+      },
+    },
     MuiAccordionSummary: {
       root: {
-        background: generatedPalette.tertiary.main,
+        width: '100%',
         '&$expanded': {
           // overrides the subclass e.g. .MuiAccordionSummary-root-311.MuiAccordionSummary-expanded-312
           minHeight: 0,
           margin: 0,
           color: generatedPalette.tertiary.contrastText,
+          backgroundColor: generatedPalette.tertiary.main,
         },
+        backgroundColor: generatedPalette.tertiary.main + ' !important',
         margin: 0,
         minHeight: 0,
-        padding: '0px 24px',
       },
       content: {
         '&$expanded': {
-          margin: '8px 0px',
+          margin: '8px 8px',
         },
-        margin: '8px 0px',
+        margin: '8px 8px',
         color: generatedPalette.tertiary.contrastText,
-      },
-      expanded: {
-        // empty block needed to keep small
       },
     },
     // makes menus more compact
