@@ -31,9 +31,6 @@ export default class TextIndex extends JBrowseCommand {
     tracks: flags.string({
       description: `Specify the tracks to index, formatted as comma separated trackIds`,
     }),
-    individual: flags.boolean({
-      description: `Only make a single-track text index for the given track`,
-    }),
     target: flags.string({
       description:
         'Path to config file in JB2 installation directory to read from.',
@@ -47,21 +44,20 @@ export default class TextIndex extends JBrowseCommand {
   // tracks associated. Gets their information and sends it to the appropriate
   // file parser to be indexed
   async run() {
-    const defaultAttributes = ['Name', 'description', 'Note', 'ID', 'type']
+    const defaultAttributes = ['Name', 'description', 'Note', 'ID']
     const { flags: runFlags } = this.parse(TextIndex)
     const outdir = runFlags.target || runFlags.out || '.'
     const isDir = (await fs.promises.lstat(outdir)).isDirectory()
     this.target = isDir ? `${outdir}/config.json` : outdir
 
-    const indexConfig = await this.getIndexingConfigurations(
-      [],
+    const indexConfig = await this.getConfig(
       this.target,
-      true,
+      runFlags.tracks?.split(','),
     )
 
     const uris = indexConfig
       .map(entry => entry?.indexingConfiguration?.gffLocation.uri)
-      .filter(f => !!f)
+      .filter((f): f is string => !!f)
 
     await this.indexDriver(uris, defaultAttributes, outdir)
     const json = JSON.parse(fs.readFileSync(this.target, 'utf8'))
@@ -175,7 +171,7 @@ export default class TextIndex extends JBrowseCommand {
   // Method for handing off the parsing of a gff3 file URL.
   // Calls the proper parser depending on if it is gzipped or not.
   // Returns a @gmod/gff stream.
-  async handleGff3Url(urlIn: string, isGZ: boolean): Promise<Readable> {
+  async handleGff3Url(urlIn: string, isGZ: boolean) {
     if (!isGZ) {
       return this.handleGff3UrlNoGz(urlIn)
     } else {
@@ -246,7 +242,7 @@ export default class TextIndex extends JBrowseCommand {
   // Function that takes in a gff3 readstream and parses through
   // it and retrieves the needed attributes and information.
   // Returns a @gmod/gff stream.
-  parseGff3Stream(gff3In: Readable) {
+  parseGff3Stream(gff3In: Readable): Readable {
     return gff3In.pipe(gff.parseStream({ parseSequences: false }))
   }
 
@@ -255,60 +251,47 @@ export default class TextIndex extends JBrowseCommand {
   // pushed to gff3Stream in proper indexing format.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   recurseFeatures(record: any, gff3Stream: Readable, attributesArr: string[]) {
-    // check if the attributes array is undefined
-    // breaks out of loop if it is (end of recursion)
-    if (attributesArr) {
-      // goes through the attributes array and checks if the record contains
-      // the attribute that the user wants to search by. If it contains it, it
-      // adds it to the record object and attributes string
+    // goes through the attributes array and checks if the record contains the
+    // attribute that the user wants to search by. If it contains it, it adds
+    // it to the record object and attributes string
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const getAndPushRecord = (subRecord: any) => {
+      const locStr = `${subRecord['seq_id']};${subRecord['start']}..${subRecord['end']}`
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const getAndPushRecord = (subRecord: any) => {
-        const locStr = `${subRecord['seq_id']};${subRecord['start']}..${subRecord['end']}`
+      const recordObj: any = {
+        locstring: `${locStr}`,
+      }
+      const attrs = []
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const recordObj: any = {
-          locstring: `${locStr}`,
+      for (const attr of attributesArr) {
+        if (subRecord[attr]) {
+          recordObj[attr] = subRecord[attr]
+          attrs.push(recordObj[attr].toString())
+        } else if (subRecord.attributes?.[attr]) {
+          recordObj[attr] = subRecord.attributes[attr]
+          // using toString, even if this is an array, turns it into a single
+          // element
+          attrs.push(recordObj[attr].toString())
         }
-        let attrString = ''
-
-        for (const attr of attributesArr) {
-          // Check to see if the attr exists for the record
-          if (subRecord[attr]) {
-            recordObj[attr] = subRecord[attr]
-            attrString += ' ' + recordObj[attr]
-          } else if (subRecord.attributes && subRecord.attributes[attr]) {
-            // Name and ID are in the attributes object, so check there too
-            recordObj[attr] = subRecord.attributes[attr]
-            attrString += ' ' + recordObj[attr]
-          }
-        }
-
-        // encodes the record object so that it can be used by ixIxx
-        // appends the attributes that we are indexing by to the end
-        // of the string before pushing to ixIxx
-        const buff = Buffer.from(JSON.stringify(recordObj))
-
-        let str: string = buff.toString('base64')
-        str += attrString + locStr + '\n'
-
-        gff3Stream.push(str)
       }
 
-      if (Array.isArray(record)) {
-        for (const r of record) {
-          getAndPushRecord(r)
-        }
-      } else {
-        getAndPushRecord(record)
+      if (attrs.length) {
+        const buff = Buffer.from(JSON.stringify(recordObj)).toString('base64')
+        const uniqAttrs = [...new Set(attrs)]
+        gff3Stream.push(`${buff} ${uniqAttrs.join(' ')}\n`)
       }
-    } else {
-      return
     }
 
-    // recurses through each record to get child features and
-    // parses their attributes as well.
+    if (Array.isArray(record)) {
+      record.forEach(r => getAndPushRecord(r))
+    } else {
+      getAndPushRecord(record)
+    }
 
+    // recurses through each record to get child features and parses their
+    // attributes as well.
     if (record.child_features || record[0].child_features) {
       if (Array.isArray(record)) {
         for (const r of record) {
@@ -344,11 +327,7 @@ export default class TextIndex extends JBrowseCommand {
   // Params:
   //  trackIds: array of string ids for tracks to index
   //  runFlags: specify if there is a target ouput location for the indexing
-  async getIndexingConfigurations(
-    trackIds: string[],
-    configPath: string,
-    aggregate = false,
-  ) {
+  async getConfig(configPath: string, trackIds?: string[]) {
     // are we planning to have target and output flags on this command?
     const config: Config = await this.readJsonFile(configPath)
     if (!config.tracks) {
@@ -356,14 +335,11 @@ export default class TextIndex extends JBrowseCommand {
         'Error, no tracks found in config.json. Please add a track before indexing.',
       )
     }
-    const trackIdsToIndex = aggregate
-      ? config.tracks.map(track => track.trackId)
-      : trackIds
+    const trackIdsToIndex =
+      trackIds || config.tracks.map(track => track.trackId)
 
-    const configurations = trackIdsToIndex.map(trackId => {
-      const currentTrack = config.tracks?.find(
-        track => trackId === track.trackId,
-      )
+    return trackIdsToIndex.map(trackId => {
+      const currentTrack = config.tracks?.find(t => trackId === t.trackId)
       if (currentTrack) {
         const { adapter, textSearchIndexingAttributes } = currentTrack
         if (adapter.type === 'Gff3TabixAdapter') {
@@ -384,6 +360,5 @@ export default class TextIndex extends JBrowseCommand {
       }
       return {}
     })
-    return configurations
   }
 }
