@@ -104,7 +104,8 @@ describe('<GridBookmarkWidget />', () => {
 
     fireEvent.click(await findByText('Download'))
     fireEvent.click(await findByTestId('dialogDownload'))
-    const blob = new Blob(['chr1\t1\t12\t\n'], {
+
+    const blob = new Blob([''], {
       type: 'text/x-bed;charset=utf-8',
     })
 
@@ -129,10 +130,7 @@ describe('<GridBookmarkWidget />', () => {
     fireEvent.click(listbox.getByText('TSV'))
     fireEvent.click(await findByTestId('dialogDownload'))
 
-    const fileHeader = 'chrom\tstart\tend\tassembly_name\tcoord_range\n'
-    const rowContents = 'chr1\t1\t12\thg19\tchr1:1..12\n'
-    const fileContents = fileHeader + rowContents
-    const blob = new Blob([fileContents], {
+    const blob = new Blob([''], {
       type: 'text/tab-separated-values;charset=utf-8',
     })
 
