@@ -1,11 +1,7 @@
 import PluginManager from '../PluginManager'
 import PluggableElementBase from './PluggableElementBase'
-import {
-  setBlobMap,
-  getBlobMap,
-  setAdditionalInfoMap,
-  searchOrReplaceInArgs,
-} from '../util/tracks'
+import { setBlobMap, getBlobMap, setAdditionalInfoMap } from '../util/tracks'
+import { searchOrReplaceInArgs } from '../util'
 
 import {
   deserializeAbortSignal,
@@ -27,22 +23,36 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
   async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
     const blobMap = getBlobMap()
-    const rootModel: any = this.pluginManager.rootModel
-    let additionalInfoMap = rootModel?.getTokensFromStorage()
+    const additionalInfoMap = {}
 
-    if (args.hasOwnProperty('adapterConfig')) {
-      const modifiedArgs = await rootModel?.findAppropriateInternetAccount(
-        // @ts-ignore
-        new URL(searchOrReplaceInArgs(args.adapterConfig, 'uri')),
-        additionalInfoMap,
-        args,
-      )
-      if (modifiedArgs) {
-        additionalInfoMap = rootModel?.getTokensFromStorage()
-        return { ...modifiedArgs, blobMap, additionalInfoMap }
-      }
+    if (
+      args.hasOwnProperty('adapterConfig') &&
+      searchOrReplaceInArgs(args, 'internetAccountId')
+    ) {
+      return this.serializeAuthArguments(args, blobMap, additionalInfoMap)
     }
     return { ...args, blobMap, additionalInfoMap }
+  }
+
+  async serializeAuthArguments(
+    args: {},
+    blobMap: { [key: string]: File },
+    additionalInfoMap: Record<string, string>,
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rootModel: any = this.pluginManager.rootModel
+    additionalInfoMap = rootModel?.getTokensFromStorage()
+
+    const modifiedArgs = await rootModel?.findAppropriateInternetAccount(
+      // @ts-ignore
+      new URL(searchOrReplaceInArgs(args.adapterConfig, 'uri')),
+      additionalInfoMap,
+      args,
+    )
+    if (modifiedArgs) {
+      additionalInfoMap = rootModel?.getTokensFromStorage()
+      return { ...modifiedArgs, blobMap, additionalInfoMap }
+    }
   }
 
   async deserializeArguments<

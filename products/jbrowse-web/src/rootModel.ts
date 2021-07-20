@@ -26,7 +26,7 @@ import assemblyManagerFactory, {
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManagerF from '@jbrowse/core/TextSearch/TextSearchManager'
-import { AbstractSessionModel } from '@jbrowse/core/util'
+import { AbstractSessionModel, searchOrReplaceInArgs } from '@jbrowse/core/util'
 // material ui
 import { MenuItem } from '@jbrowse/core/ui'
 import AddIcon from '@material-ui/icons/Add'
@@ -370,12 +370,25 @@ export default function RootModel(
         args: {},
       ) {
         let accountToUse = undefined
-        self.internetAccounts.forEach(account => {
-          const handleResult = account.handlesLocation(location)
-          if (handleResult) {
-            accountToUse = account
-          }
-        })
+
+        // find the existing account selected from menu
+        const selectedId = searchOrReplaceInArgs(args, 'internetAccountId')
+        if (selectedId) {
+          const selectedAccount = self.internetAccounts.find(account => {
+            return account.accountConfig.internetAccountId === selectedId
+          })
+          accountToUse = selectedAccount
+        }
+
+        // if no existing account or not found, try to find working account
+        if (!accountToUse) {
+          self.internetAccounts.forEach(account => {
+            const handleResult = account.handlesLocation(location)
+            if (handleResult) {
+              accountToUse = account
+            }
+          })
+        }
         return accountToUse
           ? // @ts-ignore
             await accountToUse.handleRpcMethodCall(

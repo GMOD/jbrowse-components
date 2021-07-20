@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types, Instance } from 'mobx-state-tree'
+import { Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { createInternetAccountConfig } from '@jbrowse/core/pluggableElementTypes/models'
 

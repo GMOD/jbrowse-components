@@ -134,37 +134,6 @@ export function setAdditionalInfoMap(map: { [key: string]: string }) {
   additionalInfoMap = map
 }
 
-// search through arg object for a specific key, optionally replace key with string passed
-// can move this to util/index.ts
-export function searchOrReplaceInArgs(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  obj: { [key: string]: any },
-  key: string,
-  replace?: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): any {
-  for (const property in obj) {
-    if (obj.hasOwnProperty(property)) {
-      if (property === key) {
-        if (replace) {
-          obj[key] = replace
-        }
-        return obj[key]
-      } else if (typeof obj[property] === 'object') {
-        if (Array.isArray(obj[property])) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          obj[property].forEach((p: any) => {
-            return searchOrReplaceInArgs(p, key, replace)
-          })
-        } else {
-          return searchOrReplaceInArgs(obj[property], key, replace)
-        }
-      }
-    }
-  }
-  return
-}
-
 export function guessAdapter(
   file: FileLocation,
   index: FileLocation | undefined,

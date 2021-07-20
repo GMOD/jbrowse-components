@@ -5,7 +5,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { OAuthInternetAccountConfigModel } from './configSchema'
 import crypto from 'crypto'
 import { Instance, types, getRoot } from 'mobx-state-tree'
-import { searchOrReplaceInArgs } from '@jbrowse/core/util/tracks'
+import { searchOrReplaceInArgs } from '@jbrowse/core/util'
 import deepEqual from 'fast-deep-equal'
 
 // Notes go here:
@@ -144,7 +144,12 @@ const stateModelFactory = (
           if (!location) {
             reject()
           } else {
-            const fileUrl = await this.fetchFile((location as Location).href)
+            let fileUrl
+            try {
+              fileUrl = await this.fetchFile((location as Location).href)
+            } catch (error) {
+              reject(error)
+            }
             resolve(fileUrl)
           }
           this.deleteMessageChannel()
@@ -262,7 +267,6 @@ const stateModelFactory = (
           }
           switch (self.accountConfig.internetAccountId) {
             case 'dropboxOAuth': {
-              console.log('here', accessToken)
               const response = await fetch(
                 'https://api.dropboxapi.com/2/sharing/get_shared_link_metadata',
                 {
@@ -278,7 +282,6 @@ const stateModelFactory = (
               )
               if (!response.ok) {
                 const errorText = await response.text()
-                console.error(errorText)
                 throw new Error(
                   `Network response failure: ${response.status} (${errorText})`,
                 )
@@ -298,7 +301,6 @@ const stateModelFactory = (
                 )
                 if (!fileResponse.ok) {
                   const errorText = await fileResponse.text()
-                  console.error(errorText)
                   throw new Error(
                     `Network response failure: ${fileResponse.status} (${errorText})`,
                   )
@@ -323,7 +325,6 @@ const stateModelFactory = (
 
               if (!response.ok) {
                 const errorText = await response.text()
-                console.error(errorText)
                 throw new Error(
                   `Network response failure: ${response.status} (${errorText})`,
                 )
@@ -383,24 +384,31 @@ const stateModelFactory = (
           const token = internetAccountMap[self.accountConfig.internetAccountId]
 
           let file
+          let newArgs = args
           try {
             file = !token
               ? await this.openLocation(location)
               : await this.fetchFile(location.href, token)
           } catch (error) {
-            console.log(error)
             const refreshedMap = await this.handleError(
               internetAccountMap,
               retried,
             )
             if (!retried && !deepEqual(refreshedMap, internetAccountMap)) {
-              await this.handleRpcMethodCall(location, refreshedMap, args, true)
+              newArgs = await this.handleRpcMethodCall(
+                location,
+                refreshedMap,
+                args,
+                true,
+              )
             } else {
               throw new Error(error)
             }
           }
-          const editedArgs = JSON.parse(JSON.stringify(args))
-          searchOrReplaceInArgs(editedArgs, 'uri', file)
+          const editedArgs = JSON.parse(JSON.stringify(newArgs))
+          if (file) {
+            searchOrReplaceInArgs(editedArgs, 'uri', file)
+          }
           return editedArgs
         },
         async handleError(
@@ -414,8 +422,7 @@ const stateModelFactory = (
           )
 
           if (!retried) {
-            const t = await this.exchangeRefreshForAccessToken()
-            console.log('refreshed', t)
+            await this.exchangeRefreshForAccessToken()
             internetAccountMap = rootModel.getTokensFromStorage()
           }
           return internetAccountMap

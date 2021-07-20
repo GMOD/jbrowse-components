@@ -99,8 +99,28 @@ const UrlChooser = (props: {
 }) => {
   const { location, setLocation, internetAccounts } = props
   const [currentUrl, setCurrentUrl] = useState('')
-  const [currentInternetAccount, setCurrentInternetAccount] = useState('')
+  const [currentInternetAccount, setCurrentInternetAccount] = useState(
+    'autoDetect',
+  )
 
+  const autoDetectInternetAccount = (urlInput: string) => {
+    let detectedId = ''
+    let url: URL | undefined
+    try {
+      url = new URL(urlInput)
+    } catch (error) {
+      // skip
+      return detectedId
+    }
+
+    internetAccounts?.forEach(account => {
+      if (account.handlesLocation(url)) {
+        detectedId = account.accountConfig.internetAccountId
+      }
+    })
+
+    return detectedId
+  }
   return (
     <>
       <TextField
@@ -112,6 +132,13 @@ const UrlChooser = (props: {
           if (event.target.value === '') {
             setCurrentInternetAccount('')
           }
+          if (currentInternetAccount === 'autoDetect') {
+            const internetAccountId = autoDetectInternetAccount(
+              event.target.value,
+            )
+            setLocation({ internetAccountId: internetAccountId })
+            console.log(internetAccountId)
+          }
           setLocation({ uri: event.target.value })
         }}
       />
@@ -121,34 +148,36 @@ const UrlChooser = (props: {
           <Select
             id="internetAccountSelect"
             value={currentInternetAccount}
+            style={{ margin: 5 }}
             onChange={event => {
+              let internetAccountId = event.target.value
               setCurrentInternetAccount(event.target.value as string)
+              if (event.target.value === 'autoDetect') {
+                internetAccountId = autoDetectInternetAccount(currentUrl)
+              }
               setLocation({
                 uri: currentUrl,
                 baseAuthUri: currentUrl,
-                internetAccountId: event.target.value,
+                internetAccountId: internetAccountId,
                 authHeader: 'Authorization',
               })
             }}
+            displayEmpty
           >
             <MenuItem value="">None</MenuItem>
+            <MenuItem value="autoDetect">Auto Detect</MenuItem>
             {internetAccounts?.map(account => {
-              let url
               try {
-                url = new URL(currentUrl)
-                if (account.handlesLocation(url)) {
-                  return (
-                    <MenuItem
-                      key={account.internetAccountId}
-                      value={account.internetAccountId}
-                    >
-                      {account.name}
-                    </MenuItem>
-                  )
-                } else {
-                  return null
-                }
-              } catch (error) {
+                new URL(currentUrl)
+                return (
+                  <MenuItem
+                    key={account.internetAccountId}
+                    value={account.internetAccountId}
+                  >
+                    {account.name}
+                  </MenuItem>
+                )
+              } catch (e) {
                 return null
               }
             })}
