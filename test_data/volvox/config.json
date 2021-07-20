@@ -1509,7 +1509,8 @@
       "type": "ExternalTokenInternetAccount",
       "internetAccountId": "GDCExternalToken",
       "name": "GDC",
-      "description": "GDC External Token"
+      "description": "GDC External Token",
+      "validDomains": ["gdc.com"]
     }
   ]
 }

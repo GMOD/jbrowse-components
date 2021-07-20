@@ -77,6 +77,13 @@ export const InternetAccount = types
     setInternetAccountMap(map: { [key: string]: string }) {
       self.internetAccountMap = map
     },
+    handleRpcMethodCall(
+      location: Location,
+      map: Record<string, string>,
+      args: {},
+    ) {
+      return this.openLocation(location)
+    },
   }))
 
 export type BaseInternetAccountStateModel = typeof InternetAccount

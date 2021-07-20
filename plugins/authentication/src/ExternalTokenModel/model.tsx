@@ -86,9 +86,48 @@ const stateModelFactory = (
       setExternalToken(token: string) {
         self.externalToken = token
       },
-      openLocation(location: Location) {
-        const startFlow = this.openFieldForExternalToken()
-        return startFlow
+      async openLocation(location: Location) {
+        const tokenKey = Object.keys(sessionStorage).find(key => {
+          return key === `${self.accountConfig.internetAccountId}-token`
+        })
+        let token = sessionStorage.getItem(tokenKey as string)
+
+        // prompt user for token if there isnt one existing
+        if (!token) {
+          const newToken = window.prompt(
+            `Enter token for ${self.accountConfig.internetAccountId} to use`,
+          )
+          if (!newToken) {
+            return
+          }
+          token = newToken
+          sessionStorage.setItem(
+            `${self.accountConfig.internetAccountId}-token`,
+            token,
+          )
+        }
+
+        const response = await fetch(location.href, {
+          method: 'GET',
+          headers: {
+            Authorization: `${token}`,
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error(errorText)
+          throw new Error(
+            `Network response failure: ${response.status} (${errorText})`,
+          )
+        }
+
+        const file = await response.json()
+        return file
+      },
+      handleRpcMethodCall(location: Location) {
+        return this.openLocation(location)
       },
     }))
 }
