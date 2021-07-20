@@ -101,9 +101,11 @@ const BaseLinearDisplay = observer(
             setContextCoord(undefined)
             setContextMenuFeature(undefined)
           }}
-          onExit={() => {
-            setContextCoord(undefined)
-            setContextMenuFeature(undefined)
+          TransitionProps={{
+            onExit: () => {
+              setContextCoord(undefined)
+              setContextMenuFeature(undefined)
+            },
           }}
           anchorReference="anchorPosition"
           anchorPosition={

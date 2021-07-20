@@ -44,7 +44,13 @@ const FormRow = observer(
     const classes = useStyles()
     const { assemblyNames } = getSession(model) as { assemblyNames: string[] }
     return (
-      <Grid container item justify="center" spacing={2} alignItems="center">
+      <Grid
+        container
+        item
+        justifyContent="center"
+        spacing={2}
+        alignItems="center"
+      >
         <TextField
           select
           variant="outlined"
@@ -112,7 +118,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
       <Grid
         container
         spacing={1}
-        justify="center"
+        justifyContent="center"
         alignItems="center"
         style={{ width: '50%', margin: '0 auto' }}
       >
@@ -150,7 +156,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
                   be the left column of the PAF and the second assembly should
                   be the right column
                 </p>
-                <Grid container justify="center">
+                <Grid container justifyContent="center">
                   <Grid item>
                     <FileSelector
                       name="URL"
