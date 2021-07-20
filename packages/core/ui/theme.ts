@@ -145,6 +145,12 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
     },
     MuiAccordionSummary: {
       root: {
+        // !important needed to combat the MuiButton being applied to
+        // accordions in mui4.12.2 having a background:'transparent' that
+        // otherwise overrides this other
+        backgroundColor: generatedPalette.tertiary.main + ' !important',
+
+        // width:100% added in 4.12.2 also
         width: '100%',
         '&$expanded': {
           // overrides the subclass e.g. .MuiAccordionSummary-root-311.MuiAccordionSummary-expanded-312
@@ -152,7 +158,6 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
           color: generatedPalette.tertiary.contrastText,
           backgroundColor: generatedPalette.tertiary.main,
         },
-        backgroundColor: generatedPalette.tertiary.main + ' !important',
         minHeight: 0,
       },
       content: {
