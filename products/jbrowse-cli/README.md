@@ -40,9 +40,7 @@ It is likely preferable in most cases to install the tools first however
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
 - [`jbrowse set-default-session`](#jbrowse-set-default-session)
-  <<<<<<< HEAD
-- # [`jbrowse text-index`](#jbrowse-text-index)
-  > > > > > > > c2aa05372b61eb1af97c3bba14bc92aeae7114b9
+- [`jbrowse text-index`](#jbrowse-text-index)
 - [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
 
 ## `jbrowse add-assembly SEQUENCE`
@@ -370,7 +368,7 @@ OPTIONS
   --all  see all commands in CLI
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.2/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.0/src/commands/help.ts)_
 
 ## `jbrowse set-default-session`
 
@@ -418,13 +416,11 @@ USAGE
   $ jbrowse text-index
 
 OPTIONS
-  -h, --help           show CLI help
-  --individual         Only make a single-track text index for the given track
-  --location=location  Establish a location for the output files
-  --out=out            Synonym for target
-  --target=target      Path to config file in JB2 installation directory to read from.
-  --test               Determines which version of ixIxx to use
-  --tracks=tracks      Specify the tracks to index, formatted as comma separated trackIds
+  -h, --help       show CLI help
+  --individual     Only make a single-track text index for the given track
+  --out=out        Synonym for target
+  --target=target  Path to config file in JB2 installation directory to read from.
+  --tracks=tracks  Specify the tracks to index, formatted as comma separated trackIds
 
 EXAMPLES
   $ jbrowse text-index

@@ -76,7 +76,7 @@ export interface Assembly {
 export interface Track {
   trackId: string
   name: string
-
+  assemblyNames: string[]
   adapter: Gff3TabixAdapter
   textSearchIndexingAttributes: Array<string>
 }
@@ -84,6 +84,8 @@ export interface Track {
 export interface Config {
   assemblies?: Assembly[]
   configuration?: {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  aggregateTextSearchAdapters?: any[]
   connections?: unknown[]
   defaultSession?: {}
   tracks?: Track[]
@@ -113,7 +115,7 @@ export default abstract class JBrowseCommand extends Command {
     } catch (error) {
       this.error(error instanceof Error ? error : error.message, {
         suggestions: [
-          `Make sure the file "${location}" exists`,
+          `Make sure the file "${location}" exists or use --out to point to a directory with a config.json`,
           'Run `jbrowse add-assembly` to create a config file',
         ],
         exit: 40,

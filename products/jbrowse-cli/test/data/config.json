@@ -58,7 +58,7 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "test/data/au9_scaffold_subset_sync.gff3"
+          "uri": "au9_scaffold_subset_sync.gff3"
         },
         "index": {
           "location": {
@@ -77,7 +77,7 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "test/data/volvox.sort.gff3.gz"
+          "uri": "volvox.sort.gff3.gz"
         },
         "index": {
           "location": {
@@ -168,5 +168,29 @@
     "activeWidgets": {
       "hierarchicalTrackSelector": "hierarchicalTrackSelector"
     }
-  }
+  },
+  "aggregateTextSearchAdapters": [
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "TrixAdapter",
+      "ixFilePath": {
+        "uri": "out.ix"
+      },
+      "ixxFilePath": {
+        "uri": "out.ixx"
+      },
+      "assemblies": ["volvox", "volvox2"]
+    },
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "TrixAdapter",
+      "ixFilePath": {
+        "uri": ".ix"
+      },
+      "ixxFilePath": {
+        "uri": ".ixx"
+      },
+      "assemblies": [""]
+    }
+  ]
 }
