@@ -84,6 +84,7 @@ export interface Track {
 export interface Config {
   assemblies?: Assembly[]
   configuration?: {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aggregateTextSearchAdapters?: any[]
   connections?: unknown[]
   defaultSession?: {}
