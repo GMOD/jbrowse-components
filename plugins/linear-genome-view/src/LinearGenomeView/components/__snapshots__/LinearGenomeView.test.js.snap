@@ -568,7 +568,7 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
     class="MuiContainer-root makeStyles-importFormContainer MuiContainer-maxWidthLg"
   >
     <div
-      class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center MuiGrid-justify-xs-center"
+      class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center MuiGrid-justify-content-xs-center"
     >
       <div
         class="MuiGrid-root MuiGrid-item"

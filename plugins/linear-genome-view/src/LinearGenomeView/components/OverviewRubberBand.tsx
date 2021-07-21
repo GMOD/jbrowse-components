@@ -1,13 +1,10 @@
-import Popover from '@material-ui/core/Popover'
-import { makeStyles } from '@material-ui/core/styles'
-import { fade } from '@material-ui/core/styles/colorManipulator'
-import Tooltip from '@material-ui/core/Tooltip'
-import Typography from '@material-ui/core/Typography'
+import React, { useRef, useEffect, useState } from 'react'
+import { makeStyles, alpha } from '@material-ui/core/styles'
+import { Popover, Tooltip, Typography } from '@material-ui/core'
 import { stringify } from '@jbrowse/core/util'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
-import React, { useRef, useEffect, useState } from 'react'
 import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import { LinearGenomeViewStateModel, HEADER_OVERVIEW_HEIGHT } from '..'
 
@@ -15,8 +12,8 @@ type LGV = Instance<LinearGenomeViewStateModel>
 
 const useStyles = makeStyles(theme => {
   const background = theme.palette.tertiary
-    ? fade(theme.palette.tertiary.main, 0.7)
-    : fade(theme.palette.primary.main, 0.7)
+    ? alpha(theme.palette.tertiary.main, 0.7)
+    : alpha(theme.palette.primary.main, 0.7)
   return {
     rubberBand: {
       height: '100%',
