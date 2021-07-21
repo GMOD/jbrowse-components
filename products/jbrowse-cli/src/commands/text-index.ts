@@ -128,8 +128,8 @@ export default class TextIndex extends JBrowseCommand {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           chunk.forEach((record: any) => {
             this.recurseFeatures(record, gff3Stream, attributes)
-            done()
           })
+          done()
         },
       })
 
@@ -263,6 +263,9 @@ export default class TextIndex extends JBrowseCommand {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const getAndPushRecord = (subRecord: any) => {
+      if (!subRecord) {
+        return
+      }
       const locStr = `${subRecord['seq_id']};${subRecord['start']}..${subRecord['end']}`
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -298,7 +301,7 @@ export default class TextIndex extends JBrowseCommand {
 
     // recurses through each record to get child features and parses their
     // attributes as well.
-    if (record.child_features || record[0].child_features) {
+    if (record?.child_features || record?.[0].child_features) {
       if (Array.isArray(record)) {
         for (const r of record) {
           for (let i = 0; i < record[0].child_features.length; i++) {
