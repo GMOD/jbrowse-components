@@ -15,8 +15,8 @@ const configPath = path.join(
   'indexing_config.json',
 )
 const ixIxxPath = path.join(__dirname, '..', '..', 'test', 'ixIxx')
-const ixLoc = path.join(__dirname, '..', '..', 'test', 'data', 'out.ix')
-const ixxLoc = path.join(__dirname, '..', '..', 'test', 'data', 'out.ixx')
+const ixLoc = path.join(__dirname, '..', '..', 'test', 'data', 'volvox.ix')
+const ixxLoc = path.join(__dirname, '..', '..', 'test', 'data', 'volvox.ixx')
 
 function verifyIxxFiles(ixLoc: string, ixxLoc: string) {
   const ixdata = fs.readFileSync(ixLoc, 'utf8')

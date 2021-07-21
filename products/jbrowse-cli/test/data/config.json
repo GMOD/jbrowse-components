@@ -2,9 +2,7 @@
   "assemblies": [
     {
       "name": "volvox",
-      "aliases": [
-        "vvx"
-      ],
+      "aliases": ["vvx"],
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "volvox_refseq",
@@ -25,18 +23,12 @@
             {
               "refName": "ctgA",
               "uniqueId": "alias1",
-              "aliases": [
-                "A",
-                "contigA"
-              ]
+              "aliases": ["A", "contigA"]
             },
             {
               "refName": "ctgB",
               "uniqueId": "alias2",
-              "aliases": [
-                "B",
-                "contigB"
-              ]
+              "aliases": ["B", "contigB"]
             }
           ]
         }
@@ -60,13 +52,9 @@
     {
       "type": "FeatureTrack",
       "trackId": "au9_scaffold",
-      "assemblyNames": [
-        "volvox"
-      ],
+      "assemblyNames": ["volvox"],
       "name": "AU9 Scaffold",
-      "category": [
-        "Miscellaneous"
-      ],
+      "category": ["Miscellaneous"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -78,22 +66,14 @@
           }
         }
       },
-      "textSearchIndexingAttributes": [
-        "Name",
-        "ID",
-        "type"
-      ]
+      "textSearchIndexingAttributes": ["Name", "ID", "type"]
     },
     {
       "type": "FeatureTrack",
       "trackId": "gff3tabix_genes",
-      "assemblyNames": [
-        "volvox"
-      ],
+      "assemblyNames": ["volvox"],
       "name": "GFF3Tabix genes",
-      "category": [
-        "Miscellaneous"
-      ],
+      "category": ["Miscellaneous"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -105,22 +85,14 @@
           }
         }
       },
-      "textSearchIndexingAttributes": [
-        "Name",
-        "ID",
-        "type"
-      ]
+      "textSearchIndexingAttributes": ["Name", "ID", "type"]
     },
     {
       "type": "FeatureTrack",
       "trackId": "online_gff3tabix_genes",
-      "assemblyNames": [
-        "volvox"
-      ],
+      "assemblyNames": ["volvox"],
       "name": "Online GFF3Tabix genes",
-      "category": [
-        "Miscellaneous"
-      ],
+      "category": ["Miscellaneous"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -132,22 +104,14 @@
           }
         }
       },
-      "textSearchIndexingAttributes": [
-        "Name",
-        "ID",
-        "type"
-      ]
+      "textSearchIndexingAttributes": ["Name", "ID", "type"]
     },
     {
       "type": "FeatureTrack",
       "trackId": "online_au9_scaffold",
-      "assemblyNames": [
-        "volvox"
-      ],
+      "assemblyNames": ["volvox"],
       "name": "Online AU9 Scaffold",
-      "category": [
-        "Miscellaneous"
-      ],
+      "category": ["Miscellaneous"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -159,22 +123,14 @@
           }
         }
       },
-      "textSearchIndexingAttributes": [
-        "Name",
-        "ID",
-        "type"
-      ]
+      "textSearchIndexingAttributes": ["Name", "ID", "type"]
     },
     {
       "type": "FeatureTrack",
       "trackId": "EA_0Jp4oPKg",
       "name": "NCList genes",
-      "assemblyNames": [
-        "volvox"
-      ],
-      "category": [
-        "Miscellaneous"
-      ],
+      "assemblyNames": ["volvox"],
+      "category": ["Miscellaneous"],
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
@@ -223,10 +179,7 @@
       "ixxFilePath": {
         "uri": "out.ixx"
       },
-      "assemblies": [
-        "volvox",
-        "volvox2"
-      ]
+      "assemblies": ["volvox", "volvox2"]
     },
     {
       "type": "TrixTextSearchAdapter",
@@ -237,9 +190,7 @@
       "ixxFilePath": {
         "uri": ".ixx"
       },
-      "assemblies": [
-        ""
-      ]
+      "assemblies": [""]
     }
   ]
 }
