@@ -195,7 +195,7 @@ export default class PluginManager {
 
   rootModel?: AbstractRootModel
 
-  extensions: [string, (pluggableElement: PluggableElementType) => void][] = []
+  extensionPoints: Map<string, Function[]> = new Map()
 
   constructor(initialPlugins: (Plugin | PluginLoadRecord)[] = []) {
     // add the core plugin
@@ -310,7 +310,7 @@ export default class PluginManager {
     const typeRecord = this.getElementTypeRecord(groupName)
 
     this.elementCreationSchedule.add(groupName, () => {
-      const newElement = creationCallback(this)
+      let newElement = creationCallback(this)
       if (!newElement.name) {
         throw new Error(`cannot add a ${groupName} with no name`)
       }
@@ -321,11 +321,10 @@ export default class PluginManager {
         )
       }
 
-      this.extensions.forEach(([pluggableName, extension]) => {
-        if (pluggableName === newElement.name) {
-          extension(newElement)
-        }
-      })
+      newElement = this.evaluateExtensionPoint(
+        'Core-extendPluggableElement',
+        newElement,
+      ) as PluggableElementType
 
       typeRecord.add(newElement.name, newElement)
     })
@@ -560,10 +559,32 @@ export default class PluginManager {
     return this.addElementType('rpc method', creationCallback)
   }
 
-  extendPluggable(
-    pluginName: string,
-    extensionCallback: (pluggableElement: PluggableElementType) => void,
+  addToExtensionPoint<T>(
+    extensionPointName: string,
+    callback: (extendee: T) => T,
   ) {
-    this.extensions.push([pluginName, extensionCallback])
+    let callbacks = this.extensionPoints.get(extensionPointName)
+    if (!callbacks) {
+      callbacks = []
+      this.extensionPoints.set(extensionPointName, callbacks)
+    }
+    callbacks.push(callback)
+  }
+
+  evaluateExtensionPoint(extensionPointName: string, extendee: unknown) {
+    const callbacks = this.extensionPoints.get(extensionPointName)
+    let accumulator = extendee
+    if (callbacks) {
+      for (const callback of callbacks) {
+        try {
+          accumulator = callback(accumulator)
+        } catch (error) {
+          console.error(
+            `Skipping failed extension for extension point "${extensionPointName}"`,
+          )
+        }
+      }
+    }
+    return accumulator
   }
 }
