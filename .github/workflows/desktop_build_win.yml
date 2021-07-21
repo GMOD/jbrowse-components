@@ -15,9 +15,9 @@ jobs:
           node-version: '14'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
-      # - name: Install build deps
-      #   run: |
-      #     sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev wine-stable
+      - name: Install build deps
+        run: |
+          sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev wine-stable
       - name: Build app
         env:
           WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
