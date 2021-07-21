@@ -2,11 +2,11 @@ name: Desktop build - Win
 on: push
 
 jobs:
-  container:
-    image: electronuserland/builder:wine
   build:
     name: Build Windows desktop app
     runs-on: ubuntu-latest
+    container:
+      image: electronuserland/builder:wine
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js 14
