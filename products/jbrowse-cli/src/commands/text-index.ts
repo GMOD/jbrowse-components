@@ -1,17 +1,15 @@
+import path from 'path'
+import fs from 'fs'
+import gff from '@gmod/gff'
 import { flags } from '@oclif/command'
 import { Readable } from 'stream'
-import JBrowseCommand, { Config } from '../base'
 import { ixIxxStream } from 'ixixx'
-import fs from 'fs'
 import { Transform, PassThrough } from 'stream'
-import gff from '@gmod/gff'
 import { http as httpFR, https as httpsFR } from 'follow-redirects'
 import { createGunzip } from 'zlib'
-import path from 'path'
+import JBrowseCommand, { Config } from '../base'
 
 export default class TextIndex extends JBrowseCommand {
-  target = ''
-
   static description = 'Make a text-indexing file for any given track(s).'
 
   static examples = [
@@ -27,7 +25,7 @@ export default class TextIndex extends JBrowseCommand {
   static flags = {
     help: flags.help({ char: 'h' }),
     tracks: flags.string({
-      description: `Specify the tracks to index, formatted as comma separated trackIds`,
+      description: `Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes all available tracks`,
     }),
     target: flags.string({
       description:
@@ -35,6 +33,11 @@ export default class TextIndex extends JBrowseCommand {
     }),
     out: flags.string({
       description: 'Synonym for target',
+    }),
+    assemblies: flags.string({
+      char: 'a',
+      description:
+        'Specify the assembl(ies) to create an index for. If unspecified, creates an index for each assembly in the config',
     }),
   }
 
@@ -46,31 +49,41 @@ export default class TextIndex extends JBrowseCommand {
     const { flags } = this.parse(TextIndex)
     const outdir = flags.target || flags.out || '.'
     const isDir = (await fs.promises.lstat(outdir)).isDirectory()
-    this.target = isDir ? `${outdir}/config.json` : outdir
+    const target = isDir ? `${outdir}/config.json` : outdir
 
-    const configDirectory = path.dirname(this.target)
-    const config = await this.getConfig(this.target, flags.tracks?.split(','))
+    const configDirectory = path.dirname(target)
+    const config: Config = JSON.parse(fs.readFileSync(target, 'utf8'))
+    const assembliesToIndex =
+      flags.assemblies?.split(',') || config.assemblies?.map(a => a.name) || []
+    const adapters = config.aggregateTextSearchAdapters || []
+    for (const asm of assembliesToIndex) {
+      const config = await this.getConfig(target, asm, flags.tracks?.split(','))
+      const uris = config
+        .map(entry => entry?.indexingConfiguration?.gffLocation.uri)
+        .filter((f): f is string => !!f)
 
-    const uris = config
-      .map(entry => entry?.indexingConfiguration?.gffLocation.uri)
-      .filter((f): f is string => !!f)
+      await this.indexDriver(uris, defaultAttributes, configDirectory, asm)
 
-    await this.indexDriver(uris, defaultAttributes, configDirectory)
-    const json = JSON.parse(fs.readFileSync(this.target, 'utf8'))
-    json.aggregateTextSearchAdapters = [
-      {
+      adapters.push({
         type: 'TrixTextSearchAdapter',
         textSearchAdapterId: 'TrixAdapter',
         ixFilePath: {
-          uri: 'out.ix',
+          uri: `${asm}.ix`,
         },
         ixxFilePath: {
-          uri: 'out.ixx',
+          uri: `${asm}.ixx`,
         },
-        assemblies: json.assemblies.map((a: { name: string }) => a.name),
-      },
-    ]
-    fs.writeFileSync(this.target, JSON.stringify(json, null, 2))
+        assemblies: [asm],
+      })
+    }
+    fs.writeFileSync(
+      target,
+      JSON.stringify(
+        { ...config, aggregateTextSearchAdapters: adapters },
+        null,
+        2,
+      ),
+    )
   }
 
   // Diagram of function call flow:
@@ -93,13 +106,16 @@ export default class TextIndex extends JBrowseCommand {
 
   // This function takes a list of uris, as well as which attributes to index,
   // and indexes them all into one aggregate index.
-  // Returns a promise of the indexing child process completing.
-  async indexDriver(uris: string[], attributes: string[], outLocation: string) {
-    // For loop for each uri in the uri array
-    if (typeof uris === 'string') {
-      uris = [uris]
-    } // turn uris string into an array of one string
-
+  async indexDriver(
+    uris: string[],
+    attributes: string[],
+    outLocation: string,
+    assemblyName: string,
+  ) {
+    // needed currently if empty array
+    if (!uris.length) {
+      return
+    }
     let aggregateStream = new PassThrough()
     let numStreamsFlowing = uris.length
 
@@ -145,12 +161,11 @@ export default class TextIndex extends JBrowseCommand {
       })
     }
 
-    return this.runIxIxx(aggregateStream, outLocation)
+    return this.runIxIxx(aggregateStream, outLocation, assemblyName)
   }
 
-  // Take in the local file path, check if the it is gzipped or not,
-  // then passes it into the correct file handler.
-  // Returns a @gmod/gff stream.
+  // Take in the local file path, check if the it is gzipped or not, then
+  // passes it into the correct file handler.  Returns a @gmod/gff stream.
   handleLocalGff3(gff3LocalIn: string, isGZ: boolean) {
     const gff3ReadStream = fs.createReadStream(gff3LocalIn)
     if (!isGZ) {
@@ -164,11 +179,9 @@ export default class TextIndex extends JBrowseCommand {
   // Calls the proper parser depending on if it is gzipped or not.
   // Returns a @gmod/gff stream.
   async handleGff3Url(urlIn: string, isGZ: boolean) {
-    if (!isGZ) {
-      return this.handleGff3UrlNoGz(urlIn)
-    } else {
-      return this.handleGff3UrlWithGz(urlIn)
-    }
+    return !isGZ
+      ? this.handleGff3UrlNoGz(urlIn)
+      : this.handleGff3UrlWithGz(urlIn)
   }
 
   // Grabs the remote file from urlIn, then pipe it directly to parseGff3Stream()
@@ -194,9 +207,9 @@ export default class TextIndex extends JBrowseCommand {
     })
   }
 
-  // Grab the remote file from urlIn, then unzip it before
-  // piping into parseGff3Stream for parsing.
-  // Returns a promise for the resulting @gmod/gff stream.
+  // Grab the remote file from urlIn, then unzip it before piping into
+  // parseGff3Stream for parsing.  Returns a promise for the resulting
+  // @gmod/gff stream.
   handleGff3UrlWithGz(urlIn: string) {
     const unzip = createGunzip()
     const newUrl = new URL(urlIn)
@@ -231,16 +244,17 @@ export default class TextIndex extends JBrowseCommand {
     return url.protocol === 'http:' || url.protocol === 'https:'
   }
 
-  // Function that takes in a gff3 readstream and parses through
-  // it and retrieves the needed attributes and information.
-  // Returns a @gmod/gff stream.
+  // Function that takes in a gff3 readstream and parses through it and
+  // retrieves the needed attributes and information. Returns a @gmod/gff
+  // stream.
   parseGff3Stream(gff3In: Readable): Readable {
     return gff3In.pipe(gff.parseStream({ parseSequences: false }))
   }
 
-  // Recursively goes through every record in the gff3 file and gets
-  // the desired attributes in the form of a JSON object. It is then
-  // pushed to gff3Stream in proper indexing format.
+  // Recursively goes through every record in the gff3 file and gets the
+  // desired attributes in the form of a JSON object. It is then pushed to
+  // gff3Stream in proper indexing format.
+  //
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   recurseFeatures(record: any, gff3Stream: Readable, attributes: string[]) {
     // goes through the attributes array and checks if the record contains the
@@ -303,42 +317,48 @@ export default class TextIndex extends JBrowseCommand {
   // using ixIxx.  The ixIxx executable is required on the system path for
   // users, however tests use a local copy.  Returns a promise around ixIxx
   // completing (or erroring).
-  runIxIxx(readStream: Readable, outLocation: string) {
-    const ixFilename = path.join(outLocation, 'out.ix')
-    const ixxFilename = path.join(outLocation, 'out.ixx')
+  runIxIxx(readStream: Readable, outLocation: string, assembly: string) {
+    const ixFilename = path.join(outLocation, `${assembly}.ix`)
+    const ixxFilename = path.join(outLocation, `${assembly}.ixx`)
 
     return ixIxxStream(readStream, ixFilename, ixxFilename)
   }
 
   // Function that takes in an array of tracks and returns an array of
-  // identifiers stating what will be indexed.
-  async getConfig(configPath: string, trackIds?: string[]) {
+  // identifiers stating what will be indexed
+  async getConfig(
+    configPath: string,
+    assemblyName: string,
+    trackIds?: string[],
+  ) {
     const config: Config = await this.readJsonFile(configPath)
-    if (!config.tracks) {
-      this.error(
-        'Error, no tracks found in config.json. Please add a track before indexing.',
+    const tracks = config.tracks
+    if (!tracks) {
+      throw new Error(
+        'No tracks found in config.json. Please add a track before indexing.',
       )
     }
-    const trackIdsToIndex =
-      trackIds || config.tracks.map(track => track.trackId)
+    const trackIdsToIndex = trackIds || tracks.map(track => track.trackId)
 
     return trackIdsToIndex.map(trackId => {
-      const currentTrack = config.tracks?.find(t => trackId === t.trackId)
+      const currentTrack = tracks.find(t => trackId === t.trackId)
       if (currentTrack) {
-        const { adapter, textSearchIndexingAttributes } = currentTrack
-        if (adapter.type === 'Gff3TabixAdapter') {
-          return {
-            trackId,
-            indexingConfiguration: {
-              indexingAdapter: 'GFF3',
-              gzipped: true,
-              gffLocation: adapter?.gffGzLocation,
-            },
-            attributes: textSearchIndexingAttributes,
+        if (currentTrack.assemblyNames.includes(assemblyName)) {
+          const { adapter, textSearchIndexingAttributes } = currentTrack
+          if (adapter.type === 'Gff3TabixAdapter') {
+            return {
+              trackId,
+              indexingConfiguration: {
+                indexingAdapter: 'GFF3',
+                gzipped: true,
+                gffLocation: adapter?.gffGzLocation,
+              },
+              attributes: textSearchIndexingAttributes,
+            }
           }
         }
       } else {
-        this.error(
+        throw new Error(
           `Track not found in config.json for trackId ${trackId}, please add track configuration before indexing.`,
         )
       }
