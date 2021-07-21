@@ -2,6 +2,8 @@ name: Desktop build - Win
 on: push
 
 jobs:
+  container:
+    image: electronuserland/builder:wine
   build:
     name: Build Windows desktop app
     runs-on: ubuntu-latest
@@ -23,5 +25,3 @@ jobs:
         run: |
           yarn build-electron:win
         working-directory: products/jbrowse-desktop
-        container:
-          image: electronuserland/builder:wine
