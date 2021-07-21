@@ -62,7 +62,13 @@ export default class TextIndex extends JBrowseCommand {
         .map(entry => entry?.indexingConfiguration?.gffLocation.uri)
         .filter((f): f is string => !!f)
 
-      await this.indexDriver(uris, defaultAttributes, configDirectory, asm)
+      await this.indexDriver(
+        uris,
+        defaultAttributes,
+        configDirectory,
+        asm,
+        flags.tracks?.split(',') || [],
+      )
 
       adapters.push({
         type: 'TrixTextSearchAdapter',
@@ -111,6 +117,7 @@ export default class TextIndex extends JBrowseCommand {
     attributes: string[],
     outLocation: string,
     assemblyName: string,
+    trackID: string[],
   ) {
     // needed currently if empty array
     if (!uris.length) {
@@ -127,7 +134,7 @@ export default class TextIndex extends JBrowseCommand {
         transform: (chunk, _encoding, done) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           chunk.forEach((record: any) => {
-            this.recurseFeatures(record, gff3Stream, attributes)
+            this.recurseFeatures(record, gff3Stream, attributes, trackID)
           })
           done()
         },
@@ -255,8 +262,13 @@ export default class TextIndex extends JBrowseCommand {
   // desired attributes in the form of a JSON object. It is then pushed to
   // gff3Stream in proper indexing format.
   //
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  recurseFeatures(record: any, gff3Stream: Readable, attributes: string[]) {
+  recurseFeatures(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    record: any,
+    gff3Stream: Readable,
+    attributes: string[],
+    trackID: string[],
+  ) {
     // goes through the attributes array and checks if the record contains the
     // attribute that the user wants to search by. If it contains it, it adds
     // it to the record object and attributes string
@@ -271,9 +283,9 @@ export default class TextIndex extends JBrowseCommand {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const recordObj: any = {
         locstring: `${locStr}`,
+        trackID: `${trackID}`,
       }
       const attrs = []
-
       for (const attr of attributes) {
         if (subRecord[attr]) {
           recordObj[attr] = subRecord[attr]
@@ -305,12 +317,22 @@ export default class TextIndex extends JBrowseCommand {
       if (Array.isArray(record)) {
         for (const r of record) {
           for (let i = 0; i < record[0].child_features.length; i++) {
-            this.recurseFeatures(r.child_features[i], gff3Stream, attributes)
+            this.recurseFeatures(
+              r.child_features[i],
+              gff3Stream,
+              attributes,
+              trackID,
+            )
           }
         }
       } else {
         for (let i = 0; i < record['child_features'].length; i++) {
-          this.recurseFeatures(record.child_features[i], gff3Stream, attributes)
+          this.recurseFeatures(
+            record.child_features[i],
+            gff3Stream,
+            attributes,
+            trackID,
+          )
         }
       }
     }
