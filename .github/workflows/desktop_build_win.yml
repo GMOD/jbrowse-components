@@ -17,7 +17,7 @@ jobs:
         uses: bahmutov/npm-install@v1
       - name: Pre-install commands
         run: |
-          sudo dpkg --add-architecture i386 && apt-get update && apt-get install wine32
+          sudo dpkg --add-architecture i386 && sudo apt-get update && sudo apt-get install wine32
       - name: Install build deps
         run: |
           sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
