@@ -69,7 +69,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   }, [assemblyManager, assemblyName])
 
   function setSelectedValue(selectedOption: BaseResult) {
-    setSelectedRegion(selectedOption.getLocation())
+    setSelectedRegion(selectedOption.getLabel())
   }
 
   async function handleSelectedRegion(input: string) {

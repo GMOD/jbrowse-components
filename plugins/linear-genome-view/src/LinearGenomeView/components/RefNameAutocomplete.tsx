@@ -56,10 +56,13 @@ async function fetchResults(
     queryString: query,
     searchType: 'prefix',
   }
-  const searchResults =
+  const searchResults: BaseResult[] =
     (await textSearchManager?.search(args, searchScope, rankSearchResults)) ||
     []
-  return searchResults
+  const filteredResults = searchResults.filter(function (elem, index, self) {
+    return index === self.findIndex(t => t.label === elem.label)
+  })
+  return filteredResults
 }
 function RefNameAutocomplete({
   model,

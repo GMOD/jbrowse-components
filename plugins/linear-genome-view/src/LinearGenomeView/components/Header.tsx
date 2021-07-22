@@ -123,7 +123,7 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
   const searchScope = model.searchScope(assemblyName)
   async function setDisplayedRegion(result: BaseResult) {
     if (result) {
-      const newRegionValue = result.getLocation()
+      const newRegionValue = result.getLabel()
       // need to fix finding region
       const newRegion = regions.find(
         region => newRegionValue === region.refName,
