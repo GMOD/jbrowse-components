@@ -54,15 +54,14 @@ export default abstract class RpcMethodType extends PluggableElementBase {
           return key.toLowerCase().includes('location')
         }) as string
       ]
+
     const modifiedArgs = await rootModel?.findAppropriateInternetAccount(
       fileLocation,
-      // using the wrong location, it should be using FileLocation, replace all Locations
-      // for the internetAccount flow with FileLocation
       authenticationInfoMap,
       args,
     )
     if (modifiedArgs) {
-      authenticationInfoMap = rootModel?.getAuthenticationInfoMap() // name it get authetication info map
+      authenticationInfoMap = rootModel?.getAuthenticationInfoMap()
       return { ...modifiedArgs, blobMap, authenticationInfoMap }
     }
   }

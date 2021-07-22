@@ -113,7 +113,7 @@ const UrlChooser = (props: {
     }
 
     internetAccounts?.forEach(account => {
-      if (account.handlesLocation(location)) {
+      if (account.handlesLocation({ uri: urlInput })) {
         detectedId = account.accountConfig.internetAccountId
       }
     })
@@ -136,6 +136,7 @@ const UrlChooser = (props: {
               currentInternetAccount === 'autoDetect'
                 ? autoDetectInternetAccount(event.target.value)
                 : currentInternetAccount
+
             setLocation({
               uri: event.target.value,
               baseAuthUri: event.target.value,
