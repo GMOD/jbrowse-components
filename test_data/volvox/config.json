@@ -51,6 +51,20 @@
   ],
   "aggregateTextSearchAdapters": [
     {
+      "type": "JBrowse1TextSearchAdapter",
+      "textSearchAdapterId": "JBrowse1GenerateNamesAdapter",
+      "namesIndexLocation": {
+        "uri": "names/"
+      },
+      "tracks": [
+        "bedtabix_genes",
+        "volvox_test_vcf",
+        "gff3tabix_genes",
+        "volvox_filtered_vcf"
+      ],
+      "assemblies": ["volvox", "volvox2"]
+    },
+    {
       "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "TrixAdapter",
       "ixFilePath": {
