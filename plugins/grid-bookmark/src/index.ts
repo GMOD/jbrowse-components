@@ -42,7 +42,6 @@ export default class extends Plugin {
             activateBookmarkWidget() {
               const session = getSession(self)
               if (isSessionModelWithWidgets(session)) {
-                // @ts-ignore
                 let bookmarkWidget = session.widgets.get('GridBookmark')
                 if (!bookmarkWidget) {
                   bookmarkWidget = session.addWidget(
@@ -65,14 +64,17 @@ export default class extends Plugin {
                 self.rightOffset,
               )
               const firstRegion = selectedRegions[0]
-              // @ts-ignore
-              const { widgets } = getSession(self)
-              let bookmarkWidget = widgets.get('GridBookmark')
-              if (!bookmarkWidget) {
-                this.activateBookmarkWidget()
-                bookmarkWidget = widgets.get('GridBookmark')
+              const session = getSession(self)
+              if (isSessionModelWithWidgets(session)) {
+                const { widgets } = session
+                let bookmarkWidget = widgets.get('GridBookmark')
+                if (!bookmarkWidget) {
+                  this.activateBookmarkWidget()
+                  bookmarkWidget = widgets.get('GridBookmark')
+                }
+                // @ts-ignore
+                bookmarkWidget.addBookmark(firstRegion)
               }
-              bookmarkWidget.addBookmark(firstRegion)
             },
           },
           views: {
@@ -108,15 +110,18 @@ export default class extends Plugin {
                     rightOffset,
                   )
                   const firstRegion = selectedRegions[0]
-                  // @ts-ignore
-                  const { widgets } = getSession(self)
-                  let bookmarkWidget = widgets.get('GridBookmark')
-                  if (!bookmarkWidget) {
+                  const session = getSession(self)
+                  if (isSessionModelWithWidgets(session)) {
+                    const { widgets } = session
+                    let bookmarkWidget = widgets.get('GridBookmark')
+                    if (!bookmarkWidget) {
+                      // @ts-ignore
+                      self.activateBookmarkWidget()
+                      bookmarkWidget = widgets.get('GridBookmark')
+                    }
                     // @ts-ignore
-                    self.activateBookmarkWidget()
-                    bookmarkWidget = widgets.get('GridBookmark')
+                    bookmarkWidget.addBookmark(firstRegion)
                   }
-                  bookmarkWidget.addBookmark(firstRegion)
                 },
               })
               return rubberBandMenuItems
