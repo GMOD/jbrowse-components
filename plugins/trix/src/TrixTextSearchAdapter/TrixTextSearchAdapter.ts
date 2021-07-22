@@ -71,11 +71,11 @@ export default class TrixTextSearchAdapter
     }
     // Example: {"locstring":"ctgB;1659..1984","Name":["f07"],"Note":["This is an example"],"type":"remark"}
     const formattedResults = results.map(result => {
-      const { Name, locstring } = JSON.parse(result)
+      const { Name, Note, ID, locstring } = JSON.parse(result)
       const locString = locstring.replace(/;/g, ':')
       return new LocStringResult({
         locString,
-        label: Name[0],
+        label: Name?.[0] || Note?.[0] || ID?.[0],
         matchedAttribute: 'name',
         matchedObject: result,
       })
