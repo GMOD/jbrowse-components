@@ -55,7 +55,13 @@ const FormRow = observer(
     const classes = useStyles()
     const { assemblyNames } = getSession(model) as { assemblyNames: string[] }
     return (
-      <Grid container item justify="center" spacing={2} alignItems="center">
+      <Grid
+        container
+        item
+        justifyContent="center"
+        spacing={2}
+        alignItems="center"
+      >
         <TextField
           select
           variant="outlined"
@@ -146,7 +152,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
             <Grid
               container
               item
-              justify="center"
+              justifyContent="center"
               spacing={4}
               alignItems="center"
             >
@@ -172,7 +178,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
           </Paper>
 
           <Paper className={classes.formPaper}>
-            <Grid container justify="center">
+            <Grid container justifyContent="center">
               <p style={{ textAlign: 'center' }}>
                 <b>Optional</b>: Add a PAF{' '}
                 <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
@@ -192,7 +198,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
               </Grid>
             </Grid>
           </Paper>
-          <Grid container justify="center">
+          <Grid container justifyContent="center">
             <Grid item>
               <Button onClick={onOpenClick} variant="contained" color="primary">
                 Open

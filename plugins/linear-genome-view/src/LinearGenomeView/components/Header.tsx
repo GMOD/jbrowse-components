@@ -2,7 +2,7 @@ import { getSession } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import Button from '@material-ui/core/Button'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
-import { fade } from '@material-ui/core/styles/colorManipulator'
+import { alpha } from '@material-ui/core/styles'
 import FormGroup from '@material-ui/core/FormGroup'
 import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
@@ -39,7 +39,7 @@ const useStyles = makeStyles(theme => ({
     minWidth: 100,
   },
   panButton: {
-    background: fade(theme.palette.background.paper, 0.8),
+    background: alpha(theme.palette.background.paper, 0.8),
     height: WIDGET_HEIGHT,
     margin: SPACING,
   },
@@ -186,7 +186,7 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
               style: {
                 padding: 0,
                 height: WIDGET_HEIGHT,
-                background: fade(theme.palette.background.paper, 0.8),
+                background: alpha(theme.palette.background.paper, 0.8),
               },
             },
           }}

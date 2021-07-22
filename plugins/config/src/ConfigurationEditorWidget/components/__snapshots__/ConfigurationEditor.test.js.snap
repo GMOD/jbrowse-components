@@ -161,7 +161,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 value="string1"
               />
               <div
-                class="MuiInputAdornment-root"
+                class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
               >
                 <button
                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
@@ -206,7 +206,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 value="string2"
               />
               <div
-                class="MuiInputAdornment-root"
+                class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
               >
                 <button
                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
@@ -252,7 +252,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 value=""
               />
               <div
-                class="MuiInputAdornment-root"
+                class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
               >
                 <button
                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
@@ -367,7 +367,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                     value="string1"
                   />
                   <div
-                    class="MuiInputAdornment-root"
+                    class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
                   >
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
@@ -412,7 +412,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                     value="string2"
                   />
                   <div
-                    class="MuiInputAdornment-root"
+                    class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
                   >
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
@@ -458,7 +458,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                     value=""
                   />
                   <div
-                    class="MuiInputAdornment-root"
+                    class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
                   >
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
@@ -517,7 +517,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                   value=""
                 />
                 <div
-                  class="MuiInputAdornment-root"
+                  class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
                 >
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"

@@ -191,7 +191,7 @@ const ImportForm = observer(({ model }) => {
   return (
     <>
       <Container className={classes.importFormContainer}>
-        <Grid container spacing={1} justify="center" alignItems="center">
+        <Grid container spacing={1} justifyContent="center" alignItems="center">
           <Grid item>
             <TextField
               select

@@ -1,10 +1,9 @@
-import Button from '@material-ui/core/Button'
-import { makeStyles } from '@material-ui/core/styles'
-import { fade } from '@material-ui/core/styles/colorManipulator'
+import React, { useRef, useState } from 'react'
+import { Button } from '@material-ui/core'
+import { alpha, makeStyles } from '@material-ui/core/styles'
 import ArrowDropDown from '@material-ui/icons/ArrowDropDown'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
-import React, { useRef, useState } from 'react'
 import Menu, { MenuItem } from './Menu'
 
 const useStyles = makeStyles(theme => ({
@@ -13,7 +12,7 @@ const useStyles = makeStyles(theme => ({
   },
   buttonRoot: {
     '&:hover': {
-      backgroundColor: fade(
+      backgroundColor: alpha(
         theme.palette.primary.contrastText,
         theme.palette.action.hoverOpacity,
       ),

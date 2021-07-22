@@ -4,14 +4,15 @@ import { getEnv } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-// material ui
-import { makeStyles } from '@material-ui/core/styles'
-import Button from '@material-ui/core/Button'
-import CircularProgress from '@material-ui/core/CircularProgress'
-import TextField from '@material-ui/core/TextField'
-import Container from '@material-ui/core/Container'
-import Grid from '@material-ui/core/Grid'
-import MenuItem from '@material-ui/core/MenuItem'
+import {
+  Button,
+  CircularProgress,
+  Container,
+  Grid,
+  MenuItem,
+  TextField,
+  makeStyles,
+} from '@material-ui/core'
 // other
 import RefNameAutocomplete from './RefNameAutocomplete'
 import SearchResultsDialog from './SearchResultsDialog'
@@ -117,7 +118,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
         />
       ) : null}
       <Container className={classes.importFormContainer}>
-        <Grid container spacing={1} justify="center" alignItems="center">
+        <Grid container spacing={1} justifyContent="center" alignItems="center">
           <Grid item>
             <TextField
               select

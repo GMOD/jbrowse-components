@@ -38,9 +38,11 @@ export default class ElectronLocalFile implements GenericFilehandle {
       throw new Error('no file path specified')
     }
     if (!this.fd) {
-      this.fd = this.ipcRenderer.invoke('open', this.filename, 'r') as Promise<
-        number
-      >
+      this.fd = this.ipcRenderer.invoke(
+        'open',
+        this.filename,
+        'r',
+      ) as Promise<number>
     }
     return this.fd
   }

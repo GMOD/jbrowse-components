@@ -1,14 +1,12 @@
-// import { Region } from '@jbrowse/core/util/types'
-// import { Region as MSTRegion } from '@jbrowse/core/util/types/mst'
+import React from 'react'
 import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
-import { fade } from '@material-ui/core/styles/colorManipulator'
+import { alpha } from '@material-ui/core/styles'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
-import React from 'react'
 import clsx from 'clsx'
 import { Typography } from '@material-ui/core'
 import {
@@ -83,7 +81,7 @@ const useStyles = makeStyles(theme => {
       pointerEvents: 'none',
     },
     scaleBarVisibleRegion: {
-      background: fade(scaleBarColor, 0.3),
+      background: alpha(scaleBarColor, 0.3),
       position: 'absolute',
       height: HEADER_OVERVIEW_HEIGHT,
       pointerEvents: 'none',
@@ -91,7 +89,7 @@ const useStyles = makeStyles(theme => {
       zIndex: 100,
       borderWidth: 1,
       borderStyle: 'solid',
-      borderColor: fade(scaleBarColor, 0.8),
+      borderColor: alpha(scaleBarColor, 0.8),
       boxSizing: 'content-box',
     },
     overview: {
@@ -160,8 +158,8 @@ const Polygon = observer(
         {points && (
           <polygon
             points={points.toString()}
-            fill={fade(polygonColor, 0.3)}
-            stroke={fade(polygonColor, 0.8)}
+            fill={alpha(polygonColor, 0.3)}
+            stroke={alpha(polygonColor, 0.8)}
           />
         )}
       </svg>
