@@ -278,7 +278,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         <div
                           class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-marginDense"
                           style="margin-right: 7px;"
-                          title="Search for features or navigate to a location using syntax \\"chr1:1-100\\" or \\"chr1:1..100\\""
                         >
                           <svg
                             aria-hidden="true"

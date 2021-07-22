@@ -1,9 +1,7 @@
 import { blue, green, red, amber } from '@material-ui/core/colors'
-import { createMuiTheme, ThemeOptions } from '@material-ui/core/styles'
+import { ThemeOptions, createTheme } from '@material-ui/core/styles'
 import { PaletteOptions } from '@material-ui/core/styles/createPalette'
 import deepmerge from 'deepmerge'
-
-const refTheme = createMuiTheme()
 
 // use this if we ever want to add some top-level thing to the theme
 // declare module '@material-ui/core/styles/createMuiTheme' {
@@ -46,6 +44,8 @@ const midnight = '#0D233F'
 const grape = '#721E63'
 const forest = '#135560'
 const mandarin = '#FFB11D'
+
+const refTheme = createTheme()
 
 export const jbrowseDefaultPalette = {
   // type: 'dark',
@@ -145,26 +145,27 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
     },
     MuiAccordionSummary: {
       root: {
-        background: generatedPalette.tertiary.main,
+        // !important needed to combat the MuiButton being applied to
+        // accordions in mui4.12.2 having a background:'transparent' that
+        // otherwise overrides this other
+        backgroundColor: generatedPalette.tertiary.main + ' !important',
+
+        // width:100% added in 4.12.2 also
+        width: '100%',
         '&$expanded': {
           // overrides the subclass e.g. .MuiAccordionSummary-root-311.MuiAccordionSummary-expanded-312
           minHeight: 0,
-          margin: 0,
           color: generatedPalette.tertiary.contrastText,
+          backgroundColor: generatedPalette.tertiary.main,
         },
-        margin: 0,
         minHeight: 0,
-        padding: '0px 24px',
       },
       content: {
         '&$expanded': {
-          margin: '8px 0px',
+          margin: '8px 8px',
         },
-        margin: '8px 0px',
+        margin: '8px 8px',
         color: generatedPalette.tertiary.contrastText,
-      },
-      expanded: {
-        // empty block needed to keep small
       },
     },
     // makes menus more compact
@@ -199,7 +200,7 @@ export const jbrowseBaseTheme: ThemeOptions = {
 
 export function createJBrowseTheme(theme?: ThemeOptions) {
   if (!theme) {
-    return createMuiTheme(jbrowseBaseTheme)
+    return createTheme(jbrowseBaseTheme)
   }
   if (theme.palette?.tertiary) {
     theme = {
@@ -227,5 +228,5 @@ export function createJBrowseTheme(theme?: ThemeOptions) {
       theme.overrides || {},
     ),
   }
-  return createMuiTheme(deepmerge(jbrowseBaseTheme, theme))
+  return createTheme(deepmerge(jbrowseBaseTheme, theme))
 }

@@ -181,10 +181,8 @@ export default function JBrowseWeb(
         const rootModel = getRoot(self)
         rootModel.setPluginsUpdated(true)
       },
-      removePlugin(pluginName) {
-        self.plugins = self.plugins.filter(
-          plugin => `${plugin.name}Plugin` !== pluginName,
-        )
+      removePlugin(pluginUrl) {
+        self.plugins = self.plugins.filter(plugin => plugin.url !== pluginUrl)
         const rootModel = getRoot(self)
         rootModel.setPluginsUpdated(true)
       },

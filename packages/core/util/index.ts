@@ -760,6 +760,7 @@ export function renameRegionIfNeeded(
   if (isStateTreeNode(region) && !isAlive(region)) {
     return region
   }
+
   if (region && refNameMap && refNameMap[region.refName]) {
     // clone the region so we don't modify it
     if (isStateTreeNode(region)) {
@@ -787,29 +788,33 @@ export async function renameRegionsIfNeeded<
     statusCallback?: Function
   }
 >(assemblyManager: AssemblyManager, args: ARGTYPE) {
-  const { assemblyName, regions, adapterConfig } = args
+  const { regions = [], adapterConfig } = args
   if (!args.sessionId) {
     throw new Error('sessionId is required')
   }
-  const newArgs: ARGTYPE = {
+
+  const assemblyNames = regions.map(region => region.assemblyName)
+  const assemblyMaps = Object.fromEntries(
+    await Promise.all(
+      assemblyNames.map(async assemblyName => {
+        return [
+          assemblyName,
+          await assemblyManager.getRefNameMapForAdapter(
+            adapterConfig,
+            assemblyName,
+            args,
+          ),
+        ]
+      }),
+    ),
+  )
+
+  return {
     ...args,
-    regions: [...(args.regions || [])],
+    regions: regions.map(region =>
+      renameRegionIfNeeded(assemblyMaps[region.assemblyName], region),
+    ),
   }
-
-  if (assemblyName) {
-    const refNameMap = await assemblyManager.getRefNameMapForAdapter(
-      adapterConfig,
-      assemblyName,
-      newArgs,
-    )
-
-    if (refNameMap && regions && newArgs.regions) {
-      for (let i = 0; i < regions.length; i += 1) {
-        newArgs.regions[i] = renameRegionIfNeeded(refNameMap, regions[i])
-      }
-    }
-  }
-  return newArgs
 }
 
 export function minmax(a: number, b: number) {

@@ -107,7 +107,7 @@ export default (pluginManager: PluginManager) => {
     /**
      * Returns list of relevant results given a search query and options
      * @param args - search options/arguments include: search query
-     * limit of results to return, searchType...preffix | full | exact", etc.
+     * limit of results to return, searchType...prefix | full | exact", etc.
      */
     async search(
       args: BaseArgs,

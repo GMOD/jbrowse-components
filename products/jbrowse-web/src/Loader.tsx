@@ -504,10 +504,12 @@ const Renderer = observer(
             ...runtimePlugins.map(({ plugin: P, definition }) => ({
               plugin: new P(),
               definition,
+              metadata: { url: definition.url },
             })),
             ...sessionPlugins.map(({ plugin: P, definition }) => ({
               plugin: new P(),
               definition,
+              metadata: { url: definition.url },
             })),
           ])
           pluginManager.createPluggableElements()

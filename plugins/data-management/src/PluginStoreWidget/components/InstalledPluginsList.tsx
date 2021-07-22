@@ -30,7 +30,12 @@ function InstalledPluginsList({
             plugin.name.toLowerCase().includes(model.filterText.toLowerCase()),
           )
           .map(plugin => (
-            <InstalledPlugin key={plugin.name} plugin={plugin} model={model} />
+            <InstalledPlugin
+              key={plugin.name}
+              plugin={plugin}
+              model={model}
+              pluginManager={pluginManager}
+            />
           ))
       ) : (
         <Typography>No plugins currently installed</Typography>

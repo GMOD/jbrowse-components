@@ -6,7 +6,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
   data-testid="variant-side-drawer"
 >
   <div
-    class="MuiPaper-root MuiAccordion-root makeStyles-accordionBorder MuiAccordion-expanded MuiAccordion-rounded MuiPaper-elevation1 MuiPaper-rounded"
+    class="MuiPaper-root MuiAccordion-root MuiAccordion-expanded MuiAccordion-rounded MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
       aria-disabled="false"
@@ -50,7 +50,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
       </div>
     </div>
     <div
-      class="MuiCollapse-container MuiCollapse-entered"
+      class="MuiCollapse-root MuiCollapse-entered"
       style="min-height: 0px;"
     >
       <div

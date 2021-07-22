@@ -62,6 +62,11 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
     return readVcf(fileContents)
   }
 
+  public async getHeader() {
+    const { header } = await this.decodeFileContents()
+    return header
+  }
+
   public async getLines() {
     const { header, lines } = await this.decodeFileContents()
 

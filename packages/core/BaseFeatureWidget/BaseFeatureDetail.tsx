@@ -54,9 +54,6 @@ export const useStyles = makeStyles(theme => ({
   expandIcon: {
     color: '#FFFFFF',
   },
-  paperRoot: {
-    background: theme.palette.grey[100],
-  },
   field: {
     display: 'flex',
     flexWrap: 'wrap',
@@ -90,11 +87,6 @@ export const useStyles = makeStyles(theme => ({
     boxSizing: 'border-box',
     overflow: 'auto',
   },
-
-  accordionBorder: {
-    marginTop: '4px',
-    border: '1px solid #444',
-  },
 }))
 
 export function BaseCard({
@@ -105,7 +97,6 @@ export function BaseCard({
   const classes = useStyles()
   return (
     <Accordion
-      className={classes.accordionBorder}
       defaultExpanded={defaultExpanded}
       TransitionProps={{ unmountOnExit: true }}
     >
@@ -203,13 +194,20 @@ const ArrayValue = ({
         )
       ) : value.every(val => isObject(val)) ? (
         value.map((val, i) => (
-          <Attributes attributes={val} prefix={[...prefix, name + '-' + i]} />
+          <Attributes
+            key={JSON.stringify(val) + '-' + i}
+            attributes={val}
+            prefix={[...prefix, name + '-' + i]}
+          />
         ))
       ) : (
         <div className={classes.field}>
           <FieldName prefix={prefix} description={description} name={name} />
           {value.map((val, i) => (
-            <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
+            <div
+              key={JSON.stringify(val) + '-' + i}
+              className={classes.fieldSubvalue}
+            >
               <BasicValue value={val} />
             </div>
           ))}

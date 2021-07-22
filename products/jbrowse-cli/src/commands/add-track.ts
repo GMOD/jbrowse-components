@@ -547,7 +547,8 @@ export default class AddTrack extends JBrowseCommand {
 
     if (/\.vcf$/i.test(fileName)) {
       return {
-        type: 'UNSUPPORTED',
+        type: 'VcfAdapter',
+        vcfLocation: makeLocation(fileName),
       }
     }
 
