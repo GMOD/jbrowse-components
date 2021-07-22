@@ -2731,10 +2731,10 @@
     long "^4.0.0"
     quick-lru "^2.0.0"
 
-"@gmod/trix@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-0.2.0.tgz#df9f927278cc55cad27b11b3bc7fd6b0253073e2"
-  integrity sha512-AvrkRvlTNyjepFOJ3zgOI6/TJpJQ2rpZf3O4dkFlVVBHKVQWzifRXTQsixhcKpz498kc+J38XP4jiWkbqgUtIg==
+"@gmod/trix@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-0.2.1.tgz#28e3296e39e18d4cb76d38f274c2ec558fc282a0"
+  integrity sha512-rkQI2K/QXzf0sIjsylcdQUVG/JGIT8K1EkjW4xX1TvUXp2jesngeyo8ZywUjkFHvg4Dtkn073gdYzmca8M8dRw==
 
 "@gmod/twobit@^1.1.10":
   version "1.1.10"
@@ -14003,10 +14003,10 @@ iterate-value@^1.0.0:
     es-get-iterator "^1.0.2"
     iterate-iterator "^1.0.1"
 
-ixixx@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/ixixx/-/ixixx-1.0.6.tgz#e4b4843d37c74d6ab4b51ef30da561bbc7c52dfa"
-  integrity sha512-MqdonvnyZ5oy0xpVT5W7nNSiWJhu+u20xXxGSA1hLrK9lj/IbBzdqhSkXMYbk/bgpGrNU1jlIZcxZ+YNVxZQDw==
+ixixx@^1.0.7:
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/ixixx/-/ixixx-1.0.7.tgz#b0210c780f784a7aca0dc2bc3670583a442ff00b"
+  integrity sha512-Q6mvTzAv7662pl3l7djCUzayF0jklK5CmavgNnCrW6maW2LUPsKKmUbfI5OUJ27EJJHvJa7vAZ9X+H9vvh1Zww==
 
 jake@^10.6.1:
   version "10.7.1"
