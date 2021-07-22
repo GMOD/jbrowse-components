@@ -67,7 +67,7 @@ export const UNSUPPORTED = 'UNSUPPORTED'
 
 let blobMap: { [key: string]: File } = {}
 
-let additionalInfoMap: { [key: string]: string } = {}
+let authenticationInfoMap: { [key: string]: string } = {}
 
 // get a specific blob
 export function getBlob(id: string) {
@@ -98,8 +98,8 @@ export function storeBlobLocation(location: PreFileLocation) {
 }
 
 // get a specific access token
-export function getAdditionalInfo(id: string) {
-  return additionalInfoMap[id]
+export function getAuthenticationInfo(id: string) {
+  return authenticationInfoMap[id]
 }
 
 // // put tokens from session storage into a map
@@ -130,8 +130,8 @@ export function getAdditionalInfo(id: string) {
 // }
 
 // used in new contexts like webworkers, similar to blobmap
-export function setAdditionalInfoMap(map: { [key: string]: string }) {
-  additionalInfoMap = map
+export function setAuthenticationInfoMap(map: { [key: string]: string }) {
+  authenticationInfoMap = map
 }
 
 export function guessAdapter(

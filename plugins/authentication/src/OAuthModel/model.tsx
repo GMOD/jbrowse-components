@@ -6,6 +6,7 @@ import { OAuthInternetAccountConfigModel } from './configSchema'
 import crypto from 'crypto'
 import { Instance, types, getRoot } from 'mobx-state-tree'
 import { searchOrReplaceInArgs } from '@jbrowse/core/util'
+import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
 import deepEqual from 'fast-deep-equal'
 
 // Notes go here:
@@ -58,10 +59,11 @@ const stateModelFactory = (
       errorMessage: '',
     }))
     .views(self => ({
-      handlesLocation(location?: Location): boolean {
+      handlesLocation(location: FileLocation): boolean {
+        console.log(location)
         const validDomains = self.accountConfig.validDomains || []
         return validDomains.some((domain: string) =>
-          location?.href.includes(domain),
+          (location as UriLocation)?.uri.includes(domain),
         )
       },
     }))
@@ -120,7 +122,7 @@ const stateModelFactory = (
       },
     }))
     .actions(self => {
-      let location: Location | undefined = undefined
+      let location: FileLocation | undefined = undefined
       let resolve: Function = () => {}
       let reject: Function = () => {}
       let openLocationPromise: Promise<string> | undefined = undefined
@@ -146,7 +148,7 @@ const stateModelFactory = (
           } else {
             let fileUrl
             try {
-              fileUrl = await this.fetchFile((location as Location).href)
+              fileUrl = await this.fetchFile((location as UriLocation).uri)
             } catch (error) {
               reject(error)
             }
@@ -157,7 +159,7 @@ const stateModelFactory = (
           resolve = () => {}
           reject = () => {}
         },
-        async openLocation(l: Location) {
+        async openLocation(l: FileLocation) {
           location = l
 
           if (!openLocationPromise) {
@@ -376,25 +378,26 @@ const stateModelFactory = (
           }
         },
         async handleRpcMethodCall(
-          location: Location,
-          internetAccountMap: Record<string, string>,
+          location: FileLocation,
+          authenticationInfoMap: Record<string, string>,
           args: {},
           retried = false,
         ) {
-          const token = internetAccountMap[self.accountConfig.internetAccountId]
+          const token =
+            authenticationInfoMap[self.accountConfig.internetAccountId]
 
           let file
           let newArgs = args
           try {
             file = !token
               ? await this.openLocation(location)
-              : await this.fetchFile(location.href, token)
+              : await this.fetchFile((location as UriLocation).uri, token)
           } catch (error) {
             const refreshedMap = await this.handleError(
-              internetAccountMap,
+              authenticationInfoMap,
               retried,
             )
-            if (!retried && !deepEqual(refreshedMap, internetAccountMap)) {
+            if (!retried && !deepEqual(refreshedMap, authenticationInfoMap)) {
               newArgs = await this.handleRpcMethodCall(
                 location,
                 refreshedMap,
@@ -412,20 +415,20 @@ const stateModelFactory = (
           return editedArgs
         },
         async handleError(
-          internetAccountMap: Record<string, string>,
+          authenticationInfoMap: Record<string, string>,
           retried = false,
         ) {
           const rootModel = getRoot(self)
-          rootModel.removeTokenFromStorage(
+          rootModel.removeFromAuthenticationMap(
             self.accountConfig.internetAccountId,
-            internetAccountMap,
+            authenticationInfoMap,
           )
 
           if (!retried) {
             await this.exchangeRefreshForAccessToken()
-            internetAccountMap = rootModel.getTokensFromStorage()
+            authenticationInfoMap = rootModel.getAuthenticationInfoMap()
           }
-          return internetAccountMap
+          return authenticationInfoMap
         },
       }
     })

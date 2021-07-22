@@ -105,16 +105,15 @@ const UrlChooser = (props: {
 
   const autoDetectInternetAccount = (urlInput: string) => {
     let detectedId = ''
-    let url: URL | undefined
     try {
-      url = new URL(urlInput)
+      new URL(urlInput)
     } catch (error) {
       // skip
       return detectedId
     }
 
     internetAccounts?.forEach(account => {
-      if (account.handlesLocation(url)) {
+      if (account.handlesLocation(location)) {
         detectedId = account.accountConfig.internetAccountId
       }
     })
@@ -171,7 +170,9 @@ const UrlChooser = (props: {
             displayEmpty
           >
             <MenuItem value="">None</MenuItem>
-            <MenuItem value="autoDetect">Auto Detect</MenuItem>
+            <MenuItem value="autoDetect">
+              Auto Detect: {autoDetectInternetAccount(currentUrl)}
+            </MenuItem>
             {internetAccounts?.map(account => {
               try {
                 new URL(currentUrl)

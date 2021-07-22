@@ -27,6 +27,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManagerF from '@jbrowse/core/TextSearch/TextSearchManager'
 import { AbstractSessionModel, searchOrReplaceInArgs } from '@jbrowse/core/util'
+import { FileLocation } from '@jbrowse/core/util/types'
+
 // material ui
 import { MenuItem } from '@jbrowse/core/ui'
 import AddIcon from '@material-ui/icons/Add'
@@ -365,8 +367,8 @@ export default function RootModel(
         self.error = error
       },
       async findAppropriateInternetAccount(
-        location: Location,
-        internetAccountMap: Record<string, string>,
+        location: FileLocation,
+        authenticationInfoMap: Record<string, string>,
         args: {},
       ) {
         let accountToUse = undefined
@@ -393,13 +395,13 @@ export default function RootModel(
           ? // @ts-ignore
             await accountToUse.handleRpcMethodCall(
               location,
-              internetAccountMap,
+              authenticationInfoMap,
               args,
             )
           : null
       },
       // put tokens from session storage into a map
-      getTokensFromStorage() {
+      getAuthenticationInfoMap() {
         const keyMap: Record<string, string> = {}
         Object.entries(sessionStorage).forEach(entry => {
           const [key, value] = entry
@@ -411,7 +413,7 @@ export default function RootModel(
       },
 
       // delete token from session storage and map
-      removeTokenFromStorage(id: string, keyMap: Record<string, string>) {
+      removeFromAuthenticationMap(id: string, keyMap: Record<string, string>) {
         const expiredTokenKey = Object.keys(sessionStorage).find(key => {
           return key.split('-')[0] === id
         })

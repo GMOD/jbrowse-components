@@ -1,6 +1,10 @@
 import PluginManager from '../PluginManager'
 import PluggableElementBase from './PluggableElementBase'
-import { setBlobMap, getBlobMap, setAdditionalInfoMap } from '../util/tracks'
+import {
+  setBlobMap,
+  getBlobMap,
+  setAuthenticationInfoMap,
+} from '../util/tracks'
 import { searchOrReplaceInArgs } from '../util'
 
 import {
@@ -23,35 +27,43 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
   async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
     const blobMap = getBlobMap()
-    const additionalInfoMap = {}
+    const authenticationInfoMap = {}
 
     if (
       args.hasOwnProperty('adapterConfig') &&
       searchOrReplaceInArgs(args, 'internetAccountId')
     ) {
-      return this.serializeAuthArguments(args, blobMap, additionalInfoMap)
+      return this.serializeAuthArguments(args, blobMap, authenticationInfoMap)
     }
-    return { ...args, blobMap, additionalInfoMap }
+    return { ...args, blobMap, authenticationInfoMap }
   }
 
   async serializeAuthArguments(
     args: {},
     blobMap: { [key: string]: File },
-    additionalInfoMap: Record<string, string>,
+    authenticationInfoMap: Record<string, string>,
   ) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rootModel: any = this.pluginManager.rootModel
-    additionalInfoMap = rootModel?.getTokensFromStorage()
+    authenticationInfoMap = rootModel?.getAuthenticationInfoMap()
+    const adapterConfig = searchOrReplaceInArgs(args, 'adapterConfig')
 
+    const fileLocation =
+      adapterConfig[
+        Object.keys(adapterConfig).find(key => {
+          return key.toLowerCase().includes('location')
+        }) as string
+      ]
     const modifiedArgs = await rootModel?.findAppropriateInternetAccount(
-      // @ts-ignore
-      new URL(searchOrReplaceInArgs(args.adapterConfig, 'uri')),
-      additionalInfoMap,
+      fileLocation,
+      // using the wrong location, it should be using FileLocation, replace all Locations
+      // for the internetAccount flow with FileLocation
+      authenticationInfoMap,
       args,
     )
     if (modifiedArgs) {
-      additionalInfoMap = rootModel?.getTokensFromStorage()
-      return { ...modifiedArgs, blobMap, additionalInfoMap }
+      authenticationInfoMap = rootModel?.getAuthenticationInfoMap() // name it get authetication info map
+      return { ...modifiedArgs, blobMap, authenticationInfoMap }
     }
   }
 
@@ -59,14 +71,14 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     SERIALIZED extends {
       signal?: RemoteAbortSignal
       blobMap?: Record<string, File>
-      additionalInfoMap?: Record<string, string>
+      authenticationInfoMap?: Record<string, string>
     }
   >(serializedArgs: SERIALIZED, _rpcDriverClassName: string) {
     if (serializedArgs.blobMap) {
       setBlobMap(serializedArgs.blobMap)
     }
-    if (serializedArgs.additionalInfoMap) {
-      setAdditionalInfoMap(serializedArgs.additionalInfoMap)
+    if (serializedArgs.authenticationInfoMap) {
+      setAuthenticationInfoMap(serializedArgs.authenticationInfoMap)
     }
     const { signal } = serializedArgs
     if (signal && isRemoteAbortSignal(signal)) {

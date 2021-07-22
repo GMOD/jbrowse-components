@@ -8,7 +8,7 @@ import {
   UriLocation,
   BlobLocation,
 } from '../types'
-import { getBlob, getAdditionalInfo } from '../tracks'
+import { getBlob, getAuthenticationInfo } from '../tracks'
 
 declare global {
   interface Window {
@@ -68,7 +68,7 @@ export function openLocation(location: FileLocation): GenericFilehandle {
       }
       let optionalHeaders = undefined
       if (location.authHeader && location.internetAccountId) {
-        const token = getAdditionalInfo(location.internetAccountId)
+        const token = getAuthenticationInfo(location.internetAccountId)
         if (token) {
           optionalHeaders = {
             [location.authHeader]: `Bearer ${token}`,

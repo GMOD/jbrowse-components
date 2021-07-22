@@ -2,6 +2,7 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
 import { ExternalTokenInternetAccountConfigModel } from './configSchema'
 import { Instance, types } from 'mobx-state-tree'
 import React, { useState } from 'react'
@@ -54,12 +55,12 @@ const stateModelFactory = (
       selected: false,
     }))
     .views(self => ({
-      handlesLocation(location?: Location): boolean {
+      handlesLocation(location: FileLocation): boolean {
         // this will probably look at something in the config which indicates that it is an OAuth pathway,
         // also look at location, if location is set to need authentication it would reutrn true
         const validDomains = self.accountConfig.validDomains || []
         return validDomains.some((domain: string) =>
-          location?.href.includes(domain),
+          (location as UriLocation)?.uri.includes(domain),
         )
       },
     }))
@@ -86,7 +87,7 @@ const stateModelFactory = (
       setExternalToken(token: string) {
         self.externalToken = token
       },
-      async openLocation(location: Location) {
+      async openLocation(location: FileLocation) {
         const tokenKey = Object.keys(sessionStorage).find(key => {
           return key === `${self.accountConfig.internetAccountId}-token`
         })
@@ -107,7 +108,7 @@ const stateModelFactory = (
           )
         }
 
-        const response = await fetch(location.href, {
+        const response = await fetch((location as UriLocation).uri, {
           method: 'GET',
           headers: {
             Authorization: `${token}`,
@@ -126,7 +127,7 @@ const stateModelFactory = (
         const file = await response.json()
         return file
       },
-      handleRpcMethodCall(location: Location) {
+      handleRpcMethodCall(location: FileLocation) {
         return this.openLocation(location)
       },
     }))
