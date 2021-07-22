@@ -15,6 +15,7 @@ import {
   stateModelFactory as GridBookmarkStateModelFactory,
   configSchema as GridBookmarkConfigSchema,
 } from './GridBookmarkWidget'
+import { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
 
 export default class extends Plugin {
   name = 'GridBookmarkPlugin'
@@ -32,106 +33,108 @@ export default class extends Plugin {
       })
     })
 
-    pluginManager.extendPluggable('LinearGenomeView', LinearGenomeView => {
-      const { stateModel } = LinearGenomeView as ViewType
-      const newStateModel = stateModel.extend((self: LinearGenomeViewModel) => {
-        const superMenuItems = self.menuItems
-        const superRubberBandMenuItems = self.rubberBandMenuItems
-        return {
-          actions: {
-            activateBookmarkWidget() {
-              const session = getSession(self)
-              if (isSessionModelWithWidgets(session)) {
-                let bookmarkWidget = session.widgets.get('GridBookmark')
-                if (!bookmarkWidget) {
-                  bookmarkWidget = session.addWidget(
-                    'GridBookmarkWidget',
-                    'GridBookmark',
-                    { view: self },
-                  )
-                }
+    pluginManager.addToExtensionPoint(
+      'Core-extendPluggableElement',
+      (pluggableElement: PluggableElementType) => {
+        if (pluggableElement.name === 'LinearGenomeView') {
+          const { stateModel } = pluggableElement as ViewType
+          const newStateModel = stateModel.extend(
+            (self: LinearGenomeViewModel) => {
+              const superMenuItems = self.menuItems
+              const superRubberBandMenuItems = self.rubberBandMenuItems
+              return {
+                actions: {
+                  activateBookmarkWidget() {
+                    const session = getSession(self)
+                    if (isSessionModelWithWidgets(session)) {
+                      let bookmarkWidget = session.widgets.get('GridBookmark')
+                      if (!bookmarkWidget) {
+                        bookmarkWidget = session.addWidget(
+                          'GridBookmarkWidget',
+                          'GridBookmark',
+                          { view: self },
+                        )
+                      }
 
-                session.showWidget(bookmarkWidget)
-                return bookmarkWidget
-              }
+                      session.showWidget(bookmarkWidget)
+                      return bookmarkWidget
+                    }
 
-              throw new Error('Could not open bookmark widget')
-            },
+                    throw new Error('Could not open bookmark widget')
+                  },
 
-            bookmarkCurrentRegion() {
-              const selectedRegions = self.getSelectedRegions(
-                self.leftOffset,
-                self.rightOffset,
-              )
-              const firstRegion = selectedRegions[0]
-              const session = getSession(self)
-              if (isSessionModelWithWidgets(session)) {
-                const { widgets } = session
-                let bookmarkWidget = widgets.get('GridBookmark')
-                if (!bookmarkWidget) {
-                  this.activateBookmarkWidget()
-                  bookmarkWidget = widgets.get('GridBookmark')
-                }
-                // @ts-ignore
-                bookmarkWidget.addBookmark(firstRegion)
-              }
-            },
-          },
-          views: {
-            menuItems() {
-              const menuItems = superMenuItems()
-              menuItems.push(
-                { type: 'divider' },
-                {
-                  label: 'Open bookmark widget',
-                  icon: BookmarksIcon,
-                  // @ts-ignore
-                  onClick: self.activateBookmarkWidget,
-                },
-                {
-                  label: 'Bookmark current region',
-                  icon: BookmarkIcon,
-                  // @ts-ignore
-                  onClick: self.bookmarkCurrentRegion,
-                },
-              )
-              return menuItems
-            },
-
-            rubberBandMenuItems() {
-              const rubberBandMenuItems = superRubberBandMenuItems()
-              rubberBandMenuItems.push({
-                label: 'Bookmark region',
-                icon: BookmarkIcon,
-                onClick: () => {
-                  const { leftOffset, rightOffset } = self
-                  const selectedRegions = self.getSelectedRegions(
-                    leftOffset,
-                    rightOffset,
-                  )
-                  const firstRegion = selectedRegions[0]
-                  const session = getSession(self)
-                  if (isSessionModelWithWidgets(session)) {
-                    const { widgets } = session
+                  bookmarkCurrentRegion() {
+                    const selectedRegions = self.getSelectedRegions(
+                      self.leftOffset,
+                      self.rightOffset,
+                    )
+                    const firstRegion = selectedRegions[0]
+                    // @ts-ignore
+                    const { widgets } = getSession(self)
                     let bookmarkWidget = widgets.get('GridBookmark')
                     if (!bookmarkWidget) {
-                      // @ts-ignore
-                      self.activateBookmarkWidget()
+                      this.activateBookmarkWidget()
                       bookmarkWidget = widgets.get('GridBookmark')
                     }
-                    // @ts-ignore
                     bookmarkWidget.addBookmark(firstRegion)
-                  }
+                  },
                 },
-              })
-              return rubberBandMenuItems
-            },
-          },
-        }
-      })
+                views: {
+                  menuItems() {
+                    const menuItems = superMenuItems()
+                    menuItems.push(
+                      { type: 'divider' },
+                      {
+                        label: 'Open bookmark widget',
+                        icon: BookmarksIcon,
+                        // @ts-ignore
+                        onClick: self.activateBookmarkWidget,
+                      },
+                      {
+                        label: 'Bookmark current region',
+                        icon: BookmarkIcon,
+                        // @ts-ignore
+                        onClick: self.bookmarkCurrentRegion,
+                      },
+                    )
+                    return menuItems
+                  },
 
-      ;(LinearGenomeView as ViewType).stateModel = newStateModel
-    })
+                  rubberBandMenuItems() {
+                    const rubberBandMenuItems = superRubberBandMenuItems()
+                    rubberBandMenuItems.push({
+                      label: 'Bookmark region',
+                      icon: BookmarkIcon,
+                      onClick: () => {
+                        const { leftOffset, rightOffset } = self
+                        const selectedRegions = self.getSelectedRegions(
+                          leftOffset,
+                          rightOffset,
+                        )
+                        const firstRegion = selectedRegions[0]
+                        // @ts-ignore
+                        const { widgets } = getSession(self)
+                        let bookmarkWidget = widgets.get('GridBookmark')
+                        if (!bookmarkWidget) {
+                          // @ts-ignore
+                          self.activateBookmarkWidget()
+                          bookmarkWidget = widgets.get('GridBookmark')
+                        }
+                        bookmarkWidget.addBookmark(firstRegion)
+                      },
+                    })
+                    return rubberBandMenuItems
+                  },
+                },
+              }
+            },
+          )
+
+          ;(pluggableElement as ViewType).stateModel = newStateModel
+        }
+        return pluggableElement
+      },
+    )
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
