@@ -128,46 +128,47 @@ export default class TextIndex extends JBrowseCommand {
 
     //  For each uri, we parse the file and add it to aggregateStream.
     for (const uri of uris) {
-      // Generate transform function parses an @gmod/gff stream.
-      const gffTransform = new Transform({
-        objectMode: true,
-        transform: (chunk, _encoding, done) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          chunk.forEach((record: any) => {
-            this.recurseFeatures(record, gff3Stream, attributes, trackID)
-          })
-          done()
-        },
-      })
+      for (const tracks of trackID) {
+        const gffTransform = new Transform({
+          objectMode: true,
+          transform: (chunk, _encoding, done) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            chunk.forEach((record: any) => {
+              this.recurseFeatures(record, gff3Stream, attributes, tracks)
+            })
+            done()
+          },
+        })
+        // Generate transform function parses an @gmod/gff stream.
 
-      const gff3Stream = (
-        await (this.isURL(uri)
-          ? this.handleGff3Url(uri, uri.includes('.gz'))
-          : this.handleLocalGff3(
-              path.join(outLocation, uri),
-              uri.includes('.gz'),
-            ))
-      ).pipe(gffTransform)
+        const gff3Stream = (
+          await (this.isURL(uri)
+            ? this.handleGff3Url(uri, uri.includes('.gz'))
+            : this.handleLocalGff3(
+                path.join(outLocation, uri),
+                uri.includes('.gz'),
+              ))
+        ).pipe(gffTransform)
 
-      // Add gff3Stream to aggregateStream, and DO NOT send 'end' event on
-      // completion, otherwise this would stop all streams from piping to the
-      // aggregate before completion.
-      aggregateStream = gff3Stream.pipe(aggregateStream, { end: false })
+        // Add gff3Stream to aggregateStream, and DO NOT send 'end' event on
+        // completion, otherwise this would stop all streams from piping to the
+        // aggregate before completion.
+        aggregateStream = gff3Stream.pipe(aggregateStream, { end: false })
 
-      // If a stream ends we have two options:
-      //  1) it is the last stream, so end the aggregate stream.
-      //  2) it is not the last stream, so add a '\n' to separate streams for the indexer.
+        // If a stream ends we have two options:
+        //  1) it is the last stream, so end the aggregate stream.
+        //  2) it is not the last stream, so add a '\n' to separate streams for the indexer.
 
-      // eslint-disable-next-line no-loop-func
-      gff3Stream.once('end', () => {
-        if (--numStreamsFlowing === 0) {
-          aggregateStream.end()
-        } else {
-          aggregateStream.push('\n')
-        }
-      })
+        // eslint-disable-next-line no-loop-func
+        gff3Stream.once('end', () => {
+          if (--numStreamsFlowing === 0) {
+            aggregateStream.end()
+          } else {
+            aggregateStream.push('\n')
+          }
+        })
+      }
     }
-
     return this.runIxIxx(aggregateStream, outLocation, assemblyName)
   }
 
@@ -267,7 +268,7 @@ export default class TextIndex extends JBrowseCommand {
     record: any,
     gff3Stream: Readable,
     attributes: string[],
-    trackID: string[],
+    trackID: string,
   ) {
     // goes through the attributes array and checks if the record contains the
     // attribute that the user wants to search by. If it contains it, it adds
@@ -285,6 +286,7 @@ export default class TextIndex extends JBrowseCommand {
         locstring: `${locStr}`,
         trackID: `${trackID}`,
       }
+
       const attrs = []
       for (const attr of attributes) {
         if (subRecord[attr]) {

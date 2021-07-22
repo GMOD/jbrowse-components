@@ -416,20 +416,26 @@ USAGE
   $ jbrowse text-index
 
 OPTIONS
-  -h, --help       show CLI help
-  --individual     Only make a single-track text index for the given track
-  --out=out        Synonym for target
-  --target=target  Path to config file in JB2 installation directory to read from.
-  --tracks=tracks  Specify the tracks to index, formatted as comma separated trackIds
+  -a, --assemblies=assemblies  Specify the assembl(ies) to create an index for. If unspecified, creates an index for
+                               each assembly in the config
+
+  -h, --help                   show CLI help
+
+  --out=out                    Synonym for target
+
+  --target=target              Path to config file in JB2 installation directory to read from.
+
+  --tracks=tracks              Specific tracks to index, formatted as comma separated trackIds. If unspecified, indexes
+                               all available tracks
 
 EXAMPLES
+  # indexes all tracks that it can find in the current directory's config.json
   $ jbrowse text-index
+  # indexes specific trackIds that it can find in the current directory's config.json
   $ jbrowse text-index --tracks=track1,track2,track3
-  $ jbrowse text-index --individual --tracks=my_track_id
-  $ jbrowse text-index ... --location=out_location_directory
-  $ jbrowse text-index ... --target=path_to_configuration_file
-  $ jbrowse text-index ... --out=path_to_configuration_file
-  $ jbrowse text-index ... --test=boolean
+  # indexes all tracks in a directory's config.json or in a specific config file
+  $ jbrowse text-index --out /path/to/jb2/
+  $ jbrowse text-index --out /path/to/jb2/some_alt_config.json
 ```
 
 _See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.2/products/jbrowse-cli/src/commands/text-index.ts)_
