@@ -1,4 +1,5 @@
 import RBush from 'rbush'
+import { objectFromEntries } from '../index'
 import { RectTuple, SerializedLayout, BaseLayout } from './BaseLayout'
 
 function segmentsIntersect(
@@ -143,13 +144,18 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     }
   }
 
-  getRectangles() {
-    return {}
+  getRectangles(): Map<string, RectTuple> {
+    return new Map(
+      [...this.rectangles.entries()].map(([id, { minX, minY, maxX, maxY }]) => [
+        id,
+        [minX, minY, maxX, maxY],
+      ]),
+    )
   }
 
   toJSON(): SerializedLayout {
     return {
-      rectangles: {},
+      rectangles: objectFromEntries(this.getRectangles()),
       totalHeight: this.getTotalHeight(),
       maxHeightReached: this.maxHeightReached,
     }
