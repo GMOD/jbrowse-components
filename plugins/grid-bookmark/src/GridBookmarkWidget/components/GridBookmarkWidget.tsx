@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { observer } from 'mobx-react'
 
 import { makeStyles, Link } from '@material-ui/core'
@@ -40,17 +40,16 @@ const useStyles = makeStyles(() => ({
 function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
   const classes = useStyles()
   const { views } = getSession(model)
-  const { bookmarkedRegions, updateBookmarkLabel, assemblies } = model
-  const noAssemblies = assemblies.length === 0 ? true : false
-  const [selectedAssembly, setSelectedAssembly] = useState(
-    noAssemblies ? 'none' : assemblies[0],
-  )
+  const { bookmarkedRegions, updateBookmarkLabel, selectedAssembly } = model
 
-  const bookmarkRows = bookmarkedRegions.toJS().map((region: Region) => ({
-    ...region,
-    id: `${region.refName}:${region.start}..${region.end}`,
-    delete: `${region.refName}:${region.start}..${region.end}`,
-  }))
+  const bookmarkRows = bookmarkedRegions
+    .toJS()
+    .map((region: Region) => ({
+      ...region,
+      id: `${region.refName}:${region.start}..${region.end}`,
+      delete: `${region.refName}:${region.start}..${region.end}`,
+    }))
+    .filter(region => region.assemblyName === selectedAssembly)
 
   const handleEditCellChangeCommitted = React.useCallback(
     ({ id, props }: GridEditCellPropsParams) => {
@@ -100,11 +99,7 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
 
   return (
     <div className={classes.container}>
-      <AssemblySelector
-        assemblies={assemblies}
-        selectedAssembly={selectedAssembly}
-        setSelectedAssembly={setSelectedAssembly}
-      />
+      <AssemblySelector model={model} />
       <DownloadBookmarks model={model} />
       <ClearBookmarks model={model} />
       <div style={{ height: 800, width: '100%' }}>

@@ -9,6 +9,8 @@ import {
   FormControl,
 } from '@material-ui/core'
 
+import { GridBookmarkModel } from '../model'
+
 const useStyles = makeStyles(() => ({
   container: {
     display: 'flex',
@@ -24,17 +26,11 @@ const useStyles = makeStyles(() => ({
   },
 }))
 
-function AssemblySelector({
-  assemblies,
-  selectedAssembly,
-  setSelectedAssembly,
-}: {
-  assemblies: string[]
-  selectedAssembly: string
-  setSelectedAssembly: Function
-}) {
+function AssemblySelector({ model }: { model: GridBookmarkModel }) {
   const classes = useStyles()
+  const { assemblies, selectedAssembly, setSelectedAssembly } = model
   const noAssemblies = assemblies.length === 0 ? true : false
+
   const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setSelectedAssembly(event.target.value as string)
   }
@@ -43,7 +39,10 @@ function AssemblySelector({
     <div className={classes.container}>
       <Typography className={classes.selectText}>Select assembly:</Typography>
       <FormControl className={classes.flexItem} disabled={noAssemblies}>
-        <Select value={selectedAssembly} onChange={handleChange}>
+        <Select
+          value={assemblies.includes(selectedAssembly) ? selectedAssembly : ''}
+          onChange={handleChange}
+        >
           <MenuItem value={'none'} key={'no-assembly'}>
             none
           </MenuItem>

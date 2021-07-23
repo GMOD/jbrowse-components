@@ -19,6 +19,7 @@ export default function f(pluginManager: PluginManager) {
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
       bookmarkedRegions: types.array(LabeledRegionModel),
+      selectedAssembly: '',
     })
     .actions(self => ({
       addBookmark(region: Region) {
@@ -51,6 +52,9 @@ export default function f(pluginManager: PluginManager) {
         if (index !== -1) {
           self.bookmarkedRegions[index].label = label
         }
+      },
+      setSelectedAssembly(assembly: string) {
+        self.selectedAssembly = assembly
       },
     }))
     .views(self => ({
