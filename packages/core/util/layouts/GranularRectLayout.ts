@@ -61,6 +61,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     }
 
     let currHeight = 0
+    let maxHeightReached = false
     while (
       this.rbush.collides({
         minX: left,
@@ -70,21 +71,31 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       }) &&
       currHeight <= this.maxHeight
     ) {
-      currHeight += 3
+      currHeight += 1
+      if (currHeight + height >= this.maxHeight) {
+        maxHeightReached = true
+        break
+      }
     }
 
-    const record = {
-      minX: left,
-      minY: currHeight,
-      maxX: right,
-      maxY: currHeight + height,
-      id,
-      data,
+    if (!maxHeightReached) {
+      const record = {
+        minX: left,
+        minY: currHeight,
+        maxX: right,
+        maxY: currHeight + height,
+        id,
+        data,
+      }
+      this.rbush.insert(record)
+      this.rectangles.set(id, record)
     }
-    this.rbush.insert(record)
-    this.rectangles.set(id, record)
-    this.pTotalHeight = Math.max(this.pTotalHeight, currHeight + height)
-    return currHeight
+    this.pTotalHeight = Math.min(
+      this.maxHeight,
+      Math.max(this.pTotalHeight, currHeight + height),
+    )
+    this.maxHeightReached = maxHeightReached
+    return maxHeightReached ? null : currHeight
   }
 
   collides() {
@@ -128,7 +139,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   serializeRegion(region: { start: number; end: number }): SerializedLayout {
     const regionRectangles: { [key: string]: RectTuple } = {}
-    const maxHeightReached = false
     for (const [id, rect] of this.rectangles.entries()) {
       const { minX, maxX, minY, maxY } = rect
       const { start, end } = region
@@ -140,7 +150,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     return {
       rectangles: regionRectangles,
       totalHeight: this.getTotalHeight(),
-      maxHeightReached,
+      maxHeightReached: this.maxHeightReached,
     }
   }
 
