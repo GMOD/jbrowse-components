@@ -1,11 +1,5 @@
-import { objectFromEntries } from '../index'
 import RBush from 'rbush'
-import {
-  RectTuple,
-  SerializedLayout,
-  Rectangle,
-  BaseLayout,
-} from './BaseLayout'
+import { RectTuple, SerializedLayout, BaseLayout } from './BaseLayout'
 
 function segmentsIntersect(
   x1: number,
@@ -88,7 +82,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     }
     this.rbush.insert(record)
     this.rectangles.set(id, record)
-    this.pTotalHeight = Math.max(this.pTotalHeight, currHeight)
+    this.pTotalHeight = Math.max(this.pTotalHeight, currHeight + height)
     return currHeight
   }
 
@@ -108,10 +102,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   getByCoord(x: number, y: number): Record<string, T> | string | undefined {
     const rect = { minX: x, minY: y, maxX: x + 1, maxY: y + 1 }
-    console.log('here')
-    return this.rbush.collides(rect)
-      ? this.rbush.search(rect)[0].name
-      : undefined
+    return this.rbush.collides(rect) ? this.rbush.search(rect)[0].id : undefined
   }
 
   getByID(id: string): RectTuple | undefined {
