@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { observer } from 'mobx-react'
 
 import {
@@ -8,8 +8,6 @@ import {
   MenuItem,
   FormControl,
 } from '@material-ui/core'
-
-import { GridBookmarkModel } from '../model'
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -26,14 +24,17 @@ const useStyles = makeStyles(() => ({
   },
 }))
 
-function AssemblySelector({ model }: { model: GridBookmarkModel }) {
+function AssemblySelector({
+  assemblies,
+  selectedAssembly,
+  setSelectedAssembly,
+}: {
+  assemblies: string[]
+  selectedAssembly: string
+  setSelectedAssembly: Function
+}) {
   const classes = useStyles()
-  const { assemblies } = model
   const noAssemblies = assemblies.length === 0 ? true : false
-  const [selectedAssembly, setSelectedAssembly] = useState(
-    noAssemblies ? 'none' : assemblies[0],
-  )
-
   const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setSelectedAssembly(event.target.value as string)
   }

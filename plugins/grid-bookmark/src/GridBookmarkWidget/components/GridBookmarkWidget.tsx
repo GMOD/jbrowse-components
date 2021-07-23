@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 
 import { makeStyles, Link } from '@material-ui/core'
@@ -40,7 +40,12 @@ const useStyles = makeStyles(() => ({
 function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
   const classes = useStyles()
   const { views } = getSession(model)
-  const { bookmarkedRegions, updateBookmarkLabel } = model
+  const { bookmarkedRegions, updateBookmarkLabel, assemblies } = model
+  const noAssemblies = assemblies.length === 0 ? true : false
+  const [selectedAssembly, setSelectedAssembly] = useState(
+    noAssemblies ? 'none' : assemblies[0],
+  )
+
   const bookmarkRows = bookmarkedRegions.toJS().map((region: Region) => ({
     ...region,
     id: `${region.refName}:${region.start}..${region.end}`,
@@ -95,7 +100,11 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
 
   return (
     <div className={classes.container}>
-      <AssemblySelector model={model} />
+      <AssemblySelector
+        assemblies={assemblies}
+        selectedAssembly={selectedAssembly}
+        setSelectedAssembly={setSelectedAssembly}
+      />
       <DownloadBookmarks model={model} />
       <ClearBookmarks model={model} />
       <div style={{ height: 800, width: '100%' }}>
