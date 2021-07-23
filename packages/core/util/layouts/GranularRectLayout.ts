@@ -40,7 +40,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     this.rbush = new RBush()
     this.rectangles = new Map()
     this.maxHeight = Math.ceil(maxHeight)
-    this.pTotalHeight = 0 // total height, in units of bitmap squares (px/pitchY)
+    this.pTotalHeight = 0
   }
 
   /**
@@ -89,12 +89,12 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       }
       this.rbush.insert(record)
       this.rectangles.set(id, record)
+      this.pTotalHeight = Math.min(
+        this.maxHeight,
+        Math.max(this.pTotalHeight, currHeight + height),
+      )
     }
-    this.pTotalHeight = Math.min(
-      this.maxHeight,
-      Math.max(this.pTotalHeight, currHeight + height),
-    )
-    this.maxHeightReached = maxHeightReached
+    this.maxHeightReached = this.maxHeightReached || maxHeightReached
     return maxHeightReached ? null : currHeight
   }
 

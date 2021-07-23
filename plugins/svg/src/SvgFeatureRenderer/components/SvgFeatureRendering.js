@@ -13,7 +13,9 @@ const renderingStyle = {
   position: 'relative',
 }
 
-const padding = 2
+const nameWidthPadding = 2
+const svgHeightPadding = 100
+const textVerticalPadding = 2
 
 function RenderedFeatureGlyph(props) {
   const { feature, bpPerPx, region, config, displayMode, layout } = props
@@ -47,14 +49,13 @@ function RenderedFeatureGlyph(props) {
     description =
       readConfObject(config, ['labels', 'description'], { feature }) || ''
     shouldShowDescription = /\S/.test(description) && showLabels
-    const textVerticalPadding = 2
 
     let nameWidth = 0
     if (shouldShowName) {
       nameWidth =
         Math.round(
           Math.min(measureText(name, fontHeight), rootLayout.width + expansion),
-        ) + padding
+        ) + nameWidthPadding
       rootLayout.addChild(
         'nameLabel',
         0,
@@ -75,7 +76,7 @@ function RenderedFeatureGlyph(props) {
             measureText(description, fontHeight),
             rootLayout.width + expansion,
           ),
-        ) + padding
+        ) + nameWidthPadding
       rootLayout.addChild(
         'descriptionLabel',
         0,
@@ -329,8 +330,8 @@ function SvgFeatureRendering(props) {
       <svg
         ref={ref}
         className="SvgFeatureRendering"
-        width={`${width}px`}
-        height={`${height}px`}
+        width={width}
+        height={height + svgHeightPadding}
         onMouseDown={mouseDown}
         onMouseUp={mouseUp}
         onMouseEnter={mouseEnter}
