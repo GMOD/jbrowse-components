@@ -30,6 +30,7 @@ export default function f(pluginManager: PluginManager) {
         })
         if (index === -1) {
           self.bookmarkedRegions.push(region)
+          this.setSelectedAssembly(region.assemblyName)
         }
       },
       removeBookmark(locString: string) {
