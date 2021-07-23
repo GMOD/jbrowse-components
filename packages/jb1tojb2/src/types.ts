@@ -14,6 +14,7 @@ export interface ProtoTrack {
   storeClass?: string
   type?: string
   urlTemplate?: string
+  assemblyNames: string
   baiUrlTemplate?: string
   craiUrlTemplate?: string
   tbiUrlTemplate?: string
@@ -31,6 +32,7 @@ export interface Metadata {
   category?: string
   description?: string
   Description?: string
+  shortInfo?: string
 }
 
 export interface Feature {
