@@ -13,9 +13,13 @@ const renderingStyle = {
   position: 'relative',
 }
 
+// used to make features have a little padding for their labels
 const nameWidthPadding = 2
-const svgHeightPadding = 100
 const textVerticalPadding = 2
+
+// used so that user can click-away-from-feature below the laid out features
+// (issue #1248)
+const svgHeightPadding = 100
 
 function RenderedFeatureGlyph(props) {
   const { feature, bpPerPx, region, config, displayMode, layout } = props

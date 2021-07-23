@@ -41,7 +41,7 @@ describe('GranularRectLayout', () => {
 
     for (let i = 0; i < testRects.length; i += 1) {
       const top = l.addRect(...testRects[i])
-      expect(top).toEqual(0)
+      expect(top).toEqual(1)
     }
   })
 
@@ -55,7 +55,7 @@ describe('GranularRectLayout', () => {
 
     for (let i = 0; i < testRects.length; i += 1) {
       const top = l.addRect(...testRects[i])
-      expect(top).toEqual((i % 2) * 2)
+      expect(top).toEqual((i % 2) * 3 + 1)
     }
   })
 
@@ -68,7 +68,7 @@ describe('GranularRectLayout', () => {
         10000 * i + 16000,
         1,
       )
-      expect(top).toEqual((i % 2) * 2)
+      expect(top).toEqual((i % 2) * 3 + 1)
     }
   })
 
@@ -89,10 +89,10 @@ describe('GranularRectLayout', () => {
     })
 
     expect(l.getByCoord(50000, 0)).toEqual(undefined)
-    l.addRect('test1', 0, 10000000, 1, { id: 'feat1' })
+    l.addRect('test1', 0, 10000000, 1)
     expect(l.getByCoord(50000, 0)).toEqual('test1')
-    l.addRect('test2', 0, 1000, 1, { id: 'feat2' })
-    expect(l.getByCoord(500, 2)).toEqual('test2')
+    l.addRect('test2', 0, 1000, 1)
+    expect(l.getByCoord(500, 3)).toEqual('test2')
     expect(l.rectangles.size).toBe(2)
   })
 })

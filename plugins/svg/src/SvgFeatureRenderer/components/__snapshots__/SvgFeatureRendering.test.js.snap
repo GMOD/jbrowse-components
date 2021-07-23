@@ -6,9 +6,9 @@ exports[`no features 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="20px"
+    height="120"
     style="display: block;"
-    width="100px"
+    width="100"
   />
 </div>
 `;
@@ -19,14 +19,14 @@ exports[`one feature (compact mode) 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="5px"
+    height="106"
     style="display: block;"
-    width="333.3333333333333px"
+    width="333.3333333333333"
   >
     <g>
       <polyline
         data-testid="one"
-        points="1991.7,2.5,3248.0333333333333,2.5,3246.7833333333333,1.25,3246.7833333333333,3.75,3248.0333333333333,2.5"
+        points="1991.7,3.5,3248.0333333333333,3.5,3246.7833333333333,2.25,3246.7833333333333,4.75,3248.0333333333333,3.5"
         stroke="black"
       />
       <rect
@@ -35,7 +35,7 @@ exports[`one feature (compact mode) 1`] = `
         height="3.25"
         width="44.666666666666664"
         x="1991.7"
-        y="0.875"
+        y="1.875"
       />
       <rect
         data-testid="one-2"
@@ -43,7 +43,7 @@ exports[`one feature (compact mode) 1`] = `
         height="5"
         width="12.666666666666666"
         x="2036.7"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-3"
@@ -51,7 +51,7 @@ exports[`one feature (compact mode) 1`] = `
         height="5"
         width="22.666666666666668"
         x="2205.0333333333333"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-4"
@@ -59,7 +59,7 @@ exports[`one feature (compact mode) 1`] = `
         height="5"
         width="94"
         x="2252.7"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-5"
@@ -67,7 +67,7 @@ exports[`one feature (compact mode) 1`] = `
         height="5"
         width="59"
         x="2380.7"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-6"
@@ -75,7 +75,7 @@ exports[`one feature (compact mode) 1`] = `
         height="5"
         width="92"
         x="2470.366666666667"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-7"
@@ -83,7 +83,7 @@ exports[`one feature (compact mode) 1`] = `
         height="5"
         width="34"
         x="2582.7"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-8"
@@ -91,7 +91,7 @@ exports[`one feature (compact mode) 1`] = `
         height="5"
         width="48.333333333333336"
         x="2651.0333333333333"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-9"
@@ -99,7 +99,7 @@ exports[`one feature (compact mode) 1`] = `
         height="5"
         width="51.333333333333336"
         x="2722.0333333333333"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-10"
@@ -107,7 +107,7 @@ exports[`one feature (compact mode) 1`] = `
         height="5"
         width="65"
         x="2806.366666666667"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-11"
@@ -115,7 +115,7 @@ exports[`one feature (compact mode) 1`] = `
         height="5"
         width="34.333333333333336"
         x="2902.7"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-12"
@@ -123,7 +123,7 @@ exports[`one feature (compact mode) 1`] = `
         height="5"
         width="104"
         x="2975.7"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-13"
@@ -131,7 +131,7 @@ exports[`one feature (compact mode) 1`] = `
         height="5"
         width="26.666666666666668"
         x="3138.0333333333333"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-15"
@@ -139,7 +139,7 @@ exports[`one feature (compact mode) 1`] = `
         height="3.25"
         width="83"
         x="3165.0333333333333"
-        y="0.875"
+        y="1.875"
       />
     </g>
   </svg>
@@ -152,9 +152,9 @@ exports[`one feature 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="10px"
+    height="111"
     style="display: block;"
-    width="333.3333333333333px"
+    width="333.3333333333333"
   >
     <g>
       <rect
@@ -163,7 +163,7 @@ exports[`one feature 1`] = `
         height="10"
         width="1"
         x="0.3"
-        y="0"
+        y="1"
       />
     </g>
   </svg>
@@ -176,16 +176,16 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="40px"
+    height="141"
     style="display: block;"
-    width="333.3333333333333px"
+    width="333.3333333333333"
   >
     <g>
       <polyline
         data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0"
-        points="7759845,5,7766453,5,7766450.5,2.5,7766450.5,7.5,7766453,5"
+        points="7759845,6,7766453,6,7766450.5,3.5,7766450.5,8.5,7766453,6"
         stroke="black"
-        transform="rotate(180,7763149,5)"
+        transform="rotate(180,7763149,6)"
       />
       <rect
         data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-1"
@@ -193,11 +193,11 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
         height="10"
         width="327.3333333333333"
         x="7759845"
-        y="0"
+        y="1"
       />
       <polygon
         fill="goldenrod"
-        points="7759845,0,7759840,5,7759845,10"
+        points="7759845,1,7759840,6,7759845,11"
       />
       <rect
         data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-2"
@@ -205,11 +205,11 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
         height="10"
         width="35.333333333333336"
         x="7760604.333333333"
-        y="0"
+        y="1"
       />
       <polygon
         fill="goldenrod"
-        points="7760604.333333333,0,7760599.333333333,5,7760604.333333333,10"
+        points="7760604.333333333,1,7760599.333333333,6,7760604.333333333,11"
       />
       <rect
         data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-3"
@@ -217,11 +217,11 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
         height="10"
         width="78.66666666666667"
         x="7761725.666666667"
-        y="0"
+        y="1"
       />
       <polygon
         fill="goldenrod"
-        points="7761725.666666667,0,7761720.666666667,5,7761725.666666667,10"
+        points="7761725.666666667,1,7761720.666666667,6,7761725.666666667,11"
       />
       <rect
         data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-4"
@@ -229,11 +229,11 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
         height="10"
         width="52.666666666666664"
         x="7762144.666666667"
-        y="0"
+        y="1"
       />
       <polygon
         fill="goldenrod"
-        points="7762144.666666667,0,7762139.666666667,5,7762144.666666667,10"
+        points="7762144.666666667,1,7762139.666666667,6,7762144.666666667,11"
       />
       <rect
         data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-5"
@@ -241,11 +241,11 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
         height="10"
         width="36.666666666666664"
         x="7763199.666666667"
-        y="0"
+        y="1"
       />
       <polygon
         fill="goldenrod"
-        points="7763199.666666667,0,7763194.666666667,5,7763199.666666667,10"
+        points="7763199.666666667,1,7763194.666666667,6,7763199.666666667,11"
       />
       <rect
         data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-6"
@@ -253,11 +253,11 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
         height="10"
         width="45.333333333333336"
         x="7763927.333333333"
-        y="0"
+        y="1"
       />
       <polygon
         fill="goldenrod"
-        points="7763927.333333333,0,7763922.333333333,5,7763927.333333333,10"
+        points="7763927.333333333,1,7763922.333333333,6,7763927.333333333,11"
       />
       <rect
         data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-7"
@@ -265,11 +265,11 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
         height="10"
         width="4"
         x="7766265.666666667"
-        y="0"
+        y="1"
       />
       <polygon
         fill="goldenrod"
-        points="7766265.666666667,0,7766260.666666667,5,7766265.666666667,10"
+        points="7766265.666666667,1,7766260.666666667,6,7766265.666666667,11"
       />
       <rect
         data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-8"
@@ -277,11 +277,11 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
         height="10"
         width="327.3333333333333"
         x="7759845"
-        y="0"
+        y="1"
       />
       <polygon
         fill="goldenrod"
-        points="7759845,0,7759840,5,7759845,10"
+        points="7759845,1,7759840,6,7759845,11"
       />
       <rect
         data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-9"
@@ -289,11 +289,11 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
         height="10"
         width="35.333333333333336"
         x="7760604.333333333"
-        y="0"
+        y="1"
       />
       <polygon
         fill="goldenrod"
-        points="7760604.333333333,0,7760599.333333333,5,7760604.333333333,10"
+        points="7760604.333333333,1,7760599.333333333,6,7760604.333333333,11"
       />
       <rect
         data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-10"
@@ -301,11 +301,11 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
         height="10"
         width="78.66666666666667"
         x="7761725.666666667"
-        y="0"
+        y="1"
       />
       <polygon
         fill="goldenrod"
-        points="7761725.666666667,0,7761720.666666667,5,7761725.666666667,10"
+        points="7761725.666666667,1,7761720.666666667,6,7761725.666666667,11"
       />
       <rect
         data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-11"
@@ -313,11 +313,11 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
         height="10"
         width="52.666666666666664"
         x="7762144.666666667"
-        y="0"
+        y="1"
       />
       <polygon
         fill="goldenrod"
-        points="7762144.666666667,0,7762139.666666667,5,7762144.666666667,10"
+        points="7762144.666666667,1,7762139.666666667,6,7762144.666666667,11"
       />
       <rect
         data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-12"
@@ -325,11 +325,11 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
         height="10"
         width="36.666666666666664"
         x="7763199.666666667"
-        y="0"
+        y="1"
       />
       <polygon
         fill="goldenrod"
-        points="7763199.666666667,0,7763194.666666667,5,7763199.666666667,10"
+        points="7763199.666666667,1,7763194.666666667,6,7763199.666666667,11"
       />
       <rect
         data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-13"
@@ -337,11 +337,11 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
         height="10"
         width="45.333333333333336"
         x="7763927.333333333"
-        y="0"
+        y="1"
       />
       <polygon
         fill="goldenrod"
-        points="7763927.333333333,0,7763922.333333333,5,7763927.333333333,10"
+        points="7763927.333333333,1,7763922.333333333,6,7763927.333333333,11"
       />
       <rect
         data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-14"
@@ -349,11 +349,11 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
         height="10"
         width="4"
         x="7766265.666666667"
-        y="0"
+        y="1"
       />
       <polygon
         fill="goldenrod"
-        points="7766265.666666667,0,7766260.666666667,5,7766265.666666667,10"
+        points="7766265.666666667,1,7766260.666666667,6,7766265.666666667,11"
       />
       <rect
         data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0_five_prime_UTR_7"
@@ -361,11 +361,11 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
         height="6.5"
         width="31.666666666666668"
         x="7766421.333333333"
-        y="1.75"
+        y="2.75"
       />
       <polygon
         fill="#357089"
-        points="7766421.333333333,1.75,7766418.083333333,5,7766421.333333333,8.25"
+        points="7766421.333333333,2.75,7766418.083333333,6,7766421.333333333,9.25"
       />
       <rect
         data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0_five_prime_UTR_6"
@@ -373,23 +373,23 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
         height="6.5"
         width="38.333333333333336"
         x="7766269.666666667"
-        y="1.75"
+        y="2.75"
       />
       <polygon
         fill="#357089"
-        points="7766269.666666667,1.75,7766266.416666667,5,7766269.666666667,8.25"
+        points="7766269.666666667,2.75,7766266.416666667,6,7766269.666666667,9.25"
       />
       <text
         style="font-size: 13px; fill: black; cursor: default;"
         x="7759845"
-        y="25"
+        y="26"
       >
         LACTBL1
       </text>
       <text
         style="font-size: 13px; fill: blue; cursor: default;"
         x="7759845"
-        y="40"
+        y="41"
       >
         lactamase beta like 1
       </text>
@@ -404,9 +404,9 @@ exports[`processed transcript (reducedRepresentation mode) 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="10px"
+    height="111"
     style="display: block;"
-    width="333.3333333333333px"
+    width="333.3333333333333"
   >
     <g>
       <rect
@@ -415,7 +415,7 @@ exports[`processed transcript (reducedRepresentation mode) 1`] = `
         height="10"
         width="1"
         x="0.3"
-        y="0"
+        y="1"
       />
     </g>
   </svg>
@@ -428,14 +428,14 @@ exports[`processed transcript 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="25px"
+    height="126"
     style="display: block;"
-    width="333.3333333333333px"
+    width="333.3333333333333"
   >
     <g>
       <polyline
         data-testid="one"
-        points="1991.7,5,3248.0333333333333,5,3245.5333333333333,2.5,3245.5333333333333,7.5,3248.0333333333333,5"
+        points="1991.7,6,3248.0333333333333,6,3245.5333333333333,3.5,3245.5333333333333,8.5,3248.0333333333333,6"
         stroke="black"
       />
       <rect
@@ -444,7 +444,7 @@ exports[`processed transcript 1`] = `
         height="6.5"
         width="44.666666666666664"
         x="1991.7"
-        y="1.75"
+        y="2.75"
       />
       <rect
         data-testid="one-2"
@@ -452,7 +452,7 @@ exports[`processed transcript 1`] = `
         height="10"
         width="12.666666666666666"
         x="2036.7"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-3"
@@ -460,7 +460,7 @@ exports[`processed transcript 1`] = `
         height="10"
         width="22.666666666666668"
         x="2205.0333333333333"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-4"
@@ -468,7 +468,7 @@ exports[`processed transcript 1`] = `
         height="10"
         width="94"
         x="2252.7"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-5"
@@ -476,7 +476,7 @@ exports[`processed transcript 1`] = `
         height="10"
         width="59"
         x="2380.7"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-6"
@@ -484,7 +484,7 @@ exports[`processed transcript 1`] = `
         height="10"
         width="92"
         x="2470.366666666667"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-7"
@@ -492,7 +492,7 @@ exports[`processed transcript 1`] = `
         height="10"
         width="34"
         x="2582.7"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-8"
@@ -500,7 +500,7 @@ exports[`processed transcript 1`] = `
         height="10"
         width="48.333333333333336"
         x="2651.0333333333333"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-9"
@@ -508,7 +508,7 @@ exports[`processed transcript 1`] = `
         height="10"
         width="51.333333333333336"
         x="2722.0333333333333"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-10"
@@ -516,7 +516,7 @@ exports[`processed transcript 1`] = `
         height="10"
         width="65"
         x="2806.366666666667"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-11"
@@ -524,7 +524,7 @@ exports[`processed transcript 1`] = `
         height="10"
         width="34.333333333333336"
         x="2902.7"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-12"
@@ -532,7 +532,7 @@ exports[`processed transcript 1`] = `
         height="10"
         width="104"
         x="2975.7"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-13"
@@ -540,7 +540,7 @@ exports[`processed transcript 1`] = `
         height="10"
         width="26.666666666666668"
         x="3138.0333333333333"
-        y="0"
+        y="1"
       />
       <rect
         data-testid="one-15"
@@ -548,12 +548,12 @@ exports[`processed transcript 1`] = `
         height="6.5"
         width="83"
         x="3165.0333333333333"
-        y="1.75"
+        y="2.75"
       />
       <text
         style="font-size: 13px; fill: black; cursor: default;"
         x="1991.7"
-        y="25"
+        y="26"
       >
         au9.g1002.t1
       </text>

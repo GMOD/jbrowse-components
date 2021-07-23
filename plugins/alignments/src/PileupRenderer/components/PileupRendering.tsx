@@ -5,6 +5,8 @@ import { observer } from 'mobx-react'
 import React, { MouseEvent, useRef, useState, useEffect } from 'react'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
+// used so that user can click-away-from-feature below the laid out features (issue #1248)
+const canvasPadding = 100
 function PileupRendering(props: {
   blockKey: string
   displayModel: BaseLinearDisplayModel
@@ -187,7 +189,7 @@ function PileupRendering(props: {
       <canvas
         data-testid="pileup_overlay_canvas"
         width={canvasWidth}
-        height={height}
+        height={height + canvasPadding}
         style={{ position: 'absolute', left: 0, top: 0 }}
         className="highlightOverlayCanvas"
         ref={highlightOverlayCanvas}

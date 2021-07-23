@@ -29,15 +29,27 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private rbush: RBush<{ id: string }>
 
+  private spacing: number
+
   private pTotalHeight: number
+
+  private pitchX: number
 
   constructor({
     maxHeight = 10000,
+    spacing = 2,
+    pitchX = 1,
   }: {
     maxHeight?: number
+    spacing?: number
+    pitchX?: number
   } = {}) {
+    // we keep holding onto the concept of pitchX so that when we zoom out
+    // layout is redone
+    this.pitchX = pitchX
     this.maxHeightReached = false
     this.rbush = new RBush()
+    this.spacing = spacing
     this.rectangles = new Map()
     this.maxHeight = Math.ceil(maxHeight)
     this.pTotalHeight = 0
@@ -77,6 +89,8 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
         break
       }
     }
+    currHeight--
+    currHeight += this.spacing
 
     if (!maxHeightReached) {
       const record = {
