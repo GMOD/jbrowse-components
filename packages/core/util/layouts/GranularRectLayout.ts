@@ -74,23 +74,28 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
     let currHeight = 0
     let maxHeightReached = false
+    let found = false
     while (
+      // 0.01 fudge factor to avoid edge-exact collision detection returning
+      // true
       this.rbush.collides({
         minX: left,
-        minY: currHeight,
+        minY: currHeight + 0.01,
         maxX: right,
-        maxY: currHeight + height,
+        maxY: currHeight + height - 0.01,
       }) &&
       currHeight <= this.maxHeight
     ) {
+      found = true
       currHeight += 1
       if (currHeight + height >= this.maxHeight) {
         maxHeightReached = true
         break
       }
     }
-    currHeight--
-    currHeight += this.spacing
+    if (found) {
+      currHeight += this.spacing
+    }
 
     if (!maxHeightReached) {
       const record = {

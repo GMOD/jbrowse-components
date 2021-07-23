@@ -5,7 +5,8 @@ import { observer } from 'mobx-react'
 import React, { MouseEvent, useRef, useState, useEffect } from 'react'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
-// used so that user can click-away-from-feature below the laid out features (issue #1248)
+// used so that user can click-away-from-feature below the laid out features
+// (issue #1248)
 const canvasPadding = 100
 function PileupRendering(props: {
   blockKey: string
