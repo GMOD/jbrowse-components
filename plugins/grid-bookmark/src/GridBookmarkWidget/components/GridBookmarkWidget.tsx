@@ -14,6 +14,7 @@ import { AbstractViewModel, Region } from '@jbrowse/core/util/types'
 import { GridBookmarkModel } from '../model'
 import { NavigableViewModel } from '../types'
 
+import AssemblySelector from './AssemblySelector'
 import DeleteBookmark from './DeleteBookmark'
 import DownloadBookmarks from './DownloadBookmarks'
 import ClearBookmarks from './ClearBookmarks'
@@ -94,6 +95,7 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
 
   return (
     <div className={classes.container}>
+      <AssemblySelector model={model} />
       <DownloadBookmarks model={model} />
       <ClearBookmarks model={model} />
       <div style={{ height: 800, width: '100%' }}>

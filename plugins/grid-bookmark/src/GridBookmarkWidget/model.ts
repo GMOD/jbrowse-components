@@ -53,6 +53,15 @@ export default function f(pluginManager: PluginManager) {
         }
       },
     }))
+    .views(self => ({
+      get assemblies() {
+        const assemblies = self.bookmarkedRegions.map(
+          region => region.assemblyName,
+        )
+        const uniqueAssemblies = Array.from(new Set(assemblies))
+        return uniqueAssemblies
+      },
+    }))
 }
 
 export type GridBookmarkStateModel = ReturnType<typeof f>
