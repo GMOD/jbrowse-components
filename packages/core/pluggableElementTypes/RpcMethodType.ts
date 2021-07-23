@@ -45,9 +45,6 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   ) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rootModel: any = this.pluginManager.rootModel
-    this.pluginManager.rootModel.internetAccounts.find(account => {
-      return account.internetAccountId === 'specificId'
-    })
     authenticationInfoMap = rootModel?.getAuthenticationInfoMap()
     const adapterConfig = searchOrReplaceInArgs(args, 'adapterConfig')
 

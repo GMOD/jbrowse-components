@@ -15,6 +15,7 @@ import {
   LocalPathLocation as MULocalPathLocation,
   UriLocation as MUUriLocation,
   BlobLocation as MUBlobLocation,
+  AuthLocation as MUAuthLocation,
 } from './mst'
 import RpcManager from '../../rpc/RpcManager'
 import { Feature } from '../simpleFeature'
@@ -273,7 +274,7 @@ export interface LocalPathLocation
 export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
 
 // TODOAUTH: try making a new interface similar to uri locaiton with the auth stuff
-export interface AuthLocation extends SnapshotIn<typeof MUUriLocation> {}
+export interface AuthLocation extends SnapshotIn<typeof MUAuthLocation> {}
 
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
@@ -291,7 +292,9 @@ export type FileLocation =
 export type PreUriLocation = { uri: string }
 export type PreLocalPathLocation = { localPath: string }
 export type PreBlobLocation = { blob: File }
+export type PreAuthLocation = { uri: string }
 export type PreFileLocation =
   | PreUriLocation
   | PreLocalPathLocation
   | PreBlobLocation
+  | PreAuthLocation

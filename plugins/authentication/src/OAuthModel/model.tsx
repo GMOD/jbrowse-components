@@ -6,7 +6,7 @@ import { OAuthInternetAccountConfigModel } from './configSchema'
 import crypto from 'crypto'
 import { Instance, types, getRoot } from 'mobx-state-tree'
 import { searchOrReplaceInArgs } from '@jbrowse/core/util'
-import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
+import { FileLocation, AuthLocation } from '@jbrowse/core/util/types'
 import deepEqual from 'fast-deep-equal'
 
 // Notes go here:
@@ -62,7 +62,7 @@ const stateModelFactory = (
       handlesLocation(location: FileLocation): boolean {
         const validDomains = self.accountConfig.validDomains || []
         return validDomains.some((domain: string) =>
-          (location as UriLocation)?.uri.includes(domain),
+          (location as AuthLocation)?.uri.includes(domain),
         )
       },
     }))
@@ -147,7 +147,7 @@ const stateModelFactory = (
           } else {
             let fileUrl
             try {
-              fileUrl = await this.fetchFile((location as UriLocation).uri)
+              fileUrl = await this.fetchFile((location as AuthLocation).uri)
             } catch (error) {
               reject(error)
             }
@@ -390,7 +390,7 @@ const stateModelFactory = (
           try {
             file = !token
               ? await this.openLocation(location)
-              : await this.fetchFile((location as UriLocation).uri, token)
+              : await this.fetchFile((location as AuthLocation).uri, token)
           } catch (error) {
             const refreshedMap = await this.handleError(
               authenticationInfoMap,

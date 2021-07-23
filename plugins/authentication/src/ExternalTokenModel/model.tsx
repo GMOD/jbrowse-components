@@ -2,7 +2,7 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
+import { FileLocation, AuthLocation } from '@jbrowse/core/util/types'
 import { searchOrReplaceInArgs } from '@jbrowse/core/util'
 import { ExternalTokenInternetAccountConfigModel } from './configSchema'
 import { Instance, types } from 'mobx-state-tree'
@@ -61,7 +61,7 @@ const stateModelFactory = (
         // also look at location, if location is set to need authentication it would reutrn true
         const validDomains = self.accountConfig.validDomains || []
         return validDomains.some((domain: string) =>
-          (location as UriLocation)?.uri.includes(domain),
+          (location as AuthLocation)?.uri.includes(domain),
         )
       },
     }))
@@ -92,7 +92,7 @@ const stateModelFactory = (
         self.needsToken = bool
       },
       getOrSetExternalToken() {
-        if (!self.needToken) {
+        if (!self.needsToken) {
           return ''
         }
         const tokenKey = Object.keys(sessionStorage).find(key => {
@@ -127,7 +127,7 @@ const stateModelFactory = (
 
         switch (self.accountConfig.internetAccountId) {
           case 'GDCExternalToken': {
-            const query = (location as UriLocation).uri.split('/').pop() // should get id
+            const query = (location as AuthLocation).uri.split('/').pop() // should get id
             const response = await fetch(
               `https://api.gdc.cancer.gov/files/${query}?expand=index_files`,
               {
@@ -144,7 +144,7 @@ const stateModelFactory = (
 
             const metadata = await response.json()
             if (metadata) {
-              metadata.access === 'controller'
+              metadata.access === 'controlled'
                 ? this.setNeedsToken(true)
                 : this.setNeedsToken(false)
             }
@@ -164,7 +164,7 @@ const stateModelFactory = (
 
         switch (self.accountConfig.internetAccountId) {
           case 'GDCExternalToken': {
-            const query = (location as UriLocation).uri.split('/').pop() // should get id
+            const query = (location as AuthLocation).uri.split('/').pop() // should get id
             const editedArgs = JSON.parse(JSON.stringify(args))
             searchOrReplaceInArgs(
               editedArgs,

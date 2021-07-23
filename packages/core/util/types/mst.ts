@@ -68,8 +68,17 @@ export const UriLocation = types.snapshotProcessor(UriLocationRaw, {
   },
 })
 
+export const AuthLocation = types.model('AuthLocation', {
+  uri: types.string, // TODO: refine
+  authHeader: types.maybe(types.string),
+  internetAccountId: types.maybe(types.string),
+  baseAuthUri: types.maybe(types.string),
+  baseUri: types.maybe(types.string),
+})
+
 export const FileLocation = types.union(
   LocalPathLocation,
   UriLocation,
   BlobLocation,
+  AuthLocation,
 )
