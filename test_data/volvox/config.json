@@ -1510,7 +1510,8 @@
       "internetAccountId": "GDCExternalToken",
       "name": "GDC",
       "description": "GDC External Token",
-      "validDomains": ["gdc.com"]
+      "validDomains": ["portal.gdc.cancer.gov", "api.gdc.cancer.gov"],
+      "authHeader": "X-Auth-Token"
     }
   ]
 }

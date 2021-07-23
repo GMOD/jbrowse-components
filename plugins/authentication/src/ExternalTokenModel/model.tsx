@@ -3,6 +3,7 @@ import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
+import { searchOrReplaceInArgs } from '@jbrowse/core/util'
 import { ExternalTokenInternetAccountConfigModel } from './configSchema'
 import { Instance, types } from 'mobx-state-tree'
 import React, { useState } from 'react'
@@ -52,7 +53,7 @@ const stateModelFactory = (
     .volatile(() => ({
       externalToken: '',
       currentTypeAuthorizing: '',
-      selected: false,
+      needsToken: false,
     }))
     .views(self => ({
       handlesLocation(location: FileLocation): boolean {
@@ -87,13 +88,24 @@ const stateModelFactory = (
       setExternalToken(token: string) {
         self.externalToken = token
       },
-      async openLocation(location: FileLocation) {
+      setNeedsToken(bool: boolean) {
+        self.needsToken = bool
+      },
+      getOrSetExternalToken() {
+        if (!self.needToken) {
+          return ''
+        }
         const tokenKey = Object.keys(sessionStorage).find(key => {
           return key === `${self.accountConfig.internetAccountId}-token`
         })
         let token = sessionStorage.getItem(tokenKey as string)
 
         // prompt user for token if there isnt one existing
+        // if a user doesnt enter a token allow them to continue without token
+
+        // for GDC there is a way to tell if it needs a token or not
+        // first call is an api endpoint, you get metadata for the file and has a property
+        // called access, if access is set to controller it needs a token, else it doesn't
         if (!token) {
           const newToken = window.prompt(
             `Enter token for ${self.accountConfig.internetAccountId} to use`,
@@ -108,27 +120,60 @@ const stateModelFactory = (
           )
         }
 
-        const response = await fetch((location as UriLocation).uri, {
-          method: 'GET',
-          headers: {
-            Authorization: `${token}`,
-            'Content-Type': 'application/json',
-          },
-        })
+        return token
+      },
+      async openLocation(location: FileLocation) {
+        let token = ''
 
-        if (!response.ok) {
-          const errorText = await response.text()
-          console.error(errorText)
-          throw new Error(
-            `Network response failure: ${response.status} (${errorText})`,
-          )
+        switch (self.accountConfig.internetAccountId) {
+          case 'GDCExternalToken': {
+            const query = (location as UriLocation).uri.split('/').pop() // should get id
+            const response = await fetch(
+              `https://api.gdc.cancer.gov/files/${query}?expand=index_files`,
+              {
+                method: 'GET',
+              },
+            )
+
+            if (!response.ok) {
+              const errorText = await response.text()
+              throw new Error(
+                `Network response failure: ${response.status} (${errorText})`,
+              )
+            }
+
+            const metadata = await response.json()
+            if (metadata) {
+              metadata.access === 'controller'
+                ? this.setNeedsToken(true)
+                : this.setNeedsToken(false)
+            }
+
+            token = this.getOrSetExternalToken()
+          }
         }
 
-        const file = await response.json()
-        return file
+        return token
       },
-      handleRpcMethodCall(location: FileLocation) {
-        return this.openLocation(location)
+      handleRpcMethodCall(
+        location: FileLocation,
+        authenticationInfoMap: Record<string, string>,
+        args: {},
+      ) {
+        this.openLocation(location)
+
+        switch (self.accountConfig.internetAccountId) {
+          case 'GDCExternalToken': {
+            const query = (location as UriLocation).uri.split('/').pop() // should get id
+            const editedArgs = JSON.parse(JSON.stringify(args))
+            searchOrReplaceInArgs(
+              editedArgs,
+              'uri',
+              `https://api.gdc.cancer.gov/data/${query}`,
+            )
+            return editedArgs
+          }
+        }
       },
     }))
 }

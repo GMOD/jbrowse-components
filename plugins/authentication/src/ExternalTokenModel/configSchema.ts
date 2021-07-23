@@ -13,6 +13,11 @@ function ExternalTokenConfigFactory(pluginManager: PluginManager) {
         type: 'stringArray',
         defaultValue: [],
       },
+      authHeader: {
+        description: 'custom auth header for authorization',
+        type: 'string',
+        defaultValue: 'Authorization',
+      },
     },
     {
       baseConfiguration: createInternetAccountConfig(pluginManager),

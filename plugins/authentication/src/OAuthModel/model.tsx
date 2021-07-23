@@ -60,7 +60,6 @@ const stateModelFactory = (
     }))
     .views(self => ({
       handlesLocation(location: FileLocation): boolean {
-        console.log(location)
         const validDomains = self.accountConfig.validDomains || []
         return validDomains.some((domain: string) =>
           (location as UriLocation)?.uri.includes(domain),

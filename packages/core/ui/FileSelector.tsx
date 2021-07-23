@@ -120,6 +120,14 @@ const UrlChooser = (props: {
 
     return detectedId
   }
+
+  const findInternetAccountHeader = (id: string) => {
+    const account = internetAccounts.find(account => {
+      return account.accountConfig.internetAccountId === id
+    })
+
+    return account.accountConfig.authHeader
+  }
   return (
     <>
       <TextField
@@ -137,11 +145,12 @@ const UrlChooser = (props: {
                 ? autoDetectInternetAccount(event.target.value)
                 : currentInternetAccount
 
+            const customHeader = findInternetAccountHeader(internetAccountId)
             setLocation({
               uri: event.target.value,
               baseAuthUri: event.target.value,
               internetAccountId: internetAccountId,
-              authHeader: 'Authorization',
+              authHeader: customHeader || 'Authorization',
             })
           } else {
             setLocation({ uri: event.target.value })
@@ -161,11 +170,13 @@ const UrlChooser = (props: {
               if (event.target.value === 'autoDetect') {
                 internetAccountId = autoDetectInternetAccount(currentUrl)
               }
+              const customHeader = findInternetAccountHeader(internetAccountId)
+
               setLocation({
                 uri: currentUrl,
                 baseAuthUri: currentUrl,
                 internetAccountId: internetAccountId,
-                authHeader: 'Authorization',
+                authHeader: customHeader || 'Authorization',
               })
             }}
             displayEmpty
