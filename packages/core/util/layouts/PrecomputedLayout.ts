@@ -26,7 +26,6 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
 
   constructor({ rectangles, totalHeight, maxHeightReached }: SerializedLayout) {
     this.rectangles = new Map(Object.entries(rectangles))
-    // rectangles is of the form "featureId": [leftPx, topPx, rightPx, bottomPx]
     this.totalHeight = totalHeight
     this.maxHeightReached = maxHeightReached
     this.rbush = new RBush()

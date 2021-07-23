@@ -6,9 +6,9 @@ exports[`no features 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="20px"
+    height="120"
     style="display: block;"
-    width="100px"
+    width="100"
   />
 </div>
 `;
@@ -19,9 +19,9 @@ exports[`one feature (compact mode) 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="5px"
+    height="105"
     style="display: block;"
-    width="333.3333333333333px"
+    width="333.3333333333333"
   >
     <g>
       <polyline
@@ -152,9 +152,9 @@ exports[`one feature 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="10px"
+    height="110"
     style="display: block;"
-    width="333.3333333333333px"
+    width="333.3333333333333"
   >
     <g>
       <rect
@@ -176,9 +176,9 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="40px"
+    height="140"
     style="display: block;"
-    width="333.3333333333333px"
+    width="333.3333333333333"
   >
     <g>
       <polyline
@@ -404,9 +404,9 @@ exports[`processed transcript (reducedRepresentation mode) 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="10px"
+    height="110"
     style="display: block;"
-    width="333.3333333333333px"
+    width="333.3333333333333"
   >
     <g>
       <rect
@@ -428,9 +428,9 @@ exports[`processed transcript 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="25px"
+    height="125"
     style="display: block;"
-    width="333.3333333333333px"
+    width="333.3333333333333"
   >
     <g>
       <polyline
