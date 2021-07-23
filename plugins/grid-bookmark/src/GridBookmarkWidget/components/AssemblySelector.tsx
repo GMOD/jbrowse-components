@@ -40,7 +40,9 @@ function AssemblySelector({ model }: { model: GridBookmarkModel }) {
       <Typography className={classes.selectText}>Select assembly:</Typography>
       <FormControl className={classes.flexItem} disabled={noAssemblies}>
         <Select
-          value={assemblies.includes(selectedAssembly) ? selectedAssembly : ''}
+          value={
+            assemblies.includes(selectedAssembly) ? selectedAssembly : 'none'
+          }
           onChange={handleChange}
         >
           <MenuItem value={'none'} key={'no-assembly'}>
