@@ -1475,19 +1475,20 @@
     {
       "type": "OAuthInternetAccount",
       "internetAccountId": "googleOAuth",
-      "name": "GoogleOAuth",
+      "name": "Google",
       "description": "OAuth Info for Google Drive",
       "authEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
       "needsAuthorization": true,
       "clientId": "20156747540-bes2tq75790efrskmb5pa3hupujgenb2.apps.googleusercontent.com",
       "scopes": "https://www.googleapis.com/auth/drive.readonly",
       "responseType": "token",
-      "validDomains": ["drive.google.com"]
+      "validDomains": ["drive.google.com"],
+      "origin": "google"
     },
     {
       "type": "OAuthInternetAccount",
       "internetAccountId": "dropboxOAuth",
-      "name": "DropboxOAuth",
+      "name": "Dropbox",
       "description": "OAuth Info for Dropbox",
       "authEndpoint": "https://www.dropbox.com/oauth2/authorize",
       "tokenEndpoint": "https://api.dropbox.com/oauth2/token",
@@ -1503,7 +1504,8 @@
         "dropboxbusiness.com",
         "dropbox.tech",
         "getdropbox.com"
-      ]
+      ],
+      "origin": "dropbox"
     },
     {
       "type": "ExternalTokenInternetAccount",
@@ -1511,7 +1513,8 @@
       "name": "GDC",
       "description": "GDC External Token",
       "validDomains": ["portal.gdc.cancer.gov", "api.gdc.cancer.gov"],
-      "authHeader": "X-Auth-Token"
+      "authHeader": "X-Auth-Token",
+      "origin": "GDC"
     }
   ]
 }

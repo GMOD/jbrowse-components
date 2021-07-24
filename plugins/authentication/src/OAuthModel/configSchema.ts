@@ -53,11 +53,6 @@ function OAuthConfigFactory(pluginManager: PluginManager) {
         type: 'boolean',
         defaultValue: false,
       },
-      authHeader: {
-        description: 'custom auth header for authorization',
-        type: 'string',
-        defaultValue: 'Authorization',
-      },
     },
     {
       baseConfiguration: createInternetAccountConfig(pluginManager),

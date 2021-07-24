@@ -104,6 +104,7 @@ const UrlChooser = (props: {
   )
 
   const autoDetectInternetAccount = (urlInput: string) => {
+    let name = ''
     let detectedId = ''
     try {
       new URL(urlInput)
@@ -115,10 +116,11 @@ const UrlChooser = (props: {
     internetAccounts?.forEach(account => {
       if (account.handlesLocation({ uri: urlInput })) {
         detectedId = account.accountConfig.internetAccountId
+        name = account.accountConfig.name
       }
     })
 
-    return detectedId
+    return { name: name, id: detectedId }
   }
 
   const findInternetAccountHeader = (id: string) => {
@@ -126,7 +128,7 @@ const UrlChooser = (props: {
       return account.accountConfig.internetAccountId === id
     })
 
-    return account.accountConfig.authHeader
+    return account?.accountConfig?.authHeader || ''
   }
   return (
     <>
@@ -142,7 +144,7 @@ const UrlChooser = (props: {
           if (currentInternetAccount) {
             const internetAccountId =
               currentInternetAccount === 'autoDetect'
-                ? autoDetectInternetAccount(event.target.value)
+                ? autoDetectInternetAccount(event.target.value).id
                 : currentInternetAccount
 
             const customHeader = findInternetAccountHeader(internetAccountId)
@@ -168,7 +170,7 @@ const UrlChooser = (props: {
               let internetAccountId = event.target.value
               setCurrentInternetAccount(event.target.value as string)
               if (event.target.value === 'autoDetect') {
-                internetAccountId = autoDetectInternetAccount(currentUrl)
+                internetAccountId = autoDetectInternetAccount(currentUrl).id
               }
               const customHeader = findInternetAccountHeader(internetAccountId)
 
@@ -183,7 +185,7 @@ const UrlChooser = (props: {
           >
             <MenuItem value="">None</MenuItem>
             <MenuItem value="autoDetect">
-              Auto Detect: {autoDetectInternetAccount(currentUrl)}
+              Auto Detect: {autoDetectInternetAccount(currentUrl).name}
             </MenuItem>
             {internetAccounts?.map(account => {
               try {

@@ -23,6 +23,11 @@ export function createInternetAccountConfig(pluginManager: PluginManager) {
         type: 'string',
         defaultValue: 'Authorization',
       },
+      origin: {
+        description: 'origin of the auth account',
+        type: 'string',
+        defaultValue: '',
+      },
       //   metadata: {
       //     type: 'frozen',
       //     description: 'anything to add about this internet account',

@@ -134,10 +134,9 @@ const stateModelFactory = (
           self.accessToken = token
           self.expireTime = expireTime
 
-          const tokenExpirationFromNow = Date.now() + expireTime * 1000
           if (generateNew && token) {
             sessionStorage.setItem(
-              `${self.accountConfig.internetAccountId}-token-${tokenExpirationFromNow}`,
+              `${self.accountConfig.internetAccountId}-token`,
               token,
             )
           }
@@ -266,8 +265,8 @@ const stateModelFactory = (
           if (!location || !accessToken) {
             return
           }
-          switch (self.accountConfig.internetAccountId) {
-            case 'dropboxOAuth': {
+          switch (self.accountConfig.origin) {
+            case 'dropbox': {
               const response = await fetch(
                 'https://api.dropboxapi.com/2/sharing/get_shared_link_metadata',
                 {
@@ -311,7 +310,7 @@ const stateModelFactory = (
               }
               break
             }
-            case 'googleOAuth': {
+            case 'google': {
               const urlId = location.match(/[-\w]{25,}/)
 
               const response = await fetch(
