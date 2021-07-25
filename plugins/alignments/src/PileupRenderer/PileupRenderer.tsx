@@ -334,9 +334,10 @@ export default class PileupRenderer extends BoxRendererType {
     const start = feature.get('start')
     const end = feature.get('end')
     const seq = feature.get('seq')
+    const strand = feature.get('strand')
     const cigarOps = parseCigar(cigar)
 
-    const modifications = getModificationPositions(mm, seq)
+    const modifications = getModificationPositions(mm, seq, strand)
 
     // probIndex applies across multiple modifications e.g.
     let probIndex = 0

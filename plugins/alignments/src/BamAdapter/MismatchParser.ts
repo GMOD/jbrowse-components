@@ -1,3 +1,4 @@
+import { revcom } from '@jbrowse/core/util'
 export interface Mismatch {
   qual?: number
   start: number
@@ -314,9 +315,14 @@ export function* getNextRefPos(cigarOps: string[], positions: number[]) {
   }
 }
 
-export function getModificationPositions(mm: string, seq: string) {
-  const mods = mm.split(';')
-  return mods
+export function getModificationPositions(
+  mm: string,
+  featureSeq: string,
+  strand: number,
+) {
+  const seq = strand === -1 ? revcom(featureSeq) : featureSeq
+  return mm
+    .split(';')
     .filter(mod => !!mod)
     .map(mod => {
       const [basemod, ...rest] = mod.split(',')

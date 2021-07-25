@@ -189,21 +189,23 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
                   .map(elt => Math.min(1, elt / 50))
 
             let probIndex = 0
-            getModificationPositions(mm, seq).forEach(({ type, positions }) => {
-              const mod = `mod_${type}`
-              for (const pos of getNextRefPos(cigarOps, positions)) {
-                const epos = pos + fstart - region.start
-                if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
-                  const bin = bins[epos]
-                  if (probabilities[probIndex] > 0.5) {
-                    inc(bin, fstrand, 'cov', mod)
-                  } else {
-                    inc(bin, fstrand, 'lowqual', mod)
+            getModificationPositions(mm, seq, fstrand).forEach(
+              ({ type, positions }) => {
+                const mod = `mod_${type}`
+                for (const pos of getNextRefPos(cigarOps, positions)) {
+                  const epos = pos + fstart - region.start
+                  if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
+                    const bin = bins[epos]
+                    if (probabilities[probIndex] > 0.5) {
+                      inc(bin, fstrand, 'cov', mod)
+                    } else {
+                      inc(bin, fstrand, 'lowqual', mod)
+                    }
                   }
+                  probIndex++
                 }
-                probIndex++
-              }
-            })
+              },
+            )
           }
 
           // methylation based coloring takes into account both reference
