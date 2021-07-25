@@ -334,9 +334,10 @@ export default class PileupRenderer extends BoxRendererType {
     const start = feature.get('start')
     const end = feature.get('end')
     const seq = feature.get('seq')
+    const strand = feature.get('strand')
     const cigarOps = parseCigar(cigar)
 
-    const modifications = getModificationPositions(mm, seq)
+    const modifications = getModificationPositions(mm, seq, strand)
 
     // probIndex applies across multiple modifications e.g.
     let probIndex = 0
@@ -389,11 +390,12 @@ export default class PileupRenderer extends BoxRendererType {
     const fstart = feature.get('start')
     const fend = feature.get('end')
     const seq = feature.get('seq')
+    const strand = feature.get('strand')
     const cigarOps = parseCigar(cigar)
     const { start: rstart, end: rend } = region
 
     const methBins = new Array(rend - rstart).fill(0)
-    getModificationPositions(mm, seq).forEach(({ type, positions }) => {
+    getModificationPositions(mm, seq, strand).forEach(({ type, positions }) => {
       if (type === 'm' && positions) {
         for (const pos of getNextRefPos(cigarOps, positions)) {
           const epos = pos + fstart - rstart
