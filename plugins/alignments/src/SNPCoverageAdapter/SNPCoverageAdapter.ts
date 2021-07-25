@@ -220,17 +220,19 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
             const mm = getTagAlt(feature, 'MM', 'Mm') || ''
             const methBins = new Array(region.end - region.start).fill(0)
 
-            getModificationPositions(mm, seq).forEach(({ type, positions }) => {
-              // we are processing methylation
-              if (type === 'm') {
-                for (const pos of getNextRefPos(cigarOps, positions)) {
-                  const epos = pos + fstart - region.start
-                  if (epos >= 0 && epos < methBins.length) {
-                    methBins[epos] = 1
+            getModificationPositions(mm, seq, fstrand).forEach(
+              ({ type, positions }) => {
+                // we are processing methylation
+                if (type === 'm') {
+                  for (const pos of getNextRefPos(cigarOps, positions)) {
+                    const epos = pos + fstart - region.start
+                    if (epos >= 0 && epos < methBins.length) {
+                      methBins[epos] = 1
+                    }
                   }
                 }
-              }
-            })
+              },
+            )
 
             for (let j = fstart; j < fend; j++) {
               const i = j - region.start
