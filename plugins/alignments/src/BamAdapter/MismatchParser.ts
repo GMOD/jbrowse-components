@@ -349,14 +349,12 @@ export function getModificationPositions(mm: string, seq: string) {
           positions: rest
             .map(score => +score)
             .map(delta => {
-              i++
               do {
                 if (base === 'N' || base === seq[i]) {
                   delta--
                 }
                 i++
               } while (delta >= 0 && i < seq.length)
-              i--
               return i
             }),
         }
