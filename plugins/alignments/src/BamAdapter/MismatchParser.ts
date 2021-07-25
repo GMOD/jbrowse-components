@@ -317,15 +317,15 @@ export function* getNextRefPos(cigarOps: string[], positions: number[]) {
 
 export function getModificationPositions(
   mm: string,
-  featureSeq: string,
-  strand: number,
+  fseq: string,
+  fstrand: number,
 ) {
-  const seq = strand === -1 ? revcom(featureSeq) : featureSeq
+  const seq = fstrand === -1 ? revcom(fseq) : fseq
   return mm
     .split(';')
     .filter(mod => !!mod)
     .map(mod => {
-      const [basemod, ...rest] = mod.split(',')
+      const [basemod, ...skips] = mod.split(',')
 
       // regexes based on parse_mm.pl from hts-specs
       const matches = basemod.match(/([A-Z])([-+])([^,]+)/)
@@ -348,23 +348,26 @@ export function getModificationPositions(
       // sequence of the read, if we have a modification type e.g. C+m;2 and a
       // sequence ACGTACGTAC we skip the two instances of C and go to the last
       // C
-      return types.map(type => {
-        let i = 0
-        return {
-          type,
-          positions: rest
-            .map(score => +score)
-            .map(delta => {
-              do {
-                if (base === 'N' || base === seq[i]) {
-                  delta--
-                }
-                i++
-              } while (delta >= 0 && i < seq.length)
-              return i
-            }),
+      const mods = []
+      for (let i = 0; i < types.length; i++) {
+        const type = types[i]
+        let pos = 0
+        const positions = []
+        for (let j = 0; j < skips.length; j++) {
+          let skip = +skips[j]
+          do {
+            if (base === 'N' || base === seq[pos]) {
+              skip--
+            }
+            pos++
+          } while (skip >= 0 && i < seq.length)
+          pos--
+          positions.push(fstrand === -1 ? seq.length - 1 - pos : pos)
+          pos++
         }
-      })
+        mods.push({ type, positions: positions.sort((a, b) => a - b) })
+      }
+      return mods
     })
     .flat()
 }
