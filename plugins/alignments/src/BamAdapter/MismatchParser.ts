@@ -348,26 +348,25 @@ export function getModificationPositions(
       // sequence of the read, if we have a modification type e.g. C+m;2 and a
       // sequence ACGTACGTAC we skip the two instances of C and go to the last
       // C
-      const mods = []
-      for (let i = 0; i < types.length; i++) {
-        const type = types[i]
-        let pos = 0
-        const positions = []
-        for (let j = 0; j < skips.length; j++) {
-          let skip = +skips[j]
-          do {
-            if (base === 'N' || base === seq[pos]) {
-              skip--
-            }
-            pos++
-          } while (skip >= 0 && i < seq.length)
-          pos--
-          positions.push(fstrand === -1 ? seq.length - 1 - pos : pos)
-          pos++
+      return types.map(type => {
+        let i = 0
+        return {
+          type,
+          positions: skips
+            .map(score => +score)
+            .map(delta => {
+              do {
+                if (base === 'N' || base === seq[i]) {
+                  delta--
+                }
+                i++
+              } while (delta >= 0 && i < seq.length)
+              const temp = i - 1
+              return fstrand === -1 ? seq.length - 1 - temp : temp
+            })
+            .sort((a, b) => a - b),
         }
-        mods.push({ type, positions: positions.sort((a, b) => a - b) })
-      }
-      return mods
+      })
     })
     .flat()
 }
