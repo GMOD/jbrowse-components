@@ -408,23 +408,27 @@ export default class PileupRenderer extends BoxRendererType {
 
     for (let j = fstart; j < fend; j++) {
       const i = j - rstart
-      if (i >= 0 && i < methBins.length) {
-        const l2 = regionSequence[i + 1]
-        const l1 = regionSequence[i]
+      if (i >= 1 && i < methBins.length) {
+        const l1 = regionSequence[i].toLowerCase()
+        const l2 = regionSequence[i + 1].toLowerCase()
         // color
-        if (l1.toUpperCase() === 'C' && l2.toUpperCase() === 'G') {
-          const [leftPx, rightPx] = bpSpanPx(
-            rstart + i,
-            rstart + i + 1,
-            region,
-            bpPerPx,
-          )
+        if (l1 === 'c' && l2 === 'g') {
+          const s = rstart + i
+          const [leftPx, rightPx] = bpSpanPx(s, s + 1, region, bpPerPx)
           if (methBins[i]) {
             ctx.fillStyle = 'red'
           } else {
             ctx.fillStyle = 'blue'
           }
           ctx.fillRect(leftPx, topPx, rightPx - leftPx + 0.5, heightPx)
+
+          const [leftPx2, rightPx2] = bpSpanPx(s + 1, s + 2, region, bpPerPx)
+          if (methBins[i + 1]) {
+            ctx.fillStyle = 'red'
+          } else {
+            ctx.fillStyle = 'blue'
+          }
+          ctx.fillRect(leftPx2, topPx, rightPx2 - leftPx2 + 0.5, heightPx)
         }
       }
     }

@@ -237,17 +237,23 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
             for (let j = fstart; j < fend; j++) {
               const i = j - region.start
               if (i >= 0 && i < bins.length) {
-                const l2 = regionSeq[i + 1]
-                const l1 = regionSeq[i]
+                const l1 = regionSeq[i].toLowerCase()
+                const l2 = regionSeq[i + 1].toLowerCase()
                 const bin = bins[i]
+                const bin1 = bins[i + 1]
+
                 // color
-                if (l1.toUpperCase() === 'C' && l2.toUpperCase() === 'G') {
-                  if (methBins[i]) {
+                if (l1 === 'c' && l2 === 'g') {
+                  if (methBins[i] || methBins[i + 1]) {
                     inc(bin, fstrand, 'cov', 'meth')
+                    inc(bin1, fstrand, 'cov', 'meth')
                     dec(bin, fstrand, 'ref', 'ref')
+                    dec(bin1, fstrand, 'ref', 'ref')
                   } else {
                     inc(bin, fstrand, 'cov', 'unmeth')
+                    inc(bin1, fstrand, 'cov', 'unmeth')
                     dec(bin, fstrand, 'ref', 'ref')
+                    dec(bin1, fstrand, 'ref', 'ref')
                   }
                 }
               }
