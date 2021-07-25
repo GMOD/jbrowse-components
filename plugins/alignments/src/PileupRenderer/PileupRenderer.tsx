@@ -408,7 +408,7 @@ export default class PileupRenderer extends BoxRendererType {
 
     for (let j = fstart; j < fend; j++) {
       const i = j - rstart
-      if (i >= 1 && i < methBins.length) {
+      if (i >= 0 && i < methBins.length) {
         const l1 = regionSequence[i].toLowerCase()
         const l2 = regionSequence[i + 1].toLowerCase()
         // color
