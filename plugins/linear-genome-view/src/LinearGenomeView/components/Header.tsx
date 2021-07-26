@@ -121,6 +121,28 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions = (assembly && assembly.regions) || []
   const searchScope = model.searchScope(assemblyName)
+
+  async function fetchResults(queryString: string) {
+    const results =
+      (await textSearchManager?.search(
+        {
+          queryString: queryString.toLocaleLowerCase(),
+          searchType: 'exact',
+        },
+        searchScope,
+        rankSearchResults,
+      )) || []
+    //  TODO: test trackID filter
+    const filteredResults = results.filter(function (elem, index, self) {
+      const value1 = `${elem.label}-${elem.locString}-${elem.trackID}`
+      return (
+        index ===
+        self.findIndex(t => `${t.label}-${t.locString}-${t.trackID}` === value1)
+      )
+    })
+    return filteredResults
+    // return results
+  }
   async function setDisplayedRegion(result: BaseResult) {
     if (result) {
       const newRegionValue = result.getLabel()
@@ -134,15 +156,7 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
         // region visible, xref #1703
         model.showAllRegions()
       } else {
-        const results =
-          (await textSearchManager?.search(
-            {
-              queryString: newRegionValue.toLocaleLowerCase(),
-              searchType: 'exact',
-            },
-            searchScope,
-            rankSearchResults,
-          )) || []
+        const results = await fetchResults(newRegionValue.toLocaleLowerCase())
         // distinguishes between locstrings and search strings
         if (results.length > 0) {
           model.setSearchResults(results, newRegionValue.toLocaleLowerCase())
