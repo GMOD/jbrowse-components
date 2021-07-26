@@ -28,7 +28,7 @@ export interface AbstractViewContainer {
   addView(
     typeName: string,
     initialState: Record<string, unknown>,
-  ): AbstractViewModel
+  ): void | AbstractViewModel
 }
 export function isViewContainer(
   thing: unknown,
