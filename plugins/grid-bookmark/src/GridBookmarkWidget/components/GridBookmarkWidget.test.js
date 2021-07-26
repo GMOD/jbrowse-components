@@ -109,7 +109,7 @@ describe('<GridBookmarkWidget />', () => {
       type: 'text/x-bed;charset=utf-8',
     })
 
-    expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks.bed')
+    expect(saveAs).toHaveBeenCalledWith(blob, 'jbrowse_bookmarks_hg19.bed')
   })
 
   it('downloads a TSV file correctly', async () => {
