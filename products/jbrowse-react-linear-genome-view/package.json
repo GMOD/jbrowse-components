@@ -29,10 +29,8 @@
     "test": "cd ../..; jest plugins/linear-genome-view --passWithNoTests",
     "prepublishOnly": "yarn test",
     "prepare": "tsdx build",
-    "storybook": "start-storybook -s ./public -p 6006",
-    "prebuild-storybook": "node scripts/preBuild.js",
-    "build-storybook": "build-storybook --quiet -s public",
-    "postbuild-storybook": "rimraf public/test_data && node scripts/postBuild.js"
+    "storybook": "start-storybook --static-dir public --port 6006",
+    "build:storybook": "build-storybook --quiet --static-dir public"
   },
   "dependencies": {
     "@jbrowse/core": "^1.3.2",
@@ -47,7 +45,7 @@
     "@jbrowse/plugin-svg": "^1.3.2",
     "@jbrowse/plugin-variants": "^1.3.2",
     "@jbrowse/plugin-wiggle": "^1.3.1",
-    "@material-ui/core": "^4.9.5",
+    "@material-ui/core": "^4.12.2",
     "@material-ui/icons": "^4.0.0",
     "@material-ui/lab": "^4.0.0-alpha.45",
     "mobx": "^5.10.1",

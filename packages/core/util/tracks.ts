@@ -165,7 +165,8 @@ export function guessAdapter(
 
   if (/\.vcf$/i.test(fileName)) {
     return {
-      type: 'UNSUPPORTED',
+      type: 'VcfAdapter',
+      vcfLocation: file,
     }
   }
 

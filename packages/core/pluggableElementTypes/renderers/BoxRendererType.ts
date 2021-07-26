@@ -57,7 +57,7 @@ export class LayoutSession implements LayoutSessionProps {
       maxHeight: readConfObject(this.config, 'maxHeight'),
       displayMode: readConfObject(this.config, 'displayMode'),
       pitchX: this.bpPerPx,
-      pitchY: readConfObject(this.config, 'noSpacing') ? 1 : 3,
+      spacing: readConfObject(this.config, 'noSpacing') ? 0 : 2,
     })
   }
 
@@ -87,11 +87,6 @@ export class LayoutSession implements LayoutSessionProps {
     return this.cachedLayout.layout
   }
 }
-
-/// *****************************************************************************
-/// *****************************************************************************
-/// *****************************************************************************
-
 export interface RenderArgs extends FeatureRenderArgs {
   bpPerPx: number
 }

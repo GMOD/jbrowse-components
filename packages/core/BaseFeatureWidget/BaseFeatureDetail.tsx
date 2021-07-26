@@ -54,9 +54,6 @@ export const useStyles = makeStyles(theme => ({
   expandIcon: {
     color: '#FFFFFF',
   },
-  paperRoot: {
-    background: theme.palette.grey[100],
-  },
   field: {
     display: 'flex',
     flexWrap: 'wrap',
@@ -90,11 +87,6 @@ export const useStyles = makeStyles(theme => ({
     boxSizing: 'border-box',
     overflow: 'auto',
   },
-
-  accordionBorder: {
-    marginTop: '4px',
-    border: '1px solid #444',
-  },
 }))
 
 export function BaseCard({
@@ -105,7 +97,6 @@ export function BaseCard({
   const classes = useStyles()
   return (
     <Accordion
-      className={classes.accordionBorder}
       defaultExpanded={defaultExpanded}
       TransitionProps={{ unmountOnExit: true }}
     >

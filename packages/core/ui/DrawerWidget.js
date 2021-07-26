@@ -12,17 +12,16 @@ import {
 import DeleteIcon from '@material-ui/icons/Delete'
 import CloseIcon from '@material-ui/icons/Close'
 import MinimizeIcon from '@material-ui/icons/Minimize'
-import { fade } from '@material-ui/core/styles/colorManipulator'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import { useTheme } from '@material-ui/core/styles'
+import { useTheme, alpha } from '@material-ui/core/styles'
 import Drawer from './Drawer'
 
 const useStyles = makeStyles(theme => ({
   drawerActions: {
     float: 'right',
     '&:hover': {
-      backgroundColor: fade(
+      backgroundColor: alpha(
         theme.palette.secondary.contrastText,
         theme.palette.action.hoverOpacity,
       ),

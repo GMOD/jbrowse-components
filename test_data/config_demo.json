@@ -3163,6 +3163,69 @@
           "uri": "https://jbrowse.org/genomes/GRCh38/methylation/modified_bases.5mC.bb"
         }
       }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "modbam_test.reference",
+      "name": "Nanopolish modbam_test.reference 20:10000000",
+      "assemblyNames": ["hg38"],
+      "category": ["Methylation"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/nanopolish_methylation_test/modbam_test.reference.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/hg19/nanopolish_methylation_test/modbam_test.reference.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+          }
+        }
+      }
+    },
+
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "modbam_test.read",
+      "name": "Nanopolish modbam_test.read 20:10000000",
+      "category": ["Methylation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/nanopolish_methylation_test/modbam_test.read.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/hg19/nanopolish_methylation_test/modbam_test.read.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+          }
+        }
+      }
     }
   ],
   "connections": [],
