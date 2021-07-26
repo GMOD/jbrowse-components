@@ -4,7 +4,6 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 // material ui
 import { alpha } from '@material-ui/core/styles/colorManipulator'
-import { Menu } from '@jbrowse/core/ui'
 import { makeStyles } from '@material-ui/core/styles'
 import Popover from '@material-ui/core/Popover'
 import Tooltip from '@material-ui/core/Tooltip'
