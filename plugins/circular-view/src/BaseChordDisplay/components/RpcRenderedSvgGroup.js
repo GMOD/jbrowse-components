@@ -19,7 +19,7 @@ export default ({ jbrequire }) => {
             domNode.style.display = 'none'
             unmountComponentAtNode(domNode)
           }
-          domNode.style.display = 'inline'
+          domNode.style.outline = 'none'
           domNode.innerHTML = html
           // use requestIdleCallback to defer main-thread rendering
           // and hydration for when we have some free time. helps
