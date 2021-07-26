@@ -83,5 +83,5 @@ export default class TrixTextSearchAdapter
     })
     return formattedResults
   }
-  freeResources() { }
+  freeResources() {}
 }

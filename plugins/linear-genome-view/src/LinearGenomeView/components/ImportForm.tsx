@@ -73,7 +73,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   }
 
   async function fetchResults(queryString: string) {
-    const results =
+    const results: BaseResult[] =
       (await textSearchManager?.search(
         {
           queryString: queryString.toLocaleLowerCase(),
@@ -84,10 +84,16 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       )) || []
     //  TODO: test trackID filter
     const filteredResults = results.filter(function (elem, index, self) {
-      const value1 = `${elem.label}-${elem.locString}-${elem.trackID}`
+      const value1 = `${elem.getLabel()}-${elem.getLocation()}-${
+        elem.getTrackId() || ''
+      }`
       return (
         index ===
-        self.findIndex(t => `${t.label}-${t.locString}-${t.trackID}` === value1)
+        self.findIndex(
+          t =>
+            `${t.getLabel()}-${t.getLocation()}-${t.getTrackId() || ''}` ===
+            value1,
+        )
       )
     })
     return filteredResults

@@ -123,7 +123,7 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
   const searchScope = model.searchScope(assemblyName)
 
   async function fetchResults(queryString: string) {
-    const results =
+    const results: BaseResult[] =
       (await textSearchManager?.search(
         {
           queryString: queryString.toLocaleLowerCase(),
@@ -134,14 +134,19 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
       )) || []
     //  TODO: test trackID filter
     const filteredResults = results.filter(function (elem, index, self) {
-      const value1 = `${elem.label}-${elem.locString}-${elem.trackID}`
+      const value1 = `${elem.getLabel()}-${elem.getLocation()}-${
+        elem.getTrackId() || ''
+      }`
       return (
         index ===
-        self.findIndex(t => `${t.label}-${t.locString}-${t.trackID}` === value1)
+        self.findIndex(
+          t =>
+            `${t.getLabel()}-${t.getLocation()}-${t.getTrackId() || ''}` ===
+            value1,
+        )
       )
     })
     return filteredResults
-    // return results
   }
   async function setDisplayedRegion(result: BaseResult) {
     if (result) {
