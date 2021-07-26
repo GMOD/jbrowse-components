@@ -19,6 +19,9 @@ export default ({ jbrequire }) => {
             domNode.style.display = 'none'
             unmountComponentAtNode(domNode)
           }
+
+          // setting outline:none fixes react "focusable" element issue. see
+          // https://github.com/GMOD/jbrowse-components/issues/2160
           domNode.style.outline = 'none'
           domNode.innerHTML = html
           // use requestIdleCallback to defer main-thread rendering
