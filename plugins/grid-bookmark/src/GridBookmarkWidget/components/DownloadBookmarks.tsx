@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { saveAs } from 'file-saver'
 
 import {
   IconButton,
@@ -15,41 +14,7 @@ import CloseIcon from '@material-ui/icons/Close'
 import GetAppIcon from '@material-ui/icons/GetApp'
 
 import { GridBookmarkModel } from '../model'
-import { LabeledRegion } from '../types'
-
-function downloadBookmarkFile(
-  bookmarkedRegions: LabeledRegion[],
-  fileFormat: string,
-) {
-  const fileHeader =
-    fileFormat === 'TSV'
-      ? 'chrom\tstart\tend\tlabel\tassembly_name\tcoord_range\n'
-      : ''
-
-  const fileContents = bookmarkedRegions
-    .map(b => {
-      const { label } = b
-      const labelVal = label === '' ? 'NA' : label
-      const locString = `${b.refName}:${b.start}..${b.end}`
-      const bedVal = `${b.refName}\t${b.start}\t${b.end}\t${labelVal}`
-
-      if (fileFormat === 'BED') {
-        return `${bedVal}\n`
-      } else {
-        return `${bedVal}\t${b.assemblyName}\t${locString}\n`
-      }
-    })
-    .reduce((a, b) => a + b, fileHeader)
-
-  const blob = new Blob([fileContents || ''], {
-    type:
-      fileFormat === 'BED'
-        ? 'text/x-bed;charset=utf-8'
-        : 'text/tab-separated-values;charset=utf-8',
-  })
-
-  saveAs(blob, `jbrowse_bookmarks.${fileFormat === 'BED' ? 'bed' : 'tsv'}`)
-}
+import { downloadBookmarkFile } from '../utils'
 
 const useStyles = makeStyles(() => ({
   closeDialog: {
@@ -122,7 +87,7 @@ function DownloadBookmarks({ model }: { model: GridBookmarkModel }) {
                 color="primary"
                 startIcon={<GetAppIcon />}
                 onClick={() => {
-                  downloadBookmarkFile(bookmarkedRegions, fileType)
+                  downloadBookmarkFile(bookmarkedRegions, fileType, model)
                   setDialogOpen(false)
                 }}
               >
