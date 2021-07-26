@@ -236,7 +236,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
             for (let j = fstart; j < fend; j++) {
               const i = j - region.start
-              if (i >= 0 && i < bins.length) {
+              if (i >= 0 && i < bins.length - 1) {
                 const l1 = regionSeq[i].toLowerCase()
                 const l2 = regionSeq[i + 1].toLowerCase()
                 const bin = bins[i]
