@@ -25,7 +25,10 @@ export * from './util'
 export interface AbstractViewContainer {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
-  addView(typeName: string, initialState: Record<string, unknown>): void
+  addView(
+    typeName: string,
+    initialState: Record<string, unknown>,
+  ): AbstractViewModel
 }
 export function isViewContainer(
   thing: unknown,

@@ -9,27 +9,15 @@ import {
 } from '@material-ui/data-grid'
 
 import { getSession } from '@jbrowse/core/util'
-import { AbstractViewModel, Region } from '@jbrowse/core/util/types'
+import { Region } from '@jbrowse/core/util/types'
 
 import { GridBookmarkModel } from '../model'
-import { NavigableViewModel } from '../types'
+import { navToBookmark } from '../utils'
 
 import AssemblySelector from './AssemblySelector'
 import DeleteBookmark from './DeleteBookmark'
 import DownloadBookmarks from './DownloadBookmarks'
 import ClearBookmarks from './ClearBookmarks'
-
-function navToBookmark(locString: string, views: AbstractViewModel[]) {
-  const lgv = views.find(
-    view => view.type === 'LinearGenomeView',
-  ) as NavigableViewModel
-
-  if (lgv) {
-    lgv.navToLocString(locString)
-  } else {
-    throw new Error('No LGV open')
-  }
-}
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -74,7 +62,7 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
         return (
           <Link
             onClick={() => {
-              navToBookmark(value as string, views)
+              navToBookmark(value as string, views, model)
             }}
           >
             {value}
