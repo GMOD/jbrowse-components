@@ -7,7 +7,7 @@ const output = JSON.parse(pgks.output[1].toString())
 const packages = JSON.parse(output.data)
 
 module.exports = {
-  stories: ['../stories/**/*.stories.(ts|tsx|mdx)'],
+  stories: ['../stories/**/*.stories.@(ts|tsx|mdx)'],
   addons: [
     '@storybook/addon-actions',
     '@storybook/addon-links',
