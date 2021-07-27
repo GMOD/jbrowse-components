@@ -9,6 +9,7 @@ import {
   DialogTitle,
   Divider,
   IconButton,
+  Typography,
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 
@@ -47,8 +48,10 @@ function ReturnToImportFormDialog({
       <Divider />
 
       <DialogContent>
-        Are you sure you want to return to the import form? This will lose your
-        current view
+        <Typography>
+          Are you sure you want to return to the import form? This will lose
+          your current view
+        </Typography>
       </DialogContent>
       <DialogActions>
         <Button

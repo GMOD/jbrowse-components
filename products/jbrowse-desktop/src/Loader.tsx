@@ -77,6 +77,7 @@ export default function Loader({
             ...runtimePlugins.map(({ plugin: P, definition }) => ({
               plugin: new P(),
               definition,
+              metadata: { url: definition.url },
             })),
           ])
         } catch (e) {

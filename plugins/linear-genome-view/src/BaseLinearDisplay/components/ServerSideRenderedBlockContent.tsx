@@ -94,7 +94,9 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
     <>
       {shown ? (
         <div className={classes.loading}>
-          <div className={classes.dots}>{status ? `${status}` : 'Loading'}</div>
+          <Typography className={classes.dots} variant="body2">
+            {status ? `${status}` : 'Loading'}
+          </Typography>
         </div>
       ) : null}
     </>
@@ -108,12 +110,12 @@ function BlockMessage({
 }) {
   const classes = useStyles()
 
-  return typeof messageContent === 'string' ? (
+  return React.isValidElement(messageContent) ? (
+    <div className={classes.blockReactNodeMessage}>{messageContent}</div>
+  ) : (
     <Typography variant="body2" className={classes.blockMessage}>
       {messageContent}
     </Typography>
-  ) : (
-    <div className={classes.blockReactNodeMessage}>{messageContent}</div>
   )
 }
 
@@ -130,21 +132,17 @@ function BlockError({
   return (
     <div className={classes.blockError} style={{ height: displayHeight }}>
       {reload ? (
-        <>
-          <Button
-            data-testid="reload_button"
-            onClick={reload}
-            startIcon={<RefreshIcon />}
-          >
-            Reload
-          </Button>
-          {`${error}`}
-        </>
-      ) : (
-        <Typography color="error" variant="body2">
-          {`${error}`}
-        </Typography>
-      )}
+        <Button
+          data-testid="reload_button"
+          onClick={reload}
+          startIcon={<RefreshIcon />}
+        >
+          Reload
+        </Button>
+      ) : null}
+      <Typography color="error" variant="body2" display="inline">
+        {`${error}`}
+      </Typography>
     </div>
   )
 }

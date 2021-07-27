@@ -1,5 +1,4 @@
 import { lazy } from 'react'
-
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   createBaseTrackConfig,

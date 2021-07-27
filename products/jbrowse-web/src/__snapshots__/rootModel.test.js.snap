@@ -106,6 +106,7 @@ Object {
   "name": "assembly1",
   "sequence": Object {
     "adapter": Object {
+      "adapterId": "sequenceConfigAdapterId",
       "features": Array [
         Object {
           "end": 10,
@@ -120,9 +121,6 @@ Object {
     "displays": Array [
       Object {
         "displayId": "sequenceConfigId-LinearReferenceSequenceDisplay",
-        "renderer": Object {
-          "type": "DivSequenceRenderer",
-        },
         "type": "LinearReferenceSequenceDisplay",
       },
     ],
@@ -134,15 +132,9 @@ Object {
 
 exports[`Root MST model adds track and connection configs to an assembly 2`] = `
 Object {
-  "adapter": Object {
-    "type": "BamAdapter",
-  },
   "displays": Array [
     Object {
       "displayId": "trackId0-LinearBasicDisplay",
-      "renderer": Object {
-        "type": "SvgFeatureRenderer",
-      },
       "type": "LinearBasicDisplay",
     },
   ],
@@ -158,14 +150,4 @@ Object {
 }
 `;
 
-exports[`Root MST model creates with defaults 1`] = `
-Object {
-  "rpc": Object {
-    "drivers": Object {
-      "MainThreadRpcDriver": Object {
-        "type": "MainThreadRpcDriver",
-      },
-    },
-  },
-}
-`;
+exports[`Root MST model creates with defaults 1`] = `Object {}`;

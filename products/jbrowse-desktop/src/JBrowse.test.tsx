@@ -1,8 +1,8 @@
+import React from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import electron from 'electron'
-import { render } from '@testing-library/react'
+import { render, fireEvent } from '@testing-library/react'
 import { SnapshotIn } from 'mobx-state-tree'
-import React from 'react'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
@@ -54,6 +54,7 @@ describe('JBrowse Desktop', () => {
     const { findByText } = render(
       <JBrowse pluginManager={getPluginManager()} />,
     )
-    await findByText('Start a new session')
+    fireEvent.click(await findByText('Empty'))
+    await findByText('Help')
   })
 })

@@ -214,7 +214,7 @@ export default class DotplotPlugin extends Plugin {
                       clipPos: saClipPos,
                       CIGAR: saCigar,
                       assemblyName: trackAssembly,
-                      strand: saStrandNormalized,
+                      strand: 1, // saStrandNormalized,
                       uniqueId: `${feature.id()}_SA${index}`,
                       mate: {
                         start: saClipPos,
@@ -225,6 +225,7 @@ export default class DotplotPlugin extends Plugin {
                   })
 
                 const feat = feature.toJSON()
+                feat.strand = 1
                 feat.mate = {
                   refName: readName,
                   start: clipPos,

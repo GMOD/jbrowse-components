@@ -33,6 +33,9 @@ export function openLocation(location: FileLocation): GenericFilehandle {
     throw new Error('must provide a location to openLocation')
   }
   if (isLocalPathLocation(location)) {
+    if (!location.localPath) {
+      throw new Error('No local path provided')
+    }
     if (isElectron || typeof jest !== 'undefined') {
       return new LocalFile(location.localPath)
     } else {
@@ -40,6 +43,9 @@ export function openLocation(location: FileLocation): GenericFilehandle {
     }
   }
   if (isUriLocation(location)) {
+    if (!location.uri) {
+      throw new Error('No URI provided')
+    }
     return openUrl(
       location.baseUri
         ? new URL(location.uri, location.baseUri).href

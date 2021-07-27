@@ -1,7 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`plugin in a stock JBrowse 1`] = `
+exports[`plugin in a stock JBrowse 1`] = `Object {}`;
+
+exports[`test creating a text search adapter 1`] = `
 Object {
-  "type": "NCListAdapter",
+  "namesIndexLocation": Object {
+    "uri": "names/",
+  },
+  "textSearchAdapterId": "JBrowse1GenerateNamesAdapterTest",
+  "type": "JBrowse1TextSearchAdapter",
 }
 `;

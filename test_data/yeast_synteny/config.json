@@ -35,6 +35,17 @@
   ],
   "configuration": {},
   "connections": [],
+  "textSearchAdapters": [
+    {
+      "type": "JBrowse1TextSearchAdapter",
+      "textSearchAdapterId": "JBrowse1YeastTextSearchAdapter",
+      "namesIndexLocation": {
+        "uri": "names/"
+      },
+      "tracks": [],
+      "assemblies": ["YJM1447", "R64"]
+    }
+  ],
   "tracks": [
     {
       "type": "SyntenyTrack",

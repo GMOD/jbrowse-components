@@ -23,6 +23,8 @@ export default [
   '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType',
   '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType',
   '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType',
+  '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType',
+  '@jbrowse/core/pluggableElementTypes/renderers/RendererType',
   '@jbrowse/core/configuration',
   '@jbrowse/core/util/types/mst',
   '@jbrowse/core/ui',

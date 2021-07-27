@@ -78,19 +78,22 @@ export default class VCFFeature implements Feature {
     return this._id
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dataFromVariant(variant: any): FeatureData {
+  dataFromVariant(variant: {
+    REF: string
+    POS: number
+    ALT: (string | Breakend)[]
+    CHROM: string
+    INFO: any // eslint-disable-line @typescript-eslint/no-explicit-any
+    ID: string[]
+  }): FeatureData {
     const { REF, ALT, POS, CHROM, INFO, ID } = variant
     const start = POS - 1
     const [SO_term, description] = this._getSOTermAndDescription(REF, ALT)
-    const isTRA = ALT && ALT.some((f: string | Breakend) => f === '<TRA>')
-    const isSymbolic =
-      ALT &&
-      ALT.some(
-        (f: string | Breakend) =>
-          typeof f === 'string' && f.indexOf('<') !== -1,
-      )
-    const featureData: FeatureData = {
+    const isTRA = ALT?.some(f => f === '<TRA>')
+    const isSymbolic = ALT?.some(
+      f => typeof f === 'string' && f.indexOf('<') !== -1,
+    )
+    return {
       refName: CHROM,
       start,
       end: isSymbolic && INFO.END && !isTRA ? +INFO.END[0] : start + REF.length,
@@ -99,8 +102,6 @@ export default class VCFFeature implements Feature {
       name: ID ? ID[0] : undefined,
       aliases: ID && ID.length > 1 ? variant.ID.slice(1) : undefined,
     }
-
-    return featureData
   }
 
   /**
@@ -108,7 +109,7 @@ export default class VCFFeature implements Feature {
    */
   _getSOTermAndDescription(
     ref: string,
-    alt: string[],
+    alt: (string | Breakend)[],
   ): [string, string] | [undefined, undefined] {
     // it's just a remark if there are no alternate alleles
     if (!alt || alt === []) {
@@ -119,6 +120,7 @@ export default class VCFFeature implements Feature {
     let descriptions: Set<string> = new Set()
     alt.forEach(a => {
       let [soTerm, description] = this._getSOAndDescFromAltDefs(ref, a)
+
       if (!soTerm) {
         ;[soTerm, description] = this._getSOAndDescByExamination(ref, a)
       }
@@ -127,27 +129,29 @@ export default class VCFFeature implements Feature {
         descriptions.add(description)
       }
     })
+
     // Combine descriptions like ["SNV G -> A", "SNV G -> T"] to ["SNV G -> A,T"]
     if (descriptions.size > 1) {
-      const prefixes: Set<string> = new Set()
-      descriptions.forEach(desc => {
-        const prefix = /(\w+? \w+? -> )(?:<)\w+(?:>)/.exec(desc)
-        if (prefix && prefix[1]) {
-          prefixes.add(prefix[1])
-        } else {
-          prefixes.add(desc)
-        }
+      const prefixes = new Set(
+        [...descriptions].map(desc => {
+          const prefix = desc.split('->')
+          return prefix[1] ? prefix[0] : desc
+        }),
+      )
+
+      const new_descs = [...prefixes].map(prefix => {
+        const suffixes = [...descriptions]
+          .map(desc => {
+            const pref = desc.split('-> ')
+            return pref[1] && pref[0] === prefix ? pref[1] : ''
+          })
+          .filter(f => !!f)
+
+        return suffixes.length
+          ? prefix + '-> ' + suffixes.join(',')
+          : [...descriptions].join(',')
       })
-      const new_descs: string[] = []
-      ;[...prefixes].forEach((prefix: string) => {
-        const suffixes: string[] = []
-        ;[...descriptions].forEach((desc: string) => {
-          if (desc.startsWith(prefix)) {
-            suffixes.push(desc.slice(prefix.length))
-          }
-        })
-        new_descs.push(prefix + suffixes.join(','))
-      })
+
       descriptions = new Set(new_descs)
     }
     if (soTerms.size) {
@@ -175,17 +179,12 @@ export default class VCFFeature implements Feature {
   ): [string, string] | [undefined, undefined] {
     // not a symbolic ALT if doesn't begin with '<', so we'll have no definition
     if (typeof alt === 'object') {
-      return [
-        'breakend',
-        'A VCF breakend defines one end of a point of structural variation',
-      ]
+      return ['breakend', alt.toString()]
     }
 
     if (typeof alt === 'string' && !alt.startsWith('<')) {
       return [undefined, undefined]
     }
-
-    alt = alt.replace(/^<|>$/g, '') // trim off < and >
 
     // look for a definition with an SO type for this
     let soTerm = VCFFeature._altTypeToSO[alt]
@@ -194,11 +193,11 @@ export default class VCFFeature implements Feature {
       soTerm = 'sequence_variant'
     }
     if (soTerm) {
-      const metaDescription = this.parser.getMetadata('ALT', alt, 'Description')
-      const description = metaDescription
-        ? `${alt} - ${metaDescription}`
-        : this._makeDescriptionString(soTerm, ref, alt)
-      return [soTerm, description]
+      // const metaDescription = this.parser.getMetadata('ALT', alt, 'Description')
+      // const description = metaDescription
+      //   ? `${alt} - ${metaDescription}`
+      //   : this._makeDescriptionString(soTerm, ref, alt)
+      return [soTerm, alt]
     }
 
     // try to look for a definition for a parent term if we can
@@ -209,6 +208,7 @@ export default class VCFFeature implements Feature {
         `<${modAlt.slice(0, modAlt.length - 1).join(':')}>`,
       )
     }
+
     // no parent
     return [undefined, undefined]
   }
@@ -220,11 +220,17 @@ export default class VCFFeature implements Feature {
     if (typeof alt === 'object') {
       return ['breakend', this._makeDescriptionString('breakend', ref, alt)]
     }
+
     if (ref.length === 1 && alt.length === 1) {
       // use SNV because SO definition of SNP says abundance must be at
       // least 1% in population, and can't be sure we meet that
       return ['SNV', this._makeDescriptionString('SNV', ref, alt)]
     }
+
+    if (alt.includes('<')) {
+      return ['sv', alt]
+    }
+
     if (ref.length === alt.length) {
       if (ref.split('').reverse().join('') === alt) {
         return ['inversion', this._makeDescriptionString('inversion', ref, alt)]

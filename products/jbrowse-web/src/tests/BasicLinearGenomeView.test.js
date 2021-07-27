@@ -5,6 +5,7 @@ import {
   fireEvent,
   render,
   waitFor,
+  screen,
 } from '@testing-library/react'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
@@ -175,6 +176,48 @@ describe('valid file tests', () => {
     expect(state.session.views[0].tracks.length).toBe(1)
   })
 
+  it('test navigation with the search input box', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByText, findByTestId, findByPlaceholderText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    fireEvent.click(await findByText('Help'))
+    // need this to complete before we can try to search
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+
+    const autocomplete = await findByTestId('autocomplete')
+    const inputBox = await findByPlaceholderText('Search for location')
+
+    autocomplete.focus()
+    inputBox.focus()
+    fireEvent.mouseDown(inputBox)
+    fireEvent.change(inputBox, {
+      target: { value: '{volvox2}ctgB:1..200' },
+    })
+    fireEvent.keyDown(inputBox, { key: 'Enter', code: 'Enter' })
+    fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+    await waitFor(
+      () =>
+        expect(state.session.views[0].displayedRegions[0].assemblyName).toEqual(
+          'volvox2',
+        ),
+      {
+        timeout: 10000,
+      },
+    )
+    autocomplete.focus()
+    fireEvent.mouseDown(inputBox)
+    fireEvent.change(inputBox, {
+      target: { value: 'apple2' },
+    })
+    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
+    fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+    // test search results dialog opening
+    await screen.findByText('Search Results')
+    expect(state.session.views[0].searchResults.length).toBeGreaterThan(0)
+  }, 30000)
+
   it('opens reference sequence track and expects zoom in message', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
@@ -216,7 +259,7 @@ describe('valid file tests', () => {
     expect(centerLineInfo.offset).toEqual(120)
   })
 
-  it('test navigation with the search input box', async () => {
+  it('test choose option from dropdown refName autocomplete', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByText, findByTestId, findByPlaceholderText } = render(
@@ -234,28 +277,25 @@ describe('valid file tests', () => {
 
     const autocomplete = await findByTestId('autocomplete')
     const inputBox = await findByPlaceholderText('Search for location')
-
+    fireEvent.mouseDown(inputBox)
     autocomplete.focus()
-    fireEvent.change(inputBox, {
-      target: { value: '{volvox2}ctgB:1..200' },
-    })
-
     fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
     fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
+    const option = (await screen.findAllByText('ctgB'))[0]
+    fireEvent.click(option)
     fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-    // specify different valid assembly when navigating via locstring
-    await waitFor(() =>
-      expect(state.session.views[0].displayedRegions[0].assemblyName).toEqual(
-        'volvox2',
-      ),
-    )
-    await waitFor(() =>
-      expect(state.session.views[0].displayedRegions[0].refName).toEqual(
-        'ctgB',
-      ),
+
+    await waitFor(
+      () =>
+        expect(state.session.views[0].displayedRegions[0].refName).toEqual(
+          'ctgB',
+        ),
+      {
+        timeout: 1000,
+      },
     )
     expect((await findByPlaceholderText('Search for location')).value).toEqual(
       expect.stringContaining('ctgB'),
     )
-  }, 15000)
+  }, 30000)
 })

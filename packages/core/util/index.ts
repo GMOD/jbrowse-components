@@ -29,6 +29,8 @@ export * from './types'
 export * from './aborting'
 export * from './when'
 
+export * from './offscreenCanvasPonyfill'
+
 if (!Object.fromEntries) {
   // @ts-ignore
   fromEntries.shim()
@@ -351,6 +353,9 @@ export function parseLocStringOneBased(
     throw new Error(`invalid location string: "${locString}"`)
   }
   const [, , assemblyName, location] = assemblyMatch
+  if (!assemblyName && location.startsWith('{}')) {
+    throw new Error(`no assembly name was provided in location "${location}"`)
+  }
   const lastColonIdx = location.lastIndexOf(':')
   if (lastColonIdx === -1) {
     if (isValidRefName(location, assemblyName)) {
@@ -755,6 +760,7 @@ export function renameRegionIfNeeded(
   if (isStateTreeNode(region) && !isAlive(region)) {
     return region
   }
+
   if (region && refNameMap && refNameMap[region.refName]) {
     // clone the region so we don't modify it
     if (isStateTreeNode(region)) {
@@ -782,29 +788,33 @@ export async function renameRegionsIfNeeded<
     statusCallback?: Function
   }
 >(assemblyManager: AssemblyManager, args: ARGTYPE) {
-  const { assemblyName, regions, adapterConfig } = args
+  const { regions = [], adapterConfig } = args
   if (!args.sessionId) {
     throw new Error('sessionId is required')
   }
-  const newArgs: ARGTYPE = {
+
+  const assemblyNames = regions.map(region => region.assemblyName)
+  const assemblyMaps = Object.fromEntries(
+    await Promise.all(
+      assemblyNames.map(async assemblyName => {
+        return [
+          assemblyName,
+          await assemblyManager.getRefNameMapForAdapter(
+            adapterConfig,
+            assemblyName,
+            args,
+          ),
+        ]
+      }),
+    ),
+  )
+
+  return {
     ...args,
-    regions: [...(args.regions || [])],
+    regions: regions.map(region =>
+      renameRegionIfNeeded(assemblyMaps[region.assemblyName], region),
+    ),
   }
-
-  if (assemblyName) {
-    const refNameMap = await assemblyManager.getRefNameMapForAdapter(
-      adapterConfig,
-      assemblyName,
-      newArgs,
-    )
-
-    if (refNameMap && regions && newArgs.regions) {
-      for (let i = 0; i < regions.length; i += 1) {
-        newArgs.regions[i] = renameRegionIfNeeded(refNameMap, regions[i])
-      }
-    }
-  }
-  return newArgs
 }
 
 export function minmax(a: number, b: number) {
@@ -910,12 +920,12 @@ export const rIC =
     : (cb: Function) => cb()
 
 // xref https://gist.github.com/tophtucker/62f93a4658387bb61e4510c37e2e97cf
-export function measureText(str: string, fontSize = 10) {
+export function measureText(str: unknown, fontSize = 10) {
   // prettier-ignore
   const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
   const avg = 0.5279276315789471
   return (
-    str
+    String(str)
       .split('')
       .map(c =>
         c.charCodeAt(0) < widths.length ? widths[c.charCodeAt(0)] : avg,

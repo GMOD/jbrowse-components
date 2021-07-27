@@ -44,13 +44,11 @@ const longReadsSession = {
   ...defaultSession,
   view: volvoxSession.session.views[0],
 }
-
 export const OneLinearGenomeView = () => {
   const state = createViewState({
     assembly,
     tracks,
     defaultSession,
-
     // use 1-based coordinates for locstring
     location: 'ctgA:1105..1221',
     onChange: patch => {
@@ -247,7 +245,6 @@ export const WithPlugins = () => {
   })
   return <JBrowseLinearGenomeView viewState={state} />
 }
-
 export const CustomTheme = () => {
   const state = createViewState({
     assembly,

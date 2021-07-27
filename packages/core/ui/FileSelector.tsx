@@ -11,10 +11,6 @@ import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab'
 import { observer } from 'mobx-react'
 import { isElectron } from '../util'
 import {
-  PreLocalPathLocation,
-  PreUriLocation,
-  PreBlobLocation,
-  PreFileLocation,
   LocalPathLocation,
   UriLocation,
   FileLocation,

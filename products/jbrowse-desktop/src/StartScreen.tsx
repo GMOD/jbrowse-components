@@ -83,9 +83,7 @@ const DeleteSessionDialog = ({
           Cancel
         </Button>
         <Button
-          onClick={() => {
-            setDeleteSession(true)
-          }}
+          onClick={() => setDeleteSession(true)}
           color="primary"
           variant="contained"
           autoFocus
@@ -153,9 +151,7 @@ const RenameSessionDialog = ({
           Cancel
         </Button>
         <Button
-          onClick={() => {
-            setRenameSession(true)
-          }}
+          onClick={() => setRenameSession(true)}
           color="primary"
           variant="contained"
           disabled={!newSessionName || sessionNames.includes(newSessionName)}
@@ -306,28 +302,24 @@ export default function StartScreen({
           Recent sessions
         </Typography>
         <Grid container spacing={4}>
-          {sortedSessions
-            ? sortedSessions.map(
-                ([sessionName, sessionData]: [string, any]) => (
-                  <Grid item key={sessionName}>
-                    <RecentSessionCard
-                      sessionName={sessionName}
-                      sessionStats={sessionData.stats}
-                      sessionScreenshot={sessionData.screenshot}
-                      onClick={() => {
-                        setSessionToLoad(sessionName)
-                      }}
-                      onDelete={() => {
-                        setSessionToDelete(sessionName)
-                      }}
-                      onRename={() => {
-                        setSessionToRename(sessionName)
-                      }}
-                    />
-                  </Grid>
-                ),
-              )
-            : null}
+          {sortedSessions?.map(([sessionName, sessionData]: [string, any]) => (
+            <Grid item key={sessionName}>
+              <RecentSessionCard
+                sessionName={sessionName}
+                sessionStats={sessionData.stats}
+                sessionScreenshot={sessionData.screenshot}
+                onClick={() => {
+                  setSessionToLoad(sessionName)
+                }}
+                onDelete={() => {
+                  setSessionToDelete(sessionName)
+                }}
+                onRename={() => {
+                  setSessionToRename(sessionName)
+                }}
+              />
+            </Grid>
+          ))}
         </Grid>
       </Container>
 
@@ -336,9 +328,7 @@ export default function StartScreen({
         anchorEl={menuAnchorEl}
         keepMounted
         open={Boolean(menuAnchorEl)}
-        onClose={() => {
-          setMenuAnchorEl(null)
-        }}
+        onClose={() => setMenuAnchorEl(null)}
       >
         <ListSubheader>Advanced Settings</ListSubheader>
         <MenuItem

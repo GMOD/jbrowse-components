@@ -1,8 +1,13 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import TextSearchAdapterType from '@jbrowse/core/pluggableElementTypes/TextSearchAdapterType'
 import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { configSchema as ncListAdapterConfigSchema } from './NCListAdapter'
+import {
+  AdapterClass as JBrowse1TextSearchAdapterClass,
+  configSchema as jbrowse1AdapterConfigSchema,
+} from './JBrowse1TextSeachAdapter'
 import {
   configSchema as jbrowse1ConfigSchema,
   modelFactory as jbrowse1ModelFactory,
@@ -19,6 +24,16 @@ export default class LegacyJBrowsePlugin extends Plugin {
           configSchema: ncListAdapterConfigSchema,
           getAdapterClass: () =>
             import('./NCListAdapter/NCListAdapter').then(r => r.default),
+        }),
+    )
+
+    pluginManager.addTextSearchAdapterType(
+      () =>
+        new TextSearchAdapterType({
+          name: 'JBrowse1TextSearchAdapter',
+          configSchema: jbrowse1AdapterConfigSchema,
+          AdapterClass: JBrowse1TextSearchAdapterClass,
+          description: 'A JBrowse 1 text search adapter',
         }),
     )
 

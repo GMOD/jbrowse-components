@@ -96,7 +96,7 @@ jbrowse add-track peach.sorted.gff.gz -a peach --load copy --out /var/www/html/j
 ## peach.fa` then you load --assemblyNames peach,grape. the order is reversed
 ## because the syntax is minimap2 ref.fa query.fa on the CLI and query (left side
 ## of PAF) and target (right hand side) in PAF output file
-jbrowse add-track peach_vs_grape.paf --assemblyNames peach,grape --out load copy
+jbrowse add-track peach_vs_grape.paf --assemblyNames peach,grape --out /var/www/html/jbrowse2/ --load copy
 
 
 

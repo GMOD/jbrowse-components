@@ -1,0 +1,117 @@
+{
+  "fakesnp": {
+    "prefix": ["FakeSNP1"],
+    "exact": [
+      ["FakeSNP", 11, "FakeSNP", "ctgA", 999, 1000],
+      ["FakeSNP", 13, "FakeSNP", "ctgA", 999, 1000],
+      ["FakeSNP", 14, "FakeSNP", "ctgA", 999, 1000]
+    ]
+  },
+  "rs17885634": {
+    "prefix": [],
+    "exact": [["rs17885634", 16, "rs17885634", "contigA", 10251, 10252]]
+  },
+  "apple3": {
+    "exact": [
+      ["Apple3", 0, "Apple3", "ctgA", 17399, 23000],
+      ["Apple3", 8, "Apple3", "ctgA", 17399, 23000],
+      ["Apple3", 9, "Apple3", "ctgA", 17399, 23000],
+      ["Apple3", 13, "Apple3", "ctgA", 17399, 23000],
+      ["Apple3", 14, "Apple3", "ctgA", 17399, 23000]
+    ],
+    "prefix": []
+  },
+  "rs17878": { "exact": [], "prefix": ["rs17878855", "rs17878802"] },
+  "rs1788118": { "exact": [], "prefix": ["rs17881180"] },
+  "pro": { "prefix": ["Protein:HGA", "Protein:HGB"], "exact": [] },
+  "rs1788423": { "prefix": ["rs17884233"], "exact": [] },
+  "rs767349": { "prefix": ["rs76734991"], "exact": [] },
+  "app": { "prefix": ["Apple1", "Apple2", "Apple3"], "exact": [] },
+  "appl": { "prefix": ["Apple1", "Apple2", "Apple3"], "exact": [] },
+  "rs178834": { "exact": [], "prefix": ["rs17883461"] },
+  "m1": { "exact": [], "prefix": ["m11", "m14", "m13", "m12", "m10", "m15"] },
+  "10_tssbiv": {
+    "exact": [["10_TssBiv", 1, "10_TssBiv", "ctgA", 18000, 18060]],
+    "prefix": []
+  },
+  "rs20": { "exact": [], "prefix": ["rs2070424"] },
+  "seg01": {
+    "prefix": [],
+    "exact": [
+      ["seg01", 10, "seg01", "ctgA", 32328, 32359],
+      ["seg01", 13, "seg01", "ctgA", 32328, 32359],
+      ["seg01", 14, "seg01", "ctgA", 32328, 32359]
+    ]
+  },
+  "14_reprp": { "exact": [], "prefix": ["14_ReprPCWk"] },
+  "c": { "prefix": ["ctgA", "ctgB", "cds-Apple2"], "exact": [] },
+  "rs17883998": {
+    "prefix": [],
+    "exact": [["rs17883998", 16, "rs17883998", "contigA", 9852, 9853]]
+  },
+  "rs17": {
+    "prefix": [
+      "rs17883296",
+      "rs17878855",
+      "rs17881581",
+      "rs17881180",
+      "rs17884260",
+      "rs17884040",
+      "rs17880795",
+      "rs17885219",
+      "rs17882967",
+      "rs17883270",
+      "rs17878802",
+      "rs17881807",
+      "rs17884233",
+      "rs17880490",
+      "rs17886025",
+      "rs17883461",
+      "rs17886606",
+      "rs17885303",
+      "rs17883998",
+      "rs17885833",
+      { "name": "too many matches", "hitLimit": 1 }
+    ],
+    "exact": []
+  },
+  "remark:": { "exact": [], "prefix": ["Remark:hga"] },
+  "rs76": { "prefix": ["rs76067554", "rs76734991"], "exact": [] },
+  "rs1788399": { "exact": [], "prefix": ["rs17883998"] },
+  "rs786941": { "exact": [], "prefix": ["rs78694163"] },
+  "rs17878802": {
+    "prefix": [],
+    "exact": [["rs17878802", 16, "rs17878802", "contigA", 5280, 5281]]
+  },
+  "2_ts": { "exact": [], "prefix": ["2_TssAFlnk"] },
+  "seg1": {
+    "prefix": ["seg12", "seg11", "seg10", "seg15", "seg14", "seg13"],
+    "exact": []
+  },
+  "rs1041": { "prefix": ["rs1041740"], "exact": [] },
+  "rs17881180": {
+    "prefix": [],
+    "exact": [["rs17881180", 16, "rs17881180", "contigA", 3464, 3465]]
+  },
+  "rs1788660": { "prefix": ["rs17886606"], "exact": [] },
+  "rs80265967": {
+    "exact": [["rs80265967", 16, "rs80265967", "contigA", 10780, 10781]],
+    "prefix": []
+  },
+  "agt221": { "prefix": ["agt221.5", "agt221.3"], "exact": [] },
+  "fake": { "exact": [], "prefix": ["FakeSNP", "FakeSNP1"] },
+  "14_r": { "prefix": ["14_ReprPCWk"], "exact": [] },
+  "m10": {
+    "exact": [
+      ["m10", 6, "m10", "ctgA", 28341, 28447],
+      ["m10", 13, "m10", "ctgA", 28341, 28447],
+      ["m10", 14, "m10", "ctgA", 28341, 28447]
+    ],
+    "prefix": []
+  },
+  "rs767": { "prefix": ["rs76734991"], "exact": [] },
+  "rs17883234": {
+    "exact": [["rs17883234", 16, "rs17883234", "contigA", 11181, 11182]],
+    "prefix": []
+  }
+}

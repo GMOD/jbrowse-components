@@ -1,0 +1,325 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`adapter can fetch variants from volvox.vcf 1`] = `
+Array [
+  "ctgA",
+]
+`;
+
+exports[`adapter can fetch variants from volvox.vcf 2`] = `
+Array [
+  Object {
+    "ALT": Array [
+      "C",
+    ],
+    "CHROM": "ctgA",
+    "FILTER": null,
+    "ID": null,
+    "INFO": Object {
+      "AC1": Array [
+        2,
+      ],
+      "AF1": Array [
+        1,
+      ],
+      "DP": Array [
+        3,
+      ],
+      "DP4": Array [
+        0,
+        0,
+        3,
+        0,
+      ],
+      "FQ": Array [
+        -36,
+      ],
+      "MQ": Array [
+        37,
+      ],
+      "VDB": Array [
+        0.0186,
+      ],
+    },
+    "POS": 277,
+    "QUAL": 10.4,
+    "REF": "T",
+    "aliases": undefined,
+    "description": "SNV T -> C",
+    "end": 277,
+    "name": undefined,
+    "refName": "ctgA",
+    "samples": Object {
+      "sample_data/raw/volvox/volvox-sorted.bam": Object {
+        "GQ": Array [
+          13,
+        ],
+        "GT": Array [
+          "1/1",
+        ],
+        "PL": Array [
+          42,
+          9,
+          0,
+        ],
+      },
+    },
+    "start": 276,
+    "type": "SNV",
+    "uniqueId": "test-vcf-0",
+  },
+  Object {
+    "ALT": Array [
+      "C",
+    ],
+    "CHROM": "ctgA",
+    "FILTER": null,
+    "ID": null,
+    "INFO": Object {
+      "AC1": Array [
+        2,
+      ],
+      "AF1": Array [
+        1,
+      ],
+      "DP": Array [
+        23,
+      ],
+      "DP4": Array [
+        0,
+        1,
+        8,
+        14,
+      ],
+      "FQ": Array [
+        -73,
+      ],
+      "MQ": Array [
+        37,
+      ],
+      "PV4": Array [
+        1,
+        1,
+        0.42,
+        1,
+      ],
+      "VDB": Array [
+        0.0308,
+      ],
+    },
+    "POS": 1694,
+    "QUAL": 107,
+    "REF": "T",
+    "aliases": undefined,
+    "description": "SNV T -> C",
+    "end": 1694,
+    "name": undefined,
+    "refName": "ctgA",
+    "samples": Object {
+      "sample_data/raw/volvox/volvox-sorted.bam": Object {
+        "GQ": Array [
+          89,
+        ],
+        "GT": Array [
+          "1/1",
+        ],
+        "PL": Array [
+          140,
+          46,
+          0,
+        ],
+      },
+    },
+    "start": 1693,
+    "type": "SNV",
+    "uniqueId": "test-vcf-1",
+  },
+  Object {
+    "ALT": Array [
+      "G",
+    ],
+    "CHROM": "ctgA",
+    "FILTER": null,
+    "ID": null,
+    "INFO": Object {
+      "AC1": Array [
+        1,
+      ],
+      "AF1": Array [
+        0.5,
+      ],
+      "DP": Array [
+        22,
+      ],
+      "DP4": Array [
+        6,
+        5,
+        3,
+        8,
+      ],
+      "FQ": Array [
+        45.3,
+      ],
+      "MQ": Array [
+        37,
+      ],
+      "PV4": Array [
+        0.39,
+        1,
+        1,
+        1,
+      ],
+      "VDB": Array [
+        0.0253,
+      ],
+    },
+    "POS": 2644,
+    "QUAL": 44,
+    "REF": "T",
+    "aliases": undefined,
+    "description": "SNV T -> G",
+    "end": 2644,
+    "name": undefined,
+    "refName": "ctgA",
+    "samples": Object {
+      "sample_data/raw/volvox/volvox-sorted.bam": Object {
+        "GQ": Array [
+          75,
+        ],
+        "GT": Array [
+          "0/1",
+        ],
+        "PL": Array [
+          74,
+          0,
+          77,
+        ],
+      },
+    },
+    "start": 2643,
+    "type": "SNV",
+    "uniqueId": "test-vcf-2",
+  },
+  Object {
+    "ALT": Array [
+      "A",
+    ],
+    "CHROM": "ctgA",
+    "FILTER": null,
+    "ID": null,
+    "INFO": Object {
+      "AC1": Array [
+        2,
+      ],
+      "AF1": Array [
+        1,
+      ],
+      "DP": Array [
+        19,
+      ],
+      "DP4": Array [
+        0,
+        0,
+        8,
+        11,
+      ],
+      "FQ": Array [
+        -84,
+      ],
+      "MQ": Array [
+        36,
+      ],
+      "VDB": Array [
+        0.0384,
+      ],
+    },
+    "POS": 3213,
+    "QUAL": 124,
+    "REF": "T",
+    "aliases": undefined,
+    "description": "SNV T -> A",
+    "end": 3213,
+    "name": undefined,
+    "refName": "ctgA",
+    "samples": Object {
+      "sample_data/raw/volvox/volvox-sorted.bam": Object {
+        "GQ": Array [
+          99,
+        ],
+        "GT": Array [
+          "1/1",
+        ],
+        "PL": Array [
+          157,
+          57,
+          0,
+        ],
+      },
+    },
+    "start": 3212,
+    "type": "SNV",
+    "uniqueId": "test-vcf-3",
+  },
+  Object {
+    "ALT": Array [
+      "ct",
+    ],
+    "CHROM": "ctgA",
+    "FILTER": null,
+    "ID": null,
+    "INFO": Object {
+      "AC1": Array [
+        2,
+      ],
+      "AF1": Array [
+        1,
+      ],
+      "DP": Array [
+        15,
+      ],
+      "DP4": Array [
+        0,
+        0,
+        5,
+        6,
+      ],
+      "FQ": Array [
+        -67.5,
+      ],
+      "INDEL": true,
+      "MQ": Array [
+        37,
+      ],
+      "VDB": Array [
+        0.0384,
+      ],
+    },
+    "POS": 3858,
+    "QUAL": 160,
+    "REF": "ctt",
+    "aliases": undefined,
+    "description": "deletion ctt -> ct",
+    "end": 3860,
+    "name": undefined,
+    "refName": "ctgA",
+    "samples": Object {
+      "sample_data/raw/volvox/volvox-sorted.bam": Object {
+        "GQ": Array [
+          63,
+        ],
+        "GT": Array [
+          "1/1",
+        ],
+        "PL": Array [
+          201,
+          33,
+          0,
+        ],
+      },
+    },
+    "start": 3857,
+    "type": "deletion",
+    "uniqueId": "test-vcf-4",
+  },
+]
+`;

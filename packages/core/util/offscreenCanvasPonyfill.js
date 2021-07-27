@@ -2,6 +2,7 @@
 import React from 'react'
 import Path from 'svg-path-generator'
 import Color from 'color'
+import isNode from 'detect-node'
 
 // This is a ponyfill for the HTML5 OffscreenCanvas API.
 export let createCanvas
@@ -9,11 +10,8 @@ export let createImageBitmap
 export let ImageBitmapType
 
 const weHave = {
-  realOffscreenCanvas:
-    typeof __webpack_require__ === 'function' &&
-    typeof OffscreenCanvas === 'function',
-  node:
-    typeof __webpack_require__ === 'undefined' && typeof process === 'object',
+  realOffscreenCanvas: typeof OffscreenCanvas === 'function',
+  node: isNode,
 }
 
 export class PonyfillOffscreenContext {

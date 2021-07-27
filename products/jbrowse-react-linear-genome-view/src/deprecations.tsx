@@ -11,10 +11,10 @@ export function createJBrowseTheme(theme?: ThemeOptions) {
 }
 
 export function ThemeProvider({
-  theme,
+  _theme,
   children,
 }: {
-  theme: Theme
+  _theme: Theme
   children: ReactNode
 }) {
   console.warn(

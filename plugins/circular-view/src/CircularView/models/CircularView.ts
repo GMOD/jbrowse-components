@@ -299,6 +299,7 @@ export default function CircularView(pluginManager: PluginManager) {
         },
 
         setError(error: Error) {
+          console.error(error)
           self.error = error
         },
 

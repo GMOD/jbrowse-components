@@ -1087,6 +1087,24 @@ The customized theme screenshot uses the below configuration
   }
 ```
 
+### Logo
+
+It is also possible to supply a custom logo to be displayed in the top right
+corner of the app instead of the JBrowse 2 logo. To do this, store a SVG file
+containing your logo on your server, and specify the path in your configuration:
+
+```json
+{
+  "configuration": {
+    "logoPath": {
+      "uri": "path/to/my/custom-logo.svg"
+    }
+  }
+}
+```
+
+The dimensions of the logo should be `150x48px`.
+
 ### Sizing
 
 You can also change some sizing options by specifying the "typography" (to
@@ -1191,6 +1209,8 @@ jexl:abs(-5)
 jexl:ceil(0.5)
 jexl:floor(0.5)
 jexl:round(0.5)
+jexl:parseInt('2')
+jexl:parseFloat('2.054')
 
 ```
 

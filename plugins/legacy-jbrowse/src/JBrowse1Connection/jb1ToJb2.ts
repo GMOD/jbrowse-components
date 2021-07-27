@@ -8,7 +8,7 @@ import {
   UNKNOWN,
   UNSUPPORTED,
 } from '@jbrowse/core/util/tracks'
-import { JBLocation, Track, RefSeqs, RefSeq } from './types'
+import { Track, RefSeqs, RefSeq } from './types'
 
 interface Jb2Track {
   trackId: string

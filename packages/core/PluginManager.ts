@@ -6,6 +6,7 @@ import {
   isType,
 } from 'mobx-state-tree'
 
+// Pluggable elements
 import PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
 import RendererType from './pluggableElementTypes/renderers/RendererType'
 import AdapterType from './pluggableElementTypes/AdapterType'
@@ -15,6 +16,7 @@ import ViewType from './pluggableElementTypes/ViewType'
 import WidgetType from './pluggableElementTypes/WidgetType'
 import ConnectionType from './pluggableElementTypes/ConnectionType'
 import RpcMethodType from './pluggableElementTypes/RpcMethodType'
+import TextSearchAdapterType from './pluggableElementTypes/TextSearchAdapterType'
 
 import {
   ConfigurationSchema,
@@ -76,6 +78,7 @@ type PluggableElementTypeGroup =
   | 'view'
   | 'widget'
   | 'rpc method'
+  | 'text search adapter'
 
 /** internal class that holds the info for a certain element type */
 class TypeRecord<ElementClass extends PluggableElementBase> {
@@ -158,6 +161,7 @@ export default class PluginManager {
   elementCreationSchedule = new PhasedScheduler<PluggableElementTypeGroup>(
     'renderer',
     'adapter',
+    'text search adapter',
     'display',
     'track',
     'connection',
@@ -169,6 +173,11 @@ export default class PluginManager {
   rendererTypes = new TypeRecord('RendererType', RendererType)
 
   adapterTypes = new TypeRecord('AdapterType', AdapterType)
+
+  textSearchAdapterTypes = new TypeRecord(
+    'TextSearchAdapterType',
+    TextSearchAdapterType,
+  )
 
   trackTypes = new TypeRecord('TrackType', TrackType)
 
@@ -266,6 +275,8 @@ export default class PluginManager {
     switch (groupName) {
       case 'adapter':
         return this.adapterTypes
+      case 'text search adapter':
+        return this.textSearchAdapterTypes
       case 'connection':
         return this.connectionTypes
       case 'widget':
@@ -427,6 +438,10 @@ export default class PluginManager {
     return this.adapterTypes.get(typeName)
   }
 
+  getTextSearchAdapterType(typeName: string): TextSearchAdapterType {
+    return this.textSearchAdapterTypes.get(typeName)
+  }
+
   getTrackType(typeName: string): TrackType {
     return this.trackTypes.get(typeName)
   }
@@ -461,6 +476,12 @@ export default class PluginManager {
     creationCallback: (pluginManager: PluginManager) => AdapterType,
   ): this {
     return this.addElementType('adapter', creationCallback)
+  }
+
+  addTextSearchAdapterType(
+    creationCallback: (pluginManager: PluginManager) => TextSearchAdapterType,
+  ): this {
+    return this.addElementType('text search adapter', creationCallback)
   }
 
   addTrackType(

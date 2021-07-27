@@ -5,6 +5,15 @@ import {
   BaseLayout,
   Rectangle,
 } from './BaseLayout'
+import RBush from 'rbush'
+
+export interface Layout {
+  minX: number
+  minY: number
+  maxX: number
+  maxY: number
+  name: string
+}
 
 export default class PrecomputedLayout<T> implements BaseLayout<T> {
   private rectangles: Map<string, RectTuple>
@@ -13,11 +22,22 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
 
   public maxHeightReached: boolean
 
+  private rbush: RBush<Layout>
+
   constructor({ rectangles, totalHeight, maxHeightReached }: SerializedLayout) {
     this.rectangles = new Map(Object.entries(rectangles))
-    // rectangles is of the form "featureId": [leftPx, topPx, rightPx, bottomPx]
     this.totalHeight = totalHeight
     this.maxHeightReached = maxHeightReached
+    this.rbush = new RBush()
+    for (const [key, layout] of Object.entries(rectangles)) {
+      this.rbush.insert({
+        minX: layout[0],
+        minY: layout[1],
+        maxX: layout[2],
+        maxY: layout[3],
+        name: key,
+      })
+    }
   }
 
   addRect(id: string) {
@@ -42,6 +62,17 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
 
   collides(_rect: Rectangle<T>, _top: number): boolean {
     throw new Error('Method not implemented.')
+  }
+
+  getByCoord(x: number, y: number) {
+    const rect = { minX: x, minY: y, maxX: x + 1, maxY: y + 1 }
+    return this.rbush.collides(rect)
+      ? this.rbush.search(rect)[0].name
+      : undefined
+  }
+
+  getByID(id: string) {
+    return this.rectangles.get(id)
   }
 
   addRectToBitmap(_rect: Rectangle<T>, _data: Record<string, T>): void {

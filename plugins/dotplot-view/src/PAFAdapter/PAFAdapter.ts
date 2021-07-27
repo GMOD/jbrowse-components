@@ -60,12 +60,12 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       if (line.length) {
         const [
           chr1,
-          queryRefSeqLen,
+          ,
           start1,
           end1,
           strand,
           chr2,
-          targetRefSeqLen,
+          ,
           start2,
           end2,
           numMatches,

@@ -1,0 +1,137 @@
+{
+  "seg04": {
+    "prefix": [],
+    "exact": [
+      ["seg04", 10, "seg04", "ctgA", 5232, 5302],
+      ["seg04", 10, "seg04", "ctgA", 5799, 6101],
+      ["seg04", 10, "seg04", "ctgA", 6441, 6854],
+      ["seg04", 10, "seg04", "ctgA", 7105, 7211],
+      ["seg04", 10, "seg04", "ctgA", 7694, 8177],
+      ["seg04", 10, "seg04", "ctgA", 8544, 8783],
+      ["seg04", 10, "seg04", "ctgA", 8868, 8935],
+      ["seg04", 10, "seg04", "ctgA", 9403, 9825],
+      ["seg04", 13, "seg04", "ctgA", 5232, 5302],
+      ["seg04", 13, "seg04", "ctgA", 5799, 6101],
+      ["seg04", 13, "seg04", "ctgA", 6441, 6854],
+      ["seg04", 13, "seg04", "ctgA", 7105, 7211],
+      ["seg04", 13, "seg04", "ctgA", 7694, 8177],
+      ["seg04", 13, "seg04", "ctgA", 8544, 8783],
+      ["seg04", 13, "seg04", "ctgA", 8868, 8935],
+      ["seg04", 13, "seg04", "ctgA", 9403, 9825],
+      ["seg04", 14, "seg04", "ctgA", 5232, 5302],
+      ["seg04", 14, "seg04", "ctgA", 5799, 6101],
+      ["seg04", 14, "seg04", "ctgA", 6441, 6854],
+      ["seg04", 14, "seg04", "ctgA", 7105, 7211],
+      ["seg04", 14, "seg04", "ctgA", 7694, 8177],
+      ["seg04", 14, "seg04", "ctgA", 8544, 8783],
+      ["seg04", 14, "seg04", "ctgA", 8868, 8935],
+      ["seg04", 14, "seg04", "ctgA", 9403, 9825]
+    ]
+  },
+  "apple": { "exact": [], "prefix": ["Apple1", "Apple2", "Apple3"] },
+  "14_reprpcwk": {
+    "prefix": [],
+    "exact": [["14_ReprPCWk", 1, "14_ReprPCWk", "ctgA", 12040, 13620]]
+  },
+  "2_tss": { "prefix": ["2_TssAFlnk"], "exact": [] },
+  "rs4817420": {
+    "exact": [["rs4817420", 16, "rs4817420", "contigA", 11548, 11549]],
+    "prefix": []
+  },
+  "4_t": { "exact": [], "prefix": ["4_Tx"] },
+  "f05": {
+    "exact": [
+      ["f05", 4, "f05", "ctgA", 4714, 5968],
+      ["f05", 4, "f05", "ctgB", 4714, 5968],
+      ["f05", 13, "f05", "ctgA", 4714, 5968],
+      ["f05", 13, "f05", "ctgB", 4714, 5968],
+      ["f05", 14, "f05", "ctgA", 4714, 5968],
+      ["f05", 14, "f05", "ctgB", 4714, 5968]
+    ],
+    "prefix": []
+  },
+  "rs99": { "exact": [], "prefix": ["rs9967983"] },
+  "agt": {
+    "exact": [],
+    "prefix": [
+      "agt221.5",
+      "agt830.5",
+      "agt767.5",
+      "agt830.3",
+      "agt221.3",
+      "agt767.3"
+    ]
+  },
+  "fa": { "prefix": ["FakeSNP", "FakeSNP1"], "exact": [] },
+  "f": {
+    "prefix": [
+      "f07",
+      "f06",
+      "f05",
+      "f08",
+      "f10",
+      "f13",
+      "f15",
+      "f14",
+      "f02",
+      "f09",
+      "f03",
+      "f04",
+      "f01",
+      "f11",
+      "f12",
+      "FakeSNP",
+      "FakeSNP1"
+    ],
+    "exact": []
+  },
+  "eden.2": {
+    "prefix": [],
+    "exact": [
+      ["EDEN.2", 8, "EDEN.2", "ctgA", 1049, 9000],
+      ["EDEN.2", 13, "EDEN.2", "ctgA", 1049, 9000],
+      ["EDEN.2", 14, "EDEN.2", "ctgA", 1049, 9000],
+      ["EDEN.2", 17, "EDEN.2", "ctgA", "1049", "9000"]
+    ]
+  },
+  "rs11567": { "exact": [], "prefix": ["rs11567845"] },
+  "protein:hgb": {
+    "prefix": [],
+    "exact": [
+      ["Protein:HGB", 7, "Protein:HGB", "ctgA", 1799, 2900],
+      ["Protein:HGB", 13, "Protein:HGB", "ctgA", 1799, 2900],
+      ["Protein:HGB", 14, "Protein:HGB", "ctgA", 1799, 2900]
+    ]
+  },
+  "rna-apple": { "prefix": ["rna-Apple3"], "exact": [] },
+  "protein:h": { "prefix": ["Protein:HGA", "Protein:HGB"], "exact": [] },
+  "9_": { "exact": [], "prefix": ["9_Het"] },
+  "rs6": { "prefix": ["rs6650814"], "exact": [] },
+  "1_tss": { "prefix": ["1_TssA"], "exact": [] },
+  "rs8026": { "exact": [], "prefix": ["rs80265967"] },
+  "rs114": { "prefix": ["rs114905802"], "exact": [] },
+  "rs1162": { "prefix": ["rs116260263"], "exact": [] },
+  "b1": { "prefix": ["b101.2"], "exact": [] },
+  "rna-apple3": {
+    "exact": [
+      ["rna-Apple3", 13, "Apple3", "ctgA", 17399, 23000],
+      ["rna-Apple3", 14, "Apple3", "ctgA", 17399, 23000],
+      ["rna-Apple3", 17, "rna-Apple3", "ctgA", "17399", "23000"]
+    ],
+    "prefix": []
+  },
+  "rs1156784": { "prefix": ["rs11567845"], "exact": [] },
+  "m15": {
+    "exact": [
+      ["m15", 6, "m15", "ctgA", 37496, 40559],
+      ["m15", 13, "m15", "ctgA", 37496, 40559],
+      ["m15", 14, "m15", "ctgA", 37496, 40559]
+    ],
+    "prefix": []
+  },
+  "rs1788426": { "exact": [], "prefix": ["rs17884260"] },
+  "rs17880490": {
+    "prefix": [],
+    "exact": [["rs17880490", 16, "rs17880490", "contigA", 8076, 8077]]
+  }
+}

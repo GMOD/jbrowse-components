@@ -54,9 +54,6 @@ export const useStyles = makeStyles(theme => ({
   expandIcon: {
     color: '#FFFFFF',
   },
-  paperRoot: {
-    background: theme.palette.grey[100],
-  },
   field: {
     display: 'flex',
     flexWrap: 'wrap',
@@ -90,11 +87,6 @@ export const useStyles = makeStyles(theme => ({
     boxSizing: 'border-box',
     overflow: 'auto',
   },
-
-  accordionBorder: {
-    marginTop: '4px',
-    border: '1px solid #444',
-  },
 }))
 
 export function BaseCard({
@@ -105,7 +97,6 @@ export function BaseCard({
   const classes = useStyles()
   return (
     <Accordion
-      className={classes.accordionBorder}
       defaultExpanded={defaultExpanded}
       TransitionProps={{ unmountOnExit: true }}
     >
@@ -121,7 +112,7 @@ export function BaseCard({
   )
 }
 
-const FieldName = ({
+export const FieldName = ({
   description,
   name,
   prefix = [],
@@ -143,7 +134,7 @@ const FieldName = ({
   )
 }
 
-const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
+export const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
   const classes = useStyles()
   return (
     <div className={classes.fieldValue}>
@@ -157,7 +148,8 @@ const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
     </div>
   )
 }
-const SimpleValue = ({
+
+export const SimpleValue = ({
   name,
   value,
   description,
@@ -202,13 +194,20 @@ const ArrayValue = ({
         )
       ) : value.every(val => isObject(val)) ? (
         value.map((val, i) => (
-          <Attributes attributes={val} prefix={[...prefix, name + '-' + i]} />
+          <Attributes
+            key={JSON.stringify(val) + '-' + i}
+            attributes={val}
+            prefix={[...prefix, name + '-' + i]}
+          />
         ))
       ) : (
         <div className={classes.field}>
           <FieldName prefix={prefix} description={description} name={name} />
           {value.map((val, i) => (
-            <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
+            <div
+              key={JSON.stringify(val) + '-' + i}
+              className={classes.fieldSubvalue}
+            >
               <BasicValue value={val} />
             </div>
           ))}
@@ -250,12 +249,12 @@ function CoreDetails(props: BaseProps) {
   ]
   return (
     <>
-      {coreRenderedDetails.map(key => {
-        const value = displayedDetails[key.toLowerCase()]
-        return value !== null && value !== undefined ? (
+      {coreRenderedDetails
+        .map(key => [key, displayedDetails[key.toLowerCase()]])
+        .filter(([, value]) => value !== null && value !== undefined)
+        .map(([key, value]) => (
           <SimpleValue key={key} name={key} value={value} />
-        ) : null
-      })}
+        ))}
     </>
   )
 }
@@ -473,15 +472,16 @@ export const FeatureDetails = (props: {
 
   return (
     <BaseCard title={title}>
-      <div>Core details</div>
+      <Typography>Core details</Typography>
       <CoreDetails {...props} />
       <Divider />
-      <div>Attributes</div>
+      <Typography>Attributes</Typography>
       <Attributes
         attributes={feature}
         {...props}
         omit={[...omit, ...coreDetails]}
       />
+
       {sequenceTypes.includes(feature.type) ? (
         <ErrorBoundary
           FallbackComponent={({ error }) => (
@@ -493,7 +493,8 @@ export const FeatureDetails = (props: {
           <SequenceFeatureDetails {...props} />
         </ErrorBoundary>
       ) : null}
-      {subfeatures && subfeatures.length ? (
+
+      {subfeatures?.length ? (
         <BaseCard
           title="Subfeatures"
           defaultExpanded={!sequenceTypes.includes(feature.type)}

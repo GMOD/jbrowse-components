@@ -7,6 +7,7 @@ import {
   isLateType,
   SnapshotOut,
   ModelPropertiesDeclaration,
+  getSnapshot,
 } from 'mobx-state-tree'
 
 import { ElementId } from '../util/types/mst'
@@ -39,7 +40,7 @@ export interface ConfigurationSchemaDefinition {
 interface ConfigurationSchemaOptions {
   explicitlyTyped?: boolean
   explicitIdentifier?: string
-  implicitIdentifier?: string
+  implicitIdentifier?: string | boolean
   baseConfiguration?: AnyConfigurationSchemaType
 
   actions?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -190,10 +191,27 @@ function makeConfigurationSchemaModel<
   if (options.extend) {
     completeModel = completeModel.extend(options.extend)
   }
+
+  const identifierDefault = identifier ? { [identifier]: 'placeholderId' } : {}
+  const modelDefault = options.explicitlyTyped
+    ? { type: modelName, ...identifierDefault }
+    : identifierDefault
+
+  const defaultSnap = getSnapshot(completeModel.create(modelDefault))
   completeModel = completeModel.postProcessSnapshot(snap => {
     const newSnap: SnapshotOut<typeof completeModel> = {}
+    let matchesDefault = true
     // let keyCount = 0
-    Object.entries(snap).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(snap)) {
+      if (matchesDefault) {
+        if (typeof defaultSnap[key] === 'object' && typeof value === 'object') {
+          if (JSON.stringify(defaultSnap[key]) !== JSON.stringify(value)) {
+            matchesDefault = false
+          }
+        } else if (defaultSnap[key] !== value) {
+          matchesDefault = false
+        }
+      }
       if (
         value !== undefined &&
         volatileConstants[key] === undefined &&
@@ -203,7 +221,10 @@ function makeConfigurationSchemaModel<
         // keyCount += 1
         newSnap[key] = value
       }
-    })
+    }
+    if (matchesDefault) {
+      return {}
+    }
     return newSnap
   })
 
@@ -211,13 +232,7 @@ function makeConfigurationSchemaModel<
     completeModel = completeModel.preProcessSnapshot(options.preProcessSnapshot)
   }
 
-  const identifierDefault = identifier ? { [identifier]: 'placeholderId' } : {}
-  const schemaType = types.optional(
-    completeModel,
-    options.explicitlyTyped
-      ? { type: modelName, ...identifierDefault }
-      : identifierDefault,
-  )
+  const schemaType = types.optional(completeModel, modelDefault)
   return schemaType
 }
 

@@ -45,6 +45,10 @@ export default function JBrowseWeb(
           defaultValue: false,
         },
         theme: { type: 'frozen', defaultValue: {} },
+        logoPath: {
+          type: 'fileLocation',
+          defaultValue: { uri: '' },
+        },
         ...pluginManager.pluginConfigurationSchemas(),
       }),
       plugins: types.array(types.frozen()),
@@ -52,6 +56,9 @@ export default function JBrowseWeb(
       // track configuration is an array of track config schemas. multiple
       // instances of a track can exist that use the same configuration
       tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+      aggregateTextSearchAdapters: types.array(
+        pluginManager.pluggableConfigSchemaType('text search adapter'),
+      ),
       connections: types.array(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),
@@ -171,10 +178,8 @@ export default function JBrowseWeb(
         const rootModel = getRoot(self)
         rootModel.setPluginsUpdated(true)
       },
-      removePlugin(pluginName) {
-        self.plugins = self.plugins.filter(
-          plugin => `${plugin.name}Plugin` !== pluginName,
-        )
+      removePlugin(pluginUrl) {
+        self.plugins = self.plugins.filter(plugin => plugin.url !== pluginUrl)
         const rootModel = getRoot(self)
         rootModel.setPluginsUpdated(true)
       },
