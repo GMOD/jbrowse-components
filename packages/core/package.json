@@ -63,7 +63,7 @@
   },
   "peerDependencies": {
     "@material-ui/core": "^4.12.2",
-    "@material-ui/data-grid": "^4.0.0-alpha.10",
+    "@material-ui/data-grid": "^4.0.0-alpha.34",
     "@material-ui/lab": "^4.0.0-alpha.45",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",
