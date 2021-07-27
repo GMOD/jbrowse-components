@@ -69,9 +69,35 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   }, [assemblyManager, assemblyName])
 
   function setSelectedValue(selectedOption: BaseResult) {
-    setSelectedRegion(selectedOption.getLocation())
+    setSelectedRegion(selectedOption.getLabel())
   }
 
+  async function fetchResults(queryString: string) {
+    const results: BaseResult[] =
+      (await textSearchManager?.search(
+        {
+          queryString: queryString.toLocaleLowerCase(),
+          searchType: 'exact',
+        },
+        searchScope,
+        rankSearchResults,
+      )) || []
+    //  TODO: test trackID filter
+    const filteredResults = results.filter(function (elem, index, self) {
+      const value1 = `${elem.getLabel()}-${elem.getLocation()}-${
+        elem.getTrackId() || ''
+      }`
+      return (
+        index ===
+        self.findIndex(
+          t =>
+            `${t.getLabel()}-${t.getLocation()}-${t.getTrackId() || ''}` ===
+            value1,
+        )
+      )
+    })
+    return filteredResults
+  }
   async function handleSelectedRegion(input: string) {
     const newRegion = assemblyRegions.find(r => selectedRegion === r.refName)
     if (newRegion) {
@@ -80,15 +106,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       // region visible, xref #1703
       model.showAllRegions()
     } else {
-      const results =
-        (await textSearchManager?.search(
-          {
-            queryString: input.toLocaleLowerCase(),
-            searchType: 'exact',
-          },
-          searchScope,
-          rankSearchResults,
-        )) || []
+      const results = await fetchResults(input.toLocaleLowerCase())
       if (results.length > 0) {
         model.setSearchResults(results, input.toLocaleLowerCase())
       } else {

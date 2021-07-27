@@ -121,9 +121,36 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions = (assembly && assembly.regions) || []
   const searchScope = model.searchScope(assemblyName)
+
+  async function fetchResults(queryString: string) {
+    const results: BaseResult[] =
+      (await textSearchManager?.search(
+        {
+          queryString: queryString.toLocaleLowerCase(),
+          searchType: 'exact',
+        },
+        searchScope,
+        rankSearchResults,
+      )) || []
+    //  TODO: test trackID filter
+    const filteredResults = results.filter(function (elem, index, self) {
+      const value1 = `${elem.getLabel()}-${elem.getLocation()}-${
+        elem.getTrackId() || ''
+      }`
+      return (
+        index ===
+        self.findIndex(
+          t =>
+            `${t.getLabel()}-${t.getLocation()}-${t.getTrackId() || ''}` ===
+            value1,
+        )
+      )
+    })
+    return filteredResults
+  }
   async function setDisplayedRegion(result: BaseResult) {
     if (result) {
-      const newRegionValue = result.getLocation()
+      const newRegionValue = result.getLabel()
       // need to fix finding region
       const newRegion = regions.find(
         region => newRegionValue === region.refName,
@@ -134,15 +161,7 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
         // region visible, xref #1703
         model.showAllRegions()
       } else {
-        const results =
-          (await textSearchManager?.search(
-            {
-              queryString: newRegionValue.toLocaleLowerCase(),
-              searchType: 'exact',
-            },
-            searchScope,
-            rankSearchResults,
-          )) || []
+        const results = await fetchResults(newRegionValue.toLocaleLowerCase())
         // distinguishes between locstrings and search strings
         if (results.length > 0) {
           model.setSearchResults(results, newRegionValue.toLocaleLowerCase())
