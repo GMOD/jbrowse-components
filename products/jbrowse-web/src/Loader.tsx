@@ -134,6 +134,7 @@ const SessionLoader = types
     shareWarningOpen: false as any,
     configSnapshot: undefined as any,
     sessionSnapshot: undefined as any,
+    sessionSpec: undefined as any,
     runtimePlugins: [] as PluginRecord[],
     sessionPlugins: [] as PluginRecord[],
     sessionError: undefined as Error | undefined,
@@ -148,6 +149,10 @@ const SessionLoader = types
   .views(self => ({
     get sharedSession() {
       return self.sessionQuery?.startsWith('share-')
+    },
+
+    get specSession() {
+      return self.sessionQuery?.startsWith('spec-')
     },
 
     get encodedSession() {
@@ -172,7 +177,10 @@ const SessionLoader = types
 
     get sessionLoaded() {
       return (
-        !!self.sessionError || !!self.sessionSnapshot || !!self.blankSession
+        !!self.sessionError ||
+        !!self.sessionSnapshot ||
+        !!self.blankSession ||
+        !!self.sessionSpec
       )
     },
     get configLoaded() {
@@ -359,6 +367,13 @@ const SessionLoader = types
       await this.setSessionSnapshot({ ...session, id: shortid() })
     },
 
+    decodeSessionSpec() {
+      if (!self.sessionQuery) {
+        return
+      }
+      self.sessionSpec = JSON.parse(self.sessionQuery.replace('spec-', ''))
+    },
+
     async decodeJsonUrlSession() {
       // @ts-ignore
       const session = JSON.parse(self.sessionQuery.replace('json-', ''))
@@ -369,6 +384,7 @@ const SessionLoader = types
       const {
         localSession,
         encodedSession,
+        specSession,
         sharedSession,
         jsonSession,
         configPath,
@@ -400,6 +416,8 @@ const SessionLoader = types
             if (self.configSnapshot) {
               if (sharedSession) {
                 await this.fetchSharedSession()
+              } else if (specSession) {
+                this.decodeSessionSpec()
               } else if (encodedSession) {
                 await this.decodeEncodedUrlSession()
               } else if (jsonSession) {
@@ -490,6 +508,7 @@ const Renderer = observer(
           adminKey,
           configSnapshot,
           sessionSnapshot,
+          sessionSpec,
           configPath,
         } = loader
 
@@ -574,12 +593,41 @@ const Renderer = observer(
                   }`,
                 )
               }
+            } else if (sessionSpec) {
+              try {
+                const { views } = sessionSpec
+                rootModel.setSession({
+                  name: `New session ${new Date().toLocaleString()}`,
+                })
+                const { session } = rootModel
+                Promise.all(
+                  views.map(async (view: any) => {
+                    const { type, assembly, loc } = view
+                    await rootModel.assemblyManager.waitForAssembly(assembly)
+                    if (type === 'LGV' || type === 'LinearGenomeView') {
+                      const materialView = session?.addView(
+                        'LinearGenomeView',
+                        {},
+                      )
+                      materialView.setWidth(800)
+                      materialView.navToLocString(loc, assembly)
+                    }
+                  }),
+                ).catch(e => {
+                  console.error(e)
+                  setError(e)
+                })
+              } catch (e) {
+                console.error(e)
+                rootModel.setDefaultSession()
+                rootModel.session?.notify(
+                  'Failed to load session spec from URL bar',
+                )
+              }
             } else {
               const defaultJBrowseSession = rootModel.jbrowse.defaultSession
-              if (defaultJBrowseSession?.views) {
-                if (defaultJBrowseSession.views.length > 0) {
-                  rootModel.setDefaultSession()
-                }
+              if (defaultJBrowseSession?.views.length > 0) {
+                rootModel.setDefaultSession()
               }
             }
 
