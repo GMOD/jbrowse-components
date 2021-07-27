@@ -305,6 +305,7 @@ function RubberBand({
           }}
           onMenuItemClick={handleMenuItemClick}
           open={open}
+          onClose={handleClose}
           menuItems={model.rubberBandMenuItems()}
         />
       ) : null}
