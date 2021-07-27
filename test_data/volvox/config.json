@@ -1483,7 +1483,8 @@
       "scopes": "https://www.googleapis.com/auth/drive.readonly",
       "responseType": "token",
       "validDomains": ["drive.google.com"],
-      "origin": "google"
+      "origin": "google",
+      "tokenType": "Bearer"
     },
     {
       "type": "OAuthInternetAccount",
@@ -1505,7 +1506,8 @@
         "dropbox.tech",
         "getdropbox.com"
       ],
-      "origin": "dropbox"
+      "origin": "dropbox",
+      "tokenType": "Bearer"
     },
     {
       "type": "ExternalTokenInternetAccount",
@@ -1514,7 +1516,8 @@
       "description": "GDC External Token",
       "validDomains": ["portal.gdc.cancer.gov", "api.gdc.cancer.gov"],
       "authHeader": "X-Auth-Token",
-      "origin": "GDC"
+      "origin": "GDC",
+      "customEndpoint": "http://localhost:8010/proxy"
     }
   ]
 }

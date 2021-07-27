@@ -11,6 +11,10 @@ import {
   configSchemaFactory as ExternalTokenConfigSchemaFactory,
   modelFactory as ExternalTokenInternetAccountModelFactory,
 } from './ExternalTokenModel'
+import {
+  configSchemaFactory as HTTPBasicConfigSchemaFactory,
+  modelFactory as HTTPBasicInternetAccountModelFactory,
+} from './HTTPBasicModel'
 
 export default class AuthenticationPlugin extends Plugin {
   name = 'AuthenticationPlugin'
@@ -33,6 +37,17 @@ export default class AuthenticationPlugin extends Plugin {
         name: 'ExternalTokenInternetAccount',
         configSchema: configSchema,
         stateModel: ExternalTokenInternetAccountModelFactory(
+          pluginManager,
+          configSchema,
+        ),
+      })
+    })
+    pluginManager.addInternetAccountType(() => {
+      const configSchema = HTTPBasicConfigSchemaFactory(pluginManager)
+      return new InternetAccountType({
+        name: 'HTTPBasicInternetAccount',
+        configSchema: configSchema,
+        stateModel: HTTPBasicInternetAccountModelFactory(
           pluginManager,
           configSchema,
         ),

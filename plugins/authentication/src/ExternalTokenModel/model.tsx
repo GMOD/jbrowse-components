@@ -87,13 +87,11 @@ const stateModelFactory = (
         return token
       },
       async openLocation(location: FileLocation) {
-        let token = ''
-
         switch (self.accountConfig.origin) {
           case 'GDC': {
             const query = (location as AuthLocation).uri.split('/').pop() // should get id
             const response = await fetch(
-              `https://api.gdc.cancer.gov/files/${query}?expand=index_files`,
+              `${self.accountConfig.customEndpoint}/files/${query}?expand=index_files`,
               {
                 method: 'GET',
               },
@@ -113,19 +111,24 @@ const stateModelFactory = (
                 : this.setNeedsToken(false)
             }
 
-            token = this.getOrSetExternalToken()
+            this.getOrSetExternalToken()
           }
         }
-
-        return token
       },
       handleRpcMethodCall(
         location: FileLocation,
         authenticationInfoMap: Record<string, string>,
         args: {},
       ) {
-        this.openLocation(location)
+        const token =
+          authenticationInfoMap[self.accountConfig.internetAccoundId]
+        if (!token) {
+          this.openLocation(location)
+        }
 
+        // probably will need a way to test if the token is okay before opening the track,
+        // and if it fails then do a handle error with a new handleRpcMethodCall
+        // similar to Oauth implementation
         switch (self.accountConfig.origin) {
           case 'GDC': {
             const query = (location as AuthLocation).uri.split('/').pop() // should get id
@@ -133,7 +136,7 @@ const stateModelFactory = (
             searchOrReplaceInArgs(
               editedArgs,
               'uri',
-              `https://api.gdc.cancer.gov/data/${query}`,
+              `${self.accountConfig.customEndpoint}/data/${query}`,
             )
             return editedArgs
           }

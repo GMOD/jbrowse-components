@@ -28,6 +28,11 @@ export function createInternetAccountConfig(pluginManager: PluginManager) {
         type: 'string',
         defaultValue: '',
       },
+      tokenType: {
+        description: 'the token type to be prepended in the auth header',
+        type: 'string',
+        defaultValue: '',
+      },
       //   metadata: {
       //     type: 'frozen',
       //     description: 'anything to add about this internet account',

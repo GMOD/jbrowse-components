@@ -18,6 +18,11 @@ function ExternalTokenConfigFactory(pluginManager: PluginManager) {
         type: 'string',
         defaultValue: 'Authorization',
       },
+      customEndpoint: {
+        description: 'custom endpoint for the external token resource',
+        type: 'string',
+        defaultValue: '',
+      },
     },
     {
       baseConfiguration: createInternetAccountConfig(pluginManager),

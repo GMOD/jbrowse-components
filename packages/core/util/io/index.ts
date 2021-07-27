@@ -75,8 +75,9 @@ export function openLocation(location: FileLocation): GenericFilehandle {
       if (isAuthLocation(location)) {
         const token = getAuthenticationInfo(location.internetAccountId)
         if (token) {
-          const headerContent =
-            location.authHeader === 'Authorization' ? `Bearer ${token}` : token
+          const headerContent = location.tokenType
+            ? `${location.tokenType} ${token}`
+            : token
           optionalHeaders = {
             [location.authHeader]: headerContent,
           }

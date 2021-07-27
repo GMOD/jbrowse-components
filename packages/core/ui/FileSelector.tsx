@@ -104,32 +104,18 @@ const UrlChooser = (props: {
   )
 
   const autoDetectInternetAccount = (urlInput: string) => {
-    let name = ''
-    let detectedId = ''
     try {
       new URL(urlInput)
     } catch (error) {
       // skip
-      return detectedId
+      return undefined
     }
 
-    internetAccounts?.forEach(account => {
-      if (account.handlesLocation({ uri: urlInput })) {
-        detectedId = account.accountConfig.internetAccountId
-        name = account.accountConfig.name
-      }
+    return internetAccounts?.find(account => {
+      return account.handlesLocation({ uri: urlInput })
     })
-
-    return { name: name, id: detectedId }
   }
 
-  const findInternetAccountHeader = (id: string) => {
-    const account = internetAccounts.find(account => {
-      return account.accountConfig.internetAccountId === id
-    })
-
-    return account?.accountConfig?.authHeader || ''
-  }
   return (
     <>
       <TextField
@@ -142,17 +128,23 @@ const UrlChooser = (props: {
             setCurrentInternetAccount('')
           }
           if (currentInternetAccount) {
-            const internetAccountId =
+            const internetAccount: Account | undefined =
               currentInternetAccount === 'autoDetect'
-                ? autoDetectInternetAccount(event.target.value).id
-                : currentInternetAccount
+                ? autoDetectInternetAccount(event.target.value)
+                : undefined
 
-            const customHeader = findInternetAccountHeader(internetAccountId)
             setLocation({
               uri: event.target.value,
               baseAuthUri: event.target.value,
-              internetAccountId: internetAccountId,
-              authHeader: customHeader || 'Authorization',
+              internetAccountId: internetAccount
+                ? internetAccount.accountConfig.internetAccountId
+                : currentInternetAccount,
+              authHeader: internetAccount
+                ? internetAccount.accountConfig.authHeader || 'Authorization'
+                : 'Authorization',
+              tokenType: internetAccount
+                ? internetAccount.accountConfig.tokenType
+                : '',
             })
           } else {
             setLocation({ uri: event.target.value })
@@ -167,25 +159,33 @@ const UrlChooser = (props: {
             value={currentInternetAccount}
             style={{ margin: 5 }}
             onChange={event => {
-              let internetAccountId = event.target.value
+              const internetAccountId: string = event.target.value as string
+              let internetAccount: Account | undefined
               setCurrentInternetAccount(event.target.value as string)
               if (event.target.value === 'autoDetect') {
-                internetAccountId = autoDetectInternetAccount(currentUrl).id
+                internetAccount = autoDetectInternetAccount(currentUrl)
               }
-              const customHeader = findInternetAccountHeader(internetAccountId)
 
               setLocation({
                 uri: currentUrl,
                 baseAuthUri: currentUrl,
-                internetAccountId: internetAccountId,
-                authHeader: customHeader || 'Authorization',
+                internetAccountId: internetAccount
+                  ? internetAccount.accountConfig.internetAccountId
+                  : internetAccountId,
+                authHeader: internetAccount
+                  ? internetAccount.accountConfig.authHeader || 'Authorization'
+                  : 'Authorization',
+                tokenType: internetAccount
+                  ? internetAccount.accountConfig.tokenType
+                  : '',
               })
             }}
             displayEmpty
           >
             <MenuItem value="">None</MenuItem>
             <MenuItem value="autoDetect">
-              Auto Detect: {autoDetectInternetAccount(currentUrl).name}
+              Auto Detect:{' '}
+              {autoDetectInternetAccount(currentUrl)?.accountConfig.name}
             </MenuItem>
             {internetAccounts?.map(account => {
               try {
