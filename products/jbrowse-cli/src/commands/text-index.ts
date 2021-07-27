@@ -296,7 +296,7 @@ export default class TextIndex extends JBrowseCommand {
       }
 
       fs.writeFileSync(
-        path.join('trix', 'meta.json'),
+        path.join(__dirname, '..', '..', 'trix', 'meta.json'),
         JSON.stringify({ indexingAttributes: RecordAttributes }, null, 2),
       )
 

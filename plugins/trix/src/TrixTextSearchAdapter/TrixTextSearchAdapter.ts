@@ -91,7 +91,6 @@ export default class TrixTextSearchAdapter
     const results = await this.trixJs.search(queryString)
 
     const attr = await this.getAttributes()
-    console.log(attr)
     if (attr) {
       results.forEach(data => {
         const arr = []
@@ -104,7 +103,7 @@ export default class TrixTextSearchAdapter
         searchResults.push(arr.toString())
       })
     }
-    console.log(searchResults)
+
     // return this.formatResults(searchResults)
     return []
   }
