@@ -106,7 +106,7 @@ const stateModelFactory = (
 
             const metadata = await response.json()
             if (metadata) {
-              metadata.access === 'controlled'
+              metadata.data.access === 'controlled'
                 ? this.setNeedsToken(true)
                 : this.setNeedsToken(false)
             }
@@ -115,15 +115,15 @@ const stateModelFactory = (
           }
         }
       },
-      handleRpcMethodCall(
+      async handleRpcMethodCall(
         location: FileLocation,
         authenticationInfoMap: Record<string, string>,
         args: {},
       ) {
         const token =
-          authenticationInfoMap[self.accountConfig.internetAccoundId]
+          authenticationInfoMap[self.accountConfig.internetAccountId]
         if (!token) {
-          this.openLocation(location)
+          await this.openLocation(location)
         }
 
         // probably will need a way to test if the token is okay before opening the track,

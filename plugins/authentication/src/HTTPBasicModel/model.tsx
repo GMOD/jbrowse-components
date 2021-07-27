@@ -43,16 +43,19 @@ const stateModelFactory = (
       async openLocation(location: FileLocation) {
         // notes:
         // need a field to enter a username and password
+        // this has to be a dialog box with input fields
+        // and the input password field needs to have those security settings
+        // and able to autofill with lastpass/google
         // then base64 encode the entry to the form
         // create the auth header such as "Authorization": "Basic base64user:base64pass"
         // and then call the resource
       },
-      handleRpcMethodCall(
+      async handleRpcMethodCall(
         location: FileLocation,
         authenticationInfoMap: Record<string, string>,
         args: {},
       ) {
-        this.openLocation(location)
+        await this.openLocation(location)
       },
     }))
 }

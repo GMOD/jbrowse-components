@@ -52,10 +52,6 @@ export const BlobLocation = types.model('BlobLocation', {
 
 export const UriLocationRaw = types.model('UriLocation', {
   uri: types.string, // TODO: refine
-  authHeader: types.maybe(types.string),
-  internetAccountId: types.maybe(types.string),
-  baseAuthUri: types.maybe(types.string),
-  tokenType: types.maybe(types.string),
   baseUri: types.maybe(types.string),
 })
 
@@ -69,13 +65,23 @@ export const UriLocation = types.snapshotProcessor(UriLocationRaw, {
   },
 })
 
-export const AuthLocation = types.model('AuthLocation', {
+export const AuthLocationRaw = types.model('AuthLocation', {
   uri: types.string, // TODO: refine
   authHeader: types.string,
   internetAccountId: types.string,
   baseAuthUri: types.string,
   tokenType: types.maybe(types.string),
   baseUri: types.maybe(types.string),
+})
+
+export const AuthLocation = types.snapshotProcessor(AuthLocationRaw, {
+  postProcessor: snap => {
+    const { baseUri, ...rest } = snap
+    if (!baseUri) {
+      return rest
+    }
+    return snap
+  },
 })
 
 export const FileLocation = types.union(
