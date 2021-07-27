@@ -339,12 +339,12 @@ describe('valid file tests', () => {
       assemblyName: 'volvox',
     })
 
-    fireEvent.click(await findByText('ctgA:200..240'))
+    fireEvent.click(await findByText('{volvox}ctgA:201..240'))
     const newRegion = state.session.views[0].getSelectedRegions(
       state.session.views[0].leftOffset,
       state.session.views[0].rightOffset,
     )[0]
-    expect(newRegion.key).toEqual('{volvox}ctgA:200.004..240.004-0')
+    expect(newRegion.key).toEqual('{volvox}ctgA:201..240-0')
   })
 
   it('test choose option from dropdown refName autocomplete', async () => {

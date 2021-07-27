@@ -1,9 +1,10 @@
 import { types, Instance } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
-import { ElementId } from '@jbrowse/core/util/types/mst'
-import { Region as RegionModel } from '@jbrowse/core/util/types/mst'
+
+import { assembleLocString } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
+import { Region as RegionModel, ElementId } from '@jbrowse/core/util/types/mst'
 
 const LabeledRegionModel = types.compose(
   RegionModel,
@@ -23,9 +24,9 @@ export default function f(pluginManager: PluginManager) {
     })
     .actions(self => ({
       addBookmark(region: Region) {
-        const regionLocString = `${region.refName}:${region.start}..${region.end}`
+        const regionLocString = assembleLocString(region)
         const index = self.bookmarkedRegions.findIndex(b => {
-          const bLocString = `${b.refName}:${b.start}..${b.end}`
+          const bLocString = assembleLocString(b)
           return bLocString === regionLocString
         })
         if (index === -1) {
@@ -35,7 +36,7 @@ export default function f(pluginManager: PluginManager) {
       },
       removeBookmark(locString: string) {
         const index = self.bookmarkedRegions.findIndex(b => {
-          const bLocString = `${b.refName}:${b.start}..${b.end}`
+          const bLocString = assembleLocString(b)
           return bLocString === locString
         })
         if (index !== -1) {
@@ -47,7 +48,7 @@ export default function f(pluginManager: PluginManager) {
       },
       updateBookmarkLabel(locString: string, label: string) {
         const index = self.bookmarkedRegions.findIndex(b => {
-          const bLocString = `${b.refName}:${b.start}..${b.end}`
+          const bLocString = assembleLocString(b)
           return bLocString === locString
         })
         if (index !== -1) {

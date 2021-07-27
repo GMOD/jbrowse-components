@@ -8,7 +8,7 @@ import {
   GridEditCellPropsParams,
 } from '@material-ui/data-grid'
 
-import { getSession } from '@jbrowse/core/util'
+import { getSession, assembleLocString } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 
 import { GridBookmarkModel } from '../model'
@@ -34,8 +34,8 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
     .toJS()
     .map((region: Region) => ({
       ...region,
-      id: `${region.refName}:${region.start}..${region.end}`,
-      delete: `${region.refName}:${region.start}..${region.end}`,
+      id: assembleLocString(region),
+      delete: assembleLocString(region),
     }))
     .filter(region => {
       if (selectedAssembly === 'all') {
@@ -78,12 +78,12 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
     },
     {
       field: 'label',
-      width: 110,
+      width: 105,
       editable: true,
     },
     {
       field: 'delete',
-      width: 25,
+      width: 30,
       renderCell: (params: GridCellParams) => {
         const { value } = params
         return <DeleteBookmark locString={value as string} model={model} />

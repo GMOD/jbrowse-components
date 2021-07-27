@@ -1,6 +1,11 @@
 import { saveAs } from 'file-saver'
 
-import { getSession, parseLocString, when } from '@jbrowse/core/util'
+import {
+  getSession,
+  parseLocString,
+  when,
+  assembleLocString,
+} from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { AbstractViewModel } from '@jbrowse/core/util/types'
 
@@ -73,16 +78,22 @@ export function downloadBookmarkFile(
     .map(b => {
       const { label } = b
       const labelVal = label === '' ? 'NA' : label
-      const locString = `${b.refName}:${b.start}..${b.end}`
-      const bedVal = `${b.refName}\t${b.start}\t${b.end}\t${labelVal}`
+      const locString = assembleLocString(b)
 
       if (fileFormat === 'BED') {
         if (b.assemblyName === selectedAssembly) {
-          return `${bedVal}\n`
+          // the "name" column (column 4) in a BED has a max of 255 characters
+          // according to the new spec: https://github.com/samtools/hts-specs/pull/570
+          return `${b.refName}\t${b.start}\t${b.end}\t${labelVal.slice(
+            0,
+            255,
+          )}\n`
         }
         return ''
       } else {
-        return `${bedVal}\t${b.assemblyName}\t${locString}\n`
+        return `${b.refName}\t${b.start + 1}\t${b.end}\t${labelVal}\t${
+          b.assemblyName
+        }\t${locString}\n`
       }
     })
     .reduce((a, b) => a + b, fileHeader)
