@@ -30,19 +30,6 @@ Object {
       "textSearchAdapterId": "TrixAdapter",
       "type": "TrixTextSearchAdapter",
     },
-    Object {
-      "assemblies": Array [
-        "volvox2",
-      ],
-      "ixFilePath": Object {
-        "uri": "volvox2.ix",
-      },
-      "ixxFilePath": Object {
-        "uri": "volvox2.ixx",
-      },
-      "textSearchAdapterId": "TrixAdapter",
-      "type": "TrixTextSearchAdapter",
-    },
   ],
   "assemblies": Array [
     Object {
