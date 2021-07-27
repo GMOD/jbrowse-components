@@ -84,8 +84,8 @@ export default class extends Plugin {
                 },
                 views: {
                   menuItems() {
-                    const menuItems = superMenuItems()
-                    menuItems.push(
+                    const newMenuItems = [
+                      ...superMenuItems(),
                       { type: 'divider' },
                       {
                         label: 'Open bookmark widget',
@@ -99,37 +99,41 @@ export default class extends Plugin {
                         // @ts-ignore
                         onClick: self.bookmarkCurrentRegion,
                       },
-                    )
-                    return menuItems
+                    ]
+
+                    return newMenuItems
                   },
 
                   rubberBandMenuItems() {
-                    const rubberBandMenuItems = superRubberBandMenuItems()
-                    rubberBandMenuItems.push({
-                      label: 'Bookmark region',
-                      icon: BookmarkIcon,
-                      onClick: () => {
-                        const { leftOffset, rightOffset } = self
-                        const selectedRegions = self.getSelectedRegions(
-                          leftOffset,
-                          rightOffset,
-                        )
-                        const firstRegion = selectedRegions[0]
-                        const session = getSession(self)
-                        if (isSessionModelWithWidgets(session)) {
-                          const { widgets } = session
-                          let bookmarkWidget = widgets.get('GridBookmark')
-                          if (!bookmarkWidget) {
+                    const newRubberBandMenuItems = [
+                      ...superRubberBandMenuItems(),
+                      {
+                        label: 'Bookmark region',
+                        icon: BookmarkIcon,
+                        onClick: () => {
+                          const { leftOffset, rightOffset } = self
+                          const selectedRegions = self.getSelectedRegions(
+                            leftOffset,
+                            rightOffset,
+                          )
+                          const firstRegion = selectedRegions[0]
+                          const session = getSession(self)
+                          if (isSessionModelWithWidgets(session)) {
+                            const { widgets } = session
+                            let bookmarkWidget = widgets.get('GridBookmark')
+                            if (!bookmarkWidget) {
+                              // @ts-ignore
+                              self.activateBookmarkWidget()
+                              bookmarkWidget = widgets.get('GridBookmark')
+                            }
                             // @ts-ignore
-                            self.activateBookmarkWidget()
-                            bookmarkWidget = widgets.get('GridBookmark')
+                            bookmarkWidget.addBookmark(firstRegion)
                           }
-                          // @ts-ignore
-                          bookmarkWidget.addBookmark(firstRegion)
-                        }
+                        },
                       },
-                    })
-                    return rubberBandMenuItems
+                    ]
+
+                    return newRubberBandMenuItems
                   },
                 },
               }
