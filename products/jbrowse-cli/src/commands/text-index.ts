@@ -67,10 +67,13 @@ export default class TextIndex extends JBrowseCommand {
         type: 'TrixTextSearchAdapter',
         textSearchAdapterId: 'TrixAdapter',
         ixFilePath: {
-          uri: `${asm}.ix`,
+          uri: `trix/${asm}.ix`,
         },
         ixxFilePath: {
-          uri: `${asm}.ixx`,
+          uri: `trix/${asm}.ixx`,
+        },
+        metaFilePath: {
+          uri: `trix/meta.json`,
         },
         assemblies: [asm],
       })
