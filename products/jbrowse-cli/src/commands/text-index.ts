@@ -7,7 +7,7 @@ import { ixIxxStream } from 'ixixx'
 import { Transform, PassThrough } from 'stream'
 import { http as httpFR, https as httpsFR } from 'follow-redirects'
 import { createGunzip } from 'zlib'
-import JBrowseCommand, { Config } from '../base'
+import JBrowseCommand, { Track, Config } from '../base'
 
 export default class TextIndex extends JBrowseCommand {
   static description = 'Make a text-indexing file for any given track(s).'
@@ -58,17 +58,10 @@ export default class TextIndex extends JBrowseCommand {
     const adapters = config.aggregateTextSearchAdapters || []
     for (const asm of assembliesToIndex) {
       const config = await this.getConfig(target, asm, flags.tracks?.split(','))
-      const uris = config
-        .map(entry => entry?.indexingConfiguration?.gffLocation.uri)
-        .filter((f): f is string => !!f)
 
-      await this.indexDriver(
-        uris,
-        defaultAttributes,
-        configDirectory,
-        asm,
-        flags.tracks?.split(',') || [],
-      )
+      this.log('Indexing assembly ' + asm + '...')
+
+      await this.indexDriver(config, defaultAttributes, configDirectory, asm)
 
       adapters.push({
         type: 'TrixTextSearchAdapter',
@@ -82,6 +75,7 @@ export default class TextIndex extends JBrowseCommand {
         assemblies: [asm],
       })
     }
+
     fs.writeFileSync(
       target,
       JSON.stringify(
@@ -90,6 +84,7 @@ export default class TextIndex extends JBrowseCommand {
         2,
       ),
     )
+    this.log('Finished!')
   }
 
   // Diagram of function call flow:
@@ -113,28 +108,33 @@ export default class TextIndex extends JBrowseCommand {
   // This function takes a list of uris, as well as which attributes to index,
   // and indexes them all into one aggregate index.
   async indexDriver(
-    uris: string[],
+    configs: Track[],
     attributes: string[],
     outLocation: string,
     assemblyName: string,
-    trackID: string[],
   ) {
-    // needed currently if empty array
-    if (!uris.length) {
+    if (!configs.length) {
       return
     }
     let aggregateStream = new PassThrough()
-    let numStreamsFlowing = uris.length
+    let numStreamsFlowing = configs.length
 
     //  For each uri, we parse the file and add it to aggregateStream.
-    for (const uri of uris) {
-      for (const tracks of trackID) {
+    for (const config of configs) {
+      const {
+        trackId,
+        adapter: {
+          type,
+          gffGzLocation: { uri },
+        },
+      } = config
+      if (type === 'Gff3TabixAdapter') {
         const gffTransform = new Transform({
           objectMode: true,
           transform: (chunk, _encoding, done) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             chunk.forEach((record: any) => {
-              this.recurseFeatures(record, gff3Stream, attributes, tracks)
+              this.recurseFeatures(record, gff3Stream, attributes, trackId)
             })
             done()
           },
@@ -358,8 +358,7 @@ export default class TextIndex extends JBrowseCommand {
     assemblyName: string,
     trackIds?: string[],
   ) {
-    const config: Config = await this.readJsonFile(configPath)
-    const tracks = config.tracks
+    const { tracks } = (await this.readJsonFile(configPath)) as Config
     if (!tracks) {
       throw new Error(
         'No tracks found in config.json. Please add a track before indexing.',
@@ -367,29 +366,17 @@ export default class TextIndex extends JBrowseCommand {
     }
     const trackIdsToIndex = trackIds || tracks.map(track => track.trackId)
 
-    return trackIdsToIndex.map(trackId => {
-      const currentTrack = tracks.find(t => trackId === t.trackId)
-      if (currentTrack) {
-        if (currentTrack.assemblyNames.includes(assemblyName)) {
-          const { adapter, textSearchIndexingAttributes } = currentTrack
-          if (adapter.type === 'Gff3TabixAdapter') {
-            return {
-              trackId,
-              indexingConfiguration: {
-                indexingAdapter: 'GFF3',
-                gzipped: true,
-                gffLocation: adapter?.gffGzLocation,
-              },
-              attributes: textSearchIndexingAttributes,
-            }
-          }
+    return trackIdsToIndex
+      .map(trackId => {
+        const currentTrack = tracks.find(t => trackId === t.trackId)
+        if (!currentTrack) {
+          throw new Error(
+            `Track not found in config.json for trackId ${trackId}, please add track configuration before indexing.`,
+          )
         }
-      } else {
-        throw new Error(
-          `Track not found in config.json for trackId ${trackId}, please add track configuration before indexing.`,
-        )
-      }
-      return {}
-    })
+        return currentTrack
+      })
+      .filter(track => track.assemblyNames.includes(assemblyName))
+      .filter(track => track.adapter.type === 'Gff3TabixAdapter')
   }
 }
