@@ -37,7 +37,13 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
       id: `${region.refName}:${region.start}..${region.end}`,
       delete: `${region.refName}:${region.start}..${region.end}`,
     }))
-    .filter(region => region.assemblyName === selectedAssembly)
+    .filter(region => {
+      if (selectedAssembly === 'all') {
+        return true
+      } else {
+        return region.assemblyName === selectedAssembly
+      }
+    })
 
   const handleEditCellChangeCommitted = React.useCallback(
     ({ id, props }: GridEditCellPropsParams) => {
