@@ -367,6 +367,50 @@
         "uri": "volvox2.ixx"
       },
       "assemblies": ["volvox2"]
+    },
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "TrixAdapter",
+      "ixFilePath": {
+        "uri": "volvox.ix"
+      },
+      "ixxFilePath": {
+        "uri": "volvox.ixx"
+      },
+      "assemblies": ["volvox"]
+    },
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "TrixAdapter",
+      "ixFilePath": {
+        "uri": "volvox2.ix"
+      },
+      "ixxFilePath": {
+        "uri": "volvox2.ixx"
+      },
+      "assemblies": ["volvox2"]
+    },
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "TrixAdapter",
+      "ixFilePath": {
+        "uri": "volvox.ix"
+      },
+      "ixxFilePath": {
+        "uri": "volvox.ixx"
+      },
+      "assemblies": ["volvox"]
+    },
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "TrixAdapter",
+      "ixFilePath": {
+        "uri": "volvox2.ix"
+      },
+      "ixxFilePath": {
+        "uri": "volvox2.ixx"
+      },
+      "assemblies": ["volvox2"]
     }
   ]
 }

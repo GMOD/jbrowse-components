@@ -280,29 +280,41 @@ export default class TextIndex extends JBrowseCommand {
         return
       }
       const locStr = `${subRecord['seq_id']};${subRecord['start']}..${subRecord['end']}`
+      const RecordValues: Array<string> = []
+      const RecordAttributes: Array<string> = []
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const recordObj: any = {
-        locstring: `${locStr}`,
-        trackID: `${trackID}`,
+      RecordAttributes.push('locstring')
+      RecordAttributes.push('TrackID')
+      RecordValues.push(locStr)
+      RecordValues.push(trackID)
+
+      for (const x of attributes) {
+        RecordAttributes.push(x)
       }
 
-      const attrs = []
+      fs.writeFileSync('meta.json', JSON.stringify(`${RecordAttributes}`))
+
       for (const attr of attributes) {
         if (subRecord[attr]) {
-          recordObj[attr] = subRecord[attr]
-          attrs.push(recordObj[attr].toString())
+          RecordValues.push(subRecord[attr])
+          RecordAttributes.push(attr)
         } else if (subRecord.attributes?.[attr]) {
-          recordObj[attr] = subRecord.attributes[attr]
-          // using toString, even if this is an array, turns it into a single
-          // element
-          attrs.push(recordObj[attr].toString())
+          RecordValues.push(subRecord.attributes[attr])
+          RecordAttributes.push(attr)
+        } else {
+          RecordValues.push('placeholder')
         }
       }
+      // create a meta object that has types field
+      // compare every array to the existing types field
+      // if it doesnt exist then append add it
+      // push the object to meta.json
+      if (RecordAttributes.length > 2) {
+        const uniqAttrs = [...new Set(RecordValues)]
 
-      if (attrs.length) {
-        const buff = Buffer.from(JSON.stringify(recordObj)).toString('base64')
-        const uniqAttrs = [...new Set(attrs)]
+        const buff = Buffer.from(JSON.stringify(RecordValues)).toString(
+          'base64',
+        )
         gff3Stream.push(`${buff} ${uniqAttrs.join(' ')}\n`)
       }
     }
