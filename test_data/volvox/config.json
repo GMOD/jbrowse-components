@@ -1483,8 +1483,7 @@
       "scopes": "https://www.googleapis.com/auth/drive.readonly",
       "responseType": "token",
       "validDomains": ["drive.google.com"],
-      "origin": "google",
-      "tokenType": "Bearer"
+      "origin": "google"
     },
     {
       "type": "OAuthInternetAccount",
@@ -1506,8 +1505,7 @@
         "dropbox.tech",
         "getdropbox.com"
       ],
-      "origin": "dropbox",
-      "tokenType": "Bearer"
+      "origin": "dropbox"
     },
     {
       "type": "ExternalTokenInternetAccount",

@@ -52,6 +52,10 @@ export const BlobLocation = types.model('BlobLocation', {
 
 export const UriLocationRaw = types.model('UriLocation', {
   uri: types.string, // TODO: refine
+  authHeader: types.maybe(types.string),
+  internetAccountId: types.maybe(types.string),
+  baseAuthUri: types.maybe(types.string),
+  tokenType: types.maybe(types.string),
   baseUri: types.maybe(types.string),
 })
 

@@ -103,7 +103,10 @@ const UrlChooser = (props: {
     'autoDetect',
   )
 
-  const autoDetectInternetAccount = (urlInput: string) => {
+  const findChosenInternetAccount = (
+    urlInput: string,
+    internetAccountSelection: string,
+  ) => {
     try {
       new URL(urlInput)
     } catch (error) {
@@ -111,8 +114,13 @@ const UrlChooser = (props: {
       return undefined
     }
 
+    if (internetAccountSelection === 'autoDetect') {
+      return internetAccounts?.find(account => {
+        return account.handlesLocation({ uri: urlInput })
+      })
+    }
     return internetAccounts?.find(account => {
-      return account.handlesLocation({ uri: urlInput })
+      return account.internetAccountId === internetAccountSelection
     })
   }
 
@@ -128,24 +136,21 @@ const UrlChooser = (props: {
             setCurrentInternetAccount('')
           }
           if (currentInternetAccount) {
-            const internetAccount: Account | undefined =
-              currentInternetAccount === 'autoDetect'
-                ? autoDetectInternetAccount(event.target.value)
-                : undefined
+            const internetAccount = findChosenInternetAccount(
+              event.target.value,
+              currentInternetAccount,
+            )
 
             setLocation({
               uri: event.target.value,
               baseAuthUri: event.target.value,
-              internetAccountId: internetAccount
-                ? internetAccount.accountConfig.internetAccountId
-                : currentInternetAccount,
-              authHeader: internetAccount
-                ? internetAccount.accountConfig.authHeader || 'Authorization'
-                : 'Authorization',
+              internetAccountId: internetAccount?.internetAccountId || '',
+              authHeader: internetAccount?.authHeader || 'Authorization',
               tokenType: internetAccount
-                ? internetAccount.accountConfig.tokenType
+                ? internetAccount.tokenType // internetAccount.tokenType
                 : '',
             })
+            console.log(location)
           } else {
             setLocation({ uri: event.target.value })
           }
@@ -160,24 +165,18 @@ const UrlChooser = (props: {
             style={{ margin: 5 }}
             onChange={event => {
               const internetAccountId: string = event.target.value as string
-              let internetAccount: Account | undefined
               setCurrentInternetAccount(event.target.value as string)
-              if (event.target.value === 'autoDetect') {
-                internetAccount = autoDetectInternetAccount(currentUrl)
-              }
+              const internetAccount = findChosenInternetAccount(
+                currentUrl,
+                internetAccountId,
+              )
 
               setLocation({
                 uri: currentUrl,
                 baseAuthUri: currentUrl,
-                internetAccountId: internetAccount
-                  ? internetAccount.accountConfig.internetAccountId
-                  : internetAccountId,
-                authHeader: internetAccount
-                  ? internetAccount.accountConfig.authHeader || 'Authorization'
-                  : 'Authorization',
-                tokenType: internetAccount
-                  ? internetAccount.accountConfig.tokenType
-                  : '',
+                internetAccountId: internetAccount?.internetAccountId || '',
+                authHeader: internetAccount?.authHeader || 'Authorization',
+                tokenType: internetAccount?.tokenType || '',
               })
             }}
             displayEmpty
@@ -185,7 +184,7 @@ const UrlChooser = (props: {
             <MenuItem value="">None</MenuItem>
             <MenuItem value="autoDetect">
               Auto Detect:{' '}
-              {autoDetectInternetAccount(currentUrl)?.accountConfig.name}
+              {findChosenInternetAccount(currentUrl, 'autoDetect')?.name}
             </MenuItem>
             {internetAccounts?.map(account => {
               try {

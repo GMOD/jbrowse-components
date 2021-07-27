@@ -377,7 +377,7 @@ export default function RootModel(
         const selectedId = searchOrReplaceInArgs(args, 'internetAccountId')
         if (selectedId) {
           const selectedAccount = self.internetAccounts.find(account => {
-            return account.accountConfig.internetAccountId === selectedId
+            return account.internetAccountId === selectedId
           })
           accountToUse = selectedAccount
         }

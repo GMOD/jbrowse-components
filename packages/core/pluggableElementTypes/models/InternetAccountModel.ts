@@ -19,11 +19,18 @@ export const InternetAccount = types
     get name() {
       return getConf(self, 'name')
     },
-
     get internetAccountId() {
       return getConf(self, 'internetAccountId')
     },
-
+    get authHeader() {
+      return getConf(self, 'authHeader')
+    },
+    get tokenType() {
+      return getConf(self, 'tokenType')
+    },
+    get origin() {
+      return getConf(self, 'origin')
+    },
     get accountConfig() {
       // @ts-ignore
       return readConfObject(self.configuration)

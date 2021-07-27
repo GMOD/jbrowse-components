@@ -1,5 +1,5 @@
 // will move later, just putting here tempimport React from 'react'
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { OAuthInternetAccountConfigModel } from './configSchema'
@@ -59,6 +59,9 @@ const stateModelFactory = (
       errorMessage: '',
     }))
     .views(self => ({
+      get tokenType() {
+        return getConf(self, 'tokenType') || 'Bearer'
+      },
       handlesLocation(location: FileLocation): boolean {
         const validDomains = self.accountConfig.validDomains || []
         return validDomains.some((domain: string) =>
@@ -74,17 +77,18 @@ const stateModelFactory = (
         self.errorMessage = message
       },
       async useEndpointForAuthorization() {
+        const config = self.accountConfig
         const data: OAuthData = {
-          client_id: self.accountConfig.clientId,
+          client_id: config.clientId,
           redirect_uri: 'http://localhost:3000',
-          response_type: self.accountConfig.responseType || 'code',
+          response_type: config.responseType || 'code',
         }
 
-        if (self.accountConfig.scopes) {
-          data.scope = self.accountConfig.scopes
+        if (config.scopes) {
+          data.scope = config.scopes
         }
 
-        if (self.accountConfig.needsPKCE) {
+        if (config.needsPKCE) {
           const base64Encode = (buf: Buffer) => {
             return buf
               .toString('base64')
@@ -103,7 +107,7 @@ const stateModelFactory = (
           this.setCodeVerifierPKCE(codeVerifier)
         }
 
-        if (self.accountConfig.hasRefreshToken) {
+        if (config.hasRefreshToken) {
           data.token_access_type = 'offline'
         }
 
@@ -111,11 +115,11 @@ const stateModelFactory = (
           .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
           .join('&')
 
-        const url = `${self.accountConfig.authEndpoint}?${params}`
+        const url = `${config.authEndpoint}?${params}`
         const options = `width=500,height=600,left=0,top=0`
         return window.open(
           url,
-          `JBrowseAuthWindow-${self.accountConfig.internetAccountId}`,
+          `JBrowseAuthWindow-${self.internetAccountId}`,
           options,
         )
       },
@@ -135,10 +139,7 @@ const stateModelFactory = (
           self.expireTime = expireTime
 
           if (generateNew && token) {
-            sessionStorage.setItem(
-              `${self.accountConfig.internetAccountId}-token`,
-              token,
-            )
+            sessionStorage.setItem(`${self.internetAccountId}-token`, token)
           }
 
           if (!location) {
@@ -175,12 +176,12 @@ const stateModelFactory = (
           self.authorizationCode = code
         },
         setRefreshToken(token: string) {
-          const refreshTokenKey = `${self.accountConfig.internetAccountId}-refreshToken`
+          const refreshTokenKey = `${self.internetAccountId}-refreshToken`
           const existingToken = localStorage.getItem(refreshTokenKey)
           if (!existingToken) {
             self.refreshToken = token
             localStorage.setItem(
-              `${self.accountConfig.internetAccountId}-refreshToken`,
+              `${self.internetAccountId}-refreshToken`,
               token,
             )
           } else {
@@ -188,68 +189,60 @@ const stateModelFactory = (
           }
         },
         async exchangeAuthorizationForAccessToken(token: string) {
-          if (self.accountConfig) {
-            const data = {
-              code: token,
-              grant_type: 'authorization_code',
-              client_id: self.accountConfig.clientId,
-              code_verifier: self.codeVerifierPKCE,
-              redirect_uri: 'http://localhost:3000',
-            }
+          const config = self.accountConfig
+          const data = {
+            code: token,
+            grant_type: 'authorization_code',
+            client_id: config.clientId,
+            code_verifier: self.codeVerifierPKCE,
+            redirect_uri: 'http://localhost:3000',
+          }
 
-            const params = Object.entries(data)
-              .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
-              .join('&')
+          const params = Object.entries(data)
+            .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
+            .join('&')
 
-            const response = await fetch(
-              `${self.accountConfig.tokenEndpoint}`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: params,
-              },
-            )
+          const response = await fetch(`${config.tokenEndpoint}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: params,
+          })
 
-            const accessToken = await response.json()
-            this.setAccessTokenInfo(
-              accessToken.access_token,
-              accessToken.expires_in,
-              true,
-            )
-            if (accessToken.refresh_token) {
-              this.setRefreshToken(accessToken.refresh_token)
-            }
+          const accessToken = await response.json()
+          this.setAccessTokenInfo(
+            accessToken.access_token,
+            accessToken.expires_in,
+            true,
+          )
+          if (accessToken.refresh_token) {
+            this.setRefreshToken(accessToken.refresh_token)
           }
         },
         async exchangeRefreshForAccessToken() {
           const foundRefreshToken = Object.keys(localStorage).find(key => {
-            return (
-              key === `${self.accountConfig.internetAccountId}-refreshToken`
-            )
+            return key === `${self.internetAccountId}-refreshToken`
           })
-          if (foundRefreshToken && self.accountConfig) {
+          if (foundRefreshToken) {
+            const config = self.accountConfig
             const data = {
               grant_type: 'refresh_token',
               refresh_token: localStorage.getItem(foundRefreshToken),
-              client_id: self.accountConfig.clientId,
+              client_id: config.clientId,
             }
 
             const params = Object.entries(data)
               .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
               .join('&')
 
-            const response = await fetch(
-              `${self.accountConfig.tokenEndpoint}`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: params,
+            const response = await fetch(`${config.tokenEndpoint}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
               },
-            )
+              body: params,
+            })
 
             const accessToken = await response.json()
             this.setAccessTokenInfo(
@@ -265,7 +258,7 @@ const stateModelFactory = (
           if (!location || !accessToken) {
             return
           }
-          switch (self.accountConfig.origin) {
+          switch (self.origin) {
             case 'dropbox': {
               const response = await fetch(
                 'https://api.dropboxapi.com/2/sharing/get_shared_link_metadata',
@@ -342,8 +335,7 @@ const stateModelFactory = (
         },
         finishOAuthWindow(event: MessageEvent) {
           if (
-            event.data.name ===
-            `JBrowseAuthWindow-${self.accountConfig.internetAccountId}`
+            event.data.name === `JBrowseAuthWindow-${self.internetAccountId}`
           ) {
             if (event.data.redirectUri.includes('access_token')) {
               const fixedQueryString = event.data.redirectUri.replace('#', '?')
@@ -381,8 +373,7 @@ const stateModelFactory = (
           args: {},
           retried = false,
         ) {
-          const token =
-            authenticationInfoMap[self.accountConfig.internetAccountId]
+          const token = authenticationInfoMap[self.internetAccountId]
 
           let file
           let newArgs = args
@@ -418,7 +409,7 @@ const stateModelFactory = (
         ) {
           const rootModel = getRoot(self)
           rootModel.removeFromAuthenticationMap(
-            self.accountConfig.internetAccountId,
+            self.internetAccountId,
             authenticationInfoMap,
           )
 

@@ -273,7 +273,6 @@ export interface LocalPathLocation
 
 export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
 
-// TODOAUTH: try making a new interface similar to uri locaiton with the auth stuff
 export interface AuthLocation extends SnapshotIn<typeof MUAuthLocation> {}
 
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}

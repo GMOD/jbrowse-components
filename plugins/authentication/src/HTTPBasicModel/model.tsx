@@ -1,5 +1,5 @@
 // will move later, just putting here tempimport React from 'react'
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { FileLocation, AuthLocation } from '@jbrowse/core/util/types'
@@ -30,6 +30,9 @@ const stateModelFactory = (
       currentTypeAuthorizing: '',
     }))
     .views(self => ({
+      get tokenType() {
+        return getConf(self, 'tokenType') || 'Basic'
+      },
       handlesLocation(location: FileLocation): boolean {
         // this will probably look at something in the config which indicates that it is an OAuth pathway,
         // also look at location, if location is set to need authentication it would reutrn true
@@ -46,6 +49,9 @@ const stateModelFactory = (
         // this has to be a dialog box with input fields
         // and the input password field needs to have those security settings
         // and able to autofill with lastpass/google
+        // will have to resolve the promise in the "Ok" of the dialog box
+        // check out https://github.com/GMOD/jbrowse-plugin-apollo/blob/login/src/components/LoginForm.tsx
+        // for a simple login form
         // then base64 encode the entry to the form
         // create the auth header such as "Authorization": "Basic base64user:base64pass"
         // and then call the resource

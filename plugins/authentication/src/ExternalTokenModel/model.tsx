@@ -60,7 +60,7 @@ const stateModelFactory = (
           return ''
         }
         const tokenKey = Object.keys(sessionStorage).find(key => {
-          return key === `${self.accountConfig.internetAccountId}-token`
+          return key === `${self.internetAccountId}-token`
         })
         let token = sessionStorage.getItem(tokenKey as string)
 
@@ -71,23 +71,18 @@ const stateModelFactory = (
         // first call is an api endpoint, you get metadata for the file and has a property
         // called access, if access is set to controller it needs a token, else it doesn't
         if (!token) {
-          const newToken = window.prompt(
-            `Enter token for ${self.accountConfig.name} to use`,
-          )
+          const newToken = window.prompt(`Enter token for ${self.name} to use`)
           if (!newToken) {
             return
           }
           token = newToken
-          sessionStorage.setItem(
-            `${self.accountConfig.internetAccountId}-token`,
-            token,
-          )
+          sessionStorage.setItem(`${self.internetAccountId}-token`, token)
         }
 
         return token
       },
       async openLocation(location: FileLocation) {
-        switch (self.accountConfig.origin) {
+        switch (self.origin) {
           case 'GDC': {
             const query = (location as AuthLocation).uri.split('/').pop() // should get id
             const response = await fetch(
@@ -120,8 +115,7 @@ const stateModelFactory = (
         authenticationInfoMap: Record<string, string>,
         args: {},
       ) {
-        const token =
-          authenticationInfoMap[self.accountConfig.internetAccountId]
+        const token = authenticationInfoMap[self.internetAccountId]
         if (!token) {
           await this.openLocation(location)
         }
@@ -129,7 +123,7 @@ const stateModelFactory = (
         // probably will need a way to test if the token is okay before opening the track,
         // and if it fails then do a handle error with a new handleRpcMethodCall
         // similar to Oauth implementation
-        switch (self.accountConfig.origin) {
+        switch (self.origin) {
           case 'GDC': {
             const query = (location as AuthLocation).uri.split('/').pop() // should get id
             const editedArgs = JSON.parse(JSON.stringify(args))
