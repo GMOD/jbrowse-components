@@ -8,7 +8,7 @@ export default class LocalFile implements GenericFilehandle {
   private fsReadFilePromise: Promise<typeof import('fs').readFile.__promisify__>
   private fsStatPromise: Promise<typeof import('fs').stat.__promisify__>
 
-  public constructor(source: string, opts: FilehandleOptions = {}) {
+  public constructor(source: string, _opts: FilehandleOptions = {}) {
     this.filename = source
     const utilPromise = import('util')
     const fsPromise = import('fs')
