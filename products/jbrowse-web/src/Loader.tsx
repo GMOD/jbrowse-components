@@ -602,7 +602,7 @@ const Renderer = observer(
                 const { session } = rootModel
                 Promise.all(
                   views.map(async (view: any) => {
-                    const { type, assembly, loc } = view
+                    const { tracks, type, assembly, loc } = view
                     await rootModel.assemblyManager.waitForAssembly(assembly)
                     if (type === 'LGV' || type === 'LinearGenomeView') {
                       const materialView = session?.addView(
@@ -611,6 +611,9 @@ const Renderer = observer(
                       )
                       materialView.setWidth(800)
                       materialView.navToLocString(loc, assembly)
+                      tracks.forEach((track: string) => {
+                        materialView.showTrack(track)
+                      })
                     }
                   }),
                 ).catch(e => {
