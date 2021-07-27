@@ -81,7 +81,7 @@ export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
           start: chunkStart,
           end: chunkStart + chunkSize,
         }
-        chunks.push(this.seqCache.get(JSON.stringify(r), r, opts.signal))
+        chunks.push(this.seqCache.get(JSON.stringify(r), r, opts?.signal))
       }
       const seq = (await Promise.all(chunks))
         .join('')
