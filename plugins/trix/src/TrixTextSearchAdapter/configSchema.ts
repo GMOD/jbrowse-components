@@ -13,6 +13,11 @@ export default ConfigurationSchema(
       defaultValue: { uri: 'out.ixx' },
       description: 'the location of the trixx ixx file',
     },
+    metaFilePath: {
+      type: 'fileLocation',
+      defaultValue: { uri: 'meta.json' },
+      description: 'the location of the metadata json file for the trix index',
+    },
     tracks: {
       type: 'stringArray',
       defaultValue: [],

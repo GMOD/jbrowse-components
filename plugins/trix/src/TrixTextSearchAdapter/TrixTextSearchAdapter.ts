@@ -21,6 +21,9 @@ export default class TrixTextSearchAdapter
 
   ixxUrl: string
 
+  metaUrl: string
+
+  indexingAttributes?: string[]
   trixJs: Trix
   tracksNames?: string[]
 
@@ -28,6 +31,10 @@ export default class TrixTextSearchAdapter
     super(config)
     const ixFilePath = readConfObject(config, 'ixFilePath')
     const ixxFilePath = readConfObject(config, 'ixxFilePath')
+    const metaFilePath = readConfObject(config, 'metaFilePath')
+    if (!metaFilePath) {
+      throw new Error('must provide meta.json')
+    }
     if (!ixFilePath) {
       throw new Error('must provide out.ix')
     }
@@ -40,11 +47,38 @@ export default class TrixTextSearchAdapter
     this.ixxUrl = ixxFilePath.baseUri
       ? new URL(ixxFilePath.uri, ixxFilePath.baseUri).href
       : ixxFilePath.uri
+    this.metaUrl = metaFilePath.baseUri
+      ? new URL(metaFilePath.uri, metaFilePath.baseUri).href
+      : metaFilePath.uri
     const ixFile = new RemoteFile(this.ixUrl)
     const ixxFile = new RemoteFile(this.ixxUrl)
     this.trixJs = new Trix(ixxFile, ixFile)
   }
 
+  async readMeta() {
+    try {
+      const metaFile = new RemoteFile(this.metaUrl)
+      const meta = (await metaFile.readFile('utf8')) as string
+      if (meta !== '') {
+        const metaData = JSON.parse(meta)
+        const { indexingAttributes } = metaData
+        this.indexingAttributes = indexingAttributes
+        return indexingAttributes
+      }
+      throw new Error('Error parsing meta.json')
+    } catch (err) {
+      console.warn(`Error: ${err}`)
+    }
+    return []
+  }
+
+  async getAttributes() {
+    if (this.indexingAttributes) {
+      return this.indexingAttributes
+    }
+    this.indexingAttributes = await this.readMeta()
+    return this.indexingAttributes
+  }
   /**
    * Returns list of results
    * @param args - search options/arguments include: search query
@@ -53,15 +87,26 @@ export default class TrixTextSearchAdapter
   async searchIndex(args: BaseArgs) {
     const { queryString } = args
     let buff
-    const searchResults: Array<string> = []
+    const searchResults: string[] = []
     const results = await this.trixJs.search(queryString)
 
-    results.forEach(data => {
-      buff = Buffer.from(data, 'base64')
-      const stringBuffer = buff.toString()
-      searchResults.push(stringBuffer)
-    })
-    return this.formatResults(searchResults)
+    const attr = await this.getAttributes()
+    console.log(attr)
+    if (attr) {
+      results.forEach(data => {
+        const arr = []
+        buff = Buffer.from(data, 'base64').toString('utf-8').split(',')
+        for (const x in buff) {
+          if (!buff[x].includes('attributePlaceholder')) {
+            arr.push(`${attr[x]}:${buff[x]}`)
+          }
+        }
+        searchResults.push(arr.toString())
+      })
+    }
+    console.log(searchResults)
+    // return this.formatResults(searchResults)
+    return []
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
