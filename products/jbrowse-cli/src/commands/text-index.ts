@@ -169,7 +169,7 @@ export default class TextIndex extends JBrowseCommand {
         })
       }
     }
-    return this.runIxIxx(aggregateStream, outLocation, assemblyName)
+    return this.runIxIxx(aggregateStream, path.join('trix'), assemblyName)
   }
 
   // Take in the local file path, check if the it is gzipped or not, then
@@ -292,7 +292,10 @@ export default class TextIndex extends JBrowseCommand {
         RecordAttributes.push(x)
       }
 
-      fs.writeFileSync('meta.json', JSON.stringify(`${RecordAttributes}`))
+      fs.writeFileSync(
+        path.join('trix', 'meta.json'),
+        JSON.stringify({ indexingAttributes: RecordAttributes }, null, 2),
+      )
 
       for (const attr of attributes) {
         if (subRecord[attr]) {
@@ -302,7 +305,7 @@ export default class TextIndex extends JBrowseCommand {
           RecordValues.push(subRecord.attributes[attr])
           RecordAttributes.push(attr)
         } else {
-          RecordValues.push('placeholder')
+          RecordValues.push('attributePlaceholder')
         }
       }
       // create a meta object that has types field
