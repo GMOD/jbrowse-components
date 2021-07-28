@@ -129,7 +129,9 @@ const LocalFileChooser = observer(
               const file = target && target.files && target.files[0]
               if (file) {
                 if (isElectron) {
-                  setLocation({ localPath: file.path })
+                  setLocation({
+                    localPath: (file as File & { path: string }).path,
+                  })
                 } else {
                   setLocation(storeBlobLocation({ blob: file }))
                 }
