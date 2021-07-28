@@ -24,7 +24,7 @@ const blockState = types
   .model('BlockState', {
     key: types.string,
     region: Region,
-    reload: false,
+    reloadFlag: 0,
     isLeftEndOfDisplayedRegion: false,
     isRightEndOfDisplayedRegion: false,
   })
@@ -45,6 +45,9 @@ const blockState = types
   .actions(self => {
     let renderInProgress: undefined | AbortController
     return {
+      doReload() {
+        self.reloadFlag = self.reloadFlag + 1
+      },
       afterAttach() {
         const display = getContainingDisplay(self)
         makeAbortableReaction(
@@ -235,7 +238,7 @@ export function renderBlockData(
         rendererType: rendererType.name,
         sessionId,
         blockKey: self.key,
-        reload: self.reload,
+        reloadFlag: self.reloadFlag,
         timeout: 1000000, // 10000,
       },
     }
