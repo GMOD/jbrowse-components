@@ -235,6 +235,7 @@ export function renderBlockData(
         rendererType: rendererType.name,
         sessionId,
         blockKey: self.key,
+        reload: self.reload,
         timeout: 1000000, // 10000,
       },
     }
