@@ -3195,7 +3195,6 @@
         }
       }
     },
-
     {
       "type": "AlignmentsTrack",
       "trackId": "modbam_test.read",
@@ -3296,6 +3295,34 @@
           "gziLocation": {
             "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
           }
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "colo_normal",
+      "name": "COLO829 MinION normal (coverage)",
+      "description": "https://www.ebi.ac.uk/ena/browser/view/PRJEB27698",
+      "category": ["COLO829"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/COLO829/colo_normal.bw"
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "colo_tumor",
+      "name": "COLO829 MinION tumor (coverage)",
+      "description": "https://www.ebi.ac.uk/ena/browser/view/PRJEB27698",
+      "category": ["COLO829"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/COLO829/colo_tumor.bw"
         }
       }
     }
