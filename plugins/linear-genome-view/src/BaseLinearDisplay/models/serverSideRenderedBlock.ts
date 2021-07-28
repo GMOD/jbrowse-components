@@ -24,6 +24,7 @@ const blockState = types
   .model('BlockState', {
     key: types.string,
     region: Region,
+    reload: false,
     isLeftEndOfDisplayedRegion: false,
     isRightEndOfDisplayedRegion: false,
   })

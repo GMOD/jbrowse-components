@@ -238,7 +238,7 @@ export const BaseLinearDisplay = types
     reload() {
       const temp = JSON.parse(JSON.stringify(self.blockState))
       Object.keys(temp).forEach(blockState => {
-        temp[blockState].key += '-reload'
+        temp[blockState].reload = true
       })
       self.blockState = temp
     },
