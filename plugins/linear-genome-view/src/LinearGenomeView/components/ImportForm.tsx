@@ -106,10 +106,17 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       // region visible, xref #1703
       model.showAllRegions()
     } else {
-      const results = await fetchResults(input.toLocaleLowerCase())
-      if (results.length > 0) {
+      const results: BaseResult[] = await fetchResults(
+        input.toLocaleLowerCase(),
+      )
+      if (results.length > 1) {
         model.setSearchResults(results, input.toLocaleLowerCase())
       } else {
+        if (results.length === 1) {
+          input = results[0].getLocation()
+          const trackId = results[0].getTrackId()
+          trackId && model.showTrack(trackId)
+        }
         try {
           input && model.navToLocString(input, assemblyName)
         } catch (e) {
