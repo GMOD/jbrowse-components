@@ -1,3 +1,123 @@
+## 1.3.2 (2021-07-07)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                           | Download                                                        |
+| --------------------------------- | --------------------------------------------------------------- |
+| @jbrowse/core                     | https://www.npmjs.com/package/@jbrowse/core                     |
+| @jbrowse/plugin-circular-view     | https://www.npmjs.com/package/@jbrowse/plugin-circular-view     |
+| @jbrowse/plugin-spreadsheet-view  |                                                                 |
+| @jbrowse/plugin-sv-inspector      |                                                                 |
+| @jbrowse/plugin-svg               | https://www.npmjs.com/package/@jbrowse/plugin-svg               |
+| @jbrowse/plugin-variants          | https://www.npmjs.com/package/@jbrowse/plugin-variants          |
+| @jbrowse/desktop                  |                                                                 |
+| @jbrowse/react-linear-genome-view | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view |
+| @jbrowse/web                      |                                                                 |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- Other
+  - [#2100](https://github.com/GMOD/jbrowse-components/pull/2100) Improve descriptions on VCF SVs ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#2106](https://github.com/GMOD/jbrowse-components/pull/2106) Use more accurate estimator for feature label widths ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- [#2109](https://github.com/GMOD/jbrowse-components/pull/2109) Make sure to wait for assembly to load before downloading canonical refnames in SV inspector ([@cmdcolin](https://github.com/cmdcolin))
+- [#2111](https://github.com/GMOD/jbrowse-components/pull/2111) Fix "Can't resolve '@jbrowse/plugin-legacy-jbrowse'" in `@jbrowse/react-linear-genome-view` ([@garrettjstevens](https://github.com/garrettjstevens))
+
+#### Committers: 2
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+
+## 1.3.1 (2021-07-06)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                         |
+| --------------------------------------- | ---------------------------------------------------------------- |
+| @jbrowse/core                           | https://www.npmjs.com/package/@jbrowse/core                      |
+| @jbrowse/plugin-alignments              | https://www.npmjs.com/package/@jbrowse/plugin-alignments         |
+| @jbrowse/plugin-bed                     | https://www.npmjs.com/package/@jbrowse/plugin-bed                |
+| @jbrowse/plugin-breakpoint-split-view   |                                                                  |
+| @jbrowse/plugin-circular-view           | https://www.npmjs.com/package/@jbrowse/plugin-circular-view      |
+| @jbrowse/plugin-config                  | https://www.npmjs.com/package/@jbrowse/plugin-config             |
+| @jbrowse/plugin-data-management         | https://www.npmjs.com/package/@jbrowse/plugin-data-management    |
+| @jbrowse/plugin-dotplot-view            |                                                                  |
+| @jbrowse/plugin-filtering               |                                                                  |
+| @jbrowse/plugin-hic                     |                                                                  |
+| @jbrowse/plugin-legacy-jbrowse          | https://www.npmjs.com/package/@jbrowse/plugin-legacy-jbrowse     |
+| @jbrowse/plugin-linear-comparative-view |                                                                  |
+| @jbrowse/plugin-linear-genome-view      | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view |
+| @jbrowse/plugin-menus                   |                                                                  |
+| @jbrowse/plugin-rdf                     |                                                                  |
+| @jbrowse/plugin-sequence                | https://www.npmjs.com/package/@jbrowse/plugin-sequence           |
+| @jbrowse/plugin-spreadsheet-view        |                                                                  |
+| @jbrowse/plugin-sv-inspector            |                                                                  |
+| @jbrowse/plugin-svg                     | https://www.npmjs.com/package/@jbrowse/plugin-svg                |
+| @jbrowse/plugin-variants                | https://www.npmjs.com/package/@jbrowse/plugin-variants           |
+| @jbrowse/plugin-wiggle                  | https://www.npmjs.com/package/@jbrowse/plugin-wiggle             |
+| @jbrowse/cli                            | https://www.npmjs.com/package/@jbrowse/cli                       |
+| @jbrowse/desktop                        |                                                                  |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view  |
+| @jbrowse/web                            |                                                                  |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#2094](https://github.com/GMOD/jbrowse-components/pull/2094) More usage of typography to improve consistent text styling ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2068](https://github.com/GMOD/jbrowse-components/pull/2068) Add non-indexed and plaintext VCF Adapter to variants plugin ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+  - [#2067](https://github.com/GMOD/jbrowse-components/pull/2067) Better error message if a file location has an empty string ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#2064](https://github.com/GMOD/jbrowse-components/pull/2064) Export offscreenCanvasPonyfil from core/util ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#2060](https://github.com/GMOD/jbrowse-components/pull/2060) Improve performance with large numbers of reference sequences by using MST volatiles ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2050](https://github.com/GMOD/jbrowse-components/pull/2050) Configurable app logo for web ([@elliothershberg](https://github.com/elliothershberg))
+- Other
+  - [#2104](https://github.com/GMOD/jbrowse-components/pull/2104) Use ScopedCssBaseline to help style the embedded component ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2015](https://github.com/GMOD/jbrowse-components/pull/2015) Deprecate ThemeProvider in `@jbrowse/react-linear-genome-view` ([@garrettjstevens](https://github.com/garrettjstevens))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#2097](https://github.com/GMOD/jbrowse-components/pull/2097) Improve speed for laying out features for embedded/mainthreadrpc scenarios ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2096](https://github.com/GMOD/jbrowse-components/pull/2096) Fix issue with page reload after editing session title ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2074](https://github.com/GMOD/jbrowse-components/pull/2074) Fix support for opening local files in spreadsheet/SV inspector ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2061](https://github.com/GMOD/jbrowse-components/pull/2061) Fix issue with using --force error when no track was previously loaded ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2024](https://github.com/GMOD/jbrowse-components/pull/2024) Flip drawing of negative strand PAF features in linear synteny and dotplot views ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2023](https://github.com/GMOD/jbrowse-components/pull/2023) Fix infinite loop in adding some plugins on desktop ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2019](https://github.com/GMOD/jbrowse-components/pull/2019) Fix session import to use blob map for opening local files ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#2071](https://github.com/GMOD/jbrowse-components/pull/2071) Add indicator to the end of ref name dropdown to suggest user to type the searchbox for more ([@teresam856](https://github.com/teresam856))
+  - [#2056](https://github.com/GMOD/jbrowse-components/pull/2056) Fix infinite recursion in FromConfigAdaptor by avoiding mutating the passed in data when using SimpleFeature ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2018](https://github.com/GMOD/jbrowse-components/pull/2018) Fix 3'UTR in sequence detail panels when no UTRs are in gff ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- `core`
+  - [#1967](https://github.com/GMOD/jbrowse-components/pull/1967) Omit configurationSchema snapshot when it matches the default ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#2078](https://github.com/GMOD/jbrowse-components/pull/2078) Restore eslint rule for no-unused-vars ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2051](https://github.com/GMOD/jbrowse-components/pull/2051) Add missing named exports to shared core modules ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#2045](https://github.com/GMOD/jbrowse-components/pull/2045) Add basic architecture for text searching ([@teresam856](https://github.com/teresam856))
+- Other
+  - [#2070](https://github.com/GMOD/jbrowse-components/pull/2070) Remove service worker from jbrowse-web ([@cmdcolin](https://github.com/cmdcolin))
+  - [#1995](https://github.com/GMOD/jbrowse-components/pull/1995) Pass initialDisplay snapshot via separate param to showTrack ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 5
+
+- Caroline Bridge ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Elliot Hershberg ([@elliothershberg](https://github.com/elliothershberg))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+- Teresa Martinez ([@teresam856](https://github.com/teresam856))
+
 ## 1.3.0 (2021-05-24)
 
 <details><summary>Packages in this release</summary>

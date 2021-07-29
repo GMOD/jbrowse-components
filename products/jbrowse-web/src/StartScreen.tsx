@@ -1,24 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import Button from '@material-ui/core/Button'
-import CircularProgress from '@material-ui/core/CircularProgress'
-import Container from '@material-ui/core/Container'
-import Dialog from '@material-ui/core/Dialog'
-import DialogActions from '@material-ui/core/DialogActions'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogContentText from '@material-ui/core/DialogContentText'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import Grid from '@material-ui/core/Grid'
-import List from '@material-ui/core/List'
+import React, { useEffect, useState } from 'react'
+import {
+  Button,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Grid,
+  IconButton,
+  List,
+  ListItemIcon,
+  ListSubheader,
+  Menu,
+  MenuItem,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 import WarningIcon from '@material-ui/icons/Warning'
 import SettingsIcon from '@material-ui/icons/Settings'
-import IconButton from '@material-ui/core/IconButton'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import ListSubheader from '@material-ui/core/ListSubheader'
-import Menu from '@material-ui/core/Menu'
-import MenuItem from '@material-ui/core/MenuItem'
-import { makeStyles } from '@material-ui/core/styles'
-import Typography from '@material-ui/core/Typography'
-import React, { useEffect, useState } from 'react'
+
 import { LogoFull, FactoryResetDialog } from '@jbrowse/core/ui'
 import {
   NewEmptySession,
@@ -82,9 +85,7 @@ const DeleteSessionDialog = ({
           Cancel
         </Button>
         <Button
-          onClick={() => {
-            setDeleteSession(true)
-          }}
+          onClick={() => setDeleteSession(true)}
           color="primary"
           variant="contained"
           autoFocus
@@ -195,13 +196,13 @@ export default function StartScreen({
             Start a new session
           </Typography>
           <Grid container spacing={4}>
-            <Grid item data-testid="emptySession">
+            <Grid item>
               <NewEmptySession root={root} />
             </Grid>
-            <Grid item data-testid="emptyLGVSession">
+            <Grid item>
               <NewLinearGenomeViewSession root={root} />
             </Grid>
-            <Grid item data-testid="emptySVSession">
+            <Grid item>
               <NewSVInspectorSession root={root} />
             </Grid>
           </Grid>
@@ -216,20 +217,14 @@ export default function StartScreen({
               maxHeight: 200,
             }}
           >
-            {sessionNames
-              ? sessionNames.map((sessionName: string) => (
-                  <RecentSessionCard
-                    key={sessionName}
-                    sessionName={sessionName}
-                    onClick={() => {
-                      setSessionToLoad(sessionName)
-                    }}
-                    onDelete={() => {
-                      setSessionToDelete(sessionName)
-                    }}
-                  />
-                ))
-              : null}
+            {sessionNames?.map((sessionName: string) => (
+              <RecentSessionCard
+                key={sessionName}
+                sessionName={sessionName}
+                onClick={() => setSessionToLoad(sessionName)}
+                onDelete={() => setSessionToDelete(sessionName)}
+              />
+            ))}
           </List>
         </div>
       </Container>

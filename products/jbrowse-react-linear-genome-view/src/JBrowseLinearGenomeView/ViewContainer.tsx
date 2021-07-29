@@ -7,8 +7,8 @@ import {
   Typography,
   makeStyles,
   useTheme,
-  fade,
 } from '@material-ui/core'
+import { alpha } from '@material-ui/core/styles'
 import MenuIcon from '@material-ui/icons/Menu'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
@@ -35,7 +35,7 @@ const useStyles = makeStyles(theme => ({
   },
   iconRoot: {
     '&:hover': {
-      backgroundColor: fade(
+      backgroundColor: alpha(
         theme.palette.secondary.contrastText,
         theme.palette.action.hoverOpacity,
       ),

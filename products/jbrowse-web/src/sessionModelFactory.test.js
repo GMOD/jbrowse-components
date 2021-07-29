@@ -23,6 +23,7 @@ describe('JBrowseWebSessionModel', () => {
       { name: 'testSession' },
       { pluginManager },
     )
+
     const { id, ...rest } = getSnapshot(session)
     expect(rest).toMatchSnapshot()
   })

@@ -1,33 +1,38 @@
-import assemblyManagerFactory, {
-  assemblyConfigSchemas as AssemblyConfigSchemasFactory,
-} from '@jbrowse/core/assemblyManager'
-import PluginManager from '@jbrowse/core/PluginManager'
-import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { MenuItem } from '@jbrowse/core/ui'
-import { AbstractSessionModel } from '@jbrowse/core/util'
-import AddIcon from '@material-ui/icons/Add'
-import SettingsIcon from '@material-ui/icons/Settings'
-import AppsIcon from '@material-ui/icons/Apps'
 import {
   addDisposer,
   cast,
   getSnapshot,
   getParent,
-  SnapshotIn,
-  types,
-  IAnyStateTreeNode,
-  Instance,
   getType,
+  getPropertyMembers,
+  getChildType,
+  IAnyStateTreeNode,
+  IAnyType,
+  Instance,
   isArrayType,
   isModelType,
   isReferenceType,
   isValidReference,
-  getPropertyMembers,
   isMapType,
-  getChildType,
-  IAnyType,
+  SnapshotIn,
+  types,
 } from 'mobx-state-tree'
 import { observable, autorun } from 'mobx'
+// jbrowse
+import assemblyManagerFactory, {
+  assemblyConfigSchemas as AssemblyConfigSchemasFactory,
+} from '@jbrowse/core/assemblyManager'
+import PluginManager from '@jbrowse/core/PluginManager'
+import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import TextSearchManagerF from '@jbrowse/core/TextSearch/TextSearchManager'
+import { AbstractSessionModel } from '@jbrowse/core/util'
+// material ui
+import { MenuItem } from '@jbrowse/core/ui'
+import AddIcon from '@material-ui/icons/Add'
+import SettingsIcon from '@material-ui/icons/Settings'
+import AppsIcon from '@material-ui/icons/Apps'
+
+// other
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
 // @ts-ignore
@@ -107,6 +112,7 @@ export default function RootModel(
     assemblyConfigSchemasType,
     pluginManager,
   )
+  const TextSearchManager = pluginManager.load(TextSearchManagerF)
   return types
     .model('Root', {
       jbrowse: jbrowseWebFactory(
@@ -132,6 +138,7 @@ export default function RootModel(
         },
       ),
       savedSessionsVolatile: observable.map({}),
+      textSearchManager: new TextSearchManager(),
       pluginManager,
       error: undefined as undefined | Error,
     }))
@@ -177,7 +184,7 @@ export default function RootModel(
         addDisposer(
           self,
           autorun(() => {
-            for (const [_, val] of self.savedSessionsVolatile.entries()) {
+            for (const [, val] of self.savedSessionsVolatile.entries()) {
               try {
                 const key = self.localStorageId(val.name)
                 localStorage.setItem(key, JSON.stringify({ session: val }))
@@ -213,7 +220,6 @@ export default function RootModel(
                   }),
                 )
                 if (self.pluginsUpdated) {
-                  this.setPluginsUpdated(false)
                   // reload app to get a fresh plugin manager
                   window.location.reload()
                 }
@@ -235,9 +241,6 @@ export default function RootModel(
             self.session = oldSession
             throw error
           }
-        }
-        if (oldSession) {
-          this.setPluginsUpdated(true)
         }
       },
       setAssemblyEditing(flag: boolean) {

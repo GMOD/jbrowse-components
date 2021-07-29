@@ -11,6 +11,7 @@ import {
 import { getSubAdapterType } from './dataAdapterCache'
 import { Region, NoAssemblyRegion } from '../util/types'
 import { blankStats, rectifyStats, scoresToStats } from '../util/stats'
+import BaseResult from '../TextSearch/BaseResults'
 
 export interface BaseOptions {
   signal?: AbortSignal
@@ -21,6 +22,15 @@ export interface BaseOptions {
   [key: string]: unknown
 }
 
+export type SearchType = 'full' | 'prefix' | 'exact'
+
+export interface BaseArgs {
+  searchType?: SearchType
+  queryString: string
+  signal?: AbortSignal
+  limit?: number
+  pageNumber?: number
+}
 // see
 // https://www.typescriptlang.org/docs/handbook/2/classes.html#abstract-construct-signatures
 // for why this is the abstract construct signature
@@ -35,6 +45,7 @@ export type AnyDataAdapter =
   | BaseAdapter
   | BaseFeatureDataAdapter
   | BaseRefNameAliasAdapter
+  | BaseTextSearchAdapter
   | RegionsAdapter
   | SequenceAdapter
 
@@ -299,4 +310,12 @@ export function isRefNameAliasAdapter(
   thing: object,
 ): thing is BaseRefNameAliasAdapter {
   return 'getRefNameAliases' in thing
+}
+export interface BaseTextSearchAdapter extends BaseAdapter {
+  searchIndex(args: BaseArgs): Promise<BaseResult[]>
+}
+export function isTextSearchAdapter(
+  thing: AnyDataAdapter,
+): thing is BaseTextSearchAdapter {
+  return 'searchIndex' in thing
 }

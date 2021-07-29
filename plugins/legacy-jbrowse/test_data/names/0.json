@@ -1,0 +1,4 @@
+{
+  "apple": { "exact": [], "prefix": ["Apple1", "Apple2", "Apple3"] },
+  "fa": { "prefix": ["FakeSNP", "FakeSNP1"], "exact": [] }
+}

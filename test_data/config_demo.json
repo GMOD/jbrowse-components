@@ -3163,6 +3163,168 @@
           "uri": "https://jbrowse.org/genomes/GRCh38/methylation/modified_bases.5mC.bb"
         }
       }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "modbam_test.reference",
+      "name": "Nanopolish modbam_test.reference 20:10000000",
+      "assemblyNames": ["hg38"],
+      "category": ["Methylation"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/nanopolish_methylation_test/modbam_test.reference.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/hg19/nanopolish_methylation_test/modbam_test.reference.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "modbam_test.read",
+      "name": "Nanopolish modbam_test.read 20:10000000",
+      "category": ["Methylation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/nanopolish_methylation_test/modbam_test.read.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/hg19/nanopolish_methylation_test/modbam_test.read.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "truthset_somaticSVs_COLO829",
+      "name": "truthset_somaticSVs_COLO829",
+      "description": "Source https://github.com/UMCUGenetics/COLO829_somaticSV",
+      "category": ["COLO829"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/truthset_somaticSVs_COLO829.vcf"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "colo829.normal.ngmlr.sorted",
+      "name": "COLO829 MinION normal",
+      "category": ["COLO829"],
+      "assemblyNames": ["hg19"],
+      "description": "https://www.ebi.ac.uk/ena/browser/view/PRJEB27698",
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.normal.ngmlr.sorted.merged.cram"
+        },
+        "craiLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.normal.ngmlr.sorted.merged.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "colo829.tumor.ngmlr.sorted.merged",
+      "name": "COLO829 MinION tumor",
+      "category": ["COLO829"],
+      "assemblyNames": ["hg19"],
+      "description": "https://www.ebi.ac.uk/ena/browser/view/PRJEB27698",
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.tumor.ngmlr.sorted.merged.cram"
+        },
+        "craiLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.tumor.ngmlr.sorted.merged.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "colo_normal",
+      "name": "COLO829 MinION normal (coverage)",
+      "description": "https://www.ebi.ac.uk/ena/browser/view/PRJEB27698",
+      "category": ["COLO829"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/COLO829/colo_normal.bw"
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "colo_tumor",
+      "name": "COLO829 MinION tumor (coverage)",
+      "description": "https://www.ebi.ac.uk/ena/browser/view/PRJEB27698",
+      "category": ["COLO829"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/COLO829/colo_tumor.bw"
+        }
+      }
     }
   ],
   "connections": [],

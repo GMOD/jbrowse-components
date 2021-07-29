@@ -15,8 +15,7 @@
         "displays": [
           {
             "type": "LinearReferenceSequenceDisplay",
-            "displayId": "grape_seq-LinearReferenceSequenceDisplay",
-            "renderer": { "type": "DivSequenceRenderer" }
+            "displayId": "grape_seq-LinearReferenceSequenceDisplay"
           }
         ]
       }
@@ -35,8 +34,7 @@
         "displays": [
           {
             "type": "LinearReferenceSequenceDisplay",
-            "displayId": "peach_seq-LinearReferenceSequenceDisplay",
-            "renderer": { "type": "DivSequenceRenderer" }
+            "displayId": "peach_seq-LinearReferenceSequenceDisplay"
           }
         ]
       }
@@ -73,18 +71,15 @@
       "displays": [
         {
           "type": "DotplotDisplay",
-          "displayId": "grape_peach_synteny_mcscan-DotplotDisplay",
-          "renderer": { "type": "DotplotRenderer" }
+          "displayId": "grape_peach_synteny_mcscan-DotplotDisplay"
         },
         {
           "type": "LinearComparativeDisplay",
-          "displayId": "grape_peach_synteny_mcscan-LinearComparativeDisplay",
-          "renderer": { "type": "SvgFeatureRenderer" }
+          "displayId": "grape_peach_synteny_mcscan-LinearComparativeDisplay"
         },
         {
           "type": "LinearSyntenyDisplay",
-          "displayId": "grape_peach_synteny_mcscan-LinearSyntenyDisplay",
-          "renderer": { "type": "LinearSyntenyRenderer" }
+          "displayId": "grape_peach_synteny_mcscan-LinearSyntenyDisplay"
         }
       ]
     },
@@ -103,18 +98,15 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "displayId": "peach_genes_linear",
-          "renderer": { "type": "SvgFeatureRenderer" }
+          "displayId": "peach_genes_linear"
         },
         {
           "type": "LinearFilteringDisplay",
-          "displayId": "peach_genes-LinearFilteringDisplay",
-          "renderer": { "type": "SvgFeatureRenderer" }
+          "displayId": "peach_genes-LinearFilteringDisplay"
         },
         {
           "type": "LinearLollipopDisplay",
-          "displayId": "peach_genes-LinearLollipopDisplay",
-          "renderer": { "type": "SvgFeatureRenderer" }
+          "displayId": "peach_genes-LinearLollipopDisplay"
         }
       ]
     },
@@ -133,18 +125,15 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "displayId": "peach_genes2-LinearBasicDisplay",
-          "renderer": { "type": "SvgFeatureRenderer" }
+          "displayId": "peach_genes2-LinearBasicDisplay"
         },
         {
           "type": "LinearFilteringDisplay",
-          "displayId": "peach_genes2-LinearFilteringDisplay",
-          "renderer": { "type": "SvgFeatureRenderer" }
+          "displayId": "peach_genes2-LinearFilteringDisplay"
         },
         {
           "type": "LinearLollipopDisplay",
-          "displayId": "peach_genes2-LinearLollipopDisplay",
-          "renderer": { "type": "SvgFeatureRenderer" }
+          "displayId": "peach_genes2-LinearLollipopDisplay"
         }
       ]
     },
@@ -163,18 +152,15 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "displayId": "grape_genes_linear",
-          "renderer": { "type": "SvgFeatureRenderer" }
+          "displayId": "grape_genes_linear"
         },
         {
           "type": "LinearFilteringDisplay",
-          "displayId": "grape_genes-LinearFilteringDisplay",
-          "renderer": { "type": "SvgFeatureRenderer" }
+          "displayId": "grape_genes-LinearFilteringDisplay"
         },
         {
           "type": "LinearLollipopDisplay",
-          "displayId": "grape_genes-LinearLollipopDisplay",
-          "renderer": { "type": "SvgFeatureRenderer" }
+          "displayId": "grape_genes-LinearLollipopDisplay"
         }
       ]
     },
@@ -193,18 +179,15 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "displayId": "grape_genes2-LinearBasicDisplay",
-          "renderer": { "type": "SvgFeatureRenderer" }
+          "displayId": "grape_genes2-LinearBasicDisplay"
         },
         {
           "type": "LinearFilteringDisplay",
-          "displayId": "grape_genes2-LinearFilteringDisplay",
-          "renderer": { "type": "SvgFeatureRenderer" }
+          "displayId": "grape_genes2-LinearFilteringDisplay"
         },
         {
           "type": "LinearLollipopDisplay",
-          "displayId": "grape_genes2-LinearLollipopDisplay",
-          "renderer": { "type": "SvgFeatureRenderer" }
+          "displayId": "grape_genes2-LinearLollipopDisplay"
         }
       ]
     }

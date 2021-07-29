@@ -9,7 +9,7 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { getSession, getContainingView } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import Tooltip from '../components/Tooltip'
 import { getUniqueModificationValues } from '../../shared'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

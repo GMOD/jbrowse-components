@@ -56,7 +56,7 @@ mv tmp.md CHANGELOG.md
 
 # Blog post text
 NOTES=$(cat "$BLOGPOST_DRAFT")
-DATE=$(date +"%Y-%m-%d")
+DATE=$(date +"%Y-%m-%d %H:%M:%S")
 ## Blogpost run after lerna version, to get the accurate tags
 BLOGPOST_FILENAME=website/blog/${DATE}-${RELEASE_TAG}-release.md
 RELEASE_TAG=$RELEASE_TAG DATE=$DATE NOTES=$NOTES CHANGELOG=$CHANGELOG perl -p -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' <scripts/blog_template.txt >"$BLOGPOST_FILENAME"

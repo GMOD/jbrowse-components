@@ -3,7 +3,7 @@ import ReactPropTypes from 'prop-types'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 // material ui
-import { fade } from '@material-ui/core/styles/colorManipulator'
+import { alpha } from '@material-ui/core/styles/colorManipulator'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import { Menu } from '@jbrowse/core/ui'
 import { makeStyles } from '@material-ui/core/styles'
@@ -19,8 +19,8 @@ type LGV = Instance<LinearGenomeViewStateModel>
 
 const useStyles = makeStyles(theme => {
   const background = theme.palette.tertiary
-    ? fade(theme.palette.tertiary.main, 0.7)
-    : fade(theme.palette.primary.main, 0.7)
+    ? alpha(theme.palette.tertiary.main, 0.7)
+    : alpha(theme.palette.primary.main, 0.7)
   return {
     rubberBand: {
       height: '100%',

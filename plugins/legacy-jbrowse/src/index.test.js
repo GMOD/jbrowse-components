@@ -17,3 +17,24 @@ test('plugin in a stock JBrowse', () => {
   const config = NCListAdapter.configSchema.create({ type: 'NCListAdapter' })
   expect(getSnapshot(config)).toMatchSnapshot()
 })
+
+test('test creating a text search adapter', () => {
+  console.warn = jest.fn()
+  const pluginManager = new PluginManager([new ThisPlugin()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+
+  const JB1TextSearchAdapter = pluginManager.getTextSearchAdapterType(
+    'JBrowse1TextSearchAdapter',
+  )
+  const config = JB1TextSearchAdapter.configSchema.create({
+    type: 'JBrowse1TextSearchAdapter',
+    textSearchAdapterId: 'JBrowse1GenerateNamesAdapterTest',
+    namesIndexLocation: {
+      uri: 'names/',
+    },
+    tracks: [],
+    assemblies: [],
+  })
+  expect(getSnapshot(config)).toMatchSnapshot()
+})

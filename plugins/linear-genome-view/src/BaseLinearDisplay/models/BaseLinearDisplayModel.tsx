@@ -18,7 +18,6 @@ import Typography from '@material-ui/core/Typography'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import { autorun } from 'mobx'
 import { addDisposer, Instance, isAlive, types, getEnv } from 'mobx-state-tree'
-import RBush from 'rbush'
 import React from 'react'
 import { Tooltip } from '../components/BaseLinearDisplay'
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
@@ -117,8 +116,6 @@ export const BaseLinearDisplay = types
     },
   }))
   .views(self => {
-    let stale = false // used to make rtree refresh, the mobx reactivity fails for some reason
-    let rbush: Record<string, RBush<Layout>> = {}
     return {
       /**
        * a CompositeMap of `featureId -> feature obj` that
@@ -131,7 +128,6 @@ export const BaseLinearDisplay = types
             featureMaps.push(block.features)
           }
         }
-        stale = true
         return new CompositeMap<string, Feature>(featureMaps)
       },
 
@@ -141,67 +137,19 @@ export const BaseLinearDisplay = types
           : undefined
       },
 
-      /**
-       * returns per-base block layouts as the data structure
-       * `Map<blockKey, Map<featureId, LayoutRecord>>`
-       *
-       * this per-block is needed to avoid cross-contamination of
-       * layouts across blocks especially when building the rtree
-       */
-      get blockLayoutFeatures() {
-        const layoutMaps = new Map<string, Map<string, LayoutRecord>>()
-        for (const block of self.blockState.values()) {
-          if (block && block.layout && block.layout.rectangles) {
-            layoutMaps.set(block.key, block.layout.getRectangles())
-          }
-        }
-        stale = true
-        return layoutMaps
-      },
-      /**
-       * a CompositeMap of `featureId -> feature obj` that
-       * just looks in all the block data for that feature
-       *
-       * when you are not using the rtree you can use this
-       * method because it still provides a stable reference
-       * of a featureId to a layout record (when using the
-       * rtree, you cross contaminate the coordinates)
-       */
-      get layoutFeatures() {
-        const layoutMaps = []
-        for (const block of self.blockState.values()) {
-          if (block && block.layout && block.layout.rectangles) {
-            layoutMaps.push(block.layout.getRectangles())
-          }
-        }
-        stale = true // make rtree refresh
-        return new CompositeMap<string, LayoutRecord>(layoutMaps)
+      getFeatureOverlapping(blockKey: string, x: number, y: number) {
+        return self.blockState.get(blockKey)?.layout?.getByCoord(x, y)
       },
 
-      get rtree() {
-        if (stale) {
-          rbush = {} as Record<string, RBush<Layout>>
-          for (const [blockKey, layoutFeatures] of this.blockLayoutFeatures) {
-            rbush[blockKey] = new RBush()
-            const r = rbush[blockKey]
-            for (const [key, layout] of layoutFeatures) {
-              r.insert({
-                minX: layout[0],
-                minY: layout[1],
-                maxX: layout[2],
-                maxY: layout[3],
-                name: key,
-              })
-            }
+      getFeatureByID(id: string): [number, number, number, number] | undefined {
+        let ret
+        self.blockState.forEach(block => {
+          const val = block?.layout?.getByID(id)
+          if (val) {
+            ret = val
           }
-          stale = false
-        }
-        return rbush
-      },
-      getFeatureOverlapping(blockKey: string, x: number, y: number) {
-        const rect = { minX: x, minY: y, maxX: x + 1, maxY: y + 1 }
-        const rtree = this.rtree[blockKey]
-        return rtree && rtree.collides(rect) ? rtree.search(rect) : []
+        })
+        return ret
       },
     }
   })
@@ -288,11 +236,7 @@ export const BaseLinearDisplay = types
       self.featureIdUnderMouse = feature
     },
     reload() {
-      const temp = JSON.parse(JSON.stringify(self.blockState))
-      Object.keys(temp).forEach(blockState => {
-        temp[blockState].key += '-reload'
-      })
-      self.blockState = temp
+      ;[...self.blockState.values()].map(val => val.doReload())
     },
     addAdditionalContextMenuItemCallback(callback: Function) {
       self.additionalContextMenuItemCallbacks.push(callback)

@@ -96,7 +96,6 @@ const ImportForm = observer(({ model }) => {
               <FileSelector
                 location={model.fileSource}
                 setLocation={model.setFileSource}
-                localFileAllowed
               />
             </FormGroup>
           </FormControl>

@@ -1,0 +1,12 @@
+{
+  "apple3": {
+    "exact": [
+      ["Apple3", 0, "Apple3", "ctgA", 17399, 23000],
+      ["Apple3", 8, "Apple3", "ctgA", 17399, 23000],
+      ["Apple3", 9, "Apple3", "ctgA", 17399, 23000],
+      ["Apple3", 13, "Apple3", "ctgA", 17399, 23000],
+      ["Apple3", 14, "Apple3", "ctgA", 17399, 23000]
+    ],
+    "prefix": []
+  }
+}

@@ -1,7 +1,3 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`plugin in a stock JBrowse 1`] = `
-Object {
-  "type": "BigBedAdapter",
-}
-`;
+exports[`plugin in a stock JBrowse 1`] = `Object {}`;

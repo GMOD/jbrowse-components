@@ -20,6 +20,7 @@ import TracksContainer from './TracksContainer'
 import ImportForm from './ImportForm'
 import MiniControls from './MiniControls'
 import SequenceDialog from './SequenceDialog'
+import SearchResultsDialog from './SearchResultsDialog'
 import Ruler from './Ruler'
 
 type LGV = Instance<LinearGenomeViewStateModel>
@@ -52,6 +53,14 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
           model={model}
           handleClose={() => {
             model.setOffsets(undefined, undefined)
+          }}
+        />
+      ) : null}
+      {model.isSearchDialogDisplayed ? (
+        <SearchResultsDialog
+          model={model}
+          handleClose={() => {
+            model.setSearchResults(undefined, undefined)
           }}
         />
       ) : null}
@@ -137,11 +146,9 @@ function ScaleBar({ model, fontSize }: { model: LGV; fontSize: number }) {
 function SVGRuler({
   model,
   fontSize,
-  rulerHeight,
   width,
 }: {
   model: LGV
-  rulerHeight: number
   fontSize: number
   width: number
 }) {
@@ -217,12 +224,7 @@ const SVGHeader = ({ model }: { model: LGV }) => {
         <ScaleBar model={model} fontSize={fontSize} />
       </g>
       <g transform={`translate(0 ${rulerHeight})`}>
-        <SVGRuler
-          model={model}
-          fontSize={fontSize}
-          rulerHeight={rulerHeight}
-          width={width}
-        />
+        <SVGRuler model={model} fontSize={fontSize} width={width} />
       </g>
     </g>
   )

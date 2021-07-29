@@ -11,10 +11,6 @@ import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab'
 import { observer } from 'mobx-react'
 import { isElectron } from '../util'
 import {
-  PreLocalPathLocation,
-  PreUriLocation,
-  PreBlobLocation,
-  PreFileLocation,
   LocalPathLocation,
   UriLocation,
   FileLocation,
@@ -133,7 +129,9 @@ const LocalFileChooser = observer(
               const file = target && target.files && target.files[0]
               if (file) {
                 if (isElectron) {
-                  setLocation({ localPath: file.path })
+                  setLocation({
+                    localPath: (file as File & { path: string }).path,
+                  })
                 } else {
                   setLocation(storeBlobLocation({ blob: file }))
                 }

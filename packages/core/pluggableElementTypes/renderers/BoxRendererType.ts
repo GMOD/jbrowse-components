@@ -18,14 +18,14 @@ import { readConfObject, isConfigurationModel } from '../../configuration'
 import SerializableFilterChain from './util/serializableFilterChain'
 import RpcManager from '../../rpc/RpcManager'
 
-interface LayoutSessionProps {
+export interface LayoutSessionProps {
   config: AnyConfigurationModel
   bpPerPx: number
   filters: SerializableFilterChain
 }
 
-type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
-interface CachedLayout {
+export type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
+export interface CachedLayout {
   layout: MyMultiLayout
   config: AnyConfigurationModel
   filters: SerializableFilterChain
@@ -57,7 +57,7 @@ export class LayoutSession implements LayoutSessionProps {
       maxHeight: readConfObject(this.config, 'maxHeight'),
       displayMode: readConfObject(this.config, 'displayMode'),
       pitchX: this.bpPerPx,
-      pitchY: readConfObject(this.config, 'noSpacing') ? 1 : 3,
+      spacing: readConfObject(this.config, 'noSpacing') ? 0 : 2,
     })
   }
 
@@ -87,11 +87,6 @@ export class LayoutSession implements LayoutSessionProps {
     return this.cachedLayout.layout
   }
 }
-
-/// *****************************************************************************
-/// *****************************************************************************
-/// *****************************************************************************
-
 export interface RenderArgs extends FeatureRenderArgs {
   bpPerPx: number
 }
