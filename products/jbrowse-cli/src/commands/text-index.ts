@@ -119,7 +119,13 @@ export default class TextIndex extends JBrowseCommand {
           objectMode: true,
           transform: (chunk, _encoding, done) => {
             chunk.forEach((record: any) => {
-              this.recurseFeatures(record, gff3Stream, attributes, trackId)
+              this.recurseFeatures(
+                record,
+                gff3Stream,
+                attributes,
+                trackId,
+                outLocation,
+              )
             })
             done()
           },
@@ -195,6 +201,7 @@ export default class TextIndex extends JBrowseCommand {
     gff3Stream: Readable,
     attributes: string[],
     trackID: string,
+    outPath: string,
   ) {
     // goes through the attributes array and checks if the record contains the
     // attribute that the user wants to search by. If it contains it, it adds
@@ -217,7 +224,7 @@ export default class TextIndex extends JBrowseCommand {
       }
 
       fs.writeFileSync(
-        path.join(__dirname, '..', '..', 'trix', 'meta.json'),
+        path.join(outPath, 'trix', 'meta.json'),
         JSON.stringify({ indexingAttributes: RecordAttributes }, null, 2),
       )
 
@@ -262,6 +269,7 @@ export default class TextIndex extends JBrowseCommand {
               gff3Stream,
               attributes,
               trackID,
+              outPath,
             )
           }
         }
@@ -272,6 +280,7 @@ export default class TextIndex extends JBrowseCommand {
             gff3Stream,
             attributes,
             trackID,
+            outPath,
           )
         }
       }
