@@ -118,6 +118,7 @@ export default class TextIndex extends JBrowseCommand {
         const gffTransform = new Transform({
           objectMode: true,
           transform: (chunk, _encoding, done) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             chunk.forEach((record: any) => {
               this.recurseFeatures(
                 record,
@@ -170,12 +171,11 @@ export default class TextIndex extends JBrowseCommand {
   // Returns a @gmod/gff stream.
   async createRemoteStream(urlIn: string) {
     const newUrl = new URL(urlIn)
+    const fetcher = newUrl.protocol === 'https:' ? httpsFR : httpFR
 
-    return new Promise<Readable>((resolve, reject) => {
-      ;(newUrl.protocol === 'https:' ? httpsFR : httpFR)
-        .get(urlIn, response => resolve(response))
-        .on('error', reject)
-    })
+    return new Promise<Readable>((resolve, reject) =>
+      fetcher.get(urlIn, resolve).on('error', reject),
+    )
   }
 
   // Checks if the passed in string is a valid URL.
@@ -223,7 +223,10 @@ export default class TextIndex extends JBrowseCommand {
         RecordAttributes.push(x)
       }
 
-      fs.mkdirSync(path.join(outPath, 'trix'))
+      const dir = path.join(outPath, 'trix')
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir)
+      }
       fs.writeFileSync(
         path.join(outPath, 'trix', 'meta.json'),
         JSON.stringify({ indexingAttributes: RecordAttributes }, null, 2),
