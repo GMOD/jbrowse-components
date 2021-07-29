@@ -61,22 +61,24 @@ export default class TextIndex extends JBrowseCommand {
 
       this.log('Indexing assembly ' + asm + '...')
 
-      await this.indexDriver(config, defaultAttributes, configDirectory, asm)
+      if (config.length) {
+        await this.indexDriver(config, defaultAttributes, configDirectory, asm)
 
-      adapters.push({
-        type: 'TrixTextSearchAdapter',
-        textSearchAdapterId: 'TrixAdapter',
-        ixFilePath: {
-          uri: `trix/${asm}.ix`,
-        },
-        ixxFilePath: {
-          uri: `trix/${asm}.ixx`,
-        },
-        metaFilePath: {
-          uri: `trix/meta.json`,
-        },
-        assemblies: [asm],
-      })
+        adapters.push({
+          type: 'TrixTextSearchAdapter',
+          textSearchAdapterId: 'TrixAdapter',
+          ixFilePath: {
+            uri: `trix/${asm}.ix`,
+          },
+          ixxFilePath: {
+            uri: `trix/${asm}.ixx`,
+          },
+          metaFilePath: {
+            uri: `trix/meta.json`,
+          },
+          assemblies: [asm],
+        })
+      }
     }
 
     fs.writeFileSync(
@@ -98,9 +100,6 @@ export default class TextIndex extends JBrowseCommand {
     outLocation: string,
     assemblyName: string,
   ) {
-    if (!configs.length) {
-      return
-    }
     let aggregateStream = new PassThrough()
     let numStreamsFlowing = configs.length
 
