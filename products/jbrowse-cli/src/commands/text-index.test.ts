@@ -14,13 +14,12 @@ const configPath = path.join(
   'data',
   'indexing_config.json',
 )
-const ixIxxPath = path.join(__dirname, '..', '..', 'test', 'ixIxx')
-const ixLoc = path.join(__dirname, '..', '..', 'test', 'data', 'volvox.ix')
-const ixxLoc = path.join(__dirname, '..', '..', 'test', 'data', 'volvox.ixx')
+const ixLoc = (loc: string) => path.join(loc, 'trix', 'volvox.ix')
+const ixxLoc = (loc: string) => path.join(loc, 'trix', 'volvox.ixx')
 
-function verifyIxxFiles(ixLoc: string, ixxLoc: string) {
-  const ixdata = fs.readFileSync(ixLoc, 'utf8')
-  const ixxdata = fs.readFileSync(ixxLoc, 'utf8')
+function verifyIxxFiles(ctx: string) {
+  const ixdata = fs.readFileSync(ixLoc(ctx), 'utf8')
+  const ixxdata = fs.readFileSync(ixxLoc(ctx), 'utf8')
   expect(ixdata.slice(0, 1000)).toMatchSnapshot()
   expect(ixdata.slice(-1000)).toMatchSnapshot()
   expect(ixdata.length).toMatchSnapshot()
@@ -57,12 +56,9 @@ describe('text-index', () => {
       )
       fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
       fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
-      fs.copyFileSync(ixIxxPath, path.join(ctx.dir, 'ixIxx'))
     })
     .command(['text-index', '--tracks=au9_scaffold', '--target=config.json'])
-    .it('Indexes a local non-gz gff3 file', async () => {
-      verifyIxxFiles(ixLoc, ixxLoc)
-    })
+    .it('Indexes a local non-gz gff3 file', ctx => verifyIxxFiles(ctx.dir))
 })
 
 // Gzipped File
@@ -79,12 +75,9 @@ describe('text-index tracks', () => {
       )
       fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
       fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
-      fs.copyFileSync(ixIxxPath, path.join(ctx.dir, 'ixIxx'))
     })
     .command(['text-index', '--tracks=gff3tabix_genes', '--target=config.json'])
-    .it('Indexes a local gz gff3 file', async () => {
-      verifyIxxFiles(ixLoc, ixxLoc)
-    })
+    .it('Indexes a local gz gff3 file', ctx => verifyIxxFiles(ctx.dir))
 })
 
 // Remote GZ
@@ -92,16 +85,13 @@ describe('text-index tracks', () => {
   setup
     .do(async ctx => {
       fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
-      fs.copyFileSync(ixIxxPath, path.join(ctx.dir, 'ixIxx'))
     })
     .command([
       'text-index',
       '--tracks=online_gff3tabix_genes',
       '--target=config.json',
     ])
-    .it('Indexes a remote gz gff3 file', async () => {
-      verifyIxxFiles(ixLoc, ixxLoc)
-    })
+    .it('Indexes a remote gz gff3 file', ctx => verifyIxxFiles(ctx.dir))
 })
 
 // Remote Non-GZ
@@ -110,16 +100,13 @@ describe('text-index tracks', () => {
   setup
     .do(async ctx => {
       fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
-      fs.copyFileSync(ixIxxPath, path.join(ctx.dir, 'ixIxx'))
     })
     .command([
       'text-index',
       '--tracks=online_au9_scaffold',
       '--target=config.json',
     ])
-    .it('Indexes a remote non-gz gff3 file', async () => {
-      verifyIxxFiles(ixLoc, ixxLoc)
-    })
+    .it('Indexes a remote non-gz gff3 file', ctx => verifyIxxFiles(ctx.dir))
 })
 
 // 2 Local Files
@@ -146,32 +133,26 @@ describe('text-index tracks', () => {
       fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
       fs.copyFileSync(gff3File2, path.join(ctx.dir, path.basename(gff3File2)))
       fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
-      fs.copyFileSync(ixIxxPath, path.join(ctx.dir, 'ixIxx'))
     })
     .command([
       'text-index',
       '--tracks=gff3tabix_genes,au9_scaffold',
       '--target=config.json',
     ])
-    .it('Indexes multiple local gff3 files', async () => {
-      verifyIxxFiles(ixLoc, ixxLoc)
-    })
+    .it('Indexes multiple local gff3 files', ctx => verifyIxxFiles(ctx.dir))
 })
 
 describe('text-index tracks', () => {
   setup
     .do(async ctx => {
       fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
-      fs.copyFileSync(ixIxxPath, path.join(ctx.dir, 'ixIxx'))
     })
     .command([
       'text-index',
       '--tracks=online_gff3tabix_genes,online_au9_scaffold',
       '--target=config.json',
     ])
-    .it('Indexes multiple remote gff3 file', async () => {
-      verifyIxxFiles(ixLoc, ixxLoc)
-    })
+    .it('Indexes multiple remote gff3 file', ctx => verifyIxxFiles(ctx.dir))
 })
 
 // URL and Local
@@ -188,16 +169,13 @@ describe('text-index tracks', () => {
       )
       fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
       fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
-      fs.copyFileSync(ixIxxPath, path.join(ctx.dir, 'ixIxx'))
     })
     .command([
       'text-index',
       '--tracks=gff3tabix_genes,online_au9_scaffold',
       '--target=config.json',
     ])
-    .it('Indexes a remote and a local file', async () => {
-      verifyIxxFiles(ixLoc, ixxLoc)
-    })
+    .it('Indexes a remote and a local file', ctx => verifyIxxFiles(ctx.dir))
 })
 
 // This test is commented out due to how long it takes to complete
@@ -238,7 +216,6 @@ describe('text-index tracks', () => {
         path.join(ctx.dir, 'test_config.json'),
         path.join(ctx.dir, 'config.json'),
       )
-      await fsPromises.copyFile(ixIxxPath, path.join(ctx.dir, 'ixIxx'))
       await readFile(path.join(ctx.dir, 'config.json'), 'utf8')
     })
     .command(['text-index', `--target=${path.join('config.json')}` ])
