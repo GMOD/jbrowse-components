@@ -90,26 +90,8 @@ export default class TextIndex extends JBrowseCommand {
     this.log('Finished!')
   }
 
-  // Diagram of function call flow:
-
-  //
-  //                                      ------> handleGff3UrlWithGz()---\
-  //                                    /                                  parseGff3Stream()
-  //                                  / --------> handleGff3UrlNoGz()-----/                 \
-  //                                /                                                        \
-  //               -----> handleURL()                                                         \
-  //              |                                                                            \
-  // indexDriver()                                                                          returns ----> indexDriver() -------> runIxIxx --------> output .ix and .ixx files
-  //              \                                                                            /               ⇆
-  //               -----> handleLocalGff3()                                                   /         recurseFeatures()
-  //                                      \                                                 /
-  //                                       \ -----> parseLocalGZip() ---\                 /
-  //                                        \                            parseGff3Stream()
-  //                                         --------------------------/
-  //
-
-  // This function takes a list of uris, as well as which attributes to index,
-  // and indexes them all into one aggregate index.
+  // This function takes a list of tracks, as well as which attributes to
+  // index, and indexes them all into one aggregate index.
   async indexDriver(
     configs: Track[],
     attributes: string[],
