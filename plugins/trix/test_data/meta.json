@@ -1,0 +1,10 @@
+{
+  "indexingAttributes": [
+    "locstring",
+    "TrackID",
+    "Name",
+    "description",
+    "Note",
+    "ID"
+  ]
+}

@@ -20,6 +20,9 @@ test('adapter can fetch output files', async () => {
     ixxFilePath: {
       uri: `${urlPath}/out.ixx`,
     },
+    metaFilePath: {
+      uri: `${urlPath}/meta.json`,
+    },
   }
   // create adapter
   const adapter = new Adapter(configSchema.create(args))

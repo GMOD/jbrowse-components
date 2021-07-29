@@ -111,11 +111,9 @@ export default class TrixTextSearchAdapter
     if (results.length === 0) {
       return []
     }
-    // Example: "locstring:ctgA;13000..17200,TrackID:gff3tabix_genes,Name:Apple2,Note:mRNA with CDSs but no UTRs,ID:cds-Apple2"
     const formattedResults = results.map(result => {
       const { Name, ID, locstring, TrackID } = result
-      console.log(TrackID)
-      const locString = locstring.replace(/;/g, ':')
+      const locString = locstring?.replace(/;/g, ':')
       return new LocStringResult({
         locString,
         label: Name[0] || ID[0],
