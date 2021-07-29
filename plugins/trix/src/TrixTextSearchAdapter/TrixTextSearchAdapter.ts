@@ -86,27 +86,26 @@ export default class TrixTextSearchAdapter
    */
   async searchIndex(args: BaseArgs) {
     const { queryString } = args
-    let buff
-    const searchResults: string[] = []
+    let buff: string[]
+    const searchResults: Object[] = []
     const results = await this.trixJs.search(queryString)
 
     const attr = await this.getAttributes()
-    console.log(attr)
     if (attr) {
       results.forEach(data => {
-        const arr = []
-        buff = Buffer.from(data, 'base64').toString('utf-8').split(',')
+        buff = JSON.parse(Buffer.from(data, 'base64').toString('utf8')).split(
+          ',',
+        )
+        const record: Record<string, string> = {}
         for (const x in buff) {
           if (!buff[x].includes('attributePlaceholder')) {
-            arr.push(`${attr[x]}:${buff[x]}`)
+            record[attr[x]] = buff[x]
           }
         }
-        searchResults.push(arr.toString())
+        searchResults.push(record)
       })
     }
-    console.log(searchResults)
-    // return this.formatResults(searchResults)
-    return []
+    return this.formatResults(searchResults)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -114,16 +113,16 @@ export default class TrixTextSearchAdapter
     if (results.length === 0) {
       return []
     }
-    // Example: {"locstring":"ctgB;1659..1984","Name":["f07"],"Note":["This is an example"],"type":"remark"}
+    // Example: "locstring:ctgA;13000..17200,TrackID:gff3tabix_genes,Name:Apple2,Note:mRNA with CDSs but no UTRs,ID:cds-Apple2"
     const formattedResults = results.map(result => {
-      const { Name, Note, ID, locstring, trackID } = JSON.parse(result)
+      const { Name, ID, locstring, TrackID } = result
       const locString = locstring.replace(/;/g, ':')
       return new LocStringResult({
         locString,
-        label: Name?.[0] || Note?.[0] || ID?.[0],
-        matchedAttribute: 'name',
+        label: Name || ID,
+        matchedAttribute: Name ? 'name' : 'id',
         matchedObject: result,
-        trackId: trackID,
+        trackId: TrackID,
       })
     })
     return formattedResults
