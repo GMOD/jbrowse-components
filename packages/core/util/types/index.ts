@@ -291,7 +291,7 @@ export type FileLocation =
 export type PreUriLocation = { uri: string }
 export type PreLocalPathLocation = { localPath: string }
 export type PreBlobLocation = { blob: File }
-export type PreAuthLocation = { uri: string }
+export type PreAuthLocation = { baseAuthUri: string }
 export type PreFileLocation =
   | PreUriLocation
   | PreLocalPathLocation

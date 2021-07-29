@@ -150,7 +150,6 @@ const UrlChooser = (props: {
                 ? internetAccount.tokenType // internetAccount.tokenType
                 : '',
             })
-            console.log(location)
           } else {
             setLocation({ uri: event.target.value })
           }
