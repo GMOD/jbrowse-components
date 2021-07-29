@@ -162,7 +162,7 @@ export default class TextIndex extends JBrowseCommand {
         })
       }
     }
-    return this.runIxIxx(aggregateStream, path.join('trix'), assemblyName)
+    return this.runIxIxx(aggregateStream, outLocation, assemblyName)
   }
 
   // Method for handing off the parsing of a gff3 file URL.
@@ -223,6 +223,7 @@ export default class TextIndex extends JBrowseCommand {
         RecordAttributes.push(x)
       }
 
+      fs.mkdirSync(path.join(outPath, 'trix'))
       fs.writeFileSync(
         path.join(outPath, 'trix', 'meta.json'),
         JSON.stringify({ indexingAttributes: RecordAttributes }, null, 2),
@@ -292,8 +293,8 @@ export default class TextIndex extends JBrowseCommand {
   // users, however tests use a local copy.  Returns a promise around ixIxx
   // completing (or erroring).
   runIxIxx(readStream: Readable, outLocation: string, assembly: string) {
-    const ixFilename = path.join(outLocation, `${assembly}.ix`)
-    const ixxFilename = path.join(outLocation, `${assembly}.ixx`)
+    const ixFilename = path.join(outLocation, 'trix', `${assembly}.ix`)
+    const ixxFilename = path.join(outLocation, 'trix', `${assembly}.ixx`)
 
     return ixIxxStream(readStream, ixFilename, ixxFilename)
   }
