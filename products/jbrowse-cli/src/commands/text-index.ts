@@ -61,22 +61,24 @@ export default class TextIndex extends JBrowseCommand {
 
       this.log('Indexing assembly ' + asm + '...')
 
-      await this.indexDriver(config, defaultAttributes, configDirectory, asm)
+      if (config.length) {
+        await this.indexDriver(config, defaultAttributes, configDirectory, asm)
 
-      adapters.push({
-        type: 'TrixTextSearchAdapter',
-        textSearchAdapterId: 'TrixAdapter',
-        ixFilePath: {
-          uri: `trix/${asm}.ix`,
-        },
-        ixxFilePath: {
-          uri: `trix/${asm}.ixx`,
-        },
-        metaFilePath: {
-          uri: `trix/meta.json`,
-        },
-        assemblies: [asm],
-      })
+        adapters.push({
+          type: 'TrixTextSearchAdapter',
+          textSearchAdapterId: 'TrixAdapter',
+          ixFilePath: {
+            uri: `trix/${asm}.ix`,
+          },
+          ixxFilePath: {
+            uri: `trix/${asm}.ixx`,
+          },
+          metaFilePath: {
+            uri: `trix/meta.json`,
+          },
+          assemblies: [asm],
+        })
+      }
     }
 
     fs.writeFileSync(
@@ -90,35 +92,14 @@ export default class TextIndex extends JBrowseCommand {
     this.log('Finished!')
   }
 
-  // Diagram of function call flow:
-
-  //
-  //                                      ------> handleGff3UrlWithGz()---\
-  //                                    /                                  parseGff3Stream()
-  //                                  / --------> handleGff3UrlNoGz()-----/                 \
-  //                                /                                                        \
-  //               -----> handleURL()                                                         \
-  //              |                                                                            \
-  // indexDriver()                                                                          returns ----> indexDriver() -------> runIxIxx --------> output .ix and .ixx files
-  //              \                                                                            /               ⇆
-  //               -----> handleLocalGff3()                                                   /         recurseFeatures()
-  //                                      \                                                 /
-  //                                       \ -----> parseLocalGZip() ---\                 /
-  //                                        \                            parseGff3Stream()
-  //                                         --------------------------/
-  //
-
-  // This function takes a list of uris, as well as which attributes to index,
-  // and indexes them all into one aggregate index.
+  // This function takes a list of tracks, as well as which attributes to
+  // index, and indexes them all into one aggregate index.
   async indexDriver(
     configs: Track[],
     attributes: string[],
     outLocation: string,
     assemblyName: string,
   ) {
-    if (!configs.length) {
-      return
-    }
     let aggregateStream = new PassThrough()
     let numStreamsFlowing = configs.length
 
@@ -131,27 +112,36 @@ export default class TextIndex extends JBrowseCommand {
           gffGzLocation: { uri },
         },
       } = config
+
       if (type === 'Gff3TabixAdapter') {
         const gffTransform = new Transform({
           objectMode: true,
           transform: (chunk, _encoding, done) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             chunk.forEach((record: any) => {
-              this.recurseFeatures(record, gff3Stream, attributes, trackId)
+              this.recurseFeatures(
+                record,
+                gff3Stream,
+                attributes,
+                trackId,
+                outLocation,
+              )
             })
             done()
           },
         })
-        // Generate transform function parses an @gmod/gff stream.
 
-        const gff3Stream = (
-          await (this.isURL(uri)
-            ? this.handleGff3Url(uri, uri.includes('.gz'))
-            : this.handleLocalGff3(
-                path.join(outLocation, uri),
-                uri.includes('.gz'),
-              ))
-        ).pipe(gffTransform)
+        const fileDataStream = await (this.isURL(uri)
+          ? this.createRemoteStream(uri)
+          : fs.createReadStream(path.join(outLocation, uri)))
+
+        const gzStream = uri.endsWith('.gz')
+          ? fileDataStream.pipe(createGunzip())
+          : fileDataStream
+
+        const gff3Stream = gzStream
+          .pipe(gff.parseStream({ parseSequences: false }))
+          .pipe(gffTransform)
 
         // Add gff3Stream to aggregateStream, and DO NOT send 'end' event on
         // completion, otherwise this would stop all streams from piping to the
@@ -172,73 +162,19 @@ export default class TextIndex extends JBrowseCommand {
         })
       }
     }
-    return this.runIxIxx(aggregateStream, path.join('trix'), assemblyName)
-  }
-
-  // Take in the local file path, check if the it is gzipped or not, then
-  // passes it into the correct file handler.  Returns a @gmod/gff stream.
-  handleLocalGff3(gff3LocalIn: string, isGZ: boolean) {
-    const gff3ReadStream = fs.createReadStream(gff3LocalIn)
-    if (!isGZ) {
-      return this.parseGff3Stream(gff3ReadStream)
-    } else {
-      return this.parseGff3Stream(gff3ReadStream.pipe(createGunzip()))
-    }
+    return this.runIxIxx(aggregateStream, outLocation, assemblyName)
   }
 
   // Method for handing off the parsing of a gff3 file URL.
   // Calls the proper parser depending on if it is gzipped or not.
   // Returns a @gmod/gff stream.
-  async handleGff3Url(urlIn: string, isGZ: boolean) {
-    return !isGZ
-      ? this.handleGff3UrlNoGz(urlIn)
-      : this.handleGff3UrlWithGz(urlIn)
-  }
-
-  // Grabs the remote file from urlIn, then pipe it directly to parseGff3Stream()
-  // for parsing and indexing.
-  // Returns a promise for the resulting @gmod/gff stream.
-  handleGff3UrlNoGz(urlIn: string) {
+  async createRemoteStream(urlIn: string) {
     const newUrl = new URL(urlIn)
+    const fetcher = newUrl.protocol === 'https:' ? httpsFR : httpFR
 
-    return new Promise<Readable>((resolve, reject) => {
-      ;(newUrl.protocol === 'https:' ? httpsFR : httpFR)
-        .get(urlIn, response => {
-          const parseStream = this.parseGff3Stream(response)
-          resolve(parseStream)
-        })
-        .on('error', (e: NodeJS.ErrnoException) => {
-          reject('fail')
-          if (e.code === 'ENOTFOUND') {
-            this.error('Bad file url')
-          } else {
-            this.error('Other error: ', e)
-          }
-        })
-    })
-  }
-
-  // Grab the remote file from urlIn, then unzip it before piping into
-  // parseGff3Stream for parsing.  Returns a promise for the resulting
-  // @gmod/gff stream.
-  handleGff3UrlWithGz(urlIn: string) {
-    const unzip = createGunzip()
-    const newUrl = new URL(urlIn)
-
-    return new Promise<Readable>((resolve, reject) => {
-      ;(newUrl.protocol === 'https:' ? httpsFR : httpFR)
-        .get(urlIn, response => {
-          resolve(this.parseGff3Stream(response.pipe(unzip)))
-        })
-        .on('error', (e: NodeJS.ErrnoException) => {
-          reject('fail')
-          if (e.code === 'ENOTFOUND') {
-            this.error('Bad file url')
-          } else {
-            this.error('Other error: ', e)
-          }
-        })
-    })
+    return new Promise<Readable>((resolve, reject) =>
+      fetcher.get(urlIn, resolve).on('error', reject),
+    )
   }
 
   // Checks if the passed in string is a valid URL.
@@ -255,23 +191,16 @@ export default class TextIndex extends JBrowseCommand {
     return url.protocol === 'http:' || url.protocol === 'https:'
   }
 
-  // Function that takes in a gff3 readstream and parses through it and
-  // retrieves the needed attributes and information. Returns a @gmod/gff
-  // stream.
-  parseGff3Stream(gff3In: Readable): Readable {
-    return gff3In.pipe(gff.parseStream({ parseSequences: false }))
-  }
-
   // Recursively goes through every record in the gff3 file and gets the
   // desired attributes in the form of a JSON object. It is then pushed to
   // gff3Stream in proper indexing format.
-  //
   recurseFeatures(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     record: any,
     gff3Stream: Readable,
     attributes: string[],
     trackID: string,
+    outPath: string,
   ) {
     // goes through the attributes array and checks if the record contains the
     // attribute that the user wants to search by. If it contains it, it adds
@@ -293,8 +222,12 @@ export default class TextIndex extends JBrowseCommand {
         RecordAttributes.push(x)
       }
 
+      const dir = path.join(outPath, 'trix')
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir)
+      }
       fs.writeFileSync(
-        path.join(__dirname, '..', '..', 'trix', 'meta.json'),
+        path.join(outPath, 'trix', 'meta.json'),
         JSON.stringify({ indexingAttributes: RecordAttributes }, null, 2),
       )
 
@@ -309,10 +242,9 @@ export default class TextIndex extends JBrowseCommand {
           RecordValues.push('attributePlaceholder')
         }
       }
-      // create a meta object that has types field
-      // compare every array to the existing types field
-      // if it doesnt exist then append add it
-      // push the object to meta.json
+      // create a meta object that has types field compare every array to the
+      // existing types field if it doesnt exist then append add it push the
+      // object to meta.json
       if (RecordAttributes.length > 2) {
         const uniqAttrs = [...new Set(RecordValues)]
 
@@ -340,6 +272,7 @@ export default class TextIndex extends JBrowseCommand {
               gff3Stream,
               attributes,
               trackID,
+              outPath,
             )
           }
         }
@@ -350,6 +283,7 @@ export default class TextIndex extends JBrowseCommand {
             gff3Stream,
             attributes,
             trackID,
+            outPath,
           )
         }
       }
@@ -361,8 +295,8 @@ export default class TextIndex extends JBrowseCommand {
   // users, however tests use a local copy.  Returns a promise around ixIxx
   // completing (or erroring).
   runIxIxx(readStream: Readable, outLocation: string, assembly: string) {
-    const ixFilename = path.join(outLocation, `${assembly}.ix`)
-    const ixxFilename = path.join(outLocation, `${assembly}.ixx`)
+    const ixFilename = path.join(outLocation, 'trix', `${assembly}.ix`)
+    const ixxFilename = path.join(outLocation, 'trix', `${assembly}.ixx`)
 
     return ixIxxStream(readStream, ixFilename, ixxFilename)
   }
