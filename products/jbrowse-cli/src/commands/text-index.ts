@@ -286,17 +286,15 @@ export default class TextIndex extends JBrowseCommand {
       const RecordValues: Array<string> = []
       const RecordAttributes: Array<string> = []
 
-      RecordAttributes.push('locstring')
-      RecordAttributes.push('TrackID')
-      RecordValues.push(locStr)
-      RecordValues.push(trackID)
+      RecordAttributes.push('locstring', 'TrackID')
+      RecordValues.push(locStr, trackID)
 
       for (const x of attributes) {
         RecordAttributes.push(x)
       }
 
       fs.writeFileSync(
-        path.join('trix', 'meta.json'),
+        path.join(__dirname, '..', '..', 'trix', 'meta.json'),
         JSON.stringify({ indexingAttributes: RecordAttributes }, null, 2),
       )
 

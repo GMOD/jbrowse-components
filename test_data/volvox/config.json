@@ -54,12 +54,85 @@
       "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "TrixAdapter",
       "ixFilePath": {
-        "uri": "volvox.ix"
+        "uri": "trix/volvox.ix"
       },
       "ixxFilePath": {
-        "uri": "volvox.ixx"
+        "uri": "trix/volvox.ixx"
+      },
+      "metaFilePath": {
+        "uri": "trix/meta.json"
       },
       "assemblies": ["volvox"]
+    },
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "TrixAdapter",
+      "ixFilePath": {
+        "uri": "trix/volvox2.ix"
+      },
+      "ixxFilePath": {
+        "uri": "trix/volvox2.ixx"
+      },
+      "metaFilePath": {
+        "uri": "trix/meta.json"
+      },
+      "assemblies": ["volvox2"]
+    },
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "TrixAdapter",
+      "ixFilePath": {
+        "uri": "trix/volvox.ix"
+      },
+      "ixxFilePath": {
+        "uri": "trix/volvox.ixx"
+      },
+      "metaFilePath": {
+        "uri": "trix/meta.json"
+      },
+      "assemblies": ["volvox"]
+    },
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "TrixAdapter",
+      "ixFilePath": {
+        "uri": "trix/volvox2.ix"
+      },
+      "ixxFilePath": {
+        "uri": "trix/volvox2.ixx"
+      },
+      "metaFilePath": {
+        "uri": "trix/meta.json"
+      },
+      "assemblies": ["volvox2"]
+    },
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "TrixAdapter",
+      "ixFilePath": {
+        "uri": "trix/volvox.ix"
+      },
+      "ixxFilePath": {
+        "uri": "trix/volvox.ixx"
+      },
+      "metaFilePath": {
+        "uri": "trix/meta.json"
+      },
+      "assemblies": ["volvox"]
+    },
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "TrixAdapter",
+      "ixFilePath": {
+        "uri": "trix/volvox2.ix"
+      },
+      "ixxFilePath": {
+        "uri": "trix/volvox2.ixx"
+      },
+      "metaFilePath": {
+        "uri": "trix/meta.json"
+      },
+      "assemblies": ["volvox2"]
     }
   ],
   "tracks": [
