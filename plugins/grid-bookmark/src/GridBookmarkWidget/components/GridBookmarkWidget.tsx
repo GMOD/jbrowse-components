@@ -1,33 +1,36 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { observer } from 'mobx-react'
+import AutoSizer from 'react-virtualized-auto-sizer'
 
-import { makeStyles, Link } from '@material-ui/core'
+import {
+  Link,
+  IconButton,
+  FormControlLabel,
+  Checkbox,
+  Typography,
+} from '@material-ui/core'
 import {
   DataGrid,
   GridCellParams,
   GridEditCellPropsParams,
 } from '@material-ui/data-grid'
 
-import { getSession, assembleLocString } from '@jbrowse/core/util'
+import { getSession, assembleLocString, measureText } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 
 import { GridBookmarkModel } from '../model'
 import { navToBookmark } from '../utils'
 
+import DeleteIcon from '@material-ui/icons/Delete'
 import AssemblySelector from './AssemblySelector'
-import DeleteBookmark from './DeleteBookmark'
+import DeleteBookmarkDialog from './DeleteBookmark'
 import DownloadBookmarks from './DownloadBookmarks'
 import ClearBookmarks from './ClearBookmarks'
 
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 12,
-  },
-}))
-
 function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
-  const classes = useStyles()
+  const [dialogOpen, setDialogOpen] = useState<string>()
   const { views } = getSession(model)
+  const [compact, setCompact] = useState(false)
   const { bookmarkedRegions, updateBookmarkLabel, selectedAssembly } = model
 
   const bookmarkRows = bookmarkedRegions
@@ -58,11 +61,14 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
     [bookmarkRows, updateBookmarkLabel],
   )
 
+  const measure = (row: any, col: string) =>
+    Math.min(Math.max(measureText(String(row[col]), 14) + 50, 80), 1000)
+
   const columns = [
     {
       field: 'id',
       headerName: 'bookmark link',
-      width: 200,
+      width: Math.max(...bookmarkRows.map(row => measure(row, 'id'))),
       renderCell: (params: GridCellParams) => {
         const { value } = params
         return (
@@ -78,7 +84,10 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
     },
     {
       field: 'label',
-      width: 105,
+      width: Math.max(
+        100,
+        Math.max(...bookmarkRows.map(row => measure(row, 'label'))),
+      ),
       editable: true,
     },
     {
@@ -86,25 +95,64 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
       width: 30,
       renderCell: (params: GridCellParams) => {
         const { value } = params
-        return <DeleteBookmark locString={value as string} model={model} />
+        return (
+          <IconButton
+            data-testid="deleteBookmark"
+            aria-label="delete"
+            onClick={() => setDialogOpen(value as string)}
+            style={{ padding: 0 }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        )
       },
     },
   ]
 
   return (
-    <div className={classes.container}>
+    <>
       <AssemblySelector model={model} />
       <DownloadBookmarks model={model} />
       <ClearBookmarks model={model} />
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={compact}
+            onChange={() => {
+              setCompact(!compact)
+            }}
+            color="primary"
+          />
+        }
+        label="Compact"
+        style={{ marginLeft: 4 }}
+      />
+
+      <div style={{ margin: 12 }}>
+        <Typography>
+          Note: you can double click the "label" field to add your own custom
+          notes
+        </Typography>
+      </div>
       <div style={{ height: 800, width: '100%' }}>
         <DataGrid
           rows={bookmarkRows}
+          rowHeight={compact ? 25 : undefined}
+          headerHeight={compact ? 25 : undefined}
           columns={columns}
           onEditCellChangeCommitted={handleEditCellChangeCommitted}
           disableSelectionOnClick
         />
       </div>
-    </div>
+
+      <DeleteBookmarkDialog
+        locString={dialogOpen}
+        model={model}
+        onClose={() => {
+          setDialogOpen(undefined)
+        }}
+      />
+    </>
   )
 }
 
