@@ -172,245 +172,59 @@
   "aggregateTextSearchAdapters": [
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
+      "textSearchAdapterId": "okwXtaVzvnJRJV0zePOwHA==",
       "ixFilePath": {
-        "uri": "out.ix"
+        "uri": "trix/volvox.ixx"
       },
       "ixxFilePath": {
-        "uri": "out.ixx"
+        "uri": "trix/volvox.ixx"
       },
-      "assemblies": ["volvox", "volvox2"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
-      "ixFilePath": {
-        "uri": ".ix"
-      },
-      "ixxFilePath": {
-        "uri": ".ixx"
-      },
-      "assemblies": [""]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
-      "ixFilePath": {
-        "uri": "volvox.ix"
-      },
-      "ixxFilePath": {
-        "uri": "volvox.ixx"
+      "metaFilePath": {
+        "uri": "trix/meta.json"
       },
       "assemblies": ["volvox"]
     },
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
+      "textSearchAdapterId": "/KQQTH8tYznZFJ6udRTLDQ==",
       "ixFilePath": {
-        "uri": "volvox2.ix"
+        "uri": "trix/volvox.ixx"
       },
       "ixxFilePath": {
-        "uri": "volvox2.ixx"
+        "uri": "trix/volvox.ixx"
       },
-      "assemblies": ["volvox2"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
-      "ixFilePath": {
-        "uri": "volvox.ix"
-      },
-      "ixxFilePath": {
-        "uri": "volvox.ixx"
+      "metaFilePath": {
+        "uri": "trix/meta.json"
       },
       "assemblies": ["volvox"]
     },
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
+      "textSearchAdapterId": "EjiayvSW9XtbhPzWLNoLmw==",
       "ixFilePath": {
-        "uri": "volvox2.ix"
+        "uri": "trix/volvox.ixx"
       },
       "ixxFilePath": {
-        "uri": "volvox2.ixx"
+        "uri": "trix/volvox.ixx"
       },
-      "assemblies": ["volvox2"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
-      "ixFilePath": {
-        "uri": "volvox.ix"
-      },
-      "ixxFilePath": {
-        "uri": "volvox.ixx"
+      "metaFilePath": {
+        "uri": "trix/meta.json"
       },
       "assemblies": ["volvox"]
     },
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
+      "textSearchAdapterId": "YBbj40MD53J09vnTcSM1qw==",
       "ixFilePath": {
-        "uri": "volvox2.ix"
+        "uri": "trix/volvox.ix"
       },
       "ixxFilePath": {
-        "uri": "volvox2.ixx"
+        "uri": "trix/volvox.ixx"
       },
-      "assemblies": ["volvox2"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
-      "ixFilePath": {
-        "uri": "volvox.ix"
-      },
-      "ixxFilePath": {
-        "uri": "volvox.ixx"
+      "metaFilePath": {
+        "uri": "trix/meta.json"
       },
       "assemblies": ["volvox"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
-      "ixFilePath": {
-        "uri": "volvox2.ix"
-      },
-      "ixxFilePath": {
-        "uri": "volvox2.ixx"
-      },
-      "assemblies": ["volvox2"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
-      "ixFilePath": {
-        "uri": "volvox.ix"
-      },
-      "ixxFilePath": {
-        "uri": "volvox.ixx"
-      },
-      "assemblies": ["volvox"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
-      "ixFilePath": {
-        "uri": "volvox2.ix"
-      },
-      "ixxFilePath": {
-        "uri": "volvox2.ixx"
-      },
-      "assemblies": ["volvox2"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
-      "ixFilePath": {
-        "uri": "volvox.ix"
-      },
-      "ixxFilePath": {
-        "uri": "volvox.ixx"
-      },
-      "assemblies": ["volvox"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
-      "ixFilePath": {
-        "uri": "volvox2.ix"
-      },
-      "ixxFilePath": {
-        "uri": "volvox2.ixx"
-      },
-      "assemblies": ["volvox2"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
-      "ixFilePath": {
-        "uri": "volvox.ix"
-      },
-      "ixxFilePath": {
-        "uri": "volvox.ixx"
-      },
-      "assemblies": ["volvox"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
-      "ixFilePath": {
-        "uri": "volvox2.ix"
-      },
-      "ixxFilePath": {
-        "uri": "volvox2.ixx"
-      },
-      "assemblies": ["volvox2"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
-      "ixFilePath": {
-        "uri": "volvox.ix"
-      },
-      "ixxFilePath": {
-        "uri": "volvox.ixx"
-      },
-      "assemblies": ["volvox"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
-      "ixFilePath": {
-        "uri": "volvox2.ix"
-      },
-      "ixxFilePath": {
-        "uri": "volvox2.ixx"
-      },
-      "assemblies": ["volvox2"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
-      "ixFilePath": {
-        "uri": "volvox.ix"
-      },
-      "ixxFilePath": {
-        "uri": "volvox.ixx"
-      },
-      "assemblies": ["volvox"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
-      "ixFilePath": {
-        "uri": "volvox2.ix"
-      },
-      "ixxFilePath": {
-        "uri": "volvox2.ixx"
-      },
-      "assemblies": ["volvox2"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
-      "ixFilePath": {
-        "uri": "volvox.ix"
-      },
-      "ixxFilePath": {
-        "uri": "volvox.ixx"
-      },
-      "assemblies": ["volvox"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
-      "ixFilePath": {
-        "uri": "volvox2.ix"
-      },
-      "ixxFilePath": {
-        "uri": "volvox2.ixx"
-      },
-      "assemblies": ["volvox2"]
     }
   ]
 }
