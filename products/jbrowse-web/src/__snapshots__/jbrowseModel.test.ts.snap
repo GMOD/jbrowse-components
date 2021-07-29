@@ -22,10 +22,13 @@ Object {
         "volvox",
       ],
       "ixFilePath": Object {
-        "uri": "volvox.ix",
+        "uri": "trix/volvox.ix",
       },
       "ixxFilePath": Object {
-        "uri": "volvox.ixx",
+        "uri": "trix/volvox.ixx",
+      },
+      "metaFilePath": Object {
+        "uri": "trix/meta.json",
       },
       "textSearchAdapterId": "TrixAdapter",
       "type": "TrixTextSearchAdapter",
