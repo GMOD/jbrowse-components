@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import AutoSizer from 'react-virtualized-auto-sizer'
 
 import {
   Link,
@@ -61,6 +60,7 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
     [bookmarkRows, updateBookmarkLabel],
   )
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const measure = (row: any, col: string) =>
     Math.min(Math.max(measureText(String(row[col]), 14) + 50, 80), 1000)
 
