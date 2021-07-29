@@ -93,9 +93,7 @@ export default class TrixTextSearchAdapter
     const attr = await this.getAttributes()
     if (attr) {
       results.forEach(data => {
-        buff = JSON.parse(Buffer.from(data, 'base64').toString('utf8')).split(
-          ',',
-        )
+        buff = JSON.parse(Buffer.from(data, 'base64').toString('utf8'))
         const record: Record<string, string> = {}
         for (const x in buff) {
           if (!buff[x].includes('attributePlaceholder')) {
@@ -116,11 +114,12 @@ export default class TrixTextSearchAdapter
     // Example: "locstring:ctgA;13000..17200,TrackID:gff3tabix_genes,Name:Apple2,Note:mRNA with CDSs but no UTRs,ID:cds-Apple2"
     const formattedResults = results.map(result => {
       const { Name, ID, locstring, TrackID } = result
+      console.log(TrackID)
       const locString = locstring.replace(/;/g, ':')
       return new LocStringResult({
         locString,
-        label: Name || ID,
-        matchedAttribute: Name ? 'name' : 'id',
+        label: Name[0] || ID[0],
+        matchedAttribute: Name[0] ? 'name' : 'id',
         matchedObject: result,
         trackId: TrackID,
       })
