@@ -18,10 +18,12 @@ import {
 import CloseIcon from '@material-ui/icons/Close'
 import { getSession } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { formatSeqFasta, SeqChunk } from '@jbrowse/core/util/formatFastaStrings'
 import { LinearGenomeViewModel } from '..'
 import queryBigsi from './bigsi/query_bigsi'
-import bigsi from './bigsi/bigsis/hg38_chr1and2.json'
+//import bigsi from './bigsi/bigsis/hg38_chr1and2.json'
+//import hexBigsi from './bigsi/bigsis/hg38_hex.json'
+//import bucketmap from './bigsi/bigsis/hg38_bucket_map.json'
+import binBigsi from './bigsi/bigsis/hg38_16int_bdump.bin'
 
 const useStyles = makeStyles(theme => ({
   loadingMessage: {
@@ -41,44 +43,59 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+function makeBigsiHitsFeatures(
+  self: LinearGenomeViewModel,
+  response: any,
+) {
+
+  const refName =
+    self.leftBigsiOffset?.refName || self.rightBigsiOffset?.refName || ''
+
+  const numBuckets = 10
+  const featureLength = (self.rightBigsiOffset.coord - self.leftBigsiOffset.coord)/numBuckets
+
+  let uniqueId = 0
+  let allFeatures = []
+  for (let bucket in response) {
+    const bigsiFeatures = response[bucket]
+    bigsiFeatures.uniqueId = uniqueId
+    bigsiFeatures.bucketStart = bucketmap[bucket].bucketStart
+    bigsiFeatures.bucketEnd = bucketmap[bucket].bucketEnd
+    bigsiFeatures.name = `${bucketmap[bucket].refName}:${bucketmap[bucket].bucketStart}-${bucketmap[bucket].bucketEnd}`
+    bigsiFeatures.start = self.leftBigsiOffset.coord + (parseInt(bucket%10) * featureLength)
+    bigsiFeatures.end = bigsiFeatures.start + featureLength - 1
+    bigsiFeatures.refName = refName
+    allFeatures.push(bigsiFeatures)
+    uniqueId++
+    }
+
+  return allFeatures
+}
+
 async function getBigsiHitsFeatures(
   self: LinearGenomeViewModel,
   query: string,
 ) {
     
-  // console.log(chunks[0][0].data.seq)
-  const response = await queryBigsi.main(bigsi, query)
-  console.log('response: ', response)
-    
-  const refName =
-    self.leftBigsiOffset?.refName || self.rightBigsiOffset?.refName || ''
+  const response = await queryBigsi.runHexBigsiQuery(hexBigsi, query)
+       
+  const allFeatures = makeBigsiHitsFeatures(self, response)
 
-  const allFeatures = []
-  for (let h = 0; h < response.length; h++) {
-    const bigsiFeatures = Object.values(response[h])
-    console.log('bigsiFeatures: ', bigsiFeatures)
-    for (let i = 0; i < bigsiFeatures.length; i++) {
-      bigsiFeatures[i].uniqueId = parseInt(i)
-      bigsiFeatures[i].bucketStart = bigsiFeatures[i].start
-      bigsiFeatures[i].bucketEnd = bigsiFeatures[i].end
-      bigsiFeatures[i].name = `${bigsiFeatures[i].refName}:${bigsiFeatures[i].bucketStart}-${bigsiFeatures[i].bucketEnd}`
-      //bigsiFeatures[i].start = self.leftBigsiOffset.coord
-      //bigsiFeatures[i].end = self.rightBigsiOffset.coord
-      bigsiFeatures[i].refName = refName
-      allFeatures.push(bigsiFeatures[i])
-    }
-  }
   return allFeatures
 }
 
 function constructBigsiTrack(
     self: LinearGenomeViewModel,
-    allFeatures: Array<Record<string, any>>,
+    allFeatures,
 ){
+    const refName =
+      self.leftBigsiOffset?.refName || self.rightBigsiOffset?.refName || ''
+    const assemblyName = 
+      self.leftBigsiOffset?.assemblyName || self.rightBigsiOffset?.assemblyName
+
     const bigsiQueryTrack = {
             trackId: `track-${Date.now()}`,
-            name: 'BIGSI Query',
-            //`BIGSI Query ${assemblyName}:Chr${refName}:${self.leftBigsiOffset.coord}-${self.rightBigsiOffset.coord}`,
+            name: `Sequence Search ${assemblyName}:Chr${refName}:${self.leftBigsiOffset.coord}-${self.rightBigsiOffset.coord}`,
             assemblyNames: ['hg38'],
             type: 'FeatureTrack',
             adapter: {
@@ -196,7 +213,7 @@ function BigsiDialog({
       aria-describedby="alert-dialog-description"
     >
       <DialogTitle id="alert-dialog-title">
-        Bigsi Query
+        Sequence Search
         {handleClose ? (
           <IconButton
             data-testid="close-BigsiDialog"
@@ -216,14 +233,14 @@ function BigsiDialog({
         {error ? <Typography color="error">{`${error}`}</Typography> : null}
         {loading && !error ? (
           <Container> 
-            Retrieving BIGSI hits...
+            Retrieving search hits...
 
             <CircularProgress
               style={{
                 marginLeft: 10,
               }}
               size={20}
-              disableShrink={true}
+              disableShrink
             />
           </Container>
         ) : <Container> Query complete! </Container> }

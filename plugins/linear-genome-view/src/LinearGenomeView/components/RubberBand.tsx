@@ -248,7 +248,7 @@ function RubberBand({
       },
     },
     {
-      label: 'Query BIGSI',
+      label: 'Sequence Search',
       disabled:
         currentX !== undefined &&
         startX !== undefined &&

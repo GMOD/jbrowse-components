@@ -165,6 +165,63 @@ async function getBitBigsiSubmatrix(root, rowFilter){
     )
 }
 
+
+/** Converts a buffer to a u16 typed array
+ */
+function toArrayBuffer(buffer) {
+    const buf = new ArrayBuffer(buffer.length);
+    const view = new Uint16Array(buf);
+    for (let i = 0; i < buffer.length; ++i) {
+        view[i] = buffer[i];
+    }
+    return buf;
+}
+
+/**
+ * @param { string } filename - name of binary dump bigsi file
+ * @param { array of numbers } rowFilter - array of row numbers for query rows
+ * @param { number } numCols - number of columns in bigsi
+ *
+ * @returns { array of strings } submatrix - array of bitsets of query rows 
+ * submatrix
+ */
+async function getBinaryDumpBigsiSubmatrix(filename, rowFilter, numCols){
+    const submatrix = []
+
+    try {
+        let bigsiRowBuf = await fs.readFileSync(filename, (err, data) => {
+                if (err) {
+                    console.error(err)
+                    return
+                }
+            })
+
+        const array = new Uint16Array(toArrayBuffer(bigsiRowBuf));
+        console.log('array size: ', array.length)
+        const numSeqs = numCols/16
+
+        for (let rowNum of rowFilter){
+
+            const offsetStart = rowNum*numSeqs
+            const offsetEnd = offsetStart + numSeqs
+            console.log('offsets: ', offsetStart, offsetEnd)
+            console.log('ints: ', array.slice(offsetStart, offsetEnd))
+
+            const rowBitString = Array.from(array.slice(offsetStart, offsetEnd))
+                .map((num) => {return num.toString(2)})
+                .join('')
+            console.log('bitstring: ', rowBitString)
+            const bs = new BitSet(rowBitString)
+            submatrix.push(bs);
+        }
+    } catch(err) {
+        console.log(err)
+    }
+
+
+    return submatrix
+}
+
 /**
  * @param { array of strings } submatrix - array of bitsets for query rows 
  * of bigsi
@@ -178,7 +235,7 @@ function computeBitSubmatrixHits(submatrix, bigsiHits){
         bucketHits = bucketHits.and(submatrix[i])
     }
 
-    const hitsBucketNums = bucketHits.toArray().map( value => bucketHits.toString().length - 1 - value )
+    const hitsBucketNums = bucketHits.toArray().map( value => 19 - value )
 
     for (let i = 0; i < hitsBucketNums.length; i++){
         const bucketNum = hitsBucketNums[i]
@@ -189,6 +246,35 @@ function computeBitSubmatrixHits(submatrix, bigsiHits){
         }
 
     }
+}
+
+/** 
+ * @param { string } filename - name of binary dump bigsi file
+ * @param { array of bloom filters } queryFragmentsBloomFilters - an array of Bloom filters with fragment 
+ * minimizers inserted
+ * @param { string } numCols - number of columns in bigsi
+ *
+ * @return { object } filteredBigsiHits - object containing fragment hits in the bigsi buckets
+ */
+async function queryBinaryDumpBigsi(filename, queryFragmentsBloomFilters, numCols){
+
+    const bigsiHits = {}
+
+    const numFragments = queryFragmentsBloomFilters.length
+    console.log('number of query BFs: ', queryFragmentsBloomFilters.length)
+
+    for (let m = 0; m < queryFragmentsBloomFilters.length; m++){
+        const queryBFOnesIndices = getQueryBloomFilterOnesIndices(queryFragmentsBloomFilters[m]._filter)
+        
+        let querySubmatrix = await getBinaryDumpBigsiSubmatrix(filename, queryBFOnesIndices, numCols)
+        computeBitSubmatrixHits(querySubmatrix, bigsiHits)
+    }
+
+    for (let bucketId in bigsiHits) {
+        bigsiHits[bucketId]['score'] = `${bigsiHits[bucketId]['hits']}/${numFragments}`;
+    }
+
+    return bigsiHits
 }
 
 /** 
@@ -227,7 +313,7 @@ async function queryBitBigsi(root, queryFragmentsBloomFilters){
  * submatrix
  */
 function getHexBigsiSubmatrix(hexBigsi, rowFilter){
-    let submatrix = []
+    const submatrix = []
 
     rowFilter.forEach(i => submatrix.push(hexBigsi[i]));
 
@@ -238,20 +324,26 @@ function getHexBigsiSubmatrix(hexBigsi, rowFilter){
 /**
  * @param { array of strings } submatrix - array of hexstrings for query rows 
  * of bigsi
- * @param { bigsiHits } bigsiHits - empty object for storing returned hits 
+ * @param { number } numBuckets - number of buckets (columns) in bigsi
+ * @param { object } bigsiHits - empty object for storing returned hits 
  */
-function computeHexSubmatrixHits(submatrix, bigsiHits){
+function computeHexSubmatrixHits(submatrix, numBuckets, bigsiHits){
     let bucketHits = (new BitSet).flip() // init bitset to all 1s for bitwise AND
     for (let i = 0; i < submatrix.length; i++){
         const bs = BitSet.fromHexString(submatrix[i])
         bucketHits = bucketHits.and(bs)
     }
 
-    const bucketIds = bucketHits.toArray()
-    console.log(bucketIds)
-    console.log(bigsiHits)
-    bucketIds.forEach(bucket => bigsiHits[bucket]['hits'] += 1)
+    const hitsBucketNums = bucketHits.toArray().map( value => numBuckets - 1 - value )
 
+    for (let i = 0; i < hitsBucketNums.length; i++){
+        const bucketNum = hitsBucketNums[i]
+        if (bucketNum in bigsiHits){
+            bigsiHits[bucketNum]['hits'] += 1
+        } else {
+            bigsiHits[bucketNum] = {'hits': 1}
+        }
+    }
 }
     
 /** 
@@ -262,29 +354,26 @@ function computeHexSubmatrixHits(submatrix, bigsiHits){
  *
  * @return { object } filteredBigsiHits - object containing fragment hits in the bigsi buckets
  */
-async function queryHexBigsi(bigsi, queryFragmentsBloomFilters, bigsiHits){
+async function queryHexBigsi(bigsi, queryFragmentsBloomFilters){
 
+    let bigsiHits = {}
+
+    const numBuckets = 240
+    console.log('total number of buckets: ', numBuckets)
     const numFragments = queryFragmentsBloomFilters.length
     console.log('number of query BFs: ', queryFragmentsBloomFilters.length)
 
     for (let m = 0; m < queryFragmentsBloomFilters.length; m++){
         const queryBFOnesIndices = getQueryBloomFilterOnesIndices(queryFragmentsBloomFilters[m]._filter)
-        
         const querySubmatrix = getHexBigsiSubmatrix(bigsi, queryBFOnesIndices)
-        computeHexSubmatrixHits(querySubmatrix, bigsiHits)
+        computeHexSubmatrixHits(querySubmatrix, numBuckets, bigsiHits)
     }
 
     for (let bucketId in bigsiHits) {
-        if (bigsiHits.hasOwnProperty(bucketId)) {
-            bigsiHits[bucketId]['score'] = bigsiHits[bucketId]['hits']/numFragments;
-        }
+        bigsiHits[bucketId]['score'] = `${bigsiHits[bucketId]['hits']}/${numFragments}`;
     }
 
-    const filteredBigsiHits = Object.fromEntries(
-        Object.entries(bigsiHits).filter(([key, value]) => value.score > 0) 
-    )
-
-    return filteredBigsiHits
+    return bigsiHits
 }
 
 function getBigsiSubmatrix(bigsi, rowFilter){
@@ -391,21 +480,41 @@ async function queryGenomeBigsis(genomeBigsi, queryFragmentsBloomFilters, genome
 }
 
 
-async function main(bigsi, querySeq){
-    /* Inputs:
-     *  bigsi -- bigsi JSON string
-     *  querySeq -- query sequence string
-     *
-     * Outputs: 
-     *  filteredBigsiHits -- object containing buckets with score > 0
-     *
-     */
+/* Inputs:
+    *  bigsi -- bigsi JSON string
+    *  querySeq -- query sequence string
+    *
+    * Outputs: 
+    *  filteredBigsiHits -- object containing buckets with score > 0
+    *
+    */
+async function runBigsiQuery(querySeq){
+    const queryFragmentsMinimizers = await makeQueryFragsMinimizers(querySeq)
+    const queryBloomFilter = await makeQueryFragsBloomFilters(queryFragmentsMinimizers)
+
+    // run normal bigsi query (remove?)
+}
+
+/**
+ * @param { object } hexBigsi - object (from JSON file) containing hexBigsi
+ * @param { string } querySeq - query sequence string
+ *
+ * @returns { object } filteredBigsiHits - object containing buckets with score > 0
+ */
+async function runHexBigsiQuery(hexBigsi, querySeq){
 
     const queryFragmentsMinimizers = await makeQueryFragsMinimizers(querySeq)
     const queryBloomFilter = await makeQueryFragsBloomFilters(queryFragmentsMinimizers)
 
 
-    //const genomeBigsiHits = await queryBigsi.initGenomeBigsiHits(genomeSeq)
+    const filteredBigsiHits = await queryHexBigsi(hexBigsi, queryBloomFilter)
+
+    return filteredBigsiHits
+}
+
+async function runBinaryBigsiQuery(querySeq){
+    const queryFragmentsMinimizers = await makeQueryFragsMinimizers(querySeq)
+    const queryBloomFilter = await makeQueryFragsBloomFilters(queryFragmentsMinimizers)
 
     const root = 'http://localhost:3001/binary_bigsi'
     const filteredBigsiHits = await queryBitBigsi(root, queryBloomFilter)
@@ -419,8 +528,10 @@ module.exports = {
     getQueryBloomFilterOnesIndices: getQueryBloomFilterOnesIndices,
     initBigsiHits: initBigsiHits,
     initGenomeBigsiHits: initGenomeBigsiHits,
+    getBinaryDumpBigsiSubmatrix: getBinaryDumpBigsiSubmatrix,
     getBitBigsiSubmatrix: getBitBigsiSubmatrix,
     computeBitSubmatrixHits: computeBitSubmatrixHits,
+    queryBinaryDumpBigsi: queryBinaryDumpBigsi,
     queryBitBigsi: queryBitBigsi,
     getHexBigsiSubmatrix: getHexBigsiSubmatrix,
     computeHexSubmatrixHits: computeHexSubmatrixHits,
@@ -429,5 +540,6 @@ module.exports = {
     computeSubmatrixHits: computeSubmatrixHits,
     queryBigsi: queryBigsi,
     queryGenomeBigsis: queryGenomeBigsis,
-    main: main,
+    runHexBigsiQuery: runHexBigsiQuery,
+    runBinaryBigsiQuery: runBinaryBigsiQuery,
 }

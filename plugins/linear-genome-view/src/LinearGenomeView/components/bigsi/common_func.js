@@ -121,10 +121,10 @@ function extractMinimizers(seq){
     return minimizers
 }
 
-function makeMinimizersBloomFilter(minimizers, sizeBloomFilter=300000){
+function makeMinimizersBloomFilter(minimizers, sizeBloomFilter=160000){
     /* Inputs:
      *  minimizers -- array of minimizers
-     *  sizeBloomfilter -- length of the Bloom filter (300kb)
+     *  sizeBloomfilter -- length of the Bloom filter (160k)
      *
      * Outputs:
      *  minimizersBloomFilter -- Bloom filter with inserted minimizers
