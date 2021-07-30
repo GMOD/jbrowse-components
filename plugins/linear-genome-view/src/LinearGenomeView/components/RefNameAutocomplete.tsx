@@ -40,13 +40,6 @@ export interface Option {
   result: BaseResult
 }
 
-// filters for options to display in dropdown
-const filter = createFilterOptions<Option>({
-  trim: true,
-  ignoreCase: true,
-  limit: 100,
-})
-
 async function fetchResults(
   self: LinearGenomeViewModel,
   query: string,
@@ -131,6 +124,7 @@ function RefNameAutocomplete({
           const adapterResults: Option[] = results.map(result => {
             return { result }
           })
+
           setSearchOptions(adapterResults)
         }
       } catch (e) {
@@ -183,10 +177,9 @@ function RefNameAutocomplete({
       }}
       options={searchOptions.length === 0 ? options : searchOptions}
       getOptionDisabled={option => option?.group === 'limitOption'}
-      filterOptions={(possibleOptions, params) => {
-        const filtered = filter(possibleOptions, params)
-        return filtered.length >= 100
-          ? filtered.concat([
+      filterOptions={options => {
+        return options.length >= 100
+          ? options.concat([
               {
                 group: 'limitOption',
                 result: new BaseResult({
@@ -197,7 +190,7 @@ function RefNameAutocomplete({
                 }),
               },
             ])
-          : filtered
+          : options
       }}
       ListboxProps={{ style: { maxHeight: 250 } }}
       onChange={(_, selectedOption) => onChange(selectedOption)}
