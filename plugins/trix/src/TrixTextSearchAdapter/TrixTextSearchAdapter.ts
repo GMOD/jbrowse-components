@@ -41,35 +41,20 @@ export default class TrixTextSearchAdapter
     if (!ixxFilePath) {
       throw new Error('must provide out.ixx')
     }
-    this.ixUrl = ixFilePath.baseUri
-      ? new URL(ixFilePath.uri, ixFilePath.baseUri).href
-      : ixFilePath.uri
-    this.ixxUrl = ixxFilePath.baseUri
-      ? new URL(ixxFilePath.uri, ixxFilePath.baseUri).href
-      : ixxFilePath.uri
-    this.metaUrl = metaFilePath.baseUri
-      ? new URL(metaFilePath.uri, metaFilePath.baseUri).href
-      : metaFilePath.uri
-    const ixFile = new RemoteFile(this.ixUrl)
-    const ixxFile = new RemoteFile(this.ixxUrl)
-    this.trixJs = new Trix(ixxFile, ixFile)
+    this.ixUrl = new URL(ixFilePath.uri, ixFilePath.baseUri).href
+    this.ixxUrl = new URL(ixxFilePath.uri, ixxFilePath.baseUri).href
+    this.metaUrl = new URL(metaFilePath.uri, metaFilePath.baseUri).href
+    this.trixJs = new Trix(
+      new RemoteFile(this.ixxUrl),
+      new RemoteFile(this.ixUrl),
+    )
   }
 
   async readMeta() {
-    try {
-      const metaFile = new RemoteFile(this.metaUrl)
-      const meta = (await metaFile.readFile('utf8')) as string
-      if (meta !== '') {
-        const metaData = JSON.parse(meta)
-        const { indexingAttributes } = metaData
-        this.indexingAttributes = indexingAttributes
-        return indexingAttributes
-      }
-      throw new Error('Error parsing meta.json')
-    } catch (err) {
-      console.warn(`Error: ${err}`)
-    }
-    return []
+    const metadata = (await new RemoteFile(this.metaUrl).readFile(
+      'utf8',
+    )) as string
+    return JSON.parse(metadata).indexingAttributes
   }
 
   async getAttributes() {
@@ -108,10 +93,7 @@ export default class TrixTextSearchAdapter
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formatResults(results: Array<any>) {
-    if (results.length === 0) {
-      return []
-    }
-    const formattedResults = results.map(result => {
+    return results.map(result => {
       const { Name, ID, locstring, TrackID } = result
       const locString = locstring?.replace(/;/g, ':')
       return new LocStringResult({
@@ -122,7 +104,6 @@ export default class TrixTextSearchAdapter
         trackId: TrackID,
       })
     })
-    return formattedResults
   }
   freeResources() {}
 }

@@ -48,7 +48,7 @@ export default class TextIndex extends JBrowseCommand {
     const defaultAttributes = ['Name', 'description', 'Note', 'ID']
     const { flags } = this.parse(TextIndex)
     const outdir = flags.target || flags.out || '.'
-    const isDir = (await fs.promises.lstat(outdir)).isDirectory()
+    const isDir = fs.lstatSync(outdir).isDirectory()
     const target = isDir ? `${outdir}/config.json` : outdir
 
     const configDirectory = path.dirname(target)
@@ -56,6 +56,12 @@ export default class TextIndex extends JBrowseCommand {
     const assembliesToIndex =
       flags.assemblies?.split(',') || config.assemblies?.map(a => a.name) || []
     const adapters = config.aggregateTextSearchAdapters || []
+
+    const dir = path.join(outdir, 'trix')
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir)
+    }
+
     for (const asm of assembliesToIndex) {
       const config = await this.getConfig(target, asm, flags.tracks?.split(','))
 
@@ -222,15 +228,6 @@ export default class TextIndex extends JBrowseCommand {
         RecordAttributes.push(x)
       }
 
-      const dir = path.join(outPath, 'trix')
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir)
-      }
-      fs.writeFileSync(
-        path.join(outPath, 'trix', 'meta.json'),
-        JSON.stringify({ indexingAttributes: RecordAttributes }, null, 2),
-      )
-
       for (const attr of attributes) {
         if (subRecord[attr]) {
           RecordValues.push(subRecord[attr])
@@ -247,11 +244,8 @@ export default class TextIndex extends JBrowseCommand {
       // object to meta.json
       if (RecordAttributes.length > 2) {
         const uniqAttrs = [...new Set(RecordValues)]
-
-        const buff = Buffer.from(JSON.stringify(RecordValues)).toString(
-          'base64',
-        )
-        gff3Stream.push(`${buff} ${uniqAttrs.join(' ')}\n`)
+        const buff = Buffer.from(JSON.stringify(RecordValues))
+        gff3Stream.push(`${buff.toString('base64')} ${uniqAttrs.join(' ')}\n`)
       }
     }
 
