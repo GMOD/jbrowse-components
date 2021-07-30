@@ -10,16 +10,21 @@ import { getEnv } from 'mobx-state-tree'
 
 // jbrowse core
 import { Region } from '@jbrowse/core/util/types'
-import { getSession, useDebounce } from '@jbrowse/core/util' // useDebounce
+import { getSession, useDebounce } from '@jbrowse/core/util'
+import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 import BaseResult, {
   RefSequenceResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
 // material ui
-import CircularProgress from '@material-ui/core/CircularProgress'
-import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
+import {
+  TextField,
+  TextFieldProps as TFP,
+  CircularProgress,
+  Typography,
+  InputAdornment,
+} from '@material-ui/core'
 import SearchIcon from '@material-ui/icons/Search'
-import { InputAdornment } from '@material-ui/core'
 import Autocomplete, {
   createFilterOptions,
 } from '@material-ui/lab/Autocomplete'
@@ -50,19 +55,23 @@ async function fetchResults(
   const session = getSession(self)
   const { pluginManager } = getEnv(session)
   const { rankSearchResults } = self
-  const { textSearchManager } = pluginManager.rootModel
+  const textSearchManager: TextSearchManager =
+    pluginManager.rootModel.textSearchManager
   const searchScope = self.searchScope(assemblyName)
   const args = {
     queryString: query,
-    searchType: 'prefix',
+    searchType: 'prefix' as SearchType,
   }
-  const searchResults: BaseResult[] =
-    (await textSearchManager?.search(args, searchScope, rankSearchResults)) ||
-    []
-  const filteredResults = searchResults.filter(function (elem, index, self) {
-    return index === self.findIndex(t => t.label === elem.label)
-  })
-  return filteredResults
+  const searchResults = await textSearchManager?.search(
+    args,
+    searchScope,
+    rankSearchResults,
+  )
+
+  return searchResults?.filter(
+    (elem, index, self) =>
+      index === self.findIndex(t => t.label === elem.label),
+  )
 }
 function RefNameAutocomplete({
   model,
@@ -92,18 +101,17 @@ function RefNameAutocomplete({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const regions: Region[] = assembly?.regions || []
 
-  const options: Option[] = useMemo(() => {
-    const defaultOptions = regions.map(option => {
-      return {
+  const options: Option[] = useMemo(
+    () =>
+      regions.map(option => ({
         result: new RefSequenceResult({
           refName: option.refName,
           label: option.refName,
           matchedAttribute: 'refName',
         }),
-      }
-    })
-    return defaultOptions
-  }, [regions])
+      })),
+    [regions],
+  )
 
   useEffect(() => {
     let active = true
