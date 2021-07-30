@@ -187,11 +187,11 @@ export default class TextIndex extends JBrowseCommand {
     )
 
     let fileDataStream
-    let totalBytes
+    let totalBytes = 0
     let receivedBytes = 0
     if (this.isURL(uri)) {
       fileDataStream = await this.createRemoteStream(uri)
-      totalBytes = fileDataStream.headers['content-length']
+      totalBytes = +(fileDataStream.headers['content-length'] || 0)
     } else {
       const filename = path.join(outLocation, uri)
       totalBytes = fs.statSync(filename).size
