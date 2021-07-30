@@ -1,11 +1,13 @@
 import path from 'path'
+import { SingleBar, Presets } from 'cli-progress'
 import readline from 'readline'
 import fs from 'fs'
 import crypto from 'crypto'
 import { flags } from '@oclif/command'
 import { Readable } from 'stream'
 import { ixIxxStream } from 'ixixx'
-import { http as httpFR, https as httpsFR } from 'follow-redirects'
+import { IncomingMessage } from 'http'
+import { http, https, FollowResponse } from 'follow-redirects'
 import { createGunzip } from 'zlib'
 import JBrowseCommand, { Track, Config } from '../base'
 
@@ -144,59 +146,84 @@ export default class TextIndex extends JBrowseCommand {
   ) {
     for (const config of configs) {
       const {
-        trackId,
-        adapter: {
-          type,
-          gffGzLocation: { uri },
-        },
+        adapter: { type },
       } = config
 
       if (type === 'Gff3TabixAdapter') {
-        const fileDataStream = await (this.isURL(uri)
-          ? this.createRemoteStream(uri)
-          : fs.createReadStream(path.join(outLocation, uri)))
+        this.indexGff3(config, attributes, outLocation)
+      }
+    }
+  }
 
-        const gzStream = uri.endsWith('.gz')
-          ? fileDataStream.pipe(createGunzip())
-          : fileDataStream
+  async *indexGff3(config: Track, attributes: string[], outLocation: string) {
+    const progressBar = new SingleBar(
+      {
+        format: '{bar} {percentage}% | ETA: {eta}s',
+      },
+      Presets.shades_classic,
+    )
+    const {
+      adapter: {
+        gffGzLocation: { uri },
+      },
+      trackId,
+    } = config
 
-        const rl = readline.createInterface({
-          input: gzStream,
-        })
+    let fileDataStream
+    let totalBytes
+    let receivedBytes = 0
+    if (this.isURL(uri)) {
+      fileDataStream = await this.createRemoteStream(uri)
+      totalBytes = fileDataStream.headers['content-length']
 
-        for await (const line of rl) {
-          if (line.startsWith('#')) {
-            continue
-          } else if (line.startsWith('>')) {
-            break
-          }
+      progressBar.start(totalBytes, 0)
+      fileDataStream.on('data', chunk => {
+        receivedBytes += chunk.length
+        progressBar.update(receivedBytes)
+      })
+    } else {
+      fileDataStream = fs.createReadStream(path.join(outLocation, uri))
+    }
 
-          const [seq_id, , type, start, end, , , , col9] = line.split('\t')
-          const locStr = `${seq_id}:${start}..${end}`
+    const gzStream = uri.endsWith('.gz')
+      ? fileDataStream.pipe(createGunzip())
+      : fileDataStream
 
-          if (type !== 'exon' && type !== 'CDS') {
-            const col9attrs = col9.split(';')
-            const name = col9attrs
-              .find(f => f.startsWith('Name'))
-              ?.split('=')[1]
-              .trim()
-            const id = col9attrs
-              .find(f => f.startsWith('ID'))
-              ?.split('=')[1]
-              .trim()
+    const rl = readline.createInterface({
+      input: gzStream,
+    })
 
-            if (name || id) {
-              const buff = Buffer.from(
-                JSON.stringify([locStr, trackId, name, id]),
-              )
-              yield `${buff.toString('base64')} ${[...new Set([name, id])].join(
-                ' ',
-              )}\n`
-            }
-          }
+    for await (const line of rl) {
+      if (line.startsWith('#')) {
+        continue
+      } else if (line.startsWith('>')) {
+        break
+      }
+
+      const [seq_id, , type, start, end, , , , col9] = line.split('\t')
+      const locStr = `${seq_id}:${start}..${end}`
+
+      if (type !== 'exon' && type !== 'CDS') {
+        const col9attrs = col9.split(';')
+        const name = col9attrs
+          .find(f => f.startsWith('Name'))
+          ?.split('=')[1]
+          .trim()
+        const id = col9attrs
+          .find(f => f.startsWith('ID'))
+          ?.split('=')[1]
+          .trim()
+
+        if (name || id) {
+          const buff = Buffer.from(JSON.stringify([locStr, trackId, name, id]))
+          yield `${buff.toString('base64')} ${[...new Set([name, id])].join(
+            ' ',
+          )}\n`
         }
       }
     }
+
+    progressBar.stop()
   }
 
   // Method for handing off the parsing of a gff3 file URL.
@@ -204,9 +231,9 @@ export default class TextIndex extends JBrowseCommand {
   // Returns a @gmod/gff stream.
   async createRemoteStream(urlIn: string) {
     const newUrl = new URL(urlIn)
-    const fetcher = newUrl.protocol === 'https:' ? httpsFR : httpFR
+    const fetcher = newUrl.protocol === 'https:' ? https : http
 
-    return new Promise<Readable>((resolve, reject) =>
+    return new Promise<IncomingMessage & FollowResponse>((resolve, reject) =>
       fetcher.get(urlIn, resolve).on('error', reject),
     )
   }

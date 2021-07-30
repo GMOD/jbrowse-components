@@ -50,6 +50,7 @@
     "@oclif/plugin-help": "^3",
     "boxen": "^4.2.0",
     "chalk": "^4.1.0",
+    "cli-progress": "^3.9.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "follow-redirects": "^1.14.1",
