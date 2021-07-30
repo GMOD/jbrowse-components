@@ -1,13 +1,7 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 
-import {
-  Link,
-  IconButton,
-  FormControlLabel,
-  Checkbox,
-  Typography,
-} from '@material-ui/core'
+import { Link, IconButton, Typography, Button } from '@material-ui/core'
 import {
   DataGrid,
   GridCellParams,
@@ -21,6 +15,7 @@ import { GridBookmarkModel } from '../model'
 import { navToBookmark } from '../utils'
 
 import DeleteIcon from '@material-ui/icons/Delete'
+import ViewCompactIcon from '@material-ui/icons/ViewCompact'
 import AssemblySelector from './AssemblySelector'
 import DeleteBookmarkDialog from './DeleteBookmark'
 import DownloadBookmarks from './DownloadBookmarks'
@@ -62,7 +57,7 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const measure = (row: any, col: string) =>
-    Math.min(Math.max(measureText(String(row[col]), 14) + 50, 80), 1000)
+    Math.min(Math.max(measureText(String(row[col]), 14) + 20, 80), 1000)
 
   const columns = [
     {
@@ -114,27 +109,21 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
       <AssemblySelector model={model} />
       <DownloadBookmarks model={model} />
       <ClearBookmarks model={model} />
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={compact}
-            onChange={() => {
-              setCompact(!compact)
-            }}
-            color="primary"
-          />
-        }
-        label="Compact"
-        style={{ marginLeft: 4 }}
-      />
-
+      <Button
+        startIcon={<ViewCompactIcon />}
+        onClick={() => {
+          setCompact(!compact)
+        }}
+      >
+        Compact
+      </Button>
       <div style={{ margin: 12 }}>
         <Typography>
-          Note: you can double click the "label" field to add your own custom
-          notes
+          Note: you can double click the <code>label</code> field to add your
+          own custom notes
         </Typography>
       </div>
-      <div style={{ height: 800, width: '100%' }}>
+      <div style={{ height: 750, width: '100%' }}>
         <DataGrid
           rows={bookmarkRows}
           rowHeight={compact ? 25 : undefined}
