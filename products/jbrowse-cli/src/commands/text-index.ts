@@ -1,10 +1,10 @@
 import path from 'path'
+import readline from 'readline'
 import fs from 'fs'
-import gff from '@gmod/gff'
+import streams from 'memory-streams'
 import { flags } from '@oclif/command'
 import { Readable } from 'stream'
 import { ixIxxStream } from 'ixixx'
-import { Transform, PassThrough } from 'stream'
 import { http as httpFR, https as httpsFR } from 'follow-redirects'
 import { createGunzip } from 'zlib'
 import JBrowseCommand, { Track, Config } from '../base'
@@ -50,11 +50,13 @@ export default class TextIndex extends JBrowseCommand {
   // tracks associated. Gets their information and sends it to the appropriate
   // file parser to be indexed
   async run() {
-    const { flags } = this.parse(TextIndex)
-    const { out, target, tracks, assemblies, attributes } = flags
+    const {
+      flags: { out, target, tracks, assemblies, attributes },
+    } = this.parse(TextIndex)
     const outFlag = target || out || '.'
-    const isDir = fs.lstatSync(outFlag).isDirectory()
-    const confFile = isDir ? `${outFlag}/config.json` : outFlag
+    const confFile = fs.lstatSync(outFlag).isDirectory()
+      ? path.join(outFlag, 'config.json')
+      : outFlag
     const dir = path.dirname(confFile)
 
     const config: Config = JSON.parse(fs.readFileSync(confFile, 'utf8'))
@@ -108,13 +110,18 @@ export default class TextIndex extends JBrowseCommand {
   async indexDriver(
     configs: Track[],
     attributes: string[],
-    outLocation: string,
+    out: string,
     assemblyName: string,
   ) {
-    let aggregateStream = new PassThrough()
-    let numStreamsFlowing = configs.length
+    const readable = Readable.from(this.indexFile(configs, attributes, out))
+    return this.runIxIxx(readable, out, assemblyName)
+  }
 
-    //  For each uri, we parse the file and add it to aggregateStream.
+  async *indexFile(
+    configs: Track[],
+    attributes: string[],
+    outLocation: string,
+  ) {
     for (const config of configs) {
       const {
         trackId,
@@ -125,23 +132,6 @@ export default class TextIndex extends JBrowseCommand {
       } = config
 
       if (type === 'Gff3TabixAdapter') {
-        const gffTransform = new Transform({
-          objectMode: true,
-          transform: (chunk, _encoding, done) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            chunk.forEach((record: any) => {
-              this.recurseFeatures(
-                record,
-                gff3Stream,
-                attributes,
-                trackId,
-                outLocation,
-              )
-            })
-            done()
-          },
-        })
-
         const fileDataStream = await (this.isURL(uri)
           ? this.createRemoteStream(uri)
           : fs.createReadStream(path.join(outLocation, uri)))
@@ -150,30 +140,41 @@ export default class TextIndex extends JBrowseCommand {
           ? fileDataStream.pipe(createGunzip())
           : fileDataStream
 
-        const gff3Stream = gzStream
-          .pipe(gff.parseStream({ parseSequences: false }))
-          .pipe(gffTransform)
-
-        // Add gff3Stream to aggregateStream, and DO NOT send 'end' event on
-        // completion, otherwise this would stop all streams from piping to the
-        // aggregate before completion.
-        aggregateStream = gff3Stream.pipe(aggregateStream, { end: false })
-
-        // If a stream ends we have two options:
-        //  1) it is the last stream, so end the aggregate stream.
-        //  2) it is not the last stream, so add a '\n' to separate streams for the indexer.
-
-        // eslint-disable-next-line no-loop-func
-        gff3Stream.once('end', () => {
-          if (--numStreamsFlowing === 0) {
-            aggregateStream.end()
-          } else {
-            aggregateStream.push('\n')
-          }
+        const rl = readline.createInterface({
+          input: gzStream,
         })
+
+        for await (const line of rl) {
+          if (line.startsWith('#')) {
+            continue
+          } else if (line.startsWith('>')) {
+            break
+          }
+
+          const [seq_id, src, type, start, end, , , , col9] = line.split('\t')
+          const locStr = `${seq_id}:${start}..${end}`
+
+          const col9attrs = col9.split(';')
+          const name = col9attrs
+            .find(f => f.startsWith('Name'))
+            ?.split('=')[1]
+            .trim()
+          const id = col9attrs
+            .find(f => f.startsWith('ID'))
+            ?.split('=')[1]
+            .trim()
+
+          if (name || id) {
+            const buff = Buffer.from(
+              JSON.stringify([locStr, trackId, name, id]),
+            )
+            yield `${buff.toString('base64')} ${[...new Set([name, id])].join(
+              ' ',
+            )}\n`
+          }
+        }
       }
     }
-    return this.runIxIxx(aggregateStream, outLocation, assemblyName)
   }
 
   // Method for handing off the parsing of a gff3 file URL.
@@ -205,11 +206,11 @@ export default class TextIndex extends JBrowseCommand {
   // Recursively goes through every record in the gff3 file and gets the
   // desired attributes in the form of a JSON object. It is then pushed to
   // gff3Stream in proper indexing format.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   recurseFeatures(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     record: any,
     gff3Stream: Readable,
-    indexAttrs: string[],
+    attrs: string[],
     trackID: string,
   ) {
     // goes through the attributes array and checks if the record contains the
@@ -226,7 +227,7 @@ export default class TextIndex extends JBrowseCommand {
       const name = attributes.Name?.[0] || attributes.ID?.[0]
 
       const entry = []
-      for (const attr of indexAttrs) {
+      for (const attr of attrs) {
         const val = subRecord[attr] || attributes?.[attr]
         if (val) {
           entry.push(...val)
@@ -236,10 +237,6 @@ export default class TextIndex extends JBrowseCommand {
       // create a meta object that has types field compare every array to the
       // existing types field if it doesnt exist then append add it push the
       // object to meta.json
-      const buff = Buffer.from(JSON.stringify([locStr, trackID, name]))
-      gff3Stream.push(
-        `${buff.toString('base64')} ${[...new Set(entry)].join(' ')}\n`,
-      )
     }
 
     if (Array.isArray(record)) {
@@ -249,7 +246,7 @@ export default class TextIndex extends JBrowseCommand {
     }
 
     // recurses through each record to get child features and parses their
-    // attributes as well.
+    // attributes as well
     if (record?.child_features || record?.[0].child_features) {
       if (Array.isArray(record)) {
         for (const r of record) {
@@ -257,7 +254,7 @@ export default class TextIndex extends JBrowseCommand {
             this.recurseFeatures(
               r.child_features[i],
               gff3Stream,
-              indexAttrs,
+              attrs,
               trackID,
             )
           }
@@ -267,7 +264,7 @@ export default class TextIndex extends JBrowseCommand {
           this.recurseFeatures(
             record.child_features[i],
             gff3Stream,
-            indexAttrs,
+            attrs,
             trackID,
           )
         }
