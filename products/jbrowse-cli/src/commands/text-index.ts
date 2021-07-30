@@ -46,6 +46,10 @@ export default class TextIndex extends JBrowseCommand {
       description:
         'Specify the assembl(ies) to create an index for. If unspecified, creates an index for each assembly in the config',
     }),
+    force: flags.boolean({
+      default: false,
+      description: 'Overwrite previously existing indexes',
+    }),
     quiet: flags.boolean({
       char: 'q',
       default: false,
@@ -58,7 +62,7 @@ export default class TextIndex extends JBrowseCommand {
   // file parser to be indexed
   async run() {
     const {
-      flags: { out, target, tracks, assemblies, attributes, quiet },
+      flags: { out, target, tracks, assemblies, attributes, quiet, force },
     } = this.parse(TextIndex)
     const outFlag = target || out || '.'
     const confFile = fs.lstatSync(outFlag).isDirectory()
@@ -71,11 +75,6 @@ export default class TextIndex extends JBrowseCommand {
       assemblies?.split(',') || config.assemblies?.map(a => a.name) || []
     const adapters = config.aggregateTextSearchAdapters || []
 
-    const hash: string = crypto
-      .createHash('md5')
-      .update(assembliesToIndex.toString() + tracks?.split(','.toString()))
-      .digest('base64')
-
     const trixDir = path.join(dir, 'trix')
     if (!fs.existsSync(trixDir)) {
       fs.mkdirSync(trixDir)
@@ -87,37 +86,34 @@ export default class TextIndex extends JBrowseCommand {
       this.log('Indexing assembly ' + asm + '...')
 
       if (config.length) {
+        const id = asm + '-index'
+        const adp = adapters.find(x => x.textSearchAdapterId === id)
+        if (adp && !force) {
+          throw new Error(
+            `${asm} has already been indexed with this configuration, use --force to overwrite`,
+          )
+        }
+
         await this.indexDriver(config, attributes.split(','), dir, asm, quiet)
 
         // Checks through list of configs and checks the hash values
         // if it already exists it updates the entry and increments the
         // check varible. If the check variable is equal to 0 that means
         // the entry does not exist and creates one.
-        let check = 0
-        for (const x in adapters) {
-          if (adapters[x].textSearchAdapterId === hash) {
-            adapters[x].ixFilePath.uri = `trix/${asm}.ix`
-            adapters[x].ixxFilePath.uri = `trix/${asm}.ixx`
-            adapters[x].metaFilePath.uri = `trix/meta.json`
-            check++
-          }
-        }
-        if (check === 0) {
-          adapters.push({
-            type: 'TrixTextSearchAdapter',
-            textSearchAdapterId: hash,
-            ixFilePath: {
-              uri: `trix/${asm}.ix`,
-            },
-            ixxFilePath: {
-              uri: `trix/${asm}.ixx`,
-            },
-            metaFilePath: {
-              uri: `trix/meta.json`,
-            },
-            assemblies: [asm],
-          })
-        }
+        adapters.push({
+          type: 'TrixTextSearchAdapter',
+          textSearchAdapterId: id,
+          ixFilePath: {
+            uri: `trix/${asm}.ix`,
+          },
+          ixxFilePath: {
+            uri: `trix/${asm}.ixx`,
+          },
+          metaFilePath: {
+            uri: `trix/meta.json`,
+          },
+          assemblies: [asm],
+        })
       }
     }
 
