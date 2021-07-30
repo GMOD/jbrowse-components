@@ -25,9 +25,6 @@ const useStyles = makeStyles(() => ({
   dialogContainer: {
     margin: 15,
   },
-  downloadButton: {
-    marginBottom: 5,
-  },
   flexItem: {
     margin: 5,
   },
@@ -51,11 +48,7 @@ function DownloadBookmarks({ model }: { model: GridBookmarkModel }) {
 
   return (
     <>
-      <Button
-        className={classes.downloadButton}
-        startIcon={<GetAppIcon />}
-        onClick={() => setDialogOpen(true)}
-      >
+      <Button startIcon={<GetAppIcon />} onClick={() => setDialogOpen(true)}>
         Download
       </Button>
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>

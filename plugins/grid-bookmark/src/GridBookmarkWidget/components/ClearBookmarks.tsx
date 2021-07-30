@@ -23,9 +23,6 @@ const useStyles = makeStyles(() => ({
   dialogContainer: {
     margin: 15,
   },
-  clearButton: {
-    marginBottom: 5,
-  },
 }))
 
 function ClearBookmarks({ model }: { model: GridBookmarkModel }) {
@@ -37,7 +34,6 @@ function ClearBookmarks({ model }: { model: GridBookmarkModel }) {
   return (
     <>
       <Button
-        className={classes.clearButton}
         startIcon={<ClearAllIcon />}
         aria-label="clear bookmarks"
         onClick={() => setDialogOpen(true)}

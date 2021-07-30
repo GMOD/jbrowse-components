@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { observer } from 'mobx-react'
 
 import {
@@ -9,7 +9,6 @@ import {
   Typography,
   makeStyles,
 } from '@material-ui/core'
-import DeleteIcon from '@material-ui/icons/Delete'
 import CloseIcon from '@material-ui/icons/Close'
 
 import { GridBookmarkModel } from '../model'
@@ -25,60 +24,52 @@ const useStyles = makeStyles(() => ({
   },
 }))
 
-function DeleteBookmark({
+function DeleteBookmarkDialog({
   locString,
   model,
+  onClose,
 }: {
-  locString: string
+  locString: string | undefined
   model: GridBookmarkModel
+  onClose: () => void
 }) {
   const classes = useStyles()
-  const [dialogOpen, setDialogOpen] = useState(false)
 
   const { removeBookmark } = model
 
   return (
-    <>
-      <IconButton
-        data-testid="deleteBookmark"
-        aria-label="delete"
-        onClick={() => setDialogOpen(true)}
-      >
-        <DeleteIcon />
-      </IconButton>
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-        <DialogTitle>
-          <IconButton
-            className={classes.closeDialog}
-            aria-label="close-dialog"
-            onClick={() => setDialogOpen(false)}
+    <Dialog open={!!locString} onClose={onClose}>
+      <DialogTitle>
+        <IconButton
+          className={classes.closeDialog}
+          aria-label="close-dialog"
+          onClick={onClose}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      <div className={classes.dialogContainer}>
+        <Typography>
+          Remove <code>{locString}</code>?
+        </Typography>
+        <br />
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              if (locString) {
+                removeBookmark(locString)
+                onClose()
+              }
+            }}
           >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <div className={classes.dialogContainer}>
-          <>
-            <Typography>
-              Remove <code>{locString}</code>?
-            </Typography>
-            <br />
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => {
-                  removeBookmark(locString)
-                  setDialogOpen(false)
-                }}
-              >
-                Confirm
-              </Button>
-            </div>
-          </>
+            Confirm
+          </Button>
         </div>
-      </Dialog>
-    </>
+      </div>
+    </Dialog>
   )
 }
 
-export default observer(DeleteBookmark)
+export default observer(DeleteBookmarkDialog)
