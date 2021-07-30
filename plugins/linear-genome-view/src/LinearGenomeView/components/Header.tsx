@@ -150,7 +150,7 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
   }
   async function setDisplayedRegion(result: BaseResult) {
     if (result) {
-      const newRegionValue = result.getLabel()
+      let newRegionValue = result.getLabel()
       // need to fix finding region
       const newRegion = regions.find(
         region => newRegionValue === region.refName,
@@ -161,11 +161,18 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
         // region visible, xref #1703
         model.showAllRegions()
       } else {
-        const results = await fetchResults(newRegionValue.toLocaleLowerCase())
+        const results: BaseResult[] = await fetchResults(
+          newRegionValue.toLocaleLowerCase(),
+        )
         // distinguishes between locstrings and search strings
-        if (results.length > 0) {
+        if (results.length > 1) {
           model.setSearchResults(results, newRegionValue.toLocaleLowerCase())
         } else {
+          if (results.length === 1) {
+            newRegionValue = results[0].getLocation()
+            const trackId = results[0].getTrackId()
+            trackId && model.showTrack(trackId)
+          }
           try {
             newRegionValue !== '' && model.navToLocString(newRegionValue)
           } catch (e) {

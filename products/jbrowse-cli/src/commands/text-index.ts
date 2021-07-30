@@ -1,7 +1,7 @@
 import path from 'path'
 import readline from 'readline'
 import fs from 'fs'
-import streams from 'memory-streams'
+import crypto from 'crypto'
 import { flags } from '@oclif/command'
 import { Readable } from 'stream'
 import { ixIxxStream } from 'ixixx'
@@ -64,6 +64,13 @@ export default class TextIndex extends JBrowseCommand {
       assemblies?.split(',') || config.assemblies?.map(a => a.name) || []
     const adapters = config.aggregateTextSearchAdapters || []
 
+    const hash: string = crypto
+      .createHash('md5')
+      .update(
+        assembliesToIndex.toString() + flags.tracks?.split(','.toString()),
+      )
+      .digest('base64')
+
     const trixDir = path.join(dir, 'trix')
     if (!fs.existsSync(trixDir)) {
       fs.mkdirSync(trixDir)
@@ -77,20 +84,35 @@ export default class TextIndex extends JBrowseCommand {
       if (config.length) {
         await this.indexDriver(config, attributes.split(','), dir, asm)
 
-        adapters.push({
-          type: 'TrixTextSearchAdapter',
-          textSearchAdapterId: 'TrixAdapter',
-          ixFilePath: {
-            uri: `trix/${asm}.ix`,
-          },
-          ixxFilePath: {
-            uri: `trix/${asm}.ixx`,
-          },
-          metaFilePath: {
-            uri: `trix/meta.json`,
-          },
-          assemblies: [asm],
-        })
+        // Checks through list of configs and checks the hash values
+        // if it already exists it updates the entry and increments the
+        // check varible. If the check variable is equal to 0 that means
+        // the entry does not exist and creates one.
+        let check = 0
+        for (const x in adapters) {
+          if (adapters[x].textSearchAdapterId === hash) {
+            adapters[x].ixFilePath.uri = `trix/${asm}.ix`
+            adapters[x].ixFilePath.uri = `trix/${asm}.ixx`
+            adapters[x].metaFilePath.uri = `trix/meta.json`
+            check++
+          }
+        }
+        if (check === 0) {
+          adapters.push({
+            type: 'TrixTextSearchAdapter',
+            textSearchAdapterId: hash,
+            ixFilePath: {
+              uri: `trix/${asm}.ix`,
+            },
+            ixxFilePath: {
+              uri: `trix/${asm}.ixx`,
+            },
+            metaFilePath: {
+              uri: `trix/meta.json`,
+            },
+            assemblies: [asm],
+          })
+        }
       }
     }
 
