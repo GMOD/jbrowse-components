@@ -34,6 +34,11 @@ export default class TextIndex extends JBrowseCommand {
     out: flags.string({
       description: 'Synonym for target',
     }),
+
+    attributes: flags.string({
+      description: 'Comma separated list of attributes to index',
+      default: 'Name,ID',
+    }),
     assemblies: flags.string({
       char: 'a',
       description:
@@ -45,16 +50,16 @@ export default class TextIndex extends JBrowseCommand {
   // tracks associated. Gets their information and sends it to the appropriate
   // file parser to be indexed
   async run() {
-    const defaultAttributes = ['Name', 'description', 'Note', 'ID']
     const { flags } = this.parse(TextIndex)
-    const outFlag = flags.target || flags.out || '.'
+    const { out, target, tracks, assemblies, attributes } = flags
+    const outFlag = target || out || '.'
     const isDir = fs.lstatSync(outFlag).isDirectory()
-    const target = isDir ? `${outFlag}/config.json` : outFlag
-    const dir = path.dirname(target)
+    const confFile = isDir ? `${outFlag}/config.json` : outFlag
+    const dir = path.dirname(confFile)
 
-    const config: Config = JSON.parse(fs.readFileSync(target, 'utf8'))
+    const config: Config = JSON.parse(fs.readFileSync(confFile, 'utf8'))
     const assembliesToIndex =
-      flags.assemblies?.split(',') || config.assemblies?.map(a => a.name) || []
+      assemblies?.split(',') || config.assemblies?.map(a => a.name) || []
     const adapters = config.aggregateTextSearchAdapters || []
 
     const trixDir = path.join(dir, 'trix')
@@ -63,12 +68,12 @@ export default class TextIndex extends JBrowseCommand {
     }
 
     for (const asm of assembliesToIndex) {
-      const config = await this.getConfig(target, asm, flags.tracks?.split(','))
+      const config = await this.getConfig(confFile, asm, tracks?.split(','))
 
       this.log('Indexing assembly ' + asm + '...')
 
       if (config.length) {
-        await this.indexDriver(config, defaultAttributes, dir, asm)
+        await this.indexDriver(config, attributes.split(','), dir, asm)
 
         adapters.push({
           type: 'TrixTextSearchAdapter',
@@ -88,7 +93,7 @@ export default class TextIndex extends JBrowseCommand {
     }
 
     fs.writeFileSync(
-      target,
+      confFile,
       JSON.stringify(
         { ...config, aggregateTextSearchAdapters: adapters },
         null,
