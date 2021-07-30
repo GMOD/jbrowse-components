@@ -4,19 +4,14 @@ import {
   BaseArgs,
   BaseAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { openLocation } from '@jbrowse/core/util/io'
 import { LocStringResult } from '@jbrowse/core/TextSearch/BaseResults'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { Instance } from 'mobx-state-tree'
-import { RemoteFile } from 'generic-filehandle'
-
-import MyConfigSchema from './configSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 export default class TrixTextSearchAdapter
   extends BaseAdapter
   implements BaseTextSearchAdapter {
-  /*
-  Trix text search adapter
-   */
   ixUrl: string
 
   ixxUrl: string
@@ -27,7 +22,7 @@ export default class TrixTextSearchAdapter
   trixJs: Trix
   tracksNames?: string[]
 
-  constructor(config: Instance<typeof MyConfigSchema>) {
+  constructor(config: AnyConfigurationModel) {
     super(config)
     const ixFilePath = readConfObject(config, 'ixFilePath')
     const ixxFilePath = readConfObject(config, 'ixxFilePath')
@@ -45,15 +40,14 @@ export default class TrixTextSearchAdapter
     this.ixxUrl = new URL(ixxFilePath.uri, ixxFilePath.baseUri).href
     this.metaUrl = new URL(metaFilePath.uri, metaFilePath.baseUri).href
     this.trixJs = new Trix(
-      new RemoteFile(this.ixxUrl),
-      new RemoteFile(this.ixUrl),
+      openLocation(ixxFilePath) as any,
+      openLocation(ixFilePath) as any,
     )
   }
 
   async readMeta() {
-    const metadata = (await new RemoteFile(this.metaUrl).readFile(
-      'utf8',
-    )) as string
+    const meta = readConfObject(this.config, 'metaFilePath')
+    const metadata = (await openLocation(meta).readFile('utf8')) as string
     return JSON.parse(metadata).indexingAttributes
   }
 
@@ -64,44 +58,32 @@ export default class TrixTextSearchAdapter
     this.indexingAttributes = await this.readMeta()
     return this.indexingAttributes
   }
-  /**
+  /*
    * Returns list of results
    * @param args - search options/arguments include: search query
-   * limit of results to return, searchType...preffix | full | exact", etc.
+   * limit of results to return, searchType...prefix | full | exact", etc.
    */
   async searchIndex(args: BaseArgs) {
-    const { queryString } = args
-    let buff: string[]
-    const searchResults: Object[] = []
-    const results = await this.trixJs.search(queryString)
+    const results = await this.trixJs.search(args.queryString)
 
-    const attr = await this.getAttributes()
-    if (attr) {
-      results.forEach(data => {
-        buff = JSON.parse(Buffer.from(data, 'base64').toString('utf8'))
-        const record: Record<string, string> = {}
-        for (const x in buff) {
-          if (!buff[x].includes('attributePlaceholder')) {
-            record[attr[x]] = buff[x]
-          }
-        }
-        searchResults.push(record)
-      })
-    }
-    return this.formatResults(searchResults)
+    return this.formatResults(
+      results.map(
+        data =>
+          JSON.parse(Buffer.from(data, 'base64').toString('utf8')) as string[],
+      ),
+    )
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formatResults(results: Array<any>) {
     return results.map(result => {
-      const { Name, ID, locstring, TrackID } = result
-      const locString = locstring?.replace(/;/g, ':')
+      const [locString, trackId, label] = result
       return new LocStringResult({
         locString,
-        label: Name[0] || ID[0],
-        matchedAttribute: Name[0] ? 'name' : 'id',
+        label,
+        matchedAttribute: 'name',
         matchedObject: result,
-        trackId: TrackID,
+        trackId,
       })
     })
   }

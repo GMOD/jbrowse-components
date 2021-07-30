@@ -204,9 +204,8 @@ export default class TextIndex extends JBrowseCommand {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     record: any,
     gff3Stream: Readable,
-    attributes: string[],
+    indexAttrs: string[],
     trackID: string,
-    outPath: string,
   ) {
     // goes through the attributes array and checks if the record contains the
     // attribute that the user wants to search by. If it contains it, it adds
@@ -217,36 +216,25 @@ export default class TextIndex extends JBrowseCommand {
       if (!subRecord) {
         return
       }
-      const locStr = `${subRecord['seq_id']};${subRecord['start']}..${subRecord['end']}`
-      const RecordValues: Array<string> = []
-      const RecordAttributes: Array<string> = []
+      const { seq_id, start, end, attributes } = subRecord
+      const locStr = `${seq_id}:${start}..${end}`
+      const name = attributes.Name?.[0] || attributes.ID?.[0]
 
-      RecordAttributes.push('locstring', 'TrackID')
-      RecordValues.push(locStr, trackID)
-
-      for (const x of attributes) {
-        RecordAttributes.push(x)
-      }
-
-      for (const attr of attributes) {
-        if (subRecord[attr]) {
-          RecordValues.push(subRecord[attr])
-          RecordAttributes.push(attr)
-        } else if (subRecord.attributes?.[attr]) {
-          RecordValues.push(subRecord.attributes[attr])
-          RecordAttributes.push(attr)
-        } else {
-          RecordValues.push('attributePlaceholder')
+      const entry = []
+      for (const attr of indexAttrs) {
+        const val = subRecord[attr] || attributes?.[attr]
+        if (val) {
+          entry.push(...val)
         }
       }
+
       // create a meta object that has types field compare every array to the
       // existing types field if it doesnt exist then append add it push the
       // object to meta.json
-      if (RecordAttributes.length > 2) {
-        const uniqAttrs = [...new Set(RecordValues)]
-        const buff = Buffer.from(JSON.stringify(RecordValues))
-        gff3Stream.push(`${buff.toString('base64')} ${uniqAttrs.join(' ')}\n`)
-      }
+      const buff = Buffer.from(JSON.stringify([locStr, trackID, name]))
+      gff3Stream.push(
+        `${buff.toString('base64')} ${[...new Set(entry)].join(' ')}\n`,
+      )
     }
 
     if (Array.isArray(record)) {
@@ -264,9 +252,8 @@ export default class TextIndex extends JBrowseCommand {
             this.recurseFeatures(
               r.child_features[i],
               gff3Stream,
-              attributes,
+              indexAttrs,
               trackID,
-              outPath,
             )
           }
         }
@@ -275,9 +262,8 @@ export default class TextIndex extends JBrowseCommand {
           this.recurseFeatures(
             record.child_features[i],
             gff3Stream,
-            attributes,
+            indexAttrs,
             trackID,
-            outPath,
           )
         }
       }
