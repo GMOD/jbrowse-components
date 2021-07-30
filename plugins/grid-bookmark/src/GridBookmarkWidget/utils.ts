@@ -81,7 +81,7 @@ export function downloadBookmarkFile(
       const locString = assembleLocString(b)
 
       if (fileFormat === 'BED') {
-        if (b.assemblyName === selectedAssembly) {
+        if (b.assemblyName === selectedAssembly || selectedAssembly === 'all') {
           // the "name" column (column 4) in a BED has a max of 255 characters
           // according to the new spec: https://github.com/samtools/hts-specs/pull/570
           return `${b.refName}\t${b.start}\t${b.end}\t${labelVal.slice(
