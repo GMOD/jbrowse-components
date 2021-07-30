@@ -52,7 +52,7 @@
   "aggregateTextSearchAdapters": [
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "TrixAdapter",
+      "textSearchAdapterId": "/KQQTH8tYznZFJ6udRTLDQ==",
       "ixFilePath": {
         "uri": "trix/volvox.ix"
       },
@@ -1457,3 +1457,4 @@
     }
   }
 }
+
