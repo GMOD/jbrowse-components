@@ -20,10 +20,10 @@ export default class TrixTextSearchAdapter
     super(config)
     const ixFilePath = readConfObject(config, 'ixFilePath')
     const ixxFilePath = readConfObject(config, 'ixxFilePath')
-    const metaFilePath = readConfObject(config, 'metaFilePath')
-    if (!metaFilePath) {
-      throw new Error('must provide meta.json')
-    }
+    // const metaFilePath = readConfObject(config, 'metaFilePath')
+    // if (!metaFilePath) {
+    //   throw new Error('must provide meta.json')
+    // }
     if (!ixFilePath) {
       throw new Error('must provide out.ix')
     }
@@ -38,19 +38,20 @@ export default class TrixTextSearchAdapter
     )
   }
 
-  async readMeta() {
-    const meta = readConfObject(this.config, 'metaFilePath')
-    const metadata = (await openLocation(meta).readFile('utf8')) as string
-    return JSON.parse(metadata).indexingAttributes
-  }
+  // async readMeta() {
+  //   const meta = readConfObject(this.config, 'metaFilePath')
+  //   const metadata = (await openLocation(meta).readFile('utf8')) as string
+  //   return JSON.parse(metadata).indexingAttributes
+  // }
 
-  async getAttributes() {
-    if (this.indexingAttributes) {
-      return this.indexingAttributes
-    }
-    this.indexingAttributes = await this.readMeta()
-    return this.indexingAttributes
-  }
+  // async getAttributes() {
+  //   if (this.indexingAttributes) {
+  //     return this.indexingAttributes
+  //   }
+  //   this.indexingAttributes = await this.readMeta()
+  //   return this.indexingAttributes
+  // }
+
   /*
    * Returns list of results
    * @param args - search options/arguments include: search query

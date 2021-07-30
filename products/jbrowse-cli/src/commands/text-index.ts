@@ -87,8 +87,10 @@ export default class TextIndex extends JBrowseCommand {
 
       if (config.length) {
         const id = asm + '-index'
-        const adp = adapters.find(x => x.textSearchAdapterId === id)
-        if (adp && !force) {
+        const adapterAlreadyFound = adapters.find(
+          x => x.textSearchAdapterId === id,
+        )
+        if (adapterAlreadyFound && !force) {
           throw new Error(
             `${asm} has already been indexed with this configuration, use --force to overwrite`,
           )
@@ -100,20 +102,22 @@ export default class TextIndex extends JBrowseCommand {
         // if it already exists it updates the entry and increments the
         // check varible. If the check variable is equal to 0 that means
         // the entry does not exist and creates one.
-        adapters.push({
-          type: 'TrixTextSearchAdapter',
-          textSearchAdapterId: id,
-          ixFilePath: {
-            uri: `trix/${asm}.ix`,
-          },
-          ixxFilePath: {
-            uri: `trix/${asm}.ixx`,
-          },
-          metaFilePath: {
-            uri: `trix/meta.json`,
-          },
-          assemblies: [asm],
-        })
+        if (!adapterAlreadyFound) {
+          adapters.push({
+            type: 'TrixTextSearchAdapter',
+            textSearchAdapterId: id,
+            ixFilePath: {
+              uri: `trix/${asm}.ix`,
+            },
+            ixxFilePath: {
+              uri: `trix/${asm}.ixx`,
+            },
+            metaFilePath: {
+              uri: `trix/meta.json`,
+            },
+            assemblies: [asm],
+          })
+        }
       }
     }
 
