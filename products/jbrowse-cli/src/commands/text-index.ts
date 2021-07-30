@@ -66,9 +66,7 @@ export default class TextIndex extends JBrowseCommand {
 
     const hash: string = crypto
       .createHash('md5')
-      .update(
-        assembliesToIndex.toString() + flags.tracks?.split(','.toString()),
-      )
+      .update(assembliesToIndex.toString() + tracks?.split(','.toString()))
       .digest('base64')
 
     const trixDir = path.join(dir, 'trix')
@@ -173,7 +171,7 @@ export default class TextIndex extends JBrowseCommand {
             break
           }
 
-          const [seq_id, src, type, start, end, , , , col9] = line.split('\t')
+          const [seq_id, , type, start, end, , , , col9] = line.split('\t')
           const locStr = `${seq_id}:${start}..${end}`
 
           if (type !== 'exon' && type !== 'CDS') {
@@ -225,75 +223,6 @@ export default class TextIndex extends JBrowseCommand {
     }
 
     return url.protocol === 'http:' || url.protocol === 'https:'
-  }
-
-  // Recursively goes through every record in the gff3 file and gets the
-  // desired attributes in the form of a JSON object. It is then pushed to
-  // gff3Stream in proper indexing format.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  recurseFeatures(
-    record: any,
-    gff3Stream: Readable,
-    attrs: string[],
-    trackID: string,
-  ) {
-    // goes through the attributes array and checks if the record contains the
-    // attribute that the user wants to search by. If it contains it, it adds
-    // it to the record object and attributes string
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const getAndPushRecord = (subRecord: any) => {
-      if (!subRecord) {
-        return
-      }
-      const { seq_id, start, end, attributes } = subRecord
-      const locStr = `${seq_id}:${start}..${end}`
-      const name = attributes.Name?.[0] || attributes.ID?.[0]
-
-      const entry = []
-      for (const attr of attrs) {
-        const val = subRecord[attr] || attributes?.[attr]
-        if (val) {
-          entry.push(...val)
-        }
-      }
-
-      // create a meta object that has types field compare every array to the
-      // existing types field if it doesnt exist then append add it push the
-      // object to meta.json
-    }
-
-    if (Array.isArray(record)) {
-      record.forEach(r => getAndPushRecord(r))
-    } else {
-      getAndPushRecord(record)
-    }
-
-    // recurses through each record to get child features and parses their
-    // attributes as well
-    if (record?.child_features || record?.[0].child_features) {
-      if (Array.isArray(record)) {
-        for (const r of record) {
-          for (let i = 0; i < record[0].child_features.length; i++) {
-            this.recurseFeatures(
-              r.child_features[i],
-              gff3Stream,
-              attrs,
-              trackID,
-            )
-          }
-        }
-      } else {
-        for (let i = 0; i < record['child_features'].length; i++) {
-          this.recurseFeatures(
-            record.child_features[i],
-            gff3Stream,
-            attrs,
-            trackID,
-          )
-        }
-      }
-    }
   }
 
   // Given a readStream of data, indexes the stream into .ix and .ixx files

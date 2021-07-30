@@ -40,7 +40,9 @@ export default class TrixTextSearchAdapter
     this.ixxUrl = new URL(ixxFilePath.uri, ixxFilePath.baseUri).href
     this.metaUrl = new URL(metaFilePath.uri, metaFilePath.baseUri).href
     this.trixJs = new Trix(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       openLocation(ixxFilePath) as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       openLocation(ixFilePath) as any,
     )
   }

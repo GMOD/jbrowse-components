@@ -73,6 +73,7 @@ export default (pluginManager: PluginManager) => {
       const { aggregateTextSearchAdapters, tracks } = pluginManager.rootModel
         ?.jbrowse as {
         tracks: AnyConfigurationModel[]
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         aggregateTextSearchAdapters: any
       }
 
