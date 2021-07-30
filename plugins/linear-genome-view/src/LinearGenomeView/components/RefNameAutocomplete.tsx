@@ -25,9 +25,7 @@ import {
   InputAdornment,
 } from '@material-ui/core'
 import SearchIcon from '@material-ui/icons/Search'
-import Autocomplete, {
-  createFilterOptions,
-} from '@material-ui/lab/Autocomplete'
+import Autocomplete from '@material-ui/lab/Autocomplete'
 // other
 import { LinearGenomeViewModel } from '..'
 
