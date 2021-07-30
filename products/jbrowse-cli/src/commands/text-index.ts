@@ -47,19 +47,19 @@ export default class TextIndex extends JBrowseCommand {
   async run() {
     const defaultAttributes = ['Name', 'description', 'Note', 'ID']
     const { flags } = this.parse(TextIndex)
-    const outdir = flags.target || flags.out || '.'
-    const isDir = fs.lstatSync(outdir).isDirectory()
-    const target = isDir ? `${outdir}/config.json` : outdir
+    const outFlag = flags.target || flags.out || '.'
+    const isDir = fs.lstatSync(outFlag).isDirectory()
+    const target = isDir ? `${outFlag}/config.json` : outFlag
+    const dir = path.dirname(target)
 
-    const configDirectory = path.dirname(target)
     const config: Config = JSON.parse(fs.readFileSync(target, 'utf8'))
     const assembliesToIndex =
       flags.assemblies?.split(',') || config.assemblies?.map(a => a.name) || []
     const adapters = config.aggregateTextSearchAdapters || []
 
-    const dir = path.join(outdir, 'trix')
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir)
+    const trixDir = path.join(dir, 'trix')
+    if (!fs.existsSync(trixDir)) {
+      fs.mkdirSync(trixDir)
     }
 
     for (const asm of assembliesToIndex) {
@@ -68,7 +68,7 @@ export default class TextIndex extends JBrowseCommand {
       this.log('Indexing assembly ' + asm + '...')
 
       if (config.length) {
-        await this.indexDriver(config, defaultAttributes, configDirectory, asm)
+        await this.indexDriver(config, defaultAttributes, dir, asm)
 
         adapters.push({
           type: 'TrixTextSearchAdapter',
