@@ -171,7 +171,6 @@ const stateModelFactory = (
           }
           return openLocationPromise
         },
-
         setAuthorizationCode(code: string) {
           self.authorizationCode = code
         },

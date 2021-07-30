@@ -1516,6 +1516,13 @@
       "authHeader": "X-Auth-Token",
       "origin": "GDC",
       "customEndpoint": "http://localhost:8010/proxy"
+    },
+    {
+      "type": "HTTPBasicInternetAccount",
+      "internetAccountId": "HTTPBasicTest",
+      "name": "HTTPBasic",
+      "description": "HTTPBasic",
+      "validDomains": ["httpbasic.com"]
     }
   ]
 }

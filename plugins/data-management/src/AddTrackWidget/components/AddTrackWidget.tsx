@@ -78,7 +78,6 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
         sequenceAdapter: getConf(assemblyInstance, ['sequence', 'adapter']),
       },
     })
-    console.log(model.trackAdapter)
     if (model.view) {
       model.view.showTrack(trackId)
     } else {

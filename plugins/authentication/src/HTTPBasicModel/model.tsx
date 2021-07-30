@@ -3,29 +3,22 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { FileLocation, AuthLocation } from '@jbrowse/core/util/types'
+
+import { getRoot } from 'mobx-state-tree'
 import { HTTPBasicInternetAccountConfigModel } from './configSchema'
 import { Instance, types } from 'mobx-state-tree'
 import React, { useState } from 'react'
 import Button from '@material-ui/core/Button'
-import { makeStyles } from '@material-ui/core/styles'
+import Dialog from '@material-ui/core/Dialog'
 import DialogContent from '@material-ui/core/DialogContent'
-import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import DialogActions from '@material-ui/core/DialogActions'
-import Divider from '@material-ui/core/Divider'
 import TextField from '@material-ui/core/TextField'
-import ErrorIcon from '@material-ui/icons/Error'
 
 interface Account {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
 }
-
-const useStyles = makeStyles(theme => ({
-  errorIcon: {
-    marginRight: theme.spacing(2),
-  },
-}))
 
 const stateModelFactory = (
   pluginManager: PluginManager,
@@ -66,40 +59,62 @@ const stateModelFactory = (
       setBase64Password(password: string) {
         self.base64password = btoa(password)
       },
-      setTokenInfo() {
-        sessionStorage.setItem(
-          `${self.internetAccountId}-token`,
-          `${self.base64username}:${self.base64password}`,
-        )
-      },
-      async openLocation(location: FileLocation) {
-        // notes:
-        // need a field to enter a username and password
-        // this has to be a dialog box with input fields
-        // and the input password field needs to have those security settings
-        // and able to autofill with lastpass/google
-        // will have to resolve the promise in the "Ok" of the dialog box
-        // check out https://github.com/GMOD/jbrowse-plugin-apollo/blob/login/src/components/LoginForm.tsx
-        // for a simple login form
-        // then base64 encode the entry to the form
-        // create the auth header such as "Authorization": "Basic base64user:base64pass"
-        // and then call the resource
-
-        this.setTokenInfo()
-      },
-      async handleRpcMethodCall(
-        location: FileLocation,
-        authenticationInfoMap: Record<string, string>,
-        args: {},
-      ) {
-        const token = authenticationInfoMap[self.internetAccountId]
-        if (!token) {
-          await this.openLocation(location)
-        } // just need to generate token, don't need to edit any args
-
-        return args
-      },
     }))
+    .actions(self => {
+      let resolve: Function = () => {}
+      let reject: Function = () => {}
+      let openLocationPromise: Promise<string> | undefined = undefined
+      return {
+        setTokenInfo() {
+          if (self.base64username && self.base64password) {
+            sessionStorage.setItem(
+              `${self.internetAccountId}-token`,
+              `${self.base64username}:${self.base64password}`,
+            )
+            resolve()
+          } else {
+            reject()
+          }
+          resolve = () => {}
+          reject = () => {}
+        },
+        handleClose() {
+          const { session } = getRoot(self)
+          this.setTokenInfo()
+          session.setDialogComponent(undefined, undefined)
+        },
+
+        async openLocation(location: FileLocation) {
+          if (!openLocationPromise) {
+            openLocationPromise = new Promise(async (r, x) => {
+              const { session } = getRoot(self)
+              session.setDialogComponent(HTTPBasicLoginForm, {
+                internetAccountId: self.internetAccountId,
+                setUser: self.setBase64Username,
+                setPass: self.setBase64Password,
+                handleClose: this.handleClose,
+              })
+              resolve = r
+              reject = x
+            })
+          }
+
+          return openLocationPromise
+        },
+        async handleRpcMethodCall(
+          location: FileLocation,
+          authenticationInfoMap: Record<string, string>,
+          args: {},
+        ) {
+          const token = authenticationInfoMap[self.internetAccountId]
+          if (!token) {
+            await this.openLocation(location)
+          }
+
+          return args
+        },
+      }
+    })
 }
 
 const HTTPBasicLoginForm = ({
@@ -113,44 +128,21 @@ const HTTPBasicLoginForm = ({
   setPass: (arg: string) => void
   handleClose: () => void
 }) => {
-  const classes = useStyles()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [confirmed, setConfirmed] = useState(false)
-  const [error, setError] = useState('')
-
-  function handleConfirm(event: React.FormEvent<HTMLFormElement>) {
-    if (error) {
-      setError('')
-    }
-    setConfirmed(true)
-    event.preventDefault()
-  }
-
-  function handleUsernameChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
-    if (error) {
-      setError('')
-    }
-    setUsername(event.target.value)
-  }
-
-  function handlePasswordChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
-    if (error) {
-      setError('')
-    }
-    setPassword(event.target.value)
-  }
 
   return (
     <>
-      <DialogTitle>Log In for {internetAccountId}</DialogTitle>
-      <form onSubmit={handleConfirm}>
+      <Dialog open maxWidth="xl" data-testid="login-httpbasic">
+        <DialogTitle>Log In for {internetAccountId}</DialogTitle>
         <DialogContent style={{ display: 'flex', flexDirection: 'column' }}>
           <TextField
             required
             label="Username"
             variant="outlined"
-            onChange={handleUsernameChange}
+            onChange={event => {
+              setUsername(event.target.value)
+            }}
             margin="dense"
           />
           <TextField
@@ -159,7 +151,9 @@ const HTTPBasicLoginForm = ({
             type="password"
             autoComplete="current-password"
             variant="outlined"
-            onChange={handlePasswordChange}
+            onChange={event => {
+              setPassword(event.target.value)
+            }}
             margin="dense"
           />
         </DialogContent>
@@ -168,10 +162,13 @@ const HTTPBasicLoginForm = ({
             variant="contained"
             color="primary"
             type="submit"
+            disabled={!username || !password}
             onClick={() => {
-              setUser(username)
-              setPass(password)
-              handleClose()
+              if (username && password) {
+                setUser(username)
+                setPass(password)
+                handleClose()
+              }
             }}
           >
             Submit
@@ -180,15 +177,7 @@ const HTTPBasicLoginForm = ({
             Cancel
           </Button>
         </DialogActions>
-      </form>
-      {error ? (
-        <div>
-          <DialogContentText color="error">
-            <ErrorIcon className={classes.errorIcon} />
-            {error}
-          </DialogContentText>
-        </div>
-      ) : null}
+      </Dialog>
     </>
   )
 }

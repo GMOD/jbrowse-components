@@ -12,6 +12,12 @@ function HTTPBasicConfigFactory(pluginManager: PluginManager) {
         type: 'string',
         defaultValue: 'Authorization',
       },
+      validDomains: {
+        description:
+          'array of valid domains the url can contain to use this account. Empty = all domains',
+        type: 'stringArray',
+        defaultValue: [],
+      },
     },
     {
       baseConfiguration: createInternetAccountConfig(pluginManager),

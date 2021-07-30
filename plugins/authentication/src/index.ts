@@ -1,5 +1,3 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { createInternetAccountConfig } from '@jbrowse/core/pluggableElementTypes/models'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import InternetAccountType from '@jbrowse/core/pluggableElementTypes/InternetAccountType'
