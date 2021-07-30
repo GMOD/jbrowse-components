@@ -12,12 +12,6 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 export default class TrixTextSearchAdapter
   extends BaseAdapter
   implements BaseTextSearchAdapter {
-  ixUrl: string
-
-  ixxUrl: string
-
-  metaUrl: string
-
   indexingAttributes?: string[]
   trixJs: Trix
   tracksNames?: string[]
@@ -36,9 +30,6 @@ export default class TrixTextSearchAdapter
     if (!ixxFilePath) {
       throw new Error('must provide out.ixx')
     }
-    this.ixUrl = new URL(ixFilePath.uri, ixFilePath.baseUri).href
-    this.ixxUrl = new URL(ixxFilePath.uri, ixxFilePath.baseUri).href
-    this.metaUrl = new URL(metaFilePath.uri, metaFilePath.baseUri).href
     this.trixJs = new Trix(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       openLocation(ixxFilePath) as any,
