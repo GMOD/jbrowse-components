@@ -579,9 +579,7 @@ export default class PluginManager {
         try {
           accumulator = callback(accumulator)
         } catch (error) {
-          console.error(
-            `Skipping failed extension for extension point "${extensionPointName}"`,
-          )
+          console.error(error)
         }
       }
     }
