@@ -46,6 +46,11 @@ export default class TextIndex extends JBrowseCommand {
       description:
         'Specify the assembl(ies) to create an index for. If unspecified, creates an index for each assembly in the config',
     }),
+    quiet: flags.boolean({
+      char: 'q',
+      default: false,
+      description: 'Hide the progress bars',
+    }),
   }
 
   // Called when running the terminal command. Parses the given flags and
@@ -53,7 +58,7 @@ export default class TextIndex extends JBrowseCommand {
   // file parser to be indexed
   async run() {
     const {
-      flags: { out, target, tracks, assemblies, attributes },
+      flags: { out, target, tracks, assemblies, attributes, quiet },
     } = this.parse(TextIndex)
     const outFlag = target || out || '.'
     const confFile = fs.lstatSync(outFlag).isDirectory()
@@ -82,7 +87,7 @@ export default class TextIndex extends JBrowseCommand {
       this.log('Indexing assembly ' + asm + '...')
 
       if (config.length) {
-        await this.indexDriver(config, attributes.split(','), dir, asm)
+        await this.indexDriver(config, attributes.split(','), dir, asm, quiet)
 
         // Checks through list of configs and checks the hash values
         // if it already exists it updates the entry and increments the
@@ -134,8 +139,11 @@ export default class TextIndex extends JBrowseCommand {
     attributes: string[],
     out: string,
     assemblyName: string,
+    quiet: boolean,
   ) {
-    const readable = Readable.from(this.indexFile(configs, attributes, out))
+    const readable = Readable.from(
+      this.indexFile(configs, attributes, out, quiet),
+    )
     return this.runIxIxx(readable, out, assemblyName)
   }
 
@@ -143,6 +151,7 @@ export default class TextIndex extends JBrowseCommand {
     configs: Track[],
     attributes: string[],
     outLocation: string,
+    quiet: boolean,
   ) {
     for (const config of configs) {
       const {
@@ -150,18 +159,17 @@ export default class TextIndex extends JBrowseCommand {
       } = config
 
       if (type === 'Gff3TabixAdapter') {
-        this.indexGff3(config, attributes, outLocation)
+        yield* this.indexGff3(config, attributes, outLocation, quiet)
       }
     }
   }
 
-  async *indexGff3(config: Track, attributes: string[], outLocation: string) {
-    const progressBar = new SingleBar(
-      {
-        format: '{bar} {percentage}% | ETA: {eta}s',
-      },
-      Presets.shades_classic,
-    )
+  async *indexGff3(
+    config: Track,
+    attributes: string[],
+    outLocation: string,
+    quiet: boolean,
+  ) {
     const {
       adapter: {
         gffGzLocation: { uri },
@@ -169,21 +177,35 @@ export default class TextIndex extends JBrowseCommand {
       trackId,
     } = config
 
+    // progress bar code was aided by blog post at
+    // https://webomnizz.com/download-a-file-with-progressbar-using-node-js/
+    const progressBar = new SingleBar(
+      {
+        format: '{bar} ' + trackId + ' {percentage}% | ETA: {eta}s',
+      },
+      Presets.shades_classic,
+    )
+
     let fileDataStream
     let totalBytes
     let receivedBytes = 0
     if (this.isURL(uri)) {
       fileDataStream = await this.createRemoteStream(uri)
       totalBytes = fileDataStream.headers['content-length']
-
-      progressBar.start(totalBytes, 0)
-      fileDataStream.on('data', chunk => {
-        receivedBytes += chunk.length
-        progressBar.update(receivedBytes)
-      })
     } else {
-      fileDataStream = fs.createReadStream(path.join(outLocation, uri))
+      const filename = path.join(outLocation, uri)
+      totalBytes = fs.statSync(filename).size
+      fileDataStream = fs.createReadStream(filename)
     }
+
+    if (!quiet) {
+      progressBar.start(totalBytes, 0)
+    }
+
+    fileDataStream.on('data', chunk => {
+      receivedBytes += chunk.length
+      progressBar.update(receivedBytes)
+    })
 
     const gzStream = uri.endsWith('.gz')
       ? fileDataStream.pipe(createGunzip())
@@ -215,10 +237,9 @@ export default class TextIndex extends JBrowseCommand {
           .trim()
 
         if (name || id) {
-          const buff = Buffer.from(JSON.stringify([locStr, trackId, name, id]))
-          yield `${buff.toString('base64')} ${[...new Set([name, id])].join(
-            ' ',
-          )}\n`
+          const record = JSON.stringify([locStr, trackId, name, id])
+          const buff = Buffer.from(record).toString('base64')
+          yield `${buff} ${[...new Set([name, id])].join(' ')}\n`
         }
       }
     }
