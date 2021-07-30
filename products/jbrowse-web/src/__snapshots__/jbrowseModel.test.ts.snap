@@ -30,7 +30,7 @@ Object {
       "metaFilePath": Object {
         "uri": "trix/meta.json",
       },
-      "textSearchAdapterId": "/KQQTH8tYznZFJ6udRTLDQ==",
+      "textSearchAdapterId": "volvox-index",
       "type": "TrixTextSearchAdapter",
     },
   ],
