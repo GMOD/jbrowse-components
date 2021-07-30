@@ -81,7 +81,7 @@ export default class TextIndex extends JBrowseCommand {
         for (const x in adapters) {
           if (adapters[x].textSearchAdapterId === hash) {
             adapters[x].ixFilePath.uri = `trix/${asm}.ix`
-            adapters[x].ixFilePath.uri = `trix/${asm}.ixx`
+            adapters[x].ixxFilePath.uri = `trix/${asm}.ixx`
             adapters[x].metaFilePath.uri = `trix/meta.json`
             check++
           }
