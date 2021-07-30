@@ -154,23 +154,25 @@ export default class TextIndex extends JBrowseCommand {
           const [seq_id, src, type, start, end, , , , col9] = line.split('\t')
           const locStr = `${seq_id}:${start}..${end}`
 
-          const col9attrs = col9.split(';')
-          const name = col9attrs
-            .find(f => f.startsWith('Name'))
-            ?.split('=')[1]
-            .trim()
-          const id = col9attrs
-            .find(f => f.startsWith('ID'))
-            ?.split('=')[1]
-            .trim()
+          if (type !== 'exon' && type !== 'CDS') {
+            const col9attrs = col9.split(';')
+            const name = col9attrs
+              .find(f => f.startsWith('Name'))
+              ?.split('=')[1]
+              .trim()
+            const id = col9attrs
+              .find(f => f.startsWith('ID'))
+              ?.split('=')[1]
+              .trim()
 
-          if (name || id) {
-            const buff = Buffer.from(
-              JSON.stringify([locStr, trackId, name, id]),
-            )
-            yield `${buff.toString('base64')} ${[...new Set([name, id])].join(
-              ' ',
-            )}\n`
+            if (name || id) {
+              const buff = Buffer.from(
+                JSON.stringify([locStr, trackId, name, id]),
+              )
+              yield `${buff.toString('base64')} ${[...new Set([name, id])].join(
+                ' ',
+              )}\n`
+            }
           }
         }
       }

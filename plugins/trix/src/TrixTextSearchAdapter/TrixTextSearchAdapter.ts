@@ -77,10 +77,10 @@ export default class TrixTextSearchAdapter
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formatResults(results: Array<any>) {
     return results.map(result => {
-      const [locString, trackId, label] = result
+      const [locString, trackId, name, id] = result
       return new LocStringResult({
         locString,
-        label,
+        label: name || id,
         matchedAttribute: 'name',
         matchedObject: result,
         trackId,

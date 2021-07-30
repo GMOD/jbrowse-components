@@ -67,41 +67,39 @@ export default (pluginManager: PluginManager) => {
      */
     relevantAdapters(searchScope: SearchScope) {
       // Note: (in the future we can add a condition to check if not aggregate
-      // only return track text search adapters that cover relevant tracks,
-      // for now only returning text search adapters that cover configured assemblies)
-      // root level adapters and track adapters
-      const { aggregateTextSearchAdapters, tracks } = pluginManager.rootModel // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ?.jbrowse as any
-      let trackTextSearchAdapters: AnyConfigurationModel[] = []
-      tracks.forEach((trackConfig: AnyConfigurationModel) => {
-        const trackTextSearchAdapter = trackConfig.textSearchAdapter
-        if (trackTextSearchAdapter.textSearchAdapterId !== 'placeholderId') {
-          trackTextSearchAdapters.push(trackTextSearchAdapter)
-        }
-      })
+      // only return track text search adapters that cover relevant tracks, for
+      // now only returning text search adapters that cover configured
+      // assemblies) root level adapters and track adapters
+      const { aggregateTextSearchAdapters, tracks } = pluginManager.rootModel
+        ?.jbrowse as {
+        tracks: AnyConfigurationModel[]
+        aggregateTextSearchAdapters: any
+      }
+
       // get adapters that cover assemblies
       const rootTextSearchAdapters = this.getAdaptersWithAssembly(
         searchScope.assemblyName,
         aggregateTextSearchAdapters,
       )
-      trackTextSearchAdapters = this.getAdaptersWithAssembly(
+      const trackTextSearchAdapters = this.getAdaptersWithAssembly(
         searchScope.assemblyName,
-        trackTextSearchAdapters,
+        tracks.filter(
+          track =>
+            track.textSearchAdapter.textSearchAdapterId !== 'placeholderId',
+        ),
       )
-      return rootTextSearchAdapters.concat(trackTextSearchAdapters)
+      return [...rootTextSearchAdapters, ...trackTextSearchAdapters]
     }
 
     getAdaptersWithAssembly(
       searchScopeAssemblyName: string,
       adapterList: AnyConfigurationModel[],
     ) {
-      const adaptersWithAssemblies = adapterList.filter(
-        (adapterConfig: AnyConfigurationModel) => {
-          const adapterAssemblies = readConfObject(adapterConfig, 'assemblies')
-          return adapterAssemblies?.includes(searchScopeAssemblyName)
-        },
+      return adapterList.filter(adapterConfig =>
+        readConfObject(adapterConfig, 'assemblies')?.includes(
+          searchScopeAssemblyName,
+        ),
       )
-      return adaptersWithAssemblies
     }
 
     /**
@@ -112,23 +110,16 @@ export default (pluginManager: PluginManager) => {
     async search(
       args: BaseArgs,
       searchScope: SearchScope,
-      rankSearchResults: (results: BaseResult[]) => BaseResult[],
+      rankFn: (results: BaseResult[]) => BaseResult[],
     ) {
       // determine list of relevant adapters based on scope
       this.textSearchAdapters = this.loadTextSearchAdapters(searchScope)
-      const results: Array<BaseResult[]> = await Promise.all(
-        this.textSearchAdapters.map(async adapter => {
-          // search with given search args
-          const currentResults: BaseResult[] = await adapter.searchIndex(args)
-          return currentResults
-        }),
+      const results = await Promise.all(
+        this.textSearchAdapters.map(adapter => adapter.searchIndex(args)),
       )
 
       // aggregate and return relevant results
-      const relevantResults = this.sortResults(
-        results.flat(),
-        rankSearchResults,
-      )
+      const relevantResults = this.sortResults(results.flat(), rankFn)
 
       if (args.limit && relevantResults.length > 0) {
         return relevantResults.slice(0, args.limit)
@@ -139,30 +130,16 @@ export default (pluginManager: PluginManager) => {
     /**
      * Returns array of revelevant and sorted results
      * @param results - array of results from all text search adapters
-     * @param rankSearchResults - function that updates results scores
+     * @param rankFn - function that updates results scores
      * based on more relevance
      */
     sortResults(
       results: BaseResult[],
-      rankSearchResults: (results: BaseResult[]) => BaseResult[],
+      rankFn: (results: BaseResult[]) => BaseResult[],
     ) {
-      // first sort results in alphabetical order
-      const sortedResults = results.sort(
-        (a, b) => -b.getLabel().localeCompare(a.getLabel()),
-      )
-      // sort results based on score
-      const sortedScoredResults = rankSearchResults(sortedResults).sort(
-        function (result1: BaseResult, result2: BaseResult) {
-          if (result1.getScore() < result2.getScore()) {
-            return 1
-          }
-          if (result1.getScore() > result2.getScore()) {
-            return -1
-          }
-          return 0
-        },
-      )
-      return sortedScoredResults
+      return rankFn(
+        results.sort((a, b) => -b.getLabel().localeCompare(a.getLabel())),
+      ).sort((result1, result2) => result1.getScore() - result2.getScore())
     }
   }
 }
