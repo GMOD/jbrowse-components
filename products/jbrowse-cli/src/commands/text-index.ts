@@ -90,8 +90,8 @@ export default class TextIndex extends JBrowseCommand {
           x => x.textSearchAdapterId === id,
         )
         if (adapterAlreadyFound && !force) {
-          throw new Error(
-            `${asm} has already been indexed with this configuration, use --force to overwrite`,
+          this.log(
+            `Note: ${asm} has already been indexed with this configuration, use --force to overwrite this assembly. Skipping for now`,
           )
         }
 
