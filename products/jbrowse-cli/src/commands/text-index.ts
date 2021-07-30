@@ -231,11 +231,16 @@ export default class TextIndex extends JBrowseCommand {
           .find(f => f.startsWith('ID'))
           ?.split('=')[1]
           .trim()
-
+        const attrs = attributes.map(attr =>
+          col9attrs
+            .find(f => f.startsWith(attr))
+            ?.split('=')[1]
+            .trim(),
+        )
         if (name || id) {
           const record = JSON.stringify([locStr, trackId, name, id])
           const buff = Buffer.from(record).toString('base64')
-          yield `${buff} ${[...new Set([name, id])].join(' ')}\n`
+          yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
         }
       }
     }
