@@ -568,20 +568,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
             `could not find a compatible display for view type ${self.type}`,
           )
         }
-        const track = trackType.stateModel.create({
-          ...initialSnapshot,
-          type: configuration.type,
-          configuration,
-          displays: [
-            {
-              type: displayConf.type,
-              configuration: displayConf,
-              ...displayInitialSnapshot,
-            },
-          ],
-        })
-        self.tracks.push(track)
-        return track
+
+        const shownTracks = self.tracks.filter(
+          t => t.configuration === configuration,
+        )
+        if (shownTracks.length === 0) {
+          const track = trackType.stateModel.create({
+            ...initialSnapshot,
+            type: configuration.type,
+            configuration,
+            displays: [
+              {
+                type: displayConf.type,
+                configuration: displayConf,
+                ...displayInitialSnapshot,
+              },
+            ],
+          })
+          self.tracks.push(track)
+          return track
+        }
+        return shownTracks[0]
       },
 
       hideTrack(trackId: string) {
