@@ -171,7 +171,7 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
           if (results.length === 1) {
             newRegionValue = results[0].getLocation()
             const trackId = results[0].getTrackId()
-            trackId && model.showTrack(trackId)
+            trackId && model.displayTrack(trackId)
           }
           try {
             newRegionValue !== '' && model.navToLocString(newRegionValue)

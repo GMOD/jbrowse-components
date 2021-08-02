@@ -642,6 +642,24 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
+      displayTrack(trackId: string) {
+        const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
+          'track',
+        )
+        const configuration = resolveIdentifier(
+          trackConfigSchema,
+          getRoot(self),
+          trackId,
+        )
+        // if we have any tracks with that configuration, turn them off
+        const shownTracks = self.tracks.filter(
+          t => t.configuration === configuration,
+        )
+        if (shownTracks.length === 0) {
+          self.showTrack(trackId)
+        }
+      },
+
       setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
         self.trackLabels = setting
       },
