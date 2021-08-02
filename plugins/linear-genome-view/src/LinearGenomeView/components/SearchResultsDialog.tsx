@@ -83,21 +83,6 @@ export default function SearchResultsDialog({
       session.notify(`${e}`, 'warning')
     }
   }
-  function handleShowTrack(trackId: string) {
-    const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
-    const configuration = resolveIdentifier(
-      trackConfigSchema,
-      getRoot(model),
-      trackId,
-    )
-    // check if we have any tracks with that configuration
-    const shownTracks = model.tracks.filter(
-      t => t.configuration === configuration,
-    )
-    if (shownTracks.length === 0) {
-      model.showTrack(trackId)
-    }
-  }
 
   function getTrackName(trackId: string | undefined) {
     if (trackId) {
@@ -184,7 +169,7 @@ export default function SearchResultsDialog({
                             handleClick(result.getLocation())
                             const resultTrackId = result.getTrackId()
                             if (resultTrackId) {
-                              handleShowTrack(resultTrackId)
+                              model.displayTrack(resultTrackId)
                             }
                             handleClose()
                           }}
