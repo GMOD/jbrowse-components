@@ -1,3 +1,74 @@
+## 1.3.3 (2021-08-02)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                         |
+| --------------------------------------- | ---------------------------------------------------------------- |
+| @jbrowse/core                           | https://www.npmjs.com/package/@jbrowse/core                      |
+| @jbrowse/plugin-alignments              | https://www.npmjs.com/package/@jbrowse/plugin-alignments         |
+| @jbrowse/plugin-breakpoint-split-view   |                                                                  |
+| @jbrowse/plugin-circular-view           | https://www.npmjs.com/package/@jbrowse/plugin-circular-view      |
+| @jbrowse/plugin-config                  | https://www.npmjs.com/package/@jbrowse/plugin-config             |
+| @jbrowse/plugin-data-management         | https://www.npmjs.com/package/@jbrowse/plugin-data-management    |
+| @jbrowse/plugin-dotplot-view            |                                                                  |
+| @jbrowse/plugin-filtering               |                                                                  |
+| @jbrowse/plugin-gff3                    | https://www.npmjs.com/package/@jbrowse/plugin-gff3               |
+| @jbrowse/plugin-hic                     |                                                                  |
+| @jbrowse/plugin-legacy-jbrowse          | https://www.npmjs.com/package/@jbrowse/plugin-legacy-jbrowse     |
+| @jbrowse/plugin-linear-comparative-view |                                                                  |
+| @jbrowse/plugin-linear-genome-view      | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view |
+| @jbrowse/plugin-lollipop                |                                                                  |
+| @jbrowse/plugin-menus                   |                                                                  |
+| @jbrowse/plugin-sequence                | https://www.npmjs.com/package/@jbrowse/plugin-sequence           |
+| @jbrowse/plugin-spreadsheet-view        |                                                                  |
+| @jbrowse/plugin-sv-inspector            |                                                                  |
+| @jbrowse/plugin-svg                     | https://www.npmjs.com/package/@jbrowse/plugin-svg                |
+| @jbrowse/plugin-trackhub-registry       |                                                                  |
+| @jbrowse/plugin-variants                | https://www.npmjs.com/package/@jbrowse/plugin-variants           |
+| @jbrowse/plugin-wiggle                  | https://www.npmjs.com/package/@jbrowse/plugin-wiggle             |
+| @jbrowse/cli                            | https://www.npmjs.com/package/@jbrowse/cli                       |
+| @jbrowse/desktop                        |                                                                  |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view  |
+| @jbrowse/web                            |                                                                  |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- Other
+  - [#2127](https://github.com/GMOD/jbrowse-components/pull/2127) Add example dataset for COLO829 ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#2141](https://github.com/GMOD/jbrowse-components/pull/2141) Update to @material-ui/core@4.12.2 ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2126](https://github.com/GMOD/jbrowse-components/pull/2126) Allow opening plaintext .vcf files from the "Add track" workflow ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#2159](https://github.com/GMOD/jbrowse-components/pull/2159) Stop local storage quota-exceeded errors preventing the app from starting ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2161](https://github.com/GMOD/jbrowse-components/pull/2161) Remove outline from clicking on SVG chord tracks ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2157](https://github.com/GMOD/jbrowse-components/pull/2157) Fix rendering of negative strand alignment modifications/methylation ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2131](https://github.com/GMOD/jbrowse-components/pull/2131) Fix mouseovers/click handlers after "force load" button pressed ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2128](https://github.com/GMOD/jbrowse-components/pull/2128) Fix using the "Color by modifications" setting on files that need ref renaming ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2115](https://github.com/GMOD/jbrowse-components/pull/2115) Fix bug where sometimes plugin could not be removed from UI ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#2119](https://github.com/GMOD/jbrowse-components/pull/2119) Fix loading indicator on the reference sequence selector getting stuck ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#2101](https://github.com/GMOD/jbrowse-components/pull/2101) Fix behavior of the end-of-list indicator in refNameAutocomplete to always display as a disabled item ([@teresam856](https://github.com/teresam856))
+
+#### :house: Internal
+
+- Other
+  - [#2152](https://github.com/GMOD/jbrowse-components/pull/2152) Remove storybook symlink workaround ([@garrettjstevens](https://github.com/garrettjstevens))
+- `core`
+  - [#2099](https://github.com/GMOD/jbrowse-components/pull/2099) Use rbush data structure for layout of feature tracks ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 3
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+- Teresa Martinez ([@teresam856](https://github.com/teresam856))
+
 ## 1.3.2 (2021-07-07)
 
 <details><summary>Packages in this release</summary>
