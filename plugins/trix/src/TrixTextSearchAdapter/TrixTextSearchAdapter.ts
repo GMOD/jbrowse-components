@@ -35,6 +35,7 @@ export default class TrixTextSearchAdapter
       openLocation(ixxFilePath) as any,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       openLocation(ixFilePath) as any,
+      200,
     )
   }
 
