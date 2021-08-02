@@ -39,7 +39,7 @@ function LockedPlugin() {
   return (
     <Tooltip
       style={{ marginRight: '0.5rem' }}
-      title="This plugin was installed by an admin. It cannot be removed."
+      title="This plugin was installed by an administrator, you cannot remove it."
     >
       <LockIcon />
     </Tooltip>
