@@ -169,7 +169,7 @@ export default function SearchResultsDialog({
                             handleClick(result.getLocation())
                             const resultTrackId = result.getTrackId()
                             if (resultTrackId) {
-                              model.displayTrack(resultTrackId)
+                              model.showTrack(resultTrackId)
                             }
                             handleClose()
                           }}

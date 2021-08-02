@@ -568,20 +568,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
             `could not find a compatible display for view type ${self.type}`,
           )
         }
-        const track = trackType.stateModel.create({
-          ...initialSnapshot,
-          type: configuration.type,
-          configuration,
-          displays: [
-            {
-              type: displayConf.type,
-              configuration: displayConf,
-              ...displayInitialSnapshot,
-            },
-          ],
-        })
-        self.tracks.push(track)
-        return track
+
+        const shownTracks = self.tracks.filter(
+          t => t.configuration === configuration,
+        )
+        if (shownTracks.length === 0) {
+          const track = trackType.stateModel.create({
+            ...initialSnapshot,
+            type: configuration.type,
+            configuration,
+            displays: [
+              {
+                type: displayConf.type,
+                configuration: displayConf,
+                ...displayInitialSnapshot,
+              },
+            ],
+          })
+          self.tracks.push(track)
+          return track
+        }
+        return shownTracks[0]
       },
 
       hideTrack(trackId: string) {
@@ -638,24 +645,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const hiddenCount = self.hideTrack(trackId)
         // if none had that configuration, turn one on
         if (!hiddenCount) {
-          self.showTrack(trackId)
-        }
-      },
-
-      displayTrack(trackId: string) {
-        const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
-          'track',
-        )
-        const configuration = resolveIdentifier(
-          trackConfigSchema,
-          getRoot(self),
-          trackId,
-        )
-        // if we have any tracks with that configuration, turn them off
-        const shownTracks = self.tracks.filter(
-          t => t.configuration === configuration,
-        )
-        if (shownTracks.length === 0) {
           self.showTrack(trackId)
         }
       },

@@ -115,7 +115,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
         if (results.length === 1) {
           input = results[0].getLocation()
           const trackId = results[0].getTrackId()
-          trackId && model.displayTrack(trackId)
+          trackId && model.showTrack(trackId)
         }
         try {
           input && model.navToLocString(input, assemblyName)
