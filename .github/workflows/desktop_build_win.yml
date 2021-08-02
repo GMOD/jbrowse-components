@@ -35,6 +35,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
     - name: Copy desktop Windows build to S3
-        run: |
-          cd products/jbrowse-desktop/dist && zip -r "jbrowse-desktop-windows-build-test.zip" . && cd -
-          aws s3 sync --delete products/jbrowse-desktop/dist s3://jbrowse.org/code/jb2/desktop-build-test
+      run: |
+        cd products/jbrowse-desktop/dist && zip -r "jbrowse-desktop-windows-build-test.zip" . && cd -
+        aws s3 sync --delete products/jbrowse-desktop/dist s3://jbrowse.org/code/jb2/desktop-build-test
