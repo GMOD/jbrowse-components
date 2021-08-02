@@ -95,7 +95,7 @@
     "cross-spawn": "^7.0.1",
     "del": "^5.1.0",
     "dependency-graph": "^0.9.0",
-    "electron": "9.4.0",
+    "electron": "13.1.2",
     "electron-builder": "^22.1.0",
     "electron-mock-ipc": "^0.3.8",
     "eslint-config-airbnb-typescript": "^7.0.0",

@@ -236,11 +236,7 @@ export const BaseLinearDisplay = types
       self.featureIdUnderMouse = feature
     },
     reload() {
-      const temp = JSON.parse(JSON.stringify(self.blockState))
-      Object.keys(temp).forEach(blockState => {
-        temp[blockState].key += '-reload'
-      })
-      self.blockState = temp
+      ;[...self.blockState.values()].map(val => val.doReload())
     },
     addAdditionalContextMenuItemCallback(callback: Function) {
       self.additionalContextMenuItemCallbacks.push(callback)

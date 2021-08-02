@@ -411,24 +411,41 @@ export default class PileupRenderer extends BoxRendererType {
       if (i >= 0 && i < methBins.length) {
         const l1 = regionSequence[i].toLowerCase()
         const l2 = regionSequence[i + 1].toLowerCase()
-        // color
-        if (l1 === 'c' && l2 === 'g') {
-          const s = rstart + i
-          const [leftPx, rightPx] = bpSpanPx(s, s + 1, region, bpPerPx)
-          if (methBins[i]) {
-            ctx.fillStyle = 'red'
-          } else {
-            ctx.fillStyle = 'blue'
-          }
-          ctx.fillRect(leftPx, topPx, rightPx - leftPx + 0.5, heightPx)
 
-          const [leftPx2, rightPx2] = bpSpanPx(s + 1, s + 2, region, bpPerPx)
-          if (methBins[i + 1]) {
-            ctx.fillStyle = 'red'
-          } else {
-            ctx.fillStyle = 'blue'
+        // if we are zoomed out, display just a block over the cpg
+        if (bpPerPx > 2) {
+          if (l1 === 'c' && l2 === 'g') {
+            const s = rstart + i
+            const [leftPx, rightPx] = bpSpanPx(s, s + 2, region, bpPerPx)
+            if (methBins[i] || methBins[i + 1]) {
+              ctx.fillStyle = 'red'
+            } else {
+              ctx.fillStyle = 'blue'
+            }
+            ctx.fillRect(leftPx, topPx, rightPx - leftPx + 0.5, heightPx)
           }
-          ctx.fillRect(leftPx2, topPx, rightPx2 - leftPx2 + 0.5, heightPx)
+        }
+        // if we are zoomed in, color the c inside the cpg
+        else {
+          // color
+          if (l1 === 'c' && l2 === 'g') {
+            const s = rstart + i
+            const [leftPx, rightPx] = bpSpanPx(s, s + 1, region, bpPerPx)
+            if (methBins[i]) {
+              ctx.fillStyle = 'red'
+            } else {
+              ctx.fillStyle = 'blue'
+            }
+            ctx.fillRect(leftPx, topPx, rightPx - leftPx + 0.5, heightPx)
+
+            const [leftPx2, rightPx2] = bpSpanPx(s + 1, s + 2, region, bpPerPx)
+            if (methBins[i + 1]) {
+              ctx.fillStyle = 'red'
+            } else {
+              ctx.fillStyle = 'blue'
+            }
+            ctx.fillRect(leftPx2, topPx, rightPx2 - leftPx2 + 0.5, heightPx)
+          }
         }
       }
     }

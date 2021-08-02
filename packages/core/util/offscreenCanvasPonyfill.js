@@ -9,9 +9,6 @@ export let createCanvas
 export let createImageBitmap
 export let ImageBitmapType
 
-// sniff environments
-const isElectron = typeof window !== 'undefined' && Boolean(window.electron)
-
 const weHave = {
   realOffscreenCanvas: typeof OffscreenCanvas === 'function',
   node: isNode,
@@ -393,25 +390,7 @@ export class PonyfillOffscreenCanvas {
     )
   }
 }
-// Electron serializes everything to JSON through the IPC boundary, so we just
-// send the dataURL
-if (isElectron) {
-  createCanvas = (width, height) => {
-    const canvas = document.createElement('canvas')
-    canvas.width = width
-    canvas.height = height
-    return canvas
-  }
-  createImageBitmap = async (canvas, ...otherargs) => {
-    if (otherargs.length) {
-      throw new Error(
-        'only one-argument uses of createImageBitmap are supported by the node offscreencanvas ponyfill',
-      )
-    }
-    return { dataURL: canvas.toDataURL() }
-  }
-  ImageBitmapType = Image
-} else if (weHave.realOffscreenCanvas) {
+if (weHave.realOffscreenCanvas) {
   createCanvas = (width, height) => new OffscreenCanvas(width, height)
   createImageBitmap = window.createImageBitmap || self.createImageBitmap
   ImageBitmapType = window.ImageBitmap || self.ImageBitmap
