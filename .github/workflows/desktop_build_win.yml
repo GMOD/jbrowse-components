@@ -28,3 +28,13 @@ jobs:
         run: |
           yarn build-electron:win
         working-directory: products/jbrowse-desktop
+    - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+    - name: Copy desktop Windows build to S3
+        run: |
+          cd products/jbrowse-desktop/dist && zip -r "jbrowse-desktop-windows-build-test.zip" . && cd -
+          aws s3 sync --delete products/jbrowse-desktop/dist s3://jbrowse.org/code/jb2/desktop-build-test
