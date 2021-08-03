@@ -208,7 +208,6 @@ export default class TextIndex extends JBrowseCommand {
       },
       trackId,
     } = config
-    console.log(attributes)
     // progress bar code was aided by blog post at
     // https://webomnizz.com/download-a-file-with-progressbar-using-node-js/
     const progressBar = new SingleBar(
@@ -256,7 +255,7 @@ export default class TextIndex extends JBrowseCommand {
         break
       }
 
-      const [seq_name, , feature, start, end, , , , col9] = line.split('\t')
+      const [seq_name, , , start, end, , , , col9] = line.split('\t')
       const locStr = `${seq_name}:${start}..${end}`
 
       const col9attrs = col9.split('; ')
@@ -268,7 +267,7 @@ export default class TextIndex extends JBrowseCommand {
           .replace(regex, ''),
       )
       const record = JSON.stringify([locStr, trackId])
-      // console.log(`${record} ${[...new Set(attrs)].join(' ')}`)
+
       const buff = Buffer.from(record).toString('base64')
       yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
     }
@@ -333,29 +332,20 @@ export default class TextIndex extends JBrowseCommand {
         break
       }
 
-      const [seq_id, , type, start, end, , , , col9] = line.split('\t')
+      const [seq_id, , , start, end, , , , col9] = line.split('\t')
       const locStr = `${seq_id}:${start}..${end}`
 
       const col9attrs = col9.split(';')
-      const name = col9attrs
-        .find(f => f.startsWith('Name'))
-        ?.split('=')[1]
-        .trim()
-      const id = col9attrs
-        .find(f => f.startsWith('ID'))
-        ?.split('=')[1]
-        .trim()
       const attrs = attributes.map(attr =>
         col9attrs
           .find(f => f.startsWith(attr))
           ?.split('=')[1]
           .trim(),
       )
-      if (name || id) {
-        const record = JSON.stringify([locStr, trackId, name, id])
-        const buff = Buffer.from(record).toString('base64')
-        yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
-      }
+      const record = JSON.stringify([locStr, trackId])
+
+      const buff = Buffer.from(record).toString('base64')
+      yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
     }
 
     progressBar.stop()

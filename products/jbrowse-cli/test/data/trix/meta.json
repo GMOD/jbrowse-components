@@ -1,4 +1,10 @@
 {
-  "attributes": ["gene_id", "transcript_id", "exon_id"],
-  "IndexedTracks": ["GtfTabix_Genes"]
+  "attributes": ["Name", "ID", "type", "gene_name", "gene_id"],
+  "IndexedTracks": [
+    "au9_scaffold",
+    "GtfTabix_Genes",
+    "gff3tabix_genes",
+    "online_gff3tabix_genes",
+    "online_au9_scaffold"
+  ]
 }
