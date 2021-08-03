@@ -16,7 +16,6 @@ import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 
 import { LinearGenomeViewStateModel, HEADER_BAR_HEIGHT } from '..'
-// import RefNameAutocomplete from './RefNameAutocomplete'
 import OverviewScaleBar from './OverviewScaleBar'
 import ZoomControls from './ZoomControls'
 

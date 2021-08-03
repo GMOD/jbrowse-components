@@ -15,7 +15,6 @@ import {
   makeStyles,
 } from '@material-ui/core'
 // other
-// import RefNameAutocomplete from './RefNameAutocomplete'
 import SearchResultsDialog from './SearchResultsDialog'
 import { LinearGenomeViewModel } from '..'
 
