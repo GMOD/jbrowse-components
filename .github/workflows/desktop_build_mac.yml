@@ -27,5 +27,5 @@ jobs:
           APPLEID: ${{ secrets.APPLEID }}
           APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
         run: |
-          yarn build-electron:mac --publish "always"
+          yarn build-electron:mac
         working-directory: products/jbrowse-desktop

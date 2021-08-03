@@ -28,5 +28,5 @@ jobs:
           WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
           WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
         run: |
-          yarn build-electron:win --publish "always"
+          yarn build-electron:win
         working-directory: products/jbrowse-desktop
