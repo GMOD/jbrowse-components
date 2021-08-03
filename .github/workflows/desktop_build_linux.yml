@@ -33,5 +33,5 @@ jobs:
           sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Build app
         run: |
-          yarn build-electron:linux && yarn release
+          yarn build-electron:linux --publish "always"
         working-directory: products/jbrowse-desktop
