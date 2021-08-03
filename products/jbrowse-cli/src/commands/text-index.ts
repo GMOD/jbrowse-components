@@ -68,13 +68,14 @@ export default class TextIndex extends JBrowseCommand {
       : outFlag
     const dir = path.dirname(confFile)
     const uniqueAttrs: Array<string> = []
+    const TrackIds: Array<string> = []
 
     const config: Config = JSON.parse(fs.readFileSync(confFile, 'utf8'))
     const assembliesToIndex =
       assemblies?.split(',') || config.assemblies?.map(a => a.name) || []
     const adapters = config.aggregateTextSearchAdapters || []
 
-    const metaDir = path.join(dir, 'trix', 'meta.json')
+    const metaDir = path.join(dir, 'trix', `meta.json`)
 
     const trixDir = path.join(dir, 'trix')
     if (!fs.existsSync(trixDir)) {
@@ -85,11 +86,12 @@ export default class TextIndex extends JBrowseCommand {
       const configs = await this.getConfig(confFile, asm, tracks?.split(','))
 
       for (const config of configs) {
-        const { textSearchIndexingAttributes } = config
+        const { textSearchIndexingAttributes, trackId } = config
 
         for (const attr of textSearchIndexingAttributes) {
           uniqueAttrs.push(attr)
         }
+        TrackIds.push(trackId)
       }
     }
     const attributesToIndex = attributes?.split(',') || [
@@ -111,7 +113,6 @@ export default class TextIndex extends JBrowseCommand {
             `Note: ${asm} has already been indexed with this configuration, use --force to overwrite this assembly. Skipping for now`,
           )
         }
-
         await this.indexDriver(config, attributesToIndex, dir, asm, quiet)
 
         // Checks through list of configs and checks the hash values
@@ -148,7 +149,11 @@ export default class TextIndex extends JBrowseCommand {
 
     fs.writeFileSync(
       metaDir,
-      JSON.stringify({ attributes: attributesToIndex }, null, 2),
+      JSON.stringify(
+        { attributes: attributesToIndex, IndexedTracks: TrackIds },
+        null,
+        2,
+      ),
     )
 
     this.log('Finished!')
@@ -177,13 +182,97 @@ export default class TextIndex extends JBrowseCommand {
   ) {
     for (const config of configs) {
       const {
-        adapter: { type },
+        adapter: {
+          type,
+          gffGzLocation: { uri },
+        },
       } = config
 
-      if (type === 'Gff3TabixAdapter') {
+      if (uri.endsWith('.gtf')) {
+        yield* this.indexGtf(config, attributes, outLocation, quiet)
+      } else if (type === 'Gff3TabixAdapter') {
         yield* this.indexGff3(config, attributes, outLocation, quiet)
       }
     }
+  }
+
+  async *indexGtf(
+    config: Track,
+    attributes: string[],
+    outLocation: string,
+    quiet: boolean,
+  ) {
+    const {
+      adapter: {
+        gffGzLocation: { uri },
+      },
+      trackId,
+    } = config
+    console.log(attributes)
+    // progress bar code was aided by blog post at
+    // https://webomnizz.com/download-a-file-with-progressbar-using-node-js/
+    const progressBar = new SingleBar(
+      {
+        format: '{bar} ' + trackId + ' {percentage}% | ETA: {eta}s',
+      },
+      Presets.shades_classic,
+    )
+
+    let fileDataStream
+    let totalBytes = 0
+    let receivedBytes = 0
+    if (this.isURL(uri)) {
+      fileDataStream = await this.createRemoteStream(uri)
+      totalBytes = +(fileDataStream.headers['content-length'] || 0)
+    } else {
+      const filename = path.join(outLocation, uri)
+      totalBytes = fs.statSync(filename).size
+      fileDataStream = fs.createReadStream(filename)
+    }
+
+    if (!quiet) {
+      progressBar.start(totalBytes, 0)
+    }
+
+    fileDataStream.on('data', chunk => {
+      receivedBytes += chunk.length
+      progressBar.update(receivedBytes)
+    })
+
+    const gzStream = uri.endsWith('.gz')
+      ? fileDataStream.pipe(createGunzip())
+      : fileDataStream
+
+    const rl = readline.createInterface({
+      input: gzStream,
+    })
+
+    const regex = /(["])/g
+
+    for await (const line of rl) {
+      if (line.startsWith('#')) {
+        continue
+      } else if (line.startsWith('>')) {
+        break
+      }
+
+      const [seq_name, , feature, start, end, , , , col9] = line.split('\t')
+      const locStr = `${seq_name}:${start}..${end}`
+
+      const col9attrs = col9.split('; ')
+      const attrs = attributes.map(attr =>
+        col9attrs
+          .find(f => f.startsWith(attr))
+          ?.split(' ')[1]
+          .trim()
+          .replace(regex, ''),
+      )
+      const record = JSON.stringify([locStr, trackId])
+      // console.log(`${record} ${[...new Set(attrs)].join(' ')}`)
+      const buff = Buffer.from(record).toString('base64')
+      yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
+    }
+    progressBar.stop()
   }
 
   async *indexGff3(
@@ -247,27 +336,25 @@ export default class TextIndex extends JBrowseCommand {
       const [seq_id, , type, start, end, , , , col9] = line.split('\t')
       const locStr = `${seq_id}:${start}..${end}`
 
-      if (type !== 'exon' && type !== 'CDS') {
-        const col9attrs = col9.split(';')
-        const name = col9attrs
-          .find(f => f.startsWith('Name'))
+      const col9attrs = col9.split(';')
+      const name = col9attrs
+        .find(f => f.startsWith('Name'))
+        ?.split('=')[1]
+        .trim()
+      const id = col9attrs
+        .find(f => f.startsWith('ID'))
+        ?.split('=')[1]
+        .trim()
+      const attrs = attributes.map(attr =>
+        col9attrs
+          .find(f => f.startsWith(attr))
           ?.split('=')[1]
-          .trim()
-        const id = col9attrs
-          .find(f => f.startsWith('ID'))
-          ?.split('=')[1]
-          .trim()
-        const attrs = attributes.map(attr =>
-          col9attrs
-            .find(f => f.startsWith(attr))
-            ?.split('=')[1]
-            .trim(),
-        )
-        if (name || id) {
-          const record = JSON.stringify([locStr, trackId, name, id])
-          const buff = Buffer.from(record).toString('base64')
-          yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
-        }
+          .trim(),
+      )
+      if (name || id) {
+        const record = JSON.stringify([locStr, trackId, name, id])
+        const buff = Buffer.from(record).toString('base64')
+        yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
       }
     }
 

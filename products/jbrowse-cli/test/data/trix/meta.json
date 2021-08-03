@@ -1,10 +1,4 @@
 {
-  "indexingAttributes": [
-    "locstring",
-    "TrackID",
-    "Name",
-    "description",
-    "Note",
-    "ID"
-  ]
+  "attributes": ["gene_id", "transcript_id", "exon_id"],
+  "IndexedTracks": ["GtfTabix_Genes"]
 }
