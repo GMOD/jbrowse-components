@@ -195,6 +195,8 @@ export default class PluginManager {
 
   rootModel?: AbstractRootModel
 
+  extensionPoints: Map<string, Function[]> = new Map()
+
   constructor(initialPlugins: (Plugin | PluginLoadRecord)[] = []) {
     // add the core plugin
     this.addPlugin({ plugin: new CorePlugin(), metadata: { isCore: true } })
@@ -308,7 +310,7 @@ export default class PluginManager {
     const typeRecord = this.getElementTypeRecord(groupName)
 
     this.elementCreationSchedule.add(groupName, () => {
-      const newElement = creationCallback(this)
+      let newElement = creationCallback(this)
       if (!newElement.name) {
         throw new Error(`cannot add a ${groupName} with no name`)
       }
@@ -318,6 +320,11 @@ export default class PluginManager {
           `${groupName} ${newElement.name} already registered, cannot register it again`,
         )
       }
+
+      newElement = this.evaluateExtensionPoint(
+        'Core-extendPluggableElement',
+        newElement,
+      ) as PluggableElementType
 
       typeRecord.add(newElement.name, newElement)
     })
@@ -550,5 +557,32 @@ export default class PluginManager {
     creationCallback: (pluginManager: PluginManager) => RpcMethodType,
   ): this {
     return this.addElementType('rpc method', creationCallback)
+  }
+
+  addToExtensionPoint<T>(
+    extensionPointName: string,
+    callback: (extendee: T) => T,
+  ) {
+    let callbacks = this.extensionPoints.get(extensionPointName)
+    if (!callbacks) {
+      callbacks = []
+      this.extensionPoints.set(extensionPointName, callbacks)
+    }
+    callbacks.push(callback)
+  }
+
+  evaluateExtensionPoint(extensionPointName: string, extendee: unknown) {
+    const callbacks = this.extensionPoints.get(extensionPointName)
+    let accumulator = extendee
+    if (callbacks) {
+      for (const callback of callbacks) {
+        try {
+          accumulator = callback(accumulator)
+        } catch (error) {
+          console.error(error)
+        }
+      }
+    }
+    return accumulator
   }
 }
