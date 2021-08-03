@@ -1,4 +1,8 @@
 name: Desktop build - Linux
+# on:
+#   push:
+#     tags:
+#       - 'desktop-beta*'
 on: push
 
 jobs:
@@ -6,6 +10,17 @@ jobs:
     name: Build Linux desktop app
     runs-on: ubuntu-latest
     steps:
+      # We might need this, leaving as comment here for now
+      # - name: Wait for draft release (jbrowse-web)
+      #   uses: fountainhead/action-wait-for-check@v1.0.0
+      #   id: wait-for-draft-release
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     checkName: Upload jbrowse-web artifacts
+      #     ref: ${{ github.event.head.sha }}
+      # - name: Do something with a failing build
+      #   if: steps.wait-for-draft-release.outputs.conclusion == 'failure'
+      #   run: exit 1
       - uses: actions/checkout@v2
       - name: Use Node.js 14
         uses: actions/setup-node@v2
@@ -18,5 +33,5 @@ jobs:
           sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Build app
         run: |
-          yarn build-electron:linux
+          yarn build-electron:linux && yarn release
         working-directory: products/jbrowse-desktop

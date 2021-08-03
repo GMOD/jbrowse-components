@@ -33,7 +33,8 @@
     "build-electron-only-unpacked": "electron-builder build -wml --dir",
     "build-electron-only-unpacked:win": "electron-builder build -w --dir",
     "build-electron-only-unpacked:mac": "electron-builder build -m --dir",
-    "build-electron-only-unpacked:linux": "electron-builder build -l --dir"
+    "build-electron-only-unpacked:linux": "electron-builder build -l --dir",
+    "release": "electron-builder"
   },
   "dependencies": {
     "@jbrowse/core": "^1.3.2",

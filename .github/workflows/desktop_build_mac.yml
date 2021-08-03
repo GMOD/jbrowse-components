@@ -1,4 +1,8 @@
 name: Desktop build - Mac
+# on:
+#   push:
+#     tags:
+#       - 'desktop-beta*'
 on: push
 
 jobs:
@@ -23,5 +27,5 @@ jobs:
           APPLEID: ${{ secrets.APPLEID }}
           APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
         run: |
-          yarn build-electron:mac
+          yarn build-electron:mac && yarn release
         working-directory: products/jbrowse-desktop
