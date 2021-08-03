@@ -1,6 +1,7 @@
 import { types, Instance } from 'mobx-state-tree'
 import { ElementId } from '../../util/types/mst'
 import { MenuItem } from '../../ui'
+import BaseResult from '../../TextSearch/BaseResults'
 
 const BaseViewModel = types
   .model('BaseView', {
@@ -13,6 +14,18 @@ const BaseViewModel = types
   .views((/* self */) => ({
     menuItems(): MenuItem[] {
       return []
+    },
+    currentLocation(): string | undefined {
+      return undefined
+    },
+    searchScope(assemblyName: string) {
+      return {
+        assemblyName,
+        includeAggregateIndexes: true,
+      }
+    },
+    rankSearchResults(results: BaseResult[]) {
+      return results
     },
   }))
   .actions(self => ({

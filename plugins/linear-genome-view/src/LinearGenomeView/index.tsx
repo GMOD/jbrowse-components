@@ -1400,6 +1400,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
           },
         ]
       },
+      currentLocation() {
+        return self.coarseVisibleLocStrings
+      },
     }))
 }
 

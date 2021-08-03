@@ -4,6 +4,7 @@ import { getEnv } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import RefNameAutocomplete from '@jbrowse/core/ui/RefNameAutocomplete'
 import {
   Button,
   CircularProgress,
@@ -14,7 +15,7 @@ import {
   makeStyles,
 } from '@material-ui/core'
 // other
-import RefNameAutocomplete from './RefNameAutocomplete'
+// import RefNameAutocomplete from './RefNameAutocomplete'
 import SearchResultsDialog from './SearchResultsDialog'
 import { LinearGenomeViewModel } from '..'
 

@@ -1,19 +1,22 @@
+import { observer } from 'mobx-react'
+import { Instance, getEnv } from 'mobx-state-tree'
+import React from 'react'
+
 import { getSession } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import RefNameAutocomplete from '@jbrowse/core/ui/RefNameAutocomplete'
+
 import Button from '@material-ui/core/Button'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { alpha } from '@material-ui/core/styles'
 import FormGroup from '@material-ui/core/FormGroup'
 import Typography from '@material-ui/core/Typography'
-import { observer } from 'mobx-react'
-import { Instance, getEnv } from 'mobx-state-tree'
-import React from 'react'
-
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
+
 import { LinearGenomeViewStateModel, HEADER_BAR_HEIGHT } from '..'
-import RefNameAutocomplete from './RefNameAutocomplete'
+// import RefNameAutocomplete from './RefNameAutocomplete'
 import OverviewScaleBar from './OverviewScaleBar'
 import ZoomControls from './ZoomControls'
 
