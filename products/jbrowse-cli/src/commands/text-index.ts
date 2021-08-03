@@ -38,7 +38,6 @@ export default class TextIndex extends JBrowseCommand {
 
     attributes: flags.string({
       description: 'Comma separated list of attributes to index',
-      default: 'Name,ID',
     }),
     assemblies: flags.string({
       char: 'a',
@@ -68,16 +67,34 @@ export default class TextIndex extends JBrowseCommand {
       ? path.join(outFlag, 'config.json')
       : outFlag
     const dir = path.dirname(confFile)
+    const uniqueAttrs: Array<string> = []
 
     const config: Config = JSON.parse(fs.readFileSync(confFile, 'utf8'))
     const assembliesToIndex =
       assemblies?.split(',') || config.assemblies?.map(a => a.name) || []
     const adapters = config.aggregateTextSearchAdapters || []
 
+    const metaDir = path.join(dir, 'trix', 'meta.json')
+
     const trixDir = path.join(dir, 'trix')
     if (!fs.existsSync(trixDir)) {
       fs.mkdirSync(trixDir)
     }
+
+    for (const asm of assembliesToIndex) {
+      const configs = await this.getConfig(confFile, asm, tracks?.split(','))
+
+      for (const config of configs) {
+        const { textSearchIndexingAttributes } = config
+
+        for (const attr of textSearchIndexingAttributes) {
+          uniqueAttrs.push(attr)
+        }
+      }
+    }
+    const attributesToIndex = attributes?.split(',') || [
+      ...new Set(uniqueAttrs),
+    ]
 
     for (const asm of assembliesToIndex) {
       const config = await this.getConfig(confFile, asm, tracks?.split(','))
@@ -95,7 +112,7 @@ export default class TextIndex extends JBrowseCommand {
           )
         }
 
-        await this.indexDriver(config, attributes.split(','), dir, asm, quiet)
+        await this.indexDriver(config, attributesToIndex, dir, asm, quiet)
 
         // Checks through list of configs and checks the hash values
         // if it already exists it updates the entry and increments the
@@ -128,6 +145,12 @@ export default class TextIndex extends JBrowseCommand {
         2,
       ),
     )
+
+    fs.writeFileSync(
+      metaDir,
+      JSON.stringify({ attributes: attributesToIndex }, null, 2),
+    )
+
     this.log('Finished!')
   }
 
