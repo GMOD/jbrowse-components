@@ -249,14 +249,12 @@ export function generateUnknownTrackConf(
 function generateFromConfigTrackConfig(
   jb1TrackConfig: Track,
   jb2TrackConfig: Jb2Track,
-  assemblyNames: string,
 ): Jb2Track {
   const jb1Features = jb1TrackConfig.features || []
   const jb2Features = jb1Features.map(
     (feature): Jb2Feature => {
       const jb2Feature: Jb2Feature = JSON.parse(JSON.stringify(feature))
       jb2Feature.refName = feature.seq_id
-      jb2Feature.assemblyNames = assemblyNames
       jb2Feature.uniqueId = `${feature.seq_id}:${feature.start}-${
         feature.end
       }:${feature.name || ''}`
@@ -279,6 +277,7 @@ interface Jb2Track {
   adapter?: Jb2Adapter
   type?: string
   defaultRendering?: string
+  assemblyNames?: string
 }
 
 interface Jb2Adapter {
@@ -304,7 +303,6 @@ interface Jb2Adapter {
 interface Jb2Feature {
   refName: string
   uniqueId: string
-  assemblyNames: string
   start: number
   end: number
 }
@@ -342,6 +340,7 @@ export function convertTrackConfig(
   const jb2TrackConfig: Jb2Track = {
     trackId: objectHash(jb1TrackConfig),
     name: jb1TrackConfig.key || jb1TrackConfig.label,
+    assemblyNames: assemblyNames,
   }
 
   const description =
@@ -369,7 +368,7 @@ export function convertTrackConfig(
         jb2TrackConfig.category,
       )
     }
-    return generateFromConfigTrackConfig(jb1TrackConfig, jb2TrackConfig, assemblyNames)
+    return generateFromConfigTrackConfig(jb1TrackConfig, jb2TrackConfig)
   }
 
   const resolveUrlTemplate = (urlTemplate: string) => {
