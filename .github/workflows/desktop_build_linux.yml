@@ -1,37 +1,34 @@
-name: Desktop build - Linux
-# on:
-#   push:
-#     tags:
-#       - 'desktop-beta*'
-on: push
+# name: Desktop build - Linux
+# on: push
 
-jobs:
-  build:
-    name: Build Linux desktop app
-    runs-on: ubuntu-latest
-    steps:
-      # We might need this, leaving as comment here for now
-      # - name: Wait for draft release (jbrowse-web)
-      #   uses: fountainhead/action-wait-for-check@v1.0.0
-      #   id: wait-for-draft-release
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     checkName: Upload jbrowse-web artifacts
-      #     ref: ${{ github.event.head.sha }}
-      # - name: Do something with a failing build
-      #   if: steps.wait-for-draft-release.outputs.conclusion == 'failure'
-      #   run: exit 1
-      - uses: actions/checkout@v2
-      - name: Use Node.js 14
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-      - name: Install deps (with cache)
-        uses: bahmutov/npm-install@v1
-      - name: Install build deps
-        run: |
-          sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
-      - name: Build app
-        run: |
-          yarn build-electron:linux
-        working-directory: products/jbrowse-desktop
+# jobs:
+#   build:
+#     name: Build Linux desktop app
+#     runs-on: ubuntu-latest
+#     if: "contains(github.event.head_commit.message, 'desktop beta')"
+#     steps:
+#       # Will want to wait for jbrowse-web for real releases
+#       - name: Wait for draft release
+#         uses: fountainhead/action-wait-for-check@v1.0.0
+#         id: wait-for-draft-release
+#         with:
+#           token: ${{ secrets.GITHUB_TOKEN }}
+#           checkName: Draft desktop beta release
+#           ref: ${{ github.event.head.sha }}
+#       - name: Do something with a failing build
+#         if: steps.wait-for-draft-release.outputs.conclusion == 'failure'
+#         run: exit 1
+#       - uses: actions/checkout@v2
+#       - name: Use Node.js 14
+#         uses: actions/setup-node@v2
+#         with:
+#           node-version: '14'
+#       - name: Install deps (with cache)
+#         uses: bahmutov/npm-install@v1
+#       - name: Install build deps
+#         run: |
+#           sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+#       - name: Build app
+#         run: |
+#           yarn build-electron:linux
+#         working-directory: products/jbrowse-desktop
