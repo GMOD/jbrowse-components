@@ -1209,6 +1209,8 @@ jexl:abs(-5)
 jexl:ceil(0.5)
 jexl:floor(0.5)
 jexl:round(0.5)
+jexl:parseInt('2')
+jexl:parseFloat('2.054')
 
 ```
 

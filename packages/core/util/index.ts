@@ -835,8 +835,13 @@ export function stringify({
   }`
 }
 
-export const isElectron =
-  typeof window !== 'undefined' && Boolean(window.electron)
+// this is recommended in a later comment in https://github.com/electron/electron/issues/2288
+// for detecting electron in a renderer process, which is the one that has node enabled for us
+// const isElectron = process.versions.electron
+// const i2 = process.versions.hasOwnProperty('electron')
+export const isElectron = /electron/i.test(
+  typeof navigator !== 'undefined' ? navigator.userAgent : '',
+)
 
 export function revcom(seqString: string) {
   return complement(seqString).split('').reverse().join('')

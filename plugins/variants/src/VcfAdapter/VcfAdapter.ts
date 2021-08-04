@@ -67,6 +67,12 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
     return header
   }
 
+  async getMetadata() {
+    const { header } = await this.decodeFileContents()
+    const parser = new VCF({ header: header })
+    return parser.getMetadata()
+  }
+
   public async getLines() {
     const { header, lines } = await this.decodeFileContents()
 

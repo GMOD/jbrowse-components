@@ -1,6 +1,5 @@
-import { LocalFile, BlobFile, GenericFilehandle } from 'generic-filehandle'
-import ElectronLocalFile from './ElectronLocalFile'
-import ElectronRemoteFile from './ElectronRemoteFile'
+import { BlobFile, GenericFilehandle } from 'generic-filehandle'
+import LocalFile from './LocalFile'
 import { openUrl as rangeFetcherOpenUrl } from './rangeFetcher'
 import {
   FileLocation,
@@ -10,25 +9,10 @@ import {
   AuthLocation,
 } from '../types'
 import { getBlob, getAuthenticationInfo } from '../tracks'
-
-declare global {
-  interface Window {
-    electron?: import('electron').AllElectron
-  }
-}
-
-// this is recommended in a later comment in https://github.com/electron/electron/issues/2288
-// for detecting electron in a renderer process, which is the one that has node enabled for us
-// const isElectron = process.versions.electron
-// const i2 = process.versions.hasOwnProperty('electron')
-const isElectron = /electron/i.test(
-  typeof navigator !== 'undefined' ? navigator.userAgent : '',
-)
+import { isElectron } from '../../util'
 
 export const openUrl = (arg: string, headers?: HeadersInit) => {
-  return isElectron
-    ? new ElectronRemoteFile(arg)
-    : rangeFetcherOpenUrl(arg, headers)
+  return rangeFetcherOpenUrl(arg, headers)
 }
 
 function isUriLocation(location: FileLocation): location is UriLocation {
@@ -53,18 +37,9 @@ export function openLocation(location: FileLocation): GenericFilehandle {
   if (!location) {
     throw new Error('must provide a location to openLocation')
   }
-  if (isElectron) {
-    if (isUriLocation(location)) {
-      if (!location.uri) {
-        throw new Error('No URI provided')
-      }
-      return new ElectronRemoteFile(location.uri)
-    }
-    if (isLocalPathLocation(location)) {
-      if (!location.localPath) {
-        throw new Error('No local path provided')
-      }
-      return new ElectronLocalFile(location.localPath)
+  if (isLocalPathLocation(location)) {
+    if (!location.localPath) {
+      throw new Error('No local path provided')
     }
   } else {
     if (isUriLocation(location)) {
@@ -94,8 +69,22 @@ export function openLocation(location: FileLocation): GenericFilehandle {
       if (!location.localPath) {
         throw new Error('No local path provided')
       }
-      return new LocalFile(location.localPath)
+      if (isElectron || typeof jest !== 'undefined') {
+        return new LocalFile(location.localPath)
+      }
+    } else {
+      throw new Error("can't use local files in the browser")
     }
+  }
+  if (isUriLocation(location)) {
+    if (!location.uri) {
+      throw new Error('No URI provided')
+    }
+    return openUrl(
+      location.baseUri
+        ? new URL(location.uri, location.baseUri).href
+        : location.uri,
+    )
   }
   if (isBlobLocation(location)) {
     // special case where blob is not directly stored on the model, use a getter

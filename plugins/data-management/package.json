@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-data-management",
-  "version": "1.3.1",
+  "version": "1.3.3",
   "description": "JBrowse 2 linear genome view",
   "keywords": [
     "jbrowse",
@@ -45,7 +45,7 @@
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",
     "@jbrowse/plugin-config": "^1.0.0",
-    "@material-ui/core": "^4.9.13",
+    "@material-ui/core": "^4.12.2",
     "@material-ui/lab": "^4.0.0-alpha.45",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
