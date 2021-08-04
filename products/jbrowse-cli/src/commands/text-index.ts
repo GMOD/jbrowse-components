@@ -95,8 +95,8 @@ export default class TextIndex extends JBrowseCommand {
       }
     }
     const attributesToIndex = attributes?.split(',') || [
-      ...new Set(uniqueAttrs),
-    ]
+        ...new Set(uniqueAttrs),
+      ] || ['Name', 'ID']
 
     for (const asm of assembliesToIndex) {
       const config = await this.getConfig(confFile, asm, tracks?.split(','))
