@@ -97,17 +97,17 @@
     "copyright": "Copyright © 2019",
     "win": {
       "target": "nsis",
-      "artifactName": "jbrowse-desktop-${desktopBeta}-win.${ext}"
+      "artifactName": "jbrowse-desktop-${npm_package_desktopBeta}-win.${ext}"
     },
     "linux": {
       "executableName": "jbrowse-desktop",
       "target": "AppImage",
-      "artifactName": "jbrowse-desktop-${desktopBeta}-linux.${ext}"
+      "artifactName": "jbrowse-desktop-${npm_package_desktopBeta}-linux.${ext}"
     },
     "mac": {
       "category": "public.app-category.utilities",
       "target": "dmg",
-      "artifactName": "jbrowse-desktop-${desktopBeta}-mac.${ext}"
+      "artifactName": "jbrowse-desktop-${npm_package_desktopBeta}-mac.${ext}"
     },
     "files": [
       "build/**/*",
