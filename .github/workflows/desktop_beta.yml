@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: '12'
       - name: Set release version
-        run: echo "RELEASE_VERSION=$(npm run env | grep npm_package_desktop-beta | cut -d '=' -f 2)" >> $GITHUB_ENV
+        run: echo "RELEASE_VERSION=$(node -e "console.log(require('./package.json').desktopBeta)")" >> $GITHUB_ENV
         working-directory: products/jbrowse-desktop
       - name: Create Release
         id: create_release
