@@ -37,7 +37,7 @@ jobs:
         working-directory: products/jbrowse-desktop
       - name: Get release
         id: get_release
-        uses: agners/get-draft-release@v0.1.0
+        uses: bruceadams/get-release@v1.2.2
         env:
           GITHUB_TOKEN: ${{ github.token }}
       - name: Upload Linux build
