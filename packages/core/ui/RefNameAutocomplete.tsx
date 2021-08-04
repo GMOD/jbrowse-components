@@ -159,7 +159,7 @@ function RefNameAutocomplete({
       selectOnFocus
       disabled={!assemblyName}
       style={style}
-      value={currentLocation() || value || ''}
+      value={currentLocation || value || ''}
       open={open}
       onOpen={() => setOpen(true)}
       onClose={() => {
@@ -210,7 +210,7 @@ function RefNameAutocomplete({
             {...params}
             {...TextFieldProps}
             helperText={helperText}
-            value={currentLocation() || value || ''}
+            value={currentLocation || value || ''}
             InputProps={TextFieldInputProps}
             placeholder="Search for location"
             onChange={e => {

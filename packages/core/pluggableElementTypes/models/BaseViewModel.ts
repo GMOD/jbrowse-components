@@ -12,16 +12,15 @@ const BaseViewModel = types
     width: 800,
   }))
   .views((/* self */) => ({
+    get currentLocation(): string | undefined {
+      return undefined
+    },
     menuItems(): MenuItem[] {
       return []
-    },
-    currentLocation(): string | undefined {
-      return undefined
     },
     searchScope(assemblyName: string) {
       return {
         assemblyName,
-        includeAggregateIndexes: true,
       }
     },
     rankSearchResults(results: BaseResult[]) {
