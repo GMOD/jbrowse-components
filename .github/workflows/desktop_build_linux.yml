@@ -7,17 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     if: "contains(github.event.head_commit.message, 'desktop beta')"
     steps:
-      # Will want to wait for jbrowse-web for real releases
-      - name: Wait for draft release
-        uses: fountainhead/action-wait-for-check@v1.0.0
-        id: wait-for-draft-release
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          checkName: Draft desktop beta release
-          ref: ${{ github.event.head.sha }}
-      - name: Exit with a failed draft release
-        if: steps.wait-for-draft-release.outputs.conclusion == 'failure'
-        run: exit 1
       - uses: actions/checkout@v2
       - name: Use Node.js 14
         uses: actions/setup-node@v2
