@@ -88,15 +88,18 @@ export default class TextIndex extends JBrowseCommand {
       for (const config of configs) {
         const { textSearchIndexingAttributes, trackId } = config
 
-        for (const attr of textSearchIndexingAttributes) {
-          uniqueAttrs.push(attr)
+        if (textSearchIndexingAttributes) {
+          for (const attr of textSearchIndexingAttributes) {
+            uniqueAttrs.push(attr)
+          }
         }
         TrackIds.push(trackId)
       }
     }
-    const attributesToIndex = attributes?.split(',') || [
-        ...new Set(uniqueAttrs),
-      ] || ['Name', 'ID']
+    const attributesToIndex =
+      attributes?.split(',') || uniqueAttrs.length > 0
+        ? [...new Set(uniqueAttrs)]
+        : ['Name', 'ID']
 
     for (const asm of assembliesToIndex) {
       const config = await this.getConfig(confFile, asm, tracks?.split(','))
