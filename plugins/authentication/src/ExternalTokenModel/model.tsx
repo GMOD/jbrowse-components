@@ -5,6 +5,13 @@ import { FileLocation, AuthLocation } from '@jbrowse/core/util/types'
 import { searchOrReplaceInArgs } from '@jbrowse/core/util'
 import { ExternalTokenInternetAccountConfigModel } from './configSchema'
 import { Instance, types, getRoot } from 'mobx-state-tree'
+import React, { useState } from 'react'
+import Button from '@material-ui/core/Button'
+import Dialog from '@material-ui/core/Dialog'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogTitle from '@material-ui/core/DialogTitle'
+import DialogActions from '@material-ui/core/DialogActions'
+import TextField from '@material-ui/core/TextField'
 
 interface Account {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -80,72 +87,175 @@ const stateModelFactory = (
 
         return token
       },
-      async openLocation(location: FileLocation) {
-        switch (self.origin) {
-          case 'GDC': {
-            const query = (location as AuthLocation).uri.split('/').pop() // should get id
-            const response = await fetch(
-              `${self.accountConfig.customEndpoint}/files/${query}?expand=index_files`,
-              {
-                method: 'GET',
+    }))
+    .actions(self => {
+      let resolve: Function = () => {}
+      let reject: Function = () => {}
+      let openLocationPromise: Promise<string> | undefined = undefined
+      return {
+        handleClose(token?: string) {
+          const { session } = getRoot(self)
+          if (token) {
+            sessionStorage.setItem(`${self.internetAccountId}-token`, token)
+            resolve(token)
+          } else {
+            reject(new Error('user cancelled entry'))
+          }
+          session.setDialogComponent(undefined, undefined)
+          resolve = () => {}
+          reject = () => {}
+          openLocationPromise = undefined
+        },
+        async openLocation(location: FileLocation) {
+          if (!openLocationPromise) {
+            openLocationPromise = new Promise(async (r, x) => {
+              const { session } = getRoot(self)
+              session.setDialogComponent(ExternalTokenEntryForm, {
+                internetAccountId: self.internetAccountId,
+                handleClose: this.handleClose,
+              })
+              resolve = r
+              reject = x
+            })
+            // switch (self.origin) {
+            //   case 'GDC': {
+            //     const query = (location as AuthLocation).uri.split('/').pop() // should get id
+            //     const response = await fetch(
+            //       `${self.accountConfig.customEndpoint}/files/${query}?expand=index_files`,
+            //       {
+            //         method: 'GET',
+            //       },
+            //     )
+
+            //     if (!response.ok) {
+            //       const errorText = await response.text()
+            //       throw new Error(
+            //         `Network response failure: ${response.status} (${errorText})`,
+            //       )
+            //     }
+
+            //     const metadata = await response.json()
+            //     if (metadata) {
+            //       metadata.data.access === 'controlled'
+            //         ? self.setNeedsToken(true)
+            //         : self.setNeedsToken(false)
+            //     }
+
+            //     self.getOrSetExternalToken()
+            //   }
+          }
+          return openLocationPromise
+        },
+        async handleRpcMethodCall(
+          location: FileLocation,
+          authenticationInfoMap: Record<string, string>,
+          args: {},
+        ) {
+          const token = authenticationInfoMap[self.internetAccountId]
+          if (!token) {
+            await this.openLocation(location)
+          }
+
+          try {
+            const response = await fetch(searchOrReplaceInArgs(args, 'uri'), {
+              method: 'HEAD',
+              headers: {
+                Authorization: `${self.tokenType} ${token}`,
               },
-            )
+            })
 
             if (!response.ok) {
               const errorText = await response.text()
-              throw new Error(
+              await this.handleError(
+                authenticationInfoMap,
                 `Network response failure: ${response.status} (${errorText})`,
               )
             }
-
-            const metadata = await response.json()
-            if (metadata) {
-              metadata.data.access === 'controlled'
-                ? this.setNeedsToken(true)
-                : this.setNeedsToken(false)
-            }
-
-            this.getOrSetExternalToken()
+          } catch (e) {
+            await this.handleError(authenticationInfoMap, e)
           }
-        }
-      },
-      async handleRpcMethodCall(
-        location: FileLocation,
-        authenticationInfoMap: Record<string, string>,
-        args: {},
-      ) {
-        const token = authenticationInfoMap[self.internetAccountId]
-        const reloaded = false // temp flag
-        if (!token || reloaded) {
-          if (reloaded) {
-            await this.handleError(authenticationInfoMap)
-          }
-          await this.openLocation(location)
-        }
 
-        switch (self.origin) {
-          case 'GDC': {
-            const query = (location as AuthLocation).uri.split('/').pop() // should get id
-            const editedArgs = JSON.parse(JSON.stringify(args))
-            searchOrReplaceInArgs(
-              editedArgs,
-              'uri',
-              `${self.accountConfig.customEndpoint}/data/${query}`,
-            )
-            return editedArgs
-          }
-        }
-      },
-      // if the track is on reload call, need to clear the token and open location again
-      // ask if there is any way to check if reloaded()
-      async handleError(authenticationInfoMap: Record<string, string>) {
-        const rootModel = getRoot(self)
-        rootModel.removeFromAuthenticationMap(
-          self.internetAccountId,
-          authenticationInfoMap,
-        )
-      },
-    }))
+          return args
+          // switch (self.origin) {
+          //   case 'GDC': {
+          //     const query = (location as AuthLocation).uri.split('/').pop() // should get id
+          //     const editedArgs = JSON.parse(JSON.stringify(args))
+          //     searchOrReplaceInArgs(
+          //       editedArgs,
+          //       'uri',
+          //       `${self.accountConfig.customEndpoint}/data/${query}`,
+          //     )
+          //     return editedArgs
+          //   }
+          // }
+        },
+        async handleError(
+          authenticationInfoMap: Record<string, string>,
+          errorText: string,
+        ) {
+          console.log('here')
+          const rootModel = getRoot(self)
+          rootModel.removeFromAuthenticationMap(
+            self.internetAccountId,
+            authenticationInfoMap,
+          )
+          return new Error(errorText)
+        },
+      }
+    })
+}
+
+const ExternalTokenEntryForm = ({
+  internetAccountId,
+  handleClose,
+}: {
+  internetAccountId: string
+  handleClose: (arg?: string) => void
+}) => {
+  const [token, setToken] = useState('')
+
+  return (
+    <>
+      <Dialog open maxWidth="xl" data-testid="login-httpbasic">
+        <DialogTitle>Enter Token for {internetAccountId}</DialogTitle>
+        <DialogContent style={{ display: 'flex', flexDirection: 'column' }}>
+          <TextField
+            required
+            label="Enter Token"
+            variant="outlined"
+            onChange={event => {
+              setToken(event.target.value)
+            }}
+            margin="dense"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            color="primary"
+            type="submit"
+            disabled={!token}
+            onClick={() => {
+              if (token) {
+                handleClose(token)
+              }
+            }}
+          >
+            Add
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              handleClose()
+            }}
+          >
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  )
 }
 
 export default stateModelFactory

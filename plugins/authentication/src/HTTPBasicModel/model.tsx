@@ -59,6 +59,8 @@ const stateModelFactory = (
           resolve(token)
         },
         handleClose(token?: string) {
+          console.log('hc', openLocationPromise)
+
           const { session } = getRoot(self)
           if (token) {
             this.setTokenInfo(token)
@@ -68,9 +70,11 @@ const stateModelFactory = (
           session.setDialogComponent(undefined, undefined)
           resolve = () => {}
           reject = () => {}
+          openLocationPromise = undefined
         },
 
         async openLocation(location: FileLocation) {
+          console.log(openLocationPromise)
           if (!openLocationPromise) {
             openLocationPromise = new Promise(async (r, x) => {
               const { session } = getRoot(self)
@@ -103,24 +107,17 @@ const stateModelFactory = (
               Authorization: `${self.tokenType} ${token}`,
             },
           })
-          console.log(response)
 
           if (!response.ok) {
             const errorText = await response.text()
-            this.handleError(
+            await this.handleError(
               authenticationInfoMap,
               `Network response failure: ${response.status} (${errorText})`,
             )
           }
 
-          // method 1
-          // do a head request with the token to see if the file exists and the token works potentially
-          // throw an error if the head request fails
-
           return args
         },
-        // if the track is on reload call, need to clear the token and open location again
-        // ask if there is any way to check if reloaded()
         async handleError(
           authenticationInfoMap: Record<string, string>,
           errorText: string,

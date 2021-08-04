@@ -156,6 +156,7 @@ const stateModelFactory = (
           location = undefined
           resolve = () => {}
           reject = () => {}
+          openLocationPromise = undefined
         },
         async openLocation(l: FileLocation) {
           location = l
