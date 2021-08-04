@@ -1,9 +1,8 @@
-// will move later, just putting here tempimport React from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { FileLocation, AuthLocation } from '@jbrowse/core/util/types'
-
+import { searchOrReplaceInArgs } from '@jbrowse/core/util'
 import { getRoot } from 'mobx-state-tree'
 import { HTTPBasicInternetAccountConfigModel } from './configSchema'
 import { Instance, types } from 'mobx-state-tree'
@@ -36,8 +35,6 @@ const stateModelFactory = (
     )
     .volatile(() => ({
       currentTypeAuthorizing: '',
-      base64username: '',
-      base64password: '',
     }))
     .views(self => ({
       get tokenType() {
@@ -52,36 +49,25 @@ const stateModelFactory = (
         )
       },
     }))
-    .actions(self => ({
-      setBase64Username(username: string) {
-        self.base64username = btoa(username)
-      },
-      setBase64Password(password: string) {
-        self.base64password = btoa(password)
-      },
-    }))
     .actions(self => {
       let resolve: Function = () => {}
       let reject: Function = () => {}
       let openLocationPromise: Promise<string> | undefined = undefined
       return {
-        setTokenInfo() {
-          if (self.base64username && self.base64password) {
-            sessionStorage.setItem(
-              `${self.internetAccountId}-token`,
-              `${self.base64username}:${self.base64password}`,
-            )
-            resolve()
+        setTokenInfo(token: string) {
+          sessionStorage.setItem(`${self.internetAccountId}-token`, token)
+          resolve(token)
+        },
+        handleClose(token?: string) {
+          const { session } = getRoot(self)
+          if (token) {
+            this.setTokenInfo(token)
           } else {
-            reject()
+            reject(new Error('user cancelled'))
           }
+          session.setDialogComponent(undefined, undefined)
           resolve = () => {}
           reject = () => {}
-        },
-        handleClose() {
-          const { session } = getRoot(self)
-          this.setTokenInfo()
-          session.setDialogComponent(undefined, undefined)
         },
 
         async openLocation(location: FileLocation) {
@@ -90,8 +76,6 @@ const stateModelFactory = (
               const { session } = getRoot(self)
               session.setDialogComponent(HTTPBasicLoginForm, {
                 internetAccountId: self.internetAccountId,
-                setUser: self.setBase64Username,
-                setPass: self.setBase64Password,
                 handleClose: this.handleClose,
               })
               resolve = r
@@ -106,12 +90,47 @@ const stateModelFactory = (
           authenticationInfoMap: Record<string, string>,
           args: {},
         ) {
-          const token = authenticationInfoMap[self.internetAccountId]
+          let token = authenticationInfoMap[self.internetAccountId]
+
           if (!token) {
-            await this.openLocation(location)
+            token = await this.openLocation(location)
           }
 
+          // test
+          const response = await fetch(searchOrReplaceInArgs(args, 'uri'), {
+            method: 'HEAD',
+            headers: {
+              Authorization: `${self.tokenType} ${token}`,
+            },
+          })
+          console.log(response)
+
+          if (!response.ok) {
+            const errorText = await response.text()
+            this.handleError(
+              authenticationInfoMap,
+              `Network response failure: ${response.status} (${errorText})`,
+            )
+          }
+
+          // method 1
+          // do a head request with the token to see if the file exists and the token works potentially
+          // throw an error if the head request fails
+
           return args
+        },
+        // if the track is on reload call, need to clear the token and open location again
+        // ask if there is any way to check if reloaded()
+        async handleError(
+          authenticationInfoMap: Record<string, string>,
+          errorText: string,
+        ) {
+          const rootModel = getRoot(self)
+          rootModel.removeFromAuthenticationMap(
+            self.internetAccountId,
+            authenticationInfoMap,
+          )
+          return new Error(errorText)
         },
       }
     })
@@ -119,14 +138,10 @@ const stateModelFactory = (
 
 const HTTPBasicLoginForm = ({
   internetAccountId,
-  setUser,
-  setPass,
   handleClose,
 }: {
   internetAccountId: string
-  setUser: (arg: string) => void
-  setPass: (arg: string) => void
-  handleClose: () => void
+  handleClose: (arg?: string) => void
 }) => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -165,15 +180,19 @@ const HTTPBasicLoginForm = ({
             disabled={!username || !password}
             onClick={() => {
               if (username && password) {
-                setUser(username)
-                setPass(password)
-                handleClose()
+                handleClose(btoa(`${username}:${password}`))
               }
             }}
           >
             Submit
           </Button>
-          <Button variant="contained" color="primary" onClick={handleClose}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              handleClose()
+            }}
+          >
             Cancel
           </Button>
         </DialogActions>

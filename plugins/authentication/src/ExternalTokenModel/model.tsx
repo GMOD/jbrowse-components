@@ -1,11 +1,10 @@
-// will move later, just putting here tempimport React from 'react'
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { FileLocation, AuthLocation } from '@jbrowse/core/util/types'
 import { searchOrReplaceInArgs } from '@jbrowse/core/util'
 import { ExternalTokenInternetAccountConfigModel } from './configSchema'
-import { Instance, types } from 'mobx-state-tree'
+import { Instance, types, getRoot } from 'mobx-state-tree'
 
 interface Account {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -116,13 +115,14 @@ const stateModelFactory = (
         args: {},
       ) {
         const token = authenticationInfoMap[self.internetAccountId]
-        if (!token) {
+        const reloaded = false // temp flag
+        if (!token || reloaded) {
+          if (reloaded) {
+            await this.handleError(authenticationInfoMap)
+          }
           await this.openLocation(location)
         }
 
-        // probably will need a way to test if the token is okay before opening the track,
-        // and if it fails then do a handle error with a new handleRpcMethodCall
-        // similar to Oauth implementation
         switch (self.origin) {
           case 'GDC': {
             const query = (location as AuthLocation).uri.split('/').pop() // should get id
@@ -135,6 +135,15 @@ const stateModelFactory = (
             return editedArgs
           }
         }
+      },
+      // if the track is on reload call, need to clear the token and open location again
+      // ask if there is any way to check if reloaded()
+      async handleError(authenticationInfoMap: Record<string, string>) {
+        const rootModel = getRoot(self)
+        rootModel.removeFromAuthenticationMap(
+          self.internetAccountId,
+          authenticationInfoMap,
+        )
       },
     }))
 }
