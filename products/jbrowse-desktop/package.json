@@ -14,7 +14,6 @@
     "develop": "electron .",
     "cra-start": "rescripts start",
     "test": "rescripts test",
-    "get-beta-version": "echo $npm_package_desktop-beta",
     "build": "rescripts build",
     "build-electron": "yarn build && electron-builder build --windows --mac --linux",
     "build-electron:win": "yarn build && electron-builder build --windows",
