@@ -2,7 +2,7 @@ name: Desktop build - Linux
 on:
   push:
     tags:
-      - '*'
+      - 'v*'
 
 jobs:
   build:
