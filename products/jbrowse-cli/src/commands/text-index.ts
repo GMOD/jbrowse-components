@@ -81,14 +81,6 @@ export default class TextIndex extends JBrowseCommand {
       fs.mkdirSync(trixDir)
     }
 
-    for (const asm of assembliesToIndex) {
-      const configs = await this.getConfig(confFile, asm, tracks?.split(','))
-
-      for (const config of configs) {
-        const { trackId } = config
-        TrackIds.push(trackId)
-      }
-    }
     const attributesToIndex = attributes?.split(',') || []
 
     for (const asm of assembliesToIndex) {
@@ -139,17 +131,31 @@ export default class TextIndex extends JBrowseCommand {
       ),
     )
 
+    const metaAttrs: Array<string[]> = []
+    for (const asm of assembliesToIndex) {
+      const configs = await this.getConfig(confFile, asm, tracks?.split(','))
+
+      for (const config of configs) {
+        const { textSearchIndexingAttributes, trackId } = config
+        if (attributes && attributes.length > 0) {
+          metaAttrs.push(attributes.split(','))
+        } else if (textSearchIndexingAttributes) {
+          metaAttrs.push(textSearchIndexingAttributes)
+        } else {
+          metaAttrs.push(['Name', 'ID'])
+        }
+        TrackIds.push(trackId)
+      }
+    }
+
     fs.writeFileSync(
       metaFile,
-      JSON.stringify(
-        { attributes: attributesToIndex, indexedTracks: TrackIds },
-        null,
-        2,
-      ),
+      JSON.stringify({ TrackData: { TrackIds, metaAttrs } }, null, 2),
     )
 
     this.log('Finished!')
   }
+
   // This function takes a list of tracks, as well as which attributes to
   // index, and indexes them all into one aggregate index.
   async indexDriver(
@@ -189,7 +195,6 @@ export default class TextIndex extends JBrowseCommand {
         this.log('No attributes found! Indexing by defaults.')
         attributesToIndex = ['Name', 'ID']
       }
-
       if (type === 'Gff3TabixAdapter') {
         yield* this.indexGff3(config, attributesToIndex, outLocation, quiet)
       }
