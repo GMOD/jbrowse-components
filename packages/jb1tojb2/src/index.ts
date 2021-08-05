@@ -278,6 +278,7 @@ interface Jb2Track {
   type?: string
   defaultRendering?: string
   assemblyNames?: string
+  jb1Config?: string
 }
 
 interface Jb2Adapter {
@@ -341,6 +342,7 @@ export function convertTrackConfig(
     trackId: objectHash(jb1TrackConfig),
     name: jb1TrackConfig.key || jb1TrackConfig.label,
     assemblyNames: assemblyNames,
+    jb1Config: JSON.stringify(jb1TrackConfig),
   }
 
   const description =
