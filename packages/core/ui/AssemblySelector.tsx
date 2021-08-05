@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { observer } from 'mobx-react'
 import { getConf } from '@jbrowse/core/configuration'
 import { makeStyles, TextField, MenuItem } from '@material-ui/core'
@@ -30,6 +30,7 @@ const AssemblySelector = observer(
         margin="normal"
         helperText={error || 'Select assembly to view'}
         value={error ? '' : selected}
+        inputProps={{ 'data-testid': 'assembly-selector' }}
         onChange={event => onChange(event.target.value)}
         error={!!error}
         disabled={!!error}
