@@ -22,14 +22,17 @@ jobs:
           yarn build-electron:linux
         working-directory: products/jbrowse-desktop
       - name: Set release version
-        run: echo "RELEASE_VERSION=$(node -p "require('./package.json').desktopBeta")" >> $GITHUB_ENV
+        run: echo "RELEASE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+        working-directory: products/jbrowse-desktop
+      - name: Set beta release version
+        run: echo "BETA_RELEASE_VERSION=$(node -p "require('./package.json').desktopBeta")" >> $GITHUB_ENV
         working-directory: products/jbrowse-desktop
       - name: Get release
         id: get_release
         uses: kaliber5/action-get-release@v1
         with:
           token: ${{ github.token }}
-          tag_name: ${{ env.RELEASE_VERSION }}
+          tag_name: ${{ env.BETA_RELEASE_VERSION }}
           draft: true
       - name: Upload Linux build
         id: upload-release-asset
@@ -39,5 +42,5 @@ jobs:
         with:
           upload_url: ${{ steps.get_release.outputs.upload_url }}
           asset_path: ./products/jbrowse-desktop/dist/jbrowse-desktop-${{ env.RELEASE_VERSION }}-linux.AppImage
-          asset_name: jbrowse-desktop-1.3.0-linux.AppImage
+          asset_name: jbrowse-desktop-${{ env.BETA_RELEASE_VERSION }}-linux.AppImage
           asset_content_type: application
