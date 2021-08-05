@@ -14,6 +14,7 @@
     "develop": "electron .",
     "cra-start": "rescripts start",
     "test": "rescripts test",
+    "get-desktop-beta": "echo $npm_package_desktopBeta",
     "build": "rescripts build",
     "build-electron": "yarn build && electron-builder build --windows --mac --linux",
     "build-electron:win": "yarn build && electron-builder build --windows",
@@ -97,17 +98,17 @@
     "copyright": "Copyright © 2019",
     "win": {
       "target": "nsis",
-      "artifactName": "jbrowse-desktop-${npm_package_desktopBeta}-win.${ext}"
+      "artifactName": "jbrowse-desktop-$(yarn get-desktop-beta)-win.${ext}"
     },
     "linux": {
       "executableName": "jbrowse-desktop",
       "target": "AppImage",
-      "artifactName": "jbrowse-desktop-${npm_package_desktopBeta}-linux.${ext}"
+      "artifactName": "jbrowse-desktop-$(yarn get-desktop-beta)-linux.${ext}"
     },
     "mac": {
       "category": "public.app-category.utilities",
       "target": "dmg",
-      "artifactName": "jbrowse-desktop-${npm_package_desktopBeta}-mac.${ext}"
+      "artifactName": "jbrowse-desktop-$(yarn get-desktop-beta)-mac.${ext}"
     },
     "files": [
       "build/**/*",
