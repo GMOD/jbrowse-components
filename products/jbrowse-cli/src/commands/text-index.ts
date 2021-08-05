@@ -96,10 +96,16 @@ export default class TextIndex extends JBrowseCommand {
         TrackIds.push(trackId)
       }
     }
-    const attributesToIndex =
+    let attributesToIndex =
       attributes?.split(',') || uniqueAttrs.length > 0
         ? [...new Set(uniqueAttrs)]
         : ['Name', 'ID']
+
+    // I dont think this condition will ever be hit due to line 102
+    if (attributesToIndex.length === 0) {
+      this.log('There are no attributes specified! Indexing by defaults')
+      attributesToIndex = ['Name', 'ID']
+    }
 
     for (const asm of assembliesToIndex) {
       const config = await this.getConfig(confFile, asm, tracks?.split(','))
