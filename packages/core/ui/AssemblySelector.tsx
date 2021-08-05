@@ -35,11 +35,15 @@ const AssemblySelector = observer(
         disabled={!!error}
         className={classes.importFormEntry}
       >
-        {assemblyNames.map(name => (
-          <MenuItem key={name} value={name}>
-            {getConf(assemblyManager.get(name), 'displayName') || name}
-          </MenuItem>
-        ))}
+        {assemblyNames.map(name => {
+          const assembly = assemblyManager.get(name)
+          const displayName = assembly ? getConf(assembly, 'displayName') : ''
+          return (
+            <MenuItem key={name} value={name}>
+              {displayName || name}
+            </MenuItem>
+          )
+        })}
       </TextField>
     )
   },

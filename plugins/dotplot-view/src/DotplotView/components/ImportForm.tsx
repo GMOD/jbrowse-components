@@ -3,13 +3,12 @@ import { FileSelector } from '@jbrowse/core/ui'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
+import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import {
   Button,
   Paper,
   Container,
   Grid,
-  MenuItem,
-  TextField,
   Typography,
   makeStyles,
 } from '@material-ui/core'
@@ -29,57 +28,14 @@ const useStyles = makeStyles(theme => ({
     paddingBottom: theme.spacing(1),
   },
 }))
-const FormRow = observer(
-  ({
-    model,
-    selected,
-    onChange,
-    error,
-  }: {
-    model: DotplotViewModel
-    selected: number
-    onChange: (arg0: number) => void
-    error?: string
-  }) => {
-    const classes = useStyles()
-    const { assemblyNames } = getSession(model) as { assemblyNames: string[] }
-    return (
-      <Grid
-        container
-        item
-        justifyContent="center"
-        spacing={2}
-        alignItems="center"
-      >
-        <TextField
-          select
-          variant="outlined"
-          value={assemblyNames[selected] ? selected : ''}
-          inputProps={{ 'data-testid': 'dotplot-input' }}
-          onChange={event => {
-            onChange(Number(event.target.value))
-          }}
-          error={Boolean(error)}
-          disabled={Boolean(error)}
-          className={classes.importFormEntry}
-        >
-          {assemblyNames.map((name, idx) => (
-            <MenuItem key={name} value={idx}>
-              {name}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Grid>
-    )
-  },
-)
+
 const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   const classes = useStyles()
-  const [numRows] = useState(2)
-  const [selected, setSelected] = useState([0, 0])
-  const [trackData, setTrackData] = useState<FileLocation>({ uri: '' })
   const session = getSession(model)
   const { assemblyNames } = session
+  const [trackData, setTrackData] = useState<FileLocation>({ uri: '' })
+  const [selected1, setSelected1] = useState(assemblyNames[0])
+  const [selected2, setSelected2] = useState(assemblyNames[0])
   const error = assemblyNames.length ? '' : 'No configured assemblies'
 
   function onOpenClick() {
@@ -87,10 +43,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
       { bpPerPx: 0.1, offsetPx: 0 },
       { bpPerPx: 0.1, offsetPx: 0 },
     ])
-    model.setAssemblyNames([
-      assemblyNames[selected[0]],
-      assemblyNames[selected[1]],
-    ])
+    model.setAssemblyNames([selected1, selected2])
 
     if ('uri' in trackData && trackData.uri) {
       const fileName = trackData.uri
@@ -101,12 +54,12 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
       const configuration = session.addTrackConf({
         trackId: `fileName-${Date.now()}`,
         name: fileName,
-        assemblyNames: selected.map(selection => assemblyNames[selection]),
+        assemblyNames: [selected1, selected2],
         type: 'SyntenyTrack',
         adapter: {
           type: 'PAFAdapter',
           pafLocation: trackData,
-          assemblyNames: selected.map(selection => assemblyNames[selection]),
+          assemblyNames: [selected1, selected2],
         },
       })
       model.toggleTrack(configuration.trackId)
@@ -131,19 +84,16 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
                 <p style={{ textAlign: 'center' }}>
                   Select assemblies for dotplot view
                 </p>
-                {[...new Array(numRows)].map((_, index) => (
-                  <FormRow
-                    key={`row_${index}_${selected[index]}`}
-                    error={error}
-                    selected={selected[index]}
-                    onChange={val => {
-                      const copy = selected.slice(0)
-                      copy[index] = val
-                      setSelected(copy)
-                    }}
-                    model={model}
-                  />
-                ))}
+                <AssemblySelector
+                  selected={selected1}
+                  onChange={val => setSelected1(val)}
+                  session={session}
+                />
+                <AssemblySelector
+                  selected={selected2}
+                  onChange={val => setSelected2(val)}
+                  session={session}
+                />
               </Paper>
 
               <Paper style={{ padding: 12, marginBottom: 10 }}>

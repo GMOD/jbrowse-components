@@ -15,14 +15,13 @@ import {
   Grid,
   Typography,
   TextField,
-  MenuItem,
-  Select,
   makeStyles,
 } from '@material-ui/core'
 
 import { observer } from 'mobx-react'
+import { getSession } from '@jbrowse/core/util'
 import { FileSelector } from '@jbrowse/core/ui'
-import { readConfObject } from '@jbrowse/core/configuration'
+import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 
 const useStyles = makeStyles(theme => {
   return {
@@ -68,16 +67,16 @@ const ImportForm = observer(({ model }) => {
   const classes = useStyles()
   const showColumnNameRowControls =
     model.fileType === 'CSV' || model.fileType === 'TSV'
+  const session = getSession(model)
+  const { assemblyNames } = session
+  const [selected, setSelected] = useState(assemblyNames[0])
 
   const {
-    selectedAssemblyIdx,
-    setSelectedAssemblyIdx,
     fileType,
     fileTypes,
     setFileType,
     hasColumnNameLine,
     toggleHasColumnNameLine,
-    assemblyChoices,
   } = model
 
   return (
@@ -149,22 +148,11 @@ const ImportForm = observer(({ model }) => {
           </Grid>
         ) : null}
         <Grid item>
-          <FormControl fullWidth>
-            <FormLabel component="legend">Associated with assembly</FormLabel>
-            <Select
-              value={selectedAssemblyIdx}
-              onChange={evt => setSelectedAssemblyIdx(evt.target.value)}
-            >
-              {assemblyChoices.map((assembly, idx) => {
-                const name = readConfObject(assembly, 'name')
-                return (
-                  <MenuItem key={name} value={idx}>
-                    {name}
-                  </MenuItem>
-                )
-              })}
-            </Select>
-          </FormControl>
+          <AssemblySelector
+            session={session}
+            selected={selected}
+            onChange={val => setSelected(val)}
+          />
         </Grid>
         <Grid item className={classes.buttonContainer}>
           {model.canCancel ? (
@@ -182,7 +170,7 @@ const ImportForm = observer(({ model }) => {
             variant="contained"
             data-testid="open_spreadsheet"
             color="primary"
-            onClick={model.import}
+            onClick={() => model.import(selected)}
           >
             Open
           </Button>
