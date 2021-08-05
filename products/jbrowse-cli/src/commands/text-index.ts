@@ -67,7 +67,6 @@ export default class TextIndex extends JBrowseCommand {
       ? path.join(outFlag, 'config.json')
       : outFlag
     const dir = path.dirname(confFile)
-    const uniqueAttrs: Array<string> = []
     const TrackIds: Array<string> = []
 
     const config: Config = JSON.parse(fs.readFileSync(confFile, 'utf8'))
@@ -86,13 +85,7 @@ export default class TextIndex extends JBrowseCommand {
       const configs = await this.getConfig(confFile, asm, tracks?.split(','))
 
       for (const config of configs) {
-        const { textSearchIndexingAttributes, trackId } = config
-
-        if (textSearchIndexingAttributes) {
-          for (const attr of textSearchIndexingAttributes) {
-            uniqueAttrs.push(attr)
-          }
-        }
+        const { trackId } = config
         TrackIds.push(trackId)
       }
     }
