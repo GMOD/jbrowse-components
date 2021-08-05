@@ -96,20 +96,10 @@ export default class TextIndex extends JBrowseCommand {
         TrackIds.push(trackId)
       }
     }
-    let attributesToIndex =
-      attributes?.split(',') || uniqueAttrs.length > 0
-        ? [...new Set(uniqueAttrs)]
-        : ['Name', 'ID']
-
-    // I dont think this condition will ever be hit due to line 102
-    if (attributesToIndex.length === 0) {
-      this.log('There are no attributes specified! Indexing by defaults')
-      attributesToIndex = ['Name', 'ID']
-    }
+    const attributesToIndex = attributes?.split(',') || []
 
     for (const asm of assembliesToIndex) {
       const config = await this.getConfig(confFile, asm, tracks?.split(','))
-
       this.log('Indexing assembly ' + asm + '...')
 
       if (config.length) {
@@ -191,10 +181,24 @@ export default class TextIndex extends JBrowseCommand {
     for (const config of configs) {
       const {
         adapter: { type },
+        textSearchIndexingAttributes,
       } = config
 
+      let attributesToIndex
+      if (attributes && attributes.length > 0) {
+        attributesToIndex = attributes
+      } else if (
+        textSearchIndexingAttributes &&
+        textSearchIndexingAttributes.length > 0
+      ) {
+        attributesToIndex = textSearchIndexingAttributes
+      } else {
+        this.log('No attributes found! Indexing by defaults.')
+        attributesToIndex = ['Name', 'ID']
+      }
+
       if (type === 'Gff3TabixAdapter') {
-        yield* this.indexGff3(config, attributes, outLocation, quiet)
+        yield* this.indexGff3(config, attributesToIndex, outLocation, quiet)
       }
     }
   }
