@@ -1,7 +1,8 @@
 name: Desktop build - Linux
 on:
-  tags:
-    - '*'
+  push:
+    tags:
+      - '*'
 
 jobs:
   build:
