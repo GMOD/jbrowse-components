@@ -64,7 +64,6 @@ export default class TextIndex extends JBrowseCommand {
       ? path.join(outFlag, 'config.json')
       : outFlag
     const dir = path.dirname(confFile)
-    const uniqueAttrs: Array<string> = []
     const TrackIds: Array<string> = []
 
     const config: Config = JSON.parse(fs.readFileSync(confFile, 'utf8'))
@@ -79,25 +78,10 @@ export default class TextIndex extends JBrowseCommand {
       fs.mkdirSync(trixDir)
     }
 
-    for (const asm of assembliesToIndex) {
-      const configs = await this.getConfig(confFile, asm, tracks?.split(','))
-
-      for (const config of configs) {
-        const { textSearchIndexingAttributes, trackId } = config
-
-        for (const attr of textSearchIndexingAttributes) {
-          uniqueAttrs.push(attr)
-        }
-        TrackIds.push(trackId)
-      }
-    }
-    const attributesToIndex = attributes?.split(',') || [
-      ...new Set(uniqueAttrs),
-    ]
+    const attributesToIndex = attributes?.split(',') || []
 
     for (const asm of assembliesToIndex) {
       const config = await this.getConfig(confFile, asm, tracks?.split(','))
-
       this.log('Indexing assembly ' + asm + '...')
 
       if (config.length) {
@@ -144,13 +128,26 @@ export default class TextIndex extends JBrowseCommand {
       ),
     )
 
+    const metaAttrs: Array<string[]> = []
+    for (const asm of assembliesToIndex) {
+      const configs = await this.getConfig(confFile, asm, tracks?.split(','))
+
+      for (const config of configs) {
+        const { textSearchIndexingAttributes, trackId } = config
+        if (attributes && attributes.length > 0) {
+          metaAttrs.push(attributes.split(','))
+        } else if (textSearchIndexingAttributes) {
+          metaAttrs.push(textSearchIndexingAttributes)
+        } else {
+          metaAttrs.push(['Name', 'ID'])
+        }
+        TrackIds.push(trackId)
+      }
+    }
+
     fs.writeFileSync(
       metaFile,
-      JSON.stringify(
-        { attributes: attributesToIndex, indexedTracks: TrackIds },
-        null,
-        2,
-      ),
+      JSON.stringify({ TrackData: { TrackIds, metaAttrs } }, null, 2),
     )
 
     this.log('Finished!')
@@ -183,12 +180,26 @@ export default class TextIndex extends JBrowseCommand {
           type,
           gffGzLocation: { uri },
         },
+        textSearchIndexingAttributes,
       } = config
 
+      let attributesToIndex
+      if (attributes && attributes.length > 0) {
+        attributesToIndex = attributes
+      } else if (
+        textSearchIndexingAttributes &&
+        textSearchIndexingAttributes.length > 0
+      ) {
+        attributesToIndex = textSearchIndexingAttributes
+      } else {
+        this.log('No attributes found! Indexing by defaults.')
+        attributesToIndex = ['Name', 'ID']
+      }
+
       if (uri.endsWith('.gtf')) {
-        yield* indexGtf(config, attributes, outLocation, quiet)
+        yield* indexGtf(config, attributesToIndex, outLocation, quiet)
       } else if (type === 'Gff3TabixAdapter') {
-        yield* indexGff3(config, attributes, outLocation, quiet)
+        yield* indexGff3(config, attributesToIndex, outLocation, quiet)
       }
     }
   }
