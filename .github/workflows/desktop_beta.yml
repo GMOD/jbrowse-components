@@ -25,5 +25,3 @@ jobs:
           release_name: Release desktop ${{ env.RELEASE_VERSION }}
           draft: true
           prerelease: true
-      - name: Print release upload URL
-        run: echo ${{ steps.create_release.outputs.upload_url }}
