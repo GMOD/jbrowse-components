@@ -1,7 +1,7 @@
 name: Desktop build - Linux
 on:
-  release:
-    types: [prereleased]
+  tags:
+    - '*'
 
 jobs:
   build:
