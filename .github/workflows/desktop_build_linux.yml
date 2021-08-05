@@ -29,7 +29,8 @@ jobs:
         uses: kaliber5/action-get-release@v1
         with:
           token: ${{ github.token }}
-          latest: true
+          tag_name: ${{ env.RELEASE_VERSION }}
+          draft: true
       - name: Upload Linux build
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
