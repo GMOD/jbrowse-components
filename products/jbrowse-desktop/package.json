@@ -103,7 +103,7 @@
     "linux": {
       "executableName": "jbrowse-desktop",
       "target": "AppImage",
-      "artifactName": "jbrowse-desktop-$(yarn get-desktop-beta)-linux.${ext}"
+      "artifactName": "jbrowse-desktop-1.3.2-beta.0-linux.AppImage"
     },
     "mac": {
       "category": "public.app-category.utilities",
