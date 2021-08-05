@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
+import { getConf } from '@jbrowse/core/configuration'
 import { Region } from '@jbrowse/core/util/types'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import {
@@ -136,7 +137,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             >
               {assemblyNames.map((name, idx) => (
                 <MenuItem key={name} value={idx}>
-                  {name}
+                  {getConf(assemblyManager.get(name), 'displayName') || name}
                 </MenuItem>
               ))}
             </TextField>

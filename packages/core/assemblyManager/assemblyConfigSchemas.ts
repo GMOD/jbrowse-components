@@ -19,6 +19,12 @@ export default (pluginManager: PluginManager) => {
         description:
           'Define custom colors for each reference sequence. Will cycle through this list if there are not enough colors for every sequence.',
       },
+      displayName: {
+        type: 'string',
+        defaultValue: '',
+        description:
+          'A longer display name if it is something different from the assembly ID',
+      },
     },
     { explicitIdentifier: 'name' },
   )
