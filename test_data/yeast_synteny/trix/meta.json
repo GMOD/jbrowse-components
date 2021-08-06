@@ -1,0 +1,9 @@
+{
+  "TrackData": {
+    "TrackIds": ["r64.sorted.gff", "yjm1447.sorted.gff"],
+    "metaAttrs": [
+      ["Name", "ID"],
+      ["Name", "ID"]
+    ]
+  }
+}
