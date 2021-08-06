@@ -41,44 +41,38 @@ export const Region = types.compose(
 )
 
 export const LocalPathLocation = types.model('LocalPathLocation', {
-  localPath: types.string, // TODO: refine
+  locationType: types.literal('LocalPathLocation'),
+
+  localPath: types.string,
 })
 
 // like how blobId is used to get a blob map
 export const BlobLocation = types.model('BlobLocation', {
-  name: types.string, // TODO: refine
+  locationType: types.literal('BlobLocation'),
+
+  name: types.string,
   blobId: types.string,
 })
 
 export const UriLocationRaw = types.model('UriLocation', {
-  uri: types.string, // TODO: refine
-  authHeader: types.maybe(types.string),
-  internetAccountId: types.maybe(types.string),
-  baseAuthUri: types.maybe(types.string),
-  tokenType: types.maybe(types.string),
+  locationType: types.literal('UriLocation'),
+
+  uri: types.string,
   baseUri: types.maybe(types.string),
+
+  internetAccountId: types.maybe(types.string),
+
+  // authz information (such as tokens) needed for using this resource.
+  // if provided, these must be completely sufficient for using it
+  internetAccountPreAuthorization: types.maybe(
+    types.model('InternetAccountPreAuthorization', {
+      internetAccountType: types.string,
+      authInfo: types.frozen(),
+    }),
+  ),
 })
 
 export const UriLocation = types.snapshotProcessor(UriLocationRaw, {
-  postProcessor: snap => {
-    const { baseUri, ...rest } = snap
-    if (!baseUri) {
-      return rest
-    }
-    return snap
-  },
-})
-
-export const AuthLocationRaw = types.model('AuthLocation', {
-  uri: types.string, // TODO: refine
-  authHeader: types.string,
-  internetAccountId: types.string,
-  baseAuthUri: types.string,
-  tokenType: types.maybe(types.string),
-  baseUri: types.maybe(types.string),
-})
-
-export const AuthLocation = types.snapshotProcessor(AuthLocationRaw, {
   postProcessor: snap => {
     const { baseUri, ...rest } = snap
     if (!baseUri) {
@@ -92,5 +86,4 @@ export const FileLocation = types.union(
   LocalPathLocation,
   UriLocation,
   BlobLocation,
-  AuthLocation,
 )

@@ -286,17 +286,13 @@ export type FileLocation =
   | BlobLocation
   | AuthLocation
 
-/* eslint-enable @typescript-eslint/no-empty-interface */
-
 // These types are slightly different than the MST models representing a
 // location because a blob cannot be stored in a MST, so this is the
 // pre-processed file location
 export type PreUriLocation = { uri: string }
 export type PreLocalPathLocation = { localPath: string }
 export type PreBlobLocation = { blob: File }
-export type PreAuthLocation = { baseAuthUri: string }
 export type PreFileLocation =
   | PreUriLocation
   | PreLocalPathLocation
   | PreBlobLocation
-  | PreAuthLocation

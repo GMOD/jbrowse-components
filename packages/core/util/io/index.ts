@@ -6,7 +6,6 @@ import {
   LocalPathLocation,
   UriLocation,
   BlobLocation,
-  AuthLocation,
 } from '../types'
 import { getBlob, getAuthenticationInfo } from '../tracks'
 import { isElectron } from '../../util'
@@ -17,10 +16,6 @@ export const openUrl = (arg: string, headers?: HeadersInit) => {
 
 function isUriLocation(location: FileLocation): location is UriLocation {
   return 'uri' in location
-}
-
-function isAuthLocation(location: FileLocation): location is AuthLocation {
-  return 'baseAuthUri' in location
 }
 
 function isLocalPathLocation(
@@ -47,17 +42,6 @@ export function openLocation(location: FileLocation): GenericFilehandle {
         throw new Error('No URI provided')
       }
       let optionalHeaders = undefined
-      if (isAuthLocation(location)) {
-        const token = getAuthenticationInfo(location.internetAccountId)
-        if (token) {
-          const headerContent = location.tokenType
-            ? `${location.tokenType} ${token}`
-            : token
-          optionalHeaders = {
-            [location.authHeader]: headerContent,
-          }
-        }
-      }
       return openUrl(
         location.baseUri
           ? new URL(location.uri, location.baseUri).href
