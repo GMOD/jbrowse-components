@@ -225,6 +225,20 @@
         "uri": "trix/meta.json"
       },
       "assemblies": ["volvox"]
+    },
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "volvox-index",
+      "ixFilePath": {
+        "uri": "trix/volvox.ix"
+      },
+      "ixxFilePath": {
+        "uri": "trix/volvox.ixx"
+      },
+      "metaFilePath": {
+        "uri": "trix/meta.json"
+      },
+      "assemblies": ["volvox"]
     }
   ]
 }

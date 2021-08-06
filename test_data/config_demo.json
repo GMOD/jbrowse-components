@@ -3195,7 +3195,6 @@
         }
       }
     },
-
     {
       "type": "AlignmentsTrack",
       "trackId": "modbam_test.read",
@@ -3231,5 +3230,35 @@
   "connections": [],
   "defaultSession": {
     "name": "New Session"
-  }
+  },
+  "aggregateTextSearchAdapters": [
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "hg19-index",
+      "ixFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix"
+      },
+      "ixxFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx"
+      },
+      "metaFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json"
+      },
+      "assemblies": ["hg19"]
+    },
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "hg38-index",
+      "ixFilePath": {
+        "uri": "https://jbrowse.org/genomes/GRCh38/trix/hg38.ix"
+      },
+      "ixxFilePath": {
+        "uri": "https://jbrowse.org/genomes/GRCh38/trix/hg38.ixx"
+      },
+      "metaFilePath": {
+        "uri": "https://jbrowse.org/genomes/GRCh38/trix/meta.json"
+      },
+      "assemblies": ["hg38"]
+    }
+  ]
 }

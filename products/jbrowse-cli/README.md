@@ -421,6 +421,12 @@ OPTIONS
 
   -h, --help                   show CLI help
 
+  -q, --quiet                  Hide the progress bars
+
+  --attributes=attributes      Comma separated list of attributes to index
+
+  --force                      Overwrite previously existing indexes
+
   --out=out                    Synonym for target
 
   --target=target              Path to config file in JB2 installation directory to read from.

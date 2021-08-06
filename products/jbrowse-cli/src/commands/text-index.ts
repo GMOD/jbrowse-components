@@ -1,12 +1,12 @@
 import path from 'path'
+import { SingleBar, Presets } from 'cli-progress'
+import readline from 'readline'
 import fs from 'fs'
-import crypto from 'crypto'
-import gff from '@gmod/gff'
 import { flags } from '@oclif/command'
 import { Readable } from 'stream'
 import { ixIxxStream } from 'ixixx'
-import { Transform, PassThrough } from 'stream'
-import { http as httpFR, https as httpsFR } from 'follow-redirects'
+import { IncomingMessage } from 'http'
+import { http, https, FollowResponse } from 'follow-redirects'
 import { createGunzip } from 'zlib'
 import JBrowseCommand, { Track, Config } from '../base'
 
@@ -35,10 +35,23 @@ export default class TextIndex extends JBrowseCommand {
     out: flags.string({
       description: 'Synonym for target',
     }),
+
+    attributes: flags.string({
+      description: 'Comma separated list of attributes to index',
+    }),
     assemblies: flags.string({
       char: 'a',
       description:
         'Specify the assembl(ies) to create an index for. If unspecified, creates an index for each assembly in the config',
+    }),
+    force: flags.boolean({
+      default: false,
+      description: 'Overwrite previously existing indexes',
+    }),
+    quiet: flags.boolean({
+      char: 'q',
+      default: false,
+      description: 'Hide the progress bars',
     }),
   }
 
@@ -46,50 +59,54 @@ export default class TextIndex extends JBrowseCommand {
   // tracks associated. Gets their information and sends it to the appropriate
   // file parser to be indexed
   async run() {
-    const defaultAttributes = ['Name', 'description', 'Note', 'ID']
-    const { flags } = this.parse(TextIndex)
-    const outdir = flags.target || flags.out || '.'
-    const isDir = (await fs.promises.lstat(outdir)).isDirectory()
-    const target = isDir ? `${outdir}/config.json` : outdir
+    const {
+      flags: { out, target, tracks, assemblies, attributes, quiet, force },
+    } = this.parse(TextIndex)
+    const outFlag = target || out || '.'
+    const confFile = fs.lstatSync(outFlag).isDirectory()
+      ? path.join(outFlag, 'config.json')
+      : outFlag
+    const dir = path.dirname(confFile)
+    const TrackIds: Array<string> = []
 
-    const configDirectory = path.dirname(target)
-    const config: Config = JSON.parse(fs.readFileSync(target, 'utf8'))
+    const config: Config = JSON.parse(fs.readFileSync(confFile, 'utf8'))
     const assembliesToIndex =
-      flags.assemblies?.split(',') || config.assemblies?.map(a => a.name) || []
+      assemblies?.split(',') || config.assemblies?.map(a => a.name) || []
     const adapters = config.aggregateTextSearchAdapters || []
 
-    const hash: string = crypto
-      .createHash('md5')
-      .update(
-        assembliesToIndex.toString() + flags.tracks?.split(','.toString()),
-      )
-      .digest('base64')
+    const metaFile = path.join(dir, 'trix', `meta.json`)
+
+    const trixDir = path.join(dir, 'trix')
+    if (!fs.existsSync(trixDir)) {
+      fs.mkdirSync(trixDir)
+    }
+
+    const attributesToIndex = attributes?.split(',') || []
 
     for (const asm of assembliesToIndex) {
-      const config = await this.getConfig(target, asm, flags.tracks?.split(','))
-
+      const config = await this.getConfig(confFile, asm, tracks?.split(','))
       this.log('Indexing assembly ' + asm + '...')
 
       if (config.length) {
-        await this.indexDriver(config, defaultAttributes, configDirectory, asm)
+        const id = asm + '-index'
+        const adapterAlreadyFound = adapters.find(
+          x => x.textSearchAdapterId === id,
+        )
+        if (adapterAlreadyFound && !force) {
+          this.log(
+            `Note: ${asm} has already been indexed with this configuration, use --force to overwrite this assembly. Skipping for now`,
+          )
+        }
+        await this.indexDriver(config, attributesToIndex, dir, asm, quiet)
 
         // Checks through list of configs and checks the hash values
         // if it already exists it updates the entry and increments the
         // check varible. If the check variable is equal to 0 that means
         // the entry does not exist and creates one.
-        let check = 0
-        for (const x in adapters) {
-          if (adapters[x].textSearchAdapterId === hash) {
-            adapters[x].ixFilePath.uri = `trix/${asm}.ix`
-            adapters[x].ixxFilePath.uri = `trix/${asm}.ixx`
-            adapters[x].metaFilePath.uri = `trix/meta.json`
-            check++
-          }
-        }
-        if (check === 0) {
+        if (!adapterAlreadyFound) {
           adapters.push({
             type: 'TrixTextSearchAdapter',
-            textSearchAdapterId: hash,
+            textSearchAdapterId: id,
             ixFilePath: {
               uri: `trix/${asm}.ix`,
             },
@@ -106,13 +123,36 @@ export default class TextIndex extends JBrowseCommand {
     }
 
     fs.writeFileSync(
-      target,
+      confFile,
       JSON.stringify(
         { ...config, aggregateTextSearchAdapters: adapters },
         null,
         2,
       ),
     )
+
+    const metaAttrs: Array<string[]> = []
+    for (const asm of assembliesToIndex) {
+      const configs = await this.getConfig(confFile, asm, tracks?.split(','))
+
+      for (const config of configs) {
+        const { textSearchIndexingAttributes, trackId } = config
+        if (attributes && attributes.length > 0) {
+          metaAttrs.push(attributes.split(','))
+        } else if (textSearchIndexingAttributes) {
+          metaAttrs.push(textSearchIndexingAttributes)
+        } else {
+          metaAttrs.push(['Name', 'ID'])
+        }
+        TrackIds.push(trackId)
+      }
+    }
+
+    fs.writeFileSync(
+      metaFile,
+      JSON.stringify({ TrackData: { TrackIds, metaAttrs } }, null, 2),
+    )
+
     this.log('Finished!')
   }
 
@@ -121,72 +161,130 @@ export default class TextIndex extends JBrowseCommand {
   async indexDriver(
     configs: Track[],
     attributes: string[],
-    outLocation: string,
+    out: string,
     assemblyName: string,
+    quiet: boolean,
   ) {
-    let aggregateStream = new PassThrough()
-    let numStreamsFlowing = configs.length
+    const readable = Readable.from(
+      this.indexFile(configs, attributes, out, quiet),
+    )
+    return this.runIxIxx(readable, out, assemblyName)
+  }
 
-    //  For each uri, we parse the file and add it to aggregateStream.
+  async *indexFile(
+    configs: Track[],
+    attributes: string[],
+    outLocation: string,
+    quiet: boolean,
+  ) {
     for (const config of configs) {
       const {
-        trackId,
-        adapter: {
-          type,
-          gffGzLocation: { uri },
-        },
+        adapter: { type },
+        textSearchIndexingAttributes,
       } = config
 
+      let attributesToIndex
+      if (attributes && attributes.length > 0) {
+        attributesToIndex = attributes
+      } else if (
+        textSearchIndexingAttributes &&
+        textSearchIndexingAttributes.length > 0
+      ) {
+        attributesToIndex = textSearchIndexingAttributes
+      } else {
+        this.log('No attributes found! Indexing by defaults.')
+        attributesToIndex = ['Name', 'ID']
+      }
       if (type === 'Gff3TabixAdapter') {
-        const gffTransform = new Transform({
-          objectMode: true,
-          transform: (chunk, _encoding, done) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            chunk.forEach((record: any) => {
-              this.recurseFeatures(
-                record,
-                gff3Stream,
-                attributes,
-                trackId,
-                outLocation,
-              )
-            })
-            done()
-          },
-        })
-
-        const fileDataStream = await (this.isURL(uri)
-          ? this.createRemoteStream(uri)
-          : fs.createReadStream(path.join(outLocation, uri)))
-
-        const gzStream = uri.endsWith('.gz')
-          ? fileDataStream.pipe(createGunzip())
-          : fileDataStream
-
-        const gff3Stream = gzStream
-          .pipe(gff.parseStream({ parseSequences: false }))
-          .pipe(gffTransform)
-
-        // Add gff3Stream to aggregateStream, and DO NOT send 'end' event on
-        // completion, otherwise this would stop all streams from piping to the
-        // aggregate before completion.
-        aggregateStream = gff3Stream.pipe(aggregateStream, { end: false })
-
-        // If a stream ends we have two options:
-        //  1) it is the last stream, so end the aggregate stream.
-        //  2) it is not the last stream, so add a '\n' to separate streams for the indexer.
-
-        // eslint-disable-next-line no-loop-func
-        gff3Stream.once('end', () => {
-          if (--numStreamsFlowing === 0) {
-            aggregateStream.end()
-          } else {
-            aggregateStream.push('\n')
-          }
-        })
+        yield* this.indexGff3(config, attributesToIndex, outLocation, quiet)
       }
     }
-    return this.runIxIxx(aggregateStream, outLocation, assemblyName)
+  }
+
+  async *indexGff3(
+    config: Track,
+    attributes: string[],
+    outLocation: string,
+    quiet: boolean,
+  ) {
+    const {
+      adapter: {
+        gffGzLocation: { uri },
+      },
+      trackId,
+    } = config
+
+    // progress bar code was aided by blog post at
+    // https://webomnizz.com/download-a-file-with-progressbar-using-node-js/
+    const progressBar = new SingleBar(
+      {
+        format: '{bar} ' + trackId + ' {percentage}% | ETA: {eta}s',
+      },
+      Presets.shades_classic,
+    )
+
+    let fileDataStream
+    let totalBytes = 0
+    let receivedBytes = 0
+    if (this.isURL(uri)) {
+      fileDataStream = await this.createRemoteStream(uri)
+      totalBytes = +(fileDataStream.headers['content-length'] || 0)
+    } else {
+      const filename = path.join(outLocation, uri)
+      totalBytes = fs.statSync(filename).size
+      fileDataStream = fs.createReadStream(filename)
+    }
+
+    if (!quiet) {
+      progressBar.start(totalBytes, 0)
+    }
+
+    fileDataStream.on('data', chunk => {
+      receivedBytes += chunk.length
+      progressBar.update(receivedBytes)
+    })
+
+    const gzStream = uri.endsWith('.gz')
+      ? fileDataStream.pipe(createGunzip())
+      : fileDataStream
+
+    const rl = readline.createInterface({
+      input: gzStream,
+    })
+
+    for await (const line of rl) {
+      if (line.startsWith('#')) {
+        continue
+      } else if (line.startsWith('>')) {
+        break
+      }
+
+      const [seq_id, , , start, end, , , , col9] = line.split('\t')
+      const locStr = `${seq_id}:${start}..${end}`
+
+      const col9attrs = col9.split(';')
+      const name = col9attrs
+        .find(f => f.startsWith('Name'))
+        ?.split('=')[1]
+        .trim()
+      const id = col9attrs
+        .find(f => f.startsWith('ID'))
+        ?.split('=')[1]
+        .trim()
+      const attrs = attributes.map(attr =>
+        col9attrs
+          .find(f => f.startsWith(attr))
+          ?.split('=')[1]
+          .trim(),
+      )
+      if (name || id) {
+        const record = JSON.stringify([locStr, trackId, name, id])
+        const buff = Buffer.from(record).toString('base64')
+        yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
+      }
+    }
+
+    progressBar.stop()
   }
 
   // Method for handing off the parsing of a gff3 file URL.
@@ -194,9 +292,9 @@ export default class TextIndex extends JBrowseCommand {
   // Returns a @gmod/gff stream.
   async createRemoteStream(urlIn: string) {
     const newUrl = new URL(urlIn)
-    const fetcher = newUrl.protocol === 'https:' ? httpsFR : httpFR
+    const fetcher = newUrl.protocol === 'https:' ? https : http
 
-    return new Promise<Readable>((resolve, reject) =>
+    return new Promise<IncomingMessage & FollowResponse>((resolve, reject) =>
       fetcher.get(urlIn, resolve).on('error', reject),
     )
   }
@@ -213,105 +311,6 @@ export default class TextIndex extends JBrowseCommand {
     }
 
     return url.protocol === 'http:' || url.protocol === 'https:'
-  }
-
-  // Recursively goes through every record in the gff3 file and gets the
-  // desired attributes in the form of a JSON object. It is then pushed to
-  // gff3Stream in proper indexing format.
-  recurseFeatures(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    record: any,
-    gff3Stream: Readable,
-    attributes: string[],
-    trackID: string,
-    outPath: string,
-  ) {
-    // goes through the attributes array and checks if the record contains the
-    // attribute that the user wants to search by. If it contains it, it adds
-    // it to the record object and attributes string
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const getAndPushRecord = (subRecord: any) => {
-      if (!subRecord) {
-        return
-      }
-      const locStr = `${subRecord['seq_id']};${subRecord['start']}..${subRecord['end']}`
-      const RecordValues: Array<string> = []
-      const RecordAttributes: Array<string> = []
-
-      RecordAttributes.push('locstring', 'TrackID')
-      RecordValues.push(locStr, trackID)
-
-      for (const x of attributes) {
-        RecordAttributes.push(x)
-      }
-
-      const dir = path.join(outPath, 'trix')
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir)
-      }
-      fs.writeFileSync(
-        path.join(outPath, 'trix', 'meta.json'),
-        JSON.stringify({ indexingAttributes: RecordAttributes }, null, 2),
-      )
-
-      for (const attr of attributes) {
-        if (subRecord[attr]) {
-          RecordValues.push(subRecord[attr])
-          RecordAttributes.push(attr)
-        } else if (subRecord.attributes?.[attr]) {
-          RecordValues.push(subRecord.attributes[attr])
-          RecordAttributes.push(attr)
-        } else {
-          RecordValues.push('attributePlaceholder')
-        }
-      }
-      // create a meta object that has types field compare every array to the
-      // existing types field if it doesnt exist then append add it push the
-      // object to meta.json
-      if (RecordAttributes.length > 2) {
-        const uniqAttrs = [...new Set(RecordValues)]
-
-        const buff = Buffer.from(JSON.stringify(RecordValues)).toString(
-          'base64',
-        )
-        gff3Stream.push(`${buff} ${uniqAttrs.join(' ')}\n`)
-      }
-    }
-
-    if (Array.isArray(record)) {
-      record.forEach(r => getAndPushRecord(r))
-    } else {
-      getAndPushRecord(record)
-    }
-
-    // recurses through each record to get child features and parses their
-    // attributes as well.
-    if (record?.child_features || record?.[0].child_features) {
-      if (Array.isArray(record)) {
-        for (const r of record) {
-          for (let i = 0; i < record[0].child_features.length; i++) {
-            this.recurseFeatures(
-              r.child_features[i],
-              gff3Stream,
-              attributes,
-              trackID,
-              outPath,
-            )
-          }
-        }
-      } else {
-        for (let i = 0; i < record['child_features'].length; i++) {
-          this.recurseFeatures(
-            record.child_features[i],
-            gff3Stream,
-            attributes,
-            trackID,
-            outPath,
-          )
-        }
-      }
-    }
   }
 
   // Given a readStream of data, indexes the stream into .ix and .ixx files

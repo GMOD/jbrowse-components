@@ -7,7 +7,7 @@ import configSchema from './configSchema'
 
 test('adapter can fetch output files', async () => {
   const rootTemplate = path
-    .join(__dirname, '..', '..', 'test_data')
+    .join(__dirname, '..', '..', '..', '..', 'test_data', 'volvox', 'trix')
     .replace(/\\/g, '\\\\')
 
   const urlPath = decodeURI(new URL(`file://${rootTemplate}`).href)
@@ -15,10 +15,10 @@ test('adapter can fetch output files', async () => {
     type: 'TrixTextSearchAdapter',
     textSearchAdapterId: 'TrixTextSearchAdapterTest',
     ixFilePath: {
-      uri: `${urlPath}/out.ix`,
+      uri: `${urlPath}/volvox.ix`,
     },
     ixxFilePath: {
-      uri: `${urlPath}/out.ixx`,
+      uri: `${urlPath}/volvox.ixx`,
     },
     metaFilePath: {
       uri: `${urlPath}/meta.json`,
@@ -30,11 +30,11 @@ test('adapter can fetch output files', async () => {
   const results = await adapter.searchIndex({
     queryString: 'apple',
   })
+
   // check results are of type BaseResult for prefix search
   expect(results[0] instanceof BaseResult).toBeTruthy()
-  expect(results[0].getLabel()).toEqual('Apple1')
-  expect(results[1].getLabel()).toEqual('Apple2')
-  expect(results[2].getLabel()).toEqual('Apple3')
+  expect(results[0].getLabel()).toEqual('Apple2')
+  expect(results[1].getLabel()).toEqual('Apple3')
   // exact search
   const results2 = await adapter.searchIndex({
     queryString: 'apple3',
