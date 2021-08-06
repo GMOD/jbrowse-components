@@ -175,9 +175,19 @@ function RefNameAutocomplete({
       }}
       options={searchOptions.length === 0 ? options : searchOptions}
       getOptionDisabled={option => option?.group === 'limitOption'}
-      filterOptions={options => {
-        return options.length >= 100
-          ? options.slice(0, 100).concat([
+      filterOptions={(options, params) => {
+        const searchQuery = params.inputValue.toLocaleLowerCase()
+        const filtered = options.filter(
+          option =>
+            (typeof option === 'string'
+              ? (option as string).toLocaleLowerCase().includes(searchQuery)
+              : option.result
+                  .getLabel()
+                  .toLocaleLowerCase()
+                  .includes(searchQuery)) || option.result.matchedObject,
+        )
+        return filtered.length >= 100
+          ? filtered.slice(0, 100).concat([
               {
                 group: 'limitOption',
                 result: new BaseResult({
@@ -188,7 +198,7 @@ function RefNameAutocomplete({
                 }),
               },
             ])
-          : options
+          : filtered
       }}
       ListboxProps={{ style: { maxHeight: 250 } }}
       onChange={(_, selectedOption) => onChange(selectedOption)}
