@@ -3,6 +3,13 @@ id: bcc2020_embedding_jbrowse_02_introduction
 title: Introduction
 ---
 
+:::danger Out of date
+
+Please see the
+[updated version of this tutorial](./tutorials/embed_linear_genome_view/01_getting_started).
+
+:::
+
 ## What is JBrowse 2
 
 JBrowse 2 is a pluggable open-source platform for visualizing and integrating

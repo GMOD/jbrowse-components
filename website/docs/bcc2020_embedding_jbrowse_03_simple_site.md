@@ -3,6 +3,13 @@ id: bcc2020_embedding_jbrowse_03_simple_site
 title: Beginnings of a simple site
 ---
 
+:::danger Out of date
+
+Please see the
+[updated version of this tutorial](./tutorials/embed_linear_genome_view/01_getting_started).
+
+:::
+
 ## Create a simple web page
 
 Let's get started! The first thing we're going to do is create a simple web page

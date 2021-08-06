@@ -3,6 +3,13 @@ id: bcc2020_embedding_jbrowse_07_creating_the_view
 title: Creating the view
 ---
 
+:::danger Out of date
+
+Please see the
+[updated version of this tutorial](./tutorials/embed_linear_genome_view/01_getting_started).
+
+:::
+
 ## Adding the constructor
 
 We're now ready to add the JBrowse Linear View constructor to "index.html".

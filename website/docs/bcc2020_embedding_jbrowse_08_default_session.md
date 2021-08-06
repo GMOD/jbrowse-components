@@ -3,6 +3,13 @@ id: bcc2020_embedding_jbrowse_08_default_session
 title: Creating a default session
 ---
 
+:::danger Out of date
+
+Please see the
+[updated version of this tutorial](./tutorials/embed_linear_genome_view/01_getting_started).
+
+:::
+
 ## What is a session?
 
 A session is a way to define what the state of the view is. By providing a

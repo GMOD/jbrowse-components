@@ -3,6 +3,13 @@ id: bcc2020_embedding_jbrowse_04_assemblies
 title: About assemblies
 ---
 
+:::danger Out of date
+
+Please see the
+[updated version of this tutorial](./tutorials/embed_linear_genome_view/01_getting_started).
+
+:::
+
 ## What is an assembly?
 
 An assembly in JBrowse 2 is a collection of information that describes the

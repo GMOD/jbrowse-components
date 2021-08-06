@@ -3,6 +3,13 @@ id: bcc2020_embedding_jbrowse_10_conclusion
 title: Conclusion
 ---
 
+:::danger Out of date
+
+Please see the
+[updated version of this tutorial](./tutorials/embed_linear_genome_view/01_getting_started).
+
+:::
+
 ## That's it!
 
 Congratulations, you've embedded JBrowse 2 in a web page! Now you can start to

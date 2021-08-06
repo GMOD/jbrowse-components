@@ -3,6 +3,13 @@ id: bcc2020_embedding_jbrowse_06_other_options
 title: Other options
 ---
 
+:::danger Out of date
+
+Please see the
+[updated version of this tutorial](./tutorials/embed_linear_genome_view/01_getting_started).
+
+:::
+
 There are some other optional things you can pass to JBrowse Linear View when
 you create it
 
