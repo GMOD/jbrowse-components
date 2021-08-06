@@ -27,7 +27,7 @@ jobs:
         run: |
           yarn build-electron:win
         working-directory: products/jbrowse-desktop
-        - name: Set release version
+      - name: Set release version
         run: echo "RELEASE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
         working-directory: products/jbrowse-desktop
       - name: Set beta release version
