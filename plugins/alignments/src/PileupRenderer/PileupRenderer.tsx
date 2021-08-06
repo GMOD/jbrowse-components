@@ -334,9 +334,10 @@ export default class PileupRenderer extends BoxRendererType {
     const start = feature.get('start')
     const end = feature.get('end')
     const seq = feature.get('seq')
+    const strand = feature.get('strand')
     const cigarOps = parseCigar(cigar)
 
-    const modifications = getModificationPositions(mm, seq)
+    const modifications = getModificationPositions(mm, seq, strand)
 
     // probIndex applies across multiple modifications e.g.
     let probIndex = 0
@@ -389,11 +390,12 @@ export default class PileupRenderer extends BoxRendererType {
     const fstart = feature.get('start')
     const fend = feature.get('end')
     const seq = feature.get('seq')
+    const strand = feature.get('strand')
     const cigarOps = parseCigar(cigar)
     const { start: rstart, end: rend } = region
 
     const methBins = new Array(rend - rstart).fill(0)
-    getModificationPositions(mm, seq).forEach(({ type, positions }) => {
+    getModificationPositions(mm, seq, strand).forEach(({ type, positions }) => {
       if (type === 'm' && positions) {
         for (const pos of getNextRefPos(cigarOps, positions)) {
           const epos = pos + fstart - rstart
@@ -407,22 +409,43 @@ export default class PileupRenderer extends BoxRendererType {
     for (let j = fstart; j < fend; j++) {
       const i = j - rstart
       if (i >= 0 && i < methBins.length) {
-        const l2 = regionSequence[i + 1]
-        const l1 = regionSequence[i]
-        // color
-        if (l1.toUpperCase() === 'C' && l2.toUpperCase() === 'G') {
-          const [leftPx, rightPx] = bpSpanPx(
-            rstart + i,
-            rstart + i + 1,
-            region,
-            bpPerPx,
-          )
-          if (methBins[i]) {
-            ctx.fillStyle = 'red'
-          } else {
-            ctx.fillStyle = 'blue'
+        const l1 = regionSequence[i].toLowerCase()
+        const l2 = regionSequence[i + 1].toLowerCase()
+
+        // if we are zoomed out, display just a block over the cpg
+        if (bpPerPx > 2) {
+          if (l1 === 'c' && l2 === 'g') {
+            const s = rstart + i
+            const [leftPx, rightPx] = bpSpanPx(s, s + 2, region, bpPerPx)
+            if (methBins[i] || methBins[i + 1]) {
+              ctx.fillStyle = 'red'
+            } else {
+              ctx.fillStyle = 'blue'
+            }
+            ctx.fillRect(leftPx, topPx, rightPx - leftPx + 0.5, heightPx)
           }
-          ctx.fillRect(leftPx, topPx, rightPx - leftPx + 0.5, heightPx)
+        }
+        // if we are zoomed in, color the c inside the cpg
+        else {
+          // color
+          if (l1 === 'c' && l2 === 'g') {
+            const s = rstart + i
+            const [leftPx, rightPx] = bpSpanPx(s, s + 1, region, bpPerPx)
+            if (methBins[i]) {
+              ctx.fillStyle = 'red'
+            } else {
+              ctx.fillStyle = 'blue'
+            }
+            ctx.fillRect(leftPx, topPx, rightPx - leftPx + 0.5, heightPx)
+
+            const [leftPx2, rightPx2] = bpSpanPx(s + 1, s + 2, region, bpPerPx)
+            if (methBins[i + 1]) {
+              ctx.fillStyle = 'red'
+            } else {
+              ctx.fillStyle = 'blue'
+            }
+            ctx.fillRect(leftPx2, topPx, rightPx2 - leftPx2 + 0.5, heightPx)
+          }
         }
       }
     }

@@ -534,9 +534,9 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                 >
                   <svg
                     class="SvgFeatureRendering"
-                    height="0px"
+                    height="100"
                     style="display: block;"
-                    width="100px"
+                    width="100"
                   />
                 </div>
               </div>
@@ -1579,9 +1579,9 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 >
                   <svg
                     class="SvgFeatureRendering"
-                    height="0px"
+                    height="100"
                     style="display: block;"
-                    width="100px"
+                    width="100"
                   />
                 </div>
               </div>
@@ -1598,9 +1598,9 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 >
                   <svg
                     class="SvgFeatureRendering"
-                    height="0px"
+                    height="100"
                     style="display: block;"
-                    width="1000px"
+                    width="1000"
                   />
                 </div>
               </div>
@@ -1731,9 +1731,9 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 >
                   <svg
                     class="SvgFeatureRendering"
-                    height="0px"
+                    height="100"
                     style="display: block;"
-                    width="100px"
+                    width="100"
                   />
                 </div>
               </div>
@@ -1750,9 +1750,9 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 >
                   <svg
                     class="SvgFeatureRendering"
-                    height="0px"
+                    height="100"
                     style="display: block;"
-                    width="1000px"
+                    width="1000"
                   />
                 </div>
               </div>

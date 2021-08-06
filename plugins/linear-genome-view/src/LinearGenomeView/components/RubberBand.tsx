@@ -4,16 +4,13 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 // material ui
 import { alpha } from '@material-ui/core/styles/colorManipulator'
-import MenuOpenIcon from '@material-ui/icons/MenuOpen'
-import { Menu } from '@jbrowse/core/ui'
 import { makeStyles } from '@material-ui/core/styles'
 import Popover from '@material-ui/core/Popover'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
-import ZoomInIcon from '@material-ui/icons/ZoomIn'
-
 import { stringify } from '@jbrowse/core/util'
-import { LinearGenomeViewStateModel } from '..'
+import { Menu } from '@jbrowse/core/ui'
+import { LinearGenomeViewStateModel, BpOffset } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -103,7 +100,25 @@ function RubberBand({
   const classes = useStyles()
   const mouseDragging = startX !== undefined && anchorPosition === undefined
 
+  const { setOffsets, pxToBp } = model
+
   useEffect(() => {
+    function computeOffsets(offsetX: number) {
+      if (startX === undefined) {
+        return
+      }
+      let leftPx = startX
+      let rightPx = offsetX
+      // handles clicking and draging to the left
+      if (rightPx < leftPx) {
+        ;[leftPx, rightPx] = [rightPx, leftPx]
+      }
+      const leftOffset = pxToBp(leftPx)
+      const rightOffset = pxToBp(rightPx)
+
+      return { leftOffset, rightOffset }
+    }
+
     function globalMouseMove(event: MouseEvent) {
       if (controlsRef.current && mouseDragging) {
         const relativeX =
@@ -124,6 +139,11 @@ function RubberBand({
           clientX,
           clientY,
         })
+        const { leftOffset, rightOffset } = computeOffsets(offsetX) as {
+          leftOffset: BpOffset
+          rightOffset: BpOffset
+        }
+        setOffsets(leftOffset, rightOffset)
         setGuideX(undefined)
       }
     }
@@ -136,7 +156,7 @@ function RubberBand({
       }
     }
     return () => {}
-  }, [startX, mouseDragging, anchorPosition])
+  }, [startX, mouseDragging, anchorPosition, setOffsets, pxToBp])
 
   useEffect(() => {
     if (
@@ -169,35 +189,6 @@ function RubberBand({
     model.setOffsets(undefined, undefined)
   }
 
-  function zoomToRegion() {
-    if (startX === undefined || anchorPosition === undefined) {
-      return
-    }
-    let leftPx = startX
-    let rightPx = anchorPosition.offsetX
-    if (rightPx < leftPx) {
-      ;[leftPx, rightPx] = [rightPx, leftPx]
-    }
-    const leftOffset = model.pxToBp(leftPx)
-    const rightOffset = model.pxToBp(rightPx)
-    model.moveTo(leftOffset, rightOffset)
-  }
-
-  function getSequence() {
-    if (startX === undefined || anchorPosition === undefined) {
-      return
-    }
-    let leftPx = startX
-    let rightPx = anchorPosition.offsetX
-    // handles clicking and draging to the left
-    if (rightPx < leftPx) {
-      ;[leftPx, rightPx] = [rightPx, leftPx]
-    }
-    const leftOffset = model.pxToBp(leftPx)
-    const rightOffset = model.pxToBp(rightPx)
-    model.setOffsets(leftOffset, rightOffset)
-  }
-
   function handleClose() {
     setAnchorPosition(undefined)
     setStartX(undefined)
@@ -210,29 +201,6 @@ function RubberBand({
     callback()
     handleClose()
   }
-
-  const menuItems = [
-    {
-      label: 'Zoom to region',
-      icon: ZoomInIcon,
-      onClick: () => {
-        zoomToRegion()
-        handleClose()
-      },
-    },
-    {
-      label: 'Get sequence',
-      disabled:
-        currentX !== undefined &&
-        startX !== undefined &&
-        Math.abs(currentX - startX) * model.bpPerPx > 500_000_000,
-      icon: MenuOpenIcon,
-      onClick: () => {
-        getSequence()
-        handleClose()
-      },
-    },
-  ]
 
   if (startX === undefined) {
     return (
@@ -338,7 +306,7 @@ function RubberBand({
           onMenuItemClick={handleMenuItemClick}
           open={open}
           onClose={handleClose}
-          menuItems={menuItems}
+          menuItems={model.rubberBandMenuItems()}
         />
       ) : null}
     </>

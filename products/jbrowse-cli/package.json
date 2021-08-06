@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/cli",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "A command line tool for working with JBrowse 2",
   "keywords": [
     "jbrowse",
@@ -35,10 +35,10 @@
     "build:typescript": "tsc --build",
     "postpack": "rimraf oclif.manifest.json",
     "clean": "rimraf lib",
-    "prepack": "npm-run-all clean build:typescript manifest docs",
+    "prepack": "npm run clean  && npm run build:typescript && npm run manifest && npm run docs",
     "manifest": "oclif-dev manifest",
-    "version": "npm-run-all docs:**",
-    "docs": "npm-run-all docs:*",
+    "version": "npm run docs && npm run docs:version:add",
+    "docs": "npm run docs:create && npm run docs:format",
     "docs:create": "oclif-dev readme",
     "docs:format": "prettier --write README.md",
     "docs:version:add": "git add README.md"

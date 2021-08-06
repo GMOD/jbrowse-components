@@ -22,6 +22,7 @@ import SpreadsheetViewPlugin from '@jbrowse/plugin-spreadsheet-view'
 import SvInspectorPlugin from '@jbrowse/plugin-sv-inspector'
 import HicPlugin from '@jbrowse/plugin-hic'
 import TrixPlugin from '@jbrowse/plugin-trix'
+import GridBookmarkPlugin from '@jbrowse/plugin-grid-bookmark'
 
 const corePlugins = [
   SVG,
@@ -48,6 +49,7 @@ const corePlugins = [
   BreakpointSplitView,
   HicPlugin,
   TrixPlugin,
+  GridBookmarkPlugin,
 ]
 
 export default corePlugins

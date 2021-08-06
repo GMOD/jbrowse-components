@@ -62,9 +62,13 @@ const FileLocationEditor = observer(
               }}
               aria-label="file or url picker"
             >
-              <ToggleButton value="file" aria-label="local file">
-                File
-              </ToggleButton>
+              {new URLSearchParams(window.location.search).get(
+                'adminKey',
+              ) ? null : (
+                <ToggleButton value="file" aria-label="local file">
+                  File
+                </ToggleButton>
+              )}
               <ToggleButton value="url" aria-label="url">
                 URL
               </ToggleButton>
@@ -129,7 +133,9 @@ const LocalFileChooser = observer(
               const file = target && target.files && target.files[0]
               if (file) {
                 if (isElectron) {
-                  setLocation({ localPath: file.path })
+                  setLocation({
+                    localPath: (file as File & { path: string }).path,
+                  })
                 } else {
                   setLocation(storeBlobLocation({ blob: file }))
                 }
