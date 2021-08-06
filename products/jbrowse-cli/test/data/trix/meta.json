@@ -1,10 +1,16 @@
 {
-  "attributes": ["Name", "ID", "type", "gene_name", "gene_id"],
-  "IndexedTracks": [
-    "au9_scaffold",
-    "GtfTabix_Genes",
-    "gff3tabix_genes",
-    "online_gff3tabix_genes",
-    "online_au9_scaffold"
-  ]
+  "TrackData": {
+    "TrackIds": [
+      "au9_scaffold",
+      "gff3tabix_genes",
+      "online_gff3tabix_genes",
+      "online_au9_scaffold"
+    ],
+    "metaAttrs": [
+      ["Name", "ID", "type"],
+      ["Name", "ID", "type"],
+      ["Name", "ID", "type"],
+      ["Name", "ID", "type"]
+    ]
+  }
 }
