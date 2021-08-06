@@ -177,7 +177,7 @@ function RefNameAutocomplete({
       getOptionDisabled={option => option?.group === 'limitOption'}
       filterOptions={options => {
         return options.length >= 100
-          ? options.concat([
+          ? options.slice(0, 100).concat([
               {
                 group: 'limitOption',
                 result: new BaseResult({
