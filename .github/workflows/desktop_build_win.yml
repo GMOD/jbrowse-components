@@ -1,28 +1,52 @@
-# name: Desktop build - Win
-# on: push
+name: Desktop build - Win
+on: push
 
-# jobs:
-#   build:
-#     name: Build Windows desktop app
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v2
-#       - name: Use Node.js 14
-#         uses: actions/setup-node@v2
-#         with:
-#           node-version: '14'
-#       - name: Install deps (with cache)
-#         uses: bahmutov/npm-install@v1
-#       - name: Pre-install commands
-#         run: |
-#           sudo dpkg --add-architecture i386 && sudo apt-get update && sudo apt-get install wine32
-#       - name: Install build deps
-#         run: |
-#           sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
-#       - name: Build app
-#         env:
-#           WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
-#           WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
-#         run: |
-#           yarn build-electron:win
-#         working-directory: products/jbrowse-desktop
+jobs:
+  build:
+    name: Build Windows desktop app
+    runs-on: ubuntu-latest
+    if: "contains(github.event.head_commit.message, 'desktop beta')"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 14
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install deps (with cache)
+        uses: bahmutov/npm-install@v1
+      - name: Pre-install commands
+        run: |
+          sudo dpkg --add-architecture i386 && sudo apt-get update && sudo apt-get install wine32
+      - name: Install build deps
+        run: |
+          sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+      - name: Build app
+        env:
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+        run: |
+          yarn build-electron:win
+        working-directory: products/jbrowse-desktop
+        - name: Set release version
+        run: echo "RELEASE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+        working-directory: products/jbrowse-desktop
+      - name: Set beta release version
+        run: echo "BETA_RELEASE_VERSION=$(node -p "require('./package.json').desktopBeta")" >> $GITHUB_ENV
+        working-directory: products/jbrowse-desktop
+      - name: Get release
+        id: get_release
+        uses: kaliber5/action-get-release@v1
+        with:
+          token: ${{ github.token }}
+          tag_name: ${{ env.BETA_RELEASE_VERSION }}
+          draft: true
+      - name: Upload Windows build
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          asset_path: ./products/jbrowse-desktop/dist/jbrowse-desktop-${{ env.RELEASE_VERSION }}-win.exe
+          asset_name: jbrowse-desktop-${{ env.BETA_RELEASE_VERSION }}-win.exe
+          asset_content_type: application
