@@ -15,7 +15,6 @@ import {
   LocalPathLocation as MULocalPathLocation,
   UriLocation as MUUriLocation,
   BlobLocation as MUBlobLocation,
-  AuthLocation as MUAuthLocation,
 } from './mst'
 import RpcManager from '../../rpc/RpcManager'
 import { Feature } from '../simpleFeature'
@@ -276,15 +275,9 @@ export interface LocalPathLocation
 
 export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
 
-export interface AuthLocation extends SnapshotIn<typeof MUAuthLocation> {}
-
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
-export type FileLocation =
-  | LocalPathLocation
-  | UriLocation
-  | BlobLocation
-  | AuthLocation
+export type FileLocation = LocalPathLocation | UriLocation | BlobLocation
 
 // These types are slightly different than the MST models representing a
 // location because a blob cannot be stored in a MST, so this is the

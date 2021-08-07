@@ -42,6 +42,17 @@ export function openLocation(location: FileLocation): GenericFilehandle {
         throw new Error('No URI provided')
       }
       let optionalHeaders = undefined
+      if (location.internetAccountId && location.authHeader) {
+        const token = getAuthenticationInfo(location.internetAccountId)
+        if (token) {
+          const headerContent = location.tokenType
+            ? `${location.tokenType} ${token}`
+            : token
+          optionalHeaders = {
+            [location.authHeader]: headerContent,
+          }
+        }
+      }
       return openUrl(
         location.baseUri
           ? new URL(location.uri, location.baseUri).href
