@@ -1108,6 +1108,7 @@ export function searchForLocationObjects(
   for (const property in obj) {
     if (obj.hasOwnProperty('locationType')) {
       locationObjects.push(obj)
+      return obj
     } else if (typeof obj[property] === 'object') {
       if (Array.isArray(obj[property])) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

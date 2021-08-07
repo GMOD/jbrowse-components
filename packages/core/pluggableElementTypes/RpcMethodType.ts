@@ -38,6 +38,16 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
     // needs a way for internetaccount to take a preauth location and make a filehandle from it
     console.log('here', args, searchForLocationObjects(args))
+
+    const locationObjects = searchForLocationObjects(args)
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    locationObjects.forEach((obj: any) => {
+      if (obj.hasOwnProperty('internetAccountId')) {
+        // return this.serializeAuthArguments(args, blobMap, authenticationInfoMap)
+        // next: need to change serializeautharguments to fill in the preauth object
+      }
+    })
     if (
       args.hasOwnProperty('adapterConfig') &&
       searchOrReplaceInArgs(args, 'internetAccountId')
