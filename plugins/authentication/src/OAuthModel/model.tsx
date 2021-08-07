@@ -5,7 +5,7 @@ import { OAuthInternetAccountConfigModel } from './configSchema'
 import crypto from 'crypto'
 import { Instance, types, getRoot } from 'mobx-state-tree'
 import { searchOrReplaceInArgs } from '@jbrowse/core/util'
-import { FileLocation, AuthLocation } from '@jbrowse/core/util/types'
+import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
 import deepEqual from 'fast-deep-equal'
 
 // Notes go here:
@@ -64,7 +64,7 @@ const stateModelFactory = (
       handlesLocation(location: FileLocation): boolean {
         const validDomains = self.accountConfig.validDomains || []
         return validDomains.some((domain: string) =>
-          (location as AuthLocation)?.uri.includes(domain),
+          (location as UriLocation)?.uri.includes(domain),
         )
       },
     }))
@@ -146,9 +146,9 @@ const stateModelFactory = (
           } else {
             let fileUrl
             try {
-              fileUrl = await this.fetchFile((location as AuthLocation).uri)
+              fileUrl = await this.fetchFile((location as UriLocation).uri)
             } catch (error) {
-              reject(error)
+              reject(new Error(error))
             }
             resolve(fileUrl)
           }
@@ -158,6 +158,29 @@ const stateModelFactory = (
           reject = () => {}
           openLocationPromise = undefined
         },
+        // MODELING THE NEW CONCEPT
+        // getFetcher() {
+        // return a curried version of fetch
+        // will have most of the logic from the original openLocation
+        // modified to do oauth flows or corresponding internet account stuff
+        // return (function that has same signature as core fetch)
+        // return a function taht interally calls globalCacheFetch
+        // }
+
+        // openLocation(l: FileLocation){
+        // returns a genericFilehandle RemoteFile
+        // return RemoteFile() // one of the options is passing it a fetcher
+        // can look at the genericfilehandle read me
+        // https://github.com/GMOD/generic-filehandle
+        // }
+        // code:
+        // async openLocation(location) { return new RemoteFile(location.uri, { fetch: this.getFetcher() })}
+
+        // handleRpcMethodCall()
+        // token would be looked for in the PreAuthLocation information instead of the map
+        // will always call openLocation, the logic to open the flow or not will be in getFetcher
+        // if you are in the worker, and no preauth information available throw new error
+        // it returns the serialized location information to serializedAuthArguments
         async openLocation(l: FileLocation) {
           location = l
 
@@ -379,7 +402,7 @@ const stateModelFactory = (
           try {
             file = !token
               ? await this.openLocation(location)
-              : await this.fetchFile((location as AuthLocation).uri, token)
+              : await this.fetchFile((location as UriLocation).uri, token)
           } catch (error) {
             const refreshedMap = await this.handleError(
               authenticationInfoMap,

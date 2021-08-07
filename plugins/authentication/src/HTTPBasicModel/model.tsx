@@ -1,9 +1,9 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { FileLocation, AuthLocation } from '@jbrowse/core/util/types'
+import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
 import { searchOrReplaceInArgs } from '@jbrowse/core/util'
-import { getRoot } from 'mobx-state-tree'
+import { getRoot, getParent } from 'mobx-state-tree'
 import { HTTPBasicInternetAccountConfigModel } from './configSchema'
 import { Instance, types } from 'mobx-state-tree'
 import React, { useState } from 'react'
@@ -45,7 +45,7 @@ const stateModelFactory = (
         // also look at location, if location is set to need authentication it would reutrn true
         const validDomains = self.accountConfig.validDomains || []
         return validDomains.some((domain: string) =>
-          (location as AuthLocation)?.uri.includes(domain),
+          (location as UriLocation)?.uri.includes(domain),
         )
       },
     }))
@@ -56,17 +56,16 @@ const stateModelFactory = (
       return {
         setTokenInfo(token: string) {
           sessionStorage.setItem(`${self.internetAccountId}-token`, token)
-          resolve(token)
         },
         handleClose(token?: string) {
-          console.log('hc', openLocationPromise)
-
-          const { session } = getRoot(self)
+          const { session } = getParent(self, 2)
           if (token) {
             this.setTokenInfo(token)
+            resolve(token)
           } else {
             reject(new Error('user cancelled'))
           }
+
           session.setDialogComponent(undefined, undefined)
           resolve = () => {}
           reject = () => {}
@@ -74,10 +73,9 @@ const stateModelFactory = (
         },
 
         async openLocation(location: FileLocation) {
-          console.log(openLocationPromise)
           if (!openLocationPromise) {
             openLocationPromise = new Promise(async (r, x) => {
-              const { session } = getRoot(self)
+              const { session } = getParent(self, 2)
               session.setDialogComponent(HTTPBasicLoginForm, {
                 internetAccountId: self.internetAccountId,
                 handleClose: this.handleClose,
@@ -109,25 +107,18 @@ const stateModelFactory = (
           })
 
           if (!response.ok) {
-            const errorText = await response.text()
-            await this.handleError(
-              authenticationInfoMap,
-              `Network response failure: ${response.status} (${errorText})`,
-            )
+            await this.handleError(authenticationInfoMap)
           }
 
           return args
         },
-        async handleError(
-          authenticationInfoMap: Record<string, string>,
-          errorText: string,
-        ) {
-          const rootModel = getRoot(self)
+        async handleError(authenticationInfoMap: Record<string, string>) {
+          const rootModel = getParent(self, 2)
           rootModel.removeFromAuthenticationMap(
             self.internetAccountId,
             authenticationInfoMap,
           )
-          return new Error(errorText)
+          return authenticationInfoMap
         },
       }
     })

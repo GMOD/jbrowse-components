@@ -393,7 +393,7 @@ export default function RootModel(
         }
         return accountToUse
           ? // @ts-ignore
-            await accountToUse.handleRpcMethodCall(
+            accountToUse.handleRpcMethodCall(
               location,
               authenticationInfoMap,
               args,

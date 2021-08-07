@@ -1,10 +1,10 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { FileLocation, AuthLocation } from '@jbrowse/core/util/types'
+import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
 import { searchOrReplaceInArgs } from '@jbrowse/core/util'
 import { ExternalTokenInternetAccountConfigModel } from './configSchema'
-import { Instance, types, getRoot } from 'mobx-state-tree'
+import { Instance, types, getRoot, getParent } from 'mobx-state-tree'
 import React, { useState } from 'react'
 import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
@@ -43,7 +43,7 @@ const stateModelFactory = (
         // also look at location, if location is set to need authentication it would reutrn true
         const validDomains = self.accountConfig.validDomains || []
         return validDomains.some((domain: string) =>
-          (location as AuthLocation)?.uri.includes(domain),
+          (location as UriLocation)?.uri.includes(domain),
         )
       },
     }))
@@ -94,7 +94,7 @@ const stateModelFactory = (
       let openLocationPromise: Promise<string> | undefined = undefined
       return {
         handleClose(token?: string) {
-          const { session } = getRoot(self)
+          const { session } = getParent(self, 2)
           if (token) {
             sessionStorage.setItem(`${self.internetAccountId}-token`, token)
             resolve(token)
@@ -109,7 +109,7 @@ const stateModelFactory = (
         async openLocation(location: FileLocation) {
           if (!openLocationPromise) {
             openLocationPromise = new Promise(async (r, x) => {
-              const { session } = getRoot(self)
+              const { session } = getParent(self, 2)
               session.setDialogComponent(ExternalTokenEntryForm, {
                 internetAccountId: self.internetAccountId,
                 handleClose: this.handleClose,
@@ -119,7 +119,7 @@ const stateModelFactory = (
             })
             // switch (self.origin) {
             //   case 'GDC': {
-            //     const query = (location as AuthLocation).uri.split('/').pop() // should get id
+            //     const query = (location as UriLocation).uri.split('/').pop() // should get id
             //     const response = await fetch(
             //       `${self.accountConfig.customEndpoint}/files/${query}?expand=index_files`,
             //       {
@@ -178,7 +178,7 @@ const stateModelFactory = (
           return args
           // switch (self.origin) {
           //   case 'GDC': {
-          //     const query = (location as AuthLocation).uri.split('/').pop() // should get id
+          //     const query = (location as UriLocation).uri.split('/').pop() // should get id
           //     const editedArgs = JSON.parse(JSON.stringify(args))
           //     searchOrReplaceInArgs(
           //       editedArgs,
@@ -193,8 +193,7 @@ const stateModelFactory = (
           authenticationInfoMap: Record<string, string>,
           errorText: string,
         ) {
-          console.log('here')
-          const rootModel = getRoot(self)
+          const rootModel = getParent(self, 2)
           rootModel.removeFromAuthenticationMap(
             self.internetAccountId,
             authenticationInfoMap,

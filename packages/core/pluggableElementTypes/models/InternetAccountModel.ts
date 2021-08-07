@@ -37,7 +37,7 @@ export const InternetAccount = types
     },
 
     handlesLocation(location: FileLocation): boolean {
-      return true
+      return false
     },
   }))
   .actions(self => ({
