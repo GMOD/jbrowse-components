@@ -20,6 +20,7 @@ const defaultConfig = {
           type: 'testSeqAdapter',
           twoBitLocation: {
             uri: 'test.2bit',
+            locationType: 'UriLocation',
           },
         },
       },
@@ -117,6 +118,7 @@ describe('add-connection', () => {
             connectionId: 'UCSCTrackHubConnection-testAssembly-1',
             hubTxtLocation: {
               uri: 'https://mysite.com/data/hub.txt',
+              locationType: 'UriLocation',
             },
             name: 'UCSCTrackHubConnection-testAssembly-1',
           },
@@ -151,6 +153,7 @@ describe('add-connection', () => {
             connectionId: 'JBrowse1Connection-testAssembly-1',
             dataDirLocation: {
               uri: 'https://mysite.com/jbrowse/data',
+              locationType: 'UriLocation',
             },
             name: 'JBrowse1Connection-testAssembly-1',
           },
@@ -207,7 +210,7 @@ describe('add-connection', () => {
       '--assemblyName',
       'testAssembly',
       '--config',
-      '{"url":{"uri":"https://mysite.com/custom"}}',
+      '{"url":{"uri":"https://mysite.com/custom"}, "locationType": "UriLocation"}',
     ])
     .it('adds a custom connection with user set fields', async ctx => {
       const contents = await fsPromises.readFile(
@@ -223,6 +226,7 @@ describe('add-connection', () => {
             connectionId: 'newConnectionId',
             url: {
               uri: 'https://mysite.com/custom',
+              locationType: 'UriLocation',
             },
             name: 'newName',
           },
@@ -248,7 +252,7 @@ describe('add-connection', () => {
       '--connectionId',
       'newConnectionId',
       '--config',
-      '{"url":{"uri":"https://mysite.com/custom"}}',
+      '{"url":{"uri":"https://mysite.com/custom"}, "locationType": "UriLocation"}',
     ])
     .nock('https://mysite.com', site => site.head('/custom').reply(200))
     .command([
@@ -257,7 +261,7 @@ describe('add-connection', () => {
       '--connectionId',
       'newConnectionId',
       '--config',
-      '{"url":{"uri":"https://mysite.com/custom"}}',
+      '{"url":{"uri":"https://mysite.com/custom"}, "locationType": "UriLocation"}',
     ])
     .exit(150)
     .it('Fails to add a duplicate connection Id')
@@ -279,7 +283,7 @@ describe('add-connection', () => {
       '--connectionId',
       'newConnectionId',
       '--config',
-      '{"url":{"uri":"https://mysite.com/custom"}}',
+      '{"url":{"uri":"https://mysite.com/custom"}, "locationType": "UriLocation"}',
       '--force',
     ])
     .command([
@@ -288,7 +292,7 @@ describe('add-connection', () => {
       '--connectionId',
       'newConnectionId',
       '--config',
-      '{"url":{"uri":"https://mysite.com/custom"}}',
+      '{"url":{"uri":"https://mysite.com/custom"}, "locationType": "UriLocation"}',
       '--force',
     ])
     .it(
@@ -307,6 +311,7 @@ describe('add-connection', () => {
               connectionId: 'newConnectionId',
               url: {
                 uri: 'https://mysite.com/custom',
+                locationType: 'UriLocation',
               },
               name: 'newConnectionId',
             },

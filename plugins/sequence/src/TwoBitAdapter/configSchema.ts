@@ -5,7 +5,7 @@ export default ConfigurationSchema(
   {
     twoBitLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.2bit' },
+      defaultValue: { uri: '/path/to/my.2bit', locationType: 'UriLocation' },
     },
   },
   { explicitlyTyped: true },

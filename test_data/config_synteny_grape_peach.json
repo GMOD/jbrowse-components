@@ -9,7 +9,8 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "grape.chrom.sizes"
+            "uri": "grape.chrom.sizes",
+            "locationType": "UriLocation"
           }
         },
         "displays": [
@@ -28,7 +29,8 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "peach.chrom.sizes"
+            "uri": "peach.chrom.sizes",
+            "locationType": "UriLocation"
           }
         },
         "displays": [
@@ -50,19 +52,22 @@
       "adapter": {
         "type": "MCScanAnchorsAdapter",
         "mcscanAnchorsLocation": {
-          "uri": "grape.peach.anchors"
+          "uri": "grape.peach.anchors",
+          "locationType": "UriLocation"
         },
         "subadapters": [
           {
             "type": "NCListAdapter",
             "rootUrlTemplate": {
-              "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+              "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json",
+              "locationType": "UriLocation"
             }
           },
           {
             "type": "NCListAdapter",
             "rootUrlTemplate": {
-              "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+              "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json",
+              "locationType": "UriLocation"
             }
           }
         ],
@@ -92,7 +97,8 @@
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+          "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -119,7 +125,8 @@
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+          "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -146,7 +153,8 @@
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+          "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -173,7 +181,8 @@
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+          "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -1939,7 +1948,8 @@
           "type": "PAFAdapter",
           "assemblyNames": ["peach", "grape"],
           "pafLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf",
+            "locationType": "UriLocation"
           }
         },
         "displays": [
@@ -1969,7 +1979,8 @@
           "type": "PAFAdapter",
           "assemblyNames": ["peach", "grape"],
           "pafLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf",
+            "locationType": "UriLocation"
           }
         },
         "displays": [

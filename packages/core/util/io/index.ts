@@ -28,6 +28,8 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
   return 'blobId' in location
 }
 
+// needs to take the rootmodel in as an optional parameter, use if there is no preauth information
+// calls that arent in data-adapters would need the rootmodel param added, main thread stuff
 export function openLocation(location: FileLocation): GenericFilehandle {
   if (!location) {
     throw new Error('must provide a location to openLocation')
@@ -41,19 +43,24 @@ export function openLocation(location: FileLocation): GenericFilehandle {
       if (!location.uri) {
         throw new Error('No URI provided')
       }
-      let optionalHeaders = undefined
+
+      // new block, check if location is associated with an internetAccountId
+      // if there isnt preauth information, call the rootmodel to find appropriate internetaccount id and get the auth flow running
+      // which should return the authentications openLocation
+      // if it is, get the authentication location, and return the authentication's openLocation
       return openUrl(
         location.baseUri
           ? new URL(location.uri, location.baseUri).href
           : location.uri,
-        optionalHeaders,
       )
     }
     if (isLocalPathLocation(location)) {
+      // @ts-ignore
       if (!location.localPath) {
         throw new Error('No local path provided')
       }
       if (isElectron || typeof jest !== 'undefined') {
+        // @ts-ignore
         return new LocalFile(location.localPath)
       }
     } else {
@@ -61,20 +68,26 @@ export function openLocation(location: FileLocation): GenericFilehandle {
     }
   }
   if (isUriLocation(location)) {
+    // @ts-ignore
     if (!location.uri) {
       throw new Error('No URI provided')
     }
     return openUrl(
+      // @ts-ignore
       location.baseUri
-        ? new URL(location.uri, location.baseUri).href
-        : location.uri,
+        ? // @ts-ignore
+          new URL(location.uri, location.baseUri).href
+        : // @ts-ignore
+          location.uri,
     )
   }
   if (isBlobLocation(location)) {
     // special case where blob is not directly stored on the model, use a getter
+    // @ts-ignore
     const blob = getBlob(location.blobId)
     if (!blob) {
       throw new Error(
+        // @ts-ignore
         `file ("${location.name}") was opened locally from a previous session. To restore it, go to track settings and reopen the file`,
       )
     }

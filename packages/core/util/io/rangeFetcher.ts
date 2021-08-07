@@ -80,7 +80,10 @@ const globalRangeCache = new HttpRangeFetcher({
   minimumTTL: 300000000,
 })
 
-async function globalCacheFetch(
+// export this,
+// wrapping: make a function that has same signature and inside calls the normal fetch, but before calling it messes the params
+// mess with auth headers and return
+export async function globalCacheFetch(
   url: RequestInfo,
   opts?: RequestInit,
 ): Promise<Response> {
@@ -122,6 +125,7 @@ export function clearCache() {
 export function openUrl(url: string, headers?: HeadersInit): GenericFilehandle {
   return new RemoteFile(String(url), {
     // fetch: globalCacheFetch,
+    // uncomment out above, delete below
     overrides: {
       headers: headers || {},
     },

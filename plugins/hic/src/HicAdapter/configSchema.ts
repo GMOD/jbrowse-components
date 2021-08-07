@@ -5,7 +5,7 @@ export default ConfigurationSchema(
   {
     hicLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.hic' },
+      defaultValue: { uri: '/path/to/my.hic', locationType: 'UriLocation' },
     },
   },
   { explicitlyTyped: true },

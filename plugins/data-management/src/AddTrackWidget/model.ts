@@ -79,8 +79,8 @@ export default function f(pluginManager: PluginManager) {
         self.altTrackType = ''
         self.altAssemblyName = ''
         self.adapterHint = ''
-        self.indexTrackData = { uri: '' }
-        self.trackData = { uri: '' }
+        self.indexTrackData = { uri: '', locationType: 'UriLocation' }
+        self.trackData = { uri: '', locationType: 'UriLocation' }
       },
     }))
     .views(self => ({

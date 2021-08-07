@@ -6,7 +6,7 @@ export default ConfigurationSchema(
   {
     vcfGzLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.vcf.gz' },
+      defaultValue: { uri: '/path/to/my.vcf.gz', locationType: 'UriLocation' },
     },
     index: ConfigurationSchema('VcfIndex', {
       indexType: {
@@ -16,7 +16,10 @@ export default ConfigurationSchema(
       },
       location: {
         type: 'fileLocation',
-        defaultValue: { uri: '/path/to/my.vcf.gz.tbi' },
+        defaultValue: {
+          uri: '/path/to/my.vcf.gz.tbi',
+          locationType: 'UriLocation',
+        },
       },
     }),
   },

@@ -7,6 +7,7 @@ test('adapter can fetch features from peach_grape.paf', async () => {
     MyConfigSchema.create({
       pafLocation: {
         localPath: require.resolve('./test_data/peach_grape.paf'),
+        locationType: 'LocalPathLocation',
       },
       assemblyNames: ['peach', 'grape'],
     }),

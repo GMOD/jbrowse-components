@@ -25,7 +25,10 @@ function HubDetails(props) {
     async function getHubTxt() {
       let hubTxt
       try {
-        const hubHandle = openLocation({ uri: hubUrl })
+        const hubHandle = openLocation({
+          uri: hubUrl,
+          locationType: 'UriLocation',
+        })
         hubTxt = await hubHandle.readFile('utf8')
       } catch (error) {
         setErrorMessage(

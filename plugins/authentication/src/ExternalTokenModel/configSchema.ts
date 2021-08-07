@@ -34,7 +34,5 @@ function ExternalTokenConfigFactory(pluginManager: PluginManager) {
 export type ExternalTokenInternetAccountConfigModel = ReturnType<
   typeof ExternalTokenConfigFactory
 >
-export type OAuthInternetAccountConfig = Instance<
-  ExternalTokenInternetAccountConfigModel
->
+export type OAuthInternetAccountConfig = Instance<ExternalTokenInternetAccountConfigModel>
 export default ExternalTokenConfigFactory

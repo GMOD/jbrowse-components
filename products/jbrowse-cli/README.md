@@ -154,7 +154,7 @@ OPTIONS
                                    file
 
   -c, --config=config              Any extra config settings to add to connection in JSON object format, such as
-                                   '{"uri":"url":"https://sample.com"}}'
+                                   '{"uri":"url":"https://sample.com"}, "locationType": "UriLocation"}'
 
   -f, --force                      Equivalent to `--skipCheck --overwrite`
 
@@ -183,7 +183,7 @@ EXAMPLES
   $ jbrowse add-connection http://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection --assemblyName
   hg19
   $ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config
-  '{"uri":{"url":"https://mysite.com/path/to/custom"}}' --assemblyName hg19
+  '{"uri":{"url":"https://mysite.com/path/to/custom"}, "locationType": "UriLocation"}' --assemblyName hg19
   $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target
   /path/to/jb2/installation/config.json
 ```

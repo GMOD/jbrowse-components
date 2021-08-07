@@ -56,6 +56,7 @@ test('adapter can fetch features from volvox.bam', async () => {
     configSchema.create({
       mcscanAnchorsLocation: {
         localPath: require.resolve('./test_data/grape.peach.anchors'),
+        locationType: 'LocalPathLocation',
       },
       subadapters: [new CustomAdapter(), new CustomAdapter()],
       assemblyNames: ['grape', 'peach'],

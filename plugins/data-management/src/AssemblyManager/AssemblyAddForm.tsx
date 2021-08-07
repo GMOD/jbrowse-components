@@ -158,10 +158,34 @@ const AssemblyAddForm = observer(
 
     const [assemblyName, setAssemblyName] = useState('')
     const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0])
-    const [fastaLocation, setFastaLocation] = useState({ uri: '' })
-    const [faiLocation, setFaiLocation] = useState({ uri: '' })
-    const [gziLocation, setGziLocation] = useState({ uri: '' })
-    const [twoBitLocation, setTwoBitLocation] = useState({ uri: '' })
+    const [fastaLocation, setFastaLocation] = useState<{
+      uri: string
+      locationType: 'UriLocation'
+    }>({
+      uri: '',
+      locationType: 'UriLocation',
+    })
+    const [faiLocation, setFaiLocation] = useState<{
+      uri: string
+      locationType: 'UriLocation'
+    }>({
+      uri: '',
+      locationType: 'UriLocation',
+    })
+    const [gziLocation, setGziLocation] = useState<{
+      uri: string
+      locationType: 'UriLocation'
+    }>({
+      uri: '',
+      locationType: 'UriLocation',
+    })
+    const [twoBitLocation, setTwoBitLocation] = useState<{
+      uri: string
+      locationType: 'UriLocation'
+    }>({
+      uri: '',
+      locationType: 'UriLocation',
+    })
 
     function createAssembly() {
       if (assemblyName === '') {

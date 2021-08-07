@@ -42,10 +42,12 @@ test('SNP adapter can fetch features from volvox.bam using bam subadapter', asyn
     type: 'BamAdapter',
     bamLocation: {
       localPath: require.resolve('../../test_data/volvox-sorted.bam'),
+      locationType: 'LocalPathLocation',
     },
     index: {
       location: {
         localPath: require.resolve('../../test_data/volvox-sorted.bam.bai'),
+        locationType: 'LocalPathLocation',
       },
       indexType: 'BAI',
     },
@@ -79,10 +81,12 @@ test('test usage of BamSlightlyLazyFeature toJSON in a SNP adapter', async () =>
     type: 'BamAdapter',
     bamLocation: {
       localPath: require.resolve('../../test_data/volvox-sorted.bam'),
+      locationType: 'LocalPathLocation',
     },
     index: {
       location: {
         localPath: require.resolve('../../test_data/volvox-sorted.bam.bai'),
+        locationType: 'LocalPathLocation',
       },
       indexType: 'BAI',
     },
@@ -108,10 +112,12 @@ test('test usage of getMultiRegion stats, SNP adapter can generate a domain from
     type: 'BamAdapter',
     bamLocation: {
       localPath: require.resolve('../../test_data/volvox-sorted.bam'),
+      locationType: 'LocalPathLocation',
     },
     index: {
       location: {
         localPath: require.resolve('../../test_data/volvox-sorted.bam.bai'),
+        locationType: 'LocalPathLocation',
       },
       indexType: 'BAI',
     },
@@ -170,9 +176,11 @@ test('SNP adapter can fetch features from volvox.cram using cram subadapter', as
       type: 'CramAdapter',
       cramLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.cram'),
+        locationType: 'LocalPathLocation',
       },
       craiLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
+        locationType: 'LocalPathLocation',
       },
     },
     require.resolve('../../test_data/volvox.fa'),
@@ -206,9 +214,11 @@ test('test usage of CramSlightlyLazyFeature toJSON in a SNP adapter', async () =
       type: 'CramAdapter',
       cramLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.cram'),
+        locationType: 'LocalPathLocation',
       },
       craiLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
+        locationType: 'LocalPathLocation',
       },
     },
     require.resolve('../../test_data/volvox.fa'),
@@ -235,9 +245,11 @@ test('test usage of getMultiRegion stats, SNP adapter can generate a domain from
       type: 'CramAdapter',
       cramLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.cram'),
+        locationType: 'LocalPathLocation',
       },
       craiLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
+        locationType: 'LocalPathLocation',
       },
     },
     require.resolve('../../test_data/volvox.fa'),

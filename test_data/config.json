@@ -9,13 +9,16 @@
         "adapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       },
@@ -23,7 +26,8 @@
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -37,13 +41,16 @@
         "adapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       },
@@ -51,7 +58,8 @@
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -67,7 +75,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
+          "uri": "https://jbrowse.org/genomes/hg19/repeats.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -80,7 +89,8 @@
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json"
+          "uri": "https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json",
+          "locationType": "UriLocation"
         },
         "refNames": [
           "chr1",
@@ -133,7 +143,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/gaps.bb"
+          "uri": "https://jbrowse.org/genomes/hg19/gaps.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -146,7 +157,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarCnv.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarCnv.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -159,7 +171,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -172,7 +185,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://jbrowse.org/genomes/GRCh38/repeats.bb"
+          "uri": "https://jbrowse.org/genomes/GRCh38/repeats.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -185,7 +199,8 @@
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/{refseq}/trackData.jsonz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/{refseq}/trackData.jsonz",
+          "locationType": "UriLocation"
         },
         "refNames": [
           "chr1",
@@ -238,7 +253,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -251,7 +267,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -264,7 +281,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.0.92.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.0.92.bb",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -289,7 +307,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/gdcCancer/gdcCancer.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/gdcCancer/gdcCancer.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -302,7 +321,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://jbrowse.org/genomes/GRCh38/gaps.bb"
+          "uri": "https://jbrowse.org/genomes/GRCh38/gaps.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -315,11 +335,13 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }
@@ -334,11 +356,13 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }
@@ -352,7 +376,8 @@
       "name": "COSMIC (GRCh37)",
       "assemblyNames": ["hg19"],
       "dataDirLocation": {
-        "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch37/v90/cosmic"
+        "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch37/v90/cosmic",
+        "locationType": "UriLocation"
       }
     },
     {
@@ -361,7 +386,8 @@
       "name": "COSMIC (GRCh38)",
       "assemblyNames": ["hg38"],
       "dataDirLocation": {
-        "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch38/v90/cosmic"
+        "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch38/v90/cosmic",
+        "locationType": "UriLocation"
       }
     }
   ],

@@ -1096,3 +1096,28 @@ export function searchOrReplaceInArgs(
   }
   return
 }
+
+// search through arg object for a specific key, optionally replace key with string passed
+// can move this to util/index.ts
+export function searchForLocationObjects(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  obj: { [key: string]: any },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any {
+  const locationObjects: { [key: string]: any }[] = []
+  for (const property in obj) {
+    if (obj.hasOwnProperty('locationType')) {
+      locationObjects.push(obj)
+    } else if (typeof obj[property] === 'object') {
+      if (Array.isArray(obj[property])) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        obj[property].forEach((p: any) => {
+          return searchForLocationObjects(p)
+        })
+      } else {
+        return searchForLocationObjects(obj[property])
+      }
+    }
+  }
+  return locationObjects
+}

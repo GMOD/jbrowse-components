@@ -5,7 +5,7 @@ import {
   getBlobMap,
   setAuthenticationInfoMap,
 } from '../util/tracks'
-import { searchOrReplaceInArgs } from '../util'
+import { searchOrReplaceInArgs, searchForLocationObjects } from '../util'
 
 import {
   deserializeAbortSignal,
@@ -29,6 +29,15 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     const blobMap = getBlobMap()
     const authenticationInfoMap = {}
 
+    // have a general function that searches the whole args object for locations (need to address to see if an object is a location)
+    // add to all locations a constant that is called locationType string ex. locationType: 'localPathLocation', a types.literal
+    // search for property 'locationType', if an object has that property it is a location object
+    // when finds location that is handled by or associated with internetAccount (if internetaccountId is filled it)
+    // it wills in the preauthorization, might require it to launch auth (similar to serializeAuthArguments) and fill in information
+    // instead of replacing information in the args, filling in information in the location taht you are serializing
+
+    // needs a way for internetaccount to take a preauth location and make a filehandle from it
+    console.log('here', args, searchForLocationObjects(args))
     if (
       args.hasOwnProperty('adapterConfig') &&
       searchOrReplaceInArgs(args, 'internetAccountId')
@@ -60,9 +69,12 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       authenticationInfoMap,
       args,
     )
-    if (modifiedArgs) {
+
+    if (typeof modifiedArgs === 'object') {
       authenticationInfoMap = rootModel?.getAuthenticationInfoMap()
       return { ...modifiedArgs, blobMap, authenticationInfoMap }
+    } else {
+      return { ...args, blobMap, authenticationInfoMap }
     }
   }
 

@@ -153,9 +153,13 @@ const UrlChooser = (props: {
               tokenType: internetAccount
                 ? internetAccount.tokenType // internetAccount.tokenType
                 : '',
+              locationType: 'UriLocation',
             })
           } else {
-            setLocation({ uri: event.target.value })
+            setLocation({
+              uri: event.target.value,
+              locationType: 'UriLocation',
+            })
           }
         }}
       />
@@ -180,6 +184,7 @@ const UrlChooser = (props: {
                 internetAccountId: internetAccount?.internetAccountId || '',
                 authHeader: internetAccount?.authHeader || 'Authorization',
                 tokenType: internetAccount?.tokenType || '',
+                locationType: 'UriLocation',
               })
             }}
             displayEmpty
@@ -242,6 +247,7 @@ const LocalFileChooser = observer(
                 if (isElectron) {
                   setLocation({
                     localPath: (file as File & { path: string }).path,
+                    locationType: 'LocalPathLocation',
                   })
                 } else {
                   setLocation(storeBlobLocation({ blob: file }))

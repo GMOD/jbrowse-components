@@ -6,7 +6,10 @@ export default ConfigurationSchema(
   {
     dataDirLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: 'http://mysite.com/jbrowse/data/' },
+      defaultValue: {
+        uri: 'http://mysite.com/jbrowse/data/',
+        locationType: 'UriLocation',
+      },
       description:
         'the location of the JBrowse 1 data directory, often something like http://mysite.com/jbrowse/data/',
     },

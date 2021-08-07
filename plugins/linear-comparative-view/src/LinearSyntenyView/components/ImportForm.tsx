@@ -87,7 +87,10 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   const classes = useStyles()
   const [selected, setSelected] = useState([0, 0])
   const [numRows] = useState(2)
-  const [trackData, setTrackData] = useState<FileLocation>({ uri: '' })
+  const [trackData, setTrackData] = useState<FileLocation>({
+    uri: '',
+    locationType: 'UriLocation',
+  })
   const session = getSession(model)
   const { assemblyNames } = session
   const error = assemblyNames.length ? '' : 'No configured assemblies'

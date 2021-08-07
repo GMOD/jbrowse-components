@@ -196,8 +196,11 @@ custom         Either a JSON file location or inline JSON that defines a custom
           trackId: `${name}-ReferenceSequenceTrack`,
           adapter: {
             type: 'IndexedFastaAdapter',
-            fastaLocation: { uri: sequenceLocation },
-            faiLocation: { uri: indexLocation },
+            fastaLocation: {
+              uri: sequenceLocation,
+              locationType: 'UriLocation',
+            },
+            faiLocation: { uri: indexLocation, locationType: 'UriLocation' },
           },
         }
         break
@@ -248,9 +251,15 @@ custom         Either a JSON file location or inline JSON that defines a custom
           trackId: `${name}-ReferenceSequenceTrack`,
           adapter: {
             type: 'BgzipFastaAdapter',
-            fastaLocation: { uri: sequenceLocation },
-            faiLocation: { uri: indexLocation },
-            gziLocation: { uri: bgzipIndexLocation },
+            fastaLocation: {
+              uri: sequenceLocation,
+              locationType: 'UriLocation',
+            },
+            faiLocation: { uri: indexLocation, locationType: 'UriLocation' },
+            gziLocation: {
+              uri: bgzipIndexLocation,
+              locationType: 'UriLocation',
+            },
           },
         }
         break
@@ -277,7 +286,10 @@ custom         Either a JSON file location or inline JSON that defines a custom
           trackId: `${name}-ReferenceSequenceTrack`,
           adapter: {
             type: 'TwoBitAdapter',
-            twoBitLocation: { uri: sequenceLocation },
+            twoBitLocation: {
+              uri: sequenceLocation,
+              locationType: 'UriLocation',
+            },
           },
         }
         break
@@ -304,7 +316,10 @@ custom         Either a JSON file location or inline JSON that defines a custom
           trackId: `${name}-ReferenceSequenceTrack`,
           adapter: {
             type: 'ChromSizesAdapter',
-            chromSizesLocation: { uri: sequenceLocation },
+            chromSizesLocation: {
+              uri: sequenceLocation,
+              locationType: 'UriLocation',
+            },
           },
         }
         break
@@ -413,7 +428,10 @@ custom         Either a JSON file location or inline JSON that defines a custom
         assembly.refNameAliases = {
           adapter: {
             type: 'RefNameAliasAdapter',
-            location: { uri: refNameAliasesLocation },
+            location: {
+              uri: refNameAliasesLocation,
+              locationType: 'UriLocation',
+            },
           },
         }
       }

@@ -7,6 +7,7 @@ test('adapter can fetch features from volvox.2bit', async () => {
     configSchema.create({
       twoBitLocation: {
         localPath: require.resolve('../../test_data/volvox.2bit'),
+        locationType: 'LocalPathLocation',
       },
     }),
   )

@@ -8,10 +8,12 @@
         "adapter": {
           "type": "IndexedFastaAdapter",
           "fastaLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.fa"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.fa",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.fa.fai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.fa.fai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -24,10 +26,12 @@
         "adapter": {
           "type": "IndexedFastaAdapter",
           "fastaLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.fa"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.fa",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.fa.fai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.fa.fai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -40,7 +44,8 @@
       "type": "JBrowse1TextSearchAdapter",
       "textSearchAdapterId": "JBrowse1YeastTextSearchAdapter",
       "namesIndexLocation": {
-        "uri": "names/"
+        "uri": "names/",
+        "locationType": "UriLocation"
       },
       "tracks": [],
       "assemblies": ["YJM1447", "R64"]
@@ -55,7 +60,8 @@
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64_vs_yjm1447.paf"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64_vs_yjm1447.paf",
+          "locationType": "UriLocation"
         },
         "assemblyNames": ["YJM1447", "R64"]
       }
@@ -68,11 +74,13 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.sorted.gff.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.sorted.gff.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.sorted.gff.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.sorted.gff.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }
@@ -86,11 +94,13 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.sorted.gff.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.sorted.gff.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.sorted.gff.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.sorted.gff.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }

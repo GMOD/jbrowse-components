@@ -5,7 +5,10 @@ export default ConfigurationSchema(
   {
     endpoint: {
       type: 'fileLocation',
-      defaultValue: { uri: 'https://somesite.com/sparql' },
+      defaultValue: {
+        uri: 'https://somesite.com/sparql',
+        locationType: 'UriLocation',
+      },
       description: 'URL of the SPARQL endpoint',
     },
     queryTemplate: {

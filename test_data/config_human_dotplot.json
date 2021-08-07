@@ -8,7 +8,8 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "hg19.chrom.sizes"
+            "uri": "hg19.chrom.sizes",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -21,7 +22,8 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "hg38.chrom.sizes"
+            "uri": "hg38.chrom.sizes",
+            "locationType": "UriLocation"
           }
         }
       }
