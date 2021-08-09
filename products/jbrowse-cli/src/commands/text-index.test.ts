@@ -179,7 +179,7 @@ describe('text-index tracks', () => {
 })
 
 // index with attributes tag passed in
-// 
+// index with no attributes - no tag
 
 // This test is commented out due to how long it takes to complete
 /*
