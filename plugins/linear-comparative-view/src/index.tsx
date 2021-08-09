@@ -160,6 +160,7 @@ function getTag(f: Feature, tag: string) {
 
 function mergeIntervals<T extends { start: number; end: number }>(
   intervals: T[],
+  w = 5000,
 ) {
   // test if there are at least 2 intervals
   if (intervals.length <= 1) {
@@ -170,7 +171,7 @@ function mergeIntervals<T extends { start: number; end: number }>(
   let top = null
 
   // sort the intervals based on their start values
-  intervals = intervals.sort((a: any, b: any) => a - b)
+  intervals = intervals.sort((a, b) => a.start - b.start)
 
   // push the 1st interval into the stack
   stack.push(intervals[0])
@@ -182,13 +183,13 @@ function mergeIntervals<T extends { start: number; end: number }>(
 
     // if the current interval doesn't overlap with the
     // stack top element, push it to the stack
-    if (top.end < intervals[i].start) {
+    if (top.end + w < intervals[i].start - w) {
       stack.push(intervals[i])
     }
     // otherwise update the end value of the top element
     // if end of current interval is higher
     else if (top.end < intervals[i].end) {
-      top.end = intervals[i].end
+      top.end = Math.max(top.end, intervals[i].end)
       stack.pop()
       stack.push(top)
     }
@@ -201,7 +202,6 @@ interface BasicFeature {
   end: number
   start: number
   refName: string
-  index: number
 }
 
 function gatherOverlaps(regions: BasicFeature[]) {
@@ -216,10 +216,6 @@ function gatherOverlaps(regions: BasicFeature[]) {
   return Object.values(groups)
     .map(group => mergeIntervals(group.sort((a, b) => a.start - b.start)))
     .flat()
-    .sort((a, b) => {
-      console.log({ a })
-      return a.index - b.index
-    })
 }
 
 function WindowSizeDlg(props: {
@@ -243,8 +239,9 @@ function WindowSizeDlg(props: {
   useEffect(() => {
     let done = false
     ;(async () => {
-      if (preFeature.get('flags') & 2048) {
-        const SA: string = getTag(preFeature, 'SA') || ''
+      let p = preFeature
+      if (p.get('flags') & 2048) {
+        const SA: string = getTag(p, 'SA') || ''
         const primaryAln = SA.split(';')[0]
         const [saRef, saStart] = primaryAln.split(',')
         const { rpcManager } = getSession(track)
@@ -255,16 +252,12 @@ function WindowSizeDlg(props: {
           sessionId,
           region: { refName: saRef, start: +saStart - 1, end: +saStart },
         })) as any[]
-        const primaryFeat = feats.find(
-          f =>
-            f.get('name') === preFeature.get('name') &&
-            !(f.get('flags') & 2048),
+        p = feats.find(
+          f => f.get('name') === p.get('name') && !(f.get('flags') & 2048),
         )
-        if (!done) {
-          setPrimaryFeature(primaryFeat)
-        }
-      } else {
-        setPrimaryFeature(preFeature)
+      }
+      if (!done) {
+        setPrimaryFeature(p)
       }
     })()
 
@@ -289,9 +282,8 @@ function WindowSizeDlg(props: {
       const SA: string = getTag(feature, 'SA') || ''
       const readName = feature.get('name')
 
-      // the suffix -temp is used in the beforeDetach handler to
-      // automatically remove itself from the session when this view is
-      // destroyed
+      // the suffix -temp is used in the beforeDetach handler to automatically
+      // remove itself from the session when this view is destroyed
       const readAssembly = `${readName}_assembly-temp`
       const [trackAssembly] = getConf(track, 'assemblyNames')
       const assemblyNames = [trackAssembly, readAssembly]
