@@ -245,7 +245,7 @@ function WindowSizeDlg(props: {
           const saLength = getLength(saCigar)
           const saLengthSansClipping = getLengthSansClipping(saCigar)
           const saStrandNormalized = saStrand === '-' ? -1 : 1
-          const saClipPos = getClip(saCigar, 1)
+          const saClipPos = getClip(saCigar, saStrandNormalized)
           const saRealStart = +saStart - 1
           return {
             refName: saRef,
