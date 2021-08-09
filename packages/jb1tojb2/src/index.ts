@@ -283,6 +283,7 @@ interface Jb2Track {
 
 interface Jb2Adapter {
   type: string
+  color?: string
   features?: Jb2Feature[]
   bamLocation?: Jb2Location
   cramLocation?: Jb2Location
@@ -424,13 +425,15 @@ export function convertTrackConfig(
       }
     }
     if (storeClass === 'JBrowse/Store/SeqFeature/NCList') {
+      jb2TrackConfig.adapter = {type: 'NCListAdapter', rootUrlTemplate: { uri: urlTemplate },}
+      if (jb1TrackConfig.style && 
+          jb1TrackConfig.style.color && 
+          jb1TrackConfig.style.color.indexOf('{') < 0)  {
+        jb2TrackConfig.adapter.color = jb1TrackConfig.style.color
+      }
       return {
         ...jb2TrackConfig,
         type: 'FeatureTrack',
-        adapter: {
-          type: 'NCListAdapter',
-          rootUrlTemplate: { uri: urlTemplate },
-        },
       }
     }
     if (

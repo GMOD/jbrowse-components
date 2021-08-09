@@ -26,6 +26,12 @@ export interface ProtoTrack {
 
 export interface Track extends ProtoTrack {
   label: string
+  style?: Style
+}
+
+export interface Style {
+  color: string
+  height: string
 }
 
 export interface Metadata {
