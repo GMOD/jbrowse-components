@@ -46,6 +46,7 @@ export default function (pluginManager) {
               ])
               const jb2Tracks = config.tracks.map(jb1Track => {
                 const jb2Track = convertTrackConfig(
+                  self,
                   jb1Track,
                   config.dataRoot,
                   sequenceAdapter,
