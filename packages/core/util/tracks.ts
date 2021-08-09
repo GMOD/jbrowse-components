@@ -175,7 +175,7 @@ export function guessAdapter(
       type: 'VcfTabixAdapter',
       vcfGzLocation: file,
       index: {
-        location: index || makeIndex(file, 'tbi'),
+        location: index || makeIndex(file, '.tbi'),
         indexType: makeIndexType(indexName, 'CSI', 'TBI'),
       },
     }

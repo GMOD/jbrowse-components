@@ -95,7 +95,7 @@ jobs:
         uses: bahmutov/npm-install@v1
       - name: Build Storybook static site
         run: |
-          yarn build-storybook
+          yarn build:storybook
         working-directory: products/jbrowse-react-linear-genome-view
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1

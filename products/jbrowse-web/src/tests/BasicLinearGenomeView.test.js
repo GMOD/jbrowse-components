@@ -16,6 +16,18 @@ import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { setup, generateReadBuffer, getPluginManager } from './util'
 import JBrowse from '../JBrowse'
 
+// need to mock out data grid and force all columns to render
+// https://github.com/mui-org/material-ui-x/issues/1151
+jest.mock('@material-ui/data-grid', () => {
+  const { DataGrid } = jest.requireActual('@material-ui/data-grid')
+  return {
+    ...jest.requireActual('@material-ui/data-grid'),
+    DataGrid: props => {
+      return <DataGrid {...props} columnBuffer={6} />
+    },
+  }
+})
+
 setup()
 afterEach(cleanup)
 
@@ -103,6 +115,29 @@ describe('valid file tests', () => {
     fireEvent.click(getSeqMenuItem)
     expect(state.session.views[0].leftOffset).toBeTruthy()
     expect(state.session.views[0].rightOffset).toBeTruthy()
+  })
+
+  it('click and drag rubberBand, bookmarks region', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    const rubberBandComponent = await findByTestId(
+      'rubberBand_controls',
+      {},
+      { timeout: 10000 },
+    )
+
+    expect(state.session.views[0].bpPerPx).toEqual(0.05)
+    fireEvent.mouseDown(rubberBandComponent, { clientX: 100, clientY: 0 })
+    fireEvent.mouseMove(rubberBandComponent, { clientX: 250, clientY: 0 })
+    fireEvent.mouseUp(rubberBandComponent, { clientX: 250, clientY: 0 })
+    const bookmarkMenuItem = await findByText('Bookmark region')
+    fireEvent.click(bookmarkMenuItem)
+    const { widgets } = state.session
+    const bookmarkWidget = widgets.get('GridBookmark')
+    expect(bookmarkWidget.bookmarkedRegions[0].assemblyName).toEqual('volvox')
   })
 
   it('click and drag to reorder tracks', async () => {
@@ -258,6 +293,59 @@ describe('valid file tests', () => {
     const { centerLineInfo } = state.session.views[0]
     expect(centerLineInfo.refName).toBe('ctgA')
     expect(centerLineInfo.offset).toEqual(120)
+  })
+
+  it('bookmarks current region', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+
+    const viewMenu = await findByTestId('view_menu_icon')
+    fireEvent.click(viewMenu)
+    fireEvent.click(await findByText('Bookmark current region'))
+    const { widgets } = state.session
+    const bookmarkWidget = widgets.get('GridBookmark')
+    expect(bookmarkWidget.bookmarkedRegions[0].start).toEqual(100)
+    expect(bookmarkWidget.bookmarkedRegions[0].end).toEqual(140)
+  })
+
+  it('navigates to bookmarked region from widget', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+
+    const { findByTestId, findByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+
+    // need this to complete before we can try to navigate
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+    await findByTestId(
+      'trackRenderingContainer-integration_test-volvox_alignments',
+      {},
+      { timeout: 10000 },
+    )
+
+    const viewMenu = await findByTestId('view_menu_icon')
+    fireEvent.click(viewMenu)
+    fireEvent.click(await findByText('Open bookmark widget'))
+
+    const { widgets } = state.session
+    const bookmarkWidget = widgets.get('GridBookmark')
+    bookmarkWidget.addBookmark({
+      start: 200,
+      end: 240,
+      refName: 'ctgA',
+      assemblyName: 'volvox',
+    })
+
+    fireEvent.click(await findByText('{volvox}ctgA:201..240'))
+    const newRegion = state.session.views[0].getSelectedRegions(
+      state.session.views[0].leftOffset,
+      state.session.views[0].rightOffset,
+    )[0]
+    expect(newRegion.key).toEqual('{volvox}ctgA:201..240-0')
   })
 
   it('test choose option from dropdown refName autocomplete', async () => {

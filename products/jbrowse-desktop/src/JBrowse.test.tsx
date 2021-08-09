@@ -1,42 +1,24 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
-import fs from 'fs'
-import { ipcMain, ipcRenderer } from 'electron'
+import electron from 'electron'
 import { render, fireEvent } from '@testing-library/react'
 import { SnapshotIn } from 'mobx-state-tree'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
+import configSnapshot from '../test_data/volvox/config.json'
+import electronMock from '../../../packages/__mocks__/electron'
 
 type JBrowseRootModel = ReturnType<typeof JBrowseRootModelFactory>
-
-declare global {
-  interface Window {
-    electronBetterIpc: {
-      ipcRenderer?: import('electron-better-ipc-extra').RendererProcessIpc
-    }
-    electron?: import('electron').AllElectron
-  }
-}
-
-window.electronBetterIpc = {
-  // @ts-ignore
-  ipcRenderer: Object.assign(ipcRenderer, {
-    callMain: () => {},
-    answerMain: () => {},
-    callRenderer: () => {},
-    answerRenderer: () => {},
-  }),
-}
-
-window.electron = {
-  ipcRenderer,
-  ipcMain,
-  desktopCapturer: {
-    getSources: () => [] as any,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+;(configSnapshot as any).configuration = {
+  rpc: {
+    defaultDriver: 'MainThreadRpcDriver',
   },
-} as any
+}
+
+const { ipcRenderer } = electron
+const { ipcMain } = electronMock
 
 function getPluginManager(initialState?: SnapshotIn<JBrowseRootModel>) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
@@ -45,7 +27,7 @@ function getPluginManager(initialState?: SnapshotIn<JBrowseRootModel>) {
   const JBrowseRootModel = JBrowseRootModelFactory(pluginManager)
   const rootModel = JBrowseRootModel.create(
     {
-      jbrowse: initialState || {},
+      jbrowse: initialState || configSnapshot,
       assemblyManager: {},
     },
     { pluginManager },
@@ -65,16 +47,9 @@ test('basic test of electron-mock-ipc', () => {
   ipcRenderer.send('test-event', testMessage)
 })
 
-describe('main jbrowse app render', () => {
-  it('renders empty', async () => {
-    // we use preload script to load onto the window global
-    ipcMain.handle('loadConfig', () => {
-      const config = fs.readFileSync('test_data/volvox/config.json', 'utf8')
-      return JSON.parse(config)
-    })
-    ipcMain.handle('listSessions', () => {
-      return {}
-    })
+describe('JBrowse Desktop', () => {
+  it('renders start screen', async () => {
+    ipcMain.handle('listSessions', () => ({}))
 
     const { findByText } = render(
       <JBrowse pluginManager={getPluginManager()} />,

@@ -1,6 +1,16 @@
 {
   "TrackData": {
-    "TrackIds": ["gtftabix_genes"],
-    "metaAttrs": [["gene_name", "gene_id", "feature"]]
+    "TrackIds": [
+      "au9_scaffold",
+      "gff3tabix_genes",
+      "online_gff3tabix_genes",
+      "online_au9_scaffold"
+    ],
+    "metaAttrs": [
+      ["Name", "ID", "type"],
+      ["Name", "ID", "type"],
+      ["Name", "ID", "type"],
+      ["Name", "ID", "type"]
+    ]
   }
 }

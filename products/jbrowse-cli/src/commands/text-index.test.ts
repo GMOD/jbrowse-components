@@ -178,6 +178,9 @@ describe('text-index tracks', () => {
     .it('Indexes a remote and a local file', ctx => verifyIxxFiles(ctx.dir))
 })
 
+// index with attributes tag passed in
+// 
+
 // This test is commented out due to how long it takes to complete
 /*
 // Aggregate File

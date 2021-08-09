@@ -3,11 +3,14 @@ import { getConf } from '@jbrowse/core/configuration'
 import { App, createJBrowseTheme } from '@jbrowse/core/ui'
 import { CssBaseline, ThemeProvider } from '@material-ui/core'
 
+import electron from 'electron'
 import { observer } from 'mobx-react'
 import { onSnapshot, getSnapshot } from 'mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import StartScreen from './StartScreen'
 import factoryReset from './factoryReset'
+
+const { ipcRenderer } = electron
 
 const debounceMs = 1000
 
@@ -35,16 +38,20 @@ function debounce(func, wait) {
   return debounced
 }
 function saveConfig(snapshot) {
-  const { electron = {} } = window
-  return electron.ipcRenderer.invoke('saveConfig', snapshot)
+  return ipcRenderer.invoke('saveConfig', snapshot)
 }
 const JBrowse = observer(({ pluginManager }) => {
-  const { electron = {} } = window
-  const { desktopCapturer, ipcRenderer } = electron
   const [firstLoad, setFirstLoad] = useState(true)
 
   const { rootModel } = pluginManager
-  const { session, jbrowse, error, pluginsUpdated } = rootModel
+  const {
+    session,
+    jbrowse,
+    error,
+    pluginsUpdated,
+    isAssemblyEditing,
+    setAssemblyEditing,
+  } = rootModel
 
   if (firstLoad && session) {
     setFirstLoad(false)
@@ -60,7 +67,7 @@ const JBrowse = observer(({ pluginManager }) => {
       }
     }
     return () => {}
-  }, [jbrowse, ipcRenderer, pluginsUpdated, rootModel])
+  }, [jbrowse, pluginsUpdated, rootModel])
 
   useEffect(() => {
     ;(async () => {
@@ -73,13 +80,7 @@ const JBrowse = observer(({ pluginManager }) => {
 
   useEffect(() => {
     async function createScreenshot(snapshot) {
-      const sources = await desktopCapturer.getSources({
-        types: ['window'],
-        thumbnailSize: { width: 500, height: 500 },
-      })
-      const jbWindow = sources.find(source => source.name === 'JBrowse')
-      const screenshot = jbWindow.thumbnail.toDataURL()
-      ipcRenderer.send('saveSession', snapshot, screenshot)
+      ipcRenderer.send('saveSession', snapshot)
     }
 
     let disposer = () => {}
@@ -92,26 +93,26 @@ const JBrowse = observer(({ pluginManager }) => {
       }
     }
     return disposer
-  }, [session, desktopCapturer, ipcRenderer])
+  }, [session])
 
   if (error) {
     throw new Error(error)
   }
 
-  const theme = getConf(rootModel.jbrowse, 'theme')
+  const theme = getConf(jbrowse, 'theme')
 
   return (
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <CssBaseline />
-      {rootModel.session ? (
+      {session ? (
         <>
-          <App session={rootModel.session} />
+          <App session={session} />
           <Suspense fallback={<div />}>
             <AssemblyManager
               rootModel={rootModel}
-              open={rootModel.isAssemblyEditing}
+              open={isAssemblyEditing}
               onClose={() => {
-                rootModel.setAssemblyEditing(false)
+                setAssemblyEditing(false)
               }}
             />
           </Suspense>
