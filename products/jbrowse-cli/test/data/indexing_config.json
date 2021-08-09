@@ -89,6 +89,24 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "noAttributes",
+      "assemblyNames": ["volvox"],
+      "name": "GFF3Tabix genes with no attributes",
+      "category": ["Miscellaneous"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.gff3.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.gff3.gz.tbi"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "online_gff3tabix_genes",
       "assemblyNames": ["volvox"],
       "name": "Online GFF3Tabix genes",
