@@ -178,8 +178,51 @@ describe('text-index tracks', () => {
     .it('Indexes a remote and a local file', ctx => verifyIxxFiles(ctx.dir))
 })
 
-// attributes flag
-// no config attrs
+describe('text-index tracks', () => {
+  setup
+    .do(async ctx => {
+      const gff3File = path.join(
+        __dirname,
+        '..',
+        '..',
+        'test',
+        'data',
+        'volvox.sort.gff3.gz',
+      )
+      fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
+      fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
+    })
+    .command([
+      'text-index',
+      '--tracks=noAttributes',
+      '--target=config.json',
+      '--attributes=ID',
+    ])
+    .it('Indexes a track using only the attributes tag', ctx =>
+      verifyIxxFiles(ctx.dir),
+    )
+})
+
+// no attributes in track
+describe('text-index tracks', () => {
+  setup
+    .do(async ctx => {
+      const gff3File = path.join(
+        __dirname,
+        '..',
+        '..',
+        'test',
+        'data',
+        'volvox.sort.gff3.gz',
+      )
+      fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
+      fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
+    })
+    .command(['text-index', '--tracks=noAttributes', '--target=config.json'])
+    .it('Indexes a track with no attributes in the config', ctx =>
+      verifyIxxFiles(ctx.dir),
+    )
+})
 
 // This test is commented out due to how long it takes to complete
 /*
