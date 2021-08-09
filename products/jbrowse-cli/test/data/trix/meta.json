@@ -1,16 +1,12 @@
 {
   "TrackData": {
     "TrackIds": [
-      "au9_scaffold",
-      "gff3tabix_genes",
-      "online_gff3tabix_genes",
-      "online_au9_scaffold"
+      "gtfdemo"
     ],
     "metaAttrs": [
-      ["Name", "ID", "type"],
-      ["Name", "ID", "type"],
-      ["Name", "ID", "type"],
-      ["Name", "ID", "type"]
+      [
+        "exon_id"
+      ]
     ]
   }
 }

@@ -69,6 +69,7 @@ export async function* indexGtf(
     const locStr = `${seq_name}:${start}..${end}`
 
     const col9attrs = col9.split('; ')
+    console.log(col9attrs)
     const attrs = attributes.map(attr =>
       col9attrs
         .find(f => f.startsWith(attr))
@@ -79,6 +80,7 @@ export async function* indexGtf(
     const record = JSON.stringify([locStr, trackId])
 
     const buff = Buffer.from(record).toString('base64')
+    console.log(`${buff} ${[...new Set(attrs)].join(' ')}\n`)
     yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
   }
   progressBar.stop()
