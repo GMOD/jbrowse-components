@@ -218,6 +218,7 @@ function WindowSizeDlg(props: {
       const clipPos = getClip(cigar, 1)
       const flags = feature.get('flags')
       const qual = feature.get('qual') as string
+      const origStrand = feature.get('strand')
       const SA: string = getTag(feature, 'SA') || ''
       const readName = feature.get('name')
 
@@ -239,11 +240,11 @@ function WindowSizeDlg(props: {
       const supplementaryAlignments = SA.split(';')
         .filter(aln => !!aln)
         .map((aln, index) => {
-          const [saRef, saStart, , saCigar] = aln.split(',')
+          const [saRef, saStart, saStrand, saCigar] = aln.split(',')
           const saLengthOnRef = getLengthOnRef(saCigar)
           const saLength = getLength(saCigar)
           const saLengthSansClipping = getLengthSansClipping(saCigar)
-          // const saStrandNormalized = saStrand === '-' ? -1 : 1
+          const saStrandNormalized = saStrand === '-' ? -1 : 1
           const saClipPos = getClip(saCigar, 1)
           const saRealStart = +saStart - 1
           return {
@@ -254,7 +255,7 @@ function WindowSizeDlg(props: {
             clipPos: saClipPos,
             CIGAR: saCigar,
             assemblyName: trackAssembly,
-            strand: 1, // saStrandNormalized,
+            strand: origStrand * saStrandNormalized,
             uniqueId: `${feature.id()}_SA${index}`,
             mate: {
               start: saClipPos,
@@ -361,7 +362,7 @@ function WindowSizeDlg(props: {
                   {
                     id: `${Math.random()}`,
                     type: 'LinearReferenceSequenceDisplay',
-                    showReverse: false,
+                    showReverse: true,
                     showTranslation: false,
                     height: 35,
                     configuration: `${seqTrackId}-LinearReferenceSequenceDisplay`,
@@ -392,7 +393,7 @@ function WindowSizeDlg(props: {
                   {
                     id: `${Math.random()}`,
                     type: 'LinearReferenceSequenceDisplay',
-                    showReverse: false,
+                    showReverse: true,
                     showTranslation: false,
                     height: 35,
                     configuration: `${seqTrackId}-LinearReferenceSequenceDisplay`,

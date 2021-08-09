@@ -103,6 +103,11 @@ function getClip(cigar: string, strand: number) {
     : +(cigar.match(/^(\d+)([SH])/) || [])[1] || 0
 }
 
+function getTag(f: Feature, tag: string) {
+  const tags = f.get('tags')
+  return tags ? tags[tag] : f.get(tag)
+}
+
 interface ReducedFeature {
   refName: string
   start: number
@@ -186,10 +191,8 @@ export default class DotplotPlugin extends Plugin {
                 const clipPos = feature.get('clipPos')
                 const cigar = feature.get('CIGAR')
                 const flags = feature.get('flags')
-                const SA: string =
-                  (feature.get('tags')
-                    ? feature.get('tags').SA
-                    : feature.get('SA')) || ''
+                const origStrand = feature.get('strand')
+                const SA: string = getTag(feature, 'SA') || ''
                 const readName = feature.get('name')
                 const readAssembly = `${readName}_assembly`
                 const [trackAssembly] = getConf(parentTrack, 'assemblyNames')
@@ -214,7 +217,7 @@ export default class DotplotPlugin extends Plugin {
                       clipPos: saClipPos,
                       CIGAR: saCigar,
                       assemblyName: trackAssembly,
-                      strand: 1, // saStrandNormalized,
+                      strand: origStrand * saStrandNormalized,
                       uniqueId: `${feature.id()}_SA${index}`,
                       mate: {
                         start: saClipPos,
