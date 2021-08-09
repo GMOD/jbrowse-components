@@ -68,16 +68,25 @@ export async function* indexGff3(
     const locStr = `${seq_id}:${start}..${end}`
 
     const col9attrs = col9.split(';')
+    const name = col9attrs
+      .find(f => f.startsWith('Name'))
+      ?.split('=')[1]
+      .trim()
+    const id = col9attrs
+      .find(f => f.startsWith('ID'))
+      ?.split('=')[1]
+      .trim()
     const attrs = attributes.map(attr =>
       col9attrs
         .find(f => f.startsWith(attr))
         ?.split('=')[1]
         .trim(),
     )
-    const record = JSON.stringify([locStr, trackId])
-
-    const buff = Buffer.from(record).toString('base64')
-    yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
+    if (name || id) {
+      const record = JSON.stringify([locStr, trackId, name, id])
+      const buff = Buffer.from(record).toString('base64')
+      yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
+    }
   }
 
   progressBar.stop()

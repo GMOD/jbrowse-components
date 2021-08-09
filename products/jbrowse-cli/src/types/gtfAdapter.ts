@@ -56,7 +56,7 @@ export async function* indexGtf(
     input: gzStream,
   })
 
-  const regex = /(["])/g
+  const regex = /(")+/g
 
   for await (const line of rl) {
     if (line.startsWith('#')) {
@@ -69,7 +69,16 @@ export async function* indexGtf(
     const locStr = `${seq_name}:${start}..${end}`
 
     const col9attrs = col9.split('; ')
-    console.log(col9attrs)
+    const name = col9attrs
+      .find(f => f.startsWith('gene_name'))
+      ?.split(' ')[1]
+      .trim()
+      .replace(regex, '')
+    const id = col9attrs
+      .find(f => f.startsWith('gene_id'))
+      ?.split(' ')[1]
+      .trim()
+      .replace(regex, '')
     const attrs = attributes.map(attr =>
       col9attrs
         .find(f => f.startsWith(attr))
@@ -77,11 +86,12 @@ export async function* indexGtf(
         .trim()
         .replace(regex, ''),
     )
-    const record = JSON.stringify([locStr, trackId])
-
-    const buff = Buffer.from(record).toString('base64')
-    console.log(`${buff} ${[...new Set(attrs)].join(' ')}\n`)
-    yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
+    if (name || id) {
+      const record = JSON.stringify([locStr, trackId, name, id])
+      console.log(record)
+      const buff = Buffer.from(record).toString('base64')
+      yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
+    }
   }
   progressBar.stop()
 }
