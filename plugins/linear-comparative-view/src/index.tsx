@@ -211,7 +211,10 @@ function WindowSizeDlg(props: {
 
   function onSubmit() {
     try {
-      const feature = primaryFeature || preFeature
+      if (!primaryFeature) {
+        return
+      }
+      const feature = primaryFeature
       const session = getSession(track)
       const view = getContainingView(track)
       const cigar = feature.get('CIGAR')
