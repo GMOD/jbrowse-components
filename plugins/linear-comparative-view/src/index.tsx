@@ -158,7 +158,9 @@ function getTag(f: Feature, tag: string) {
   return tags ? tags[tag] : f.get(tag)
 }
 
-function mergeIntervals(intervals: any) {
+function mergeIntervals<T extends { start: number; end: number }>(
+  intervals: T[],
+) {
   // test if there are at least 2 intervals
   if (intervals.length <= 1) {
     return intervals
@@ -195,23 +197,29 @@ function mergeIntervals(intervals: any) {
   return stack
 }
 
-function groupBy(arr: any, property: any) {
-  return arr.reduce(function (memo, x) {
-    if (!memo[x[property]]) {
-      memo[x[property]] = []
-    }
-    memo[x[property]].push(x)
-    return memo
-  }, {})
+interface BasicFeature {
+  end: number
+  start: number
+  refName: string
+  index: number
 }
-function gatherOverlaps(regions: any[]) {
-  const groups = groupBy(regions, 'refName')
-  const merged = Object.values(groups).map((group: any) => {
-    group.sort((a, b) => a.start - b.start)
-    return mergeIntervals(group)
-  })
 
-  return merged.flat().sort((a, b) => a.index - b.index)
+function gatherOverlaps(regions: BasicFeature[]) {
+  const groups = regions.reduce((memo, x) => {
+    if (!memo[x.refName]) {
+      memo[x.refName] = []
+    }
+    memo[x.refName].push(x)
+    return memo
+  }, {} as { [key: string]: BasicFeature[] })
+
+  return Object.values(groups)
+    .map(group => mergeIntervals(group.sort((a, b) => a.start - b.start)))
+    .flat()
+    .sort((a, b) => {
+      console.log({ a })
+      return a.index - b.index
+    })
 }
 
 function WindowSizeDlg(props: {
@@ -370,15 +378,13 @@ function WindowSizeDlg(props: {
       const seqTrackId = `${readName}_${Date.now()}`
       const sequenceTrackConf = getConf(assembly, 'sequence')
       const lgvRegions = gatherOverlaps(
-        features.map(f => {
-          return {
-            ...f,
-            start: Math.max(0, f.start - windowSize),
-            end: f.end + windowSize,
-            assemblyName: trackAssembly,
-          }
-        }),
-      ).sort((a, b) => a.clipPos - b.clipPos)
+        features.map(f => ({
+          ...f,
+          start: Math.max(0, f.start - windowSize),
+          end: f.end + windowSize,
+          assemblyName: trackAssembly,
+        })),
+      )
 
       session.addAssembly?.({
         name: `${readAssembly}`,
