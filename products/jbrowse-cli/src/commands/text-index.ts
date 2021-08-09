@@ -146,7 +146,7 @@ export default class TextIndex extends JBrowseCommand {
       }
 
       fs.writeFileSync(
-        path.join(dir, 'trix', `${asm}.json`),
+        path.join(dir, 'trix', `${asm}_meta.json`),
         JSON.stringify({ TrackData: { TrackIds, metaAttrs } }, null, 2),
       )
     }
