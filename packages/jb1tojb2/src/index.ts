@@ -284,6 +284,7 @@ interface Jb2Track {
 interface Jb2Adapter {
   type: string
   color?: string
+  height?: number
   features?: Jb2Feature[]
   bamLocation?: Jb2Location
   cramLocation?: Jb2Location
@@ -430,6 +431,11 @@ export function convertTrackConfig(
           jb1TrackConfig.style.color && 
           jb1TrackConfig.style.color.indexOf('{') < 0)  {
         jb2TrackConfig.adapter.color = jb1TrackConfig.style.color
+      }
+      if (jb1TrackConfig.style &&
+          jb1TrackConfig.style.height &&
+          !isNaN( Number(jb1TrackConfig.style.height) ) )  {
+        jb2TrackConfig.adapter.height = Number(jb1TrackConfig.style.height)
       }
       return {
         ...jb2TrackConfig,
