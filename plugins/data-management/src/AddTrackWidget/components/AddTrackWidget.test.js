@@ -117,4 +117,25 @@ describe('<AddTrackWidget />', () => {
     fireEvent.click(getByTestId('addTrackNextButton'))
     expect(session.sessionTracks.length).toBe(2)
   })
+
+  xit('fails to add a track', async () => {
+    const { widget } = session
+    const { getByTestId, findByText } = render(<AddTrackWidget model={model} />)
+    expect(session.sessionTracks.length).toBe(1)
+    fireEvent.click(getByTestId('addTrackNextButton'))
+    fireEvent.change(getByTestId('trackNameInput'), {
+      target: { value: 'Test track name' },
+    })
+    const trackTypeSelect = getByTestId('trackTypeSelect')
+    fireEvent.mouseDown(trackTypeSelect)
+    const featureTrack = await findByText('FeatureTrack')
+    fireEvent.click(featureTrack)
+    widget.setAdapterHint('InvalidAdapter')
+    const assemblyNameSelect = getByTestId('assemblyNameSelect')
+    fireEvent.mouseDown(assemblyNameSelect)
+    const volMyt1 = await findByText('volMyt1')
+    fireEvent.click(volMyt1)
+    fireEvent.click(getByTestId('addTrackNextButton'))
+    expect(session.sessionTracks.length).toBe(1)
+  })
 })
