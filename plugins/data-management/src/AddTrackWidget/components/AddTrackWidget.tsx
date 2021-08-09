@@ -15,7 +15,6 @@ import ConfirmTrack from './ConfirmTrack'
 import TrackSourceSelect from './TrackSourceSelect'
 import { AddTrackModel } from '../model'
 import { Alert } from '@material-ui/lab'
-import { UNKNOWN } from '../../../../../packages/core/util/tracks'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -73,7 +72,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
 
     const assemblyInstance = session.assemblyManager.get(assembly)
 
-    if (trackAdapter && trackAdapter.type != UNKNOWN) {
+    if (trackAdapter && trackAdapter.type != 'UNKNOWN') {
       // @ts-ignore
       session.addTrackConf({
         trackId,

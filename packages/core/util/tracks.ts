@@ -295,7 +295,7 @@ export function guessAdapter(
     const schema = getEnv(session).pluginManager.getAdapterType(adapterHint)
       .configSchema.jbrowseSchemaDefinition
     if (schema) {
-      let location = 'location'
+      let location = undefined
 
       Object.keys(schema).forEach(key => {
         if (key.toLowerCase().includes('location')) {
@@ -303,9 +303,11 @@ export function guessAdapter(
         }
       })
 
-      return {
-        type: adapterHint,
-        [location]: file,
+      if (location) {
+        return {
+          type: adapterHint,
+          [location]: file,
+        }
       }
     }
   }
