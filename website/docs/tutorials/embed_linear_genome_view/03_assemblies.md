@@ -1,5 +1,5 @@
 ---
-id: 04_assemblies
+id: 03_assemblies
 title: About assemblies
 ---
 
@@ -101,7 +101,8 @@ that list is our assembly. You can see the name, alias, sequence, and reference
 name aliases we specified in our command. If for some reason the index files
 were unusually named, you could change them in the "faiLocation" and
 "gziLocation" entries, but these look right. Create a new file called
-"assembly.js" and have it export this object, like this:
+"assembly.js" and copy the assembly entry over to that file and have it be
+exported, like this:
 
 ```javascript title="assembly.js"
 export default {
@@ -166,3 +167,5 @@ Then add an import to your "index.html" adding this data:
   </body>
 </html>
 ```
+
+Keep the config.json around for now, as we'll use it in the next step as well.

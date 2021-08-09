@@ -1,10 +1,11 @@
 ---
-id: 06_other_options
+id: 05_other_options
 title: Other options
 ---
 
 There are some other optional things you can pass to JBrowse Linear Genome View
-when you create it
+when you create it. We won't be adding any of these options for this demo, so
+this page is just for your information.
 
 ## location
 

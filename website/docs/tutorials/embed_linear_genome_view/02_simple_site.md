@@ -1,5 +1,5 @@
 ---
-id: 03_simple_site
+id: 02_simple_site
 title: Beginnings of a simple site
 ---
 

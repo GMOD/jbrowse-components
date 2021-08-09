@@ -1,5 +1,5 @@
 ---
-id: 07_creating_the_view
+id: 06_creating_the_view
 title: Creating the view
 ---
 
@@ -99,7 +99,8 @@ can open the track selector by clicking "SELECT TRACKS" or by clicking on the
 icon on the far left of the navigation area. You can pan with the arrow buttons
 or click and drag to move around. You can change chromosome, enter a location to
 navigate to, and zoom in and out. There's also a menu button in the top left of
-the view that has other display options.
+the view that has other display options. If you open a widget that pops up on
+the screen, click anywhere outside it to close the widget.
 
 ## Controlling the view
 

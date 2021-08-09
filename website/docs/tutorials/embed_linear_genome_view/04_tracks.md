@@ -1,5 +1,5 @@
 ---
-id: 05_tracks
+id: 04_tracks
 title: About tracks
 ---
 
@@ -48,7 +48,7 @@ jbrowse add-track https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/variants/A
 Open "config.json" again and look at the tracks that were generated. You can see
 that again, it has guessed index locations for you, which you can change if
 needed. Create a new file called "tracks.js" and copy the tracks array into it
-and have it exported, like this:
+and have it be exported, like this:
 
 ```javascript title="tracks.js"
 export default [
@@ -135,7 +135,8 @@ export default [
 ]
 ```
 
-Now update "index.html" to import this file.
+You can delete "config.json" at this point, as you won't need it any more. Now
+update "index.html" to import this file.
 
 ```html {22} title="index.html"
 <html>

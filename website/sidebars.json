@@ -27,16 +27,15 @@
           "type": "category",
           "label": "Embedding JBrowse 2 in your website",
           "items": [
-            "tutorials/embed_linear_genome_view/01_getting_started",
-            "tutorials/embed_linear_genome_view/02_introduction",
-            "tutorials/embed_linear_genome_view/03_simple_site",
-            "tutorials/embed_linear_genome_view/04_assemblies",
-            "tutorials/embed_linear_genome_view/05_tracks",
-            "tutorials/embed_linear_genome_view/06_other_options",
-            "tutorials/embed_linear_genome_view/07_creating_the_view",
-            "tutorials/embed_linear_genome_view/08_default_session",
-            "tutorials/embed_linear_genome_view/09_reacting",
-            "tutorials/embed_linear_genome_view/10_conclusion"
+            "tutorials/embed_linear_genome_view/01_introduction",
+            "tutorials/embed_linear_genome_view/02_simple_site",
+            "tutorials/embed_linear_genome_view/03_assemblies",
+            "tutorials/embed_linear_genome_view/04_tracks",
+            "tutorials/embed_linear_genome_view/05_other_options",
+            "tutorials/embed_linear_genome_view/06_creating_the_view",
+            "tutorials/embed_linear_genome_view/07_default_session",
+            "tutorials/embed_linear_genome_view/08_reacting",
+            "tutorials/embed_linear_genome_view/09_conclusion"
           ]
         },
         {
