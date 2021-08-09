@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`text-index Indexes a local non-gz gff3 file 1`] = `" WyJHcm91cDEuMzY6MTc2OTc1Li4xODA3NDQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzEwMDIiLCJhdTkuZzEwMDIiXQ==,2 WyJHcm91cDEuMzY6MTc2OTc1Li4xODA3NDQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzEwMDIudDEiLCJhdTkuZzEwMDIudDEiXQ==,2 WyJHcm91cDEuMzY6MTY1NTU4Li4xNjY5ODQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzk5OSIsImF1OS5nOTk5Il0=,2 WyJHcm91cDEuMzY6MTY1NTU4Li4xNjY5ODQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzk5OS50MSIsImF1OS5nOTk5LnQxIl0=,2 WyJHcm91cDEuMzY6MTAxNjIzLi4xMjA1NDQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzk4OSIsImF1OS5nOTg5Il0=,2 WyJHcm91cDEuMzY6MTAxNjIzLi4xMjA1NDQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzk4OS50MiIsImF1OS5nOTg5LnQyIl0=,2 WyJHcm91cDEuMzY6MTAxNjIzLi4xMjA1NDQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzk4OS50MSIsImF1OS5nOTg5LnQxIl0=,2 WyJHcm91cDEuMzY6MTk1MjQ4Li4xOTcyNTQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzEwMDUiLCJhdTkuZzEwMDUiXQ==,2 WyJHcm91cDEuMzY6MTk1MjQ4Li4xOTcyNTQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzEwMDUudDEiLCJhdTkuZzEwMDUudDEiXQ==,2 WyJHcm91cDEuMzY6MTQ3NTIwLi4xNTA0MTQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzk5NSIsImF1OS5nOTk1Il0=,2 WyJHcm91cDEuMzY6MTQ3NTIwLi4xNTA0M"`;
+exports[`text-index Indexes a local non-gz gff3 file 1`] = `" WyJHcm91cDEuMzY6MTc2OTc1Li4xNzcxMDkiLCJhdTlfc2NhZmZvbGQiXQ==,1 WyJHcm91cDEuMzY6MTc3MTEwLi4xNzcxMTIiLCJhdTlfc2NhZmZvbGQiXQ==,1 WyJHcm91cDEuMzY6MTc3MTEwLi4xNzcxNDgiLCJhdTlfc2NhZmZvbGQiXQ==,1 WyJHcm91cDEuMzY6MTc3NjE1Li4xNzc2ODMiLCJhdTlfc2NhZmZvbGQiXQ==,1 WyJHcm91cDEuMzY6MTc3NzU4Li4xNzgwNDAiLCJhdTlfc2NhZmZvbGQiXQ==,1 WyJHcm91cDEuMzY6MTc4MTQyLi4xNzgzMTkiLCJhdTlfc2NhZmZvbGQiXQ==,1 WyJHcm91cDEuMzY6MTc4NDExLi4xNzg2ODciLCJhdTlfc2NhZmZvbGQiXQ==,1 WyJHcm91cDEuMzY6MTc4NzQ4Li4xNzg4NTAiLCJhdTlfc2NhZmZvbGQiXQ==,1 WyJHcm91cDEuMzY6MTc4OTUzLi4xNzkwOTgiLCJhdTlfc2NhZmZvbGQiXQ==,1 WyJHcm91cDEuMzY6MTc5MTY2Li4xNzkzMjAiLCJhdTlfc2NhZmZvbGQiXQ==,1 WyJHcm91cDEuMzY6MTc5NDE5Li4xNzk2MTQiLCJhdTlfc2NhZmZvbGQiXQ==,1 WyJHcm91cDEuMzY6MTc5NzA4Li4xNzk4MTEiLCJhdTlfc2NhZmZvbGQiXQ==,1 WyJHcm91cDEuMzY6MTc5OTI3Li4xODAyMzkiLCJhdTlfc2NhZmZvbGQiXQ==,1 WyJHcm91cDEuMzY6MTgwNDE0Li4xODA0OTQiLCJhdTlfc2NhZmZvbGQiXQ==,1 WyJHcm91cDEuMzY6MTgwNDkyLi4xODA0OTQiLCJhdTlfc2NhZmZvbGQiXQ==,1 WyJHcm91cDEuMzY6MTgwNDk1Li4xODA3NDQiLCJhdTlfc2NhZmZvbG"`;
 
 exports[`text-index Indexes a local non-gz gff3 file 2`] = `
 "NTI1Li4xMzUxNjQiLCJhdTlfc2NhZmZvbGQiXQ==,1
@@ -20,15 +20,15 @@ au9.g999.t1 WyJHcm91cDEuMzY6MTY1NTU4Li4xNjY5ODQiLCJhdTlfc2NhZmZvbGQiXQ==,1
 "
 `;
 
-exports[`text-index Indexes a local non-gz gff3 file 3`] = `273739`;
+exports[`text-index Indexes a local non-gz gff3 file 3`] = `736740`;
 
 exports[`text-index Indexes a local non-gz gff3 file 4`] = `
 "     0000000000
-au9.g000001F991
+au9.g000009C01A
 "
 `;
 
-exports[`text-index tracks Indexes a local gz gff3 file 1`] = `" WyJjdGdBOjEuLjUwMDAxIiwiZ2ZmM3RhYml4X2dlbmVzIiwiY3RnQSIsbnVsbF0=,2 WyJjdGdBOjEwMDAuLjIwMDAwIiwiZ2ZmM3RhYml4X2dlbmVzIiwiYjEwMS4yIiwiYjEwMS4yIl0=,2 WyJjdGdBOjEwMDAuLjIwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJSZW1hcms6aGdhIixudWxsXQ==,2 WyJjdGdBOjEwNTAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q4MzAuNSIsbnVsbF0=,2 WyJjdGdBOjEwNTAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3QyMjEuNSIsbnVsbF0=,2 WyJjdGdBOjEwNTAuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJFREVOIiwiRURFTiJd,2 WyJjdGdBOjEwNTAuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJFREVOLjEiLCJFREVOLjEiXQ==,2 WyJjdGdBOjEwNTAuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJFREVOLjIiLCJFREVOLjIiXQ==,2 WyJjdGdBOjExMDAuLjIwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJHZW5lOmhnYSIsbnVsbF0=,2 WyJjdGdBOjExNTAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q3NjcuNSIsbnVsbF0=,2 WyJjdGdBOjEyMDAuLjE5MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJQcm90ZWluOkhHQSIsbnVsbF0=,2 WyJjdGdBOjEzMDAuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJFREVOLjMiLCJFREVOLjMiXQ==,2 WyJjdGdBOjE2MDAuLjMwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJHZW5lOmhnYiIsbnVsbF0=,2 WyJjdGdBOjE2"`;
+exports[`text-index tracks Indexes a local gz gff3 file 1`] = `" WyJjdGdBOjEwMDAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjEwNTAuLjEyMDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjEwNTAuLjEyMDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjEyMDEuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjEyMDEuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjEzMDAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjMwMDAuLjM5MDIiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjMwMDAuLjMzMDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjMzMDEuLjM5MDIiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjUwMDAuLjU1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjUwMDAuLjU1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjUwMDAuLjU1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjcwMDAuLjc2MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjcwMDAuLjc2MDgiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjcwMDAuLjc2MDgiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjc2MDEuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjc2MDkuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjc2MDkuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBO"`;
 
 exports[`text-index tracks Indexes a local gz gff3 file 2`] = `
 "d,1 WyJjdGdBOjQ3NDQ5Li40NzgyOSIsImdmZjN0YWJpeF9nZW5lcyJd,1
@@ -36,14 +36,14 @@ seg15 WyJjdGdBOjM5MjY1Li4zOTM2MSIsImdmZjN0YWJpeF9nZW5lcyJd,1 WyJjdGdBOjM5NzUzLi4
 "
 `;
 
-exports[`text-index tracks Indexes a local gz gff3 file 3`] = `33164`;
+exports[`text-index tracks Indexes a local gz gff3 file 3`] = `26077`;
 
 exports[`text-index tracks Indexes a local gz gff3 file 4`] = `
 "     0000000000
 "
 `;
 
-exports[`text-index tracks Indexes a remote and a local file 1`] = `" WyJjdGdBOjEuLjUwMDAxIiwiZ2ZmM3RhYml4X2dlbmVzIiwiY3RnQSIsbnVsbF0=,2 WyJjdGdBOjEwMDAuLjIwMDAwIiwiZ2ZmM3RhYml4X2dlbmVzIiwiYjEwMS4yIiwiYjEwMS4yIl0=,2 WyJjdGdBOjEwMDAuLjIwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJSZW1hcms6aGdhIixudWxsXQ==,2 WyJjdGdBOjEwNTAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q4MzAuNSIsbnVsbF0=,2 WyJjdGdBOjEwNTAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3QyMjEuNSIsbnVsbF0=,2 WyJjdGdBOjEwNTAuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJFREVOIiwiRURFTiJd,2 WyJjdGdBOjEwNTAuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJFREVOLjEiLCJFREVOLjEiXQ==,2 WyJjdGdBOjEwNTAuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJFREVOLjIiLCJFREVOLjIiXQ==,2 WyJjdGdBOjExMDAuLjIwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJHZW5lOmhnYSIsbnVsbF0=,2 WyJjdGdBOjExNTAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q3NjcuNSIsbnVsbF0=,2 WyJjdGdBOjEyMDAuLjE5MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJQcm90ZWluOkhHQSIsbnVsbF0=,2 WyJjdGdBOjEzMDAuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJFREVOLjMiLCJFREVOLjMiXQ==,2 WyJjdGdBOjE2MDAuLjMwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJHZW5lOmhnYiIsbnVsbF0=,2 WyJjdGdBOjE2"`;
+exports[`text-index tracks Indexes a remote and a local file 1`] = `" WyJjdGdBOjEwMDAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjEwNTAuLjEyMDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjEwNTAuLjEyMDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjEyMDEuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjEyMDEuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjEzMDAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjMwMDAuLjM5MDIiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjMwMDAuLjMzMDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjMzMDEuLjM5MDIiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjUwMDAuLjU1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjUwMDAuLjU1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjUwMDAuLjU1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjcwMDAuLjc2MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjcwMDAuLjc2MDgiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjcwMDAuLjc2MDgiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjc2MDEuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjc2MDkuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjc2MDkuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBO"`;
 
 exports[`text-index tracks Indexes a remote and a local file 2`] = `
 "d,1 WyJjdGdBOjQ3NDQ5Li40NzgyOSIsImdmZjN0YWJpeF9nZW5lcyJd,1
@@ -51,31 +51,30 @@ seg15 WyJjdGdBOjM5MjY1Li4zOTM2MSIsImdmZjN0YWJpeF9nZW5lcyJd,1 WyJjdGdBOjM5NzUzLi4
 "
 `;
 
-exports[`text-index tracks Indexes a remote and a local file 3`] = `328214`;
+exports[`text-index tracks Indexes a remote and a local file 3`] = `856624`;
 
 exports[`text-index tracks Indexes a remote and a local file 4`] = `
 "     0000000000
-agt2200000261A2
-au9.g00000267AE
-b101.000004C508
+agt2200000B3880
+au9.g00000B3CE0
 "
 `;
 
-exports[`text-index tracks Indexes a remote gz gff3 file 1`] = `" WyJjdGdBOjEuLjUwMDAxIiwib25saW5lX2dmZjN0YWJpeF9nZW5lcyIsImN0Z0EiLG51bGxd,2 WyJjdGdBOjEwMDAuLjIwMDAwIiwib25saW5lX2dmZjN0YWJpeF9nZW5lcyIsImIxMDEuMiIsImIxMDEuMiJd,2 WyJjdGdBOjEwMDAuLjIwMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiUmVtYXJrOmhnYSIsbnVsbF0=,2 WyJjdGdBOjEwNTAuLjE1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0ODMwLjUiLG51bGxd,2 WyJjdGdBOjEwNTAuLjE1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0MjIxLjUiLG51bGxd,2 WyJjdGdBOjEwNTAuLjkwMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiRURFTiIsIkVERU4iXQ==,2 WyJjdGdBOjEwNTAuLjkwMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiRURFTi4xIiwiRURFTi4xIl0=,2 WyJjdGdBOjEwNTAuLjkwMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiRURFTi4yIiwiRURFTi4yIl0=,2 WyJjdGdBOjExMDAuLjIwMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiR2VuZTpoZ2EiLG51bGxd,2 WyJjdGdBOjExNTAuLjE1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0NzY3LjUiLG51bGxd,2 WyJjdGdBOjEyMDAuLjE5MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiUHJvdGVpbjpIR0EiLG51bGxd,2 WyJjdGdBOjEzMDAuLjkwMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiRURFTi4zIiwiRU"`;
+exports[`text-index tracks Indexes a remote gz gff3 file 1`] = `" WyJjdGdBOjEwMDAuLjE1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjEwNTAuLjEyMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjEwNTAuLjEyMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjEyMDEuLjE1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjEyMDEuLjE1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjEzMDAuLjE1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjMwMDAuLjM5MDIiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjMwMDAuLjMzMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjMzMDEuLjM5MDIiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjUwMDAuLjU1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjUwMDAuLjU1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjUwMDAuLjU1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjcwMDAuLjc2MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjcwMDAuLjc2MDgiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjcwMDAuLjc2MDgiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjc2MDEuLjkwMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbm"`;
 
 exports[`text-index tracks Indexes a remote gz gff3 file 2`] = `
 "GdBOjQwNTE1Li40MDk1NCIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQxMjUyLi40MTM2NSIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQxNDkyLi40MTUwNCIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQxOTQxLi40MjM3NyIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQyNzQ4Li40Mjk1NCIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQzNDAxLi40Mzg5NyIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQ0MDQzLi40NDExMyIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQ0Mzk5Li40NDg4OCIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQ1MjgxLi40NTM3NSIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQ1NzExLi40NjA0MSIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQ2NDI1Li40NjU2NCIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQ2NzM4Li40NzA4NyIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQ3MzI5Li40NzU5NSIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQ3ODU4Li40Nzk3OSIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQ4MTY5Li40ODQ1MyIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1
 "
 `;
 
-exports[`text-index tracks Indexes a remote gz gff3 file 3`] = `36804`;
+exports[`text-index tracks Indexes a remote gz gff3 file 3`] = `31193`;
 
 exports[`text-index tracks Indexes a remote gz gff3 file 4`] = `
 "     0000000000
 "
 `;
 
-exports[`text-index tracks Indexes a remote non-gz gff3 file 1`] = `" WyJHcm91cDEuMzY6MTc2OTc1Li4xODA3NDQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5LmcxMDAyIiwiYXU5LmcxMDAyIl0=,2 WyJHcm91cDEuMzY6MTc2OTc1Li4xODA3NDQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5LmcxMDAyLnQxIiwiYXU5LmcxMDAyLnQxIl0=,2 WyJHcm91cDEuMzY6MTY1NTU4Li4xNjY5ODQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5Lmc5OTkiLCJhdTkuZzk5OSJd,2 WyJHcm91cDEuMzY6MTY1NTU4Li4xNjY5ODQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5Lmc5OTkudDEiLCJhdTkuZzk5OS50MSJd,2 WyJHcm91cDEuMzY6MTAxNjIzLi4xMjA1NDQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5Lmc5ODkiLCJhdTkuZzk4OSJd,2 WyJHcm91cDEuMzY6MTAxNjIzLi4xMjA1NDQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5Lmc5ODkudDIiLCJhdTkuZzk4OS50MiJd,2 WyJHcm91cDEuMzY6MTAxNjIzLi4xMjA1NDQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5Lmc5ODkudDEiLCJhdTkuZzk4OS50MSJd,2 WyJHcm91cDEuMzY6MTk1MjQ4Li4xOTcyNTQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5LmcxMDA1IiwiYXU5LmcxMDA1Il0=,2 WyJHcm91cDEuMzY6MTk1MjQ4Li4xOTcyNTQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5LmcxMDA1LnQxIiwiYXU5LmcxMDA1LnQxIl0=,2 WyJHcm91cDEuMzY6MTQ3NTIwLi4xNTA0MTQiLCJvbmxpbmVfYXU5"`;
+exports[`text-index tracks Indexes a remote non-gz gff3 file 1`] = `" WyJHcm91cDEuMzY6MTc2OTc1Li4xNzcxMDkiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIl0=,1 WyJHcm91cDEuMzY6MTc3MTEwLi4xNzcxMTIiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIl0=,1 WyJHcm91cDEuMzY6MTc3MTEwLi4xNzcxNDgiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIl0=,1 WyJHcm91cDEuMzY6MTc3NjE1Li4xNzc2ODMiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIl0=,1 WyJHcm91cDEuMzY6MTc3NzU4Li4xNzgwNDAiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIl0=,1 WyJHcm91cDEuMzY6MTc4MTQyLi4xNzgzMTkiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIl0=,1 WyJHcm91cDEuMzY6MTc4NDExLi4xNzg2ODciLCJvbmxpbmVfYXU5X3NjYWZmb2xkIl0=,1 WyJHcm91cDEuMzY6MTc4NzQ4Li4xNzg4NTAiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIl0=,1 WyJHcm91cDEuMzY6MTc4OTUzLi4xNzkwOTgiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIl0=,1 WyJHcm91cDEuMzY6MTc5MTY2Li4xNzkzMjAiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIl0=,1 WyJHcm91cDEuMzY6MTc5NDE5Li4xNzk2MTQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIl0=,1 WyJHcm91cDEuMzY6MTc5NzA4Li4xNzk4MTEiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIl0=,1 WyJHcm91cDEuMzY6MTc5OTI3Li4xODAyMzkiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIl0=,1 WyJHcm91cDEuMzY6MTgwNDE0Li4xODA0OTQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIl0=,1 WyJHc"`;
 
 exports[`text-index tracks Indexes a remote non-gz gff3 file 2`] = `
 "XU5X3NjYWZmb2xkIl0=,1
@@ -94,15 +93,15 @@ au9.g999.t1 WyJHcm91cDEuMzY6MTY1NTU4Li4xNjY5ODQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIl0=
 "
 `;
 
-exports[`text-index tracks Indexes a remote non-gz gff3 file 3`] = `295051`;
+exports[`text-index tracks Indexes a remote non-gz gff3 file 3`] = `830548`;
 
 exports[`text-index tracks Indexes a remote non-gz gff3 file 4`] = `
 "     0000000000
-au9.g0000022331
+au9.g00000B048A
 "
 `;
 
-exports[`text-index tracks Indexes multiple local gff3 files 1`] = `" WyJjdGdBOjEuLjUwMDAxIiwiZ2ZmM3RhYml4X2dlbmVzIiwiY3RnQSIsbnVsbF0=,2 WyJjdGdBOjEwMDAuLjIwMDAwIiwiZ2ZmM3RhYml4X2dlbmVzIiwiYjEwMS4yIiwiYjEwMS4yIl0=,2 WyJjdGdBOjEwMDAuLjIwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJSZW1hcms6aGdhIixudWxsXQ==,2 WyJjdGdBOjEwNTAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q4MzAuNSIsbnVsbF0=,2 WyJjdGdBOjEwNTAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3QyMjEuNSIsbnVsbF0=,2 WyJjdGdBOjEwNTAuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJFREVOIiwiRURFTiJd,2 WyJjdGdBOjEwNTAuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJFREVOLjEiLCJFREVOLjEiXQ==,2 WyJjdGdBOjEwNTAuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJFREVOLjIiLCJFREVOLjIiXQ==,2 WyJjdGdBOjExMDAuLjIwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJHZW5lOmhnYSIsbnVsbF0=,2 WyJjdGdBOjExNTAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q3NjcuNSIsbnVsbF0=,2 WyJjdGdBOjEyMDAuLjE5MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJQcm90ZWluOkhHQSIsbnVsbF0=,2 WyJjdGdBOjEzMDAuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJFREVOLjMiLCJFREVOLjMiXQ==,2 WyJjdGdBOjE2MDAuLjMwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJHZW5lOmhnYiIsbnVsbF0=,2 WyJjdGdBOjE2"`;
+exports[`text-index tracks Indexes multiple local gff3 files 1`] = `" WyJjdGdBOjEwMDAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjEwNTAuLjEyMDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjEwNTAuLjEyMDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjEyMDEuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjEyMDEuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjEzMDAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjMwMDAuLjM5MDIiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjMwMDAuLjMzMDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjMzMDEuLjM5MDIiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjUwMDAuLjU1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjUwMDAuLjU1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjUwMDAuLjU1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjcwMDAuLjc2MDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjcwMDAuLjc2MDgiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjcwMDAuLjc2MDgiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjc2MDEuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjc2MDkuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjc2MDkuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBO"`;
 
 exports[`text-index tracks Indexes multiple local gff3 files 2`] = `
 "d,1 WyJjdGdBOjQ3NDQ5Li40NzgyOSIsImdmZjN0YWJpeF9nZW5lcyJd,1
@@ -110,29 +109,27 @@ seg15 WyJjdGdBOjM5MjY1Li4zOTM2MSIsImdmZjN0YWJpeF9nZW5lcyJd,1 WyJjdGdBOjM5NzUzLi4
 "
 `;
 
-exports[`text-index tracks Indexes multiple local gff3 files 3`] = `306902`;
+exports[`text-index tracks Indexes multiple local gff3 files 3`] = `762816`;
 
 exports[`text-index tracks Indexes multiple local gff3 files 4`] = `
 "     0000000000
-agt220000023802
-au9.g0000023E0E
-b101.00000471C8
+agt22000009F410
+au9.g000009F870
 "
 `;
 
-exports[`text-index tracks Indexes multiple remote gff3 file 1`] = `" WyJjdGdBOjEuLjUwMDAxIiwib25saW5lX2dmZjN0YWJpeF9nZW5lcyIsImN0Z0EiLG51bGxd,2 WyJjdGdBOjEwMDAuLjIwMDAwIiwib25saW5lX2dmZjN0YWJpeF9nZW5lcyIsImIxMDEuMiIsImIxMDEuMiJd,2 WyJjdGdBOjEwMDAuLjIwMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiUmVtYXJrOmhnYSIsbnVsbF0=,2 WyJjdGdBOjEwNTAuLjE1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0ODMwLjUiLG51bGxd,2 WyJjdGdBOjEwNTAuLjE1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0MjIxLjUiLG51bGxd,2 WyJjdGdBOjEwNTAuLjkwMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiRURFTiIsIkVERU4iXQ==,2 WyJjdGdBOjEwNTAuLjkwMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiRURFTi4xIiwiRURFTi4xIl0=,2 WyJjdGdBOjEwNTAuLjkwMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiRURFTi4yIiwiRURFTi4yIl0=,2 WyJjdGdBOjExMDAuLjIwMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiR2VuZTpoZ2EiLG51bGxd,2 WyJjdGdBOjExNTAuLjE1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0NzY3LjUiLG51bGxd,2 WyJjdGdBOjEyMDAuLjE5MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiUHJvdGVpbjpIR0EiLG51bGxd,2 WyJjdGdBOjEzMDAuLjkwMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiRURFTi4zIiwiRU"`;
+exports[`text-index tracks Indexes multiple remote gff3 file 1`] = `" WyJjdGdBOjEwMDAuLjE1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjEwNTAuLjEyMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjEwNTAuLjEyMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjEyMDEuLjE1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjEyMDEuLjE1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjEzMDAuLjE1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjMwMDAuLjM5MDIiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjMwMDAuLjMzMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjMzMDEuLjM5MDIiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjUwMDAuLjU1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjUwMDAuLjU1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjUwMDAuLjU1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjcwMDAuLjc2MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjcwMDAuLjc2MDgiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjcwMDAuLjc2MDgiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIl0=,1 WyJjdGdBOjc2MDEuLjkwMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbm"`;
 
 exports[`text-index tracks Indexes multiple remote gff3 file 2`] = `
 "GdBOjQwNTE1Li40MDk1NCIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQxMjUyLi40MTM2NSIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQxNDkyLi40MTUwNCIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQxOTQxLi40MjM3NyIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQyNzQ4Li40Mjk1NCIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQzNDAxLi40Mzg5NyIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQ0MDQzLi40NDExMyIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQ0Mzk5Li40NDg4OCIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQ1MjgxLi40NTM3NSIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQ1NzExLi40NjA0MSIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQ2NDI1Li40NjU2NCIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQ2NzM4Li40NzA4NyIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQ3MzI5Li40NzU5NSIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQ3ODU4Li40Nzk3OSIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1 WyJjdGdBOjQ4MTY5Li40ODQ1MyIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiXQ==,1
 "
 `;
 
-exports[`text-index tracks Indexes multiple remote gff3 file 3`] = `331854`;
+exports[`text-index tracks Indexes multiple remote gff3 file 3`] = `861740`;
 
 exports[`text-index tracks Indexes multiple remote gff3 file 4`] = `
 "     0000000000
-agt22000002688E
-au9.g0000026F4A
-b101.000004CCA4
+agt2200000B42D4
+au9.g00000B47D8
 "
 `;

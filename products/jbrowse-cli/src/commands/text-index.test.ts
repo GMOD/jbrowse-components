@@ -178,8 +178,8 @@ describe('text-index tracks', () => {
     .it('Indexes a remote and a local file', ctx => verifyIxxFiles(ctx.dir))
 })
 
-// index with attributes tag passed in
-// index with no attributes - no tag
+// attributes flag
+// no config attrs
 
 // This test is commented out due to how long it takes to complete
 /*
