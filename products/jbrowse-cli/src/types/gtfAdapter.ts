@@ -88,7 +88,6 @@ export async function* indexGtf(
     )
     if (name || id) {
       const record = JSON.stringify([locStr, trackId, name, id])
-      console.log(record)
       const buff = Buffer.from(record).toString('base64')
       yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
     }
