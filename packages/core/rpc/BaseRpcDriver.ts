@@ -247,7 +247,8 @@ export default abstract class BaseRpcDriver {
     // check every 5 seconds to see if the worker has been killed, and
     // reject the killedP promise if it has
     let killedCheckInterval: ReturnType<typeof setInterval>
-    const killedP = new Promise((_resolve, reject) => {
+    let done = false
+    const killedP = new Promise((resolve, reject) => {
       killedCheckInterval = setInterval(() => {
         // must've been killed
         if (worker.status === 'killed') {
@@ -256,6 +257,8 @@ export default abstract class BaseRpcDriver {
               `operation timed out, worker process stopped responding, ${worker.error}`,
             ),
           )
+        } else if (done) {
+          resolve()
         }
       }, this.workerCheckFrequency)
     }).finally(() => {
@@ -266,7 +269,9 @@ export default abstract class BaseRpcDriver {
     // promise. the killed promise will only actually win if the worker was
     // killed before the call could return
     const resultP = Promise.race([callP, killedP])
+    const result = await resultP
+    done = true
 
-    return rpcMethod.deserializeReturn(await resultP, args, this.name)
+    return rpcMethod.deserializeReturn(result, args, this.name)
   }
 }
