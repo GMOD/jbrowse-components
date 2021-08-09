@@ -114,8 +114,6 @@ export function guessAdapter(
     return location
   }
 
-  const session = getSession(model)
-
   const fileName = getFileName(file)
   const indexName = index && getFileName(index)
   function makeIndexType(
@@ -292,6 +290,8 @@ export function guessAdapter(
 
   // if no adapter type can be guessed, check if the adapter type has a jbrowse schema definition
   if (adapterHint) {
+    const session = getSession(model)
+
     const schema = getEnv(session).pluginManager.getAdapterType(adapterHint)
       .configSchema.jbrowseSchemaDefinition
     if (schema) {
