@@ -3,6 +3,8 @@ import { objectHash } from './index'
 import { PreFileLocation, FileLocation } from './types'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { readConfObject } from '../configuration'
+import { getSession } from '@jbrowse/core/util'
+import { getEnv } from 'mobx-state-tree'
 
 /* utility functions for use by track models and so forth */
 
@@ -96,6 +98,7 @@ export function storeBlobLocation(location: PreFileLocation) {
 }
 
 export function guessAdapter(
+  model: any,
   file: FileLocation,
   index: FileLocation | undefined,
   getFileName: (f: FileLocation) => string,
@@ -110,6 +113,8 @@ export function guessAdapter(
     }
     return location
   }
+
+  const session = getSession(model)
 
   const fileName = getFileName(file)
   const indexName = index && getFileName(index)
@@ -163,7 +168,7 @@ export function guessAdapter(
     }
   }
 
-  if (/\.vcf$/i.test(fileName)) {
+  if (/\.vcf$/i.test(fileName) || adapterHint === 'VcfAdapter') {
     return {
       type: 'VcfAdapter',
       vcfLocation: file,
@@ -282,6 +287,26 @@ export function guessAdapter(
     return {
       type: 'PAFAdapter',
       pafLocation: file,
+    }
+  }
+
+  // if no adapter type can be guessed, check if the adapter type has a jbrowse schema definition
+  if (adapterHint) {
+    const schema = getEnv(session).pluginManager.getAdapterType(adapterHint)
+      .configSchema.jbrowseSchemaDefinition
+    if (schema) {
+      let location = 'location'
+
+      Object.keys(schema).forEach(key => {
+        if (key.toLowerCase().includes('location')) {
+          location = key
+        }
+      })
+
+      return {
+        type: adapterHint,
+        [location]: file,
+      }
     }
   }
 

@@ -14,6 +14,8 @@ import { observer } from 'mobx-react'
 import ConfirmTrack from './ConfirmTrack'
 import TrackSourceSelect from './TrackSourceSelect'
 import { AddTrackModel } from '../model'
+import { Alert } from '@material-ui/lab'
+import { UNKNOWN } from '../../../../../packages/core/util/tracks'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -32,6 +34,9 @@ const useStyles = makeStyles(theme => ({
   stepContent: {
     margin: theme.spacing(1),
   },
+  alertContainer: {
+    padding: `${theme.spacing(2)}px 0px ${theme.spacing(2)}px 0px`,
+  },
 }))
 
 const steps = ['Enter track data', 'Confirm track type']
@@ -41,6 +46,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
   const session = getSession(model)
   const { assembly, trackAdapter, trackData, trackName, trackType } = model
+  const [trackErrorMessage, setTrackErrorMessage] = useState<String>()
 
   function getStepContent(step: number) {
     switch (step) {
@@ -67,31 +73,38 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
 
     const assemblyInstance = session.assemblyManager.get(assembly)
 
-    // @ts-ignore
-    session.addTrackConf({
-      trackId,
-      type: trackType,
-      name: trackName,
-      assemblyNames: [assembly],
-      adapter: {
-        ...trackAdapter,
-        sequenceAdapter: getConf(assemblyInstance, ['sequence', 'adapter']),
-      },
-    })
-    if (model.view) {
-      model.view.showTrack(trackId)
+    if (trackAdapter && trackAdapter.type != UNKNOWN) {
+      // @ts-ignore
+      session.addTrackConf({
+        trackId,
+        type: trackType,
+        name: trackName,
+        assemblyNames: [assembly],
+        adapter: {
+          ...trackAdapter,
+          sequenceAdapter: getConf(assemblyInstance, ['sequence', 'adapter']),
+        },
+      })
+      if (model.view) {
+        model.view.showTrack(trackId)
+      } else {
+        session.notify(
+          'Open a new view, or use the track selector in an existing view, to view this track',
+          'info',
+        )
+      }
+      model.clearData()
+      // @ts-ignore
+      session.hideWidget(model)
     } else {
-      session.notify(
-        'Open a new view, or use the track selector in an existing view, to view this track',
-        'info',
+      setTrackErrorMessage(
+        'Failed to add track.\nThe configuration of this file is not currently supported.',
       )
     }
-    model.clearData()
-    // @ts-ignore
-    session.hideWidget(model)
   }
 
   function handleBack() {
+    setTrackErrorMessage(undefined)
     setActiveStep(activeStep - 1)
   }
 
@@ -137,6 +150,11 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
                   {activeStep === steps.length - 1 ? 'Add' : 'Next'}
                 </Button>
               </div>
+              {trackErrorMessage ? (
+                <div className={classes.alertContainer}>
+                  <Alert severity="error">{trackErrorMessage}</Alert>
+                </div>
+              ) : null}
             </StepContent>
           </Step>
         ))}
