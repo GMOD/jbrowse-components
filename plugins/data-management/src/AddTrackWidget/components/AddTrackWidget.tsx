@@ -72,7 +72,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
 
     const assemblyInstance = session.assemblyManager.get(assembly)
 
-    if (trackAdapter && trackAdapter.type != 'UNKNOWN') {
+    if (trackAdapter && trackAdapter.type !== 'UNKNOWN') {
       // @ts-ignore
       session.addTrackConf({
         trackId,

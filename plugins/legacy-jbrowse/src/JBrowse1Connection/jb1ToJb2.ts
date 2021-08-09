@@ -54,6 +54,7 @@ interface Jb2Location {
 }
 
 export function convertTrackConfig(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   model: any,
   jb1TrackConfig: Track,
   dataRoot: string,

@@ -41,12 +41,9 @@ function StatusMessage({
   )
 }
 
-function getTrackAdapterSelector(
-  classes: any,
-  adapterHint: string,
-  model: AddTrackModel,
-  session: any,
-) {
+function TrackAdapterSelector(adapterHint: string, model: AddTrackModel) {
+  const classes = useStyles()
+  const session = getSession(model)
   return (
     <TextField
       className={classes.spacing}
@@ -78,7 +75,6 @@ function getTrackAdapterSelector(
 
 function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
-  const session = getSession(model)
   const { adapterHint } = model
   return (
     <>
@@ -102,7 +98,7 @@ function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
         </Link>{' '}
         and add a feature request for this data type.
       </Typography>
-      {getTrackAdapterSelector(classes, adapterHint, model, session)}
+      {TrackAdapterSelector(adapterHint, model)}
     </>
   )
 }
@@ -160,7 +156,7 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
       {warningMessage ? (
         <Typography style={{ color: 'orange' }}>{warningMessage}</Typography>
       ) : null}
-      {getTrackAdapterSelector(classes, adapterHint, model, session)}
+      {TrackAdapterSelector(adapterHint, model)}
       <TextField
         className={classes.spacing}
         label="trackName"

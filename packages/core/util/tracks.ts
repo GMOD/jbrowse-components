@@ -98,6 +98,7 @@ export function storeBlobLocation(location: PreFileLocation) {
 }
 
 export function guessAdapter(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   model: any,
   file: FileLocation,
   index: FileLocation | undefined,
