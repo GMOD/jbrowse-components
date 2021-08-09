@@ -108,6 +108,66 @@ function getTag(f: Feature, tag: string) {
   return tags ? tags[tag] : f.get(tag)
 }
 
+function mergeIntervals<T extends { start: number; end: number }>(
+  intervals: T[],
+  w = 5000,
+) {
+  // test if there are at least 2 intervals
+  if (intervals.length <= 1) {
+    return intervals
+  }
+
+  const stack = []
+  let top = null
+
+  // sort the intervals based on their start values
+  intervals = intervals.sort((a, b) => a.start - b.start)
+
+  // push the 1st interval into the stack
+  stack.push(intervals[0])
+
+  // start from the next interval and merge if needed
+  for (let i = 1; i < intervals.length; i++) {
+    // get the top element
+    top = stack[stack.length - 1]
+
+    // if the current interval doesn't overlap with the
+    // stack top element, push it to the stack
+    if (top.end + w < intervals[i].start - w) {
+      stack.push(intervals[i])
+    }
+    // otherwise update the end value of the top element
+    // if end of current interval is higher
+    else if (top.end < intervals[i].end) {
+      top.end = Math.max(top.end, intervals[i].end)
+      stack.pop()
+      stack.push(top)
+    }
+  }
+
+  return stack
+}
+
+interface BasicFeature {
+  end: number
+  start: number
+  refName: string
+}
+
+function gatherOverlaps(regions: BasicFeature[]) {
+  const groups = regions.reduce((memo, x) => {
+    if (!memo[x.refName]) {
+      memo[x.refName] = []
+    }
+    memo[x.refName].push(x)
+    return memo
+  }, {} as { [key: string]: BasicFeature[] })
+
+  return Object.values(groups)
+    .map(group => mergeIntervals(group.sort((a, b) => a.start - b.start)))
+    .flat()
+}
+
 interface ReducedFeature {
   refName: string
   start: number
@@ -188,8 +248,8 @@ export default class DotplotPlugin extends Plugin {
               icon: AddIcon,
               onClick: () => {
                 const session = getSession(display)
-                const clipPos = feature.get('clipPos')
                 const cigar = feature.get('CIGAR')
+                const clipPos = getClip(cigar, 1)
                 const flags = feature.get('flags')
                 const origStrand = feature.get('strand')
                 const SA: string = getTag(feature, 'SA') || ''
@@ -207,7 +267,10 @@ export default class DotplotPlugin extends Plugin {
                     const saLength = getLength(saCigar)
                     const saLengthSansClipping = getLengthSansClipping(saCigar)
                     const saStrandNormalized = saStrand === '-' ? -1 : 1
-                    const saClipPos = getClip(saCigar, saStrandNormalized)
+                    const saClipPos = getClip(
+                      saCigar,
+                      saStrandNormalized * origStrand,
+                    )
                     const saRealStart = +saStart - 1
                     return {
                       refName: saRef,
@@ -254,60 +317,6 @@ export default class DotplotPlugin extends Plugin {
                   (a, f) => a + f.end - f.start,
                   0,
                 )
-
-                function mergeIntervals(intervals: any) {
-                  // test if there are at least 2 intervals
-                  if (intervals.length <= 1) return intervals
-
-                  const stack = []
-                  let top = null
-
-                  // sort the intervals based on their start values
-                  intervals = intervals.sort((a, b) => a - b)
-
-                  // push the 1st interval into the stack
-                  stack.push(intervals[0])
-
-                  // start from the next interval and merge if needed
-                  for (let i = 1; i < intervals.length; i++) {
-                    // get the top element
-                    top = stack[stack.length - 1]
-
-                    // if the current interval doesn't overlap with the
-                    // stack top element, push it to the stack
-                    if (top.end < intervals[i].start) {
-                      stack.push(intervals[i])
-                    }
-                    // otherwise update the end value of the top element
-                    // if end of current interval is higher
-                    else if (top.end < intervals[i].end) {
-                      top.end = intervals[i].end
-                      stack.pop()
-                      stack.push(top)
-                    }
-                  }
-
-                  return stack
-                }
-
-                function groupBy(arr, property) {
-                  return arr.reduce(function (memo, x) {
-                    if (!memo[x[property]]) {
-                      memo[x[property]] = []
-                    }
-                    memo[x[property]].push(x)
-                    return memo
-                  }, {})
-                }
-                function gatherOverlaps(regions: IndexedRegion[]) {
-                  const groups = groupBy(regions, 'refName')
-                  const merged = Object.values(groups).map(group => {
-                    group.sort((a, b) => a.start - b.start)
-                    return mergeIntervals(group)
-                  })
-
-                  return merged.flat().sort((a, b) => a.index - b.index)
-                }
 
                 session.addView('DotplotView', {
                   type: 'DotplotView',
