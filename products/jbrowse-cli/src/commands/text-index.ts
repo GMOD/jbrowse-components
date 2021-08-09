@@ -74,8 +74,6 @@ export default class TextIndex extends JBrowseCommand {
       assemblies?.split(',') || config.assemblies?.map(a => a.name) || []
     const adapters = config.aggregateTextSearchAdapters || []
 
-    const metaFile = path.join(dir, 'trix', `meta.json`)
-
     const trixDir = path.join(dir, 'trix')
     if (!fs.existsSync(trixDir)) {
       fs.mkdirSync(trixDir)
@@ -146,12 +144,12 @@ export default class TextIndex extends JBrowseCommand {
         }
         TrackIds.push(trackId)
       }
-    }
 
-    fs.writeFileSync(
-      metaFile,
-      JSON.stringify({ TrackData: { TrackIds, metaAttrs } }, null, 2),
-    )
+      fs.writeFileSync(
+        path.join(dir, 'trix', `${asm}.json`),
+        JSON.stringify({ TrackData: { TrackIds, metaAttrs } }, null, 2),
+      )
+    }
 
     this.log('Finished!')
   }
