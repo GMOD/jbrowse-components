@@ -74,11 +74,12 @@ export interface Assembly {
 }
 
 export interface Track {
+  indexingFeatureTypesToExclude: string[]
   trackId: string
   name: string
   assemblyNames: string[]
   adapter: Gff3TabixAdapter
-  textSearchIndexingAttributes: Array<string>
+  textSearchIndexingAttributes: string[]
 }
 
 export interface Config {
