@@ -33,12 +33,29 @@ import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
+import { makeStyles } from '@material-ui/core'
 import packagedef from '../package.json'
 import factoryReset from './factoryReset'
 
 const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))
 const ConfigWarningDialog = lazy(() => import('./ConfigWarningDialog'))
 const StartScreen = lazy(() => import('./StartScreen'))
+
+const useStyles = makeStyles(theme => ({
+  message: {
+    border: '1px solid black',
+    overflow: 'auto',
+    maxHeight: 200,
+    margin: theme.spacing(1),
+    padding: theme.spacing(1),
+  },
+
+  errorBox: {
+    background: 'lightgrey',
+    border: '1px solid black',
+    margin: 20,
+  },
+}))
 
 function NoConfigMessage() {
   const links = [
@@ -466,6 +483,39 @@ export function Loader({
   )
 }
 
+const ErrorMessage = ({
+  err,
+  snapshotError,
+}: {
+  err: Error
+  snapshotError?: string
+}) => {
+  const classes = useStyles()
+  return (
+    <div>
+      <NoConfigMessage />
+      {err && err.message === 'HTTP 404 fetching config.json' ? (
+        <div className={classes.message} style={{ background: '#9f9' }}>
+          No config detected ({`${err}`}), you can proceed to create a config
+          with the JBrowse CLI
+        </div>
+      ) : (
+        <div className={classes.message} style={{ background: '#f88' }}>
+          {`${err}`}
+          {snapshotError ? (
+            <>
+              ... Failed element had snapshot:
+              <pre className={classes.errorBox}>
+                {JSON.stringify(JSON.parse(snapshotError), null, 2)}
+              </pre>
+            </>
+          ) : null}
+        </div>
+      )}
+    </div>
+  )
+}
+
 const Renderer = observer(
   ({
     loader,
@@ -479,8 +529,9 @@ const Renderer = observer(
     const [, setPassword] = useQueryParam('password', StringParam)
     const { sessionError, configError, ready, shareWarningOpen } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
-    const [error, setError] = useState('')
+    const [error, setError] = useState<Error>()
     const [snapshotError, setSnapshotError] = useState('')
+
     // only create the pluginManager/rootModel "on mount"
     useEffect(() => {
       try {
@@ -614,10 +665,10 @@ const Renderer = observer(
         // best effort to make a better error message than the default
         // mobx-state-tree
         if (match) {
-          setError(`Failed to load element at ${match[1]}`)
+          setError(new Error(`Failed to load element at ${match[1]}`))
           setSnapshotError(match[2])
         } else {
-          setError(e.message.slice(0, 10000))
+          setError(new Error(e.message.slice(0, 10000)))
         }
         console.error(e)
       }
@@ -634,39 +685,7 @@ const Renderer = observer(
     const err = configError || error
 
     if (err) {
-      return (
-        <div>
-          <NoConfigMessage />
-          {err ? (
-            <div
-              style={{
-                border: '1px solid black',
-                overflow: 'auto',
-                maxHeight: 200,
-                padding: 2,
-                margin: 2,
-                backgroundColor: '#ff8888',
-              }}
-            >
-              {`${err}`}
-              {snapshotError ? (
-                <>
-                  ... Failed element had snapshot:
-                  <pre
-                    style={{
-                      background: 'lightgrey',
-                      border: '1px solid black',
-                      margin: 20,
-                    }}
-                  >
-                    {JSON.stringify(JSON.parse(snapshotError), null, 2)}
-                  </pre>
-                </>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
-      )
+      return <ErrorMessage err={err} snapshotError={snapshotError} />
     }
 
     if (loader.sessionTriaged) {
