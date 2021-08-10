@@ -172,7 +172,7 @@ export default {
 </details>
 
 <details>
-  <summary>assembly.js</summary>
+  <summary>tracks.js</summary>
   <p>
 
 ```javascript title="tracks.js"
