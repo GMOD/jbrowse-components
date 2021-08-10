@@ -45,11 +45,11 @@ export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
     this.fasta = new IndexedFasta(fastaOpts)
   }
 
-  public getRefNames(opts: BaseOptions) {
+  public getRefNames(opts?: BaseOptions) {
     return this.fasta.getSequenceNames(opts)
   }
 
-  public async getRegions(opts: BaseOptions): Promise<NoAssemblyRegion[]> {
+  public async getRegions(opts?: BaseOptions): Promise<NoAssemblyRegion[]> {
     const seqSizes = await this.fasta.getSequenceSizes(opts)
     return Object.keys(seqSizes).map(
       (refName): NoAssemblyRegion => ({
@@ -65,7 +65,7 @@ export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
    * @param param -
    * @returns Observable of Feature objects in the region
    */
-  public getFeatures(region: NoAssemblyRegion, opts: BaseOptions) {
+  public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {
     const { refName, start, end } = region
     return ObservableCreate<Feature>(async observer => {
       const size = await this.fasta.getSequenceSize(refName, opts)
