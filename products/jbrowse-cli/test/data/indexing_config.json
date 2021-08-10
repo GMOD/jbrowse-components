@@ -67,10 +67,7 @@
         }
       },
       "textSearchIndexingAttributes": ["Name", "ID", "type"],
-      "indexingFeatureTypesToExclude": [
-        "CDS",
-        "exon"
-      ]
+      "indexingFeatureTypesToExclude": ["CDS", "exon"]
     },
     {
       "type": "FeatureTrack",
@@ -90,10 +87,7 @@
         }
       },
       "textSearchIndexingAttributes": ["Name", "ID", "type"],
-      "indexingFeatureTypesToExclude": [
-        "CDS",
-        "exon"
-      ]
+      "indexingFeatureTypesToExclude": ["CDS", "exon"]
     },
     {
       "type": "FeatureTrack",
@@ -112,10 +106,7 @@
           }
         }
       },
-      "indexingFeatureTypesToExclude": [
-        "CDS",
-        "exon"
-      ]
+      "indexingFeatureTypesToExclude": ["CDS", "exon"]
     },
     {
       "type": "FeatureTrack",
@@ -135,10 +126,7 @@
         }
       },
       "textSearchIndexingAttributes": ["Name", "ID", "type"],
-      "indexingFeatureTypesToExclude": [
-        "CDS",
-        "exon"
-      ]
+      "indexingFeatureTypesToExclude": ["CDS", "exon"]
     },
     {
       "type": "FeatureTrack",
@@ -158,10 +146,7 @@
         }
       },
       "textSearchIndexingAttributes": ["Name", "ID", "type"],
-      "indexingFeatureTypesToExclude": [
-        "CDS",
-        "exon"
-      ]
+      "indexingFeatureTypesToExclude": ["CDS", "exon"]
     },
     {
       "type": "FeatureTrack",
