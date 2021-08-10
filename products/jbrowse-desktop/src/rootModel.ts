@@ -7,6 +7,7 @@ import { MenuItem } from '@jbrowse/core/ui'
 import AddIcon from '@material-ui/icons/Add'
 import SettingsIcon from '@material-ui/icons/Settings'
 import AppsIcon from '@material-ui/icons/Apps'
+import electron from 'electron'
 import {
   cast,
   getParent,
@@ -15,12 +16,11 @@ import {
   types,
 } from 'mobx-state-tree'
 import JBrowseDesktop from './jbrowseModel'
+// @ts-ignore
+import RenderWorker from './rpc.worker'
 import sessionModelFactory from './sessionModelFactory'
 
-const { electronBetterIpc = {} } = window
-const ipcRenderer = (electronBetterIpc && electronBetterIpc.ipcRenderer) || {
-  invoke: () => {},
-}
+const { ipcRenderer } = electron
 interface Menu {
   label: string
   menuItems: MenuItem[]
@@ -142,7 +142,8 @@ export default function RootModel(pluginManager: PluginManager) {
         pluginManager,
         self.jbrowse.configuration.rpc,
         {
-          ElectronRpcDriver: { workerCreationChannel: 'createWindowWorker' },
+          WebWorkerRpcDriver: { WorkerClass: RenderWorker },
+          MainThreadRpcDriver: {},
         },
       ),
       adminMode: true,

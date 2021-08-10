@@ -1,5 +1,5 @@
 import { createTestSession } from '@jbrowse/web/src/rootModel'
-import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles'
+import { createTheme, ThemeProvider } from '@material-ui/core/styles'
 import { cleanup, render } from '@testing-library/react'
 import React from 'react'
 import HierarchicalTrackSelector from './HierarchicalTrackSelector'
@@ -16,7 +16,7 @@ describe('HierarchicalTrackSelector widget', () => {
     const model = firstView.activateTrackSelector()
 
     const { container } = render(
-      <ThemeProvider theme={createMuiTheme()}>
+      <ThemeProvider theme={createTheme()}>
         <HierarchicalTrackSelector model={model} />
       </ThemeProvider>,
     )
@@ -71,7 +71,7 @@ describe('HierarchicalTrackSelector widget', () => {
     const model = firstView.activateTrackSelector()
 
     const { container, findByTestId } = render(
-      <ThemeProvider theme={createMuiTheme()}>
+      <ThemeProvider theme={createTheme()}>
         <HierarchicalTrackSelector model={model} />
       </ThemeProvider>,
     )
@@ -132,7 +132,7 @@ describe('HierarchicalTrackSelector widget', () => {
     const model = firstView.activateTrackSelector()
 
     const { container, findByTestId } = render(
-      <ThemeProvider theme={createMuiTheme()}>
+      <ThemeProvider theme={createTheme()}>
         <HierarchicalTrackSelector model={model} />
       </ThemeProvider>,
     )

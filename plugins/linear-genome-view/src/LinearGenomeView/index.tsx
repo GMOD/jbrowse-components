@@ -40,6 +40,9 @@ import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import LabelIcon from '@material-ui/icons/Label'
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
+import PhotoCameraIcon from '@material-ui/icons/PhotoCamera'
+import ZoomInIcon from '@material-ui/icons/ZoomIn'
+import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { saveAs } from 'file-saver'
@@ -139,6 +142,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       rightOffset: undefined as undefined | BpOffset,
       searchResults: undefined as undefined | BaseResult[],
       searchQuery: undefined as undefined | string,
+      seqDialogDisplayed: false,
     }))
     .views(self => ({
       get width(): number {
@@ -148,6 +152,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
           )
         }
         return self.volatileWidth
+      },
+      get interRegionPaddingWidth() {
+        return INTER_REGION_PADDING_WIDTH
       },
     }))
     .views(self => ({
@@ -173,9 +180,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       get hasDisplayedRegions() {
         return self.displayedRegions.length > 0
-      },
-      get isSeqDialogDisplayed() {
-        return self.leftOffset && self.rightOffset
       },
       get isSearchDialogDisplayed() {
         return self.searchResults !== undefined
@@ -207,9 +211,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           this.headerHeight +
           this.scaleBarHeight
         )
-      },
-      get interRegionPaddingWidth() {
-        return INTER_REGION_PADDING_WIDTH
       },
       get totalBp() {
         let totalbp = 0
@@ -284,7 +285,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }) {
         let offsetBp = 0
 
-        const interRegionPaddingBp = this.interRegionPaddingWidth * self.bpPerPx
+        const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
         const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
         const index = self.displayedRegions.findIndex((region, idx) => {
           const len = region.end - region.start
@@ -347,7 +348,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
         }
 
-        const interRegionPaddingBp = this.interRegionPaddingWidth * self.bpPerPx
+        const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
         const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
 
         for (let index = 0; index < self.displayedRegions.length; index += 1) {
@@ -525,6 +526,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.searchQuery = query
       },
 
+      setSequenceDialogOpen(open: boolean) {
+        self.seqDialogDisplayed = open
+      },
+
       setNewView(bpPerPx: number, offsetPx: number) {
         this.zoomTo(bpPerPx)
         this.scrollTo(offsetPx)
@@ -671,6 +676,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
+
       navToLocString(locString: string, optAssemblyName?: string) {
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
@@ -1203,7 +1209,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
-        get menuItems(): MenuItem[] {
+        menuItems(): MenuItem[] {
           const menuItems: MenuItem[] = [
             {
               label: 'Return to import form',
@@ -1216,6 +1222,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             },
             {
               label: 'Export SVG',
+              icon: PhotoCameraIcon,
               onClick: () => {
                 getSession(self).setDialogComponent(ExportSvgDlg, {
                   model: self,
@@ -1232,6 +1239,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               icon: SyncAltIcon,
               onClick: self.horizontallyFlip,
             },
+            { type: 'divider' },
             {
               label: 'Show all regions in assembly',
               icon: VisibilityIcon,
@@ -1244,7 +1252,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
               checked: self.showCenterLine,
               onClick: self.toggleCenterLine,
             },
-            { type: 'divider' },
             {
               label: 'Show header',
               icon: VisibilityIcon,
@@ -1371,6 +1378,28 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const html = await renderToSvg(self as any, opts)
         const blob = new Blob([html], { type: 'image/svg+xml' })
         saveAs(blob, 'image.svg')
+      },
+    }))
+    .views(self => ({
+      rubberBandMenuItems(): MenuItem[] {
+        return [
+          {
+            label: 'Zoom to region',
+            icon: ZoomInIcon,
+            onClick: () => {
+              if (self.leftOffset && self.rightOffset) {
+                self.moveTo(self.leftOffset, self.rightOffset)
+              }
+            },
+          },
+          {
+            label: 'Get sequence',
+            icon: MenuOpenIcon,
+            onClick: () => {
+              self.setSequenceDialogOpen(true)
+            },
+          },
+        ]
       },
     }))
 }

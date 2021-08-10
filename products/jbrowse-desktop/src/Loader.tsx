@@ -11,13 +11,14 @@ import {
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
 import { readConfObject } from '@jbrowse/core/configuration'
+import electron from 'electron'
 import factoryReset from './factoryReset'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
 import packagedef from '../package.json'
 
-const { electron } = window
+const { ipcRenderer } = electron
 
 const useStyles = makeStyles({
   loadingIndicator: {
@@ -45,16 +46,9 @@ export default function Loader({
   const [pluginManager, setPluginManager] = useState<PluginManager>()
 
   useEffect(() => {
-    const ipcRenderer = (electron && electron.ipcRenderer) || {
-      invoke: () => {},
-    }
     async function fetchConfig() {
       try {
-        setConfigSnapshot(
-          Object.assign(await ipcRenderer.invoke('loadConfig'), {
-            configuration: { rpc: { defaultDriver: 'ElectronRpcDriver' } },
-          }),
-        )
+        setConfigSnapshot(await ipcRenderer.invoke('loadConfig'))
       } catch (e) {
         // used to launch an error dialog for whatever caused loadConfig to
         // fail
@@ -115,11 +109,11 @@ export default function Loader({
             { pluginManager: pm },
           )
           rootModel.jbrowse.configuration.rpc.addDriverConfig(
-            'ElectronRpcDriver',
-            { type: 'ElectronRpcDriver' },
+            'WebWorkerRpcDriver',
+            { type: 'WebWorkerRpcDriver' },
           )
           rootModel.jbrowse.configuration.rpc.defaultDriver.set(
-            'ElectronRpcDriver',
+            'WebWorkerRpcDriver',
           )
           // make some things available globally for testing
           // e.g. window.MODEL.views[0] in devtools

@@ -189,21 +189,23 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
                   .map(elt => Math.min(1, elt / 50))
 
             let probIndex = 0
-            getModificationPositions(mm, seq).forEach(({ type, positions }) => {
-              const mod = `mod_${type}`
-              for (const pos of getNextRefPos(cigarOps, positions)) {
-                const epos = pos + fstart - region.start
-                if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
-                  const bin = bins[epos]
-                  if (probabilities[probIndex] > 0.5) {
-                    inc(bin, fstrand, 'cov', mod)
-                  } else {
-                    inc(bin, fstrand, 'lowqual', mod)
+            getModificationPositions(mm, seq, fstrand).forEach(
+              ({ type, positions }) => {
+                const mod = `mod_${type}`
+                for (const pos of getNextRefPos(cigarOps, positions)) {
+                  const epos = pos + fstart - region.start
+                  if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
+                    const bin = bins[epos]
+                    if (probabilities[probIndex] > 0.5) {
+                      inc(bin, fstrand, 'cov', mod)
+                    } else {
+                      inc(bin, fstrand, 'lowqual', mod)
+                    }
                   }
+                  probIndex++
                 }
-                probIndex++
-              }
-            })
+              },
+            )
           }
 
           // methylation based coloring takes into account both reference
@@ -218,32 +220,40 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
             const mm = getTagAlt(feature, 'MM', 'Mm') || ''
             const methBins = new Array(region.end - region.start).fill(0)
 
-            getModificationPositions(mm, seq).forEach(({ type, positions }) => {
-              // we are processing methylation
-              if (type === 'm') {
-                for (const pos of getNextRefPos(cigarOps, positions)) {
-                  const epos = pos + fstart - region.start
-                  if (epos >= 0 && epos < methBins.length) {
-                    methBins[epos] = 1
+            getModificationPositions(mm, seq, fstrand).forEach(
+              ({ type, positions }) => {
+                // we are processing methylation
+                if (type === 'm') {
+                  for (const pos of getNextRefPos(cigarOps, positions)) {
+                    const epos = pos + fstart - region.start
+                    if (epos >= 0 && epos < methBins.length) {
+                      methBins[epos] = 1
+                    }
                   }
                 }
-              }
-            })
+              },
+            )
 
             for (let j = fstart; j < fend; j++) {
               const i = j - region.start
-              if (i >= 0 && i < bins.length) {
-                const l2 = regionSeq[i + 1]
-                const l1 = regionSeq[i]
+              if (i >= 0 && i < bins.length - 1) {
+                const l1 = regionSeq[i].toLowerCase()
+                const l2 = regionSeq[i + 1].toLowerCase()
                 const bin = bins[i]
+                const bin1 = bins[i + 1]
+
                 // color
-                if (l1.toUpperCase() === 'C' && l2.toUpperCase() === 'G') {
-                  if (methBins[i]) {
+                if (l1 === 'c' && l2 === 'g') {
+                  if (methBins[i] || methBins[i + 1]) {
                     inc(bin, fstrand, 'cov', 'meth')
+                    inc(bin1, fstrand, 'cov', 'meth')
                     dec(bin, fstrand, 'ref', 'ref')
+                    dec(bin1, fstrand, 'ref', 'ref')
                   } else {
                     inc(bin, fstrand, 'cov', 'unmeth')
+                    inc(bin1, fstrand, 'cov', 'unmeth')
                     dec(bin, fstrand, 'ref', 'ref')
+                    dec(bin1, fstrand, 'ref', 'ref')
                   }
                 }
               }

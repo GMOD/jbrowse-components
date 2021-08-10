@@ -219,8 +219,8 @@ const SpreadsheetView = observer(({ model }) => {
               component="div"
               rowsPerPage={rowsPerPage}
               page={page}
-              onChangePage={handleChangePage}
-              onChangeRowsPerPage={handleChangeRowsPerPage}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
             />
             <div className={classes.spacer} />
           </FormGroup>

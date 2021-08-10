@@ -242,13 +242,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
-      get menuItems(): MenuItem[] {
+      menuItems(): MenuItem[] {
         const menuItems: MenuItem[] = []
         self.views.forEach((view, idx) => {
-          if (view.menuItems) {
+          if (view.menuItems?.()) {
             menuItems.push({
               label: `View ${idx + 1} Menu`,
-              subMenu: view.menuItems,
+              subMenu: view.menuItems(),
             })
           }
         })
@@ -265,6 +265,4 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 export type LinearComparativeViewStateModel = ReturnType<
   typeof stateModelFactory
 >
-export type LinearComparativeViewModel = Instance<
-  LinearComparativeViewStateModel
->
+export type LinearComparativeViewModel = Instance<LinearComparativeViewStateModel>

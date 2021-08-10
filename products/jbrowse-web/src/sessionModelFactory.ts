@@ -192,6 +192,13 @@ export default function sessionModelFactory(
       },
 
       addAssembly(assemblyConfig: AnyConfigurationModel) {
+        const asm = self.sessionAssemblies.find(
+          f => f.name === assemblyConfig.name,
+        )
+        if (asm) {
+          console.warn(`Assembly ${assemblyConfig.name} was already existing`)
+          return asm
+        }
         self.sessionAssemblies.push(assemblyConfig)
       },
       addSessionPlugin(plugin: JBrowsePlugin) {

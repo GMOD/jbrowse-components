@@ -1,3 +1,4 @@
+import { revcom } from '@jbrowse/core/util'
 export interface Mismatch {
   qual?: number
   start: number
@@ -314,12 +315,17 @@ export function* getNextRefPos(cigarOps: string[], positions: number[]) {
   }
 }
 
-export function getModificationPositions(mm: string, seq: string) {
-  const mods = mm.split(';')
-  return mods
+export function getModificationPositions(
+  mm: string,
+  fseq: string,
+  fstrand: number,
+) {
+  const seq = fstrand === -1 ? revcom(fseq) : fseq
+  return mm
+    .split(';')
     .filter(mod => !!mod)
     .map(mod => {
-      const [basemod, ...rest] = mod.split(',')
+      const [basemod, ...skips] = mod.split(',')
 
       // regexes based on parse_mm.pl from hts-specs
       const matches = basemod.match(/([A-Z])([-+])([^,]+)/)
@@ -346,19 +352,19 @@ export function getModificationPositions(mm: string, seq: string) {
         let i = 0
         return {
           type,
-          positions: rest
+          positions: skips
             .map(score => +score)
             .map(delta => {
-              i++
               do {
                 if (base === 'N' || base === seq[i]) {
                   delta--
                 }
                 i++
               } while (delta >= 0 && i < seq.length)
-              i--
-              return i
-            }),
+              const temp = i - 1
+              return fstrand === -1 ? seq.length - 1 - temp : temp
+            })
+            .sort((a, b) => a - b),
         }
       })
     })

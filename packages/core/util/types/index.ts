@@ -23,7 +23,10 @@ export * from './util'
 export interface AbstractViewContainer {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
-  addView(typeName: string, initialState: Record<string, unknown>): void
+  addView(
+    typeName: string,
+    initialState: Record<string, unknown>,
+  ): void | AbstractViewModel
 }
 export function isViewContainer(
   thing: unknown,
@@ -117,7 +120,7 @@ export function isSessionModelWithConfigEditing(
 /** abstract interface for a session that manages widgets */
 export interface SessionWithWidgets extends AbstractSessionModel {
   visibleWidget?: { id: string }
-  widgets?: unknown[]
+  widgets: Map<string, unknown>
   addWidget(
     typeName: string,
     id: string,

@@ -23,7 +23,7 @@ import HelpOutlineIcon from '@material-ui/icons/HelpOutline'
 import SettingsIcon from '@material-ui/icons/Settings'
 import CloseIcon from '@material-ui/icons/Close'
 import copy from 'copy-to-clipboard'
-import { fade } from '@material-ui/core/styles/colorManipulator'
+import { alpha } from '@material-ui/core/styles'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import { getSnapshot } from 'mobx-state-tree'
 import { toUrlSafeB64 } from '@jbrowse/core/util'
@@ -37,7 +37,7 @@ const useStyles = makeStyles(theme => ({
   },
   shareButton: {
     '&:hover': {
-      backgroundColor: fade(
+      backgroundColor: alpha(
         theme.palette.primary.contrastText,
         theme.palette.action.hoverOpacity,
       ),

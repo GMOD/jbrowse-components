@@ -444,7 +444,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         },
       }))
       .views(self => ({
-        get menuItems() {
+        menuItems() {
           const session = getSession(self)
           if (isSessionModelWithWidgets(session)) {
             return [

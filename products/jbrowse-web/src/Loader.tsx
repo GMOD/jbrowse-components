@@ -374,10 +374,14 @@ const SessionLoader = types
         configPath,
       } = self
 
-      // rename autosave to previousAutosave
-      const lastAutosave = localStorage.getItem(`autosave-${configPath}`)
-      if (lastAutosave) {
-        localStorage.setItem(`previousAutosave-${configPath}`, lastAutosave)
+      try {
+        // rename autosave to previousAutosave
+        const lastAutosave = localStorage.getItem(`autosave-${configPath}`)
+        if (lastAutosave) {
+          localStorage.setItem(`previousAutosave-${configPath}`, lastAutosave)
+        }
+      } catch (e) {
+        console.error('failed to create previousAutosave')
       }
 
       try {
