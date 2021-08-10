@@ -103,6 +103,71 @@ function getClip(cigar: string, strand: number) {
     : +(cigar.match(/^(\d+)([SH])/) || [])[1] || 0
 }
 
+function getTag(f: Feature, tag: string) {
+  const tags = f.get('tags')
+  return tags ? tags[tag] : f.get(tag)
+}
+
+function mergeIntervals<T extends { start: number; end: number }>(
+  intervals: T[],
+  w = 5000,
+) {
+  // test if there are at least 2 intervals
+  if (intervals.length <= 1) {
+    return intervals
+  }
+
+  const stack = []
+  let top = null
+
+  // sort the intervals based on their start values
+  intervals = intervals.sort((a, b) => a.start - b.start)
+
+  // push the 1st interval into the stack
+  stack.push(intervals[0])
+
+  // start from the next interval and merge if needed
+  for (let i = 1; i < intervals.length; i++) {
+    // get the top element
+    top = stack[stack.length - 1]
+
+    // if the current interval doesn't overlap with the
+    // stack top element, push it to the stack
+    if (top.end + w < intervals[i].start - w) {
+      stack.push(intervals[i])
+    }
+    // otherwise update the end value of the top element
+    // if end of current interval is higher
+    else if (top.end < intervals[i].end) {
+      top.end = Math.max(top.end, intervals[i].end)
+      stack.pop()
+      stack.push(top)
+    }
+  }
+
+  return stack
+}
+
+interface BasicFeature {
+  end: number
+  start: number
+  refName: string
+}
+
+function gatherOverlaps(regions: BasicFeature[]) {
+  const groups = regions.reduce((memo, x) => {
+    if (!memo[x.refName]) {
+      memo[x.refName] = []
+    }
+    memo[x.refName].push(x)
+    return memo
+  }, {} as { [key: string]: BasicFeature[] })
+
+  return Object.values(groups)
+    .map(group => mergeIntervals(group.sort((a, b) => a.start - b.start)))
+    .flat()
+}
+
 interface ReducedFeature {
   refName: string
   start: number
@@ -183,13 +248,11 @@ export default class DotplotPlugin extends Plugin {
               icon: AddIcon,
               onClick: () => {
                 const session = getSession(display)
-                const clipPos = feature.get('clipPos')
                 const cigar = feature.get('CIGAR')
+                const clipPos = getClip(cigar, 1)
                 const flags = feature.get('flags')
-                const SA: string =
-                  (feature.get('tags')
-                    ? feature.get('tags').SA
-                    : feature.get('SA')) || ''
+                const origStrand = feature.get('strand')
+                const SA: string = getTag(feature, 'SA') || ''
                 const readName = feature.get('name')
                 const readAssembly = `${readName}_assembly`
                 const [trackAssembly] = getConf(parentTrack, 'assemblyNames')
@@ -204,7 +267,10 @@ export default class DotplotPlugin extends Plugin {
                     const saLength = getLength(saCigar)
                     const saLengthSansClipping = getLengthSansClipping(saCigar)
                     const saStrandNormalized = saStrand === '-' ? -1 : 1
-                    const saClipPos = getClip(saCigar, saStrandNormalized)
+                    const saClipPos = getClip(
+                      saCigar,
+                      saStrandNormalized * origStrand,
+                    )
                     const saRealStart = +saStart - 1
                     return {
                       refName: saRef,
@@ -214,7 +280,7 @@ export default class DotplotPlugin extends Plugin {
                       clipPos: saClipPos,
                       CIGAR: saCigar,
                       assemblyName: trackAssembly,
-                      strand: 1, // saStrandNormalized,
+                      strand: origStrand * saStrandNormalized,
                       uniqueId: `${feature.id()}_SA${index}`,
                       mate: {
                         start: saClipPos,
@@ -257,16 +323,18 @@ export default class DotplotPlugin extends Plugin {
                   hview: {
                     offsetPx: 0,
                     bpPerPx: refLength / 800,
-                    minimumBlockWidth: 0,
-                    interRegionPaddingWidth: 0,
-                    displayedRegions: features.map(f => {
-                      return {
-                        start: f.start,
-                        end: f.end,
-                        refName: f.refName,
-                        assemblyName: trackAssembly,
-                      }
-                    }),
+                    displayedRegions: gatherOverlaps(
+                      features.map((f, index) => {
+                        const { start, end, refName } = f
+                        return {
+                          start,
+                          end,
+                          refName,
+                          index,
+                          assemblyName: trackAssembly,
+                        }
+                      }),
+                    ),
                   },
                   vview: {
                     offsetPx: 0,

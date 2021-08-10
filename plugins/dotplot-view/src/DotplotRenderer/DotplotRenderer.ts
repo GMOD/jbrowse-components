@@ -44,7 +44,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     ;(hview.features || []).forEach(feature => {
       let start = feature.get('start')
       let end = feature.get('end')
-      const strand = feature.get('strand')
+      const strand = feature.get('strand') || 1
       const refName = feature.get('refName')
       const mate = feature.get('mate')
       const mateRef = mate.refName
@@ -92,10 +92,10 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
               const prevY = currY
 
               if (op === 'M' || op === '=' || op === 'X') {
-                currX += val / hview.bpPerPx
+                currX += (val / hview.bpPerPx) * strand
                 currY += val / vview.bpPerPx
               } else if (op === 'D' || op === 'N') {
-                currX += val / hview.bpPerPx
+                currX += (val / hview.bpPerPx) * strand
               } else if (op === 'I') {
                 currY += val / vview.bpPerPx
               }
