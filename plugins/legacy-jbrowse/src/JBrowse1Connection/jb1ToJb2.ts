@@ -54,8 +54,6 @@ interface Jb2Location {
 }
 
 export function convertTrackConfig(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  model: any,
   jb1TrackConfig: Track,
   dataRoot: string,
   sequenceAdapter: Jb2Adapter,
@@ -355,7 +353,6 @@ export function convertTrackConfig(
 
   // If we don't recogize the store class, make a best effort to guess by file type
   jb2TrackConfig.adapter = guessAdapter(
-    model,
     { uri: urlTemplate },
     undefined,
     () => urlTemplate,

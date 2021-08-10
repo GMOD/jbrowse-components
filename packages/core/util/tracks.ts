@@ -3,8 +3,6 @@ import { objectHash } from './index'
 import { PreFileLocation, FileLocation } from './types'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { readConfObject } from '../configuration'
-import { getSession } from '@jbrowse/core/util'
-import { getEnv } from 'mobx-state-tree'
 
 /* utility functions for use by track models and so forth */
 
@@ -98,8 +96,6 @@ export function storeBlobLocation(location: PreFileLocation) {
 }
 
 export function guessAdapter(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  model: any,
   file: FileLocation,
   index: FileLocation | undefined,
   getFileName: (f: FileLocation) => string,
@@ -286,30 +282,6 @@ export function guessAdapter(
     return {
       type: 'PAFAdapter',
       pafLocation: file,
-    }
-  }
-
-  // if no adapter type can be guessed, check if the adapter type has a jbrowse schema definition
-  if (adapterHint) {
-    const session = getSession(model)
-
-    const schema = getEnv(session).pluginManager.getAdapterType(adapterHint)
-      .configSchema.jbrowseSchemaDefinition
-    if (schema) {
-      let location = undefined
-
-      Object.keys(schema).forEach(key => {
-        if (key.toLowerCase().includes('location')) {
-          location = key
-        }
-      })
-
-      if (location) {
-        return {
-          type: adapterHint,
-          [location]: file,
-        }
-      }
     }
   }
 
