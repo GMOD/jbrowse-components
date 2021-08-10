@@ -187,11 +187,11 @@ export default pluginManager =>
           })
       },
 
-      hierarchy(assemblyName, collapsed) {
+      hierarchy(assemblyName) {
         const hier = generateHierarchy(
           self,
           self.trackConfigurations(assemblyName),
-          collapsed,
+          self.collapsed,
         )
 
         const session = getSession(self)

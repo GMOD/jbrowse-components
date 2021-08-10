@@ -546,7 +546,7 @@ const HierarchicalTrackSelector = observer(({ model, toolbarHeight = 0 }) => {
   const [assemblyIdx, setAssemblyIdx] = useState(0)
   const [headerHeight, setHeaderHeight] = useState(0)
 
-  const { assemblyNames, collapsed } = model
+  const { assemblyNames } = model
   const assemblyName = assemblyNames[assemblyIdx]
   return assemblyName ? (
     <>
@@ -557,7 +557,7 @@ const HierarchicalTrackSelector = observer(({ model, toolbarHeight = 0 }) => {
         assemblyIdx={assemblyIdx}
       />
       <AutoSizedHierarchicalTree
-        tree={model.hierarchy(assemblyName, collapsed)}
+        tree={model.hierarchy(assemblyName)}
         model={model}
         offset={toolbarHeight + headerHeight}
       />
