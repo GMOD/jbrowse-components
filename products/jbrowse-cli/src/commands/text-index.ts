@@ -213,15 +213,21 @@ export default class TextIndex extends JBrowseCommand {
         indexingFeatureTypesToExclude,
       } = config
 
+      const types: Array<string> = indexingFeatureTypesToExclude || [
+        'CDS',
+        'exon',
+        'transcript',
+      ]
+
       for (const inc of include) {
-        const index = indexingFeatureTypesToExclude.indexOf(inc)
+        const index = types.indexOf(inc)
         if (index > -1) {
-          indexingFeatureTypesToExclude.splice(index, 1)
+          types.splice(index, 1)
         }
       }
       for (const exc of exclude) {
         if (exc.length > 0) {
-          indexingFeatureTypesToExclude.push(exc)
+          types.push(exc)
         }
       }
 
@@ -242,7 +248,7 @@ export default class TextIndex extends JBrowseCommand {
           config,
           attributesToIndex,
           outLocation,
-          indexingFeatureTypesToExclude,
+          types,
           quiet,
         )
       }
