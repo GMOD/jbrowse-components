@@ -127,6 +127,9 @@ const SessionLoader = types
     sessionQuery: types.maybe(types.string),
     password: types.maybe(types.string),
     adminKey: types.maybe(types.string),
+    loc: types.maybe(types.string),
+    assembly: types.maybe(types.string),
+    tracks: types.maybe(types.string),
   })
   .volatile(() => ({
     blankSession: false as any,
@@ -147,23 +150,28 @@ const SessionLoader = types
       new window.BroadcastChannel('jb_respond_session'),
   }))
   .views(self => ({
-    get sharedSession() {
+    get isSharedSession() {
       return self.sessionQuery?.startsWith('share-')
     },
 
-    get specSession() {
+    get isSpecSession() {
       return self.sessionQuery?.startsWith('spec-')
     },
 
-    get encodedSession() {
+    get isJb1StyleSession() {
+      console.log('here', self.loc)
+      return !!self.loc
+    },
+
+    get isEncodedSession() {
       return self.sessionQuery?.startsWith('encoded-')
     },
 
-    get jsonSession() {
+    get isJsonSession() {
       return self.sessionQuery?.startsWith('json-')
     },
 
-    get localSession() {
+    get isLocalSession() {
       return self.sessionQuery?.startsWith('local-')
     },
 
@@ -374,6 +382,21 @@ const SessionLoader = types
       self.sessionSpec = JSON.parse(self.sessionQuery.replace('spec-', ''))
     },
 
+    decodeJb1StyleSession() {
+      if (self.loc) {
+        self.sessionSpec = {
+          views: [
+            {
+              type: 'LGV',
+              loc: self.loc,
+              tracks: self.tracks?.split(','),
+              assembly: self.assembly,
+            },
+          ],
+        }
+      }
+    },
+
     async decodeJsonUrlSession() {
       // @ts-ignore
       const session = JSON.parse(self.sessionQuery.replace('json-', ''))
@@ -381,20 +404,14 @@ const SessionLoader = types
     },
 
     async afterCreate() {
-      const {
-        localSession,
-        encodedSession,
-        specSession,
-        sharedSession,
-        jsonSession,
-        configPath,
-      } = self
-
       try {
         // rename autosave to previousAutosave
-        const lastAutosave = localStorage.getItem(`autosave-${configPath}`)
+        const lastAutosave = localStorage.getItem(`autosave-${self.configPath}`)
         if (lastAutosave) {
-          localStorage.setItem(`previousAutosave-${configPath}`, lastAutosave)
+          localStorage.setItem(
+            `previousAutosave-${self.configPath}`,
+            lastAutosave,
+          )
         }
       } catch (e) {
         console.error('failed to create previousAutosave')
@@ -408,23 +425,35 @@ const SessionLoader = types
         self.setConfigError(e)
         return
       }
+      const {
+        isLocalSession,
+        isEncodedSession,
+        isSpecSession,
+        isSharedSession,
+        isJsonSession,
+        isJb1StyleSession,
+        sessionQuery,
+        configSnapshot,
+      } = self
 
       addDisposer(
         self,
         autorun(async () => {
           try {
-            if (self.configSnapshot) {
-              if (sharedSession) {
+            if (configSnapshot) {
+              if (isSharedSession) {
                 await this.fetchSharedSession()
-              } else if (specSession) {
+              } else if (isSpecSession) {
                 this.decodeSessionSpec()
-              } else if (encodedSession) {
+              } else if (isJb1StyleSession) {
+                this.decodeJb1StyleSession()
+              } else if (isEncodedSession) {
                 await this.decodeEncodedUrlSession()
-              } else if (jsonSession) {
+              } else if (isJsonSession) {
                 await this.decodeJsonUrlSession()
-              } else if (localSession) {
+              } else if (isLocalSession) {
                 await this.fetchSessionStorageSession()
-              } else if (self.sessionQuery) {
+              } else if (sessionQuery) {
                 // if there was a sessionQuery and we don't recognize it
                 throw new Error('unrecognized session format')
               } else {
@@ -467,12 +496,18 @@ export function Loader({
   const [session] = useQueryParam('session', StringParam)
   const [password] = useQueryParam('password', StringParam)
   const [adminKey] = useQueryParam('adminKey', StringParam)
+  const [tracks] = useQueryParam('tracks', StringParam)
+  const [loc] = useQueryParam('loc', StringParam)
+  const [assembly] = useQueryParam('assembly', StringParam)
 
   const loader = SessionLoader.create({
     configPath: load(config),
     sessionQuery: load(session),
     password: load(password),
     adminKey: load(adminKey),
+    loc: load(loc),
+    assembly: load(assembly),
+    tracks: load(tracks),
   })
 
   return (
@@ -541,7 +576,7 @@ const Renderer = observer(
             !!adminKey,
           )
 
-          if (loader.configSnapshot) {
+          if (configSnapshot) {
             const rootModel = JBrowseRootModel.create(
               {
                 jbrowse: configSnapshot,
@@ -551,14 +586,12 @@ const Renderer = observer(
               },
               { pluginManager },
             )
-            rootModel.jbrowse.configuration.rpc.addDriverConfig(
-              'WebWorkerRpcDriver',
-              { type: 'WebWorkerRpcDriver' },
-            )
-            if (!loader.configSnapshot?.configuration?.rpc?.defaultDriver) {
-              rootModel.jbrowse.configuration.rpc.defaultDriver.set(
-                'WebWorkerRpcDriver',
-              )
+            const jbrowse = rootModel.jbrowse
+            jbrowse.configuration.rpc.addDriverConfig('WebWorkerRpcDriver', {
+              type: 'WebWorkerRpcDriver',
+            })
+            if (!configSnapshot?.configuration?.rpc?.defaultDriver) {
+              jbrowse.configuration.rpc.defaultDriver.set('WebWorkerRpcDriver')
             }
 
             // in order: saves the previous autosave for recovery, tries to
@@ -578,7 +611,7 @@ const Renderer = observer(
               }
             } else if (sessionSnapshot && !shareWarningOpen) {
               try {
-                rootModel.setSession(loader.sessionSnapshot)
+                rootModel.setSession(sessionSnapshot)
               } catch (err) {
                 console.error(err)
                 rootModel.setDefaultSession()
@@ -611,7 +644,7 @@ const Renderer = observer(
                       )
                       materialView.setWidth(800)
                       materialView.navToLocString(loc, assembly)
-                      tracks.forEach((track: string) => {
+                      tracks?.forEach((track: string) => {
                         materialView.showTrack(track)
                       })
                     }
@@ -628,20 +661,13 @@ const Renderer = observer(
                 )
               }
             } else {
-              const defaultJBrowseSession = rootModel.jbrowse.defaultSession
-              if (defaultJBrowseSession?.views.length > 0) {
+              if (jbrowse.defaultSession?.views.length > 0) {
                 rootModel.setDefaultSession()
               }
             }
 
             // send analytics
-            if (
-              rootModel &&
-              !readConfObject(
-                rootModel.jbrowse.configuration,
-                'disableAnalytics',
-              )
-            ) {
+            if (!readConfObject(jbrowse.configuration, 'disableAnalytics')) {
               writeAWSAnalytics(
                 rootModel,
                 initialTimestamp,
