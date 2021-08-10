@@ -88,7 +88,7 @@ const stateModelFactory = (
         filterBy: types.optional(
           types.model({
             flagInclude: types.optional(types.number, 0),
-            flagExclude: types.optional(types.number, 1536),
+            flagExclude: types.optional(types.number, 1540),
             readName: types.maybe(types.string),
             tagFilter: types.maybe(
               types.model({ tag: types.string, value: types.string }),
