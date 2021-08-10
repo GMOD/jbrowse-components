@@ -111,9 +111,11 @@ const Node = props => {
     id,
     name,
     onChange,
+    toggleCollapse,
     conf,
     onMoreInfo,
   } = data
+
   const classes = useStyles()
   const width = 10
   const marginLeft = nestingLevel * width + (isLeaf ? width : 0)
@@ -131,7 +133,10 @@ const Node = props => {
       ))}
       <div
         className={!isLeaf ? classes.accordionCard : undefined}
-        onClick={() => setOpen(!isOpen)}
+        onClick={() => {
+          toggleCollapse(id)
+          setOpen(!isOpen)
+        }}
         style={{
           marginLeft,
           whiteSpace: 'nowrap',
@@ -199,17 +204,18 @@ const getNodeData = (node, nestingLevel, extra) => {
 // in jbrowse-web the toolbar is position="sticky" which means the autosizer
 // includes the height of the toolbar, so we subtract the given offsets
 const HierarchicalTree = observer(({ height, tree, model }) => {
+  const { filterText, view } = model
   const treeRef = useRef(null)
   const [info, setMoreInfo] = useState()
   const session = getSession(model)
-  const { filterText } = model
 
   const extra = useMemo(
     () => ({
-      onChange: trackId => model.view.toggleTrack(trackId),
+      onChange: trackId => view.toggleTrack(trackId),
+      toggleCollapse: pathName => model.toggleCategory(pathName),
       onMoreInfo: setMoreInfo,
     }),
-    [model.view],
+    [view, model],
   )
   const treeWalker = useCallback(
     function* treeWalker() {
@@ -540,14 +546,9 @@ const HierarchicalTrackSelector = observer(({ model, toolbarHeight = 0 }) => {
   const [assemblyIdx, setAssemblyIdx] = useState(0)
   const [headerHeight, setHeaderHeight] = useState(0)
 
-  const { assemblyNames } = model
+  const { assemblyNames, collapsed } = model
   const assemblyName = assemblyNames[assemblyIdx]
-  if (!assemblyName) {
-    return null
-  }
-  const nodes = model.hierarchy(assemblyNames[assemblyIdx])
-
-  return (
+  return assemblyName ? (
     <>
       <HierarchicalTrackSelectorHeader
         model={model}
@@ -556,12 +557,12 @@ const HierarchicalTrackSelector = observer(({ model, toolbarHeight = 0 }) => {
         assemblyIdx={assemblyIdx}
       />
       <AutoSizedHierarchicalTree
-        tree={nodes}
+        tree={model.hierarchy(assemblyName, collapsed)}
         model={model}
         offset={toolbarHeight + headerHeight}
       />
     </>
-  )
+  ) : null
 })
 
 export default HierarchicalTrackSelectorContainer
