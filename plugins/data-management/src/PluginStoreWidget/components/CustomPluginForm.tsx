@@ -2,15 +2,22 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
 
-import { makeStyles } from '@material-ui/core/styles'
-import Dialog from '@material-ui/core/Dialog'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import TextField from '@material-ui/core/TextField'
-import Button from '@material-ui/core/Button'
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogTitle,
+  DialogContent,
+  TextField,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 
+// icons
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 
+// locals
 import { PluginStoreModel } from '../model'
 
 const useStyles = makeStyles(() => ({
@@ -32,69 +39,60 @@ function CustomPluginForm({
   model,
 }: {
   open: boolean
-  onClose: Function
+  onClose: () => void
   model: PluginStoreModel
 }) {
   const classes = useStyles()
-  const [formInput, setFormInput] = useState({
-    name: '',
-    url: '',
-  })
-
-  const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setFormInput({
-      ...formInput,
-      [event.target.name]: event.target.value,
-    })
-  }
-
+  const [formName, setFormName] = useState<string>()
+  const [formUrl, setFormUrl] = useState<string>()
   const rootModel = getRoot(model)
   const { jbrowse } = rootModel
 
-  const handleSubmit = () => {
-    jbrowse.addPlugin({ name: formInput.name, url: formInput.url })
-  }
-
   return (
-    <Dialog open={open} onClose={() => onClose(false)}>
+    <Dialog open={open} onClose={() => onClose()}>
       <DialogTitle>
-        <IconButton
-          className={classes.closeDialog}
-          aria-label="close-dialog"
-          onClick={() => onClose(false)}
-        >
+        Add custom plugin
+        <IconButton className={classes.closeDialog} onClick={() => onClose()}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
 
-      <div className={classes.dialogContainer}>
-        <TextField
-          id="name-input"
-          name="name"
-          label="Plugin name"
-          variant="outlined"
-          value={formInput.name}
-          onChange={handleChange}
-          multiline
-        />
-        <TextField
-          id="url-input"
-          name="url"
-          label="Plugin URL"
-          variant="outlined"
-          value={formInput.url}
-          onChange={handleChange}
-          multiline
-        />
+      <DialogContent>
+        <div className={classes.dialogContainer}>
+          <Typography>
+            Specify the name and URL path of your plugin source
+          </Typography>
+          <TextField
+            label="Plugin name"
+            variant="outlined"
+            value={formName}
+            onChange={event => setFormName(event.target.value)}
+            multiline
+          />
+          <TextField
+            label="Plugin URL"
+            variant="outlined"
+            value={formUrl}
+            onChange={event => setFormUrl(event.target.value)}
+            multiline
+          />
+        </div>
+      </DialogContent>
+      <DialogActions>
+        <Button variant="contained" color="secondary" onClick={() => onClose()}>
+          Cancel
+        </Button>
         <Button
           variant="contained"
           color="primary"
-          style={{ marginTop: '1.5rem' }}
-          onClick={handleSubmit}
+          onClick={() => {
+            jbrowse.addPlugin({ name: formName, url: formUrl })
+            onClose()
+          }}
         >
-          Add plugin
+          Submit
         </Button>
-      </div>
+      </DialogActions>
     </Dialog>
   )
 }
