@@ -1,12 +1,6 @@
 {
   "TrackData": {
-    "TrackIds": [
-      "gtfdemo"
-    ],
-    "metaAttrs": [
-      [
-        "exon_id"
-      ]
-    ]
+    "TrackIds": ["gtfdemo"],
+    "metaAttrs": [["exon_id"]]
   }
 }

@@ -878,13 +878,9 @@
     {
       "type": "FeatureTrack",
       "trackId": "gff3demo",
-      "assemblyNames": [
-        "volvox"
-      ],
+      "assemblyNames": ["volvox"],
       "name": "gff3 demo",
-      "category": [
-        "Miscellaneous"
-      ],
+      "category": ["Miscellaneous"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -896,9 +892,7 @@
           }
         }
       },
-      "textSearchIndexingAttributes": [
-        "gene_name"
-      ]
+      "textSearchIndexingAttributes": ["gene_name"]
     },
     {
       "type": "AlignmentsTrack",
