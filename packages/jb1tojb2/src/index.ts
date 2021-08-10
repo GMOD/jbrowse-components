@@ -277,7 +277,7 @@ interface Jb2Track {
   adapter?: Jb2Adapter
   type?: string
   defaultRendering?: string
-  assemblyNames?: string
+  assemblyNames?: string[]
   jb1Config?: string
 }
 
@@ -337,7 +337,7 @@ export function objectHash(obj: Record<string, any>) {
 export function convertTrackConfig(
   jb1TrackConfig: Track,
   dataRoot: string,
-  assemblyNames: string,
+  assemblyNames: string[],
   sequenceAdapter: Jb2Adapter,
 ): Jb2Track {
   const jb2TrackConfig: Jb2Track = {

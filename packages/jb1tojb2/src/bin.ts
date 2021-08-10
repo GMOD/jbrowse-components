@@ -24,7 +24,7 @@ if (assemblyNames) {
 
 const jb1config: { tracks: Track[] } = JSON.parse(fs.readFileSync(file, 'utf8'))
 const tracks = jb1config.tracks.map(track =>
-  convertTrackConfig(track, dataRoot, assemblyNames,  {
+  convertTrackConfig(track, dataRoot, [assemblyNames],  {
     type: 'IndexedFastaAdapter',
   }),
 )
