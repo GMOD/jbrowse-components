@@ -5,8 +5,10 @@ import { OAuthInternetAccountConfigModel } from './configSchema'
 import crypto from 'crypto'
 import { Instance, types, getRoot } from 'mobx-state-tree'
 import { searchOrReplaceInArgs } from '@jbrowse/core/util'
+import { globalCacheFetch } from '@jbrowse/core/util/io/rangeFetcher'
 import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
 import deepEqual from 'fast-deep-equal'
+import { RemoteFile, GenericFilehandle } from 'generic-filehandle'
 
 // Notes go here:
 
@@ -60,6 +62,9 @@ const stateModelFactory = (
     .views(self => ({
       get tokenType() {
         return getConf(self, 'tokenType') || 'Bearer'
+      },
+      get internetAccountType() {
+        return 'OAuthInternetAccount'
       },
       handlesLocation(location: FileLocation): boolean {
         const validDomains = self.accountConfig.validDomains || []
@@ -124,7 +129,7 @@ const stateModelFactory = (
       },
     }))
     .actions(self => {
-      let location: FileLocation | undefined = undefined
+      let location: UriLocation | undefined = undefined
       let resolve: Function = () => {}
       let reject: Function = () => {}
       let openLocationPromise: Promise<string> | undefined = undefined
@@ -152,11 +157,14 @@ const stateModelFactory = (
             }
             resolve(fileUrl)
           }
+
+          if (location && location.internetAccountPreAuthorization) {
+            location.internetAccountPreAuthorization.authInfo.token = token
+          }
+
           this.deleteMessageChannel()
-          location = undefined
           resolve = () => {}
           reject = () => {}
-          openLocationPromise = undefined
         },
         // MODELING THE NEW CONCEPT
         // getFetcher() {
@@ -166,7 +174,46 @@ const stateModelFactory = (
         // return (function that has same signature as core fetch)
         // return a function taht interally calls globalCacheFetch
         // }
+        async getFetcher(
+          url: RequestInfo,
+          opts?: RequestInit,
+        ): Promise<Response> {
+          console.log('this', url, opts)
 
+          let newOpts = opts
+          let fileUrl
+          const token =
+            location?.internetAccountPreAuthorization?.authInfo.token
+          if (!token) {
+            if (!openLocationPromise) {
+              openLocationPromise = new Promise(async (r, x) => {
+                this.addMessageChannel()
+                self.useEndpointForAuthorization()
+                resolve = r
+                reject = x
+              })
+              fileUrl = await openLocationPromise
+            }
+          } else {
+            fileUrl = await this.fetchFile(String(url), token)
+          }
+
+          openLocationPromise = undefined
+
+          if (location && location.internetAccountPreAuthorization && fileUrl) {
+            const authInfo = location.internetAccountPreAuthorization.authInfo
+            const headers = {
+              [authInfo.authHeader]: `${authInfo.tokenType} ${authInfo.token}`,
+            }
+            newOpts = {
+              ...opts,
+              headers,
+            }
+          }
+          location = undefined
+
+          return globalCacheFetch(fileUrl, newOpts)
+        },
         // openLocation(l: FileLocation){
         // returns a genericFilehandle RemoteFile
         // return RemoteFile() // one of the options is passing it a fetcher
@@ -175,24 +222,28 @@ const stateModelFactory = (
         // }
         // code:
         // async openLocation(location) { return new RemoteFile(location.uri, { fetch: this.getFetcher() })}
-
-        // handleRpcMethodCall()
-        // token would be looked for in the PreAuthLocation information instead of the map
-        // will always call openLocation, the logic to open the flow or not will be in getFetcher
-        // if you are in the worker, and no preauth information available throw new error
-        // it returns the serialized location information to serializedAuthArguments
-        async openLocation(l: FileLocation) {
+        async openLocation(l: UriLocation) {
+          // console.log('here', l)
+          // let headers
+          // if (l.internetAccountPreAuthorization) {
+          //   const authInfo = l.internetAccountPreAuthorization.authInfo
+          //   headers = {
+          //     [authInfo.authHeaders]: `${authInfo.tokenType}`,
+          //   }
+          // }
           location = l
+          return new RemoteFile(l.uri, { fetch: this.getFetcher })
+          // location = l
 
-          if (!openLocationPromise) {
-            openLocationPromise = new Promise(async (r, x) => {
-              this.addMessageChannel()
-              self.useEndpointForAuthorization()
-              resolve = r
-              reject = x
-            })
-          }
-          return openLocationPromise
+          // if (!openLocationPromise) {
+          //   openLocationPromise = new Promise(async (r, x) => {
+          //     this.addMessageChannel()
+          //     self.useEndpointForAuthorization()
+          //     resolve = r
+          //     reject = x
+          //   })
+          // }
+          // return openLocationPromise
         },
         setAuthorizationCode(code: string) {
           self.authorizationCode = code
@@ -389,41 +440,33 @@ const stateModelFactory = (
             }
           }
         },
+        // handleRpcMethodCall()
+        // token would be looked for in the PreAuthLocation information instead of the map
+        // will always call openLocation, the logic to open the flow or not will be in getFetcher
+        // if you are in the worker, and no preauth information available throw new error
+        // it returns the serialized location information to serializedAuthArguments
         async handleRpcMethodCall(
-          location: FileLocation,
+          location: UriLocation,
           authenticationInfoMap: Record<string, string>,
           args: {},
           retried = false,
         ) {
-          const token = authenticationInfoMap[self.internetAccountId]
-
-          let file
-          let newArgs = args
+          // if in worker && !location.preauthInto throw new error
           try {
-            file = !token
-              ? await this.openLocation(location)
-              : await this.fetchFile((location as UriLocation).uri, token)
+            await this.openLocation(location as UriLocation)
           } catch (error) {
             const refreshedMap = await this.handleError(
               authenticationInfoMap,
               retried,
             )
             if (!retried && !deepEqual(refreshedMap, authenticationInfoMap)) {
-              newArgs = await this.handleRpcMethodCall(
-                location,
-                refreshedMap,
-                args,
-                true,
-              )
+              await this.handleRpcMethodCall(location, refreshedMap, args, true)
             } else {
               throw new Error(error)
             }
           }
-          const editedArgs = JSON.parse(JSON.stringify(newArgs))
-          if (file) {
-            searchOrReplaceInArgs(editedArgs, 'uri', file)
-          }
-          return editedArgs
+
+          return
         },
         async handleError(
           authenticationInfoMap: Record<string, string>,

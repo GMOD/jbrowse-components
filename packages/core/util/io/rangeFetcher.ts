@@ -124,7 +124,7 @@ export function clearCache() {
 
 export function openUrl(url: string, headers?: HeadersInit): GenericFilehandle {
   return new RemoteFile(String(url), {
-    // fetch: globalCacheFetch,
+    fetch: globalCacheFetch,
     // uncomment out above, delete below
     overrides: {
       headers: headers || {},

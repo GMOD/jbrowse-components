@@ -46,15 +46,43 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       if (obj.hasOwnProperty('internetAccountId')) {
         // return this.serializeAuthArguments(args, blobMap, authenticationInfoMap)
         // next: need to change serializeautharguments to fill in the preauth object
+        return this.serializeNewAuthArguments(
+          args,
+          blobMap,
+          authenticationInfoMap,
+          obj,
+        )
       }
+      return
     })
-    if (
-      args.hasOwnProperty('adapterConfig') &&
-      searchOrReplaceInArgs(args, 'internetAccountId')
-    ) {
-      return this.serializeAuthArguments(args, blobMap, authenticationInfoMap)
-    }
+    // if (
+    //   args.hasOwnProperty('adapterConfig') &&
+    //   searchOrReplaceInArgs(args, 'internetAccountId')
+    // ) {
+    //   return this.serializeAuthArguments(args, blobMap, authenticationInfoMap)
+    // }
     return { ...args, blobMap, authenticationInfoMap }
+  }
+
+  async serializeNewAuthArguments(
+    args: {},
+    blobMap: { [key: string]: File },
+    authenticationInfoMap: Record<string, string>,
+    locationObj: { [key: string]: string },
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rootModel: any = this.pluginManager.rootModel
+    authenticationInfoMap = rootModel?.getAuthenticationInfoMap()
+
+    const modifiedPreAuth = await rootModel?.findAppropriateInternetAccount(
+      locationObj,
+      authenticationInfoMap,
+      args,
+    )
+
+    if (typeof modifiedPreAuth === 'object') {
+      return { ...args, blobMap, authenticationInfoMap }
+    }
   }
 
   async serializeAuthArguments(

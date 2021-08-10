@@ -149,11 +149,16 @@ const UrlChooser = (props: {
               uri: event.target.value,
               baseAuthUri: event.target.value,
               internetAccountId: internetAccount?.internetAccountId || '',
-              authHeader: internetAccount?.authHeader || 'Authorization',
-              tokenType: internetAccount
-                ? internetAccount.tokenType // internetAccount.tokenType
-                : '',
               locationType: 'UriLocation',
+              internetAccountPreAuthorization: {
+                internetAccountType: internetAccount?.internetAccountType || '',
+                authInfo: {
+                  authHeader: internetAccount?.authHeader || 'Authorization',
+                  tokenType: internetAccount
+                    ? internetAccount.tokenType // internetAccount.tokenType
+                    : '',
+                },
+              },
             })
           } else {
             setLocation({
@@ -182,9 +187,17 @@ const UrlChooser = (props: {
                 uri: currentUrl,
                 baseAuthUri: currentUrl,
                 internetAccountId: internetAccount?.internetAccountId || '',
-                authHeader: internetAccount?.authHeader || 'Authorization',
-                tokenType: internetAccount?.tokenType || '',
                 locationType: 'UriLocation',
+                internetAccountPreAuthorization: {
+                  internetAccountType:
+                    internetAccount?.internetAccountType || '',
+                  authInfo: {
+                    authHeader: internetAccount?.authHeader || 'Authorization',
+                    tokenType: internetAccount
+                      ? internetAccount.tokenType // internetAccount.tokenType
+                      : '',
+                  },
+                },
               })
             }}
             displayEmpty

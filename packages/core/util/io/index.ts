@@ -30,7 +30,10 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
 
 // needs to take the rootmodel in as an optional parameter, use if there is no preauth information
 // calls that arent in data-adapters would need the rootmodel param added, main thread stuff
-export function openLocation(location: FileLocation): GenericFilehandle {
+export function openLocation(
+  location: FileLocation,
+  rootModel?: any,
+): GenericFilehandle {
   if (!location) {
     throw new Error('must provide a location to openLocation')
   }
@@ -48,6 +51,14 @@ export function openLocation(location: FileLocation): GenericFilehandle {
       // if there isnt preauth information, call the rootmodel to find appropriate internetaccount id and get the auth flow running
       // which should return the authentications openLocation
       // if it is, get the authentication location, and return the authentication's openLocation
+      if (location.internetAccountId) {
+        // if (!location.internetAccountPreAuthorization) {
+        //   rootModel.findAppropriateInternetAccount(location)
+        // }
+        console.log(location)
+        // current progress: need to somehow call the authentication's open location
+        return location.internetAccountPreAuthorization?.authInfo.openLocation
+      }
       return openUrl(
         location.baseUri
           ? new URL(location.uri, location.baseUri).href
