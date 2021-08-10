@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { lazy, useEffect, useState, Suspense } from 'react'
 import PluginManager, { PluginLoadRecord } from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'

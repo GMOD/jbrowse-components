@@ -8,6 +8,7 @@ import { fromUrlSafeB64 } from '@jbrowse/core/util'
 import { readSessionFromDynamo } from './sessionSharing'
 import { openLocation } from '@jbrowse/core/util/io'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import JBrowseRootModelFactory from './rootModel'
 import shortid from 'shortid'
 
 type Config = SnapshotOut<AnyConfigurationModel>
@@ -49,11 +50,17 @@ const SessionLoader = types
     tracks: types.maybe(types.string),
   })
   .volatile(() => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
     blankSession: false as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
     sessionTriaged: undefined as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
     shareWarningOpen: false as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
     configSnapshot: undefined as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
     sessionSnapshot: undefined as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
     sessionSpec: undefined as any,
     runtimePlugins: [] as PluginRecord[],
     sessionPlugins: [] as PluginRecord[],
@@ -402,14 +409,19 @@ export type SessionLoaderModel = Instance<typeof SessionLoader>
 
 export default SessionLoader
 
-export function loadSessionSpec(sessionSpec: any, rootModel: any) {
+export function loadSessionSpec(
+  sessionSpec: {
+    views: { type: string; tracks: string[]; assembly: string; loc: string }[]
+  },
+  rootModel: Instance<ReturnType<typeof JBrowseRootModelFactory>>,
+) {
   const { views } = sessionSpec
   rootModel.setSession({
     name: `New session ${new Date().toLocaleString()}`,
   })
   const { session } = rootModel
   return Promise.all(
-    views.map(async (view: any) => {
+    views.map(async view => {
       const { tracks, type, assembly, loc } = view
       await rootModel.assemblyManager.waitForAssembly(assembly)
       if (type === 'LGV' || type === 'LinearGenomeView') {
