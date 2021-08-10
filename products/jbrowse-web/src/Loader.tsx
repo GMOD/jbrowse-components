@@ -1,22 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { lazy, useEffect, useState, Suspense } from 'react'
 import PluginManager, { PluginLoadRecord } from '@jbrowse/core/PluginManager'
-import PluginLoader, {
-  PluginDefinition,
-  PluginRecord,
-} from '@jbrowse/core/PluginLoader'
 import { observer } from 'mobx-react'
-import { inDevelopment, fromUrlSafeB64 } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
+import { inDevelopment } from '@jbrowse/core/util'
 import { ErrorBoundary } from 'react-error-boundary'
 import {
   StringParam,
   QueryParamProvider,
   useQueryParam,
 } from 'use-query-params'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { types, addDisposer, Instance, SnapshotOut } from 'mobx-state-tree'
-import { autorun } from 'mobx'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import 'fontsource-roboto'
 import 'requestidlecallback-polyfill'
@@ -28,13 +20,16 @@ import {
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { readSessionFromDynamo } from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
 import packagedef from '../package.json'
 import factoryReset from './factoryReset'
+import SessionLoader, {
+  loadSessionSpec,
+  SessionLoaderModel,
+} from './SessionLoader'
 
 const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))
 const ConfigWarningDialog = lazy(() => import('./ConfigWarningDialog'))
@@ -105,383 +100,6 @@ function NoConfigMessage() {
   )
 }
 
-async function checkPlugins(pluginsToCheck: { url: string }[]) {
-  const fetchResult = await fetch(
-    'https://jbrowse.org/plugin-store/plugins.json',
-  )
-  if (!fetchResult.ok) {
-    throw new Error('Failed to fetch plugin data')
-  }
-  const array = (await fetchResult.json()) as {
-    plugins: { url: string }[]
-  }
-  const allowedPluginUrls = array.plugins.map(p => p.url)
-  return pluginsToCheck.every(p => allowedPluginUrls.includes(p.url))
-}
-
-type Config = SnapshotOut<AnyConfigurationModel>
-
-const SessionLoader = types
-  .model({
-    configPath: types.maybe(types.string),
-    sessionQuery: types.maybe(types.string),
-    password: types.maybe(types.string),
-    adminKey: types.maybe(types.string),
-    loc: types.maybe(types.string),
-    assembly: types.maybe(types.string),
-    tracks: types.maybe(types.string),
-  })
-  .volatile(() => ({
-    blankSession: false as any,
-    sessionTriaged: undefined as any,
-    shareWarningOpen: false as any,
-    configSnapshot: undefined as any,
-    sessionSnapshot: undefined as any,
-    sessionSpec: undefined as any,
-    runtimePlugins: [] as PluginRecord[],
-    sessionPlugins: [] as PluginRecord[],
-    sessionError: undefined as Error | undefined,
-    configError: undefined as Error | undefined,
-    bc1:
-      window.BroadcastChannel &&
-      new window.BroadcastChannel('jb_request_session'),
-    bc2:
-      window.BroadcastChannel &&
-      new window.BroadcastChannel('jb_respond_session'),
-  }))
-  .views(self => ({
-    get isSharedSession() {
-      return self.sessionQuery?.startsWith('share-')
-    },
-
-    get isSpecSession() {
-      return self.sessionQuery?.startsWith('spec-')
-    },
-
-    get isJb1StyleSession() {
-      console.log('here', self.loc)
-      return !!self.loc
-    },
-
-    get isEncodedSession() {
-      return self.sessionQuery?.startsWith('encoded-')
-    },
-
-    get isJsonSession() {
-      return self.sessionQuery?.startsWith('json-')
-    },
-
-    get isLocalSession() {
-      return self.sessionQuery?.startsWith('local-')
-    },
-
-    get ready() {
-      return this.sessionLoaded && !self.configError
-    },
-
-    get error() {
-      return self.configError || self.sessionError
-    },
-
-    get sessionLoaded() {
-      return (
-        !!self.sessionError ||
-        !!self.sessionSnapshot ||
-        !!self.blankSession ||
-        !!self.sessionSpec
-      )
-    },
-    get configLoaded() {
-      return !!self.configError || !!self.configSnapshot
-    },
-  }))
-  .actions(self => ({
-    setSessionQuery(session?: any) {
-      self.sessionQuery = session
-    },
-    setConfigError(error: Error) {
-      self.configError = error
-    },
-    setSessionError(error: Error) {
-      self.sessionError = error
-    },
-    setRuntimePlugins(plugins: PluginRecord[]) {
-      self.runtimePlugins = plugins
-    },
-    setSessionPlugins(plugins: PluginRecord[]) {
-      self.sessionPlugins = plugins
-    },
-    setConfigSnapshot(snap: unknown) {
-      self.configSnapshot = snap
-    },
-
-    setBlankSession(flag: boolean) {
-      self.blankSession = flag
-    },
-    setSessionTriaged(args?: {
-      snap: unknown
-      origin: string
-      reason: { url: string }[]
-    }) {
-      self.sessionTriaged = args
-    },
-    setSessionSnapshotSuccess(snap: unknown) {
-      self.sessionSnapshot = snap
-    },
-  }))
-  .actions(self => ({
-    async fetchPlugins(config: { plugins: PluginDefinition[] }) {
-      try {
-        const pluginLoader = new PluginLoader(config.plugins)
-        pluginLoader.installGlobalReExports(window)
-        const runtimePlugins = await pluginLoader.load()
-        self.setRuntimePlugins([...runtimePlugins])
-      } catch (e) {
-        console.error(e)
-        self.setConfigError(e)
-      }
-    },
-    async fetchSessionPlugins(snap: { sessionPlugins?: PluginDefinition[] }) {
-      try {
-        const pluginLoader = new PluginLoader(snap.sessionPlugins || [])
-        pluginLoader.installGlobalReExports(window)
-        const plugins = await pluginLoader.load()
-        self.setSessionPlugins([...plugins])
-      } catch (e) {
-        console.error(e)
-        self.setConfigError(e)
-      }
-    },
-
-    // passed
-    async setSessionSnapshot(
-      snap: { sessionPlugins?: PluginDefinition[] },
-      userAcceptedConfirmation?: boolean,
-    ) {
-      try {
-        const { sessionPlugins = [] } = snap
-        const sessionPluginsAllowed = sessionPlugins.length
-          ? await checkPlugins(sessionPlugins)
-          : true
-        if (sessionPluginsAllowed || userAcceptedConfirmation) {
-          await this.fetchSessionPlugins(snap)
-          self.setSessionSnapshotSuccess(snap)
-        } else {
-          self.setSessionTriaged({
-            snap,
-            origin: 'session',
-            reason: sessionPlugins,
-          })
-        }
-      } catch (e) {
-        console.error(e)
-        self.setConfigError(e)
-      }
-    },
-
-    async fetchConfig() {
-      const { configPath = 'config.json' } = self
-      const config = JSON.parse(
-        (await openLocation({ uri: configPath }).readFile('utf8')) as string,
-      )
-      const configUri = new URL(configPath, window.location.href)
-      addRelativeUris(config, configUri)
-
-      // cross origin config check
-      if (configUri.hostname !== window.location.hostname) {
-        const configPlugins = config.plugins || []
-        const configPluginsAllowed = configPlugins.length
-          ? await checkPlugins(configPlugins)
-          : true
-        if (!configPluginsAllowed) {
-          self.setSessionTriaged({
-            snap: config,
-            origin: 'config',
-            reason: configPlugins,
-          })
-        } else {
-          await this.fetchPlugins(config)
-          self.setConfigSnapshot(config)
-        }
-      } else {
-        await this.fetchPlugins(config)
-        self.setConfigSnapshot(config)
-      }
-    },
-
-    async fetchSessionStorageSession() {
-      const sessionStr = sessionStorage.getItem('current')
-      const query = (self.sessionQuery as string).replace('local-', '')
-
-      // check if
-      if (sessionStr) {
-        const sessionSnap = JSON.parse(sessionStr).session || {}
-        if (query === sessionSnap.id) {
-          await this.setSessionSnapshot(sessionSnap)
-          return
-        }
-      }
-      if (self.bc1) {
-        self.bc1.postMessage(query)
-        const resultP = new Promise((resolve, reject) => {
-          if (self.bc2) {
-            self.bc2.onmessage = msg => {
-              resolve(msg.data)
-            }
-          }
-          setTimeout(() => reject(), 1000)
-        })
-
-        try {
-          const result = await resultP
-          // @ts-ignore
-          await self.setSessionSnapshot({ ...result, id: shortid() })
-          return
-        } catch (e) {
-          // the broadcast channels did not find the session in another tab
-          // clear session param, so just ignore
-        }
-      }
-      throw new Error('Local storage session not found')
-    },
-
-    async fetchSharedSession() {
-      // raw readConf alternative for before conf is initialized
-      const readConf = (
-        conf: { configuration?: { [key: string]: string } },
-        attr: string,
-        def: string,
-      ) => {
-        return (conf.configuration || {})[attr] || def
-      }
-
-      const defaultURL = 'https://share.jbrowse.org/api/v1/'
-      const decryptedSession = await readSessionFromDynamo(
-        `${readConf(self.configSnapshot, 'shareURL', defaultURL)}load`,
-        self.sessionQuery || '',
-        self.password || '',
-      )
-
-      const session = JSON.parse(fromUrlSafeB64(decryptedSession))
-
-      await this.setSessionSnapshot({ ...session, id: shortid() })
-    },
-
-    async decodeEncodedUrlSession() {
-      const session = JSON.parse(
-        // @ts-ignore
-        fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
-      )
-      await this.setSessionSnapshot({ ...session, id: shortid() })
-    },
-
-    decodeSessionSpec() {
-      if (!self.sessionQuery) {
-        return
-      }
-      self.sessionSpec = JSON.parse(self.sessionQuery.replace('spec-', ''))
-    },
-
-    decodeJb1StyleSession() {
-      if (self.loc) {
-        self.sessionSpec = {
-          views: [
-            {
-              type: 'LGV',
-              loc: self.loc,
-              tracks: self.tracks?.split(','),
-              assembly: self.assembly,
-            },
-          ],
-        }
-      }
-    },
-
-    async decodeJsonUrlSession() {
-      // @ts-ignore
-      const session = JSON.parse(self.sessionQuery.replace('json-', ''))
-      await this.setSessionSnapshot({ ...session.session, id: shortid() })
-    },
-
-    async afterCreate() {
-      try {
-        // rename autosave to previousAutosave
-        const lastAutosave = localStorage.getItem(`autosave-${self.configPath}`)
-        if (lastAutosave) {
-          localStorage.setItem(
-            `previousAutosave-${self.configPath}`,
-            lastAutosave,
-          )
-        }
-      } catch (e) {
-        console.error('failed to create previousAutosave')
-      }
-
-      try {
-        // fetch config
-        await this.fetchConfig()
-      } catch (e) {
-        console.error(e)
-        self.setConfigError(e)
-        return
-      }
-      const {
-        isLocalSession,
-        isEncodedSession,
-        isSpecSession,
-        isSharedSession,
-        isJsonSession,
-        isJb1StyleSession,
-        sessionQuery,
-        configSnapshot,
-      } = self
-
-      addDisposer(
-        self,
-        autorun(async () => {
-          try {
-            if (configSnapshot) {
-              if (isSharedSession) {
-                await this.fetchSharedSession()
-              } else if (isSpecSession) {
-                this.decodeSessionSpec()
-              } else if (isJb1StyleSession) {
-                this.decodeJb1StyleSession()
-              } else if (isEncodedSession) {
-                await this.decodeEncodedUrlSession()
-              } else if (isJsonSession) {
-                await this.decodeJsonUrlSession()
-              } else if (isLocalSession) {
-                await this.fetchSessionStorageSession()
-              } else if (sessionQuery) {
-                // if there was a sessionQuery and we don't recognize it
-                throw new Error('unrecognized session format')
-              } else {
-                // placeholder for session loaded, but none found
-                self.setBlankSession(true)
-              }
-              if (self.bc1) {
-                self.bc1.onmessage = msg => {
-                  const ret =
-                    JSON.parse(sessionStorage.getItem('current') || '{}')
-                      .session || {}
-                  if (ret.id === msg.data) {
-                    if (self.bc2) {
-                      self.bc2.postMessage(ret)
-                    }
-                  }
-                }
-              }
-            }
-          } catch (e) {
-            console.error(e)
-            self.setSessionError(e)
-          }
-        }),
-      )
-    },
-  }))
-
 export function Loader({
   initialTimestamp = Date.now(),
 }: {
@@ -496,9 +114,9 @@ export function Loader({
   const [session] = useQueryParam('session', StringParam)
   const [password] = useQueryParam('password', StringParam)
   const [adminKey] = useQueryParam('adminKey', StringParam)
-  const [tracks] = useQueryParam('tracks', StringParam)
-  const [loc] = useQueryParam('loc', StringParam)
-  const [assembly] = useQueryParam('assembly', StringParam)
+  const [tracks, setTracks] = useQueryParam('tracks', StringParam)
+  const [loc, setLoc] = useQueryParam('loc', StringParam)
+  const [assembly, setAssembly] = useQueryParam('assembly', StringParam)
 
   const loader = SessionLoader.create({
     configPath: load(config),
@@ -510,6 +128,12 @@ export function Loader({
     tracks: load(tracks),
   })
 
+  useEffect(() => {
+    setLoc(undefined)
+    setTracks(undefined)
+    setAssembly(undefined)
+  }, [setAssembly, setLoc, setTracks])
+
   return (
     <Renderer
       loader={loader}
@@ -519,13 +143,59 @@ export function Loader({
   )
 }
 
+const SessionTriaged = observer(
+  ({ loader }: { loader: SessionLoaderModel }) => {
+    const handleClose = () => {
+      loader.setSessionTriaged(undefined)
+    }
+    return loader.sessionTriaged.origin === 'session' ? (
+      <Suspense fallback={<div />}>
+        <SessionWarningDialog
+          onConfirm={async () => {
+            const session = JSON.parse(
+              JSON.stringify(loader.sessionTriaged.snap),
+            )
+
+            // second param true says we passed user confirmation
+            await loader.setSessionSnapshot({ ...session, id: shortid() }, true)
+            handleClose()
+          }}
+          onCancel={() => {
+            loader.setBlankSession(true)
+            handleClose()
+          }}
+          reason={loader.sessionTriaged.reason}
+        />
+      </Suspense>
+    ) : (
+      <Suspense fallback={<div />}>
+        <ConfigWarningDialog
+          onConfirm={async () => {
+            const session = JSON.parse(
+              JSON.stringify(loader.sessionTriaged.snap),
+            )
+            await loader.fetchPlugins(session)
+            loader.setConfigSnapshot({ ...session, id: shortid() })
+            handleClose()
+          }}
+          onCancel={() => {
+            factoryReset()
+            handleClose()
+          }}
+          reason={loader.sessionTriaged.reason}
+        />
+      </Suspense>
+    )
+  },
+)
+
 const Renderer = observer(
   ({
     loader,
     initialTimestamp,
     initialSessionQuery,
   }: {
-    loader: Instance<typeof SessionLoader>
+    loader: SessionLoaderModel
     initialTimestamp: number
     initialSessionQuery: string | null | undefined
   }) => {
@@ -534,170 +204,152 @@ const Renderer = observer(
     const [pm, setPluginManager] = useState<PluginManager>()
     const [error, setError] = useState('')
     const [snapshotError, setSnapshotError] = useState('')
+
     // only create the pluginManager/rootModel "on mount"
     useEffect(() => {
-      try {
-        const {
-          runtimePlugins,
-          sessionPlugins,
-          adminKey,
-          configSnapshot,
-          sessionSnapshot,
-          sessionSpec,
-          configPath,
-        } = loader
+      ;(async () => {
+        try {
+          const {
+            runtimePlugins,
+            sessionPlugins,
+            adminKey,
+            configSnapshot,
+            sessionSnapshot,
+            sessionSpec,
+            configPath,
+          } = loader
 
-        if (ready) {
-          // it is ready when a session has loaded and when there is no config
-          // error Assuming that the query changes self.sessionError or
-          // self.sessionSnapshot or self.blankSession
-          const pluginManager = new PluginManager([
-            ...corePlugins.map(P => {
-              return {
+          if (ready) {
+            // it is ready when a session has loaded and when there is no
+            // config error Assuming that the query changes self.sessionError
+            // or self.sessionSnapshot or self.blankSession
+            const pluginManager = new PluginManager([
+              ...corePlugins.map(
+                P =>
+                  ({
+                    plugin: new P(),
+                    metadata: { isCore: true },
+                  } as PluginLoadRecord),
+              ),
+              ...runtimePlugins.map(({ plugin: P, definition }) => ({
                 plugin: new P(),
-                metadata: { isCore: true },
-              } as PluginLoadRecord
-            }),
-            ...runtimePlugins.map(({ plugin: P, definition }) => ({
-              plugin: new P(),
-              definition,
-              metadata: { url: definition.url },
-            })),
-            ...sessionPlugins.map(({ plugin: P, definition }) => ({
-              plugin: new P(),
-              definition,
-              metadata: { url: definition.url },
-            })),
-          ])
-          pluginManager.createPluggableElements()
+                definition,
+                metadata: { url: definition.url },
+              })),
+              ...sessionPlugins.map(({ plugin: P, definition }) => ({
+                plugin: new P(),
+                definition,
+                metadata: { url: definition.url },
+              })),
+            ])
+            pluginManager.createPluggableElements()
 
-          const JBrowseRootModel = JBrowseRootModelFactory(
-            pluginManager,
-            !!adminKey,
-          )
-
-          if (configSnapshot) {
-            const rootModel = JBrowseRootModel.create(
-              {
-                jbrowse: configSnapshot,
-                assemblyManager: {},
-                version: packagedef.version,
-                configPath,
-              },
-              { pluginManager },
+            const JBrowseRootModel = JBrowseRootModelFactory(
+              pluginManager,
+              !!adminKey,
             )
-            const jbrowse = rootModel.jbrowse
-            jbrowse.configuration.rpc.addDriverConfig('WebWorkerRpcDriver', {
-              type: 'WebWorkerRpcDriver',
-            })
-            if (!configSnapshot?.configuration?.rpc?.defaultDriver) {
-              jbrowse.configuration.rpc.defaultDriver.set('WebWorkerRpcDriver')
-            }
 
-            // in order: saves the previous autosave for recovery, tries to
-            // load the local session if session in query, or loads the default
-            // session
-            if (sessionError) {
-              rootModel.setDefaultSession()
-              // make typescript happy by checking for session after
-              // setDefaultSession, even though we know this exists now
-              if (rootModel.session) {
-                rootModel.session.notify(
-                  `Error loading session: ${sessionError.message}. If you
-                received this URL from another user, request that they send you
-                a session generated with the "Share" button instead of copying
-                and pasting their URL`,
-                )
-              }
-            } else if (sessionSnapshot && !shareWarningOpen) {
-              try {
-                rootModel.setSession(sessionSnapshot)
-              } catch (err) {
-                console.error(err)
-                rootModel.setDefaultSession()
-                const errorMessage = (err.message || '')
-                  .replace('[mobx-state-tree] ', '')
-                  .replace(/\(.+/, '')
-                rootModel.session?.notify(
-                  `Session could not be loaded. ${
-                    errorMessage.length > 1000
-                      ? `${errorMessage.slice(0, 1000)}...see more in console`
-                      : errorMessage
-                  }`,
-                )
-              }
-            } else if (sessionSpec) {
-              try {
-                const { views } = sessionSpec
-                rootModel.setSession({
-                  name: `New session ${new Date().toLocaleString()}`,
-                })
-                const { session } = rootModel
-                Promise.all(
-                  views.map(async (view: any) => {
-                    const { tracks, type, assembly, loc } = view
-                    await rootModel.assemblyManager.waitForAssembly(assembly)
-                    if (type === 'LGV' || type === 'LinearGenomeView') {
-                      const materialView = session?.addView(
-                        'LinearGenomeView',
-                        {},
-                      )
-                      materialView.setWidth(800)
-                      materialView.navToLocString(loc, assembly)
-                      tracks?.forEach((track: string) => {
-                        materialView.showTrack(track)
-                      })
-                    }
-                  }),
-                ).catch(e => {
-                  console.error(e)
-                  setError(e)
-                })
-              } catch (e) {
-                console.error(e)
-                rootModel.setDefaultSession()
-                rootModel.session?.notify(
-                  'Failed to load session spec from URL bar',
-                )
-              }
-            } else {
-              if (jbrowse.defaultSession?.views.length > 0) {
-                rootModel.setDefaultSession()
-              }
-            }
-
-            // send analytics
-            if (!readConfObject(jbrowse.configuration, 'disableAnalytics')) {
-              writeAWSAnalytics(
-                rootModel,
-                initialTimestamp,
-                initialSessionQuery,
+            if (configSnapshot) {
+              const rootModel = JBrowseRootModel.create(
+                {
+                  jbrowse: configSnapshot,
+                  assemblyManager: {},
+                  version: packagedef.version,
+                  configPath,
+                },
+                { pluginManager },
               )
-              writeGAAnalytics(rootModel, initialTimestamp)
+              const jbrowse = rootModel.jbrowse
+              jbrowse.configuration.rpc.addDriverConfig('WebWorkerRpcDriver', {
+                type: 'WebWorkerRpcDriver',
+              })
+              if (!configSnapshot?.configuration?.rpc?.defaultDriver) {
+                jbrowse.configuration.rpc.defaultDriver.set(
+                  'WebWorkerRpcDriver',
+                )
+              }
+
+              // in order: saves the previous autosave for recovery, tries to
+              // load the local session if session in query, or loads the default
+              // session
+              if (sessionError) {
+                rootModel.setDefaultSession()
+                // make typescript happy by checking for session after
+                // setDefaultSession, even though we know this exists now
+                if (rootModel.session) {
+                  rootModel.session.notify(
+                    `Error loading session: ${sessionError.message}. If you
+                    received this URL from another user, request that they send
+                    you a session generated with the "Share" button instead of
+                    copying and pasting their URL`,
+                  )
+                }
+              } else if (sessionSnapshot && !shareWarningOpen) {
+                try {
+                  rootModel.setSession(sessionSnapshot)
+                } catch (err) {
+                  console.error(err)
+                  rootModel.setDefaultSession()
+                  const errorMessage = (err.message || '')
+                    .replace('[mobx-state-tree] ', '')
+                    .replace(/\(.+/, '')
+                  rootModel.session?.notify(
+                    `Session could not be loaded. ${
+                      errorMessage.length > 1000
+                        ? `${errorMessage.slice(0, 1000)}...see more in console`
+                        : errorMessage
+                    }`,
+                  )
+                }
+              } else if (sessionSpec) {
+                try {
+                  await loadSessionSpec(sessionSpec, rootModel)
+                } catch (e) {
+                  console.error(e)
+                  rootModel.setDefaultSession()
+                  rootModel.session?.notify(
+                    'Failed to load session spec from URL bar',
+                  )
+                }
+              } else {
+                if (jbrowse.defaultSession?.views.length > 0) {
+                  rootModel.setDefaultSession()
+                }
+              }
+
+              // send analytics
+              if (!readConfObject(jbrowse.configuration, 'disableAnalytics')) {
+                writeAWSAnalytics(
+                  rootModel,
+                  initialTimestamp,
+                  initialSessionQuery,
+                )
+                writeGAAnalytics(rootModel, initialTimestamp)
+              }
+
+              pluginManager.setRootModel(rootModel)
+              pluginManager.configure()
+              setPluginManager(pluginManager)
+
+              // automatically clear password field once loaded
+              setPassword(undefined)
             }
-
-            pluginManager.setRootModel(rootModel)
-            pluginManager.configure()
-            setPluginManager(pluginManager)
-
-            // automatically clear password field once loaded
-            setPassword(undefined)
           }
+        } catch (e) {
+          const match = e.message.match(
+            /.*at path "(.*)" snapshot `(.*)` is not assignable/,
+          )
+          // best effort to make a better error message than the default
+          // mobx-state-tree
+          if (match) {
+            setError(`Failed to load element at ${match[1]}`)
+            setSnapshotError(match[2])
+          } else {
+            setError(e.message.slice(0, 10000))
+          }
+          console.error(e)
         }
-      } catch (e) {
-        const match = e.message.match(
-          /.*at path "(.*)" snapshot `(.*)` is not assignable/,
-        )
-        // best effort to make a better error message than the default
-        // mobx-state-tree
-        if (match) {
-          setError(`Failed to load element at ${match[1]}`)
-          setSnapshotError(match[2])
-        } else {
-          setError(e.message.slice(0, 10000))
-        }
-        console.error(e)
-      }
+      })()
     }, [
       loader,
       shareWarningOpen,
@@ -744,79 +396,21 @@ const Renderer = observer(
           ) : null}
         </div>
       )
-    }
-
-    if (loader.sessionTriaged) {
-      const handleClose = () => {
-        loader.setSessionTriaged(undefined)
-      }
-      return loader.sessionTriaged.origin === 'session' ? (
-        <Suspense fallback={<div />}>
-          <SessionWarningDialog
-            onConfirm={async () => {
-              const session = JSON.parse(
-                JSON.stringify(loader.sessionTriaged.snap),
-              )
-
-              // second param true says we passed user confirmation
-              await loader.setSessionSnapshot(
-                { ...session, id: shortid() },
-                true,
-              )
-              handleClose()
-            }}
-            onCancel={() => {
-              loader.setBlankSession(true)
-              handleClose()
-            }}
-            reason={loader.sessionTriaged.reason}
-          />
-        </Suspense>
+    } else if (loader.sessionTriaged) {
+      return <SessionTriaged loader={loader} />
+    } else if (pm) {
+      return pm.rootModel?.session ? (
+        <JBrowse pluginManager={pm} />
       ) : (
-        <Suspense fallback={<div />}>
-          <ConfigWarningDialog
-            onConfirm={async () => {
-              const session = JSON.parse(
-                JSON.stringify(loader.sessionTriaged.snap),
-              )
-              await loader.fetchPlugins(session)
-              loader.setConfigSnapshot({ ...session, id: shortid() })
-              handleClose()
-            }}
-            onCancel={() => {
-              factoryReset()
-              handleClose()
-            }}
-            reason={loader.sessionTriaged.reason}
-          />
+        <Suspense fallback={<div>Loading...</div>}>
+          <StartScreen root={pm.rootModel} onFactoryReset={factoryReset} />
         </Suspense>
       )
+    } else {
+      return <Loading />
     }
-    if (pm) {
-      if (!pm.rootModel?.session) {
-        return (
-          <Suspense fallback={<div>Loading...</div>}>
-            <StartScreen root={pm.rootModel} onFactoryReset={factoryReset} />
-          </Suspense>
-        )
-      }
-      return <JBrowse pluginManager={pm} />
-    }
-    return <Loading />
   },
 )
-
-function addRelativeUris(config: Config, configUri: URL) {
-  if (typeof config === 'object') {
-    for (const key of Object.keys(config)) {
-      if (typeof config[key] === 'object') {
-        addRelativeUris(config[key], configUri)
-      } else if (key === 'uri') {
-        config.baseUri = configUri.href
-      }
-    }
-  }
-}
 
 const PlatformSpecificFatalErrorDialog = (props: unknown) => {
   return (
@@ -838,5 +432,3 @@ const LoaderWrapper = ({ initialTimestamp }: { initialTimestamp: number }) => {
 }
 
 export default LoaderWrapper
-
-export type SessionLoader = Instance<typeof SessionLoader>
