@@ -127,7 +127,6 @@ describe('<AddTrackWidget />', () => {
   })
 
   it('fails to add a track', async () => {
-    const { widget } = session
     const { getByTestId, getAllByTestId, findByText } = render(
       <AddTrackWidget model={model} />,
     )
