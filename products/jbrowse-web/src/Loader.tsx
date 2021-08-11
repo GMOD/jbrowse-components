@@ -496,8 +496,14 @@ const ErrorMessage = ({
       <NoConfigMessage />
       {err && err.message === 'HTTP 404 fetching config.json' ? (
         <div className={classes.message} style={{ background: '#9f9' }}>
-          No config detected ({`${err}`}), you can proceed to create a config
-          with the JBrowse CLI
+          No config detected ({`${err}`})
+          <br />
+          <p>
+            If you want to learn how to complete your setup, visit our{' '}
+            <a href="https://jbrowse.org/jb2/docs/quickstart_web">
+              Quick start guide
+            </a>
+          </p>
         </div>
       ) : (
         <div className={classes.message} style={{ background: '#f88' }}>
