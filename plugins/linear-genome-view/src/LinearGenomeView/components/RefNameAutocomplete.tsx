@@ -112,7 +112,6 @@ function RefNameAutocomplete({
       try {
         let results: BaseResult[] = []
         if (debouncedSearch && debouncedSearch !== '' && assemblyName) {
-          setSearchOptions([])
           setLoaded(false)
           const searchResults = await fetchResults(
             model,
@@ -181,11 +180,7 @@ function RefNameAutocomplete({
           setSearchOptions([])
         }
       }}
-      options={
-        searchOptions.length === 0 && currentSearch === ''
-          ? options
-          : searchOptions
-      }
+      options={searchOptions.length === 0 ? options : searchOptions}
       getOptionDisabled={option => option?.group === 'limitOption'}
       filterOptions={(options, params) => {
         const searchQuery = params.inputValue.toLocaleLowerCase()
