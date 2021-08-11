@@ -33,7 +33,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
   return types
     .model('ReactCircularGenomeViewSession', {
       name: types.identifier,
-      margin: 0,
       view: pluginManager.getViewType('CircularView').stateModel,
       widgets: types.map(
         pluginManager.pluggableMstType('widget', 'stateModel'),

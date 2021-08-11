@@ -54,6 +54,9 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
       get jbrowse() {
         return self.config
       },
+      get pluginManager() {
+        return pluginManager
+      },
     }))
     .volatile(self => ({
       rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
