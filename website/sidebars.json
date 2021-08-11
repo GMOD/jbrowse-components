@@ -18,10 +18,9 @@
     "config_guide",
     "cli",
     "developer_guide",
-    "faq",
     {
       "type": "category",
-      "label": "JBrowse educational courses",
+      "label": "Developer tutorials",
       "items": [
         {
           "type": "category",
@@ -37,7 +36,14 @@
             "tutorials/embed_linear_genome_view/08_reacting",
             "tutorials/embed_linear_genome_view/09_conclusion"
           ]
-        },
+        }
+      ]
+    },
+    "faq",
+    {
+      "type": "category",
+      "label": "JBrowse educational courses",
+      "items": [
         {
           "type": "category",
           "label": "Archive",
