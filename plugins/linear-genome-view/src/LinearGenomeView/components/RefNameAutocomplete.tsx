@@ -169,6 +169,8 @@ function RefNameAutocomplete({
       style={style}
       value={coarseVisibleLocStrings || value || ''}
       open={open}
+      loading={loaded !== undefined ? !loaded : false}
+      loadingText="loading results"
       onOpen={() => {
         setOpen(true)
       }}
@@ -216,8 +218,7 @@ function RefNameAutocomplete({
           ...InputProps,
           endAdornment: (
             <>
-              {regions.length === 0 ||
-              (loaded !== undefined ? !loaded : false) ? (
+              {regions.length === 0 ? (
                 <CircularProgress color="inherit" size={20} />
               ) : (
                 <InputAdornment position="end" style={{ marginRight: 7 }}>
