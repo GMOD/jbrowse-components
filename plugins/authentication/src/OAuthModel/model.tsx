@@ -127,7 +127,6 @@ const stateModelFactory = (
       },
     }))
     .actions(self => {
-      let location: UriLocation | undefined = undefined
       let resolve: Function = () => {}
       let reject: Function = () => {}
       let openLocationPromise: Promise<string> | undefined = undefined
@@ -145,7 +144,7 @@ const stateModelFactory = (
             sessionStorage.setItem(`${self.internetAccountId}-token`, token)
           }
 
-          if (!location) {
+          if (!token) {
             reject()
           } else {
             resolve(token)
@@ -168,6 +167,7 @@ const stateModelFactory = (
                 reject = x
               })
               token = await openLocationPromise
+              console.log(token)
             }
           }
 
@@ -175,7 +175,6 @@ const stateModelFactory = (
             preAuthInfo.authInfo.token = token
           }
 
-          location = undefined
           openLocationPromise = undefined
           return token
         },
@@ -430,6 +429,8 @@ const stateModelFactory = (
         // return (function that has same signature as core fetch)
         // return a function taht interally calls globalCacheFetch
         // }
+
+        // called by the web worker, should have authinformation by here
         async getFetcher(
           url: RequestInfo,
           opts?: RequestInit,
@@ -446,22 +447,23 @@ const stateModelFactory = (
             if (!fileUrl) {
               fileUrl = await this.fetchFile(String(url), foundToken)
             }
-            const headers = {
+            const newHeaders = {
               ...opts?.headers,
               [self.authHeader]: `${self.tokenType} ${preAuthInfo.authInfo.token}`,
             }
             newOpts = {
               ...opts,
-              headers,
+              headers: newHeaders,
             }
           }
+
+          console.log(newOpts)
 
           return globalCacheFetch(fileUrl, newOpts)
         },
         // called on the web worker, returns a generic filehandle with a modified fetch
         // preauth info should be filled in by here
         openLocation(l: UriLocation) {
-          location = l
           preAuthInfo = l.internetAccountPreAuthorization || {}
           return new RemoteFile(String(l.uri), {
             fetch: this.getFetcher,

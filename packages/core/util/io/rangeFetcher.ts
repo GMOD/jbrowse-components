@@ -30,6 +30,7 @@ async function fetchBinaryRange(
   end: number,
   options: { headers?: HeadersInit; signal?: AbortSignal } = {},
 ) {
+  console.log(options.headers)
   const requestDate = new Date()
   const requestHeaders = { ...options.headers, range: `bytes=${start}-${end}` }
   const res = await getfetch(url, {
@@ -87,7 +88,6 @@ export async function globalCacheFetch(
   url: RequestInfo,
   opts?: RequestInit,
 ): Promise<Response> {
-  // console.log('inside', opts)
   // if it is a range request, route it through the global range cache
   const requestHeaders = opts && opts.headers
   let range
@@ -109,6 +109,8 @@ export async function globalCacheFetch(
       const [, start, end] = rangeParse
       const s = parseInt(start, 10)
       const e = parseInt(end, 10)
+      // current issue, the authorization header issue is not passed to fetch Binary range
+      // so it fails as fetchbinary range tries to access the resource without authorization
       const response = await (globalRangeCache.getRange(url, s, e - s + 1, {
         signal: opts && opts.signal,
       }) as ReturnType<typeof fetchBinaryRange>)
