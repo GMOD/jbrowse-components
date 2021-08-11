@@ -83,10 +83,11 @@ function RefNameAutocomplete({
   const [open, setOpen] = useState(false)
   const [, setError] = useState<Error>()
   const [currentSearch, setCurrentSearch] = useState('')
+  const [loaded, setLoaded] = useState<undefined | boolean>(undefined)
   const debouncedSearch = useDebounce(currentSearch, 300)
   const [searchOptions, setSearchOptions] = useState<Option[]>([])
   const { assemblyManager } = session
-  const { coarseVisibleLocStrings } = model
+  const { coarseVisibleLocStrings, hasDisplayedRegions } = model
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -111,6 +112,8 @@ function RefNameAutocomplete({
       try {
         let results: BaseResult[] = []
         if (debouncedSearch && debouncedSearch !== '' && assemblyName) {
+          setSearchOptions([])
+          setLoaded(false)
           const searchResults = await fetchResults(
             model,
             debouncedSearch,
@@ -118,13 +121,13 @@ function RefNameAutocomplete({
           )
           results = results.concat(searchResults)
         }
-        if (results.length > 0 && active) {
+        if (results.length >= 0 && active) {
           const adapterResults: Option[] = results.map(result => {
             return { result }
           })
-
           setSearchOptions(adapterResults)
         }
+        setLoaded(true)
       } catch (e) {
         console.error(e)
         if (active) {
@@ -167,13 +170,22 @@ function RefNameAutocomplete({
       style={style}
       value={coarseVisibleLocStrings || value || ''}
       open={open}
-      onOpen={() => setOpen(true)}
+      onOpen={() => {
+        setOpen(true)
+      }}
       onClose={() => {
         setOpen(false)
-        setCurrentSearch('')
-        setSearchOptions([])
+        setLoaded(undefined)
+        if (hasDisplayedRegions) {
+          setCurrentSearch('')
+          setSearchOptions([])
+        }
       }}
-      options={searchOptions.length === 0 ? options : searchOptions}
+      options={
+        searchOptions.length === 0 && currentSearch === ''
+          ? options
+          : searchOptions
+      }
       getOptionDisabled={option => option?.group === 'limitOption'}
       filterOptions={(options, params) => {
         const searchQuery = params.inputValue.toLocaleLowerCase()
@@ -209,7 +221,8 @@ function RefNameAutocomplete({
           ...InputProps,
           endAdornment: (
             <>
-              {regions.length === 0 && searchOptions.length === 0 ? (
+              {regions.length === 0 ||
+              (loaded !== undefined ? !loaded : false) ? (
                 <CircularProgress color="inherit" size={20} />
               ) : (
                 <InputAdornment position="end" style={{ marginRight: 7 }}>
