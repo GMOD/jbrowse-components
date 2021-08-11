@@ -67,8 +67,6 @@ export const UNSUPPORTED = 'UNSUPPORTED'
 
 let blobMap: { [key: string]: File } = {}
 
-let authenticationInfoMap: { [key: string]: string } = {}
-
 // get a specific blob
 export function getBlob(id: string) {
   return blobMap[id]
@@ -95,43 +93,6 @@ export function storeBlobLocation(location: PreFileLocation) {
     return { name: location?.blob.name, blobId, locationType: 'BlobLocation' }
   }
   return location
-}
-
-// get a specific access token
-export function getAuthenticationInfo(id: string) {
-  return authenticationInfoMap[id]
-}
-
-// // put tokens from session storage into a map
-// export function getTokensFromStorage() {
-//   const keyMap: Record<string, string> = {}
-//   Object.entries(sessionStorage).forEach(entry => {
-//     const [key, value] = entry
-//     if (key.includes('token')) {
-//       keyMap[key.split('-')[0]] = value
-//     }
-//   })
-//   return keyMap
-// }
-
-// // delete token from session storage and map
-// export function removeTokenFromStorage(
-//   id: string,
-//   keyMap: Record<string, string>,
-// ) {
-//   const expiredTokenKey = Object.keys(sessionStorage).find(key => {
-//     return key.split('-')[0] === id
-//   })
-//   if (expiredTokenKey) {
-//     sessionStorage.removeItem(expiredTokenKey)
-//     delete keyMap[id]
-//   }
-//   return keyMap
-// }
-
-// used in new contexts like webworkers, similar to blobmap
-export function setAuthenticationInfoMap(map: { [key: string]: string }) {
-  authenticationInfoMap = map
 }
 
 export function guessAdapter(

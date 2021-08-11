@@ -1,11 +1,7 @@
 import PluginManager from '../PluginManager'
 import PluggableElementBase from './PluggableElementBase'
-import {
-  setBlobMap,
-  getBlobMap,
-  setAuthenticationInfoMap,
-} from '../util/tracks'
-import { searchOrReplaceInArgs, searchForLocationObjects } from '../util'
+import { setBlobMap, getBlobMap } from '../util/tracks'
+import { searchForLocationObjects, replaceInArgs } from '../util'
 
 import {
   deserializeAbortSignal,
@@ -27,7 +23,6 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
   async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
     const blobMap = getBlobMap()
-    const authenticationInfoMap = {}
 
     // have a general function that searches the whole args object for locations (need to address to see if an object is a location)
     // add to all locations a constant that is called locationType string ex. locationType: 'localPathLocation', a types.literal
@@ -37,97 +32,50 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     // instead of replacing information in the args, filling in information in the location taht you are serializing
 
     // needs a way for internetaccount to take a preauth location and make a filehandle from it
-    console.log('here', args, searchForLocationObjects(args))
+    const modifiedArgs = JSON.parse(JSON.stringify(args))
 
-    const locationObjects = searchForLocationObjects(args)
+    const locationObjects = searchForLocationObjects(modifiedArgs)
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    locationObjects.forEach((obj: any) => {
-      if (obj.hasOwnProperty('internetAccountId')) {
-        // return this.serializeAuthArguments(args, blobMap, authenticationInfoMap)
-        // next: need to change serializeautharguments to fill in the preauth object
-        return this.serializeNewAuthArguments(
-          args,
-          blobMap,
-          authenticationInfoMap,
-          obj,
-        )
+    for (const i in locationObjects) {
+      if (locationObjects[i].hasOwnProperty('internetAccountId')) {
+        // check rootmodel.handlelocations
+        await this.serializeNewAuthArguments(modifiedArgs, locationObjects[i])
       }
-      return
-    })
-    // if (
-    //   args.hasOwnProperty('adapterConfig') &&
-    //   searchOrReplaceInArgs(args, 'internetAccountId')
-    // ) {
-    //   return this.serializeAuthArguments(args, blobMap, authenticationInfoMap)
-    // }
-    return { ...args, blobMap, authenticationInfoMap }
+    }
+    return { ...modifiedArgs, blobMap }
   }
 
   async serializeNewAuthArguments(
     args: {},
-    blobMap: { [key: string]: File },
-    authenticationInfoMap: Record<string, string>,
     locationObj: { [key: string]: string },
   ) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rootModel: any = this.pluginManager.rootModel
-    authenticationInfoMap = rootModel?.getAuthenticationInfoMap()
 
+    if (locationObj.internetAccountPreAuthorization) {
+      throw new Error('PreAuthorization should not exist yet')
+    }
     const modifiedPreAuth = await rootModel?.findAppropriateInternetAccount(
       locationObj,
-      authenticationInfoMap,
       args,
     )
 
-    if (typeof modifiedPreAuth === 'object') {
-      return { ...args, blobMap, authenticationInfoMap }
+    const newLocationObj = {
+      ...locationObj,
+      internetAccountPreAuthorization: modifiedPreAuth,
     }
-  }
 
-  async serializeAuthArguments(
-    args: {},
-    blobMap: { [key: string]: File },
-    authenticationInfoMap: Record<string, string>,
-  ) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rootModel: any = this.pluginManager.rootModel
-    authenticationInfoMap = rootModel?.getAuthenticationInfoMap()
-    const adapterConfig = searchOrReplaceInArgs(args, 'adapterConfig')
-
-    const fileLocation =
-      adapterConfig[
-        Object.keys(adapterConfig).find(key => {
-          return key.toLowerCase().includes('location')
-        }) as string
-      ]
-
-    const modifiedArgs = await rootModel?.findAppropriateInternetAccount(
-      fileLocation,
-      authenticationInfoMap,
-      args,
-    )
-
-    if (typeof modifiedArgs === 'object') {
-      authenticationInfoMap = rootModel?.getAuthenticationInfoMap()
-      return { ...modifiedArgs, blobMap, authenticationInfoMap }
-    } else {
-      return { ...args, blobMap, authenticationInfoMap }
-    }
+    replaceInArgs(args, locationObj, newLocationObj)
   }
 
   async deserializeArguments<
     SERIALIZED extends {
       signal?: RemoteAbortSignal
       blobMap?: Record<string, File>
-      authenticationInfoMap?: Record<string, string>
     }
   >(serializedArgs: SERIALIZED, _rpcDriverClassName: string) {
     if (serializedArgs.blobMap) {
       setBlobMap(serializedArgs.blobMap)
-    }
-    if (serializedArgs.authenticationInfoMap) {
-      setAuthenticationInfoMap(serializedArgs.authenticationInfoMap)
     }
     const { signal } = serializedArgs
     if (signal && isRemoteAbortSignal(signal)) {

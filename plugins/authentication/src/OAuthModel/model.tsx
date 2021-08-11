@@ -3,12 +3,10 @@ import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { OAuthInternetAccountConfigModel } from './configSchema'
 import crypto from 'crypto'
-import { Instance, types, getRoot } from 'mobx-state-tree'
-import { searchOrReplaceInArgs } from '@jbrowse/core/util'
+import { Instance, types } from 'mobx-state-tree'
 import { globalCacheFetch } from '@jbrowse/core/util/io/rangeFetcher'
 import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
-import deepEqual from 'fast-deep-equal'
-import { RemoteFile, GenericFilehandle } from 'generic-filehandle'
+import { RemoteFile } from 'generic-filehandle'
 
 // Notes go here:
 
@@ -133,6 +131,7 @@ const stateModelFactory = (
       let resolve: Function = () => {}
       let reject: Function = () => {}
       let openLocationPromise: Promise<string> | undefined = undefined
+      let preAuthInfo: { [key: string]: any } = {}
       return {
         async setAccessTokenInfo(
           token: string,
@@ -158,13 +157,37 @@ const stateModelFactory = (
             resolve(fileUrl)
           }
 
-          if (location && location.internetAccountPreAuthorization) {
-            location.internetAccountPreAuthorization.authInfo.token = token
-          }
+          preAuthInfo.authInfo.token = token
 
           this.deleteMessageChannel()
           resolve = () => {}
           reject = () => {}
+        },
+        async checkToken(url: string) {
+          const token =
+            preAuthInfo?.authInfo?.token ||
+            sessionStorage.getItem(`${self.internetAccountId}-token`)
+          let fileUrl
+          if (!token) {
+            if (!openLocationPromise) {
+              openLocationPromise = new Promise(async (r, x) => {
+                this.addMessageChannel()
+                self.useEndpointForAuthorization()
+                resolve = r
+                reject = x
+              })
+              fileUrl = await openLocationPromise
+            }
+          } else {
+            if (!preAuthInfo.authInfo.token) {
+              preAuthInfo.authInfo.token = token
+            }
+            fileUrl = await this.fetchFile(url, token)
+          }
+
+          location = undefined
+          openLocationPromise = undefined
+          return fileUrl
         },
         // MODELING THE NEW CONCEPT
         // getFetcher() {
@@ -178,39 +201,19 @@ const stateModelFactory = (
           url: RequestInfo,
           opts?: RequestInit,
         ): Promise<Response> {
-          console.log('this', url, opts)
-
+          const fileUrl = await this.checkToken(String(url))
           let newOpts = opts
-          let fileUrl
-          const token =
-            location?.internetAccountPreAuthorization?.authInfo.token
-          if (!token) {
-            if (!openLocationPromise) {
-              openLocationPromise = new Promise(async (r, x) => {
-                this.addMessageChannel()
-                self.useEndpointForAuthorization()
-                resolve = r
-                reject = x
-              })
-              fileUrl = await openLocationPromise
-            }
-          } else {
-            fileUrl = await this.fetchFile(String(url), token)
-          }
 
-          openLocationPromise = undefined
-
-          if (location && location.internetAccountPreAuthorization && fileUrl) {
-            const authInfo = location.internetAccountPreAuthorization.authInfo
+          if (fileUrl) {
             const headers = {
-              [authInfo.authHeader]: `${authInfo.tokenType} ${authInfo.token}`,
+              ...opts?.headers,
+              [self.authHeader]: `${self.tokenType} ${preAuthInfo.authInfo.token}`,
             }
             newOpts = {
               ...opts,
               headers,
             }
           }
-          location = undefined
 
           return globalCacheFetch(fileUrl, newOpts)
         },
@@ -222,28 +225,12 @@ const stateModelFactory = (
         // }
         // code:
         // async openLocation(location) { return new RemoteFile(location.uri, { fetch: this.getFetcher() })}
-        async openLocation(l: UriLocation) {
-          // console.log('here', l)
-          // let headers
-          // if (l.internetAccountPreAuthorization) {
-          //   const authInfo = l.internetAccountPreAuthorization.authInfo
-          //   headers = {
-          //     [authInfo.authHeaders]: `${authInfo.tokenType}`,
-          //   }
-          // }
+        openLocation(l: UriLocation) {
           location = l
-          return new RemoteFile(l.uri, { fetch: this.getFetcher })
-          // location = l
-
-          // if (!openLocationPromise) {
-          //   openLocationPromise = new Promise(async (r, x) => {
-          //     this.addMessageChannel()
-          //     self.useEndpointForAuthorization()
-          //     resolve = r
-          //     reject = x
-          //   })
-          // }
-          // return openLocationPromise
+          preAuthInfo = l.internetAccountPreAuthorization || {}
+          return new RemoteFile(String(l.uri), {
+            fetch: this.getFetcher,
+          })
         },
         setAuthorizationCode(code: string) {
           self.authorizationCode = code
@@ -324,6 +311,8 @@ const stateModelFactory = (
               true,
             )
             return accessToken
+          } else {
+            throw new Error('Could not find valid token to use')
           }
         },
         async fetchFile(location: string, existingToken?: string) {
@@ -331,7 +320,8 @@ const stateModelFactory = (
           if (!location || !accessToken) {
             return
           }
-          switch (self.origin) {
+          const findOrigin = preAuthInfo.authInfo.origin || self.origin
+          switch (findOrigin) {
             case 'dropbox': {
               const response = await fetch(
                 'https://api.dropboxapi.com/2/sharing/get_shared_link_metadata',
@@ -445,44 +435,52 @@ const stateModelFactory = (
         // will always call openLocation, the logic to open the flow or not will be in getFetcher
         // if you are in the worker, and no preauth information available throw new error
         // it returns the serialized location information to serializedAuthArguments
-        async handleRpcMethodCall(
+
+        // rename to getPreAuthorizationInformation
+        async getPreAuthorizationInformation(
           location: UriLocation,
-          authenticationInfoMap: Record<string, string>,
           args: {},
           retried = false,
         ) {
+          if (!preAuthInfo.authInfo) {
+            this.resetAuthInfo()
+          }
+
           // if in worker && !location.preauthInto throw new error
           try {
-            await this.openLocation(location as UriLocation)
+            await this.checkToken(location.uri)
           } catch (error) {
-            const refreshedMap = await this.handleError(
-              authenticationInfoMap,
-              retried,
-            )
-            if (!retried && !deepEqual(refreshedMap, authenticationInfoMap)) {
-              await this.handleRpcMethodCall(location, refreshedMap, args, true)
+            await this.handleError(retried)
+            if (!retried) {
+              await this.getPreAuthorizationInformation(location, args, true)
             } else {
               throw new Error(error)
             }
           }
 
-          return
+          return preAuthInfo
         },
-        async handleError(
-          authenticationInfoMap: Record<string, string>,
-          retried = false,
-        ) {
-          const rootModel = getRoot(self)
-          rootModel.removeFromAuthenticationMap(
-            self.internetAccountId,
-            authenticationInfoMap,
-          )
-
+        async handleError(retried = false) {
+          this.resetAuthInfo()
+          if (sessionStorage) {
+            sessionStorage.removeItem(`${self.internetAccountId}-token`)
+          }
           if (!retried) {
             await this.exchangeRefreshForAccessToken()
-            authenticationInfoMap = rootModel.getAuthenticationInfoMap()
+          } else {
+            throw new Error('Invalid token')
           }
-          return authenticationInfoMap
+        },
+
+        resetAuthInfo() {
+          preAuthInfo = {
+            internetAccountType: self.internetAccountType,
+            authInfo: {
+              authHeader: self.authHeader,
+              tokenType: self.tokenType,
+              origin: self.origin,
+            },
+          }
         },
       }
     })

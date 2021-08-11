@@ -87,6 +87,7 @@ export async function globalCacheFetch(
   url: RequestInfo,
   opts?: RequestInit,
 ): Promise<Response> {
+  // console.log('inside', opts)
   // if it is a range request, route it through the global range cache
   const requestHeaders = opts && opts.headers
   let range
@@ -126,8 +127,8 @@ export function openUrl(url: string, headers?: HeadersInit): GenericFilehandle {
   return new RemoteFile(String(url), {
     fetch: globalCacheFetch,
     // uncomment out above, delete below
-    overrides: {
-      headers: headers || {},
-    },
+    // overrides: {
+    //   headers: headers || {},
+    // },
   })
 }

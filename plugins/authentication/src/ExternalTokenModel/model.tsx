@@ -2,7 +2,6 @@ import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
-import { searchOrReplaceInArgs } from '@jbrowse/core/util'
 import { ExternalTokenInternetAccountConfigModel } from './configSchema'
 import { Instance, types, getRoot, getParent } from 'mobx-state-tree'
 import React, { useState } from 'react'
@@ -147,7 +146,7 @@ const stateModelFactory = (
           return openLocationPromise
         },
         async handleRpcMethodCall(
-          location: FileLocation,
+          location: UriLocation,
           authenticationInfoMap: Record<string, string>,
           args: {},
         ) {
@@ -157,7 +156,7 @@ const stateModelFactory = (
           }
 
           try {
-            const response = await fetch(searchOrReplaceInArgs(args, 'uri'), {
+            const response = await fetch(location.uri, {
               method: 'HEAD',
               headers: {
                 Authorization: `${self.tokenType} ${token}`,
@@ -194,10 +193,6 @@ const stateModelFactory = (
           errorText: string,
         ) {
           const rootModel = getParent(self, 2)
-          rootModel.removeFromAuthenticationMap(
-            self.internetAccountId,
-            authenticationInfoMap,
-          )
           return new Error(errorText)
         },
       }

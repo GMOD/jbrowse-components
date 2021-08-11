@@ -7,8 +7,10 @@ import {
   UriLocation,
   BlobLocation,
 } from '../types'
-import { getBlob, getAuthenticationInfo } from '../tracks'
+import { getBlob } from '../tracks'
 import { isElectron } from '../../util'
+import PluginManager from '../../PluginManager'
+import AuthenticationPlugin from '@jbrowse/plugin-authentication'
 
 export const openUrl = (arg: string, headers?: HeadersInit) => {
   return rangeFetcherOpenUrl(arg, headers)
@@ -30,6 +32,8 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
 
 // needs to take the rootmodel in as an optional parameter, use if there is no preauth information
 // calls that arent in data-adapters would need the rootmodel param added, main thread stuff
+
+// need plugin manger for openLocation now
 export function openLocation(
   location: FileLocation,
   rootModel?: any,
@@ -55,9 +59,32 @@ export function openLocation(
         // if (!location.internetAccountPreAuthorization) {
         //   rootModel.findAppropriateInternetAccount(location)
         // }
-        console.log(location)
-        // current progress: need to somehow call the authentication's open location
-        return location.internetAccountPreAuthorization?.authInfo.openLocation
+        if (!location.internetAccountPreAuthorization) {
+        } else {
+          // I have preauth Information here,
+          // make a new instance of model
+          // use pluginmanager to get pluggable type
+          // then get statemodel from pluggable type
+          // statemodel should have a way to populate itself from preauthorization information
+          // use that to ccreate a new instance of model, and call that new instance's openLocation
+
+          const pluginManager = new PluginManager([new AuthenticationPlugin()])
+          pluginManager.createPluggableElements()
+          const internetAccountType = pluginManager.getInternetAccountType(
+            location.internetAccountPreAuthorization.internetAccountType,
+          )
+
+          const internetAccount = internetAccountType.stateModel.create({
+            type: location.internetAccountPreAuthorization.internetAccountType,
+          })
+
+          // internetAccount.openLocation(location).then((response: any) => {
+          //   console.log('here', response)
+          //   return response
+          // })
+
+          return internetAccount.openLocation(location)
+        }
       }
       return openUrl(
         location.baseUri

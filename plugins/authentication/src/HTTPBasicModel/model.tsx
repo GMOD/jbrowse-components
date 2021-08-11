@@ -2,7 +2,6 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
-import { searchOrReplaceInArgs } from '@jbrowse/core/util'
 import { getRoot, getParent } from 'mobx-state-tree'
 import { HTTPBasicInternetAccountConfigModel } from './configSchema'
 import { Instance, types } from 'mobx-state-tree'
@@ -88,7 +87,7 @@ const stateModelFactory = (
           return openLocationPromise
         },
         async handleRpcMethodCall(
-          location: FileLocation,
+          location: UriLocation,
           authenticationInfoMap: Record<string, string>,
           args: {},
         ) {
@@ -99,7 +98,7 @@ const stateModelFactory = (
           }
 
           // test
-          const response = await fetch(searchOrReplaceInArgs(args, 'uri'), {
+          const response = await fetch(location.uri, {
             method: 'HEAD',
             headers: {
               Authorization: `${self.tokenType} ${token}`,
@@ -114,10 +113,6 @@ const stateModelFactory = (
         },
         async handleError(authenticationInfoMap: Record<string, string>) {
           const rootModel = getParent(self, 2)
-          rootModel.removeFromAuthenticationMap(
-            self.internetAccountId,
-            authenticationInfoMap,
-          )
           return authenticationInfoMap
         },
       }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { toByteArray, fromByteArray } from 'base64-js'
 import {
   getParent,
@@ -24,6 +25,7 @@ import {
   AssemblyManager,
 } from './types'
 import { isAbortException, checkAbortSignal } from './aborting'
+import deepEqual from 'fast-deep-equal'
 
 export * from './types'
 export * from './aborting'
@@ -1066,49 +1068,11 @@ export function objectHash(obj: Record<string, any>) {
   return `${hashCode(JSON.stringify(obj))}`
 }
 
-// search through arg object for a specific key, optionally replace key with string passed
-// can move this to util/index.ts
-export function searchOrReplaceInArgs(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  obj: { [key: string]: any },
-  key: string,
-  replace?: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): any {
-  for (const property in obj) {
-    if (obj.hasOwnProperty(property)) {
-      if (property === key) {
-        if (replace) {
-          obj[key] = replace
-        }
-        return obj[key]
-      } else if (typeof obj[property] === 'object') {
-        if (Array.isArray(obj[property])) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          obj[property].forEach((p: any) => {
-            return searchOrReplaceInArgs(p, key, replace)
-          })
-        } else {
-          return searchOrReplaceInArgs(obj[property], key, replace)
-        }
-      }
-    }
-  }
-  return
-}
-
-// search through arg object for a specific key, optionally replace key with string passed
-// can move this to util/index.ts
-export function searchForLocationObjects(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  obj: { [key: string]: any },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): any {
+export function searchForLocationObjects(obj: { [key: string]: any }): any {
   const locationObjects: { [key: string]: any }[] = []
   for (const property in obj) {
-    if (obj.hasOwnProperty('locationType')) {
-      locationObjects.push(obj)
-      return locationObjects
+    if (property === 'locationType') {
+      locationObjects.push(obj) // pushing 4 times, check if the subobject has that property, something like if obj[property] === 'locationType
     } else if (typeof obj[property] === 'object') {
       if (Array.isArray(obj[property])) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1121,4 +1085,28 @@ export function searchForLocationObjects(
     }
   }
   return locationObjects
+}
+
+// search through arg object for a specific key, optionally search a specific value
+// can move this to util/index.ts
+export function replaceInArgs(
+  obj: { [key: string]: any },
+  original: { [key: string]: any },
+  replace: { [key: string]: any },
+): any {
+  for (const property in obj) {
+    if (deepEqual(obj[property], original)) {
+      obj[property] = replace
+      return obj[property]
+    } else if (typeof obj[property] === 'object') {
+      if (Array.isArray(obj[property])) {
+        obj[property].forEach((p: any) => {
+          return replaceInArgs(p, original, replace)
+        })
+      } else {
+        return replaceInArgs(obj[property], original, replace)
+      }
+    }
+  }
+  return
 }

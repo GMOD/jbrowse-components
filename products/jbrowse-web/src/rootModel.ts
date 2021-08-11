@@ -26,8 +26,8 @@ import assemblyManagerFactory, {
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManagerF from '@jbrowse/core/TextSearch/TextSearchManager'
-import { AbstractSessionModel, searchOrReplaceInArgs } from '@jbrowse/core/util'
-import { FileLocation } from '@jbrowse/core/util/types'
+import { AbstractSessionModel } from '@jbrowse/core/util'
+import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
 
 // material ui
 import { MenuItem } from '@jbrowse/core/ui'
@@ -366,15 +366,11 @@ export default function RootModel(
       setError(error?: Error) {
         self.error = error
       },
-      async findAppropriateInternetAccount(
-        location: FileLocation,
-        authenticationInfoMap: Record<string, string>,
-        args: {},
-      ) {
+      async findAppropriateInternetAccount(location: UriLocation, args: {}) {
         let accountToUse = undefined
 
         // find the existing account selected from menu
-        const selectedId = searchOrReplaceInArgs(args, 'internetAccountId')
+        const selectedId = location.internetAccountId
         if (selectedId) {
           const selectedAccount = self.internetAccounts.find(account => {
             return account.internetAccountId === selectedId
@@ -393,35 +389,8 @@ export default function RootModel(
         }
         return accountToUse
           ? // @ts-ignore
-            accountToUse.handleRpcMethodCall(
-              location,
-              authenticationInfoMap,
-              args,
-            )
+            accountToUse.getPreAuthorizationInformation(location, args)
           : null
-      },
-      // put tokens from session storage into a map
-      getAuthenticationInfoMap() {
-        const keyMap: Record<string, string> = {}
-        Object.entries(sessionStorage).forEach(entry => {
-          const [key, value] = entry
-          if (key.includes('token')) {
-            keyMap[key.split('-')[0]] = value
-          }
-        })
-        return keyMap
-      },
-
-      // delete token from session storage and map
-      removeFromAuthenticationMap(id: string, keyMap: Record<string, string>) {
-        const expiredTokenKey = Object.keys(sessionStorage).find(key => {
-          return key.split('-')[0] === id
-        })
-        if (expiredTokenKey) {
-          sessionStorage.removeItem(expiredTokenKey)
-          delete keyMap[id]
-        }
-        return keyMap
       },
     }))
     .volatile(self => ({
