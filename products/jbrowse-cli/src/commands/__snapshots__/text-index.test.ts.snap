@@ -31,7 +31,7 @@ exports[`text-index tracks Indexes a local gz gff3 file 2`] = `
 "
 `;
 
-exports[`text-index tracks Indexes a local gz gff3 file 3`] = `33164`;
+exports[`text-index tracks Indexes a local gz gff3 file 3`] = `33007`;
 
 exports[`text-index tracks Indexes a local gz gff3 file 4`] = `
 "     0000000000
@@ -45,13 +45,13 @@ exports[`text-index tracks Indexes a remote and a local file 2`] = `
 "
 `;
 
-exports[`text-index tracks Indexes a remote and a local file 3`] = `328214`;
+exports[`text-index tracks Indexes a remote and a local file 3`] = `328057`;
 
 exports[`text-index tracks Indexes a remote and a local file 4`] = `
 "     0000000000
-agt2200000261A2
-au9.g00000267AE
-b101.000004C508
+agt220000026157
+au9.g0000026711
+b101.000004C46B
 "
 `;
 
@@ -62,7 +62,7 @@ exports[`text-index tracks Indexes a remote gz gff3 file 2`] = `
 "
 `;
 
-exports[`text-index tracks Indexes a remote gz gff3 file 3`] = `36804`;
+exports[`text-index tracks Indexes a remote gz gff3 file 3`] = `36631`;
 
 exports[`text-index tracks Indexes a remote gz gff3 file 4`] = `
 "     0000000000
@@ -111,7 +111,7 @@ rna-apple3 WyJjdGdBOjE3NDAwLi4yMzAwMCIsIm5vQXR0cmlidXRlcyIsIkFwcGxlMyIsInJuYS1Bc
 "
 `;
 
-exports[`text-index tracks Indexes a track using only the attributes tag 3`] = `15232`;
+exports[`text-index tracks Indexes a track using only the attributes tag 3`] = `15161`;
 
 exports[`text-index tracks Indexes a track using only the attributes tag 4`] = `
 "     0000000000
@@ -125,7 +125,7 @@ exports[`text-index tracks Indexes a track with no attributes in the config 2`] 
 "
 `;
 
-exports[`text-index tracks Indexes a track with no attributes in the config 3`] = `30346`;
+exports[`text-index tracks Indexes a track with no attributes in the config 3`] = `30197`;
 
 exports[`text-index tracks Indexes a track with no attributes in the config 4`] = `
 "     0000000000
@@ -139,13 +139,13 @@ exports[`text-index tracks Indexes multiple local gff3 files 2`] = `
 "
 `;
 
-exports[`text-index tracks Indexes multiple local gff3 files 3`] = `306902`;
+exports[`text-index tracks Indexes multiple local gff3 files 3`] = `306745`;
 
 exports[`text-index tracks Indexes multiple local gff3 files 4`] = `
 "     0000000000
-agt220000023802
-au9.g0000023E0E
-b101.00000471C8
+agt2200000237B7
+au9.g0000023D71
+b101.000004712B
 "
 `;
 
@@ -156,12 +156,12 @@ exports[`text-index tracks Indexes multiple remote gff3 file 2`] = `
 "
 `;
 
-exports[`text-index tracks Indexes multiple remote gff3 file 3`] = `331854`;
+exports[`text-index tracks Indexes multiple remote gff3 file 3`] = `331681`;
 
 exports[`text-index tracks Indexes multiple remote gff3 file 4`] = `
 "     0000000000
-agt22000002688E
-au9.g0000026F4A
-b101.000004CCA4
+agt22000002683B
+au9.g0000026E9D
+b101.000004CBF7
 "
 `;

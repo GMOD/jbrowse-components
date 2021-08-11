@@ -41,7 +41,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       textSearchIndexingFeatureTypesToExclude: {
         type: 'stringArray',
         description: 'list of feature types to exclude in text search index',
-        defaultValue: ['CDS', 'exon'],
+        defaultValue: ['CDS', 'exon', 'transcript'],
       },
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       textSearchAdapter: pluginManager.pluggableConfigSchemaType(

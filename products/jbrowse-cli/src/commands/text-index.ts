@@ -53,6 +53,14 @@ export default class TextIndex extends JBrowseCommand {
       default: false,
       description: 'Hide the progress bars',
     }),
+    include: flags.string({
+      description: 'Removes gene type from list of excluded types',
+      default: '',
+    }),
+    exclude: flags.string({
+      description: 'Adds gene type to list of excluded types',
+      default: '',
+    }),
   }
 
   // Called when running the terminal command. Parses the given flags and
@@ -60,7 +68,17 @@ export default class TextIndex extends JBrowseCommand {
   // file parser to be indexed
   async run() {
     const {
-      flags: { out, target, tracks, assemblies, attributes, quiet, force },
+      flags: {
+        out,
+        target,
+        tracks,
+        assemblies,
+        attributes,
+        quiet,
+        force,
+        include,
+        exclude,
+      },
     } = this.parse(TextIndex)
     const outFlag = target || out || '.'
     const confFile = fs.lstatSync(outFlag).isDirectory()
@@ -95,7 +113,15 @@ export default class TextIndex extends JBrowseCommand {
             `Note: ${asm} has already been indexed with this configuration, use --force to overwrite this assembly. Skipping for now`,
           )
         }
-        await this.indexDriver(config, attributesToIndex, dir, asm, quiet)
+        await this.indexDriver(
+          config,
+          attributesToIndex,
+          dir,
+          asm,
+          quiet,
+          include?.split(','),
+          exclude?.split(','),
+        )
 
         // Checks through list of configs and checks the hash values
         // if it already exists it updates the entry and increments the
@@ -135,6 +161,7 @@ export default class TextIndex extends JBrowseCommand {
 
       for (const config of configs) {
         const { textSearchIndexingAttributes, trackId } = config
+
         if (attributes && attributes.length > 0) {
           metaAttrs.push(attributes.split(','))
         } else if (textSearchIndexingAttributes) {
@@ -162,9 +189,11 @@ export default class TextIndex extends JBrowseCommand {
     out: string,
     assemblyName: string,
     quiet: boolean,
+    include: string[],
+    exclude: string[],
   ) {
     const readable = Readable.from(
-      this.indexFile(configs, attributes, out, quiet),
+      this.indexFile(configs, attributes, out, quiet, include, exclude),
     )
     return this.runIxIxx(readable, out, assemblyName)
   }
@@ -174,12 +203,33 @@ export default class TextIndex extends JBrowseCommand {
     attributes: string[],
     outLocation: string,
     quiet: boolean,
+    include: string[],
+    exclude: string[],
   ) {
     for (const config of configs) {
       const {
         adapter: { type },
         textSearchIndexingAttributes,
+        indexingFeatureTypesToExclude,
       } = config
+
+      const types: Array<string> = indexingFeatureTypesToExclude || [
+        'CDS',
+        'exon',
+        'transcript',
+      ]
+
+      for (const inc of include) {
+        const index = types.indexOf(inc)
+        if (index > -1) {
+          types.splice(index, 1)
+        }
+      }
+      for (const exc of exclude) {
+        if (exc.length > 0) {
+          types.push(exc)
+        }
+      }
 
       let attributesToIndex
       if (attributes && attributes.length > 0) {
@@ -194,7 +244,13 @@ export default class TextIndex extends JBrowseCommand {
         attributesToIndex = ['Name', 'ID']
       }
       if (type === 'Gff3TabixAdapter') {
-        yield* this.indexGff3(config, attributesToIndex, outLocation, quiet)
+        yield* this.indexGff3(
+          config,
+          attributesToIndex,
+          outLocation,
+          types,
+          quiet,
+        )
       }
     }
   }
@@ -203,6 +259,7 @@ export default class TextIndex extends JBrowseCommand {
     config: Track,
     attributes: string[],
     outLocation: string,
+    types: string[],
     quiet: boolean,
   ) {
     const {
@@ -257,28 +314,30 @@ export default class TextIndex extends JBrowseCommand {
         break
       }
 
-      const [seq_id, , , start, end, , , , col9] = line.split('\t')
+      const [seq_id, , type, start, end, , , , col9] = line.split('\t')
       const locStr = `${seq_id}:${start}..${end}`
 
-      const col9attrs = col9.split(';')
-      const name = col9attrs
-        .find(f => f.startsWith('Name'))
-        ?.split('=')[1]
-        .trim()
-      const id = col9attrs
-        .find(f => f.startsWith('ID'))
-        ?.split('=')[1]
-        .trim()
-      const attrs = attributes.map(attr =>
-        col9attrs
-          .find(f => f.startsWith(attr))
+      if (!types.includes(type)) {
+        const col9attrs = col9.split(';')
+        const name = col9attrs
+          .find(f => f.startsWith('Name'))
           ?.split('=')[1]
-          .trim(),
-      )
-      if (name || id) {
-        const record = JSON.stringify([locStr, trackId, name, id])
-        const buff = Buffer.from(record).toString('base64')
-        yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
+          .trim()
+        const id = col9attrs
+          .find(f => f.startsWith('ID'))
+          ?.split('=')[1]
+          .trim()
+        const attrs = attributes.map(attr =>
+          col9attrs
+            .find(f => f.startsWith(attr))
+            ?.split('=')[1]
+            .trim(),
+        )
+        if (name || id) {
+          const record = JSON.stringify([locStr, trackId, name, id])
+          const buff = Buffer.from(record).toString('base64')
+          yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
+        }
       }
     }
 
@@ -287,7 +346,7 @@ export default class TextIndex extends JBrowseCommand {
 
   // Method for handing off the parsing of a gff3 file URL.
   // Calls the proper parser depending on if it is gzipped or not.
-  // Returns a @gmod/gff stream.
+  // Returns a gff stream.
   async createRemoteStream(urlIn: string) {
     const newUrl = new URL(urlIn)
     const fetcher = newUrl.protocol === 'https:' ? https : http
