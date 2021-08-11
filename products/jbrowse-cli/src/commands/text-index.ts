@@ -210,10 +210,10 @@ export default class TextIndex extends JBrowseCommand {
       const {
         adapter: { type },
         textSearchIndexingAttributes,
-        indexingFeatureTypesToExclude,
+        textSearchIndexingFeatureTypesToExclude,
       } = config
 
-      const types: Array<string> = indexingFeatureTypesToExclude || [
+      const types: Array<string> = textSearchIndexingFeatureTypesToExclude || [
         'CDS',
         'exon',
         'transcript',
