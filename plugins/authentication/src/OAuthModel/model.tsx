@@ -148,26 +148,17 @@ const stateModelFactory = (
           if (!location) {
             reject()
           } else {
-            let fileUrl
-            try {
-              fileUrl = await this.fetchFile((location as UriLocation).uri)
-            } catch (error) {
-              reject(new Error(error))
-            }
-            resolve(fileUrl)
+            resolve(token)
           }
-
-          preAuthInfo.authInfo.token = token
 
           this.deleteMessageChannel()
           resolve = () => {}
           reject = () => {}
         },
-        async checkToken(url: string) {
-          const token =
+        async checkToken() {
+          let token =
             preAuthInfo?.authInfo?.token ||
             sessionStorage.getItem(`${self.internetAccountId}-token`)
-          let fileUrl
           if (!token) {
             if (!openLocationPromise) {
               openLocationPromise = new Promise(async (r, x) => {
@@ -176,61 +167,17 @@ const stateModelFactory = (
                 resolve = r
                 reject = x
               })
-              fileUrl = await openLocationPromise
+              token = await openLocationPromise
             }
-          } else {
-            if (!preAuthInfo.authInfo.token) {
-              preAuthInfo.authInfo.token = token
-            }
-            fileUrl = await this.fetchFile(url, token)
+          }
+
+          if (!preAuthInfo.authInfo.token) {
+            preAuthInfo.authInfo.token = token
           }
 
           location = undefined
           openLocationPromise = undefined
-          return fileUrl
-        },
-        // MODELING THE NEW CONCEPT
-        // getFetcher() {
-        // return a curried version of fetch
-        // will have most of the logic from the original openLocation
-        // modified to do oauth flows or corresponding internet account stuff
-        // return (function that has same signature as core fetch)
-        // return a function taht interally calls globalCacheFetch
-        // }
-        async getFetcher(
-          url: RequestInfo,
-          opts?: RequestInit,
-        ): Promise<Response> {
-          const fileUrl = await this.checkToken(String(url))
-          let newOpts = opts
-
-          if (fileUrl) {
-            const headers = {
-              ...opts?.headers,
-              [self.authHeader]: `${self.tokenType} ${preAuthInfo.authInfo.token}`,
-            }
-            newOpts = {
-              ...opts,
-              headers,
-            }
-          }
-
-          return globalCacheFetch(fileUrl, newOpts)
-        },
-        // openLocation(l: FileLocation){
-        // returns a genericFilehandle RemoteFile
-        // return RemoteFile() // one of the options is passing it a fetcher
-        // can look at the genericfilehandle read me
-        // https://github.com/GMOD/generic-filehandle
-        // }
-        // code:
-        // async openLocation(location) { return new RemoteFile(location.uri, { fetch: this.getFetcher() })}
-        openLocation(l: UriLocation) {
-          location = l
-          preAuthInfo = l.internetAccountPreAuthorization || {}
-          return new RemoteFile(String(l.uri), {
-            fetch: this.getFetcher,
-          })
+          return token
         },
         setAuthorizationCode(code: string) {
           self.authorizationCode = code
@@ -430,13 +377,14 @@ const stateModelFactory = (
             }
           }
         },
-        // handleRpcMethodCall()
-        // token would be looked for in the PreAuthLocation information instead of the map
-        // will always call openLocation, the logic to open the flow or not will be in getFetcher
-        // if you are in the worker, and no preauth information available throw new error
-        // it returns the serialized location information to serializedAuthArguments
 
-        // rename to getPreAuthorizationInformation
+        // if you are in the worker, and no preauth information available throw new error
+
+        // called from RpcMethodType, fills in the internetAccountPreAuthorization
+        // should be undefined coming in, and should have origin, tokenType, authHeader
+        // token and fileUrl (the actual url to open) when finished
+
+        // on error it tries again once if there is a refresh token available
         async getPreAuthorizationInformation(
           location: UriLocation,
           args: {},
@@ -447,8 +395,9 @@ const stateModelFactory = (
           }
 
           // if in worker && !location.preauthInto throw new error
+          let accessToken
           try {
-            await this.checkToken(location.uri)
+            accessToken = await this.checkToken()
           } catch (error) {
             await this.handleError(retried)
             if (!retried) {
@@ -458,7 +407,65 @@ const stateModelFactory = (
             }
           }
 
+          if (accessToken) {
+            let fileUrl
+            try {
+              fileUrl = await this.fetchFile(
+                (location as UriLocation).uri,
+                accessToken,
+              )
+              preAuthInfo.authInfo.fileUrl = fileUrl
+            } catch (error) {
+              reject(new Error(error))
+            }
+          }
+
           return preAuthInfo
+        },
+        // MODELING THE NEW CONCEPT
+        // getFetcher() {
+        // return a curried version of fetch
+        // will have most of the logic from the original openLocation
+        // modified to do oauth flows or corresponding internet account stuff
+        // return (function that has same signature as core fetch)
+        // return a function taht interally calls globalCacheFetch
+        // }
+        async getFetcher(
+          url: RequestInfo,
+          opts?: RequestInit,
+        ): Promise<Response> {
+          if (!preAuthInfo || !preAuthInfo.authInfo) {
+            throw new Error('Auth Information Missing')
+          }
+
+          let fileUrl = preAuthInfo.authInfo.fileUrl
+          const foundToken = await this.checkToken()
+          let newOpts = opts
+
+          if (foundToken) {
+            if (!fileUrl) {
+              fileUrl = await this.fetchFile(String(url), foundToken)
+            }
+            const headers = {
+              ...opts?.headers,
+              [self.authHeader]: `${self.tokenType} ${preAuthInfo.authInfo.token}`,
+            }
+            newOpts = {
+              ...opts,
+              headers,
+            }
+          }
+
+          return globalCacheFetch(fileUrl, newOpts)
+        },
+        // called on the web worker, returns a generic filehandle with a modified fetch
+        // preauth info should be filled in by here
+        openLocation(l: UriLocation) {
+          location = l
+          preAuthInfo = l.internetAccountPreAuthorization || {}
+          return new RemoteFile(String(l.uri), {
+            fetch: this.getFetcher,
+          })
         },
         async handleError(retried = false) {
           this.resetAuthInfo()
