@@ -19,6 +19,27 @@ way we can. Our contact information can be found
 
 Happy hacking!
 
+## Production note
+
+This tutorial relies on the development builds of React and the JBrowse Linear
+Genome View. You should use the production builds in your final product. You
+would do this by replacing the `src` inside the `<script>` tag in your
+"index.html". Here are the development builds and their production equivalents:
+
+- React
+  - Development: https://unpkg.com/react@16/umd/react.development.js
+  - Production: https://unpkg.com/react@16.14.0/umd/react.production.min.js
+- ReactDOM
+  - Development:
+    https://unpkg.com/react-dom@16.14.0/umd/react-dom.development.js
+  - Production:
+    https://unpkg.com/react-dom@16.14.0/umd/react-dom.production.min.js
+- JBrowseReactLinearGenomeView
+  - Development:
+    https://unpkg.com/@jbrowse/react-linear-genome-view/dist/react-linear-genome-view.umd.development.js
+  - Production:
+    https://unpkg.com/@jbrowse/react-linear-genome-view/dist/react-linear-genome-view.umd.production.min.js
+
 ## Reference
 
 For reference, here are the final versions of the files we created in this
@@ -40,7 +61,7 @@ tutorial:
       crossorigin
     ></script>
     <script
-      src="//s3.amazonaws.com/jbrowse.org/jb2_releases/react-linear-genome-view.umd.development.js"
+      src="//unpkg.com/@jbrowse/react-linear-genome-view/dist/react-linear-genome-view.umd.development.js"
       crossorigin
     ></script>
   </head>

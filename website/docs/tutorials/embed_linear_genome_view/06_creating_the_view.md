@@ -19,7 +19,7 @@ We're now ready to create the state of the view in "index.html".
       crossorigin
     ></script>
     <script
-      src="//s3.amazonaws.com/jbrowse.org/jb2_releases/react-linear-genome-view.umd.development.js"
+      src="//unpkg.com/@jbrowse/react-linear-genome-view/dist/react-linear-genome-view.umd.development.js"
       crossorigin
     ></script>
   </head>
@@ -61,7 +61,7 @@ page. This is done using React's `createElement` and `render`.
       crossorigin
     ></script>
     <script
-      src="//s3.amazonaws.com/jbrowse.org/jb2_releases/react-linear-genome-view.umd.development.js"
+      src="//unpkg.com/@jbrowse/react-linear-genome-view/dist/react-linear-genome-view.umd.development.js"
       crossorigin
     ></script>
   </head>
@@ -123,7 +123,7 @@ Modify "index.html" so that it looks like the following:
       crossorigin
     ></script>
     <script
-      src="//s3.amazonaws.com/jbrowse.org/jb2_releases/react-linear-genome-view.umd.development.js"
+      src="//unpkg.com/@jbrowse/react-linear-genome-view/dist/react-linear-genome-view.umd.development.js"
       crossorigin
     ></script>
   </head>

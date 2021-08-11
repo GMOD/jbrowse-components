@@ -153,7 +153,7 @@ Then add an import to your "index.html" adding this data:
       crossorigin
     ></script>
     <script
-      src="//s3.amazonaws.com/jbrowse.org/jb2_releases/react-linear-genome-view.umd.development.js"
+      src="//unpkg.com/@jbrowse/react-linear-genome-view/dist/react-linear-genome-view.umd.development.js"
       crossorigin
     ></script>
   </head>
