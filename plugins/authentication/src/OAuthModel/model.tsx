@@ -4,25 +4,12 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { OAuthInternetAccountConfigModel } from './configSchema'
 import crypto from 'crypto'
 import { Instance, types } from 'mobx-state-tree'
-import { globalCacheFetch } from '@jbrowse/core/util/io/rangeFetcher'
 import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
 import { RemoteFile } from 'generic-filehandle'
 
-// Notes go here:
-
-// if chooser is first,
-// put a menu item to open dropbox or open google drive
-// similar to igv where the menu item action is that it opens the chooser
-// and the user selects a file, where that file will be put into the track selector
-// or maybe in the 'Add track' flow, add an option for add from dropbox/google drive
-// or maybe its just part of the file selector flow (such as import form or sv inspector import form)
-
-// make a new core plugin called authentication
-// put OAuthModel file there, plugin would have implementation of Oauth, HTTPBasic, etc
-
 interface Account {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
+  [key: string]: string | string[]
 }
 
 interface OAuthData {
@@ -69,6 +56,16 @@ const stateModelFactory = (
         return validDomains.some((domain: string) =>
           (location as UriLocation)?.uri.includes(domain),
         )
+      },
+      get generateAuthInfo() {
+        return {
+          internetAccountType: this.internetAccountType,
+          authInfo: {
+            authHeader: self.authHeader,
+            tokenType: this.tokenType,
+            origin: self.origin,
+          },
+        }
       },
     }))
     .actions(self => ({
@@ -130,7 +127,8 @@ const stateModelFactory = (
       let resolve: Function = () => {}
       let reject: Function = () => {}
       let openLocationPromise: Promise<string> | undefined = undefined
-      let preAuthInfo: { [key: string]: any } = {}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let preAuthInfo: any = {}
       return {
         async setAccessTokenInfo(
           token: string,
@@ -150,9 +148,9 @@ const stateModelFactory = (
             resolve(token)
           }
 
-          this.deleteMessageChannel()
           resolve = () => {}
           reject = () => {}
+          this.deleteMessageChannel()
         },
         async checkToken() {
           let token =
@@ -167,14 +165,13 @@ const stateModelFactory = (
                 reject = x
               })
               token = await openLocationPromise
-              console.log(token)
             }
           }
 
           if (!preAuthInfo.authInfo.token) {
             preAuthInfo.authInfo.token = token
           }
-
+          resolve()
           openLocationPromise = undefined
           return token
         },
@@ -258,6 +255,7 @@ const stateModelFactory = (
             )
             return accessToken
           } else {
+            reject()
             throw new Error('Could not find valid token to use')
           }
         },
@@ -283,10 +281,7 @@ const stateModelFactory = (
                 },
               )
               if (!response.ok) {
-                const errorText = await response.text()
-                throw new Error(
-                  `Network response failure: ${response.status} (${errorText})`,
-                )
+                return this.handleError(response)
               }
               const metadata = await response.json()
               if (metadata) {
@@ -302,10 +297,7 @@ const stateModelFactory = (
                   },
                 )
                 if (!fileResponse.ok) {
-                  const errorText = await fileResponse.text()
-                  throw new Error(
-                    `Network response failure: ${fileResponse.status} (${errorText})`,
-                  )
+                  return this.handleError(response)
                 }
                 const file = await fileResponse.json()
                 return file.link
@@ -326,10 +318,7 @@ const stateModelFactory = (
               )
 
               if (!response.ok) {
-                const errorText = await response.text()
-                throw new Error(
-                  `Network response failure: ${response.status} (${errorText})`,
-                )
+                return this.handleError(response, false)
               }
               const fileMetadata = await response.json()
               return fileMetadata.downloadUrl
@@ -386,11 +375,10 @@ const stateModelFactory = (
         // on error it tries again once if there is a refresh token available
         async getPreAuthorizationInformation(
           location: UriLocation,
-          args: {},
           retried = false,
         ) {
           if (!preAuthInfo.authInfo) {
-            this.resetAuthInfo()
+            preAuthInfo = self.generateAuthInfo
           }
 
           // if in worker && !location.preauthInto throw new error
@@ -398,12 +386,10 @@ const stateModelFactory = (
           try {
             accessToken = await this.checkToken()
           } catch (error) {
-            await this.handleError(retried)
-            if (!retried) {
-              await this.getPreAuthorizationInformation(location, args, true)
-            } else {
-              throw new Error(error)
-            }
+            await this.handleError(undefined, retried)
+            !retried
+              ? await this.getPreAuthorizationInformation(location, true)
+              : reject(new Error(error))
           }
 
           if (accessToken) {
@@ -415,7 +401,7 @@ const stateModelFactory = (
               )
               preAuthInfo.authInfo.fileUrl = fileUrl
             } catch (error) {
-              reject(new Error(error))
+              // ignore
             }
           }
 
@@ -445,7 +431,9 @@ const stateModelFactory = (
 
           if (foundToken) {
             if (!fileUrl) {
-              fileUrl = await this.fetchFile(String(url), foundToken)
+              try {
+                fileUrl = await this.fetchFile(String(url), foundToken)
+              } catch (e) {}
             }
             const newHeaders = {
               ...opts?.headers,
@@ -457,38 +445,36 @@ const stateModelFactory = (
             }
           }
 
-          console.log(newOpts)
-
-          return globalCacheFetch(fileUrl, newOpts)
+          return fetch(fileUrl, {
+            method: 'GET',
+            credentials: 'same-origin',
+            ...newOpts,
+          })
         },
         // called on the web worker, returns a generic filehandle with a modified fetch
         // preauth info should be filled in by here
         openLocation(l: UriLocation) {
-          preAuthInfo = l.internetAccountPreAuthorization || {}
+          preAuthInfo =
+            l.internetAccountPreAuthorization || self.generateAuthInfo
           return new RemoteFile(String(l.uri), {
             fetch: this.getFetcher,
           })
         },
-        async handleError(retried = false) {
-          this.resetAuthInfo()
+        async handleError(response?: Response, tryRefreshToken = true) {
+          preAuthInfo = self.generateAuthInfo // if it reaches here the token was bad
           if (sessionStorage) {
             sessionStorage.removeItem(`${self.internetAccountId}-token`)
           }
-          if (!retried) {
+          if (tryRefreshToken) {
             await this.exchangeRefreshForAccessToken()
           } else {
-            throw new Error('Invalid token')
-          }
-        },
-
-        resetAuthInfo() {
-          preAuthInfo = {
-            internetAccountType: self.internetAccountType,
-            authInfo: {
-              authHeader: self.authHeader,
-              tokenType: self.tokenType,
-              origin: self.origin,
-            },
+            throw new Error(
+              response
+                ? `Network response failure: ${
+                    response.status
+                  } (${await response.text()})`
+                : `Could not get file`,
+            )
           }
         },
       }

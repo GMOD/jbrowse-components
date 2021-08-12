@@ -57,7 +57,6 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     }
     const modifiedPreAuth = await rootModel?.findAppropriateInternetAccount(
       locationObj,
-      args,
     )
 
     const newLocationObj = {

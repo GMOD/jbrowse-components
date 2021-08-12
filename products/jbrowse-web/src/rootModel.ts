@@ -27,7 +27,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManagerF from '@jbrowse/core/TextSearch/TextSearchManager'
 import { AbstractSessionModel } from '@jbrowse/core/util'
-import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
+import { UriLocation } from '@jbrowse/core/util/types'
 
 // material ui
 import { MenuItem } from '@jbrowse/core/ui'
@@ -366,7 +366,7 @@ export default function RootModel(
       setError(error?: Error) {
         self.error = error
       },
-      async findAppropriateInternetAccount(location: UriLocation, args: {}) {
+      async findAppropriateInternetAccount(location: UriLocation) {
         let accountToUse = undefined
 
         // find the existing account selected from menu
@@ -389,7 +389,7 @@ export default function RootModel(
         }
         return accountToUse
           ? // @ts-ignore
-            accountToUse.getPreAuthorizationInformation(location, args)
+            accountToUse.getPreAuthorizationInformation(location)
           : null
       },
     }))
