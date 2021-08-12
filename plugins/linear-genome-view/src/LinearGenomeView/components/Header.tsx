@@ -132,7 +132,6 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
         searchScope,
         rankSearchResults,
       )) || []
-    //  TODO: test trackID filter
     const filteredResults = results.filter(function (elem, index, self) {
       const value1 = `${elem.getLabel()}-${elem.getLocation()}-${
         elem.getTrackId() || ''

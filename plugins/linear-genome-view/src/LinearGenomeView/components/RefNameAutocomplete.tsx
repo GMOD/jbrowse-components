@@ -58,12 +58,23 @@ async function fetchResults(
     searchScope,
     rankSearchResults,
   )
-
+  // removes duplicate search results
   return searchResults?.filter(
     (elem, index, self) =>
       index === self.findIndex(t => t.label === elem.label),
   )
 }
+
+function filterOptions(options: Option[], searchQuery: string) {
+  return options.filter(option => {
+    const { result } = option
+    return (
+      result.getLabel().toLocaleLowerCase().includes(searchQuery) ||
+      result.matchedObject
+    )
+  })
+}
+
 function RefNameAutocomplete({
   model,
   onSelect,
@@ -80,13 +91,13 @@ function RefNameAutocomplete({
   TextFieldProps?: TFP
 }) {
   const session = getSession(model)
+  const { assemblyManager } = session
   const [open, setOpen] = useState(false)
   const [, setError] = useState<Error>()
-  const [currentSearch, setCurrentSearch] = useState('')
   const [loaded, setLoaded] = useState<undefined | boolean>(undefined)
-  const debouncedSearch = useDebounce(currentSearch, 300)
+  const [currentSearch, setCurrentSearch] = useState('')
   const [searchOptions, setSearchOptions] = useState<Option[]>([])
-  const { assemblyManager } = session
+  const debouncedSearch = useDebounce(currentSearch, 300)
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
 
@@ -159,18 +170,18 @@ function RefNameAutocomplete({
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
       data-testid="autocomplete"
-      freeSolo
+      clearOnBlur
       disableListWrap
       disableClearable
-      includeInputInList
-      clearOnBlur
-      selectOnFocus
       disabled={!assemblyName}
+      freeSolo
+      includeInputInList
+      selectOnFocus
       style={style}
       value={coarseVisibleLocStrings || value || ''}
-      open={open}
       loading={loaded !== undefined ? !loaded : false}
       loadingText="loading results"
+      open={open}
       onOpen={() => {
         setOpen(true)
       }}
@@ -182,19 +193,12 @@ function RefNameAutocomplete({
           setSearchOptions([])
         }
       }}
+      onChange={(_, selectedOption) => onChange(selectedOption)}
       options={searchOptions.length === 0 ? options : searchOptions}
       getOptionDisabled={option => option?.group === 'limitOption'}
       filterOptions={(options, params) => {
         const searchQuery = params.inputValue.toLocaleLowerCase()
-        const filtered = options.filter(
-          option =>
-            (typeof option === 'string'
-              ? (option as string).toLocaleLowerCase().includes(searchQuery)
-              : option.result
-                  .getLabel()
-                  .toLocaleLowerCase()
-                  .includes(searchQuery)) || option.result.matchedObject,
-        )
+        const filtered = filterOptions(options, searchQuery)
         return filtered.length >= 100
           ? filtered.slice(0, 100).concat([
               {
@@ -210,7 +214,6 @@ function RefNameAutocomplete({
           : filtered
       }}
       ListboxProps={{ style: { maxHeight: 250 } }}
-      onChange={(_, selectedOption) => onChange(selectedOption)}
       renderInput={params => {
         const { helperText, InputProps = {} } = TextFieldProps
         const TextFieldInputProps = {
@@ -245,15 +248,13 @@ function RefNameAutocomplete({
       }}
       renderOption={option => {
         const { result } = option
-        const rendering = result.getLabel()
-        // if renderingComponent is provided render that
         const component = result.getRenderingComponent()
         if (component) {
           if (React.isValidElement(component)) {
             return component
           }
         }
-        return <Typography noWrap>{rendering}</Typography>
+        return <Typography noWrap>{result.getLabel()}</Typography>
       }}
       getOptionLabel={option => {
         // needed for filtering options and value
