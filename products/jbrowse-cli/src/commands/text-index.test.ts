@@ -225,19 +225,25 @@ describe('text-index tracks', () => {
     )
 })
 
-//source https://stackoverflow.com/a/64255382/2129219
+// source https://stackoverflow.com/a/64255382/2129219
 async function copyDir(src: string, dest: string) {
   await fs.promises.mkdir(dest, { recursive: true })
-  let entries = await fs.promises.readdir(src, { withFileTypes: true })
+  const entries = await fs.promises.readdir(src, { withFileTypes: true })
 
-  for (let entry of entries) {
-    let srcPath = path.join(src, entry.name)
-    let destPath = path.join(dest, entry.name)
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name)
+    const destPath = path.join(dest, entry.name)
 
     entry.isDirectory()
       ? await copyDir(srcPath, destPath)
       : await fs.promises.copyFile(srcPath, destPath)
   }
+}
+function readText(d: string, s: string) {
+  return fs.readFileSync(path.join(d, 'trix', s), 'utf8')
+}
+function readJSON(d: string, s: string) {
+  return JSON.parse(readText(d, s))
 }
 
 describe('check that volvox data is properly indexed, re-run text-index on volvox config if fails', () => {
@@ -245,25 +251,24 @@ describe('check that volvox data is properly indexed, re-run text-index on volvo
   let preVolvoxIxx = ''
   let preVolvoxMeta = ''
   let preVolvox2Meta = ''
-  const read = (d: string, s: string) =>
-    fs.readFileSync(path.join(d, 'trix', s), 'utf8')
+
   setup
     .do(async ctx => {
       await copyDir(
         path.join(__dirname, '..', '..', '..', '..', 'test_data', 'volvox'),
         ctx.dir,
       )
-      preVolvoxIx = read(ctx.dir, 'volvox.ix')
-      preVolvoxIxx = read(ctx.dir, 'volvox.ixx')
-      preVolvoxMeta = read(ctx.dir, 'volvox_meta.json')
-      preVolvox2Meta = read(ctx.dir, 'volvox2_meta.json')
+      preVolvoxIx = readText(ctx.dir, 'volvox.ix')
+      preVolvoxIxx = readText(ctx.dir, 'volvox.ixx')
+      preVolvoxMeta = readJSON(ctx.dir, 'volvox_meta.json')
+      preVolvox2Meta = readJSON(ctx.dir, 'volvox2_meta.json')
     })
     .command(['text-index', '--target=config.json', '--force'])
     .it('Indexes entire volvox config', ctx => {
-      const postVolvoxIx = read(ctx.dir, 'volvox.ix')
-      const postVolvoxIxx = read(ctx.dir, 'volvox.ixx')
-      const postVolvoxMeta = read(ctx.dir, 'volvox_meta.json')
-      const postVolvox2Meta = read(ctx.dir, 'volvox2_meta.json')
+      const postVolvoxIx = readText(ctx.dir, 'volvox.ix')
+      const postVolvoxIxx = readText(ctx.dir, 'volvox.ixx')
+      const postVolvoxMeta = readJSON(ctx.dir, 'volvox_meta.json')
+      const postVolvox2Meta = readJSON(ctx.dir, 'volvox2_meta.json')
       expect(postVolvoxIx).toEqual(preVolvoxIx)
       expect(postVolvoxIxx).toEqual(preVolvoxIxx)
       expect(postVolvoxMeta).toEqual(preVolvoxMeta)
