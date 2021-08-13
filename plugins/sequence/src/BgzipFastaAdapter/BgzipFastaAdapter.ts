@@ -1,13 +1,12 @@
 import { BgzipIndexedFasta } from '@gmod/indexedfasta'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
-import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import IndexedFasta from '../IndexedFastaAdapter/IndexedFastaAdapter'
-import MyConfigSchema from './configSchema'
 
 export default class extends IndexedFasta {
-  public constructor(config: Instance<typeof MyConfigSchema>) {
+  public constructor(config: AnyConfigurationModel) {
     super(config)
     const fastaLocation = readConfObject(config, 'fastaLocation')
     const faiLocation = readConfObject(config, 'faiLocation')

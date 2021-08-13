@@ -35,7 +35,7 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@gmod/indexedfasta": "^2.0.0",
+    "@gmod/indexedfasta": "^2.0.1",
     "@gmod/twobit": "^1.1.10",
     "abortable-promise-cache": "^1.3.0",
     "clsx": "^1.1.0",
