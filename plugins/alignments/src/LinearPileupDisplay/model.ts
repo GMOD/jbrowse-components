@@ -4,10 +4,7 @@ import {
   readConfObject,
   getConf,
 } from '@jbrowse/core/configuration'
-import {
-  getParentRenderProps,
-  getRpcSessionId,
-} from '@jbrowse/core/util/tracks'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   getSession,
   isSessionModelWithWidgets,
@@ -418,20 +415,23 @@ const stateModelFactory = (
 
         renderProps() {
           const view = getContainingView(self) as LGV
+          const {
+            ready,
+            colorTagMap,
+            modificationTagMap,
+            sortedBy,
+            colorBy,
+            rpcDriverName,
+          } = self
           return {
             ...superRenderProps(),
-            ...getParentRenderProps(self),
-            notReady:
-              !self.ready ||
-              (self.sortedBy && self.currBpPerPx !== view.bpPerPx),
-            rpcDriverName: self.rpcDriverName,
+            notReady: !ready || (sortedBy && self.currBpPerPx !== view.bpPerPx),
+            rpcDriverName,
             displayModel: self,
-            sortedBy: self.sortedBy,
-            colorBy: self.colorBy,
-            colorTagMap: JSON.parse(JSON.stringify(self.colorTagMap)),
-            modificationTagMap: JSON.parse(
-              JSON.stringify(self.modificationTagMap),
-            ),
+            sortedBy,
+            colorBy,
+            colorTagMap: JSON.parse(JSON.stringify(colorTagMap)),
+            modificationTagMap: JSON.parse(JSON.stringify(modificationTagMap)),
             filters: this.filters,
             showSoftClip: self.showSoftClipping,
             config: self.rendererConfig,
