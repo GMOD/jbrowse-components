@@ -21,35 +21,33 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         height: 180,
       }),
     )
-    .views(self => ({
-      renderProps() {
-        const {
-          renderProps: superRenderProps,
-          showForward,
-          showReverse,
-          showTranslation,
-        } = self
-        return {
-          ...superRenderProps(),
-          rpcDriverName: self.rpcDriverName,
-          config: self.configuration.renderer,
-          showForward,
-          showReverse,
-          showTranslation,
-        }
-      },
-      regionCannotBeRendered(/* region */) {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        if (view && view.bpPerPx >= 1) {
-          return 'Zoom in to see sequence'
-        }
-        return undefined
-      },
+    .views(self => {
+      const { renderProps: superRenderProps } = self
+      return {
+        renderProps() {
+          const { showForward, showReverse, showTranslation } = self
+          return {
+            ...superRenderProps(),
+            rpcDriverName: self.rpcDriverName,
+            config: self.configuration.renderer,
+            showForward,
+            showReverse,
+            showTranslation,
+          }
+        },
+        regionCannotBeRendered(/* region */) {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          if (view && view.bpPerPx >= 1) {
+            return 'Zoom in to see sequence'
+          }
+          return undefined
+        },
 
-      get rendererTypeName() {
-        return self.configuration.renderer.type
-      },
-    }))
+        get rendererTypeName() {
+          return self.configuration.renderer.type
+        },
+      }
+    })
     .actions(self => ({
       toggleShowForward() {
         self.showForward = !self.showForward
