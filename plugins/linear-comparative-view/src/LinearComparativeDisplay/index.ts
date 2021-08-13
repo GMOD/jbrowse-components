@@ -135,14 +135,10 @@ function renderBlockData(self: LinearComparativeDisplay) {
   const { rpcManager } = getSession(self) as any
   const display = self
 
-  const {
-    renderProps,
-    rendererType,
-  }: { renderProps: any; rendererType: any } = display
+  const { rendererType }: { rendererType: any } = display
 
-  // Alternative to readConfObject(config) is below
-  // used because renderProps is something under our control.
-  // Compare to serverSideRenderedBlock
+  // Alternative to readConfObject(config) is below used because renderProps is
+  // something under our control.  Compare to serverSideRenderedBlock
   readConfObject(self.configuration)
 
   const { adapterConfig } = self
@@ -154,10 +150,8 @@ function renderBlockData(self: LinearComparativeDisplay) {
     rendererType,
     rpcManager,
     renderProps: {
-      ...renderProps,
+      ...display.renderProps(),
       view: getSnapshot(parent),
-    },
-    renderArgs: {
       adapterConfig,
       rendererType: rendererType.name,
       sessionId,
@@ -171,14 +165,11 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
     throw new Error('cannot render with no props')
   }
 
-  const { rendererType, rpcManager, renderProps, renderArgs } = props
+  const { rendererType, rpcManager, renderProps } = props
 
   const { reactElement, ...data } = await rendererType.renderInClient(
     rpcManager,
-    {
-      ...renderArgs,
-      ...renderProps,
-    },
+    renderProps,
   )
 
   return { reactElement, data, renderingComponent: rendererType.ReactComponent }
