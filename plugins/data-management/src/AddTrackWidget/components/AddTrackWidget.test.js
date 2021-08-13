@@ -99,10 +99,18 @@ describe('<AddTrackWidget />', () => {
     expect(container.firstChild).toMatchSnapshot()
   })
 
-  xit('adds a track', async () => {
-    const { getByTestId, findByText } = render(<AddTrackWidget model={model} />)
+  it('adds a track', async () => {
+    const { getByTestId, getAllByTestId, findByText, findAllByText } = render(
+      <AddTrackWidget model={model} />,
+    )
     expect(session.sessionTracks.length).toBe(1)
+    fireEvent.change(getAllByTestId('urlInput')[0], {
+      target: { value: 'test.txt' },
+    })
     fireEvent.click(getByTestId('addTrackNextButton'))
+    fireEvent.mouseDown(getByTestId('adapterTypeSelect'))
+    const bamAdapter = await findByText('BamAdapter')
+    fireEvent.click(bamAdapter)
     fireEvent.change(getByTestId('trackNameInput'), {
       target: { value: 'Test track name' },
     })
@@ -112,8 +120,24 @@ describe('<AddTrackWidget />', () => {
     fireEvent.click(featureTrack)
     const assemblyNameSelect = getByTestId('assemblyNameSelect')
     fireEvent.mouseDown(assemblyNameSelect)
-    const volMyt1 = await findByText('volMyt1')
-    fireEvent.click(volMyt1)
+    const volMyt1 = await findAllByText('volMyt1')
+    fireEvent.click(volMyt1[1])
+    fireEvent.click(getByTestId('addTrackNextButton'))
+    expect(session.sessionTracks.length).toBe(2)
+  })
+
+  it('fails to add a track', async () => {
+    const { getByTestId, getAllByTestId, findByText } = render(
+      <AddTrackWidget model={model} />,
+    )
+    expect(session.sessionTracks.length).toBe(2)
+    fireEvent.change(getAllByTestId('urlInput')[0], {
+      target: { value: 'test.txt' },
+    })
+    fireEvent.click(getByTestId('addTrackNextButton'))
+    fireEvent.mouseDown(getByTestId('adapterTypeSelect'))
+    const chrom = await findByText('ChromSizesAdapter')
+    fireEvent.click(chrom)
     fireEvent.click(getByTestId('addTrackNextButton'))
     expect(session.sessionTracks.length).toBe(2)
   })
