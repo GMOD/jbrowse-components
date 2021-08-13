@@ -296,28 +296,23 @@ const stateModelFactory = (
         },
       }
     })
+    .views(self => ({
+      get ticks() {
+        const { scaleType, domain, height } = self
+        const range = [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET]
+        const scale = getScale({
+          scaleType,
+          domain,
+          range,
+          inverted: getConf(self, 'inverted'),
+        })
+        const ticks = height < 50 ? 2 : 4
+        return axisPropsFromTickScale(scale, ticks)
+      },
+    }))
     .views(self => {
-      const {
-        trackMenuItems: superTrackMenuItems,
-        renderProps: superRenderProps,
-      } = self
+      const { renderProps: superRenderProps } = self
       return {
-        get ticks() {
-          const { scaleType, domain, height } = self
-          const range = [
-            height - YSCALEBAR_LABEL_OFFSET,
-            YSCALEBAR_LABEL_OFFSET,
-          ]
-          const scale = getScale({
-            scaleType,
-            domain,
-            range,
-            inverted: getConf(self, 'inverted'),
-          })
-          const ticks = height < 50 ? 2 : 4
-          return axisPropsFromTickScale(scale, ticks)
-        },
-
         renderProps() {
           return {
             ...superRenderProps(),
@@ -328,17 +323,15 @@ const stateModelFactory = (
             scaleOpts: self.scaleOpts,
             resolution: self.resolution,
             height: self.height,
-            ticks: this.ticks,
+            ticks: self.ticks,
             displayCrossHatches: self.displayCrossHatches,
             filters: self.filters,
           }
         },
 
         get adapterCapabilities() {
-          const { adapterCapabilities } = pluginManager.getAdapterType(
-            self.adapterTypeName,
-          )
-          return adapterCapabilities
+          return pluginManager.getAdapterType(self.adapterTypeName)
+            .adapterCapabilities
         },
 
         get hasResolution() {
@@ -348,11 +341,15 @@ const stateModelFactory = (
         get hasGlobalStats() {
           return this.adapterCapabilities.includes('hasGlobalStats')
         },
-
+      }
+    })
+    .views(self => {
+      const { trackMenuItems: superTrackMenuItems } = self
+      return {
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
-            ...(this.hasResolution
+            ...(self.hasResolution
               ? [
                   {
                     label: 'Resolution',
@@ -425,7 +422,7 @@ const stateModelFactory = (
               label: 'Autoscale type',
               subMenu: [
                 ['local', 'Local'],
-                ...(this.hasGlobalStats
+                ...(self.hasGlobalStats
                   ? [
                       ['global', 'Global'],
                       ['globalsd', 'Global ± 3σ'],
