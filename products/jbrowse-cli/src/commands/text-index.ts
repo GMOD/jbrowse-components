@@ -162,20 +162,22 @@ export default class TextIndex extends JBrowseCommand {
       for (const config of configs) {
         const { textSearchIndexingAttributes, trackId } = config
 
-        if (attributes && attributes.length > 0) {
-          metaAttrs.push(attributes.split(','))
-        } else if (textSearchIndexingAttributes) {
-          metaAttrs.push(textSearchIndexingAttributes)
-        } else {
-          metaAttrs.push(['Name', 'ID'])
+        if (configs.length) {
+          if (attributes && attributes.length > 0) {
+            metaAttrs.push(attributes.split(','))
+          } else if (textSearchIndexingAttributes) {
+            metaAttrs.push(textSearchIndexingAttributes)
+          } else {
+            metaAttrs.push(['Name', 'ID'])
+          }
+          TrackIds.push(trackId)
         }
-        TrackIds.push(trackId)
-      }
 
-      fs.writeFileSync(
-        path.join(dir, 'trix', `${asm}_meta.json`),
-        JSON.stringify({ TrackData: { TrackIds, metaAttrs } }, null, 2),
-      )
+        fs.writeFileSync(
+          path.join(dir, 'trix', `${asm}_meta.json`),
+          JSON.stringify({ TrackData: { TrackIds, metaAttrs } }, null, 2),
+        )
+      }
     }
 
     this.log('Finished!')
