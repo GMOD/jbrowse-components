@@ -288,18 +288,10 @@ export const BaseLinearDisplay = types
       return undefined
     },
 
-    get trackMenuItems(): MenuItem[] {
+    trackMenuItems(): MenuItem[] {
       return []
     },
-    // distinct set of display items that are particular to this display type.
-    // for base, there are none
-    //
-    // note: this attribute is helpful when composing together multiple
-    // subdisplays so that you don't repeat the "about this track" from each
-    // child display
-    get composedTrackMenuItems(): MenuItem[] {
-      return []
-    },
+
     get contextMenuItems() {
       const { pluginManager } = getEnv(self)
       const contextMenuItems = self.contextMenuFeature
@@ -322,7 +314,7 @@ export const BaseLinearDisplay = types
       })
       return contextMenuItems
     },
-    get composedRenderProps() {
+    renderProps() {
       return {
         ...getParentRenderProps(self),
         rpcDriverName: self.rpcDriverName,
@@ -363,9 +355,6 @@ export const BaseLinearDisplay = types
           self.clearFeatureSelection()
         },
       }
-    },
-    get renderProps() {
-      return this.composedRenderProps
     },
   }))
   .actions(self => ({

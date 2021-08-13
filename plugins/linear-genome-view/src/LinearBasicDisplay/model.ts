@@ -1,6 +1,5 @@
 import { lazy } from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { getSession } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
 import VisibilityIcon from '@material-ui/icons/Visibility'
@@ -75,26 +74,23 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
       },
     }))
     .views(self => {
-      const { trackMenuItems } = self
+      const {
+        trackMenuItems: superTrackMenuItems,
+        renderProps: superRenderProps,
+      } = self
       return {
-        get renderProps() {
+        renderProps() {
           const config = self.rendererConfig
 
           return {
-            ...self.composedRenderProps,
-            ...getParentRenderProps(self),
+            ...superRenderProps(),
             config,
           }
         },
-        get trackMenuItems(): MenuItem[] {
-          const displayModes = [
-            'compact',
-            'reducedRepresentation',
-            'normal',
-            'collapse',
-          ]
+
+        trackMenuItems(): MenuItem[] {
           return [
-            ...trackMenuItems,
+            ...superTrackMenuItems(),
             {
               label: 'Show labels',
               icon: VisibilityIcon,
@@ -107,7 +103,12 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
             {
               label: 'Display mode',
               icon: VisibilityIcon,
-              subMenu: displayModes.map(val => ({
+              subMenu: [
+                'compact',
+                'reducedRepresentation',
+                'normal',
+                'collapse',
+              ].map(val => ({
                 label: val,
                 onClick: () => {
                   self.setDisplayMode(val)

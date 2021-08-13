@@ -4,7 +4,6 @@ import {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import { ConfigurationReference } from '@jbrowse/core/configuration'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 import { getContainingView } from '@jbrowse/core/util'
 
@@ -23,11 +22,15 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       }),
     )
     .views(self => ({
-      get renderProps() {
-        const { showForward, showReverse, showTranslation } = self
+      renderProps() {
+        const {
+          renderProps: superRenderProps,
+          showForward,
+          showReverse,
+          showTranslation,
+        } = self
         return {
-          ...self.composedRenderProps,
-          ...getParentRenderProps(self),
+          ...superRenderProps(),
           rpcDriverName: self.rpcDriverName,
           config: self.configuration.renderer,
           showForward,
@@ -59,7 +62,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       },
     }))
     .views(self => ({
-      get trackMenuItems() {
+      trackMenuItems() {
         return [
           {
             label: 'Show forward',

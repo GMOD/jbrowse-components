@@ -98,6 +98,8 @@ const TrackLabel = React.forwardRef(
       handleClose()
     }
 
+    const items = track.trackMenuItems()
+
     return (
       <>
         <Paper ref={ref} className={clsx(className, classes.root)}>
@@ -132,7 +134,7 @@ const TrackLabel = React.forwardRef(
             className={classes.iconButton}
             color="secondary"
             data-testid="track_menu_icon"
-            disabled={!track.trackMenuItems.length}
+            disabled={!items.length}
           >
             <MoreVertIcon />
           </IconButton>
@@ -143,10 +145,8 @@ const TrackLabel = React.forwardRef(
           open={Boolean(anchorEl)}
           onClose={handleClose}
           menuItems={[
-            ...(session.getTrackActionMenuItems
-              ? session.getTrackActionMenuItems(trackConf)
-              : []),
-            ...track.trackMenuItems,
+            ...session.getTrackActionMenuItems?.(trackConf),
+            ...items,
           ].sort((a, b) => (b.priority || 0) - (a.priority || 0))}
         />
       </>

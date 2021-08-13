@@ -297,7 +297,10 @@ const stateModelFactory = (
       }
     })
     .views(self => {
-      const { trackMenuItems } = self
+      const {
+        trackMenuItems: superTrackMenuItems,
+        renderProps: superRenderProps,
+      } = self
       return {
         get ticks() {
           const { scaleType, domain, height } = self
@@ -314,10 +317,10 @@ const stateModelFactory = (
           const ticks = height < 50 ? 2 : 4
           return axisPropsFromTickScale(scale, ticks)
         },
-        get renderProps() {
+
+        renderProps() {
           return {
-            ...self.composedRenderProps,
-            ...getParentRenderProps(self),
+            ...superRenderProps(),
             notReady: !self.ready,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
@@ -346,8 +349,9 @@ const stateModelFactory = (
           return this.adapterCapabilities.includes('hasGlobalStats')
         },
 
-        get composedTrackMenuItems() {
+        trackMenuItems() {
           return [
+            ...superTrackMenuItems(),
             ...(this.hasResolution
               ? [
                   {
@@ -455,15 +459,10 @@ const stateModelFactory = (
             },
           ]
         },
-
-        get trackMenuItems() {
-          return [...trackMenuItems, ...this.composedTrackMenuItems]
-        },
       }
     })
     .actions(self => {
-      const superReload = self.reload
-      const superRenderSvg = self.renderSvg
+      const { reload: superReload, renderSvg: superRenderSvg } = self
 
       type ExportSvgOpts = Parameters<typeof superRenderSvg>[0]
 
@@ -524,9 +523,9 @@ const stateModelFactory = (
           )) as FeatureStats
           const { scoreMin, scoreMean, scoreStdDev } = results
 
-          // localsd uses heuristic to avoid unnecessary scoreMin<0
-          // if the scoreMin is never less than 0
-          // helps with most coverage bigwigs just being >0
+          // localsd uses heuristic to avoid unnecessary scoreMin<0 if the
+          // scoreMin is never less than 0 helps with most coverage bigwigs
+          // just being >0
           return autoscaleType === 'localsd'
             ? {
                 ...results,

@@ -342,7 +342,11 @@ const stateModelFactory = (
       },
     }))
     .views(self => {
-      const { trackMenuItems } = self
+      const {
+        trackMenuItems: superTrackMenuItems,
+        renderProps: superRenderProps,
+      } = self
+
       return {
         get rendererTypeName() {
           const viewName = getConf(self, 'defaultRendering')
@@ -412,10 +416,10 @@ const stateModelFactory = (
           return new SerializableFilterChain({ filters })
         },
 
-        get renderProps() {
+        renderProps() {
           const view = getContainingView(self) as LGV
           return {
-            ...self.composedRenderProps,
+            ...superRenderProps(),
             ...getParentRenderProps(self),
             notReady:
               !self.ready ||
@@ -434,8 +438,9 @@ const stateModelFactory = (
           }
         },
 
-        get composedTrackMenuItems() {
+        trackMenuItems() {
           return [
+            ...superTrackMenuItems(),
             {
               label: 'Show soft clipping',
               icon: VisibilityIcon,
@@ -574,10 +579,6 @@ const stateModelFactory = (
               },
             },
           ]
-        },
-
-        get trackMenuItems() {
-          return [...trackMenuItems, ...this.composedTrackMenuItems]
         },
       }
     })

@@ -178,7 +178,7 @@ const stateModelFactory = (
     }))
 
     .views(self => {
-      const { trackMenuItems } = self
+      const { trackMenuItems: superTrackMenuItems } = self
       return {
         get TooltipComponent() {
           return Tooltip
@@ -204,8 +204,9 @@ const stateModelFactory = (
           return []
         },
 
-        get extraTrackMenuItems() {
+        trackMenuItems() {
           return [
+            ...superTrackMenuItems(),
             {
               label: 'Draw insertion/clipping indicators',
               type: 'checkbox',
@@ -224,36 +225,33 @@ const stateModelFactory = (
             },
           ]
         },
-        get trackMenuItems() {
-          return [
-            ...trackMenuItems,
-            ...self.composedTrackMenuItems,
-            ...this.extraTrackMenuItems,
-          ]
-        },
-        // The SNPCoverage filters are called twice because the BAM/CRAM features
-        // pass filters and then the SNPCoverage score features pass through
-        // here, and are already have 'snpinfo' are passed through
+        // The SNPCoverage filters are called twice because the BAM/CRAM
+        // features pass filters and then the SNPCoverage score features pass
+        // through here, and are already have 'snpinfo' are passed through
         get filters() {
           let filters: string[] = []
           if (self.filterBy) {
-            const { flagInclude, flagExclude } = self.filterBy
+            const {
+              flagInclude,
+              flagExclude,
+              tagFilter,
+              readName,
+            } = self.filterBy
             filters = [
               `jexl:get(feature,'snpinfo') != undefined ? true : ` +
                 `((get(feature,'flags')&${flagInclude})==${flagInclude}) && ` +
                 `!((get(feature,'flags')&${flagExclude}))`,
             ]
 
-            if (self.filterBy.tagFilter) {
-              const { tag, value } = self.filterBy.tagFilter
+            if (tagFilter) {
+              const { tag, value } = tagFilter
               filters.push(
                 `jexl:get(feature,'snpinfo') != undefined ? true : ` +
                   `"${value}" =='*' ? getTag(feature,"${tag}") != undefined : ` +
                   `getTag(feature,"${tag}") == "${value}"`,
               )
             }
-            if (self.filterBy.readName) {
-              const { readName } = self.filterBy
+            if (readName) {
               filters.push(
                 `jexl:get(feature,'snpinfo') != undefined ? true : ` +
                   `get(feature,'name') == "${readName}"`,

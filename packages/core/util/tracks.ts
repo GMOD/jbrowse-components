@@ -55,7 +55,7 @@ export function getParentRenderProps(node: IAnyStateTreeNode) {
     currentNode = getParent(currentNode)
   ) {
     if ('renderProps' in currentNode) {
-      return currentNode.renderProps
+      return currentNode.renderProps()
     }
   }
 
