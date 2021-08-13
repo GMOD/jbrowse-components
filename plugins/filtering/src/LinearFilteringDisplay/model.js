@@ -1,5 +1,4 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 

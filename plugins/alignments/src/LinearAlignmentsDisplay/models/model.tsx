@@ -98,7 +98,7 @@ const stateModelFactory = (
           }
         },
 
-        trackMenuItems() {
+        trackMenuItems(): MenuItem[] {
           return [
             ...superTrackMenuItems(),
             {

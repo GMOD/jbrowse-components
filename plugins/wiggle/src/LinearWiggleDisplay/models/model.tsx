@@ -10,10 +10,7 @@ import {
   getContainingView,
   isSelectionContainer,
 } from '@jbrowse/core/util'
-import {
-  getParentRenderProps,
-  getRpcSessionId,
-} from '@jbrowse/core/util/tracks'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   BaseLinearDisplay,
   LinearGenomeViewModel,
