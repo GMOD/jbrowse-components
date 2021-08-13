@@ -225,6 +225,52 @@ describe('text-index tracks', () => {
     )
 })
 
+//source https://stackoverflow.com/a/64255382/2129219
+async function copyDir(src: string, dest: string) {
+  await fs.promises.mkdir(dest, { recursive: true })
+  let entries = await fs.promises.readdir(src, { withFileTypes: true })
+
+  for (let entry of entries) {
+    let srcPath = path.join(src, entry.name)
+    let destPath = path.join(dest, entry.name)
+
+    entry.isDirectory()
+      ? await copyDir(srcPath, destPath)
+      : await fs.promises.copyFile(srcPath, destPath)
+  }
+}
+
+describe('check that volvox data is properly indexed, re-run text-index on volvox config if fails', () => {
+  let preVolvoxIx = ''
+  let preVolvoxIxx = ''
+  let preVolvoxMeta = ''
+  let preVolvox2Meta = ''
+  const read = (d: string, s: string) =>
+    fs.readFileSync(path.join(d, 'trix', s), 'utf8')
+  setup
+    .do(async ctx => {
+      await copyDir(
+        path.join(__dirname, '..', '..', '..', '..', 'test_data', 'volvox'),
+        ctx.dir,
+      )
+      preVolvoxIx = read(ctx.dir, 'volvox.ix')
+      preVolvoxIxx = read(ctx.dir, 'volvox.ixx')
+      preVolvoxMeta = read(ctx.dir, 'volvox_meta.json')
+      preVolvox2Meta = read(ctx.dir, 'volvox2_meta.json')
+    })
+    .command(['text-index', '--target=config.json', '--force'])
+    .it('Indexes entire volvox config', ctx => {
+      const postVolvoxIx = read(ctx.dir, 'volvox.ix')
+      const postVolvoxIxx = read(ctx.dir, 'volvox.ixx')
+      const postVolvoxMeta = read(ctx.dir, 'volvox_meta.json')
+      const postVolvox2Meta = read(ctx.dir, 'volvox2_meta.json')
+      expect(postVolvoxIx).toEqual(preVolvoxIx)
+      expect(postVolvoxIxx).toEqual(preVolvoxIxx)
+      expect(postVolvoxMeta).toEqual(preVolvoxMeta)
+      expect(postVolvox2Meta).toEqual(preVolvox2Meta)
+    })
+})
+
 // This test is commented out due to how long it takes to complete
 /*
 // Aggregate File
