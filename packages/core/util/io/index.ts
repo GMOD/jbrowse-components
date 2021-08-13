@@ -75,7 +75,11 @@ export function openLocation(
           )
           internetAccount = internetAccountType.stateModel.create({
             type: location.internetAccountPreAuthorization.internetAccountType,
+            configuration:
+              location.internetAccountPreAuthorization.authInfo.configuration,
           })
+
+          // maybe need to rebuild the config somehow?
         }
         if (internetAccount) {
           if (!location.internetAccountPreAuthorization?.authInfo.token) {

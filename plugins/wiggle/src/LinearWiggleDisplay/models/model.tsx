@@ -549,13 +549,18 @@ const stateModelFactory = (
         async reload() {
           self.setError()
           const aborter = new AbortController()
-          const stats = await getStats({
-            signal: aborter.signal,
-            filters: self.filters,
-          })
-          if (isAlive(self)) {
-            self.updateStats(stats)
-            superReload()
+          let stats
+          try {
+            stats = await getStats({
+              signal: aborter.signal,
+              filters: self.filters,
+            })
+            if (isAlive(self)) {
+              self.updateStats(stats)
+              superReload()
+            }
+          } catch (e) {
+            self.setError(e)
           }
         },
         afterAttach() {

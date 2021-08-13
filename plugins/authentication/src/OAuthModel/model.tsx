@@ -4,13 +4,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { OAuthInternetAccountConfigModel } from './configSchema'
 import crypto from 'crypto'
 import { Instance, types } from 'mobx-state-tree'
-import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
+import { UriLocation } from '@jbrowse/core/util/types'
 import { RemoteFile } from 'generic-filehandle'
-
-interface Account {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: string | string[]
-}
 
 interface OAuthData {
   client_id: string
@@ -38,10 +33,7 @@ const stateModelFactory = (
     )
     .volatile(() => ({
       authorizationCode: '',
-      accessToken: '',
-      refreshToken: '',
       codeVerifierPKCE: '',
-      expireTime: 0,
       errorMessage: '',
     }))
     .views(self => ({
@@ -51,10 +43,10 @@ const stateModelFactory = (
       get internetAccountType() {
         return 'OAuthInternetAccount'
       },
-      handlesLocation(location: FileLocation): boolean {
+      handlesLocation(location: UriLocation): boolean {
         const validDomains = self.accountConfig.validDomains || []
         return validDomains.some((domain: string) =>
-          (location as UriLocation)?.uri.includes(domain),
+          location?.uri.includes(domain),
         )
       },
       get generateAuthInfo() {
@@ -64,6 +56,7 @@ const stateModelFactory = (
             authHeader: self.authHeader,
             tokenType: this.tokenType,
             origin: self.origin,
+            configuration: self.accountConfig,
           },
         }
       },
@@ -130,14 +123,7 @@ const stateModelFactory = (
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let preAuthInfo: any = {}
       return {
-        async setAccessTokenInfo(
-          token: string,
-          expireTime = 0,
-          generateNew = false,
-        ) {
-          self.accessToken = token
-          self.expireTime = expireTime
-
+        async setAccessTokenInfo(token: string, generateNew = false) {
           if (generateNew && token) {
             sessionStorage.setItem(`${self.internetAccountId}-token`, token)
           }
@@ -156,6 +142,11 @@ const stateModelFactory = (
           let token =
             preAuthInfo?.authInfo?.token ||
             sessionStorage.getItem(`${self.internetAccountId}-token`)
+
+          const refreshToken =
+            preAuthInfo.authInfo?.token ||
+            localStorage.getItem(`${self.internetAccountId}-refreshToken`)
+
           if (!token) {
             if (!openLocationPromise) {
               openLocationPromise = new Promise(async (r, x) => {
@@ -171,6 +162,9 @@ const stateModelFactory = (
           if (!preAuthInfo.authInfo.token) {
             preAuthInfo.authInfo.token = token
           }
+          if (!preAuthInfo.authInfo.refreshToken && refreshToken) {
+            preAuthInfo.authInfo.refreshToken = refreshToken
+          }
           resolve()
           openLocationPromise = undefined
           return token
@@ -182,13 +176,14 @@ const stateModelFactory = (
           const refreshTokenKey = `${self.internetAccountId}-refreshToken`
           const existingToken = localStorage.getItem(refreshTokenKey)
           if (!existingToken) {
-            self.refreshToken = token
             localStorage.setItem(
               `${self.internetAccountId}-refreshToken`,
               token,
             )
-          } else {
-            self.refreshToken = existingToken
+          }
+
+          if (!preAuthInfo.authInfo.refreshToken) {
+            preAuthInfo.authInfo.refreshToken = token
           }
         },
         async exchangeAuthorizationForAccessToken(token: string) {
@@ -214,24 +209,23 @@ const stateModelFactory = (
           })
 
           const accessToken = await response.json()
-          this.setAccessTokenInfo(
-            accessToken.access_token,
-            accessToken.expires_in,
-            true,
-          )
+          this.setAccessTokenInfo(accessToken.access_token, true)
           if (accessToken.refresh_token) {
             this.setRefreshToken(accessToken.refresh_token)
           }
         },
         async exchangeRefreshForAccessToken() {
-          const foundRefreshToken = Object.keys(localStorage).find(key => {
-            return key === `${self.internetAccountId}-refreshToken`
-          })
+          const foundRefreshToken =
+            preAuthInfo?.authInfo?.refreshToken ||
+            localStorage.getItem(`${self.internetAccountId}-refreshToken`)
+
           if (foundRefreshToken) {
+            // need to set it so
+            // checks if it from webworker, and if it is use preauth config info
             const config = self.accountConfig
             const data = {
               grant_type: 'refresh_token',
-              refresh_token: localStorage.getItem(foundRefreshToken),
+              refresh_token: foundRefreshToken,
               client_id: config.clientId,
             }
 
@@ -247,20 +241,30 @@ const stateModelFactory = (
               body: params,
             })
 
+            if (!response.ok) {
+              if (localStorage) {
+                // need indicator of from fetch or not
+                localStorage.removeItem(
+                  `${self.internetAccountId}-refreshToken`,
+                )
+              }
+              throw new Error(
+                `Network response failure: ${
+                  response.status
+                } (${await response.text()})`,
+              )
+            }
+
             const accessToken = await response.json()
-            this.setAccessTokenInfo(
-              accessToken.access_token,
-              accessToken.expires_in,
-              true,
-            )
+            this.setAccessTokenInfo(accessToken.access_token, true)
             return accessToken
           } else {
-            reject()
-            throw new Error('Could not find valid token to use')
+            throw new Error(
+              `Malformed or expired access token, and refresh token not found`,
+            )
           }
         },
-        async fetchFile(location: string, existingToken?: string) {
-          const accessToken = existingToken ? existingToken : self.accessToken
+        async fetchFile(location: string, accessToken: string) {
           if (!location || !accessToken) {
             return
           }
@@ -281,7 +285,11 @@ const stateModelFactory = (
                 },
               )
               if (!response.ok) {
-                return this.handleError(response)
+                throw new Error(
+                  `Network response failure: ${
+                    response.status
+                  } (${await response.text()})`,
+                )
               }
               const metadata = await response.json()
               if (metadata) {
@@ -297,7 +305,11 @@ const stateModelFactory = (
                   },
                 )
                 if (!fileResponse.ok) {
-                  return this.handleError(response)
+                  throw new Error(
+                    `Network response failure: ${
+                      fileResponse.status
+                    } (${await fileResponse.text()})`,
+                  )
                 }
                 const file = await fileResponse.json()
                 return file.link
@@ -318,7 +330,11 @@ const stateModelFactory = (
               )
 
               if (!response.ok) {
-                return this.handleError(response, false)
+                throw new Error(
+                  `Network response failure: ${
+                    response.status
+                  } (${await response.text()})`,
+                )
               }
               const fileMetadata = await response.json()
               return fileMetadata.downloadUrl
@@ -340,12 +356,13 @@ const stateModelFactory = (
               const queryStringSearch = new URL(fixedQueryString).search
               const urlParams = new URLSearchParams(queryStringSearch)
               const token = urlParams.get('access_token')
-              const expireTime = urlParams.get('expires_in')
-              if (!token || !expireTime) {
+              if (!token) {
                 self.setErrorMessage('Error fetching token')
-                return reject(self.errorMessage)
+                reject(self.errorMessage)
+                openLocationPromise = undefined
+                return
               }
-              this.setAccessTokenInfo(token, parseFloat(expireTime), true)
+              this.setAccessTokenInfo(token, true)
             }
             if (event.data.redirectUri.includes('code')) {
               const queryString = new URL(event.data.redirectUri).search
@@ -353,15 +370,17 @@ const stateModelFactory = (
               const code = urlParams.get('code')
               if (!code) {
                 self.setErrorMessage('Error fetching code')
-                return reject(self.errorMessage)
+                reject(self.errorMessage)
+                openLocationPromise = undefined
+                return
               }
               this.exchangeAuthorizationForAccessToken(code)
             }
             if (event.data.redirectUri.includes('access_denied')) {
               self.setErrorMessage('User cancelled OAuth flow')
-              if (reject) {
-                return reject(self.errorMessage)
-              }
+              reject(self.errorMessage)
+              openLocationPromise = undefined
+              return
             }
           }
         },
@@ -386,37 +405,24 @@ const stateModelFactory = (
           try {
             accessToken = await this.checkToken()
           } catch (error) {
-            await this.handleError(undefined, retried)
-            !retried
-              ? await this.getPreAuthorizationInformation(location, true)
-              : reject(new Error(error))
+            await this.handleError(error, retried)
           }
 
           if (accessToken) {
             let fileUrl
             try {
-              fileUrl = await this.fetchFile(
-                (location as UriLocation).uri,
-                accessToken,
-              )
+              fileUrl = await this.fetchFile(location.uri, accessToken)
               preAuthInfo.authInfo.fileUrl = fileUrl
             } catch (error) {
-              // ignore
+              await this.handleError(error, retried)
+              if (!retried) {
+                await this.getPreAuthorizationInformation(location, true)
+              }
             }
           }
 
           return preAuthInfo
         },
-        // MODELING THE NEW CONCEPT
-        // getFetcher() {
-        // return a curried version of fetch
-        // will have most of the logic from the original openLocation
-        // modified to do oauth flows or corresponding internet account stuff
-        // return (function that has same signature as core fetch)
-        // return a function taht interally calls globalCacheFetch
-        // }
-
-        // called by the web worker, should have authinformation by here
         async getFetcher(
           url: RequestInfo,
           opts?: RequestInit,
@@ -426,14 +432,21 @@ const stateModelFactory = (
           }
 
           let fileUrl = preAuthInfo.authInfo.fileUrl
-          const foundToken = await this.checkToken()
+          let foundToken
+          try {
+            foundToken = await this.checkToken()
+          } catch (e) {
+            await this.handleError(e, false, true)
+          }
           let newOpts = opts
 
           if (foundToken) {
             if (!fileUrl) {
               try {
                 fileUrl = await this.fetchFile(String(url), foundToken)
-              } catch (e) {}
+              } catch (e) {
+                await this.handleError(e, false, true)
+              }
             }
             const newHeaders = {
               ...opts?.headers,
@@ -453,28 +466,26 @@ const stateModelFactory = (
         },
         // called on the web worker, returns a generic filehandle with a modified fetch
         // preauth info should be filled in by here
-        openLocation(l: UriLocation) {
+        openLocation(location: UriLocation) {
           preAuthInfo =
-            l.internetAccountPreAuthorization || self.generateAuthInfo
-          return new RemoteFile(String(l.uri), {
+            location.internetAccountPreAuthorization || self.generateAuthInfo
+          return new RemoteFile(String(location.uri), {
             fetch: this.getFetcher,
           })
         },
-        async handleError(response?: Response, tryRefreshToken = true) {
-          preAuthInfo = self.generateAuthInfo // if it reaches here the token was bad
-          if (sessionStorage) {
+        async handleError(
+          error: string,
+          triedRefreshToken = false,
+          fromFetch = false,
+        ) {
+          if (!fromFetch) {
+            preAuthInfo = self.generateAuthInfo // if it reaches here the token was bad
             sessionStorage.removeItem(`${self.internetAccountId}-token`)
           }
-          if (tryRefreshToken) {
+          if (!triedRefreshToken) {
             await this.exchangeRefreshForAccessToken()
           } else {
-            throw new Error(
-              response
-                ? `Network response failure: ${
-                    response.status
-                  } (${await response.text()})`
-                : `Could not get file`,
-            )
+            throw new Error(error)
           }
         },
       }

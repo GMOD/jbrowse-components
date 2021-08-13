@@ -2,6 +2,7 @@ import PluginManager from '../PluginManager'
 import PluggableElementBase from './PluggableElementBase'
 import { setBlobMap, getBlobMap } from '../util/tracks'
 import { searchForLocationObjects, replaceInArgs } from '../util'
+import { UriLocation } from '../util/types'
 
 import {
   deserializeAbortSignal,
@@ -24,16 +25,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
     const blobMap = getBlobMap()
 
-    // have a general function that searches the whole args object for locations (need to address to see if an object is a location)
-    // add to all locations a constant that is called locationType string ex. locationType: 'localPathLocation', a types.literal
-    // search for property 'locationType', if an object has that property it is a location object
-    // when finds location that is handled by or associated with internetAccount (if internetaccountId is filled it)
-    // it wills in the preauthorization, might require it to launch auth (similar to serializeAuthArguments) and fill in information
-    // instead of replacing information in the args, filling in information in the location taht you are serializing
-
-    // needs a way for internetaccount to take a preauth location and make a filehandle from it
     const modifiedArgs = JSON.parse(JSON.stringify(args))
-
     const locationObjects = searchForLocationObjects(modifiedArgs)
 
     for (const i in locationObjects) {
@@ -45,26 +37,27 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     return { ...modifiedArgs, blobMap }
   }
 
-  async serializeNewAuthArguments(
-    args: {},
-    locationObj: { [key: string]: string },
-  ) {
+  async serializeNewAuthArguments(args: {}, location: UriLocation) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rootModel: any = this.pluginManager.rootModel
 
-    if (locationObj.internetAccountPreAuthorization) {
+    if (location.internetAccountPreAuthorization) {
       throw new Error('PreAuthorization should not exist yet')
     }
-    const modifiedPreAuth = await rootModel?.findAppropriateInternetAccount(
-      locationObj,
-    )
+    const account = await rootModel?.findAppropriateInternetAccount(location)
 
-    const newLocationObj = {
-      ...locationObj,
-      internetAccountPreAuthorization: modifiedPreAuth,
+    if (account) {
+      const modifiedPreAuth = await account.getPreAuthorizationInformation(
+        location,
+      )
+
+      const locationWithPreAuth = {
+        ...location,
+        internetAccountPreAuthorization: modifiedPreAuth,
+      }
+
+      replaceInArgs(args, location, locationWithPreAuth)
     }
-
-    replaceInArgs(args, locationObj, newLocationObj)
   }
 
   async deserializeArguments<

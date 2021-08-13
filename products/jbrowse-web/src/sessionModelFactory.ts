@@ -188,6 +188,9 @@ export default function sessionModelFactory(
         self.DialogComponent = comp
         self.DialogProps = props
       },
+      // queue dialog would manage a session state that is a queue of dialog, when one is done (via callback), then it launches the next one
+      // take a callback that returns the array of the component and the props]
+      // queueDialog( doneCallback : Function => [ReactComponent, ReactProps]) : void
       setName(str: string) {
         self.name = str
       },

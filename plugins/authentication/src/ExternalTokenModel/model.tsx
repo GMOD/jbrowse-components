@@ -1,7 +1,7 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
+import { UriLocation } from '@jbrowse/core/util/types'
 import { ExternalTokenInternetAccountConfigModel } from './configSchema'
 import { Instance, types, getParent } from 'mobx-state-tree'
 import React, { useState } from 'react'
@@ -11,11 +11,7 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import DialogActions from '@material-ui/core/DialogActions'
 import TextField from '@material-ui/core/TextField'
-
-interface Account {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
-}
+import { RemoteFile } from 'generic-filehandle'
 
 const stateModelFactory = (
   pluginManager: PluginManager,
@@ -37,13 +33,26 @@ const stateModelFactory = (
       needsToken: false,
     }))
     .views(self => ({
-      handlesLocation(location: FileLocation): boolean {
+      get internetAccountType() {
+        return 'ExternalTokenInternetAccount'
+      },
+      handlesLocation(location: UriLocation): boolean {
         // this will probably look at something in the config which indicates that it is an OAuth pathway,
         // also look at location, if location is set to need authentication it would reutrn true
         const validDomains = self.accountConfig.validDomains || []
         return validDomains.some((domain: string) =>
-          (location as UriLocation)?.uri.includes(domain),
+          location?.uri.includes(domain),
         )
+      },
+      get generateAuthInfo() {
+        return {
+          internetAccountType: this.internetAccountType,
+          authInfo: {
+            authHeader: self.authHeader,
+            tokenType: '',
+            origin: self.origin,
+          },
+        }
       },
     }))
     .actions(self => ({
@@ -91,6 +100,8 @@ const stateModelFactory = (
       let resolve: Function = () => {}
       let reject: Function = () => {}
       let openLocationPromise: Promise<string> | undefined = undefined
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let preAuthInfo: any = {}
       return {
         handleClose(token?: string) {
           const { session } = getParent(self, 2)
@@ -105,76 +116,107 @@ const stateModelFactory = (
           reject = () => {}
           openLocationPromise = undefined
         },
-        async openLocation(location: FileLocation) {
-          if (!openLocationPromise) {
-            openLocationPromise = new Promise(async (r, x) => {
-              const { session } = getParent(self, 2)
-              session.setDialogComponent(ExternalTokenEntryForm, {
-                internetAccountId: self.internetAccountId,
-                handleClose: this.handleClose,
-              })
-              resolve = r
-              reject = x
-            })
-            // switch (self.origin) {
-            //   case 'GDC': {
-            //     const query = (location as UriLocation).uri.split('/').pop() // should get id
-            //     const response = await fetch(
-            //       `${self.accountConfig.customEndpoint}/files/${query}?expand=index_files`,
-            //       {
-            //         method: 'GET',
-            //       },
-            //     )
-
-            //     if (!response.ok) {
-            //       const errorText = await response.text()
-            //       throw new Error(
-            //         `Network response failure: ${response.status} (${errorText})`,
-            //       )
-            //     }
-
-            //     const metadata = await response.json()
-            //     if (metadata) {
-            //       metadata.data.access === 'controlled'
-            //         ? self.setNeedsToken(true)
-            //         : self.setNeedsToken(false)
-            //     }
-
-            //     self.getOrSetExternalToken()
-            //   }
-          }
-          return openLocationPromise
-        },
-        async handleRpcMethodCall(
-          location: UriLocation,
-          authenticationInfoMap: Record<string, string>,
-          args: {},
-        ) {
-          const token = authenticationInfoMap[self.internetAccountId]
+        async checkToken() {
+          let token =
+            preAuthInfo?.authInfo?.token ||
+            sessionStorage.getItem(`${self.internetAccountId}-token`)
           if (!token) {
-            await this.openLocation(location)
+            if (!openLocationPromise) {
+              openLocationPromise = new Promise(async (r, x) => {
+                const { session } = getParent(self, 2)
+                session.setDialogComponent(ExternalTokenEntryForm, {
+                  internetAccountId: self.internetAccountId,
+                  handleClose: this.handleClose,
+                })
+                resolve = r
+                reject = x
+              })
+            }
+            token = await openLocationPromise
           }
 
+          if (!preAuthInfo.authInfo.token) {
+            preAuthInfo.authInfo.token = token
+          }
+          resolve()
+          openLocationPromise = undefined
+          return token
+        },
+        async getFetcher(
+          url: RequestInfo,
+          opts?: RequestInit,
+        ): Promise<Response> {
+          if (!preAuthInfo || !preAuthInfo.authInfo) {
+            throw new Error('Auth Information Missing')
+          }
+
+          let foundToken
           try {
+            foundToken = await this.checkToken()
+          } catch (e) {}
+
+          let newOpts = opts
+          if (foundToken) {
+            const newHeaders = {
+              ...opts?.headers,
+              [self.authHeader]: `${self.tokenType} ${preAuthInfo.authInfo.token}`,
+            }
+            newOpts = {
+              ...opts,
+              headers: newHeaders,
+            }
+          }
+
+          return fetch(url, {
+            method: 'GET',
+            credentials: 'same-origin',
+            ...newOpts,
+          })
+        },
+        openLocation(location: UriLocation) {
+          preAuthInfo =
+            location.internetAccountPreAuthorization || self.generateAuthInfo
+          return new RemoteFile(String(location.uri), {
+            fetch: this.getFetcher,
+          })
+
+          // switch (self.origin) {
+          //   case 'GDC': {
+          //     const query = (location as UriLocation).uri.split('/').pop() // should get id
+          //     const response = await fetch(
+          //       `${self.accountConfig.customEndpoint}/files/${query}?expand=index_files`,
+          //       {
+          //         method: 'GET',
+          //       },
+          //     )
+        },
+        async getPreAuthorizationInformation(location: UriLocation) {
+          if (!preAuthInfo.authInfo) {
+            preAuthInfo = self.generateAuthInfo
+          }
+
+          let accessToken
+          try {
+            accessToken = await this.checkToken()
+          } catch (error) {
+            await this.handleError()
+          }
+
+          // test
+          if (accessToken) {
             const response = await fetch(location.uri, {
               method: 'HEAD',
               headers: {
-                Authorization: `${self.tokenType} ${token}`,
+                Authorization: `${self.tokenType} ${accessToken}`,
               },
             })
 
             if (!response.ok) {
-              const errorText = await response.text()
-              await this.handleError(
-                authenticationInfoMap,
-                `Network response failure: ${response.status} (${errorText})`,
-              )
+              await this.handleError()
             }
-          } catch (e) {
-            await this.handleError(authenticationInfoMap, e)
           }
 
-          return args
+          return preAuthInfo
           // switch (self.origin) {
           //   case 'GDC': {
           //     const query = (location as UriLocation).uri.split('/').pop() // should get id
@@ -188,12 +230,13 @@ const stateModelFactory = (
           //   }
           // }
         },
-        async handleError(
-          authenticationInfoMap: Record<string, string>,
-          errorText: string,
-        ) {
-          const rootModel = getParent(self, 2)
-          return new Error(errorText)
+        async handleError() {
+          preAuthInfo = self.generateAuthInfo
+          if (sessionStorage) {
+            sessionStorage.removeItem(`${self.internetAccountId}-token`)
+          }
+
+          throw new Error('Could not access resource with token')
         },
       }
     })

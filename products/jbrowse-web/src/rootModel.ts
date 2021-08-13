@@ -269,6 +269,7 @@ export default function RootModel(
           self,
           internetAccountId,
         )
+
         const internetAccountType = pluginManager.getInternetAccountType(
           configuration.type,
         )
@@ -387,10 +388,8 @@ export default function RootModel(
             }
           })
         }
+
         return accountToUse
-          ? // @ts-ignore
-            accountToUse.getPreAuthorizationInformation(location)
-          : null
       },
     }))
     .volatile(self => ({
