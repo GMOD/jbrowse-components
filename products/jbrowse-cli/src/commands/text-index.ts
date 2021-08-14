@@ -6,6 +6,7 @@ import { ixIxxStream } from 'ixixx'
 import JBrowseCommand, { Track, Config } from '../base'
 import { indexGff3 } from '../types/gff3Adapter'
 import { indexGtf } from '../types/gtfAdapter'
+import { indexVcf } from '../types/vcfAdapter'
 
 export default class TextIndex extends JBrowseCommand {
   static description = 'Make a text-indexing file for any given track(s).'
@@ -35,6 +36,7 @@ export default class TextIndex extends JBrowseCommand {
 
     attributes: flags.string({
       description: 'Comma separated list of attributes to index',
+      default: 'Name,ID',
     }),
     assemblies: flags.string({
       char: 'a',
@@ -100,46 +102,47 @@ export default class TextIndex extends JBrowseCommand {
       const config = await this.getConfig(confFile, asm, tracks?.split(','))
       this.log('Indexing assembly ' + asm + '...')
 
-      if (config.length) {
-        const id = asm + '-index'
-        const adapterAlreadyFound = adapters.find(
-          x => x.textSearchAdapterId === id,
+      if (!config.length) {
+        continue
+      }
+      const id = asm + '-index'
+      const adapterAlreadyFound = adapters.find(
+        x => x.textSearchAdapterId === id,
+      )
+      if (adapterAlreadyFound && !force) {
+        this.log(
+          `Note: ${asm} has already been indexed with this configuration, use --force to overwrite this assembly. Skipping for now`,
         )
-        if (adapterAlreadyFound && !force) {
-          this.log(
-            `Note: ${asm} has already been indexed with this configuration, use --force to overwrite this assembly. Skipping for now`,
-          )
-        }
-        await this.indexDriver(
-          config,
-          attributesToIndex,
-          dir,
-          asm,
-          quiet,
-          include?.split(','),
-          exclude?.split(','),
-        )
+      }
+      await this.indexDriver(
+        config,
+        attributesToIndex,
+        dir,
+        asm,
+        quiet,
+        include?.split(','),
+        exclude?.split(','),
+      )
 
-        // Checks through list of configs and checks the hash values
-        // if it already exists it updates the entry and increments the
-        // check varible. If the check variable is equal to 0 that means
-        // the entry does not exist and creates one.
-        if (!adapterAlreadyFound) {
-          adapters.push({
-            type: 'TrixTextSearchAdapter',
-            textSearchAdapterId: id,
-            ixFilePath: {
-              uri: `trix/${asm}.ix`,
-            },
-            ixxFilePath: {
-              uri: `trix/${asm}.ixx`,
-            },
-            metaFilePath: {
-              uri: `trix/${asm}_meta.json`,
-            },
-            assemblies: [asm],
-          })
-        }
+      // Checks through list of configs and checks the hash values if it
+      // already exists it updates the entry and increments the check varible.
+      // If the check variable is equal to 0 that means the entry does not
+      // exist and creates one.
+      if (!adapterAlreadyFound) {
+        adapters.push({
+          type: 'TrixTextSearchAdapter',
+          textSearchAdapterId: id,
+          ixFilePath: {
+            uri: `trix/${asm}.ix`,
+          },
+          ixxFilePath: {
+            uri: `trix/${asm}.ixx`,
+          },
+          metaFilePath: {
+            uri: `trix/${asm}_meta.json`,
+          },
+          assemblies: [asm],
+        })
       }
     }
 
@@ -152,26 +155,10 @@ export default class TextIndex extends JBrowseCommand {
       ),
     )
 
-    const metaAttrs: Array<string[]> = []
     for (const asm of assembliesToIndex) {
-      const configs = await this.getConfig(confFile, asm, tracks?.split(','))
-
-      for (const config of configs) {
-        const { textSearchIndexingAttributes, trackId } = config
-
-        if (attributes && attributes.length > 0) {
-          metaAttrs.push(attributes.split(','))
-        } else if (textSearchIndexingAttributes) {
-          metaAttrs.push(textSearchIndexingAttributes)
-        } else {
-          metaAttrs.push(['Name', 'ID'])
-        }
-        TrackIds.push(trackId)
-      }
-
       fs.writeFileSync(
         path.join(dir, 'trix', `${asm}_meta.json`),
-        JSON.stringify({ TrackData: { TrackIds, metaAttrs } }, null, 2),
+        JSON.stringify({}, null, 2),
       )
     }
 
@@ -210,11 +197,7 @@ export default class TextIndex extends JBrowseCommand {
         textSearchIndexingFeatureTypesToExclude,
       } = config
 
-      const types: Array<string> = textSearchIndexingFeatureTypesToExclude || [
-        'CDS',
-        'exon',
-        'transcript',
-      ]
+      const types = textSearchIndexingFeatureTypesToExclude || ['CDS', 'exon']
 
       for (const inc of include) {
         const index = types.indexOf(inc)
@@ -237,13 +220,15 @@ export default class TextIndex extends JBrowseCommand {
       ) {
         attributesToIndex = textSearchIndexingAttributes
       } else {
-        this.log('No attributes found! Indexing by defaults.')
         attributesToIndex = ['Name', 'ID']
       }
+
       if (type === 'Gff3TabixAdapter') {
         yield* indexGff3(config, attributesToIndex, outLocation, types, quiet)
       } else if (type === 'GtfTabixAdapter') {
         yield* indexGtf(config, attributesToIndex, outLocation, types, quiet)
+      } else if (type === 'VcfTabixAdapter') {
+        yield* indexVcf(config, attributesToIndex, outLocation, types, quiet)
       }
     }
   }

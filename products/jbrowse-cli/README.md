@@ -423,7 +423,7 @@ OPTIONS
 
   -q, --quiet                  Hide the progress bars
 
-  --attributes=attributes      Comma separated list of attributes to index
+  --attributes=attributes      [default: Name,ID] Comma separated list of attributes to index
 
   --exclude=exclude            Adds gene type to list of excluded types
 
