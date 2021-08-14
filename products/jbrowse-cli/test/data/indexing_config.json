@@ -66,7 +66,8 @@
           }
         }
       },
-      "textSearchIndexingAttributes": ["Name", "ID", "type"]
+      "textSearchIndexingAttributes": ["Name", "ID", "type"],
+      "textSearchIndexingFeatureTypesToExclude": ["CDS", "exon"]
     },
     {
       "type": "FeatureTrack",
@@ -85,7 +86,8 @@
           }
         }
       },
-      "textSearchIndexingAttributes": ["Name", "ID", "type"]
+      "textSearchIndexingAttributes": ["Name", "ID", "type"],
+      "textSearchIndexingFeatureTypesToExclude": ["CDS", "exon"]
     },
     {
       "type": "FeatureTrack",
@@ -103,7 +105,8 @@
             "uri": "volvox.sort.gff3.gz.tbi"
           }
         }
-      }
+      },
+      "textSearchIndexingFeatureTypesToExclude": ["CDS", "exon"]
     },
     {
       "type": "FeatureTrack",
@@ -122,7 +125,8 @@
           }
         }
       },
-      "textSearchIndexingAttributes": ["Name", "ID", "type"]
+      "textSearchIndexingAttributes": ["Name", "ID", "type"],
+      "textSearchIndexingFeatureTypesToExclude": ["CDS", "exon"]
     },
     {
       "type": "FeatureTrack",
@@ -141,26 +145,8 @@
           }
         }
       },
-      "textSearchIndexingAttributes": ["Name", "ID", "type"]
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "bovine_gene",
-      "assemblyNames": ["volvox"],
-      "name": "Bovine Gene",
-      "category": ["Miscellaneous"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/RefSeq_Sus_scrofa_protein_vs_UMD3.1.gff3.gz"
-        },
-        "index": {
-          "location": {
-            "uri": "http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/RefSeq_Sus_scrofa_protein_vs_UMD3.1.gff3.gz.tbi"
-          }
-        }
-      },
-      "textSearchIndexingAttributes": ["Name", "ID", "type"]
+      "textSearchIndexingAttributes": ["Name", "ID", "type"],
+      "textSearchIndexingFeatureTypesToExclude": ["CDS", "exon"]
     },
     {
       "type": "FeatureTrack",

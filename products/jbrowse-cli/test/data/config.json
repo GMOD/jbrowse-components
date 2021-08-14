@@ -85,7 +85,8 @@
           }
         }
       },
-      "textSearchIndexingAttributes": ["Name", "ID", "type"]
+      "textSearchIndexingAttributes": ["Name", "ID", "type"],
+      "textSearchIndexingFeatureTypesToExclude": ["CDS", "exon"]
     },
     {
       "type": "FeatureTrack",
@@ -104,7 +105,8 @@
           }
         }
       },
-      "textSearchIndexingAttributes": ["Name", "ID", "type"]
+      "textSearchIndexingAttributes": ["Name", "ID", "type"],
+      "textSearchIndexingFeatureTypesToExclude": ["CDS", "exon"]
     },
     {
       "type": "FeatureTrack",
@@ -123,7 +125,8 @@
           }
         }
       },
-      "textSearchIndexingAttributes": ["Name", "ID", "type"]
+      "textSearchIndexingAttributes": ["Name", "ID", "type"],
+      "textSearchIndexingFeatureTypesToExclude": ["CDS", "exon"]
     },
     {
       "type": "FeatureTrack",
@@ -180,7 +183,8 @@
           }
         }
       },
-      "textSearchIndexingAttributes": ["Name", "ID", "type"]
+      "textSearchIndexingAttributes": ["Name", "ID", "type"],
+      "textSearchIndexingFeatureTypesToExclude": ["CDS", "exon"]
     },
     {
       "type": "FeatureTrack",

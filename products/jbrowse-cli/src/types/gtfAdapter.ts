@@ -10,6 +10,7 @@ export async function* indexGtf(
   config: Track,
   attributes: string[],
   outLocation: string,
+  typesToExclude: string[],
   quiet: boolean,
 ) {
   const {
@@ -65,31 +66,33 @@ export async function* indexGtf(
       break
     }
 
-    const [seq_name, , , start, end, , , , col9] = line.split('\t')
+    const [seq_name, , type, start, end, , , , col9] = line.split('\t')
     const locStr = `${seq_name}:${start}..${end}`
 
-    const col9attrs = col9.split('; ')
-    const name = col9attrs
-      .find(f => f.startsWith('gene_name'))
-      ?.split(' ')[1]
-      .trim()
-      .replace(regex, '')
-    const id = col9attrs
-      .find(f => f.startsWith('gene_id'))
-      ?.split(' ')[1]
-      .trim()
-      .replace(regex, '')
-    const attrs = attributes.map(attr =>
-      col9attrs
-        .find(f => f.startsWith(attr))
+    if (!typesToExclude.includes(type)) {
+      const col9attrs = col9.split('; ')
+      const name = col9attrs
+        .find(f => f.startsWith('gene_name'))
         ?.split(' ')[1]
         .trim()
-        .replace(regex, ''),
-    )
-    if (name || id) {
-      const record = JSON.stringify([locStr, trackId, name, id])
-      const buff = Buffer.from(record).toString('base64')
-      yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
+        .replace(regex, '')
+      const id = col9attrs
+        .find(f => f.startsWith('gene_id'))
+        ?.split(' ')[1]
+        .trim()
+        .replace(regex, '')
+      const attrs = attributes.map(attr =>
+        col9attrs
+          .find(f => f.startsWith(attr))
+          ?.split(' ')[1]
+          .trim()
+          .replace(regex, ''),
+      )
+      if (name || id) {
+        const record = JSON.stringify([locStr, trackId, name, id])
+        const buff = Buffer.from(record).toString('base64')
+        yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
+      }
     }
   }
   progressBar.stop()
