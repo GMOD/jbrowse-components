@@ -178,7 +178,6 @@ describe('text-index tracks', () => {
     .it('Indexes a remote and a local file', ctx => verifyIxxFiles(ctx.dir))
 })
 
-// attributes flag
 describe('text-index tracks', () => {
   setup
     .do(async ctx => {
