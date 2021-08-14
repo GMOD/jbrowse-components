@@ -167,7 +167,7 @@ const stateModelFactory = (
             async () => {
               try {
                 const { rpcManager } = getSession(self)
-                const { sortedBy, colorBy, renderProps } = self
+                const { sortedBy, colorBy } = self
                 const view = getContainingView(self) as LGV
 
                 // continually generate the vc pairing, set and rerender if any
@@ -196,21 +196,20 @@ const stateModelFactory = (
 
                   const region = {
                     start: pos,
-                    end: (pos || 0) + 1,
+                    end: pos + 1,
                     refName,
                     assemblyName,
                   }
 
                   // render just the sorted region first
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  await (self.rendererType as any).renderInClient(rpcManager, {
+                  await self.rendererType.renderInClient(rpcManager, {
                     assemblyName,
                     regions: [region],
                     adapterConfig: self.adapterConfig,
                     rendererType: self.rendererType.name,
                     sessionId: getRpcSessionId(self),
                     timeout: 1000000,
-                    ...renderProps,
+                    ...self.renderProps(),
                   })
                   self.setReady(true)
                   self.setCurrBpPerPx(view.bpPerPx)
