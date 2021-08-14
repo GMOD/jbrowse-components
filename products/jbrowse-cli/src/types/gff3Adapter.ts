@@ -78,12 +78,14 @@ export async function* indexGff3(
         .find(f => f.startsWith('ID'))
         ?.split('=')[1]
         .trim()
-      const attrs = attributes.map(attr =>
-        col9attrs
-          .find(f => f.startsWith(attr))
-          ?.split('=')[1]
-          .trim(),
-      )
+      const attrs = attributes
+        .map(attr =>
+          col9attrs
+            .find(f => f.startsWith(attr))
+            ?.split('=')[1]
+            .trim(),
+        )
+        .filter(f => !!f)
       if (name || id) {
         const record = JSON.stringify([locStr, trackId, name, id])
         const buff = Buffer.from(record).toString('base64')
