@@ -876,25 +876,6 @@
       }
     },
     {
-      "type": "FeatureTrack",
-      "trackId": "gff3demo",
-      "assemblyNames": ["volvox"],
-      "name": "gff3 demo",
-      "category": ["Miscellaneous"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "demo.gtf"
-        },
-        "index": {
-          "location": {
-            "uri": "demo.gtf.tbi"
-          }
-        }
-      },
-      "textSearchIndexingAttributes": ["gene_name"]
-    },
-    {
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram",
       "name": "volvox-sorted.cram",
