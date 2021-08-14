@@ -1,9 +1,1 @@
-{
-  "TrackData": {
-    "TrackIds": ["gff3tabix_genes", "single_exon_gene"],
-    "metaAttrs": [
-      ["Name", "ID"],
-      ["Name", "ID"]
-    ]
-  }
-}
+{}

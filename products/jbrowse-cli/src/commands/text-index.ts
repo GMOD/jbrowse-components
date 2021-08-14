@@ -84,8 +84,6 @@ export default class TextIndex extends JBrowseCommand {
       ? path.join(outFlag, 'config.json')
       : outFlag
     const dir = path.dirname(confFile)
-    const TrackIds: Array<string> = []
-
     const config: Config = JSON.parse(fs.readFileSync(confFile, 'utf8'))
     const assembliesToIndex =
       assemblies?.split(',') || config.assemblies?.map(a => a.name) || []
@@ -113,6 +111,7 @@ export default class TextIndex extends JBrowseCommand {
         this.log(
           `Note: ${asm} has already been indexed with this configuration, use --force to overwrite this assembly. Skipping for now`,
         )
+        continue
       }
       await this.indexDriver(
         config,
@@ -184,7 +183,7 @@ export default class TextIndex extends JBrowseCommand {
 
   async *indexFile(
     configs: Track[],
-    attributes: string[],
+    attributesToIndex: string[],
     outLocation: string,
     quiet: boolean,
     include: string[],
@@ -209,18 +208,6 @@ export default class TextIndex extends JBrowseCommand {
         if (exc.length > 0) {
           types.push(exc)
         }
-      }
-
-      let attributesToIndex
-      if (attributes && attributes.length > 0) {
-        attributesToIndex = attributes
-      } else if (
-        textSearchIndexingAttributes &&
-        textSearchIndexingAttributes.length > 0
-      ) {
-        attributesToIndex = textSearchIndexingAttributes
-      } else {
-        attributesToIndex = ['Name', 'ID']
       }
 
       if (type === 'Gff3TabixAdapter') {
@@ -270,6 +257,12 @@ export default class TextIndex extends JBrowseCommand {
         return currentTrack
       })
       .filter(track => track.assemblyNames.includes(assemblyName))
-      .filter(track => track.adapter.type === 'Gff3TabixAdapter')
+      .filter(track => supported(track.adapter.type))
   }
+}
+
+function supported(type: string) {
+  return ['Gff3TabixAdapter', 'GtfTabixAdapter', 'VcfTabixAdapter'].includes(
+    type,
+  )
 }
