@@ -249,7 +249,6 @@ describe('check that volvox data is properly indexed, re-run text-index on volvo
   let preVolvoxIx = ''
   let preVolvoxIxx = ''
   let preVolvoxMeta = ''
-  let preVolvox2Meta = ''
 
   setup
     .do(async ctx => {
@@ -260,18 +259,15 @@ describe('check that volvox data is properly indexed, re-run text-index on volvo
       preVolvoxIx = readText(ctx.dir, 'volvox.ix')
       preVolvoxIxx = readText(ctx.dir, 'volvox.ixx')
       preVolvoxMeta = readJSON(ctx.dir, 'volvox_meta.json')
-      preVolvox2Meta = readJSON(ctx.dir, 'volvox2_meta.json')
     })
     .command(['text-index', '--target=config.json', '--force'])
     .it('Indexes entire volvox config', ctx => {
       const postVolvoxIx = readText(ctx.dir, 'volvox.ix')
       const postVolvoxIxx = readText(ctx.dir, 'volvox.ixx')
       const postVolvoxMeta = readJSON(ctx.dir, 'volvox_meta.json')
-      const postVolvox2Meta = readJSON(ctx.dir, 'volvox2_meta.json')
       expect(postVolvoxIx).toEqual(preVolvoxIx)
       expect(postVolvoxIxx).toEqual(preVolvoxIxx)
       expect(postVolvoxMeta).toEqual(preVolvoxMeta)
-      expect(postVolvox2Meta).toEqual(preVolvox2Meta)
     })
 })
 
