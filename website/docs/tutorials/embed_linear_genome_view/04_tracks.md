@@ -1,22 +1,16 @@
 ---
-id: bcc2020_embedding_jbrowse_05_tracks
+id: 04_tracks
 title: About tracks
 ---
 
-:::danger Out of date
-
-Please see the
-[updated version of this tutorial](./tutorials/embed_linear_genome_view/01_introduction).
-
-:::
-
 ## What is a track?
 
-A track is the place to display your data files in JBrowse Linear View. For this
-tutorial we're going to add a gene track, an
-[alignments track](user_guide#alignments-tracks), and a [variants track](user_guide#variant-tracks).
-We're just going to use basic configuration, but check the links for the track
-types to see what kinds of things you can configure in them.
+A track is the place to display your data files in JBrowse Linear Genome View.
+For this tutorial we're going to add a gene track, an
+[alignments track](../../user_guide#alignments-tracks), and a
+[variants track](../../user_guide#variant-tracks). We're just going to use basic
+configuration, but check the links for the track types to see what kinds of
+things you can configure in them.
 
 ## Adding tracks
 
@@ -43,6 +37,8 @@ https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_in
 
 ### Creating track configurations with the CLI
 
+Here are the commands to run to generate the track configurations:
+
 ```sh
 jbrowse add-track https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz --name "NCBI RefSeq Genes" --category "Genes" --config '{"renderer": {"type": "SvgFeatureRenderer"}}' --skipCheck
 jbrowse add-track https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram --name "NA12878 Exome" --category "1000 Genomes, Alignments" --skipCheck
@@ -52,12 +48,12 @@ jbrowse add-track https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/variants/A
 Open "config.json" again and look at the tracks that were generated. You can see
 that again, it has guessed index locations for you, which you can change if
 needed. Create a new file called "tracks.js" and copy the tracks array into it
-and have it exported, like this:
+and have it be exported, like this:
 
 ```javascript title="tracks.js"
 export default [
   {
-    type: 'BasicTrack',
+    type: 'FeatureTrack',
     trackId:
       'GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff',
     name: 'NCBI RefSeq Genes',
@@ -139,17 +135,29 @@ export default [
 ]
 ```
 
-Now update "index.html" to import this file.
+You can delete "config.json" at this point, as you won't need it any more. Now
+update "index.html" to import this file.
 
-```html {11} title="index.html"
+```html {22} title="index.html"
 <html>
   <head>
-    <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>
+    <script
+      src="//unpkg.com/react@16/umd/react.development.js"
+      crossorigin
+    ></script>
+    <script
+      src="//unpkg.com/react-dom@16/umd/react-dom.development.js"
+      crossorigin
+    ></script>
+    <script
+      src="//unpkg.com/@jbrowse/react-linear-genome-view/dist/react-linear-genome-view.umd.development.js"
+      crossorigin
+    ></script>
   </head>
 
   <body>
-    <h1>We're using JBrowse Linear View!</h1>
-    <div id="jbrowse_linear_view"></div>
+    <h1>We're using JBrowse Linear Genome View!</h1>
+    <div id="jbrowse_linear_genome_view"></div>
     <script type="module">
       import assembly from './assembly.js'
       import tracks from './tracks.js'

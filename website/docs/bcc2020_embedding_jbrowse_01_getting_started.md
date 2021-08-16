@@ -3,6 +3,13 @@ id: bcc2020_embedding_jbrowse_01_getting_started
 title: Getting started
 ---
 
+:::danger Out of date
+
+Please see the
+[updated version of this tutorial](./tutorials/embed_linear_genome_view/01_introduction).
+
+:::
+
 ## Welcome!
 
 We've been working hard on JBrowse 2 and are happy to be able to start sharing
@@ -26,9 +33,10 @@ like, you can follow along with the tutorial using the recording below.
 ></iframe>
 <p>
   <a href="https://vimeo.com/454059086"
-    >Embedding JBrowse 2 in your website, BCC2020 West Training </a
-  >
-  from <a href="https://vimeo.com/user119241161">Jennifer Vessio</a> on
+    >Embedding JBrowse 2 in your website, BCC2020 West Training
+  </a>
+  &nbsp;from&nbsp;
+  <a href="https://vimeo.com/user119241161">Jennifer Vessio</a> on&nbsp;
   <a href="https://vimeo.com">Vimeo</a>.
 </p>
 

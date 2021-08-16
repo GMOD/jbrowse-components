@@ -1,17 +1,11 @@
 ---
-id: bcc2020_embedding_jbrowse_06_other_options
+id: 05_other_options
 title: Other options
 ---
 
-:::danger Out of date
-
-Please see the
-[updated version of this tutorial](./tutorials/embed_linear_genome_view/01_introduction).
-
-:::
-
-There are some other optional things you can pass to JBrowse Linear View when
-you create it
+There are some other optional things you can pass to JBrowse Linear Genome View
+when you create it. We won't be adding any of these options for this demo, so
+this page is just for your information.
 
 ## location
 
@@ -28,7 +22,7 @@ example, if you wanted to have the view open to chromosome 1 from position
 
 JBrowse 2 allows you to provide plugins to add new features or modify behavior.
 We won't get into them today, but you can read more about creating a plugin
-[here](developer_guide#creating-a-new-plugin).
+[here](../../developer_guide).
 
 ## defaultSession
 
@@ -43,5 +37,5 @@ changes. We'll also talk about this more later in the tutorial.
 
 ## configuration
 
-This is a place to put top-level configuration. It's mostly reserved for future
-use, so you won't need to worry about it right now.
+This is a place to put top-level configuration, such as the color theme that
+JBrowse uses.
