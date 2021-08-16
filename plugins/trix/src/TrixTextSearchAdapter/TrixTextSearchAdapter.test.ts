@@ -21,7 +21,7 @@ test('adapter can fetch output files', async () => {
       uri: `${urlPath}/volvox.ixx`,
     },
     metaFilePath: {
-      uri: `${urlPath}/meta.json`,
+      uri: `${urlPath}/volvox_meta.json`,
     },
   }
   // create adapter
