@@ -82,7 +82,6 @@ export default class TextIndex extends JBrowseCommand {
       ? path.join(outFlag, 'config.json')
       : outFlag
     const dir = path.dirname(confFile)
-    const TrackIds: Array<string> = []
 
     const config: Config = JSON.parse(fs.readFileSync(confFile, 'utf8'))
     const assembliesToIndex =
@@ -152,27 +151,30 @@ export default class TextIndex extends JBrowseCommand {
       ),
     )
 
-    const metaAttrs: Array<string[]> = []
     for (const asm of assembliesToIndex) {
+      const metaAttrs: Array<string[]> = []
+      const TrackIds: Array<string> = []
       const configs = await this.getConfig(confFile, asm, tracks?.split(','))
 
       for (const config of configs) {
         const { textSearchIndexingAttributes, trackId } = config
 
-        if (attributes && attributes.length > 0) {
-          metaAttrs.push(attributes.split(','))
-        } else if (textSearchIndexingAttributes) {
-          metaAttrs.push(textSearchIndexingAttributes)
-        } else {
-          metaAttrs.push(['Name', 'ID'])
+        if (configs.length) {
+          if (attributes && attributes.length > 0) {
+            metaAttrs.push(attributes.split(','))
+          } else if (textSearchIndexingAttributes) {
+            metaAttrs.push(textSearchIndexingAttributes)
+          } else {
+            metaAttrs.push(['Name', 'ID'])
+          }
+          TrackIds.push(trackId)
         }
-        TrackIds.push(trackId)
-      }
 
-      fs.writeFileSync(
-        path.join(dir, 'trix', `${asm}_meta.json`),
-        JSON.stringify({ TrackData: { TrackIds, metaAttrs } }, null, 2),
-      )
+        fs.writeFileSync(
+          path.join(dir, 'trix', `${asm}_meta.json`),
+          JSON.stringify({ TrackData: { TrackIds, metaAttrs } }, null, 2),
+        )
+      }
     }
 
     this.log('Finished!')
