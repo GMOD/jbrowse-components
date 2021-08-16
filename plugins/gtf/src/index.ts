@@ -11,7 +11,7 @@ export default class extends Plugin {
       () =>
         new AdapterType({
           name: 'GtfTabixAdapter',
-          configSchema: gff3TabixAdapterConfigSchema,
+          configSchema: gtfTabixAdapterConfigSchema,
           getAdapterClass: () =>
             import('./GtfTabixAdapter/GtfTabixAdapter').then(r => r.default),
         }),
