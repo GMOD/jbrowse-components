@@ -8,7 +8,7 @@ import fs from 'fs'
 
 export async function* indexVcf(
   config: Track,
-  attributes: string[],
+  attributesToIndex: string[],
   outLocation: string,
   typesToExclude: string[],
   quiet: boolean,
