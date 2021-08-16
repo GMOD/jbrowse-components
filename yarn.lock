@@ -6135,6 +6135,13 @@ available-typed-arrays@^1.0.2:
   dependencies:
     array-filter "^1.0.0"
 
+await-first@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/await-first/-/await-first-1.0.0.tgz#06afa6db7cebe412be9be54e82dd8c6cb4cdb241"
+  integrity sha512-SK20HicVu6lXvNM0nS1flurrs4/1NdhvccvEn52Gf+vpERZnnkKBnJvAQDsYkzJnsHs1bRNNKEiobEet7a/0TA==
+  dependencies:
+    ee-first "^1.1.1"
+
 aws-sign2@~0.7.0:
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/aws-sign2/-/aws-sign2-0.7.0.tgz#b46e890934a9591f2d2f6f86d7e6a9f1b3fe76a8"
@@ -8688,6 +8695,13 @@ debug@^3.0.0, debug@^3.1.0, debug@^3.1.1, debug@^3.2.5, debug@^3.2.6:
   dependencies:
     ms "^2.1.1"
 
+debug@^4.3.1:
+  version "4.3.2"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.2.tgz#f0a49c18ac8779e31d4a0c6029dfb76873c7428b"
+  integrity sha512-mOp8wKcvj7XxC78zLgw/ZA+6TSgkoE2C/ienthhRD298T7UNwAg9diBpLRxC0mOezLl4B0xV7M0cCO6P/O0Xhw==
+  dependencies:
+    ms "2.1.2"
+
 debuglog@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/debuglog/-/debuglog-1.0.1.tgz#aa24ffb9ac3df9a2351837cfb2d279360cd78492"
@@ -9247,7 +9261,7 @@ ecc-jsbn@~0.1.1:
     jsbn "~0.1.0"
     safer-buffer "^2.1.0"
 
-ee-first@1.1.1:
+ee-first@1.1.1, ee-first@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/ee-first/-/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
   integrity sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
@@ -10272,12 +10286,14 @@ external-editor@^3.0.0, external-editor@^3.0.3:
     iconv-lite "^0.4.24"
     tmp "^0.0.33"
 
-external-sorting@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/external-sorting/-/external-sorting-1.2.0.tgz#e2f492be8caf171c0f5fcd5831b565bcd2117a46"
-  integrity sha512-VJ61/dKifQd2wmEPi3SeMnYTjCbeysPcAxfGpQzIbC2mEdgaNBhCWw+lM4Km8sEzYkOToxLT7XV80hdM1UykoQ==
+external-sort@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/external-sort/-/external-sort-1.0.0.tgz#5fe5680a5437aa0f261352f642e7b2b4d3776719"
+  integrity sha512-XodH3l9aHeU1hpBJa43tU1z6M00gh+LnGNTujMUK3L97C4a1WD6cril+Q1bzFAXHZscLkV7mEC7/O83Wc8sAhw==
   dependencies:
-    fast-sort "^2.0.1"
+    await-first "^1.0.0"
+    debug "^4.3.1"
+    mz-modules "^2.1.0"
 
 extglob@^2.0.4:
   version "2.0.4"
@@ -10384,11 +10400,6 @@ fast-levenshtein@^2.0.6, fast-levenshtein@~2.0.6:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/fast-levenshtein/-/fast-levenshtein-2.0.6.tgz#3d8a5c66883a16a30ca8643e851f19baa7797917"
   integrity sha1-PYpcZog6FqMMqGQ+hR8Zuqd5eRc=
-
-fast-sort@^2.0.1:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/fast-sort/-/fast-sort-2.2.0.tgz#20903763531fbcbb41c9df5ab1bf5f2cefc8476a"
-  integrity sha512-W7zqnn2zsYoQA87FKmYtgOsbJohOrh7XrtZrCVHN5XZKqTBTv5UG+rSS3+iWbg/nepRQUOu+wnas8BwtK8kiCg==
 
 fastq@^1.6.0:
   version "1.8.0"
@@ -13019,12 +13030,12 @@ iterate-value@^1.0.0:
     es-get-iterator "^1.0.2"
     iterate-iterator "^1.0.1"
 
-ixixx@^1.0.8:
-  version "1.0.8"
-  resolved "https://registry.yarnpkg.com/ixixx/-/ixixx-1.0.8.tgz#2cbc2924f443a62e8d903a67fb40bb2c1e3e1e44"
-  integrity sha512-cZtAHy+vP/ExOk3F9FHpRAXp/mqemoBLUstTnk+Zwaf4bM3O+OxA5/2UIOSdGIyVgH+w756+Hv77aSIAoi5QYw==
+ixixx@^1.0.9:
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/ixixx/-/ixixx-1.0.9.tgz#092cac72137ebf26d6ce11e99d0bde1838756e98"
+  integrity sha512-xh74ilpXxriSh5xLOg4Z9Ufl4N7ENUtBGGgXL+BtHCNNTu42gMOeEkUZvMs+9hYNK7Dyr0L385qslCSCFeQo5A==
   dependencies:
-    external-sorting "^1.2.0"
+    external-sort "^1.0.0"
     tmp "^0.2.1"
 
 jake@^10.6.1:
@@ -14249,6 +14260,13 @@ klona@^2.0.4:
   resolved "https://registry.yarnpkg.com/klona/-/klona-2.0.4.tgz#7bb1e3affb0cb8624547ef7e8f6708ea2e39dfc0"
   integrity sha512-ZRbnvdg/NxqzC7L9Uyqzf4psi1OM4Cuc+sJAkQPjO6XkQIJTNbfK2Rsmbw8fx1p2mkZdp2FZYo2+LwXYY/uwIA==
 
+ko-sleep@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/ko-sleep/-/ko-sleep-1.0.3.tgz#28a2a0a1485e8b7f415ff488dee17d24788ab082"
+  integrity sha1-KKKgoUhei39BX/SI3uF9JHiKsII=
+  dependencies:
+    ms "^2.0.0"
+
 language-subtag-registry@~0.3.2:
   version "0.3.20"
   resolved "https://registry.yarnpkg.com/language-subtag-registry/-/language-subtag-registry-0.3.20.tgz#a00a37121894f224f763268e431c55556b0c0755"
@@ -15429,6 +15447,17 @@ mute-stream@0.0.8, mute-stream@~0.0.4:
   version "0.0.8"
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.8.tgz#1630c42b2251ff81e2a283de96a5497ea92e5e0d"
   integrity sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==
+
+mz-modules@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/mz-modules/-/mz-modules-2.1.0.tgz#7f529877afd0d42f409a7463b96986d61cfbcf96"
+  integrity sha512-sjk8lcRW3vrVYnZ+W+67L/2rL+jbO5K/N6PFGIcLWTiYytNr22Ah9FDXFs+AQntTM1boZcoHi5qS+CV1seuPog==
+  dependencies:
+    glob "^7.1.2"
+    ko-sleep "^1.0.3"
+    mkdirp "^0.5.1"
+    pump "^3.0.0"
+    rimraf "^2.6.1"
 
 mz@^2.4.0, mz@^2.5.0:
   version "2.7.0"

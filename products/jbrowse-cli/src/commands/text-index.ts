@@ -58,7 +58,7 @@ export default class TextIndex extends JBrowseCommand {
     }),
     exclude: flags.string({
       description: 'Adds gene type to list of excluded types',
-      default: '',
+      default: 'CDS,exon',
     }),
   }
 
@@ -186,8 +186,8 @@ export default class TextIndex extends JBrowseCommand {
     attributesToIndex: string[],
     outLocation: string,
     quiet: boolean,
-    include: string[],
-    exclude: string[],
+    typesToInclude: string[],
+    typesToExclude: string[],
   ) {
     for (const config of configs) {
       const {
@@ -196,26 +196,16 @@ export default class TextIndex extends JBrowseCommand {
         textSearchIndexingFeatureTypesToExclude,
       } = config
 
-      const types = textSearchIndexingFeatureTypesToExclude || ['CDS', 'exon']
+      const types = textSearchIndexingFeatureTypesToExclude || typesToExclude
 
-      for (const inc of include) {
-        const index = types.indexOf(inc)
-        if (index > -1) {
-          types.splice(index, 1)
-        }
-      }
-      for (const exc of exclude) {
-        if (exc.length > 0) {
-          types.push(exc)
-        }
-      }
+      const attrs = textSearchIndexingAttributes || attributesToIndex
 
       if (type === 'Gff3TabixAdapter') {
-        yield* indexGff3(config, attributesToIndex, outLocation, types, quiet)
+        yield* indexGff3(config, attrs, outLocation, types, quiet)
       } else if (type === 'GtfTabixAdapter') {
-        yield* indexGtf(config, attributesToIndex, outLocation, types, quiet)
+        yield* indexGtf(config, attrs, outLocation, types, quiet)
       } else if (type === 'VcfTabixAdapter') {
-        yield* indexVcf(config, attributesToIndex, outLocation, types, quiet)
+        yield* indexVcf(config, attrs, outLocation, types, quiet)
       }
     }
   }
