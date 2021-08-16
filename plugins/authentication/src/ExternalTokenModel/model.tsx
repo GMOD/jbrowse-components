@@ -111,7 +111,6 @@ const stateModelFactory = (
           } else {
             reject(new Error('user cancelled entry'))
           }
-          session.setDialogComponent(undefined, undefined)
           resolve = () => {}
           reject = () => {}
           openLocationPromise = undefined
@@ -124,10 +123,22 @@ const stateModelFactory = (
             if (!openLocationPromise) {
               openLocationPromise = new Promise(async (r, x) => {
                 const { session } = getParent(self, 2)
-                session.setDialogComponent(ExternalTokenEntryForm, {
-                  internetAccountId: self.internetAccountId,
-                  handleClose: this.handleClose,
-                })
+                // session.setDialogComponent(ExternalTokenEntryForm, {
+                //   internetAccountId: self.internetAccountId,
+                //   handleClose: this.handleClose,
+                // })
+
+                session.queueDialog((callback: Function) => [
+                  ExternalTokenEntryForm,
+                  {
+                    internetAccountId: self.internetAccountId,
+                    handleClose: () => {
+                      console.log('done')
+                      this.handleClose()
+                      callback()
+                    },
+                  },
+                ])
                 resolve = r
                 reject = x
               })

@@ -76,7 +76,6 @@ const stateModelFactory = (
             reject()
           }
 
-          session.setDialogComponent(undefined, undefined)
           resolve = () => {}
           reject = () => {}
           openLocationPromise = undefined
@@ -90,20 +89,21 @@ const stateModelFactory = (
               openLocationPromise = new Promise(async (r, x) => {
                 const { session } = getParent(self, 2)
 
-                // session.launchDialog((thisDialogIsDone: Function) => [
-                //   HTTPBasicLoginForm,
-                //   {
-                //     internetAccountId: self.internetAccountId,
-                //     handleClose: () => {
-                //       this.handleClose()
-                //       thisDialogIsDone()
-                //     },
-                //   },
-                // ])
-                session.setDialogComponent(HTTPBasicLoginForm, {
-                  internetAccountId: self.internetAccountId,
-                  handleClose: this.handleClose,
-                })
+                session.queueDialog((callback: Function) => [
+                  HTTPBasicLoginForm,
+                  {
+                    internetAccountId: self.internetAccountId,
+                    handleClose: () => {
+                      console.log('done')
+                      this.handleClose()
+                      callback()
+                    },
+                  },
+                ])
+                // session.setDialogComponent(HTTPBasicLoginForm, {
+                //   internetAccountId: self.internetAccountId,
+                //   handleClose: this.handleClose,
+                // })
                 resolve = r
                 reject = x
               })
