@@ -178,7 +178,6 @@ describe('text-index tracks', () => {
     .it('Indexes a remote and a local file', ctx => verifyIxxFiles(ctx.dir))
 })
 
-// attributes flag
 describe('text-index tracks', () => {
   setup
     .do(async ctx => {
@@ -223,6 +222,53 @@ describe('text-index tracks', () => {
     .it('Indexes a track with no attributes in the config', ctx =>
       verifyIxxFiles(ctx.dir),
     )
+})
+
+// source https://stackoverflow.com/a/64255382/2129219
+async function copyDir(src: string, dest: string) {
+  await fs.promises.mkdir(dest, { recursive: true })
+  const entries = await fs.promises.readdir(src, { withFileTypes: true })
+
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name)
+    const destPath = path.join(dest, entry.name)
+
+    entry.isDirectory()
+      ? await copyDir(srcPath, destPath)
+      : await fs.promises.copyFile(srcPath, destPath)
+  }
+}
+function readText(d: string, s: string) {
+  return fs.readFileSync(path.join(d, 'trix', s), 'utf8')
+}
+function readJSON(d: string, s: string) {
+  return JSON.parse(readText(d, s))
+}
+
+describe('check that volvox data is properly indexed, re-run text-index on volvox config if fails', () => {
+  let preVolvoxIx = ''
+  let preVolvoxIxx = ''
+  let preVolvoxMeta = ''
+
+  setup
+    .do(async ctx => {
+      await copyDir(
+        path.join(__dirname, '..', '..', '..', '..', 'test_data', 'volvox'),
+        ctx.dir,
+      )
+      preVolvoxIx = readText(ctx.dir, 'volvox.ix')
+      preVolvoxIxx = readText(ctx.dir, 'volvox.ixx')
+      preVolvoxMeta = readJSON(ctx.dir, 'volvox_meta.json')
+    })
+    .command(['text-index', '--target=config.json', '--force'])
+    .it('Indexes entire volvox config', ctx => {
+      const postVolvoxIx = readText(ctx.dir, 'volvox.ix')
+      const postVolvoxIxx = readText(ctx.dir, 'volvox.ixx')
+      const postVolvoxMeta = readJSON(ctx.dir, 'volvox_meta.json')
+      expect(postVolvoxIx).toEqual(preVolvoxIx)
+      expect(postVolvoxIxx).toEqual(preVolvoxIxx)
+      expect(postVolvoxMeta).toEqual(preVolvoxMeta)
+    })
 })
 
 // This test is commented out due to how long it takes to complete

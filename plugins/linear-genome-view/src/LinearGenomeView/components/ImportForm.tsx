@@ -184,6 +184,8 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                     onBlur: event => {
                       if (event.target.value !== '') {
                         setSelectedRegion(event.target.value)
+                      } else {
+                        setSelectedRegion(assemblyRegions[0].refName)
                       }
                     },
                     onKeyPress: event => {

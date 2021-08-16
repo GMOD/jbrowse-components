@@ -425,7 +425,11 @@ OPTIONS
 
   --attributes=attributes      Comma separated list of attributes to index
 
+  --exclude=exclude            Adds gene type to list of excluded types
+
   --force                      Overwrite previously existing indexes
+
+  --include=include            Removes gene type from list of excluded types
 
   --out=out                    Synonym for target
 

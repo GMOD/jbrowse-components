@@ -74,7 +74,7 @@ export interface Assembly {
 }
 
 export interface Track {
-  indexingFeatureTypesToExclude: string[]
+  textSearchIndexingFeatureTypesToExclude: string[]
   trackId: string
   name: string
   assemblyNames: string[]

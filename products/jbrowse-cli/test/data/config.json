@@ -51,6 +51,25 @@
   "tracks": [
     {
       "type": "FeatureTrack",
+      "trackId": "gtftabix_genes",
+      "assemblyNames": ["volvox"],
+      "name": "Gtf Tabix Genes",
+      "category": ["Miscellaneous"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "Felis_catus.Felis_catus_9.0.104.chr.gtf"
+        },
+        "index": {
+          "location": {
+            "uri": "Felis_catus.Felis_catus_9.0.104.chr.gtf.tbi"
+          }
+        }
+      },
+      "textSearchIndexingAttributes": ["gene_name", "gene_id", "feature"]
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "au9_scaffold",
       "assemblyNames": ["volvox"],
       "name": "AU9 Scaffold",
@@ -67,7 +86,7 @@
         }
       },
       "textSearchIndexingAttributes": ["Name", "ID", "type"],
-      "indexingFeatureTypesToExclude": ["CDS", "exon"]
+      "textSearchIndexingFeatureTypesToExclude": ["CDS", "exon"]
     },
     {
       "type": "FeatureTrack",
@@ -87,7 +106,7 @@
         }
       },
       "textSearchIndexingAttributes": ["Name", "ID", "type"],
-      "indexingFeatureTypesToExclude": ["CDS", "exon"]
+      "textSearchIndexingFeatureTypesToExclude": ["CDS", "exon"]
     },
     {
       "type": "FeatureTrack",
@@ -107,7 +126,45 @@
         }
       },
       "textSearchIndexingAttributes": ["Name", "ID", "type"],
-      "indexingFeatureTypesToExclude": ["CDS", "exon"]
+      "textSearchIndexingFeatureTypesToExclude": ["CDS", "exon"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gff3demo",
+      "assemblyNames": ["volvox"],
+      "name": "gff3 demo",
+      "category": ["Miscellaneous"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "demo.gff3"
+        },
+        "index": {
+          "location": {
+            "uri": "demo.gff3.tbi"
+          }
+        }
+      },
+      "textSearchIndexingAttributes": ["Name"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gtfdemo",
+      "assemblyNames": ["volvox"],
+      "name": "gtf demo",
+      "category": ["Miscellaneous"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "demo.gtf"
+        },
+        "index": {
+          "location": {
+            "uri": "demo.gtf.tbi"
+          }
+        }
+      },
+      "textSearchIndexingAttributes": ["exon_id"]
     },
     {
       "type": "FeatureTrack",
@@ -127,7 +184,7 @@
         }
       },
       "textSearchIndexingAttributes": ["Name", "ID", "type"],
-      "indexingFeatureTypesToExclude": ["CDS", "exon"]
+      "textSearchIndexingFeatureTypesToExclude": ["CDS", "exon"]
     },
     {
       "type": "FeatureTrack",

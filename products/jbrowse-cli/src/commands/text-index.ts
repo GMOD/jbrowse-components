@@ -1,14 +1,11 @@
 import path from 'path'
-import { SingleBar, Presets } from 'cli-progress'
-import readline from 'readline'
 import fs from 'fs'
 import { flags } from '@oclif/command'
 import { Readable } from 'stream'
 import { ixIxxStream } from 'ixixx'
-import { IncomingMessage } from 'http'
-import { http, https, FollowResponse } from 'follow-redirects'
-import { createGunzip } from 'zlib'
 import JBrowseCommand, { Track, Config } from '../base'
+import { indexGff3 } from '../types/gff3Adapter'
+import { indexGtf } from '../types/gtfAdapter'
 
 export default class TextIndex extends JBrowseCommand {
   static description = 'Make a text-indexing file for any given track(s).'
@@ -85,7 +82,6 @@ export default class TextIndex extends JBrowseCommand {
       ? path.join(outFlag, 'config.json')
       : outFlag
     const dir = path.dirname(confFile)
-    const TrackIds: Array<string> = []
 
     const config: Config = JSON.parse(fs.readFileSync(confFile, 'utf8'))
     const assembliesToIndex =
@@ -138,7 +134,7 @@ export default class TextIndex extends JBrowseCommand {
               uri: `trix/${asm}.ixx`,
             },
             metaFilePath: {
-              uri: `trix/meta.json`,
+              uri: `trix/${asm}_meta.json`,
             },
             assemblies: [asm],
           })
@@ -155,27 +151,30 @@ export default class TextIndex extends JBrowseCommand {
       ),
     )
 
-    const metaAttrs: Array<string[]> = []
     for (const asm of assembliesToIndex) {
+      const metaAttrs: Array<string[]> = []
+      const TrackIds: Array<string> = []
       const configs = await this.getConfig(confFile, asm, tracks?.split(','))
 
       for (const config of configs) {
         const { textSearchIndexingAttributes, trackId } = config
 
-        if (attributes && attributes.length > 0) {
-          metaAttrs.push(attributes.split(','))
-        } else if (textSearchIndexingAttributes) {
-          metaAttrs.push(textSearchIndexingAttributes)
-        } else {
-          metaAttrs.push(['Name', 'ID'])
+        if (configs.length) {
+          if (attributes && attributes.length > 0) {
+            metaAttrs.push(attributes.split(','))
+          } else if (textSearchIndexingAttributes) {
+            metaAttrs.push(textSearchIndexingAttributes)
+          } else {
+            metaAttrs.push(['Name', 'ID'])
+          }
+          TrackIds.push(trackId)
         }
-        TrackIds.push(trackId)
-      }
 
-      fs.writeFileSync(
-        path.join(dir, 'trix', `${asm}_meta.json`),
-        JSON.stringify({ TrackData: { TrackIds, metaAttrs } }, null, 2),
-      )
+        fs.writeFileSync(
+          path.join(dir, 'trix', `${asm}_meta.json`),
+          JSON.stringify({ TrackData: { TrackIds, metaAttrs } }, null, 2),
+        )
+      }
     }
 
     this.log('Finished!')
@@ -210,10 +209,10 @@ export default class TextIndex extends JBrowseCommand {
       const {
         adapter: { type },
         textSearchIndexingAttributes,
-        indexingFeatureTypesToExclude,
+        textSearchIndexingFeatureTypesToExclude,
       } = config
 
-      const types: Array<string> = indexingFeatureTypesToExclude || [
+      const types: Array<string> = textSearchIndexingFeatureTypesToExclude || [
         'CDS',
         'exon',
         'transcript',
@@ -244,130 +243,11 @@ export default class TextIndex extends JBrowseCommand {
         attributesToIndex = ['Name', 'ID']
       }
       if (type === 'Gff3TabixAdapter') {
-        yield* this.indexGff3(
-          config,
-          attributesToIndex,
-          outLocation,
-          types,
-          quiet,
-        )
+        yield* indexGff3(config, attributesToIndex, outLocation, types, quiet)
+      } else if (type === 'GtfTabixAdapter') {
+        yield* indexGtf(config, attributesToIndex, outLocation, types, quiet)
       }
     }
-  }
-
-  async *indexGff3(
-    config: Track,
-    attributes: string[],
-    outLocation: string,
-    types: string[],
-    quiet: boolean,
-  ) {
-    const {
-      adapter: {
-        gffGzLocation: { uri },
-      },
-      trackId,
-    } = config
-
-    // progress bar code was aided by blog post at
-    // https://webomnizz.com/download-a-file-with-progressbar-using-node-js/
-    const progressBar = new SingleBar(
-      {
-        format: '{bar} ' + trackId + ' {percentage}% | ETA: {eta}s',
-      },
-      Presets.shades_classic,
-    )
-
-    let fileDataStream
-    let totalBytes = 0
-    let receivedBytes = 0
-    if (this.isURL(uri)) {
-      fileDataStream = await this.createRemoteStream(uri)
-      totalBytes = +(fileDataStream.headers['content-length'] || 0)
-    } else {
-      const filename = path.join(outLocation, uri)
-      totalBytes = fs.statSync(filename).size
-      fileDataStream = fs.createReadStream(filename)
-    }
-
-    if (!quiet) {
-      progressBar.start(totalBytes, 0)
-    }
-
-    fileDataStream.on('data', chunk => {
-      receivedBytes += chunk.length
-      progressBar.update(receivedBytes)
-    })
-
-    const gzStream = uri.endsWith('.gz')
-      ? fileDataStream.pipe(createGunzip())
-      : fileDataStream
-
-    const rl = readline.createInterface({
-      input: gzStream,
-    })
-
-    for await (const line of rl) {
-      if (line.startsWith('#')) {
-        continue
-      } else if (line.startsWith('>')) {
-        break
-      }
-
-      const [seq_id, , type, start, end, , , , col9] = line.split('\t')
-      const locStr = `${seq_id}:${start}..${end}`
-
-      if (!types.includes(type)) {
-        const col9attrs = col9.split(';')
-        const name = col9attrs
-          .find(f => f.startsWith('Name'))
-          ?.split('=')[1]
-          .trim()
-        const id = col9attrs
-          .find(f => f.startsWith('ID'))
-          ?.split('=')[1]
-          .trim()
-        const attrs = attributes.map(attr =>
-          col9attrs
-            .find(f => f.startsWith(attr))
-            ?.split('=')[1]
-            .trim(),
-        )
-        if (name || id) {
-          const record = JSON.stringify([locStr, trackId, name, id])
-          const buff = Buffer.from(record).toString('base64')
-          yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
-        }
-      }
-    }
-
-    progressBar.stop()
-  }
-
-  // Method for handing off the parsing of a gff3 file URL.
-  // Calls the proper parser depending on if it is gzipped or not.
-  // Returns a gff stream.
-  async createRemoteStream(urlIn: string) {
-    const newUrl = new URL(urlIn)
-    const fetcher = newUrl.protocol === 'https:' ? https : http
-
-    return new Promise<IncomingMessage & FollowResponse>((resolve, reject) =>
-      fetcher.get(urlIn, resolve).on('error', reject),
-    )
-  }
-
-  // Checks if the passed in string is a valid URL.
-  // Returns a boolean.
-  isURL(FileName: string) {
-    let url
-
-    try {
-      url = new URL(FileName)
-    } catch (_) {
-      return false
-    }
-
-    return url.protocol === 'http:' || url.protocol === 'https:'
   }
 
   // Given a readStream of data, indexes the stream into .ix and .ixx files
