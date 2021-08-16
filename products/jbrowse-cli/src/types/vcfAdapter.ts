@@ -1,4 +1,4 @@
-import { Gff3TabixAdapter, Track } from '../base'
+import { Track, VcfTabixAdapter } from '../base'
 import { isURL, createRemoteStream } from '../types/common'
 import { SingleBar, Presets } from 'cli-progress'
 import { createGunzip } from 'zlib'
@@ -6,17 +6,17 @@ import readline from 'readline'
 import path from 'path'
 import fs from 'fs'
 
-export async function* indexGff3(
+export async function* indexVcf(
   config: Track,
-  attributes: string[],
+  attributesToIndex: string[],
   outLocation: string,
   typesToExclude: string[],
   quiet: boolean,
 ) {
   const { adapter, trackId } = config
   const {
-    gffGzLocation: { uri },
-  } = adapter as Gff3TabixAdapter
+    vcfGzLocation: { uri },
+  } = adapter as VcfTabixAdapter
 
   // progress bar code was aided by blog post at
   // https://webomnizz.com/download-a-file-with-progressbar-using-node-js/
@@ -59,36 +59,27 @@ export async function* indexGff3(
   for await (const line of rl) {
     if (line.startsWith('#')) {
       continue
-    } else if (line.startsWith('>')) {
-      break
     }
 
-    const [seq_id, , type, start, end, , , , col9] = line.split('\t')
-    const locStr = `${seq_id}:${start}..${end}`
+    const [ref, pos, id, _ref, _alt, _qual, _filter, info] = line.split('\t')
+    const fields = info
+      .split(';')
+      .map(f => f.trim())
+      .map(f => f.split('='))
+    const end = fields.find(f => f[0] === 'END')
 
-    if (!typesToExclude.includes(type)) {
-      const col9attrs = col9.split(';')
-      const name = col9attrs
-        .find(f => f.startsWith('Name'))
-        ?.split('=')[1]
-        .trim()
-      const id = col9attrs
-        .find(f => f.startsWith('ID'))
-        ?.split('=')[1]
-        .trim()
-      const attrs = attributes
-        .map(attr =>
-          col9attrs
-            .find(f => f.startsWith(attr))
-            ?.split('=')[1]
-            .trim(),
-        )
-        .filter(f => !!f)
-      if (name || id) {
-        const record = JSON.stringify([locStr, trackId, name, id])
-        const buff = Buffer.from(record).toString('base64')
-        yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
-      }
+    const locStr = `${ref}:${pos}..${end ? end[1] : +pos + 1}`
+    if (id === '.') {
+      continue
+    }
+
+    const ids = id.split(',')
+    for (let i = 0; i < ids.length; i++) {
+      const id = ids[i]
+      const attrs = [id]
+      const record = JSON.stringify([locStr, trackId, undefined, id])
+      const buff = Buffer.from(record).toString('base64')
+      yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
     }
   }
 

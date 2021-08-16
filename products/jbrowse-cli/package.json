@@ -54,7 +54,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "follow-redirects": "^1.14.1",
-    "ixixx": "^1.0.7",
+    "ixixx": "^1.0.10",
     "json-parse-better-errors": "^1.0.2",
     "node-fetch": "^2.6.0",
     "tslib": "^1",
