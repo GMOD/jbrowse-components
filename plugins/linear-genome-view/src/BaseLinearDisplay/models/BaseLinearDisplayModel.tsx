@@ -17,7 +17,7 @@ import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import { autorun } from 'mobx'
-import { addDisposer, Instance, isAlive, types, getEnv } from 'mobx-state-tree'
+import { addDisposer, Instance, isAlive, types } from 'mobx-state-tree'
 import React from 'react'
 import { Tooltip } from '../components/BaseLinearDisplay'
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
@@ -56,7 +56,6 @@ export const BaseLinearDisplay = types
     message: '',
     featureIdUnderMouse: undefined as undefined | string,
     contextMenuFeature: undefined as undefined | Feature,
-    additionalContextMenuItemCallbacks: [] as Function[],
     scrollTop: 0,
   }))
   .views(self => ({
@@ -238,9 +237,6 @@ export const BaseLinearDisplay = types
     reload() {
       ;[...self.blockState.values()].map(val => val.doReload())
     },
-    addAdditionalContextMenuItemCallback(callback: Function) {
-      self.additionalContextMenuItemCallbacks.push(callback)
-    },
     setContextMenuFeature(feature?: Feature) {
       self.contextMenuFeature = feature
     },
@@ -293,7 +289,6 @@ export const BaseLinearDisplay = types
     },
 
     get contextMenuItems() {
-      const { pluginManager } = getEnv(self)
       const contextMenuItems = self.contextMenuFeature
         ? [
             {
@@ -308,10 +303,6 @@ export const BaseLinearDisplay = types
           ]
         : []
 
-      self.additionalContextMenuItemCallbacks.forEach(callback => {
-        const menuItems = callback(self.contextMenuFeature, self, pluginManager)
-        contextMenuItems.push(...menuItems)
-      })
       return contextMenuItems
     },
     renderProps() {
