@@ -81,11 +81,12 @@ export default class TextSearchManager {
       searchScope.assemblyName,
       aggregateTextSearchAdapters,
     )
+    const trackTextSearchConfs = tracks.map(track => track.textSearchConf)
     const trackTextSearchAdapters = this.getAdaptersWithAssembly(
       searchScope.assemblyName,
-      tracks.filter(
-        track =>
-          track.textSearchAdapter.textSearchAdapterId !== 'placeholderId',
+      trackTextSearchConfs.filter(
+        conf =>
+          conf?.textSearchAdapter?.textSearchAdapterId !== 'placeholderId',
       ),
     )
     return [...rootTextSearchAdapters, ...trackTextSearchAdapters]

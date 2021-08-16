@@ -82,14 +82,6 @@
             "uri": "volvox.dup.vcf.gz.tbi"
           }
         }
-      },
-      "textSearchAdapter": {
-        "type": "JBrowse1TextSearchAdapter",
-        "textSearchAdapterId": "TrackAdapter",
-        "namesIndexLocation": {
-          "uri": "names/"
-        },
-        "assemblies": ["NonExistantAssembly"]
       }
     },
     {
