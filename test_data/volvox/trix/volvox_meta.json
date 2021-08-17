@@ -1,8 +1,8 @@
 {
-  "DateCreated": {
+  "dateCreated": {
     "created": "17-08-2021"
   },
-  "track": [
+  "tracks": [
     {
       "ID": "volvox_sv_test",
       "attributesIndexed": ["Name", "ID"],

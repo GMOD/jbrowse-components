@@ -51,12 +51,25 @@ export async function generateMeta(
   const includeExclude: Array<string[]> = []
 
   for (const config of configs) {
-    const track = []
+    const tracks = []
     const { textSearchConf } = config
     if (configs.length) {
       includeExclude.push(
         textSearchConf?.indexingFeatureTypesToExclude || ['CDS', 'exon'],
       )
+
+      for (const inc of include) {
+        const index = includeExclude[0].indexOf(inc)
+        if (index > -1) {
+          includeExclude[0].splice(index, 1)
+        }
+      }
+      for (const exc of exclude) {
+        if (exc.length > 0 && includeExclude[0].indexOf(exc) === -1) {
+          includeExclude[0].push(exc)
+        }
+      }
+
       if (attributes && attributes.length > 0) {
         metaAttrs.push(attributes)
       } else if (textSearchConf?.indexingAttributes) {
@@ -73,12 +86,12 @@ export async function generateMeta(
           excludedTypes: includeExclude[x],
         }
 
-        track.push(trackObj)
+        tracks.push(trackObj)
       }
 
       fs.writeFileSync(
         path.join(dir, 'trix', `${asm}_meta.json`),
-        JSON.stringify({ DateCreated: { created }, track }, null, 2),
+        JSON.stringify({ dateCreated: { created }, tracks }, null, 2),
       )
     }
   }
