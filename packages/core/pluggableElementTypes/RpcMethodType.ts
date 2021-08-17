@@ -3,6 +3,7 @@ import PluggableElementBase from './PluggableElementBase'
 import { setBlobMap, getBlobMap } from '../util/tracks'
 import { searchForLocationObjects, replaceInArgs } from '../util'
 import { UriLocation } from '../util/types'
+import cloneDeep from 'clone-deep'
 
 import {
   deserializeAbortSignal,
@@ -25,15 +26,15 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
     const blobMap = getBlobMap()
 
-    const modifiedArgs = JSON.parse(JSON.stringify(args))
+    const modifiedArgs = cloneDeep(args)
     const locationObjects = searchForLocationObjects(modifiedArgs)
 
     for (const i in locationObjects) {
       if (locationObjects[i].hasOwnProperty('internetAccountId')) {
-        // check rootmodel.handlelocations
         await this.serializeNewAuthArguments(modifiedArgs, locationObjects[i])
       }
     }
+
     return { ...modifiedArgs, blobMap }
   }
 
@@ -44,7 +45,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     if (location.internetAccountPreAuthorization) {
       throw new Error('PreAuthorization should not exist yet')
     }
-    const account = await rootModel?.findAppropriateInternetAccount(location)
+    const account = rootModel?.findAppropriateInternetAccount(location)
 
     if (account) {
       const modifiedPreAuth = await account.getPreAuthorizationInformation(

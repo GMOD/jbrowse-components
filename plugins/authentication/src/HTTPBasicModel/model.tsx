@@ -68,7 +68,6 @@ const stateModelFactory = (
           sessionStorage.setItem(`${self.internetAccountId}-token`, token)
         },
         handleClose(token?: string) {
-          const { session } = getParent(self, 2)
           if (token) {
             this.setTokenInfo(token)
             resolve(token)
@@ -89,21 +88,16 @@ const stateModelFactory = (
               openLocationPromise = new Promise(async (r, x) => {
                 const { session } = getParent(self, 2)
 
-                session.queueDialog((callback: Function) => [
+                session.queueDialog((doneCallback: Function) => [
                   HTTPBasicLoginForm,
                   {
                     internetAccountId: self.internetAccountId,
-                    handleClose: () => {
-                      console.log('done')
-                      this.handleClose()
-                      callback()
+                    handleClose: (token: string) => {
+                      this.handleClose(token)
+                      doneCallback()
                     },
                   },
                 ])
-                // session.setDialogComponent(HTTPBasicLoginForm, {
-                //   internetAccountId: self.internetAccountId,
-                //   handleClose: this.handleClose,
-                // })
                 resolve = r
                 reject = x
               })
@@ -189,7 +183,7 @@ const stateModelFactory = (
         },
         handleError() {
           preAuthInfo = self.generateAuthInfo
-          if (sessionStorage) {
+          if (typeof sessionStorage !== 'undefined') {
             sessionStorage.removeItem(`${self.internetAccountId}-token`)
           }
 

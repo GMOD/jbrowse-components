@@ -61,16 +61,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        */
       task: undefined,
 
-      // DialogComponent: undefined as DialogComponentType | undefined,
-      // DialogProps: undefined as any,
-      queueOfDialogs: [] as [DialogComponentType, any][],
-      queuedDialogCallbacks: [] as ((
-        doneCallback: Function,
-      ) => [DialogComponentType, any])[],
+      queueOfDialogs: observable.array([] as [DialogComponentType, any][]),
     }))
     .views(self => ({
       get DialogComponent() {
-        console.log('getter', self.queueOfDialogs)
         if (self.queueOfDialogs.length) {
           const firstInQueue = self.queueOfDialogs[0]
           return firstInQueue && firstInQueue[0]
@@ -153,10 +147,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      setDialogComponent(comp?: DialogComponentType, props?: any) {
-        // self.DialogComponent = comp
-        // self.DialogProps = props
-      },
       queueDialog(
         callback: (doneCallback: Function) => [DialogComponentType, any],
       ): void {
@@ -164,21 +154,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           self.queueOfDialogs.shift()
         })
         self.queueOfDialogs.push([component, props])
-        console.log('qod', self.queueOfDialogs)
-        // if (!self.DialogComponent && !self.DialogProps) {
-        //   const [component, props] = callback(() => {
-        //     if (self.queuedDialogCallbacks.length) {
-        //       const queuedCallback = self.queuedDialogCallbacks.shift()
-        //       if (queuedCallback) {
-        //         const [queuedComponent, queuedProps] = queuedCallback(() => {})
-        //       }
-        //     } else {
-        //       this.unsetDialogComponent()
-        //     }
-        //   })
-        //   self.DialogComponent = component
-        //   self.DialogProps = props
-        // }
       },
       makeConnection(
         configuration: AnyConfigurationModel,
@@ -356,7 +331,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           {
             label: 'About track',
             onClick: () => {
-              self.setDialogComponent(AboutDialog, { config })
+              self.queueDialog((doneCallback: Function) => [
+                AboutDialog,
+                { config, handleClose: doneCallback },
+              ])
             },
             icon: InfoIcon,
           },

@@ -367,7 +367,7 @@ export default function RootModel(
       setError(error?: Error) {
         self.error = error
       },
-      async findAppropriateInternetAccount(location: UriLocation) {
+      findAppropriateInternetAccount(location: UriLocation) {
         let accountToUse = undefined
 
         // find the existing account selected from menu

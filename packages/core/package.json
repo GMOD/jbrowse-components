@@ -48,6 +48,7 @@
     "http-range-fetcher": "^1.2.2",
     "is-object": "^1.0.1",
     "jexl": "^2.3.0",
+    "clone-deep": "^4.0.1",
     "json-stable-stringify": "^1.0.1",
     "load-script2": "^2.0.5",
     "object.fromentries": "^2.0.0",

@@ -401,6 +401,12 @@ const stateModelFactory = (
           }
 
           // if in worker && !location.preauthInto throw new error
+          if (
+            typeof sessionStorage === 'undefined' &&
+            !location.internetAccountPreAuthorization
+          ) {
+            throw new Error('Error')
+          }
           let accessToken
           try {
             accessToken = await this.checkToken()
@@ -436,7 +442,7 @@ const stateModelFactory = (
           try {
             foundToken = await this.checkToken()
           } catch (e) {
-            await this.handleError(e, false, true)
+            await this.handleError(e)
           }
           let newOpts = opts
 
@@ -445,7 +451,7 @@ const stateModelFactory = (
               try {
                 fileUrl = await this.fetchFile(String(url), foundToken)
               } catch (e) {
-                await this.handleError(e, false, true)
+                await this.handleError(e)
               }
             }
             const newHeaders = {
@@ -473,12 +479,8 @@ const stateModelFactory = (
             fetch: this.getFetcher,
           })
         },
-        async handleError(
-          error: string,
-          triedRefreshToken = false,
-          fromFetch = false,
-        ) {
-          if (!fromFetch) {
+        async handleError(error: string, triedRefreshToken = false) {
+          if (typeof sessionStorage !== 'undefined') {
             preAuthInfo = self.generateAuthInfo // if it reaches here the token was bad
             sessionStorage.removeItem(`${self.internetAccountId}-token`)
           }

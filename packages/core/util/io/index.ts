@@ -10,6 +10,7 @@ import { getBlob } from '../tracks'
 import { isElectron } from '../../util'
 import PluginManager from '../../PluginManager'
 import AuthenticationPlugin from '@jbrowse/plugin-authentication'
+import cloneDeep from 'clone-deep'
 
 function isUriLocation(location: FileLocation): location is UriLocation {
   return 'uri' in location
@@ -27,10 +28,12 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
 
 // needs to take the rootmodel in as an optional parameter, use if there is no preauth information
 // calls that arent in data-adapters would need the rootmodel param added, main thread stuff
+// this does not exist right now
 
 // need plugin manger for openLocation now
 export function openLocation(
   location: FileLocation,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rootModel?: any,
 ): GenericFilehandle {
   if (!location) {
@@ -50,38 +53,33 @@ export function openLocation(
       if (!location.uri) {
         throw new Error('No URI provided')
       }
-
-      // new block, check if location is associated with an internetAccountId
-      // if there isnt preauth information, call the rootmodel to find appropriate internetaccount id and get the auth flow running
-      // which should return the authentications openLocation
-      // if it is, get the authentication location, and return the authentication's openLocation
       if (location.internetAccountId) {
-        let internetAccount
-        if (!location.internetAccountPreAuthorization) {
-          // const modifiedLocation = JSON.parse(JSON.stringify(location))
-          // const preAuthInfo = rootModel.findAppropriateInternetAccount(location)
-          // modifiedLocation.internetAccountPreAuthorization = preAuthInfo
-          // internetAccount = rootModel.internetAccounts.find(
-          //   (account: any) =>
-          //     account.internetAccountId === modifiedLocation.internetAccountId,
-          // )
+        if (!location.internetAccountPreAuthorization && rootModel) {
+          const modifiedLocation = cloneDeep(location)
+          const internetAccount = rootModel.findAppropriateInternetAccount(
+            location,
+          )
+          if (!internetAccount) {
+            throw new Error('Could not find associated internet account')
+          }
+          internetAccount
+            .getPreAuthorizationInformation(location)
+            .then(
+              preAuthInfo =>
+                (modifiedLocation.internetAccountPreAuthorization = preAuthInfo),
+            )
+          return internetAccount.openLocation(modifiedLocation)
         } else {
-          // statemodel should have a way to populate itself from preauthorization information
-          // use that to ccreate a new instance of model, and call that new instance's openLocation
           const pluginManager = new PluginManager([new AuthenticationPlugin()])
           pluginManager.createPluggableElements()
           const internetAccountType = pluginManager.getInternetAccountType(
             location.internetAccountPreAuthorization.internetAccountType,
           )
-          internetAccount = internetAccountType.stateModel.create({
+          const internetAccount = internetAccountType.stateModel.create({
             type: location.internetAccountPreAuthorization.internetAccountType,
             configuration:
               location.internetAccountPreAuthorization.authInfo.configuration,
           })
-
-          // maybe need to rebuild the config somehow?
-        }
-        if (internetAccount) {
           if (!location.internetAccountPreAuthorization?.authInfo.token) {
             throw new Error('Issue with authorization')
           }

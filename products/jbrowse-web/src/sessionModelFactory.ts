@@ -31,7 +31,6 @@ import {
   walk,
   Instance,
 } from 'mobx-state-tree'
-import { AnyReactComponentType } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import SettingsIcon from '@material-ui/icons/Settings'
@@ -101,16 +100,12 @@ export default function sessionModelFactory(
        */
       task: undefined,
 
-      // DialogComponent: undefined as DialogComponentType | undefined,
-      // DialogProps: undefined as any,
-      queueOfDialogs: [] as [DialogComponentType, any][],
-      queuedDialogCallbacks: [] as ((
-        doneCallback: Function,
-      ) => [DialogComponentType, ReactProps])[],
+      queueOfDialogs: observable.array(
+        [] as [DialogComponentType, ReactProps][],
+      ),
     }))
     .views(self => ({
       get DialogComponent() {
-        console.log('getter', self.queueOfDialogs)
         if (self.queueOfDialogs.length) {
           const firstInQueue = self.queueOfDialogs[0]
           return firstInQueue && firstInQueue[0]
@@ -208,14 +203,6 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
-      setDialogComponent(comp?: DialogComponentType, props?: any) {},
-      // unsetDialogComponent() {
-      //   self.DialogComponent = undefined
-      //   self.DialogProps = undefined
-      // },
-      // queue dialog would manage a session state that is a queue of dialog, when one is done (via callback), then it launches the next one
-      // take a callback that returns the array of the component and the props]
-      // queueDialog( doneCallback : Function => [ReactComponent, ReactProps]) : void
       queueDialog(
         callback: (doneCallback: Function) => [DialogComponentType, ReactProps],
       ): void {
@@ -223,21 +210,6 @@ export default function sessionModelFactory(
           self.queueOfDialogs.shift()
         })
         self.queueOfDialogs.push([component, props])
-        console.log('qod', self.queueOfDialogs)
-        // if (!self.DialogComponent && !self.DialogProps) {
-        //   const [component, props] = callback(() => {
-        //     if (self.queuedDialogCallbacks.length) {
-        //       const queuedCallback = self.queuedDialogCallbacks.shift()
-        //       if (queuedCallback) {
-        //         const [queuedComponent, queuedProps] = queuedCallback(() => {})
-        //       }
-        //     } else {
-        //       this.unsetDialogComponent()
-        //     }
-        //   })
-        //   self.DialogComponent = component
-        //   self.DialogProps = props
-        // }
       },
       setName(str: string) {
         self.name = str
@@ -696,7 +668,10 @@ export default function sessionModelFactory(
           {
             label: 'About track',
             onClick: () => {
-              session.setDialogComponent(AboutDialog, { config })
+              session.queueDialog((doneCallback: Function) => [
+                AboutDialog,
+                { config, handleClose: doneCallback },
+              ])
             },
             icon: InfoIcon,
           },

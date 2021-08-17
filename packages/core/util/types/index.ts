@@ -97,8 +97,10 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   DialogComponent?: DialogComponentType
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DialogProps: any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setDialogComponent: (dlg?: DialogComponentType, props?: any) => void
+  queueDialog: (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    callback: (doneCallback: Function) => [DialogComponentType, any],
+  ) => void
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (

@@ -69,32 +69,6 @@ const stateModelFactory = (
       setNeedsToken(bool: boolean) {
         self.needsToken = bool
       },
-      getOrSetExternalToken() {
-        if (!self.needsToken) {
-          return ''
-        }
-        const tokenKey = Object.keys(sessionStorage).find(key => {
-          return key === `${self.internetAccountId}-token`
-        })
-        let token = sessionStorage.getItem(tokenKey as string)
-
-        // prompt user for token if there isnt one existing
-        // if a user doesnt enter a token allow them to continue without token
-
-        // for GDC there is a way to tell if it needs a token or not
-        // first call is an api endpoint, you get metadata for the file and has a property
-        // called access, if access is set to controller it needs a token, else it doesn't
-        if (!token) {
-          const newToken = window.prompt(`Enter token for ${self.name} to use`)
-          if (!newToken) {
-            return
-          }
-          token = newToken
-          sessionStorage.setItem(`${self.internetAccountId}-token`, token)
-        }
-
-        return token
-      },
     }))
     .actions(self => {
       let resolve: Function = () => {}
@@ -104,7 +78,6 @@ const stateModelFactory = (
       let preAuthInfo: any = {}
       return {
         handleClose(token?: string) {
-          const { session } = getParent(self, 2)
           if (token) {
             sessionStorage.setItem(`${self.internetAccountId}-token`, token)
             resolve(token)
@@ -123,19 +96,13 @@ const stateModelFactory = (
             if (!openLocationPromise) {
               openLocationPromise = new Promise(async (r, x) => {
                 const { session } = getParent(self, 2)
-                // session.setDialogComponent(ExternalTokenEntryForm, {
-                //   internetAccountId: self.internetAccountId,
-                //   handleClose: this.handleClose,
-                // })
-
-                session.queueDialog((callback: Function) => [
+                session.queueDialog((doneCallback: Function) => [
                   ExternalTokenEntryForm,
                   {
                     internetAccountId: self.internetAccountId,
-                    handleClose: () => {
-                      console.log('done')
-                      this.handleClose()
-                      callback()
+                    handleClose: (token: string) => {
+                      this.handleClose(token)
+                      doneCallback()
                     },
                   },
                 ])
@@ -243,7 +210,7 @@ const stateModelFactory = (
         },
         async handleError() {
           preAuthInfo = self.generateAuthInfo
-          if (sessionStorage) {
+          if (typeof sessionStorage !== 'undefined') {
             sessionStorage.removeItem(`${self.internetAccountId}-token`)
           }
 
