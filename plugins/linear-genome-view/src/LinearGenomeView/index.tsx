@@ -557,7 +557,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           getRoot(self),
           trackId,
         )
-        const trackType = pluginManager.getTrackType(configuration.type)
+        if (!configuration) {
+          throw new Error(`Could not resolve identifier`)
+        }
+        const trackType = pluginManager.getTrackType(configuration?.type)
         if (!trackType) {
           throw new Error(`unknown track type ${configuration.type}`)
         }
