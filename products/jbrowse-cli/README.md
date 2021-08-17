@@ -368,7 +368,7 @@ OPTIONS
   --all  see all commands in CLI
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.0/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.3/src/commands/help.ts)_
 
 ## `jbrowse set-default-session`
 
@@ -423,9 +423,9 @@ OPTIONS
 
   -q, --quiet                  Hide the progress bars
 
-  --attributes=attributes      [default: Name,ID] Comma separated list of attributes to index
+  --attributes=attributes      Comma separated list of attributes to index
 
-  --exclude=exclude            [default: CDS,exon] Adds gene type to list of excluded types
+  --exclude=exclude            Adds gene type to list of excluded types
 
   --force                      Overwrite previously existing indexes
 

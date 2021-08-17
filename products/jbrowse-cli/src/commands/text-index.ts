@@ -7,6 +7,7 @@ import JBrowseCommand, { Track, Config } from '../base'
 import { indexGff3 } from '../types/gff3Adapter'
 import { indexGtf } from '../types/gtfAdapter'
 import { indexVcf } from '../types/vcfAdapter'
+import { generateMeta } from '../types/common'
 
 export default class TextIndex extends JBrowseCommand {
   static description = 'Make a text-indexing file for any given track(s).'
@@ -36,7 +37,6 @@ export default class TextIndex extends JBrowseCommand {
 
     attributes: flags.string({
       description: 'Comma separated list of attributes to index',
-      default: 'Name,ID',
     }),
     assemblies: flags.string({
       char: 'a',
@@ -58,7 +58,7 @@ export default class TextIndex extends JBrowseCommand {
     }),
     exclude: flags.string({
       description: 'Adds gene type to list of excluded types',
-      default: 'CDS,exon',
+      default: '',
     }),
   }
 
@@ -88,7 +88,6 @@ export default class TextIndex extends JBrowseCommand {
     const assembliesToIndex =
       assemblies?.split(',') || config.assemblies?.map(a => a.name) || []
     const adapters = config.aggregateTextSearchAdapters || []
-
     const trixDir = path.join(dir, 'trix')
     if (!fs.existsSync(trixDir)) {
       fs.mkdirSync(trixDir)
@@ -113,6 +112,7 @@ export default class TextIndex extends JBrowseCommand {
         )
         continue
       }
+
       await this.indexDriver(
         config,
         attributesToIndex,
@@ -121,6 +121,14 @@ export default class TextIndex extends JBrowseCommand {
         quiet,
         include?.split(','),
         exclude?.split(','),
+      )
+      await generateMeta(
+        asm,
+        attributesToIndex,
+        include.split(','),
+        exclude.split(','),
+        confFile,
+        config,
       )
 
       // Checks through list of configs and checks the hash values if it
@@ -154,13 +162,6 @@ export default class TextIndex extends JBrowseCommand {
       ),
     )
 
-    for (const asm of assembliesToIndex) {
-      fs.writeFileSync(
-        path.join(dir, 'trix', `${asm}_meta.json`),
-        JSON.stringify({}, null, 2),
-      )
-    }
-
     this.log('Finished!')
   }
 
@@ -192,13 +193,30 @@ export default class TextIndex extends JBrowseCommand {
     for (const config of configs) {
       const {
         adapter: { type },
-        textSearchIndexingAttributes,
-        textSearchIndexingFeatureTypesToExclude,
+        textSearchConf,
       } = config
 
-      const types = textSearchIndexingFeatureTypesToExclude || typesToExclude
+      const types: Array<string> = textSearchConf?.indexingFeatureTypesToExclude || [
+        'CDS',
+        'exon',
+      ]
 
-      const attrs = textSearchIndexingAttributes || attributesToIndex
+      for (const inc of typesToInclude) {
+        const index = types.indexOf(inc)
+        if (index > -1) {
+          types.splice(index, 1)
+        }
+      }
+      for (const exc of typesToExclude) {
+        if (exc.length > 0) {
+          types.push(exc)
+        }
+      }
+
+      const attrs =
+        attributesToIndex.length && attributesToIndex
+          ? attributesToIndex
+          : textSearchConf?.indexingAttributes || ['Name', 'ID']
 
       if (type === 'Gff3TabixAdapter') {
         yield* indexGff3(config, attrs, outLocation, types, quiet)

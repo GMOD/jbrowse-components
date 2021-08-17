@@ -1,16 +1,32 @@
 {
-  "TrackData": {
-    "TrackIds": [
-      "au9_scaffold",
-      "gff3tabix_genes",
-      "online_gff3tabix_genes",
-      "online_au9_scaffold"
-    ],
-    "metaAttrs": [
-      ["Name", "ID", "type"],
-      ["Name", "ID", "type"],
-      ["Name", "ID", "type"],
-      ["Name", "ID", "type"]
-    ]
-  }
+  "DateCreated": {
+    "created": "17-08-2021"
+  },
+  "track": [
+    {
+      "ID": "au9_scaffold",
+      "attributesIndexed": ["Name", "ID", "type"],
+      "excludedTypes": ["CDS", "exon"]
+    },
+    {
+      "ID": "gff3tabix_genes",
+      "attributesIndexed": ["Name", "ID", "type"],
+      "excludedTypes": ["CDS", "exon"]
+    },
+    {
+      "ID": "online_gff3tabix_genes",
+      "attributesIndexed": ["Name", "ID", "type"],
+      "excludedTypes": ["CDS", "exon"]
+    },
+    {
+      "ID": "gtfdemo",
+      "attributesIndexed": ["exon_id"],
+      "excludedTypes": ["CDS", "exon"]
+    },
+    {
+      "ID": "online_au9_scaffold",
+      "attributesIndexed": ["Name", "ID", "type"],
+      "excludedTypes": ["CDS", "exon"]
+    }
+  ]
 }
