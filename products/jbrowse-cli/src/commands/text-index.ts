@@ -176,12 +176,12 @@ export default class TextIndex extends JBrowseCommand {
     exclude: string[],
   ) {
     const readable = Readable.from(
-      this.indexFile(configs, attributes, out, quiet, include, exclude),
+      this.indexFiles(configs, attributes, out, quiet, include, exclude),
     )
     return this.runIxIxx(readable, out, assemblyName)
   }
 
-  async *indexFile(
+  async *indexFiles(
     configs: Track[],
     attributesToIndex: string[],
     outLocation: string,
