@@ -243,7 +243,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return this.totalBp / self.bpPerPx
       },
 
-      get renderProps() {
+      renderProps() {
         return {
           ...getParentRenderProps(self),
           bpPerPx: self.bpPerPx,
@@ -253,6 +253,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ),
         }
       },
+
       get assemblyNames() {
         return [
           ...new Set(self.displayedRegions.map(region => region.assemblyName)),

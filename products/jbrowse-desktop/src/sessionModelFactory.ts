@@ -134,7 +134,7 @@ export default function sessionModelFactory(
       get version() {
         return getParent(self).version
       },
-      get renderProps() {
+      renderProps() {
         return { theme: readConfObject(this.configuration, 'theme') }
       },
       get visibleWidget() {

@@ -1,5 +1,4 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { types, getEnv } from 'mobx-state-tree'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
@@ -15,44 +14,43 @@ export default (configSchema: AnyConfigurationSchemaType) =>
         resolution: types.optional(types.number, 1),
       }),
     )
-    .views(self => ({
-      get blockType() {
-        return 'dynamicBlocks'
-      },
-      get rendererTypeName() {
-        return 'HicRenderer'
-      },
+    .views(self => {
+      const { renderProps: superRenderProps } = self
+      return {
+        get blockType() {
+          return 'dynamicBlocks'
+        },
+        get rendererTypeName() {
+          return 'HicRenderer'
+        },
 
-      /**
-       * the react props that are passed to the Renderer when data
-       * is rendered in this track
-       */
-      get renderProps() {
-        const config = self.rendererType.configSchema.create(
-          getConf(self, 'renderer') || {},
-          getEnv(self),
-        )
+        renderProps() {
+          const config = self.rendererType.configSchema.create(
+            getConf(self, 'renderer') || {},
+            getEnv(self),
+          )
 
-        return {
-          ...self.composedRenderProps,
-          ...getParentRenderProps(self),
-          config,
-          rpcDriverName: self.rpcDriverName,
-          displayModel: self,
-          resolution: self.resolution,
-        }
-      },
-    }))
+          return {
+            ...superRenderProps(),
+            config,
+            rpcDriverName: self.rpcDriverName,
+            displayModel: self,
+            resolution: self.resolution,
+          }
+        },
+      }
+    })
     .actions(self => ({
       setResolution(n: number) {
         self.resolution = n
       },
     }))
     .views(self => {
-      const { trackMenuItems } = self
+      const { trackMenuItems: superTrackMenuItems } = self
       return {
-        get composedTrackMenuItems() {
+        trackMenuItems() {
           return [
+            ...superTrackMenuItems(),
             {
               label: 'Resolution',
               subMenu: [
@@ -71,10 +69,6 @@ export default (configSchema: AnyConfigurationSchemaType) =>
               ],
             },
           ]
-        },
-
-        get trackMenuItems() {
-          return [...trackMenuItems, ...this.composedTrackMenuItems]
         },
       }
     })

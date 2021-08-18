@@ -105,17 +105,17 @@ export class CoreGetFeatures extends RpcMethodType {
   name = 'CoreGetFeatures'
 
   async deserializeReturn(feats: SimpleFeatureSerialized[]) {
-    return feats.map(feat => {
-      return new SimpleFeature(feat)
-    })
+    return feats.map(feat => new SimpleFeature(feat))
   }
 
   async execute(
     args: {
       sessionId: string
-      signal: RemoteAbortSignal
       region: Region
       adapterConfig: {}
+      signal?: RemoteAbortSignal
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      opts?: any
     },
     rpcDriverClassName: string,
   ) {
@@ -123,18 +123,18 @@ export class CoreGetFeatures extends RpcMethodType {
       args,
       rpcDriverClassName,
     )
-    const { sessionId, adapterConfig, region } = deserializedArgs
+    const { signal, sessionId, adapterConfig, region, opts } = deserializedArgs
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
     )
-    if (isFeatureAdapter(dataAdapter)) {
-      const ret = dataAdapter.getFeatures(region)
-      const r = await ret.pipe(toArray()).toPromise()
-      return r.map(f => f.toJSON())
+    if (!isFeatureAdapter(dataAdapter)) {
+      return []
     }
-    return []
+    const ret = dataAdapter.getFeatures(region, { ...opts, signal })
+    const r = await ret.pipe(toArray()).toPromise()
+    return r.map(f => f.toJSON())
   }
 }
 

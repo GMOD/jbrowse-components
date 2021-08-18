@@ -10,10 +10,7 @@ import {
   getContainingView,
   isSelectionContainer,
 } from '@jbrowse/core/util'
-import {
-  getParentRenderProps,
-  getRpcSessionId,
-} from '@jbrowse/core/util/tracks'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   BaseLinearDisplay,
   LinearGenomeViewModel,
@@ -296,28 +293,26 @@ const stateModelFactory = (
         },
       }
     })
+    .views(self => ({
+      get ticks() {
+        const { scaleType, domain, height } = self
+        const range = [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET]
+        const scale = getScale({
+          scaleType,
+          domain,
+          range,
+          inverted: getConf(self, 'inverted'),
+        })
+        const ticks = height < 50 ? 2 : 4
+        return axisPropsFromTickScale(scale, ticks)
+      },
+    }))
     .views(self => {
-      const { trackMenuItems } = self
+      const { renderProps: superRenderProps } = self
       return {
-        get ticks() {
-          const { scaleType, domain, height } = self
-          const range = [
-            height - YSCALEBAR_LABEL_OFFSET,
-            YSCALEBAR_LABEL_OFFSET,
-          ]
-          const scale = getScale({
-            scaleType,
-            domain,
-            range,
-            inverted: getConf(self, 'inverted'),
-          })
-          const ticks = height < 50 ? 2 : 4
-          return axisPropsFromTickScale(scale, ticks)
-        },
-        get renderProps() {
+        renderProps() {
           return {
-            ...self.composedRenderProps,
-            ...getParentRenderProps(self),
+            ...superRenderProps(),
             notReady: !self.ready,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
@@ -325,17 +320,15 @@ const stateModelFactory = (
             scaleOpts: self.scaleOpts,
             resolution: self.resolution,
             height: self.height,
-            ticks: this.ticks,
+            ticks: self.ticks,
             displayCrossHatches: self.displayCrossHatches,
             filters: self.filters,
           }
         },
 
         get adapterCapabilities() {
-          const { adapterCapabilities } = pluginManager.getAdapterType(
-            self.adapterTypeName,
-          )
-          return adapterCapabilities
+          return pluginManager.getAdapterType(self.adapterTypeName)
+            .adapterCapabilities
         },
 
         get hasResolution() {
@@ -345,10 +338,15 @@ const stateModelFactory = (
         get hasGlobalStats() {
           return this.adapterCapabilities.includes('hasGlobalStats')
         },
-
-        get composedTrackMenuItems() {
+      }
+    })
+    .views(self => {
+      const { trackMenuItems: superTrackMenuItems } = self
+      return {
+        trackMenuItems() {
           return [
-            ...(this.hasResolution
+            ...superTrackMenuItems(),
+            ...(self.hasResolution
               ? [
                   {
                     label: 'Resolution',
@@ -421,7 +419,7 @@ const stateModelFactory = (
               label: 'Autoscale type',
               subMenu: [
                 ['local', 'Local'],
-                ...(this.hasGlobalStats
+                ...(self.hasGlobalStats
                   ? [
                       ['global', 'Global'],
                       ['globalsd', 'Global ± 3σ'],
@@ -457,15 +455,10 @@ const stateModelFactory = (
             },
           ]
         },
-
-        get trackMenuItems() {
-          return [...trackMenuItems, ...this.composedTrackMenuItems]
-        },
       }
     })
     .actions(self => {
-      const superReload = self.reload
-      const superRenderSvg = self.renderSvg
+      const { reload: superReload, renderSvg: superRenderSvg } = self
 
       type ExportSvgOpts = Parameters<typeof superRenderSvg>[0]
 
@@ -526,9 +519,9 @@ const stateModelFactory = (
           )) as FeatureStats
           const { scoreMin, scoreMean, scoreStdDev } = results
 
-          // localsd uses heuristic to avoid unnecessary scoreMin<0
-          // if the scoreMin is never less than 0
-          // helps with most coverage bigwigs just being >0
+          // localsd uses heuristic to avoid unnecessary scoreMin<0 if the
+          // scoreMin is never less than 0 helps with most coverage bigwigs
+          // just being >0
           return autoscaleType === 'localsd'
             ? {
                 ...results,

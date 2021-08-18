@@ -3,6 +3,13 @@ id: bcc2020_embedding_jbrowse_05_tracks
 title: About tracks
 ---
 
+:::danger Out of date
+
+Please see the
+[updated version of this tutorial](./tutorials/embed_linear_genome_view/01_introduction).
+
+:::
+
 ## What is a track?
 
 A track is the place to display your data files in JBrowse Linear View. For this

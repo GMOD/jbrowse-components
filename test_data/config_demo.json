@@ -3675,6 +3675,66 @@
           "locationType": "UriLocation"
         }
       }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "lra.inv.bed",
+      "name": "lra.inv.bed",
+      "category": ["HG002 inversions"],
+      "description": "From <a href=\"https://figshare.com/articles/dataset/lra-supplemental-HG002-SV_vcf_tar_gz/13238717\">https://figshare.com/articles/dataset/lra-supplemental-HG002-SV_vcf_tar_gz/13238717</a>",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/lra.inv.bed.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/lra.inv.bed.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "mm2.inv.bed",
+      "name": "mm2.inv.bed",
+      "description": "From <a href=\"https://figshare.com/articles/dataset/lra-supplemental-HG002-SV_vcf_tar_gz/13238717\">https://figshare.com/articles/dataset/lra-supplemental-HG002-SV_vcf_tar_gz/13238717</a>",
+      "category": ["HG002 inversions"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/mm2.inv.bed.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/mm2.inv.bed.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ngmlr.inv.bed",
+      "name": "ngmlr.inv.bed",
+      "category": ["HG002 inversions"],
+      "description": "From <a href=\"https://figshare.com/articles/dataset/lra-supplemental-HG002-SV_vcf_tar_gz/13238717\">https://figshare.com/articles/dataset/lra-supplemental-HG002-SV_vcf_tar_gz/13238717</a>",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/ngmlr.inv.bed.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/ngmlr.inv.bed.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      }
     }
   ],
   "connections": [],

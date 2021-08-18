@@ -36,7 +36,8 @@ const ChordVariantDisplayF = pluginManager => {
       get rendererTypeName() {
         return self.configuration.renderer.type
       },
-      get renderProps() {
+
+      renderProps() {
         const view = getContainingView(self)
         return {
           ...getParentRenderProps(self),

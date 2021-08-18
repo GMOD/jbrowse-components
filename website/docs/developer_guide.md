@@ -468,7 +468,7 @@ types
     // model
   })
   .views(self => ({
-    get trackMenuItems() {
+    trackMenuItems() {
       return [
         {
           label: 'Menu Item',
@@ -490,19 +490,17 @@ types
     // model
   })
   .views(self => {
-    const { trackMenuitems } = self
+    const { trackMenuItems: superTrackMenuItems } = self
     return {
-      get composedTrackMenuItems() {
+      get trackMenuItems() {
         return [
+          ...superTrackMenuItems(),
           {
             label: 'Menu Item',
             icon: AddIcon,
             onClick: () => {},
           },
         ]
-      },
-      get trackMenuItems() {
-        return [...trackMenuItems, ...this.composedTrackMenuItems]
       },
     }
   })
@@ -1424,21 +1422,23 @@ const model = types
       type: types.literal('WiggleTrack'),
     }),
   )
-  .views(self => ({
-    get renderProps() {
-      return {
-        ...self.composedRenderProps, // props that the blockBasedTrack adds,
-        ...getParentRenderProps(self), // props that the view wants to add,
-        scaleOpts: {
-          domain: this.domain,
-          stats: self.stats,
-          autoscaleType: getConf(self, 'autoscale'),
-          scaleType: getConf(self, 'scaleType'),
-          inverted: getConf(self, 'inverted'),
-        },
-      }
-    },
-  }))
+  .views(self => {
+    const { renderProps: superRenderProps } = self
+    return {
+      renderProps() {
+        return {
+          ...superRenderProps(),
+          scaleOpts: {
+            domain: this.domain,
+            stats: self.stats,
+            autoscaleType: getConf(self, 'autoscale'),
+            scaleType: getConf(self, 'scaleType'),
+            inverted: getConf(self, 'inverted'),
+          },
+        }
+      },
+    }
+  })
 ```
 
 ### Rendering SVG
