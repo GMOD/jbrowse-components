@@ -4,10 +4,7 @@ import {
   readConfObject,
   getConf,
 } from '@jbrowse/core/configuration'
-import {
-  getParentRenderProps,
-  getRpcSessionId,
-} from '@jbrowse/core/util/tracks'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   getSession,
   isSessionModelWithWidgets,
@@ -170,7 +167,7 @@ const stateModelFactory = (
             async () => {
               try {
                 const { rpcManager } = getSession(self)
-                const { sortedBy, colorBy, renderProps } = self
+                const { sortedBy, colorBy } = self
                 const view = getContainingView(self) as LGV
 
                 // continually generate the vc pairing, set and rerender if any
@@ -199,21 +196,20 @@ const stateModelFactory = (
 
                   const region = {
                     start: pos,
-                    end: (pos || 0) + 1,
+                    end: pos + 1,
                     refName,
                     assemblyName,
                   }
 
                   // render just the sorted region first
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  await (self.rendererType as any).renderInClient(rpcManager, {
+                  await self.rendererType.renderInClient(rpcManager, {
                     assemblyName,
                     regions: [region],
                     adapterConfig: self.adapterConfig,
                     rendererType: self.rendererType.name,
                     sessionId: getRpcSessionId(self),
                     timeout: 1000000,
-                    ...renderProps,
+                    ...self.renderProps(),
                   })
                   self.setReady(true)
                   self.setCurrBpPerPx(view.bpPerPx)
@@ -342,7 +338,11 @@ const stateModelFactory = (
       },
     }))
     .views(self => {
-      const { trackMenuItems } = self
+      const {
+        trackMenuItems: superTrackMenuItems,
+        renderProps: superRenderProps,
+      } = self
+
       return {
         get rendererTypeName() {
           const viewName = getConf(self, 'defaultRendering')
@@ -412,30 +412,34 @@ const stateModelFactory = (
           return new SerializableFilterChain({ filters })
         },
 
-        get renderProps() {
+        renderProps() {
           const view = getContainingView(self) as LGV
+          const {
+            ready,
+            colorTagMap,
+            modificationTagMap,
+            sortedBy,
+            colorBy,
+            rpcDriverName,
+          } = self
           return {
-            ...self.composedRenderProps,
-            ...getParentRenderProps(self),
-            notReady:
-              !self.ready ||
-              (self.sortedBy && self.currBpPerPx !== view.bpPerPx),
-            rpcDriverName: self.rpcDriverName,
+            ...superRenderProps(),
+            notReady: !ready || (sortedBy && self.currBpPerPx !== view.bpPerPx),
+            rpcDriverName,
             displayModel: self,
-            sortedBy: self.sortedBy,
-            colorBy: self.colorBy,
-            colorTagMap: JSON.parse(JSON.stringify(self.colorTagMap)),
-            modificationTagMap: JSON.parse(
-              JSON.stringify(self.modificationTagMap),
-            ),
+            sortedBy,
+            colorBy,
+            colorTagMap: JSON.parse(JSON.stringify(colorTagMap)),
+            modificationTagMap: JSON.parse(JSON.stringify(modificationTagMap)),
             filters: this.filters,
             showSoftClip: self.showSoftClipping,
             config: self.rendererConfig,
           }
         },
 
-        get composedTrackMenuItems() {
+        trackMenuItems() {
           return [
+            ...superTrackMenuItems(),
             {
               label: 'Show soft clipping',
               icon: VisibilityIcon,
@@ -574,10 +578,6 @@ const stateModelFactory = (
               },
             },
           ]
-        },
-
-        get trackMenuItems() {
-          return [...trackMenuItems, ...this.composedTrackMenuItems]
         },
       }
     })

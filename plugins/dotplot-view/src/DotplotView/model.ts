@@ -143,7 +143,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           return [self.hview, self.vview]
         },
 
-        get renderProps() {
+        renderProps() {
           return {
             ...getParentRenderProps(self),
             highResolutionScaling: getConf(

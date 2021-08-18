@@ -76,7 +76,7 @@ export const BaseChordDisplayModel = types
       return slices
     },
 
-    get renderProps() {
+    renderProps() {
       const view = getContainingView(self) as CircularViewModel
       return {
         ...getParentRenderProps(self),

@@ -60,7 +60,7 @@ export function stateModelFactory(configSchema: any) {
       get rendererTypeName() {
         return getConf(self, ['renderer', 'type'])
       },
-      get renderProps() {
+      renderProps() {
         return {
           ...getParentRenderProps(self),
           rpcDriverName: self.rpcDriverName,
@@ -149,13 +149,12 @@ export function stateModelFactory(configSchema: any) {
 
 function renderBlockData(self: DotplotDisplayModel) {
   const { rpcManager } = getSession(self)
-  const { renderProps, rendererType } = self
+  const { rendererType } = self
   const { adapterConfig } = self
   const parent = getContainingView(self) as DotplotViewModel
 
-  // Alternative to readConfObject(config) is below
-  // used because renderProps is something under our control.
-  // Compare to serverSideRenderedBlock
+  // Alternative to readConfObject(config) is below used because renderProps is
+  // something under our control.  Compare to serverSideRenderedBlock
   readConfObject(self.configuration)
   getSnapshot(parent)
 
@@ -165,15 +164,13 @@ function renderBlockData(self: DotplotDisplayModel) {
       rendererType,
       rpcManager,
       renderProps: {
-        ...renderProps,
+        ...self.renderProps(),
         view: getSnapshot(parent),
         width: viewWidth,
         height: viewHeight,
         borderSize,
         borderX,
         borderY,
-      },
-      renderArgs: {
         adapterConfig,
         rendererType: rendererType.name,
         sessionId: getRpcSessionId(self),
@@ -191,14 +188,11 @@ async function renderBlockEffect(
     throw new Error('cannot render with no props')
   }
 
-  const { rendererType, rpcManager, renderArgs, renderProps } = props
+  const { rendererType, rpcManager, renderProps } = props
 
-  const { reactElement, ...data } = await (rendererType as any).renderInClient(
+  const { reactElement, ...data } = await rendererType.renderInClient(
     rpcManager,
-    {
-      ...renderArgs,
-      ...renderProps,
-    },
+    renderProps,
   )
 
   return { reactElement, data, renderingComponent: rendererType.ReactComponent }
