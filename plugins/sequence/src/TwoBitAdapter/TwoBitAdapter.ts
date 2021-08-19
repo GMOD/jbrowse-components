@@ -17,20 +17,51 @@ export default class TwoBitAdapter
   implements SequenceAdapter {
   private twobit: typeof TwoBitFile
 
-  constructor(config: Instance<typeof configSchema>) {
-    super(config)
-    const twoBitOpts = {
-      filehandle: openLocation(readConfObject(config, 'twoBitLocation')),
-    }
+  protected refSeqs: Promise<Record<string, number> | undefined>
 
-    this.twobit = new TwoBitFile(twoBitOpts)
+  private async initChromSizes() {
+    const conf = readConfObject(this.config, 'chromSizesLocation')
+    if (conf.uri !== '/path/to/default.chrom.sizes') {
+      const file = openLocation(conf)
+      const data = (await file.readFile('utf8')) as string
+      return Object.fromEntries(
+        data
+          ?.split('\n')
+          .filter(line => !!line.trim())
+          .map(line => {
+            const [name, length] = line.split('\t')
+            return [name, +length]
+          }),
+      )
+    }
+    return undefined
   }
 
-  public getRefNames() {
+  constructor(config: Instance<typeof configSchema>) {
+    super(config)
+    this.refSeqs = this.initChromSizes()
+    this.twobit = new TwoBitFile({
+      filehandle: openLocation(readConfObject(config, 'twoBitLocation')),
+    })
+  }
+
+  public async getRefNames() {
+    const refSeqs = await this.refSeqs
+    if (refSeqs) {
+      return Object.keys(refSeqs)
+    }
     return this.twobit.getSequenceNames()
   }
 
   public async getRegions(): Promise<NoAssemblyRegion[]> {
+    const refSeqs = await this.refSeqs
+    if (refSeqs) {
+      return Object.keys(refSeqs).map(refName => ({
+        refName,
+        start: 0,
+        end: refSeqs[refName],
+      }))
+    }
     const refSizes = await this.twobit.getSequenceSizes()
     return Object.keys(refSizes).map(
       (refName: string): NoAssemblyRegion => ({
