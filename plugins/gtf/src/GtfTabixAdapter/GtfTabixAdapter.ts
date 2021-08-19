@@ -40,7 +40,6 @@ export default class extends BaseFeatureDataAdapter {
   }
 
   private formatFeatures(featureLocs: FeatureLoc[]) {
-
   }
 
   public freeResources(/* { region } */): void {}
