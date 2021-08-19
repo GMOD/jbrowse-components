@@ -2,7 +2,14 @@ import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
 // material ui things
-import { Button, Paper, Typography, makeStyles } from '@material-ui/core'
+import {
+  Button,
+  Card,
+  CardContent,
+  Paper,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // misc
@@ -34,12 +41,32 @@ const useStyles = makeStyles(theme => ({
   spacer: {
     marginRight: theme.spacing(2),
   },
+  errorCard: {
+    width: '50%',
+    border: '2px solid red',
+    margin: theme.spacing(3),
+  },
 }))
+
+const ErrorDisplay = observer(({ error }: { error: Error }) => {
+  const classes = useStyles()
+  return (
+    <Card style={{ padding: 20 }}>
+      <CardContent className={classes.errorCard}>
+        <Typography variant="h6" color="error">
+          {`${error}`}
+        </Typography>
+      </CardContent>
+    </Card>
+  )
+})
 
 const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const { tracks, error, hideHeader, initialized, hasDisplayedRegions } = model
   const classes = useStyles()
-
+  if (error) {
+    return <ErrorDisplay error={error} />
+  }
   if (!initialized) {
     return null
   }
@@ -77,34 +104,26 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
           <MiniControls model={model} />
         </div>
       )}
-      {error ? (
-        <Paper variant="outlined" className={classes.errorMessage}>
-          <Typography color="error">{error.message}</Typography>
-        </Paper>
-      ) : (
-        <>
-          <TracksContainer model={model}>
-            {!tracks.length ? (
-              <Paper variant="outlined" className={classes.errorMessage}>
-                <Typography>No tracks active.</Typography>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={model.activateTrackSelector}
-                  style={{ zIndex: 1000 }}
-                >
-                  <TrackSelectorIcon className={classes.spacer} />
-                  Open track selector
-                </Button>
-              </Paper>
-            ) : (
-              tracks.map(track => (
-                <TrackContainer key={track.id} model={model} track={track} />
-              ))
-            )}
-          </TracksContainer>
-        </>
-      )}
+      <TracksContainer model={model}>
+        {!tracks.length ? (
+          <Paper variant="outlined" className={classes.errorMessage}>
+            <Typography>No tracks active.</Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={model.activateTrackSelector}
+              style={{ zIndex: 1000 }}
+            >
+              <TrackSelectorIcon className={classes.spacer} />
+              Open track selector
+            </Button>
+          </Paper>
+        ) : (
+          tracks.map(track => (
+            <TrackContainer key={track.id} model={model} track={track} />
+          ))
+        )}
+      </TracksContainer>
     </div>
   )
 })

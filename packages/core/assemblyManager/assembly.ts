@@ -1,7 +1,7 @@
 import jsonStableStringify from 'json-stable-stringify'
 import { getParent, IAnyType, types, Instance } from 'mobx-state-tree'
 import AbortablePromiseCache from 'abortable-promise-cache'
-import { readConfObject } from '../configuration'
+import { getConf } from '../configuration'
 import {
   BaseRefNameAliasAdapter,
   RegionsAdapter,
@@ -120,6 +120,13 @@ interface CacheData {
   sessionId: string
   options: BaseOptions
 }
+
+interface BasicRegion {
+  start: number
+  end: number
+  refName: string
+  assemblyName: string
+}
 export default function assemblyFactory(
   assemblyConfigType: IAnyType,
   pluginManager: PluginManager,
@@ -146,14 +153,8 @@ export default function assemblyFactory(
       configuration: types.safeReference(assemblyConfigType),
     })
     .volatile(() => ({
-      regions: undefined as
-        | {
-            start: number
-            end: number
-            refName: string
-            assemblyName: string
-          }[]
-        | undefined,
+      error: undefined as Error | undefined,
+      regions: undefined as BasicRegion[] | undefined,
       refNameAliases: undefined as { [key: string]: string } | undefined,
     }))
     .views(self => ({
@@ -161,11 +162,11 @@ export default function assemblyFactory(
         return Boolean(self.refNameAliases)
       },
       get name(): string {
-        return readConfObject(self.configuration, 'name')
+        return getConf(self, 'name')
       },
 
       get aliases(): string[] {
-        return readConfObject(self.configuration, 'aliases')
+        return getConf(self, 'aliases')
       },
 
       hasName(name: string) {
@@ -179,19 +180,15 @@ export default function assemblyFactory(
         return self.regions && self.regions.map(region => region.refName)
       },
       get allRefNames() {
-        if (!self.refNameAliases) {
-          return undefined
-        }
-        return Object.keys(self.refNameAliases)
+        return !self.refNameAliases
+          ? undefined
+          : Object.keys(self.refNameAliases)
       },
       get rpcManager() {
         return getParent(self, 2).rpcManager
       },
       get refNameColors() {
-        const colors = readConfObject(
-          self.configuration,
-          'refNameColors',
-        ) as string[]
+        const colors: string[] = getConf(self, 'refNameColors')
         if (colors.length === 0) {
           return refNameColors
         }
@@ -237,7 +234,7 @@ export default function assemblyFactory(
       },
       setError(error: Error) {
         if (!getParent(self, 3).isAssemblyEditing) {
-          getParent(self, 3).setError(error)
+          self.error = error
         }
       },
       setRegions(regions: Region[]) {

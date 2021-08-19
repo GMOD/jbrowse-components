@@ -127,7 +127,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       volatileWidth: undefined as number | undefined,
       minimumBlockWidth: 3,
       draggingTrackId: undefined as undefined | string,
-      error: undefined as undefined | Error,
+      volatileError: undefined as undefined | Error,
 
       // array of callbacks to run after the next set of the displayedRegions,
       // which is basically like an onLoad
@@ -157,25 +157,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
-      get initialized() {
+      get assemblyError() {
         const { assemblyManager } = getSession(self)
+        return this.assemblyNames.reduce((a, b) => {
+          return a || assemblyManager.get(b)?.error
+        }, undefined as Error | undefined)
+      },
 
-        // if the assemblyManager is tracking a given assembly name, wait for
-        // it to be loaded. this is done by looking in the assemblyManager's
-        // assembly list, and then waiting on it's initialized state which is
-        // updated later
-        const assembliesInitialized = this.assemblyNames.every(assemblyName => {
-          if (
-            assemblyManager.assemblyList
-              ?.map(asm => asm.name)
-              .includes(assemblyName)
-          ) {
-            return (assemblyManager.get(assemblyName) || {}).initialized
-          }
-          return true
+      get assembliesInitialized() {
+        const { assemblyManager } = getSession(self)
+        return this.assemblyNames.every(assemblyName => {
+          return assemblyManager.get(assemblyName)?.initialized
         })
-
-        return self.volatileWidth !== undefined && assembliesInitialized
+      },
+      get initialized() {
+        return self.volatileWidth !== undefined && this.assembliesInitialized
       },
       get hasDisplayedRegions() {
         return self.displayedRegions.length > 0
@@ -225,6 +221,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       get minBpPerPx() {
         return 1 / 50
+      },
+
+      get error() {
+        return self.volatileError || this.assemblyError
       },
 
       get maxOffset() {
@@ -471,7 +471,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.volatileWidth = newWidth
       },
       setError(error: Error | undefined) {
-        self.error = error
+        self.volatileError = error
       },
 
       toggleHeader() {

@@ -28,6 +28,10 @@ export default function assemblyManagerFactory(
         return self.assemblies.find(assembly => assembly.hasName(assemblyName))
       },
 
+      get assemblyNamesList() {
+        return this.assemblyList.map(asm => asm.name)
+      },
+
       get assemblyList() {
         // name is the explicit identifier and can be accessed without getConf,
         // hence the union with {name:string}
