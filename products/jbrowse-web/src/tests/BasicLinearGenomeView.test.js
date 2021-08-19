@@ -244,7 +244,7 @@ describe('valid file tests', () => {
     autocomplete.focus()
     fireEvent.mouseDown(inputBox)
     fireEvent.change(inputBox, {
-      target: { value: 'apple' },
+      target: { value: 'seg02' },
     })
     // fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
     // fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
