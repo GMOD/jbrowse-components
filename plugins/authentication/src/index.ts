@@ -13,6 +13,14 @@ import {
   configSchemaFactory as HTTPBasicConfigSchemaFactory,
   modelFactory as HTTPBasicInternetAccountModelFactory,
 } from './HTTPBasicModel'
+import {
+  configSchemaFactory as DropboxOAuthConfigSchemaFactory,
+  modelFactory as DropboxOAuthInternetAccountModelFactory,
+} from './DropboxOAuthModel'
+import {
+  configSchemaFactory as GoogleDriveOAuthConfigSchemaFactory,
+  modelFactory as GoogleDriveOAuthInternetAccountModelFactory,
+} from './GoogleDriveOAuthModel'
 
 export default class AuthenticationPlugin extends Plugin {
   name = 'AuthenticationPlugin'
@@ -46,6 +54,28 @@ export default class AuthenticationPlugin extends Plugin {
         name: 'HTTPBasicInternetAccount',
         configSchema: configSchema,
         stateModel: HTTPBasicInternetAccountModelFactory(
+          pluginManager,
+          configSchema,
+        ),
+      })
+    })
+    pluginManager.addInternetAccountType(() => {
+      const configSchema = DropboxOAuthConfigSchemaFactory(pluginManager)
+      return new InternetAccountType({
+        name: 'DropboxOAuthInternetAccount',
+        configSchema: configSchema,
+        stateModel: DropboxOAuthInternetAccountModelFactory(
+          pluginManager,
+          configSchema,
+        ),
+      })
+    })
+    pluginManager.addInternetAccountType(() => {
+      const configSchema = GoogleDriveOAuthConfigSchemaFactory(pluginManager)
+      return new InternetAccountType({
+        name: 'GoogleDriveOAuthInternetAccount',
+        configSchema: configSchema,
+        stateModel: GoogleDriveOAuthInternetAccountModelFactory(
           pluginManager,
           configSchema,
         ),

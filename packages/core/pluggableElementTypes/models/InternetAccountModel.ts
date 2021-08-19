@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Instance, types } from 'mobx-state-tree'
-import { getConf, readConfObject } from '../../configuration'
+import { getConf } from '../../configuration'
 import { ElementId } from '../../util/types/mst'
 import { GenericFilehandle, RemoteFile } from 'generic-filehandle'
 import { FileLocation } from '@jbrowse/core/util/types'
@@ -11,10 +9,6 @@ export const InternetAccount = types
     id: ElementId,
     type: types.string,
   })
-  .volatile(() => ({
-    loggedIn: false,
-    internetAccountMap: {},
-  }))
   .views(self => ({
     get name() {
       return getConf(self, 'name')
@@ -28,31 +22,18 @@ export const InternetAccount = types
     get tokenType() {
       return getConf(self, 'tokenType')
     },
-    get origin() {
-      return getConf(self, 'origin')
-    },
     get accountConfig() {
-      // @ts-ignore
-      return readConfObject(self.configuration)
+      return getConf(self)
     },
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     handlesLocation(location: FileLocation): boolean {
       return false
     },
   }))
-  .actions(self => ({
+  .actions(() => ({
     openLocation(location: FileLocation): GenericFilehandle {
       return new RemoteFile(String(location))
-    },
-    setLoggedIn(bool: boolean) {
-      self.loggedIn = bool
-    },
-    handleRpcMethodCall(
-      location: FileLocation,
-      map: Record<string, string>,
-      args: {},
-    ) {
-      return this.openLocation(location)
     },
   }))
 

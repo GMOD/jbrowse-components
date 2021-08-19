@@ -3,9 +3,9 @@ import { Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { createInternetAccountConfig } from '@jbrowse/core/pluggableElementTypes/models'
 
-function OAuthConfigFactory(pluginManager: PluginManager) {
+function GoogleDriveOAuthConfigFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
-    'OAuthInternetAccount',
+    'GoogleDriveOAuthInternetAccount',
     {
       authEndpoint: {
         description: 'the authorization code endpoint of the internet account',
@@ -61,8 +61,8 @@ function OAuthConfigFactory(pluginManager: PluginManager) {
   )
 }
 
-export type OAuthInternetAccountConfigModel = ReturnType<
-  typeof OAuthConfigFactory
+export type GoogleDriveOAuthInternetAccountConfigModel = ReturnType<
+  typeof GoogleDriveOAuthConfigFactory
 >
-export type OAuthInternetAccountConfig = Instance<OAuthInternetAccountConfigModel>
-export default OAuthConfigFactory
+export type GoogleDriveOAuthInternetAccountConfig = Instance<GoogleDriveOAuthInternetAccountConfigModel>
+export default GoogleDriveOAuthConfigFactory

@@ -49,6 +49,7 @@
     "@testing-library/react": "^11.0.0",
     "@types/base64-js": "^1.2.5",
     "@types/clone": "^0.1.30",
+    "@types/clone-deep": "^4.0.1",
     "@types/color": "^3.0.1",
     "@types/cors": "^2.8.8",
     "@types/crypto-js": "^4.0.1",

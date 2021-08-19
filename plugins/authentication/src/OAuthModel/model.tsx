@@ -1,6 +1,8 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { isElectron } from '@jbrowse/core/util'
+
 import { OAuthInternetAccountConfigModel } from './configSchema'
 import crypto from 'crypto'
 import { Instance, types } from 'mobx-state-tree'
@@ -17,6 +19,8 @@ interface OAuthData {
   token_access_type?: string
 }
 
+const inWebWorker = typeof sessionStorage === 'undefined'
+
 const stateModelFactory = (
   pluginManager: PluginManager,
   configSchema: OAuthInternetAccountConfigModel,
@@ -25,14 +29,13 @@ const stateModelFactory = (
     .compose(
       'OAuthInternetAccount',
       InternetAccount,
-      types.model({
+      types.model('OAuthModel', {
         id: 'OAuth',
         type: types.literal('OAuthInternetAccount'),
         configuration: ConfigurationReference(configSchema),
       }),
     )
     .volatile(() => ({
-      authorizationCode: '',
       codeVerifierPKCE: '',
       errorMessage: '',
     }))
@@ -55,7 +58,6 @@ const stateModelFactory = (
           authInfo: {
             authHeader: self.authHeader,
             tokenType: this.tokenType,
-            origin: self.origin,
             configuration: self.accountConfig,
           },
         }
@@ -68,52 +70,11 @@ const stateModelFactory = (
       setErrorMessage(message: string) {
         self.errorMessage = message
       },
-      async useEndpointForAuthorization() {
-        const config = self.accountConfig
-        const data: OAuthData = {
-          client_id: config.clientId,
-          redirect_uri: 'http://localhost:3000',
-          response_type: config.responseType || 'code',
+      async fetchFile(locationUri: string, accessToken: string) {
+        if (!locationUri || !accessToken) {
+          return
         }
-
-        if (config.scopes) {
-          data.scope = config.scopes
-        }
-
-        if (config.needsPKCE) {
-          const base64Encode = (buf: Buffer) => {
-            return buf
-              .toString('base64')
-              .replace(/\+/g, '-')
-              .replace(/\//g, '_')
-              .replace(/=/g, '')
-          }
-          const codeVerifier = base64Encode(crypto.randomBytes(32))
-          const sha256 = (str: string) => {
-            return crypto.createHash('sha256').update(str).digest()
-          }
-          const codeChallenge = base64Encode(sha256(codeVerifier))
-          data.code_challenge = codeChallenge
-          data.code_challenge_method = 'S256'
-
-          this.setCodeVerifierPKCE(codeVerifier)
-        }
-
-        if (config.hasRefreshToken) {
-          data.token_access_type = 'offline'
-        }
-
-        const params = Object.entries(data)
-          .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
-          .join('&')
-
-        const url = `${config.authEndpoint}?${params}`
-        const options = `width=500,height=600,left=0,top=0`
-        return window.open(
-          url,
-          `JBrowseAuthWindow-${self.internetAccountId}`,
-          options,
-        )
+        return locationUri
       },
     }))
     .actions(self => {
@@ -123,6 +84,97 @@ const stateModelFactory = (
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let preAuthInfo: any = {}
       return {
+        async useEndpointForAuthorization() {
+          const config = !inWebWorker
+            ? self.accountConfig
+            : preAuthInfo?.authInfo?.configuration
+          const data: OAuthData = {
+            client_id: config.clientId,
+            redirect_uri: 'http://localhost:3000',
+            response_type: config.responseType || 'code',
+          }
+
+          if (config.scopes) {
+            data.scope = config.scopes
+          }
+
+          if (config.needsPKCE) {
+            const base64Encode = (buf: Buffer) => {
+              return buf
+                .toString('base64')
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=/g, '')
+            }
+            const codeVerifier = base64Encode(crypto.randomBytes(32))
+            const sha256 = (str: string) => {
+              return crypto.createHash('sha256').update(str).digest()
+            }
+            const codeChallenge = base64Encode(sha256(codeVerifier))
+            data.code_challenge = codeChallenge
+            data.code_challenge_method = 'S256'
+
+            self.setCodeVerifierPKCE(codeVerifier)
+          }
+
+          if (config.hasRefreshToken) {
+            data.token_access_type = 'offline'
+          }
+
+          const params = Object.entries(data)
+            .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
+            .join('&')
+
+          const url = `${config.authEndpoint}?${params}`
+
+          // need the isElectron conditional to check desktop or web
+          // if desktop use  https://auth0.com/blog/securing-electron-applications-with-openid-connect-and-oauth-2/
+          // open new browser window
+          if (isElectron) {
+            const model = self
+            const electron = require('electron')
+            const { BrowserWindow } = electron.remote
+
+            let win = new BrowserWindow({
+              width: 1000,
+              height: 600,
+              webPreferences: {
+                nodeIntegration: true,
+                contextIsolation: false,
+                enableRemoteModule: false,
+              },
+            })
+            win.title = `JBrowseAuthWindow-${self.internetAccountId}`
+            win.loadURL(url)
+
+            win.webContents.on(
+              'did-navigate',
+              function (event: Event, redirectUrl: string) {
+                if (redirectUrl.startsWith(data.redirect_uri)) {
+                  event.preventDefault()
+                  win.close()
+                  const eventFromDesktop = new MessageEvent('message', {
+                    data: {
+                      name: `JBrowseAuthWindow-${self.internetAccountId}`,
+                      redirectUri: redirectUrl,
+                    },
+                  })
+                  // @ts-ignore
+                  model.finishOAuthWindow(eventFromDesktop)
+                  win = null
+                }
+              },
+            )
+            return
+          } else {
+            const options = `width=500,height=600,left=0,top=0`
+            return window.open(
+              url,
+              `JBrowseAuthWindow-${self.internetAccountId}`,
+              options,
+            )
+          }
+        },
         async setAccessTokenInfo(token: string, generateNew = false) {
           if (generateNew && token) {
             sessionStorage.setItem(`${self.internetAccountId}-token`, token)
@@ -141,17 +193,20 @@ const stateModelFactory = (
         async checkToken() {
           let token =
             preAuthInfo?.authInfo?.token ||
-            sessionStorage.getItem(`${self.internetAccountId}-token`)
-
+            (!inWebWorker
+              ? sessionStorage.getItem(`${self.internetAccountId}-token`)
+              : null)
           const refreshToken =
-            preAuthInfo.authInfo?.token ||
-            localStorage.getItem(`${self.internetAccountId}-refreshToken`)
+            preAuthInfo.authInfo?.refreshToken ||
+            (!inWebWorker
+              ? localStorage.getItem(`${self.internetAccountId}-refreshToken`)
+              : null)
 
           if (!token) {
             if (!openLocationPromise) {
               openLocationPromise = new Promise(async (r, x) => {
                 this.addMessageChannel()
-                self.useEndpointForAuthorization()
+                this.useEndpointForAuthorization()
                 resolve = r
                 reject = x
               })
@@ -169,9 +224,6 @@ const stateModelFactory = (
           openLocationPromise = undefined
           return token
         },
-        setAuthorizationCode(code: string) {
-          self.authorizationCode = code
-        },
         setRefreshToken(token: string) {
           const refreshTokenKey = `${self.internetAccountId}-refreshToken`
           const existingToken = localStorage.getItem(refreshTokenKey)
@@ -187,7 +239,9 @@ const stateModelFactory = (
           }
         },
         async exchangeAuthorizationForAccessToken(token: string) {
-          const config = self.accountConfig
+          const config = !inWebWorker
+            ? self.accountConfig
+            : preAuthInfo?.authInfo?.configuration
           const data = {
             code: token,
             grant_type: 'authorization_code',
@@ -209,20 +263,26 @@ const stateModelFactory = (
           })
 
           const accessToken = await response.json()
-          this.setAccessTokenInfo(accessToken.access_token, true)
-          if (accessToken.refresh_token) {
-            this.setRefreshToken(accessToken.refresh_token)
+          if (!inWebWorker) {
+            this.setAccessTokenInfo(accessToken.access_token, true)
+            if (accessToken.refresh_token) {
+              this.setRefreshToken(accessToken.refresh_token)
+            }
           }
         },
         async exchangeRefreshForAccessToken() {
           const foundRefreshToken =
-            preAuthInfo?.authInfo?.refreshToken ||
-            localStorage.getItem(`${self.internetAccountId}-refreshToken`)
+            preAuthInfo.authInfo.refreshToken ||
+            (!inWebWorker
+              ? localStorage.getItem(`${self.internetAccountId}-refreshToken`)
+              : null)
 
           if (foundRefreshToken) {
             // need to set it so
             // checks if it from webworker, and if it is use preauth config info
-            const config = self.accountConfig
+            const config = !inWebWorker
+              ? self.accountConfig
+              : preAuthInfo.authInfo.configuration
             const data = {
               grant_type: 'refresh_token',
               refresh_token: foundRefreshToken,
@@ -242,8 +302,7 @@ const stateModelFactory = (
             })
 
             if (!response.ok) {
-              if (localStorage) {
-                // need indicator of from fetch or not
+              if (!inWebWorker) {
                 localStorage.removeItem(
                   `${self.internetAccountId}-refreshToken`,
                 )
@@ -256,89 +315,14 @@ const stateModelFactory = (
             }
 
             const accessToken = await response.json()
-            this.setAccessTokenInfo(accessToken.access_token, true)
+            if (!inWebWorker) {
+              this.setAccessTokenInfo(accessToken.access_token, true)
+            }
             return accessToken
           } else {
             throw new Error(
               `Malformed or expired access token, and refresh token not found`,
             )
-          }
-        },
-        async fetchFile(location: string, accessToken: string) {
-          if (!location || !accessToken) {
-            return
-          }
-          const findOrigin = preAuthInfo.authInfo.origin || self.origin
-          switch (findOrigin) {
-            case 'dropbox': {
-              const response = await fetch(
-                'https://api.dropboxapi.com/2/sharing/get_shared_link_metadata',
-                {
-                  method: 'POST',
-                  headers: {
-                    Authorization: `Bearer ${accessToken}`, // the access token is getting cached or something here
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    url: location,
-                  }),
-                },
-              )
-              if (!response.ok) {
-                throw new Error(
-                  `Network response failure: ${
-                    response.status
-                  } (${await response.text()})`,
-                )
-              }
-              const metadata = await response.json()
-              if (metadata) {
-                const fileResponse = await fetch(
-                  'https://api.dropboxapi.com/2/files/get_temporary_link',
-                  {
-                    method: 'POST',
-                    headers: {
-                      Authorization: `Bearer ${accessToken}`,
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ path: metadata.id }),
-                  },
-                )
-                if (!fileResponse.ok) {
-                  throw new Error(
-                    `Network response failure: ${
-                      fileResponse.status
-                    } (${await fileResponse.text()})`,
-                  )
-                }
-                const file = await fileResponse.json()
-                return file.link
-              }
-              break
-            }
-            case 'google': {
-              const urlId = location.match(/[-\w]{25,}/)
-
-              const response = await fetch(
-                `https://www.googleapis.com/drive/v2/files/${urlId}`,
-                {
-                  headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                  },
-                },
-              )
-
-              if (!response.ok) {
-                throw new Error(
-                  `Network response failure: ${
-                    response.status
-                  } (${await response.text()})`,
-                )
-              }
-              const fileMetadata = await response.json()
-              return fileMetadata.downloadUrl
-            }
           }
         },
         addMessageChannel() {
@@ -351,8 +335,9 @@ const stateModelFactory = (
           if (
             event.data.name === `JBrowseAuthWindow-${self.internetAccountId}`
           ) {
-            if (event.data.redirectUri.includes('access_token')) {
-              const fixedQueryString = event.data.redirectUri.replace('#', '?')
+            const redirectUri = event.data.redirectUri
+            if (redirectUri.includes('access_token')) {
+              const fixedQueryString = redirectUri.replace('#', '?')
               const queryStringSearch = new URL(fixedQueryString).search
               const urlParams = new URLSearchParams(queryStringSearch)
               const token = urlParams.get('access_token')
@@ -364,8 +349,8 @@ const stateModelFactory = (
               }
               this.setAccessTokenInfo(token, true)
             }
-            if (event.data.redirectUri.includes('code')) {
-              const queryString = new URL(event.data.redirectUri).search
+            if (redirectUri.includes('code')) {
+              const queryString = new URL(redirectUri).search
               const urlParams = new URLSearchParams(queryString)
               const code = urlParams.get('code')
               if (!code) {
@@ -374,10 +359,9 @@ const stateModelFactory = (
                 openLocationPromise = undefined
                 return
               }
-              console.log(code)
               this.exchangeAuthorizationForAccessToken(code)
             }
-            if (event.data.redirectUri.includes('access_denied')) {
+            if (redirectUri.includes('access_denied')) {
               self.setErrorMessage('User cancelled OAuth flow')
               reject(self.errorMessage)
               openLocationPromise = undefined
@@ -402,10 +386,7 @@ const stateModelFactory = (
           }
 
           // if in worker && !location.preauthInto throw new error
-          if (
-            typeof sessionStorage === 'undefined' &&
-            !location.internetAccountPreAuthorization
-          ) {
+          if (inWebWorker && !location.internetAccountPreAuthorization) {
             throw new Error('Error')
           }
           let accessToken
@@ -418,7 +399,7 @@ const stateModelFactory = (
           if (accessToken) {
             let fileUrl
             try {
-              fileUrl = await this.fetchFile(location.uri, accessToken)
+              fileUrl = await self.fetchFile(location.uri, accessToken)
               preAuthInfo.authInfo.fileUrl = fileUrl
             } catch (error) {
               await this.handleError(error, retried)
@@ -450,7 +431,7 @@ const stateModelFactory = (
           if (foundToken) {
             if (!fileUrl) {
               try {
-                fileUrl = await this.fetchFile(String(url), foundToken)
+                fileUrl = await self.fetchFile(String(url), foundToken)
               } catch (e) {
                 await this.handleError(e)
               }
@@ -481,7 +462,7 @@ const stateModelFactory = (
           })
         },
         async handleError(error: string, triedRefreshToken = false) {
-          if (typeof sessionStorage !== 'undefined') {
+          if (!inWebWorker) {
             preAuthInfo = self.generateAuthInfo // if it reaches here the token was bad
             sessionStorage.removeItem(`${self.internetAccountId}-token`)
           }
@@ -496,5 +477,5 @@ const stateModelFactory = (
 }
 
 export default stateModelFactory
-export type AlignmentsDisplayStateModel = ReturnType<typeof stateModelFactory>
-export type AlignmentsDisplayModel = Instance<AlignmentsDisplayStateModel>
+export type OAuthStateModel = ReturnType<typeof stateModelFactory>
+export type OAuthModel = Instance<OAuthStateModel>

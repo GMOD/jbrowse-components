@@ -29,7 +29,5 @@ function HTTPBasicConfigFactory(pluginManager: PluginManager) {
 export type HTTPBasicInternetAccountConfigModel = ReturnType<
   typeof HTTPBasicConfigFactory
 >
-export type HTTPBasicInternetAccountConfig = Instance<
-  HTTPBasicInternetAccountConfigModel
->
+export type HTTPBasicInternetAccountConfig = Instance<HTTPBasicInternetAccountConfigModel>
 export default HTTPBasicConfigFactory

@@ -38,6 +38,7 @@ function createWindow() {
       nodeIntegration: true,
       nodeIntegrationInWorker: true,
       contextIsolation: false,
+      enableRemoteModule: true,
     },
   })
   mainWindow.loadURL(

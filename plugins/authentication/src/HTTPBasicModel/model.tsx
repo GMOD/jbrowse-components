@@ -14,6 +14,8 @@ import DialogActions from '@material-ui/core/DialogActions'
 import TextField from '@material-ui/core/TextField'
 import { RemoteFile } from 'generic-filehandle'
 
+const inWebWorker = typeof sessionStorage === 'undefined'
+
 const stateModelFactory = (
   pluginManager: PluginManager,
   configSchema: HTTPBasicInternetAccountConfigModel,
@@ -28,9 +30,6 @@ const stateModelFactory = (
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .volatile(() => ({
-      currentTypeAuthorizing: '',
-    }))
     .views(self => ({
       get tokenType() {
         return getConf(self, 'tokenType') || 'Basic'
@@ -52,7 +51,6 @@ const stateModelFactory = (
           authInfo: {
             authHeader: self.authHeader,
             tokenType: this.tokenType,
-            origin: self.origin,
           },
         }
       },
@@ -69,7 +67,9 @@ const stateModelFactory = (
         },
         handleClose(token?: string) {
           if (token) {
-            this.setTokenInfo(token)
+            if (!inWebWorker) {
+              this.setTokenInfo(token)
+            }
             resolve(token)
           } else {
             reject()
@@ -82,7 +82,9 @@ const stateModelFactory = (
         async checkToken() {
           let token =
             preAuthInfo?.authInfo?.token ||
-            sessionStorage.getItem(`${self.internetAccountId}-token`)
+            (!inWebWorker
+              ? sessionStorage.getItem(`${self.internetAccountId}-token`)
+              : null)
           if (!token) {
             if (!openLocationPromise) {
               openLocationPromise = new Promise(async (r, x) => {
@@ -183,7 +185,7 @@ const stateModelFactory = (
         },
         handleError() {
           preAuthInfo = self.generateAuthInfo
-          if (typeof sessionStorage !== 'undefined') {
+          if (!inWebWorker) {
             sessionStorage.removeItem(`${self.internetAccountId}-token`)
           }
 
@@ -259,5 +261,5 @@ const HTTPBasicLoginForm = ({
 }
 
 export default stateModelFactory
-export type AlignmentsDisplayStateModel = ReturnType<typeof stateModelFactory>
-export type AlignmentsDisplayModel = Instance<AlignmentsDisplayStateModel>
+export type HTTPBasicStateModel = ReturnType<typeof stateModelFactory>
+export type HTTPBasicModel = Instance<HTTPBasicStateModel>

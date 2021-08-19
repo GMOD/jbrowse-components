@@ -3,9 +3,9 @@ import { Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { createInternetAccountConfig } from '@jbrowse/core/pluggableElementTypes/models'
 
-function OAuthConfigFactory(pluginManager: PluginManager) {
+function DropboxOAuthConfigFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
-    'OAuthInternetAccount',
+    'DropboxOAuthInternetAccount',
     {
       authEndpoint: {
         description: 'the authorization code endpoint of the internet account',
@@ -61,8 +61,8 @@ function OAuthConfigFactory(pluginManager: PluginManager) {
   )
 }
 
-export type OAuthInternetAccountConfigModel = ReturnType<
-  typeof OAuthConfigFactory
+export type DropboxOAuthInternetAccountConfigModel = ReturnType<
+  typeof DropboxOAuthConfigFactory
 >
-export type OAuthInternetAccountConfig = Instance<OAuthInternetAccountConfigModel>
-export default OAuthConfigFactory
+export type DropboxOAuthInternetAccountConfig = Instance<DropboxOAuthInternetAccountConfigModel>
+export default DropboxOAuthConfigFactory

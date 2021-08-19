@@ -54,21 +54,22 @@ export function openLocation(
         throw new Error('No URI provided')
       }
       if (location.internetAccountId) {
-        if (!location.internetAccountPreAuthorization && rootModel) {
-          const modifiedLocation = cloneDeep(location)
-          const internetAccount = rootModel.findAppropriateInternetAccount(
-            location,
-          )
-          if (!internetAccount) {
-            throw new Error('Could not find associated internet account')
-          }
-          internetAccount
-            .getPreAuthorizationInformation(location)
-            .then(
-              preAuthInfo =>
+        if (!location.internetAccountPreAuthorization) {
+          if (rootModel) {
+            const modifiedLocation = cloneDeep(location)
+            const internetAccount = rootModel.findAppropriateInternetAccount(
+              location,
+            )
+            if (!internetAccount) {
+              throw new Error('Could not find associated internet account')
+            }
+            internetAccount.getPreAuthorizationInformation(location).then(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (preAuthInfo: any) =>
                 (modifiedLocation.internetAccountPreAuthorization = preAuthInfo),
             )
-          return internetAccount.openLocation(modifiedLocation)
+            return internetAccount.openLocation(modifiedLocation)
+          }
         } else {
           const pluginManager = new PluginManager([new AuthenticationPlugin()])
           pluginManager.createPluggableElements()
@@ -95,11 +96,9 @@ export function openLocation(
   }
   if (isBlobLocation(location)) {
     // special case where blob is not directly stored on the model, use a getter
-    // @ts-ignore
     const blob = getBlob(location.blobId)
     if (!blob) {
       throw new Error(
-        // @ts-ignore
         `file ("${location.name}") was opened locally from a previous session. To restore it, go to track settings and reopen the file`,
       )
     }

@@ -8,7 +8,6 @@ import Loader from './Loader'
 
 const initialTimestamp = Date.now()
 
-console.log('here')
 if (window && window.name.startsWith('JBrowseAuthWindow')) {
   const parent = window.opener
   if (parent) {

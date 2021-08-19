@@ -23,11 +23,6 @@ export function createInternetAccountConfig(pluginManager: PluginManager) {
         type: 'string',
         defaultValue: 'Authorization',
       },
-      origin: {
-        description: 'origin of the auth account',
-        type: 'string',
-        defaultValue: '',
-      },
       tokenType: {
         description: 'the token type to be prepended in the auth header',
         type: 'string',

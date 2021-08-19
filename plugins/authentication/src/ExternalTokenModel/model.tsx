@@ -13,6 +13,8 @@ import DialogActions from '@material-ui/core/DialogActions'
 import TextField from '@material-ui/core/TextField'
 import { RemoteFile } from 'generic-filehandle'
 
+const inWebWorker = typeof sessionStorage === 'undefined'
+
 const stateModelFactory = (
   pluginManager: PluginManager,
   configSchema: ExternalTokenInternetAccountConfigModel,
@@ -28,8 +30,6 @@ const stateModelFactory = (
       }),
     )
     .volatile(() => ({
-      externalToken: '',
-      currentTypeAuthorizing: '',
       needsToken: false,
     }))
     .views(self => ({
@@ -50,22 +50,11 @@ const stateModelFactory = (
           authInfo: {
             authHeader: self.authHeader,
             tokenType: '',
-            origin: self.origin,
           },
         }
       },
     }))
     .actions(self => ({
-      async fetchFile(location: string) {
-        if (!location || !self.externalToken) {
-          return
-        }
-        // add a fetch call for gdc adding the token to the header, or place the header into
-        // sessionstorage for fetch to use
-      },
-      setExternalToken(token: string) {
-        self.externalToken = token
-      },
       setNeedsToken(bool: boolean) {
         self.needsToken = bool
       },
@@ -77,9 +66,14 @@ const stateModelFactory = (
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let preAuthInfo: any = {}
       return {
+        setTokenInfo(token: string) {
+          sessionStorage.setItem(`${self.internetAccountId}-token`, token)
+        },
         handleClose(token?: string) {
           if (token) {
-            sessionStorage.setItem(`${self.internetAccountId}-token`, token)
+            if (!inWebWorker) {
+              this.setTokenInfo(token)
+            }
             resolve(token)
           } else {
             reject(new Error('user cancelled entry'))
@@ -91,7 +85,9 @@ const stateModelFactory = (
         async checkToken() {
           let token =
             preAuthInfo?.authInfo?.token ||
-            sessionStorage.getItem(`${self.internetAccountId}-token`)
+            (!inWebWorker
+              ? sessionStorage.getItem(`${self.internetAccountId}-token`)
+              : null)
           if (!token) {
             if (!openLocationPromise) {
               openLocationPromise = new Promise(async (r, x) => {
@@ -210,7 +206,7 @@ const stateModelFactory = (
         },
         async handleError() {
           preAuthInfo = self.generateAuthInfo
-          if (typeof sessionStorage !== 'undefined') {
+          if (!inWebWorker) {
             sessionStorage.removeItem(`${self.internetAccountId}-token`)
           }
 
@@ -274,5 +270,5 @@ const ExternalTokenEntryForm = ({
 }
 
 export default stateModelFactory
-export type AlignmentsDisplayStateModel = ReturnType<typeof stateModelFactory>
-export type AlignmentsDisplayModel = Instance<AlignmentsDisplayStateModel>
+export type ExternalTokenStateModel = ReturnType<typeof stateModelFactory>
+export type ExternalTokenModel = Instance<ExternalTokenStateModel>
