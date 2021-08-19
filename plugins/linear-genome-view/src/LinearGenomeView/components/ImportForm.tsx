@@ -7,9 +7,12 @@ import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import {
   Button,
+  Card,
+  CardContent,
   CircularProgress,
   Container,
   Grid,
+  Typography,
   makeStyles,
 } from '@material-ui/core'
 // other
@@ -31,6 +34,14 @@ const useStyles = makeStyles(theme => ({
 
 type LGV = LinearGenomeViewModel
 
+const ErrorDisplay = observer(({ error }: { error: Error }) => {
+  return (
+    <Typography variant="h6" color="error">
+      {`${error}`}
+    </Typography>
+  )
+})
+
 const ImportForm = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const session = getSession(model)
@@ -43,20 +54,28 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   )
   const [selectedRegion, setSelectedRegion] = useState<string>()
   const [assemblyRegions, setAssemblyRegions] = useState<Region[]>([])
-  const error = !assemblyNames.length ? 'No configured assemblies' : ''
+  const [error, setError] = useState<Error>()
+  const message = !assemblyNames.length ? 'No configured assemblies' : ''
   const searchScope = model.searchScope(selectedAssembly)
   useEffect(() => {
     let done = false
     ;(async () => {
-      if (selectedAssembly) {
-        const assembly = await assemblyManager.waitForAssembly(selectedAssembly)
-        if (assembly && assembly.regions) {
-          const regions = assembly.regions
-          if (!done && regions) {
-            setSelectedRegion(regions[0].refName)
-            setAssemblyRegions(regions)
+      try {
+        if (selectedAssembly) {
+          const assembly = await assemblyManager.waitForAssembly(
+            selectedAssembly,
+          )
+          if (assembly && assembly.regions) {
+            const regions = assembly.regions
+            if (!done && regions) {
+              setSelectedRegion(regions[0].refName)
+              setAssemblyRegions(regions)
+            }
           }
         }
+      } catch (e) {
+        console.error(e)
+        setError(e)
       }
     })()
     return () => {
@@ -123,11 +142,13 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             />
           </Grid>
           <Grid item>
-            {selectedAssembly ? (
+            {error ? (
+              <ErrorDisplay error={error} />
+            ) : selectedAssembly ? (
               selectedRegion && model.volatileWidth ? (
                 <RefNameAutocomplete
                   model={model}
-                  assemblyName={error ? undefined : selectedAssembly}
+                  assemblyName={message ? undefined : selectedAssembly}
                   value={selectedRegion}
                   onSelect={option => setSelectedValue(option)}
                   TextFieldProps={{

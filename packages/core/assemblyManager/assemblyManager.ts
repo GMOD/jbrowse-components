@@ -71,7 +71,14 @@ export default function assemblyManagerFactory(
         }
         const assembly = self.get(assemblyName)
         if (assembly) {
-          await when(() => Boolean(assembly.regions && assembly.refNameAliases))
+          await when(
+            () =>
+              Boolean(assembly.regions && assembly.refNameAliases) ||
+              !!assembly.error,
+          )
+          if (assembly.error) {
+            throw assembly.error
+          }
           return assembly
         }
         return undefined
