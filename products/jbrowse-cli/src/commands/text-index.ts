@@ -96,10 +96,13 @@ export default class TextIndex extends JBrowseCommand {
     const attributesToIndex = attributes?.split(',') || []
 
     for (const asm of assembliesToIndex) {
-      const config = await this.getConfig(confFile, asm, tracks?.split(','))
+      const trackConfigs = await this.getConfig(
+        confFile,
+        asm,
+        tracks?.split(','),
+      )
       this.log('Indexing assembly ' + asm + '...')
-
-      if (!config.length) {
+      if (!trackConfigs.length) {
         continue
       }
       const id = asm + '-index'
@@ -114,7 +117,7 @@ export default class TextIndex extends JBrowseCommand {
       }
 
       await this.indexDriver(
-        config,
+        trackConfigs,
         attributesToIndex,
         dir,
         asm,
@@ -128,7 +131,7 @@ export default class TextIndex extends JBrowseCommand {
         include.split(','),
         exclude.split(','),
         confFile,
-        config,
+        trackConfigs,
       )
 
       // Checks through list of configs and checks the hash values if it
