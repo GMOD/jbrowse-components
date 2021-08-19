@@ -7,8 +7,6 @@ import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import {
   Button,
-  Card,
-  CardContent,
   CircularProgress,
   Container,
   Grid,
@@ -48,40 +46,40 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const { assemblyNames, assemblyManager } = session
   const { pluginManager } = getEnv(session)
   const { textSearchManager } = pluginManager.rootModel
-  const { rankSearchResults } = model
-  const [selectedAssembly, setSelectedAssembly] = useState<string>(
-    assemblyNames[0],
-  )
+  const {
+    rankSearchResults,
+    isSearchDialogDisplayed,
+    error: modelError,
+  } = model
+  const [selectedAsm, setSelectedAsm] = useState<string>(assemblyNames[0])
   const [selectedRegion, setSelectedRegion] = useState<string>()
   const [assemblyRegions, setAssemblyRegions] = useState<Region[]>([])
-  const [error, setError] = useState<Error>()
+  const [error, setError] = useState<Error | undefined>(modelError)
   const message = !assemblyNames.length ? 'No configured assemblies' : ''
-  const searchScope = model.searchScope(selectedAssembly)
+  const searchScope = model.searchScope(selectedAsm)
+
   useEffect(() => {
-    let done = false
     ;(async () => {
       try {
-        if (selectedAssembly) {
-          const assembly = await assemblyManager.waitForAssembly(
-            selectedAssembly,
-          )
+        if (selectedAsm) {
+          const assembly = await assemblyManager.waitForAssembly(selectedAsm)
           if (assembly && assembly.regions) {
             const regions = assembly.regions
-            if (!done && regions) {
+            if (regions) {
               setSelectedRegion(regions[0].refName)
               setAssemblyRegions(regions)
             }
           }
         }
+        setError(undefined)
       } catch (e) {
         console.error(e)
         setError(e)
+        setSelectedRegion(undefined)
+        setAssemblyRegions([])
       }
     })()
-    return () => {
-      done = true
-    }
-  }, [assemblyManager, selectedAssembly])
+  }, [assemblyManager, selectedAsm])
 
   function setSelectedValue(selectedOption: BaseResult) {
     setSelectedRegion(selectedOption.getLocation())
@@ -108,7 +106,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
         model.setSearchResults(results, input.toLocaleLowerCase())
       } else {
         try {
-          input && model.navToLocString(input, selectedAssembly)
+          input && model.navToLocString(input, selectedAsm)
         } catch (e) {
           if (`${e}` === `Error: Unknown reference sequence "${input}"`) {
             model.setSearchResults(results, input.toLocaleLowerCase())
@@ -123,32 +121,26 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
 
   return (
     <div>
-      {model.isSearchDialogDisplayed ? (
-        <SearchResultsDialog
-          model={model}
-          optAssemblyName={selectedAssembly}
-          handleClose={() => {
-            model.setSearchResults(undefined, undefined)
-          }}
-        />
-      ) : null}
+      {error ? <ErrorDisplay error={error} /> : null}
+
       <Container className={classes.importFormContainer}>
         <Grid container spacing={1} justifyContent="center" alignItems="center">
           <Grid item>
             <AssemblySelector
-              onChange={val => setSelectedAssembly(val)}
+              onChange={val => {
+                setError(undefined)
+                setSelectedAsm(val)
+              }}
               session={session}
-              selected={selectedAssembly}
+              selected={selectedAsm}
             />
           </Grid>
           <Grid item>
-            {error ? (
-              <ErrorDisplay error={error} />
-            ) : selectedAssembly ? (
-              selectedRegion && model.volatileWidth ? (
+            {selectedAsm ? (
+              selectedRegion && model.volatileWidth && !error ? (
                 <RefNameAutocomplete
                   model={model}
-                  assemblyName={message ? undefined : selectedAssembly}
+                  assemblyName={message ? undefined : selectedAsm}
                   value={selectedRegion}
                   onSelect={option => setSelectedValue(option)}
                   TextFieldProps={{
@@ -173,13 +165,15 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                     },
                   }}
                 />
-              ) : (
+              ) : !error ? (
                 <CircularProgress
                   role="progressbar"
                   color="inherit"
                   size={20}
                   disableShrink
                 />
+              ) : (
+                <Typography color="error">X</Typography>
               )
             ) : null}
           </Grid>
@@ -188,6 +182,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
               disabled={!selectedRegion}
               className={classes.button}
               onClick={() => {
+                model.setError(undefined)
                 if (selectedRegion) {
                   handleSelectedRegion(selectedRegion)
                 }
@@ -200,7 +195,10 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             <Button
               disabled={!selectedRegion}
               className={classes.button}
-              onClick={() => model.showAllRegionsInAssembly(selectedAssembly)}
+              onClick={() => {
+                model.setError(undefined)
+                model.showAllRegionsInAssembly(selectedAsm)
+              }}
               variant="contained"
               color="secondary"
             >
@@ -209,6 +207,15 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
           </Grid>
         </Grid>
       </Container>
+      {isSearchDialogDisplayed ? (
+        <SearchResultsDialog
+          model={model}
+          optAssemblyName={selectedAsm}
+          handleClose={() => {
+            model.setSearchResults(undefined, undefined)
+          }}
+        />
+      ) : null}
     </div>
   )
 })

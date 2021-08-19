@@ -41,36 +41,16 @@ const useStyles = makeStyles(theme => ({
   spacer: {
     marginRight: theme.spacing(2),
   },
-  errorCard: {
-    width: '50%',
-    border: '2px solid red',
-    margin: theme.spacing(3),
-  },
 }))
-
-const ErrorDisplay = observer(({ error }: { error: Error }) => {
-  const classes = useStyles()
-  return (
-    <Card style={{ padding: 20 }}>
-      <CardContent className={classes.errorCard}>
-        <Typography variant="h6" color="error">
-          {`${error}`}
-        </Typography>
-      </CardContent>
-    </Card>
-  )
-})
 
 const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const { tracks, error, hideHeader, initialized, hasDisplayedRegions } = model
   const classes = useStyles()
-  if (error) {
-    return <ErrorDisplay error={error} />
-  }
-  if (!initialized) {
+
+  if (!initialized && !error) {
     return null
   }
-  if (!hasDisplayedRegions) {
+  if (!hasDisplayedRegions || error) {
     return <ImportForm model={model} />
   }
   return (
