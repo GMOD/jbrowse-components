@@ -137,7 +137,7 @@ const UrlChooser = (props: {
         onChange={event => {
           setCurrentUrl(event.target.value)
           if (event.target.value === '') {
-            setCurrentInternetAccount('')
+            setCurrentInternetAccount('autoDetect')
           }
           if (currentInternetAccount) {
             const internetAccount = findChosenInternetAccount(

@@ -50,13 +50,16 @@ Here is a complete config.json file containing only a hg19
         "adapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         },
         "rendering": {
@@ -67,7 +70,8 @@ Here is a complete config.json file containing only a hg19
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -88,7 +92,8 @@ The refNameAliases in the above config provides this functionality
   "adapter": {
     "type": "RefNameAliasAdapter",
     "location": {
-      "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
+      "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt",
+      "locationType": "UriLocation"
     }
   }
 }
@@ -174,13 +179,16 @@ Here is a complete config.json that has the hg19 genome loaded
         "adapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         },
         "rendering": {
@@ -191,7 +199,8 @@ Here is a complete config.json that has the hg19 genome loaded
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -232,13 +241,16 @@ child of the assembly section of the config
   "adapter": {
     "type": "BgzipFastaAdapter",
     "fastaLocation": {
-      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+      "locationType": "UriLocation"
     },
     "faiLocation": {
-      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+      "locationType": "UriLocation"
     },
     "gziLocation": {
-      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+      "locationType": "UriLocation"
     }
   },
   "rendering": {
@@ -267,13 +279,16 @@ These are loaded into a BgzipFastaAdapter as follows
 {
   "type": "BgzipFastaAdapter",
   "fastaLocation": {
-    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+    "locationType": "UriLocation"
   },
   "faiLocation": {
-    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+    "locationType": "UriLocation"
   },
   "gziLocation": {
-    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+    "locationType": "UriLocation"
   }
 }
 ```
@@ -296,10 +311,12 @@ These are loaded into a IndexedFastaAdapter as follows
 {
   "type": "IndexedFastaAdapter",
   "fastaLocation": {
-    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa"
+    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa",
+    "locationType": "UriLocation"
   },
   "faiLocation": {
-    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.fai"
+    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.fai",
+    "locationType": "UriLocation"
   }
 }
 ```
@@ -314,7 +331,8 @@ parsing time.
 {
   "type": "TwoBitAdapter",
   "twoBitLocation": {
-    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.2bit"
+    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.2bit",
+    "locationType": "UriLocation"
   }
 }
 ```
@@ -344,13 +362,16 @@ Example config.json containing a track config
         "adapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -366,7 +387,8 @@ Example config.json containing a track config
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
+          "uri": "https://jbrowse.org/genomes/hg19/repeats.bb",
+          "locationType": "UriLocation"
         }
       }
     }
@@ -386,8 +408,8 @@ Example AlignmentsTrack config
   "type": "AlignmentsTrack",
   "adapter": {
     "type": "BamAdapter",
-    "bamLocation": { "uri": "http://yourhost/file.bam" },
-    "index": { "location": { "uri": "http://yourhost/file.bam.bai" } }
+    "bamLocation": { "uri": "http://yourhost/file.bam", "locationType": "UriLocation" },
+    "index": { "location": { "uri": "http://yourhost/file.bam.bai", "locationType": "UriLocation" } }
   }
 }
 ```
@@ -404,8 +426,8 @@ Example BamAdapter config
 ```json
 {
   "type": "BamAdapter",
-  "bamLocation": { "uri": "http://yourhost/file.bam" },
-  "index": { "location": { "uri": "http://yourhost/file.bam.bai" } }
+  "bamLocation": { "uri": "http://yourhost/file.bam", "locationType": "UriLocation" },
+  "index": { "location": { "uri": "http://yourhost/file.bam.bai", "locationType": "UriLocation" } }
 }
 ```
 
@@ -419,8 +441,8 @@ Example CramAdapter config
 ```json
 {
   "type": "CramAdapter",
-  "cramLocation": { "uri": "http://yourhost/file.cram" },
-  "craiLocation": { "uri": "http://yourhost/file.cram.crai" }
+  "cramLocation": { "uri": "http://yourhost/file.cram", "locationType": "UriLocation" },
+  "craiLocation": { "uri": "http://yourhost/file.cram.crai", "locationType": "UriLocation" }
 }
 ```
 
@@ -437,7 +459,8 @@ Example Hi-C track config
   "adapter": {
     "type": "HicAdapter",
     "hicLocation": {
-      "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
+      "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic",
+      "locationType": "UriLocation"
     }
   }
 }
@@ -451,7 +474,8 @@ We just simply supply a hicLocation currently for the HicAdapter
 {
   "type": "HicAdapter",
   "hicLocation": {
-    "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
+    "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic",
+    "locationType": "UriLocation"
   }
 }
 ```
@@ -479,8 +503,8 @@ Example config
   "assemblyNames": ["hg19"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "vcfGzLocation": { "uri": "http://yourhost/file.vcf.gz" },
-    "index": { "location": { "uri": "http://yourhost/file.vcf.gz.tbi" } }
+    "vcfGzLocation": { "uri": "http://yourhost/file.vcf.gz", "locationType": "UriLocation" },
+    "index": { "location": { "uri": "http://yourhost/file.vcf.gz.tbi", "locationType": "UriLocation" } }
   }
 }
 ```
@@ -497,8 +521,8 @@ Example VcfTabixAdapter adapter config
 ```json
 {
   "type": "VcfTabixAdapter",
-  "vcfGzLocation": { "uri": "http://yourhost/file.vcf.gz" },
-  "index": { "location": { "uri": "http://yourhost/file.vcf.gz.tbi" } }
+  "vcfGzLocation": { "uri": "http://yourhost/file.vcf.gz", "locationType": "UriLocation" },
+  "index": { "location": { "uri": "http://yourhost/file.vcf.gz.tbi", "locationType": "UriLocation" } }
 }
 ```
 
@@ -514,7 +538,7 @@ Example QuantitativeTrack config
   "type": "QuantitativeTrack",
   "adapter": {
     "type": "BigWig",
-    "bigWigLocation": { "uri": "http://yourhost/file.bw" }
+    "bigWigLocation": { "uri": "http://yourhost/file.bw", "locationType": "UriLocation" }
   }
 }
 ```
@@ -568,7 +592,7 @@ Example BigWig adapter config
 ```json
 {
   "type": "BigWig",
-  "bigWigLocation": { "uri": "http://yourhost/file.bw" }
+  "bigWigLocation": { "uri": "http://yourhost/file.bw", "locationType": "UriLocation" }
 }
 ```
 
@@ -585,7 +609,8 @@ Example SyntenyTrack config
   "adapter": {
     "type": "PAFAdapter",
     "pafLocation": {
-      "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.paf"
+      "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.paf",
+      "locationType": "UriLocation"
     },
     "assemblyNames": ["YJM1447", "R64"]
   }
@@ -708,13 +733,15 @@ let's look at an example
           {
             "type": "NCListAdapter",
             "rootUrlTemplate": {
-              "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+              "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json",
+              "locationType": "UriLocation"
             }
           },
           {
             "type": "NCListAdapter",
             "rootUrlTemplate": {
-              "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+              "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json",
+              "locationType": "UriLocation"
             }
           }
         ],
@@ -732,7 +759,8 @@ let's look at an example
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf",
+          "locationType": "UriLocation"
         },
         "assemblyNames": ["peach", "grape"]
       }
@@ -903,7 +931,8 @@ and adding synteny tracks
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "grape.chrom.sizes"
+            "uri": "grape.chrom.sizes",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -916,7 +945,8 @@ and adding synteny tracks
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "peach.chrom.sizes"
+            "uri": "peach.chrom.sizes",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -931,19 +961,22 @@ and adding synteny tracks
       "renderDelay": 100,
       "adapter": {
         "mcscanAnchorsLocation": {
-          "uri": "grape.peach.anchors"
+          "uri": "grape.peach.anchors",
+          "locationType": "UriLocation"
         },
         "subadapters": [
           {
             "type": "NCListAdapter",
             "rootUrlTemplate": {
-              "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+              "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json",
+              "locationType": "UriLocation"
             }
           },
           {
             "type": "NCListAdapter",
             "rootUrlTemplate": {
-              "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+              "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json",
+              "locationType": "UriLocation"
             }
           }
         ],
@@ -962,7 +995,8 @@ and adding synteny tracks
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+          "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -984,7 +1018,8 @@ and adding synteny tracks
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+          "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -997,7 +1032,8 @@ and adding synteny tracks
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+          "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -1019,7 +1055,8 @@ and adding synteny tracks
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+          "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json",
+          "locationType": "UriLocation"
         }
       }
     }

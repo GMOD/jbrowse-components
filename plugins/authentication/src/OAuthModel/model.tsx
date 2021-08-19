@@ -374,6 +374,7 @@ const stateModelFactory = (
                 openLocationPromise = undefined
                 return
               }
+              console.log(code)
               this.exchangeAuthorizationForAccessToken(code)
             }
             if (event.data.redirectUri.includes('access_denied')) {
