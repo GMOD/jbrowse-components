@@ -81,7 +81,7 @@ export async function generateMeta(
 
       for (const x in trackIds) {
         const trackObj = {
-          ID: trackIds[x],
+          trackId: trackIds[x],
           attributesIndexed: metaAttrs[x],
           excludedTypes: includeExclude[x],
         }
