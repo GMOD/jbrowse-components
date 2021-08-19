@@ -1,45 +1,45 @@
 {
   "dateCreated": {
-    "created": "17-08-2021"
+    "created": "18-08-2021"
   },
   "tracks": [
     {
-      "ID": "volvox_sv_test",
+      "trackId": "volvox_sv_test",
       "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"]
     },
     {
-      "ID": "volvox_sv_test_renamed",
+      "trackId": "volvox_sv_test_renamed",
       "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"]
     },
     {
-      "ID": "volvox_test_vcf",
+      "trackId": "volvox_test_vcf",
       "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"]
     },
     {
-      "ID": "gff3tabix_genes",
+      "trackId": "gff3tabix_genes",
       "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"]
     },
     {
-      "ID": "volvox_filtered_vcf",
+      "trackId": "volvox_filtered_vcf",
       "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"]
     },
     {
-      "ID": "variant_colors",
+      "trackId": "variant_colors",
       "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"]
     },
     {
-      "ID": "single_exon_gene",
+      "trackId": "single_exon_gene",
       "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"]
     },
     {
-      "ID": "volvox.inv.vcf",
+      "trackId": "volvox.inv.vcf",
       "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"]
     }

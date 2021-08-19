@@ -167,16 +167,6 @@ Object {
         },
       ],
       "name": "volvox structural variant test",
-      "textSearchAdapter": Object {
-        "assemblies": Array [
-          "NonExistantAssembly",
-        ],
-        "namesIndexLocation": Object {
-          "uri": "names/",
-        },
-        "textSearchAdapterId": "TrackAdapter",
-        "type": "JBrowse1TextSearchAdapter",
-      },
       "trackId": "volvox_sv_test",
       "type": "VariantTrack",
     },
