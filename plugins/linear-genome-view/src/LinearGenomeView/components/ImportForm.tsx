@@ -32,7 +32,7 @@ const useStyles = makeStyles(theme => ({
 
 type LGV = LinearGenomeViewModel
 
-const ErrorDisplay = observer(({ error }: { error: Error }) => {
+const ErrorDisplay = observer(({ error }: { error?: Error | string }) => {
   return (
     <Typography variant="h6" color="error">
       {`${error}`}
@@ -52,57 +52,36 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     error: modelError,
   } = model
   const [selectedAsm, setSelectedAsm] = useState<string>(assemblyNames[0])
-  const [selectedRegion, setSelectedRegion] = useState<string>()
-  const [assemblyRegions, setAssemblyRegions] = useState<Region[]>([])
   const [error, setError] = useState<Error | undefined>(modelError)
   const message = !assemblyNames.length ? 'No configured assemblies' : ''
   const searchScope = model.searchScope(selectedAsm)
 
-  useEffect(() => {
-    ;(async () => {
-      try {
-        if (selectedAsm) {
-          const assembly = await assemblyManager.waitForAssembly(selectedAsm)
-          if (assembly && assembly.regions) {
-            const regions = assembly.regions
-            if (regions) {
-              setSelectedRegion(regions[0].refName)
-              setAssemblyRegions(regions)
-            }
-          }
-        }
-        setError(undefined)
-      } catch (e) {
-        console.error(e)
-        setError(e)
-        setSelectedRegion(undefined)
-        setAssemblyRegions([])
-      }
-    })()
-  }, [assemblyManager, selectedAsm])
-
-  function setSelectedValue(selectedOption: BaseResult) {
-    setSelectedRegion(selectedOption.getLocation())
-  }
+  const assembly = assemblyManager.get(selectedAsm)
+  const assemblyError = assemblyNames.length
+    ? assembly?.error
+    : 'No configured assemblies'
+  const regions = assembly?.regions || []
+  const err = assemblyError || error
+  const [mySelectedRegion, setSelectedRegion] = useState<string>()
+  const selectedRegion = mySelectedRegion || regions[0]?.refName
 
   async function handleSelectedRegion(input: string) {
-    const newRegion = assemblyRegions.find(r => selectedRegion === r.refName)
+    const newRegion = regions.find(r => selectedRegion === r.refName)
     if (newRegion) {
       model.setDisplayedRegions([newRegion])
       // we use showAllRegions after setDisplayedRegions to make the entire
       // region visible, xref #1703
       model.showAllRegions()
     } else {
-      const results =
-        (await textSearchManager?.search(
-          {
-            queryString: input.toLocaleLowerCase(),
-            searchType: 'exact',
-          },
-          searchScope,
-          rankSearchResults,
-        )) || []
-      if (results.length > 0) {
+      const results = await textSearchManager?.search(
+        {
+          queryString: input.toLocaleLowerCase(),
+          searchType: 'exact',
+        },
+        searchScope,
+        rankSearchResults,
+      )
+      if (results?.length > 0) {
         model.setSearchResults(results, input.toLocaleLowerCase())
       } else {
         try {
@@ -119,9 +98,11 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     }
   }
 
+  console.log({ selectedAsm })
+
   return (
     <div>
-      {error ? <ErrorDisplay error={error} /> : null}
+      {err ? <ErrorDisplay error={err} /> : null}
 
       <Container className={classes.importFormContainer}>
         <Grid container spacing={1} justifyContent="center" alignItems="center">
@@ -137,12 +118,14 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
           </Grid>
           <Grid item>
             {selectedAsm ? (
-              selectedRegion && model.volatileWidth && !error ? (
+              err ? (
+                <Typography color="error">X</Typography>
+              ) : selectedRegion && model.volatileWidth ? (
                 <RefNameAutocomplete
                   model={model}
                   assemblyName={message ? undefined : selectedAsm}
                   value={selectedRegion}
-                  onSelect={option => setSelectedValue(option)}
+                  onSelect={option => setSelectedRegion(option.getLocation())}
                   TextFieldProps={{
                     margin: 'normal',
                     variant: 'outlined',
@@ -154,26 +137,18 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                       }
                     },
                     onKeyPress: event => {
-                      const inputValue = (event.target as HTMLInputElement)
-                        .value
+                      const elt = event.target as HTMLInputElement
                       // maybe check regular expression here to see if it's a
                       // locstring try defaulting exact matches to first exact
                       // match
                       if (event.key === 'Enter') {
-                        handleSelectedRegion(inputValue)
+                        handleSelectedRegion(elt.value)
                       }
                     },
                   }}
                 />
-              ) : !error ? (
-                <CircularProgress
-                  role="progressbar"
-                  color="inherit"
-                  size={20}
-                  disableShrink
-                />
               ) : (
-                <Typography color="error">X</Typography>
+                <CircularProgress role="progressbar" size={20} disableShrink />
               )
             ) : null}
           </Grid>

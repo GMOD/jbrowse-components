@@ -10,21 +10,14 @@ import LockOpen from '@material-ui/icons/LockOpen'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // material-ui stuff
-import {
-  Button,
-  Container,
-  Grid,
-  IconButton,
-  MenuItem,
-  TextField,
-  makeStyles,
-} from '@material-ui/core'
+import { IconButton, makeStyles } from '@material-ui/core'
 
 import { grey } from '@material-ui/core/colors'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
-import { assembleLocString, getSession } from '@jbrowse/core/util'
+import { assembleLocString } from '@jbrowse/core/util'
 import Ruler from './Ruler'
+import ImportForm from './ImportForm'
 
 const dragHandleHeight = 3
 
@@ -169,63 +162,6 @@ const Controls = observer(({ model, showingFigure }) => {
         </IconButton>
       )}
     </div>
-  )
-})
-
-const ImportForm = observer(({ model }) => {
-  const classes = useStyles()
-  const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
-  const { assemblyNames, assemblyManager } = getSession(model)
-  const assemblyError = assemblyNames.length ? '' : 'No configured assemblies'
-  const assembly = assemblyManager.get(assemblyNames[selectedAssemblyIdx])
-  const regions = assembly?.regions || []
-
-  function onAssemblyChange(event) {
-    setSelectedAssemblyIdx(Number(event.target.value))
-  }
-
-  function onOpenClick() {
-    model.setDisplayedRegions(regions)
-  }
-
-  return (
-    <>
-      <Container className={classes.importFormContainer}>
-        <Grid container spacing={1} justifyContent="center" alignItems="center">
-          <Grid item>
-            <TextField
-              select
-              value={
-                assemblyNames[selectedAssemblyIdx] && !assemblyError
-                  ? selectedAssemblyIdx
-                  : ''
-              }
-              onChange={onAssemblyChange}
-              helperText={assemblyError || 'Select assembly to view'}
-              error={!!assemblyError}
-              disabled={!!assemblyError}
-              margin="normal"
-            >
-              {assemblyNames.map((name, idx) => (
-                <MenuItem key={name} value={idx}>
-                  {name}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-          <Grid item>
-            <Button
-              disabled={!(regions && regions.length)}
-              onClick={onOpenClick}
-              variant="contained"
-              color="primary"
-            >
-              {regions.length ? 'Open' : 'Loading…'}
-            </Button>
-          </Grid>
-        </Grid>
-      </Container>
-    </>
   )
 })
 
