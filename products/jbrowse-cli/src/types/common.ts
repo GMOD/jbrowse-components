@@ -30,8 +30,17 @@ export function isURL(FileName: string) {
   return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
+/**
+ * Generates metadata of index given a filename (trackId or assembly)
+ * @param name -  assembly name or trackId
+ * @param attributes -  attributes indexed
+ * @param include -  feature types included from index
+ * @param exclude -  feature types excluded from index
+ * @param confFile -  path to config file
+ * @param configs - list of track
+ */
 export async function generateMeta(
-  asm: string,
+  name: string,
   attributes: string[],
   include: string[],
   exclude: string[],
@@ -90,7 +99,7 @@ export async function generateMeta(
       }
 
       fs.writeFileSync(
-        path.join(dir, 'trix', `${asm}_meta.json`),
+        path.join(dir, 'trix', `${name}_meta.json`),
         JSON.stringify({ dateCreated: { created }, tracks }, null, 2),
       )
     }

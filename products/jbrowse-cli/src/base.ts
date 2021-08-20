@@ -86,6 +86,8 @@ export interface Assembly {
 
 export interface TrixTextSearchAdapter {
   type: 'TrixTextSearchAdapter'
+
+  textSearchAdapterId: string
   ixFilePath: UriLocation
   ixxFilePath: UriLocation
   metaFilePath: UriLocation
