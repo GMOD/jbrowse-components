@@ -22,7 +22,6 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(0, 3),
     },
     paper: {
-      maxWidth: 400,
       margin: `${theme.spacing(1)}px auto`,
       padding: theme.spacing(2),
     },
@@ -233,8 +232,20 @@ const AssemblyAddForm = observer(
           <TextField
             id="assembly-name"
             inputProps={{ 'data-testid': 'assembly-name' }}
-            label="Assembly Name"
+            defaultValue=""
+            label="Assembly name"
+            helperText="The assembly name e.g. hg38"
             variant="outlined"
+            value={assemblyName}
+            onChange={event => setAssemblyName(event.target.value)}
+          />
+          <TextField
+            id="assembly-name"
+            inputProps={{ 'data-testid': 'assembly-display-name' }}
+            label="Assembly display name"
+            helperText="The display name e.g. Homo sapiens (hg38). The display name will be used in assembly selectors"
+            variant="outlined"
+            defaultValue=""
             value={assemblyName}
             onChange={event => setAssemblyName(event.target.value)}
           />
