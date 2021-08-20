@@ -423,6 +423,10 @@ custom         Either a JSON file location or inline JSON that defines a custom
       }
     }
 
+    if (runFlags.displayName) {
+      assembly.displayName = runFlags.displayName
+    }
+
     const defaultConfig: Config = {
       assemblies: [],
       configuration: {},
