@@ -10,10 +10,6 @@ const useStyles = makeStyles(() => ({
     gridRow: '1/2',
     pointerEvents: 'none',
   },
-  spacer: {
-    gridColumn: '1/2',
-    gridRow: '2/2',
-  },
   htext: {
     gridColumn: '2/2',
     gridRow: '2/2',

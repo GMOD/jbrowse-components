@@ -50,7 +50,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     error: modelError,
   } = model
   const [selectedAsm, setSelectedAsm] = useState<string>(assemblyNames[0])
-  const [error, setError] = useState<Error | undefined>(modelError)
+  const [error, setError] = useState<Error | string | undefined>(modelError)
   const message = !assemblyNames.length ? 'No configured assemblies' : ''
   const searchScope = model.searchScope(selectedAsm)
 

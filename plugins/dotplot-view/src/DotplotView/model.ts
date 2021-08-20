@@ -350,7 +350,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             .map(track => {
               const trackConf = track.configuration
               return trackConf.displays.find(
-                display => display.type === 'LinearSyntenyDisplay',
+                (display: { type: string }) =>
+                  display.type === 'LinearSyntenyDisplay',
               )
             })
             .filter(f => !!f)

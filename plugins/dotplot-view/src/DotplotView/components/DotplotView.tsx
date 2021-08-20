@@ -11,51 +11,53 @@ import Controls from './Controls'
 import { locstr } from './util'
 import { HorizontalAxis, VerticalAxis } from './Axes'
 
-const useStyles = makeStyles(theme => {
-  return {
-    root: {
-      position: 'relative',
-      marginBottom: theme.spacing(1),
-      overflow: 'hidden',
+const useStyles = makeStyles(theme => ({
+  spacer: {
+    gridColumn: '1/2',
+    gridRow: '2/2',
+  },
+  root: {
+    position: 'relative',
+    marginBottom: theme.spacing(1),
+    overflow: 'hidden',
+  },
+  viewContainer: {
+    marginTop: '3px',
+  },
+  container: {
+    display: 'grid',
+    padding: 5,
+    position: 'relative',
+  },
+  overlay: {
+    pointerEvents: 'none',
+    overflow: 'hidden',
+    display: 'flex',
+    width: '100%',
+    gridRow: '1/2',
+    gridColumn: '2/2',
+    zIndex: 100, // needs to be below controls
+    '& path': {
+      cursor: 'crosshair',
+      fill: 'none',
     },
-    viewContainer: {
-      marginTop: '3px',
-    },
-    container: {
-      display: 'grid',
-      padding: 5,
-      position: 'relative',
-    },
-    overlay: {
-      pointerEvents: 'none',
-      overflow: 'hidden',
-      display: 'flex',
-      width: '100%',
-      gridRow: '1/2',
-      gridColumn: '2/2',
-      zIndex: 100, // needs to be below controls
-      '& path': {
-        cursor: 'crosshair',
-        fill: 'none',
-      },
-    },
+  },
 
-    content: {
-      gridColumn: '2/2',
-      gridRow: '1/2',
-    },
+  content: {
+    gridColumn: '2/2',
+    gridRow: '1/2',
+  },
 
-    popover: {
-      background: '#fff',
-      maxWidth: 400,
-      wordBreak: 'break-all',
-      zIndex: 1000,
-      border: '1px solid black',
-      pointerEvents: 'none',
-      position: 'absolute',
-    },
-  }
-})
+  popover: {
+    background: '#fff',
+    maxWidth: 400,
+    wordBreak: 'break-all',
+    zIndex: 1000,
+    border: '1px solid black',
+    pointerEvents: 'none',
+    position: 'absolute',
+  },
+}))
 
 type Coord = [number, number] | undefined
 type Timer = ReturnType<typeof setTimeout>
