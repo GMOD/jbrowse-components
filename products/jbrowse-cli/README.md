@@ -131,7 +131,7 @@ OPTIONS
 EXAMPLES
   $ jbrowse add-assembly GRCh38.fa --load copy
   $ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta --load move
-  $ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38 --load inPlace
+  $ jbrowse add-assembly myFile.fa.gz --name hg38 --alias GRCh38 --displayName "Homo sapiens (hg38)" --load inPlace
   $ jbrowse add-assembly GRCh38.chrom.sizes --load inPlace
   $ jbrowse add-assembly GRCh38.config.json --load copy
   $ jbrowse add-assembly https://example.com/data/sample.2bit
