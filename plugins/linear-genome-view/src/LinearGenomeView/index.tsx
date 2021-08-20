@@ -157,18 +157,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
-      get assemblyError() {
+      get assemblyErrors() {
         const { assemblyManager } = getSession(self)
-        return this.assemblyNames.reduce((a, b) => {
-          return a || assemblyManager.get(b)?.error
-        }, undefined as Error | undefined)
+        return this.assemblyNames
+          .map(a => assemblyManager.get(a)?.error)
+          .filter(f => !!f)
+          .join(', ')
       },
 
       get assembliesInitialized() {
         const { assemblyManager } = getSession(self)
-        return this.assemblyNames.every(assemblyName => {
-          return assemblyManager.get(assemblyName)?.initialized
-        })
+        return this.assemblyNames.every(
+          a => assemblyManager.get(a)?.initialized,
+        )
       },
       get initialized() {
         return self.volatileWidth !== undefined && this.assembliesInitialized
@@ -224,7 +225,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       get error() {
-        return self.volatileError || this.assemblyError
+        return self.volatileError || this.assemblyErrors
       },
 
       get maxOffset() {

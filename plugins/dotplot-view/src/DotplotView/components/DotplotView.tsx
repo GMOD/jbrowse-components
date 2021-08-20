@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
-import { LinearProgress } from '@material-ui/core'
+import { makeStyles, LinearProgress } from '@material-ui/core'
 import { getConf } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
-import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import normalizeWheel from 'normalize-wheel'
-import { DotplotViewModel, Dotplot1DViewModel } from '../model'
+import { DotplotViewModel } from '../model'
 import ImportForm from './ImportForm'
 import Controls from './Controls'
+import { locstr } from './util'
+import { HorizontalAxis, VerticalAxis } from './Axes'
 
 const useStyles = makeStyles(theme => {
   return {
@@ -39,27 +39,12 @@ const useStyles = makeStyles(theme => {
         fill: 'none',
       },
     },
-    vtext: {
-      gridColumn: '1/2',
-      gridRow: '1/2',
-      pointerEvents: 'none',
-    },
+
     content: {
       gridColumn: '2/2',
       gridRow: '1/2',
     },
-    spacer: {
-      gridColumn: '1/2',
-      gridRow: '2/2',
-    },
-    htext: {
-      gridColumn: '2/2',
-      gridRow: '2/2',
-      pointerEvents: 'none',
-    },
-    error: {
-      color: 'red',
-    },
+
     popover: {
       background: '#fff',
       maxWidth: 400,
@@ -69,288 +54,12 @@ const useStyles = makeStyles(theme => {
       pointerEvents: 'none',
       position: 'absolute',
     },
-    majorTickLabel: {
-      fontSize: '11px',
-    },
-    majorTick: {
-      stroke: '#555',
-    },
-    minorTick: {
-      stroke: '#999',
-    },
   }
 })
 
 type Coord = [number, number] | undefined
 type Timer = ReturnType<typeof setTimeout>
 type Rect = { left: number; top: number }
-
-function locstr(px: number, view: Dotplot1DViewModel) {
-  const { refName, start, offset, oob } = view.pxToBp(px)
-  const coord = Math.floor(start + offset)
-  return oob ? 'out of bounds' : `${refName}:${coord.toLocaleString('en-US')}`
-}
-
-function getBlockLabelKeysToHide(
-  blocks: BaseBlock[],
-  length: number,
-  viewOffsetPx: number,
-) {
-  const blockLabelKeysToHide: string[] = []
-  const sortedBlocks = blocks.slice(0).sort((a, b) => {
-    const alen = a.end - a.start
-    const blen = b.end - b.start
-    return blen - alen
-  })
-  const positions = new Array(Math.round(length))
-  sortedBlocks.forEach(({ key, offsetPx }) => {
-    const y = Math.round(length - offsetPx + viewOffsetPx)
-    const labelBounds = [Math.max(y - 12, 0), y]
-    if (y === 0 || positions.slice(...labelBounds).some(Boolean)) {
-      blockLabelKeysToHide.push(key)
-    } else {
-      positions.fill(true, ...labelBounds)
-    }
-  })
-  return blockLabelKeysToHide
-}
-/**
- * Given a scale ( bp/px ) and minimum distances (px) between major and minor
- * gridlines, return an object like `{ majorPitch: bp, minorPitch: bp }` giving
- * the gridline pitches to use.
- */
-export function chooseGridPitch(
-  scale: number,
-  minMajorPitchPx: number,
-  minMinorPitchPx: number,
-) {
-  scale = Math.abs(scale)
-  const minMajorPitchBp = minMajorPitchPx * scale
-  const majorMagnitude = parseInt(
-    Number(minMajorPitchBp).toExponential().split(/e/i)[1],
-    10,
-  )
-
-  let majorPitch = 10 ** majorMagnitude
-  while (majorPitch < minMajorPitchBp) {
-    majorPitch *= 2
-    if (majorPitch >= minMajorPitchBp) {
-      break
-    }
-    majorPitch *= 2.5
-  }
-
-  majorPitch = Math.max(majorPitch, 5)
-
-  const majorPitchPx = majorPitch / scale
-
-  let minorPitch = 0
-  if (!(majorPitch % 10) && majorPitchPx / 10 >= minMinorPitchPx) {
-    minorPitch = majorPitch / 10
-  } else if (!(majorPitch % 5) && majorPitchPx / 5 >= minMinorPitchPx) {
-    minorPitch = majorPitch / 5
-  } else if (!(majorPitch % 2) && majorPitchPx / 2 >= minMinorPitchPx) {
-    minorPitch = majorPitch / 2
-  }
-
-  return { majorPitch, minorPitch }
-}
-
-function makeTicks(
-  regions: BaseBlock[],
-  bpPerPx: number,
-  emitMajor = true,
-  emitMinor = true,
-) {
-  const ticks = []
-  const gridPitch = chooseGridPitch(bpPerPx, 60, 15)
-  const iterPitch = gridPitch.minorPitch || gridPitch.majorPitch
-  for (let i = 0; i < regions.length; i++) {
-    const region = regions[i]
-    const { start, end, refName } = region
-    let index = 0
-
-    const minBase = start
-    const maxBase = end
-    for (
-      let base = Math.ceil(minBase / iterPitch) * iterPitch;
-      base < maxBase;
-      base += iterPitch
-    ) {
-      if (emitMinor && base % gridPitch.majorPitch) {
-        ticks.push({ type: 'minor', base: base - 1, index, refName })
-        index += 1
-      } else if (
-        emitMajor &&
-        Math.abs(base - region.start) > gridPitch.minorPitch
-      ) {
-        ticks.push({ type: 'major', base: base - 1, index, refName })
-        index += 1
-      }
-    }
-  }
-  return ticks
-}
-
-const HorizontalAxis = observer(({ model }: { model: DotplotViewModel }) => {
-  const classes = useStyles()
-  const { viewWidth, borderY, hview, htextRotation } = model
-  const hide = getBlockLabelKeysToHide(
-    hview.dynamicBlocks.contentBlocks,
-    viewWidth,
-    hview.offsetPx,
-  )
-  const ticks = makeTicks(hview.staticBlocks.contentBlocks, hview.bpPerPx)
-  return (
-    <svg width={viewWidth} height={borderY} className={classes.htext}>
-      <g>
-        {hview.dynamicBlocks.contentBlocks
-          .filter(region => !hide.includes(region.key))
-          .map(region => {
-            const x = region.offsetPx
-            const y = 0
-            return (
-              <text
-                transform={`rotate(${htextRotation},${
-                  x - hview.offsetPx
-                },${y})`}
-                key={JSON.stringify(region)}
-                x={x - hview.offsetPx}
-                y={y + 1}
-                fill="#000000"
-                dominantBaseline="hanging"
-                textAnchor="end"
-              >
-                {`${region.refName}:${
-                  region.start !== 0
-                    ? Math.floor(region.start).toLocaleString('en-US')
-                    : ''
-                }`}
-              </text>
-            )
-          })}
-        {ticks.map(tick => {
-          const x =
-            (hview.bpToPx({ refName: tick.refName, coord: tick.base }) || 0) -
-            hview.offsetPx
-          return (
-            <line
-              key={`line-${JSON.stringify(tick)}`}
-              x1={x}
-              x2={x}
-              y1={0}
-              y2={tick.type === 'major' ? 6 : 4}
-              strokeWidth={1}
-              stroke={tick.type === 'major' ? '#555' : '#999'}
-              className={
-                tick.type === 'major' ? classes.majorTick : classes.minorTick
-              }
-              data-bp={tick.base}
-            />
-          )
-        })}
-        {ticks
-          .filter(tick => tick.type === 'major')
-          .map(tick => {
-            const x =
-              (hview.bpToPx({ refName: tick.refName, coord: tick.base }) || 0) -
-              hview.offsetPx
-            const y = 0
-            return (
-              <text
-                x={x - 7}
-                y={y}
-                transform={`rotate(${htextRotation},${x},${y})`}
-                key={`text-${JSON.stringify(tick)}`}
-                style={{ fontSize: '11px' }}
-                className={classes.majorTickLabel}
-                dominantBaseline="middle"
-                textAnchor="end"
-              >
-                {(tick.base + 1).toLocaleString('en-US')}
-              </text>
-            )
-          })}
-      </g>
-    </svg>
-  )
-})
-const VerticalAxis = observer(({ model }: { model: DotplotViewModel }) => {
-  const classes = useStyles()
-  const { borderX, viewHeight, vview, vtextRotation } = model
-  const hide = getBlockLabelKeysToHide(
-    vview.dynamicBlocks.contentBlocks,
-    viewHeight,
-    vview.offsetPx,
-  )
-  const ticks = makeTicks(vview.staticBlocks.contentBlocks, vview.bpPerPx)
-  return (
-    <svg className={classes.vtext} width={borderX} height={viewHeight}>
-      <g>
-        {vview.dynamicBlocks.contentBlocks
-          .filter(region => !hide.includes(region.key))
-          .map(region => {
-            const y = region.offsetPx
-            const x = borderX
-            return (
-              <text
-                transform={`rotate(${vtextRotation},${x},${y})`}
-                key={JSON.stringify(region)}
-                x={borderX}
-                y={viewHeight - y + vview.offsetPx}
-                fill="#000000"
-                textAnchor="end"
-              >
-                {`${region.refName}:${
-                  region.start !== 0 ? Math.floor(region.start) : ''
-                }`}
-              </text>
-            )
-          })}
-        {ticks.map(tick => {
-          const y =
-            (vview.bpToPx({ refName: tick.refName, coord: tick.base }) || 0) -
-            vview.offsetPx
-          return (
-            <line
-              key={`line-${JSON.stringify(tick)}`}
-              y1={viewHeight - y}
-              y2={viewHeight - y}
-              x1={borderX}
-              x2={borderX - (tick.type === 'major' ? 6 : 4)}
-              strokeWidth={1}
-              stroke={tick.type === 'major' ? '#555' : '#999'}
-              className={
-                tick.type === 'major' ? classes.majorTick : classes.minorTick
-              }
-              data-bp={tick.base}
-            />
-          )
-        })}
-        {ticks
-          .filter(tick => tick.type === 'major')
-          .map(tick => {
-            const y =
-              (vview.bpToPx({ refName: tick.refName, coord: tick.base }) || 0) -
-              vview.offsetPx
-            return (
-              <text
-                y={viewHeight - y - 3}
-                x={borderX - 7}
-                key={`text-${JSON.stringify(tick)}`}
-                textAnchor="end"
-                dominantBaseline="hanging"
-                style={{ fontSize: '11px' }}
-                className={classes.majorTickLabel}
-              >
-                {(tick.base + 1).toLocaleString('en-US')}
-              </text>
-            )
-          })}
-      </g>
-    </svg>
-  )
-})
 
 const Grid = observer(
   ({
@@ -375,7 +84,6 @@ const Grid = observer(
         width={viewWidth}
         height={viewHeight}
       >
-        {' '}
         <rect
           x={hbottom}
           y={viewHeight - vtop}
@@ -520,6 +228,7 @@ const DotplotViewInternal = observer(
       function globalMouseMove(event: MouseEvent) {
         setMouseCurrClient([event.clientX, event.clientY])
       }
+
       window.addEventListener('mousemove', globalMouseMove)
       return () => {
         window.removeEventListener('mousemove', globalMouseMove)
@@ -700,15 +409,11 @@ const DotplotViewInternal = observer(
 )
 const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
   const { initialized, loading, error } = model
-  const classes = useStyles()
 
-  if (!initialized && !loading) {
+  if ((!initialized && !loading) || error) {
     return <ImportForm model={model} />
   }
 
-  if (error) {
-    return <p className={classes.error}>{String(error)}</p>
-  }
   if (loading) {
     return (
       <div>

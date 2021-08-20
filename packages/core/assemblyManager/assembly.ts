@@ -121,7 +121,7 @@ interface CacheData {
   options: BaseOptions
 }
 
-interface BasicRegion {
+export interface BasicRegion {
   start: number
   end: number
   refName: string

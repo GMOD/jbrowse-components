@@ -33,7 +33,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   const classes = useStyles()
   const session = getSession(model)
   const { assemblyNames, assemblyManager } = session
-  const [trackData, setTrackData] = useState<FileLocation>({ uri: '' })
+  const [trackData, setTrackData] = useState<FileLocation>()
   const [selected1, setSelected1] = useState(assemblyNames[0])
   const [selected2, setSelected2] = useState(assemblyNames[0])
   const selected = [selected1, selected2]
@@ -52,7 +52,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
     model.setAssemblyNames([selected1, selected2])
 
     const fileName =
-      'uri' in trackData && trackData.uri
+      trackData && 'uri' in trackData && trackData.uri
         ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
         : 'MyTrack'
 
@@ -82,7 +82,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
         style={{ width: '50%', margin: '0 auto' }}
       >
         <Grid item>
-          <Paper style={{ padding: 12, marginBottom: 10 }}>
+          <Paper style={{ padding: 12 }}>
             <p style={{ textAlign: 'center' }}>
               Select assemblies for dotplot view
             </p>
@@ -98,7 +98,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
             />
           </Paper>
 
-          <Paper style={{ padding: 12, marginBottom: 10 }}>
+          <Paper style={{ padding: 12 }}>
             <p style={{ textAlign: 'center' }}>
               <b>Optional</b>: Add a PAF{' '}
               <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
