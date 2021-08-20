@@ -288,8 +288,8 @@ export const BaseLinearDisplay = types
       return []
     },
 
-    get contextMenuItems() {
-      const contextMenuItems = self.contextMenuFeature
+    contextMenuItems() {
+      return self.contextMenuFeature
         ? [
             {
               label: 'Open feature details',
@@ -302,8 +302,6 @@ export const BaseLinearDisplay = types
             },
           ]
         : []
-
-      return contextMenuItems
     },
     renderProps() {
       return {
