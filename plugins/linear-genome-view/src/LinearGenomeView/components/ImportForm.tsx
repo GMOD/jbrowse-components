@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
-import { Region } from '@jbrowse/core/util/types'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import {
   Button,
   CircularProgress,
