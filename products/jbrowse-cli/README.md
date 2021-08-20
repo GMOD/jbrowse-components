@@ -93,6 +93,10 @@ OPTIONS
       custom         Either a JSON file location or inline JSON that defines a custom
                       sequence adapter; must provide --name if using inline JSON
 
+  --displayName=displayName
+      The display name to specify for the assembly, e.g. "Homo sapiens (hg38)" while the name can be a shorter identifier
+      like "hg38"
+
   --faiLocation=faiLocation
       [default: <fastaLocation>.fai] FASTA index file or URL
 

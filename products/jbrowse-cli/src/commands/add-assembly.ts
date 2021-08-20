@@ -74,6 +74,10 @@ custom         Either a JSON file location or inline JSON that defines a custom
         'An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38");\ncan be specified multiple times',
       multiple: true,
     }),
+    displayName: flags.string({
+      description:
+        'The display name to specify for the assembly, e.g. "Homo sapiens (hg38)" while the name can be a shorter identifier like "hg38"',
+    }),
     faiLocation: flags.string({
       description: '[default: <fastaLocation>.fai] FASTA index file or URL',
     }),

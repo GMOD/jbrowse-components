@@ -23,7 +23,7 @@ export default (pluginManager: PluginManager) => {
         type: 'string',
         defaultValue: '',
         description:
-          'A longer display name if it is something different from the assembly ID',
+          'A human readable display name if e.g. "Homo sapiens (hg38)" while the name is more often like an ID e.g. hg38',
       },
     },
     { explicitIdentifier: 'name' },
