@@ -19,24 +19,30 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(4),
     margin: '0 auto',
   },
-  importFormEntry: {
-    minWidth: 180,
-  },
-  errorMessage: {
-    textAlign: 'center',
-    paddingTop: theme.spacing(1),
-    paddingBottom: theme.spacing(1),
-  },
 }))
+
+const ErrorDisplay = observer(({ error }: { error?: Error | string }) => {
+  return (
+    <Typography variant="h6" color="error">
+      {`${error}`}
+    </Typography>
+  )
+})
 
 const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   const classes = useStyles()
   const session = getSession(model)
-  const { assemblyNames } = session
+  const { assemblyNames, assemblyManager } = session
   const [trackData, setTrackData] = useState<FileLocation>({ uri: '' })
   const [selected1, setSelected1] = useState(assemblyNames[0])
   const [selected2, setSelected2] = useState(assemblyNames[0])
-  const error = assemblyNames.length ? '' : 'No configured assemblies'
+  const selected = [selected1, selected2]
+
+  const asmError = selected
+    .map(a => assemblyManager.get(a)?.error)
+    .filter(f => !!f)
+    .join(', ')
+  const err = assemblyNames.length ? asmError : 'No configured assemblies'
 
   function onOpenClick() {
     model.setViews([
@@ -45,29 +51,29 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
     ])
     model.setAssemblyNames([selected1, selected2])
 
-    if ('uri' in trackData && trackData.uri) {
-      const fileName = trackData.uri
+    const fileName =
+      'uri' in trackData && trackData.uri
         ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
-        : null
+        : 'MyTrack'
 
-      // @ts-ignore
-      const configuration = session.addTrackConf({
-        trackId: `fileName-${Date.now()}`,
-        name: fileName,
-        assemblyNames: [selected1, selected2],
-        type: 'SyntenyTrack',
-        adapter: {
-          type: 'PAFAdapter',
-          pafLocation: trackData,
-          assemblyNames: [selected1, selected2],
-        },
-      })
-      model.toggleTrack(configuration.trackId)
-    }
+    // @ts-ignore
+    const configuration = session.addTrackConf({
+      trackId: `${fileName}-${Date.now()}`,
+      name: fileName,
+      assemblyNames: selected,
+      type: 'SyntenyTrack',
+      adapter: {
+        type: 'PAFAdapter',
+        pafLocation: trackData,
+        assemblyNames: selected,
+      },
+    })
+    model.toggleTrack(configuration.trackId)
   }
 
   return (
     <Container className={classes.importFormContainer}>
+      {err ? <ErrorDisplay error={err} /> : null}
       <Grid
         container
         spacing={1}
@@ -75,61 +81,56 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
         alignItems="center"
         style={{ width: '50%', margin: '0 auto' }}
       >
-        {error ? (
-          <Typography color="error">{error}</Typography>
-        ) : (
-          <>
-            <Grid item>
-              <Paper style={{ padding: 12, marginBottom: 10 }}>
-                <p style={{ textAlign: 'center' }}>
-                  Select assemblies for dotplot view
-                </p>
-                <AssemblySelector
-                  selected={selected1}
-                  onChange={val => setSelected1(val)}
-                  session={session}
-                />
-                <AssemblySelector
-                  selected={selected2}
-                  onChange={val => setSelected2(val)}
-                  session={session}
-                />
-              </Paper>
+        <Grid item>
+          <Paper style={{ padding: 12, marginBottom: 10 }}>
+            <p style={{ textAlign: 'center' }}>
+              Select assemblies for dotplot view
+            </p>
+            <AssemblySelector
+              selected={selected1}
+              onChange={val => setSelected1(val)}
+              session={session}
+            />
+            <AssemblySelector
+              selected={selected2}
+              onChange={val => setSelected2(val)}
+              session={session}
+            />
+          </Paper>
 
-              <Paper style={{ padding: 12, marginBottom: 10 }}>
-                <p style={{ textAlign: 'center' }}>
-                  <b>Optional</b>: Add a PAF{' '}
-                  <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
-                    (pairwise mapping format)
-                  </a>{' '}
-                  file for the dotplot view. Note that the first assembly should
-                  be the left column of the PAF and the second assembly should
-                  be the right column
-                </p>
-                <Grid container justifyContent="center">
-                  <Grid item>
-                    <FileSelector
-                      name="URL"
-                      description=""
-                      location={trackData}
-                      setLocation={loc => setTrackData(loc)}
-                    />
-                  </Grid>
-                </Grid>
-              </Paper>
+          <Paper style={{ padding: 12, marginBottom: 10 }}>
+            <p style={{ textAlign: 'center' }}>
+              <b>Optional</b>: Add a PAF{' '}
+              <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
+                (pairwise mapping format)
+              </a>{' '}
+              file for the dotplot view. Note that the first assembly should be
+              the left column of the PAF and the second assembly should be the
+              right column
+            </p>
+            <Grid container justifyContent="center">
+              <Grid item>
+                <FileSelector
+                  name="URL"
+                  description=""
+                  location={trackData}
+                  setLocation={loc => setTrackData(loc)}
+                />
+              </Grid>
             </Grid>
-            <Grid item>
-              <Button
-                data-testid="submitDotplot"
-                onClick={onOpenClick}
-                variant="contained"
-                color="primary"
-              >
-                Open
-              </Button>
-            </Grid>
-          </>
-        )}
+          </Paper>
+        </Grid>
+        <Grid item>
+          <Button
+            data-testid="submitDotplot"
+            onClick={onOpenClick}
+            disabled={!!err}
+            variant="contained"
+            color="primary"
+          >
+            Open
+          </Button>
+        </Grid>
       </Grid>
     </Container>
   )

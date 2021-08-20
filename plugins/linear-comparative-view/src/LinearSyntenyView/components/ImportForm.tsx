@@ -98,68 +98,66 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   return (
     <Container className={classes.importFormContainer}>
       {err ? <ErrorDisplay error={err} /> : null}
-      <>
-        <Paper className={classes.formPaper}>
-          <Grid
-            container
-            item
-            justifyContent="center"
-            spacing={4}
-            alignItems="center"
-          >
-            <Grid item>
-              <Typography>Select assemblies for synteny view</Typography>
-              {[...new Array(numRows)].map((_, index) => (
-                <AssemblySelector
-                  key={`row_${index}_${selected[index]}`}
-                  selected={selected[index]}
-                  onChange={val => {
-                    // splice the value into the current array
-                    const copy = selected.slice(0)
-                    copy[index] = val
-                    setSelected(copy)
-                  }}
-                  session={session}
-                />
-              ))}
-            </Grid>
-          </Grid>
-        </Paper>
-
-        <Paper className={classes.formPaper}>
-          <Grid container justifyContent="center">
-            <Typography style={{ textAlign: 'center' }}>
-              <b>Optional</b>: Add a PAF{' '}
-              <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
-                (pairwise mapping format)
-              </a>{' '}
-              file for the linear synteny view. Note that the first assembly
-              should be the left column of the PAF and the second assembly
-              should be the right column
-            </Typography>
-            <Grid item>
-              <FileSelector
-                name="URL"
-                description=""
-                location={trackData}
-                setLocation={loc => setTrackData(loc)}
-              />
-            </Grid>
-          </Grid>
-        </Paper>
-        <Grid container justifyContent="center">
+      <Paper className={classes.formPaper}>
+        <Grid
+          container
+          item
+          justifyContent="center"
+          spacing={4}
+          alignItems="center"
+        >
           <Grid item>
-            <Button
-              disabled={!!err}
-              onClick={onOpenClick}
-              variant="contained"
-              color="primary"
-            >
-              Open
-            </Button>
+            <Typography>Select assemblies for synteny view</Typography>
+            {[...new Array(numRows)].map((_, index) => (
+              <AssemblySelector
+                key={`row_${index}_${selected[index]}`}
+                selected={selected[index]}
+                onChange={val => {
+                  // splice the value into the current array
+                  const copy = selected.slice(0)
+                  copy[index] = val
+                  setSelected(copy)
+                }}
+                session={session}
+              />
+            ))}
           </Grid>
         </Grid>
-      </>
+      </Paper>
+
+      <Paper className={classes.formPaper}>
+        <Grid container justifyContent="center">
+          <Typography style={{ textAlign: 'center' }}>
+            <b>Optional</b>: Add a PAF{' '}
+            <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
+              (pairwise mapping format)
+            </a>{' '}
+            file for the linear synteny view. Note that the first assembly
+            should be the left column of the PAF and the second assembly should
+            be the right column
+          </Typography>
+          <Grid item>
+            <FileSelector
+              name="URL"
+              description=""
+              location={trackData}
+              setLocation={loc => setTrackData(loc)}
+            />
+          </Grid>
+        </Grid>
+      </Paper>
+      <Grid container justifyContent="center">
+        <Grid item>
+          <Button
+            disabled={!!err}
+            onClick={onOpenClick}
+            variant="contained"
+            color="primary"
+          >
+            Open
+          </Button>
+        </Grid>
+      </Grid>
     </Container>
   )
 })

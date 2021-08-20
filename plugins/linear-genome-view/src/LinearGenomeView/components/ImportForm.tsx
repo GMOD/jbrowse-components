@@ -96,8 +96,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     }
   }
 
-  console.log({ selectedAsm })
-
   return (
     <div>
       {err ? <ErrorDisplay error={err} /> : null}
