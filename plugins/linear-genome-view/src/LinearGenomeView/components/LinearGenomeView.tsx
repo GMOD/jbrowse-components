@@ -2,14 +2,7 @@ import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
 // material ui things
-import {
-  Button,
-  Card,
-  CardContent,
-  Paper,
-  Typography,
-  makeStyles,
-} from '@material-ui/core'
+import { Button, Paper, Typography, makeStyles } from '@material-ui/core'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // misc
