@@ -169,6 +169,7 @@ const AssemblyAddForm = observer(
     ]
 
     const [assemblyName, setAssemblyName] = useState('')
+    const [assemblyDisplayName, setAssemblyDisplayName] = useState('')
     const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0])
     const [fastaLocation, setFastaLocation] = useState({ uri: '' })
     const [faiLocation, setFaiLocation] = useState({ uri: '' })
@@ -186,6 +187,7 @@ const AssemblyAddForm = observer(
         if (adapterSelection === 'IndexedFastaAdapter') {
           newAssembly = {
             name: assemblyName,
+            displayName: assemblyDisplayName,
             sequence: {
               adapter: {
                 type: 'IndexedFastaAdapter',
@@ -197,6 +199,7 @@ const AssemblyAddForm = observer(
         } else if (adapterSelection === 'BgzipFastaAdapter') {
           newAssembly = {
             name: assemblyName,
+            displayName: assemblyDisplayName,
             sequence: {
               adapter: {
                 type: 'BgzipFastaAdapter',
@@ -209,6 +212,7 @@ const AssemblyAddForm = observer(
         } else if (adapterSelection === 'TwoBitAdapter') {
           newAssembly = {
             name: assemblyName,
+            displayName: assemblyDisplayName,
             sequence: {
               adapter: {
                 type: 'TwoBitAdapter',
@@ -243,11 +247,11 @@ const AssemblyAddForm = observer(
             id="assembly-name"
             inputProps={{ 'data-testid': 'assembly-display-name' }}
             label="Assembly display name"
-            helperText="The display name e.g. Homo sapiens (hg38). The display name will be used in assembly selectors"
+            helperText="The display name e.g. Homo sapiens (hg38). The display name can could include details that a compact ID might not have"
             variant="outlined"
             defaultValue=""
-            value={assemblyName}
-            onChange={event => setAssemblyName(event.target.value)}
+            value={assemblyDisplayName}
+            onChange={event => setAssemblyDisplayName(event.target.value)}
           />
           <AdapterSelector
             adapterSelection={adapterSelection}
