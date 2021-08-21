@@ -105,26 +105,7 @@ const RenameSessionDialog = ({
   onClose: (arg0: boolean) => void
 }) => {
   const [newSessionName, setNewSessionName] = useState('')
-  const [renameSession, setRenameSession] = useState(false)
-  useEffect(() => {
-    ;(async () => {
-      try {
-        if (renameSession) {
-          setRenameSession(false)
-          await ipcRenderer.invoke(
-            'renameSession',
-            sessionToRename,
-            newSessionName,
-          )
-          onClose(true)
-        }
-      } catch (e) {
-        setRenameSession(() => {
-          throw e
-        })
-      }
-    })()
-  }, [newSessionName, onClose, renameSession, sessionToRename])
+  const [error, setError] = useState<Error>()
 
   return (
     <Dialog open={!!sessionToRename} onClose={() => onClose(false)}>
@@ -141,17 +122,30 @@ const RenameSessionDialog = ({
         <Input
           autoFocus
           defaultValue={sessionToRename}
-          onChange={event => {
-            setNewSessionName(event.target.value)
-          }}
+          onChange={event => setNewSessionName(event.target.value)}
         />
+        {error ? (
+          <Typography color="error" variant="h6">{`${error}`}</Typography>
+        ) : null}
       </DialogContent>
       <DialogActions>
         <Button onClick={() => onClose(false)} color="primary">
           Cancel
         </Button>
         <Button
-          onClick={() => setRenameSession(true)}
+          onClick={async () => {
+            try {
+              await ipcRenderer.invoke(
+                'renameSession',
+                sessionToRename,
+                newSessionName,
+              )
+              onClose(true)
+            } catch (e) {
+              console.error(e)
+              setError(e)
+            }
+          }}
           color="primary"
           variant="contained"
           disabled={!newSessionName || sessionNames.includes(newSessionName)}
@@ -172,17 +166,22 @@ export default function StartScreen({
   bypass: boolean
   onFactoryReset: Function
 }) {
-  const [sessions, setSessions] = useState<Record<string, any> | undefined>()
-  const [sessionToDelete, setSessionToDelete] = useState<string | undefined>()
-  const [sessionToRename, setSessionToRename] = useState<string | undefined>()
-  const [sessionToLoad, setSessionToLoad] = useState<string | undefined>()
+  const [sessions, setSessions] = useState<Record<string, any>>()
+  const [sessionToDelete, setSessionToDelete] = useState<string>()
+  const [sessionToRename, setSessionToRename] = useState<string>()
   const [updateSessionsList, setUpdateSessionsList] = useState(true)
-  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
+  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
   const [reset, setReset] = useState(false)
+  const [error, setError] = useState<Error>()
   const classes = useStyles()
 
-  const sessionNames = sessions !== undefined ? Object.keys(sessions) : []
-  root.setSavedSessionNames(sessionNames)
+  const sessionNames = useMemo(
+    () => (sessions !== undefined ? Object.keys(sessions) : []),
+    [sessions],
+  )
+  useEffect(() => {
+    root.setSavedSessionNames(sessionNames)
+  }, [root, sessionNames])
 
   const sortedSessions = useMemo(
     () =>
@@ -195,25 +194,25 @@ export default function StartScreen({
     [sessions],
   )
 
+  // inDevelopment, go back to the most recent session
   useEffect(() => {
     ;(async () => {
       try {
         const load =
           bypass && inDevelopment && sortedSessions.length
             ? sortedSessions[0][0]
-            : sessionToLoad
+            : undefined
         if (load) {
           root.activateSession(
             JSON.parse(await ipcRenderer.invoke('loadSession', load)),
           )
         }
       } catch (e) {
-        setSessions(() => {
-          throw e
-        })
+        console.error(e)
+        setError(e)
       }
     })()
-  }, [bypass, root, sessionToLoad, sortedSessions])
+  }, [])
 
   useEffect(() => {
     ;(async () => {
@@ -282,6 +281,9 @@ export default function StartScreen({
       </IconButton>
       <Container maxWidth="md">
         <LogoFull />
+        {error ? (
+          <Typography color="error" variant="h6">{`${error}`}</Typography>
+        ) : null}
         <div className={classes.newSession}>
           <Typography variant="h5" className={classes.header}>
             Start a new session
@@ -308,8 +310,17 @@ export default function StartScreen({
                 sessionName={sessionName}
                 sessionStats={sessionData.stats}
                 sessionScreenshot={sessionData.screenshot}
-                onClick={() => {
-                  setSessionToLoad(sessionName)
+                onClick={async () => {
+                  try {
+                    root.activateSession(
+                      JSON.parse(
+                        await ipcRenderer.invoke('loadSession', sessionName),
+                      ),
+                    )
+                  } catch (e) {
+                    console.error(e)
+                    setError(e)
+                  }
                 }}
                 onDelete={() => {
                   setSessionToDelete(sessionName)
@@ -340,7 +351,7 @@ export default function StartScreen({
           <ListItemIcon>
             <WarningIcon />
           </ListItemIcon>
-          <Typography variant="inherit">Factory Reset</Typography>
+          <Typography variant="inherit">Factory reset</Typography>
         </MenuItem>
       </Menu>
     </>
