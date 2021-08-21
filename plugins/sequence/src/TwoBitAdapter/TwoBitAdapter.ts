@@ -8,16 +8,16 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TwoBitFile } from '@gmod/twobit'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { Instance } from 'mobx-state-tree'
-
-import configSchema from './configSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 export default class TwoBitAdapter
   extends BaseFeatureDataAdapter
   implements SequenceAdapter {
   private twobit: typeof TwoBitFile
 
-  protected refSeqs: Promise<Record<string, number> | undefined>
+  // the chromSizesData can be used to speed up loading since TwoBit has to do
+  // many range requests at startup to perform the getRegions request
+  protected chromSizesData: Promise<Record<string, number> | undefined>
 
   private async initChromSizes() {
     const conf = readConfObject(this.config, 'chromSizesLocation')
@@ -37,29 +37,29 @@ export default class TwoBitAdapter
     return undefined
   }
 
-  constructor(config: Instance<typeof configSchema>) {
+  constructor(config: AnyConfigurationModel) {
     super(config)
-    this.refSeqs = this.initChromSizes()
+    this.chromSizesData = this.initChromSizes()
     this.twobit = new TwoBitFile({
       filehandle: openLocation(readConfObject(config, 'twoBitLocation')),
     })
   }
 
   public async getRefNames() {
-    const refSeqs = await this.refSeqs
-    if (refSeqs) {
-      return Object.keys(refSeqs)
+    const chromSizesData = await this.chromSizesData
+    if (chromSizesData) {
+      return Object.keys(chromSizesData)
     }
     return this.twobit.getSequenceNames()
   }
 
   public async getRegions(): Promise<NoAssemblyRegion[]> {
-    const refSeqs = await this.refSeqs
-    if (refSeqs) {
-      return Object.keys(refSeqs).map(refName => ({
+    const chromSizesData = await this.chromSizesData
+    if (chromSizesData) {
+      return Object.keys(chromSizesData).map(refName => ({
         refName,
         start: 0,
-        end: refSeqs[refName],
+        end: chromSizesData[refName],
       }))
     }
     const refSizes = await this.twobit.getSequenceSizes()
