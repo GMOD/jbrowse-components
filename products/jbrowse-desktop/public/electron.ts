@@ -1,12 +1,12 @@
-const electron = require('electron')
-const debug = require('electron-debug')
-const isDev = require('electron-is-dev')
-const windowStateKeeper = require('electron-window-state')
-const fs = require('fs')
-const path = require('path')
-const url = require('url')
+import electron from 'electron'
+import debug from 'electron-debug'
+import isDev from 'electron-is-dev'
+import windowStateKeeper from 'electron-window-state'
+import fs from 'fs'
+import path from 'path'
+import url from 'url'
 
-const fsPromises = fs.promises
+const { unlink, rename, readdir, readFile, writeFile, stat } = fs.promises
 
 const { app, ipcMain, shell, BrowserWindow, Menu } = electron
 
@@ -17,18 +17,18 @@ const devServerUrl = url.parse(
 )
 
 const configLocation = path.join(app.getPath('userData'), 'config.json')
-const sessionDirectory = path.join(app.getPath('userData'), 'sessions')
+const sessionDir = path.join(app.getPath('userData'), 'sessions')
 try {
-  fs.statSync(sessionDirectory)
+  fs.statSync(sessionDir)
 } catch (error) {
   if (error.code === 'ENOENT' || error.code === 'ENOTDIR') {
-    fs.mkdirSync(sessionDirectory, { recursive: true })
+    fs.mkdirSync(sessionDir, { recursive: true })
   } else {
     throw error
   }
 }
 
-let mainWindow
+let mainWindow: electron.BrowserWindow | null
 
 async function createWindow() {
   const mainWindowState = windowStateKeeper({
@@ -61,7 +61,7 @@ async function createWindow() {
 
   const isMac = process.platform === 'darwin'
 
-  const template = [
+  const mainMenu = Menu.buildFromTemplate([
     // { role: 'appMenu' }
     ...(isMac
       ? [
@@ -152,8 +152,7 @@ async function createWindow() {
         },
       ],
     },
-  ]
-  const mainMenu = Menu.buildFromTemplate(template)
+  ] as any)
 
   if (isMac) {
     Menu.setApplicationMenu(mainMenu)
@@ -186,55 +185,44 @@ app.on('activate', () => {
 
 ipcMain.handle('loadConfig', async () => {
   try {
-    return JSON.parse(
-      await fsPromises.readFile(configLocation, { encoding: 'utf8' }),
-    )
+    return JSON.parse(await readFile(configLocation, { encoding: 'utf8' }))
   } catch (error) {
     if (error.code === 'ENOENT') {
       // make a config file since one does not exist yet
-      const configTemplateLocation = isDev
-        ? path.join(app.getAppPath(), 'public', 'test_data', 'config.json')
-        : path.join(app.getAppPath(), 'build', 'test_data', 'config.json')
+      const part = isDev ? 'public' : 'build'
       const config = JSON.parse(
-        await fsPromises.readFile(configTemplateLocation, { encoding: 'utf8' }),
+        await readFile(
+          path.join(app.getAppPath(), part, 'test_data', 'config.json'),
+          'utf8',
+        ),
       )
 
-      await fsPromises.writeFile(
-        configLocation,
-        JSON.stringify(config, null, 2),
-      )
+      await writeFile(configLocation, JSON.stringify(config, null, 2))
       return config
     }
     throw error
   }
 })
 
-ipcMain.handle('saveConfig', async (event, configSnapshot) => {
-  return fsPromises.writeFile(
-    configLocation,
-    JSON.stringify(configSnapshot, null, 2),
-  )
+ipcMain.handle('saveConfig', async (_event: any, configSnapshot: any) => {
+  return writeFile(configLocation, JSON.stringify(configSnapshot, null, 2))
 })
 
 ipcMain.handle('listSessions', async () => {
   try {
-    const sessionFiles = await fsPromises.readdir(sessionDirectory)
-    const sessionFilesData = []
+    const sessionFiles = await readdir(sessionDir)
+    const sessionFilesData = [] as any
     for (const sessionFile of sessionFiles) {
       if (path.extname(sessionFile) === '.thumbnail') {
         sessionFilesData.push(
-          fsPromises.readFile(path.join(sessionDirectory, sessionFile), {
-            encoding: 'utf8',
-          }),
+          readFile(path.join(sessionDir, sessionFile), 'utf8'),
         )
       } else {
-        sessionFilesData.push(
-          fsPromises.stat(path.join(sessionDirectory, sessionFile)),
-        )
+        sessionFilesData.push(stat(path.join(sessionDir, sessionFile)))
       }
     }
     const data = await Promise.all(sessionFilesData)
-    const sessions = {}
+    const sessions = {} as { [key: string]: any }
     sessionFiles.forEach((sessionFile, idx) => {
       const ext = path.extname(sessionFile)
       const basename = path.basename(sessionFile, ext)
@@ -261,78 +249,85 @@ ipcMain.handle('listSessions', async () => {
   }
 })
 
-ipcMain.handle('loadSession', async (event, sessionName) => {
-  return fsPromises.readFile(
-    path.join(sessionDirectory, `${encodeURIComponent(sessionName)}.json`),
+ipcMain.handle('loadSession', async (_event: any, sessionName: string) => {
+  return readFile(
+    path.join(sessionDir, `${encodeURIComponent(sessionName)}.json`),
     { encoding: 'utf8' },
   )
 })
 
-ipcMain.on('saveSession', async (event, sessionSnapshot) => {
-  const sessionScreenshot = (await mainWindow.capturePage()).toDataURL()
-  fsPromises.writeFile(
-    path.join(
-      sessionDirectory,
-      `${encodeURIComponent(sessionSnapshot.name)}.thumbnail`,
-    ),
-    sessionScreenshot,
-  )
-  fsPromises.writeFile(
-    path.join(
-      sessionDirectory,
-      `${encodeURIComponent(sessionSnapshot.name)}.json`,
-    ),
-    JSON.stringify(sessionSnapshot, null, 2),
-  )
-})
+interface SessionSnapshot {
+  name: string
+  [key: string]: any
+}
 
-ipcMain.handle('renameSession', async (event, oldName, newName) => {
-  try {
-    await fsPromises.rename(
-      path.join(sessionDirectory, `${encodeURIComponent(oldName)}.thumbnail`),
-      path.join(sessionDirectory, `${encodeURIComponent(newName)}.thumbnail`),
+ipcMain.on(
+  'saveSession',
+  async (_event: any, sessionSnapshot: SessionSnapshot) => {
+    const page = await mainWindow?.capturePage()
+    if (page) {
+      const sessionScreenshot = page.toDataURL()
+      writeFile(
+        path.join(
+          sessionDir,
+          `${encodeURIComponent(sessionSnapshot.name)}.thumbnail`,
+        ),
+        sessionScreenshot,
+      )
+      writeFile(
+        path.join(
+          sessionDir,
+          `${encodeURIComponent(sessionSnapshot.name)}.json`,
+        ),
+        JSON.stringify(sessionSnapshot, null, 2),
+      )
+    }
+  },
+)
+
+ipcMain.handle(
+  'renameSession',
+  async (_event: any, oldName: string, newName: string) => {
+    try {
+      await rename(
+        path.join(sessionDir, `${encodeURIComponent(oldName)}.thumbnail`),
+        path.join(sessionDir, `${encodeURIComponent(newName)}.thumbnail`),
+      )
+    } catch {
+      // ignore
+    }
+    const sessionJson = await readFile(
+      path.join(sessionDir, `${encodeURIComponent(oldName)}.json`),
+      'utf8',
     )
-  } catch {
-    // ignore
-  }
-  const sessionJson = await fsPromises.readFile(
-    path.join(sessionDirectory, `${encodeURIComponent(oldName)}.json`),
-    { encoding: 'utf8' },
-  )
-  const sessionSnapshot = JSON.parse(sessionJson)
-  sessionSnapshot.name = newName
-  await fsPromises.unlink(
-    path.join(sessionDirectory, `${encodeURIComponent(oldName)}.json`),
-  )
-  await fsPromises.writeFile(
-    path.join(sessionDirectory, `${encodeURIComponent(newName)}.json`),
-    JSON.stringify(sessionSnapshot, null, 2),
-  )
-})
+    const sessionSnapshot = JSON.parse(sessionJson)
+    sessionSnapshot.name = newName
+    await unlink(path.join(sessionDir, `${encodeURIComponent(oldName)}.json`))
+    await writeFile(
+      path.join(sessionDir, `${encodeURIComponent(newName)}.json`),
+      JSON.stringify(sessionSnapshot, null, 2),
+    )
+  },
+)
 
 ipcMain.handle('reset', async () => {
-  const sessionFiles = await fsPromises.readdir(sessionDirectory)
-  const unlinkCommands = [fsPromises.unlink(configLocation)]
-  for (const sessionFile of sessionFiles) {
-    unlinkCommands.push(
-      fsPromises.unlink(path.join(sessionDirectory, sessionFile)),
-    )
-  }
-  await Promise.all(unlinkCommands)
+  const sessionFiles = await readdir(sessionDir)
+  await unlink(configLocation)
+  return Promise.all(
+    sessionFiles.map(sessionFile => unlink(path.join(sessionDir, sessionFile))),
+  )
 })
 
-ipcMain.handle('deleteSession', async (event, sessionName) => {
+ipcMain.handle('deleteSession', async (_event: any, sessionName: string) => {
   try {
-    await fsPromises.unlink(
-      path.join(
-        sessionDirectory,
-        `${encodeURIComponent(sessionName)}.thumbnail`,
-      ),
+    await unlink(
+      path.join(sessionDir, `${encodeURIComponent(sessionName)}.thumbnail`),
     )
-  } catch {
+  } catch (e) {
+    console.log('received delete session warning', e)
     // ignore
   }
-  return fsPromises.unlink(
-    path.join(sessionDirectory, `${encodeURIComponent(sessionName)}.json`),
+  return unlink(
+    path.join(sessionDir, `${encodeURIComponent(sessionName)}.json`),
   )
 })
