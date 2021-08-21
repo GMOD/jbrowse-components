@@ -1,20 +1,26 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-
+import { getSession } from '@jbrowse/core/util'
+import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
+import { FileLocation } from '@jbrowse/core/util/types'
+import { FileSelector } from '@jbrowse/core/ui'
+import { openLocation } from '@jbrowse/core/util/io'
 import {
   IconButton,
   Button,
   Dialog,
   DialogTitle,
+  DialogContent,
+  DialogActions,
+  Grid,
   Select,
   MenuItem,
   makeStyles,
+  Typography,
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 import ImportIcon from '@material-ui/icons/Publish'
-
 import { GridBookmarkModel } from '../model'
-import { downloadBookmarkFile } from '../utils'
 
 const useStyles = makeStyles(() => ({
   closeDialog: {
@@ -28,30 +34,35 @@ const useStyles = makeStyles(() => ({
   flexItem: {
     margin: 5,
   },
-  flexContainer: {
-    display: 'flex',
-    justifyContent: 'space-evenly',
-    width: 200,
-  },
 }))
 
-function ImportBookmarks({ model }: { model: GridBookmarkModel }) {
+function ImportBookmarks({
+  model,
+  assemblyName,
+}: {
+  model: GridBookmarkModel
+  assemblyName: string
+}) {
   const classes = useStyles()
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [location, setLocation] = useState<FileLocation>()
+  const [error, setError] = useState<Error>()
   const [fileType, setFileType] = useState('BED')
-
-  const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setFileType(event.target.value as string)
-  }
-
-  const { bookmarkedRegions } = model
+  const session = getSession(model)
+  const [selectedAsm, setSelectedAsm] = useState<string>(
+    assemblyName || session.assemblyNames[0],
+  )
 
   return (
     <>
       <Button startIcon={<ImportIcon />} onClick={() => setDialogOpen(true)}>
         Import
       </Button>
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+      <Dialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        maxWidth="xl"
+      >
         <DialogTitle>
           <IconButton
             className={classes.closeDialog}
@@ -61,34 +72,89 @@ function ImportBookmarks({ model }: { model: GridBookmarkModel }) {
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        <div className={classes.dialogContainer}>
-          <>
-            <div className={classes.flexContainer}>
+        <DialogContent>
+          <Grid container direction="column" spacing={10}>
+            <Grid item>
+              <Typography>
+                Currently, only simple BED file imports are supported
+              </Typography>
               <Select
                 className={classes.flexItem}
                 data-testid="selectFileType"
                 value={fileType}
-                onChange={handleChange}
+                disabled
+                onChange={event => setFileType(event.target.value as string)}
               >
                 <MenuItem value="BED">BED</MenuItem>
                 <MenuItem value="TSV">TSV</MenuItem>
               </Select>
-              <Button
-                className={classes.flexItem}
-                data-testid="dialogImport"
-                variant="contained"
-                color="primary"
-                startIcon={<ImportIcon />}
-                onClick={() => {
-                  downloadBookmarkFile(bookmarkedRegions, fileType, model)
-                  setDialogOpen(false)
-                }}
-              >
-                Download
-              </Button>
-            </div>
-          </>
-        </div>
+            </Grid>
+            <Grid item>
+              <Typography>Select assembly that your data belongs to</Typography>
+              <AssemblySelector
+                onChange={val => setSelectedAsm(val)}
+                session={session}
+                selected={selectedAsm}
+              />
+            </Grid>
+            <Grid item>
+              <FileSelector
+                location={location}
+                setLocation={setLocation}
+                name="File"
+              />
+            </Grid>
+          </Grid>
+          {error ? (
+            <Typography color="error" variant="h6">{`${error}`}</Typography>
+          ) : null}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            className={classes.flexItem}
+            data-testid="dialogImport"
+            variant="contained"
+            color="primary"
+            disabled={!location}
+            startIcon={<ImportIcon />}
+            onClick={async () => {
+              try {
+                if (!location) {
+                  return
+                }
+                const data = (await openLocation(location).readFile(
+                  'utf8',
+                )) as string
+                const regions = data
+                  .split('\n')
+                  .filter(f => !!f.trim())
+                  .filter(
+                    f =>
+                      !f.startsWith('#') &&
+                      !f.startsWith('track') &&
+                      !f.startsWith('browser'),
+                  )
+                  .map(line => {
+                    const [refName, start, end, name] = line.split('\t')
+                    return {
+                      assemblyName: selectedAsm,
+                      refName,
+                      start: +start,
+                      end: +end,
+                      label: name === '.' ? undefined : name,
+                    }
+                  })
+                model.importBookmarks(regions)
+                setDialogOpen(false)
+              } catch (e) {
+                console.error(e)
+                setError(e)
+              }
+            }}
+          >
+            Import
+          </Button>
+        </DialogActions>
       </Dialog>
     </>
   )

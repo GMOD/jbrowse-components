@@ -38,7 +38,7 @@ function ClearBookmarks({ model }: { model: GridBookmarkModel }) {
         aria-label="clear bookmarks"
         onClick={() => setDialogOpen(true)}
       >
-        Clear bookmarks
+        Clear
       </Button>
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
         <DialogTitle>
@@ -52,7 +52,10 @@ function ClearBookmarks({ model }: { model: GridBookmarkModel }) {
         </DialogTitle>
         <div className={classes.dialogContainer}>
           <>
-            <Typography>Clear all bookmarks?</Typography>
+            <Typography>
+              Clear all bookmarks? Note this will clear bookmarks for all
+              assemblies
+            </Typography>
             <br />
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <Button

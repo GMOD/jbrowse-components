@@ -1,6 +1,8 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 
+import { assembleLocString } from '@jbrowse/core/util'
+
 import {
   IconButton,
   Button,
@@ -25,11 +27,11 @@ const useStyles = makeStyles(() => ({
 }))
 
 function DeleteBookmarkDialog({
-  locString,
+  rowNumber,
   model,
   onClose,
 }: {
-  locString: string | undefined
+  rowNumber: number | undefined
   model: GridBookmarkModel
   onClose: () => void
 }) {
@@ -38,7 +40,7 @@ function DeleteBookmarkDialog({
   const { removeBookmark } = model
 
   return (
-    <Dialog open={!!locString} onClose={onClose}>
+    <Dialog open={rowNumber !== undefined} onClose={onClose}>
       <DialogTitle>
         <IconButton
           className={classes.closeDialog}
@@ -50,7 +52,12 @@ function DeleteBookmarkDialog({
       </DialogTitle>
       <div className={classes.dialogContainer}>
         <Typography>
-          Remove <code>{locString}</code>?
+          Remove row number{' '}
+          <code>
+            {rowNumber !== undefined
+              ? assembleLocString(model.bookmarkedRegions[rowNumber])
+              : ''}
+          </code>
         </Typography>
         <br />
         <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -58,8 +65,8 @@ function DeleteBookmarkDialog({
             variant="contained"
             color="primary"
             onClick={() => {
-              if (locString) {
-                removeBookmark(locString)
+              if (rowNumber !== undefined) {
+                removeBookmark(rowNumber)
                 onClose()
               }
             }}
