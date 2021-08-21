@@ -81,6 +81,7 @@ const AdapterInput = observer(
     setGziLocation,
     twoBitLocation,
     setTwoBitLocation,
+    setChromSizesLocation,
   }: {
     adapterSelection: string
     fastaLocation: FileLocation
@@ -91,6 +92,7 @@ const AdapterInput = observer(
     setGziLocation: Function
     twoBitLocation: FileLocation
     setTwoBitLocation: Function
+    setChromSizesLocation: Function
   }) => {
     if (
       adapterSelection === 'IndexedFastaAdapter' ||
@@ -127,11 +129,22 @@ const AdapterInput = observer(
 
     if (adapterSelection === 'TwoBitAdapter') {
       return (
-        <FileSelector
-          name="twoBitLocation"
-          location={twoBitLocation}
-          setLocation={loc => setTwoBitLocation(loc)}
-        />
+        <Grid container spacing={2}>
+          <Grid item>
+            <FileSelector
+              name="twoBitLocation"
+              location={twoBitLocation}
+              setLocation={loc => setTwoBitLocation(loc)}
+            />
+          </Grid>
+          <Grid item>
+            <FileSelector
+              name="chromSizesLocation (optional, can be added to speed up loading 2bit files with many contigs)"
+              location={twoBitLocation}
+              setLocation={loc => setChromSizesLocation(loc)}
+            />
+          </Grid>
+        </Grid>
       )
     }
 
@@ -162,6 +175,7 @@ const AssemblyAddForm = observer(
     const [faiLocation, setFaiLocation] = useState({ uri: '' })
     const [gziLocation, setGziLocation] = useState({ uri: '' })
     const [twoBitLocation, setTwoBitLocation] = useState({ uri: '' })
+    const [chromSizesLocation, setChromSizesLocation] = useState({ uri: '' })
 
     function createAssembly() {
       if (assemblyName === '') {
@@ -200,6 +214,7 @@ const AssemblyAddForm = observer(
               adapter: {
                 type: 'TwoBitAdapter',
                 twoBitLocation,
+                chromSizesLocation,
               },
             },
           }
@@ -239,6 +254,7 @@ const AssemblyAddForm = observer(
               setGziLocation={setGziLocation}
               twoBitLocation={twoBitLocation}
               setTwoBitLocation={setTwoBitLocation}
+              setChromSizesLocation={setChromSizesLocation}
             />
           </div>
         </Paper>

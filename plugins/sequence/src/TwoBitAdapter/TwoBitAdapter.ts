@@ -21,7 +21,10 @@ export default class TwoBitAdapter
 
   private async initChromSizes() {
     const conf = readConfObject(this.config, 'chromSizesLocation')
-    if (conf.uri !== '/path/to/default.chrom.sizes') {
+    // check against default and empty in case someone makes the field blank in
+    // config editor, may want better way to check "optional config slots" in
+    // future
+    if (conf.uri !== '/path/to/default.chrom.sizes' && conf.uri !== '') {
       const file = openLocation(conf)
       const data = (await file.readFile('utf8')) as string
       return Object.fromEntries(
