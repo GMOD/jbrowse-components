@@ -2,12 +2,11 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
+import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import {
   Button,
   Container,
   Grid,
-  MenuItem,
-  TextField,
   Paper,
   Typography,
   makeStyles,
@@ -40,56 +39,14 @@ const useStyles = makeStyles(theme => ({
     marginBottom: 10,
   },
 }))
-const FormRow = observer(
-  ({
-    model,
-    selected,
-    onChange,
-    error,
-  }: {
-    model: LinearSyntenyViewModel
-    selected: number
-    onChange: (arg0: number) => void
-    error?: string
-  }) => {
-    const classes = useStyles()
-    const { assemblyNames } = getSession(model) as { assemblyNames: string[] }
-    return (
-      <Grid
-        container
-        item
-        justifyContent="center"
-        spacing={2}
-        alignItems="center"
-      >
-        <TextField
-          select
-          variant="outlined"
-          value={assemblyNames[selected] ? selected : ''}
-          onChange={event => {
-            onChange(Number(event.target.value))
-          }}
-          error={Boolean(error)}
-          disabled={Boolean(error)}
-          className={classes.importFormEntry}
-        >
-          {assemblyNames.map((name, idx) => (
-            <MenuItem key={name} value={idx}>
-              {name}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Grid>
-    )
-  },
-)
+
 const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   const classes = useStyles()
-  const [selected, setSelected] = useState([0, 0])
-  const [numRows] = useState(2)
-  const [trackData, setTrackData] = useState<FileLocation>({ uri: '' })
   const session = getSession(model)
   const { assemblyNames } = session
+  const [trackData, setTrackData] = useState<FileLocation>({ uri: '' })
+  const [selected, setSelected] = useState([assemblyNames[0], assemblyNames[0]])
+  const [numRows] = useState(2)
   const error = assemblyNames.length ? '' : 'No configured assemblies'
 
   async function onOpenClick() {
@@ -100,9 +57,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
       await Promise.all(
         selected
           .map(async selection => {
-            const assembly = await assemblyManager.waitForAssembly(
-              assemblyNames[selection],
-            )
+            const assembly = await assemblyManager.waitForAssembly(selection)
             if (assembly) {
               return {
                 type: 'LinearGenomeView',
@@ -130,12 +85,12 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
       const configuration = session.addTrackConf({
         trackId: `fileName-${Date.now()}`,
         name: fileName,
-        assemblyNames: selected.map(selection => assemblyNames[selection]),
+        assemblyNames: selected,
         type: 'SyntenyTrack',
         adapter: {
           type: 'PAFAdapter',
           pafLocation: trackData,
-          assemblyNames: selected.map(selection => assemblyNames[selection]),
+          assemblyNames: selected,
         },
       })
       model.toggleTrack(configuration.trackId)
@@ -161,16 +116,16 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
                   Select assemblies for synteny view
                 </p>
                 {[...new Array(numRows)].map((_, index) => (
-                  <FormRow
+                  <AssemblySelector
                     key={`row_${index}_${selected[index]}`}
-                    error={error}
                     selected={selected[index]}
                     onChange={val => {
+                      // splice the value into the current array
                       const copy = selected.slice(0)
                       copy[index] = val
                       setSelected(copy)
                     }}
-                    model={model}
+                    session={session}
                   />
                 ))}
               </Grid>

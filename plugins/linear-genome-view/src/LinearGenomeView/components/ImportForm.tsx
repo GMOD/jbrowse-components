@@ -3,14 +3,13 @@ import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
+import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import {
   Button,
   CircularProgress,
   Container,
   Grid,
-  MenuItem,
-  TextField,
   makeStyles,
 } from '@material-ui/core'
 // other
@@ -39,21 +38,18 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const { pluginManager } = getEnv(session)
   const { textSearchManager } = pluginManager.rootModel
   const { rankSearchResults } = model
-  const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
-  const [selectedRegion, setSelectedRegion] = useState<string | undefined>(
-    undefined,
+  const [selectedAssembly, setSelectedAssembly] = useState<string>(
+    assemblyNames[0],
   )
+  const [selectedRegion, setSelectedRegion] = useState<string>()
   const [assemblyRegions, setAssemblyRegions] = useState<Region[]>([])
   const error = !assemblyNames.length ? 'No configured assemblies' : ''
-  const hasError = Boolean(error)
-  const assemblyName = assemblyNames[selectedAssemblyIdx]
-  const displayName = assemblyName && !error ? selectedAssemblyIdx : ''
-  const searchScope = model.searchScope(assemblyName)
+  const searchScope = model.searchScope(selectedAssembly)
   useEffect(() => {
     let done = false
     ;(async () => {
-      if (assemblyName) {
-        const assembly = await assemblyManager.waitForAssembly(assemblyName)
+      if (selectedAssembly) {
+        const assembly = await assemblyManager.waitForAssembly(selectedAssembly)
         if (assembly && assembly.regions) {
           const regions = assembly.regions
           if (!done && regions) {
@@ -66,7 +62,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     return () => {
       done = true
     }
-  }, [assemblyManager, assemblyName])
+  }, [assemblyManager, selectedAssembly])
 
   function setSelectedValue(selectedOption: BaseResult) {
     setSelectedRegion(selectedOption.getLocation())
@@ -93,7 +89,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
         model.setSearchResults(results, input.toLocaleLowerCase())
       } else {
         try {
-          input && model.navToLocString(input, assemblyName)
+          input && model.navToLocString(input, selectedAssembly)
         } catch (e) {
           if (`${e}` === `Error: Unknown reference sequence "${input}"`) {
             model.setSearchResults(results, input.toLocaleLowerCase())
@@ -111,7 +107,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       {model.isSearchDialogDisplayed ? (
         <SearchResultsDialog
           model={model}
-          optAssemblyName={assemblyName}
+          optAssemblyName={selectedAssembly}
           handleClose={() => {
             model.setSearchResults(undefined, undefined)
           }}
@@ -120,42 +116,25 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       <Container className={classes.importFormContainer}>
         <Grid container spacing={1} justifyContent="center" alignItems="center">
           <Grid item>
-            <TextField
-              select
-              variant="outlined"
-              value={displayName}
-              onChange={event => {
-                setSelectedAssemblyIdx(Number(event.target.value))
-              }}
-              label="Assembly"
-              helperText={error || 'Select assembly to view'}
-              error={hasError}
-              disabled={hasError}
-              margin="normal"
-              className={classes.importFormEntry}
-            >
-              {assemblyNames.map((name, idx) => (
-                <MenuItem key={name} value={idx}>
-                  {name}
-                </MenuItem>
-              ))}
-            </TextField>
+            <AssemblySelector
+              onChange={val => setSelectedAssembly(val)}
+              session={session}
+              selected={selectedAssembly}
+            />
           </Grid>
           <Grid item>
-            {assemblyName ? (
+            {selectedAssembly ? (
               selectedRegion && model.volatileWidth ? (
                 <RefNameAutocomplete
                   model={model}
-                  assemblyName={
-                    error ? undefined : assemblyNames[selectedAssemblyIdx]
-                  }
+                  assemblyName={error ? undefined : selectedAssembly}
                   value={selectedRegion}
                   onSelect={option => setSelectedValue(option)}
                   TextFieldProps={{
                     margin: 'normal',
                     variant: 'outlined',
-                    className: classes.importFormEntry,
                     helperText: 'Enter a sequence or location',
+                    className: classes.importFormEntry,
                     onBlur: event => {
                       if (event.target.value !== '') {
                         setSelectedRegion(event.target.value)
@@ -164,8 +143,9 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                     onKeyPress: event => {
                       const inputValue = (event.target as HTMLInputElement)
                         .value
-                      // maybe check regular expression here to see if it's a locstring
-                      // try defaulting exact matches to first exact match
+                      // maybe check regular expression here to see if it's a
+                      // locstring try defaulting exact matches to first exact
+                      // match
                       if (event.key === 'Enter') {
                         handleSelectedRegion(inputValue)
                       }
@@ -199,9 +179,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             <Button
               disabled={!selectedRegion}
               className={classes.button}
-              onClick={() => {
-                model.showAllRegionsInAssembly(assemblyName)
-              }}
+              onClick={() => model.showAllRegionsInAssembly(selectedAssembly)}
               variant="contained"
               color="secondary"
             >
