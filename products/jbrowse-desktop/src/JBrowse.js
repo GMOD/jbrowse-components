@@ -48,7 +48,7 @@ const JBrowse = observer(({ pluginManager }) => {
         </>
       ) : (
         <StartScreen
-          root={rootModel}
+          rootModel={rootModel}
           bypass={firstLoad}
           onFactoryReset={factoryReset}
         />

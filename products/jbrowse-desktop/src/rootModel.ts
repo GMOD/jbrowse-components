@@ -16,6 +16,7 @@ import {
   types,
   addDisposer,
   SnapshotIn,
+  Instance,
 } from 'mobx-state-tree'
 import JBrowseDesktop from './jbrowseModel'
 // @ts-ignore
@@ -28,7 +29,7 @@ interface Menu {
   menuItems: MenuItem[]
 }
 
-export default function RootModel(pluginManager: PluginManager) {
+export default function rootModelFactory(pluginManager: PluginManager) {
   const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
     pluginManager,
   )
@@ -312,3 +313,6 @@ export default function RootModel(pluginManager: PluginManager) {
       },
     }))
 }
+
+export type RootModelType = ReturnType<typeof rootModelFactory>
+export type RootModel = Instance<RootModelType>

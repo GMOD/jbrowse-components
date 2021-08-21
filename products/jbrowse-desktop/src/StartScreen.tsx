@@ -1,6 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useMemo, useState } from 'react'
+import fs from 'fs'
 import { format } from 'timeago.js'
+import { RootModel } from './rootModel'
 import {
   Button,
   CircularProgress,
@@ -173,19 +174,19 @@ const RenameSessionDialog = ({
 }
 
 function NewSessionsTable({
-  root,
+  rootModel,
   dateMode,
   setError,
   sortedSessions,
   setSessionToDelete,
   setSessionToRename,
 }: {
-  root: any
+  rootModel: RootModel
   dateMode: string
   setError: (e: Error) => void
   setSessionToDelete: (e: string) => void
   setSessionToRename: (e: string) => void
-  sortedSessions: [string, any][]
+  sortedSessions: [string, { stats: fs.Stats }][]
 }) {
   const classes = useStyles()
   const columns = [
@@ -224,7 +225,7 @@ function NewSessionsTable({
             className={classes.pointer}
             onClick={async () => {
               try {
-                root.activateSession(
+                rootModel.activateSession(
                   JSON.parse(
                     await ipcRenderer.invoke('loadSession', value as string),
                   ),
@@ -285,22 +286,24 @@ function NewSessionsTable({
   )
 }
 
+type Session = [string, { screenshot: string; stats: fs.Stats }]
+
 function NewSessionsGrid({
   sortedSessions,
-  root,
+  rootModel,
   setError,
   setSessionToDelete,
   setSessionToRename,
 }: {
-  root: any
+  rootModel: RootModel
   setError: (e: Error) => void
   setSessionToDelete: (e: string) => void
   setSessionToRename: (e: string) => void
-  sortedSessions: [string, { mtime: any; birthtime: any }][]
+  sortedSessions: Session[]
 }) {
   return (
     <Grid container spacing={4}>
-      {sortedSessions?.map(([sessionName, sessionData]: [string, any]) => (
+      {sortedSessions?.map(([sessionName, sessionData]) => (
         <Grid item key={sessionName}>
           <RecentSessionCard
             sessionName={sessionName}
@@ -308,7 +311,7 @@ function NewSessionsGrid({
             sessionScreenshot={sessionData.screenshot}
             onClick={async () => {
               try {
-                root.activateSession(
+                rootModel.activateSession(
                   JSON.parse(
                     await ipcRenderer.invoke('loadSession', sessionName),
                   ),
@@ -328,15 +331,17 @@ function NewSessionsGrid({
 }
 
 export default function StartScreen({
-  root,
+  rootModel,
   bypass,
   onFactoryReset,
 }: {
-  root: any
+  rootModel: RootModel
   bypass: boolean
   onFactoryReset: Function
 }) {
-  const [sessions, setSessions] = useState<Record<string, any>>()
+  const [sessions, setSessions] = useState<
+    Record<string, { screenshot: string; stats: fs.Stats }>
+  >()
   const [sessionToDelete, setSessionToDelete] = useState<string>()
   const [sessionToRename, setSessionToRename] = useState<string>()
   const [updateSessionsList, setUpdateSessionsList] = useState(true)
@@ -352,17 +357,14 @@ export default function StartScreen({
     [sessions],
   )
   useEffect(() => {
-    root.setSavedSessionNames(sessionNames)
-  }, [root, sessionNames])
+    rootModel.setSavedSessionNames(sessionNames)
+  }, [rootModel, sessionNames])
 
   const sortedSessions = useMemo(
     () =>
-      sessions
-        ? Object.entries(sessions).sort(
-            (a: any, b: any) =>
-              b[1].stats?.mtimeMs || 0 - a[1].stats?.mtimeMs || 0,
-          )
-        : [],
+      Object.entries(sessions || {}).sort(
+        (a, b) => b[1].stats?.mtimeMs || 0 - a[1].stats?.mtimeMs || 0,
+      ),
     [sessions],
   )
 
@@ -375,7 +377,7 @@ export default function StartScreen({
             ? sortedSessions[0][0]
             : undefined
         if (load) {
-          root.activateSession(
+          rootModel.activateSession(
             JSON.parse(await ipcRenderer.invoke('loadSession', load)),
           )
         }
@@ -384,7 +386,7 @@ export default function StartScreen({
         setError(e)
       }
     })()
-  }, [bypass, root, sortedSessions])
+  }, [bypass, rootModel, sortedSessions])
 
   useEffect(() => {
     ;(async () => {
@@ -459,13 +461,13 @@ export default function StartScreen({
           </Typography>
           <Grid container spacing={4}>
             <Grid item>
-              <NewEmptySession root={root} />
+              <NewEmptySession rootModel={rootModel} />
             </Grid>
             <Grid item>
-              <NewLinearGenomeViewSession root={root} />
+              <NewLinearGenomeViewSession rootModel={rootModel} />
             </Grid>
             <Grid item>
-              <NewSVInspectorSession root={root} />
+              <NewSVInspectorSession rootModel={rootModel} />
             </Grid>
           </Grid>
         </div>
@@ -497,7 +499,7 @@ export default function StartScreen({
         {sortedSessions.length ? (
           displayMode === 'grid' ? (
             <NewSessionsGrid
-              root={root}
+              rootModel={rootModel}
               sortedSessions={sortedSessions}
               setError={setError}
               setSessionToDelete={setSessionToDelete}
@@ -505,7 +507,7 @@ export default function StartScreen({
             />
           ) : (
             <NewSessionsTable
-              root={root}
+              rootModel={rootModel}
               dateMode={dateMode}
               sortedSessions={sortedSessions}
               setError={setError}
