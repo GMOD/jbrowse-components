@@ -14,6 +14,7 @@ import ViewCompactIcon from '@material-ui/icons/ViewCompact'
 import AssemblySelector from './AssemblySelector'
 import DeleteBookmarkDialog from './DeleteBookmark'
 import DownloadBookmarks from './DownloadBookmarks'
+import ImportBookmarks from './ImportBookmarks'
 import ClearBookmarks from './ClearBookmarks'
 
 // creates a coarse measurement of column width, similar to code in BaseFeatureDetails
@@ -130,6 +131,7 @@ function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
     <>
       <AssemblySelector model={model} />
       <DownloadBookmarks model={model} />
+      <ImportBookmarks model={model} />
       <ClearBookmarks model={model} />
       <Button
         startIcon={<ViewCompactIcon />}
