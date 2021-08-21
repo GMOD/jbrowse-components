@@ -274,11 +274,11 @@ function NewSessionsTable({
     lastModified: stats.mtime,
   }))
   return (
-    <div style={{ height: 750, width: '100%' }}>
+    <div style={{ height: 400, width: '100%' }}>
       <DataGrid
         rows={rows}
         rowHeight={25}
-        headerHeight={25}
+        headerHeight={33}
         columns={columns}
       />
     </div>
@@ -494,23 +494,27 @@ export default function StartScreen({
             <MenuItem value={'timeago'}>Time ago</MenuItem>
           </Select>
         </FormControl>
-        {displayMode === 'grid' ? (
-          <NewSessionsGrid
-            root={root}
-            sortedSessions={sortedSessions}
-            setError={setError}
-            setSessionToDelete={setSessionToDelete}
-            setSessionToRename={setSessionToRename}
-          />
+        {sortedSessions.length ? (
+          displayMode === 'grid' ? (
+            <NewSessionsGrid
+              root={root}
+              sortedSessions={sortedSessions}
+              setError={setError}
+              setSessionToDelete={setSessionToDelete}
+              setSessionToRename={setSessionToRename}
+            />
+          ) : (
+            <NewSessionsTable
+              root={root}
+              dateMode={dateMode}
+              sortedSessions={sortedSessions}
+              setError={setError}
+              setSessionToDelete={setSessionToDelete}
+              setSessionToRename={setSessionToRename}
+            />
+          )
         ) : (
-          <NewSessionsTable
-            root={root}
-            dateMode={dateMode}
-            sortedSessions={sortedSessions}
-            setError={setError}
-            setSessionToDelete={setSessionToDelete}
-            setSessionToRename={setSessionToRename}
-          />
+          <Typography>No sessions available</Typography>
         )}
       </Container>
 
