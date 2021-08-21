@@ -1,6 +1,7 @@
 import assemblyManagerFactory, {
   assemblyConfigSchemas as AssemblyConfigSchemasFactory,
 } from '@jbrowse/core/assemblyManager'
+import { autorun } from 'mobx'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
@@ -12,8 +13,9 @@ import {
   cast,
   getParent,
   getSnapshot,
-  SnapshotIn,
   types,
+  addDisposer,
+  SnapshotIn,
 } from 'mobx-state-tree'
 import JBrowseDesktop from './jbrowseModel'
 // @ts-ignore
@@ -251,6 +253,7 @@ export default function RootModel(pluginManager: PluginManager) {
         })
         return subMenu.push(menuItem)
       },
+
       /**
        * Insert a menu item into a sub-menu
        * @param menuPath - Path to the sub-menu to add to, starting with the
@@ -289,6 +292,23 @@ export default function RootModel(pluginManager: PluginManager) {
         })
         subMenu.splice(position, 0, menuItem)
         return subMenu.length
+      },
+
+      afterCreate() {
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              if (self.session) {
+                ipcRenderer.send('saveSession', getSnapshot(self.session))
+              }
+              if (self.jbrowse || self.pluginsUpdated) {
+                ipcRenderer.send('saveConfig', getSnapshot(self.jbrowse))
+              }
+            },
+            { delay: 1000 },
+          ),
+        )
       },
     }))
 }

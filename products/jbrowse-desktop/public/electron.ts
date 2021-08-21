@@ -262,7 +262,9 @@ interface SessionSnap {
 }
 
 ipcMain.on('saveSession', async (_event: any, sessionSnapshot: SessionSnap) => {
+  console.log({ sessionSnapshot })
   const page = await mainWindow?.capturePage()
+  console.log({ page })
   if (page) {
     const sessionScreenshot = page.toDataURL()
     writeFile(
