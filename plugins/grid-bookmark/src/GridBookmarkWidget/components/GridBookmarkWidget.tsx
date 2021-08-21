@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 
 import { Link, IconButton, Typography, Button } from '@material-ui/core'
@@ -21,38 +21,36 @@ import ClearBookmarks from './ClearBookmarks'
 const measure = (row: any, col: string) =>
   Math.min(Math.max(measureText(String(row[col]), 14) + 20, 80), 1000)
 
-function BookmarkGrid({
-  compact,
-  model,
-}: {
-  model: GridBookmarkModel
-  compact: boolean
-}) {
-  const [dialogOpen, setDialogOpen] = useState<string>()
-  const { bookmarkedRegions, updateBookmarkLabel, selectedAssembly } = model
-  const { views } = getSession(model)
+const BookmarkGrid = observer(
+  ({ compact, model }: { model: GridBookmarkModel; compact: boolean }) => {
+    const [dialogOpen, setDialogOpen] = useState<string>()
+    const { bookmarkedRegions, updateBookmarkLabel, selectedAssembly } = model
+    const { views } = getSession(model)
 
-  const bookmarkRows = useMemo(
-    () =>
-      bookmarkedRegions
-        .toJS()
-        .map(region => ({
+    const bookmarkRows = bookmarkedRegions
+      .toJS()
+      .map(region => {
+        const { assemblyName, ...rest } = region
+        const displayedId = assembleLocString(
+          selectedAssembly === 'all' ? region : rest,
+        )
+        const id = assembleLocString(region)
+        return {
           ...region,
-          id: assembleLocString(region),
-          delete: assembleLocString(region),
-        }))
-        .filter(
-          region =>
-            selectedAssembly === 'all' ||
-            region.assemblyName === selectedAssembly,
-        ),
-    [bookmarkedRegions, selectedAssembly],
-  )
+          displayedId,
+          id,
+          delete: id,
+        }
+      })
+      .filter(
+        region =>
+          selectedAssembly === 'all' ||
+          region.assemblyName === selectedAssembly,
+      )
 
-  const columns = useMemo(
-    () => [
+    const columns = [
       {
-        field: 'id',
+        field: 'displayedId',
         headerName: 'bookmark link',
         width: Math.max(...bookmarkRows.map(row => measure(row, 'id'))),
         renderCell: (params: GridCellParams) => {
@@ -93,38 +91,37 @@ function BookmarkGrid({
           )
         },
       },
-    ],
-    [bookmarkRows, model, views],
-  )
+    ]
 
-  return (
-    <>
-      <DataGrid
-        rows={bookmarkRows}
-        rowHeight={compact ? 25 : undefined}
-        headerHeight={compact ? 25 : undefined}
-        columns={columns}
-        onCellEditCommit={args => {
-          const { value, id } = args
-          bookmarkRows.forEach(row => {
-            if (row.id === id) {
-              updateBookmarkLabel(id, value as string)
-            }
-          })
-        }}
-        disableSelectionOnClick
-      />
+    return (
+      <>
+        <DataGrid
+          rows={bookmarkRows}
+          rowHeight={compact ? 25 : undefined}
+          headerHeight={compact ? 25 : undefined}
+          columns={columns}
+          onCellEditCommit={args => {
+            const { value, id } = args
+            bookmarkRows.forEach(row => {
+              if (row.id === id) {
+                updateBookmarkLabel(id, value as string)
+              }
+            })
+          }}
+          disableSelectionOnClick
+        />
 
-      <DeleteBookmarkDialog
-        locString={dialogOpen}
-        model={model}
-        onClose={() => {
-          setDialogOpen(undefined)
-        }}
-      />
-    </>
-  )
-}
+        <DeleteBookmarkDialog
+          locString={dialogOpen}
+          model={model}
+          onClose={() => {
+            setDialogOpen(undefined)
+          }}
+        />
+      </>
+    )
+  },
+)
 
 function GridBookmarkWidget({ model }: { model: GridBookmarkModel }) {
   const [compact, setCompact] = useState(false)
