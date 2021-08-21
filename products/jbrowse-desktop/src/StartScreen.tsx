@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useMemo, useState } from 'react'
+import { format } from 'timeago.js'
 import {
   Button,
   CircularProgress,
@@ -9,18 +10,25 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  FormControl,
   Grid,
   IconButton,
   Input,
+  InputLabel,
+  Link,
   ListSubheader,
+  ListItemIcon,
   Menu,
   MenuItem,
+  Select,
   Typography,
   makeStyles,
 } from '@material-ui/core'
+import { DataGrid, GridCellParams } from '@material-ui/data-grid'
 import WarningIcon from '@material-ui/icons/Warning'
 import SettingsIcon from '@material-ui/icons/Settings'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
+import DeleteIcon from '@material-ui/icons/Delete'
+import EditIcon from '@material-ui/icons/Edit'
 import { LogoFull } from '@jbrowse/core/ui/Logo'
 import { inDevelopment } from '@jbrowse/core/util'
 import {
@@ -35,6 +43,13 @@ import electron from 'electron'
 const { ipcRenderer } = electron
 
 const useStyles = makeStyles(theme => ({
+  pointer: {
+    cursor: 'pointer',
+  },
+  formControl: {
+    margin: theme.spacing(1),
+    minWidth: 120,
+  },
   newSession: {
     backgroundColor: theme.palette.grey['300'],
     padding: theme.spacing(2),
@@ -157,6 +172,161 @@ const RenameSessionDialog = ({
   )
 }
 
+function NewSessionsTable({
+  root,
+  dateMode,
+  setError,
+  sortedSessions,
+  setSessionToDelete,
+  setSessionToRename,
+}: {
+  root: any
+  dateMode: string
+  setError: (e: Error) => void
+  setSessionToDelete: (e: string) => void
+  setSessionToRename: (e: string) => void
+  sortedSessions: [string, any][]
+}) {
+  const classes = useStyles()
+  const columns = [
+    {
+      field: 'delete',
+      width: 50,
+      renderCell: (params: GridCellParams) => {
+        const { value } = params
+        return (
+          <IconButton onClick={() => setSessionToDelete(value as string)}>
+            <DeleteIcon />
+          </IconButton>
+        )
+      },
+    },
+    {
+      field: 'rename',
+      width: 50,
+      renderCell: (params: GridCellParams) => {
+        const { value } = params
+        return (
+          <IconButton onClick={() => setSessionToRename(value as string)}>
+            <EditIcon />
+          </IconButton>
+        )
+      },
+    },
+    {
+      field: 'name',
+      headerName: 'Session name',
+      flex: 0.7,
+      renderCell: (params: GridCellParams) => {
+        const { value } = params
+        return (
+          <Link
+            className={classes.pointer}
+            onClick={async () => {
+              try {
+                root.activateSession(
+                  JSON.parse(
+                    await ipcRenderer.invoke('loadSession', value as string),
+                  ),
+                )
+              } catch (e) {
+                console.error(e)
+                setError(e)
+              }
+            }}
+          >
+            {value}
+          </Link>
+        )
+      },
+    },
+
+    {
+      field: 'lastModified',
+      headerName: 'Last modified',
+      renderCell: ({ value }: GridCellParams) =>
+        !value
+          ? null
+          : dateMode === 'timeago'
+          ? format(value as string)
+          : `${value.toLocaleString('en-US')}`,
+      width: 150,
+    },
+    {
+      field: 'birthtime',
+      headerName: 'Created',
+      renderCell: ({ value }: GridCellParams) =>
+        !value
+          ? null
+          : dateMode === 'timeago'
+          ? format(value as string)
+          : `${value.toLocaleString('en-US')}`,
+      width: 150,
+    },
+  ]
+
+  const rows = sortedSessions.map(([sessionName, { stats }]) => ({
+    id: sessionName,
+    name: sessionName,
+    rename: sessionName,
+    delete: sessionName,
+    birthtime: stats.birthtime,
+    lastModified: stats.mtime,
+  }))
+  return (
+    <div style={{ height: 750, width: '100%' }}>
+      <DataGrid
+        rows={rows}
+        rowHeight={25}
+        headerHeight={25}
+        columns={columns}
+      />
+    </div>
+  )
+}
+
+function NewSessionsGrid({
+  sortedSessions,
+  root,
+  setError,
+  setSessionToDelete,
+  setSessionToRename,
+}: {
+  root: any
+  setError: (e: Error) => void
+  setSessionToDelete: (e: string) => void
+  setSessionToRename: (e: string) => void
+  sortedSessions: [string, { mtime: any; birthtime: any }][]
+}) {
+  return (
+    <Grid container spacing={4}>
+      {sortedSessions?.map(([sessionName, sessionData]: [string, any]) => (
+        <Grid item key={sessionName}>
+          <RecentSessionCard
+            sessionName={sessionName}
+            sessionStats={sessionData.stats}
+            sessionScreenshot={sessionData.screenshot}
+            onClick={async () => {
+              try {
+                root.activateSession(
+                  JSON.parse(
+                    await ipcRenderer.invoke('loadSession', sessionName),
+                  ),
+                )
+              } catch (e) {
+                console.error(e)
+                setError(e)
+              }
+            }}
+            onDelete={setSessionToDelete}
+            onRename={setSessionToRename}
+          />
+        </Grid>
+      ))}
+    </Grid>
+  )
+}
+
 export default function StartScreen({
   root,
   bypass,
@@ -173,6 +343,8 @@ export default function StartScreen({
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
   const [reset, setReset] = useState(false)
   const [error, setError] = useState<Error>()
+  const [displayMode, setDisplayMode] = useState('table')
+  const [dateMode, setDateMode] = useState('timeago')
   const classes = useStyles()
 
   const sessionNames = useMemo(
@@ -212,21 +384,18 @@ export default function StartScreen({
         setError(e)
       }
     })()
-  }, [])
+  }, [bypass, root, sortedSessions])
 
   useEffect(() => {
     ;(async () => {
       try {
         if (updateSessionsList) {
           setUpdateSessionsList(false)
-
-          const sess = await ipcRenderer.invoke('listSessions')
-          setSessions(sess)
+          setSessions(await ipcRenderer.invoke('listSessions'))
         }
       } catch (e) {
-        setSessions(() => {
-          throw e
-        })
+        setError(e)
+        console.error(e)
       }
     })()
   }, [updateSessionsList])
@@ -303,35 +472,46 @@ export default function StartScreen({
         <Typography variant="h5" className={classes.header}>
           Recent sessions
         </Typography>
-        <Grid container spacing={4}>
-          {sortedSessions?.map(([sessionName, sessionData]: [string, any]) => (
-            <Grid item key={sessionName}>
-              <RecentSessionCard
-                sessionName={sessionName}
-                sessionStats={sessionData.stats}
-                sessionScreenshot={sessionData.screenshot}
-                onClick={async () => {
-                  try {
-                    root.activateSession(
-                      JSON.parse(
-                        await ipcRenderer.invoke('loadSession', sessionName),
-                      ),
-                    )
-                  } catch (e) {
-                    console.error(e)
-                    setError(e)
-                  }
-                }}
-                onDelete={() => {
-                  setSessionToDelete(sessionName)
-                }}
-                onRename={() => {
-                  setSessionToRename(sessionName)
-                }}
-              />
-            </Grid>
-          ))}
-        </Grid>
+        <FormControl className={classes.formControl}>
+          <InputLabel htmlFor="myselect">Display mode</InputLabel>
+          <Select
+            id="myselect"
+            value={displayMode}
+            onChange={event => setDisplayMode(event.target.value as string)}
+          >
+            <MenuItem value={'grid'}>Grid</MenuItem>
+            <MenuItem value={'table'}>Table</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl className={classes.formControl}>
+          <InputLabel htmlFor="mydate">Date display mode</InputLabel>
+          <Select
+            id="mydate"
+            value={dateMode}
+            onChange={event => setDateMode(event.target.value as string)}
+          >
+            <MenuItem value={'datestring'}>Date string</MenuItem>
+            <MenuItem value={'timeago'}>Time ago</MenuItem>
+          </Select>
+        </FormControl>
+        {displayMode === 'grid' ? (
+          <NewSessionsGrid
+            root={root}
+            sortedSessions={sortedSessions}
+            setError={setError}
+            setSessionToDelete={setSessionToDelete}
+            setSessionToRename={setSessionToRename}
+          />
+        ) : (
+          <NewSessionsTable
+            root={root}
+            dateMode={dateMode}
+            sortedSessions={sortedSessions}
+            setError={setError}
+            setSessionToDelete={setSessionToDelete}
+            setSessionToRename={setSessionToRename}
+          />
+        )}
       </Container>
 
       <Menu
@@ -341,7 +521,7 @@ export default function StartScreen({
         open={Boolean(menuAnchorEl)}
         onClose={() => setMenuAnchorEl(null)}
       >
-        <ListSubheader>Advanced Settings</ListSubheader>
+        <ListSubheader>Advanced settings</ListSubheader>
         <MenuItem
           onClick={() => {
             setReset(true)
