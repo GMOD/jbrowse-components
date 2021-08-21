@@ -256,34 +256,28 @@ ipcMain.handle('loadSession', async (_event: any, sessionName: string) => {
   )
 })
 
-interface SessionSnapshot {
+interface SessionSnap {
   name: string
   [key: string]: any
 }
 
-ipcMain.on(
-  'saveSession',
-  async (_event: any, sessionSnapshot: SessionSnapshot) => {
-    const page = await mainWindow?.capturePage()
-    if (page) {
-      const sessionScreenshot = page.toDataURL()
-      writeFile(
-        path.join(
-          sessionDir,
-          `${encodeURIComponent(sessionSnapshot.name)}.thumbnail`,
-        ),
-        sessionScreenshot,
-      )
-      writeFile(
-        path.join(
-          sessionDir,
-          `${encodeURIComponent(sessionSnapshot.name)}.json`,
-        ),
-        JSON.stringify(sessionSnapshot, null, 2),
-      )
-    }
-  },
-)
+ipcMain.on('saveSession', async (_event: any, sessionSnapshot: SessionSnap) => {
+  const page = await mainWindow?.capturePage()
+  if (page) {
+    const sessionScreenshot = page.toDataURL()
+    writeFile(
+      path.join(
+        sessionDir,
+        `${encodeURIComponent(sessionSnapshot.name)}.thumbnail`,
+      ),
+      sessionScreenshot,
+    )
+    writeFile(
+      path.join(sessionDir, `${encodeURIComponent(sessionSnapshot.name)}.json`),
+      JSON.stringify(sessionSnapshot, null, 2),
+    )
+  }
+})
 
 ipcMain.handle(
   'renameSession',
