@@ -88,7 +88,7 @@ const Logo = observer(({ session }) => {
   }
 })
 
-const App = observer(({ session, HeaderButtons }) => {
+const App = observer(({ session, HeaderButtons = null }) => {
   const classes = useStyles()
   const { pluginManager } = getEnv(session)
   const {
