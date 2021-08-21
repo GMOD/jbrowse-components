@@ -205,5 +205,5 @@ export default function Loader({
     )
   }
 
-  return <JBrowse pluginManager={pluginManager} />
+  return pluginManager ? <JBrowse pluginManager={pluginManager} /> : null
 }

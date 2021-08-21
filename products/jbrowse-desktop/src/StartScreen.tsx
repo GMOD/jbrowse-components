@@ -1,17 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import fs from 'fs'
-import { RootModel } from './rootModel'
 import {
-  Button,
   CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   Grid,
   IconButton,
-  Input,
   ListSubheader,
   ListItemIcon,
   Menu,
@@ -19,149 +10,68 @@ import {
   Typography,
   makeStyles,
 } from '@material-ui/core'
-import WarningIcon from '@material-ui/icons/Warning'
-import SettingsIcon from '@material-ui/icons/Settings'
 
+import FactoryResetDialog from '@jbrowse/core/ui/FactoryResetDialog'
 import { LogoFull } from '@jbrowse/core/ui/Logo'
 import { inDevelopment } from '@jbrowse/core/util'
 
-import RecentSessionPanel from './StartScreen/RecentSessions'
-import FactoryResetDialog from '@jbrowse/core/ui/FactoryResetDialog'
+// icons
+import WarningIcon from '@material-ui/icons/Warning'
+import SettingsIcon from '@material-ui/icons/Settings'
+
+// misc
+import fs from 'fs'
 import electron from 'electron'
+
+// locals
+import StartScreenOptionsPanel from './StartScreen/StartScreenOptionsPanel'
+import DeleteSessionDialog from './StartScreen/DeleteSessionDialog'
+import RenameSessionDialog from './StartScreen/RenameSessionDialog'
+import RecentSessionPanel from './StartScreen/RecentSessionsPanel'
+import { RootModel } from './rootModel'
+import { version } from '../package.json'
 
 const { ipcRenderer } = electron
 
 const useStyles = makeStyles(theme => ({
-  pointer: {
-    cursor: 'pointer',
+  root: {
+    marginLeft: 200,
+    marginRight: 200,
+    flexGrow: 1,
   },
   formControl: {
     margin: theme.spacing(1),
     minWidth: 120,
+    maxWidth: 300,
   },
-  newSession: {
-    backgroundColor: theme.palette.grey['300'],
-    padding: theme.spacing(2),
-    marginTop: theme.spacing(6),
-  },
-  header: {
-    margin: theme.spacing(2),
-  },
+
   settings: {
     float: 'right',
   },
+  logo: {
+    margin: '0 auto',
+    width: 500,
+  },
 }))
 
-const DeleteSessionDialog = ({
-  sessionToDelete,
-  onClose,
-  setError,
-}: {
-  sessionToDelete?: string
-  onClose: (arg0: boolean) => void
-  setError: (e: Error) => void
-}) => {
-  const [deleteSession, setDeleteSession] = useState(false)
-  useEffect(() => {
-    ;(async () => {
-      try {
-        if (deleteSession) {
-          setDeleteSession(false)
-          await ipcRenderer.invoke('deleteSession', sessionToDelete)
-          onClose(true)
-        }
-      } catch (e) {
-        console.error(e)
-        setError(e)
-      }
-    })()
-  }, [deleteSession, onClose, sessionToDelete, setError])
+const getTime = (a: [string, SessionStats]) => +a[1].stats.mtime
 
-  return (
-    <Dialog open={!!sessionToDelete} onClose={() => onClose(false)}>
-      <DialogTitle>{`Delete session "${sessionToDelete}"?`}</DialogTitle>
-      <DialogContent>
-        <DialogContentText>This action cannot be undone</DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => onClose(false)} color="primary">
-          Cancel
-        </Button>
-        <Button
-          onClick={() => setDeleteSession(true)}
-          color="primary"
-          variant="contained"
-          autoFocus
-        >
-          Delete
-        </Button>
-      </DialogActions>
-    </Dialog>
-  )
+interface SessionStats {
+  screenshot: string
+  stats: fs.Stats
 }
 
-const RenameSessionDialog = ({
-  sessionNames,
-  sessionToRename,
-  onClose,
-}: {
-  sessionNames: string[]
-  sessionToRename?: string
-  onClose: (arg0: boolean) => void
-}) => {
-  const [newSessionName, setNewSessionName] = useState('')
-  const [error, setError] = useState<Error>()
-
+function LogoWithVersion() {
+  const classes = useStyles()
   return (
-    <Dialog open={!!sessionToRename} onClose={() => onClose(false)}>
-      <DialogTitle id="alert-dialog-title">Rename</DialogTitle>
-      <DialogContent>
-        <DialogContentText id="alert-dialog-description">
-          Please enter a new name for the session:
-        </DialogContentText>
-        {sessionNames.includes(newSessionName) ? (
-          <DialogContentText color="error">
-            There is already a session named &quot;{newSessionName}&quot;
-          </DialogContentText>
-        ) : null}
-        <Input
-          autoFocus
-          defaultValue={sessionToRename}
-          onChange={event => setNewSessionName(event.target.value)}
-        />
-        {error ? (
-          <Typography color="error" variant="h6">{`${error}`}</Typography>
-        ) : null}
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => onClose(false)} color="primary">
-          Cancel
-        </Button>
-        <Button
-          onClick={async () => {
-            try {
-              await ipcRenderer.invoke(
-                'renameSession',
-                sessionToRename,
-                newSessionName,
-              )
-              onClose(true)
-            } catch (e) {
-              console.error(e)
-              setError(e)
-            }
-          }}
-          color="primary"
-          variant="contained"
-          disabled={!newSessionName || sessionNames.includes(newSessionName)}
-        >
-          OK
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <div className={classes.logo}>
+      <LogoFull />
+      <Typography variant="h6" style={{ float: 'right' }}>
+        v{version}
+      </Typography>
+    </div>
   )
 }
-
 export default function StartScreen({
   rootModel,
   bypass,
@@ -171,9 +81,8 @@ export default function StartScreen({
   bypass: boolean
   onFactoryReset: Function
 }) {
-  const [sessions, setSessions] = useState<
-    Record<string, { screenshot: string; stats: fs.Stats }>
-  >()
+  const classes = useStyles()
+  const [sessions, setSessions] = useState<Record<string, SessionStats>>()
   const [sessionToDelete, setSessionToDelete] = useState<string>()
   const [sessionToRename, setSessionToRename] = useState<string>()
   const [updateSessionsList, setUpdateSessionsList] = useState(true)
@@ -181,23 +90,17 @@ export default function StartScreen({
   const [reset, setReset] = useState(false)
   const [error, setError] = useState<Error>()
 
-  const classes = useStyles()
-
-  const sessionNames = useMemo(
-    () => (sessions !== undefined ? Object.keys(sessions) : []),
-    [sessions],
-  )
-  useEffect(() => {
-    rootModel.setSavedSessionNames(sessionNames)
-  }, [rootModel, sessionNames])
+  const sessionNames = useMemo(() => Object.keys(sessions || {}), [sessions])
 
   const sortedSessions = useMemo(
     () =>
-      Object.entries(sessions || {}).sort(
-        (a, b) => b[1].stats?.mtimeMs || 0 - a[1].stats?.mtimeMs || 0,
-      ),
+      Object.entries(sessions || {}).sort((a, b) => getTime(b) - getTime(a)),
     [sessions],
   )
+
+  useEffect(() => {
+    rootModel.setSavedSessionNames(sessionNames)
+  }, [rootModel, sessionNames])
 
   // inDevelopment, go back to the most recent session
   // useEffect(() => {
@@ -249,7 +152,7 @@ export default function StartScreen({
   }
 
   return (
-    <>
+    <div>
       <FactoryResetDialog
         open={reset}
         onFactoryReset={onFactoryReset}
@@ -282,23 +185,28 @@ export default function StartScreen({
       >
         <SettingsIcon />
       </IconButton>
-      <Grid container xl>
-        {error ? (
-          <Typography color="error" variant="h6">{`${error}`}</Typography>
-        ) : null}
-        <Grid item>
-          <h1>Hello</h1>
+
+      <LogoWithVersion />
+      {error ? (
+        <Typography color="error" variant="h6">{`${error}`}</Typography>
+      ) : null}
+
+      <div className={classes.root}>
+        <Grid container spacing={3}>
+          <Grid item xs={4}>
+            <StartScreenOptionsPanel rootModel={rootModel} />
+          </Grid>
+          <Grid item xs={8}>
+            <RecentSessionPanel
+              sortedSessions={sortedSessions}
+              rootModel={rootModel}
+              setSessionToDelete={setSessionToDelete}
+              setSessionToRename={setSessionToRename}
+              setError={setError}
+            />
+          </Grid>
         </Grid>
-        <Grid item>
-          <RecentSessionPanel
-            sortedSessions={sortedSessions}
-            rootModel={rootModel}
-            setSessionToDelete={setSessionToDelete}
-            setSessionToRename={setSessionToRename}
-            setError={setError}
-          />
-        </Grid>
-      </Grid>
+      </div>
 
       <Menu
         id="simple-menu"
@@ -320,6 +228,6 @@ export default function StartScreen({
           <Typography variant="inherit">Factory reset</Typography>
         </MenuItem>
       </Menu>
-    </>
+    </div>
   )
 }
