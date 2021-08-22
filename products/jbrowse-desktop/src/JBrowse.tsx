@@ -49,13 +49,14 @@ const JBrowseNonNullRoot = observer(
           <>
             <App session={session} />
             <Suspense fallback={<div />}>
-              <AssemblyManager
-                rootModel={rootModel}
-                open={isAssemblyEditing}
-                onClose={() => {
-                  setAssemblyEditing(false)
-                }}
-              />
+              {isAssemblyEditing ? (
+                <AssemblyManager
+                  rootModel={rootModel}
+                  onClose={() => {
+                    setAssemblyEditing(false)
+                  }}
+                />
+              ) : null}
             </Suspense>
           </>
         ) : (
