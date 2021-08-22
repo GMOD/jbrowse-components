@@ -17,11 +17,8 @@ import DeleteIcon from '@material-ui/icons/Delete'
 import EditIcon from '@material-ui/icons/Edit'
 import RecentSessionCard from '@jbrowse/core/ui/RecentSessionCard'
 import PluginManager from '@jbrowse/core/PluginManager'
-import electron from 'electron'
-
+import { ipcRenderer } from 'electron'
 import { createPluginManager } from './util'
-
-const { ipcRenderer } = electron
 
 const useStyles = makeStyles(theme => ({
   pointer: {
