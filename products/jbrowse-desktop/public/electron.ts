@@ -235,6 +235,9 @@ ipcMain.handle('listSessions', async () => {
   }
 })
 
+ipcMain.handle('loadExternalConfig', async (_event: unknown, sessionPath) => {
+  return readFile(sessionPath, 'utf8')
+})
 ipcMain.handle('loadSession', async (_event: unknown, sessionName: string) => {
   return readFile(getPath(sessionName), 'utf8')
 })

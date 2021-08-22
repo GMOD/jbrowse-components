@@ -53,7 +53,7 @@ export default function StartScreenOptionsPanel({
             className={classes.button}
             onClick={() => setDataDirectoryDialogOpen(true)}
           >
-            Open data directory
+            Open pre-existing-config
           </Button>
         </Grid>
         <Grid item>
