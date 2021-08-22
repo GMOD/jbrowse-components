@@ -183,31 +183,6 @@ app.on('activate', () => {
   }
 })
 
-ipcMain.handle('loadConfig', async () => {
-  try {
-    return JSON.parse(await readFile(configLocation, { encoding: 'utf8' }))
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      // make a config file since one does not exist yet
-      const part = isDev ? 'public' : 'build'
-      const config = JSON.parse(
-        await readFile(
-          path.join(app.getAppPath(), part, 'test_data', 'config.json'),
-          'utf8',
-        ),
-      )
-
-      await writeFile(configLocation, JSON.stringify(config, null, 2))
-      return config
-    }
-    throw error
-  }
-})
-
-ipcMain.handle('saveConfig', async (_event: any, configSnapshot: any) => {
-  return writeFile(configLocation, JSON.stringify(configSnapshot, null, 2))
-})
-
 ipcMain.handle('listSessions', async () => {
   try {
     const sessionFiles = await readdir(sessionDir)
@@ -261,46 +236,35 @@ interface SessionSnap {
   [key: string]: any
 }
 
-ipcMain.on('saveSession', async (_event: any, sessionSnapshot: SessionSnap) => {
+ipcMain.on('saveSession', async (_event: any, snap: SessionSnap) => {
+  const base = path.join(
+    sessionDir,
+    `${encodeURIComponent(snap.defaultSession.name)}`,
+  )
   const page = await mainWindow?.capturePage()
   if (page) {
-    const sessionScreenshot = page.toDataURL()
-    writeFile(
-      path.join(
-        sessionDir,
-        `${encodeURIComponent(sessionSnapshot.name)}.thumbnail`,
-      ),
-      sessionScreenshot,
-    )
+    writeFile(`${base}.thumbnail`, page.toDataURL())
   }
-  writeFile(
-    path.join(sessionDir, `${encodeURIComponent(sessionSnapshot.name)}.json`),
-    JSON.stringify(sessionSnapshot, null, 2),
-  )
+  writeFile(`${base}.json`, JSON.stringify(snap, null, 2))
 })
 
 ipcMain.handle(
   'renameSession',
   async (_event: any, oldName: string, newName: string) => {
+    const oldBase = path.join(sessionDir, `${encodeURIComponent(oldName)}`)
+    const newBase = path.join(sessionDir, `${encodeURIComponent(newName)}`)
     try {
-      await rename(
-        path.join(sessionDir, `${encodeURIComponent(oldName)}.thumbnail`),
-        path.join(sessionDir, `${encodeURIComponent(newName)}.thumbnail`),
-      )
-    } catch {
-      // ignore
+      await rename(oldBase + '.thumbnail', newBase + '.thumbnail')
+    } catch (e) {
+      console.log('rename thumbnail failed', e)
     }
-    const sessionJson = await readFile(
-      path.join(sessionDir, `${encodeURIComponent(oldName)}.json`),
-      'utf8',
-    )
-    const sessionSnapshot = JSON.parse(sessionJson)
-    sessionSnapshot.name = newName
-    await unlink(path.join(sessionDir, `${encodeURIComponent(oldName)}.json`))
-    await writeFile(
-      path.join(sessionDir, `${encodeURIComponent(newName)}.json`),
-      JSON.stringify(sessionSnapshot, null, 2),
-    )
+
+    const json = await readFile(oldBase + '.json', 'utf8')
+    const snap = JSON.parse(json)
+
+    snap.defaultSession.name = newName
+    await unlink(oldBase + '.json')
+    await writeFile(newBase + '.json', JSON.stringify(snap, null, 2))
   },
 )
 
@@ -313,15 +277,11 @@ ipcMain.handle('reset', async () => {
 })
 
 ipcMain.handle('deleteSession', async (_event: any, sessionName: string) => {
+  const base = path.join(sessionDir, `${encodeURIComponent(sessionName)}`)
   try {
-    await unlink(
-      path.join(sessionDir, `${encodeURIComponent(sessionName)}.thumbnail`),
-    )
+    await unlink(base + '.thumbnail')
   } catch (e) {
-    console.log('received delete session warning', e)
-    // ignore
+    console.log('delete thumbnail failed', e)
   }
-  return unlink(
-    path.join(sessionDir, `${encodeURIComponent(sessionName)}.json`),
-  )
+  return unlink(base + '.json')
 })
