@@ -63,8 +63,7 @@ const DeleteSessionDialog = ({
                 JSON.parse(
                   await ipcRenderer.invoke('loadExternalConfig', file.path),
                   function (k, v) {
-                    if (k === 'uri') {
-                      // @ts-ignore
+                    if (k === 'uri' && v.match(/https?:\/\//)) {
                       this.localPath = path.join(baseUri, v)
                       return
                     }
