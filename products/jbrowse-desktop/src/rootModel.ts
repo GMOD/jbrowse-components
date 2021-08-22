@@ -299,11 +299,14 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           self,
           autorun(
             () => {
+              // if (self.session) {
+              //   ipcRenderer.send('saveSession', getSnapshot(self.session))
+              // }
               if (self.session) {
-                ipcRenderer.send('saveSession', getSnapshot(self.session))
-              }
-              if (self.jbrowse || self.pluginsUpdated) {
-                ipcRenderer.send('saveConfig', getSnapshot(self.jbrowse))
+                ipcRenderer.send('saveSession', {
+                  ...getSnapshot(self.jbrowse),
+                  defaultSession: getSnapshot(self.session),
+                })
               }
             },
             { delay: 1000 },
