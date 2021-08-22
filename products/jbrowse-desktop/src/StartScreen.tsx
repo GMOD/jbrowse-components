@@ -13,6 +13,7 @@ import {
 
 import FactoryResetDialog from '@jbrowse/core/ui/FactoryResetDialog'
 import { LogoFull } from '@jbrowse/core/ui/Logo'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 // icons
 import WarningIcon from '@material-ui/icons/Warning'
@@ -27,7 +28,6 @@ import StartScreenOptionsPanel from './StartScreen/StartScreenOptionsPanel'
 import DeleteSessionDialog from './StartScreen/DeleteSessionDialog'
 import RenameSessionDialog from './StartScreen/RenameSessionDialog'
 import RecentSessionPanel from './StartScreen/RecentSessionsPanel'
-import { RootModel } from './rootModel'
 import { version } from '../package.json'
 
 const { ipcRenderer } = electron
@@ -72,12 +72,8 @@ function LogoWithVersion() {
   )
 }
 export default function StartScreen({
-  rootModel,
-  onFactoryReset,
   setPluginManager,
 }: {
-  rootModel: RootModel
-  onFactoryReset: Function
   setPluginManager: (arg: PluginManager) => void
 }) {
   const classes = useStyles()
@@ -128,13 +124,6 @@ export default function StartScreen({
 
   return (
     <div>
-      <FactoryResetDialog
-        open={reset}
-        onFactoryReset={onFactoryReset}
-        onClose={() => {
-          setReset(false)
-        }}
-      />
       <RenameSessionDialog
         sessionToRename={sessionToRename}
         sessionNames={sessionNames}
