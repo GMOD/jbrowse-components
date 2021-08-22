@@ -11,7 +11,6 @@ import {
   makeStyles,
 } from '@material-ui/core'
 
-import FactoryResetDialog from '@jbrowse/core/ui/FactoryResetDialog'
 import { LogoFull } from '@jbrowse/core/ui/Logo'
 import PluginManager from '@jbrowse/core/PluginManager'
 
@@ -24,11 +23,11 @@ import fs from 'fs'
 import electron from 'electron'
 
 // locals
-import StartScreenOptionsPanel from './StartScreen/StartScreenOptionsPanel'
-import DeleteSessionDialog from './StartScreen/DeleteSessionDialog'
-import RenameSessionDialog from './StartScreen/RenameSessionDialog'
-import RecentSessionPanel from './StartScreen/RecentSessionsPanel'
-import { version } from '../package.json'
+import LauncherPanel from './LauncherPanel'
+import DeleteSessionDialog from './DeleteSessionDialog'
+import RenameSessionDialog from './RenameSessionDialog'
+import RecentSessionPanel from './RecentSessionsPanel'
+import { version } from '../../package.json'
 
 const { ipcRenderer } = electron
 
@@ -158,7 +157,7 @@ export default function StartScreen({
       <div className={classes.root}>
         <Grid container spacing={3}>
           <Grid item xs={4}>
-            <StartScreenOptionsPanel setPluginManager={setPluginManager} />
+            <LauncherPanel setPluginManager={setPluginManager} />
           </Grid>
           <Grid item xs={8}>
             <RecentSessionPanel
