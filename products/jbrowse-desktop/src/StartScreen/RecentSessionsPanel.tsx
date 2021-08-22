@@ -56,7 +56,9 @@ function RecentSessionsTable({
   const columns = [
     {
       field: 'delete',
-      width: 50,
+      width: 40,
+      sortable: false,
+      filterable: false,
       renderCell: (params: GridCellParams) => {
         const { value } = params
         return (
@@ -68,7 +70,9 @@ function RecentSessionsTable({
     },
     {
       field: 'rename',
-      width: 50,
+      width: 40,
+      sortable: false,
+      filterable: false,
       renderCell: (params: GridCellParams) => {
         const { value } = params
         return (
