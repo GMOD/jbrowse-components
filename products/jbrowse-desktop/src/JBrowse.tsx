@@ -58,7 +58,9 @@ const JBrowseNonNullRoot = observer(
               />
             </Suspense>
           </>
-        ) : null}
+        ) : (
+          <div>No session</div>
+        )}
       </ThemeProvider>
     )
   },

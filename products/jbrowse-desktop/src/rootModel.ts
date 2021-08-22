@@ -117,8 +117,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             {
               label: 'New Session',
               icon: AddIcon,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick: (session: any) => {
+              onClick: (session: { setDefaultSession: () => void }) => {
                 session.setDefaultSession()
               },
             },
