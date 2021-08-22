@@ -16,7 +16,6 @@ const devServerUrl = url.parse(
   process.env.DEV_SERVER_URL || 'http://localhost:3000',
 )
 
-const configLocation = path.join(app.getPath('userData'), 'config.json')
 const sessionDir = path.join(app.getPath('userData'), 'sessions')
 
 function getPath(sessionName: string, ext = 'json') {
@@ -31,6 +30,14 @@ try {
   } else {
     throw error
   }
+}
+
+interface SessionSnap {
+  defaultSession: {
+    name: string
+  }
+
+  [key: string]: any
 }
 
 let mainWindow: electron.BrowserWindow | null
@@ -164,11 +171,7 @@ async function createWindow() {
   } else {
     Menu.setApplicationMenu(null)
   }
-  // if (isDev) {
-  // Open the DevTools.
-  // BrowserWindow.addDevToolsExtension('<location to your react chrome extension>');
-  // mainWindow.webContents.openDevTools()
-  // }
+
   mainWindow.on('closed', () => {
     mainWindow = null
   })
@@ -230,13 +233,8 @@ ipcMain.handle('listSessions', async () => {
 })
 
 ipcMain.handle('loadSession', async (_event: any, sessionName: string) => {
-  return JSON.parse(await readFile(getPath(sessionName), 'utf8'))
+  return readFile(getPath(sessionName), 'utf8')
 })
-
-interface SessionSnap {
-  name: string
-  [key: string]: any
-}
 
 ipcMain.on('saveSession', async (_event: any, snap: SessionSnap) => {
   const page = await mainWindow?.capturePage()
@@ -255,8 +253,7 @@ ipcMain.handle(
       console.error('rename thumbnail failed', e)
     }
 
-    const json = await readFile(getPath(oldName), 'utf8')
-    const snap = JSON.parse(json)
+    const snap = JSON.parse(await readFile(getPath(oldName), 'utf8'))
 
     snap.defaultSession.name = newName
     await unlink(getPath(oldName))
@@ -265,10 +262,8 @@ ipcMain.handle(
 )
 
 ipcMain.handle('reset', async () => {
-  const sessionFiles = await readdir(sessionDir)
-  await unlink(configLocation)
-  return Promise.all(
-    sessionFiles.map(sessionFile => unlink(path.join(sessionDir, sessionFile))),
+  await Promise.all(
+    (await readdir(sessionDir)).map(f => unlink(path.join(sessionDir, f))),
   )
 })
 

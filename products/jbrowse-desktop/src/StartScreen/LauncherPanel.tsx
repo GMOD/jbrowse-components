@@ -11,12 +11,13 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 import { createPluginManager } from './util'
 import preloadedConfigs from './preloadedConfigs'
+import OpenSequenceDialog from './OpenSequenceDialog'
+import OpenDataDirectoryDialog from './OpenDataDirectoryDialog'
 
 const useStyles = makeStyles(theme => ({
   formControl: {
     margin: theme.spacing(1),
     minWidth: 200,
-    maxWidth: 300,
   },
   button: {
     minWidth: 200,
@@ -54,6 +55,8 @@ export default function StartScreenOptionsPanel({
   setPluginManager: (arg0: PluginManager) => void
 }) {
   const classes = useStyles()
+  const [sequenceDialogOpen, setSequenceDialogOpen] = useState(false)
+  const [dataDirectoryDialogOpen, setDataDirectoryDialogOpen] = useState(false)
   return (
     <Grid item xs={4}>
       <Grid container spacing={5} direction="column" alignItems="center">
@@ -62,6 +65,7 @@ export default function StartScreenOptionsPanel({
             variant="contained"
             color="primary"
             className={classes.button}
+            onClick={() => setSequenceDialogOpen(true)}
           >
             Open sequence file
           </Button>
@@ -71,6 +75,7 @@ export default function StartScreenOptionsPanel({
             variant="contained"
             color="primary"
             className={classes.button}
+            onClick={() => setDataDirectoryDialogOpen(true)}
           >
             Open data directory
           </Button>
@@ -79,6 +84,18 @@ export default function StartScreenOptionsPanel({
           <PreloadedSelector setPluginManager={setPluginManager} />
         </Grid>
       </Grid>
+      {sequenceDialogOpen ? (
+        <OpenSequenceDialog
+          onClose={() => setSequenceDialogOpen(false)}
+          setPluginManager={setPluginManager}
+        />
+      ) : null}
+      {dataDirectoryDialogOpen ? (
+        <OpenDataDirectoryDialog
+          onClose={() => setDataDirectoryDialogOpen(false)}
+          setPluginManager={setPluginManager}
+        />
+      ) : null}
     </Grid>
   )
 }
