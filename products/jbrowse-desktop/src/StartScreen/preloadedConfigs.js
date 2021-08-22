@@ -1,0 +1,401 @@
+export default {
+  hg38: {
+    assemblies: [
+      {
+        name: 'hg38',
+        displayName: 'Homo sapiens (hg38)',
+        aliases: ['GRCh38'],
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'P6R5xbRqRr',
+          adapter: {
+            type: 'BgzipFastaAdapter',
+            fastaLocation: {
+              uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+            },
+            faiLocation: {
+              uri:
+                'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai',
+            },
+            gziLocation: {
+              uri:
+                'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi',
+            },
+          },
+        },
+        refNameAliases: {
+          adapter: {
+            type: 'RefNameAliasAdapter',
+            location: {
+              uri:
+                'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+            },
+          },
+        },
+      },
+    ],
+    tracks: [
+      {
+        type: 'FeatureTrack',
+        trackId: 'repeats_hg38',
+        name: 'Repeats',
+        assemblyNames: ['hg38'],
+        category: ['Annotation'],
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: {
+            uri: 'https://jbrowse.org/genomes/GRCh38/repeats.bb',
+          },
+        },
+      },
+      {
+        type: 'FeatureTrack',
+        trackId: 'gencode_nclist_hg38',
+        name: 'Gencode v32',
+        assemblyNames: ['hg38'],
+        category: ['Annotation'],
+        adapter: {
+          type: 'NCListAdapter',
+          rootUrlTemplate: {
+            uri:
+              'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/{refseq}/trackData.jsonz',
+          },
+          refNames: [
+            'chr1',
+            'chr2',
+            'chr3',
+            'chr4',
+            'chr5',
+            'chr6',
+            'chr7',
+            'chr8',
+            'chr9',
+            'chr10',
+            'chr11',
+            'chr12',
+            'chr13',
+            'chr14',
+            'chr15',
+            'chr16',
+            'chr17',
+            'chr18',
+            'chr19',
+            'chr20',
+            'chr21',
+            'chr22',
+            'chr23',
+            'chrX',
+            'chrY',
+            'chrMT',
+          ],
+        },
+        displays: [
+          {
+            type: 'LinearBasicDisplay',
+            displayId: 'gencode_nclist_hg38_linear',
+            renderer: {
+              type: 'SvgFeatureRenderer',
+              labels: {
+                description: "jexl:get(feature,'gene_name')",
+              },
+            },
+          },
+        ],
+      },
+      {
+        type: 'FeatureTrack',
+        trackId: 'clinvar_cnv_hg38',
+        name: 'Clinvar CNV',
+        assemblyNames: ['hg38'],
+        category: ['Annotation'],
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: {
+            uri:
+              'https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb',
+          },
+        },
+      },
+      {
+        type: 'FeatureTrack',
+        trackId: 'clinvar_hg38',
+        name: 'Clinvar variants',
+        assemblyNames: ['hg38'],
+        category: ['Annotation'],
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: {
+            uri:
+              'https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb',
+          },
+        },
+      },
+      {
+        type: 'FeatureTrack',
+        trackId: 'mane_hg38',
+        name: 'MANE 0.92',
+        assemblyNames: ['hg38'],
+        category: ['Annotation'],
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: {
+            uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.0.92.bb',
+          },
+        },
+        displays: [
+          {
+            type: 'LinearBasicDisplay',
+            displayId: 'mane_hg38_linear',
+            renderer: {
+              type: 'SvgFeatureRenderer',
+              labels: {
+                description: "jexl:get(feature,'geneName2')",
+              },
+            },
+          },
+        ],
+      },
+      {
+        type: 'FeatureTrack',
+        trackId: 'gdc_features',
+        name: 'GDC Cancer',
+        assemblyNames: ['hg38'],
+        category: ['Annotation'],
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: {
+            uri:
+              'https://hgdownload.soe.ucsc.edu/gbdb/hg38/gdcCancer/gdcCancer.bb',
+          },
+        },
+      },
+      {
+        type: 'FeatureTrack',
+        trackId: 'hg38_gaps',
+        name: 'Gaps',
+        assemblyNames: ['hg38'],
+        category: ['Annotation'],
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: {
+            uri: 'https://jbrowse.org/genomes/GRCh38/gaps.bb',
+          },
+        },
+      },
+      {
+        type: 'FeatureTrack',
+        trackId: 'gencode.v36.annotation.sort.gff3',
+        name: 'Gencode v36',
+        category: ['Annotation'],
+        assemblyNames: ['hg38'],
+        adapter: {
+          type: 'Gff3TabixAdapter',
+          gffGzLocation: {
+            uri:
+              'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz',
+          },
+          index: {
+            location: {
+              uri:
+                'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz.tbi',
+            },
+            indexType: 'TBI',
+          },
+        },
+      },
+    ],
+
+    defaultSession: {
+      name: 'New Session',
+    },
+  },
+  hg19: {
+    assemblies: [
+      {
+        name: 'hg19',
+        displayName: 'Homo sapiens (hg19)',
+        aliases: ['GRCh37'],
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'Pd8Wh30ei9R',
+          adapter: {
+            type: 'BgzipFastaAdapter',
+            fastaLocation: {
+              uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
+            },
+            faiLocation: {
+              uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai',
+            },
+            gziLocation: {
+              uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi',
+            },
+          },
+        },
+        refNameAliases: {
+          adapter: {
+            type: 'RefNameAliasAdapter',
+            location: {
+              uri:
+                'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
+            },
+          },
+        },
+      },
+    ],
+    tracks: [
+      {
+        type: 'FeatureTrack',
+        trackId: 'repeats_hg19',
+        name: 'Repeats',
+        assemblyNames: ['hg19'],
+        category: ['Annotation'],
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: {
+            uri: 'https://jbrowse.org/genomes/hg19/repeats.bb',
+          },
+        },
+      },
+      {
+        type: 'FeatureTrack',
+        trackId: 'nclist_genes_hg19',
+        name: 'Gencode v19',
+        assemblyNames: ['hg19'],
+        category: ['Annotation'],
+        adapter: {
+          type: 'NCListAdapter',
+          rootUrlTemplate: {
+            uri:
+              'https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json',
+          },
+          refNames: [
+            'chr1',
+            'chr2',
+            'chr3',
+            'chr4',
+            'chr5',
+            'chr6',
+            'chr7',
+            'chr8',
+            'chr9',
+            'chr10',
+            'chr11',
+            'chr12',
+            'chr13',
+            'chr14',
+            'chr15',
+            'chr16',
+            'chr17',
+            'chr18',
+            'chr19',
+            'chr20',
+            'chr21',
+            'chr22',
+            'chr23',
+            'chrX',
+            'chrY',
+            'chrMT',
+          ],
+        },
+        displays: [
+          {
+            type: 'LinearBasicDisplay',
+            displayId: 'nclist_genes_hg19_linear',
+            renderer: {
+              type: 'SvgFeatureRenderer',
+              labels: {
+                description: "jexl:get(feature,'gene_name')",
+              },
+            },
+          },
+        ],
+      },
+      {
+        type: 'FeatureTrack',
+        trackId: 'hg19_gaps',
+        name: 'Gaps',
+        assemblyNames: ['hg19'],
+        category: ['Annotation'],
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: {
+            uri: 'https://jbrowse.org/genomes/hg19/gaps.bb',
+          },
+        },
+      },
+      {
+        type: 'FeatureTrack',
+        trackId: 'clinvar_cnv_hg19',
+        name: 'Clinvar CNV',
+        assemblyNames: ['hg19'],
+        category: ['Annotation'],
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: {
+            uri:
+              'https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarCnv.bb',
+          },
+        },
+      },
+      {
+        type: 'FeatureTrack',
+        trackId: 'clinvar_hg19',
+        name: 'Clinvar variants',
+        assemblyNames: ['hg19'],
+        category: ['Annotation'],
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: {
+            uri:
+              'https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb',
+          },
+        },
+      },
+      {
+        type: 'FeatureTrack',
+        trackId: 'gencode.v36.annotation.sort.gff3',
+        name: 'Gencode v36',
+        category: ['Annotation'],
+        assemblyNames: ['hg38'],
+        adapter: {
+          type: 'Gff3TabixAdapter',
+          gffGzLocation: {
+            uri:
+              'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz',
+          },
+          index: {
+            location: {
+              uri:
+                'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz.tbi',
+            },
+            indexType: 'TBI',
+          },
+        },
+      },
+      {
+        type: 'FeatureTrack',
+        trackId: 'gencode.v36lift37.annotation.sort.gff3',
+        name: 'Gencode v36 (GRCh37 liftover)',
+        category: ['Annotation'],
+        assemblyNames: ['hg19'],
+        adapter: {
+          type: 'Gff3TabixAdapter',
+          gffGzLocation: {
+            uri:
+              'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz',
+          },
+          index: {
+            location: {
+              uri:
+                'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz.tbi',
+            },
+            indexType: 'TBI',
+          },
+        },
+      },
+    ],
+    defaultSession: {
+      name: 'New Session',
+    },
+  },
+}

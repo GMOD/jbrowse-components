@@ -11,7 +11,7 @@
   "scripts": {
     "start": "concurrently \"yarn serve\" \"wait-on http://localhost:3000 && yarn develop\"",
     "serve": "cross-env BROWSER=none yarn cra-start",
-    "develop": "yarn tsc --strict --esModuleInterop public/electron.ts --watch &  electron .",
+    "develop": "electron .",
     "cra-start": "rescripts start",
     "test": "rescripts test",
     "prebuild": "yarn tsc --strict --esModuleInterop public/electron.ts",

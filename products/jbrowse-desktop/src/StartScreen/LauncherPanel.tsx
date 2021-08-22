@@ -10,12 +10,7 @@ import {
 } from '@material-ui/core'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { createPluginManager } from './util'
-
-const preloadedSessions = {
-  hg38: {},
-  mm10: {},
-  hg19: {},
-}
+import preloadedConfigs from './preloadedConfigs'
 
 const useStyles = makeStyles(theme => ({
   formControl: {
@@ -25,6 +20,7 @@ const useStyles = makeStyles(theme => ({
   },
   button: {
     minWidth: 200,
+    height: '3em',
   },
 }))
 
@@ -60,7 +56,7 @@ export default function StartScreenOptionsPanel({
   const classes = useStyles()
   return (
     <Grid item xs={4}>
-      <Grid container spacing={1} direction="column" alignItems="center">
+      <Grid container spacing={5} direction="column" alignItems="center">
         <Grid item>
           <Button
             variant="contained"
@@ -103,7 +99,7 @@ function PreloadedSelector({
           label="Pre-loaded datasets"
           onChange={event => setAssemblyChoice(event.target.value as string)}
         >
-          {Object.keys(preloadedSessions).map(name => (
+          {Object.keys(preloadedConfigs).map(name => (
             <MenuItem key={name} value={name}>
               {name}
             </MenuItem>
@@ -113,10 +109,12 @@ function PreloadedSelector({
       <div style={{ margin: 'auto 0' }}>
         <Button
           onClick={async () => {
-            setPluginManager(
+            const pm = await createPluginManager(
               // @ts-ignore
-              createPluginManager(preloadedSessions[assemblyChoice]),
+              preloadedConfigs[assemblyChoice],
             )
+            console.log({ pm })
+            setPluginManager(pm)
           }}
           variant="contained"
           color="primary"
