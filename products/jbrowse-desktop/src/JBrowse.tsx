@@ -8,8 +8,6 @@ import { AssemblyManager } from '@jbrowse/plugin-data-management'
 
 // locals
 import { RootModel } from './rootModel'
-import StartScreen from './StartScreen'
-import factoryReset from './factoryReset'
 
 const JBrowse = observer(
   ({ pluginManager }: { pluginManager: PluginManager }) => {
@@ -60,13 +58,7 @@ const JBrowseNonNullRoot = observer(
               />
             </Suspense>
           </>
-        ) : (
-          <StartScreen
-            rootModel={rootModel}
-            bypass={firstLoad}
-            onFactoryReset={factoryReset}
-          />
-        )}
+        ) : null}
       </ThemeProvider>
     )
   },

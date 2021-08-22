@@ -13,7 +13,6 @@ import {
 
 import FactoryResetDialog from '@jbrowse/core/ui/FactoryResetDialog'
 import { LogoFull } from '@jbrowse/core/ui/Logo'
-import { inDevelopment } from '@jbrowse/core/util'
 
 // icons
 import WarningIcon from '@material-ui/icons/Warning'
@@ -35,8 +34,8 @@ const { ipcRenderer } = electron
 
 const useStyles = makeStyles(theme => ({
   root: {
-    marginLeft: 200,
-    marginRight: 200,
+    marginLeft: 100,
+    marginRight: 100,
     flexGrow: 1,
   },
   formControl: {
@@ -74,12 +73,12 @@ function LogoWithVersion() {
 }
 export default function StartScreen({
   rootModel,
-  bypass,
   onFactoryReset,
+  setPluginManager,
 }: {
   rootModel: RootModel
-  bypass: boolean
   onFactoryReset: Function
+  setPluginManager: (arg: PluginManager) => void
 }) {
   const classes = useStyles()
   const [sessions, setSessions] = useState<Record<string, SessionStats>>()
@@ -97,30 +96,6 @@ export default function StartScreen({
       Object.entries(sessions || {}).sort((a, b) => getTime(b) - getTime(a)),
     [sessions],
   )
-
-  useEffect(() => {
-    rootModel.setSavedSessionNames(sessionNames)
-  }, [rootModel, sessionNames])
-
-  // inDevelopment, go back to the most recent session
-  // useEffect(() => {
-  //   ;(async () => {
-  //     try {
-  //       const load =
-  //         bypass && inDevelopment && sortedSessions.length
-  //           ? sortedSessions[0][0]
-  //           : undefined
-  //       if (load) {
-  //         rootModel.activateSession(
-  //           JSON.parse(await ipcRenderer.invoke('loadSession', load)),
-  //         )
-  //       }
-  //     } catch (e) {
-  //       console.error(e)
-  //       setError(e)
-  //     }
-  //   })()
-  // }, [bypass, rootModel, sortedSessions])
 
   useEffect(() => {
     ;(async () => {
@@ -194,12 +169,11 @@ export default function StartScreen({
       <div className={classes.root}>
         <Grid container spacing={3}>
           <Grid item xs={4}>
-            <StartScreenOptionsPanel rootModel={rootModel} />
+            <StartScreenOptionsPanel setPluginManager={setPluginManager} />
           </Grid>
           <Grid item xs={8}>
             <RecentSessionPanel
               sortedSessions={sortedSessions}
-              rootModel={rootModel}
               setSessionToDelete={setSessionToDelete}
               setSessionToRename={setSessionToRename}
               setError={setError}

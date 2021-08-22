@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import fs from 'fs'
-import { RootModel } from '../rootModel'
 import { format } from 'timeago.js'
 import {
   FormControl,
@@ -17,9 +16,6 @@ import { DataGrid, GridCellParams } from '@material-ui/data-grid'
 import DeleteIcon from '@material-ui/icons/Delete'
 import EditIcon from '@material-ui/icons/Edit'
 import RecentSessionCard from '@jbrowse/core/ui/RecentSessionCard'
-import electron from 'electron'
-
-const { ipcRenderer } = electron
 
 const useStyles = makeStyles(theme => ({
   pointer: {
@@ -36,14 +32,12 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function RecentSessionsTable({
-  rootModel,
   dateMode,
   setError,
   sortedSessions,
   setSessionToDelete,
   setSessionToRename,
 }: {
-  rootModel: RootModel
   dateMode: string
   setError: (e: Error) => void
   setSessionToDelete: (e: string) => void
@@ -87,11 +81,12 @@ function RecentSessionsTable({
             className={classes.pointer}
             onClick={async () => {
               try {
-                rootModel.activateSession(
-                  JSON.parse(
-                    await ipcRenderer.invoke('loadSession', value as string),
-                  ),
-                )
+                console.log('wtotw')
+                // rootModel.activateSession(
+                //   JSON.parse(
+                //     await ipcRenderer.invoke('loadSession', value as string),
+                //   ),
+                // )
               } catch (e) {
                 console.error(e)
                 setError(e)
@@ -152,12 +147,10 @@ type Session = [string, { screenshot: string; stats: fs.Stats }]
 
 function RecentSessionsGrid({
   sortedSessions,
-  rootModel,
   setError,
   setSessionToDelete,
   setSessionToRename,
 }: {
-  rootModel: RootModel
   setError: (e: Error) => void
   setSessionToDelete: (e: string) => void
   setSessionToRename: (e: string) => void
@@ -173,11 +166,7 @@ function RecentSessionsGrid({
             sessionScreenshot={sessionData.screenshot}
             onClick={async () => {
               try {
-                rootModel.activateSession(
-                  JSON.parse(
-                    await ipcRenderer.invoke('loadSession', sessionName),
-                  ),
-                )
+                console.log('woo')
               } catch (e) {
                 console.error(e)
                 setError(e)
@@ -194,13 +183,11 @@ function RecentSessionsGrid({
 
 export default function RecentSessionPanel({
   setError,
-  rootModel,
   sortedSessions,
   setSessionToRename,
   setSessionToDelete,
 }: {
   setError: (e: Error) => void
-  rootModel: RootModel
   sortedSessions: Session[]
   setSessionToRename: (e: string) => void
   setSessionToDelete: (e: string) => void
@@ -238,7 +225,6 @@ export default function RecentSessionPanel({
       {sortedSessions.length ? (
         displayMode === 'grid' ? (
           <RecentSessionsGrid
-            rootModel={rootModel}
             sortedSessions={sortedSessions}
             setError={setError}
             setSessionToDelete={setSessionToDelete}
@@ -246,7 +232,6 @@ export default function RecentSessionPanel({
           />
         ) : (
           <RecentSessionsTable
-            rootModel={rootModel}
             dateMode={dateMode}
             sortedSessions={sortedSessions}
             setError={setError}
