@@ -9,7 +9,7 @@ import {
 
 const DeleteSessionDialog = ({
   onClose,
-  setPluginManager,
+  setPluginManager: _setPluginManager,
 }: {
   setPluginManager: Function
   onClose: () => void

@@ -52,7 +52,9 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const getTime = (a: [string, SessionStats]) => +a[1].stats.mtime
+const getTime = (a: [string, SessionStats]) => {
+  return +a[1].stats?.mtime
+}
 
 interface SessionStats {
   screenshot: string
@@ -81,7 +83,6 @@ export default function StartScreen({
   const [sessionToRename, setSessionToRename] = useState<string>()
   const [updateSessionsList, setUpdateSessionsList] = useState(true)
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
-  const [reset, setReset] = useState(false)
   const [error, setError] = useState<Error>()
 
   const sessionNames = useMemo(() => Object.keys(sessions || {}), [sessions])
@@ -172,23 +173,27 @@ export default function StartScreen({
       </div>
 
       <Menu
-        id="simple-menu"
-        anchorEl={menuAnchorEl}
         keepMounted
+        anchorEl={menuAnchorEl}
         open={Boolean(menuAnchorEl)}
         onClose={() => setMenuAnchorEl(null)}
       >
         <ListSubheader>Advanced settings</ListSubheader>
         <MenuItem
-          onClick={() => {
-            setReset(true)
+          onClick={async () => {
+            try {
+              await ipcRenderer.invoke('reset')
+            } catch (e) {
+              setError(e)
+              console.error(e)
+            }
             setMenuAnchorEl(null)
           }}
         >
           <ListItemIcon>
             <WarningIcon />
           </ListItemIcon>
-          <Typography variant="inherit">Factory reset</Typography>
+          <Typography>Factory reset</Typography>
         </MenuItem>
       </Menu>
     </div>

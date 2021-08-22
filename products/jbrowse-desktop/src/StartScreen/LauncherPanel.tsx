@@ -25,30 +25,6 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function load(
-  setError: (e: string) => void,
-  setSnapshotError: (e: Error) => void,
-) {
-  try {
-  } catch (e) {
-    console.error(e)
-    const match = e.message.match(
-      /.*at path "(.*)" snapshot `(.*)` is not assignable/,
-    )
-    // best effort to make a better error message than the default
-    // mobx-state-tree
-    if (match) {
-      setError(`Failed to load element at ${match[1]}`)
-      setSnapshotError(match[2])
-    } else {
-      const additionalMsg =
-        e.message.length > 10000 ? '... see console for more' : ''
-      throw new Error(e.message.slice(0, 10000) + additionalMsg)
-    }
-    console.error(e)
-  }
-}
-
 export default function StartScreenOptionsPanel({
   setPluginManager,
 }: {

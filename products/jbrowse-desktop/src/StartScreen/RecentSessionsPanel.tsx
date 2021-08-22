@@ -119,17 +119,6 @@ function RecentSessionsTable({
           : `${value.toLocaleString('en-US')}`,
       width: 150,
     },
-    {
-      field: 'birthtime',
-      headerName: 'Created',
-      renderCell: ({ value }: GridCellParams) =>
-        !value
-          ? null
-          : dateMode === 'timeago'
-          ? format(value as string)
-          : `${value.toLocaleString('en-US')}`,
-      width: 150,
-    },
   ]
 
   const rows = sortedSessions.map(([sessionName, { stats }]) => ({
@@ -137,8 +126,7 @@ function RecentSessionsTable({
     name: sessionName,
     rename: sessionName,
     delete: sessionName,
-    birthtime: stats.birthtime,
-    lastModified: stats.mtime,
+    lastModified: stats?.mtime,
   }))
   return (
     <div style={{ height: 400, width: '100%' }}>
@@ -157,10 +145,12 @@ type Session = [string, { screenshot: string; stats: fs.Stats }]
 function RecentSessionsCards({
   sortedSessions,
   setError,
+  dateMode,
   setSessionToDelete,
   setSessionToRename,
   setPluginManager,
 }: {
+  dateMode: string
   setError: (e: Error) => void
   setSessionToDelete: (e: string) => void
   setSessionToRename: (e: string) => void
@@ -175,6 +165,7 @@ function RecentSessionsCards({
             sessionName={name}
             sessionStats={sessionData.stats}
             sessionScreenshot={sessionData.screenshot}
+            dateMode={dateMode}
             onClick={async () => {
               try {
                 const data = await ipcRenderer.invoke('loadSession', name)
@@ -243,6 +234,7 @@ export default function RecentSessionPanel({
             setPluginManager={setPluginManager}
             sortedSessions={sortedSessions}
             setError={setError}
+            dateMode={dateMode}
             setSessionToDelete={setSessionToDelete}
             setSessionToRename={setSessionToRename}
           />
