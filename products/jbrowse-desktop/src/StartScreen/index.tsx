@@ -161,6 +161,7 @@ export default function StartScreen({
           </Grid>
           <Grid item xs={8}>
             <RecentSessionPanel
+              setPluginManager={setPluginManager}
               sortedSessions={sortedSessions}
               setSessionToDelete={setSessionToDelete}
               setSessionToRename={setSessionToRename}

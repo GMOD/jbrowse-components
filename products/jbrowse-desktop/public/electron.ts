@@ -18,6 +18,11 @@ const devServerUrl = url.parse(
 
 const configLocation = path.join(app.getPath('userData'), 'config.json')
 const sessionDir = path.join(app.getPath('userData'), 'sessions')
+
+function getPath(sessionName: string, ext = 'json') {
+  return path.join(sessionDir, `${encodeURIComponent(sessionName)}.${ext}`)
+}
+
 try {
   fs.statSync(sessionDir)
 } catch (error) {
@@ -225,10 +230,7 @@ ipcMain.handle('listSessions', async () => {
 })
 
 ipcMain.handle('loadSession', async (_event: any, sessionName: string) => {
-  return readFile(
-    path.join(sessionDir, `${encodeURIComponent(sessionName)}.json`),
-    { encoding: 'utf8' },
-  )
+  return JSON.parse(await readFile(getPath(sessionName), 'utf8'))
 })
 
 interface SessionSnap {
@@ -237,34 +239,28 @@ interface SessionSnap {
 }
 
 ipcMain.on('saveSession', async (_event: any, snap: SessionSnap) => {
-  const base = path.join(
-    sessionDir,
-    `${encodeURIComponent(snap.defaultSession.name)}`,
-  )
   const page = await mainWindow?.capturePage()
   if (page) {
-    writeFile(`${base}.thumbnail`, page.toDataURL())
+    writeFile(getPath(snap.defaultSession.name, 'thumbnail'), page.toDataURL())
   }
-  writeFile(`${base}.json`, JSON.stringify(snap, null, 2))
+  writeFile(getPath(snap.defaultSession.name), JSON.stringify(snap, null, 2))
 })
 
 ipcMain.handle(
   'renameSession',
   async (_event: any, oldName: string, newName: string) => {
-    const oldBase = path.join(sessionDir, `${encodeURIComponent(oldName)}`)
-    const newBase = path.join(sessionDir, `${encodeURIComponent(newName)}`)
     try {
-      await rename(oldBase + '.thumbnail', newBase + '.thumbnail')
+      await rename(getPath(oldName, 'thumbnail'), getPath(newName, 'thumbnail'))
     } catch (e) {
-      console.log('rename thumbnail failed', e)
+      console.error('rename thumbnail failed', e)
     }
 
-    const json = await readFile(oldBase + '.json', 'utf8')
+    const json = await readFile(getPath(oldName), 'utf8')
     const snap = JSON.parse(json)
 
     snap.defaultSession.name = newName
-    await unlink(oldBase + '.json')
-    await writeFile(newBase + '.json', JSON.stringify(snap, null, 2))
+    await unlink(getPath(oldName))
+    await writeFile(getPath(newName), JSON.stringify(snap, null, 2))
   },
 )
 
@@ -277,11 +273,10 @@ ipcMain.handle('reset', async () => {
 })
 
 ipcMain.handle('deleteSession', async (_event: any, sessionName: string) => {
-  const base = path.join(sessionDir, `${encodeURIComponent(sessionName)}`)
   try {
-    await unlink(base + '.thumbnail')
+    await unlink(getPath(sessionName, '.thumbnail'))
   } catch (e) {
-    console.log('delete thumbnail failed', e)
+    console.error('delete thumbnail failed', e)
   }
-  return unlink(base + '.json')
+  return unlink(getPath(sessionName))
 })
