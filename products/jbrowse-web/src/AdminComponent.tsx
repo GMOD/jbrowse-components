@@ -33,13 +33,14 @@ function AdminComponent({ pluginManager }: { pluginManager: PluginManager }) {
 
   return (
     <>
-      <AssemblyManager
-        rootModel={rootModel}
-        open={isAssemblyEditing}
-        onClose={() => {
-          setAssemblyEditing(false)
-        }}
-      />
+      {isAssemblyEditing ? (
+        <AssemblyManager
+          rootModel={rootModel}
+          onClose={() => {
+            setAssemblyEditing(false)
+          }}
+        />
+      ) : null}
       <SetDefaultSession
         rootModel={rootModel}
         open={isDefaultSessionEditing}

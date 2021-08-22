@@ -37,7 +37,7 @@ interface SessionSnap {
     name: string
   }
 
-  [key: string]: any
+  [key: string]: unknown
 }
 
 let mainWindow: electron.BrowserWindow | null
@@ -73,6 +73,7 @@ async function createWindow() {
 
   const isMac = process.platform === 'darwin'
 
+  // @ts-ignore
   const mainMenu = Menu.buildFromTemplate([
     // { role: 'appMenu' }
     ...(isMac
@@ -164,7 +165,7 @@ async function createWindow() {
         },
       ],
     },
-  ] as any)
+  ])
 
   if (isMac) {
     Menu.setApplicationMenu(mainMenu)
@@ -194,6 +195,7 @@ app.on('activate', () => {
 ipcMain.handle('listSessions', async () => {
   try {
     const sessionFiles = await readdir(sessionDir)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sessionFilesData = [] as any
     for (const sessionFile of sessionFiles) {
       if (path.extname(sessionFile) === '.thumbnail') {
@@ -205,6 +207,7 @@ ipcMain.handle('listSessions', async () => {
       }
     }
     const data = await Promise.all(sessionFilesData)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sessions = {} as { [key: string]: any }
     sessionFiles.forEach((sessionFile, idx) => {
       const ext = path.extname(sessionFile)
@@ -232,11 +235,11 @@ ipcMain.handle('listSessions', async () => {
   }
 })
 
-ipcMain.handle('loadSession', async (_event: any, sessionName: string) => {
+ipcMain.handle('loadSession', async (_event: unknown, sessionName: string) => {
   return readFile(getPath(sessionName), 'utf8')
 })
 
-ipcMain.on('saveSession', async (_event: any, snap: SessionSnap) => {
+ipcMain.on('saveSession', async (_event: unknown, snap: SessionSnap) => {
   const page = await mainWindow?.capturePage()
   if (page) {
     writeFile(getPath(snap.defaultSession.name, 'thumbnail'), page.toDataURL())
@@ -246,7 +249,7 @@ ipcMain.on('saveSession', async (_event: any, snap: SessionSnap) => {
 
 ipcMain.handle(
   'renameSession',
-  async (_event: any, oldName: string, newName: string) => {
+  async (_event: unknown, oldName: string, newName: string) => {
     try {
       await rename(getPath(oldName, 'thumbnail'), getPath(newName, 'thumbnail'))
     } catch (e) {
@@ -267,11 +270,14 @@ ipcMain.handle('reset', async () => {
   )
 })
 
-ipcMain.handle('deleteSession', async (_event: any, sessionName: string) => {
-  try {
-    await unlink(getPath(sessionName, '.thumbnail'))
-  } catch (e) {
-    console.error('delete thumbnail failed', e)
-  }
-  return unlink(getPath(sessionName))
-})
+ipcMain.handle(
+  'deleteSession',
+  async (_event: unknown, sessionName: string) => {
+    try {
+      await unlink(getPath(sessionName, '.thumbnail'))
+    } catch (e) {
+      console.error('delete thumbnail failed', e)
+    }
+    return unlink(getPath(sessionName))
+  },
+)

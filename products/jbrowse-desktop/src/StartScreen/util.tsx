@@ -12,6 +12,7 @@ import {
 } from '@jbrowse/core/util/analytics'
 
 export async function createPluginManager(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   configSnapshot: any,
   initialTimestamp = +Date.now(),
 ) {
