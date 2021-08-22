@@ -16,6 +16,12 @@ import { DataGrid, GridCellParams } from '@material-ui/data-grid'
 import DeleteIcon from '@material-ui/icons/Delete'
 import EditIcon from '@material-ui/icons/Edit'
 import RecentSessionCard from '@jbrowse/core/ui/RecentSessionCard'
+import PluginManager from '@jbrowse/core/PluginManager'
+import electron from 'electron'
+
+import { createPluginManager } from './util'
+
+const { ipcRenderer } = electron
 
 const useStyles = makeStyles(theme => ({
   pointer: {
@@ -37,11 +43,13 @@ function RecentSessionsTable({
   sortedSessions,
   setSessionToDelete,
   setSessionToRename,
+  setPluginManager,
 }: {
   dateMode: string
   setError: (e: Error) => void
   setSessionToDelete: (e: string) => void
   setSessionToRename: (e: string) => void
+  setPluginManager: (pm: PluginManager) => void
   sortedSessions: [string, { stats: fs.Stats }][]
 }) {
   const classes = useStyles()
@@ -81,12 +89,9 @@ function RecentSessionsTable({
             className={classes.pointer}
             onClick={async () => {
               try {
-                console.log('wtotw')
-                // rootModel.activateSession(
-                //   JSON.parse(
-                //     await ipcRenderer.invoke('loadSession', value as string),
-                //   ),
-                // )
+                const data = await ipcRenderer.invoke('loadSession', value)
+                const pm = await createPluginManager(JSON.parse(data))
+                setPluginManager(pm)
               } catch (e) {
                 console.error(e)
                 setError(e)
@@ -145,28 +150,32 @@ function RecentSessionsTable({
 
 type Session = [string, { screenshot: string; stats: fs.Stats }]
 
-function RecentSessionsGrid({
+function RecentSessionsCards({
   sortedSessions,
   setError,
   setSessionToDelete,
   setSessionToRename,
+  setPluginManager,
 }: {
   setError: (e: Error) => void
   setSessionToDelete: (e: string) => void
   setSessionToRename: (e: string) => void
+  setPluginManager: (pm: PluginManager) => void
   sortedSessions: Session[]
 }) {
   return (
     <Grid container spacing={4}>
-      {sortedSessions?.map(([sessionName, sessionData]) => (
-        <Grid item key={sessionName}>
+      {sortedSessions?.map(([name, sessionData]) => (
+        <Grid item key={name}>
           <RecentSessionCard
-            sessionName={sessionName}
+            sessionName={name}
             sessionStats={sessionData.stats}
             sessionScreenshot={sessionData.screenshot}
             onClick={async () => {
               try {
-                console.log('woo')
+                const data = await ipcRenderer.invoke('loadSession', name)
+                const pm = await createPluginManager(JSON.parse(data))
+                setPluginManager(pm)
               } catch (e) {
                 console.error(e)
                 setError(e)
@@ -186,11 +195,13 @@ export default function RecentSessionPanel({
   sortedSessions,
   setSessionToRename,
   setSessionToDelete,
+  setPluginManager,
 }: {
   setError: (e: Error) => void
   sortedSessions: Session[]
   setSessionToRename: (e: string) => void
   setSessionToDelete: (e: string) => void
+  setPluginManager: (pm: PluginManager) => void
 }) {
   const classes = useStyles()
   const [displayMode, setDisplayMode] = useState('table')
@@ -207,7 +218,7 @@ export default function RecentSessionPanel({
           value={displayMode}
           onChange={event => setDisplayMode(event.target.value as string)}
         >
-          <MenuItem value={'grid'}>Grid</MenuItem>
+          <MenuItem value={'grid'}>Cards</MenuItem>
           <MenuItem value={'table'}>Table</MenuItem>
         </Select>
       </FormControl>
@@ -224,7 +235,8 @@ export default function RecentSessionPanel({
       </FormControl>
       {sortedSessions.length ? (
         displayMode === 'grid' ? (
-          <RecentSessionsGrid
+          <RecentSessionsCards
+            setPluginManager={setPluginManager}
             sortedSessions={sortedSessions}
             setError={setError}
             setSessionToDelete={setSessionToDelete}
@@ -232,6 +244,7 @@ export default function RecentSessionPanel({
           />
         ) : (
           <RecentSessionsTable
+            setPluginManager={setPluginManager}
             dateMode={dateMode}
             sortedSessions={sortedSessions}
             setError={setError}

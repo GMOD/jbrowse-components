@@ -113,7 +113,6 @@ function PreloadedSelector({
               // @ts-ignore
               preloadedConfigs[assemblyChoice],
             )
-            console.log({ pm })
             setPluginManager(pm)
           }}
           variant="contained"
