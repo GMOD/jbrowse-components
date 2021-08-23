@@ -122,6 +122,25 @@ Object {
         "type": "ReferenceSequenceTrack",
       },
     },
+    Object {
+      "name": "volvox404",
+      "sequence": Object {
+        "adapter": Object {
+          "twoBitLocation": Object {
+            "uri": "volvox.2bit_404",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "displays": Array [
+          Object {
+            "displayId": "volvox_refseq404-LinearReferenceSequenceDisplay",
+            "type": "LinearReferenceSequenceDisplay",
+          },
+        ],
+        "trackId": "volvox_refseq404",
+        "type": "ReferenceSequenceTrack",
+      },
+    },
   ],
   "configuration": Object {},
   "connections": Array [],

@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
-import { Region } from '@jbrowse/core/util/types'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import {
   Button,
   CircularProgress,
   Container,
   Grid,
+  Typography,
   makeStyles,
 } from '@material-ui/core'
 // other
@@ -31,65 +30,60 @@ const useStyles = makeStyles(theme => ({
 
 type LGV = LinearGenomeViewModel
 
+const ErrorDisplay = observer(({ error }: { error?: Error | string }) => {
+  return (
+    <Typography variant="h6" color="error">
+      {`${error}`}
+    </Typography>
+  )
+})
+
 const ImportForm = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const session = getSession(model)
   const { assemblyNames, assemblyManager } = session
   const { pluginManager } = getEnv(session)
   const { textSearchManager } = pluginManager.rootModel
-  const { rankSearchResults } = model
-  const [selectedAssembly, setSelectedAssembly] = useState<string>(
-    assemblyNames[0],
-  )
-  const [selectedRegion, setSelectedRegion] = useState<string>()
-  const [assemblyRegions, setAssemblyRegions] = useState<Region[]>([])
-  const error = !assemblyNames.length ? 'No configured assemblies' : ''
-  const searchScope = model.searchScope(selectedAssembly)
-  useEffect(() => {
-    let done = false
-    ;(async () => {
-      if (selectedAssembly) {
-        const assembly = await assemblyManager.waitForAssembly(selectedAssembly)
-        if (assembly && assembly.regions) {
-          const regions = assembly.regions
-          if (!done && regions) {
-            setSelectedRegion(regions[0].refName)
-            setAssemblyRegions(regions)
-          }
-        }
-      }
-    })()
-    return () => {
-      done = true
-    }
-  }, [assemblyManager, selectedAssembly])
+  const {
+    rankSearchResults,
+    isSearchDialogDisplayed,
+    error: modelError,
+  } = model
+  const [selectedAsm, setSelectedAsm] = useState<string>(assemblyNames[0])
+  const [error, setError] = useState<Error | string | undefined>(modelError)
+  const message = !assemblyNames.length ? 'No configured assemblies' : ''
+  const searchScope = model.searchScope(selectedAsm)
 
-  function setSelectedValue(selectedOption: BaseResult) {
-    setSelectedRegion(selectedOption.getLocation())
-  }
+  const assembly = assemblyManager.get(selectedAsm)
+  const assemblyError = assemblyNames.length
+    ? assembly?.error
+    : 'No configured assemblies'
+  const regions = assembly?.regions || []
+  const err = assemblyError || error
+  const [mySelectedRegion, setSelectedRegion] = useState<string>()
+  const selectedRegion = mySelectedRegion || regions[0]?.refName
 
   async function handleSelectedRegion(input: string) {
-    const newRegion = assemblyRegions.find(r => selectedRegion === r.refName)
+    const newRegion = regions.find(r => selectedRegion === r.refName)
     if (newRegion) {
       model.setDisplayedRegions([newRegion])
       // we use showAllRegions after setDisplayedRegions to make the entire
       // region visible, xref #1703
       model.showAllRegions()
     } else {
-      const results =
-        (await textSearchManager?.search(
-          {
-            queryString: input.toLocaleLowerCase(),
-            searchType: 'exact',
-          },
-          searchScope,
-          rankSearchResults,
-        )) || []
-      if (results.length > 0) {
+      const results = await textSearchManager?.search(
+        {
+          queryString: input.toLocaleLowerCase(),
+          searchType: 'exact',
+        },
+        searchScope,
+        rankSearchResults,
+      )
+      if (results?.length > 0) {
         model.setSearchResults(results, input.toLocaleLowerCase())
       } else {
         try {
-          input && model.navToLocString(input, selectedAssembly)
+          input && model.navToLocString(input, selectedAsm)
         } catch (e) {
           if (`${e}` === `Error: Unknown reference sequence "${input}"`) {
             model.setSearchResults(results, input.toLocaleLowerCase())
@@ -104,32 +98,30 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
 
   return (
     <div>
-      {model.isSearchDialogDisplayed ? (
-        <SearchResultsDialog
-          model={model}
-          optAssemblyName={selectedAssembly}
-          handleClose={() => {
-            model.setSearchResults(undefined, undefined)
-          }}
-        />
-      ) : null}
+      {err ? <ErrorDisplay error={err} /> : null}
+
       <Container className={classes.importFormContainer}>
         <Grid container spacing={1} justifyContent="center" alignItems="center">
           <Grid item>
             <AssemblySelector
-              onChange={val => setSelectedAssembly(val)}
+              onChange={val => {
+                setError(undefined)
+                setSelectedAsm(val)
+              }}
               session={session}
-              selected={selectedAssembly}
+              selected={selectedAsm}
             />
           </Grid>
           <Grid item>
-            {selectedAssembly ? (
-              selectedRegion && model.volatileWidth ? (
+            {selectedAsm ? (
+              err ? (
+                <Typography color="error">X</Typography>
+              ) : selectedRegion && model.volatileWidth ? (
                 <RefNameAutocomplete
                   model={model}
-                  assemblyName={error ? undefined : selectedAssembly}
+                  assemblyName={message ? undefined : selectedAsm}
                   value={selectedRegion}
-                  onSelect={option => setSelectedValue(option)}
+                  onSelect={option => setSelectedRegion(option.getLocation())}
                   TextFieldProps={{
                     margin: 'normal',
                     variant: 'outlined',
@@ -141,24 +133,18 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                       }
                     },
                     onKeyPress: event => {
-                      const inputValue = (event.target as HTMLInputElement)
-                        .value
+                      const elt = event.target as HTMLInputElement
                       // maybe check regular expression here to see if it's a
                       // locstring try defaulting exact matches to first exact
                       // match
                       if (event.key === 'Enter') {
-                        handleSelectedRegion(inputValue)
+                        handleSelectedRegion(elt.value)
                       }
                     },
                   }}
                 />
               ) : (
-                <CircularProgress
-                  role="progressbar"
-                  color="inherit"
-                  size={20}
-                  disableShrink
-                />
+                <CircularProgress role="progressbar" size={20} disableShrink />
               )
             ) : null}
           </Grid>
@@ -167,6 +153,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
               disabled={!selectedRegion}
               className={classes.button}
               onClick={() => {
+                model.setError(undefined)
                 if (selectedRegion) {
                   handleSelectedRegion(selectedRegion)
                 }
@@ -179,7 +166,10 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             <Button
               disabled={!selectedRegion}
               className={classes.button}
-              onClick={() => model.showAllRegionsInAssembly(selectedAssembly)}
+              onClick={() => {
+                model.setError(undefined)
+                model.showAllRegionsInAssembly(selectedAsm)
+              }}
               variant="contained"
               color="secondary"
             >
@@ -188,6 +178,15 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
           </Grid>
         </Grid>
       </Container>
+      {isSearchDialogDisplayed ? (
+        <SearchResultsDialog
+          model={model}
+          optAssemblyName={selectedAsm}
+          handleClose={() => {
+            model.setSearchResults(undefined, undefined)
+          }}
+        />
+      ) : null}
     </div>
   )
 })

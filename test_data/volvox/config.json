@@ -47,6 +47,19 @@
           }
         }
       }
+    },
+    {
+      "name": "volvox404",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_refseq404",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit_404"
+          }
+        }
+      }
     }
   ],
   "aggregateTextSearchAdapters": [

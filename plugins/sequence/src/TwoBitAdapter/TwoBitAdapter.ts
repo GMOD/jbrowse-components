@@ -66,13 +66,11 @@ export default class TwoBitAdapter
       }))
     }
     const refSizes = await this.twobit.getSequenceSizes()
-    return Object.keys(refSizes).map(
-      (refName: string): NoAssemblyRegion => ({
-        refName,
-        start: 0,
-        end: refSizes[refName],
-      }),
-    )
+    return Object.keys(refSizes).map(refName => ({
+      refName,
+      start: 0,
+      end: refSizes[refName],
+    }))
   }
 
   /**

@@ -31,12 +31,6 @@ export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
     super(config)
     const fastaLocation = readConfObject(config, 'fastaLocation')
     const faiLocation = readConfObject(config, 'faiLocation')
-    if (!fastaLocation) {
-      throw new Error('must provide fastaLocation')
-    }
-    if (!faiLocation) {
-      throw new Error('must provide faiLocation')
-    }
     const fastaOpts = {
       fasta: openLocation(fastaLocation as FileLocation),
       fai: openLocation(faiLocation as FileLocation),
@@ -49,15 +43,13 @@ export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
     return this.fasta.getSequenceNames(opts)
   }
 
-  public async getRegions(opts?: BaseOptions): Promise<NoAssemblyRegion[]> {
+  public async getRegions(opts?: BaseOptions) {
     const seqSizes = await this.fasta.getSequenceSizes(opts)
-    return Object.keys(seqSizes).map(
-      (refName): NoAssemblyRegion => ({
-        refName,
-        start: 0,
-        end: seqSizes[refName],
-      }),
-    )
+    return Object.keys(seqSizes).map(refName => ({
+      refName,
+      start: 0,
+      end: seqSizes[refName],
+    }))
   }
 
   /**
