@@ -30,6 +30,7 @@
     "postpublish": "git push origin main --follow-tags"
   },
   "dependencies": {
+    "@babel/runtime": "^7.15.3",
     "@librpc/web": "rbuels/librpc-web#737bb9706762a52a87169a12c9b59fb241febab0",
     "@material-ui/icons": "^4.0.0",
     "abortable-promise-cache": "^1.1.3",
