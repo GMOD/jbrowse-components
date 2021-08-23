@@ -23,7 +23,6 @@
     "@jbrowse/plugin-config": "^1.3.3",
     "@jbrowse/plugin-data-management": "^1.3.3",
     "@jbrowse/plugin-dotplot-view": "^1.3.3",
-    "@jbrowse/plugin-filtering": "^1.3.3",
     "@jbrowse/plugin-gff3": "^1.3.3",
     "@jbrowse/plugin-grid-bookmark": "^1.3.3",
     "@jbrowse/plugin-hic": "^1.3.3",
