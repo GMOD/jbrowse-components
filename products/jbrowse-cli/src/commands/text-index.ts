@@ -111,7 +111,7 @@ export default class TextIndex extends JBrowseCommand {
       const trackConfigs = await this.getConfig(confFile, tracks?.split(','))
       if (!trackConfigs.length) {
         throw new Error(
-          `Specified tracks not found and no tracks found in config.json, please add track configurations before indexing.`,
+          `Tracks not found in config.json, please add track configurations before indexing.`,
         )
       }
       for (const trackConfig of trackConfigs) {
@@ -132,36 +132,29 @@ export default class TextIndex extends JBrowseCommand {
           quiet,
           include?.split(','),
           exclude?.split(','),
-        )
-        await generateMeta(
-          trackId,
-          attributesToIndex,
-          include.split(','),
-          exclude.split(','),
           confFile,
-          [trackConfig],
+          assemblyNames,
         )
         if (!textSearchConf || !textSearchConf?.textSearchAdapter) {
-          const newTextSearchConf = {
-            ...textSearchConf,
-            textSearchAdapter: {
-              type: 'TrixTextSearchAdapter',
-              textSearchAdapterId: id,
-              ixFilePath: {
-                uri: `trix/${trackId}.ix`,
-              },
-              ixxFilePath: {
-                uri: `trix/${trackId}.ixx`,
-              },
-              metaFilePath: {
-                uri: `trix/${trackId}_meta.json`,
-              },
-              assemblies: assemblyNames,
-            },
-          }
           const newTrackConfig = {
             ...trackConfig,
-            textSearchConf: newTextSearchConf,
+            textSearchConf: {
+              ...textSearchConf,
+              textSearchAdapter: {
+                type: 'TrixTextSearchAdapter',
+                textSearchAdapterId: id,
+                ixFilePath: {
+                  uri: `trix/${trackId}.ix`,
+                },
+                ixxFilePath: {
+                  uri: `trix/${trackId}.ixx`,
+                },
+                metaFilePath: {
+                  uri: `trix/${trackId}_meta.json`,
+                },
+                assemblies: assemblyNames,
+              },
+            },
           }
           const index = configTracks.findIndex(
             track => trackId === track.trackId,
@@ -203,16 +196,9 @@ export default class TextIndex extends JBrowseCommand {
           quiet,
           include?.split(','),
           exclude?.split(','),
-        )
-        await generateMeta(
-          asm,
-          attributesToIndex,
-          include.split(','),
-          exclude.split(','),
           confFile,
-          trackConfigs,
+          [asm],
         )
-
         // Checks through list of configs and checks the hash values if it
         // already exists it updates the entry and increments the check varible.
         // If the check variable is equal to 0 that means the entry does not
@@ -234,7 +220,6 @@ export default class TextIndex extends JBrowseCommand {
           })
         }
       }
-
       fs.writeFileSync(
         confFile,
         JSON.stringify(
@@ -267,11 +252,25 @@ export default class TextIndex extends JBrowseCommand {
     quiet: boolean,
     include: string[],
     exclude: string[],
+    confFile: string,
+    assemblies: string[],
   ) {
     const readable = Readable.from(
       this.indexFile(configs, attributes, out, quiet, include, exclude),
     )
-    return this.runIxIxx(readable, out, name)
+    const ixIxxStream = await this.runIxIxx(readable, out, name)
+    await generateMeta(
+      configs,
+      attributes,
+      out,
+      name,
+      quiet,
+      include,
+      exclude,
+      confFile,
+      assemblies,
+    )
+    return ixIxxStream
   }
 
   async *indexFile(

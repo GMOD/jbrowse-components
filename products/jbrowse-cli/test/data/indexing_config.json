@@ -65,9 +65,7 @@
             "uri": "au9_scaffold_subset_sync.gff3.tbi"
           }
         }
-      },
-      "textSearchIndexingAttributes": ["Name", "ID", "type"],
-      "textSearchIndexingFeatureTypesToExclude": ["CDS", "exon"]
+      }
     },
     {
       "type": "FeatureTrack",
@@ -85,9 +83,7 @@
             "uri": "volvox.sort.gff3.gz.tbi"
           }
         }
-      },
-      "textSearchIndexingAttributes": ["Name", "ID", "type"],
-      "textSearchIndexingFeatureTypesToExclude": ["CDS", "exon"]
+      }
     },
     {
       "type": "FeatureTrack",
@@ -105,8 +101,7 @@
             "uri": "volvox.sort.gff3.gz.tbi"
           }
         }
-      },
-      "textSearchIndexingFeatureTypesToExclude": ["CDS", "exon"]
+      }
     },
     {
       "type": "FeatureTrack",
@@ -124,9 +119,7 @@
             "uri": "https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz.tbi"
           }
         }
-      },
-      "textSearchIndexingAttributes": ["Name", "ID", "type"],
-      "textSearchIndexingFeatureTypesToExclude": ["CDS", "exon"]
+      }
     },
     {
       "type": "FeatureTrack",
@@ -144,9 +137,7 @@
             "uri": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3.tbi"
           }
         }
-      },
-      "textSearchIndexingAttributes": ["Name", "ID", "type"],
-      "textSearchIndexingFeatureTypesToExclude": ["CDS", "exon"]
+      }
     },
     {
       "type": "FeatureTrack",

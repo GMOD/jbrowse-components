@@ -1,7 +1,5 @@
 {
-  "dateCreated": {
-    "created": "20-08-2021"
-  },
+  "dateCreated": "8/23/2021, 2:20:39 PM",
   "tracks": [
     {
       "trackId": "volvox_sv_test",
@@ -43,5 +41,6 @@
       "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"]
     }
-  ]
+  ],
+  "assemblies": ["volvox"]
 }

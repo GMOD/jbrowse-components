@@ -40,20 +40,17 @@ export function isURL(FileName: string) {
  * @param configs - list of track
  */
 export async function generateMeta(
-  name: string,
+  configs: Track[],
   attributes: string[],
+  out: string,
+  name: string,
+  quiet: boolean,
   include: string[],
   exclude: string[],
   confFile: string,
-  configs: Track[],
+  assemblies: string[],
 ) {
   const dir = path.dirname(confFile)
-
-  const date_ob = new Date()
-  const date = ('0' + date_ob.getDate()).slice(-2)
-  const month = ('0' + (date_ob.getMonth() + 1)).slice(-2)
-  const year = date_ob.getFullYear()
-  const created = `${date}-${month}-${year}`
 
   const metaAttrs: Array<string[]> = []
   const trackIds: Array<string> = []
@@ -100,7 +97,15 @@ export async function generateMeta(
 
       fs.writeFileSync(
         path.join(dir, 'trix', `${name}_meta.json`),
-        JSON.stringify({ dateCreated: { created }, tracks }, null, 2),
+        JSON.stringify(
+          {
+            dateCreated: new Date().toLocaleString('en-US'),
+            tracks,
+            assemblies,
+          },
+          null,
+          2,
+        ),
       )
     }
   }
