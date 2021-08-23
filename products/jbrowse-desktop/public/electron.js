@@ -1,6 +1,7 @@
 const electron = require('electron')
 const debug = require('electron-debug')
 const isDev = require('electron-is-dev')
+const windowStateKeeper = require('electron-window-state')
 const fs = require('fs')
 const path = require('path')
 const url = require('url')
@@ -29,10 +30,17 @@ try {
 
 let mainWindow
 
-function createWindow() {
+async function createWindow() {
+  const mainWindowState = windowStateKeeper({
+    defaultWidth: 1400,
+    defaultHeight: 800,
+  })
+  const { x, y, width, height } = mainWindowState
   mainWindow = new BrowserWindow({
-    width: 1400,
-    height: 800,
+    x,
+    y,
+    width,
+    height,
     webPreferences: {
       webSecurity: false,
       nodeIntegration: true,
@@ -41,6 +49,7 @@ function createWindow() {
       enableRemoteModule: true,
     },
   })
+  mainWindowState.manage(mainWindow)
   mainWindow.loadURL(
     isDev
       ? url.format(devServerUrl)

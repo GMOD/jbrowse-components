@@ -22,7 +22,6 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(0, 3),
     },
     paper: {
-      maxWidth: 400,
       margin: `${theme.spacing(1)}px auto`,
       padding: theme.spacing(2),
     },
@@ -81,6 +80,8 @@ const AdapterInput = observer(
     setGziLocation,
     twoBitLocation,
     setTwoBitLocation,
+    chromSizesLocation,
+    setChromSizesLocation,
   }: {
     adapterSelection: string
     fastaLocation: FileLocation
@@ -91,6 +92,8 @@ const AdapterInput = observer(
     setGziLocation: Function
     twoBitLocation: FileLocation
     setTwoBitLocation: Function
+    chromSizesLocation: FileLocation
+    setChromSizesLocation: Function
   }) => {
     if (
       adapterSelection === 'IndexedFastaAdapter' ||
@@ -127,11 +130,22 @@ const AdapterInput = observer(
 
     if (adapterSelection === 'TwoBitAdapter') {
       return (
-        <FileSelector
-          name="twoBitLocation"
-          location={twoBitLocation}
-          setLocation={loc => setTwoBitLocation(loc)}
-        />
+        <Grid container spacing={2}>
+          <Grid item>
+            <FileSelector
+              name="twoBitLocation"
+              location={twoBitLocation}
+              setLocation={loc => setTwoBitLocation(loc)}
+            />
+          </Grid>
+          <Grid item>
+            <FileSelector
+              name="chromSizesLocation (optional, can be added to speed up loading 2bit files with many contigs)"
+              location={chromSizesLocation}
+              setLocation={loc => setChromSizesLocation(loc)}
+            />
+          </Grid>
+        </Grid>
       )
     }
 
@@ -157,6 +171,7 @@ const AssemblyAddForm = observer(
     ]
 
     const [assemblyName, setAssemblyName] = useState('')
+    const [assemblyDisplayName, setAssemblyDisplayName] = useState('')
     const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0])
     const [fastaLocation, setFastaLocation] = useState<{
       uri: string
@@ -186,6 +201,13 @@ const AssemblyAddForm = observer(
       uri: '',
       locationType: 'UriLocation',
     })
+    const [chromSizesLocation, setChromSizesLocation] = useState<{
+      uri: string
+      locationType: 'UriLocation'
+    }>({
+      uri: '',
+      locationType: 'UriLocation',
+    })
 
     function createAssembly() {
       if (assemblyName === '') {
@@ -197,6 +219,7 @@ const AssemblyAddForm = observer(
         if (adapterSelection === 'IndexedFastaAdapter') {
           newAssembly = {
             name: assemblyName,
+            displayName: assemblyDisplayName,
             sequence: {
               adapter: {
                 type: 'IndexedFastaAdapter',
@@ -208,6 +231,7 @@ const AssemblyAddForm = observer(
         } else if (adapterSelection === 'BgzipFastaAdapter') {
           newAssembly = {
             name: assemblyName,
+            displayName: assemblyDisplayName,
             sequence: {
               adapter: {
                 type: 'BgzipFastaAdapter',
@@ -220,10 +244,12 @@ const AssemblyAddForm = observer(
         } else if (adapterSelection === 'TwoBitAdapter') {
           newAssembly = {
             name: assemblyName,
+            displayName: assemblyDisplayName,
             sequence: {
               adapter: {
                 type: 'TwoBitAdapter',
                 twoBitLocation,
+                chromSizesLocation,
               },
             },
           }
@@ -242,10 +268,22 @@ const AssemblyAddForm = observer(
           <TextField
             id="assembly-name"
             inputProps={{ 'data-testid': 'assembly-name' }}
-            label="Assembly Name"
+            defaultValue=""
+            label="Assembly name"
+            helperText="The assembly name e.g. hg38"
             variant="outlined"
             value={assemblyName}
             onChange={event => setAssemblyName(event.target.value)}
+          />
+          <TextField
+            id="assembly-name"
+            inputProps={{ 'data-testid': 'assembly-display-name' }}
+            label="Assembly display name"
+            helperText='A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
+            variant="outlined"
+            defaultValue=""
+            value={assemblyDisplayName}
+            onChange={event => setAssemblyDisplayName(event.target.value)}
           />
           <AdapterSelector
             adapterSelection={adapterSelection}
@@ -263,6 +301,8 @@ const AssemblyAddForm = observer(
               setGziLocation={setGziLocation}
               twoBitLocation={twoBitLocation}
               setTwoBitLocation={setTwoBitLocation}
+              chromSizesLocation={chromSizesLocation}
+              setChromSizesLocation={setChromSizesLocation}
             />
           </div>
         </Paper>

@@ -6,7 +6,6 @@ import CircularView from '@jbrowse/plugin-circular-view'
 import Config from '@jbrowse/plugin-config'
 import DataManagement from '@jbrowse/plugin-data-management'
 import DotplotView from '@jbrowse/plugin-dotplot-view'
-import Filtering from '@jbrowse/plugin-filtering'
 import Gff3Tabix from '@jbrowse/plugin-gff3'
 import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
@@ -34,7 +33,6 @@ const corePlugins = [
   Config,
   DataManagement,
   DotplotView,
-  Filtering,
   Gff3Tabix,
   LegacyJBrowse,
   LinearComparativeView,

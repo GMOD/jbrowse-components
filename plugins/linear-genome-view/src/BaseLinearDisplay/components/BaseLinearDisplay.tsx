@@ -92,7 +92,7 @@ const BaseLinearDisplay = observer(
         />
 
         <Menu
-          open={Boolean(contextCoord) && Boolean(contextMenuItems.length)}
+          open={Boolean(contextCoord) && Boolean(contextMenuItems().length)}
           onMenuItemClick={(_, callback) => {
             callback()
             setContextCoord(undefined)
@@ -114,7 +114,7 @@ const BaseLinearDisplay = observer(
               : undefined
           }
           style={{ zIndex: theme.zIndex.tooltip }}
-          menuItems={contextMenuItems}
+          menuItems={contextMenuItems()}
           data-testid="base_linear_display_context_menu"
         />
       </div>

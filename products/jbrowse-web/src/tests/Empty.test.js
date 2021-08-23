@@ -11,6 +11,6 @@ import emptyConfig from '../../test_data/empty.json'
 
 test('catches no assemblies with empty config', async () => {
   const pluginManager = getPluginManager(emptyConfig)
-  const { findByText } = render(<JBrowse pluginManager={pluginManager} />)
-  expect(await findByText('No configured assemblies')).toBeTruthy()
+  const { findAllByText } = render(<JBrowse pluginManager={pluginManager} />)
+  await findAllByText('No configured assemblies')
 })

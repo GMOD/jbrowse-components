@@ -194,7 +194,7 @@ const stateModelFactory = (
           return true
         },
 
-        get contextMenuItems() {
+        contextMenuItems() {
           return []
         },
 

@@ -6,11 +6,10 @@ import { autorun } from 'mobx'
 import ColumnDataTypes from './ColumnDataTypes'
 import StaticRowSetF from './StaticRowSet'
 import RowF from './Row'
+import { types, getParent } from 'mobx-state-tree'
 
 const SpreadsheetModelF = (pluginManager: PluginManager) => {
-  const { lib, load } = pluginManager
-  const { types, getParent } = lib['mobx-state-tree']
-
+  const { load } = pluginManager
   const { ColumnTypes, AnyColumnType } = load(ColumnDataTypes)
 
   const StaticRowSetModel = load(StaticRowSetF)
@@ -76,11 +75,7 @@ const SpreadsheetModelF = (pluginManager: PluginManager) => {
       get initialized() {
         const session = getSession(self)
         const name = self.assemblyName
-        if (name) {
-          const asm = session.assemblyManager.get(name)
-          return asm && asm.initialized
-        }
-        return true
+        return name ? session.assemblyManager.get(name)?.initialized : false
       },
       get hideRowSelection() {
         // just delegates to parent

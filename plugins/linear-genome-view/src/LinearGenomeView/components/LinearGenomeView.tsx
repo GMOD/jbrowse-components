@@ -40,10 +40,10 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const { tracks, error, hideHeader, initialized, hasDisplayedRegions } = model
   const classes = useStyles()
 
-  if (!initialized) {
+  if (!initialized && !error) {
     return null
   }
-  if (!hasDisplayedRegions) {
+  if (!hasDisplayedRegions || error) {
     return <ImportForm model={model} />
   }
   return (
@@ -77,34 +77,26 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
           <MiniControls model={model} />
         </div>
       )}
-      {error ? (
-        <Paper variant="outlined" className={classes.errorMessage}>
-          <Typography color="error">{error.message}</Typography>
-        </Paper>
-      ) : (
-        <>
-          <TracksContainer model={model}>
-            {!tracks.length ? (
-              <Paper variant="outlined" className={classes.errorMessage}>
-                <Typography>No tracks active.</Typography>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={model.activateTrackSelector}
-                  style={{ zIndex: 1000 }}
-                >
-                  <TrackSelectorIcon className={classes.spacer} />
-                  Open track selector
-                </Button>
-              </Paper>
-            ) : (
-              tracks.map(track => (
-                <TrackContainer key={track.id} model={model} track={track} />
-              ))
-            )}
-          </TracksContainer>
-        </>
-      )}
+      <TracksContainer model={model}>
+        {!tracks.length ? (
+          <Paper variant="outlined" className={classes.errorMessage}>
+            <Typography>No tracks active.</Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={model.activateTrackSelector}
+              style={{ zIndex: 1000 }}
+            >
+              <TrackSelectorIcon className={classes.spacer} />
+              Open track selector
+            </Button>
+          </Paper>
+        ) : (
+          tracks.map(track => (
+            <TrackContainer key={track.id} model={model} track={track} />
+          ))
+        )}
+      </TracksContainer>
     </div>
   )
 })
