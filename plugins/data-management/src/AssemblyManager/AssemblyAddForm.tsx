@@ -80,6 +80,7 @@ const AdapterInput = observer(
     setGziLocation,
     twoBitLocation,
     setTwoBitLocation,
+    chromSizesLocation,
     setChromSizesLocation,
   }: {
     adapterSelection: string
@@ -91,6 +92,7 @@ const AdapterInput = observer(
     setGziLocation: Function
     twoBitLocation: FileLocation
     setTwoBitLocation: Function
+    chromSizesLocation: FileLocation
     setChromSizesLocation: Function
   }) => {
     if (
@@ -139,7 +141,7 @@ const AdapterInput = observer(
           <Grid item>
             <FileSelector
               name="chromSizesLocation (optional, can be added to speed up loading 2bit files with many contigs)"
-              location={twoBitLocation}
+              location={chromSizesLocation}
               setLocation={loc => setChromSizesLocation(loc)}
             />
           </Grid>
@@ -269,6 +271,7 @@ const AssemblyAddForm = observer(
               setGziLocation={setGziLocation}
               twoBitLocation={twoBitLocation}
               setTwoBitLocation={setTwoBitLocation}
+              chromSizesLocation={chromSizesLocation}
               setChromSizesLocation={setChromSizesLocation}
             />
           </div>
