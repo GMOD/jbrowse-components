@@ -433,7 +433,7 @@ OPTIONS
 
   --out=out                    Synonym for target
 
-  --perTrack                   If set, creates an index for each track in the config or set with the tracks flag
+  --perTrack                   If set, creates an index per track
 
   --target=target              Path to config file in JB2 installation directory to read from.
 

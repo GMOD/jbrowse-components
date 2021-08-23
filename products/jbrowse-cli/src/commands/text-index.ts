@@ -54,8 +54,7 @@ export default class TextIndex extends JBrowseCommand {
     }),
     perTrack: flags.boolean({
       default: false,
-      description:
-        'If set, creates an index for each track in the config or set with the tracks flag',
+      description: 'If set, creates an index per track',
     }),
     include: flags.string({
       description: 'Removes gene type from list of excluded types',
@@ -128,7 +127,7 @@ export default class TextIndex extends JBrowseCommand {
           [trackConfig],
           attributesToIndex,
           dir,
-          trackId,
+          trackId, // name of index
           quiet,
           include?.split(','),
           exclude?.split(','),
@@ -156,6 +155,7 @@ export default class TextIndex extends JBrowseCommand {
               },
             },
           }
+          // modifies track with new text search adapter
           const index = configTracks.findIndex(
             track => trackId === track.trackId,
           )
@@ -167,6 +167,7 @@ export default class TextIndex extends JBrowseCommand {
         )
       }
     } else {
+      // creates an aggregate index per assembly
       for (const asm of assembliesToIndex) {
         const trackConfigs = await this.getConfig(
           confFile,
@@ -243,6 +244,7 @@ export default class TextIndex extends JBrowseCommand {
    * @param quiet - boolean flag to remove progress bars
    * @param include - array of feature types to include on index
    * @param exclude - array of feature types to exclude on index
+   * @param assemblies - assemblies covered by index
    */
   async indexDriver(
     configs: Track[],
