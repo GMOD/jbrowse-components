@@ -1,3 +1,16 @@
+## 1.3.5 (2021-08-23)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                             | Download                                                          |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/react-circular-genome-view | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view   | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+
+</p>
+</details>
+
 ## 1.3.4 (2021-08-23)
 
 <details><summary>Packages in this release</summary>
