@@ -277,7 +277,7 @@ ipcMain.handle(
   'deleteSession',
   async (_event: unknown, sessionName: string) => {
     try {
-      await unlink(getPath(sessionName, '.thumbnail'))
+      await unlink(getPath(sessionName, 'thumbnail'))
     } catch (e) {
       console.error('delete thumbnail failed', e)
     }
