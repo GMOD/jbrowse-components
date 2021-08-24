@@ -1,6 +1,12 @@
 {
-  "TrackData": {
-    "TrackIds": ["r64.sorted.gff"],
-    "metaAttrs": [["Name", "ID"]]
-  }
+  "dateCreated": {
+    "created": "18-08-2021"
+  },
+  "tracks": [
+    {
+      "trackId": "r64.sorted.gff",
+      "attributesIndexed": ["Name", "ID"],
+      "excludedTypes": ["CDS", "exon"]
+    }
+  ]
 }

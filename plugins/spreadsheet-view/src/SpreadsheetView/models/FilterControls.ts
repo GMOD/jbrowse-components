@@ -1,10 +1,9 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { SnapshotIn } from 'mobx-state-tree'
+import { types, getParent, SnapshotIn } from 'mobx-state-tree'
 import ColumnDataTypes from './ColumnDataTypes'
 
 export default (pluginManager: PluginManager) => {
-  const { lib, load } = pluginManager
-  const { types, getParent } = lib['mobx-state-tree']
+  const { load } = pluginManager
 
   const { AnyFilterModelType: AnyColumnFilter } = load(ColumnDataTypes)
 

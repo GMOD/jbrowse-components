@@ -75,6 +75,7 @@ export interface Sequence {
 }
 
 export interface Assembly {
+  displayName?: string
   name: string
   aliases?: string[]
   sequence: Sequence
@@ -84,13 +85,28 @@ export interface Assembly {
   refNameColors?: string[]
 }
 
+export interface TrixTextSearchAdapter {
+  type: 'TrixTextSearchAdapter'
+
+  textSearchAdapterId: string
+  ixFilePath: UriLocation
+  ixxFilePath: UriLocation
+  metaFilePath: UriLocation
+
+  assemblies: string[]
+}
+export interface TextSearchConf {
+  indexingFeatureTypesToExclude: string[]
+  indexingAttributes: string[]
+
+  textSearchAdapter: TrixTextSearchAdapter
+}
 export interface Track {
-  textSearchIndexingFeatureTypesToExclude: string[]
   trackId: string
   name: string
   assemblyNames: string[]
   adapter: Gff3TabixAdapter | GtfTabixAdapter | VcfTabixAdapter
-  textSearchIndexingAttributes: string[]
+  textSearchConf: TextSearchConf
 }
 
 export interface Config {

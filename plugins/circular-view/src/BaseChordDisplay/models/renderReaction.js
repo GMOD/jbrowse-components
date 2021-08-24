@@ -4,27 +4,24 @@ export default ({ jbrequire }) => {
   const { getSession } = jbrequire('@jbrowse/core/util')
 
   function renderReactionData(self) {
-    const display = self
-    const view = getContainingView(display)
-    const { rendererType, renderProps } = display
+    const view = getContainingView(self)
+    const { rendererType } = self
     const { rpcManager } = getSession(view)
 
-    const a = {
+    return {
       rendererType,
       rpcManager,
-      renderProps,
+      renderProps: self.renderProps(),
       renderArgs: {
-        // TODO: Figure this out for multiple assembly names
         assemblyName: view.displayedRegions[0]?.assemblyName,
-        adapterConfig: JSON.parse(JSON.stringify(display.adapterConfig)),
+        adapterConfig: JSON.parse(JSON.stringify(self.adapterConfig)),
         rendererType: rendererType.name,
         regions: JSON.parse(JSON.stringify(view.displayedRegions)),
-        blockDefinitions: view.blockDefinitions,
-        sessionId: getRpcSessionId(display),
-        timeout: 1000000, // 10000,
+        blockDefinitions: self.blockDefinitions,
+        sessionId: getRpcSessionId(self),
+        timeout: 1000000,
       },
     }
-    return a
   }
 
   async function renderReactionEffect(props, signal, self) {

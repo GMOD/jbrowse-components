@@ -30,6 +30,7 @@ export * from './aborting'
 export * from './when'
 
 export * from './offscreenCanvasPonyfill'
+export * from './offscreenCanvasUtils'
 
 if (!Object.fromEntries) {
   // @ts-ignore

@@ -7,7 +7,7 @@ export default ({ jbrequire }) => {
   const { rIC } = jbrequire('@jbrowse/core/util')
 
   function RpcRenderedSvgGroup({ model }) {
-    const { data, html, filled, renderProps, renderingComponent } = model
+    const { data, html, filled, renderingComponent } = model
 
     const ssrContainerNode = useRef(null)
 
@@ -33,7 +33,7 @@ export default ({ jbrequire }) => {
             }
             const mainThreadRendering = React.createElement(
               renderingComponent,
-              { ...data, ...renderProps },
+              { ...data, ...model.renderProps() },
               null,
             )
             rIC(() => {
