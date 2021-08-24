@@ -251,7 +251,7 @@ export default class TextIndex extends JBrowseCommand {
     assemblies: string[],
   ) {
     const readable = Readable.from(
-      this.indexFile(configs, attributes, out, quiet, exclude),
+      this.indexFiles(configs, attributes, out, quiet, exclude),
     )
     const ixIxxStream = await this.runIxIxx(readable, out, name)
 
