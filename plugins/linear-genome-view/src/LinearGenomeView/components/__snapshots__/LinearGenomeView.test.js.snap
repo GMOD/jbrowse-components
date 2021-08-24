@@ -596,8 +596,9 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
             <input
               aria-hidden="true"
               class="MuiSelect-nativeInput"
+              data-testid="assembly-selector"
               tabindex="-1"
-              value="0"
+              value="volMyt1"
             />
             <svg
               aria-hidden="true"

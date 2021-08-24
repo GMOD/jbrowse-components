@@ -94,6 +94,10 @@ OPTIONS
       custom         Either a JSON file location or inline JSON that defines a custom
                       sequence adapter; must provide --name if using inline JSON
 
+  --displayName=displayName
+      The display name to specify for the assembly, e.g. "Homo sapiens (hg38)" while the name can be a shorter identifier
+      like "hg38"
+
   --faiLocation=faiLocation
       [default: <fastaLocation>.fai] FASTA index file or URL
 
@@ -128,14 +132,14 @@ OPTIONS
 EXAMPLES
   $ jbrowse add-assembly GRCh38.fa --load copy
   $ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta --load move
-  $ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38 --load inPlace
+  $ jbrowse add-assembly myFile.fa.gz --name hg38 --alias GRCh38 --displayName "Homo sapiens (hg38)" --load inPlace
   $ jbrowse add-assembly GRCh38.chrom.sizes --load inPlace
   $ jbrowse add-assembly GRCh38.config.json --load copy
   $ jbrowse add-assembly https://example.com/data/sample.2bit
   $ jbrowse add-assembly GRCh38.fa --target /path/to/jb2/installation/customconfig.json --load copy
 ```
 
-_See code: [src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.3/products/jbrowse-cli/src/commands/add-assembly.ts)_
+_See code: [src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.4/products/jbrowse-cli/src/commands/add-assembly.ts)_
 
 ## `jbrowse add-connection CONNECTIONURLORPATH`
 
@@ -189,7 +193,7 @@ EXAMPLES
   /path/to/jb2/installation/config.json
 ```
 
-_See code: [src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.3/products/jbrowse-cli/src/commands/add-connection.ts)_
+_See code: [src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.4/products/jbrowse-cli/src/commands/add-connection.ts)_
 
 ## `jbrowse add-track TRACK`
 
@@ -263,7 +267,7 @@ EXAMPLES
   $ jbrowse add-track /url/relative/path.bam --trackId AlignmentsTrack1 --load url --overwrite
 ```
 
-_See code: [src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.3/products/jbrowse-cli/src/commands/add-track.ts)_
+_See code: [src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.4/products/jbrowse-cli/src/commands/add-track.ts)_
 
 ## `jbrowse add-track-json TRACK`
 
@@ -288,7 +292,7 @@ EXAMPLES
   $ jbrowse add-track-json track.json --update
 ```
 
-_See code: [src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.3/products/jbrowse-cli/src/commands/add-track-json.ts)_
+_See code: [src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.4/products/jbrowse-cli/src/commands/add-track-json.ts)_
 
 ## `jbrowse admin-server`
 
@@ -316,7 +320,7 @@ EXAMPLES
   $ jbrowse admin-server -p 8888
 ```
 
-_See code: [src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.3/products/jbrowse-cli/src/commands/admin-server.ts)_
+_See code: [src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.4/products/jbrowse-cli/src/commands/admin-server.ts)_
 
 ## `jbrowse create LOCALPATH`
 
@@ -351,7 +355,7 @@ EXAMPLES
   $ jbrowse create --listVersions # Lists out all available versions of JBrowse 2
 ```
 
-_See code: [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.3/products/jbrowse-cli/src/commands/create.ts)_
+_See code: [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.4/products/jbrowse-cli/src/commands/create.ts)_
 
 ## `jbrowse help [COMMAND]`
 
@@ -405,7 +409,7 @@ EXAMPLES
   $ jbrowse set-default-session --currentSession # Prints out current default session
 ```
 
-_See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.3/products/jbrowse-cli/src/commands/set-default-session.ts)_
+_See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.4/products/jbrowse-cli/src/commands/set-default-session.ts)_
 
 ## `jbrowse text-index`
 
@@ -482,7 +486,7 @@ EXAMPLES
   $ jbrowse upgrade --url https://sample.com/jbrowse2.zip
 ```
 
-_See code: [src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.3/products/jbrowse-cli/src/commands/upgrade.ts)_
+_See code: [src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.4/products/jbrowse-cli/src/commands/upgrade.ts)_
 
 <!-- commandsstop -->
 

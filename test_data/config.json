@@ -2,6 +2,7 @@
   "assemblies": [
     {
       "name": "hg19",
+      "displayName": "Homo sapiens (hg19)",
       "aliases": ["GRCh37"],
       "sequence": {
         "type": "ReferenceSequenceTrack",
@@ -30,6 +31,7 @@
     },
     {
       "name": "hg38",
+      "displayName": "Homo sapiens (hg38)",
       "aliases": ["GRCh38"],
       "sequence": {
         "type": "ReferenceSequenceTrack",

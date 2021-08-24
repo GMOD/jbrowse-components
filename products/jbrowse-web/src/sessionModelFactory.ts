@@ -148,9 +148,11 @@ export default function sessionModelFactory(
       get version() {
         return getParent(self).version
       },
-      get renderProps() {
+
+      renderProps() {
         return { theme: readConfObject(this.configuration, 'theme') }
       },
+
       get visibleWidget() {
         if (isAlive(self)) {
           // returns most recently added item in active widgets
@@ -193,6 +195,13 @@ export default function sessionModelFactory(
       },
 
       addAssembly(assemblyConfig: AnyConfigurationModel) {
+        const asm = self.sessionAssemblies.find(
+          f => f.name === assemblyConfig.name,
+        )
+        if (asm) {
+          console.warn(`Assembly ${assemblyConfig.name} was already existing`)
+          return asm
+        }
         self.sessionAssemblies.push(assemblyConfig)
       },
       addSessionPlugin(plugin: JBrowsePlugin) {

@@ -93,7 +93,7 @@ function RefNameAutocomplete({
   const session = getSession(model)
   const { assemblyManager } = session
   const [open, setOpen] = useState(false)
-  const [, setError] = useState<Error>()
+  const [error, setError] = useState<Error>()
   const [loaded, setLoaded] = useState<undefined | boolean>(undefined)
   const [currentSearch, setCurrentSearch] = useState('')
   const [searchOptions, setSearchOptions] = useState<Option[]>([])
@@ -167,13 +167,14 @@ function RefNameAutocomplete({
   }
 
   return (
+    <>
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
       data-testid="autocomplete"
       clearOnBlur
       disableListWrap
       disableClearable
-      disabled={!assemblyName}
+      disabled={!!error || !assemblyName}
       freeSolo
       includeInputInList
       selectOnFocus
@@ -262,7 +263,10 @@ function RefNameAutocomplete({
           (typeof option === 'string' ? option : option.result.getLabel()) || ''
         )
       }}
-    />
+    />      {error ? (
+        <Typography variant="h6" color="error">{`${error}`}</Typography>
+      ) : null}
+    </>
   )
 }
 

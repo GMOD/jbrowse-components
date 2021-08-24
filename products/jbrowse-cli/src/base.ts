@@ -75,6 +75,7 @@ export interface Sequence {
 }
 
 export interface Assembly {
+  displayName?: string
   name: string
   aliases?: string[]
   sequence: Sequence
