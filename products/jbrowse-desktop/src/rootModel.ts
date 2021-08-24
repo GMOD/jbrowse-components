@@ -48,13 +48,13 @@ export default function RootModel(pluginManager: PluginManager) {
       ),
       session: types.maybe(Session),
       assemblyManager: assemblyManagerType,
-      error: types.maybe(types.string),
       savedSessionNames: types.maybe(types.array(types.string)),
       version: types.maybe(types.string),
       isAssemblyEditing: false,
     })
     .volatile(() => ({
       pluginsUpdated: false,
+      error: undefined as Error | undefined,
     }))
     .actions(self => ({
       setSavedSessionNames(sessionNames: string[]) {
@@ -62,6 +62,9 @@ export default function RootModel(pluginManager: PluginManager) {
       },
       setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
         self.session = cast(sessionSnapshot)
+      },
+      setError(error: Error) {
+        self.error = error
       },
       setDefaultSession() {
         this.setSession({

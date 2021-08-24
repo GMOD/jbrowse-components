@@ -41,9 +41,46 @@ function StatusMessage({
   )
 }
 
-function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
+function TrackAdapterSelector({
+  adapterHint,
+  model,
+}: {
+  adapterHint: string
+  model: AddTrackModel
+}) {
   const classes = useStyles()
   const session = getSession(model)
+  return (
+    <TextField
+      className={classes.spacing}
+      value={adapterHint}
+      label="adapterType"
+      helperText="An adapter type"
+      select
+      fullWidth
+      onChange={event => {
+        model.setAdapterHint(event.target.value)
+      }}
+      SelectProps={{
+        // @ts-ignore
+        SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
+      }}
+    >
+      {getEnv(session)
+        .pluginManager.getElementTypesInGroup('adapter')
+        // Exclude SNPCoverageAdapter from primary adapter user selection
+        .filter((elt: { name: string }) => elt.name !== 'SNPCoverageAdapter')
+        .map((elt: { name: string }) => (
+          <MenuItem key={elt.name} value={elt.name}>
+            {elt.name}
+          </MenuItem>
+        ))}
+    </TextField>
+  )
+}
+
+function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
+  const classes = useStyles()
   const { adapterHint } = model
   return (
     <>
@@ -67,31 +104,7 @@ function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
         </Link>{' '}
         and add a feature request for this data type.
       </Typography>
-      <TextField
-        className={classes.spacing}
-        value={adapterHint}
-        label="adapterType"
-        helperText="An adapter type"
-        select
-        fullWidth
-        onChange={event => {
-          model.setAdapterHint(event.target.value)
-        }}
-        SelectProps={{
-          // @ts-ignore
-          SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
-        }}
-      >
-        {getEnv(session)
-          .pluginManager.getElementTypesInGroup('adapter')
-          // Exclude SNPCoverageAdapter from primary adapter user selection
-          .filter((elt: { name: string }) => elt.name !== 'SNPCoverageAdapter')
-          .map((elt: { name: string }) => (
-            <MenuItem key={elt.name} value={elt.name}>
-              {elt.name}
-            </MenuItem>
-          ))}
-      </TextField>
+      <TrackAdapterSelector adapterHint={adapterHint} model={model} />
     </>
   )
 }
@@ -99,7 +112,14 @@ function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
 function ConfirmTrack({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
   const session = getSession(model)
-  const { trackName, trackAdapter, trackType, assembly, warningMessage } = model
+  const {
+    trackName,
+    trackAdapter,
+    trackType,
+    assembly,
+    warningMessage,
+    adapterHint,
+  } = model
 
   if (model.unsupported) {
     return (
@@ -142,6 +162,7 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
       {warningMessage ? (
         <Typography style={{ color: 'orange' }}>{warningMessage}</Typography>
       ) : null}
+      <TrackAdapterSelector adapterHint={adapterHint} model={model} />
       <TextField
         className={classes.spacing}
         label="trackName"

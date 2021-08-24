@@ -8,7 +8,6 @@ import {
 } from '@jbrowse/core/configuration/configurationSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { getContainingView } from '@jbrowse/core/util'
 import Tooltip from '../components/Tooltip'
 import { getUniqueModificationValues } from '../../shared'
@@ -34,7 +33,7 @@ const stateModelFactory = (
         filterBy: types.optional(
           types.model({
             flagInclude: types.optional(types.number, 0),
-            flagExclude: types.optional(types.number, 1536),
+            flagExclude: types.optional(types.number, 1540),
             readName: types.maybe(types.string),
             tagFilter: types.maybe(
               types.model({ tag: types.string, value: types.string }),
@@ -81,67 +80,62 @@ const stateModelFactory = (
         })
       },
     }))
-    .views(self => ({
-      get rendererConfig() {
-        const configBlob =
-          getConf(self, ['renderers', self.rendererTypeName]) || {}
+    .views(self => {
+      const { renderProps: superRenderProps } = self
+      return {
+        get rendererConfig() {
+          const configBlob =
+            getConf(self, ['renderers', self.rendererTypeName]) || {}
 
-        return self.rendererType.configSchema.create(
-          {
-            ...configBlob,
-            drawInterbaseCounts:
-              self.drawInterbaseCounts === undefined
-                ? configBlob.drawInterbaseCounts
-                : self.drawInterbaseCounts,
-            drawIndicators:
-              self.drawIndicators === undefined
-                ? configBlob.drawIndicators
-                : self.drawIndicators,
-          },
-          getEnv(self),
-        )
-      },
-      get drawInterbaseCountsSetting() {
-        return self.drawInterbaseCounts !== undefined
-          ? self.drawInterbaseCounts
-          : readConfObject(this.rendererConfig, 'drawInterbaseCounts')
-      },
-      get drawIndicatorsSetting() {
-        return self.drawIndicators !== undefined
-          ? self.drawIndicators
-          : readConfObject(this.rendererConfig, 'drawIndicators')
-      },
+          return self.rendererType.configSchema.create(
+            {
+              ...configBlob,
+              drawInterbaseCounts:
+                self.drawInterbaseCounts === undefined
+                  ? configBlob.drawInterbaseCounts
+                  : self.drawInterbaseCounts,
+              drawIndicators:
+                self.drawIndicators === undefined
+                  ? configBlob.drawIndicators
+                  : self.drawIndicators,
+            },
+            getEnv(self),
+          )
+        },
+        get drawInterbaseCountsSetting() {
+          return self.drawInterbaseCounts !== undefined
+            ? self.drawInterbaseCounts
+            : readConfObject(this.rendererConfig, 'drawInterbaseCounts')
+        },
+        get drawIndicatorsSetting() {
+          return self.drawIndicators !== undefined
+            ? self.drawIndicators
+            : readConfObject(this.rendererConfig, 'drawIndicators')
+        },
 
-      get modificationsReady() {
-        return self.colorBy?.type === 'modifications'
-          ? Object.keys(JSON.parse(JSON.stringify(self.modificationTagMap)))
-              .length > 0
-          : true
-      },
-      get renderProps() {
-        return {
-          ...self.composedRenderProps,
-          ...getParentRenderProps(self),
-          notReady: !self.ready || !this.modificationsReady,
-          rpcDriverName: self.rpcDriverName,
-          displayModel: self,
-          config: self.rendererConfig,
-          scaleOpts: self.scaleOpts,
-          resolution: self.resolution,
-          height: self.height,
-          ticks: self.ticks,
-          displayCrossHatches: self.displayCrossHatches,
-          filters: self.filters,
-          modificationTagMap: JSON.parse(
-            JSON.stringify(self.modificationTagMap),
-          ),
+        get modificationsReady() {
+          return self.colorBy?.type === 'modifications'
+            ? Object.keys(JSON.parse(JSON.stringify(self.modificationTagMap)))
+                .length > 0
+            : true
+        },
 
-          // must use getSnapshot because otherwise changes to e.g. just the
-          // colorBy.type are not read
-          colorBy: self.colorBy ? getSnapshot(self.colorBy) : undefined,
-        }
-      },
-    }))
+        renderProps() {
+          return {
+            ...superRenderProps(),
+            notReady: !self.ready || !this.modificationsReady,
+            filters: self.filters,
+            modificationTagMap: JSON.parse(
+              JSON.stringify(self.modificationTagMap),
+            ),
+
+            // must use getSnapshot because otherwise changes to e.g. just the
+            // colorBy.type are not read
+            colorBy: self.colorBy ? getSnapshot(self.colorBy) : undefined,
+          }
+        },
+      }
+    })
     .actions(self => ({
       toggleDrawIndicators() {
         self.drawIndicators = !self.drawIndicatorsSetting
@@ -178,7 +172,7 @@ const stateModelFactory = (
     }))
 
     .views(self => {
-      const { trackMenuItems } = self
+      const { trackMenuItems: superTrackMenuItems } = self
       return {
         get TooltipComponent() {
           return Tooltip
@@ -200,12 +194,13 @@ const stateModelFactory = (
           return true
         },
 
-        get contextMenuItems() {
+        contextMenuItems() {
           return []
         },
 
-        get extraTrackMenuItems() {
+        trackMenuItems() {
           return [
+            ...superTrackMenuItems(),
             {
               label: 'Draw insertion/clipping indicators',
               type: 'checkbox',
@@ -224,36 +219,33 @@ const stateModelFactory = (
             },
           ]
         },
-        get trackMenuItems() {
-          return [
-            ...trackMenuItems,
-            ...self.composedTrackMenuItems,
-            ...this.extraTrackMenuItems,
-          ]
-        },
-        // The SNPCoverage filters are called twice because the BAM/CRAM features
-        // pass filters and then the SNPCoverage score features pass through
-        // here, and are already have 'snpinfo' are passed through
+        // The SNPCoverage filters are called twice because the BAM/CRAM
+        // features pass filters and then the SNPCoverage score features pass
+        // through here, and are already have 'snpinfo' are passed through
         get filters() {
           let filters: string[] = []
           if (self.filterBy) {
-            const { flagInclude, flagExclude } = self.filterBy
+            const {
+              flagInclude,
+              flagExclude,
+              tagFilter,
+              readName,
+            } = self.filterBy
             filters = [
               `jexl:get(feature,'snpinfo') != undefined ? true : ` +
                 `((get(feature,'flags')&${flagInclude})==${flagInclude}) && ` +
                 `!((get(feature,'flags')&${flagExclude}))`,
             ]
 
-            if (self.filterBy.tagFilter) {
-              const { tag, value } = self.filterBy.tagFilter
+            if (tagFilter) {
+              const { tag, value } = tagFilter
               filters.push(
                 `jexl:get(feature,'snpinfo') != undefined ? true : ` +
                   `"${value}" =='*' ? getTag(feature,"${tag}") != undefined : ` +
                   `getTag(feature,"${tag}") == "${value}"`,
               )
             }
-            if (self.filterBy.readName) {
-              const { readName } = self.filterBy
+            if (readName) {
               filters.push(
                 `jexl:get(feature,'snpinfo') != undefined ? true : ` +
                   `get(feature,'name') == "${readName}"`,

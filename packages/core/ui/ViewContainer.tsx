@@ -42,21 +42,7 @@ const useStyles = makeStyles(theme => ({
       },
     },
   },
-  listItemIconRoot: {
-    minWidth: 28,
-  },
-  listItemInset: {
-    paddingLeft: 28,
-  },
-  menuItemDense: {
-    paddingLeft: theme.spacing(1),
-    paddingRight: 26,
-    paddingTop: 0,
-    paddingBottom: 0,
-  },
-  secondaryActionRoot: {
-    right: theme.spacing(1),
-  },
+
   input: {
     paddingBottom: 0,
     paddingTop: 2,
@@ -86,12 +72,12 @@ const ViewMenu = observer(
     IconProps: SvgIconProps
   }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>()
+    const { menuItems } = model
 
-    if (!model.menuItems?.().length) {
-      return null
-    }
+    // <=1.3.3 didn't use a function
+    const items = typeof menuItems === 'function' ? menuItems() : menuItems
 
-    return (
+    return items?.length ? (
       <>
         <IconButton
           {...IconButtonProps}
@@ -118,7 +104,7 @@ const ViewMenu = observer(
           menuItems={model.menuItems()}
         />
       </>
-    )
+    ) : null
   },
 )
 

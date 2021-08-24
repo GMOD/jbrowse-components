@@ -54,7 +54,7 @@ export const BaseDisplay = types
      * the react props that are passed to the Renderer when data
      * is rendered in this display
      */
-    get renderProps() {
+    renderProps() {
       return {
         ...getParentRenderProps(self),
         rpcDriverName: self.rpcDriverName,
@@ -88,7 +88,7 @@ export const BaseDisplay = types
       return undefined as undefined | React.FC<any>
     },
 
-    get trackMenuItems(): MenuItem[] {
+    trackMenuItems(): MenuItem[] {
       return []
     },
 

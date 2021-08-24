@@ -5,7 +5,11 @@ const sidebar = JSON.parse(fs.readFileSync('../sidebars.json'))
 function readTree(tree, res = []) {
   tree.forEach(subtree => {
     if (subtree.items) {
-      if (subtree.label !== 'JBrowse educational courses') {
+      if (
+        !['JBrowse educational courses', 'Developer tutorials'].includes(
+          subtree.label,
+        )
+      ) {
         readTree(subtree.items, res)
       }
     } else if (typeof subtree === 'string') {

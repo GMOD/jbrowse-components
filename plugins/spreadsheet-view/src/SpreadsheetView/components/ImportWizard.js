@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react'
 
 import {
-  Card,
-  CardContent,
   FormControl,
   FormGroup,
   FormLabel,
@@ -15,30 +13,17 @@ import {
   Grid,
   Typography,
   TextField,
-  MenuItem,
-  Select,
   makeStyles,
 } from '@material-ui/core'
 
 import { observer } from 'mobx-react'
+import { getSession } from '@jbrowse/core/util'
 import { FileSelector } from '@jbrowse/core/ui'
-import { readConfObject } from '@jbrowse/core/configuration'
+import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 
-const useStyles = makeStyles(theme => {
-  return {
-    root: {
-      position: 'relative',
-      padding: theme.spacing(1),
-      background: 'white',
-    },
-    errorCard: {
-      width: '50%',
-      margin: [[theme.spacing(2), 'auto']],
-      border: [['2px', 'solid', theme.palette.error.main]],
-    },
-    buttonContainer: { marginTop: theme.spacing(1) },
-  }
-})
+const useStyles = makeStyles(theme => ({
+  buttonContainer: { marginTop: theme.spacing(1) },
+}))
 
 const NumberEditor = observer(
   ({ model, disabled, modelPropName, modelSetterName }) => {
@@ -64,24 +49,33 @@ const NumberEditor = observer(
     )
   },
 )
-const ImportForm = observer(({ model }) => {
-  const classes = useStyles()
-  const showColumnNameRowControls =
-    model.fileType === 'CSV' || model.fileType === 'TSV'
 
+const ErrorDisplay = observer(({ error }) => {
+  return (
+    <Typography variant="h6" color="error">
+      {`${error}`}
+    </Typography>
+  )
+})
+
+const ImportForm = observer(({ model }) => {
+  const session = getSession(model)
+  const classes = useStyles()
+  const { assemblyNames, assemblyManager } = session
   const {
-    selectedAssemblyIdx,
-    setSelectedAssemblyIdx,
     fileType,
     fileTypes,
     setFileType,
     hasColumnNameLine,
     toggleHasColumnNameLine,
-    assemblyChoices,
   } = model
+  const [selected, setSelected] = useState(assemblyNames[0])
+  const err = assemblyManager.get(selected)?.error
+  const showRowControls = model.fileType === 'CSV' || model.fileType === 'TSV'
 
   return (
     <Container>
+      {err ? <ErrorDisplay error={err} /> : null}
       <Grid
         style={{ width: '25rem', margin: '0 auto' }}
         container
@@ -122,13 +116,13 @@ const ImportForm = observer(({ model }) => {
             </RadioGroup>
           </FormControl>
         </Grid>
-        {showColumnNameRowControls ? (
+        {showRowControls ? (
           <Grid item>
             <FormControl component="fieldset" className={classes.formControl}>
               <FormLabel component="legend">Column Names</FormLabel>
               <div>
                 <FormControlLabel
-                  disabled={!showColumnNameRowControls}
+                  disabled={!showRowControls}
                   label="has column names on line"
                   labelPlacement="end"
                   control={
@@ -140,7 +134,7 @@ const ImportForm = observer(({ model }) => {
                 />
                 <NumberEditor
                   model={model}
-                  disabled={!showColumnNameRowControls || !hasColumnNameLine}
+                  disabled={!showRowControls || !hasColumnNameLine}
                   modelPropName="columnNameLineNumber"
                   modelSetterName="setColumnNameLineNumber"
                 />
@@ -149,22 +143,11 @@ const ImportForm = observer(({ model }) => {
           </Grid>
         ) : null}
         <Grid item>
-          <FormControl fullWidth>
-            <FormLabel component="legend">Associated with assembly</FormLabel>
-            <Select
-              value={selectedAssemblyIdx}
-              onChange={evt => setSelectedAssemblyIdx(evt.target.value)}
-            >
-              {assemblyChoices.map((assembly, idx) => {
-                const name = readConfObject(assembly, 'name')
-                return (
-                  <MenuItem key={name} value={idx}>
-                    {name}
-                  </MenuItem>
-                )
-              })}
-            </Select>
-          </FormControl>
+          <AssemblySelector
+            session={session}
+            selected={selected}
+            onChange={val => setSelected(val)}
+          />
         </Grid>
         <Grid item className={classes.buttonContainer}>
           {model.canCancel ? (
@@ -178,30 +161,17 @@ const ImportForm = observer(({ model }) => {
             </Button>
           ) : null}{' '}
           <Button
-            disabled={!model.isReadyToOpen}
+            disabled={!model.isReadyToOpen || !!err}
             variant="contained"
             data-testid="open_spreadsheet"
             color="primary"
-            onClick={model.import}
+            onClick={() => model.import(selected)}
           >
             Open
           </Button>
         </Grid>
       </Grid>
     </Container>
-  )
-})
-
-const ErrorDisplay = observer(({ errorMessage }) => {
-  const classes = useStyles()
-  return (
-    <Card className={classes.errorCard}>
-      <CardContent>
-        <Typography variant="h6" color="error">
-          {String(errorMessage)}
-        </Typography>
-      </CardContent>
-    </Card>
   )
 })
 

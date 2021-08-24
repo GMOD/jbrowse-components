@@ -1,3 +1,96 @@
+## 1.3.5 (2021-08-23)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                             | Download                                                          |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/react-circular-genome-view | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view   | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+
+</p>
+</details>
+
+## 1.3.4 (2021-08-23)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                          |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                           | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/plugin-alignments              | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-bed                     | https://www.npmjs.com/package/@jbrowse/plugin-bed                 |
+| @jbrowse/plugin-breakpoint-split-view   |                                                                   |
+| @jbrowse/plugin-circular-view           | https://www.npmjs.com/package/@jbrowse/plugin-circular-view       |
+| @jbrowse/plugin-data-management         | https://www.npmjs.com/package/@jbrowse/plugin-data-management     |
+| @jbrowse/plugin-dotplot-view            |                                                                   |
+| @jbrowse/plugin-grid-bookmark           | https://www.npmjs.com/package/@jbrowse/plugin-grid-bookmark       |
+| @jbrowse/plugin-hic                     |                                                                   |
+| @jbrowse/plugin-linear-comparative-view |                                                                   |
+| @jbrowse/plugin-linear-genome-view      | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/plugin-lollipop                |                                                                   |
+| @jbrowse/plugin-sequence                | https://www.npmjs.com/package/@jbrowse/plugin-sequence            |
+| @jbrowse/plugin-spreadsheet-view        |                                                                   |
+| @jbrowse/plugin-variants                | https://www.npmjs.com/package/@jbrowse/plugin-variants            |
+| @jbrowse/plugin-wiggle                  | https://www.npmjs.com/package/@jbrowse/plugin-wiggle              |
+| @jbrowse/cli                            | https://www.npmjs.com/package/@jbrowse/cli                        |
+| @jbrowse/desktop                        |                                                                   |
+| @jbrowse/react-circular-genome-view     | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                            |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- Other
+  - [#2163](https://github.com/GMOD/jbrowse-components/pull/2163) Add new embeddable React Circular Genome View ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#2229](https://github.com/GMOD/jbrowse-components/pull/2229) Use extendPluggableElement for context menu items ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#2233](https://github.com/GMOD/jbrowse-components/pull/2233) Add optional chromSizes config slot to TwoBitAdapter to speed up loading of TwoBit files with many refseqs ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2199](https://github.com/GMOD/jbrowse-components/pull/2199) Make the BED parser not interpret general tab delimited data as BED12 ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2241](https://github.com/GMOD/jbrowse-components/pull/2241) Restore previous window location when re-opening on desktop ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#2203](https://github.com/GMOD/jbrowse-components/pull/2203) Add a helpful message if there is a 404 on config.json error ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2204](https://github.com/GMOD/jbrowse-components/pull/2204) Hide reads with unmapped flag by default in alignments tracks ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2198](https://github.com/GMOD/jbrowse-components/pull/2198) Add better inversion visualization to read vs reference visualizations ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2154](https://github.com/GMOD/jbrowse-components/pull/2154) Add UMD build of react-linear-genome-view for plain-js use ([@garrettjstevens](https://github.com/garrettjstevens))
+- `core`
+  - [#2236](https://github.com/GMOD/jbrowse-components/pull/2236) Detect assembly loading error and encapsulate error instead of failing at app level ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2029](https://github.com/GMOD/jbrowse-components/pull/2029) Polish desktop builds ([@elliothershberg](https://github.com/elliothershberg))
+  - [#2140](https://github.com/GMOD/jbrowse-components/pull/2140) New core plugin that adds a "bookmarked regions" list widget, new extension points system ([@elliothershberg](https://github.com/elliothershberg))
+
+#### :bug: Bug Fix
+
+- `core`
+  - [#2245](https://github.com/GMOD/jbrowse-components/pull/2245) Fix missing regenerator runtime dependency in core ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#2202](https://github.com/GMOD/jbrowse-components/pull/2202) Fixed a crash when an incompatible adapter is selected for provided data in 'open track' ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+  - [#2197](https://github.com/GMOD/jbrowse-components/pull/2197) Fix handle leak for killed worker checker ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#2208](https://github.com/GMOD/jbrowse-components/pull/2208) Fix issue where collapsed categories were not remembered after toggling a track ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- [#2192](https://github.com/GMOD/jbrowse-components/pull/2192) Update Linear Genome View embedding docs ([@garrettjstevens](https://github.com/garrettjstevens))
+
+#### :house: Internal
+
+- `core`
+  - [#2057](https://github.com/GMOD/jbrowse-components/pull/2057) Use idMaker for dataAdapterCache key for faster FromConfigAdapter performance ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2231](https://github.com/GMOD/jbrowse-components/pull/2231) Export offscreenCanvasUtils ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2226](https://github.com/GMOD/jbrowse-components/pull/2226) Use superRenderProps and superTrackMenuItems for better simulated inheritance model ([@cmdcolin](https://github.com/cmdcolin))
+  - [#1874](https://github.com/GMOD/jbrowse-components/pull/1874) Add aborting to CoreGetFeatures rpcManager call ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#2232](https://github.com/GMOD/jbrowse-components/pull/2232) Remove filtering display type from core ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2234](https://github.com/GMOD/jbrowse-components/pull/2234) Add rootModel setError on jbrowse-desktop ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 4
+
+- Caroline Bridge ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Elliot Hershberg ([@elliothershberg](https://github.com/elliothershberg))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+
 ## 1.3.3 (2021-08-02)
 
 <details><summary>Packages in this release</summary>
