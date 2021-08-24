@@ -44,13 +44,13 @@ function ImportBookmarks({
   assemblyName: string
 }) {
   const classes = useStyles()
+  const session = getSession(model)
+  const { assemblyNames } = session
   const [dialogOpen, setDialogOpen] = useState(false)
   const [location, setLocation] = useState<FileLocation>()
   const [error, setError] = useState<Error>()
-  const [fileType, setFileType] = useState('BED')
-  const session = getSession(model)
-  const [selectedAsm, setSelectedAsm] = useState<string>(
-    assemblyName || session.assemblyNames[0],
+  const [selectedAsm, setSelectedAsm] = useState(
+    assemblyName || assemblyNames[0],
   )
 
   return (
@@ -64,6 +64,7 @@ function ImportBookmarks({
         maxWidth="xl"
       >
         <DialogTitle>
+          Import bookmarks
           <IconButton
             className={classes.closeDialog}
             aria-label="close-dialog"
@@ -73,43 +74,33 @@ function ImportBookmarks({
           </IconButton>
         </DialogTitle>
         <DialogContent>
-          <Grid container direction="column" spacing={10}>
-            <Grid item>
-              <Typography>
-                Currently, only simple BED file imports are supported
-              </Typography>
-              <Select
-                className={classes.flexItem}
-                data-testid="selectFileType"
-                value={fileType}
-                disabled
-                onChange={event => setFileType(event.target.value as string)}
-              >
-                <MenuItem value="BED">BED</MenuItem>
-                <MenuItem value="TSV">TSV</MenuItem>
-              </Select>
-            </Grid>
-            <Grid item>
-              <Typography>Select assembly that your data belongs to</Typography>
-              <AssemblySelector
-                onChange={val => setSelectedAsm(val)}
-                session={session}
-                selected={selectedAsm}
-              />
-            </Grid>
-            <Grid item>
-              <FileSelector
-                location={location}
-                setLocation={setLocation}
-                name="File"
-              />
-            </Grid>
-          </Grid>
+          <Typography>
+            Choose a BED format file to import. The first 4 columns will be used
+          </Typography>
+
+          <FileSelector
+            location={location}
+            setLocation={setLocation}
+            name="File"
+          />
+          <Typography>Select assembly that your data belongs to</Typography>
+          <AssemblySelector
+            onChange={val => setSelectedAsm(val)}
+            session={session}
+            selected={selectedAsm}
+          />
           {error ? (
             <Typography color="error" variant="h6">{`${error}`}</Typography>
           ) : null}
         </DialogContent>
         <DialogActions>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => setDialogOpen(false)}
+          >
+            Cancel
+          </Button>
           <Button
             className={classes.flexItem}
             data-testid="dialogImport"

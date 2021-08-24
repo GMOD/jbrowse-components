@@ -8,6 +8,8 @@ import {
   Button,
   Dialog,
   DialogTitle,
+  DialogContent,
+  DialogActions,
   Typography,
   makeStyles,
 } from '@material-ui/core'
@@ -42,6 +44,7 @@ function DeleteBookmarkDialog({
   return (
     <Dialog open={rowNumber !== undefined} onClose={onClose}>
       <DialogTitle>
+        Delete bookmark
         <IconButton
           className={classes.closeDialog}
           aria-label="close-dialog"
@@ -50,31 +53,41 @@ function DeleteBookmarkDialog({
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <div className={classes.dialogContainer}>
+      <DialogContent>
         <Typography>
-          Remove row number{' '}
+          Remove{' '}
           <code>
             {rowNumber !== undefined
               ? assembleLocString(model.bookmarkedRegions[rowNumber])
               : ''}
-          </code>
+          </code>{' '}
+          ?
         </Typography>
-        <br />
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              if (rowNumber !== undefined) {
-                removeBookmark(rowNumber)
-                onClose()
-              }
-            }}
-          >
-            Confirm
-          </Button>
-        </div>
-      </div>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => {
+            onClose()
+          }}
+        >
+          Cancel
+        </Button>
+
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            if (rowNumber !== undefined) {
+              removeBookmark(rowNumber)
+              onClose()
+            }
+          }}
+        >
+          Confirm
+        </Button>
+      </DialogActions>
     </Dialog>
   )
 }

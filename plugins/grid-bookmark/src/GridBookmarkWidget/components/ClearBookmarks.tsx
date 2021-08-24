@@ -6,6 +6,8 @@ import {
   IconButton,
   Dialog,
   DialogTitle,
+  DialogContent,
+  DialogActions,
   Typography,
   makeStyles,
 } from '@material-ui/core'
@@ -42,6 +44,7 @@ function ClearBookmarks({ model }: { model: GridBookmarkModel }) {
       </Button>
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
         <DialogTitle>
+          Clear bookmarks
           <IconButton
             className={classes.closeDialog}
             aria-label="close-dialog"
@@ -50,27 +53,33 @@ function ClearBookmarks({ model }: { model: GridBookmarkModel }) {
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        <div className={classes.dialogContainer}>
-          <>
-            <Typography>
-              Clear all bookmarks? Note this will clear bookmarks for all
-              assemblies
-            </Typography>
-            <br />
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => {
-                  clearAllBookmarks()
-                  setDialogOpen(false)
-                }}
-              >
-                Confirm
-              </Button>
-            </div>
-          </>
-        </div>
+        <DialogContent>
+          <Typography>
+            Clear all bookmarks? Note this will clear bookmarks for all
+            assemblies
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => {
+              setDialogOpen(false)
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              clearAllBookmarks()
+              setDialogOpen(false)
+            }}
+          >
+            Confirm
+          </Button>
+        </DialogActions>
       </Dialog>
     </>
   )
