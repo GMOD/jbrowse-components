@@ -194,13 +194,7 @@ export function renderBlockData(
   try {
     const display = optDisplay || (getContainingDisplay(self) as any)
     const { assemblyManager, rpcManager } = getSession(display)
-    const {
-      adapterConfig,
-      renderProps,
-      rendererType,
-      error: displayError,
-      parentTrack,
-    } = display
+    const { adapterConfig, rendererType, error, parentTrack } = display
     const assemblyNames = getTrackAssemblyNames(parentTrack)
     const regionAsm = self.region.assemblyName
     if (
@@ -212,7 +206,9 @@ export function renderBlockData(
       )
     }
 
+    const renderProps = display.renderProps()
     const { config } = renderProps
+
     // This line is to trigger the mobx reaction when the config changes
     // It won't trigger the reaction if it doesn't think we're accessing it
     readConfObject(config)
@@ -225,7 +221,7 @@ export function renderBlockData(
       rpcManager,
       renderProps,
       cannotBeRenderedReason,
-      displayError,
+      displayError: error,
       renderArgs: {
         statusCallback: (message: string) => {
           if (isAlive(self)) {

@@ -42,7 +42,7 @@ function Home() {
     <Layout title={`${siteConfig.title}`}>
       <div className={classes.body}>
         <div className={classes.container}>
-          <div style={{ flexBasis: '50%' }}>
+          <div style={{ flex: '50%' }}>
             <h1>JBrowse 2</h1>
             <p>
               A pluggable open-source platform for visualizing and integrating
@@ -98,7 +98,7 @@ function Home() {
               <li>Coming soon</li>
             </ul>
           </div>
-          <div style={{ flexBasis: '50%', padding: 20 }}>
+          <div style={{ flex: '50%', padding: 20 }}>
             <img alt="screenshot of jbrowse 2" src="img/screenshot.png" />
           </div>
         </div>

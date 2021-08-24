@@ -47,6 +47,19 @@
           }
         }
       }
+    },
+    {
+      "name": "volvox404",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_refseq404",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit_404"
+          }
+        }
+      }
     }
   ],
   "aggregateTextSearchAdapters": [
@@ -623,68 +636,6 @@
           "displayId": "lollipop_track_linear",
           "renderer": {
             "type": "LollipopRenderer"
-          }
-        }
-      ]
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "filtering_track",
-      "name": "FromConfig Track (defaults to LinearFilteringDisplay)",
-      "assemblyNames": ["volvox"],
-      "category": ["Miscellaneous"],
-      "adapter": {
-        "type": "FromConfigAdapter",
-        "adapterId": "DvufUT5OYV",
-        "features": [
-          {
-            "uniqueId": "one",
-            "refName": "ctgA",
-            "start": 190,
-            "end": 191,
-            "type": "foo",
-            "score": 200,
-            "name": "Boris",
-            "note": "note for boris"
-          },
-          {
-            "uniqueId": "two",
-            "refName": "ctgA",
-            "start": 191,
-            "end": 192,
-            "type": "bar",
-            "score": 20,
-            "name": "Theresa",
-            "note": "note for theresa"
-          },
-          {
-            "uniqueId": "three",
-            "refName": "ctgA",
-            "start": 210,
-            "end": 211,
-            "type": "baz",
-            "score": 300,
-            "name": "Nigel",
-            "note": "note for nigel"
-          },
-          {
-            "uniqueId": "four",
-            "refName": "ctgA",
-            "start": 220,
-            "end": 221,
-            "score": 2,
-            "type": "quux",
-            "name": "Geoffray",
-            "note": "note for geoffray"
-          }
-        ]
-      },
-      "displays": [
-        {
-          "type": "LinearFilteringDisplay",
-          "displayId": "filtering_track_linear",
-          "renderer": {
-            "type": "SvgFeatureRenderer"
           }
         }
       ]

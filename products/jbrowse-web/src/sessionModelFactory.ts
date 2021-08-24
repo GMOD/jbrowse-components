@@ -13,6 +13,7 @@ import {
   TrackViewModel,
   JBrowsePlugin,
   DialogComponentType,
+  TextSearchManager,
 } from '@jbrowse/core/util/types'
 import { getContainingView } from '@jbrowse/core/util'
 import { observable } from 'mobx'
@@ -118,6 +119,9 @@ export default function sessionModelFactory(
       get tracks() {
         return [...self.sessionTracks, ...getParent(self).jbrowse.tracks]
       },
+      get textSearchManager(): TextSearchManager {
+        return getParent(self).textSearchManager
+      },
       get connections() {
         return [
           ...self.sessionConnections,
@@ -148,9 +152,11 @@ export default function sessionModelFactory(
       get version() {
         return getParent(self).version
       },
-      get renderProps() {
+
+      renderProps() {
         return { theme: readConfObject(this.configuration, 'theme') }
       },
+
       get visibleWidget() {
         if (isAlive(self)) {
           // returns most recently added item in active widgets
@@ -193,6 +199,13 @@ export default function sessionModelFactory(
       },
 
       addAssembly(assemblyConfig: AnyConfigurationModel) {
+        const asm = self.sessionAssemblies.find(
+          f => f.name === assemblyConfig.name,
+        )
+        if (asm) {
+          console.warn(`Assembly ${assemblyConfig.name} was already existing`)
+          return asm
+        }
         self.sessionAssemblies.push(assemblyConfig)
       },
       addSessionPlugin(plugin: JBrowsePlugin) {

@@ -620,7 +620,7 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
   expect(model.hideHeaderOverview).toEqual(true)
   model.toggleHeaderOverview()
   model.setError(Error('pxToBp failed to map to a region'))
-  expect(model.error?.message).toEqual('pxToBp failed to map to a region')
+  expect(`${model.error}`).toEqual('Error: pxToBp failed to map to a region')
 })
 // determined objectively by looking at
 // http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-Se2K5q_Jog&password=qT9on

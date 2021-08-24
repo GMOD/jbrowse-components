@@ -35,8 +35,10 @@ import {
   isAbstractMenuManager,
 } from '@jbrowse/core/util'
 
-import { MismatchParser } from '@jbrowse/plugin-alignments'
-import { autorun } from 'mobx'
+import {
+  MismatchParser,
+  LinearPileupDisplayModel,
+} from '@jbrowse/plugin-alignments'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   configSchemaFactory as linearComparativeDisplayConfigSchemaFactory,
@@ -57,6 +59,8 @@ import {
   AdapterClass as MCScanAnchorsAdapter,
   configSchema as MCScanAnchorsConfigSchema,
 } from './MCScanAnchorsAdapter'
+import { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
+import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
 const { parseCigar } = MismatchParser
 
@@ -64,8 +68,6 @@ interface Track {
   id: string
   type: string
   displays: {
-    addAdditionalContextMenuItemCallback: Function
-    additionalContextMenuItemCallbacks: Function[]
     id: string
     type: string
     PileupDisplay: any
@@ -158,6 +160,66 @@ function getTag(f: Feature, tag: string) {
   return tags ? tags[tag] : f.get(tag)
 }
 
+function mergeIntervals<T extends { start: number; end: number }>(
+  intervals: T[],
+  w = 5000,
+) {
+  // test if there are at least 2 intervals
+  if (intervals.length <= 1) {
+    return intervals
+  }
+
+  const stack = []
+  let top = null
+
+  // sort the intervals based on their start values
+  intervals = intervals.sort((a, b) => a.start - b.start)
+
+  // push the 1st interval into the stack
+  stack.push(intervals[0])
+
+  // start from the next interval and merge if needed
+  for (let i = 1; i < intervals.length; i++) {
+    // get the top element
+    top = stack[stack.length - 1]
+
+    // if the current interval doesn't overlap with the
+    // stack top element, push it to the stack
+    if (top.end + w < intervals[i].start - w) {
+      stack.push(intervals[i])
+    }
+    // otherwise update the end value of the top element
+    // if end of current interval is higher
+    else if (top.end < intervals[i].end) {
+      top.end = Math.max(top.end, intervals[i].end)
+      stack.pop()
+      stack.push(top)
+    }
+  }
+
+  return stack
+}
+
+interface BasicFeature {
+  end: number
+  start: number
+  refName: string
+}
+
+function gatherOverlaps(regions: BasicFeature[]) {
+  const groups = regions.reduce((memo, x) => {
+    if (!memo[x.refName]) {
+      memo[x.refName] = []
+    }
+    memo[x.refName].push(x)
+    return memo
+  }, {} as { [key: string]: BasicFeature[] })
+
+  return Object.values(groups)
+    .map(group => mergeIntervals(group.sort((a, b) => a.start - b.start)))
+    .flat()
+}
+
 function WindowSizeDlg(props: {
   feature: Feature
   handleClose: () => void
@@ -179,8 +241,9 @@ function WindowSizeDlg(props: {
   useEffect(() => {
     let done = false
     ;(async () => {
-      if (preFeature.get('flags') & 2048) {
-        const SA: string = getTag(preFeature, 'SA') || ''
+      let p = preFeature
+      if (p.get('flags') & 2048) {
+        const SA: string = getTag(p, 'SA') || ''
         const primaryAln = SA.split(';')[0]
         const [saRef, saStart] = primaryAln.split(',')
         const { rpcManager } = getSession(track)
@@ -191,16 +254,12 @@ function WindowSizeDlg(props: {
           sessionId,
           region: { refName: saRef, start: +saStart - 1, end: +saStart },
         })) as any[]
-        const primaryFeat = feats.find(
-          f =>
-            f.get('name') === preFeature.get('name') &&
-            !(f.get('flags') & 2048),
+        p = feats.find(
+          f => f.get('name') === p.get('name') && !(f.get('flags') & 2048),
         )
-        if (!done) {
-          setPrimaryFeature(primaryFeat)
-        }
-      } else {
-        setPrimaryFeature(preFeature)
+      }
+      if (!done) {
+        setPrimaryFeature(p)
       }
     })()
 
@@ -211,19 +270,22 @@ function WindowSizeDlg(props: {
 
   function onSubmit() {
     try {
-      const feature = primaryFeature || preFeature
+      if (!primaryFeature) {
+        return
+      }
+      const feature = primaryFeature
       const session = getSession(track)
       const view = getContainingView(track)
       const cigar = feature.get('CIGAR')
       const clipPos = getClip(cigar, 1)
       const flags = feature.get('flags')
       const qual = feature.get('qual') as string
+      const origStrand = feature.get('strand')
       const SA: string = getTag(feature, 'SA') || ''
       const readName = feature.get('name')
 
-      // the suffix -temp is used in the beforeDetach handler to
-      // automatically remove itself from the session when this view is
-      // destroyed
+      // the suffix -temp is used in the beforeDetach handler to automatically
+      // remove itself from the session when this view is destroyed
       const readAssembly = `${readName}_assembly-temp`
       const [trackAssembly] = getConf(track, 'assemblyNames')
       const assemblyNames = [trackAssembly, readAssembly]
@@ -239,12 +301,12 @@ function WindowSizeDlg(props: {
       const supplementaryAlignments = SA.split(';')
         .filter(aln => !!aln)
         .map((aln, index) => {
-          const [saRef, saStart, , saCigar] = aln.split(',')
+          const [saRef, saStart, saStrand, saCigar] = aln.split(',')
           const saLengthOnRef = getLengthOnRef(saCigar)
           const saLength = getLength(saCigar)
           const saLengthSansClipping = getLengthSansClipping(saCigar)
-          // const saStrandNormalized = saStrand === '-' ? -1 : 1
-          const saClipPos = getClip(saCigar, 1)
+          const saStrandNormalized = saStrand === '-' ? -1 : 1
+          const saClipPos = getClip(saCigar, saStrandNormalized * origStrand)
           const saRealStart = +saStart - 1
           return {
             refName: saRef,
@@ -254,7 +316,7 @@ function WindowSizeDlg(props: {
             clipPos: saClipPos,
             CIGAR: saCigar,
             assemblyName: trackAssembly,
-            strand: 1, // saStrandNormalized,
+            strand: origStrand * saStrandNormalized,
             uniqueId: `${feature.id()}_SA${index}`,
             mate: {
               start: saClipPos,
@@ -309,16 +371,14 @@ function WindowSizeDlg(props: {
 
       const seqTrackId = `${readName}_${Date.now()}`
       const sequenceTrackConf = getConf(assembly, 'sequence')
-      const lgvRegions = features
-        .map(f => {
-          return {
-            ...f,
-            start: Math.max(0, f.start - windowSize),
-            end: f.end + windowSize,
-            assemblyName: trackAssembly,
-          }
-        })
-        .sort((a, b) => a.clipPos - b.clipPos)
+      const lgvRegions = gatherOverlaps(
+        features.map(f => ({
+          ...f,
+          start: Math.max(0, f.start - windowSize),
+          end: f.end + windowSize,
+          assemblyName: trackAssembly,
+        })),
+      )
 
       session.addAssembly?.({
         name: `${readAssembly}`,
@@ -361,7 +421,7 @@ function WindowSizeDlg(props: {
                   {
                     id: `${Math.random()}`,
                     type: 'LinearReferenceSequenceDisplay',
-                    showReverse: false,
+                    showReverse: true,
                     showTranslation: false,
                     height: 35,
                     configuration: `${seqTrackId}-LinearReferenceSequenceDisplay`,
@@ -392,7 +452,7 @@ function WindowSizeDlg(props: {
                   {
                     id: `${Math.random()}`,
                     type: 'LinearReferenceSequenceDisplay',
-                    showReverse: false,
+                    showReverse: true,
                     showTranslation: false,
                     height: 35,
                     configuration: `${seqTrackId}-LinearReferenceSequenceDisplay`,
@@ -604,6 +664,48 @@ export default class extends Plugin {
           pluginManager,
         }),
     )
+
+    pluginManager.addToExtensionPoint(
+      'Core-extendPluggableElement',
+      (pluggableElement: PluggableElementType) => {
+        if (pluggableElement.name === 'LinearPileupDisplay') {
+          const { stateModel } = pluggableElement as ViewType
+          const newStateModel = stateModel.extend(
+            (self: LinearPileupDisplayModel) => {
+              const superContextMenuItems = self.contextMenuItems
+              return {
+                views: {
+                  contextMenuItems() {
+                    const feature = self.contextMenuFeature
+                    if (!feature) {
+                      return superContextMenuItems()
+                    }
+                    const newMenuItems = [
+                      ...superContextMenuItems(),
+                      {
+                        label: 'Linear read vs ref',
+                        icon: AddIcon,
+                        onClick: () => {
+                          getSession(self).setDialogComponent(WindowSizeDlg, {
+                            track: getContainingTrack(self),
+                            feature,
+                          })
+                        },
+                      },
+                    ]
+
+                    return newMenuItems
+                  },
+                },
+              }
+            },
+          )
+
+          ;(pluggableElement as DisplayType).stateModel = newStateModel
+        }
+        return pluggableElement
+      },
+    )
   }
 
   configure(pluginManager: PluginManager) {
@@ -616,63 +718,5 @@ export default class extends Plugin {
         },
       })
     }
-
-    const callback = (feature: Feature, display: any) => {
-      return feature
-        ? [
-            {
-              label: 'Linear read vs ref',
-              icon: AddIcon,
-              onClick: () => {
-                getSession(display).setDialogComponent(WindowSizeDlg, {
-                  track: getContainingTrack(display),
-                  feature,
-                })
-              },
-            },
-          ]
-        : []
-    }
-
-    function checkCallback(obj: any) {
-      return obj.additionalContextMenuItemCallbacks.includes(callback)
-    }
-    function addCallback(obj: any) {
-      obj.addAdditionalContextMenuItemCallback(callback)
-    }
-    function addContextMenu(view: View) {
-      if (view.type === 'LinearGenomeView') {
-        view.tracks.forEach(track => {
-          if (track.type === 'AlignmentsTrack') {
-            track.displays.forEach(display => {
-              if (
-                display.type === 'LinearPileupDisplay' &&
-                !checkCallback(display)
-              ) {
-                addCallback(display)
-              } else if (
-                display.type === 'LinearAlignmentsDisplay' &&
-                display.PileupDisplay &&
-                !checkCallback(display.PileupDisplay)
-              ) {
-                addCallback(display.PileupDisplay)
-              }
-            })
-          }
-        })
-      }
-    }
-    autorun(() => {
-      const session = pluginManager.rootModel?.session as Session | undefined
-      if (session) {
-        session.views.forEach(view => {
-          if (view.views) {
-            view.views.forEach(v => addContextMenu(v))
-          } else {
-            addContextMenu(view)
-          }
-        })
-      }
-    })
   }
 }

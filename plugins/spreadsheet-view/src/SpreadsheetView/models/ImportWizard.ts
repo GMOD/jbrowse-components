@@ -1,15 +1,11 @@
+import { types, getParent } from 'mobx-state-tree'
+import { openLocation } from '@jbrowse/core/util/io'
 import { getSession } from '@jbrowse/core/util'
-import PluginManager from '@jbrowse/core/PluginManager'
 
 // 30MB
 const IMPORT_SIZE_LIMIT = 30_000_000
 
-export default (pluginManager: PluginManager) => {
-  const { lib } = pluginManager
-  const { types, getParent, getRoot } = lib['mobx-state-tree']
-  const { openLocation } = lib['@jbrowse/core/util/io']
-  const { readConfObject } = lib['@jbrowse/core/configuration']
-
+export default () => {
   const fileTypes = ['CSV', 'TSV', 'VCF', 'BED', 'BEDPE', 'STAR-Fusion']
   const fileTypeParsers = {
     CSV: () =>
@@ -38,7 +34,7 @@ export default (pluginManager: PluginManager) => {
       fileType: types.optional(types.enumeration(fileTypes), 'CSV'),
       hasColumnNameLine: true,
       columnNameLineNumber: 1,
-      selectedAssemblyIdx: 0,
+      selectedAssemblyName: types.maybe(types.string),
     })
     .volatile(() => ({
       fileTypes,
@@ -59,16 +55,6 @@ export default (pluginManager: PluginManager) => {
       },
       get canCancel() {
         return getParent(self).readyToDisplay
-      },
-      get assemblyChoices() {
-        return getRoot(self).jbrowse.assemblies
-      },
-      get selectedAssemblyName() {
-        const asm = getRoot(self).jbrowse.assemblies[self.selectedAssemblyIdx]
-        if (asm) {
-          return readConfObject(asm, 'name')
-        }
-        return undefined
       },
 
       get fileName() {
@@ -91,6 +77,9 @@ export default (pluginManager: PluginManager) => {
       },
     }))
     .actions(self => ({
+      setSelectedAssemblyName(s: string) {
+        self.selectedAssemblyName = s
+      },
       setFileSource(newSource: unknown) {
         self.fileSource = newSource
         self.error = undefined
@@ -110,10 +99,6 @@ export default (pluginManager: PluginManager) => {
             }
           }
         }
-      },
-
-      setSelectedAssemblyIdx(idx: number) {
-        self.selectedAssemblyIdx = idx
       },
 
       toggleHasColumnNameLine() {
@@ -148,19 +133,20 @@ export default (pluginManager: PluginManager) => {
 
       // fetch and parse the file, make a new Spreadsheet model for it,
       // then set the parent to display it
-      async import() {
+      async import(assemblyName: string) {
         try {
           if (!self.fileSource) {
             return
           }
 
           if (self.loading) {
-            throw new Error('cannot import, load already in progress')
+            throw new Error('Cannot import, load already in progress')
           }
+
+          self.selectedAssemblyName = assemblyName
           self.loading = true
-          const typeParser = await fileTypeParsers[
-            self.fileType as keyof typeof fileTypeParsers
-          ]()
+          const type = self.fileType as keyof typeof fileTypeParsers
+          const typeParser = await fileTypeParsers[type]()
           if (!typeParser) {
             throw new Error(`cannot open files of type '${self.fileType}'`)
           }
@@ -168,7 +154,7 @@ export default (pluginManager: PluginManager) => {
           const { unzip } = await import('@gmod/bgzf-filehandle')
 
           const filehandle = openLocation(self.fileSource)
-          filehandle
+          await filehandle
             .stat()
             .then(stat => {
               if (stat.size > IMPORT_SIZE_LIMIT) {
@@ -180,15 +166,12 @@ export default (pluginManager: PluginManager) => {
               }
             })
             .then(() => filehandle.readFile())
-            .then(buffer => {
-              return self.requiresUnzip ? unzip(buffer) : buffer
-            })
+            .then(buffer => (self.requiresUnzip ? unzip(buffer) : buffer))
             .then(buffer => typeParser(buffer as Buffer, self))
             .then(spreadsheet => {
               this.setLoaded()
               getParent(self).displaySpreadsheet(spreadsheet)
             })
-            .catch(this.setError)
         } catch (error) {
           this.setError(error)
         }

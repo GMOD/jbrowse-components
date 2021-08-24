@@ -270,12 +270,12 @@ describe('test sharing', () => {
 test('404 sequence file', async () => {
   console.error = jest.fn()
   const pluginManager = getPluginManager(chromeSizesConfig)
-  const { findByText } = render(
+  const { findAllByText } = render(
     <ErrorBoundary FallbackComponent={FallbackComponent}>
       <JBrowse pluginManager={pluginManager} />
     </ErrorBoundary>,
   )
-  await findByText('HTTP 404 fetching grape.chrom.sizes.nonexist', {
+  await findAllByText('HTTP 404 fetching grape.chrom.sizes.nonexist', {
     exact: false,
   })
 })
