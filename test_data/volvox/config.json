@@ -58,7 +58,8 @@
         "adapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit_404"
+            "uri": "volvox.2bit_404",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -594,6 +595,21 @@
         "bigWigLocation": {
           "uri": "volvox_microarray.bw",
           "locationType": "UriLocation"
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "volvox_microarray_dropbox",
+      "name": "wiggle_track xyplot",
+      "category": ["Integration test", "Wiggle"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "volvox_microarray.bw",
+          "locationType": "UriLocation",
+          "internetAccountId": "dropboxOAuth"
         }
       }
     },

@@ -40,7 +40,10 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   const classes = useStyles()
   const session = getSession(model)
   const { assemblyNames, assemblyManager } = session
-  const [trackData, setTrackData] = useState<FileLocation>({ uri: '', locationType: 'UriLocation', })
+  const [trackData, setTrackData] = useState<FileLocation>({
+    uri: '',
+    locationType: 'UriLocation',
+  })
   const [selected, setSelected] = useState([assemblyNames[0], assemblyNames[0]])
   const [numRows] = useState(2)
 

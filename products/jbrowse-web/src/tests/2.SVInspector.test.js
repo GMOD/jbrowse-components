@@ -7,7 +7,6 @@ import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
-import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { TextEncoder, TextDecoder } from 'web-encoding'
 import JBrowse from '../JBrowse'
@@ -23,7 +22,6 @@ setup()
 afterEach(cleanup)
 
 beforeEach(() => {
-  clearCache()
   clearAdapterCache()
   fetch.resetMocks()
   fetch.mockResponse(

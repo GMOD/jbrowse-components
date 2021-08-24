@@ -224,9 +224,9 @@ describe('add-connection', () => {
             type: 'newType',
             assemblyName: 'testAssembly',
             connectionId: 'newConnectionId',
+            locationType: 'UriLocation',
             url: {
               uri: 'https://mysite.com/custom',
-              locationType: 'UriLocation',
             },
             name: 'newName',
           },
@@ -309,9 +309,9 @@ describe('add-connection', () => {
               type: 'custom',
               assemblyName: 'testAssembly',
               connectionId: 'newConnectionId',
+              locationType: 'UriLocation',
               url: {
                 uri: 'https://mysite.com/custom',
-                locationType: 'UriLocation',
               },
               name: 'newConnectionId',
             },

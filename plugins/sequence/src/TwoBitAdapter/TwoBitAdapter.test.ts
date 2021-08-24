@@ -45,6 +45,7 @@ test('adapter can fetch regions from with chrom.sizes', async () => {
     configSchema.create({
       chromSizesLocation: {
         localPath: require.resolve('../../test_data/volvox.chrom.sizes'),
+        locationType: 'LocalPathLocation',
       },
     }),
   )

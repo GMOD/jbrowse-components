@@ -3686,11 +3686,13 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/lra.inv.bed.gz"
+          "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/lra.inv.bed.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/lra.inv.bed.gz.tbi"
+            "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/lra.inv.bed.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }
@@ -3706,11 +3708,13 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/mm2.inv.bed.gz"
+          "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/mm2.inv.bed.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/mm2.inv.bed.gz.tbi"
+            "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/mm2.inv.bed.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }
@@ -3726,11 +3730,13 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/ngmlr.inv.bed.gz"
+          "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/ngmlr.inv.bed.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/ngmlr.inv.bed.gz.tbi"
+            "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/ngmlr.inv.bed.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }

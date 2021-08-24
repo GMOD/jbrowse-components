@@ -131,9 +131,12 @@ const stateModelFactory = (
 
           let newOpts = opts
           if (foundToken) {
+            const tokenInfoString = self.tokenType
+              ? `${self.tokenType} ${preAuthInfo.authInfo.token}`
+              : `${preAuthInfo.authInfo.token}`
             const newHeaders = {
               ...opts?.headers,
-              [self.authHeader]: `${self.tokenType} ${preAuthInfo.authInfo.token}`,
+              [self.authHeader]: `${tokenInfoString}`,
             }
             newOpts = {
               ...opts,
@@ -169,6 +172,9 @@ const stateModelFactory = (
             preAuthInfo = self.generateAuthInfo
           }
 
+          if (inWebWorker && !location.internetAccountPreAuthorization) {
+            throw new Error('Error')
+          }
           let accessToken
           try {
             accessToken = await this.checkToken()
@@ -205,8 +211,8 @@ const stateModelFactory = (
           // }
         },
         async handleError() {
-          preAuthInfo = self.generateAuthInfo
           if (!inWebWorker) {
+            preAuthInfo = self.generateAuthInfo
             sessionStorage.removeItem(`${self.internetAccountId}-token`)
           }
 

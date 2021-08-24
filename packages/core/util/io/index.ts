@@ -73,6 +73,7 @@ export function openLocation(
         } else {
           const pluginManager = new PluginManager([new AuthenticationPlugin()])
           pluginManager.createPluggableElements()
+          console.log(pluginManager)
           const internetAccountType = pluginManager.getInternetAccountType(
             location.internetAccountPreAuthorization.internetAccountType,
           )

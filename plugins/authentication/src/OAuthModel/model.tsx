@@ -342,7 +342,7 @@ const stateModelFactory = (
               const urlParams = new URLSearchParams(queryStringSearch)
               const token = urlParams.get('access_token')
               if (!token) {
-                self.setErrorMessage('Error fetching token')
+                self.setErrorMessage('Error with token endpoint')
                 reject(self.errorMessage)
                 openLocationPromise = undefined
                 return
@@ -354,7 +354,7 @@ const stateModelFactory = (
               const urlParams = new URLSearchParams(queryString)
               const code = urlParams.get('code')
               if (!code) {
-                self.setErrorMessage('Error fetching code')
+                self.setErrorMessage('Error with authorization endpoint')
                 reject(self.errorMessage)
                 openLocationPromise = undefined
                 return
@@ -362,20 +362,68 @@ const stateModelFactory = (
               this.exchangeAuthorizationForAccessToken(code)
             }
             if (redirectUri.includes('access_denied')) {
-              self.setErrorMessage('User cancelled OAuth flow')
+              self.setErrorMessage('OAuth flow was cancelled')
               reject(self.errorMessage)
               openLocationPromise = undefined
               return
             }
           }
         },
+        async getFetcher(
+          url: RequestInfo,
+          opts?: RequestInit,
+        ): Promise<Response> {
+          if (!preAuthInfo || !preAuthInfo.authInfo) {
+            throw new Error(
+              'Authorization information not detected while trying to fetch',
+            )
+          }
 
-        // if you are in the worker, and no preauth information available throw new error
+          let fileUrl = preAuthInfo.authInfo.fileUrl
+          let foundToken
+          try {
+            foundToken = await this.checkToken()
+          } catch (e) {
+            await this.handleError(e)
+          }
+          let newOpts = opts
 
-        // called from RpcMethodType, fills in the internetAccountPreAuthorization
-        // should be undefined coming in, and should have origin, tokenType, authHeader
-        // token and fileUrl (the actual url to open) when finished
+          if (foundToken) {
+            if (!fileUrl) {
+              try {
+                fileUrl = await self.fetchFile(String(url), foundToken)
+              } catch (e) {
+                await this.handleError(e)
+              }
+            }
+            const tokenInfoString = self.tokenType
+              ? `${self.tokenType} ${preAuthInfo.authInfo.token}`
+              : `${preAuthInfo.authInfo.token}`
+            const newHeaders = {
+              ...opts?.headers,
+              [self.authHeader]: `${tokenInfoString}`,
+            }
+            newOpts = {
+              ...opts,
+              headers: newHeaders,
+            }
+          }
 
+          return fetch(fileUrl, {
+            method: 'GET',
+            credentials: 'same-origin',
+            ...newOpts,
+          })
+        },
+        // called on the web worker, returns a generic filehandle with a modified fetch
+        // preauth info should be filled in by here
+        openLocation(location: UriLocation) {
+          preAuthInfo =
+            location.internetAccountPreAuthorization || self.generateAuthInfo
+          return new RemoteFile(String(location.uri), {
+            fetch: this.getFetcher,
+          })
+        },
         // on error it tries again once if there is a refresh token available
         async getPreAuthorizationInformation(
           location: UriLocation,
@@ -387,7 +435,7 @@ const stateModelFactory = (
 
           // if in worker && !location.preauthInto throw new error
           if (inWebWorker && !location.internetAccountPreAuthorization) {
-            throw new Error('Error')
+            throw new Error('Authorization information not detected')
           }
           let accessToken
           try {
@@ -410,56 +458,6 @@ const stateModelFactory = (
           }
 
           return preAuthInfo
-        },
-        async getFetcher(
-          url: RequestInfo,
-          opts?: RequestInit,
-        ): Promise<Response> {
-          if (!preAuthInfo || !preAuthInfo.authInfo) {
-            throw new Error('Auth Information Missing')
-          }
-
-          let fileUrl = preAuthInfo.authInfo.fileUrl
-          let foundToken
-          try {
-            foundToken = await this.checkToken()
-          } catch (e) {
-            await this.handleError(e)
-          }
-          let newOpts = opts
-
-          if (foundToken) {
-            if (!fileUrl) {
-              try {
-                fileUrl = await self.fetchFile(String(url), foundToken)
-              } catch (e) {
-                await this.handleError(e)
-              }
-            }
-            const newHeaders = {
-              ...opts?.headers,
-              [self.authHeader]: `${self.tokenType} ${preAuthInfo.authInfo.token}`,
-            }
-            newOpts = {
-              ...opts,
-              headers: newHeaders,
-            }
-          }
-
-          return fetch(fileUrl, {
-            method: 'GET',
-            credentials: 'same-origin',
-            ...newOpts,
-          })
-        },
-        // called on the web worker, returns a generic filehandle with a modified fetch
-        // preauth info should be filled in by here
-        openLocation(location: UriLocation) {
-          preAuthInfo =
-            location.internetAccountPreAuthorization || self.generateAuthInfo
-          return new RemoteFile(String(location.uri), {
-            fetch: this.getFetcher,
-          })
         },
         async handleError(error: string, triedRefreshToken = false) {
           if (!inWebWorker) {
