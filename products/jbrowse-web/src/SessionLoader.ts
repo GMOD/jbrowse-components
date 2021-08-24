@@ -119,6 +119,7 @@ const SessionLoader = types
     },
   }))
   .actions(self => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,
     setSessionQuery(session?: any) {
       self.sessionQuery = session
     },

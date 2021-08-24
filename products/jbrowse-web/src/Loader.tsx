@@ -1,5 +1,5 @@
 import React, { lazy, useEffect, useState, Suspense } from 'react'
-import PluginManager, { PluginLoadRecord } from '@jbrowse/core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
 import { inDevelopment } from '@jbrowse/core/util'
 import { ErrorBoundary } from 'react-error-boundary'
@@ -24,7 +24,7 @@ import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
 import { makeStyles } from '@material-ui/core'
-import packagedef from '../package.json'
+import { version } from '../package.json'
 import factoryReset from './factoryReset'
 import SessionLoader, {
   loadSessionSpec,
@@ -128,8 +128,8 @@ export function Loader({
 
   const [config] = useQueryParam('config', StringParam)
   const [session] = useQueryParam('session', StringParam)
-  const [password] = useQueryParam('password', StringParam)
   const [adminKey] = useQueryParam('adminKey', StringParam)
+  const [password, setPassword] = useQueryParam('password', StringParam)
   const [tracks, setTracks] = useQueryParam('tracks', StringParam)
   const [loc, setLoc] = useQueryParam('loc', StringParam)
   const [assembly, setAssembly] = useQueryParam('assembly', StringParam)
@@ -148,7 +148,8 @@ export function Loader({
     setLoc(undefined)
     setTracks(undefined)
     setAssembly(undefined)
-  }, [setAssembly, setLoc, setTracks])
+    setPassword(undefined)
+  }, [setAssembly, setLoc, setTracks, setPassword])
 
   return (
     <Renderer
@@ -253,7 +254,6 @@ const Renderer = observer(
     initialTimestamp: number
     initialSessionQuery: string | null | undefined
   }) => {
-    const [, setPassword] = useQueryParam('password', StringParam)
     const { sessionError, configError, ready, shareWarningOpen } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
     const [error, setError] = useState<Error>()
@@ -278,13 +278,10 @@ const Renderer = observer(
             // config error Assuming that the query changes self.sessionError
             // or self.sessionSnapshot or self.blankSession
             const pluginManager = new PluginManager([
-              ...corePlugins.map(
-                P =>
-                  ({
-                    plugin: new P(),
-                    metadata: { isCore: true },
-                  } as PluginLoadRecord),
-              ),
+              ...corePlugins.map(P => ({
+                plugin: new P(),
+                metadata: { isCore: true },
+              })),
               ...runtimePlugins.map(({ plugin: P, definition }) => ({
                 plugin: new P(),
                 definition,
@@ -308,7 +305,7 @@ const Renderer = observer(
                 {
                   jbrowse: configSnapshot,
                   assemblyManager: {},
-                  version: packagedef.version,
+                  version,
                   configPath,
                 },
                 { pluginManager },
@@ -324,20 +321,18 @@ const Renderer = observer(
               }
 
               // in order: saves the previous autosave for recovery, tries to
-              // load the local session if session in query, or loads the default
-              // session
+              // load the local session if session in query, or loads the
+              // default session
               if (sessionError) {
                 rootModel.setDefaultSession()
                 // make typescript happy by checking for session after
                 // setDefaultSession, even though we know this exists now
-                if (rootModel.session) {
-                  rootModel.session.notify(
-                    `Error loading session: ${sessionError.message}. If you
+                rootModel.session?.notify(
+                  `Error loading session: ${sessionError.message}. If you
                     received this URL from another user, request that they send
                     you a session generated with the "Share" button instead of
                     copying and pasting their URL`,
-                  )
-                }
+                )
               } else if (sessionSnapshot && !shareWarningOpen) {
                 try {
                   rootModel.setSession(sessionSnapshot)
@@ -384,9 +379,6 @@ const Renderer = observer(
               pluginManager.setRootModel(rootModel)
               pluginManager.configure()
               setPluginManager(pluginManager)
-
-              // automatically clear password field once loaded
-              setPassword(undefined)
             }
           }
         } catch (e) {
@@ -409,7 +401,6 @@ const Renderer = observer(
       shareWarningOpen,
       ready,
       sessionError,
-      setPassword,
       initialTimestamp,
       initialSessionQuery,
     ])
@@ -420,50 +411,7 @@ const Renderer = observer(
       return <ErrorMessage err={err} snapshotError={snapshotError} />
     }
     if (loader.sessionTriaged) {
-      const handleClose = () => {
-        loader.setSessionTriaged(undefined)
-      }
-      return loader.sessionTriaged.origin === 'session' ? (
-        <Suspense fallback={<div />}>
-          <SessionWarningDialog
-            onConfirm={async () => {
-              const session = JSON.parse(
-                JSON.stringify(loader.sessionTriaged.snap),
-              )
-
-              // second param true says we passed user confirmation
-              await loader.setSessionSnapshot(
-                { ...session, id: shortid() },
-                true,
-              )
-              handleClose()
-            }}
-            onCancel={() => {
-              loader.setBlankSession(true)
-              handleClose()
-            }}
-            reason={loader.sessionTriaged.reason}
-          />
-        </Suspense>
-      ) : (
-        <Suspense fallback={<div />}>
-          <ConfigWarningDialog
-            onConfirm={async () => {
-              const session = JSON.parse(
-                JSON.stringify(loader.sessionTriaged.snap),
-              )
-              await loader.fetchPlugins(session)
-              loader.setConfigSnapshot({ ...session, id: shortid() })
-              handleClose()
-            }}
-            onCancel={() => {
-              factoryReset()
-              handleClose()
-            }}
-            reason={loader.sessionTriaged.reason}
-          />
-        </Suspense>
-      )
+      return <SessionTriaged loader={loader} />
     }
     if (pm) {
       if (!pm.rootModel?.session) {
