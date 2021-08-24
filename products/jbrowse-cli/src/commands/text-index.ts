@@ -268,7 +268,7 @@ export default class TextIndex extends JBrowseCommand {
     return ixIxxStream
   }
 
-  async *indexFile(
+  async *indexFiles(
     configs: Track[],
     attributesToIndex: string[],
     outLocation: string,

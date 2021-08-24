@@ -49,6 +49,7 @@ exports[`text-index tracks Indexes a local gz gff3 file 2`] = `
 
 exports[`text-index tracks Indexes a local gz gff3 file 3`] = `17096`;
 
+
 exports[`text-index tracks Indexes a local gz gff3 file 4`] = `
 "agt220000000000
 "
@@ -68,6 +69,7 @@ exports[`text-index tracks Indexes a remote and a local file 2`] = `
 `;
 
 exports[`text-index tracks Indexes a remote and a local file 3`] = `172066`;
+
 
 exports[`text-index tracks Indexes a remote and a local file 4`] = `
 "agt220000000000
@@ -189,6 +191,7 @@ exports[`text-index tracks Indexes multiple local gff3 files 2`] = `
 `;
 
 exports[`text-index tracks Indexes multiple local gff3 files 3`] = `161410`;
+
 
 exports[`text-index tracks Indexes multiple local gff3 files 4`] = `
 "agt220000000000

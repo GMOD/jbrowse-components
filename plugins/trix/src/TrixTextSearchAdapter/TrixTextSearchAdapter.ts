@@ -43,13 +43,20 @@ export default class TrixTextSearchAdapter
    */
   async searchIndex(args: BaseArgs) {
     const results = await this.trixJs.search(args.queryString)
-
-    return this.formatResults(
+    const formatted = this.formatResults(
       results.map(
         data =>
           JSON.parse(Buffer.from(data, 'base64').toString('utf8')) as string[],
       ),
     )
+    if (args.searchType === 'exact') {
+      return formatted.filter(
+        result =>
+          result.getLabel().toLocaleLowerCase() ===
+          args.queryString.toLocaleLowerCase(),
+      )
+    }
+    return formatted
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
