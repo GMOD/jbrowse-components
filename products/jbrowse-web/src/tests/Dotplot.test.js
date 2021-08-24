@@ -65,7 +65,7 @@ describe('dotplot view', () => {
     fireEvent.click(await findByText('File'))
     fireEvent.click(await findByText('Add'))
     fireEvent.click(await findByText('Dotplot view'))
-    const inputBox = await findAllByTestId('dotplot-input')
+    const inputBox = await findAllByTestId('assembly-selector')
     fireEvent.change(inputBox[0], {
       target: {
         value: 'peach',

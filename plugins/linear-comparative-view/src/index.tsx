@@ -35,8 +35,10 @@ import {
   isAbstractMenuManager,
 } from '@jbrowse/core/util'
 
-import { MismatchParser } from '@jbrowse/plugin-alignments'
-import { autorun } from 'mobx'
+import {
+  MismatchParser,
+  LinearPileupDisplayModel,
+} from '@jbrowse/plugin-alignments'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   configSchemaFactory as linearComparativeDisplayConfigSchemaFactory,
@@ -57,6 +59,8 @@ import {
   AdapterClass as MCScanAnchorsAdapter,
   configSchema as MCScanAnchorsConfigSchema,
 } from './MCScanAnchorsAdapter'
+import { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
+import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
 const { parseCigar } = MismatchParser
 
@@ -64,8 +68,6 @@ interface Track {
   id: string
   type: string
   displays: {
-    addAdditionalContextMenuItemCallback: Function
-    additionalContextMenuItemCallbacks: Function[]
     id: string
     type: string
     PileupDisplay: any
@@ -662,6 +664,48 @@ export default class extends Plugin {
           pluginManager,
         }),
     )
+
+    pluginManager.addToExtensionPoint(
+      'Core-extendPluggableElement',
+      (pluggableElement: PluggableElementType) => {
+        if (pluggableElement.name === 'LinearPileupDisplay') {
+          const { stateModel } = pluggableElement as ViewType
+          const newStateModel = stateModel.extend(
+            (self: LinearPileupDisplayModel) => {
+              const superContextMenuItems = self.contextMenuItems
+              return {
+                views: {
+                  contextMenuItems() {
+                    const feature = self.contextMenuFeature
+                    if (!feature) {
+                      return superContextMenuItems()
+                    }
+                    const newMenuItems = [
+                      ...superContextMenuItems(),
+                      {
+                        label: 'Linear read vs ref',
+                        icon: AddIcon,
+                        onClick: () => {
+                          getSession(self).setDialogComponent(WindowSizeDlg, {
+                            track: getContainingTrack(self),
+                            feature,
+                          })
+                        },
+                      },
+                    ]
+
+                    return newMenuItems
+                  },
+                },
+              }
+            },
+          )
+
+          ;(pluggableElement as DisplayType).stateModel = newStateModel
+        }
+        return pluggableElement
+      },
+    )
   }
 
   configure(pluginManager: PluginManager) {
@@ -674,63 +718,5 @@ export default class extends Plugin {
         },
       })
     }
-
-    const callback = (feature: Feature, display: any) => {
-      return feature
-        ? [
-            {
-              label: 'Linear read vs ref',
-              icon: AddIcon,
-              onClick: () => {
-                getSession(display).setDialogComponent(WindowSizeDlg, {
-                  track: getContainingTrack(display),
-                  feature,
-                })
-              },
-            },
-          ]
-        : []
-    }
-
-    function checkCallback(obj: any) {
-      return obj.additionalContextMenuItemCallbacks.includes(callback)
-    }
-    function addCallback(obj: any) {
-      obj.addAdditionalContextMenuItemCallback(callback)
-    }
-    function addContextMenu(view: View) {
-      if (view.type === 'LinearGenomeView') {
-        view.tracks.forEach(track => {
-          if (track.type === 'AlignmentsTrack') {
-            track.displays.forEach(display => {
-              if (
-                display.type === 'LinearPileupDisplay' &&
-                !checkCallback(display)
-              ) {
-                addCallback(display)
-              } else if (
-                display.type === 'LinearAlignmentsDisplay' &&
-                display.PileupDisplay &&
-                !checkCallback(display.PileupDisplay)
-              ) {
-                addCallback(display.PileupDisplay)
-              }
-            })
-          }
-        })
-      }
-    }
-    autorun(() => {
-      const session = pluginManager.rootModel?.session as Session | undefined
-      if (session) {
-        session.views.forEach(view => {
-          if (view.views) {
-            view.views.forEach(v => addContextMenu(v))
-          } else {
-            addContextMenu(view)
-          }
-        })
-      }
-    })
   }
 }

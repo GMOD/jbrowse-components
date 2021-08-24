@@ -54,7 +54,7 @@ export function generateHierarchy(model, trackConfigurations, collapsed) {
             children: [],
             name: category,
             id,
-            state: { expanded: !collapsed.get(id) },
+            isOpenByDefault: !collapsed.get(id),
           }
           currLevel.children.push(n)
           currLevel = n
@@ -90,7 +90,6 @@ export default pluginManager =>
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
-      collapsedCategories: types.map(types.string, types.boolean),
     })
     .actions(self => ({
       setView(view) {

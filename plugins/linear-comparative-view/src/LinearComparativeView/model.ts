@@ -19,15 +19,13 @@ import {
   getPath,
   SnapshotIn,
   cast,
-  ISerializedActionCall,
   getRoot,
 } from 'mobx-state-tree'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
-export default function stateModelFactory(pluginManager: PluginManager) {
-  const { jbrequire } = pluginManager
-  const { ElementId } = jbrequire('@jbrowse/core/util/types/mst')
+import { ElementId } from '@jbrowse/core/util/types/mst'
 
+export default function stateModelFactory(pluginManager: PluginManager) {
   const defaultHeight = 400
   return types
     .compose(
@@ -49,9 +47,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             .stateModel as LinearGenomeViewStateModel,
         ),
 
-        // this represents tracks specific to this view
-        // specifically used for read vs ref dotplots where
-        // this track would not really apply elsewhere
+        // this represents tracks specific to this view specifically used for
+        // read vs ref dotplots where this track would not really apply
+        // elsewhere
         viewTrackConfigs: types.array(
           pluginManager.pluggableConfigSchemaType('track'),
         ),
@@ -75,21 +73,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       get assemblyNames() {
         return [...new Set(self.views.map(v => v.assemblyNames).flat())]
       },
-
-      // // Get a composite map of featureId->feature map for a track
-      // // across multiple views
-      //
-      // getTrackFeatures(trackIds: string[]) {
-      //   // @ts-ignore
-      //   const tracks = trackIds.map(t => resolveIdentifier(getSession(self), t))
-      //   return new CompositeMap<string, Feature>(tracks.map(t => t.features))
-      // },
     }))
     .actions(self => ({
       afterAttach() {
         addDisposer(
           self,
-          onAction(self, (param: ISerializedActionCall) => {
+          onAction(self, param => {
             if (self.linkViews) {
               const { name, path, args } = param
               const actions = [

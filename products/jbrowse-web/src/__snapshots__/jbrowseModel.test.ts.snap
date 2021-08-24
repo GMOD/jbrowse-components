@@ -122,6 +122,25 @@ Object {
         "type": "ReferenceSequenceTrack",
       },
     },
+    Object {
+      "name": "volvox404",
+      "sequence": Object {
+        "adapter": Object {
+          "twoBitLocation": Object {
+            "uri": "volvox.2bit_404",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "displays": Array [
+          Object {
+            "displayId": "volvox_refseq404-LinearReferenceSequenceDisplay",
+            "type": "LinearReferenceSequenceDisplay",
+          },
+        ],
+        "trackId": "volvox_refseq404",
+        "type": "ReferenceSequenceTrack",
+      },
+    },
   ],
   "configuration": Object {},
   "connections": Array [],
@@ -1025,73 +1044,6 @@ Object {
       ],
       "name": "FromConfig Track (defaults to LinearLollipopDisplay)",
       "trackId": "lollipop_track",
-      "type": "FeatureTrack",
-    },
-    Object {
-      "adapter": Object {
-        "adapterId": "DvufUT5OYV",
-        "features": Array [
-          Object {
-            "end": 191,
-            "name": "Boris",
-            "note": "note for boris",
-            "refName": "ctgA",
-            "score": 200,
-            "start": 190,
-            "type": "foo",
-            "uniqueId": "one",
-          },
-          Object {
-            "end": 192,
-            "name": "Theresa",
-            "note": "note for theresa",
-            "refName": "ctgA",
-            "score": 20,
-            "start": 191,
-            "type": "bar",
-            "uniqueId": "two",
-          },
-          Object {
-            "end": 211,
-            "name": "Nigel",
-            "note": "note for nigel",
-            "refName": "ctgA",
-            "score": 300,
-            "start": 210,
-            "type": "baz",
-            "uniqueId": "three",
-          },
-          Object {
-            "end": 221,
-            "name": "Geoffray",
-            "note": "note for geoffray",
-            "refName": "ctgA",
-            "score": 2,
-            "start": 220,
-            "type": "quux",
-            "uniqueId": "four",
-          },
-        ],
-        "type": "FromConfigAdapter",
-      },
-      "assemblyNames": Array [
-        "volvox",
-      ],
-      "category": Array [
-        "Miscellaneous",
-      ],
-      "displays": Array [
-        Object {
-          "displayId": "filtering_track_linear",
-          "type": "LinearFilteringDisplay",
-        },
-        Object {
-          "displayId": "filtering_track-LinearBasicDisplay",
-          "type": "LinearBasicDisplay",
-        },
-      ],
-      "name": "FromConfig Track (defaults to LinearFilteringDisplay)",
-      "trackId": "filtering_track",
       "type": "FeatureTrack",
     },
     Object {

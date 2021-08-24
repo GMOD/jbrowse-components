@@ -17,18 +17,21 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       }),
     )
 
-    .views(self => ({
-      get renderProps() {
-        return {
-          ...self.composedRenderProps,
-          ...getParentRenderProps(self),
-          rpcDriverName: self.rpcDriverName,
-          config: self.configuration.renderer,
-        }
-      },
+    .views(self => {
+      const { renderProps: superRenderProps } = self
+      return {
+        renderProps() {
+          return {
+            ...superRenderProps(),
+            ...getParentRenderProps(self),
+            rpcDriverName: self.rpcDriverName,
+            config: self.configuration.renderer,
+          }
+        },
 
-      get rendererTypeName() {
-        return self.configuration.renderer.type
-      },
-    }))
+        get rendererTypeName() {
+          return self.configuration.renderer.type
+        },
+      }
+    })
 }

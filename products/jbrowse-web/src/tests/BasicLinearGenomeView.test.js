@@ -339,7 +339,7 @@ describe('valid file tests', () => {
       assemblyName: 'volvox',
     })
 
-    fireEvent.click(await findByText('{volvox}ctgA:201..240'))
+    fireEvent.click(await findByText('ctgA:201..240'))
     const newRegion = state.session.views[0].getSelectedRegions(
       state.session.views[0].leftOffset,
       state.session.views[0].rightOffset,
