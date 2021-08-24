@@ -56,7 +56,7 @@ const FileLocationEditor = observer(
               onChange={(_, newValue) => {
                 if (newValue === 'url') {
                   setFileOrUrlState('url')
-                } else {
+                } else if (newValue === 'file') {
                   setFileOrUrlState('file')
                 }
               }}
