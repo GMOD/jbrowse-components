@@ -100,6 +100,7 @@
     "electron": "13.1.2",
     "electron-builder": "^22.1.0",
     "electron-mock-ipc": "^0.3.8",
+    "electron-notarize": "^1.0.0",
     "eslint-config-airbnb-typescript": "^7.0.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-config-react-app": "^6.0.0",

@@ -1,4 +1,4 @@
-import { Track } from '../base'
+import { Gff3TabixAdapter, Track } from '../base'
 import { isURL, createRemoteStream } from '../types/common'
 import { SingleBar, Presets } from 'cli-progress'
 import { createGunzip } from 'zlib'
@@ -13,12 +13,10 @@ export async function* indexGff3(
   typesToExclude: string[],
   quiet: boolean,
 ) {
+  const { adapter, trackId } = config
   const {
-    adapter: {
-      gffGzLocation: { uri },
-    },
-    trackId,
-  } = config
+    gffGzLocation: { uri },
+  } = adapter as Gff3TabixAdapter
 
   // progress bar code was aided by blog post at
   // https://webomnizz.com/download-a-file-with-progressbar-using-node-js/

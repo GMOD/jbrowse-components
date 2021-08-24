@@ -55,7 +55,7 @@ export function getParentRenderProps(node: IAnyStateTreeNode) {
     currentNode = getParent(currentNode)
   ) {
     if ('renderProps' in currentNode) {
-      return currentNode.renderProps
+      return currentNode.renderProps()
     }
   }
 
@@ -163,7 +163,7 @@ export function guessAdapter(
     }
   }
 
-  if (/\.vcf$/i.test(fileName)) {
+  if (/\.vcf$/i.test(fileName) || adapterHint === 'VcfAdapter') {
     return {
       type: 'VcfAdapter',
       vcfLocation: file,

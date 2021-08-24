@@ -244,7 +244,7 @@ describe('valid file tests', () => {
     autocomplete.focus()
     fireEvent.mouseDown(inputBox)
     fireEvent.change(inputBox, {
-      target: { value: 'apple' },
+      target: { value: 'seg02' },
     })
     // fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
     // fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
@@ -340,7 +340,7 @@ describe('valid file tests', () => {
       assemblyName: 'volvox',
     })
 
-    fireEvent.click(await findByText('{volvox}ctgA:201..240'))
+    fireEvent.click(await findByText('ctgA:201..240'))
     const newRegion = state.session.views[0].getSelectedRegions(
       state.session.views[0].leftOffset,
       state.session.views[0].rightOffset,

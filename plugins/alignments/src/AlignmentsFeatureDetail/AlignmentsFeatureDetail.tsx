@@ -128,7 +128,9 @@ function SupplementaryAlignments(props: { tag: string; model: any }) {
             const locString = `${saRef}:${Math.max(1, start - extra)}-${
               end + extra
             }`
-            const displayString = `${saRef}:${start}-${end} (${saStrand})`
+            const displayStart = start.toLocaleString('en-US')
+            const displayEnd = end.toLocaleString('en-US')
+            const displayString = `${saRef}:${displayStart}-${displayEnd} (${saStrand})`
             return (
               <li key={`${locString}-${index}`}>
                 <Link

@@ -226,6 +226,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               </div>
             </div>
           </div>
+           
         </div>
         <p
           class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
@@ -596,8 +597,9 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
             <input
               aria-hidden="true"
               class="MuiSelect-nativeInput"
+              data-testid="assembly-selector"
               tabindex="-1"
-              value="0"
+              value="volMyt1"
             />
             <svg
               aria-hidden="true"
@@ -698,6 +700,7 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
             </p>
           </div>
         </div>
+         
       </div>
       <div
         class="MuiGrid-root MuiGrid-item"
@@ -976,6 +979,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               </div>
             </div>
           </div>
+           
         </div>
         <p
           class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"

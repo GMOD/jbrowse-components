@@ -468,7 +468,7 @@ types
     // model
   })
   .views(self => ({
-    get trackMenuItems() {
+    trackMenuItems() {
       return [
         {
           label: 'Menu Item',
@@ -490,19 +490,17 @@ types
     // model
   })
   .views(self => {
-    const { trackMenuitems } = self
+    const { trackMenuItems: superTrackMenuItems } = self
     return {
-      get composedTrackMenuItems() {
+      get trackMenuItems() {
         return [
+          ...superTrackMenuItems(),
           {
             label: 'Menu Item',
             icon: AddIcon,
             onClick: () => {},
           },
         ]
-      },
-      get trackMenuItems() {
-        return [...trackMenuItems, ...this.composedTrackMenuItems]
       },
     }
   })
@@ -513,51 +511,50 @@ types
 When you right-click in a linear track, a context menu will appear if there are
 any menu items defined for it. It's possible to add items to that menu, and you
 can also have different menu items based on if the click was on a feature or
-not, and based on what feature is clicked. This is done by adding a callback
-that takes the feature and track and returns a list of menu items to add based
-on those. This has to be done via a mobx `autorun` because it needs to add the
-callback to tracks after they are created. Here is an example:
+not, and based on what feature is clicked. This is done by extending the
+`contextMenuItems` view of the display model. Here is an example:
 
 ```js
 class SomePlugin extends Plugin {
   name = 'SomePlugin'
 
   install(pluginManager) {
-    // install some stuff
-  }
-
-  configure(pluginManager) {
-    const menuItemCallback = (feature, track) => {
-      const menuItem = {
-        label: 'Some menu item',
-        icon: SomeIcon,
-        onClick: session => {
-          // do some stuff
-        },
-      }
-      return [menuItem]
-    }
-
-    const session = pluginManager.rootModel?.session
-    autorun(() => {
-      const views = session?.views
-
-      views.forEach(view => {
-        if (view.type === 'LinearGenomeView') {
-          const { tracks } = view
-          tracks.forEach(track => {
-            if (
-              track.type === 'VariantTrack' &&
-              !track.additionalContextMenuItemCallbacks.includes(
-                menuItemCallback,
-              )
-            ) {
-              track.addAdditionalContextMenuItemCallback(menuItemCallback)
+    pluginManager.addToExtensionPoint(
+      'Core-extendPluggableElement',
+      pluggableElement => {
+        if (pluggableElement.name === 'LinearPileupDisplay') {
+          const { stateModel } = pluggableElement
+          const newStateModel = stateModel.extend(self => {
+            const superContextMenuItems = self.contextMenuItems
+            return {
+              views: {
+                contextMenuItems() {
+                  const feature = self.contextMenuFeature
+                  if (!feature) {
+                    // we're not adding any menu items since the click was not
+                    // on a feature
+                    return superContextMenuItems()
+                  }
+                  return [
+                    ...superContextMenuItems(),
+                    {
+                      label: 'Some menu item',
+                      icon: SomeIcon,
+                      onClick: () => {
+                        // do some stuff
+                      },
+                    },
+                  ]
+                },
+              },
             }
           })
+
+          pluggableElement.stateModel = newStateModel
         }
-      })
-    })
+        return pluggableElement
+      },
+    )
   }
 }
 ```
@@ -1420,21 +1417,23 @@ const model = types
       type: types.literal('WiggleTrack'),
     }),
   )
-  .views(self => ({
-    get renderProps() {
-      return {
-        ...self.composedRenderProps, // props that the blockBasedTrack adds,
-        ...getParentRenderProps(self), // props that the view wants to add,
-        scaleOpts: {
-          domain: this.domain,
-          stats: self.stats,
-          autoscaleType: getConf(self, 'autoscale'),
-          scaleType: getConf(self, 'scaleType'),
-          inverted: getConf(self, 'inverted'),
-        },
-      }
-    },
-  }))
+  .views(self => {
+    const { renderProps: superRenderProps } = self
+    return {
+      renderProps() {
+        return {
+          ...superRenderProps(),
+          scaleOpts: {
+            domain: this.domain,
+            stats: self.stats,
+            autoscaleType: getConf(self, 'autoscale'),
+            scaleType: getConf(self, 'scaleType'),
+            inverted: getConf(self, 'inverted'),
+          },
+        }
+      },
+    }
+  })
 ```
 
 ### Rendering SVG

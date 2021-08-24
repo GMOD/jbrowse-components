@@ -44,6 +44,7 @@ const longReadsSession = {
   ...defaultSession,
   view: volvoxSession.session.views[0],
 }
+const aggregateTextSearchAdapters = volvoxConfig.aggregateTextSearchAdapters
 export const OneLinearGenomeView = () => {
   const state = createViewState({
     assembly,
@@ -74,7 +75,6 @@ export const OneLinearGenomeViewUsingLocObject = () => {
   })
   return <JBrowseLinearGenomeView viewState={state} />
 }
-
 export const LinearViewWithLongReads = () => {
   const state = createViewState({
     assembly,
@@ -241,6 +241,21 @@ export const WithPlugins = () => {
         trackLabels: 'overlapping',
         showCenterLine: false,
       },
+    },
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+export const WithTextSearching = () => {
+  const state = createViewState({
+    assembly,
+    tracks,
+    defaultSession,
+    aggregateTextSearchAdapters,
+    // use 1-based coordinates for locstring
+    location: 'ctgA:1..800',
+    onChange: patch => {
+      // eslint-disable-next-line no-console
+      console.log('patch', patch)
     },
   })
   return <JBrowseLinearGenomeView viewState={state} />
