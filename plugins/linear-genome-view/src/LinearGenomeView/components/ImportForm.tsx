@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import {
@@ -41,16 +40,14 @@ const ErrorDisplay = observer(({ error }: { error?: Error | string }) => {
 const ImportForm = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const session = getSession(model)
-  const { assemblyNames, assemblyManager } = session
-  const { pluginManager } = getEnv(session)
-  const { textSearchManager } = pluginManager.rootModel
+  const { assemblyNames, assemblyManager, textSearchManager } = session
   const {
     rankSearchResults,
     isSearchDialogDisplayed,
     error: modelError,
   } = model
-  const [selectedAsm, setSelectedAsm] = useState<string>(assemblyNames[0])
-  const [error, setError] = useState<Error | string | undefined>(modelError)
+  const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
+  const [error, setError] = useState<typeof modelError | undefined>(modelError)
   const message = !assemblyNames.length ? 'No configured assemblies' : ''
   const searchScope = model.searchScope(selectedAsm)
 
@@ -64,7 +61,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const selectedRegion = mySelectedRegion || regions[0]?.refName
 
   async function fetchResults(queryString: string) {
-    const results: BaseResult[] =
+    const results =
       (await textSearchManager?.search(
         {
           queryString: queryString.toLocaleLowerCase(),
@@ -73,21 +70,10 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
         searchScope,
         rankSearchResults,
       )) || []
-    //  TODO: test trackID filter
-    const filteredResults = results.filter(function (elem, index, self) {
-      const value1 = `${elem.getLabel()}-${elem.getLocation()}-${
-        elem.getTrackId() || ''
-      }`
-      return (
-        index ===
-        self.findIndex(
-          t =>
-            `${t.getLabel()}-${t.getLocation()}-${t.getTrackId() || ''}` ===
-            value1,
-        )
-      )
-    })
-    return filteredResults
+    return results.filter(
+      (elem, index, self) =>
+        index === self.findIndex(t => t.getId() === elem.getId()),
+    )
   }
   async function handleSelectedRegion(input: string) {
     const newRegion = regions.find(r => selectedRegion === r.refName)
@@ -97,16 +83,16 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       // region visible, xref #1703
       model.showAllRegions()
     } else {
-      const results = await fetchResults(
-        input.toLocaleLowerCase(),
-      )
-      if (results?.length 1 0) {
+      const results = await fetchResults(input.toLocaleLowerCase())
+      if (results?.length > 1) {
         model.setSearchResults(results, input.toLocaleLowerCase())
       } else {
         if (results.length === 1) {
           input = results[0].getLocation()
           const trackId = results[0].getTrackId()
-          trackId && model.showTrack(trackId)
+          if (trackId) {
+            model.showTrack(trackId)
+          }
         }
         try {
           input && model.navToLocString(input, selectedAsm)
@@ -147,7 +133,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                   model={model}
                   assemblyName={message ? undefined : selectedAsm}
                   value={selectedRegion}
-                  onSelect={option => setSelectedValue(option)}
+                  onSelect={option => setSelectedRegion(option.getLabel())}
                   TextFieldProps={{
                     margin: 'normal',
                     variant: 'outlined',
@@ -157,7 +143,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                       if (event.target.value !== '') {
                         setSelectedRegion(event.target.value)
                       } else {
-                        setSelectedRegion(assemblyRegions[0].refName)
+                        setSelectedRegion(regions[0].refName)
                       }
                     },
                     onKeyPress: event => {

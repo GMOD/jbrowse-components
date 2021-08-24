@@ -68,9 +68,14 @@ export default class BaseResult {
   getScore() {
     return this.score
   }
+
   updateScore(newScore: number) {
     this.score = newScore
     return this.score
+  }
+
+  getId() {
+    return `${this.getLabel()}-${this.getLocation()}-${this.getTrackId()}`
   }
 }
 

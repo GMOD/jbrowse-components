@@ -13,6 +13,7 @@ import {
   TrackViewModel,
   JBrowsePlugin,
   DialogComponentType,
+  TextSearchManager,
 } from '@jbrowse/core/util/types'
 import { getContainingView } from '@jbrowse/core/util'
 import { observable } from 'mobx'
@@ -117,6 +118,9 @@ export default function sessionModelFactory(
       },
       get tracks() {
         return [...self.sessionTracks, ...getParent(self).jbrowse.tracks]
+      },
+      get textSeachManager(): TextSearchManager {
+        return getParent(self).textSeachManager
       },
       get connections() {
         return [
