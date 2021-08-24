@@ -85,9 +85,7 @@ const stateModelFactory = (
       let preAuthInfo: any = {}
       return {
         async useEndpointForAuthorization() {
-          const config = !inWebWorker
-            ? self.accountConfig
-            : preAuthInfo?.authInfo?.configuration
+          const config = self.accountConfig
           const data: OAuthData = {
             client_id: config.clientId,
             redirect_uri: 'http://localhost:3000',
@@ -135,7 +133,7 @@ const stateModelFactory = (
             const electron = require('electron')
             const { BrowserWindow } = electron.remote
 
-            let win = new BrowserWindow({
+            const win = new BrowserWindow({
               width: 1000,
               height: 600,
               webPreferences: {
@@ -161,7 +159,7 @@ const stateModelFactory = (
                   })
                   // @ts-ignore
                   model.finishOAuthWindow(eventFromDesktop)
-                  win = null
+                  win.destroy()
                 }
               },
             )
@@ -239,9 +237,7 @@ const stateModelFactory = (
           }
         },
         async exchangeAuthorizationForAccessToken(token: string) {
-          const config = !inWebWorker
-            ? self.accountConfig
-            : preAuthInfo?.authInfo?.configuration
+          const config = self.accountConfig
           const data = {
             code: token,
             grant_type: 'authorization_code',
@@ -280,9 +276,7 @@ const stateModelFactory = (
           if (foundRefreshToken) {
             // need to set it so
             // checks if it from webworker, and if it is use preauth config info
-            const config = !inWebWorker
-              ? self.accountConfig
-              : preAuthInfo.authInfo.configuration
+            const config = self.accountConfig
             const data = {
               grant_type: 'refresh_token',
               refresh_token: foundRefreshToken,
@@ -448,6 +442,7 @@ const stateModelFactory = (
             let fileUrl
             try {
               fileUrl = await self.fetchFile(location.uri, accessToken)
+              console.log(fileUrl)
               preAuthInfo.authInfo.fileUrl = fileUrl
             } catch (error) {
               await this.handleError(error, retried)

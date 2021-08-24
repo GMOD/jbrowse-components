@@ -10,7 +10,6 @@ import { getBlob } from '../tracks'
 import { isElectron } from '../../util'
 import PluginManager from '../../PluginManager'
 import AuthenticationPlugin from '@jbrowse/plugin-authentication'
-import cloneDeep from 'clone-deep'
 
 function isUriLocation(location: FileLocation): location is UriLocation {
   return 'uri' in location
@@ -56,7 +55,7 @@ export function openLocation(
       if (location.internetAccountId) {
         if (!location.internetAccountPreAuthorization) {
           if (rootModel) {
-            const modifiedLocation = cloneDeep(location)
+            const modifiedLocation = JSON.parse(JSON.stringify(location))
             const internetAccount = rootModel.findAppropriateInternetAccount(
               location,
             )
@@ -73,7 +72,6 @@ export function openLocation(
         } else {
           const pluginManager = new PluginManager([new AuthenticationPlugin()])
           pluginManager.createPluggableElements()
-          console.log(pluginManager)
           const internetAccountType = pluginManager.getInternetAccountType(
             location.internetAccountPreAuthorization.internetAccountType,
           )

@@ -1073,10 +1073,9 @@ export function searchForLocationObjects(obj: { [key: string]: any }): any {
   const locationObjects: { [key: string]: any }[] = []
   for (const property in obj) {
     if (property === 'locationType') {
-      locationObjects.push(obj) // pushing 4 times, check if the subobject has that property, something like if obj[property] === 'locationType
+      locationObjects.push(obj)
     } else if (typeof obj[property] === 'object') {
       if (Array.isArray(obj[property])) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         obj[property].forEach((p: any) => {
           return searchForLocationObjects(p)
         })

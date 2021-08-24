@@ -3,7 +3,6 @@ import PluggableElementBase from './PluggableElementBase'
 import { setBlobMap, getBlobMap } from '../util/tracks'
 import { searchForLocationObjects, replaceInArgs } from '../util'
 import { UriLocation } from '../util/types'
-import cloneDeep from 'clone-deep'
 
 import {
   deserializeAbortSignal,
@@ -26,18 +25,14 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
     const blobMap = getBlobMap()
 
-    // TODOAUTH: cloning is breaking some tests
-    // const modifiedArgs = args
-    const modifiedArgs = cloneDeep(args)
-    const locationObjects = searchForLocationObjects(modifiedArgs)
-
+    const locationObjects = searchForLocationObjects(args)
     for (const i in locationObjects) {
       if (locationObjects[i].hasOwnProperty('internetAccountId')) {
-        await this.serializeNewAuthArguments(modifiedArgs, locationObjects[i])
+        await this.serializeNewAuthArguments(args, locationObjects[i])
       }
     }
 
-    return { ...modifiedArgs, blobMap }
+    return { ...args, blobMap }
   }
 
   async serializeNewAuthArguments(args: {}, location: UriLocation) {

@@ -1171,6 +1171,33 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": "dropboxOAuth",
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox_microarray.bw",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+        "Wiggle",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox_microarray_dropbox-LinearWiggleDisplay",
+          "type": "LinearWiggleDisplay",
+        },
+      ],
+      "name": "wiggle_track xyplot",
+      "trackId": "volvox_microarray_dropbox",
+      "type": "QuantitativeTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bigWigLocation": Object {
           "internetAccountId": undefined,
           "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",

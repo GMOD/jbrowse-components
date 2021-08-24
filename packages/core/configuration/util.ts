@@ -42,7 +42,7 @@ export function readConfObject(
     throw new TypeError('must provide conf object to read')
   }
   if (!slotPath) {
-    return getSnapshot(confObject)
+    return JSON.parse(JSON.stringify(getSnapshot(confObject)))
   }
   if (typeof slotPath === 'string') {
     let slot = confObject[slotPath]
@@ -71,12 +71,12 @@ export function readConfObject(
     if (slot.expr) {
       const appliedFunc = slot.expr.evalSync(args)
       if (isStateTreeNode(appliedFunc)) {
-        return getSnapshot(appliedFunc)
+        return JSON.parse(JSON.stringify(getSnapshot(appliedFunc)))
       }
       return appliedFunc
     }
     if (isStateTreeNode(slot)) {
-      return getSnapshot(slot)
+      return JSON.parse(JSON.stringify(getSnapshot(slot)))
     }
     return slot
   }

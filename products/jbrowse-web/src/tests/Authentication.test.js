@@ -27,15 +27,20 @@ beforeEach(() => {
 
 describe('authentication', () => {
   it('open a bigwig track that needs authentication', async () => {
-    sessionStorage.setItem(`dropboxOAuth-token`, '1234')
+    sessionStorage.setItem('dropboxOAuth-token', '1234')
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findAllByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
+    state.internetAccounts[1].fetchFile = jest
+      .fn()
+      .mockReturnValue('volvox_microarray_dropbox.bw')
     await findByText('Help')
     state.session.views[0].setNewView(5, 0)
-    fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray'))
+    fireEvent.click(
+      await findByTestId('htsTrackEntry-volvox_microarray_dropbox'),
+    )
     const canvas = await findAllByTestId(
       'prerendered_canvas',
       {},
