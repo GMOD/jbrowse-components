@@ -1,32 +1,36 @@
 {
-  "dateCreated": {
-    "created": "17-08-2021"
-  },
+  "dateCreated": "8/24/2021, 11:45:16 AM",
   "tracks": [
     {
-      "ID": "au9_scaffold",
+      "trackId": "au9_scaffold",
       "attributesIndexed": ["Name", "ID", "type"],
-      "excludedTypes": ["CDS", "exon"]
+      "excludedTypes": ["CDS", "exon"],
+      "fileLocation": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3"
     },
     {
-      "ID": "gff3tabix_genes",
+      "trackId": "gff3tabix_genes",
       "attributesIndexed": ["Name", "ID", "type"],
-      "excludedTypes": ["CDS", "exon"]
+      "excludedTypes": ["CDS", "exon"],
+      "fileLocation": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3"
     },
     {
-      "ID": "online_gff3tabix_genes",
+      "trackId": "online_gff3tabix_genes",
       "attributesIndexed": ["Name", "ID", "type"],
-      "excludedTypes": ["CDS", "exon"]
+      "excludedTypes": ["CDS", "exon"],
+      "fileLocation": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3"
     },
     {
-      "ID": "gtfdemo",
+      "trackId": "gtfdemo",
       "attributesIndexed": ["exon_id"],
-      "excludedTypes": ["CDS", "exon"]
+      "excludedTypes": ["CDS", "exon"],
+      "fileLocation": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3"
     },
     {
-      "ID": "online_au9_scaffold",
+      "trackId": "online_au9_scaffold",
       "attributesIndexed": ["Name", "ID", "type"],
-      "excludedTypes": ["CDS", "exon"]
+      "excludedTypes": ["CDS", "exon"],
+      "fileLocation": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3"
     }
-  ]
+  ],
+  "assemblies": ["volvox"]
 }

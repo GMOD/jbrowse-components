@@ -1,45 +1,53 @@
 {
-  "dateCreated": "8/23/2021, 2:20:39 PM",
+  "dateCreated": "8/24/2021, 11:51:26 AM",
   "tracks": [
     {
       "trackId": "volvox_sv_test",
       "attributesIndexed": ["Name", "ID"],
-      "excludedTypes": ["CDS", "exon"]
+      "excludedTypes": ["CDS", "exon"],
+      "fileLocation": "volvox.inv.vcf.gz"
     },
     {
       "trackId": "volvox_sv_test_renamed",
       "attributesIndexed": ["Name", "ID"],
-      "excludedTypes": ["CDS", "exon"]
+      "excludedTypes": ["CDS", "exon"],
+      "fileLocation": "volvox.inv.vcf.gz"
     },
     {
       "trackId": "volvox_test_vcf",
       "attributesIndexed": ["Name", "ID"],
-      "excludedTypes": ["CDS", "exon"]
+      "excludedTypes": ["CDS", "exon"],
+      "fileLocation": "volvox.inv.vcf.gz"
     },
     {
       "trackId": "gff3tabix_genes",
       "attributesIndexed": ["Name", "ID"],
-      "excludedTypes": ["CDS", "exon"]
+      "excludedTypes": ["CDS", "exon"],
+      "fileLocation": "volvox.inv.vcf.gz"
     },
     {
       "trackId": "volvox_filtered_vcf",
       "attributesIndexed": ["Name", "ID"],
-      "excludedTypes": ["CDS", "exon"]
+      "excludedTypes": ["CDS", "exon"],
+      "fileLocation": "volvox.inv.vcf.gz"
     },
     {
       "trackId": "variant_colors",
       "attributesIndexed": ["Name", "ID"],
-      "excludedTypes": ["CDS", "exon"]
+      "excludedTypes": ["CDS", "exon"],
+      "fileLocation": "volvox.inv.vcf.gz"
     },
     {
       "trackId": "single_exon_gene",
       "attributesIndexed": ["Name", "ID"],
-      "excludedTypes": ["CDS", "exon"]
+      "excludedTypes": ["CDS", "exon"],
+      "fileLocation": "volvox.inv.vcf.gz"
     },
     {
       "trackId": "volvox.inv.vcf",
       "attributesIndexed": ["Name", "ID"],
-      "excludedTypes": ["CDS", "exon"]
+      "excludedTypes": ["CDS", "exon"],
+      "fileLocation": "volvox.inv.vcf.gz"
     }
   ],
   "assemblies": ["volvox"]

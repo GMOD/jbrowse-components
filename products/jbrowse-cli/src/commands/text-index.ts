@@ -37,6 +37,7 @@ export default class TextIndex extends JBrowseCommand {
 
     attributes: flags.string({
       description: 'Comma separated list of attributes to index',
+      default: 'Name,ID',
     }),
     assemblies: flags.string({
       char: 'a',
@@ -56,13 +57,9 @@ export default class TextIndex extends JBrowseCommand {
       default: false,
       description: 'If set, creates an index per track',
     }),
-    include: flags.string({
-      description: 'Removes gene type from list of excluded types',
-      default: '',
-    }),
     exclude: flags.string({
       description: 'Adds gene type to list of excluded types',
-      default: '',
+      default: 'CDS,exon',
     }),
   }
 
@@ -79,7 +76,6 @@ export default class TextIndex extends JBrowseCommand {
         attributes,
         quiet,
         force,
-        include,
         exclude,
         perTrack,
       },
@@ -129,7 +125,6 @@ export default class TextIndex extends JBrowseCommand {
           dir,
           trackId, // name of index
           quiet,
-          include?.split(','),
           exclude?.split(','),
           confFile,
           assemblyNames,
@@ -195,7 +190,6 @@ export default class TextIndex extends JBrowseCommand {
           dir,
           asm,
           quiet,
-          include?.split(','),
           exclude?.split(','),
           confFile,
           [asm],
@@ -252,22 +246,21 @@ export default class TextIndex extends JBrowseCommand {
     out: string,
     name: string,
     quiet: boolean,
-    include: string[],
     exclude: string[],
     confFile: string,
     assemblies: string[],
   ) {
     const readable = Readable.from(
-      this.indexFile(configs, attributes, out, quiet, include, exclude),
+      this.indexFile(configs, attributes, out, quiet, exclude),
     )
     const ixIxxStream = await this.runIxIxx(readable, out, name)
+
     await generateMeta(
       configs,
       attributes,
       out,
       name,
       quiet,
-      include,
       exclude,
       confFile,
       assemblies,
@@ -280,7 +273,6 @@ export default class TextIndex extends JBrowseCommand {
     attributesToIndex: string[],
     outLocation: string,
     quiet: boolean,
-    typesToInclude: string[],
     typesToExclude: string[],
   ) {
     for (const config of configs) {
@@ -289,27 +281,10 @@ export default class TextIndex extends JBrowseCommand {
         textSearchConf,
       } = config
 
-      const types: Array<string> = textSearchConf?.indexingFeatureTypesToExclude || [
-        'CDS',
-        'exon',
-      ]
+      const types: Array<string> =
+        textSearchConf?.indexingFeatureTypesToExclude || typesToExclude
 
-      for (const inc of typesToInclude) {
-        const index = types.indexOf(inc)
-        if (index > -1) {
-          types.splice(index, 1)
-        }
-      }
-      for (const exc of typesToExclude) {
-        if (exc.length > 0) {
-          types.push(exc)
-        }
-      }
-
-      const attrs =
-        attributesToIndex.length && attributesToIndex
-          ? attributesToIndex
-          : textSearchConf?.indexingAttributes || ['Name', 'ID']
+      const attrs = textSearchConf?.indexingAttributes || attributesToIndex
 
       if (type === 'Gff3TabixAdapter') {
         yield* indexGff3(config, attrs, outLocation, types, quiet)
