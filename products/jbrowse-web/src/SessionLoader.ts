@@ -7,6 +7,7 @@ import PluginLoader, {
 import { fromUrlSafeB64 } from '@jbrowse/core/util'
 import { readSessionFromDynamo } from './sessionSharing'
 import { openLocation } from '@jbrowse/core/util/io'
+import { when } from '@jbrowse/core/util'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import JBrowseRootModelFactory from './rootModel'
 import shortid from 'shortid'
@@ -412,7 +413,7 @@ export default SessionLoader
 
 export function loadSessionSpec(
   sessionSpec: {
-    views: { type: string; tracks: string[]; assembly: string; loc: string }[]
+    views: { type: string; tracks?: string[]; assembly: string; loc: string }[]
   },
   rootModel: Instance<ReturnType<typeof JBrowseRootModelFactory>>,
 ) {
@@ -421,18 +422,19 @@ export function loadSessionSpec(
     name: `New session ${new Date().toLocaleString()}`,
   })
   const { session } = rootModel
-  return Promise.all(
-    views.map(async view => {
-      const { tracks, type, assembly, loc } = view
-      await rootModel.assemblyManager.waitForAssembly(assembly)
-      if (type === 'LGV' || type === 'LinearGenomeView') {
-        const materialView = session?.addView('LinearGenomeView', {})
-        materialView.setWidth(800)
-        materialView.navToLocString(loc, assembly)
-        tracks?.forEach((track: string) => {
-          materialView.showTrack(track)
-        })
-      }
-    }),
-  )
+  return () =>
+    Promise.all(
+      views.map(async view => {
+        const { tracks, type, assembly, loc } = view
+        if (type === 'LGV' || type === 'LinearGenomeView') {
+          const materialView = session?.addView('LinearGenomeView', {})
+          await when(() => materialView.volatileWidth !== undefined)
+          await rootModel.assemblyManager.waitForAssembly(assembly)
+          materialView.navToLocString(loc, assembly)
+          tracks?.forEach(track => {
+            materialView.showTrack(track)
+          })
+        }
+      }),
+    )
 }

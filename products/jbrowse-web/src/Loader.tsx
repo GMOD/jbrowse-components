@@ -320,6 +320,8 @@ const Renderer = observer(
                 )
               }
 
+              let cb
+
               // in order: saves the previous autosave for recovery, tries to
               // load the local session if session in query, or loads the
               // default session
@@ -352,7 +354,7 @@ const Renderer = observer(
                 }
               } else if (sessionSpec) {
                 try {
-                  await loadSessionSpec(sessionSpec, rootModel)
+                  cb = loadSessionSpec(sessionSpec, rootModel)
                 } catch (e) {
                   console.error(e)
                   rootModel.setDefaultSession()
@@ -379,6 +381,9 @@ const Renderer = observer(
               pluginManager.setRootModel(rootModel)
               pluginManager.configure()
               setPluginManager(pluginManager)
+              if (cb) {
+                cb()
+              }
             }
           }
         } catch (e) {
