@@ -51,6 +51,7 @@ const stateModelFactory = (
           authInfo: {
             authHeader: self.authHeader,
             tokenType: this.tokenType,
+            configuration: self.accountConfig,
           },
         }
       },
