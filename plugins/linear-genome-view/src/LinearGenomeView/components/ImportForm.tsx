@@ -61,16 +61,16 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const selectedRegion = mySelectedRegion || regions[0]?.refName
 
   async function fetchResults(queryString: string) {
-    const results =
-      (await textSearchManager?.search(
-        {
-          queryString: queryString.toLocaleLowerCase(),
-          searchType: 'exact',
-        },
-        searchScope,
-        rankSearchResults,
-      )) || []
-    return results.filter(
+    const results = await textSearchManager?.search(
+      {
+        queryString: queryString.toLocaleLowerCase(),
+        searchType: 'exact',
+      },
+      searchScope,
+      rankSearchResults,
+    )
+
+    return results?.filter(
       (elem, index, self) =>
         index === self.findIndex(t => t.getId() === elem.getId()),
     )
@@ -84,10 +84,10 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       model.showAllRegions()
     } else {
       const results = await fetchResults(input.toLocaleLowerCase())
-      if (results?.length > 1) {
+      if (results && results.length > 1) {
         model.setSearchResults(results, input.toLocaleLowerCase())
       } else {
-        if (results.length === 1) {
+        if (results?.length === 1) {
           input = results[0].getLocation()
           const trackId = results[0].getTrackId()
           if (trackId) {
@@ -111,7 +111,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   return (
     <div>
       {err ? <ErrorDisplay error={err} /> : null}
-
       <Container className={classes.importFormContainer}>
         <Grid container spacing={1} justifyContent="center" alignItems="center">
           <Grid item>
