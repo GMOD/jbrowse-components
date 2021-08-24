@@ -232,12 +232,36 @@ To load a GFF3 file, we can sort and index it with tabix
 Sorting a GFF3 can be done with [GenomeTools](http://genometools.org/) (to
 install can use `sudo apt install genometools`)
 
-```
+```sh-session
 gt gff3 -sortlines -tidy -retainids yourfile.gff > yourfile.sorted.gff
 bgzip yourfile.sorted.gff
 tabix yourfile.sorted.gff.gz
 jbrowse add-track yourfile.sorted.gff.gz --load copy
 ```
+
+## Indexing feature names for searching
+
+The final step of loading you jbrowse instance may include adding a "search
+index" so that you can search by genes or other features by their name or ID
+
+To do this we can use the `jbrowse text-index` command
+
+```sh-session
+jbrowse text-index
+```
+
+This will index relevant track types e.g. any track with Gff3TabixAdapter (gene
+names and IDs) or VcfTabixAdapter (e.g. variant IDs). The command will print
+out a progress bar for each track that it is indexing. It will output files to
+the TMPDIR while indexing to reduce memory usage so if the filesystem with /tmp
+is has low disk space you can set an alternative temporary directory using the
+environment variable `TMPDIR=~/alt_tmp_dir/ jbrowse text-index`
+
+After this command is run, you can type a gene name into the "search box" in
+the linear genome view or other views and quickly navigate to genes by gene
+name.
+
+See the [text-index](cli#text-index) command docs for more info
 
 ## Conclusion
 

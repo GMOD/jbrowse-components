@@ -433,9 +433,9 @@ OPTIONS
 
   --force                      Overwrite previously existing indexes
 
-  --include=include            Removes gene type from list of excluded types
-
   --out=out                    Synonym for target
+
+  --perTrack                   If set, creates an index per track
 
   --target=target              Path to config file in JB2 installation directory to read from.
 

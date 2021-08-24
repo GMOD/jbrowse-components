@@ -242,7 +242,13 @@ function readText(d: string, s: string) {
   return fs.readFileSync(path.join(d, 'trix', s), 'utf8')
 }
 function readJSON(d: string, s: string) {
-  return JSON.parse(readText(d, s))
+  return JSON.parse(readText(d, s), function (key, value) {
+    if (key === 'dateCreated') {
+      return 'test'
+    } else {
+      return value
+    }
+  })
 }
 
 describe('check that volvox data is properly indexed, re-run text-index on volvox config if fails', () => {
