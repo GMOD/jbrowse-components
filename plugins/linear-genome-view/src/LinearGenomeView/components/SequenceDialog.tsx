@@ -127,29 +127,27 @@ function SequenceDialog({
             controller.signal,
           )
           if (active) {
-            const seq = formatSeqFasta(
-              chunks
-                .filter(f => !!f)
-                .map(chunk => {
-                  const chunkSeq = chunk.get('seq')
-                  const chunkRefName = chunk.get('refName')
-                  const chunkStart = chunk.get('start') + 1
-                  const chunkEnd = chunk.get('end')
-                  const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
-                  if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
-                    throw new Error(
-                      `${chunkLocstring} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
-                        chunkEnd - chunkStart
-                      ).toLocaleString()}`,
-                    )
-                  }
-                  return { header: chunkLocstring, seq: chunkSeq }
-                }),
+            setSequence(
+              formatSeqFasta(
+                chunks
+                  .filter(f => !!f)
+                  .map(chunk => {
+                    const chunkSeq = chunk.get('seq')
+                    const chunkRefName = chunk.get('refName')
+                    const chunkStart = chunk.get('start') + 1
+                    const chunkEnd = chunk.get('end')
+                    const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
+                    if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
+                      throw new Error(
+                        `${chunkLocstring} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
+                          chunkEnd - chunkStart
+                        ).toLocaleString()}`,
+                      )
+                    }
+                    return { header: chunkLocstring, seq: chunkSeq }
+                  }),
+              ),
             )
-            if (!seq) {
-              throw new Error('No sequence found')
-            }
-            setSequence(seq)
           }
         } else {
           throw new Error('Selected region is out of bounds')
