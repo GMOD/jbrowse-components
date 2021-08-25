@@ -5,16 +5,19 @@ import {
   FormControl,
   Grid,
   IconButton,
-  InputLabel,
   Link,
-  MenuItem,
-  Select,
   Typography,
   makeStyles,
+  List,
 } from '@material-ui/core'
 import { DataGrid, GridCellParams } from '@material-ui/data-grid'
+import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab'
+
 import DeleteIcon from '@material-ui/icons/Delete'
 import EditIcon from '@material-ui/icons/Edit'
+import ViewComfyIcon from '@material-ui/icons/ViewComfy'
+import ListIcon from '@material-ui/icons/List'
+
 import RecentSessionCard from '@jbrowse/core/ui/RecentSessionCard'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ipcRenderer } from 'electron'
@@ -25,8 +28,7 @@ const useStyles = makeStyles(theme => ({
     cursor: 'pointer',
   },
   formControl: {
-    margin: theme.spacing(1),
-    minWidth: 120,
+    margin: theme.spacing(2),
   },
 
   header: {
@@ -204,26 +206,28 @@ export default function RecentSessionPanel({
         Recent sessions
       </Typography>
       <FormControl className={classes.formControl}>
-        <InputLabel htmlFor="myselect">Display mode</InputLabel>
-        <Select
-          id="myselect"
+        <ToggleButtonGroup
+          exclusive
           value={displayMode}
-          onChange={event => setDisplayMode(event.target.value as string)}
+          onChange={(_, newVal) => setDisplayMode(newVal)}
         >
-          <MenuItem value={'grid'}>Cards</MenuItem>
-          <MenuItem value={'table'}>Table</MenuItem>
-        </Select>
+          <ToggleButton value={'grid'}>
+            <ViewComfyIcon />
+          </ToggleButton>
+          <ToggleButton value={'table'}>
+            <ListIcon />
+          </ToggleButton>
+        </ToggleButtonGroup>
       </FormControl>
       <FormControl className={classes.formControl}>
-        <InputLabel htmlFor="mydate">Date display mode</InputLabel>
-        <Select
-          id="mydate"
+        <ToggleButtonGroup
+          exclusive
           value={dateMode}
-          onChange={event => setDateMode(event.target.value as string)}
+          onChange={(_, newVal) => setDateMode(newVal)}
         >
-          <MenuItem value={'datestring'}>Date string</MenuItem>
-          <MenuItem value={'timeago'}>Time ago</MenuItem>
-        </Select>
+          <ToggleButton value={'datestring'}>Date string</ToggleButton>
+          <ToggleButton value={'timeago'}>Time ago</ToggleButton>
+        </ToggleButtonGroup>
       </FormControl>
       {sortedSessions.length ? (
         displayMode === 'grid' ? (
