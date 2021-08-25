@@ -1,10 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { observer } from 'mobx-react'
-import { saveAs } from 'file-saver'
-import { Region } from '@jbrowse/core/util/types'
-import { readConfObject } from '@jbrowse/core/configuration'
-import copy from 'copy-to-clipboard'
-import { makeStyles } from '@material-ui/core/styles'
+
 import {
   Button,
   CircularProgress,
@@ -17,7 +12,13 @@ import {
   Divider,
   IconButton,
   TextField,
+  makeStyles,
 } from '@material-ui/core'
+import { observer } from 'mobx-react'
+import { saveAs } from 'file-saver'
+import { Region } from '@jbrowse/core/util/types'
+import { readConfObject } from '@jbrowse/core/configuration'
+import copy from 'copy-to-clipboard'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import CloseIcon from '@material-ui/icons/Close'
 import GetAppIcon from '@material-ui/icons/GetApp'
@@ -44,12 +45,14 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+type LGV = LinearGenomeViewModel
+
 /**
  * Fetches and returns a list features for a given list of regions
  */
 async function fetchSequence(
-  model: LinearGenomeViewModel,
-  selectedRegions: Region[],
+  model: LGV,
+  regions: Region[],
   signal?: AbortSignal,
 ) {
   const session = getSession(model)
@@ -75,7 +78,7 @@ async function fetchSequence(
 
   const sessionId = 'getSequence'
   const chunks = (await Promise.all(
-    selectedRegions.map(region =>
+    regions.map(region =>
       rpcManager.call(sessionId, 'CoreGetFeatures', {
         adapterConfig,
         region,
@@ -99,8 +102,8 @@ function SequenceDialog({
   const classes = useStyles()
   const session = getSession(model)
   const [error, setError] = useState<Error>()
-  const [sequence, setSequence] = useState('')
-  const loading = Boolean(!sequence) || Boolean(error)
+  const [sequence, setSequence] = useState<string>()
+  const loading = Boolean(sequence === undefined)
   const { leftOffset, rightOffset } = model
 
   // avoid infinite looping of useEffect
@@ -115,26 +118,6 @@ function SequenceDialog({
     let active = true
     const controller = new AbortController()
 
-    function formatSequence(seqChunks: Feature[]) {
-      return formatSeqFasta(
-        seqChunks.map(chunk => {
-          const chunkSeq = chunk.get('seq')
-          const chunkRefName = chunk.get('refName')
-          const chunkStart = chunk.get('start') + 1
-          const chunkEnd = chunk.get('end')
-          const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
-          if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
-            throw new Error(
-              `${chunkLocstring} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
-                chunkEnd - chunkStart
-              ).toLocaleString()}`,
-            )
-          }
-          return { header: chunkLocstring, seq: chunkSeq }
-        }),
-      )
-    }
-
     ;(async () => {
       try {
         if (regionsSelected.length > 0) {
@@ -144,7 +127,29 @@ function SequenceDialog({
             controller.signal,
           )
           if (active) {
-            setSequence(formatSequence(chunks))
+            const seq = formatSeqFasta(
+              chunks
+                .filter(f => !!f)
+                .map(chunk => {
+                  const chunkSeq = chunk.get('seq')
+                  const chunkRefName = chunk.get('refName')
+                  const chunkStart = chunk.get('start') + 1
+                  const chunkEnd = chunk.get('end')
+                  const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
+                  if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
+                    throw new Error(
+                      `${chunkLocstring} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
+                        chunkEnd - chunkStart
+                      ).toLocaleString()}`,
+                    )
+                  }
+                  return { header: chunkLocstring, seq: chunkSeq }
+                }),
+            )
+            if (!seq) {
+              throw new Error('No sequence found')
+            }
+            setSequence(seq)
           }
         } else {
           throw new Error('Selected region is out of bounds')
@@ -163,7 +168,7 @@ function SequenceDialog({
     }
   }, [model, session, regionsSelected, setSequence])
 
-  const sequenceTooLarge = sequence.length > 1_000_000
+  const sequenceTooLarge = sequence ? sequence.length > 1_000_000 : false
 
   return (
     <Dialog
@@ -205,28 +210,26 @@ function SequenceDialog({
             />
           </Container>
         ) : null}
-        {sequence !== undefined ? (
-          <TextField
-            data-testid="rubberband-sequence"
-            variant="outlined"
-            multiline
-            rows={5}
-            disabled={sequenceTooLarge}
-            className={classes.dialogContent}
-            fullWidth
-            value={
-              sequenceTooLarge
-                ? 'Reference sequence too large to display, use the download FASTA button'
-                : sequence
-            }
-            InputProps={{
-              readOnly: true,
-              classes: {
-                input: classes.textAreaFont,
-              },
-            }}
-          />
-        ) : null}
+        <TextField
+          data-testid="rubberband-sequence"
+          variant="outlined"
+          multiline
+          rows={5}
+          disabled={sequenceTooLarge}
+          className={classes.dialogContent}
+          fullWidth
+          value={
+            sequenceTooLarge
+              ? 'Reference sequence too large to display, use the download FASTA button'
+              : sequence
+          }
+          InputProps={{
+            readOnly: true,
+            classes: {
+              input: classes.textAreaFont,
+            },
+          }}
+        />
       </DialogContent>
       <DialogActions>
         <Button
@@ -234,7 +237,7 @@ function SequenceDialog({
             copy(sequence || '')
             session.notify('Copied to clipboard', 'success')
           }}
-          disabled={loading || sequenceTooLarge}
+          disabled={loading || !!error || sequenceTooLarge}
           color="primary"
           startIcon={<ContentCopyIcon />}
         >
@@ -247,7 +250,7 @@ function SequenceDialog({
             })
             saveAs(seqFastaFile, 'jbrowse_ref_seq.fa')
           }}
-          disabled={loading}
+          disabled={loading || !!error}
           color="primary"
           startIcon={<GetAppIcon />}
         >
