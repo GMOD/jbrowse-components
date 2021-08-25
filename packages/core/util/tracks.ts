@@ -1,8 +1,9 @@
 import { getParent, isRoot, IAnyStateTreeNode } from 'mobx-state-tree'
-import { objectHash } from './index'
+import { getSession, objectHash } from './index'
 import { PreFileLocation, FileLocation } from './types'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { readConfObject } from '../configuration'
+import { getEnv } from 'mobx-state-tree'
 
 /* utility functions for use by track models and so forth */
 
@@ -120,6 +121,34 @@ export function guessAdapter(
   ) {
     return name?.toUpperCase().endsWith(typeA) ? typeA : typeB
   }
+
+  // order of operations:
+  // user enters in their file, either from a url or from local
+  // user presses next
+  // system uses the file's name structure (i.e. does it have an extension) and iterates through all of the adapter guesses
+  //    to see if any of them match with the extension
+  // if yes, guess that adapter by returning its coordinating 'track guess' config
+  // if no, allow the user to select whatever adapter they want
+
+  // break up plugin-associated adapters in the dropdown menu
+  const session = getSession(model) // how do i do this here
+
+  const adapter = getEnv(session)
+    .pluginManager.getElementTypesInGroup('adapter guess')
+    .find((adapter: any) => {
+      adapter.regexGuess.test(fileName) || adapterHint === adapter.name
+    })
+
+  if (adapter) {
+    return adapter.fetchConfig(fileName, index, indexName) // index indexName
+  } else {
+    return {
+      type: UNKNOWN,
+    }
+  }
+
+  {
+    /**
 
   if (/\.bam$/i.test(fileName) || adapterHint === 'BamAdapter') {
     return {
@@ -287,6 +316,9 @@ export function guessAdapter(
 
   return {
     type: UNKNOWN,
+  }
+
+*/
   }
 }
 

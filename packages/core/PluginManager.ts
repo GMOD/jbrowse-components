@@ -17,6 +17,7 @@ import WidgetType from './pluggableElementTypes/WidgetType'
 import ConnectionType from './pluggableElementTypes/ConnectionType'
 import RpcMethodType from './pluggableElementTypes/RpcMethodType'
 import TextSearchAdapterType from './pluggableElementTypes/TextSearchAdapterType'
+import AdapterGuessType from './pluggableElementTypes/AdapterGuessType'
 
 import {
   ConfigurationSchema,
@@ -79,6 +80,7 @@ type PluggableElementTypeGroup =
   | 'widget'
   | 'rpc method'
   | 'text search adapter'
+  | 'adapter guess'
 
 /** internal class that holds the info for a certain element type */
 class TypeRecord<ElementClass extends PluggableElementBase> {
@@ -168,6 +170,7 @@ export default class PluginManager {
     'view',
     'widget',
     'rpc method',
+    'adapter guess',
   )
 
   rendererTypes = new TypeRecord('RendererType', RendererType)
@@ -584,5 +587,11 @@ export default class PluginManager {
       }
     }
     return accumulator
+  }
+
+  registerAdapterGuess(
+    creationCallback: (pluginManager: PluginManager) => AdapterGuessType,
+  ): this {
+    return this.addElementType('adapter guess', creationCallback)
   }
 }
