@@ -183,6 +183,7 @@ export default function StartScreen({
           onClick={async () => {
             try {
               await ipcRenderer.invoke('reset')
+              setUpdateSessionsList(true)
             } catch (e) {
               setError(e)
               console.error(e)
