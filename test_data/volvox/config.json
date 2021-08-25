@@ -615,6 +615,36 @@
     },
     {
       "type": "QuantitativeTrack",
+      "trackId": "volvox_microarray_externaltoken",
+      "name": "wiggle_track xyplot",
+      "category": ["Integration test", "Wiggle"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "volvox_microarray.bw",
+          "locationType": "UriLocation",
+          "internetAccountId": "ExternalTokenTest"
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "volvox_microarray_httpbasic",
+      "name": "wiggle_track xyplot",
+      "category": ["Integration test", "Wiggle"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "volvox_microarray.bw",
+          "locationType": "UriLocation",
+          "internetAccountId": "HTTPBasicTest"
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_line",
       "name": "wiggle_track lineplot",
       "category": ["Integration test", "Wiggle"],
@@ -1564,18 +1594,6 @@
   },
   "internetAccounts": [
     {
-      "type": "GoogleDriveOAuthInternetAccount",
-      "internetAccountId": "googleOAuth",
-      "name": "Google",
-      "description": "OAuth Info for Google Drive",
-      "authEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
-      "needsAuthorization": true,
-      "clientId": "20156747540-bes2tq75790efrskmb5pa3hupujgenb2.apps.googleusercontent.com",
-      "scopes": "https://www.googleapis.com/auth/drive.readonly",
-      "responseType": "token",
-      "validDomains": ["drive.google.com"]
-    },
-    {
       "type": "DropboxOAuthInternetAccount",
       "internetAccountId": "dropboxOAuth",
       "name": "Dropbox",
@@ -1597,11 +1615,35 @@
       ]
     },
     {
+      "type": "GoogleDriveOAuthInternetAccount",
+      "internetAccountId": "googleOAuth",
+      "name": "Google",
+      "description": "OAuth Info for Google Drive",
+      "authEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
+      "needsAuthorization": true,
+      "clientId": "20156747540-bes2tq75790efrskmb5pa3hupujgenb2.apps.googleusercontent.com",
+      "scopes": "https://www.googleapis.com/auth/drive.readonly",
+      "responseType": "token",
+      "validDomains": ["drive.google.com"]
+    },
+    {
+      "type": "GoogleDriveOAuthInternetAccount",
+      "internetAccountId": "googleOAuth2",
+      "name": "Google2",
+      "description": "OAuth Info for Google Drive2",
+      "authEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
+      "needsAuthorization": true,
+      "clientId": "109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com",
+      "scopes": "https://www.googleapis.com/auth/drive.readonly",
+      "responseType": "token",
+      "validDomains": ["drive.google.com"]
+    },
+    {
       "type": "ExternalTokenInternetAccount",
-      "internetAccountId": "GDCExternalToken",
-      "name": "GDC",
-      "description": "GDC External Token",
-      "validDomains": ["portal.gdc.cancer.gov", "api.gdc.cancer.gov"],
+      "internetAccountId": "ExternalTokenTest",
+      "name": "External token",
+      "description": "External Token for testing",
+      "validDomains": ["externaltoken.com"],
       "authHeader": "X-Auth-Token",
       "customEndpoint": "http://localhost:8010/proxy"
     },

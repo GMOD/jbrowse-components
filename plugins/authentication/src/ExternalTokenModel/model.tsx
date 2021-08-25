@@ -234,13 +234,14 @@ const ExternalTokenEntryForm = ({
 
   return (
     <>
-      <Dialog open maxWidth="xl" data-testid="login-httpbasic">
+      <Dialog open maxWidth="xl" data-testid="externalToken-form">
         <DialogTitle>Enter Token for {internetAccountId}</DialogTitle>
         <DialogContent style={{ display: 'flex', flexDirection: 'column' }}>
           <TextField
             required
             label="Enter Token"
             variant="outlined"
+            inputProps={{ 'data-testid': 'entry-externalToken' }}
             onChange={event => {
               setToken(event.target.value)
             }}

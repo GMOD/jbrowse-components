@@ -26,14 +26,14 @@ beforeEach(() => {
 })
 
 describe('authentication', () => {
-  it('open a bigwig track that needs authentication', async () => {
-    sessionStorage.setItem('dropboxOAuth-token', '1234')
+  it('open a bigwig track that needs oauth authentication and has existing token', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findAllByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
-    state.internetAccounts[1].fetchFile = jest
+    sessionStorage.setItem('dropboxOAuth-token', '1234')
+    state.internetAccounts[0].fetchFile = jest
       .fn()
       .mockReturnValue('volvox_microarray_dropbox.bw')
     await findByText('Help')
@@ -56,4 +56,80 @@ describe('authentication', () => {
       failureThresholdType: 'percent',
     })
   }, 15000)
+
+  it('opens a bigwig track that needs external token authentication', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findAllByTestId, findByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    state.session.views[0].setNewView(5, 0)
+    fireEvent.click(
+      await findByTestId('htsTrackEntry-volvox_microarray_externaltoken'),
+    )
+    await findByTestId('externalToken-form')
+    fireEvent.change(await findByTestId('entry-externalToken'), {
+      target: { value: 'testentry' },
+    })
+    fireEvent.click(await findByText('Add'))
+
+    expect(Object.keys(sessionStorage)).toContain('ExternalTokenTest-token')
+    expect(Object.values(sessionStorage)).toContain('testentry')
+
+    const canvas = await findAllByTestId(
+      'prerendered_canvas',
+      {},
+      {
+        timeout: 10000,
+      },
+    )
+    const bigwigImg = canvas[0].toDataURL()
+    const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
+    const bigwigBuf = Buffer.from(bigwigData, 'base64')
+    expect(bigwigBuf).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    })
+  })
+
+  it('opens a bigwig track that needs httpbasic authentication', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findAllByTestId, findByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    // state.internetAccounts[1].fetchFile = jest
+    //   .fn()
+    //   .mockReturnValue('volvox_microarray_dropbox.bw')
+    state.session.views[0].setNewView(5, 0)
+    fireEvent.click(
+      await findByTestId('htsTrackEntry-volvox_microarray_httpbasic'),
+    )
+    await findByTestId('login-httpbasic')
+    fireEvent.change(await findByTestId('login-httpbasic-username'), {
+      target: { value: 'username' },
+    })
+    fireEvent.change(await findByTestId('login-httpbasic-password'), {
+      target: { value: 'password' },
+    })
+    fireEvent.click(await findByText('Submit'))
+
+    expect(Object.keys(sessionStorage)).toContain('HTTPBasicTest-token')
+    expect(Object.values(sessionStorage)).toContain(btoa(`username:password`))
+
+    const canvas = await findAllByTestId(
+      'prerendered_canvas',
+      {},
+      {
+        timeout: 10000,
+      },
+    )
+    const bigwigImg = canvas[0].toDataURL()
+    const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
+    const bigwigBuf = Buffer.from(bigwigData, 'base64')
+    expect(bigwigBuf).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    })
+  })
 })

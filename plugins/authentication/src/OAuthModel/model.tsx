@@ -201,14 +201,18 @@ const stateModelFactory = (
               : null)
 
           if (!token) {
-            if (!openLocationPromise) {
-              openLocationPromise = new Promise(async (r, x) => {
-                this.addMessageChannel()
-                this.useEndpointForAuthorization()
-                resolve = r
-                reject = x
-              })
-              token = await openLocationPromise
+            if (refreshToken) {
+              token = await this.exchangeRefreshForAccessToken()
+            } else {
+              if (!openLocationPromise) {
+                openLocationPromise = new Promise(async (r, x) => {
+                  this.addMessageChannel()
+                  this.useEndpointForAuthorization()
+                  resolve = r
+                  reject = x
+                })
+                token = await openLocationPromise
+              }
             }
           }
 
@@ -386,6 +390,7 @@ const stateModelFactory = (
             if (!fileUrl) {
               try {
                 fileUrl = await self.fetchFile(String(url), foundToken)
+                console.log(fileUrl)
               } catch (e) {
                 await this.handleError(e)
               }
@@ -442,7 +447,6 @@ const stateModelFactory = (
             let fileUrl
             try {
               fileUrl = await self.fetchFile(location.uri, accessToken)
-              console.log(fileUrl)
               preAuthInfo.authInfo.fileUrl = fileUrl
             } catch (error) {
               await this.handleError(error, retried)
