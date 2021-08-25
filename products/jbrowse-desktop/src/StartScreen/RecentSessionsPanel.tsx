@@ -8,7 +8,6 @@ import {
   Link,
   Typography,
   makeStyles,
-  List,
 } from '@material-ui/core'
 import { DataGrid, GridCellParams } from '@material-ui/data-grid'
 import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab'

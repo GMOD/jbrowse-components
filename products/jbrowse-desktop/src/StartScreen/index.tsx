@@ -78,7 +78,7 @@ export default function StartScreen({
   setPluginManager: (arg: PluginManager) => void
 }) {
   const classes = useStyles()
-  const [sessions, setSessions] = useState<Record<string, SessionStats>>()
+  const [sessions, setSessions] = useState<Map<string, SessionStats>>()
   const [sessionToDelete, setSessionToDelete] = useState<string>()
   const [sessionToRename, setSessionToRename] = useState<string>()
   const [updateSessionsList, setUpdateSessionsList] = useState(true)
@@ -87,18 +87,19 @@ export default function StartScreen({
 
   const sessionNames = useMemo(() => Object.keys(sessions || {}), [sessions])
 
-  const sortedSessions = useMemo(
-    () =>
-      Object.entries(sessions || {}).sort((a, b) => getTime(b) - getTime(a)),
-    [sessions],
-  )
+  const sortedSessions = useMemo(() => {
+    return sessions
+      ? [...sessions.entries()].sort((a, b) => getTime(b) - getTime(a))
+      : []
+  }, [sessions])
 
   useEffect(() => {
     ;(async () => {
       try {
         if (updateSessionsList) {
+          const sessions = await ipcRenderer.invoke('listSessions')
           setUpdateSessionsList(false)
-          setSessions(await ipcRenderer.invoke('listSessions'))
+          setSessions(sessions)
         }
       } catch (e) {
         setError(e)

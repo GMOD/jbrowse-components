@@ -6,7 +6,7 @@ import fs from 'fs'
 import path from 'path'
 import url from 'url'
 
-const { unlink, rename, readdir, readFile, writeFile, stat } = fs.promises
+const { unlink, rename, readdir, readFile, writeFile } = fs.promises
 
 const { app, ipcMain, shell, BrowserWindow, Menu } = electron
 
@@ -193,54 +193,33 @@ app.on('activate', () => {
 })
 
 ipcMain.handle('listSessions', async () => {
-  try {
-    const sessionFiles = await readdir(sessionDir)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const sessionFilesData = [] as any
-    for (const sessionFile of sessionFiles) {
-      if (path.extname(sessionFile) === '.thumbnail') {
-        sessionFilesData.push(
-          readFile(path.join(sessionDir, sessionFile), 'utf8'),
-        )
-      } else {
-        sessionFilesData.push(stat(path.join(sessionDir, sessionFile)))
-      }
-    }
-    const data = await Promise.all(sessionFilesData)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const sessions = {} as { [key: string]: any }
-    sessionFiles.forEach((sessionFile, idx) => {
-      const ext = path.extname(sessionFile)
-      const basename = path.basename(sessionFile, ext)
-      if (ext === '.thumbnail') {
-        const sessionName = decodeURIComponent(basename)
-        if (!sessions[sessionName]) {
-          sessions[sessionName] = {}
-        }
-        sessions[sessionName].screenshot = data[idx]
-      } else if (ext === '.json') {
-        const sessionName = decodeURIComponent(basename)
-        if (!sessions[sessionName]) {
-          sessions[sessionName] = {}
-        }
-        sessions[sessionName].stats = data[idx]
-      }
-    })
-    return sessions
-  } catch (error) {
-    if (error.code === 'ENOENT' || error.code === 'ENOTDIR') {
-      return []
-    }
-    throw error
-  }
+  return new Map(
+    (await readdir(sessionDir))
+      .filter(f => path.extname(f) === '.json')
+      .map(f => {
+        const base = path.basename(f, '.json')
+        const json = path.join(sessionDir, base + '.json')
+        const thumb = path.join(sessionDir, base + '.thumbnail')
+
+        return [
+          decodeURIComponent(base),
+          {
+            stats: fs.existsSync(json) ? fs.statSync(json) : undefined,
+            screenshot: fs.existsSync(thumb)
+              ? fs.readFileSync(thumb)
+              : undefined,
+          },
+        ]
+      }),
+  )
 })
 
-ipcMain.handle('loadExternalConfig', async (_event: unknown, sessionPath) => {
-  return readFile(sessionPath, 'utf8')
-})
-ipcMain.handle('loadSession', async (_event: unknown, sessionName: string) => {
-  return readFile(getPath(sessionName), 'utf8')
-})
+ipcMain.handle('loadExternalConfig', (_event: unknown, sessionPath) =>
+  readFile(sessionPath, 'utf8'),
+)
+ipcMain.handle('loadSession', (_event: unknown, sessionName: string) =>
+  readFile(getPath(sessionName), 'utf8'),
+)
 
 ipcMain.on('saveSession', async (_event: unknown, snap: SessionSnap) => {
   const page = await mainWindow?.capturePage()
