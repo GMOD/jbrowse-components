@@ -150,6 +150,10 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
     return <UnknownAdapterPrompt model={model} />
   }
 
+  if (adapterHint === '') {
+    model.setAdapterHint(trackAdapter.type)
+  }
+
   if (!trackAdapter?.type) {
     return <Typography>Could not recognize this data type.</Typography>
   }

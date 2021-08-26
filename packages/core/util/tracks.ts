@@ -106,14 +106,6 @@ export function guessAdapter(
   const fileName = getFileName(file)
   const indexName = index && getFileName(index)
 
-  // order of operations:
-  // user enters in their file, either from a url or from local
-  // user presses next
-  // system uses the file's name structure (i.e. does it have an extension) and iterates through all of the adapter guesses
-  //    to see if any of them match with the extension
-  // if yes, guess that adapter by returning its coordinating 'track guess' config
-  // if no, allow the user to select whatever adapter they want
-
   // break up plugin-associated adapters in the dropdown menu
   if (model) {
     const session = getSession(model)
@@ -121,13 +113,16 @@ export function guessAdapter(
     const adapter = getEnv(session)
       .pluginManager.getElementTypesInGroup('adapter guess')
       .find((adapter: any) => {
-        if (adapter.regexGuess.test(fileName) || adapterHint === adapter.name) {
+        if (
+          (adapter.regexGuess && adapter.regexGuess.test(fileName)) ||
+          adapterHint === adapter.name
+        ) {
           return adapter
         }
       })
 
     if (adapter) {
-      return adapter.fetchConfig(fileName, index, indexName)
+      return adapter.fetchConfig(file, index, indexName)
     }
   }
 

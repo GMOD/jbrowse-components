@@ -7,6 +7,7 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
+import { FileLocation } from '@jbrowse/core/util/types'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
@@ -151,14 +152,18 @@ export default class AlignmentsPlugin extends Plugin {
         new AdapterGuessType({
           name: 'BamAdapter',
           regexGuess: /\.bam$/i,
-          fetchConfig: (file: any, index: any, indexName: string) => {
+          fetchConfig: (
+            file: FileLocation,
+            index: FileLocation,
+            indexName: string,
+          ) => {
             return {
               type: 'BamAdapter',
               bamLocation: file,
-              // index: {
-              //   location: index || makeIndex(file, '.bai'),
-              //   indexType: makeIndexType(indexName, 'CSI', 'BAI'),
-              // },
+              index: {
+                location: index || makeIndex(file, '.bai'),
+                indexType: makeIndexType(indexName, 'CSI', 'BAI'),
+              },
             }
           },
         }),

@@ -1,11 +1,13 @@
 import { lazy } from 'react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import AdapterGuessType from '@jbrowse/core/pluggableElementTypes/AdapterGuessType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
+import { FileLocation } from '@jbrowse/core/util/types'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
@@ -45,6 +47,19 @@ export default class VariantsPlugin extends Plugin {
           configSchema: vcfAdapterConfigSchema,
           getAdapterClass: () =>
             import('./VcfAdapter/VcfAdapter').then(r => r.default),
+        }),
+    )
+
+    pluginManager.registerAdapterGuess(
+      () =>
+        new AdapterGuessType({
+          name: 'VcfAdapter',
+          fetchConfig: (file: FileLocation) => {
+            return {
+              type: 'VcfAdapter',
+              vcfLocation: file,
+            }
+          },
         }),
     )
 
