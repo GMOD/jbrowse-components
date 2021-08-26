@@ -1,0 +1,12 @@
+{
+  "dateCreated": "8/26/2021, 11:36:35 AM",
+  "tracks": [
+    {
+      "trackId": "gff3tabix_genes",
+      "attributesIndexed": ["Name", "ID"],
+      "excludedTypes": ["CDS", "exon"],
+      "fileLocation": "volvox.sort.gff3.gz"
+    }
+  ],
+  "assemblies": ["volvox"]
+}
