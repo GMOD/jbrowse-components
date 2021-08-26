@@ -2,6 +2,7 @@
 import React, { useRef, useState, useEffect } from 'react'
 import { Button, Select, MenuItem, Typography } from '@material-ui/core'
 import { useInView } from 'react-intersection-observer'
+import { makeStyles } from '@material-ui/core/styles'
 import copy from 'copy-to-clipboard'
 import {
   defaultCodonTable,
@@ -21,6 +22,42 @@ interface Feat {
 interface ParentFeat extends Feat {
   strand?: number
   subfeatures?: Feat[]
+}
+
+/**
+ * Copy value to the clipboard
+ * Based on https://github.com/sudodoki/copy-to-clipboard/issues/112#issuecomment-897097948 answer
+ * with additionnal support for clipboard API, but
+ * will fallback to execCommand if needed.
+ * Still use copy-to-clipboard for HTML copy
+ * @param value- the value to save in clipboard
+ * @param html- should it be saved as html
+ * @returns nothing, just used to break early
+ */
+const copyToClipboard = (value: string | null, html = false) => {
+  if (value === null || value === undefined) {
+    return
+  }
+  // Use copy-to-clipboard to keep colors, wasn't able to do it reliably
+  // with native API
+  if (html) {
+    copy(value, { format: 'text/html' })
+    return
+  }
+  // Use native API, as they don't have the problem of copied text not
+  // being available
+  if (navigator.clipboard) {
+    // Use more recent but less supported Clipboard API
+    navigator.clipboard.writeText(value)
+  } else {
+    // Fallback to the deprecated execCommand() API for compatibility
+    const input = document.createElement('textarea')
+    document.body.appendChild(input)
+    input.value = value
+    input.select()
+    document.execCommand('copy')
+    document.body.removeChild(input)
+  }
 }
 
 function stitch(subfeats: Feat[], sequence: string) {
@@ -279,6 +316,18 @@ export const SequencePanel = React.forwardRef<
   )
 })
 
+const useStyles = makeStyles(() => ({
+  SequenceFeatureDetailsContainer: {
+    display: 'flex',
+    justifyContent: 'flex-start',
+  },
+  SequenceFeatureCopyButton: {
+    margin: '3px',
+    padding: '2px inherit',
+    lineHeight: 1.3,
+  },
+}))
+
 // display the stitched-together sequence of a gene's CDS, cDNA, or protein
 // sequence. this is a best effort and weird genomic phenomena could lead these
 // to not be 100% accurate
@@ -297,6 +346,7 @@ export default function SequenceFeatureDetails(props: BaseProps) {
   const [error, setError] = useState<string>()
   const [mode, setMode] = useState(hasCDS ? 'cds' : 'cdna')
   const [copied, setCopied] = useState(false)
+  const [copiedHtml, setCopiedHtml] = useState(false)
 
   useEffect(() => {
     let finished = false
@@ -358,41 +408,62 @@ export default function SequenceFeatureDetails(props: BaseProps) {
 
   const loading = !sequence
 
+  const classes = useStyles()
+
   return (
     <div ref={ref}>
-      <Select
-        value={mode}
-        onChange={event => setMode(event.target.value as string)}
-      >
-        {hasCDS ? <MenuItem value="cds">CDS</MenuItem> : null}
-        {hasCDS ? <MenuItem value="protein">Protein</MenuItem> : null}
-        <MenuItem value="gene">Gene w/ introns</MenuItem>
-        <MenuItem value="gene_collapsed_intron">
-          Gene w/ 10bp of intron
-        </MenuItem>
-        <MenuItem value="gene_updownstream">
-          Gene w/ 500bp up+down stream
-        </MenuItem>
-        <MenuItem value="gene_updownstream_collapsed_intron">
-          Gene w/ 500bp up+down stream w/ 10bp intron
-        </MenuItem>
-        <MenuItem value="cdna">cDNA</MenuItem>
-      </Select>
-      <Button
-        type="button"
-        variant="contained"
-        onClick={() => {
-          if (seqPanelRef.current) {
-            copy(seqPanelRef.current.innerHTML, { format: 'text/html' })
-            setCopied(true)
-            setTimeout(() => {
-              setCopied(false)
-            }, 1000)
-          }
-        }}
-      >
-        {copied ? 'Copied to clipboard!' : 'Copy'}
-      </Button>
+      <div className={classes.SequenceFeatureDetailsContainer}>
+        <Select
+          value={mode}
+          onChange={event => setMode(event.target.value as string)}
+        >
+          {hasCDS ? <MenuItem value="cds">CDS</MenuItem> : null}
+          {hasCDS ? <MenuItem value="protein">Protein</MenuItem> : null}
+          <MenuItem value="gene">Gene w/ introns</MenuItem>
+          <MenuItem value="gene_collapsed_intron">
+            Gene w/ 10bp of intron
+          </MenuItem>
+          <MenuItem value="gene_updownstream">
+            Gene w/ 500bp up+down stream
+          </MenuItem>
+          <MenuItem value="gene_updownstream_collapsed_intron">
+            Gene w/ 500bp up+down stream w/ 10bp intron
+          </MenuItem>
+          <MenuItem value="cdna">cDNA</MenuItem>
+        </Select>
+        <Button
+          type="button"
+          variant="contained"
+          className={classes.SequenceFeatureCopyButton}
+          onClick={() => {
+            if (seqPanelRef.current) {
+              copyToClipboard(seqPanelRef.current.textContent)
+              setCopied(true)
+              setTimeout(() => {
+                setCopied(false)
+              }, 1000)
+            }
+          }}
+        >
+          {copied ? 'Copied to clipboard!' : 'Copy'}
+        </Button>
+        <Button
+          type="button"
+          variant="contained"
+          className={classes.SequenceFeatureCopyButton}
+          onClick={() => {
+            if (seqPanelRef.current) {
+              copyToClipboard(seqPanelRef.current.innerHTML, true)
+              setCopiedHtml(true)
+              setTimeout(() => {
+                setCopiedHtml(false)
+              }, 1000)
+            }
+          }}
+        >
+          {copiedHtml ? 'Copied to clipboard!' : 'Copy HTML'}
+        </Button>
+      </div>
       <div data-testid="feature_sequence">
         {error ? (
           <Typography color="error">{`${error}`}</Typography>
