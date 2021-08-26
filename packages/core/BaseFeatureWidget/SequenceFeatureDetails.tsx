@@ -386,39 +386,42 @@ export default function SequenceFeatureDetails(props: BaseProps) {
 
   return (
     <div ref={ref}>
-      <Select
-        value={mode}
-        onChange={event => setMode(event.target.value as string)}
-      >
-        {hasCDS ? <MenuItem value="cds">CDS</MenuItem> : null}
-        {hasCDS ? <MenuItem value="protein">Protein</MenuItem> : null}
-        <MenuItem value="gene">Gene w/ introns</MenuItem>
-        <MenuItem value="gene_collapsed_intron">
-          Gene w/ 10bp of intron
-        </MenuItem>
-        <MenuItem value="gene_updownstream">
-          Gene w/ 500bp up+down stream
-        </MenuItem>
-        <MenuItem value="gene_updownstream_collapsed_intron">
-          Gene w/ 500bp up+down stream w/ 10bp intron
-        </MenuItem>
-        <MenuItem value="cdna">cDNA</MenuItem>
-      </Select>
-      <Button
-        type="button"
-        variant="contained"
-        onClick={() => {
-          if (seqPanelRef.current) {
-            copyToClipboard(seqPanelRef.current.textContent)
-            setCopied(true)
-            setTimeout(() => {
-              setCopied(false)
-            }, 1000)
-          }
-        }}
-      >
-        {copied ? 'Copied to clipboard!' : 'Copy'}
-      </Button>
+      <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+        <Select
+          value={mode}
+          onChange={event => setMode(event.target.value as string)}
+        >
+          {hasCDS ? <MenuItem value="cds">CDS</MenuItem> : null}
+          {hasCDS ? <MenuItem value="protein">Protein</MenuItem> : null}
+          <MenuItem value="gene">Gene w/ introns</MenuItem>
+          <MenuItem value="gene_collapsed_intron">
+            Gene w/ 10bp of intron
+          </MenuItem>
+          <MenuItem value="gene_updownstream">
+            Gene w/ 500bp up+down stream
+          </MenuItem>
+          <MenuItem value="gene_updownstream_collapsed_intron">
+            Gene w/ 500bp up+down stream w/ 10bp intron
+          </MenuItem>
+          <MenuItem value="cdna">cDNA</MenuItem>
+        </Select>
+        <Button
+          type="button"
+          variant="contained"
+          style={{ margin: '3px', padding: '2px inherit', lineHeight: 1.3 }}
+          onClick={() => {
+            if (seqPanelRef.current) {
+              copyToClipboard(seqPanelRef.current.textContent)
+              setCopied(true)
+              setTimeout(() => {
+                setCopied(false)
+              }, 1000)
+            }
+          }}
+        >
+          {copied ? 'Copied to clipboard!' : 'Copy'}
+        </Button>
+      </div>
       <div data-testid="feature_sequence">
         {error ? (
           <Typography color="error">{`${error}`}</Typography>
