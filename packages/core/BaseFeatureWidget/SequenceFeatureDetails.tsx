@@ -2,6 +2,7 @@
 import React, { useRef, useState, useEffect } from 'react'
 import { Button, Select, MenuItem, Typography } from '@material-ui/core'
 import { useInView } from 'react-intersection-observer'
+import { makeStyles } from '@material-ui/core/styles'
 import copy from 'copy-to-clipboard'
 import {
   defaultCodonTable,
@@ -28,6 +29,7 @@ interface ParentFeat extends Feat {
  * Based on https://github.com/sudodoki/copy-to-clipboard/issues/112#issuecomment-897097948 answer
  * with additionnal support for clipboard API, but
  * will fallback to execCommand if needed.
+ * Still use copy-to-clipboard for HTML copy
  * @param value- the value to save in clipboard
  * @returns nothing, just used to break early
  */
@@ -35,14 +37,12 @@ const copyToClipboard = (value: string | null, html = false) => {
   if (value === null || value === undefined) {
     return
   }
-
   // Use copy-to-clipboard to keep colors, wasn't able to do it reliably
   // with native API
   if (html) {
     copy(value, { format: 'text/html' })
     return
   }
-
   // Use native API, as they don't have the problem of copied text not
   // being available
   if (navigator.clipboard) {
@@ -315,6 +315,18 @@ export const SequencePanel = React.forwardRef<
   )
 })
 
+const useStyles = makeStyles(() => ({
+  SequenceFeatureDetailsContainer: {
+    display: 'flex',
+    justifyContent: 'flex-start',
+  },
+  SequenceFeatureCopyButton: {
+    margin: '3px',
+    padding: '2px inherit',
+    lineHeight: 1.3,
+  },
+}))
+
 // display the stitched-together sequence of a gene's CDS, cDNA, or protein
 // sequence. this is a best effort and weird genomic phenomena could lead these
 // to not be 100% accurate
@@ -395,9 +407,11 @@ export default function SequenceFeatureDetails(props: BaseProps) {
 
   const loading = !sequence
 
+  const classes = useStyles()
+
   return (
     <div ref={ref}>
-      <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+      <div className={classes.SequenceFeatureDetailsContainer}>
         <Select
           value={mode}
           onChange={event => setMode(event.target.value as string)}
@@ -419,7 +433,7 @@ export default function SequenceFeatureDetails(props: BaseProps) {
         <Button
           type="button"
           variant="contained"
-          style={{ margin: '3px', padding: '2px inherit', lineHeight: 1.3 }}
+          className={classes.SequenceFeatureCopyButton}
           onClick={() => {
             if (seqPanelRef.current) {
               copyToClipboard(seqPanelRef.current.textContent)
@@ -435,7 +449,7 @@ export default function SequenceFeatureDetails(props: BaseProps) {
         <Button
           type="button"
           variant="contained"
-          style={{ margin: '3px', padding: '2px inherit', lineHeight: 1.3 }}
+          className={classes.SequenceFeatureCopyButton}
           onClick={() => {
             if (seqPanelRef.current) {
               copyToClipboard(seqPanelRef.current.innerHTML, true)
