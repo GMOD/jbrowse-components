@@ -255,7 +255,7 @@ names and IDs) or VcfTabixAdapter (e.g. variant IDs). The command will print
 out a progress bar for each track that it is indexing. It will output files to
 the TMPDIR while indexing to reduce memory usage so if the filesystem with /tmp
 is has low disk space you can set an alternative temporary directory using the
-environment variable `TMPDIR=~/alt_tmp_dir/ jbrowse text-index`
+environment variable `TMPDIR=~/alt_tmp_dir/ jbrowse text-index`.This will also modify your config.json to add the necessary text search adapters.
 
 After this command is run, you can type a gene name into the "search box" in
 the linear genome view or other views and quickly navigate to genes by gene

@@ -20,6 +20,9 @@ A JBrowse 2 configuration file, a config.json, is structured as follows
     /* array of tracks being loaded, contain reference to which assembl(y/ies)
     they belong to */
   ],
+  "aggregateTextSearchAdapters": [
+    /* optional array of text search adapters */
+  ],
   "defaultSession": {
     /* optional default session */
   }
@@ -654,6 +657,76 @@ Example FromConfigSequenceAdapter
   ]
 }
 ```
+
+### Text search config
+
+A subconfiguration of a the track config used to store text searching related configurations.
+
+Example: text search track subconfiguration
+
+```json
+{
+  "textSearchConf": {
+    "textSearchAdapter": {
+      /* text search adapter  */
+    },
+    "indexingAttributes": [
+      /* list of which feature attributes to index */
+    ],
+    "indexingFeatureTypesToExclude": [
+      /* list of feature types to exclude */
+    ]
+  }
+}
+```
+
+Information on generating trix indexes via the cli can be found [here](cli.md#jbrowse-text-index)
+
+## Text Searching
+
+Text searching is now available on JBrowse2.
+
+#### TrixTextSearchAdapter Config
+
+```json
+{
+  "textSearchAdapter": {
+    "type": "TrixTextSearchAdapter",
+    "textSearchAdapterId": "gff3tabix_genes-index",
+    "ixFilePath": {
+      "uri": "trix/gff3tabix_genes.ix"
+    },
+    "ixxFilePath": {
+      "uri": "trix/gff3tabix_genes.ixx"
+    },
+    "metaFilePath": {
+      "uri": "trix/gff3tabix_genes_meta.json"
+    }
+  }
+}
+```
+
+- ixFilePath - the location of the trixx ix file
+- ixxFilePath - the location of the trixx ixx file
+- metaFilePath - the location of the metadata json file for the trix index
+
+#### JBrowse1TextSearchAdapter Config
+
+```json
+{
+  "textSearchAdapter": {
+    "type": "JBrowse1TextSearchAdapter",
+    "textSearchAdapterId": "generate-names-index",
+    "namesIndexLocation": {
+      "uri": "/names"
+    }
+  }
+}
+```
+
+- namesIndexLocation - the location of the JBrowse1 names index data directory
+
+To enable text searching, you will need access to a text index. You can create a new text index via our command line tools. More info found [here](cli.md#jbrowse-text-index).
 
 ## DotplotView config
 
