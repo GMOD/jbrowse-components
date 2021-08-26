@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import AdapterGuessType from '@jbrowse/core/pluggableElementTypes/AdapterGuessType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import {
   createBaseTrackConfig,
@@ -47,6 +48,7 @@ import {
   PileupGetGlobalValueForTag,
   PileupGetVisibleModifications,
 } from './PileupRPC/rpcMethods'
+import { makeIndex, makeIndexType } from './util'
 
 export { MismatchParser }
 export type { LinearPileupDisplayModel }
@@ -144,6 +146,24 @@ export default class AlignmentsPlugin extends Plugin {
           ...pluginManager.load(BamAdapterF),
         }),
     )
+    pluginManager.registerAdapterGuess(
+      () =>
+        new AdapterGuessType({
+          name: 'BamAdapter',
+          regexGuess: /\.bam$/i,
+          fetchConfig: (file: any, index: any, indexName: string) => {
+            return {
+              type: 'BamAdapter',
+              bamLocation: file,
+              // index: {
+              //   location: index || makeIndex(file, '.bai'),
+              //   indexType: makeIndexType(indexName, 'CSI', 'BAI'),
+              // },
+            }
+          },
+        }),
+    )
+
     pluginManager.addAdapterType(
       () =>
         new AdapterType({

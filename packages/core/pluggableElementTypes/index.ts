@@ -7,6 +7,7 @@ import DisplayType from './DisplayType'
 import ViewType from './ViewType'
 import RpcMethodType from './RpcMethodType'
 import TextSearchAdapter from './TextSearchAdapterType'
+import AdapterGuessType from './AdapterGuessType'
 
 export type PluggableElementType =
   | AdapterType
@@ -18,6 +19,7 @@ export type PluggableElementType =
   | ViewType
   | RpcMethodType
   | TextSearchAdapter
+  | AdapterGuessType
 
 export type PluggableElementMember =
   | keyof AdapterType
@@ -29,3 +31,4 @@ export type PluggableElementMember =
   | keyof ViewType
   | keyof RpcMethodType
   | keyof TextSearchAdapter
+  | keyof AdapterGuessType

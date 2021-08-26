@@ -100,27 +100,11 @@ export function guessAdapter(
   file: FileLocation,
   index: FileLocation | undefined,
   getFileName: (f: FileLocation) => string,
+  model?: any,
   adapterHint?: string,
 ) {
-  function makeIndex(location: FileLocation, suffix: string) {
-    if ('uri' in location) {
-      return { uri: location.uri + suffix }
-    }
-    if ('localPath' in location) {
-      return { localPath: location.localPath + suffix }
-    }
-    return location
-  }
-
   const fileName = getFileName(file)
   const indexName = index && getFileName(index)
-  function makeIndexType(
-    name: string | undefined,
-    typeA: string,
-    typeB: string,
-  ) {
-    return name?.toUpperCase().endsWith(typeA) ? typeA : typeB
-  }
 
   // order of operations:
   // user enters in their file, either from a url or from local
@@ -131,20 +115,24 @@ export function guessAdapter(
   // if no, allow the user to select whatever adapter they want
 
   // break up plugin-associated adapters in the dropdown menu
-  const session = getSession(model) // how do i do this here
+  if (model) {
+    const session = getSession(model)
 
-  const adapter = getEnv(session)
-    .pluginManager.getElementTypesInGroup('adapter guess')
-    .find((adapter: any) => {
-      adapter.regexGuess.test(fileName) || adapterHint === adapter.name
-    })
+    const adapter = getEnv(session)
+      .pluginManager.getElementTypesInGroup('adapter guess')
+      .find((adapter: any) => {
+        if (adapter.regexGuess.test(fileName) || adapterHint === adapter.name) {
+          return adapter
+        }
+      })
 
-  if (adapter) {
-    return adapter.fetchConfig(fileName, index, indexName) // index indexName
-  } else {
-    return {
-      type: UNKNOWN,
+    if (adapter) {
+      return adapter.fetchConfig(fileName, index, indexName)
     }
+  }
+
+  return {
+    type: UNKNOWN,
   }
 
   {

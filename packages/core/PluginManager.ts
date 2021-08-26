@@ -194,6 +194,8 @@ export default class PluginManager {
 
   rpcMethods = new TypeRecord('RpcMethodType', RpcMethodType)
 
+  adapterGuess = new TypeRecord('AdapterGuessType', AdapterGuessType)
+
   configured = false
 
   rootModel?: AbstractRootModel
@@ -296,6 +298,8 @@ export default class PluginManager {
         return this.viewTypes
       case 'rpc method':
         return this.rpcMethods
+      case 'adapter guess':
+        return this.adapterGuess
       default:
         throw new Error(`invalid element type '${groupName}'`)
     }
