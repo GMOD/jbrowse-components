@@ -36,16 +36,6 @@
             "tutorials/embed_linear_genome_view/08_reacting",
             "tutorials/embed_linear_genome_view/09_conclusion"
           ]
-        },
-        {
-          "type": "category",
-          "label": "Name searching in JBrowse2",
-          "items": [
-            "tutorials/text_searching/01_introduction",
-            "tutorials/text_searching/02_getting_started",
-            "tutorials/text_searching/03_create_text_index",
-            "tutorials/text_searching/04_conclusion"
-          ]
         }
       ]
     },
