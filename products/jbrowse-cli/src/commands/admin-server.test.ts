@@ -201,6 +201,6 @@ describe('admin-server', () => {
         body: JSON.stringify(payload),
       })
       expect(response.status).toBe(500)
-      expect(await response.text()).toBe('Could not write config file')
+      expect(await response.text()).toMatch(/Could not write config file/)
     })
 })

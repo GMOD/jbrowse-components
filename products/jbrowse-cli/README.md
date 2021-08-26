@@ -311,8 +311,6 @@ OPTIONS
 
   --out=out        synonym for target
 
-  --skipCheck      Don't check whether or not you are in a JBrowse directory
-
   --target=target  path to config file in JB2 installation directory to write out to.
                    Creates ./config.json if nonexistent
 
