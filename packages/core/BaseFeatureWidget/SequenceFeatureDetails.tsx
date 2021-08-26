@@ -2,7 +2,6 @@
 import React, { useRef, useState, useEffect } from 'react'
 import { Button, Select, MenuItem, Typography } from '@material-ui/core'
 import { useInView } from 'react-intersection-observer'
-import copy from 'copy-to-clipboard'
 import {
   defaultCodonTable,
   generateCodonTable,
@@ -21,6 +20,33 @@ interface Feat {
 interface ParentFeat extends Feat {
   strand?: number
   subfeatures?: Feat[]
+}
+
+/**
+ * Copy value to the clipboard
+ * Based on https://github.com/sudodoki/copy-to-clipboard/issues/112#issuecomment-897097948 answer
+ * with additionnal support for clipboard API, but
+ * will fallback to execCommand if needed.
+ * @param value, the value to save in clipboad
+ * @returns nothing, just use to break early
+ */
+const copyToClipboard = (value: string | null) => {
+  if (value === null || value === undefined) {
+    return
+  }
+
+  // Use more recent but less supported Clipboard API if possible
+  // Fallback to the deprecated execCommand() API for compatibility
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(value)
+  } else {
+    const input = document.createElement('textarea')
+    document.body.appendChild(input)
+    input.value = value
+    input.select()
+    document.execCommand('copy')
+    document.body.removeChild(input)
+  }
 }
 
 function stitch(subfeats: Feat[], sequence: string) {
@@ -383,7 +409,7 @@ export default function SequenceFeatureDetails(props: BaseProps) {
         variant="contained"
         onClick={() => {
           if (seqPanelRef.current) {
-            copy(seqPanelRef.current.innerHTML, { format: 'text/html' })
+            copyToClipboard(seqPanelRef.current.textContent)
             setCopied(true)
             setTimeout(() => {
               setCopied(false)
