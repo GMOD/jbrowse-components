@@ -31,6 +31,7 @@ interface ParentFeat extends Feat {
  * will fallback to execCommand if needed.
  * Still use copy-to-clipboard for HTML copy
  * @param value- the value to save in clipboard
+ * @param html- should it be saved as html
  * @returns nothing, just used to break early
  */
 const copyToClipboard = (value: string | null, html = false) => {
