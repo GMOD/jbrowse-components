@@ -27,19 +27,19 @@ interface ParentFeat extends Feat {
  * Based on https://github.com/sudodoki/copy-to-clipboard/issues/112#issuecomment-897097948 answer
  * with additionnal support for clipboard API, but
  * will fallback to execCommand if needed.
- * @param value, the value to save in clipboad
- * @returns nothing, just use to break early
+ * @param value- the value to save in clipboard
+ * @returns nothing, just used to break early
  */
 const copyToClipboard = (value: string | null) => {
   if (value === null || value === undefined) {
     return
   }
 
-  // Use more recent but less supported Clipboard API if possible
-  // Fallback to the deprecated execCommand() API for compatibility
   if (navigator.clipboard) {
+    // Use more recent but less supported Clipboard API
     navigator.clipboard.writeText(value)
   } else {
+    // Fallback to the deprecated execCommand() API for compatibility
     const input = document.createElement('textarea')
     document.body.appendChild(input)
     input.value = value
