@@ -2,6 +2,7 @@
 import React, { useRef, useState, useEffect } from 'react'
 import { Button, Select, MenuItem, Typography } from '@material-ui/core'
 import { useInView } from 'react-intersection-observer'
+import copy from 'copy-to-clipboard'
 import {
   defaultCodonTable,
   generateCodonTable,
@@ -30,11 +31,20 @@ interface ParentFeat extends Feat {
  * @param value- the value to save in clipboard
  * @returns nothing, just used to break early
  */
-const copyToClipboard = (value: string | null) => {
+const copyToClipboard = (value: string | null, html = false) => {
   if (value === null || value === undefined) {
     return
   }
 
+  // Use copy-to-clipboard to keep colors, wasn't able to do it reliably
+  // with native API
+  if (html) {
+    copy(value, { format: 'text/html' })
+    return
+  }
+
+  // Use native API, as they don't have the problem of copied text not
+  // being available
   if (navigator.clipboard) {
     // Use more recent but less supported Clipboard API
     navigator.clipboard.writeText(value)
@@ -323,6 +333,7 @@ export default function SequenceFeatureDetails(props: BaseProps) {
   const [error, setError] = useState<string>()
   const [mode, setMode] = useState(hasCDS ? 'cds' : 'cdna')
   const [copied, setCopied] = useState(false)
+  const [copiedHtml, setCopiedHtml] = useState(false)
 
   useEffect(() => {
     let finished = false
@@ -420,6 +431,24 @@ export default function SequenceFeatureDetails(props: BaseProps) {
           }}
         >
           {copied ? 'Copied to clipboard!' : 'Copy'}
+        </Button>
+        <Button
+          type="button"
+          variant="contained"
+          style={{ margin: '3px', padding: '2px inherit', lineHeight: 1.3 }}
+          onClick={() => {
+            if (seqPanelRef.current) {
+              copyToClipboard(seqPanelRef.current.innerHTML, true)
+              setCopiedHtml(true)
+              setTimeout(() => {
+                setCopiedHtml(false)
+              }, 1000)
+            }
+          }}
+        >
+          {copiedHtml
+            ? 'Copied to clipboard!'
+            : 'Copy HTML (Keep Color in Word)'}
         </Button>
       </div>
       <div data-testid="feature_sequence">
