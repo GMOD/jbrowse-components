@@ -452,7 +452,7 @@ EXAMPLES
   $ jbrowse text-index --out /path/to/jb2/some_alt_config.json
 ```
 
-_See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.3/products/jbrowse-cli/src/commands/text-index.ts)_
+_See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.4/products/jbrowse-cli/src/commands/text-index.ts)_
 
 ## `jbrowse upgrade [LOCALPATH]`
 
