@@ -632,7 +632,8 @@ Example FromConfigAdapter
 
 #### FromConfigSequenceAdapter
 
-Similar behavior to FromConfigAdapter, with a specific emphasis on performance when the features are sequences.
+Similar behavior to FromConfigAdapter, with a specific emphasis on performance
+when the features are sequences.
 
 Example FromConfigSequenceAdapter
 
@@ -658,35 +659,82 @@ Example FromConfigSequenceAdapter
 }
 ```
 
-### Text search config
+## Text searching
 
-A subconfiguration of a the track config used to store text searching related configurations.
+Text searching is now available on JBrowse 2.
 
-Example: text search track subconfiguration
+Text searching appears in two forms: per-track indexes and aggregate indexes
+which search across multiple tracks
 
-```json
+Aggregate indexes may look like this
+
+````json
 {
-  "textSearchConf": {
-    "textSearchAdapter": {
-      /* text search adapter  */
-    },
-    "indexingAttributes": [
-      /* list of which feature attributes to index */
-    ],
-    "indexingFeatureTypesToExclude": [
-      /* list of feature types to exclude */
-    ]
-  }
+"aggregateTextSearchAdapters": [
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "hg19-index",
+      "ixFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix"
+      },
+      "ixxFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx"
+      },
+      "metaFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json"
+      },
+      "assemblies": ["hg19"]
+    }
 }
 ```
 
-Information on generating trix indexes via the cli can be found [here](cli.md#jbrowse-text-index)
 
-## Text Searching
+An example per-track config may look like this
 
-Text searching is now available on JBrowse2.
+```json
+{
+  "trackId":"yourtrack",
+  "name":"Track name",
+  "adapter":{
+    "type": "Gff3TabixAdapter",
+    "gffGzLocation": { "uri":"yourfile.gff.gz" }
+    "index":{ "location": { "uri":"yourfile.gff.gz.tbi" } }
+  },
+  "textSearchConf": {
+    "textSearchAdapter": {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "hg19-index",
+      "ixFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix"
+      },
+      "ixxFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx"
+      },
+      "metaFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json"
+      },
+      "assemblies": ["hg19"]
+    },
+    "indexingAttributes": ["Name","ID"],
+    "indexingFeatureTypesToExclude": ["CDS","exon"]
+  }
+}
+````
 
-#### TrixTextSearchAdapter Config
+Information on generating trix indexes via the cli can be found
+[here](cli.md#jbrowse-text-index)
+
+### TrixTextSearchAdapter config
+
+The trix search index is the current file format for name searching
+
+It is based on the UCSC trix file format described here
+https://genome.ucsc.edu/goldenPath/help/trix.html
+
+To create trix indexes you can use our command line tools. More info found at
+our [jbrowse text-index guide](cli.md#jbrowse-text-index). This tool will
+automatically generate a config like this. The config slots are described below
+for details
 
 ```json
 {
@@ -706,11 +754,14 @@ Text searching is now available on JBrowse2.
 }
 ```
 
-- ixFilePath - the location of the trixx ix file
-- ixxFilePath - the location of the trixx ixx file
+- ixFilePath - the location of the trix ix file
+- ixxFilePath - the location of the trix ixx file
 - metaFilePath - the location of the metadata json file for the trix index
 
-#### JBrowse1TextSearchAdapter Config
+### JBrowse1TextSearchAdapter config
+
+This is more uncommon, but allows back compatibility with a jbrowse 1 names
+index created by generate-names.pl
 
 ```json
 {
@@ -725,8 +776,6 @@ Text searching is now available on JBrowse2.
 ```
 
 - namesIndexLocation - the location of the JBrowse1 names index data directory
-
-To enable text searching, you will need access to a text index. You can create a new text index via our command line tools. More info found [here](cli.md#jbrowse-text-index).
 
 ## DotplotView config
 
