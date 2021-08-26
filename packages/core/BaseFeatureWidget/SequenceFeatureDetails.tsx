@@ -446,9 +446,7 @@ export default function SequenceFeatureDetails(props: BaseProps) {
             }
           }}
         >
-          {copiedHtml
-            ? 'Copied to clipboard!'
-            : 'Copy HTML (Keep Color in Word)'}
+          {copiedHtml ? 'Copied to clipboard!' : 'Copy HTML'}
         </Button>
       </div>
       <div data-testid="feature_sequence">
