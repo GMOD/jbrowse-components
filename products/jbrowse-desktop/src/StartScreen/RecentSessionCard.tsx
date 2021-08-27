@@ -12,7 +12,6 @@ import {
   makeStyles,
 } from '@material-ui/core'
 
-import { format } from 'timeago.js'
 import DeleteIcon from '@material-ui/icons/Delete'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import TextFieldsIcon from '@material-ui/icons/TextFields'
@@ -35,7 +34,6 @@ function RecentSessionCard({
   sessionName,
   sessionStats,
   sessionScreenshot = defaultSessionScreenshot,
-  dateMode,
   onClick,
   onDelete,
   onRename,
@@ -43,7 +41,6 @@ function RecentSessionCard({
   sessionName: string
   sessionStats?: { mtime: Date }
   sessionScreenshot: string
-  dateMode: string
   onClick: Function
   onDelete: Function
   onRename: Function
@@ -90,9 +87,7 @@ function RecentSessionCard({
             >
               Last modified{' '}
               {sessionStats
-                ? dateMode === 'timeago'
-                  ? format(sessionStats.mtime)
-                  : `${sessionStats.mtime.toLocaleString('en-US')}`
+                ? `${sessionStats.mtime.toLocaleString('en-US')}`
                 : null}
             </Typography>
           }
