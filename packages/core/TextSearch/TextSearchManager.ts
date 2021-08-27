@@ -71,7 +71,7 @@ export default class TextSearchManager {
         aggregateTextSearchAdapters,
       ),
       ...this.getAdaptersWithAssembly(
-        searchScope.assemblyName,
+        assemblyName,
         tracks.map(track =>
           readConfObject(track, ['textSearchConf', 'textSearchAdapter']),
         ),

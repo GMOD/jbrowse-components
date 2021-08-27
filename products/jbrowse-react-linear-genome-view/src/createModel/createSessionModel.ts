@@ -1,29 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import {
   NotificationLevel,
   AbstractSessionModel,
   TrackViewModel,
   DialogComponentType,
 } from '@jbrowse/core/util/types'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { getContainingView } from '@jbrowse/core/util'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { observable } from 'mobx'
 import {
   getMembers,
   getParent,
   getSnapshot,
   getType,
-  IAnyStateTreeNode,
   isAlive,
   isModelType,
   isReferenceType,
   types,
   walk,
   Instance,
+  IAnyStateTreeNode,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { readConfObject } from '@jbrowse/core/configuration'
+import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import InfoIcon from '@material-ui/icons/Info'
 import { ReferringNode } from '../types'
 
@@ -65,6 +66,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       DialogProps: undefined as any,
     }))
     .views(self => ({
+      get textSearchManager(): TextSearchManager {
+        return getParent(self).textSearchManager
+      },
       get rpcManager() {
         return getParent(self).rpcManager
       },

@@ -61,9 +61,12 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const selectedRegion = mySelectedRegion || regions[0]?.refName
 
   async function fetchResults(queryString: string) {
+    if (!textSearchManager) {
+      console.warn('No text search manager')
+    }
     const results = await textSearchManager?.search(
       {
-        queryString: queryString.toLocaleLowerCase(),
+        queryString: queryString.toLowerCase(),
         searchType: 'exact',
       },
       searchScope,
@@ -83,9 +86,9 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       // region visible, xref #1703
       model.showAllRegions()
     } else {
-      const results = await fetchResults(input.toLocaleLowerCase())
+      const results = await fetchResults(input)
       if (results && results.length > 1) {
-        model.setSearchResults(results, input.toLocaleLowerCase())
+        model.setSearchResults(results, input.toLowerCase())
       } else {
         if (results?.length === 1) {
           input = results[0].getLocation()

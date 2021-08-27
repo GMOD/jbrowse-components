@@ -121,9 +121,12 @@ const LinearGenomeViewHeader = observer(
     const searchScope = model.searchScope(assemblyName)
 
     async function fetchResults(queryString: string) {
+      if (!textSearchManager) {
+        console.warn('No text search manager')
+      }
       const results = await textSearchManager?.search(
         {
-          queryString: queryString.toLocaleLowerCase(),
+          queryString: queryString.toLowerCase(),
           searchType: 'exact',
         },
         searchScope,
@@ -134,26 +137,23 @@ const LinearGenomeViewHeader = observer(
           index === self.findIndex(t => t.getId() === elem.getId()),
       )
     }
+
     async function setDisplayedRegion(result: BaseResult) {
       if (result) {
-        let newRegionValue = result.getLabel()
-        // need to fix finding region
-        const newRegion = regions.find(
-          region => newRegionValue === region.refName,
-        )
+        let label = result.getLabel()
+        const newRegion = regions.find(region => label === region.refName)
         if (newRegion) {
           model.setDisplayedRegions([newRegion])
           // we use showAllRegions after setDisplayedRegions to make the entire
           // region visible, xref #1703
           model.showAllRegions()
         } else {
-          const results = await fetchResults(newRegionValue.toLocaleLowerCase())
-          // distinguishes between locstrings and search strings
+          const results = await fetchResults(label)
           if (results && results.length > 1) {
-            model.setSearchResults(results, newRegionValue.toLocaleLowerCase())
+            model.setSearchResults(results, label.toLowerCase())
           } else {
             if (results?.length === 1) {
-              newRegionValue = results[0].getLocation()
+              label = results[0].getLocation()
               const trackId = results[0].getTrackId()
               try {
                 trackId && model.showTrack(trackId)
@@ -164,16 +164,10 @@ const LinearGenomeViewHeader = observer(
               }
             }
             try {
-              newRegionValue !== '' && model.navToLocString(newRegionValue)
+              label !== '' && model.navToLocString(label)
             } catch (e) {
-              if (
-                `${e}` ===
-                `Error: Unknown reference sequence "${newRegionValue}"`
-              ) {
-                model.setSearchResults(
-                  results,
-                  newRegionValue.toLocaleLowerCase(),
-                )
+              if (`${e}` === `Error: Unknown reference sequence "${label}"`) {
+                model.setSearchResults(results, label.toLowerCase())
               } else {
                 console.warn(e)
                 session.notify(`${e}`, 'warning')
