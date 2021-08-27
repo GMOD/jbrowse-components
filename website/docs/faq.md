@@ -183,7 +183,7 @@ larger .ix file, and find what the user is interested in
 
 #### How does the jbrowse text-index trix format work
 
-JBrowse 2 text indexing system creates text searching indexes using trix. The
+The `jbrowse text-index` command creates text searching indexes using trix. The
 trix indexes are based on the format described by UCSC here
 https://genome.ucsc.edu/goldenPath/help/trix.html but we reimplemented the code
 the create these index formats in the JBrowse CLI so you do not have to install
