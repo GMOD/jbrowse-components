@@ -7,6 +7,9 @@ import refNamesResponse from './test_data/refNamesResponse.json'
 import 'core-js/stable'
 
 import configSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+
+const pluginManager = new PluginManager()
 
 // window.fetch = jest.fn(url => new Promise(resolve => resolve()))
 
@@ -30,12 +33,16 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   spy.mockImplementation(mockFetch as any)
   const adapter = new Adapter(
     configSchema.create({
-      endpoint: { uri: 'http://somesite.com/sparql' },
+      endpoint: {
+        uri: 'http://somesite.com/sparql',
+        locationType: 'UriLocation',
+      },
       queryTemplate: 'fakeSPARQLQuery-start{start}-end{end}-{refName}',
       refNamesQueryTemplate: 'fakeRefNamesQuery',
       additionalQueryParams: ['format=json'],
       refNames: [],
     }),
+    pluginManager,
   )
 
   const refNames = await adapter.getRefNames()

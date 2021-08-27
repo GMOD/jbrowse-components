@@ -2,15 +2,19 @@ import { toArray } from 'rxjs/operators'
 import Adapter from './VcfAdapter'
 import configSchema from './configSchema'
 import { TextDecoder } from 'web-encoding'
+import PluginManager from '@jbrowse/core/PluginManager'
 window.TextDecoder = TextDecoder
 
+const pluginManager = new PluginManager()
 test('adapter can fetch variants from volvox.vcf', async () => {
   const adapter = new Adapter(
     configSchema.create({
       vcfLocation: {
         localPath: require.resolve('./test_data/volvox.filtered.vcf'),
+        locationType: 'LocalPathLocation',
       },
     }),
+    pluginManager,
   )
 
   const features = adapter.getFeatures({

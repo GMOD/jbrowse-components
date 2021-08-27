@@ -1,13 +1,16 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './FromConfigAdapter'
 import { configSchema } from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+
+const pluginManager = new PluginManager()
 
 test('adapter can fetch features', async () => {
   const features = [
     { uniqueId: 'one', refName: 'ctgA', start: 20, end: 40 },
     { uniqueId: 'two', refName: 'ctgB', start: 50, end: 60 },
   ]
-  const adapter = new Adapter(configSchema.create({ features }))
+  const adapter = new Adapter(configSchema.create({ features }), pluginManager)
   const result = adapter.getFeatures({
     refName: 'ctgA',
     start: 0,
@@ -43,7 +46,7 @@ test('adapter can fetch features with subfeatures', async () => {
       ],
     },
   ]
-  const adapter = new Adapter(configSchema.create({ features }))
+  const adapter = new Adapter(configSchema.create({ features }), pluginManager)
   const result = adapter.getFeatures({
     refName: 'ctgA',
     start: 0,

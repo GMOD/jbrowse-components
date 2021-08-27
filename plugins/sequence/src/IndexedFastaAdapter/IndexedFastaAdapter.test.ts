@@ -1,17 +1,23 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './IndexedFastaAdapter'
 import configSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+
+const pluginManager = new PluginManager()
 
 test('adapter can fetch sequence from volvox.fa', async () => {
   const adapter = new Adapter(
     configSchema.create({
       fastaLocation: {
         localPath: require.resolve('../../test_data/volvox.fa'),
+        locationType: 'LocalPathLocation',
       },
       faiLocation: {
         localPath: require.resolve('../../test_data/volvox.fa.fai'),
+        locationType: 'LocalPathLocation',
       },
     }),
+    pluginManager,
   )
 
   const features = adapter.getFeatures({

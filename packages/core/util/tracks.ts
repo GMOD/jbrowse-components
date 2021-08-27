@@ -91,7 +91,7 @@ export function storeBlobLocation(location: PreFileLocation) {
     // @ts-ignore
     const blobId = `b${+Date.now()}`
     blobMap[blobId] = location.blob
-    return { name: location?.blob.name, blobId }
+    return { name: location?.blob.name, blobId, locationType: 'BlobLocation' }
   }
   return location
 }

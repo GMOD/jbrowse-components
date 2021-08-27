@@ -46,6 +46,7 @@ async function createWindow() {
       nodeIntegration: true,
       nodeIntegrationInWorker: true,
       contextIsolation: false,
+      enableRemoteModule: true,
     },
   })
   mainWindowState.manage(mainWindow)

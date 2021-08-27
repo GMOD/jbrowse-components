@@ -124,10 +124,7 @@ const App = observer(({ session, HeaderButtons }) => {
     >
       {session.DialogComponent ? (
         <Suspense fallback={<div />}>
-          <session.DialogComponent
-            handleClose={() => session.setDialogComponent(undefined, undefined)}
-            {...session.DialogProps}
-          />
+          <session.DialogComponent {...session.DialogProps} />
         </Suspense>
       ) : null}
       <div className={classes.menuBarAndComponents}>

@@ -61,10 +61,23 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        */
       task: undefined,
 
-      DialogComponent: undefined as DialogComponentType | undefined,
-      DialogProps: undefined as any,
+      queueOfDialogs: observable.array([] as [DialogComponentType, any][]),
     }))
     .views(self => ({
+      get DialogComponent() {
+        if (self.queueOfDialogs.length) {
+          const firstInQueue = self.queueOfDialogs[0]
+          return firstInQueue && firstInQueue[0]
+        }
+        return undefined
+      },
+      get DialogProps() {
+        if (self.queueOfDialogs.length) {
+          const firstInQueue = self.queueOfDialogs[0]
+          return firstInQueue && firstInQueue[1]
+        }
+        return undefined
+      },
       get rpcManager() {
         return getParent(self).rpcManager
       },
@@ -134,9 +147,13 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      setDialogComponent(comp?: DialogComponentType, props?: any) {
-        self.DialogComponent = comp
-        self.DialogProps = props
+      queueDialog(
+        callback: (doneCallback: Function) => [DialogComponentType, any],
+      ): void {
+        const [component, props] = callback(() => {
+          self.queueOfDialogs.shift()
+        })
+        self.queueOfDialogs.push([component, props])
       },
       makeConnection(
         configuration: AnyConfigurationModel,
@@ -314,7 +331,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           {
             label: 'About track',
             onClick: () => {
-              self.setDialogComponent(AboutDialog, { config })
+              self.queueDialog((doneCallback: Function) => [
+                AboutDialog,
+                { config, handleClose: doneCallback },
+              ])
             },
             icon: InfoIcon,
           },

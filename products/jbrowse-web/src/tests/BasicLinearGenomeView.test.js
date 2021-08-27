@@ -11,7 +11,6 @@ import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
-import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { setup, generateReadBuffer, getPluginManager } from './util'
 import JBrowse from '../JBrowse'
@@ -32,7 +31,6 @@ setup()
 afterEach(cleanup)
 
 beforeEach(() => {
-  clearCache()
   clearAdapterCache()
   fetch.resetMocks()
   fetch.mockResponse(
@@ -211,6 +209,7 @@ describe('valid file tests', () => {
     expect(state.session.views[0].tracks.length).toBe(1)
   })
 
+  // TODOAUTH: runs fine on its own, errors anytime else
   it('test navigation with the search input box', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
@@ -238,7 +237,7 @@ describe('valid file tests', () => {
           'volvox2',
         ),
       {
-        timeout: 10000,
+        timeout: 20000,
       },
     )
     autocomplete.focus()

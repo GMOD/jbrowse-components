@@ -52,6 +52,7 @@ export default (pluginManager: PluginManager) => {
             )
             const textSearchAdapter = new textSearchAdapterType.AdapterClass(
               adapterConfig,
+              pluginManager,
             ) as BaseTextSearchAdapter
             this.adapterCache.set(adapterId, textSearchAdapter)
             adaptersToUse.push(textSearchAdapter)

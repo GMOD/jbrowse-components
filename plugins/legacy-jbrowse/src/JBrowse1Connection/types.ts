@@ -94,10 +94,12 @@ export interface Config {
 export interface UriLocation {
   uri: string
   baseUri?: string
+  locationType: 'UriLocation'
 }
 
 export interface LocalPathLocation {
   localPath: string
+  locationType: 'LocalPathLocation'
 }
 
 export type JBLocation = UriLocation | LocalPathLocation

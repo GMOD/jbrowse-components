@@ -49,7 +49,7 @@ export default function JBrowseDesktop(
         theme: { type: 'frozen', defaultValue: {} },
         logoPath: {
           type: 'fileLocation',
-          defaultValue: { uri: '' },
+          defaultValue: { uri: '', locationType: 'UriLocation' },
         },
         ...pluginManager.pluginConfigurationSchemas(),
       }),
@@ -58,6 +58,9 @@ export default function JBrowseDesktop(
       // track configuration is an array of track config schemas. multiple
       // instances of a track can exist that use the same configuration
       tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+      internetAccounts: types.array(
+        pluginManager.pluggableConfigSchemaType('internet account'),
+      ),
       connections: types.array(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),

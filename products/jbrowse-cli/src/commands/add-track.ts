@@ -22,10 +22,12 @@ interface Config {
 
 interface UriLocation {
   uri: string
+  locationType: 'UriLocation'
 }
 
 interface LocalPathLocation {
   localPath: string
+  locationType: 'LocalPathLocation'
 }
 
 export default class AddTrack extends JBrowseCommand {
@@ -494,10 +496,10 @@ export default class AddTrack extends JBrowseCommand {
   guessAdapter(fileName: string, protocol: string, index?: string) {
     function makeLocation(location: string): UriLocation | LocalPathLocation {
       if (protocol === 'uri') {
-        return { uri: location }
+        return { uri: location, locationType: 'UriLocation' }
       }
       if (protocol === 'localPath') {
-        return { localPath: location }
+        return { localPath: location, locationType: 'LocalPathLocation' }
       }
       throw new Error(`invalid protocol ${protocol}`)
     }

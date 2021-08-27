@@ -686,10 +686,16 @@ export default class extends Plugin {
                         label: 'Linear read vs ref',
                         icon: AddIcon,
                         onClick: () => {
-                          getSession(self).setDialogComponent(WindowSizeDlg, {
-                            track: getContainingTrack(self),
-                            feature,
-                          })
+                          getSession(self).queueDialog(
+                            (doneCallback: Function) => [
+                              WindowSizeDlg,
+                              {
+                                track: getContainingTrack(self),
+                                feature,
+                                handleClose: doneCallback,
+                              },
+                            ],
+                          )
                         },
                       },
                     ]

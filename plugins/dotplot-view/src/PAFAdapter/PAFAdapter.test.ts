@@ -1,15 +1,20 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './PAFAdapter'
 import MyConfigSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+
+const pluginManager = new PluginManager()
 
 test('adapter can fetch features from peach_grape.paf', async () => {
   const adapter = new Adapter(
     MyConfigSchema.create({
       pafLocation: {
         localPath: require.resolve('./test_data/peach_grape.paf'),
+        locationType: 'LocalPathLocation',
       },
       assemblyNames: ['peach', 'grape'],
     }),
+    pluginManager,
   )
 
   const features1 = adapter.getFeatures({

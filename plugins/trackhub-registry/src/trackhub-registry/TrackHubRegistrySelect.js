@@ -129,7 +129,10 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
         if (item.hub.url.startsWith('ftp://')) {
           item.error = 'JBrowse cannot add connections from FTP sources'
         } else {
-          const hub = openLocation({ uri: item.hub.url })
+          const hub = openLocation({
+            uri: item.hub.url,
+            locationType: 'UriLocation',
+          })
           try {
             await hub.stat()
           } catch (error) {

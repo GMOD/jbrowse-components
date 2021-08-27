@@ -7,7 +7,6 @@ import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
-import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import JBrowse from '../JBrowse'
 import { setup, getPluginManager, generateReadBuffer } from './util'
@@ -23,7 +22,6 @@ const readBuffer = generateReadBuffer(url => {
 })
 
 beforeEach(() => {
-  clearCache()
   clearAdapterCache()
   fetch.resetMocks()
   fetch.mockResponse(readBuffer)

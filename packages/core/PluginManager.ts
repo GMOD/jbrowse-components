@@ -16,6 +16,7 @@ import ViewType from './pluggableElementTypes/ViewType'
 import WidgetType from './pluggableElementTypes/WidgetType'
 import ConnectionType from './pluggableElementTypes/ConnectionType'
 import RpcMethodType from './pluggableElementTypes/RpcMethodType'
+import InternetAccountType from './pluggableElementTypes/InternetAccountType'
 import TextSearchAdapterType from './pluggableElementTypes/TextSearchAdapterType'
 import AdapterGuessType from './pluggableElementTypes/AdapterGuessType'
 
@@ -79,6 +80,7 @@ type PluggableElementTypeGroup =
   | 'view'
   | 'widget'
   | 'rpc method'
+  | 'internet account'
   | 'text search adapter'
   | 'adapter guess'
 
@@ -171,6 +173,7 @@ export default class PluginManager {
     'widget',
     'rpc method',
     'adapter guess',
+    'internet account',
   )
 
   rendererTypes = new TypeRecord('RendererType', RendererType)
@@ -195,6 +198,11 @@ export default class PluginManager {
   rpcMethods = new TypeRecord('RpcMethodType', RpcMethodType)
 
   adapterGuess = new TypeRecord('AdapterGuessType', AdapterGuessType)
+
+  internetAccountTypes = new TypeRecord(
+    'InternetAccountType',
+    InternetAccountType,
+  )
 
   configured = false
 
@@ -300,6 +308,8 @@ export default class PluginManager {
         return this.rpcMethods
       case 'adapter guess':
         return this.adapterGuess
+      case 'internet account':
+        return this.internetAccountTypes
       default:
         throw new Error(`invalid element type '${groupName}'`)
     }
@@ -480,6 +490,10 @@ export default class PluginManager {
     return this.rpcMethods.get(methodName)
   }
 
+  getInternetAccountType(internetAccountName: string): InternetAccountType {
+    return this.internetAccountTypes.get(internetAccountName)
+  }
+
   addRendererType(
     creationCallback: (pluginManager: PluginManager) => RendererType,
   ): this {
@@ -564,6 +578,12 @@ export default class PluginManager {
     creationCallback: (pluginManager: PluginManager) => RpcMethodType,
   ): this {
     return this.addElementType('rpc method', creationCallback)
+  }
+
+  addInternetAccountType(
+    creationCallback: (pluginManager: PluginManager) => InternetAccountType,
+  ): this {
+    return this.addElementType('internet account', creationCallback)
   }
 
   addToExtensionPoint<T>(

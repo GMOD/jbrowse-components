@@ -1,6 +1,5 @@
-import { BlobFile, GenericFilehandle } from 'generic-filehandle'
+import { BlobFile, GenericFilehandle, RemoteFile } from 'generic-filehandle'
 import LocalFile from './LocalFile'
-import { openUrl as rangeFetcherOpenUrl } from './rangeFetcher'
 import {
   FileLocation,
   LocalPathLocation,
@@ -9,10 +8,8 @@ import {
 } from '../types'
 import { getBlob } from '../tracks'
 import { isElectron } from '../../util'
-
-export const openUrl = (arg: string) => {
-  return rangeFetcherOpenUrl(arg)
-}
+import PluginManager from '../../PluginManager'
+import AuthenticationPlugin from '@jbrowse/plugin-authentication'
 
 function isUriLocation(location: FileLocation): location is UriLocation {
   return 'uri' in location
@@ -28,7 +25,17 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
   return 'blobId' in location
 }
 
-export function openLocation(location: FileLocation): GenericFilehandle {
+// needs to take the rootmodel in as an optional parameter, use if there is no preauth information
+// calls that arent in data-adapters would need the rootmodel param added, main thread stuff
+// this does not exist right now
+
+// need plugin manger for openLocation now
+export function openLocation(
+  location: FileLocation,
+  pluginManager?: PluginManager,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  rootModel?: any,
+): GenericFilehandle {
   if (!location) {
     throw new Error('must provide a location to openLocation')
   }
@@ -41,16 +48,52 @@ export function openLocation(location: FileLocation): GenericFilehandle {
     } else {
       throw new Error("can't use local files in the browser")
     }
-  }
-  if (isUriLocation(location)) {
-    if (!location.uri) {
-      throw new Error('No URI provided')
-    }
-    return openUrl(
-      location.baseUri
+  } else {
+    if (isUriLocation(location)) {
+      if (!location.uri) {
+        throw new Error('No URI provided')
+      }
+      if (location.internetAccountId) {
+        if (!location.internetAccountPreAuthorization) {
+          if (rootModel) {
+            const modifiedLocation = JSON.parse(JSON.stringify(location))
+            const internetAccount = rootModel.findAppropriateInternetAccount(
+              location,
+            )
+            if (!internetAccount) {
+              throw new Error('Could not find associated internet account')
+            }
+            internetAccount.getPreAuthorizationInformation(location).then(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (preAuthInfo: any) =>
+                (modifiedLocation.internetAccountPreAuthorization = preAuthInfo),
+            )
+            return internetAccount.openLocation(modifiedLocation)
+          }
+        } else {
+          if (pluginManager) {
+            const internetAccountType = pluginManager.getInternetAccountType(
+              location.internetAccountPreAuthorization.internetAccountType,
+            )
+            const internetAccount = internetAccountType.stateModel.create({
+              type:
+                location.internetAccountPreAuthorization.internetAccountType,
+              configuration:
+                location.internetAccountPreAuthorization.authInfo.configuration,
+            })
+            if (!location.internetAccountPreAuthorization?.authInfo.token) {
+              throw new Error('Issue with authorization')
+            }
+            return internetAccount.openLocation(location)
+          }
+        }
+      }
+
+      const url = location.baseUri
         ? new URL(location.uri, location.baseUri).href
-        : location.uri,
-    )
+        : location.uri
+      return new RemoteFile(String(url))
+    }
   }
   if (isBlobLocation(location)) {
     // special case where blob is not directly stored on the model, use a getter

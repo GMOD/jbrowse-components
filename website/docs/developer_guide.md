@@ -740,7 +740,7 @@ ConfigurationSchema(
   {
     bamLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bam' },
+      defaultValue: { uri: '/path/to/my.bam', locationType: 'UriLocation' },
     },
     // this is a sub-config schema
     index: ConfigurationSchema('BamIndex', {
@@ -751,7 +751,10 @@ ConfigurationSchema(
       },
       location: {
         type: 'fileLocation',
-        defaultValue: { uri: '/path/to/my.bam.bai' },
+        defaultValue: {
+          uri: '/path/to/my.bam.bai',
+          locationType: 'UriLocation',
+        },
       },
     }),
   },
@@ -1040,6 +1043,7 @@ export const configSchema = ConfigurationSchema(
       description: 'base URL for the UCSC API',
       defaultValue: {
         uri: 'https://cors-anywhere.herokuapp.com/https://api.genome.ucsc.edu/',
+        locationType: 'UriLocation',
       },
     },
     track: {

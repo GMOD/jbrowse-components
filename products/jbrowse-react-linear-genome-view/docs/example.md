@@ -19,15 +19,18 @@ const assembly = {
       type: 'BgzipFastaAdapter',
       fastaLocation: {
         uri:
-          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
+          'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz',
+        locationType: 'UriLocation',
       },
       faiLocation: {
         uri:
-          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.fai',
+          'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.fai',
+        locationType: 'UriLocation',
       },
       gziLocation: {
         uri:
-          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.gzi',
+          'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.gzi',
+        locationType: 'UriLocation',
       },
     },
   },
@@ -55,11 +58,13 @@ const tracks = [
       gffGzLocation: {
         uri:
           'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
+        locationType: 'UriLocation',
       },
       index: {
         location: {
           uri:
             'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.tbi',
+          locationType: 'UriLocation',
         },
       },
     },

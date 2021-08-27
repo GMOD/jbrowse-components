@@ -1,14 +1,19 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './TwoBitAdapter'
 import configSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+
+const pluginManager = new PluginManager()
 
 test('adapter can fetch features from volvox.2bit', async () => {
   const adapter = new Adapter(
     configSchema.create({
       twoBitLocation: {
         localPath: require.resolve('../../test_data/volvox.2bit'),
+        locationType: 'LocalPathLocation',
       },
     }),
+    pluginManager,
   )
 
   const features = adapter.getFeatures({
@@ -44,8 +49,10 @@ test('adapter can fetch regions from with chrom.sizes', async () => {
     configSchema.create({
       chromSizesLocation: {
         localPath: require.resolve('../../test_data/volvox.chrom.sizes'),
+        locationType: 'LocalPathLocation',
       },
     }),
+    pluginManager,
   )
 
   expect(await adapter.getRegions()).toMatchSnapshot()

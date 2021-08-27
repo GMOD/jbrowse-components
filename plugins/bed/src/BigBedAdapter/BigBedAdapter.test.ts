@@ -1,12 +1,19 @@
 import { toArray } from 'rxjs/operators'
 import BigBedAdapter from './BigBedAdapter'
 import configSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+
+const pluginManager = new PluginManager()
 
 test('adapter can fetch features from volvox.bb', async () => {
   const adapter = new BigBedAdapter(
     configSchema.create({
-      bigBedLocation: { localPath: require.resolve('./test_data/volvox.bb') },
+      bigBedLocation: {
+        localPath: require.resolve('./test_data/volvox.bb'),
+        locationType: 'LocalPathLocation',
+      },
     }),
+    pluginManager,
   )
 
   const features = adapter.getFeatures({

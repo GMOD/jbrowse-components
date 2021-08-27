@@ -101,9 +101,13 @@ function makeTrackConfig(
   if (trackDbFileLocation.uri) {
     bigDataLocation = {
       uri: new URL(track.get('bigDataUrl'), trackDbFileLocation.uri).href,
+      locationType: 'UriLocation',
     }
   } else {
-    bigDataLocation = { localPath: track.get('bigDataUrl') }
+    bigDataLocation = {
+      localPath: track.get('bigDataUrl'),
+      locationType: 'LocalPathLocation',
+    }
   }
   let bigDataIndexLocation
 
@@ -114,17 +118,25 @@ function makeTrackConfig(
           ? {
               uri: new URL(track.get('bigDataIndex'), trackDbFileLocation.uri)
                 .href,
+              locationType: 'UriLocation',
             }
           : {
               uri: new URL(
                 `${track.get('bigDataUrl')}.bai`,
                 trackDbFileLocation.uri,
               ).href,
+              locationType: 'UriLocation',
             }
       } else {
         bigDataIndexLocation = track.get('bigDataIndex')
-          ? { localPath: track.get('bigDataIndex') }
-          : { localPath: `${track.get('bigDataUrl')}.bai` }
+          ? {
+              localPath: track.get('bigDataIndex'),
+              locationType: 'LocalPathLocation',
+            }
+          : {
+              localPath: `${track.get('bigDataUrl')}.bai`,
+              locationType: 'LocalPathLocation',
+            }
       }
       return {
         type: 'AlignmentsTrack',
@@ -284,17 +296,25 @@ function makeTrackConfig(
           ? {
               uri: new URL(track.get('bigDataIndex'), trackDbFileLocation.uri)
                 .href,
+              locationType: 'UriLocation',
             }
           : {
               uri: new URL(
                 `${track.get('bigDataUrl')}.crai`,
                 trackDbFileLocation.uri,
               ).href,
+              locationType: 'UriLocation',
             }
       } else {
         bigDataIndexLocation = track.get('bigDataIndex')
-          ? { localPath: track.get('bigDataIndex') }
-          : { localPath: `${track.get('bigDataUrl')}.crai` }
+          ? {
+              localPath: track.get('bigDataIndex'),
+              locationType: 'LocalPathLocation',
+            }
+          : {
+              localPath: `${track.get('bigDataUrl')}.crai`,
+              locationType: 'LocalPathLocation',
+            }
       }
       return {
         type: 'AlignmentsTrack',
@@ -349,17 +369,25 @@ function makeTrackConfig(
           ? {
               uri: new URL(track.get('bigDataIndex'), trackDbFileLocation.uri)
                 .href,
+              locationType: 'UriLocation',
             }
           : {
               uri: new URL(
                 `${track.get('bigDataUrl')}.tbi`,
                 trackDbFileLocation.uri,
               ).href,
+              locationType: 'UriLocation',
             }
       } else {
         bigDataIndexLocation = track.get('bigDataIndex')
-          ? { localPath: track.get('bigDataIndex') }
-          : { localPath: `${track.get('bigDataUrl')}.tbi` }
+          ? {
+              localPath: track.get('bigDataIndex'),
+              locationType: 'LocalPathLocation',
+            }
+          : {
+              localPath: `${track.get('bigDataUrl')}.tbi`,
+              locationType: 'LocalPathLocation',
+            }
       }
       return {
         type: 'VariantTrack',

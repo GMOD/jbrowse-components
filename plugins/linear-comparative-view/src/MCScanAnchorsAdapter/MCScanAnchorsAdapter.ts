@@ -51,6 +51,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
     const assemblyNames = readConfObject(this.config, 'assemblyNames')
     this.mcscanAnchorsLocation = openLocation(
       readConfObject(this.config, 'mcscanAnchorsLocation') as FileLocation,
+      this.pluginManager,
     )
 
     this.subadapters = await Promise.all(

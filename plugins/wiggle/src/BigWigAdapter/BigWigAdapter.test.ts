@@ -1,14 +1,21 @@
 import { toArray } from 'rxjs/operators'
 import BigWigAdapter from './BigWigAdapter'
 import configSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+
+const pluginManager = new PluginManager()
 
 describe('adapter can fetch features from volvox.bw', () => {
   let adapter: BigWigAdapter
   beforeEach(() => {
     adapter = new BigWigAdapter(
       configSchema.create({
-        bigWigLocation: { localPath: require.resolve('./test_data/volvox.bw') },
+        bigWigLocation: {
+          localPath: require.resolve('./test_data/volvox.bw'),
+          locationType: 'LocalPathLocation',
+        },
       }),
+      pluginManager,
     )
   })
   it('test basic aspects of getfeatures', async () => {

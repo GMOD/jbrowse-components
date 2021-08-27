@@ -463,10 +463,12 @@ const stateModelFactory = (
                 ),
                 {
                   label: 'Sort by tag...',
-                  onClick: () =>
-                    getSession(self).setDialogComponent(SortByTagDlg, {
-                      model: self,
-                    }),
+                  onClick: () => {
+                    getSession(self).queueDialog((doneCallback: Function) => [
+                      SortByTagDlg,
+                      { model: self, handleClose: doneCallback },
+                    ])
+                  },
                 },
                 {
                   label: 'Clear sort',
@@ -511,9 +513,10 @@ const stateModelFactory = (
                 {
                   label: 'Modifications or methylation',
                   onClick: () => {
-                    getSession(self).setDialogComponent(ModificationsDlg, {
-                      model: self,
-                    })
+                    getSession(self).queueDialog((doneCallback: Function) => [
+                      ModificationsDlg,
+                      { model: self, handleClose: doneCallback },
+                    ])
                   },
                 },
                 {
@@ -531,9 +534,10 @@ const stateModelFactory = (
                 {
                   label: 'Color by tag...',
                   onClick: () => {
-                    getSession(self).setDialogComponent(ColorByTagDlg, {
-                      model: self,
-                    })
+                    getSession(self).queueDialog((doneCallback: Function) => [
+                      ColorByTagDlg,
+                      { model: self, handleClose: doneCallback },
+                    ])
                   },
                 },
               ],
@@ -542,25 +546,28 @@ const stateModelFactory = (
               label: 'Filter by',
               icon: FilterListIcon,
               onClick: () => {
-                getSession(self).setDialogComponent(FilterByTagDlg, {
-                  model: self,
-                })
+                getSession(self).queueDialog((doneCallback: Function) => [
+                  FilterByTagDlg,
+                  { model: self, handleClose: doneCallback },
+                ])
               },
             },
             {
               label: 'Set feature height',
               onClick: () => {
-                getSession(self).setDialogComponent(SetFeatureHeightDlg, {
-                  model: self,
-                })
+                getSession(self).queueDialog((doneCallback: Function) => [
+                  SetFeatureHeightDlg,
+                  { model: self, handleClose: doneCallback },
+                ])
               },
             },
             {
               label: 'Set max height',
               onClick: () => {
-                getSession(self).setDialogComponent(SetMaxHeightDlg, {
-                  model: self,
-                })
+                getSession(self).queueDialog((doneCallback: Function) => [
+                  SetMaxHeightDlg,
+                  { model: self, handleClose: doneCallback },
+                ])
               },
             },
             {

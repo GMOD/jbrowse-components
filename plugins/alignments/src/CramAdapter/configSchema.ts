@@ -9,11 +9,17 @@ export default (pluginManager: PluginManager) => {
       {
         cramLocation: {
           type: 'fileLocation',
-          defaultValue: { uri: '/path/to/my.cram' },
+          defaultValue: {
+            uri: '/path/to/my.cram',
+            locationType: 'UriLocation',
+          },
         },
         craiLocation: {
           type: 'fileLocation',
-          defaultValue: { uri: '/path/to/my.cram.crai' },
+          defaultValue: {
+            uri: '/path/to/my.cram.crai',
+            locationType: 'UriLocation',
+          },
         },
         sequenceAdapter: pluginManager.pluggableConfigSchemaType('adapter'),
       },

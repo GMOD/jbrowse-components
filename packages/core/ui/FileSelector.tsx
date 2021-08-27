@@ -6,6 +6,8 @@ import {
   InputLabel,
   TextField,
   Typography,
+  Select,
+  MenuItem,
 } from '@material-ui/core'
 import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab'
 import { observer } from 'mobx-react'
@@ -18,6 +20,10 @@ import {
 } from '../util/types'
 import { getBlob, storeBlobLocation } from '../util/tracks'
 
+interface Account {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any
+}
 function isUriLocation(location: FileLocation): location is UriLocation {
   return 'uri' in location
 }
@@ -36,6 +42,8 @@ const FileLocationEditor = observer(
   (props: {
     location?: FileLocation
     setLocation: (param: FileLocation) => void
+    setName?: (str: string) => void
+    internetAccounts?: Account[]
     name?: string
     description?: string
   }) => {
@@ -91,16 +99,133 @@ const FileLocationEditor = observer(
 const UrlChooser = (props: {
   location?: FileLocation
   setLocation: Function
+  internetAccounts?: Account[]
 }) => {
-  const { location, setLocation } = props
+  const { location, setLocation, internetAccounts } = props
+  const [currentUrl, setCurrentUrl] = useState('')
+  const [currentInternetAccount, setCurrentInternetAccount] = useState(
+    'autoDetect',
+  )
+
+  const findChosenInternetAccount = (
+    urlInput: string,
+    internetAccountSelection: string,
+  ) => {
+    try {
+      new URL(urlInput)
+    } catch (error) {
+      // skip
+      return undefined
+    }
+
+    if (internetAccountSelection === 'autoDetect') {
+      return internetAccounts?.find(account => {
+        return account.handlesLocation({ uri: urlInput })
+      })
+    }
+    return internetAccounts?.find(account => {
+      return account.internetAccountId === internetAccountSelection
+    })
+  }
 
   return (
-    <TextField
-      fullWidth
-      inputProps={{ 'data-testid': 'urlInput' }}
-      defaultValue={location && isUriLocation(location) ? location.uri : ''}
-      onChange={event => setLocation({ uri: event.target.value })}
-    />
+    <>
+      <TextField
+        fullWidth
+        inputProps={{ 'data-testid': 'urlInput' }}
+        defaultValue={location && isUriLocation(location) ? location.uri : ''}
+        onChange={event => {
+          setCurrentUrl(event.target.value)
+          if (event.target.value === '') {
+            setCurrentInternetAccount('autoDetect')
+          }
+          if (currentInternetAccount) {
+            const internetAccount = findChosenInternetAccount(
+              event.target.value,
+              currentInternetAccount,
+            )
+
+            setLocation({
+              uri: event.target.value,
+              baseAuthUri: event.target.value,
+              internetAccountId: internetAccount?.internetAccountId || '',
+              locationType: 'UriLocation',
+              // internetAccountPreAuthorization: {
+              //   internetAccountType: internetAccount?.internetAccountType || '',
+              //   authInfo: {
+              //     authHeader: internetAccount?.authHeader || 'Authorization',
+              //     tokenType: internetAccount
+              //       ? internetAccount.tokenType // internetAccount.tokenType
+              //       : '',
+              //   },
+              // },
+            })
+          } else {
+            setLocation({
+              uri: event.target.value,
+              locationType: 'UriLocation',
+            })
+          }
+        }}
+      />
+      {currentUrl !== '' && internetAccounts && (
+        <div>
+          <label htmlFor="internetAccountSelect">Select Internet Account</label>
+          <Select
+            id="internetAccountSelect"
+            value={currentInternetAccount}
+            style={{ margin: 5 }}
+            onChange={event => {
+              const internetAccountId: string = event.target.value as string
+              setCurrentInternetAccount(event.target.value as string)
+              const internetAccount = findChosenInternetAccount(
+                currentUrl,
+                internetAccountId,
+              )
+
+              setLocation({
+                uri: currentUrl,
+                baseAuthUri: currentUrl,
+                internetAccountId: internetAccount?.internetAccountId || '',
+                locationType: 'UriLocation',
+                // internetAccountPreAuthorization: {
+                //   internetAccountType:
+                //     internetAccount?.internetAccountType || '',
+                //   authInfo: {
+                //     authHeader: internetAccount?.authHeader || 'Authorization',
+                //     tokenType: internetAccount
+                //       ? internetAccount.tokenType // internetAccount.tokenType
+                //       : '',
+                //   },
+                // },
+              })
+            }}
+            displayEmpty
+          >
+            <MenuItem value="">None</MenuItem>
+            <MenuItem value="autoDetect">
+              Auto Detect:{' '}
+              {findChosenInternetAccount(currentUrl, 'autoDetect')?.name}
+            </MenuItem>
+            {internetAccounts?.map(account => {
+              try {
+                new URL(currentUrl)
+                return (
+                  <MenuItem
+                    key={account.internetAccountId}
+                    value={account.internetAccountId}
+                  >
+                    {account.name}
+                  </MenuItem>
+                )
+              } catch (e) {
+                return null
+              }
+            })}
+          </Select>
+        </div>
+      )}
+    </>
   )
 }
 
@@ -135,6 +260,7 @@ const LocalFileChooser = observer(
                 if (isElectron) {
                   setLocation({
                     localPath: (file as File & { path: string }).path,
+                    locationType: 'LocalPathLocation',
                   })
                 } else {
                   setLocation(storeBlobLocation({ blob: file }))

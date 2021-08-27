@@ -1,6 +1,8 @@
 import PluginManager from '../PluginManager'
 import PluggableElementBase from './PluggableElementBase'
 import { setBlobMap, getBlobMap } from '../util/tracks'
+import { searchForLocationObjects, replaceInArgs } from '../util'
+import { UriLocation } from '../util/types'
 
 import {
   deserializeAbortSignal,
@@ -22,7 +24,38 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
   async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
     const blobMap = getBlobMap()
+
+    const locationObjects = searchForLocationObjects(args)
+    for (const i in locationObjects) {
+      if (locationObjects[i].hasOwnProperty('internetAccountId')) {
+        await this.serializeNewAuthArguments(args, locationObjects[i])
+      }
+    }
+
     return { ...args, blobMap }
+  }
+
+  async serializeNewAuthArguments(args: {}, location: UriLocation) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rootModel: any = this.pluginManager.rootModel
+
+    if (location.internetAccountPreAuthorization) {
+      throw new Error('PreAuthorization should not exist yet')
+    }
+    const account = rootModel?.findAppropriateInternetAccount(location)
+
+    if (account) {
+      const modifiedPreAuth = await account.getPreAuthorizationInformation(
+        location,
+      )
+
+      const locationWithPreAuth = {
+        ...location,
+        internetAccountPreAuthorization: modifiedPreAuth,
+      }
+
+      replaceInArgs(args, location, locationWithPreAuth)
+    }
   }
 
   async deserializeArguments<

@@ -16,6 +16,7 @@ import { toJS } from 'mobx'
 window.getSnapshot = getSnapshot
 window.resolveIdentifier = resolveIdentifier
 
+// TODOAUTH: here you add a addInternetAccountConf,
 export default function JBrowseWeb(
   pluginManager,
   Session,
@@ -47,7 +48,7 @@ export default function JBrowseWeb(
         theme: { type: 'frozen', defaultValue: {} },
         logoPath: {
           type: 'fileLocation',
-          defaultValue: { uri: '' },
+          defaultValue: { uri: '', locationType: 'UriLocation' },
         },
         ...pluginManager.pluginConfigurationSchemas(),
       }),
@@ -56,6 +57,9 @@ export default function JBrowseWeb(
       // track configuration is an array of track config schemas. multiple
       // instances of a track can exist that use the same configuration
       tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+      internetAccounts: types.array(
+        pluginManager.pluggableConfigSchemaType('internet account'),
+      ),
       aggregateTextSearchAdapters: types.array(
         pluginManager.pluggableConfigSchemaType('text search adapter'),
       ),
@@ -143,7 +147,6 @@ export default function JBrowseWeb(
         const length = self.connections.push(connectionConf)
         return self.connections[length - 1]
       },
-
       deleteConnectionConf(configuration) {
         const idx = self.connections.findIndex(
           conn => conn.id === configuration.id,

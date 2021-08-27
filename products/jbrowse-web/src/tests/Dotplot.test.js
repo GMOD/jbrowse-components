@@ -5,7 +5,6 @@ import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
-import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import dotplotConfig from '../../test_data/config_dotplot.json'
@@ -24,7 +23,6 @@ setup()
 afterEach(cleanup)
 
 beforeEach(() => {
-  clearCache()
   clearAdapterCache()
   fetch.resetMocks()
   fetch.mockResponse(

@@ -10,6 +10,7 @@ import fetch from 'node-fetch'
 
 export interface UriLocation {
   uri: string
+  locationType: 'UriLocation'
 }
 
 export interface IndexedFastaAdapter {

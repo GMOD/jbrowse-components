@@ -14,7 +14,8 @@
         "adapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       },
@@ -47,11 +48,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "volvox-sorted-altname.bam"
+          "uri": "volvox-sorted-altname.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox-sorted-altname.bam.bai"
+            "uri": "volvox-sorted-altname.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       },
@@ -71,11 +74,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "volvox-sorted.bam"
+          "uri": "volvox-sorted.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox-sorted.bam.bai"
+            "uri": "volvox-sorted.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       },

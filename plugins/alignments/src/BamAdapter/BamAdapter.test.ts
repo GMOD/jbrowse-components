@@ -1,19 +1,25 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './BamAdapter'
 import configSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+
+const pluginManager = new PluginManager()
 
 test('adapter can fetch features from volvox.bam', async () => {
   const adapter = new Adapter(
     configSchema.create({
       bamLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.bam'),
+        locationType: 'LocalPathLocation',
       },
       index: {
         location: {
           localPath: require.resolve('../../test_data/volvox-sorted.bam.bai'),
+          locationType: 'LocalPathLocation',
         },
       },
     }),
+    pluginManager,
   )
 
   const features = adapter.getFeatures({
@@ -38,14 +44,17 @@ test('adapter can fetch features from volvox.bam', async () => {
     configSchema.create({
       bamLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.bam'),
+        locationType: 'LocalPathLocation',
       },
       index: {
         indexType: 'CSI',
         location: {
           localPath: require.resolve('../../test_data/volvox-sorted.bam.csi'),
+          locationType: 'LocalPathLocation',
         },
       },
     }),
+    pluginManager,
   )
 
   const featuresCSI = adapterCSI.getFeatures({
@@ -64,14 +73,17 @@ test('test usage of BamSlightlyLazyFeature toJSON (used in the widget)', async (
     configSchema.create({
       bamLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.bam'),
+        locationType: 'LocalPathLocation',
       },
       index: {
         location: {
           localPath: require.resolve('../../test_data/volvox-sorted.bam.bai'),
+          locationType: 'LocalPathLocation',
         },
         indexType: 'BAI',
       },
     }),
+    pluginManager,
   )
 
   const features = adapter.getFeatures({
@@ -93,14 +105,17 @@ test('test usage of BamSlightlyLazyFeature for extended CIGAR', async () => {
     configSchema.create({
       bamLocation: {
         localPath: require.resolve('../../test_data/extended_cigar.bam'),
+        locationType: 'LocalPathLocation',
       },
       index: {
         location: {
           localPath: require.resolve('../../test_data/extended_cigar.bam.bai'),
+          locationType: 'LocalPathLocation',
         },
         indexType: 'BAI',
       },
     }),
+    pluginManager,
   )
 
   const features = adapter.getFeatures({

@@ -4,6 +4,9 @@ import { URL } from 'url'
 import { toArray } from 'rxjs/operators'
 import Adapter from './NCListAdapter'
 import configSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+
+const pluginManager = new PluginManager()
 
 test('adapter can fetch features from ensembl_genes test set', async () => {
   const rootTemplate = path
@@ -20,9 +23,12 @@ test('adapter can fetch features from ensembl_genes test set', async () => {
   await fsPromises.stat(rootTemplate.replace('{refseq}', '21')) // will throw if doesnt exist
   const args = {
     refNames: [],
-    rootUrlTemplate: { uri: decodeURI(new URL(`file://${rootTemplate}`).href) },
+    rootUrlTemplate: {
+      uri: decodeURI(new URL(`file://${rootTemplate}`).href),
+      locationType: 'UriLocation',
+    },
   }
-  const adapter = new Adapter(configSchema.create(args))
+  const adapter = new Adapter(configSchema.create(args), pluginManager)
 
   const features = adapter.getFeatures({
     assemblyName: 'volvox',

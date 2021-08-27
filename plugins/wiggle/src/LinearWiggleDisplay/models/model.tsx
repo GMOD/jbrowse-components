@@ -438,17 +438,19 @@ const stateModelFactory = (
             {
               label: 'Set min/max score',
               onClick: () => {
-                getSession(self).setDialogComponent(SetMinMaxDlg, {
-                  model: self,
-                })
+                getSession(self).queueDialog((doneCallback: Function) => [
+                  SetMinMaxDlg,
+                  { model: self, handleClose: doneCallback },
+                ])
               },
             },
             {
               label: 'Set color',
               onClick: () => {
-                getSession(self).setDialogComponent(SetColorDlg, {
-                  model: self,
-                })
+                getSession(self).queueDialog((doneCallback: Function) => [
+                  SetColorDlg,
+                  { model: self, handleClose: doneCallback },
+                ])
               },
             },
           ]
@@ -542,13 +544,18 @@ const stateModelFactory = (
         async reload() {
           self.setError()
           const aborter = new AbortController()
-          const stats = await getStats({
-            signal: aborter.signal,
-            filters: self.filters,
-          })
-          if (isAlive(self)) {
-            self.updateStats(stats)
-            superReload()
+          let stats
+          try {
+            stats = await getStats({
+              signal: aborter.signal,
+              filters: self.filters,
+            })
+            if (isAlive(self)) {
+              self.updateStats(stats)
+              superReload()
+            }
+          } catch (e) {
+            self.setError(e)
           }
         },
         afterAttach() {

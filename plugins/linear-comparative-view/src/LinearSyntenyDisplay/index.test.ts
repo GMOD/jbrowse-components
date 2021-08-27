@@ -15,6 +15,7 @@ test('create config', () => {
       adapter: {
         mcscanAnchorsLocation: {
           uri: 'test_data/grape.peach.anchors',
+          locationType: 'UriLocation',
         },
         subadapters: [
           {

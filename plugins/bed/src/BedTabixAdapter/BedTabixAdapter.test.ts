@@ -1,19 +1,25 @@
 import { toArray } from 'rxjs/operators'
 import BedTabixAdapter from './BedTabixAdapter'
 import MyConfigSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+
+const pluginManager = new PluginManager()
 
 test('adapter can fetch features from volvox-bed12.bed.gz', async () => {
   const adapter = new BedTabixAdapter(
     MyConfigSchema.create({
       bedGzLocation: {
         localPath: require.resolve('./test_data/volvox-bed12.bed.gz'),
+        locationType: 'LocalPathLocation',
       },
       index: {
         location: {
           localPath: require.resolve('./test_data/volvox-bed12.bed.gz.tbi'),
+          locationType: 'LocalPathLocation',
         },
       },
     }),
+    pluginManager,
   )
 
   const features = adapter.getFeatures({
@@ -35,13 +41,16 @@ test('adapter can fetch features from volvox.sort.bed.gz simple bed3', async () 
     MyConfigSchema.create({
       bedGzLocation: {
         localPath: require.resolve('./test_data/volvox.sort.bed.gz'),
+        locationType: 'LocalPathLocation',
       },
       index: {
         location: {
           localPath: require.resolve('./test_data/volvox.sort.bed.gz.tbi'),
+          locationType: 'LocalPathLocation',
         },
       },
     }),
+    pluginManager,
   )
 
   const features = adapter.getFeatures({
@@ -63,10 +72,12 @@ test('adapter can fetch features bed with autosql', async () => {
     MyConfigSchema.create({
       bedGzLocation: {
         localPath: require.resolve('./test_data/volvox-autosql.bed.gz'),
+        locationType: 'LocalPathLocation',
       },
       index: {
         location: {
           localPath: require.resolve('./test_data/volvox-autosql.bed.gz.tbi'),
+          locationType: 'LocalPathLocation',
         },
       },
       autoSql: `table gdcCancer
@@ -111,6 +122,7 @@ test('adapter can fetch features bed with autosql', async () => {
     lstring case_id;                "Case ID number"
 )`,
     }),
+    pluginManager,
   )
   const features = adapter.getFeatures({
     refName: 'ctgA',
@@ -133,15 +145,18 @@ test('adapter can fetch bed with header', async () => {
         localPath: require.resolve(
           './test_data/volvox.sort.with.header.bed.gz',
         ),
+        locationType: 'LocalPathLocation',
       },
       index: {
         location: {
           localPath: require.resolve(
             './test_data/volvox.sort.with.header.bed.gz.tbi',
           ),
+          locationType: 'LocalPathLocation',
         },
       },
     }),
+    pluginManager,
   )
 
   const features = adapter.getFeatures({
@@ -163,13 +178,16 @@ test('adapter can use gwas header', async () => {
     MyConfigSchema.create({
       bedGzLocation: {
         localPath: require.resolve('./test_data/gwas.bed.gz'),
+        locationType: 'LocalPathLocation',
       },
       index: {
         location: {
           localPath: require.resolve('./test_data/gwas.bed.gz.tbi'),
+          locationType: 'LocalPathLocation',
         },
       },
     }),
+    pluginManager,
   )
 
   const features = adapter.getFeatures({

@@ -9,11 +9,16 @@ export function getTag(feature: Feature, tag: string) {
 
 export function makeIndex(location: FileLocation, suffix: string) {
   if ('uri' in location) {
-    return { uri: location.uri + suffix }
+    return { uri: location.uri + suffix, locationType: 'UriLocation' }
   }
+
   if ('localPath' in location) {
-    return { localPath: location.localPath + suffix }
+    return {
+      localPath: location.localPath + suffix,
+      locationType: 'LocalPathLocation',
+    }
   }
+
   return location
 }
 

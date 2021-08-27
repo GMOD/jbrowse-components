@@ -7,15 +7,18 @@ export default {
       type: 'BgzipFastaAdapter',
       fastaLocation: {
         uri:
-          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
+          'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz',
+        locationType: 'UriLocation',
       },
       faiLocation: {
         uri:
-          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.fai',
+          'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.fai',
+        locationType: 'UriLocation',
       },
       gziLocation: {
         uri:
-          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.gzi',
+          'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.gzi',
+        locationType: 'UriLocation',
       },
     },
   },
@@ -25,6 +28,7 @@ export default {
       type: 'RefNameAliasAdapter',
       location: {
         uri: 'GRCh38.aliases.txt',
+        locationType: 'UriLocation',
       },
     },
   },

@@ -30,12 +30,19 @@ export default class extends BaseFeatureDataAdapter {
       const location = readConfObject(this.config, ['index', 'location'])
       const indexType = readConfObject(this.config, ['index', 'indexType'])
 
-      const filehandle = openLocation(vcfGzLocation as FileLocation)
+      const filehandle = openLocation(
+        vcfGzLocation as FileLocation,
+        this.pluginManager,
+      )
       const isCSI = indexType === 'CSI'
       const vcf = new TabixIndexedFile({
         filehandle,
-        csiFilehandle: isCSI ? openLocation(location) : undefined,
-        tbiFilehandle: !isCSI ? openLocation(location) : undefined,
+        csiFilehandle: isCSI
+          ? openLocation(location, this.pluginManager)
+          : undefined,
+        tbiFilehandle: !isCSI
+          ? openLocation(location, this.pluginManager)
+          : undefined,
         chunkCacheSize: 50 * 2 ** 20,
         chunkSizeLimit: 1000000000,
       })

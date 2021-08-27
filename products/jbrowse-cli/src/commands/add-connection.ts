@@ -31,7 +31,7 @@ export default class AddConnection extends JBrowseCommand {
     '$ jbrowse add-connection http://mysite.com/jbrowse/custom_data_folder/ --type JBrowse1Connection',
     '$ jbrowse add-connection http://mysite.com/path/to/hub.txt --assemblyName hg19',
     '$ jbrowse add-connection http://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection --assemblyName hg19',
-    `$ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config '{"uri":{"url":"https://mysite.com/path/to/custom"}}' --assemblyName hg19`,
+    `$ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config '{"uri":{"url":"https://mysite.com/path/to/custom"}, "locationType": "UriLocation"}' --assemblyName hg19`,
     '$ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json',
   ]
 
@@ -56,7 +56,7 @@ export default class AddConnection extends JBrowseCommand {
     }),
     config: flags.string({
       char: 'c',
-      description: `Any extra config settings to add to connection in JSON object format, such as '{"uri":"url":"https://sample.com"}}'`,
+      description: `Any extra config settings to add to connection in JSON object format, such as '{"uri":"url":"https://sample.com"}, "locationType": "UriLocation"}'`,
     }),
     connectionId: flags.string({
       description: `Id for the connection that must be unique to JBrowse.  Defaults to 'connectionType-assemblyName-currentTime'`,
@@ -169,11 +169,17 @@ export default class AddConnection extends JBrowseCommand {
 
     switch (type) {
       case 'UCSCTrackHubConnection': {
-        connectionConfig.hubTxtLocation = { uri: url }
+        connectionConfig.hubTxtLocation = {
+          uri: url,
+          locationType: 'UriLocation',
+        }
         break
       }
       case 'JBrowse1Connection': {
-        connectionConfig.dataDirLocation = { uri: url }
+        connectionConfig.dataDirLocation = {
+          uri: url,
+          locationType: 'UriLocation',
+        }
         break
       }
       default: {

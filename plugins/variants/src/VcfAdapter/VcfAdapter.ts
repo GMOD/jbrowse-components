@@ -11,6 +11,7 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 import VcfFeature from '../VcfTabixAdapter/VcfFeature'
 import VCF from '@gmod/vcf'
 import { unzip } from '@gmod/bgzf-filehandle'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 const readVcf = (f: string) => {
   const lines = f.split('\n')
@@ -34,8 +35,11 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
   private setupP?: Promise<Feature[]>
 
-  public constructor(config: AnyConfigurationModel) {
-    super(config)
+  public constructor(
+    config: AnyConfigurationModel,
+    pluginManager: PluginManager,
+  ) {
+    super(config, pluginManager)
   }
 
   private async decodeFileContents() {
@@ -44,7 +48,10 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       'vcfLocation',
     ) as FileLocation
 
-    let fileContents = await openLocation(vcfLocation).readFile()
+    let fileContents = await openLocation(
+      vcfLocation,
+      this.pluginManager,
+    ).readFile()
 
     if (
       typeof fileContents[0] === 'number' &&
