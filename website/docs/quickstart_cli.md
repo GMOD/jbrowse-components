@@ -258,8 +258,8 @@ This will also update your config.json so after it completes, you can type a
 gene name into the "search box" in the linear genome view or other views and
 quickly navigate to genes by gene name.
 
-See the [text-index](cli#jbrowse-text-index) command docs for more info. Also see the
-[FAQ entries for text searching](faq#text-searching)
+See the [text-index](cli#jbrowse-text-index) command docs for more info. Also
+see the [FAQ entries for text searching](faq#text-searching)
 
 ## Conclusion
 

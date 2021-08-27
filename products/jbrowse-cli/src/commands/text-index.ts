@@ -15,11 +15,15 @@ export default class TextIndex extends JBrowseCommand {
   static examples = [
     "# indexes all tracks that it can find in the current directory's config.json",
     '$ jbrowse text-index',
+    '',
     "# indexes specific trackIds that it can find in the current directory's config.json",
     '$ jbrowse text-index --tracks=track1,track2,track3',
+    '',
     "# indexes all tracks in a directory's config.json or in a specific config file",
     '$ jbrowse text-index --out /path/to/jb2/',
-    '$ jbrowse text-index --out /path/to/jb2/some_alt_config.json',
+    '',
+    '# indexes only a specific assembly, and overwrite what was previously there using force (which is needed if a previous index already existed)',
+    '$ jbrowse text-index -a hg19 --force',
   ]
 
   static flags = {
