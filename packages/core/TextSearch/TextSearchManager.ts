@@ -73,7 +73,7 @@ export default class TextSearchManager {
       ...this.getAdaptersWithAssembly(
         assemblyName,
         tracks.map(track =>
-          readConfObject(track, ['textSearchConf', 'textSearchAdapter']),
+          readConfObject(track, ['textSearching', 'textSearchAdapter']),
         ),
       ),
     ]
