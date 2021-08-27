@@ -22,7 +22,7 @@ import ListIcon from '@material-ui/icons/List'
 
 // local
 import { useLocalStorage, createPluginManager } from './util'
-import RecentSessionCard from './RecentSessionCard'
+import SessionCard from './SessionCard'
 
 const useStyles = makeStyles(theme => ({
   pointer: {
@@ -156,7 +156,7 @@ function RecentSessionsCards({
     <Grid container spacing={4}>
       {sortedSessions?.map(([name, sessionData]) => (
         <Grid item key={name}>
-          <RecentSessionCard
+          <SessionCard
             sessionName={name}
             sessionStats={sessionData.stats}
             sessionScreenshot={sessionData.screenshot}

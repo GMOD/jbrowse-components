@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button, Grid, makeStyles } from '@material-ui/core'
+import { Button, makeStyles } from '@material-ui/core'
 import PluginManager from '@jbrowse/core/PluginManager'
 import PreloadedDatasetSelector from './PreloadedDatasetSelector'
 import OpenSequenceDialog from './OpenSequenceDialog'
@@ -12,6 +12,7 @@ const useStyles = makeStyles(theme => ({
   },
   button: {
     minWidth: 200,
+    margin: theme.spacing(3),
     height: '3em',
   },
 }))
@@ -25,32 +26,24 @@ export default function StartScreenOptionsPanel({
   const [sequenceDialogOpen, setSequenceDialogOpen] = useState(false)
   const [dataDirectoryDialogOpen, setDataDirectoryDialogOpen] = useState(false)
   return (
-    <Grid item xs={4}>
-      <Grid container spacing={5} direction="column" alignItems="center">
-        <Grid item>
-          <Button
-            variant="contained"
-            color="primary"
-            className={classes.button}
-            onClick={() => setSequenceDialogOpen(true)}
-          >
-            Open sequence file
-          </Button>
-        </Grid>
-        <Grid item>
-          <Button
-            variant="contained"
-            color="primary"
-            className={classes.button}
-            onClick={() => setDataDirectoryDialogOpen(true)}
-          >
-            Open jbrowse web config
-          </Button>
-        </Grid>
-        <Grid item>
-          <PreloadedDatasetSelector setPluginManager={setPluginManager} />
-        </Grid>
-      </Grid>
+    <>
+      <Button
+        variant="contained"
+        color="primary"
+        className={classes.button}
+        onClick={() => setSequenceDialogOpen(true)}
+      >
+        Open sequence file
+      </Button>
+      <Button
+        variant="contained"
+        color="primary"
+        className={classes.button}
+        onClick={() => setDataDirectoryDialogOpen(true)}
+      >
+        Open jbrowse web config
+      </Button>
+      <PreloadedDatasetSelector setPluginManager={setPluginManager} />
       {sequenceDialogOpen ? (
         <OpenSequenceDialog
           onClose={() => setSequenceDialogOpen(false)}
@@ -63,6 +56,6 @@ export default function StartScreenOptionsPanel({
           setPluginManager={setPluginManager}
         />
       ) : null}
-    </Grid>
+    </>
   )
 }

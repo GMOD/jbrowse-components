@@ -398,4 +398,28 @@ export default {
       name: 'New Session',
     },
   },
+  mm10: {
+    assemblies: [
+      {
+        name: 'mm10',
+        displayName: 'Mus musculus (mm10)',
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'mouse_seq',
+          adapter: {
+            type: 'BgzipFastaAdapter',
+            fastaLocation: {
+              uri: 'https://jbrowse.org/genomes/mm10/fasta/mm10.fa.gz',
+            },
+            faiLocation: {
+              uri: 'https://jbrowse.org/genomes/mm10/fasta/mm10.fa.gz.fai',
+            },
+            gziLocation: {
+              uri: 'https://jbrowse.org/genomes/mm10/fasta/mm10.fa.gz.gzi',
+            },
+          },
+        },
+      },
+    ],
+  },
 }
