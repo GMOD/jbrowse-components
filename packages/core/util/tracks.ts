@@ -106,7 +106,15 @@ export function guessAdapter(
   const fileName = getFileName(file)
   const indexName = index && getFileName(index)
 
-  // break up plugin-associated adapters in the dropdown menu
+  // unsure if this is necessary since the front end catches anything that isn't registered, think about this later
+  // const unsupportedList = [
+  //   /\.gff3?$/i,
+  //   /\.gtf?$/i,
+  //   /\.vcf\.idx$/i,
+  //   /\.bed$/i,
+  //   /\.sizes$/i,
+  // ]
+
   if (model) {
     const session = getSession(model)
 
@@ -129,196 +137,25 @@ export function guessAdapter(
   return {
     type: UNKNOWN,
   }
-
-  {
-    /**
-
-  if (/\.bam$/i.test(fileName) || adapterHint === 'BamAdapter') {
-    return {
-      type: 'BamAdapter',
-      bamLocation: file,
-      index: {
-        location: index || makeIndex(file, '.bai'),
-        indexType: makeIndexType(indexName, 'CSI', 'BAI'),
-      },
-    }
-  }
-
-  if (/\.cram$/i.test(fileName) || adapterHint === 'CramAdapter') {
-    return {
-      type: 'CramAdapter',
-      cramLocation: file,
-      craiLocation: index || makeIndex(file, '.crai'),
-    }
-  }
-
-  if (/\.gff3?$/i.test(fileName)) {
-    return {
-      type: 'UNSUPPORTED',
-    }
-  }
-
-  if (/\.gff3?\.b?gz$/i.test(fileName) || adapterHint === 'Gff3TabixAdapter') {
-    return {
-      type: 'Gff3TabixAdapter',
-      gffGzLocation: file,
-      index: {
-        location: index || makeIndex(file, '.tbi'),
-        indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-      },
-    }
-  }
-
-  if (/\.gtf?$/i.test(fileName)) {
-    return {
-      type: 'UNSUPPORTED',
-    }
-  }
-
-  if (/\.vcf$/i.test(fileName) || adapterHint === 'VcfAdapter') {
-    return {
-      type: 'VcfAdapter',
-      vcfLocation: file,
-    }
-  }
-
-  if (/\.vcf\.b?gz$/i.test(fileName) || adapterHint === 'VcfTabixAdapter') {
-    return {
-      type: 'VcfTabixAdapter',
-      vcfGzLocation: file,
-      index: {
-        location: index || makeIndex(file, '.tbi'),
-        indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-      },
-    }
-  }
-
-  if (/\.vcf\.idx$/i.test(fileName)) {
-    return {
-      type: 'UNSUPPORTED',
-    }
-  }
-
-  if (/\.bed$/i.test(fileName)) {
-    return {
-      type: 'UNSUPPORTED',
-    }
-  }
-
-  if (/\.bed\.b?gz$/i.test(fileName) || adapterHint === 'BedTabixAdapter') {
-    return {
-      type: 'BedTabixAdapter',
-      bedGzLocation: file,
-      index: {
-        location: index || makeIndex(file, '.tbi'),
-        indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-      },
-    }
-  }
-
-  if (/\.(bb|bigbed)$/i.test(fileName) || adapterHint === 'BigBedAdapter') {
-    return {
-      type: 'BigBedAdapter',
-      bigBedLocation: file,
-    }
-  }
-
-  if (/\.(bw|bigwig)$/i.test(fileName) || adapterHint === 'BigWigAdapter') {
-    return {
-      type: 'BigWigAdapter',
-      bigWigLocation: file,
-    }
-  }
-
-  if (
-    /\.(fa|fasta|fas|fna|mfa)$/i.test(fileName) ||
-    adapterHint === 'IndexedFastaAdapter'
-  ) {
-    return {
-      type: 'IndexedFastaAdapter',
-      fastaLocation: file,
-      faiLocation: index || makeIndex(file, '.fai'),
-    }
-  }
-
-  if (
-    /\.(fa|fasta|fas|fna|mfa)\.b?gz$/i.test(fileName) ||
-    adapterHint === 'BgzipFastaAdapter'
-  ) {
-    return {
-      type: 'BgzipFastaAdapter',
-      fastaLocation: file,
-      faiLocation: makeIndex(file, '.fai'),
-      gziLocation: makeIndex(file, '.gzi'),
-    }
-  }
-
-  if (/\.2bit$/i.test(fileName) || adapterHint === 'TwoBitAdapter') {
-    return {
-      type: 'TwoBitAdapter',
-      twoBitLocation: file,
-    }
-  }
-
-  if (/\.sizes$/i.test(fileName)) {
-    return {
-      type: 'UNSUPPORTED',
-    }
-  }
-
-  if (
-    /\/trackData.jsonz?$/i.test(fileName) ||
-    adapterHint === 'NCListAdapter'
-  ) {
-    return {
-      type: 'NCListAdapter',
-      rootUrlTemplate: file,
-    }
-  }
-
-  if (/\/sparql$/i.test(fileName) || adapterHint === 'SPARQLAdapter') {
-    return {
-      type: 'SPARQLAdapter',
-      endpoint: file,
-    }
-  }
-
-  if (/\.hic/i.test(fileName) || adapterHint === 'HicAdapter') {
-    return {
-      type: 'HicAdapter',
-      hicLocation: file,
-    }
-  }
-
-  if (/\.paf/i.test(fileName) || adapterHint === 'PAFAdapter') {
-    return {
-      type: 'PAFAdapter',
-      pafLocation: file,
-    }
-  }
-
-  return {
-    type: UNKNOWN,
-  }
-
-*/
-  }
 }
 
-export function guessTrackType(adapterType: string): string {
-  const known: { [key: string]: string | undefined } = {
-    BamAdapter: 'AlignmentsTrack',
-    CramAdapter: 'AlignmentsTrack',
-    BgzipFastaAdapter: 'ReferenceSequenceTrack',
-    BigWigAdapter: 'QuantitativeTrack',
-    IndexedFastaAdapter: 'ReferenceSequenceTrack',
-    TwoBitAdapter: 'ReferenceSequenceTrack',
-    VcfAdapter: 'VariantTrack',
-    VcfTabixAdapter: 'VariantTrack',
-    HicAdapter: 'HicTrack',
-    PAFAdapter: 'SyntenyTrack',
+export function guessTrackType(adapterType: string, model?: any): string {
+  if (model) {
+    const session = getSession(model)
+
+    const adapter = getEnv(session)
+      .pluginManager.getElementTypesInGroup('adapter guess')
+      .find((adapter: any) => {
+        if (adapterType === adapter.name) {
+          return adapter
+        }
+      })
+
+    if (adapter) {
+      return adapter.trackGuess
+    }
   }
-  return known[adapterType] || 'FeatureTrack'
+  return 'FeatureTrack'
 }
 
 export function generateUnsupportedTrackConf(

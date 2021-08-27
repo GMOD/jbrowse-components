@@ -7,14 +7,18 @@ export default class AdapterGuessType extends PluggableElementBase {
 
   regexGuess: RegExp | undefined
 
+  trackGuess: string | undefined
+
   constructor(stuff: {
     name: string
-    regexGuess?: RegExp
     fetchConfig: Function
+    regexGuess?: RegExp
+    trackGuess?: string
   }) {
     super(stuff)
     this.name = stuff.name
-    this.regexGuess = stuff.regexGuess
     this.fetchConfig = stuff.fetchConfig
+    this.regexGuess = stuff.regexGuess
+    this.trackGuess = stuff.trackGuess
   }
 }

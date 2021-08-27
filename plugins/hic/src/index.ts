@@ -9,6 +9,8 @@ import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
+import AdapterGuessType from '@jbrowse/core/pluggableElementTypes/AdapterGuessType'
+import { FileLocation } from '@jbrowse/core/util/types'
 import Color from 'color'
 import HicRenderer, {
   configSchema as hicRendererConfigSchema,
@@ -31,6 +33,20 @@ export default class HicPlugin extends Plugin {
           configSchema: hicAdapterConfigSchema,
           getAdapterClass: () =>
             import('./HicAdapter/HicAdapter').then(r => r.default),
+        }),
+    )
+    pluginManager.registerAdapterGuess(
+      () =>
+        new AdapterGuessType({
+          name: 'HicAdapter',
+          regexGuess: /\.hic/i,
+          trackGuess: 'HicTrack',
+          fetchConfig: (file: FileLocation) => {
+            return {
+              type: 'HicAdapter',
+              hicLocation: file,
+            }
+          },
         }),
     )
     pluginManager.addRendererType(

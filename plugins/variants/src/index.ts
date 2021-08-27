@@ -40,6 +40,29 @@ export default class VariantsPlugin extends Plugin {
         }),
     )
 
+    pluginManager.registerAdapterGuess(
+      () =>
+        new AdapterGuessType({
+          name: 'VcfTabixAdapter',
+          regexGuess: /\.vcf\.b?gz$/i,
+          trackGuess: 'VariantTrack',
+          fetchConfig: (
+            file: FileLocation,
+            index: FileLocation,
+            indexName: string,
+          ) => {
+            return {
+              type: 'VcfTabixAdapter',
+              vcfGzLocation: file,
+              index: {
+                location: index || makeIndex(file, '.tbi'),
+                indexType: makeIndexType(indexName, 'CSI', 'TBI'),
+              },
+            }
+          },
+        }),
+    )
+
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
@@ -54,6 +77,8 @@ export default class VariantsPlugin extends Plugin {
       () =>
         new AdapterGuessType({
           name: 'VcfAdapter',
+          regexGuess: /\.vcf$/i,
+          trackGuess: 'VariantTrack',
           fetchConfig: (file: FileLocation) => {
             return {
               type: 'VcfAdapter',

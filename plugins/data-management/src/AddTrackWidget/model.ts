@@ -152,7 +152,9 @@ export default function f(pluginManager: PluginManager) {
       get trackType() {
         return (
           self.altTrackType ||
-          (this.trackAdapter ? guessTrackType(this.trackAdapter.type) : '')
+          (this.trackAdapter
+            ? guessTrackType(this.trackAdapter.type, self)
+            : '')
         )
       },
     }))

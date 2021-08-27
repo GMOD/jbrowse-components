@@ -3,6 +3,8 @@ import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { configSchema as bigBedAdapterConfigSchema } from './BigBedAdapter'
 import { configSchema as bedTabixAdapterConfigSchema } from './BedTabixAdapter'
+import AdapterGuessType from '@jbrowse/core/pluggableElementTypes/AdapterGuessType'
+import { FileLocation } from '@jbrowse/core/util/types'
 
 export default class BedPlugin extends Plugin {
   name = 'BedPlugin'
@@ -17,6 +19,20 @@ export default class BedPlugin extends Plugin {
             import('./BigBedAdapter/BigBedAdapter').then(r => r.default),
         }),
     )
+    pluginManager.registerAdapterGuess(
+      () =>
+        new AdapterGuessType({
+          name: 'BigBedAdapter',
+          regexGuess: /\.(bb|bigbed)$/i,
+          fetchConfig: (file: FileLocation) => {
+            return {
+              type: 'BigBedAdapter',
+              bigBedLocation: file,
+            }
+          },
+        }),
+    )
+
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
@@ -24,6 +40,28 @@ export default class BedPlugin extends Plugin {
           configSchema: bedTabixAdapterConfigSchema,
           getAdapterClass: () =>
             import('./BedTabixAdapter/BedTabixAdapter').then(r => r.default),
+        }),
+    )
+
+    pluginManager.registerAdapterGuess(
+      () =>
+        new AdapterGuessType({
+          name: 'BedTabixAdapter',
+          regexGuess: /\.bed\.b?gz$/i,
+          fetchConfig: (
+            file: FileLocation,
+            index: FileLocation,
+            indexName: string,
+          ) => {
+            return {
+              type: 'BedTabixAdapter',
+              bedGzLocation: file,
+              index: {
+                location: index || makeIndex(file, '.tbi'),
+                indexType: makeIndexType(indexName, 'CSI', 'TBI'),
+              },
+            }
+          },
         }),
     )
   }

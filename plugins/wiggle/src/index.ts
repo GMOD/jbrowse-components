@@ -9,6 +9,8 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import AdapterGuessType from '@jbrowse/core/pluggableElementTypes/AdapterGuessType'
+import { FileLocation } from '@jbrowse/core/util/types'
 import WiggleBaseRenderer from './WiggleBaseRenderer'
 import WiggleRendering from './WiggleRendering'
 import {
@@ -83,6 +85,20 @@ export default class WigglePlugin extends Plugin {
           adapterCapabilities,
           getAdapterClass: () =>
             import('./BigWigAdapter/BigWigAdapter').then(r => r.default),
+        }),
+    )
+    pluginManager.registerAdapterGuess(
+      () =>
+        new AdapterGuessType({
+          name: 'BigWigAdapter',
+          regexGuess: /\.(bw|bigwig)$/i,
+          trackGuess: 'QuantitativeTrack',
+          fetchConfig: (file: FileLocation) => {
+            return {
+              type: 'BigWigAdapter',
+              bigWigLocation: file,
+            }
+          },
         }),
     )
 

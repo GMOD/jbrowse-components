@@ -152,6 +152,7 @@ export default class AlignmentsPlugin extends Plugin {
         new AdapterGuessType({
           name: 'BamAdapter',
           regexGuess: /\.bam$/i,
+          trackGuess: 'AlignmentsTrack',
           fetchConfig: (
             file: FileLocation,
             index: FileLocation,
@@ -168,7 +169,6 @@ export default class AlignmentsPlugin extends Plugin {
           },
         }),
     )
-
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
@@ -181,6 +181,21 @@ export default class AlignmentsPlugin extends Plugin {
         new AdapterType({
           name: 'CramAdapter',
           ...pluginManager.load(CramAdapterF),
+        }),
+    )
+    pluginManager.registerAdapterGuess(
+      () =>
+        new AdapterGuessType({
+          name: 'CramAdapter',
+          regexGuess: /\.cram$/i,
+          trackGuess: 'AlignmentsTrack',
+          fetchConfig: (file: FileLocation, index: FileLocation) => {
+            return {
+              type: 'CramAdapter',
+              cramLocation: file,
+              craiLocation: index || makeIndex(file, '.crai'),
+            }
+          },
         }),
     )
     pluginManager.addAdapterType(

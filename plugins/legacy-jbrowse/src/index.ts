@@ -3,6 +3,8 @@ import TextSearchAdapterType from '@jbrowse/core/pluggableElementTypes/TextSearc
 import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
+import AdapterGuessType from '@jbrowse/core/pluggableElementTypes/AdapterGuessType'
+import { FileLocation } from '@jbrowse/core/util/types'
 import { configSchema as ncListAdapterConfigSchema } from './NCListAdapter'
 import {
   AdapterClass as JBrowse1TextSearchAdapterClass,
@@ -24,6 +26,20 @@ export default class LegacyJBrowsePlugin extends Plugin {
           configSchema: ncListAdapterConfigSchema,
           getAdapterClass: () =>
             import('./NCListAdapter/NCListAdapter').then(r => r.default),
+        }),
+    )
+
+    pluginManager.registerAdapterGuess(
+      () =>
+        new AdapterGuessType({
+          name: 'NCListAdapter',
+          regexGuess: /\/trackData.jsonz?$/i,
+          fetchConfig: (file: FileLocation) => {
+            return {
+              type: 'NCListAdapter',
+              rootUrlTemplate: file,
+            }
+          },
         }),
     )
 
