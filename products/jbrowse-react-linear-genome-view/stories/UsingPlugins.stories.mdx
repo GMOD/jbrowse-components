@@ -1,0 +1,22 @@
+import { Meta, Story, Canvas } from '@storybook/addon-docs/blocks'
+
+<Meta title="Using Plugins" />
+
+## Using plugins
+
+You can use extra load a plugin at runtime for the embedded component.
+
+This can come in the form of
+
+- Plugins loaded a build time
+- Plugins loaded at runtime
+
+The build time would be installed from NPM and included in your source code for
+setting up the components. The runtime ones would load e.g. from a URL, and
+you'd also write some code to load those. This example shows runtime, but a
+small source code comment in this example shows how build time would be used
+too
+
+<Canvas withSource="open">
+  <Story id="linear-view--with-plugins" />
+</Canvas>

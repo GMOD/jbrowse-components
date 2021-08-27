@@ -8,13 +8,14 @@ This document covers the CLI tools.
 
 ## Installation
 
-The command line tools can be installed using `npm` as follows
+The command line tools can be installed globally using `npm` as follows
 
 ```sh-session
 $ npm install -g @jbrowse/cli
 ```
 
-You can test your installation with
+A CLI tool called `jbrowse` should then be available in the path. You can test
+your installation with
 
 ```sh-session
 $ jbrowse --version
@@ -26,7 +27,7 @@ It is also possible to do one-off executions using npx, e.g.
 npx @jbrowse/cli create myfolder
 ```
 
-It is likely preferable in most cases to install the tools first however
+It is likely preferable in most cases to install the tools globally with `npm install @jbrowse/cli -g` however
 
 ## Commands
 
@@ -413,7 +414,7 @@ _See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse
 
 ## `jbrowse text-index`
 
-Make a text-indexing file for any given track(s).
+Make a text-indexing file for any given track(s)
 
 ```
 USAGE
@@ -445,14 +446,19 @@ OPTIONS
 EXAMPLES
   # indexes all tracks that it can find in the current directory's config.json
   $ jbrowse text-index
+
   # indexes specific trackIds that it can find in the current directory's config.json
   $ jbrowse text-index --tracks=track1,track2,track3
+
   # indexes all tracks in a directory's config.json or in a specific config file
   $ jbrowse text-index --out /path/to/jb2/
-  $ jbrowse text-index --out /path/to/jb2/some_alt_config.json
+
+  # indexes only a specific assembly, and overwrite what was previously there using force (which is needed if a previous
+  index already existed)
+  $ jbrowse text-index -a hg19 --force
 ```
 
-_See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.3/products/jbrowse-cli/src/commands/text-index.ts)_
+_See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.4/products/jbrowse-cli/src/commands/text-index.ts)_
 
 ## `jbrowse upgrade [LOCALPATH]`
 
