@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { createViewState, JBrowseLinearGenomeView, loadPlugins } from '../src'
 import volvoxConfig from '../public/test_data/volvox/config.json'
 import volvoxSession from '../public/volvox-session.json'
+import nextstrainConfig from '../public/nextstrain_covid.json'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function addRelativeUris(config: any, baseUri: string) {
@@ -56,7 +57,7 @@ export const OneLinearGenomeView = () => {
   return <JBrowseLinearGenomeView viewState={state} />
 }
 
-export const OneLinearGenomeViewUsingLocObject = () => {
+export const UsingLocObject = () => {
   const state = createViewState({
     assembly,
     tracks,
@@ -64,43 +65,34 @@ export const OneLinearGenomeViewUsingLocObject = () => {
 
     // use 0-based coordinates for "location object" here
     location: { refName: 'ctgA', start: 10000, end: 20000 },
-    onChange: patch => {
-      // eslint-disable-next-line no-console
-      console.log('patch', patch)
-    },
   })
   return <JBrowseLinearGenomeView viewState={state} />
 }
-export const LinearViewWithLongReads = () => {
+export const WithLongReads = () => {
   const state = createViewState({
     assembly,
     tracks,
     defaultSession: longReadsSession,
     location: 'ctgA:1105..1221',
-    onChange: patch => {
-      // eslint-disable-next-line no-console
-      console.log('patch', patch)
-    },
   })
 
   return <JBrowseLinearGenomeView viewState={state} />
 }
 
-export const OneLinearGenomeViewWithOutsideStyling = () => {
+export const WithOutsideStyling = () => {
   const state = createViewState({
     assembly,
     tracks,
     defaultSession,
     location: 'ctgA:1105..1221',
-    onChange: patch => {
-      // eslint-disable-next-line no-console
-      console.log('patch', patch)
-    },
   })
 
   return (
     <div style={{ textAlign: 'center', fontFamily: 'monospace' }}>
-      <h2>Hello world, this is centered but not affecting the internal LGV</h2>
+      <h2>
+        This parent container has textAlign:'center' and a monospace font, but
+        these attributes are not affecting the internal LGV
+      </h2>
       <JBrowseLinearGenomeView viewState={state} />
     </div>
   )
@@ -132,10 +124,12 @@ export const TwoLinearGenomeViews = () => {
 
 export const WithPlugins = () => {
   // usage with buildtime plugins
+  // this plugins array is then passed to the createViewState constructor
   // import UCSCPlugin from 'jbrowse-plugin-ucsc'
   // const plugins = [UCSCPlugin]
 
-  // alternative usage with runtime plugins
+  // usage with runtime plugins
+  // this plugins array is then passed to the createViewState constructor
   const [plugins, setPlugins] = useState<PluginRecord[]>()
   useEffect(() => {
     async function getPlugins() {
@@ -330,7 +324,7 @@ export const WithTextSearching = () => {
   return <JBrowseLinearGenomeView viewState={state} />
 }
 
-export const withTrackTextSearchingIndex = () => {
+export const WithPerTrackTextSearching = () => {
   const textSearchConfig = {
     assembly,
     tracks: [
@@ -427,6 +421,32 @@ export const CustomTheme = () => {
             C: { main: '#87CEEB' },
             G: { main: '#DAA520' },
             T: { main: '#DC143C' },
+          },
+        },
+      },
+    },
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+export const NextstrainExample = () => {
+  const { assembly, tracks, defaultSession } = nextstrainConfig
+  const state = createViewState({
+    assembly,
+    tracks,
+    defaultSession,
+    location: 'SARS-CoV-2:1..29,903',
+    onChange: patch => {
+      // eslint-disable-next-line no-console
+      console.log('patch', patch)
+    },
+    configuration: {
+      theme: {
+        palette: {
+          primary: {
+            main: '#5da8a3',
+          },
+          secondary: {
+            main: '#333',
           },
         },
       },
