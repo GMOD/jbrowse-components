@@ -9,6 +9,7 @@ import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TwoBitFile } from '@gmod/twobit'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 export default class TwoBitAdapter
   extends BaseFeatureDataAdapter
@@ -25,7 +26,7 @@ export default class TwoBitAdapter
     // config editor, may want better way to check "optional config slots" in
     // future
     if (conf.uri !== '/path/to/default.chrom.sizes' && conf.uri !== '') {
-      const file = openLocation(conf)
+      const file = openLocation(conf, this.pluginManager)
       const data = (await file.readFile('utf8')) as string
       return Object.fromEntries(
         data
@@ -40,11 +41,14 @@ export default class TwoBitAdapter
     return undefined
   }
 
-  constructor(config: AnyConfigurationModel) {
-    super(config)
+  constructor(config: AnyConfigurationModel, pluginManager: PluginManager) {
+    super(config, pluginManager)
     this.chromSizesData = this.initChromSizes()
     this.twobit = new TwoBitFile({
-      filehandle: openLocation(readConfObject(config, 'twoBitLocation')),
+      filehandle: openLocation(
+        readConfObject(config, 'twoBitLocation'),
+        this.pluginManager,
+      ),
     })
   }
 

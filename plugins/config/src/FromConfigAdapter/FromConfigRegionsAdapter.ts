@@ -10,6 +10,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { ConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'
 import FromConfigAdapter from './FromConfigAdapter'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * Adapter that just returns the features defined in its `features` configuration
@@ -23,8 +24,9 @@ export default class FromConfigRegionsAdapter
 
   constructor(
     config: ConfigurationModel<typeof FromConfigAdapterConfigSchema>,
+    pluginManager: PluginManager,
   ) {
-    super(config)
+    super(config, pluginManager)
     const features = readConfObject(
       config,
       'features',

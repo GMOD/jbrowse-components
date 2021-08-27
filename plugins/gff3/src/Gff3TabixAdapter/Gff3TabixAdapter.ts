@@ -15,6 +15,7 @@ import { Observer } from 'rxjs'
 import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import MyConfigSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 type Strand = '+' | '-' | '.' | '?'
 interface FeatureLoc {
@@ -41,8 +42,11 @@ export default class extends BaseFeatureDataAdapter {
 
   protected dontRedispatch: string[]
 
-  public constructor(config: Instance<typeof MyConfigSchema>) {
-    super(config)
+  public constructor(
+    config: Instance<typeof MyConfigSchema>,
+    pluginManager: PluginManager,
+  ) {
+    super(config, pluginManager)
     const gffGzLocation = readConfObject(config, 'gffGzLocation')
     const indexType = readConfObject(config, ['index', 'indexType'])
     const location = readConfObject(config, ['index', 'location'])
@@ -50,9 +54,15 @@ export default class extends BaseFeatureDataAdapter {
 
     this.dontRedispatch = dontRedispatch || ['chromosome', 'contig', 'region']
     this.gff = new TabixIndexedFile({
-      filehandle: openLocation(gffGzLocation),
-      csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
-      tbiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
+      filehandle: openLocation(gffGzLocation, this.pluginManager),
+      csiFilehandle:
+        indexType === 'CSI'
+          ? openLocation(location, this.pluginManager)
+          : undefined,
+      tbiFilehandle:
+        indexType !== 'CSI'
+          ? openLocation(location, this.pluginManager)
+          : undefined,
       chunkCacheSize: 50 * 2 ** 20,
       renameRefSeqs: (n: string) => n,
     })

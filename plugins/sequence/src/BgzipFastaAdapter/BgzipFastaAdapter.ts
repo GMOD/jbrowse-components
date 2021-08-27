@@ -4,10 +4,14 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import IndexedFasta from '../IndexedFastaAdapter/IndexedFastaAdapter'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 export default class extends IndexedFasta {
-  public constructor(config: AnyConfigurationModel) {
-    super(config)
+  public constructor(
+    config: AnyConfigurationModel,
+    pluginManager: PluginManager,
+  ) {
+    super(config, pluginManager)
     const fastaLocation = readConfObject(config, 'fastaLocation')
     const faiLocation = readConfObject(config, 'faiLocation')
     const gziLocation = readConfObject(config, 'gziLocation')
@@ -21,9 +25,9 @@ export default class extends IndexedFasta {
       throw new Error('must provide gziLocation')
     }
     const fastaOpts = {
-      fasta: openLocation(fastaLocation as FileLocation),
-      fai: openLocation(faiLocation as FileLocation),
-      gzi: openLocation(gziLocation as FileLocation),
+      fasta: openLocation(fastaLocation as FileLocation, this.pluginManager),
+      fai: openLocation(faiLocation as FileLocation, this.pluginManager),
+      gzi: openLocation(gziLocation as FileLocation, this.pluginManager),
     }
 
     this.fasta = new BgzipIndexedFasta(fastaOpts)

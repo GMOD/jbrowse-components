@@ -37,9 +37,15 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const chunkSizeLimit = readConfObject(this.config, 'chunkSizeLimit')
       const fetchSizeLimit = readConfObject(this.config, 'fetchSizeLimit')
       const bam = new BamFile({
-        bamFilehandle: openLocation(bamLocation),
-        csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
-        baiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
+        bamFilehandle: openLocation(bamLocation, this.pluginManager),
+        csiFilehandle:
+          indexType === 'CSI'
+            ? openLocation(location, this.pluginManager)
+            : undefined,
+        baiFilehandle:
+          indexType !== 'CSI'
+            ? openLocation(location, this.pluginManager)
+            : undefined,
         chunkSizeLimit,
         fetchSizeLimit,
       })

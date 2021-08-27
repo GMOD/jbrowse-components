@@ -32,6 +32,7 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
 // need plugin manger for openLocation now
 export function openLocation(
   location: FileLocation,
+  pluginManager?: PluginManager,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rootModel?: any,
 ): GenericFilehandle {
@@ -70,20 +71,21 @@ export function openLocation(
             return internetAccount.openLocation(modifiedLocation)
           }
         } else {
-          const pluginManager = new PluginManager([new AuthenticationPlugin()])
-          pluginManager.createPluggableElements()
-          const internetAccountType = pluginManager.getInternetAccountType(
-            location.internetAccountPreAuthorization.internetAccountType,
-          )
-          const internetAccount = internetAccountType.stateModel.create({
-            type: location.internetAccountPreAuthorization.internetAccountType,
-            configuration:
-              location.internetAccountPreAuthorization.authInfo.configuration,
-          })
-          if (!location.internetAccountPreAuthorization?.authInfo.token) {
-            throw new Error('Issue with authorization')
+          if (pluginManager) {
+            const internetAccountType = pluginManager.getInternetAccountType(
+              location.internetAccountPreAuthorization.internetAccountType,
+            )
+            const internetAccount = internetAccountType.stateModel.create({
+              type:
+                location.internetAccountPreAuthorization.internetAccountType,
+              configuration:
+                location.internetAccountPreAuthorization.authInfo.configuration,
+            })
+            if (!location.internetAccountPreAuthorization?.authInfo.token) {
+              throw new Error('Issue with authorization')
+            }
+            return internetAccount.openLocation(location)
           }
-          return internetAccount.openLocation(location)
         }
       }
 

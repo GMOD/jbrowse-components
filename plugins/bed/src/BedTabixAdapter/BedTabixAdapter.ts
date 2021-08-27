@@ -13,6 +13,7 @@ import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { ucscProcessedTranscript } from '../util'
 import MyConfigSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   private parser: any
@@ -25,8 +26,11 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: Instance<typeof MyConfigSchema>) {
-    super(config)
+  public constructor(
+    config: Instance<typeof MyConfigSchema>,
+    pluginManager: PluginManager,
+  ) {
+    super(config, pluginManager)
     const bedGzLocation = readConfObject(
       config,
       'bedGzLocation',
@@ -39,9 +43,15 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     const { location, indexType } = index
 
     this.bed = new TabixIndexedFile({
-      filehandle: openLocation(bedGzLocation),
-      csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
-      tbiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
+      filehandle: openLocation(bedGzLocation, this.pluginManager),
+      csiFilehandle:
+        indexType === 'CSI'
+          ? openLocation(location, this.pluginManager)
+          : undefined,
+      tbiFilehandle:
+        indexType !== 'CSI'
+          ? openLocation(location, this.pluginManager)
+          : undefined,
       chunkCacheSize: 50 * 2 ** 20,
     })
     this.columnNames = readConfObject(config, 'columnNames')

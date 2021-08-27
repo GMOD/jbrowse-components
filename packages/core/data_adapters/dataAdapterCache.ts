@@ -67,7 +67,7 @@ export async function getAdapter(
       throw new Error('Failed to get adapter')
     }
 
-    const dataAdapter = new CLASS(adapterConfig, getSubAdapter)
+    const dataAdapter = new CLASS(adapterConfig, pluginManager, getSubAdapter)
 
     // store it in our cache
     adapterCache[cacheKey] = {
