@@ -64,7 +64,7 @@ export async function generateMeta(
   for (const config of configs) {
     const tracks = []
     const {
-      textSearching,
+      textSearchConf,
       adapter: { type },
       adapter,
     } = config
@@ -87,10 +87,10 @@ export async function generateMeta(
 
     if (configs.length) {
       includeExclude.push(
-        textSearching?.indexingFeatureTypesToExclude || exclude,
+        textSearchConf?.indexingFeatureTypesToExclude || exclude,
       )
 
-      metaAttrs.push(textSearching?.indexingAttributes || attributes)
+      metaAttrs.push(textSearchConf?.indexingAttributes || attributes)
 
       trackIds.push(config.trackId)
       for (const x in trackIds) {

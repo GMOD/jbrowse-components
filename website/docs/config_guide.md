@@ -700,7 +700,7 @@ An example per-track config may look like this
     "gffGzLocation": { "uri":"yourfile.gff.gz" }
     "index":{ "location": { "uri":"yourfile.gff.gz.tbi" } }
   },
-  "textSearching": {
+  "textSearchConf": {
     "textSearchAdapter": {
       "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "hg19-index",

@@ -156,9 +156,7 @@ const LinearGenomeViewHeader = observer(
               label = results[0].getLocation()
               const trackId = results[0].getTrackId()
               try {
-                if (trackId) {
-                  model.showTrack(trackId)
-                }
+                trackId && model.showTrack(trackId)
               } catch (e) {
                 console.warn(
                   `'${e}' occurred while attempting to show track: ${trackId}`,
