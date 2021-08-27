@@ -13,7 +13,6 @@ import { DataGrid, GridCellParams } from '@material-ui/data-grid'
 import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ipcRenderer } from 'electron'
-import { useLocalStorage } from 'react-use'
 
 // icons
 import DeleteIcon from '@material-ui/icons/Delete'
@@ -22,7 +21,7 @@ import ViewComfyIcon from '@material-ui/icons/ViewComfy'
 import ListIcon from '@material-ui/icons/List'
 
 // local
-import { createPluginManager } from './util'
+import { useLocalStorage, createPluginManager } from './util'
 import RecentSessionCard from './RecentSessionCard'
 
 const useStyles = makeStyles(theme => ({

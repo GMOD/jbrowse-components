@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -61,4 +62,19 @@ export async function createPluginManager(
   rootModel.setDefaultSession()
 
   return pm
+}
+
+// similar to https://blog.logrocket.com/using-localstorage-react-hooks/
+export const useLocalStorage = (key: string, defaultValue: string) => {
+  const [value, setValue] = useState(
+    () => localStorage.getItem(key) || defaultValue,
+  )
+
+  useEffect(() => {
+    localStorage.setItem(key, value)
+  }, [key, value])
+
+  // without this cast, tsc complained that the type of setValue could be a
+  // string or a callback
+  return [value, setValue] as [string, (arg: string) => void]
 }
