@@ -66,7 +66,7 @@
           }
         }
       },
-      "textSearchConf": {
+      "textSearching": {
         "indexingAttributes": ["Name", "ID", "type"],
         "indexingFeatureTypesToExclude": ["CDS", "exon"],
         "textSearchAdapter": {
@@ -102,7 +102,7 @@
           }
         }
       },
-      "textSearchConf": {
+      "textSearching": {
         "indexingAttributes": ["Name", "ID", "type"],
         "indexingFeatureTypesToExclude": ["CDS", "exon"],
         "textSearchAdapter": {
@@ -138,7 +138,7 @@
           }
         }
       },
-      "textSearchConf": {
+      "textSearching": {
         "indexingAttributes": ["Name", "ID", "type"],
         "indexingFeatureTypesToExclude": ["CDS", "exon"],
         "textSearchAdapter": {
@@ -174,7 +174,7 @@
           }
         }
       },
-      "textSearchConf": {
+      "textSearching": {
         "indexingAttributes": ["exon_id"],
         "textSearchAdapter": {
           "type": "TrixTextSearchAdapter",
@@ -209,7 +209,7 @@
           }
         }
       },
-      "textSearchConf": {
+      "textSearching": {
         "indexingAttributes": ["Name", "ID", "type"],
         "indexingFeatureTypesToExclude": ["CDS", "exon"],
         "textSearchAdapter": {

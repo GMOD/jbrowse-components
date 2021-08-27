@@ -345,7 +345,7 @@ export const WithPerTrackTextSearching = () => {
             },
           },
         },
-        textSearchConf: {
+        textSearching: {
           textSearchAdapter: {
             type: 'TrixTextSearchAdapter',
             textSearchAdapterId: 'gff3tabix_genes-index',

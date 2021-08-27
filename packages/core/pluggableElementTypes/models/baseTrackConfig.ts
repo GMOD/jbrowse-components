@@ -33,7 +33,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         defaultValue: {},
       },
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
-      textSearchConf: ConfigurationSchema('TextSearchConf', {
+      textSearching: ConfigurationSchema('textSearching', {
         indexingAttributes: {
           type: 'stringArray',
           description:
