@@ -5,6 +5,7 @@ import {
   Grid,
   IconButton,
   Link,
+  Tooltip,
   Typography,
   makeStyles,
 } from '@material-ui/core'
@@ -61,7 +62,9 @@ function RecentSessionsTable({
         const { value } = params
         return (
           <IconButton onClick={() => setSessionToDelete(value as string)}>
-            <DeleteIcon />
+            <Tooltip title="Delete session">
+              <DeleteIcon />
+            </Tooltip>
           </IconButton>
         )
       },
@@ -75,7 +78,9 @@ function RecentSessionsTable({
         const { value } = params
         return (
           <IconButton onClick={() => setSessionToRename(value as string)}>
-            <EditIcon />
+            <Tooltip title="Rename session">
+              <EditIcon />
+            </Tooltip>
           </IconButton>
         )
       },
@@ -202,10 +207,14 @@ export default function RecentSessionPanel({
           onChange={(_, newVal) => setDisplayMode(newVal)}
         >
           <ToggleButton value={'grid'}>
-            <ViewComfyIcon />
+            <Tooltip title="Grid view">
+              <ViewComfyIcon />
+            </Tooltip>
           </ToggleButton>
           <ToggleButton value={'table'}>
-            <ListIcon />
+            <Tooltip title="Table view">
+              <ListIcon />
+            </Tooltip>
           </ToggleButton>
         </ToggleButtonGroup>
       </FormControl>

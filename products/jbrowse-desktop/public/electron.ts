@@ -206,7 +206,7 @@ ipcMain.handle('listSessions', async () => {
           {
             stats: fs.existsSync(json) ? fs.statSync(json) : undefined,
             screenshot: fs.existsSync(thumb)
-              ? fs.readFileSync(thumb)
+              ? fs.readFileSync(thumb, 'utf8')
               : undefined,
           },
         ]

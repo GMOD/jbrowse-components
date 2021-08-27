@@ -12,7 +12,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { createPluginManager } from './util'
 import preloadedConfigs from './preloadedConfigs'
 import OpenSequenceDialog from './OpenSequenceDialog'
-import OpenDataDirectoryDialog from './OpenDataDirectoryDialog'
+import OpenJBrowseWebConfigDialog from './OpenJBrowseWebConfigDialog'
 
 const useStyles = makeStyles(theme => ({
   formControl: {
@@ -53,7 +53,7 @@ export default function StartScreenOptionsPanel({
             className={classes.button}
             onClick={() => setDataDirectoryDialogOpen(true)}
           >
-            Open pre-existing-config
+            Open jbrowse web config
           </Button>
         </Grid>
         <Grid item>
@@ -67,7 +67,7 @@ export default function StartScreenOptionsPanel({
         />
       ) : null}
       {dataDirectoryDialogOpen ? (
-        <OpenDataDirectoryDialog
+        <OpenJBrowseWebConfigDialog
           onClose={() => setDataDirectoryDialogOpen(false)}
           setPluginManager={setPluginManager}
         />

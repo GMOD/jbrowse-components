@@ -7,14 +7,19 @@ import {
   DialogContent,
   DialogTitle,
   Typography,
+  makeStyles,
 } from '@material-ui/core'
 import { ipcRenderer } from 'electron'
 import { createPluginManager } from './util'
 
-// function replaceUrisWithLocalPath(obj) {
-
-// }
-
+const useStyles = makeStyles(theme => ({
+  button: {
+    margin: theme.spacing(4),
+  },
+  note: {
+    margin: theme.spacing(4),
+  },
+}))
 const DeleteSessionDialog = ({
   onClose,
   setPluginManager,
@@ -22,21 +27,26 @@ const DeleteSessionDialog = ({
   setPluginManager: Function
   onClose: () => void
 }) => {
+  const classes = useStyles()
   const [file, setFile] = useState<File>()
   const [error, setError] = useState<Error>()
 
   return (
     <Dialog open onClose={() => onClose()}>
-      <DialogTitle>Open existing config</DialogTitle>
+      <DialogTitle>Open jbrowse-web config</DialogTitle>
       <DialogContent>
         <Typography>
-          Use this form to open a pre-existing config. This will be like a
-          config.json from the JBrowse 2 web app.
+          Use this form to open a pre-existing config.json from the jbrowse-web
+          app.
         </Typography>
+        <Typography className={classes.note}>
+          Note: This file will won't be modified, it'll be copied to a new file
+        </Typography>
+
         {error ? (
           <Typography variant="h6" color="error">{`${error}`}</Typography>
         ) : null}
-        <Button variant="contained" component="label">
+        <Button variant="contained" color="primary" className={classes.button}>
           Select config.json
           <input
             type="file"

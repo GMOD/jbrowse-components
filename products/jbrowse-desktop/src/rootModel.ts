@@ -122,7 +122,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               },
             },
             {
-              label: 'Return to splash screen',
+              label: 'Return to start screen',
               icon: AppsIcon,
               onClick: () => {
                 self.setSession(undefined)
