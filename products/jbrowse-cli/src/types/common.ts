@@ -103,12 +103,11 @@ export async function generateMeta(
 
         tracks.push(trackObj)
       }
-
       fs.writeFileSync(
         path.join(dir, 'trix', `${name}_meta.json`),
         JSON.stringify(
           {
-            dateCreated: new Date().toLocaleString('en-US'),
+            dateCreated: String(new Date()),
             tracks,
             assemblies,
           },
