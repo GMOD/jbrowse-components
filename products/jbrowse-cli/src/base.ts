@@ -95,7 +95,7 @@ export interface TrixTextSearchAdapter {
 
   assemblies: string[]
 }
-export interface TextSearchConf {
+export interface TextSearching {
   indexingFeatureTypesToExclude: string[]
   indexingAttributes: string[]
 
@@ -106,7 +106,7 @@ export interface Track {
   name: string
   assemblyNames: string[]
   adapter: Gff3TabixAdapter | GtfTabixAdapter | VcfTabixAdapter
-  textSearchConf: TextSearchConf
+  textSearchConf: TextSearching
 }
 
 export interface Config {

@@ -114,8 +114,8 @@ export default class TextIndex extends JBrowseCommand {
         )
       }
       for (const trackConfig of trackConfigs) {
-        const { textSearchConf, trackId, assemblyNames } = trackConfig
-        if (textSearchConf?.textSearchAdapter && !force) {
+        const { textSearching, trackId, assemblyNames } = trackConfig
+        if (textSearching?.textSearchAdapter && !force) {
           this.log(
             `Note: ${trackId} has already been indexed with this configuration, use --force to overwrite this track. Skipping for now`,
           )
@@ -133,11 +133,11 @@ export default class TextIndex extends JBrowseCommand {
           confFile,
           assemblyNames,
         )
-        if (!textSearchConf || !textSearchConf?.textSearchAdapter) {
+        if (!textSearching || !textSearching?.textSearchAdapter) {
           const newTrackConfig = {
             ...trackConfig,
-            textSearchConf: {
-              ...textSearchConf,
+            textSearching: {
+              ...textSearching,
               textSearchAdapter: {
                 type: 'TrixTextSearchAdapter',
                 textSearchAdapterId: id,
@@ -282,13 +282,13 @@ export default class TextIndex extends JBrowseCommand {
     for (const config of configs) {
       const {
         adapter: { type },
-        textSearchConf,
+        textSearching,
       } = config
 
       const types: Array<string> =
-        textSearchConf?.indexingFeatureTypesToExclude || typesToExclude
+        textSearching?.indexingFeatureTypesToExclude || typesToExclude
 
-      const attrs = textSearchConf?.indexingAttributes || attributesToIndex
+      const attrs = textSearching?.indexingAttributes || attributesToIndex
 
       if (type === 'Gff3TabixAdapter') {
         yield* indexGff3(config, attrs, outLocation, types, quiet)

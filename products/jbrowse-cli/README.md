@@ -414,7 +414,7 @@ _See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse
 
 ## `jbrowse text-index`
 
-Make a text-indexing file for any given track(s)
+Make a text-indexing file for any given track(s).
 
 ```
 USAGE
