@@ -71,6 +71,13 @@ async function createWindow() {
     shell.openExternal(outboundUrl)
   })
 
+  // open url in a browser and prevent default
+  // also has <base target="_blank"> in <head> to redirect links by default
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url)
+    return { action: 'deny' }
+  })
+
   const isMac = process.platform === 'darwin'
 
   // @ts-ignore
