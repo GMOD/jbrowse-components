@@ -8,13 +8,14 @@ This document covers the CLI tools.
 
 ## Installation
 
-The command line tools can be installed using `npm` as follows
+The command line tools can be installed globally using `npm` as follows
 
 ```sh-session
 $ npm install -g @jbrowse/cli
 ```
 
-You can test your installation with
+A CLI tool called `jbrowse` should then be available in the path. You can test
+your installation with
 
 ```sh-session
 $ jbrowse --version
@@ -26,7 +27,7 @@ It is also possible to do one-off executions using npx, e.g.
 npx @jbrowse/cli create myfolder
 ```
 
-It is likely preferable in most cases to install the tools first however
+It is likely preferable in most cases to install the tools globally with `npm install @jbrowse/cli -g` however
 
 ## Commands
 
@@ -413,7 +414,7 @@ _See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse
 
 ## `jbrowse text-index`
 
-Make a text-indexing file for any given track(s).
+Make a text-indexing file for any given track(s)
 
 ```
 USAGE
