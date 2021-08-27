@@ -6,10 +6,10 @@ toplevel: true
 
 This is a quick overview to get started running JBrowse 2 from scratch using
 the command line. It is helpful if you have some familiarity with the command
-line, and with some bioinformatics tools like samtools in general to follow
-these steps. This guide also assumes you have:
+line, and with some bioinformatics tools like samtools in general. This guide
+also assumes you have:
 
-- a webserver that reads files from /var/www/html/ e.g. Apache or nginx (not
+- a web server that reads files from /var/www/html/ e.g. Apache or nginx (not
   strictly necessary for jbrowse to run, see footnote)
 - node 10+ installed
 - genometools installed e.g. `sudo apt install genometools` or `brew install brewsci/bio/genometools`, used for sorting GFF3 for creating tabix GFF
@@ -93,7 +93,7 @@ jbrowse add-track myfile.bam --subDir my_bams --out /var/www/html/jbrowse2 --loa
 cd /var/www/html/jbrowse2
 jbrowse add-track /path/to/my/file.bam --load copy
 
-## After you've had jbrowse for awhile, you can upgrade to our latest release
+## After you've had jbrowse for a while, you can upgrade to our latest release
 jbrowse upgrade /var/www/html/jbrowse2
 
 ## Outputting to a specific config file instead of a config directory
@@ -152,15 +152,15 @@ jbrowse text-index --out /var/www/html/jbrowse2 --force
 
 You can now visit http://localhost/jbrowse2 and your genome should be ready!
 
-This guide is meant to be a super-quick conceptual overview for getting jbrowse
-2 setup, but if you are new to the command line or to jbrowse in general, you
-might want to start with the slightly-longer quick-start guide
+This guide is meant to be a super-quick conceptual overview for getting JBrowse
+2 set up, but if you are new to the command line or to jbrowse in general, you
+might want to start with the slightly longer quick-start guide
 [here](quickstart_cli).
 
 ## Footnote
 
 JBrowse doesn't strictly need Apache or nginx, it is "static site
-compatible" meaning it uses no server side code and can run on any static
+compatible" meaning it uses no server code and can run on any static
 website hosting. For example, you can upload the jbrowse folder that we
 prepared here in /var/www/html/jbrowse2 to Amazon S3, and it will work there
 too. See the FAQ for [what webserver do I
