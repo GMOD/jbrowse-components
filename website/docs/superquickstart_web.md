@@ -137,8 +137,11 @@ jbrowse text-index --out /var/www/html/jbrowse2
 ## Index only a specific assembly
 jbrowse text-index --out /var/www/html/jbrowse2 -a hg19
 
-## Index only some specific trackIds
-jbrowse text-index --out /var/www/html/jbrowse2 --tracks mygenes
+### Index only some specific trackIds
+jbrowse text-index --out /var/www/html/jbrowse2 --tracks=mygenes1,mygenes2
+
+### Index each track individually
+jbrowse text-index --out /var/www/html/jbrowse2 --tracks=mygenes1,mygenes2 --perTrack
 
 ## If you already have a text-index, you have to use --force to overwrite the old one
 jbrowse text-index --out /var/www/html/jbrowse2 --force

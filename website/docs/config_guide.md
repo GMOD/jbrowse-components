@@ -20,6 +20,9 @@ A JBrowse 2 configuration file, a config.json, is structured as follows
     /* array of tracks being loaded, contain reference to which assembl(y/ies)
     they belong to */
   ],
+  "aggregateTextSearchAdapters": [
+    /* optional array of text search adapters */
+  ],
   "defaultSession": {
     /* optional default session */
   }
@@ -629,7 +632,8 @@ Example FromConfigAdapter
 
 #### FromConfigSequenceAdapter
 
-Similar behavior to FromConfigAdapter, with a specific emphasis on performance when the features are sequences.
+Similar behavior to FromConfigAdapter, with a specific emphasis on performance
+when the features are sequences.
 
 Example FromConfigSequenceAdapter
 
@@ -654,6 +658,124 @@ Example FromConfigSequenceAdapter
   ]
 }
 ```
+
+## Text searching
+
+Text searching is now available on JBrowse 2.
+
+Text searching appears in two forms: per-track indexes and aggregate indexes
+which search across multiple tracks
+
+Aggregate indexes may look like this
+
+````json
+{
+"aggregateTextSearchAdapters": [
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "hg19-index",
+      "ixFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix"
+      },
+      "ixxFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx"
+      },
+      "metaFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json"
+      },
+      "assemblies": ["hg19"]
+    }
+}
+```
+
+
+An example per-track config may look like this
+
+```json
+{
+  "trackId":"yourtrack",
+  "name":"Track name",
+  "adapter":{
+    "type": "Gff3TabixAdapter",
+    "gffGzLocation": { "uri":"yourfile.gff.gz" }
+    "index":{ "location": { "uri":"yourfile.gff.gz.tbi" } }
+  },
+  "textSearchConf": {
+    "textSearchAdapter": {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "hg19-index",
+      "ixFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix"
+      },
+      "ixxFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx"
+      },
+      "metaFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json"
+      },
+      "assemblies": ["hg19"]
+    },
+    "indexingAttributes": ["Name","ID"],
+    "indexingFeatureTypesToExclude": ["CDS","exon"]
+  }
+}
+````
+
+Information on generating trix indexes via the cli can be found
+[here](cli.md#jbrowse-text-index)
+
+### TrixTextSearchAdapter config
+
+The trix search index is the current file format for name searching
+
+It is based on the UCSC trix file format described here
+https://genome.ucsc.edu/goldenPath/help/trix.html
+
+To create trix indexes you can use our command line tools. More info found at
+our [jbrowse text-index guide](cli.md#jbrowse-text-index). This tool will
+automatically generate a config like this. The config slots are described below
+for details
+
+```json
+{
+  "textSearchAdapter": {
+    "type": "TrixTextSearchAdapter",
+    "textSearchAdapterId": "gff3tabix_genes-index",
+    "ixFilePath": {
+      "uri": "trix/gff3tabix_genes.ix"
+    },
+    "ixxFilePath": {
+      "uri": "trix/gff3tabix_genes.ixx"
+    },
+    "metaFilePath": {
+      "uri": "trix/gff3tabix_genes_meta.json"
+    }
+  }
+}
+```
+
+- ixFilePath - the location of the trix ix file
+- ixxFilePath - the location of the trix ixx file
+- metaFilePath - the location of the metadata json file for the trix index
+
+### JBrowse1TextSearchAdapter config
+
+This is more uncommon, but allows back compatibility with a jbrowse 1 names
+index created by generate-names.pl
+
+```json
+{
+  "textSearchAdapter": {
+    "type": "JBrowse1TextSearchAdapter",
+    "textSearchAdapterId": "generate-names-index",
+    "namesIndexLocation": {
+      "uri": "/names"
+    }
+  }
+}
+```
+
+- namesIndexLocation - the location of the JBrowse1 names index data directory
 
 ## DotplotView config
 
