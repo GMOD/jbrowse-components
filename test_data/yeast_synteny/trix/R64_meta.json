@@ -1,12 +1,12 @@
 {
-  "dateCreated": {
-    "created": "18-08-2021"
-  },
+  "dateCreated": "Fri Aug 27 2021 15:58:37 GMT-0700 (Pacific Daylight Time)",
   "tracks": [
     {
       "trackId": "r64.sorted.gff",
       "attributesIndexed": ["Name", "ID"],
-      "excludedTypes": ["CDS", "exon"]
+      "excludedTypes": ["CDS", "exon"],
+      "fileLocation": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.sorted.gff.gz"
     }
-  ]
+  ],
+  "assemblies": ["R64"]
 }
