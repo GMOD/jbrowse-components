@@ -70,12 +70,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         self.error = error
       },
       setDefaultSession() {
-        this.setSession({
-          ...self.jbrowse.defaultSession,
-          name: `${
-            self.jbrowse.defaultSession.name
-          } ${new Date().toLocaleString()}`,
-        })
+        this.setSession(self.jbrowse.defaultSession)
       },
       setAssemblyEditing(flag: boolean) {
         self.isAssemblyEditing = flag

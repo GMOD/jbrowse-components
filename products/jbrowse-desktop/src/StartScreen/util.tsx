@@ -19,7 +19,7 @@ export async function createPluginManager(
   const pluginLoader = new PluginLoader(configSnapshot.plugins)
   pluginLoader.installGlobalReExports(window)
   const runtimePlugins = await pluginLoader.load()
-  const plugins = [
+  const pm = new PluginManager([
     ...corePlugins.map(P => ({
       plugin: new P(),
       metadata: { isCore: true },
@@ -29,8 +29,7 @@ export async function createPluginManager(
       definition,
       metadata: { url: definition.url },
     })),
-  ]
-  const pm = new PluginManager(plugins)
+  ])
   pm.createPluggableElements()
 
   const JBrowseRootModel = JBrowseRootModelFactory(pm)
