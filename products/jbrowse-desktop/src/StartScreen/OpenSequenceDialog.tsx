@@ -5,11 +5,11 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Typography,
   Grid,
   MenuItem,
   Paper,
   TextField,
+  Typography,
   makeStyles,
 } from '@material-ui/core'
 import FileSelector from '@jbrowse/core/ui/FileSelector'
@@ -223,6 +223,10 @@ const OpenSequenceDialog = ({
           <Typography variant="h6" color="error">{`${error}`}</Typography>
         ) : null}
         <div className={classes.root}>
+          <Typography>
+            Use this dialog to open a new FASTA file, indexed FASTA file, .2bit
+            file of a genome assembly or other sequence
+          </Typography>
           <Paper className={classes.paper}>
             <TextField
               id="assembly-name"
