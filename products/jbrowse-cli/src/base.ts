@@ -106,7 +106,7 @@ export interface Track {
   name: string
   assemblyNames: string[]
   adapter: Gff3TabixAdapter | GtfTabixAdapter | VcfTabixAdapter
-  textSearchConf: TextSearching
+  textSearching: TextSearching
 }
 
 export interface Config {
