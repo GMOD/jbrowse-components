@@ -44,20 +44,24 @@
     "docs:version:add": "git add README.md"
   },
   "dependencies": {
+    "@gmod/gff": "^1.1.2",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^3",
     "boxen": "^4.2.0",
     "chalk": "^4.1.0",
+    "cli-progress": "^3.9.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "follow-redirects": "^1.14.1",
+    "ixixx": "^1.0.14",
     "json-parse-better-errors": "^1.0.2",
     "node-fetch": "^2.6.0",
-    "pako": "^1.0.11",
     "tslib": "^1",
     "unzipper": "^0.10.11"
   },
   "devDependencies": {
+    "@types/follow-redirects": "^1.13.0",
     "typescript": "^3.0.0"
   },
   "oclif": {

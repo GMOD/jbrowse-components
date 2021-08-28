@@ -310,6 +310,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                       </div>
                     </div>
                   </div>
+                   
                 </div>
                 <p
                   class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"

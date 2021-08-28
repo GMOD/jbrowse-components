@@ -169,3 +169,47 @@ Some reads, such as secondary reads, do not have a SEQ field on their records,
 so they will not display softclipping.
 
 The soft clipping indicators on these reads will appear black.
+
+### Text searching
+
+#### What should I know before using jbrowse text-index
+
+The `jbrowse text-index` program will output data to a TMP directory while
+indexing. If your filesystem has low diskspace for /tmp you can set an
+alternative temporary directory using the environment variable
+`TMPDIR=~/alt_tmp_dir/ jbrowse text-index`. By using the info in the ixx file,
+I can take a couple letters the user typed, jump to the that byte offset in the
+larger .ix file, and find what the user is interested in
+
+#### How does the jbrowse text-index trix format work
+
+The `jbrowse text-index` command creates text searching indexes using trix. The
+trix indexes are based on the format described by UCSC here
+https://genome.ucsc.edu/goldenPath/help/trix.html but we reimplemented the code
+the create these index formats in the JBrowse CLI so you do not have to install
+the UCSC tools.
+
+The main idea is that you give trix
+
+```
+GENEID001  Wnt signalling
+GENEID002  ey  Pax6
+```
+
+Then this will generate a new file, the .ix file, sorted in alphabetical order
+
+```
+ey  GENE002
+signalling  GENE001
+Pax6  GENE002
+Wnt  GENE001
+```
+
+Then a second file, the .ixx file, tells us at what byte offset certain lines
+in the file are e.g.
+
+```
+signa000000435
+```
+
+Note that JBrowse creates a specialized trix index also. Instead of creating a ix file with just the gene names, it also provides their name and location in base64 encoded format.

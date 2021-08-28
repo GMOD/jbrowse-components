@@ -236,6 +236,144 @@ export const WithPlugins = () => {
   return <JBrowseLinearGenomeView viewState={state} />
 }
 
+export const WithTextSearching = () => {
+  const textSearchConfig = {
+    assembly,
+    aggregateTextSearchAdapters: [
+      {
+        type: 'TrixTextSearchAdapter',
+        textSearchAdapterId: 'volvox-index',
+        ixFilePath: {
+          uri: 'storybook_data/volvox.ix',
+        },
+        ixxFilePath: {
+          uri: 'storybook_data/volvox.ixx',
+        },
+        metaFilePath: {
+          uri: 'storybook_data/volvox_meta.json',
+        },
+        assemblies: ['volvox'],
+      },
+    ],
+    tracks: [
+      {
+        type: 'FeatureTrack',
+        trackId: 'gff3tabix_genes',
+        assemblyNames: ['volvox'],
+        name: 'GFF3Tabix genes',
+        category: ['Miscellaneous'],
+        adapter: {
+          type: 'Gff3TabixAdapter',
+          gffGzLocation: {
+            uri: 'volvox.sort.gff3.gz',
+          },
+          index: {
+            location: {
+              uri: 'volvox.sort.gff3.gz.tbi',
+            },
+          },
+        },
+      },
+      {
+        type: 'FeatureTrack',
+        trackId: 'single_exon_gene',
+        category: ['Miscellaneous'],
+        name: 'Single exon gene',
+        assemblyNames: ['volvox'],
+        adapter: {
+          type: 'Gff3TabixAdapter',
+          gffGzLocation: {
+            uri: 'single_exon_gene.sorted.gff.gz',
+          },
+          index: {
+            location: {
+              uri: 'single_exon_gene.sorted.gff.gz.tbi',
+            },
+          },
+        },
+      },
+      {
+        type: 'VariantTrack',
+        trackId: 'volvox.inv.vcf',
+        name: 'volvox inversions',
+        category: ['VCF'],
+        assemblyNames: ['volvox'],
+        adapter: {
+          type: 'VcfTabixAdapter',
+          vcfGzLocation: {
+            uri: 'volvox.inv.vcf.gz',
+          },
+          index: {
+            location: {
+              uri: 'volvox.inv.vcf.gz.tbi',
+            },
+            indexType: 'TBI',
+          },
+        },
+      },
+    ],
+    defaultSession,
+    // use 1-based coordinates for locstring
+    location: 'ctgA:1..800',
+  }
+  addRelativeUris(
+    textSearchConfig,
+    new URL(configPath, window.location.href).href,
+  )
+  const state = createViewState(textSearchConfig)
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const WithPerTrackTextSearching = () => {
+  const textSearchConfig = {
+    assembly,
+    tracks: [
+      {
+        type: 'FeatureTrack',
+        trackId: 'gff3tabix_genes',
+        assemblyNames: ['volvox'],
+        name: 'GFF3Tabix genes',
+        category: ['Miscellaneous'],
+        adapter: {
+          type: 'Gff3TabixAdapter',
+          gffGzLocation: {
+            uri: 'volvox.sort.gff3.gz',
+          },
+          index: {
+            location: {
+              uri: 'volvox.sort.gff3.gz.tbi',
+            },
+          },
+        },
+        textSearching: {
+          textSearchAdapter: {
+            type: 'TrixTextSearchAdapter',
+            textSearchAdapterId: 'gff3tabix_genes-index',
+            ixFilePath: {
+              uri: 'storybook_data/gff3tabix_genes.ix',
+            },
+            ixxFilePath: {
+              uri: 'storybook_data/gff3tabix_genes.ixx',
+            },
+            metaFilePath: {
+              uri: 'storybook_data/gff3tabix_genes_meta.json',
+            },
+            assemblies: ['volvox'],
+          },
+        },
+      },
+    ],
+    defaultSession,
+    // use 1-based coordinates for locstring
+    location: 'ctgA:1..800',
+  }
+  addRelativeUris(
+    textSearchConfig,
+    new URL(configPath, window.location.href).href,
+  )
+  const state = createViewState(textSearchConfig)
+  return <JBrowseLinearGenomeView viewState={state} />
+}
 export const CustomTheme = () => {
   const state = createViewState({
     assembly,
