@@ -43,7 +43,7 @@ The view types available by default with JBrowse 2 web include
 | Non-administrator users can open tracks and share them with others  | :heavy_check_mark:      | :x:                |
 | Embeddable in JavaScript projects using NPM                         | :heavy_check_mark: [^2] | :x:                |
 | Embeddable directly in React applications                           | :heavy_check_mark: [^2] | :x:                |
-| Ability to type a gene name/ID (added in 1.4.0)                     | :heavy_check_mark:      | :heavy_check_mark: |
+| Ability to search by gene name/ID (added in 1.4.0)                  | :heavy_check_mark:      | :heavy_check_mark: |
 | URL query API e.g. specifying ?loc=chr1:1-100 in URL bar            | :x:                     | :heavy_check_mark: |
 
 [^1] If using with JBrowse 2 web, requires that trackhub server be configured to allow [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
