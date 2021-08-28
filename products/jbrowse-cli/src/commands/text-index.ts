@@ -285,7 +285,7 @@ export default class TextIndex extends JBrowseCommand {
         textSearching,
       } = config
 
-      const types: Array<string> =
+      const types =
         textSearching?.indexingFeatureTypesToExclude || typesToExclude
 
       const attrs = textSearching?.indexingAttributes || attributesToIndex
@@ -325,12 +325,10 @@ export default class TextIndex extends JBrowseCommand {
   ) {
     const { tracks } = (await this.readJsonFile(configPath)) as Config
     if (!tracks) {
-      throw new Error(
-        'No tracks found in config.json. Please add a track before indexing.',
-      )
+      return []
     }
-    const trackIdsToIndex = trackIds || tracks.map(track => track.trackId)
-    const supportedTracksToIndex = trackIdsToIndex
+    const trackIdsToIndex = trackIds || tracks?.map(track => track.trackId)
+    return trackIdsToIndex
       .map(trackId => {
         const currentTrack = tracks.find(t => trackId === t.trackId)
         if (!currentTrack) {
@@ -341,14 +339,9 @@ export default class TextIndex extends JBrowseCommand {
         return currentTrack
       })
       .filter(track => supported(track.adapter.type))
-
-    if (assemblyName) {
-      return supportedTracksToIndex.filter(track =>
-        track.assemblyNames.includes(assemblyName),
+      .filter(track =>
+        assemblyName ? track.assemblyNames.includes(assemblyName) : true,
       )
-    }
-
-    return supportedTracksToIndex
   }
 }
 

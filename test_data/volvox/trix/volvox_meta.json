@@ -1,53 +1,134 @@
 {
-  "dateCreated": "Fri Aug 27 2021 19:44:43 GMT-0400 (Eastern Daylight Time)",
+  "dateCreated": "Fri Aug 27 2021 20:00:35 GMT-0400 (Eastern Daylight Time)",
   "tracks": [
     {
       "trackId": "volvox_sv_test",
       "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"],
-      "fileLocation": "volvox.inv.vcf.gz"
+      "adapterConf": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.dup.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.dup.vcf.gz.tbi"
+          }
+        }
+      }
     },
     {
       "trackId": "volvox_sv_test_renamed",
       "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"],
-      "fileLocation": "volvox.inv.vcf.gz"
+      "adapterConf": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.dup.renamed.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.dup.renamed.vcf.gz.tbi"
+          }
+        }
+      }
     },
     {
       "trackId": "volvox_test_vcf",
       "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"],
-      "fileLocation": "volvox.inv.vcf.gz"
+      "adapterConf": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.test.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.test.vcf.gz.tbi"
+          }
+        }
+      }
     },
     {
       "trackId": "gff3tabix_genes",
       "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"],
-      "fileLocation": "volvox.inv.vcf.gz"
+      "adapterConf": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.gff3.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.gff3.gz.tbi"
+          }
+        }
+      }
     },
     {
       "trackId": "volvox_filtered_vcf",
       "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"],
-      "fileLocation": "volvox.inv.vcf.gz"
+      "adapterConf": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.filtered.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.filtered.vcf.gz.tbi"
+          }
+        }
+      }
     },
     {
       "trackId": "variant_colors",
       "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"],
-      "fileLocation": "volvox.inv.vcf.gz"
+      "adapterConf": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.filtered.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.filtered.vcf.gz.tbi"
+          }
+        }
+      }
     },
     {
       "trackId": "single_exon_gene",
       "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"],
-      "fileLocation": "volvox.inv.vcf.gz"
+      "adapterConf": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "single_exon_gene.sorted.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "single_exon_gene.sorted.gff.gz.tbi"
+          }
+        }
+      }
     },
     {
       "trackId": "volvox.inv.vcf",
       "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"],
-      "fileLocation": "volvox.inv.vcf.gz"
+      "adapterConf": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.inv.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.inv.vcf.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      }
     }
   ],
   "assemblies": ["volvox"]

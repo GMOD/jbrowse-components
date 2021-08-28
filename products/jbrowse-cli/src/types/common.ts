@@ -1,12 +1,7 @@
 import { IncomingMessage } from 'http'
 import fs from 'fs'
 import { http, https, FollowResponse } from 'follow-redirects'
-import {
-  Track,
-  Gff3TabixAdapter,
-  GtfTabixAdapter,
-  VcfTabixAdapter,
-} from '../base'
+import { Track } from '../base'
 import path from 'path'
 
 // Method for handing off the parsing of a gff3 file URL.
@@ -56,65 +51,31 @@ export async function generateMeta(
 ) {
   const dir = path.dirname(confFile)
 
-  const metaAttrs: Array<string[]> = []
-  const trackIds: Array<string> = []
-  const includeExclude: Array<string[]> = []
-  let Trackuri = ''
+  const tracks = configs.map(config => {
+    const { trackId, textSearching, adapter } = config
 
-  for (const config of configs) {
-    const tracks = []
-    const {
-      textSearching,
-      adapter: { type },
-      adapter,
-    } = config
-    if (type === 'Gff3TabixAdapter') {
-      const {
-        gffGzLocation: { uri },
-      } = adapter as Gff3TabixAdapter
-      Trackuri = uri
-    } else if (type === 'GtfTabixAdapter') {
-      const {
-        gtfGzLocation: { uri },
-      } = adapter as GtfTabixAdapter
-      Trackuri = uri
-    } else if (type === 'VcfTabixAdapter') {
-      const {
-        vcfGzLocation: { uri },
-      } = adapter as VcfTabixAdapter
-      Trackuri = uri
+    const includeExclude =
+      textSearching?.indexingFeatureTypesToExclude || exclude
+
+    const metaAttrs = textSearching?.indexingAttributes || attributes
+
+    return {
+      trackId: trackId,
+      attributesIndexed: metaAttrs,
+      excludedTypes: includeExclude,
+      adapterConf: adapter,
     }
-
-    if (configs.length) {
-      includeExclude.push(
-        textSearching?.indexingFeatureTypesToExclude || exclude,
-      )
-
-      metaAttrs.push(textSearching?.indexingAttributes || attributes)
-
-      trackIds.push(config.trackId)
-      for (const x in trackIds) {
-        const trackObj = {
-          trackId: trackIds[x],
-          attributesIndexed: metaAttrs[x],
-          excludedTypes: includeExclude[x],
-          fileLocation: `${Trackuri}`,
-        }
-
-        tracks.push(trackObj)
-      }
-      fs.writeFileSync(
-        path.join(dir, 'trix', `${name}_meta.json`),
-        JSON.stringify(
-          {
-            dateCreated: String(new Date()),
-            tracks,
-            assemblies,
-          },
-          null,
-          2,
-        ),
-      )
-    }
-  }
+  })
+  fs.writeFileSync(
+    path.join(dir, 'trix', `${name}_meta.json`),
+    JSON.stringify(
+      {
+        dateCreated: String(new Date()),
+        tracks,
+        assemblies,
+      },
+      null,
+      2,
+    ),
+  )
 }
