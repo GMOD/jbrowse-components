@@ -6,14 +6,6 @@ toplevel: true
 
 ### General
 
-#### What technologies does JBrowse 2 use
-
-- React
-- mobx-state-tree
-- web-workers
-- Typescript
-- Electron (for desktop specifically)
-
 #### What is special about JBrowse 2
 
 One thing that makes JBrowse 2 special is that we can create new view types via
@@ -25,26 +17,7 @@ that can be built on.
 
 #### What are new features in JBrowse 2
 
-- Uses web workers for multi-core data parsing and rendering of tracks
-- Use ctrl+scroll to zoom in and out quickly
-- Status updates while track is loading (e.g. Downloading BAM index...)
-- Hi-C visualization from .hic format files
-- Can display multiple chromosomes or discontinuous regions on a single linear
-  genome view
-- Can connect to UCSC trackhubs
-- Alignments track has both coverage and pileup display integrated in a single
-  track
-- Read pileups can be sorted by various attributes
-- Has ability to show soft clipped bases on reads
-- Interactively edit the configuration using the GUI
-- Circular, dotplot, stacked synteny views
-- SV inspector, that gives tabular and circular overview of data in a single
-  view
-- Linear genome view can be reverse complemented
-
-#### Can the linear genome view be reverse complemented
-
-Yes! See [here](user_guide#navigating-the-ui)
+See the https://jbrowse.org/jb2/features page for an overview of features
 
 ### Setup
 
@@ -72,32 +45,7 @@ header Content-Encoding: gzip which JBrowse does NOT want, because this
 instructs the browser to unzip the data but JBrowse should be in charge of
 this.
 
-#### How can I start the JBrowse 2 app as a developer
-
-We recommend that you have the following
-
-- Node v10+
-- Git
-- [Yarn](https://classic.yarnpkg.com/en/docs/install/#debian-stable)
-
-Then you can follow steps from our
-[README](https://github.com/gmod/jbrowse-components)
-
-It basically boils down to git cloning our repo, and running `yarn start` which
-creates a development server on port 3000
-
-You can use `PORT=8080 yarn start` to manually specify a different port
-
-Note that this is a development server that gets started up. To install jbrowse
-2 in production on your webserver, see below
-
-#### Do you have any tips for learning React and mobx-state-tree
-
-Here is a short guide to React and mobx-state-tree that could help get you oriented
-
-https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f
-
-#### How can I setup JBrowse 2 in production
+#### How can I setup JBrowse 2 on my web server
 
 We recommend following the steps in the [quickstart web](quickstart_web) guide.
 
@@ -106,6 +54,30 @@ will download the latest version of jbrowse to your web folder e.g. in
 /var/www/html
 
 You can also use `jbrowse upgrade /var/www/html/jb2` to get the latest version
+
+#### How do I install or update the @jbrowse/cli tool
+
+To install the @jbrowse/cli tool, you can use `npm install -g @jbrowse/cli`
+
+You can use this same command to upgrade the tool too
+
+This command will give you a command named `jbrowse` which should automatically
+be in your path if you have a standard installation of nodejs. We recommend
+using nodesource or nvm to get your nodejs for this.
+
+Also note that the @jbrowse/cli tool is just made for preparing your
+config.json, it is not used to run any server-side code
+
+#### How do I update my instance of jbrowse-web
+
+You can use the command, after installing
+
+```
+jbrowse upgrade /path/to/your/jbrowse2
+```
+
+This will download the latest release from github and overwrite it onto your
+jbrowse-web instance
 
 #### How can I setup JBrowse 2 without the CLI tools
 
@@ -213,3 +185,40 @@ signa000000435
 ```
 
 Note that JBrowse creates a specialized trix index also. Instead of creating a ix file with just the gene names, it also provides their name and location in base64 encoded format.
+
+### Developers
+
+#### How can I start the JBrowse 2 app as a developer
+
+We recommend that you have the following
+
+- Node v10+
+- Git
+- [Yarn](https://classic.yarnpkg.com/en/docs/install/#debian-stable)
+
+Then you can follow steps from our
+[README](https://github.com/gmod/jbrowse-components)
+
+It basically boils down to git cloning our repo, and running `yarn start` which
+creates a development server on port 3000
+
+You can use `PORT=8080 yarn start` to manually specify a different port
+
+Note that this is a development server that gets started up. To install jbrowse
+2 in production on your webserver, see below
+
+#### Do you have any tips for learning React and mobx-state-tree
+
+Here is a short guide to React and mobx-state-tree that could help get you oriented
+
+https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f
+
+#### What technologies does JBrowse 2 use
+
+We build on a lot of great open source technology, some main ones include
+
+- React
+- mobx-state-tree
+- web-workers
+- Typescript
+- Electron (for desktop specifically)
