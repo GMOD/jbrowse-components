@@ -102,7 +102,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
                   />
                   <div
-                    class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward"
+                    class="makeStyles-scaleBarContig"
                     style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
                   >
                     <p
@@ -147,6 +147,9 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     >
                       120
                     </p>
+                    <svg
+                      style="width: 100%;"
+                    />
                   </div>
                   <div
                     class="makeStyles-scaleBarContig"

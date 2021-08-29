@@ -49,26 +49,16 @@ interface Menu {
 }
 
 export default function rootModelFactory(pluginManager: PluginManager) {
-  const { assemblyConfigSchemas, dispatcher } =
-    AssemblyConfigSchemasFactory(pluginManager)
-  const assemblyConfigSchemasType = types.union(
-    { dispatcher },
-    ...assemblyConfigSchemas,
-  )
-  const Session = sessionModelFactory(pluginManager, assemblyConfigSchemasType)
-  const assemblyManagerType = assemblyManagerFactory(
-    assemblyConfigSchemasType,
-    pluginManager,
-  )
+  const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
+  const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
   return types
     .model('Root', {
-      jbrowse: JBrowseDesktop(
-        pluginManager,
-        Session,
-        assemblyConfigSchemasType as AnyConfigurationSchemaType,
-      ),
+      jbrowse: JBrowseDesktop(pluginManager, Session, assemblyConfigSchema),
       session: types.maybe(Session),
-      assemblyManager: assemblyManagerType,
+      assemblyManager: assemblyManagerFactory(
+        assemblyConfigSchema,
+        pluginManager,
+      ),
       savedSessionNames: types.maybe(types.array(types.string)),
       version: types.maybe(types.string),
       internetAccounts: types.array(

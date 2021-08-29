@@ -1,5 +1,5 @@
 import jsonStableStringify from 'json-stable-stringify'
-import { getParent, types, Instance } from 'mobx-state-tree'
+import { getParent, types, Instance, IAnyType } from 'mobx-state-tree'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import { Feature } from '../util/simpleFeature'
 import { getConf } from '../configuration'
@@ -11,10 +11,7 @@ import PluginManager from '../PluginManager'
 import { Region } from '../util/types'
 import { makeAbortableReaction, when } from '../util'
 import QuickLRU from '../util/QuickLRU'
-import {
-  AnyConfigurationSchemaType,
-  AnyConfigurationModel,
-} from '../configuration/configurationSchema'
+import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 // Based on the UCSC Genome Browser chromosome color palette:
 // https://github.com/ucscGenomeBrowser/kent/blob/a50ed53aff81d6fb3e34e6913ce18578292bc24e/src/hg/inc/chromColors.h
@@ -134,7 +131,7 @@ export interface BasicRegion {
   assemblyName: string
 }
 export default function assemblyFactory(
-  assemblyConfigType: AnyConfigurationSchemaType,
+  assemblyConfigType: IAnyType,
   pluginManager: PluginManager,
 ) {
   const adapterLoads = new AbortablePromiseCache({

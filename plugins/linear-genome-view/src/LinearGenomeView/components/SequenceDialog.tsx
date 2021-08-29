@@ -71,10 +71,7 @@ async function fetchSequence(
   if (!assembly) {
     throw new Error(`assembly ${assemblyName} not found`)
   }
-  const adapterConfig = readConfObject(assembly.configuration, [
-    'sequence',
-    'adapter',
-  ])
+  const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
 
   const sessionId = 'getSequence'
   const chunks = (await Promise.all(

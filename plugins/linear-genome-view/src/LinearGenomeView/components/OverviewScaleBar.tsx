@@ -212,9 +212,9 @@ const Cytobands = observer(
       ])
 
     let firstCent = true
-    return (
+    return cytobands ? (
       <svg style={{ width: '100%' }}>
-        {cytobands?.map(([start, end, type]) => {
+        {cytobands.map(([start, end, type]) => {
           if (type === 'acen' && firstCent) {
             firstCent = false
             return (
@@ -254,7 +254,7 @@ const Cytobands = observer(
           )
         })}
       </svg>
-    )
+    ) : null
   },
 )
 

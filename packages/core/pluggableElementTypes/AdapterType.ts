@@ -24,6 +24,7 @@ export default class AdapterType extends PluggableElementBase {
   ) {
     super(stuff)
     if ('AdapterClass' in stuff) {
+      this.AdapterClass = stuff.AdapterClass
       this.getAdapterClass = async () => stuff.AdapterClass
     } else if ('getAdapterClass' in stuff) {
       this.getAdapterClass = stuff.getAdapterClass
