@@ -1,21 +1,23 @@
 import React from 'react'
 import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import { getSession } from '@jbrowse/core/util'
-import { makeStyles, useTheme } from '@material-ui/core/styles'
-import { alpha } from '@material-ui/core/styles'
-import LinearProgress from '@material-ui/core/LinearProgress'
+import {
+  LinearProgress,
+  Typography,
+  alpha,
+  makeStyles,
+  useTheme,
+} from '@material-ui/core'
 import { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
-import clsx from 'clsx'
-import { Typography } from '@material-ui/core'
 import {
-  LinearGenomeViewStateModel,
+  LinearGenomeViewModel,
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
 } from '..'
 import { chooseGridPitch } from '../util'
 import OverviewRubberBand from './OverviewRubberBand'
+import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 const useStyles = makeStyles(theme => {
   const scaleBarColor = theme.palette.tertiary
@@ -107,8 +109,8 @@ const Polygon = observer(
     model,
     overview,
   }: {
-    model: LGV
-    overview: Instance<Base1DViewModel>
+    model: LinearGenomeViewModel
+    overview: Base1DViewModel
   }) => {
     const theme = useTheme()
     const classes = useStyles()
@@ -117,9 +119,8 @@ const Polygon = observer(
       dynamicBlocks: { contentBlocks, totalWidthPxWithoutBorders },
     } = model
 
-    const polygonColor = theme.palette.tertiary
-      ? theme.palette.tertiary.light
-      : theme.palette.primary.light
+    const pal = theme.palette
+    const polygonColor = pal.tertiary ? pal.tertiary.light : pal.primary.light
 
     if (!contentBlocks.length) {
       return null
@@ -169,7 +170,158 @@ const Polygon = observer(
   },
 )
 
-type LGV = Instance<LinearGenomeViewStateModel>
+const colorMap: { [key: string]: string | undefined } = {
+  gneg: '#ccc',
+  gpos25: '#aaa',
+  gpos50: '#888',
+  gpos100: '#333',
+  gpos75: '#666',
+  gvar: 'black',
+  stalk: 'brown',
+  acen: '#800',
+}
+
+const Cytobands = observer(
+  ({
+    overview,
+    block,
+    assembly,
+  }: {
+    overview: Base1DViewModel
+    assembly?: Assembly
+    block: ContentBlock
+  }) => {
+    const cytobands = assembly?.cytobands
+      ?.map(f => ({
+        refName: assembly.getCanonicalRefName(f.get('refName')),
+        start: f.get('start'),
+        end: f.get('end'),
+        type: f.get('type'),
+      }))
+      .filter(f => f.refName === block.refName)
+      .map(f => [
+        overview.bpToPx({
+          refName: f.refName,
+          coord: f.start,
+        }),
+        overview.bpToPx({
+          refName: f.refName,
+          coord: f.end,
+        }),
+        f.type,
+      ])
+
+    let firstCent = true
+    return (
+      <svg style={{ width: '100%' }}>
+        {cytobands?.map(([start, end, type]) => {
+          if (type === 'acen' && firstCent) {
+            firstCent = false
+            return (
+              <polygon
+                key={start + '-' + end + '-' + type}
+                points={[
+                  [start, 0],
+                  [end, (HEADER_OVERVIEW_HEIGHT - 2) / 2],
+                  [start, HEADER_OVERVIEW_HEIGHT - 2],
+                ].toString()}
+                fill={colorMap[type]}
+              />
+            )
+          }
+          if (type === 'acen' && !firstCent) {
+            return (
+              <polygon
+                key={start + '-' + end + '-' + type}
+                points={[
+                  [start, (HEADER_OVERVIEW_HEIGHT - 2) / 2],
+                  [end, 0],
+                  [end, HEADER_OVERVIEW_HEIGHT - 2],
+                ].toString()}
+                fill={colorMap[type]}
+              />
+            )
+          }
+          return (
+            <rect
+              key={start + '-' + end + '-' + type}
+              x={start}
+              y={0}
+              width={end - start}
+              height={HEADER_OVERVIEW_HEIGHT - 2}
+              fill={colorMap[type]}
+            />
+          )
+        })}
+      </svg>
+    )
+  },
+)
+
+const ChromosomeOverview = observer(
+  ({
+    block,
+    gridPitch,
+    assembly,
+    scale,
+    overview,
+  }: {
+    block: ContentBlock
+    assembly?: Assembly
+    scale: number
+    gridPitch: { majorPitch: number }
+    overview: Base1DViewModel
+  }) => {
+    const classes = useStyles()
+    const { offsetPx, widthPx, refName, start, end, reversed } = block
+    const refNameColor = assembly?.getRefNameColor(refName)
+
+    const regionLength = end - start
+    const tickLabels = []
+    for (
+      let index = 0;
+      index < Math.floor(regionLength / gridPitch.majorPitch);
+      index++
+    ) {
+      const offsetLabel = (index + 1) * gridPitch.majorPitch
+      tickLabels.push(reversed ? end - offsetLabel : start + offsetLabel)
+    }
+
+    return (
+      <div
+        className={classes.scaleBarContig}
+        style={{
+          left: offsetPx,
+          width: widthPx,
+          borderColor: refNameColor,
+        }}
+      >
+        <Typography
+          style={{ color: refNameColor }}
+          className={classes.scaleBarRefName}
+        >
+          {refName}
+        </Typography>
+
+        {tickLabels.map((tickLabel, labelIdx) => (
+          <Typography
+            key={`${JSON.stringify(block)}-${tickLabel}-${labelIdx}`}
+            className={classes.scaleBarLabel}
+            variant="body2"
+            style={{
+              left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
+              pointerEvents: 'none',
+              color: refNameColor,
+            }}
+          >
+            {tickLabel.toLocaleString('en-US')}
+          </Typography>
+        ))}
+        <Cytobands overview={overview} assembly={assembly} block={block} />
+      </div>
+    )
+  },
+)
 
 const ScaleBar = observer(
   ({
@@ -177,15 +329,15 @@ const ScaleBar = observer(
     scale,
     overview,
   }: {
-    model: LGV
+    model: LinearGenomeViewModel
     overview: Base1DViewModel
     scale: number
   }) => {
     const classes = useStyles()
-    const { dynamicBlocks: visibleRegions } = model
     const { assemblyManager } = getSession(model)
-    const gridPitch = chooseGridPitch(scale, 120, 15)
+    const { dynamicBlocks: visibleRegions } = model
     const { dynamicBlocks: overviewVisibleRegions } = overview
+    const gridPitch = chooseGridPitch(scale, 120, 15)
 
     if (!visibleRegions.contentBlocks.length) {
       return null
@@ -217,76 +369,29 @@ const ScaleBar = observer(
           }}
         />
         {/* this is the entire scale bar */}
-        {overviewVisibleRegions.map((seq, idx) => {
-          const assembly = assemblyManager.get(seq.assemblyName)
-          const refNameColor = assembly?.getRefNameColor(seq.refName)
-          const cytobands = assembly?.cytobands
-
-          const regionLength = seq.end - seq.start
-          const tickLabels = []
-          for (
-            let index = 0;
-            index < Math.floor(regionLength / gridPitch.majorPitch);
-            index++
-          ) {
-            const offsetLabel = (index + 1) * gridPitch.majorPitch
-            tickLabels.push(
-              seq.reversed ? seq.end - offsetLabel : seq.start + offsetLabel,
-            )
-          }
-
-          return !(seq instanceof ContentBlock) ? (
+        {overviewVisibleRegions.map((block, idx) => {
+          const assembly = assemblyManager.get(block.assemblyName)
+          return !(block instanceof ContentBlock) ? (
             <div
-              key={`${JSON.stringify(seq)}-${idx}`}
+              key={`${JSON.stringify(block)}-${idx}`}
               className={classes.scaleBarContig}
               style={{
-                width: seq.widthPx,
-                left: seq.offsetPx,
+                width: block.widthPx,
+                left: block.offsetPx,
                 backgroundColor: '#999',
                 backgroundImage:
                   'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
               }}
             />
           ) : (
-            <div
-              key={`${JSON.stringify(seq)}-${idx}`}
-              className={clsx(
-                classes.scaleBarContig,
-                seq.reversed
-                  ? classes.scaleBarContigReverse
-                  : classes.scaleBarContigForward,
-              )}
-              style={{
-                left: seq.offsetPx,
-                width: seq.widthPx,
-                borderColor: refNameColor,
-              }}
-            >
-              <Typography
-                style={{
-                  color: refNameColor,
-                  zIndex: 100,
-                }}
-                className={classes.scaleBarRefName}
-              >
-                {seq.refName}
-              </Typography>
-
-              {tickLabels.map((tickLabel, labelIdx) => (
-                <Typography
-                  key={`${JSON.stringify(seq)}-${tickLabel}-${labelIdx}`}
-                  className={classes.scaleBarLabel}
-                  variant="body2"
-                  style={{
-                    left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
-                    pointerEvents: 'none',
-                    color: refNameColor,
-                  }}
-                >
-                  {tickLabel.toLocaleString('en-US')}
-                </Typography>
-              ))}
-            </div>
+            <ChromosomeOverview
+              key={`${JSON.stringify(block)}-${idx}`}
+              gridPitch={gridPitch}
+              block={block}
+              assembly={assembly}
+              scale={scale}
+              overview={overview}
+            />
           )
         })}
       </div>
@@ -298,7 +403,7 @@ function OverviewScaleBar({
   model,
   children,
 }: {
-  model: LGV
+  model: LinearGenomeViewModel
   children: React.ReactNode
 }) {
   const classes = useStyles()
