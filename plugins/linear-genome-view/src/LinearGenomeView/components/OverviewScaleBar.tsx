@@ -101,6 +101,7 @@ const useStyles = makeStyles(theme => {
 })
 
 const wholeSeqSpacer = 2
+
 const Polygon = observer(
   ({
     model,
@@ -123,6 +124,7 @@ const Polygon = observer(
     if (!contentBlocks.length) {
       return null
     }
+
     const firstBlock = contentBlocks[0]
     const lastBlock = contentBlocks[contentBlocks.length - 1]
     const topLeft = overview.bpToPx({

@@ -1,5 +1,5 @@
 import assemblyManagerFactory, {
-  assemblyConfigSchemas as createAssemblyConfigSchemas,
+  assemblyConfigSchemaFactory,
 } from '@jbrowse/core/assemblyManager'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -16,19 +16,14 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
   )
   pluginManager.createPluggableElements()
   const Session = createSessionModel(pluginManager)
-  const { assemblyConfigSchemas, dispatcher } =
-    createAssemblyConfigSchemas(pluginManager)
-  const assemblyConfigSchemasType = types.union(
-    { dispatcher },
-    ...assemblyConfigSchemas,
-  )
+  const assemblyConfig = assemblyConfigSchemaFactory(pluginManager)
   const assemblyManagerType = assemblyManagerFactory(
-    assemblyConfigSchemasType,
+    assemblyConfig,
     pluginManager,
   )
   const rootModel = types
     .model('ReactLinearGenomeView', {
-      config: createConfigModel(pluginManager, assemblyConfigSchemasType),
+      config: createConfigModel(pluginManager, assemblyConfig),
       session: Session,
       assemblyManager: assemblyManagerType,
     })

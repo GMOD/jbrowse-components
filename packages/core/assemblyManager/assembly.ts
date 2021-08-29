@@ -1,5 +1,5 @@
 import jsonStableStringify from 'json-stable-stringify'
-import { getParent, IAnyType, types, Instance } from 'mobx-state-tree'
+import { getParent, types, Instance } from 'mobx-state-tree'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import { getConf } from '../configuration'
 import {
@@ -10,6 +10,7 @@ import PluginManager from '../PluginManager'
 import { Region } from '../util/types'
 import { makeAbortableReaction, when } from '../util'
 import QuickLRU from '../util/QuickLRU'
+import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
 
 // Based on the UCSC Genome Browser chromosome color palette:
 // https://github.com/ucscGenomeBrowser/kent/blob/a50ed53aff81d6fb3e34e6913ce18578292bc24e/src/hg/inc/chromColors.h
@@ -56,7 +57,7 @@ async function loadRefNameMap(
     name: 'when assembly ready',
   })
 
-  const refNames = await assembly.rpcManager.call(
+  const refNames = (await assembly.rpcManager.call(
     sessionId,
     'CoreGetRefNames',
     {
@@ -65,26 +66,28 @@ async function loadRefNameMap(
       ...options,
     },
     { timeout: 1000000 },
-  )
-  const refNameMap: Record<string, string> = {}
+  )) as string[]
+
   const { refNameAliases } = assembly
   if (!refNameAliases) {
     throw new Error(`error loading assembly ${assembly.name}'s refNameAliases`)
   }
 
-  refNames.forEach((refName: string) => {
-    checkRefName(refName)
-    const canon = assembly.getCanonicalRefName(refName)
-    if (canon) {
-      refNameMap[canon] = refName
-    }
-  })
+  const refNameMap = Object.fromEntries(
+    refNames.map(name => {
+      checkRefName(name)
+      return [assembly.getCanonicalRefName(name), name]
+    }),
+  )
 
   // make the reversed map too
-  const reversed: Record<string, string> = {}
-  for (const [canonicalName, adapterName] of Object.entries(refNameMap)) {
-    reversed[adapterName] = canonicalName
-  }
+  const reversed = Object.fromEntries(
+    Object.entries(refNameMap).map(([canonicalName, adapterName]) => [
+      adapterName,
+      canonicalName,
+    ]),
+  )
+  console.log({ reversed, refNameMap })
 
   return {
     forwardMap: refNameMap,
@@ -92,8 +95,8 @@ async function loadRefNameMap(
   }
 }
 
+// Valid refName pattern from https://samtools.github.io/hts-specs/SAMv1.pdf
 function checkRefName(refName: string) {
-  // Valid refName pattern from https://samtools.github.io/hts-specs/SAMv1.pdf
   if (
     !refName.match(
       /[0-9A-Za-z!#$%&+./:;?@^_|~-][0-9A-Za-z!#$%&*+./:;=?@^_|~-]*/,
@@ -128,7 +131,7 @@ export interface BasicRegion {
   assemblyName: string
 }
 export default function assemblyFactory(
-  assemblyConfigType: IAnyType,
+  assemblyConfigType: AnyConfigurationSchemaType,
   pluginManager: PluginManager,
 ) {
   const adapterLoads = new AbortablePromiseCache({
@@ -159,7 +162,7 @@ export default function assemblyFactory(
     }))
     .views(self => ({
       get initialized() {
-        return Boolean(self.refNameAliases)
+        return !!self.refNameAliases
       },
       get name(): string {
         return getConf(self, 'name')
@@ -170,14 +173,14 @@ export default function assemblyFactory(
       },
 
       hasName(name: string) {
-        return this.name === name || this.aliases.includes(name)
+        return this.allAliases.includes(name)
       },
 
       get allAliases() {
         return [this.name, ...this.aliases]
       },
       get refNames() {
-        return self.regions && self.regions.map(region => region.refName)
+        return self.regions?.map(region => region.refName)
       },
       get allRefNames() {
         return !self.refNameAliases
@@ -233,9 +236,8 @@ export default function assemblyFactory(
         this.setRefNameAliases(refNameAliases)
       },
       setError(error: Error) {
-        if (!getParent(self, 3).isAssemblyEditing) {
-          self.error = error
-        }
+        console.error(error)
+        self.error = error
       },
       setRegions(regions: Region[]) {
         self.regions = regions
@@ -305,9 +307,10 @@ function makeLoadAssemblyData(pluginManager: PluginManager) {
       // use full configuration instead of snapshot of the config, the
       // rpcManager normally receives a snapshot but we bypass rpcManager here
       // to avoid spinning up a webworker
-      const sequenceAdapterConfig = self.configuration.sequence.adapter
-      const refNameAliasesAdapterConfig =
-        self.configuration.refNameAliases?.adapter
+      //
+      const { sequence, refNameAliases } = self.configuration
+      const sequenceAdapterConfig = sequence.adapter
+      const refNameAliasesAdapterConfig = refNameAliases?.adapter
       return {
         sequenceAdapterConfig,
         assemblyName: self.name,
@@ -369,12 +372,9 @@ async function loadAssemblyReaction(
     const refNameAliasAdapter = new REFCLASS(
       refNameAliasesAdapterConfig,
     ) as BaseRefNameAliasAdapter
-    const refNameAliasesList = (await refNameAliasAdapter.getRefNameAliases({
+    const refNameAliasesList = await refNameAliasAdapter.getRefNameAliases({
       signal,
-    })) as {
-      refName: string
-      aliases: string[]
-    }[]
+    })
 
     refNameAliasesList.forEach(({ refName, aliases }) => {
       aliases.forEach(alias => {
@@ -390,4 +390,6 @@ async function loadAssemblyReaction(
   })
   return { adapterRegionsWithAssembly, refNameAliases }
 }
-export type Assembly = Instance<ReturnType<typeof assemblyFactory>>
+
+export type AssemblyModel = ReturnType<typeof assemblyFactory>
+export type Assembly = Instance<AssemblyModel>

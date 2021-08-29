@@ -113,24 +113,15 @@ export default function RootModel(
   pluginManager: PluginManager,
   adminMode = false,
 ) {
-  const { assemblyConfigSchemas, dispatcher } =
-    AssemblyConfigSchemasFactory(pluginManager)
-  const assemblyConfigSchemasType = types.union(
-    { dispatcher },
-    ...assemblyConfigSchemas,
-  )
-  const Session = sessionModelFactory(pluginManager, assemblyConfigSchemasType)
+  const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
+  const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
   const assemblyManagerType = assemblyManagerFactory(
-    assemblyConfigSchemasType,
+    assemblyConfigSchema,
     pluginManager,
   )
   return types
     .model('Root', {
-      jbrowse: jbrowseWebFactory(
-        pluginManager,
-        Session,
-        assemblyConfigSchemasType as AnyConfigurationSchemaType,
-      ),
+      jbrowse: jbrowseWebFactory(pluginManager, Session, assemblyConfigSchema),
       configPath: types.maybe(types.string),
       session: types.maybe(Session),
       assemblyManager: assemblyManagerType,
