@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '../configuration'
-import { types } from 'mobx-state-tree'
 import PluginManager from '../PluginManager'
 
 export default (pluginManager: PluginManager) => {
@@ -36,14 +35,14 @@ export default (pluginManager: PluginManager) => {
           },
         },
       ),
-      cytoBandFile: ConfigurationSchema(
-        'RefNameAliases',
+      cytobands: ConfigurationSchema(
+        'Cytoband',
         {
           adapter: pluginManager.pluggableConfigSchemaType('adapter'),
         },
         {
           preProcessSnapshot: snap => {
-            // allow refNameAliases to be unspecified
+            // allow cytoBand to be unspecified
             // @ts-ignore
             if (!snap.adapter) {
               return { adapter: { type: 'CytobandAdapter' } }

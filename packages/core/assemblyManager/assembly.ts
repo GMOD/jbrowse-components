@@ -10,7 +10,10 @@ import PluginManager from '../PluginManager'
 import { Region } from '../util/types'
 import { makeAbortableReaction, when } from '../util'
 import QuickLRU from '../util/QuickLRU'
-import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
+import {
+  AnyConfigurationSchemaType,
+  AnyConfigurationModel,
+} from '../configuration/configurationSchema'
 
 // Based on the UCSC Genome Browser chromosome color palette:
 // https://github.com/ucscGenomeBrowser/kent/blob/a50ed53aff81d6fb3e34e6913ce18578292bc24e/src/hg/inc/chromColors.h
@@ -87,7 +90,6 @@ async function loadRefNameMap(
       canonicalName,
     ]),
   )
-  console.log({ reversed, refNameMap })
 
   return {
     forwardMap: refNameMap,
@@ -307,14 +309,15 @@ function makeLoadAssemblyData(pluginManager: PluginManager) {
       // use full configuration instead of snapshot of the config, the
       // rpcManager normally receives a snapshot but we bypass rpcManager here
       // to avoid spinning up a webworker
-      //
-      const { sequence, refNameAliases } = self.configuration
+      const { sequence, refNameAliases, cytobands } = self.configuration
       const sequenceAdapterConfig = sequence.adapter
       const refNameAliasesAdapterConfig = refNameAliases?.adapter
+      const cytobandAdapterConfig = cytobands?.adapter
       return {
         sequenceAdapterConfig,
         assemblyName: self.name,
         refNameAliasesAdapterConfig,
+        cytobandAdapterConfig,
         pluginManager,
       }
     }
@@ -333,62 +336,78 @@ async function loadAssemblyReaction(
     sequenceAdapterConfig,
     assemblyName,
     refNameAliasesAdapterConfig,
+    cytobandAdapterConfig,
     pluginManager,
   } = props
 
-  const dataAdapterType = pluginManager.getAdapterType(
-    sequenceAdapterConfig.type,
-  )
-  const { AdapterClass, getAdapterClass } = dataAdapterType
-  const CLASS = AdapterClass || (await getAdapterClass?.())
-  if (!CLASS) {
-    throw new Error('Failed to get adapter class')
-  }
-  const adapter = new CLASS(
+  const adapterRegions = await getAssemblyRegions(
     sequenceAdapterConfig,
-    undefined,
     pluginManager,
-  ) as RegionsAdapter
-  const adapterRegions = (await adapter.getRegions({ signal })) as Region[]
-
+    signal,
+  )
   const adapterRegionsWithAssembly = adapterRegions.map(adapterRegion => {
-    const { refName } = adapterRegion
-    checkRefName(refName)
+    checkRefName(adapterRegion.refName)
     return { ...adapterRegion, assemblyName }
   })
   const refNameAliases: RefNameAliases = {}
-  if (refNameAliasesAdapterConfig) {
-    const refAliasAdapterType = pluginManager.getAdapterType(
-      refNameAliasesAdapterConfig.type,
-    )
-    const {
-      AdapterClass: RefAdapterClass,
-      getAdapterClass: getRefAdapterClass,
-    } = refAliasAdapterType
-    const REFCLASS = RefAdapterClass || (await getRefAdapterClass?.())
-    if (!REFCLASS) {
-      throw new Error('Failed to get REFCLASS')
-    }
-    const refNameAliasAdapter = new REFCLASS(
-      refNameAliasesAdapterConfig,
-    ) as BaseRefNameAliasAdapter
-    const refNameAliasesList = await refNameAliasAdapter.getRefNameAliases({
-      signal,
-    })
 
-    refNameAliasesList.forEach(({ refName, aliases }) => {
-      aliases.forEach(alias => {
-        checkRefName(alias)
-        refNameAliases[alias] = refName
-      })
+  const aliases = await getRefNameAliases(
+    refNameAliasesAdapterConfig,
+    pluginManager,
+    signal,
+  )
+  const cytobands = await getCytobands(cytobandAdapterConfig, pluginManager)
+  aliases.forEach(({ refName, aliases }) => {
+    aliases.forEach(alias => {
+      checkRefName(alias)
+      refNameAliases[alias] = refName
     })
-  }
-
+  })
   // add identity to the refNameAliases list
   adapterRegionsWithAssembly.forEach(region => {
     refNameAliases[region.refName] = region.refName
   })
-  return { adapterRegionsWithAssembly, refNameAliases }
+
+  return { adapterRegionsWithAssembly, refNameAliases, cytobands }
+}
+
+async function getRefNameAliases(
+  config: AnyConfigurationModel,
+  pluginManager: PluginManager,
+  signal?: AbortSignal,
+) {
+  const type = pluginManager.getAdapterType(config.type)
+  const CLASS = await type.getAdapterClass?.()
+  const adapter = new CLASS(config,     undefined,
+    pluginManager) as BaseRefNameAliasAdapter
+  return adapter.getRefNameAliases({
+    signal,
+  })
+}
+
+async function getCytobands(
+  config: AnyConfigurationModel,
+  pluginManager: PluginManager,
+) {
+  const type = pluginManager.getAdapterType(config.type)
+  const CLASS = await type.getAdapterClass()
+  const adapter = new CLASS(config,     undefined,
+    pluginManager)
+
+  // @ts-ignore
+  return adapter.getData()
+}
+
+async function getAssemblyRegions(
+  config: AnyConfigurationModel,
+  pluginManager: PluginManager,
+  signal?: AbortSignal,
+) {
+  const type = pluginManager.getAdapterType(config.type)
+  const CLASS = await type.getAdapterClass()
+  const adapter = new CLASS(config,     undefined,
+    pluginManager) as RegionsAdapter
+  return adapter.getRegions({ signal })
 }
 
 export type AssemblyModel = ReturnType<typeof assemblyFactory>
