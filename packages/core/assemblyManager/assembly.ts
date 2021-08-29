@@ -1,6 +1,7 @@
 import jsonStableStringify from 'json-stable-stringify'
 import { getParent, types, Instance } from 'mobx-state-tree'
 import AbortablePromiseCache from 'abortable-promise-cache'
+import { Feature } from '../util/simpleFeature'
 import { getConf } from '../configuration'
 import {
   BaseRefNameAliasAdapter,
@@ -161,6 +162,7 @@ export default function assemblyFactory(
       error: undefined as Error | undefined,
       regions: undefined as BasicRegion[] | undefined,
       refNameAliases: undefined as { [key: string]: string } | undefined,
+      cytobands: undefined as Feature[] | undefined,
     }))
     .views(self => ({
       get initialized() {
@@ -230,22 +232,28 @@ export default function assemblyFactory(
       setLoaded({
         adapterRegionsWithAssembly,
         refNameAliases,
+        cytobands,
       }: {
         adapterRegionsWithAssembly: Region[]
         refNameAliases: RefNameAliases
+        cytobands: Feature[]
       }) {
         this.setRegions(adapterRegionsWithAssembly)
         this.setRefNameAliases(refNameAliases)
+        this.setCytobands(cytobands)
       },
-      setError(error: Error) {
-        console.error(error)
-        self.error = error
+      setError(e: Error) {
+        console.error(e)
+        self.error = e
       },
       setRegions(regions: Region[]) {
         self.regions = regions
       },
       setRefNameAliases(refNameAliases: RefNameAliases) {
         self.refNameAliases = refNameAliases
+      },
+      setCytobands(cytobands: Feature[]) {
+        self.cytobands = cytobands
       },
       afterAttach() {
         makeAbortableReaction(
@@ -303,6 +311,7 @@ export default function assemblyFactory(
       },
     }))
 }
+
 function makeLoadAssemblyData(pluginManager: PluginManager) {
   return (self: Assembly) => {
     if (self.configuration) {

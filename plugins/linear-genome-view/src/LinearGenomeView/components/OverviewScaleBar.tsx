@@ -219,10 +219,9 @@ const ScaleBar = observer(
         {/* this is the entire scale bar */}
         {overviewVisibleRegions.map((seq, idx) => {
           const assembly = assemblyManager.get(seq.assemblyName)
-          let refNameColor: string | undefined
-          if (assembly) {
-            refNameColor = assembly.getRefNameColor(seq.refName)
-          }
+          const refNameColor = assembly?.getRefNameColor(seq.refName)
+          const cytobands = assembly?.cytobands
+
           const regionLength = seq.end - seq.start
           const tickLabels = []
           for (
@@ -263,7 +262,6 @@ const ScaleBar = observer(
                 borderColor: refNameColor,
               }}
             >
-              {/* name of sequence */}
               <Typography
                 style={{
                   color: refNameColor,
@@ -274,7 +272,6 @@ const ScaleBar = observer(
                 {seq.refName}
               </Typography>
 
-              {/* the number labels drawn in overview scale bar*/}
               {tickLabels.map((tickLabel, labelIdx) => (
                 <Typography
                   key={`${JSON.stringify(seq)}-${tickLabel}-${labelIdx}`}
