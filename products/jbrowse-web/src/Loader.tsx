@@ -363,7 +363,7 @@ const Renderer = observer(
                   )
                 }
               } else {
-                if (jbrowse.defaultSession?.views.length > 0) {
+                if (jbrowse.defaultSession?.views?.length > 0) {
                   rootModel.setDefaultSession()
                 }
               }
