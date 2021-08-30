@@ -8,6 +8,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import AdapterGuessType from '@jbrowse/core/pluggableElementTypes/AdapterGuessType'
 import { FileLocation } from '@jbrowse/core/util/types'
+import { makeIndex } from '@jbrowse/core/util/tracks'
 import { configSchema as bgzipFastaAdapterConfigSchema } from './BgzipFastaAdapter'
 import { configSchema as chromSizesAdapterConfigSchema } from './ChromSizesAdapter'
 import {
@@ -94,7 +95,7 @@ export default class SequencePlugin extends Plugin {
         new AdapterGuessType({
           name: 'IndexedFastaAdapter',
           regexGuess: /\.(fa|fasta|fas|fna|mfa)$/i,
-          trackAdapter: 'ReferenceSequenceTrack',
+          trackGuess: 'ReferenceSequenceTrack',
           fetchConfig: (file: FileLocation, index: FileLocation) => {
             return {
               type: 'IndexedFastaAdapter',

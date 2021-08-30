@@ -96,6 +96,29 @@ export function storeBlobLocation(location: PreFileLocation) {
   return location
 }
 
+export function makeIndex(location: FileLocation, suffix: string) {
+  if ('uri' in location) {
+    return { uri: location.uri + suffix, locationType: 'UriLocation' }
+  }
+
+  if ('localPath' in location) {
+    return {
+      localPath: location.localPath + suffix,
+      locationType: 'LocalPathLocation',
+    }
+  }
+
+  return location
+}
+
+export function makeIndexType(
+  name: string | undefined,
+  typeA: string,
+  typeB: string,
+) {
+  return name?.toUpperCase().endsWith(typeA) ? typeA : typeB
+}
+
 export function guessAdapter(
   file: FileLocation,
   index: FileLocation | undefined,

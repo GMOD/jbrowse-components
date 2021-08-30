@@ -25,6 +25,7 @@ import {
 } from './VariantFeatureWidget'
 import { configSchema as vcfTabixAdapterConfigSchema } from './VcfTabixAdapter'
 import { configSchema as vcfAdapterConfigSchema } from './VcfAdapter'
+import { makeIndex, makeIndexType } from '@jbrowse/core/util/tracks'
 
 export default class VariantsPlugin extends Plugin {
   name = 'VariantsPlugin'

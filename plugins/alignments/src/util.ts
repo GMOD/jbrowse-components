@@ -1,33 +1,9 @@
 import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { FileLocation } from '@jbrowse/core/util/types'
 // get tag from BAM or CRAM feature, where CRAM uses feature.get('tags') and
 // BAM does not
 export function getTag(feature: Feature, tag: string) {
   const tags = feature.get('tags')
   return tags ? tags[tag] : feature.get(tag)
-}
-
-export function makeIndex(location: FileLocation, suffix: string) {
-  if ('uri' in location) {
-    return { uri: location.uri + suffix, locationType: 'UriLocation' }
-  }
-
-  if ('localPath' in location) {
-    return {
-      localPath: location.localPath + suffix,
-      locationType: 'LocalPathLocation',
-    }
-  }
-
-  return location
-}
-
-export function makeIndexType(
-  name: string | undefined,
-  typeA: string,
-  typeB: string,
-) {
-  return name?.toUpperCase().endsWith(typeA) ? typeA : typeB
 }
 
 // use fallback alt tag, used in situations where upper case/lower case tags

@@ -49,7 +49,7 @@ import {
   PileupGetGlobalValueForTag,
   PileupGetVisibleModifications,
 } from './PileupRPC/rpcMethods'
-import { makeIndex, makeIndexType } from './util'
+import { makeIndex, makeIndexType } from '@jbrowse/core/util/tracks'
 
 export { MismatchParser }
 export type { LinearPileupDisplayModel }

@@ -5,6 +5,7 @@ import { configSchema as bigBedAdapterConfigSchema } from './BigBedAdapter'
 import { configSchema as bedTabixAdapterConfigSchema } from './BedTabixAdapter'
 import AdapterGuessType from '@jbrowse/core/pluggableElementTypes/AdapterGuessType'
 import { FileLocation } from '@jbrowse/core/util/types'
+import { makeIndex, makeIndexType } from '@jbrowse/core/util/tracks'
 
 export default class BedPlugin extends Plugin {
   name = 'BedPlugin'
