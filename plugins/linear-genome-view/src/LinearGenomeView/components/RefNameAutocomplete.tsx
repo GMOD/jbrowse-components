@@ -214,7 +214,6 @@ function RefNameAutocomplete({
               ])
             : filtered
         }}
-        ListboxProps={{ style: { maxHeight: 250 } }}
         renderInput={params => {
           const { helperText, InputProps = {} } = TextFieldProps
           const TextFieldInputProps = {
