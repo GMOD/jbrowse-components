@@ -1,4 +1,4 @@
-export default {
+const preloadedConfigs = {
   hg38: {
     assemblies: [
       {
@@ -423,3 +423,5 @@ export default {
     ],
   },
 }
+
+export default preloadedConfigs

@@ -3,11 +3,14 @@ import {
   Button,
   Checkbox,
   FormControlLabel,
+  IconButton,
   TextField,
+  Tooltip,
   Typography,
   makeStyles,
 } from '@material-ui/core'
 import PluginManager from '@jbrowse/core/PluginManager'
+import SearchIcon from '@material-ui/icons/Search'
 import { createPluginManager } from './util'
 import preloadedConfigs from './preloadedConfigs'
 import deepmerge from 'deepmerge'
@@ -37,22 +40,31 @@ function PreloadedDatasetSelector({
   const classes = useStyles()
   const [selected, setSelected] = useState({} as Record<string, boolean>)
   const [search, setSearch] = useState('')
+  const [filterShown, setFilterShown] = useState(false)
 
   return (
     <div className={classes.container}>
       <div style={{ display: 'flex' }}>
         <Typography className={classes.header}>
           Select assembly (or multiple assemblies) for your session
+          <IconButton onClick={() => setFilterShown(!filterShown)}>
+            <Tooltip title="Show filter?">
+              <SearchIcon />
+            </Tooltip>
+          </IconButton>
         </Typography>
         <Button
           className={classes.button}
           onClick={async () => {
-            const pm = await createPluginManager(
-              deepmerge.all(
-                // @ts-ignore
-                Object.keys(selected).map(name => preloadedConfigs[name]),
-              ),
+            const config = deepmerge.all(
+              // @ts-ignore
+              Object.keys(selected).map(name => preloadedConfigs[name]),
             )
+
+            // @ts-ignore
+            config.defaultSession.name +=
+              ' ' + new Date().toLocaleString('en-US')
+            const pm = await createPluginManager(config)
             setPluginManager(pm)
           }}
           variant="contained"
@@ -61,11 +73,13 @@ function PreloadedDatasetSelector({
           Go
         </Button>
       </div>
-      <TextField
-        label="Filter datasets"
-        value={search}
-        onChange={event => setSearch(event.target.value as string)}
-      />
+      {filterShown ? (
+        <TextField
+          label="Filter datasets"
+          value={search}
+          onChange={event => setSearch(event.target.value as string)}
+        />
+      ) : null}
       <br />
       {Object.keys(preloadedConfigs)
         .filter(name => (search ? name.match(new RegExp(search, 'i')) : true))
