@@ -20,37 +20,18 @@ Object {
     Object {
       "assemblies": Array [
         "volvox",
-        "volvox2",
       ],
-      "namesIndexLocation": Object {
-        "uri": "names/",
+      "ixFilePath": Object {
+        "uri": "trix/volvox.ix",
       },
-      "textSearchAdapterId": "JBrowse1GenerateNamesAdapter",
-      "tracks": Array [
-        "bedtabix_genes",
-        "volvox_test_vcf",
-        "gff3tabix_genes",
-        "volvox_filtered_vcf",
-      ],
-      "type": "JBrowse1TextSearchAdapter",
-    },
-    Object {
-      "namesIndexLocation": Object {
-        "uri": "names/",
+      "ixxFilePath": Object {
+        "uri": "trix/volvox.ixx",
       },
-      "textSearchAdapterId": "AdapterWithoutAssemblies",
-      "type": "JBrowse1TextSearchAdapter",
-    },
-    Object {
-      "assemblies": Array [
-        "volvox3",
-        "volvox4",
-      ],
-      "namesIndexLocation": Object {
-        "uri": "names/",
+      "metaFilePath": Object {
+        "uri": "trix/volvox_meta.json",
       },
-      "textSearchAdapterId": "AdapterWithDiffAssemblies",
-      "type": "JBrowse1TextSearchAdapter",
+      "textSearchAdapterId": "volvox-index",
+      "type": "TrixTextSearchAdapter",
     },
   ],
   "assemblies": Array [
@@ -205,16 +186,6 @@ Object {
         },
       ],
       "name": "volvox structural variant test",
-      "textSearchAdapter": Object {
-        "assemblies": Array [
-          "NonExistantAssembly",
-        ],
-        "namesIndexLocation": Object {
-          "uri": "names/",
-        },
-        "textSearchAdapterId": "TrackAdapter",
-        "type": "JBrowse1TextSearchAdapter",
-      },
       "trackId": "volvox_sv_test",
       "type": "VariantTrack",
     },

@@ -64,33 +64,18 @@
   ],
   "aggregateTextSearchAdapters": [
     {
-      "type": "JBrowse1TextSearchAdapter",
-      "textSearchAdapterId": "JBrowse1GenerateNamesAdapter",
-      "namesIndexLocation": {
-        "uri": "names/"
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "volvox-index",
+      "ixFilePath": {
+        "uri": "trix/volvox.ix"
       },
-      "tracks": [
-        "bedtabix_genes",
-        "volvox_test_vcf",
-        "gff3tabix_genes",
-        "volvox_filtered_vcf"
-      ],
-      "assemblies": ["volvox", "volvox2"]
-    },
-    {
-      "type": "JBrowse1TextSearchAdapter",
-      "textSearchAdapterId": "AdapterWithoutAssemblies",
-      "namesIndexLocation": {
-        "uri": "names/"
-      }
-    },
-    {
-      "type": "JBrowse1TextSearchAdapter",
-      "textSearchAdapterId": "AdapterWithDiffAssemblies",
-      "namesIndexLocation": {
-        "uri": "names/"
+      "ixxFilePath": {
+        "uri": "trix/volvox.ixx"
       },
-      "assemblies": ["volvox3", "volvox4"]
+      "metaFilePath": {
+        "uri": "trix/volvox_meta.json"
+      },
+      "assemblies": ["volvox"]
     }
   ],
   "tracks": [
@@ -110,14 +95,6 @@
             "uri": "volvox.dup.vcf.gz.tbi"
           }
         }
-      },
-      "textSearchAdapter": {
-        "type": "JBrowse1TextSearchAdapter",
-        "textSearchAdapterId": "TrackAdapter",
-        "namesIndexLocation": {
-          "uri": "names/"
-        },
-        "assemblies": ["NonExistantAssembly"]
       }
     },
     {

@@ -8,6 +8,7 @@ import {
   AdapterClass as JBrowse1TextSearchAdapterClass,
   configSchema as jbrowse1AdapterConfigSchema,
 } from './JBrowse1TextSeachAdapter'
+
 import {
   configSchema as jbrowse1ConfigSchema,
   modelFactory as jbrowse1ModelFactory,

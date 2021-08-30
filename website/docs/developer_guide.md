@@ -811,6 +811,7 @@ with your adapter.
   aliases for reference sequence names, for example to define that "chr1" is an
   alias for "1". An example of this in JBrowse is an adapter for
   (alias files)[http://software.broadinstitute.org/software/igv/LoadData/#aliasfile]
+- **Text search adapter** - This type of adapter is used to search through text search indexes. Returns list of search results. An example of this in JBrowse is the trix text search adapter.
 
 Note about refname alias adapter: the first column must match what is seen in
 your FASTA file

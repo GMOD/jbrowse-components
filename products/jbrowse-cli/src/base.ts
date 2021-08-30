@@ -12,6 +12,21 @@ export interface UriLocation {
   uri: string
 }
 
+export interface Gff3TabixAdapter {
+  type: 'Gff3TabixAdapter'
+  gffGzLocation: UriLocation
+}
+
+export interface GtfTabixAdapter {
+  type: 'GtfTabixAdapter'
+  gtfGzLocation: UriLocation
+}
+
+export interface VcfTabixAdapter {
+  type: 'VcfTabixAdapter'
+  vcfGzLocation: UriLocation
+}
+
 export interface IndexedFastaAdapter {
   type: 'IndexedFastaAdapter'
   fastaLocation: UriLocation
@@ -70,14 +85,35 @@ export interface Assembly {
   refNameColors?: string[]
 }
 
+export interface TrixTextSearchAdapter {
+  type: 'TrixTextSearchAdapter'
+
+  textSearchAdapterId: string
+  ixFilePath: UriLocation
+  ixxFilePath: UriLocation
+  metaFilePath: UriLocation
+
+  assemblies: string[]
+}
+export interface TextSearching {
+  indexingFeatureTypesToExclude: string[]
+  indexingAttributes: string[]
+
+  textSearchAdapter: TrixTextSearchAdapter
+}
 export interface Track {
   trackId: string
   name: string
+  assemblyNames: string[]
+  adapter: Gff3TabixAdapter | GtfTabixAdapter | VcfTabixAdapter
+  textSearching: TextSearching
 }
 
 export interface Config {
   assemblies?: Assembly[]
   configuration?: {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  aggregateTextSearchAdapters?: any[]
   connections?: unknown[]
   defaultSession?: {}
   tracks?: Track[]
@@ -107,7 +143,7 @@ export default abstract class JBrowseCommand extends Command {
     } catch (error) {
       this.error(error instanceof Error ? error : error.message, {
         suggestions: [
-          `Make sure the file "${location}" exists`,
+          `Make sure the file "${location}" exists or use --out to point to a directory with a config.json`,
           'Run `jbrowse add-assembly` to create a config file',
         ],
         exit: 40,
