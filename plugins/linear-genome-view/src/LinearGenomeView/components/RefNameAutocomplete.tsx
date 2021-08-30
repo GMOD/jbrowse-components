@@ -10,7 +10,7 @@ import { getEnv } from 'mobx-state-tree'
 
 // jbrowse core
 import { Region } from '@jbrowse/core/util/types'
-import { getSession, useDebounce } from '@jbrowse/core/util'
+import { getSession, useDebounce, measureText } from '@jbrowse/core/util'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 import BaseResult, {
@@ -165,7 +165,9 @@ function RefNameAutocomplete({
       }
     }
   }
-
+  const inputBoxVal = coarseVisibleLocStrings || value || ''
+  // heuristic, text width + icon width, minimum 200
+  const width = Math.min(Math.max(measureText(inputBoxVal, 16) + 25, 200), 550)
   return (
     <>
       <Autocomplete
@@ -178,8 +180,8 @@ function RefNameAutocomplete({
         freeSolo
         includeInputInList
         selectOnFocus
-        style={style}
-        value={coarseVisibleLocStrings || value || ''}
+        style={{ ...style, width }}
+        value={inputBoxVal}
         loading={loaded !== undefined ? !loaded : false}
         loadingText="loading results"
         open={open}
@@ -237,7 +239,6 @@ function RefNameAutocomplete({
               {...params}
               {...TextFieldProps}
               helperText={helperText}
-              value={coarseVisibleLocStrings || value || ''}
               InputProps={TextFieldInputProps}
               placeholder="Search for location"
               onChange={e => {

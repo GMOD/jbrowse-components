@@ -263,7 +263,10 @@ const ScaleBar = observer(
             >
               {/* name of sequence */}
               <Typography
-                style={{ color: refNameColor }}
+                style={{
+                  color: refNameColor,
+                  zIndex: 100,
+                }}
                 className={classes.scaleBarRefName}
               >
                 {seq.refName}
