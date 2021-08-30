@@ -43,11 +43,8 @@ async function fetchResults(
   query: string,
   assemblyName: string,
 ) {
-  const session = getSession(self)
-  const { pluginManager } = getEnv(session)
+  const { textSearchManager } = getSession(self)
   const { rankSearchResults } = self
-  const textSearchManager: TextSearchManager =
-    pluginManager.rootModel.textSearchManager
   const searchScope = self.searchScope(assemblyName)
   const args = {
     queryString: query,
@@ -121,23 +118,21 @@ function RefNameAutocomplete({
 
     ;(async () => {
       try {
-        let results: BaseResult[] = []
+        setLoaded(false)
         if (debouncedSearch && debouncedSearch !== '' && assemblyName) {
-          setLoaded(false)
           const searchResults = await fetchResults(
             model,
             debouncedSearch,
             assemblyName,
           )
-          results = results.concat(searchResults)
+          if (searchResults?.length && active) {
+            const adapterResults: Option[] = searchResults.map(result => {
+              return { result }
+            })
+            setSearchOptions(adapterResults)
+          }
+          setLoaded(true)
         }
-        if (results.length >= 0 && active) {
-          const adapterResults: Option[] = results.map(result => {
-            return { result }
-          })
-          setSearchOptions(adapterResults)
-        }
-        setLoaded(true)
       } catch (e) {
         console.error(e)
         if (active) {
@@ -152,6 +147,7 @@ function RefNameAutocomplete({
   }, [assemblyName, debouncedSearch, model])
 
   function onChange(selectedOption: Option | string) {
+    console.log({ selectedOption })
     if (selectedOption && assemblyName) {
       if (typeof selectedOption === 'string') {
         // handles string inputs on keyPress enter
@@ -214,7 +210,6 @@ function RefNameAutocomplete({
               ])
             : filtered
         }}
-        ListboxProps={{ style: { maxHeight: 250 } }}
         renderInput={params => {
           const { helperText, InputProps = {} } = TextFieldProps
           const TextFieldInputProps = {
