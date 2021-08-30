@@ -4,6 +4,9 @@ import BaseResult, {
 import path from 'path'
 import Adapter from './TrixTextSearchAdapter'
 import configSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+
+const pluginManager = new PluginManager()
 
 test('adapter can fetch output files', async () => {
   const rootTemplate = path
@@ -16,16 +19,19 @@ test('adapter can fetch output files', async () => {
     textSearchAdapterId: 'TrixTextSearchAdapterTest',
     ixFilePath: {
       uri: `${urlPath}/volvox.ix`,
+      locationType: 'UriLocation',
     },
     ixxFilePath: {
       uri: `${urlPath}/volvox.ixx`,
+      locationType: 'UriLocation',
     },
     metaFilePath: {
       uri: `${urlPath}/volvox_meta.json`,
+      locationType: 'UriLocation',
     },
   }
   // create adapter
-  const adapter = new Adapter(configSchema.create(args))
+  const adapter = new Adapter(configSchema.create(args), pluginManager)
   // prefix search
   const results = await adapter.searchIndex({
     queryString: 'apple',
