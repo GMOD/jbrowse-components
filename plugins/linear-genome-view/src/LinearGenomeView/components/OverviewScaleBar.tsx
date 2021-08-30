@@ -265,7 +265,6 @@ const ScaleBar = observer(
               <Typography
                 style={{
                   color: refNameColor,
-                  backgroundColor: 'rgba(255,255,255)',
                   zIndex: 100,
                 }}
                 className={classes.scaleBarRefName}
