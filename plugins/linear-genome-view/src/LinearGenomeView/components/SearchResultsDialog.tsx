@@ -6,7 +6,6 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
   Divider,
   IconButton,
@@ -18,10 +17,9 @@ import {
   TableRow,
   Typography,
   Paper,
+  makeStyles,
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
-import { makeStyles } from '@material-ui/core/styles'
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { LinearGenomeViewModel } from '../..'
 
 export const useStyles = makeStyles(theme => ({
@@ -101,8 +99,8 @@ export default function SearchResultsDialog({
 
   return (
     <Dialog open maxWidth="xl" onClose={handleClose}>
-      <DialogTitle id="search-results-dialog">
-        Search Results
+      <DialogTitle>
+        Search results
         {handleClose ? (
           <IconButton
             data-testid="close-resultsDialog"
@@ -117,18 +115,15 @@ export default function SearchResultsDialog({
       </DialogTitle>
       <Divider />
       <DialogContent>
-        {model.searchResults?.length === 0 ||
-        model.searchResults === undefined ? (
+        {!model.searchResults?.length ? (
           <Typography>
-            {`No results found for `}
-            <b>{model.searchQuery}</b>
+            No results found for <b>{model.searchQuery}</b>
           </Typography>
         ) : (
           <>
-            <DialogContentText id="alert-dialog-slide-description">
-              {`Showing results for `}
-              <b>{model.searchQuery}</b>
-            </DialogContentText>
+            <Typography>
+              Showing results for <b>{model.searchQuery}</b>
+            </Typography>
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
@@ -140,8 +135,8 @@ export default function SearchResultsDialog({
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {model.searchResults.map((result: BaseResult, index) => (
-                    <TableRow key={`${result.getLabel()}-${index}`}>
+                  {model.searchResults.map(result => (
+                    <TableRow key={`${result.getId()}`}>
                       <TableCell component="th" scope="row">
                         {result.getLabel()}
                       </TableCell>
@@ -150,18 +145,6 @@ export default function SearchResultsDialog({
                       </TableCell>
                       <TableCell align="right">
                         {getTrackName(result.getTrackId()) || 'N/A'}
-                      </TableCell>
-                      <TableCell align="right">
-                        <Button
-                          onClick={() => {
-                            handleClick(result.getLocation())
-                            handleClose()
-                          }}
-                          color="primary"
-                          variant="contained"
-                        >
-                          Go to location
-                        </Button>
                       </TableCell>
                       <TableCell align="right">
                         <Button
@@ -177,7 +160,7 @@ export default function SearchResultsDialog({
                           color="primary"
                           variant="contained"
                         >
-                          Show Track
+                          Go
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -190,12 +173,7 @@ export default function SearchResultsDialog({
       </DialogContent>
       <Divider />
       <DialogActions>
-        <Button
-          onClick={() => {
-            handleClose()
-          }}
-          color="primary"
-        >
+        <Button onClick={() => handleClose()} color="primary">
           Cancel
         </Button>
       </DialogActions>
