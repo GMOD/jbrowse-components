@@ -4,7 +4,7 @@ import {
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
-import { NoAssemblyRegion, Region } from '@jbrowse/core/util/types'
+import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -94,7 +94,7 @@ export default class extends BaseFeatureDataAdapter {
           lines.push(this.parseLine(metadata.columnNumbers, line, fileOffset))
         },
       )
-      if(allowRedispatch && lines.length) {
+      if (allowRedispatch && lines.length) {
         let minStart = Infinity
         let maxEnd = -Infinity
 
@@ -106,7 +106,7 @@ export default class extends BaseFeatureDataAdapter {
             if (start < minStart) {
               minStart = start
             }
-            if(line.end > maxEnd) {
+            if (line.end > maxEnd) {
               maxEnd = line.end
             }
           }
@@ -125,33 +125,96 @@ export default class extends BaseFeatureDataAdapter {
       }
 
       const gtf = lines
-      .map((lineRecord: LineFeature) => {
-        if(lineRecord.fields[8] && lineRecord.fields[8] !== '.') {
-          if(!lineRecord.fields[8].includes('_lineHash')) {
-            lineRecord.fields[8] += `;_lineHash =${lineRecord.lineHash}`
+        .map((lineRecord: LineFeature) => {
+          if (lineRecord.fields[8] && lineRecord.fields[8] !== '.') {
+            if (!lineRecord.fields[8].includes('_lineHash')) {
+              lineRecord.fields[8] += `;_lineHash =${lineRecord.lineHash}`
+            }
+          } else {
+            lineRecord.fields[8] = `_lineHash=${lineRecord.lineHash}`
           }
-        } else {
-          lineRecord.fields[8] = `_lineHash=${lineRecord.lineHash}`
-        }
-        return lineRecord.fields.join('\t')
-      })
-      .join('\n')
+          return lineRecord.fields.join('\t')
+        })
+        .join('\n')
 
       const features = this.gtfParseStringSync(gtf) as FeatureLoc[][]
 
-      // features.forEach(featureLocs => 
-      //   this.formatFeatures(featureLocs).forEach(f => {
-      //     if ( /* does intersect */)
-      //   }))
+      features.forEach(featureLocs =>
+        this.formatFeatures(featureLocs).forEach(f => {
+          if (
+            doesIntersect2(
+              f.get('start'),
+              f.get('end'),
+              originalQuery.start,
+              originalQuery.end,
+            )
+          ) {
+            observer.next(f)
+          }
+        }),
+      )
+      observer.complete()
     } catch (e) {
       observer.error(e)
     }
   }
 
   private formatFeatures(featureLocs: FeatureLoc[]) {
-    
+    return featureLocs.map(
+      featureLoc =>
+        new SimpleFeature({
+          data: this.featureData(featureLoc),
+          id: `${this.id}-offset-${featureLoc.attributes._lineHash[0]}`,
+        }),
+    )
   }
-  private featureData(data: FeatureLoc) {}
+
+  private featureData(data: FeatureLoc) {
+    const f: Record<string, unknown> = { ...data }
+    ;(f.start as number) -= 1 // convert to interbase
+    f.strand = { '+': 1, '-': -1, '.': 0, '?': undefined }[data.strand] // convert strand
+    f.phase = Number(data.phase)
+    f.refName = data.seq_name
+    if (data.score === null) {
+      delete f.score
+    }
+    if (data.phase === null) {
+      delete f.score
+    }
+    const defaultFields = [
+      'start',
+      'end',
+      'seq_name',
+      'score',
+      'feature',
+      'source',
+      'phase',
+      'strand',
+    ]
+    Object.keys(data.attributes).forEach(a => {
+      let b = a.toLowerCase()
+      if (defaultFields.includes(b)) {
+        // add "suffix" to tag name if it already exists
+        // reproduces behavior of NCList
+        b += '2'
+      }
+      if (data.attributes[a] !== null) {
+        let attr = data.attributes[a]
+        if (Array.isArray(attr) && attr.length === 1) {
+          ;[attr] = attr
+        }
+        f[b] = attr
+      }
+    })
+    f.refName = f.seq_name
+
+    delete f.data
+    delete f.derived_features
+    delete f._linehash
+    delete f.attributes
+    delete f.seq_name
+    return f
+  }
 
   private parseLine(
     columnNumbers: { start: number; end: number },
@@ -199,6 +262,5 @@ export default class extends BaseFeatureDataAdapter {
 
     return items
   }
-
-  public freeResources(/* { region } */): void {}
+  public freeResources(/* { region } */) {}
 }
