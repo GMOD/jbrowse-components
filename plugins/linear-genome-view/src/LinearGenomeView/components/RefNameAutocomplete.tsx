@@ -166,6 +166,7 @@ function RefNameAutocomplete({
     }
   }
   const inputBoxVal = coarseVisibleLocStrings || value || ''
+  // heuristic, text width + icon width, minimum 200
   const width = Math.max(measureText(inputBoxVal, 16) + 25, 200)
   return (
     <>
