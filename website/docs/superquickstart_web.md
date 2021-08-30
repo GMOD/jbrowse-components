@@ -6,10 +6,10 @@ toplevel: true
 
 This is a quick overview to get started running JBrowse 2 from scratch using
 the command line. It is helpful if you have some familiarity with the command
-line, and with some bioinformatics tools like samtools in general to follow
-these steps. This guide also assumes you have:
+line, and with some bioinformatics tools like samtools in general. This guide
+also assumes you have:
 
-- a webserver that reads files from /var/www/html/ e.g. Apache or nginx (not
+- a web server that reads files from /var/www/html/ e.g. Apache or nginx (not
   strictly necessary for jbrowse to run, see footnote)
 - node 10+ installed
 - genometools installed e.g. `sudo apt install genometools` or `brew install brewsci/bio/genometools`, used for sorting GFF3 for creating tabix GFF
@@ -18,6 +18,8 @@ these steps. This guide also assumes you have:
   for created tabix indexes for BED/VCF/GFF files
 
 ## Super-quick overview for CLI
+
+### Initial setup
 
 ```bash
 ## Install JBrowse 2 CLI tools, note: if you want to use the jbrowse command
@@ -36,14 +38,22 @@ jbrowse create /var/www/html/jbrowse2
 jbrowse create ~/mylocaljbrowse
 mv ~/mylocaljbrowse /var/www/html/jbrowse2
 
+```
 
+### Loading a FASTA file
+
+```
 
 ## Create indexed FASTA file and load it using the add-assembly command
 ## Add your genome assembly to the config at /var/www/html/jbrowse2/config.json
 ## Also copies the files to this directory
 samtools faidx genome.fa
 jbrowse add-assembly genome.fa --out /var/www/html/jbrowse2 --load copy
+```
 
+### Loading a BAM file
+
+```
 ## Copies file.bam and file.bam.bai to /var/www/html/jbrowse2 and adds track to
 ## the config at /var/www/html/jbrowse2/config.json. Assumes that file.bam and
 ## file.bam.bai exist
@@ -57,19 +67,22 @@ jbrowse add-track http://website.com/myfile.bam --out /var/www/html/jbrowse2
 ## If your BAM index (bai) is not filename+'.bai' then you can manually specify
 ## the --index flag. The --index flag also works with loading tabix tracks too
 jbrowse add-track myfile.bam --index myfile.bai --out /var/www/html/jbrowse2 --load copy
+```
 
-## Outputting to a specific config file instead of a config directory
-## Alternative loading syntax where I specify a config file, and then this can
-## be loaded via http://localhost/jbrowse2/?config=alt_config.json
-jbrowse add-assembly mygenome.fa --out /var/www/html/jbrowse2/alt_config.json --load copy
+### Loading GFF3
 
+```
 ## load gene annotations from a GFF, using "GenomeTools" (gt) to sort the gff
 ## and tabix to index the GFF3
 gt gff3 -sortlines -tidy -retainids myfile.gff > myfile.sorted.gff
 bgzip myfile.sorted.gff
 tabix myfile.sorted.gff.gz
 jbrowse add-track myfile.sorted.gff.gz --out /var/www/html/jbrowse2 --load copy
+```
 
+### Miscellaneous tips
+
+```
 ## Example of using --subDir to organize your data directory:
 ## copies myfile.bam and myfile.bam.bai to /var/www/html/jbrowse2/my_bams
 ## folder, which helps organize your data folder
@@ -80,6 +93,20 @@ jbrowse add-track myfile.bam --subDir my_bams --out /var/www/html/jbrowse2 --loa
 cd /var/www/html/jbrowse2
 jbrowse add-track /path/to/my/file.bam --load copy
 
+## After you've had jbrowse for a while, you can upgrade to our latest release
+jbrowse upgrade /var/www/html/jbrowse2
+
+## Outputting to a specific config file instead of a config directory
+## Alternative loading syntax where I specify a config file, and then this can
+## be loaded via http://localhost/jbrowse2/?config=alt_config.json
+jbrowse add-assembly mygenome.fa --out /var/www/html/jbrowse2/alt_config.json --load copy
+
+
+```
+
+### Load a synteny track
+
+```
 ## Demo for loading synteny data, both assemblies are outputted to a single
 ## config.json in /var/www/html/jbrowse2/config.json
 minimap2 grape.fa peach.fa > peach_vs_grape.paf
@@ -97,12 +124,27 @@ jbrowse add-track peach.sorted.gff.gz -a peach --load copy --out /var/www/html/j
 ## because the syntax is minimap2 ref.fa query.fa on the CLI and query (left side
 ## of PAF) and target (right hand side) in PAF output file
 jbrowse add-track peach_vs_grape.paf --assemblyNames peach,grape --out /var/www/html/jbrowse2/ --load copy
+```
 
+### Create a text index to let users search for gene names
 
+```
+## Finally create a text-index for your genes. By default it will index all
+## tracks with Gff3TabixAdapter and VcfTabixAdapter. A progress bar will show
+## indexing progress
+jbrowse text-index --out /var/www/html/jbrowse2
 
+## Index only a specific assembly
+jbrowse text-index --out /var/www/html/jbrowse2 -a hg19
 
-## After you've had jbrowse for awhile, you can upgrade to our latest release
-jbrowse upgrade /var/www/html/jbrowse2
+### Index only some specific trackIds
+jbrowse text-index --out /var/www/html/jbrowse2 --tracks=mygenes1,mygenes2
+
+### Index each track individually
+jbrowse text-index --out /var/www/html/jbrowse2 --tracks=mygenes1,mygenes2 --perTrack
+
+## If you already have a text-index, you have to use --force to overwrite the old one
+jbrowse text-index --out /var/www/html/jbrowse2 --force
 
 ```
 
@@ -110,15 +152,15 @@ jbrowse upgrade /var/www/html/jbrowse2
 
 You can now visit http://localhost/jbrowse2 and your genome should be ready!
 
-This guide is meant to be a super-quick conceptual overview for getting jbrowse
-2 setup, but if you are new to the command line or to jbrowse in general, you
-might want to start with the slightly-longer quick-start guide
+This guide is meant to be a super-quick conceptual overview for getting JBrowse
+2 set up, but if you are new to the command line or to jbrowse in general, you
+might want to start with the slightly longer quick-start guide
 [here](quickstart_cli).
 
 ## Footnote
 
 JBrowse doesn't strictly need Apache or nginx, it is "static site
-compatible" meaning it uses no server side code and can run on any static
+compatible" meaning it uses no server code and can run on any static
 website hosting. For example, you can upload the jbrowse folder that we
 prepared here in /var/www/html/jbrowse2 to Amazon S3, and it will work there
 too. See the FAQ for [what webserver do I

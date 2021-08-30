@@ -39,18 +39,6 @@
   ],
   "configuration": {},
   "connections": [],
-  "textSearchAdapters": [
-    {
-      "type": "JBrowse1TextSearchAdapter",
-      "textSearchAdapterId": "JBrowse1YeastTextSearchAdapter",
-      "namesIndexLocation": {
-        "uri": "names/",
-        "locationType": "UriLocation"
-      },
-      "tracks": [],
-      "assemblies": ["YJM1447", "R64"]
-    }
-  ],
   "tracks": [
     {
       "type": "SyntenyTrack",
@@ -711,5 +699,44 @@
     "sessionConnections": [],
     "sessionAssemblies": [],
     "minimized": false
-  }
+  },
+  "aggregateTextSearchAdapters": [
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "R64-index",
+      "ixFilePath": {
+        "uri": "trix/R64.ix"
+      },
+      "ixxFilePath": {
+        "uri": "trix/R64.ixx"
+      },
+      "metaFilePath": {
+        "uri": "trix/meta.json"
+      },
+      "assemblies": ["R64"]
+    },
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "YJM1447-index",
+      "ixFilePath": {
+        "uri": "trix/YJM1447.ix"
+      },
+      "ixxFilePath": {
+        "uri": "trix/YJM1447.ixx"
+      },
+      "metaFilePath": {
+        "uri": "trix/meta.json"
+      },
+      "assemblies": ["YJM1447"]
+    },
+    {
+      "type": "JBrowse1TextSearchAdapter",
+      "textSearchAdapterId": "JBrowse1YeastTextSearchAdapter",
+      "namesIndexLocation": {
+        "uri": "names/"
+      },
+      "tracks": [],
+      "assemblies": ["YJM1447", "R64"]
+    }
+  ]
 }

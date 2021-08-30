@@ -68,8 +68,8 @@ get installed.
 ### Gathering files
 
 Let's use a human GRCh38 assembly as our example. First we need a sequence file.
-Ensembl hosts a compressed indexed FASTA that we can use. The URL is
-http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.
+We'll use this url:
+https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.
 
 We also need to define some reference sequence name aliases so that any files we
 want to use that use "chr1" instead of "1" will display correctly. There is an
@@ -92,7 +92,7 @@ about in this case. Now go ahead and run the below command, referring to the
 help to interpret the options as needed:
 
 ```sh
-jbrowse add-assembly http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz --name GRCh38 --alias hg38 --refNameAliases http://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/GRCh38.aliases.txt --skipCheck
+jbrowse add-assembly https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz --name GRCh38 --alias hg38 --refNameAliases http://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/GRCh38.aliases.txt --skipCheck
 ```
 
 This will create a file called "config.json". Go ahead and open that file up. In
@@ -114,15 +114,15 @@ export default {
       type: 'BgzipFastaAdapter',
       fastaLocation: {
         uri:
-          'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz',
+          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
       },
       faiLocation: {
         uri:
-          'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.fai',
+          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.fai',
       },
       gziLocation: {
         uri:
-          'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.gzi',
+          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.gzi',
       },
     },
   },

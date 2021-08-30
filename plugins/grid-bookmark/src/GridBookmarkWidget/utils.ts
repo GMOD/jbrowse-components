@@ -77,7 +77,7 @@ export function downloadBookmarkFile(
   const fileContents = bookmarkedRegions
     .map(b => {
       const { label } = b
-      const labelVal = label === '' ? 'NA' : label
+      const labelVal = label === '' ? '.' : label
       const locString = assembleLocString(b)
 
       if (fileFormat === 'BED') {

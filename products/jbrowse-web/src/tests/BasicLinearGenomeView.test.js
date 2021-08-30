@@ -243,9 +243,10 @@ describe('valid file tests', () => {
     autocomplete.focus()
     fireEvent.mouseDown(inputBox)
     fireEvent.change(inputBox, {
-      target: { value: 'apple2' },
+      target: { value: 'seg02' },
     })
-    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
+    // fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
+    // fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
     fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
     // test search results dialog opening
     await screen.findByText('Search Results')

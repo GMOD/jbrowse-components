@@ -19,18 +19,18 @@ const assembly = {
       type: 'BgzipFastaAdapter',
       fastaLocation: {
         uri:
-          'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz',
-        locationType: 'UriLocation',
+          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
+          locationType: 'UriLocation',
       },
       faiLocation: {
         uri:
-          'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.fai',
-        locationType: 'UriLocation',
+          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.fai',
+          locationType: 'UriLocation',
       },
       gziLocation: {
         uri:
-          'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.gzi',
-        locationType: 'UriLocation',
+          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.gzi',
+          locationType: 'UriLocation',
       },
     },
   },

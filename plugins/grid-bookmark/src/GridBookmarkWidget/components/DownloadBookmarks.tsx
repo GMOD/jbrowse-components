@@ -6,8 +6,11 @@ import {
   Button,
   Dialog,
   DialogTitle,
-  Select,
+  DialogContent,
+  DialogActions,
   MenuItem,
+  Select,
+  Typography,
   makeStyles,
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
@@ -39,11 +42,6 @@ function DownloadBookmarks({ model }: { model: GridBookmarkModel }) {
   const classes = useStyles()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [fileType, setFileType] = useState('BED')
-
-  const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setFileType(event.target.value as string)
-  }
-
   const { bookmarkedRegions } = model
 
   return (
@@ -61,34 +59,40 @@ function DownloadBookmarks({ model }: { model: GridBookmarkModel }) {
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        <div className={classes.dialogContainer}>
-          <>
-            <div className={classes.flexContainer}>
-              <Select
-                className={classes.flexItem}
-                data-testid="selectFileType"
-                value={fileType}
-                onChange={handleChange}
-              >
-                <MenuItem value="BED">BED</MenuItem>
-                <MenuItem value="TSV">TSV</MenuItem>
-              </Select>
-              <Button
-                className={classes.flexItem}
-                data-testid="dialogDownload"
-                variant="contained"
-                color="primary"
-                startIcon={<GetAppIcon />}
-                onClick={() => {
-                  downloadBookmarkFile(bookmarkedRegions, fileType, model)
-                  setDialogOpen(false)
-                }}
-              >
-                Download
-              </Button>
-            </div>
-          </>
-        </div>
+        <DialogContent>
+          <Typography>Format to download</Typography>
+          <Select
+            className={classes.flexItem}
+            data-testid="selectFileType"
+            value={fileType}
+            onChange={event => setFileType(event.target.value as string)}
+          >
+            <MenuItem value="BED">BED</MenuItem>
+            <MenuItem value="TSV">TSV</MenuItem>
+          </Select>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => setDialogOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            className={classes.flexItem}
+            data-testid="dialogDownload"
+            variant="contained"
+            color="primary"
+            startIcon={<GetAppIcon />}
+            onClick={() => {
+              downloadBookmarkFile(bookmarkedRegions, fileType, model)
+              setDialogOpen(false)
+            }}
+          >
+            Download
+          </Button>
+        </DialogActions>
       </Dialog>
     </>
   )
