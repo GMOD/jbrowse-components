@@ -577,7 +577,7 @@
     {
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_dropbox",
-      "name": "wiggle_track xyplot",
+      "name": "wiggle_track xyplot dropbox",
       "category": ["Integration test", "Wiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
@@ -592,7 +592,7 @@
     {
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_externaltoken",
-      "name": "wiggle_track xyplot",
+      "name": "wiggle_track xyplot external token",
       "category": ["Integration test", "Wiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
@@ -607,7 +607,7 @@
     {
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_httpbasic",
-      "name": "wiggle_track xyplot",
+      "name": "wiggle_track xyplot httpbasic",
       "category": ["Integration test", "Wiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {

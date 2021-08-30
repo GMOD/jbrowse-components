@@ -45,7 +45,7 @@ export default class TextSearchManager {
         const { AdapterClass } = this.pluginManager.getTextSearchAdapterType(
           adapterConfig.type,
         )
-        const adapter = new AdapterClass(adapterConfig, pluginManager)
+        const adapter = new AdapterClass(adapterConfig, this.pluginManager)
         this.adapterCache.set(adapterId, adapter)
         return adapter
       }

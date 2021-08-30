@@ -390,7 +390,6 @@ const stateModelFactory = (
             if (!fileUrl) {
               try {
                 fileUrl = await self.fetchFile(String(url), foundToken)
-                console.log(fileUrl)
               } catch (e) {
                 await this.handleError(e)
               }
