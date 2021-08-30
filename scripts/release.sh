@@ -66,4 +66,4 @@ git add .
 git commit --message "Prepare for $RELEASE_TAG release"
 
 # Run lerna version first, publish after changelog and blog post have been created
-yarn lerna publish "$SEMVER_LEVEL" --message "[update docs] %s"
+yarn lerna publish --force-publish "*" "$SEMVER_LEVEL" --message "[update docs] %s"
