@@ -1,10 +1,13 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
-import Link from '@material-ui/core/Link'
-import MenuItem from '@material-ui/core/MenuItem'
-import { makeStyles } from '@material-ui/core/styles'
-import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
+import {
+  Link,
+  MenuItem,
+  TextField,
+  ListSubheader,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import React from 'react'
@@ -41,6 +44,42 @@ function StatusMessage({
   )
 }
 
+/**
+ * categorizeAdapters takes a list of adapters and sorts their menu item elements under an appropriate ListSubheader
+ *  element. In this way, adapters that are from external plugins can have headers that differentiate them from the
+ *  out-of-the-box plugins.
+ * @param adaptersList a list of adapters found in the PluginManager
+ * @returns a series of JSX elements that are ListSubheaders followed by the adapters
+ *   found under that subheader
+ */
+function categorizeAdapters(
+  adaptersList: { name: string; externalPluginName: string }[],
+) {
+  let currentPluginName = ''
+  const items: any = []
+  adaptersList.forEach(adapter => {
+    if (adapter.externalPluginName) {
+      if (currentPluginName !== adapter.externalPluginName) {
+        currentPluginName = adapter.externalPluginName
+        items.push(
+          <ListSubheader
+            key={adapter.externalPluginName}
+            value={adapter.externalPluginName}
+          >
+            {adapter.externalPluginName}
+          </ListSubheader>,
+        )
+      }
+      items.push(
+        <MenuItem key={adapter.name} value={adapter.name}>
+          {adapter.name}
+        </MenuItem>,
+      )
+    }
+  })
+  return items
+}
+
 function TrackAdapterSelector({
   adapterHint,
   model,
@@ -50,6 +89,9 @@ function TrackAdapterSelector({
 }) {
   const classes = useStyles()
   const session = getSession(model)
+  const adapters = getEnv(session).pluginManager.getElementTypesInGroup(
+    'adapter',
+  )
   return (
     <TextField
       className={classes.spacing}
@@ -66,15 +108,22 @@ function TrackAdapterSelector({
         SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
       }}
     >
-      {getEnv(session)
-        .pluginManager.getElementTypesInGroup('adapter')
-        // Exclude SNPCoverageAdapter from primary adapter user selection
-        .filter((elt: { name: string }) => elt.name !== 'SNPCoverageAdapter')
+      {adapters
+        // Excludes any adapter with the 'excludeFromTrackSelector' property, and anything with the 'externalPluginName' property
+        .filter(
+          (elt: {
+            name: string
+            excludeFromTrackSelector: boolean
+            externalPluginName: string
+          }) => !elt.excludeFromTrackSelector && !elt.externalPluginName,
+        )
         .map((elt: { name: string }) => (
           <MenuItem key={elt.name} value={elt.name}>
             {elt.name}
           </MenuItem>
         ))}
+      {/* adapters with the 'externalPluginName' property are categorized by the value of the property here */}
+      {categorizeAdapters(adapters)}
     </TextField>
   )
 }

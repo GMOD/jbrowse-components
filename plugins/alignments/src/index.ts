@@ -173,6 +173,7 @@ export default class AlignmentsPlugin extends Plugin {
       () =>
         new AdapterType({
           name: 'SNPCoverageAdapter',
+          excludeFromTrackSelector: true,
           ...pluginManager.load(SNPCoverageAdapterF),
         }),
     )
