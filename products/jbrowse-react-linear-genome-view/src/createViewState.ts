@@ -27,42 +27,42 @@ interface ViewStateOptions {
   plugins?: PluginConstructor[]
   location?: string | Location
   defaultSession?: SessionSnapshot
+  defaultTracks?: string[]
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
 }
 
-export default function createViewState(opts: ViewStateOptions) {
-  const {
-    assembly,
-    tracks,
-    configuration,
-    aggregateTextSearchAdapters,
-    plugins,
-    location,
-    onChange,
-  } = opts
-  const { model, pluginManager } = createModel(plugins || [])
-  let { defaultSession } = opts
-  if (!defaultSession) {
-    defaultSession = {
-      name: 'this session',
-      view: {
-        id: 'linearGenomeView',
-        type: 'LinearGenomeView',
-      },
-    }
-  }
-  const stateSnapshot = {
-    config: {
-      configuration,
-      assembly,
-      tracks,
-      aggregateTextSearchAdapters,
-      defaultSession,
+export default function createViewState({
+  assembly,
+  tracks,
+  configuration,
+  aggregateTextSearchAdapters,
+  location,
+  onChange,
+  defaultTracks,
+  plugins = [],
+  defaultSession = {
+    name: 'this session',
+    view: {
+      id: 'linearGenomeView',
+      type: 'LinearGenomeView',
     },
-    assemblyManager: {},
-    session: defaultSession,
-  }
-  const stateTree = model.create(stateSnapshot, { pluginManager })
+  },
+}: ViewStateOptions) {
+  const { model, pluginManager } = createModel(plugins)
+  const stateTree = model.create(
+    {
+      config: {
+        configuration,
+        assembly,
+        tracks,
+        aggregateTextSearchAdapters,
+      },
+      assemblyManager: {},
+      session: defaultSession,
+    },
+    { pluginManager },
+  )
+
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   if (location) {
@@ -86,5 +86,9 @@ export default function createViewState(opts: ViewStateOptions) {
   if (onChange) {
     onPatch(stateTree, onChange)
   }
+
+  defaultTracks?.forEach(track => {
+    stateTree.session.view.showTrack(track)
+  })
   return stateTree
 }

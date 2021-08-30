@@ -37,7 +37,7 @@ const supportedTrackTypes = [
   'PileupTrack',
   'SNPCoverageTrack',
   'VariantTrack',
-  'WiggleTrack',
+  'QuantitativeTrack',
 ]
 
 const assembly = volvoxConfig.assemblies[0]
@@ -57,6 +57,22 @@ export const OneLinearGenomeView = () => {
     assembly,
     tracks,
     defaultSession,
+    // use 1-based coordinates for locstring
+    location: 'ctgA:1105..1221',
+    onChange: patch => {
+      console.log('patch', patch)
+    },
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const UsingDefaultTracks = () => {
+  const state = createViewState({
+    assembly,
+    tracks,
+    defaultSession,
+    defaultTracks: ['wiggle_track_fractional_posneg'],
+
     // use 1-based coordinates for locstring
     location: 'ctgA:1105..1221',
     onChange: patch => {
