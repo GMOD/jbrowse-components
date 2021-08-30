@@ -290,6 +290,9 @@ const OpenSequenceDialog = ({
                     },
                   },
                 ],
+                defaultSession: {
+                  name: 'New Session ' + new Date().toLocaleString('en-US'),
+                },
               })
               setPluginManager(pm)
               onClose()
