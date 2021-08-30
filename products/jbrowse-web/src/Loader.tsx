@@ -81,8 +81,8 @@ function NoConfigMessage() {
       </p>
 
       {inDevelopment ? (
-        <>
-          <div>Sample JBrowse configs:</div>
+        <div>
+          Sample JBrowse configs:
           <ul>
             {links.map(([link, name]) => {
               const { href, search } = window.location
@@ -99,10 +99,10 @@ function NoConfigMessage() {
               )
             })}
           </ul>
-        </>
+        </div>
       ) : (
-        <>
-          <div>Sample JBrowse config:</div>
+        <div>
+          Sample JBrowse config:
           <ul>
             <li>
               <a href="?config=test_data/volvox/config.json">
@@ -110,7 +110,7 @@ function NoConfigMessage() {
               </a>
             </li>
           </ul>
-        </>
+        </div>
       )}
     </div>
   )
@@ -173,9 +173,8 @@ const ErrorMessage = ({
       <NoConfigMessage />
       {err && err.message === 'HTTP 404 fetching config.json' ? (
         <div className={classes.message} style={{ background: '#9f9' }}>
-          No config detected ({`${err}`})
-          <br />
-          <p>
+          <p style={{ margin: 0, marginBottom: 10 }}>No config detected</p>
+          <p style={{ margin: 0 }}>
             If you want to learn how to complete your setup, visit our{' '}
             <a href="https://jbrowse.org/jb2/docs/quickstart_web">
               Quick start guide
