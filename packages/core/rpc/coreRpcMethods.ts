@@ -218,38 +218,22 @@ export class CoreRender extends RpcMethodType {
         rpcDriverClassName,
       )
     }
-    const { sessionId, adapterConfig, rendererType, signal } = deserializedArgs
+    const { sessionId, rendererType, signal } = deserializedArgs
     if (!sessionId) {
       throw new Error('must pass a unique session id')
     }
 
     checkAbortSignal(signal)
 
-    const { dataAdapter } = await getAdapter(
-      this.pluginManager,
-      sessionId,
-      adapterConfig,
-    )
-    if (!(dataAdapter instanceof BaseFeatureDataAdapter)) {
-      throw new Error(
-        `CoreRender cannot handle this type of data adapter ${dataAdapter}`,
-      )
-    }
-
     const RendererType = validateRendererType(
       rendererType,
       this.pluginManager.getRendererType(rendererType),
     )
 
-    const renderArgs = {
-      ...deserializedArgs,
-      dataAdapter,
-    }
-
     const result =
       rpcDriverClassName === 'MainThreadRpcDriver'
-        ? await RendererType.render(renderArgs)
-        : await RendererType.renderInWorker(renderArgs)
+        ? await RendererType.render(deserializedArgs)
+        : await RendererType.renderInWorker(deserializedArgs)
 
     checkAbortSignal(signal)
     return result
