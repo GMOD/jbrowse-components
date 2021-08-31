@@ -233,7 +233,7 @@ describe('<Loader />', () => {
   }, 10000)
 
   it('can use a spec url', async () => {
-    const { findByText } = render(
+    const { findByText, findByPlaceholderText } = render(
       <QueryParamProvider
         // @ts-ignore
         location={{
@@ -246,6 +246,10 @@ describe('<Loader />', () => {
     )
 
     await findByText('Help')
-    await findByText(/volvox-sorted.bam/, {}, { timeout: 20000 })
+    await findByText(/volvox-sorted.bam/)
+    const elt = await findByPlaceholderText('Search for location')
+
+    // @ts-ignore
+    expect(elt.value).toBe('ctgA:5,999..6,999')
   }, 20000)
 })
