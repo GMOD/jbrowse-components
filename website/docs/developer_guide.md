@@ -675,11 +675,13 @@ callback for color, it might look like this
   "adapter": {
     "type": "VcfTabixAdapter",
     "vcfGzLocation": {
-      "uri": "volvox.filtered.vcf.gz"
+      "uri": "volvox.filtered.vcf.gz",
+      "locationType": "UriLocation"
     },
     "index": {
       "location": {
-        "uri": "volvox.filtered.vcf.gz.tbi"
+        "uri": "volvox.filtered.vcf.gz.tbi",
+        "locationType": "UriLocation"
       }
     }
   },

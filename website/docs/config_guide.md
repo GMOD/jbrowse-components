@@ -744,13 +744,16 @@ Aggregate indexes may look like this
       "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "hg19-index",
       "ixFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix"
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix",
+        "locationType": "UriLocation"
       },
       "ixxFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx"
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx",
+        "locationType": "UriLocation"
       },
       "metaFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json"
+        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json",
+        "locationType": "UriLocation"
       },
       "assemblies": ["hg19"]
     }
@@ -766,21 +769,26 @@ An example per-track config may look like this
   "name":"Track name",
   "adapter":{
     "type": "Gff3TabixAdapter",
-    "gffGzLocation": { "uri":"yourfile.gff.gz" }
-    "index":{ "location": { "uri":"yourfile.gff.gz.tbi" } }
+    "gffGzLocation": { "uri":"yourfile.gff.gz",
+        "locationType": "UriLocation" }
+    "index":{ "location": { "uri":"yourfile.gff.gz.tbi",
+        "locationType": "UriLocation" } }
   },
   "textSearching": {
     "textSearchAdapter": {
       "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "hg19-index",
       "ixFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix"
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix",
+        "locationType": "UriLocation"
       },
       "ixxFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx"
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx",
+        "locationType": "UriLocation"
       },
       "metaFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json"
+        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json",
+        "locationType": "UriLocation"
       },
       "assemblies": ["hg19"]
     },
@@ -811,13 +819,16 @@ for details
     "type": "TrixTextSearchAdapter",
     "textSearchAdapterId": "gff3tabix_genes-index",
     "ixFilePath": {
-      "uri": "trix/gff3tabix_genes.ix"
+      "uri": "trix/gff3tabix_genes.ix",
+      "locationType": "UriLocation"
     },
     "ixxFilePath": {
-      "uri": "trix/gff3tabix_genes.ixx"
+      "uri": "trix/gff3tabix_genes.ixx",
+      "locationType": "UriLocation"
     },
     "metaFilePath": {
-      "uri": "trix/gff3tabix_genes_meta.json"
+      "uri": "trix/gff3tabix_genes_meta.json",
+      "locationType": "UriLocation"
     }
   }
 }
@@ -838,7 +849,8 @@ index created by generate-names.pl
     "type": "JBrowse1TextSearchAdapter",
     "textSearchAdapterId": "generate-names-index",
     "namesIndexLocation": {
-      "uri": "/names"
+      "uri": "/names",
+      "locationType": "UriLocation"
     }
   }
 }
@@ -865,7 +877,8 @@ let's look at an example
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "grape.chrom.sizes"
+            "uri": "grape.chrom.sizes",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -878,7 +891,8 @@ let's look at an example
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "peach.chrom.sizes"
+            "uri": "peach.chrom.sizes",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -893,7 +907,8 @@ let's look at an example
       "renderDelay": 100,
       "adapter": {
         "mcscanAnchorsLocation": {
-          "uri": "grape.peach.anchors"
+          "uri": "grape.peach.anchors",
+          "locationType": "UriLocation"
         },
         "subadapters": [
           {
@@ -939,7 +954,8 @@ let's look at an example
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
-          "uri": "peach_grape_small.paf"
+          "uri": "peach_grape_small.paf",
+          "locationType": "UriLocation"
         },
         "assemblyNames": ["peach", "grape"]
       }
