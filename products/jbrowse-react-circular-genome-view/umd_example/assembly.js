@@ -8,6 +8,7 @@ export default {
       type: 'TwoBitAdapter',
       twoBitLocation: {
         uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/volvox/volvox.2bit',
+        locationType: 'UriLocation',
       },
     },
   },

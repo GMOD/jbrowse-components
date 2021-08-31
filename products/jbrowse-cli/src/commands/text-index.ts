@@ -143,12 +143,15 @@ export default class TextIndex extends JBrowseCommand {
                 textSearchAdapterId: id,
                 ixFilePath: {
                   uri: `trix/${trackId}.ix`,
+                  locationType: 'UriLocation',
                 },
                 ixxFilePath: {
                   uri: `trix/${trackId}.ixx`,
+                  locationType: 'UriLocation',
                 },
                 metaFilePath: {
                   uri: `trix/${trackId}_meta.json`,
+                  locationType: 'UriLocation',
                 },
                 assemblies: assemblyNames,
               },
@@ -208,12 +211,15 @@ export default class TextIndex extends JBrowseCommand {
             textSearchAdapterId: id,
             ixFilePath: {
               uri: `trix/${asm}.ix`,
+              locationType: 'UriLocation',
             },
             ixxFilePath: {
               uri: `trix/${asm}.ixx`,
+              locationType: 'UriLocation',
             },
             metaFilePath: {
               uri: `trix/${asm}_meta.json`,
+              locationType: 'UriLocation',
             },
             assemblies: [asm],
           })

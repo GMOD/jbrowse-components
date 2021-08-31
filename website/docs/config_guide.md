@@ -411,8 +411,16 @@ Example AlignmentsTrack config
   "type": "AlignmentsTrack",
   "adapter": {
     "type": "BamAdapter",
-    "bamLocation": { "uri": "http://yourhost/file.bam", "locationType": "UriLocation" },
-    "index": { "location": { "uri": "http://yourhost/file.bam.bai", "locationType": "UriLocation" } }
+    "bamLocation": {
+      "uri": "http://yourhost/file.bam",
+      "locationType": "UriLocation"
+    },
+    "index": {
+      "location": {
+        "uri": "http://yourhost/file.bam.bai",
+        "locationType": "UriLocation"
+      }
+    }
   }
 }
 ```
@@ -429,8 +437,16 @@ Example BamAdapter config
 ```json
 {
   "type": "BamAdapter",
-  "bamLocation": { "uri": "http://yourhost/file.bam", "locationType": "UriLocation" },
-  "index": { "location": { "uri": "http://yourhost/file.bam.bai", "locationType": "UriLocation" } }
+  "bamLocation": {
+    "uri": "http://yourhost/file.bam",
+    "locationType": "UriLocation"
+  },
+  "index": {
+    "location": {
+      "uri": "http://yourhost/file.bam.bai",
+      "locationType": "UriLocation"
+    }
+  }
 }
 ```
 
@@ -444,8 +460,14 @@ Example CramAdapter config
 ```json
 {
   "type": "CramAdapter",
-  "cramLocation": { "uri": "http://yourhost/file.cram", "locationType": "UriLocation" },
-  "craiLocation": { "uri": "http://yourhost/file.cram.crai", "locationType": "UriLocation" }
+  "cramLocation": {
+    "uri": "http://yourhost/file.cram",
+    "locationType": "UriLocation"
+  },
+  "craiLocation": {
+    "uri": "http://yourhost/file.cram.crai",
+    "locationType": "UriLocation"
+  }
 }
 ```
 
@@ -506,8 +528,16 @@ Example config
   "assemblyNames": ["hg19"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "vcfGzLocation": { "uri": "http://yourhost/file.vcf.gz", "locationType": "UriLocation" },
-    "index": { "location": { "uri": "http://yourhost/file.vcf.gz.tbi", "locationType": "UriLocation" } }
+    "vcfGzLocation": {
+      "uri": "http://yourhost/file.vcf.gz",
+      "locationType": "UriLocation"
+    },
+    "index": {
+      "location": {
+        "uri": "http://yourhost/file.vcf.gz.tbi",
+        "locationType": "UriLocation"
+      }
+    }
   }
 }
 ```
@@ -524,8 +554,16 @@ Example VcfTabixAdapter adapter config
 ```json
 {
   "type": "VcfTabixAdapter",
-  "vcfGzLocation": { "uri": "http://yourhost/file.vcf.gz", "locationType": "UriLocation" },
-  "index": { "location": { "uri": "http://yourhost/file.vcf.gz.tbi", "locationType": "UriLocation" } }
+  "vcfGzLocation": {
+    "uri": "http://yourhost/file.vcf.gz",
+    "locationType": "UriLocation"
+  },
+  "index": {
+    "location": {
+      "uri": "http://yourhost/file.vcf.gz.tbi",
+      "locationType": "UriLocation"
+    }
+  }
 }
 ```
 
@@ -541,7 +579,10 @@ Example QuantitativeTrack config
   "type": "QuantitativeTrack",
   "adapter": {
     "type": "BigWig",
-    "bigWigLocation": { "uri": "http://yourhost/file.bw", "locationType": "UriLocation" }
+    "bigWigLocation": {
+      "uri": "http://yourhost/file.bw",
+      "locationType": "UriLocation"
+    }
   }
 }
 ```
@@ -595,7 +636,10 @@ Example BigWig adapter config
 ```json
 {
   "type": "BigWig",
-  "bigWigLocation": { "uri": "http://yourhost/file.bw", "locationType": "UriLocation" }
+  "bigWigLocation": {
+    "uri": "http://yourhost/file.bw",
+    "locationType": "UriLocation"
+  }
 }
 ```
 

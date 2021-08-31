@@ -107,10 +107,6 @@
           "displayId": "peach_genes_linear"
         },
         {
-          "type": "LinearFilteringDisplay",
-          "displayId": "peach_genes-LinearFilteringDisplay"
-        },
-        {
           "type": "LinearLollipopDisplay",
           "displayId": "peach_genes-LinearLollipopDisplay"
         }
@@ -133,10 +129,6 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "peach_genes2-LinearBasicDisplay"
-        },
-        {
-          "type": "LinearFilteringDisplay",
-          "displayId": "peach_genes2-LinearFilteringDisplay"
         },
         {
           "type": "LinearLollipopDisplay",
@@ -163,10 +155,6 @@
           "displayId": "grape_genes_linear"
         },
         {
-          "type": "LinearFilteringDisplay",
-          "displayId": "grape_genes-LinearFilteringDisplay"
-        },
-        {
           "type": "LinearLollipopDisplay",
           "displayId": "grape_genes-LinearLollipopDisplay"
         }
@@ -189,10 +177,6 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "grape_genes2-LinearBasicDisplay"
-        },
-        {
-          "type": "LinearFilteringDisplay",
-          "displayId": "grape_genes2-LinearFilteringDisplay"
         },
         {
           "type": "LinearLollipopDisplay",

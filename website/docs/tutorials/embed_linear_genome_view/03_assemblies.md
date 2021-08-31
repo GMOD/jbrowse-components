@@ -115,14 +115,17 @@ export default {
       fastaLocation: {
         uri:
           'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
+        locationType: 'UriLocation',
       },
       faiLocation: {
         uri:
           'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.fai',
+        locationType: 'UriLocation',
       },
       gziLocation: {
         uri:
           'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.gzi',
+        locationType: 'UriLocation',
       },
     },
   },
@@ -133,6 +136,7 @@ export default {
       location: {
         uri:
           'http://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/GRCh38.aliases.txt',
+        locationType: 'UriLocation',
       },
     },
   },

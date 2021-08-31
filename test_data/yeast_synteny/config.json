@@ -705,13 +705,16 @@
       "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "R64-index",
       "ixFilePath": {
-        "uri": "trix/R64.ix"
+        "uri": "trix/R64.ix",
+        "locationType": "UriLocation"
       },
       "ixxFilePath": {
-        "uri": "trix/R64.ixx"
+        "uri": "trix/R64.ixx",
+        "locationType": "UriLocation"
       },
       "metaFilePath": {
-        "uri": "trix/meta.json"
+        "uri": "trix/meta.json",
+        "locationType": "UriLocation"
       },
       "assemblies": ["R64"]
     },
@@ -719,13 +722,16 @@
       "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "YJM1447-index",
       "ixFilePath": {
-        "uri": "trix/YJM1447.ix"
+        "uri": "trix/YJM1447.ix",
+        "locationType": "UriLocation"
       },
       "ixxFilePath": {
-        "uri": "trix/YJM1447.ixx"
+        "uri": "trix/YJM1447.ixx",
+        "locationType": "UriLocation"
       },
       "metaFilePath": {
-        "uri": "trix/meta.json"
+        "uri": "trix/meta.json",
+        "locationType": "UriLocation"
       },
       "assemblies": ["YJM1447"]
     },
@@ -733,7 +739,8 @@
       "type": "JBrowse1TextSearchAdapter",
       "textSearchAdapterId": "JBrowse1YeastTextSearchAdapter",
       "namesIndexLocation": {
-        "uri": "names/"
+        "uri": "names/",
+        "locationType": "UriLocation"
       },
       "tracks": [],
       "assemblies": ["YJM1447", "R64"]
