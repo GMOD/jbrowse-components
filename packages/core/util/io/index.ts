@@ -9,7 +9,6 @@ import {
 import { getBlob } from '../tracks'
 import { isElectron } from '../../util'
 import PluginManager from '../../PluginManager'
-import AuthenticationPlugin from '@jbrowse/plugin-authentication'
 
 function isUriLocation(location: FileLocation): location is UriLocation {
   return 'uri' in location
@@ -82,7 +81,7 @@ export function openLocation(
                 location.internetAccountPreAuthorization.authInfo.configuration,
             })
             if (!location.internetAccountPreAuthorization?.authInfo.token) {
-              throw new Error('Issue with authorization')
+              throw new Error('Failed to obtain token from internet account')
             }
             return internetAccount.openLocation(location)
           }

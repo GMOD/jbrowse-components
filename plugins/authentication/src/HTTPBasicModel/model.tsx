@@ -164,7 +164,9 @@ const stateModelFactory = (
           }
 
           if (inWebWorker && !location.internetAccountPreAuthorization) {
-            throw new Error('Error')
+            throw new Error(
+              'Failed to obtain authorization information needed to fetch',
+            )
           }
           let accessToken
           try {

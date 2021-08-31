@@ -16,7 +16,6 @@ import { toJS } from 'mobx'
 window.getSnapshot = getSnapshot
 window.resolveIdentifier = resolveIdentifier
 
-// TODOAUTH: here you add a addInternetAccountConf,
 export default function JBrowseWeb(
   pluginManager,
   Session,
@@ -185,6 +184,23 @@ export default function JBrowseWeb(
         self.plugins = self.plugins.filter(plugin => plugin.url !== pluginUrl)
         const rootModel = getRoot(self)
         rootModel.setPluginsUpdated(true)
+      },
+      addInternetAccountConf(internetAccountConf) {
+        const { type } = internetAccountConf
+        if (!type) {
+          throw new Error(`unknown internetAccount type ${type}`)
+        }
+        const length = self.internetAccounts.push(internetAccountConf)
+        return self.internetAccounts[length - 1]
+      },
+      deleteInternetAccountConf(configuration) {
+        const idx = self.internetAccounts.findIndex(
+          acct => acct.id === configuration.id,
+        )
+        if (idx === -1) {
+          return undefined
+        }
+        return self.internetAccounts.splice(idx, 1)
       },
     }))
     .views(self => ({

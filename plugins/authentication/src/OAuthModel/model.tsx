@@ -373,7 +373,7 @@ const stateModelFactory = (
         ): Promise<Response> {
           if (!preAuthInfo || !preAuthInfo.authInfo) {
             throw new Error(
-              'Authorization information not detected while trying to fetch',
+              'Failed to obtain authorization information needed to fetch',
             )
           }
 
@@ -413,8 +413,6 @@ const stateModelFactory = (
             ...newOpts,
           })
         },
-        // called on the web worker, returns a generic filehandle with a modified fetch
-        // preauth info should be filled in by here
         openLocation(location: UriLocation) {
           preAuthInfo =
             location.internetAccountPreAuthorization || self.generateAuthInfo
@@ -422,7 +420,6 @@ const stateModelFactory = (
             fetch: this.getFetcher,
           })
         },
-        // on error it tries again once if there is a refresh token available
         async getPreAuthorizationInformation(
           location: UriLocation,
           retried = false,
@@ -430,10 +427,10 @@ const stateModelFactory = (
           if (!preAuthInfo.authInfo) {
             preAuthInfo = self.generateAuthInfo
           }
-
-          // if in worker && !location.preauthInto throw new error
           if (inWebWorker && !location.internetAccountPreAuthorization) {
-            throw new Error('Authorization information not detected')
+            throw new Error(
+              'Failed to obtain authorization information needed to fetch',
+            )
           }
           let accessToken
           try {

@@ -23,12 +23,21 @@ Object {
         "volvox",
       ],
       "ixFilePath": Object {
+        "internetAccountId": undefined,
+        "internetAccountPreAuthorization": undefined,
+        "locationType": "UriLocation",
         "uri": "trix/volvox.ix",
       },
       "ixxFilePath": Object {
+        "internetAccountId": undefined,
+        "internetAccountPreAuthorization": undefined,
+        "locationType": "UriLocation",
         "uri": "trix/volvox.ixx",
       },
       "metaFilePath": Object {
+        "internetAccountId": undefined,
+        "internetAccountPreAuthorization": undefined,
+        "locationType": "UriLocation",
         "uri": "trix/volvox_meta.json",
       },
       "textSearchAdapterId": "volvox-index",
@@ -185,20 +194,6 @@ Object {
   },
   "internetAccounts": Array [
     Object {
-      "authEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
-      "clientId": "20156747540-bes2tq75790efrskmb5pa3hupujgenb2.apps.googleusercontent.com",
-      "description": "OAuth Info for Google Drive",
-      "internetAccountId": "googleOAuth",
-      "name": "Google",
-      "needsAuthorization": true,
-      "responseType": "token",
-      "scopes": "https://www.googleapis.com/auth/drive.readonly",
-      "type": "GoogleDriveOAuthInternetAccount",
-      "validDomains": Array [
-        "drive.google.com",
-      ],
-    },
-    Object {
       "authEndpoint": "https://www.dropbox.com/oauth2/authorize",
       "clientId": "wyngfdvw0ntnj5b",
       "description": "OAuth Info for Dropbox",
@@ -220,15 +215,42 @@ Object {
       ],
     },
     Object {
+      "authEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
+      "clientId": "20156747540-bes2tq75790efrskmb5pa3hupujgenb2.apps.googleusercontent.com",
+      "description": "OAuth Info for Google Drive",
+      "internetAccountId": "googleOAuth",
+      "name": "Google",
+      "needsAuthorization": true,
+      "responseType": "token",
+      "scopes": "https://www.googleapis.com/auth/drive.readonly",
+      "type": "GoogleDriveOAuthInternetAccount",
+      "validDomains": Array [
+        "drive.google.com",
+      ],
+    },
+    Object {
+      "authEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
+      "clientId": "109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com",
+      "description": "OAuth Info for Google Drive2",
+      "internetAccountId": "googleOAuth2",
+      "name": "Google2",
+      "needsAuthorization": true,
+      "responseType": "token",
+      "scopes": "https://www.googleapis.com/auth/drive.readonly",
+      "type": "GoogleDriveOAuthInternetAccount",
+      "validDomains": Array [
+        "drive.google.com",
+      ],
+    },
+    Object {
       "authHeader": "X-Auth-Token",
       "customEndpoint": "http://localhost:8010/proxy",
-      "description": "GDC External Token",
-      "internetAccountId": "GDCExternalToken",
-      "name": "GDC",
+      "description": "External Token for testing",
+      "internetAccountId": "ExternalTokenTest",
+      "name": "External token",
       "type": "ExternalTokenInternetAccount",
       "validDomains": Array [
-        "portal.gdc.cancer.gov",
-        "api.gdc.cancer.gov",
+        "externaltoken.com",
       ],
     },
     Object {
@@ -1150,8 +1172,62 @@ Object {
           "type": "LinearWiggleDisplay",
         },
       ],
-      "name": "wiggle_track xyplot",
+      "name": "wiggle_track xyplot dropbox",
       "trackId": "volvox_microarray_dropbox",
+      "type": "QuantitativeTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bigWigLocation": Object {
+          "internetAccountId": "ExternalTokenTest",
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox_microarray.bw",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+        "Wiggle",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox_microarray_externaltoken-LinearWiggleDisplay",
+          "type": "LinearWiggleDisplay",
+        },
+      ],
+      "name": "wiggle_track xyplot external token",
+      "trackId": "volvox_microarray_externaltoken",
+      "type": "QuantitativeTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bigWigLocation": Object {
+          "internetAccountId": "HTTPBasicTest",
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox_microarray.bw",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+        "Wiggle",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox_microarray_httpbasic-LinearWiggleDisplay",
+          "type": "LinearWiggleDisplay",
+        },
+      ],
+      "name": "wiggle_track xyplot httpbasic",
+      "trackId": "volvox_microarray_httpbasic",
       "type": "QuantitativeTrack",
     },
     Object {

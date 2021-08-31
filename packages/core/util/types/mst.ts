@@ -59,7 +59,7 @@ export const UriLocationRaw = types.model('UriLocation', {
 
   internetAccountId: types.maybe(types.string),
 
-  // authz information (such as tokens) needed for using this resource.
+  // auths information (such as tokens) needed for using this resource.
   // if provided, these must be completely sufficient for using it
   internetAccountPreAuthorization: types.maybe(
     types.model('InternetAccountPreAuthorization', {

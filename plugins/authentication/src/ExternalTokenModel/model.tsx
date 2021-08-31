@@ -122,7 +122,9 @@ const stateModelFactory = (
           opts?: RequestInit,
         ): Promise<Response> {
           if (!preAuthInfo || !preAuthInfo.authInfo) {
-            throw new Error('Auth Information Missing')
+            throw new Error(
+              'Failed to obtain authorization information needed to fetch',
+            )
           }
 
           let foundToken
@@ -174,7 +176,9 @@ const stateModelFactory = (
           }
 
           if (inWebWorker && !location.internetAccountPreAuthorization) {
-            throw new Error('Error')
+            throw new Error(
+              'Failed to obtain authorization information needed to fetch',
+            )
           }
           let accessToken
           try {
