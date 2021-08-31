@@ -133,6 +133,10 @@ export default withContentRect('bounds')(
       if (contentRect.bounds) {
         ;({ width } = contentRect.bounds)
       }
+      if (!width && typeof jest !== 'undefined') {
+        width = 800
+      }
+
       useEffect(() => {
         if (width) {
           if (isAlive(view)) {

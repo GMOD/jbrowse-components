@@ -231,4 +231,21 @@ describe('<Loader />', () => {
     )
     await findAllByText(/Failed to load/)
   }, 10000)
+
+  it('can use a spec url', async () => {
+    const { findByText } = render(
+      <QueryParamProvider
+        // @ts-ignore
+        location={{
+          search:
+            '?config=test_data/volvox/config_main_thread.json&loc=ctgA:6000-7000&assembly=volvox&tracks=volvox_bam_pileup',
+        }}
+      >
+        <Loader />
+      </QueryParamProvider>,
+    )
+
+    await findByText('Help')
+    await findByText(/volvox-sorted.bam/, {}, { timeout: 20000 })
+  }, 20000)
 })
