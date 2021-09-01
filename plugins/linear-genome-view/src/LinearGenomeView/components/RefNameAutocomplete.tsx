@@ -6,12 +6,10 @@
  */
 import React, { useMemo, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
 
 // jbrowse core
 import { Region } from '@jbrowse/core/util/types'
 import { getSession, useDebounce, measureText } from '@jbrowse/core/util'
-import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 import BaseResult, {
   RefSequenceResult,
@@ -147,7 +145,6 @@ function RefNameAutocomplete({
   }, [assemblyName, debouncedSearch, model])
 
   function onChange(selectedOption: Option | string) {
-    console.log({ selectedOption })
     if (selectedOption && assemblyName) {
       if (typeof selectedOption === 'string') {
         // handles string inputs on keyPress enter
