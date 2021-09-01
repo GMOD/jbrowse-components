@@ -737,7 +737,7 @@ which search across multiple tracks
 
 Aggregate indexes may look like this
 
-````json
+```json
 {
 "aggregateTextSearchAdapters": [
     {
@@ -759,7 +759,6 @@ Aggregate indexes may look like this
     }
 }
 ```
-
 
 An example per-track config may look like this
 
@@ -796,7 +795,7 @@ An example per-track config may look like this
     "indexingFeatureTypesToExclude": ["CDS","exon"]
   }
 }
-````
+```
 
 Information on generating trix indexes via the cli can be found
 [here](cli.md#jbrowse-text-index)
