@@ -20,17 +20,17 @@ const assembly = {
       fastaLocation: {
         uri:
           'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
-          locationType: 'UriLocation',
+        locationType: 'UriLocation',
       },
       faiLocation: {
         uri:
           'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.fai',
-          locationType: 'UriLocation',
+        locationType: 'UriLocation',
       },
       gziLocation: {
         uri:
           'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.gzi',
-          locationType: 'UriLocation',
+        locationType: 'UriLocation',
       },
     },
   },
@@ -41,7 +41,7 @@ const assembly = {
       location: {
         uri:
           'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-          locationType: 'UriLocation',
+        locationType: 'UriLocation',
       },
     },
   },
