@@ -321,6 +321,7 @@ const stateModelFactory = (
             )
           }
         },
+        // used to listen to child window for auth code/token
         addMessageChannel() {
           window.addEventListener('message', this.finishOAuthWindow)
         },
