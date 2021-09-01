@@ -1,1 +1,1 @@
-declare module '@librpc/web'
+declare module 'librpc-web-mod'

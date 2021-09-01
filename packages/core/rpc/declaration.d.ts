@@ -1,4 +1,4 @@
-declare module '@librpc/web' {
+declare module 'librpc-web-mod' {
   interface ConstructorArgs {
     workers: Worker[]
   }

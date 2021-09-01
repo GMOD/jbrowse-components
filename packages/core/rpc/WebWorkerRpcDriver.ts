@@ -1,4 +1,4 @@
-import Rpc from '@librpc/web'
+import Rpc from 'librpc-web-mod'
 import shortid from 'shortid'
 import BaseRpcDriver, { RpcDriverConstructorArgs } from './BaseRpcDriver'
 import { PluginDefinition } from '../PluginLoader'
