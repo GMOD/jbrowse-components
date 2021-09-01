@@ -134,7 +134,9 @@ export default withContentRect('bounds')(
         ;({ width } = contentRect.bounds)
       }
       if (!width && typeof jest !== 'undefined') {
-        width = 800
+        // this is only used in jest because can't mock react-measure easily
+        // the added padWidth*2 is added to just be subtracted by the setWidth call below
+        width = 800 + padWidth * 2
       }
 
       useEffect(() => {
