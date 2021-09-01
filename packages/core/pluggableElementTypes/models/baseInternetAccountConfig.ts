@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Instance } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../../configuration'
 import PluginManager from '../../PluginManager'
