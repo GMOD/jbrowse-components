@@ -44,12 +44,11 @@ $ yarn add @jbrowse/react-circular-genome-view
 Or with [npm](https://npmjs.org/):
 
 ```
-$ npm install @jbrowse/react-circular-genome-view
+$ npm install @jbrowse/react-circular-genome-view --legacy-peer-deps
 ```
 
-## Documentation
-
-The latest Storybook documentation for the component is hosted [here](https://jbrowse.org/storybook/lgv/main).
+The --legacy-peer-deps helps with installing via NPM to avoid warnings about
+the peer dependencies not being met while installing.
 
 ### Note on fonts
 
