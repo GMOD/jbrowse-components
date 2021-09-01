@@ -19,9 +19,6 @@ const useStyles = makeStyles(theme => ({
   importFormContainer: {
     padding: theme.spacing(2),
   },
-  importFormEntry: {
-    minWidth: 180,
-  },
   button: {
     margin: theme.spacing(2),
   },
@@ -140,7 +137,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                     margin: 'normal',
                     variant: 'outlined',
                     helperText: 'Enter a sequence or location',
-                    className: classes.importFormEntry,
                     onBlur: event => {
                       if (event.target.value !== '') {
                         setSelectedRegion(event.target.value)
