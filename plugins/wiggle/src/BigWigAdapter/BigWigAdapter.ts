@@ -80,7 +80,6 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
       statusCallback('Downloading bigwig data')
       const ob = await this.bigwig.getFeatureStream(refName, start, end, {
         ...opts,
-        // dataAdapter: undefined,
         basesPerSpan: bpPerPx / resolution,
       })
       ob.pipe(

@@ -114,7 +114,6 @@ const UrlChooser = (props: {
     try {
       new URL(urlInput)
     } catch (error) {
-      // skip
       return undefined
     }
 

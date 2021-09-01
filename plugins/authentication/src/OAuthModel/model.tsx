@@ -84,6 +84,7 @@ const stateModelFactory = (
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let preAuthInfo: any = {}
       return {
+        // opens external OAuth flow, popup for web and new browser window for desktop
         async useEndpointForAuthorization() {
           const config = self.accountConfig
           const data: OAuthData = {
@@ -125,9 +126,6 @@ const stateModelFactory = (
 
           const url = `${config.authEndpoint}?${params}`
 
-          // need the isElectron conditional to check desktop or web
-          // if desktop use  https://auth0.com/blog/securing-electron-applications-with-openid-connect-and-oauth-2/
-          // open new browser window
           if (isElectron) {
             const model = self
             const electron = require('electron')
@@ -367,6 +365,7 @@ const stateModelFactory = (
             }
           }
         },
+        // modified fetch that includes the headers
         async getFetcher(
           url: RequestInfo,
           opts?: RequestInit,
@@ -420,6 +419,7 @@ const stateModelFactory = (
             fetch: this.getFetcher,
           })
         },
+        // fills in a locations preauth information with all necessary information
         async getPreAuthorizationInformation(
           location: UriLocation,
           retried = false,

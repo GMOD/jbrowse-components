@@ -28,11 +28,6 @@ export function createInternetAccountConfig(pluginManager: PluginManager) {
         type: 'string',
         defaultValue: '',
       },
-      //   metadata: {
-      //     type: 'frozen',
-      //     description: 'anything to add about this internet account',
-      //     defaultValue: {},
-      //   },
     },
     { explicitIdentifier: 'internetAccountId' },
   )

@@ -38,8 +38,6 @@ const stateModelFactory = (
         return 'HTTPBasicInternetAccount'
       },
       handlesLocation(location: UriLocation): boolean {
-        // this will probably look at something in the config which indicates that it is an OAuth pathway,
-        // also look at location, if location is set to need authentication it would reutrn true
         const validDomains = self.accountConfig.validDomains || []
         return validDomains.some((domain: string) =>
           location?.uri.includes(domain),

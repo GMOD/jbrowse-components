@@ -209,7 +209,6 @@ describe('valid file tests', () => {
     expect(state.session.views[0].tracks.length).toBe(1)
   })
 
-  // TODOAUTH: runs fine on its own, errors anytime else
   it('test navigation with the search input box', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
@@ -237,7 +236,7 @@ describe('valid file tests', () => {
           'volvox2',
         ),
       {
-        timeout: 20000,
+        timeout: 25000,
       },
     )
     autocomplete.focus()
@@ -267,7 +266,7 @@ describe('valid file tests', () => {
       { timeout: 10000 },
     )
     expect(getAllByText('Zoom in to see sequence')).toBeTruthy()
-  }, 10000)
+  }, 30000)
 
   it('click to display center line with correct value', async () => {
     const pluginManager = getPluginManager()
