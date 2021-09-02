@@ -47,11 +47,11 @@ const useStyles = makeStyles(theme => ({
 const DeleteSessionDialog = ({
   sessionToDelete,
   onClose,
-  root,
+  rootModel,
 }: {
   sessionToDelete?: string
   onClose: (arg0: boolean) => void
-  root: any
+  rootModel: any
 }) => {
   const [deleteSession, setDeleteSession] = useState(false)
   useEffect(() => {
@@ -59,7 +59,7 @@ const DeleteSessionDialog = ({
       try {
         if (deleteSession) {
           setDeleteSession(false)
-          root.removeSavedSession({ name: sessionToDelete })
+          rootModel.removeSavedSession({ name: sessionToDelete })
           onClose(true)
         }
       } catch (e) {
@@ -68,7 +68,7 @@ const DeleteSessionDialog = ({
         })
       }
     })()
-  }, [deleteSession, onClose, root, sessionToDelete])
+  }, [deleteSession, onClose, rootModel, sessionToDelete])
 
   return (
     <Dialog open={!!sessionToDelete} onClose={() => onClose(false)}>
@@ -98,10 +98,10 @@ const DeleteSessionDialog = ({
 }
 
 export default function StartScreen({
-  root,
+  rootModel,
   onFactoryReset,
 }: {
-  root: any
+  rootModel: any
   onFactoryReset: Function
 }) {
   const classes = useStyles()
@@ -118,7 +118,7 @@ export default function StartScreen({
     ;(async () => {
       try {
         if (sessionToLoad) {
-          root.activateSession(sessionToLoad)
+          rootModel.activateSession(sessionToLoad)
         }
       } catch (e) {
         setSessions(() => {
@@ -126,14 +126,14 @@ export default function StartScreen({
         })
       }
     })()
-  }, [root, sessionToLoad])
+  }, [rootModel, sessionToLoad])
 
   useEffect(() => {
     ;(async () => {
       try {
         if (updateSessionsList) {
           setUpdateSessionsList(false)
-          const savedRootSessions = root.savedSessions.map(
+          const savedRootSessions = rootModel.savedSessions.map(
             (rootSavedSession: any) => {
               return JSON.parse(JSON.stringify(rootSavedSession))?.name
             },
@@ -146,7 +146,7 @@ export default function StartScreen({
         })
       }
     })()
-  }, [root.savedSessions, updateSessionsList])
+  }, [rootModel.savedSessions, updateSessionsList])
 
   if (!sessions) {
     return (
@@ -173,7 +173,7 @@ export default function StartScreen({
         }}
       />
       <DeleteSessionDialog
-        root={root}
+        rootModel={rootModel}
         sessionToDelete={sessionToDelete}
         onClose={update => {
           setSessionToDelete(undefined)
@@ -197,13 +197,13 @@ export default function StartScreen({
           </Typography>
           <Grid container spacing={4}>
             <Grid item>
-              <NewEmptySession root={root} />
+              <NewEmptySession rootModel={rootModel} />
             </Grid>
             <Grid item>
-              <NewLinearGenomeViewSession root={root} />
+              <NewLinearGenomeViewSession rootModel={rootModel} />
             </Grid>
             <Grid item>
-              <NewSVInspectorSession root={root} />
+              <NewSVInspectorSession rootModel={rootModel} />
             </Grid>
           </Grid>
         </div>

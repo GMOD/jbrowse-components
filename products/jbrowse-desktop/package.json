@@ -1,7 +1,7 @@
 {
   "name": "@jbrowse/desktop",
   "version": "1.3.4",
-  "desktopBeta": "1.3.3-beta.0",
+  "desktopBeta": "1.3.5-beta.0",
   "description": "JBrowse desktop application specialized to inspect structural variants",
   "license": "Apache-2.0",
   "homepage": "./",
@@ -14,6 +14,9 @@
     "develop": "electron .",
     "cra-start": "rescripts start",
     "test": "rescripts test",
+    "electron-ts": "yarn tsc --strict --esModuleInterop --skipLibCheck public/electron.ts",
+    "prebuild": "npm run electron-ts",
+    "predevelop": "npm run electron-ts",
     "build": "rescripts build",
     "build-electron": "yarn build && electron-builder build --windows --mac --linux",
     "build-electron:win": "yarn build && electron-builder build --windows",
