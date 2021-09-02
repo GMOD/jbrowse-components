@@ -432,6 +432,8 @@ OPTIONS
 
   --exclude=exclude            [default: CDS,exon] Adds gene type to list of excluded types
 
+  --file=file                  File or files to index.
+
   --force                      Overwrite previously existing indexes
 
   --out=out                    Synonym for target

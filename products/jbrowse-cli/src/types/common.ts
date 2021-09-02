@@ -30,6 +30,16 @@ export function isURL(FileName: string) {
   return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
+// function supportedFile(filePath: string) {
+//   console.log('path', path)
+//   return true
+// }
+
+export function supportedTrack(type: string) {
+  return ['Gff3TabixAdapter', 'GtfTabixAdapter', 'VcfTabixAdapter'].includes(
+    type,
+  )
+}
 /**
  * Generates metadata of index given a filename (trackId or assembly)
  * @param name -  assembly name or trackId

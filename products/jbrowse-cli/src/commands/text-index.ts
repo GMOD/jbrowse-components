@@ -7,7 +7,7 @@ import JBrowseCommand, { Track, Config } from '../base'
 import { indexGff3 } from '../types/gff3Adapter'
 import { indexGtf } from '../types/gtfAdapter'
 import { indexVcf } from '../types/vcfAdapter'
-import { generateMeta } from '../types/common'
+import { generateMeta, supportedTrack } from '../types/common'
 
 export default class TextIndex extends JBrowseCommand {
   static description = 'Make a text-indexing file for any given track(s).'
@@ -65,6 +65,10 @@ export default class TextIndex extends JBrowseCommand {
       description: 'Adds gene type to list of excluded types',
       default: 'CDS,exon',
     }),
+    file: flags.string({
+      description: 'File or files to index.',
+      multiple: true,
+    }),
   }
 
   // Called when running the terminal command. Parses the given flags and
@@ -82,6 +86,7 @@ export default class TextIndex extends JBrowseCommand {
         force,
         exclude,
         perTrack,
+        file,
       },
     } = this.parse(TextIndex)
     const outFlag = target || out || '.'
@@ -95,6 +100,7 @@ export default class TextIndex extends JBrowseCommand {
       assemblies?.split(',') || config.assemblies?.map(a => a.name) || []
     const aggregateAdapters = config.aggregateTextSearchAdapters || []
     const trixDir = path.join(dir, 'trix')
+    // console.log('File', file)
     if (!fs.existsSync(trixDir)) {
       fs.mkdirSync(trixDir)
     }
@@ -107,7 +113,10 @@ export default class TextIndex extends JBrowseCommand {
           `Can't specify assemblies when indexing per track, remove assemblies flag to continue.`,
         )
       }
-      const trackConfigs = await this.getConfig(confFile, tracks?.split(','))
+      const trackConfigs = await this.getTrackConfigs(
+        confFile,
+        tracks?.split(','),
+      )
       if (!trackConfigs.length) {
         throw new Error(
           `Tracks not found in config.json, please add track configurations before indexing.`,
@@ -168,7 +177,7 @@ export default class TextIndex extends JBrowseCommand {
     } else {
       // creates an aggregate index per assembly
       for (const asm of assembliesToIndex) {
-        const trackConfigs = await this.getConfig(
+        const trackConfigs = await this.getTrackConfigs(
           confFile,
           tracks?.split(','),
           asm,
@@ -273,13 +282,13 @@ export default class TextIndex extends JBrowseCommand {
   }
 
   async *indexFiles(
-    configs: Track[],
+    trackConfigs: Track[],
     attributesToIndex: string[],
     outLocation: string,
     quiet: boolean,
     typesToExclude: string[],
   ) {
-    for (const config of configs) {
+    for (const config of trackConfigs) {
       const {
         adapter: { type },
         textSearching,
@@ -300,6 +309,26 @@ export default class TextIndex extends JBrowseCommand {
     }
   }
 
+  // getTrackUri(config: Track) {
+  //   const { adapter } = config
+  //   const { type } = adapter
+  //   if (type === 'Gff3TabixAdapter') {
+  //     const {
+  //       gffGzLocation: { uri },
+  //     } = adapter as Gff3TabixAdapter
+  //     return uri
+  //   } else if (type === 'GtfTabixAdapter') {
+  //     const {
+  //       gtfGzLocation: { uri },
+  //     } = adapter as GtfTabixAdapter
+  //     return uri
+  //   } else if (type === 'VcfTabixAdapter') {
+  //     const {
+  //       vcfGzLocation: { uri },
+  //     } = adapter as VcfTabixAdapter
+  //     return uri
+  //   }
+  // }
   /**
    * Given a readStream of data, indexes the stream into .ix and .ixx files
     using ixIxx.  The ixIxx executable is required on the system path for
@@ -316,9 +345,14 @@ export default class TextIndex extends JBrowseCommand {
     return ixIxxStream(readStream, ixFilename, ixxFilename)
   }
 
-  // Function that takes in an array of tracks and returns an array of
-  // identifiers stating what will be indexed
-  async getConfig(
+  /**
+   * Function that takes in an array of tracks and returns an array of
+   * identifiers stating what will be indexed
+   * @param configPath - path to config.json file
+   * @param trackIds - (optional) list of trackIds
+   * @param assemblyName - (optional) assembly name to filter tracks by
+   */
+  async getTrackConfigs(
     configPath: string,
     trackIds?: string[],
     assemblyName?: string,
@@ -338,15 +372,9 @@ export default class TextIndex extends JBrowseCommand {
         }
         return currentTrack
       })
-      .filter(track => supported(track.adapter.type))
+      .filter(track => supportedTrack(track.adapter.type))
       .filter(track =>
         assemblyName ? track.assemblyNames.includes(assemblyName) : true,
       )
   }
-}
-
-function supported(type: string) {
-  return ['Gff3TabixAdapter', 'GtfTabixAdapter', 'VcfTabixAdapter'].includes(
-    type,
-  )
 }
