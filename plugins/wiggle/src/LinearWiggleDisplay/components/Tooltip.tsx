@@ -1,13 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
-import MUITooltip from '@material-ui/core/Tooltip'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@material-ui/core/styles'
+import { alpha, makeStyles } from '@material-ui/core'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { YSCALEBAR_LABEL_OFFSET } from '../models/model'
 
 const toP = (s = 0) => parseFloat(s.toPrecision(6))
 
+function round(value: number) {
+  return Math.round(value * 1e5) / 1e5
+}
 const useStyles = makeStyles(theme => ({
   popper: {
     fontSize: '0.8em',
@@ -29,6 +31,23 @@ const useStyles = makeStyles(theme => ({
     cursor: 'default',
     position: 'absolute',
     pointerEvents: 'none',
+  },
+
+  // these styles come from
+  // https://github.com/mui-org/material-ui/blob/master/packages/material-ui/src/Tooltip/Tooltip.js
+  tooltip: {
+    position: 'absolute',
+    pointerEvents: 'none',
+    backgroundColor: alpha(theme.palette.grey[700], 0.9),
+    borderRadius: theme.shape.borderRadius,
+    color: theme.palette.common.white,
+    fontFamily: theme.typography.fontFamily,
+    padding: '4px 8px',
+    fontSize: theme.typography.pxToRem(10),
+    lineHeight: `${round(14 / 10)}em`,
+    maxWidth: 300,
+    wordWrap: 'break-word',
+    fontWeight: theme.typography.fontWeightMedium,
   },
 }))
 
@@ -76,22 +95,15 @@ const Tooltip = observer(
 
     return featureUnderMouse ? (
       <>
-        <MUITooltip
-          placement="right-start"
-          className={classes.popper}
-          open
-          title={<TooltipContents feature={featureUnderMouse} />}
+        <div
+          className={classes.tooltip}
+          style={{
+            left: mouseCoord[0] + 25,
+            top: 0,
+          }}
         >
-          <div
-            style={{
-              position: 'absolute',
-              left: mouseCoord[0],
-              top: 5,
-            }}
-          >
-            {' '}
-          </div>
-        </MUITooltip>
+          <TooltipContents feature={featureUnderMouse} />
+        </div>
         <div
           className={classes.hoverVertical}
           style={{
