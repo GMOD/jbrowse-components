@@ -23,6 +23,7 @@ export async function* indexGff3(
   const progressBar = new SingleBar(
     {
       format: '{bar} ' + trackId + ' {percentage}% | ETA: {eta}s',
+      etaBuffer: 200,
     },
     Presets.shades_classic,
   )
