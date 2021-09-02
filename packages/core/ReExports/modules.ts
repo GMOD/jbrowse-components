@@ -65,15 +65,17 @@ import CircularChordRendererType from '../pluggableElementTypes/renderers/Circul
 import * as BoxRendererType from '../pluggableElementTypes/renderers/BoxRendererType'
 import * as FeatureRendererType from '../pluggableElementTypes/renderers/FeatureRendererType'
 import * as RendererType from '../pluggableElementTypes/renderers/RendererType'
+import * as renderers from '../pluggableElementTypes/renderers'
 
 import * as Configuration from '../configuration'
-import * as Plugin from '../Plugin'
+import Plugin from '../Plugin'
 import * as coreUi from '../ui'
 import * as coreUtil from '../util'
 import * as coreColor from '../util/color'
 import * as trackUtils from '../util/tracks'
 import * as coreIo from '../util/io'
 import * as coreMstReflection from '../util/mst-reflection'
+import * as range from '../util/range'
 import * as rxjs from '../util/rxjs'
 import * as MUIColors from './material-ui-colors'
 import * as mstTypes from '../util/types/mst'
@@ -147,6 +149,7 @@ const libs = {
   '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType': BoxRendererType,
   '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType': FeatureRendererType,
   '@jbrowse/core/pluggableElementTypes/renderers/RendererType': RendererType,
+  '@jbrowse/core/pluggableElementTypes/renderers': renderers,
   '@jbrowse/core/configuration': Configuration,
   '@jbrowse/core/util/types/mst': mstTypes,
   '@jbrowse/core/ui': coreUi,
@@ -156,6 +159,7 @@ const libs = {
   '@jbrowse/core/util/Base1DViewModel': Base1DView,
   '@jbrowse/core/util/io': coreIo,
   '@jbrowse/core/util/mst-reflection': coreMstReflection,
+  '@jbrowse/core/util/range': range,
   '@jbrowse/core/util/rxjs': rxjs,
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': BaseFeatureDetail,
 
