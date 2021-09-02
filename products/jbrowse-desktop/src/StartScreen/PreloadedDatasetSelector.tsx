@@ -84,6 +84,7 @@ function PreloadedDatasetSelector({
         .filter(name => (search ? name.match(new RegExp(search, 'i')) : true))
         .map(name => (
           <FormControlLabel
+            key={name}
             className={classes.checkbox}
             control={
               <Checkbox
