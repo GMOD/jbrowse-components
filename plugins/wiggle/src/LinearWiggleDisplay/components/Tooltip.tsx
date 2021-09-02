@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles, Portal } from '@material-ui/core'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { YSCALEBAR_LABEL_OFFSET } from '../models/model'
 import { usePopper, Popper } from 'react-popper'
@@ -60,28 +60,13 @@ function TooltipContents(props: { feature: Feature }) {
   )
 }
 
-// This is going to create a virtual reference element
-// positioned 10px from top and left of the document
-// 90px wide and 10px high
-const virtualReference = {
-  getBoundingClientRect() {
-    return {
-      top: 10 + 300,
-      left: 10 + 300,
-      bottom: 20 + 300,
-      right: 100 + 300,
-      width: 90,
-      height: 10,
-    }
-  },
-}
-
 type Coord = [number, number]
 const Tooltip = observer(
   ({
     model,
     height,
     mouseCoord,
+    clientRect,
   }: {
     model: any
     height: number
@@ -92,25 +77,44 @@ const Tooltip = observer(
     const classes = useStyles()
 
     const [popperElement, setPopperElement] = React.useState<any>(null)
-    const { styles, attributes } = usePopper(virtualReference, popperElement, {
-      strategy: 'fixed',
-    })
+    const { styles, attributes } = usePopper(
+      {
+        getBoundingClientRect() {
+          const top = 100
+          console.log(mouseCoord[0])
+          return {
+            top,
+            left: mouseCoord[0],
+            bottom: top + 1,
+            right: mouseCoord[0] + 1,
+            width: 90,
+            height: 10,
+          }
+        },
+      },
+      popperElement,
+      {
+        strategy: 'fixed',
+      },
+    )
 
     return featureUnderMouse ? (
       <>
-        <div
-          ref={setPopperElement}
-          style={{
-            ...styles.popper,
-            background: 'white',
-            zIndex: 10000,
-          }}
-          {...attributes.popper}
-        >
-          Popper element Popper element Popper element
-          <br /> Popper element Popper element Popper element <br />
-          Popper element
-        </div>
+        <Portal>
+          <div
+            ref={setPopperElement}
+            style={{
+              ...styles.popper,
+              background: 'white',
+              zIndex: 10000,
+            }}
+            {...attributes.popper}
+          >
+            Popper element Popper element Popper element
+            <br /> Popper element Popper element Popper element <br />
+            Popper element
+          </div>
+        </Portal>
 
         <div
           className={classes.hoverVertical}

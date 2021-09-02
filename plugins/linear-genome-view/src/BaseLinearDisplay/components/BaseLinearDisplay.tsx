@@ -44,12 +44,11 @@ const BaseLinearDisplay = observer(
   (props: { model: BaseLinearDisplayModel; children?: React.ReactNode }) => {
     const classes = useStyles()
     const theme = useTheme()
-
+    const ref = useRef<HTMLDivElement>(null)
     const [clientRect, setClientRect] = useState<ClientRect>()
     const [offsetMouseCoord, setOffsetMouseCoord] = useState<Coord>([0, 0])
     const [clientMouseCoord, setClientMouseCoord] = useState<Coord>([0, 0])
     const [contextCoord, setContextCoord] = useState<Coord>()
-    const ref = useRef<HTMLDivElement>(null)
     const { model, children } = props
     const {
       TooltipComponent,
