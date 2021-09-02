@@ -3,7 +3,6 @@ import { Button, makeStyles } from '@material-ui/core'
 import PluginManager from '@jbrowse/core/PluginManager'
 import PreloadedDatasetSelector from './PreloadedDatasetSelector'
 import OpenSequenceDialog from './OpenSequenceDialog'
-import OpenJBrowseWebConfigDialog from './OpenJBrowseWebConfigDialog'
 
 const useStyles = makeStyles(theme => ({
   form: {
@@ -24,7 +23,6 @@ export default function StartScreenOptionsPanel({
 }) {
   const classes = useStyles()
   const [sequenceDialogOpen, setSequenceDialogOpen] = useState(false)
-  const [dataDirectoryDialogOpen, setDataDirectoryDialogOpen] = useState(false)
   return (
     <div className={classes.form}>
       <Button
@@ -35,24 +33,10 @@ export default function StartScreenOptionsPanel({
       >
         Open sequence file
       </Button>
-      <Button
-        variant="contained"
-        color="primary"
-        className={classes.button}
-        onClick={() => setDataDirectoryDialogOpen(true)}
-      >
-        Open jbrowse web config
-      </Button>
       <PreloadedDatasetSelector setPluginManager={setPluginManager} />
       {sequenceDialogOpen ? (
         <OpenSequenceDialog
           onClose={() => setSequenceDialogOpen(false)}
-          setPluginManager={setPluginManager}
-        />
-      ) : null}
-      {dataDirectoryDialogOpen ? (
-        <OpenJBrowseWebConfigDialog
-          onClose={() => setDataDirectoryDialogOpen(false)}
           setPluginManager={setPluginManager}
         />
       ) : null}
