@@ -196,9 +196,6 @@ export default function RecentSessionPanel({
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'table')
   return (
     <div>
-      <Typography variant="h5" className={classes.header}>
-        Recent sessions
-      </Typography>
       <FormControl className={classes.formControl}>
         <ToggleButtonGroup
           exclusive

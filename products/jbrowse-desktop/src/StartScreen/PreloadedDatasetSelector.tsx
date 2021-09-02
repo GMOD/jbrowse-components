@@ -26,9 +26,8 @@ const useStyles = makeStyles(theme => ({
     height: '3em',
     margin: theme.spacing(2),
   },
-  header: {
-    marginRight: theme.spacing(4),
-    marginBottom: theme.spacing(4),
+  checkbox: {
+    display: 'block',
   },
 }))
 
@@ -44,35 +43,35 @@ function PreloadedDatasetSelector({
 
   return (
     <div className={classes.container}>
-      <div style={{ display: 'flex' }}>
-        <Typography className={classes.header}>
-          Select assembly (or multiple assemblies) for your session
-          <IconButton onClick={() => setFilterShown(!filterShown)}>
-            <Tooltip title="Show filter?">
-              <SearchIcon />
-            </Tooltip>
-          </IconButton>
-        </Typography>
-        <Button
-          className={classes.button}
-          onClick={async () => {
-            const config = deepmerge.all(
-              // @ts-ignore
-              Object.keys(selected).map(name => preloadedConfigs[name]),
-            )
-
+      <Typography>
+        Select assembly (or multiple assemblies) for your session, and then hit
+        "Go"
+        <IconButton onClick={() => setFilterShown(!filterShown)}>
+          <Tooltip title="Show filter?">
+            <SearchIcon />
+          </Tooltip>
+        </IconButton>
+      </Typography>
+      <Button
+        className={classes.button}
+        onClick={async () => {
+          const config = deepmerge.all(
             // @ts-ignore
-            config.defaultSession.name +=
-              ' ' + new Date().toLocaleString('en-US')
-            const pm = await createPluginManager(config)
-            setPluginManager(pm)
-          }}
-          variant="contained"
-          color="primary"
-        >
-          Go
-        </Button>
-      </div>
+            Object.keys(selected).map(name => preloadedConfigs[name]),
+          )
+
+          // @ts-ignore
+          config.defaultSession.name = `New session ${new Date().toLocaleString(
+            'en-US',
+          )}`
+          const pm = await createPluginManager(config)
+          setPluginManager(pm)
+        }}
+        variant="contained"
+        color="primary"
+      >
+        Go
+      </Button>
       {filterShown ? (
         <TextField
           label="Filter datasets"
@@ -84,20 +83,18 @@ function PreloadedDatasetSelector({
       {Object.keys(preloadedConfigs)
         .filter(name => (search ? name.match(new RegExp(search, 'i')) : true))
         .map(name => (
-          <>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={selected[name] || false}
-                  onChange={() =>
-                    setSelected({ ...selected, [name]: !selected[name] })
-                  }
-                />
-              }
-              label={name}
-            />
-            <br />
-          </>
+          <FormControlLabel
+            className={classes.checkbox}
+            control={
+              <Checkbox
+                checked={selected[name] || false}
+                onChange={() =>
+                  setSelected({ ...selected, [name]: !selected[name] })
+                }
+              />
+            }
+            label={name}
+          />
         ))}
     </div>
   )

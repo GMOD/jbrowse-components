@@ -6,14 +6,13 @@ import OpenSequenceDialog from './OpenSequenceDialog'
 import OpenJBrowseWebConfigDialog from './OpenJBrowseWebConfigDialog'
 
 const useStyles = makeStyles(theme => ({
-  formControl: {
-    margin: theme.spacing(1),
-    minWidth: 200,
+  form: {
+    marginTop: theme.spacing(4),
   },
   button: {
-    minWidth: 200,
+    display: 'block',
     marginBottom: theme.spacing(3),
-    marginLeft: theme.spacing(3),
+    width: 200,
     height: '3em',
   },
 }))
@@ -27,7 +26,7 @@ export default function StartScreenOptionsPanel({
   const [sequenceDialogOpen, setSequenceDialogOpen] = useState(false)
   const [dataDirectoryDialogOpen, setDataDirectoryDialogOpen] = useState(false)
   return (
-    <>
+    <div className={classes.form}>
       <Button
         variant="contained"
         color="primary"
@@ -57,6 +56,6 @@ export default function StartScreenOptionsPanel({
           setPluginManager={setPluginManager}
         />
       ) : null}
-    </>
+    </div>
   )
 }

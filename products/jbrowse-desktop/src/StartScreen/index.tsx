@@ -42,6 +42,11 @@ const useStyles = makeStyles(theme => ({
     minWidth: 120,
     maxWidth: 300,
   },
+  panel: {
+    margin: theme.spacing(1),
+    padding: theme.spacing(4),
+    border: '1px solid black',
+  },
 
   settings: {
     float: 'right',
@@ -159,16 +164,22 @@ export default function StartScreen({
       <div className={classes.root}>
         <Grid container spacing={3}>
           <Grid item xs={4}>
-            <LauncherPanel setPluginManager={setPluginManager} />
+            <div className={classes.panel}>
+              <Typography variant="h5">Launch new session</Typography>
+              <LauncherPanel setPluginManager={setPluginManager} />
+            </div>
           </Grid>
           <Grid item xs={8}>
-            <RecentSessionPanel
-              setPluginManager={setPluginManager}
-              sortedSessions={sortedSessions}
-              setSessionToDelete={setSessionToDelete}
-              setSessionToRename={setSessionToRename}
-              setError={setError}
-            />
+            <div className={classes.panel}>
+              <Typography variant="h5">Recently opened sessions</Typography>
+              <RecentSessionPanel
+                setPluginManager={setPluginManager}
+                sortedSessions={sortedSessions}
+                setSessionToDelete={setSessionToDelete}
+                setSessionToRename={setSessionToRename}
+                setError={setError}
+              />
+            </div>
           </Grid>
         </Grid>
       </div>
@@ -188,8 +199,9 @@ export default function StartScreen({
             } catch (e) {
               setError(e)
               console.error(e)
+            } finally {
+              setMenuAnchorEl(null)
             }
-            setMenuAnchorEl(null)
           }}
         >
           <ListItemIcon>
