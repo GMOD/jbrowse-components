@@ -12,7 +12,7 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 import SearchIcon from '@material-ui/icons/Search'
 import { createPluginManager } from './util'
-import preloadedConfigs from './preloadedConfigs'
+import preloadedConfigs from './data/preloadedConfigs'
 import deepmerge from 'deepmerge'
 
 const useStyles = makeStyles(theme => ({

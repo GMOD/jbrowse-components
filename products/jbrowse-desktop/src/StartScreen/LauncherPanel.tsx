@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Button, makeStyles } from '@material-ui/core'
 import PluginManager from '@jbrowse/core/PluginManager'
 import PreloadedDatasetSelector from './PreloadedDatasetSelector'
-import OpenSequenceDialog from './OpenSequenceDialog'
+import OpenSequenceDialog from './dialogs/OpenSequenceDialog'
 
 const useStyles = makeStyles(theme => ({
   form: {

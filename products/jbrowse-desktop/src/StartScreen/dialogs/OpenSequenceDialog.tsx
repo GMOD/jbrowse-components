@@ -15,7 +15,7 @@ import {
 import FileSelector from '@jbrowse/core/ui/FileSelector'
 import { FileLocation } from '@jbrowse/core/util/types'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { createPluginManager } from './util'
+import { createPluginManager } from '../util'
 
 const useStyles = makeStyles(theme => ({
   root: {

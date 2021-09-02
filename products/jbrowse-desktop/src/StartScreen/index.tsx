@@ -24,9 +24,10 @@ import electron from 'electron'
 
 // locals
 import LauncherPanel from './LauncherPanel'
-import DeleteSessionDialog from './DeleteSessionDialog'
-import RenameSessionDialog from './RenameSessionDialog'
 import RecentSessionPanel from './RecentSessionsPanel'
+import RenameSessionDialog from './dialogs/RenameSessionDialog'
+import DeleteSessionDialog from './dialogs/DeleteSessionDialog'
+import FactoryResetDialog from './dialogs/FactoryResetDialog'
 import { version } from '../../package.json'
 
 const { ipcRenderer } = electron
@@ -86,6 +87,7 @@ export default function StartScreen({
   const [sessions, setSessions] = useState<Map<string, SessionStats>>()
   const [sessionToDelete, setSessionToDelete] = useState<string>()
   const [sessionToRename, setSessionToRename] = useState<string>()
+  const [factoryResetDialogOpen, setFactoryResetDialogOpen] = useState(false)
   const [updateSessionsList, setUpdateSessionsList] = useState(true)
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
   const [error, setError] = useState<Error>()
@@ -146,6 +148,22 @@ export default function StartScreen({
           setUpdateSessionsList(update)
         }}
       />
+      <FactoryResetDialog
+        open={factoryResetDialogOpen}
+        onFactoryReset={async () => {
+          try {
+            await ipcRenderer.invoke('reset')
+            setUpdateSessionsList(true)
+          } catch (e) {
+            setError(e)
+            console.error(e)
+          } finally {
+            setMenuAnchorEl(null)
+          }
+        }}
+        onClose={() => setFactoryResetDialogOpen(false)}
+      />
+
       <IconButton
         className={classes.settings}
         onClick={event => {
@@ -191,19 +209,7 @@ export default function StartScreen({
         onClose={() => setMenuAnchorEl(null)}
       >
         <ListSubheader>Advanced settings</ListSubheader>
-        <MenuItem
-          onClick={async () => {
-            try {
-              await ipcRenderer.invoke('reset')
-              setUpdateSessionsList(true)
-            } catch (e) {
-              setError(e)
-              console.error(e)
-            } finally {
-              setMenuAnchorEl(null)
-            }
-          }}
-        >
+        <MenuItem onClick={() => setFactoryResetDialogOpen(true)}>
           <ListItemIcon>
             <WarningIcon />
           </ListItemIcon>
