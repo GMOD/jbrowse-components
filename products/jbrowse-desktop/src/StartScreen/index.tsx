@@ -158,7 +158,7 @@ export default function StartScreen({
             setError(e)
             console.error(e)
           } finally {
-            setMenuAnchorEl(null)
+            setFactoryResetDialogOpen(false)
           }
         }}
         onClose={() => setFactoryResetDialogOpen(false)}

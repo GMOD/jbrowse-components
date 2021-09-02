@@ -224,8 +224,8 @@ const OpenSequenceDialog = ({
         ) : null}
         <div className={classes.root}>
           <Typography>
-            Use this dialog to open a new FASTA file, indexed FASTA file, .2bit
-            file of a genome assembly or other sequence
+            Use this dialog to open a new indexed FASTA file, bgzipped+indexed
+            FASTA file, or .2bit file of a genome assembly or other sequence
           </Typography>
           <Paper className={classes.paper}>
             <TextField

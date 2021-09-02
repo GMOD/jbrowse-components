@@ -30,10 +30,7 @@ export default ({
           Cancel
         </Button>
         <Button
-          onClick={async () => {
-            await onFactoryReset()
-            onClose()
-          }}
+          onClick={() => onFactoryReset()}
           color="primary"
           variant="contained"
         >
