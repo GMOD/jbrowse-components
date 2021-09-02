@@ -45,7 +45,9 @@ const BaseLinearDisplay = observer(
     const classes = useStyles()
     const theme = useTheme()
 
-    const [mouseCoord, setMouseCoord] = useState<Coord>([0, 0])
+    const [clientRect, setClientRect] = useState<ClientRect>()
+    const [offsetMouseCoord, setOffsetMouseCoord] = useState<Coord>([0, 0])
+    const [clientMouseCoord, setClientMouseCoord] = useState<Coord>([0, 0])
     const [contextCoord, setContextCoord] = useState<Coord>()
     const ref = useRef<HTMLDivElement>(null)
     const { model, children } = props
@@ -74,7 +76,12 @@ const BaseLinearDisplay = observer(
         onMouseMove={event => {
           if (ref.current) {
             const rect = ref.current.getBoundingClientRect()
-            setMouseCoord([event.clientX - rect.left, event.clientY - rect.top])
+            setOffsetMouseCoord([
+              event.clientX - rect.left,
+              event.clientY - rect.top,
+            ])
+            setClientMouseCoord([event.clientX, event.clientY])
+            setClientRect(rect)
           }
         }}
         role="presentation"
@@ -85,10 +92,14 @@ const BaseLinearDisplay = observer(
           <LinearBlocks {...props} />
         )}
         {children}
+
         <TooltipComponent
           model={model}
           height={height}
-          mouseCoord={mouseCoord}
+          offsetMouseCoord={offsetMouseCoord}
+          clientMouseCoord={clientMouseCoord}
+          clientRect={clientRect}
+          mouseCoord={offsetMouseCoord}
         />
 
         <Menu

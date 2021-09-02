@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
-import MUITooltip from '@material-ui/core/Tooltip'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { YSCALEBAR_LABEL_OFFSET } from '../models/model'
+import { usePopper, Popper } from 'react-popper'
 
 const toP = (s = 0) => parseFloat(s.toPrecision(6))
 
@@ -60,6 +60,22 @@ function TooltipContents(props: { feature: Feature }) {
   )
 }
 
+// This is going to create a virtual reference element
+// positioned 10px from top and left of the document
+// 90px wide and 10px high
+const virtualReference = {
+  getBoundingClientRect() {
+    return {
+      top: 10 + 300,
+      left: 10 + 300,
+      bottom: 20 + 300,
+      right: 100 + 300,
+      width: 90,
+      height: 10,
+    }
+  },
+}
+
 type Coord = [number, number]
 const Tooltip = observer(
   ({
@@ -70,28 +86,32 @@ const Tooltip = observer(
     model: any
     height: number
     mouseCoord: Coord
+    clientRect: ClientRect
   }) => {
     const { featureUnderMouse } = model
     const classes = useStyles()
 
+    const [popperElement, setPopperElement] = React.useState<any>(null)
+    const { styles, attributes } = usePopper(virtualReference, popperElement, {
+      strategy: 'fixed',
+    })
+
     return featureUnderMouse ? (
       <>
-        <MUITooltip
-          placement="right-start"
-          className={classes.popper}
-          open
-          title={<TooltipContents feature={featureUnderMouse} />}
+        <div
+          ref={setPopperElement}
+          style={{
+            ...styles.popper,
+            background: 'white',
+            zIndex: 10000,
+          }}
+          {...attributes.popper}
         >
-          <div
-            style={{
-              position: 'absolute',
-              left: mouseCoord[0],
-              top: 5,
-            }}
-          >
-            {' '}
-          </div>
-        </MUITooltip>
+          Popper element Popper element Popper element
+          <br /> Popper element Popper element Popper element <br />
+          Popper element
+        </div>
+
         <div
           className={classes.hoverVertical}
           style={{
