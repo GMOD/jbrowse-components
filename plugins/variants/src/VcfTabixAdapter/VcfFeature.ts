@@ -226,12 +226,17 @@ export default class VCFFeature implements Feature {
       // least 1% in population, and can't be sure we meet that
       return ['SNV', this._makeDescriptionString('SNV', ref, alt)]
     }
-
-    if (alt.includes('<')) {
+    if (alt === '<INS>') {
+      return ['insertion', alt]
+    } else if (alt === '<DEL>') {
+      return ['deletion', alt]
+    } else if (alt === '<INV>') {
+      return ['deletion', alt]
+    } else if (alt === '<TRA>') {
+      return ['translocation', alt]
+    } else if (alt.includes('<')) {
       return ['sv', alt]
-    }
-
-    if (ref.length === alt.length) {
+    } else if (ref.length === alt.length) {
       if (ref.split('').reverse().join('') === alt) {
         return ['inversion', this._makeDescriptionString('inversion', ref, alt)]
       }
