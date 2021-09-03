@@ -42,8 +42,7 @@ export default class TrixTextSearchAdapter
    * limit of results to return, searchType...prefix | full | exact", etc.
    */
   async searchIndex(args: BaseArgs) {
-    const results = await this.trixJs.search(args.queryString)
-    console.log({ results })
+    const results = await this.trixJs.search(args.queryString.toLowerCase())
     const formatted = this.formatResults(
       results.map(([term, data]) => [
         term,
@@ -53,8 +52,7 @@ export default class TrixTextSearchAdapter
     if (args.searchType === 'exact') {
       return formatted.filter(
         result =>
-          result.getLabel().toLocaleLowerCase() ===
-          args.queryString.toLocaleLowerCase(),
+          result.getLabel().toLowerCase() === args.queryString.toLowerCase(),
       )
     }
     return formatted

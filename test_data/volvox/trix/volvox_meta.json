@@ -1,10 +1,17 @@
 {
-  "dateCreated": "Fri Aug 27 2021 20:00:35 GMT-0400 (Eastern Daylight Time)",
+  "dateCreated": "Fri Sep 03 2021 12:12:31 GMT-0400 (Eastern Daylight Time)",
   "tracks": [
     {
       "trackId": "volvox_sv_test",
-      "attributesIndexed": ["Name", "ID"],
-      "excludedTypes": ["CDS", "exon"],
+      "attributesIndexed": [
+        "Name",
+        "ID",
+        "Note"
+      ],
+      "excludedTypes": [
+        "CDS",
+        "exon"
+      ],
       "adapterConf": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -19,8 +26,15 @@
     },
     {
       "trackId": "volvox_sv_test_renamed",
-      "attributesIndexed": ["Name", "ID"],
-      "excludedTypes": ["CDS", "exon"],
+      "attributesIndexed": [
+        "Name",
+        "ID",
+        "Note"
+      ],
+      "excludedTypes": [
+        "CDS",
+        "exon"
+      ],
       "adapterConf": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -35,8 +49,15 @@
     },
     {
       "trackId": "volvox_test_vcf",
-      "attributesIndexed": ["Name", "ID"],
-      "excludedTypes": ["CDS", "exon"],
+      "attributesIndexed": [
+        "Name",
+        "ID",
+        "Note"
+      ],
+      "excludedTypes": [
+        "CDS",
+        "exon"
+      ],
       "adapterConf": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -51,8 +72,15 @@
     },
     {
       "trackId": "gff3tabix_genes",
-      "attributesIndexed": ["Name", "ID"],
-      "excludedTypes": ["CDS", "exon"],
+      "attributesIndexed": [
+        "Name",
+        "ID",
+        "Note"
+      ],
+      "excludedTypes": [
+        "CDS",
+        "exon"
+      ],
       "adapterConf": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -67,8 +95,15 @@
     },
     {
       "trackId": "volvox_filtered_vcf",
-      "attributesIndexed": ["Name", "ID"],
-      "excludedTypes": ["CDS", "exon"],
+      "attributesIndexed": [
+        "Name",
+        "ID",
+        "Note"
+      ],
+      "excludedTypes": [
+        "CDS",
+        "exon"
+      ],
       "adapterConf": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -83,8 +118,15 @@
     },
     {
       "trackId": "variant_colors",
-      "attributesIndexed": ["Name", "ID"],
-      "excludedTypes": ["CDS", "exon"],
+      "attributesIndexed": [
+        "Name",
+        "ID",
+        "Note"
+      ],
+      "excludedTypes": [
+        "CDS",
+        "exon"
+      ],
       "adapterConf": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -99,8 +141,15 @@
     },
     {
       "trackId": "single_exon_gene",
-      "attributesIndexed": ["Name", "ID"],
-      "excludedTypes": ["CDS", "exon"],
+      "attributesIndexed": [
+        "Name",
+        "ID",
+        "Note"
+      ],
+      "excludedTypes": [
+        "CDS",
+        "exon"
+      ],
       "adapterConf": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -115,8 +164,15 @@
     },
     {
       "trackId": "volvox.inv.vcf",
-      "attributesIndexed": ["Name", "ID"],
-      "excludedTypes": ["CDS", "exon"],
+      "attributesIndexed": [
+        "Name",
+        "ID",
+        "Note"
+      ],
+      "excludedTypes": [
+        "CDS",
+        "exon"
+      ],
       "adapterConf": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -131,5 +187,7 @@
       }
     }
   ],
-  "assemblies": ["volvox"]
+  "assemblies": [
+    "volvox"
+  ]
 }
