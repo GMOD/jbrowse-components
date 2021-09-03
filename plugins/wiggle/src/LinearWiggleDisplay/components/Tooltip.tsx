@@ -1,23 +1,35 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles, Portal } from '@material-ui/core'
+import { makeStyles, alpha, Portal } from '@material-ui/core'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { YSCALEBAR_LABEL_OFFSET } from '../models/model'
-import { usePopper, Popper } from 'react-popper'
+import { usePopper } from 'react-popper'
 
-const toP = (s = 0) => parseFloat(s.toPrecision(6))
+function toP(s = 0) {
+  return parseFloat(s.toPrecision(6))
+}
+
+function round(value: number) {
+  return Math.round(value * 1e5) / 1e5
+}
 
 const useStyles = makeStyles(theme => ({
-  popper: {
-    fontSize: '0.8em',
-
-    // important to have a zIndex directly on the popper itself
-    // @material-ui/Tooltip uses popper and has similar thing
-    zIndex: theme.zIndex.tooltip,
-
-    // needed to avoid rapid mouseLeave/mouseEnter on popper
+  // these styles come from
+  // https://github.com/mui-org/material-ui/blob/master/packages/material-ui/src/Tooltip/Tooltip.js
+  tooltip: {
+    position: 'absolute',
     pointerEvents: 'none',
+    backgroundColor: alpha(theme.palette.grey[700], 0.9),
+    borderRadius: theme.shape.borderRadius,
+    color: theme.palette.common.white,
+    fontFamily: theme.typography.fontFamily,
+    padding: '4px 8px',
+    fontSize: theme.typography.pxToRem(10),
+    lineHeight: `${round(14 / 10)}em`,
+    maxWidth: 300,
+    wordWrap: 'break-word',
+    fontWeight: theme.typography.fontWeightMedium,
   },
 
   hoverVertical: {
@@ -61,65 +73,63 @@ function TooltipContents(props: { feature: Feature }) {
 }
 
 type Coord = [number, number]
+
 const Tooltip = observer(
   ({
     model,
     height,
-    mouseCoord,
+    clientMouseCoord,
+    offsetMouseCoord,
     clientRect,
+    TooltipContents,
   }: {
     model: any
     height: number
-    mouseCoord: Coord
-    clientRect: ClientRect
+    clientMouseCoord: Coord
+    offsetMouseCoord: Coord
+    clientRect?: ClientRect
+    TooltipContents: React.FC<any>
   }) => {
     const { featureUnderMouse } = model
     const classes = useStyles()
 
-    const [popperElement, setPopperElement] = React.useState<any>(null)
-    const { styles, attributes } = usePopper(
-      {
-        getBoundingClientRect() {
-          const top = 100
-          console.log(mouseCoord[0])
+    const [popperElement, setPopperElement] = useState<any>(null)
+
+    const virtElement = useMemo(
+      () => ({
+        getBoundingClientRect: () => {
           return {
-            top,
-            left: mouseCoord[0],
-            bottom: top + 1,
-            right: mouseCoord[0] + 1,
-            width: 90,
-            height: 10,
+            top: clientRect?.top || 0,
+            left: clientMouseCoord[0] + 20,
+            bottom: clientRect?.top || 0,
+            right: clientMouseCoord[0],
+            width: 0,
+            height: 0,
           }
         },
-      },
-      popperElement,
-      {
-        strategy: 'fixed',
-      },
+      }),
+      [clientRect?.top, clientMouseCoord],
     )
+    const { styles, attributes } = usePopper(virtElement, popperElement)
 
     return featureUnderMouse ? (
       <>
         <Portal>
           <div
             ref={setPopperElement}
-            style={{
-              ...styles.popper,
-              background: 'white',
-              zIndex: 10000,
-            }}
+            className={classes.tooltip}
+            // zIndex needed to go over widget drawer
+            style={{ ...styles.popper, zIndex: 100000 }}
             {...attributes.popper}
           >
-            Popper element Popper element Popper element
-            <br /> Popper element Popper element Popper element <br />
-            Popper element
+            <TooltipContents feature={featureUnderMouse} />
           </div>
         </Portal>
 
         <div
           className={classes.hoverVertical}
           style={{
-            left: mouseCoord[0],
+            left: offsetMouseCoord[0],
             height: height - YSCALEBAR_LABEL_OFFSET * 2,
           }}
         />
@@ -128,4 +138,16 @@ const Tooltip = observer(
   },
 )
 
-export default Tooltip
+const WiggleTooltip = observer(
+  (props: {
+    model: any
+    height: number
+    offsetMouseCoord: Coord
+    clientMouseCoord: Coord
+    clientRect?: ClientRect
+  }) => {
+    return <Tooltip TooltipContents={TooltipContents} {...props} />
+  },
+)
+export default WiggleTooltip
+export { Tooltip }

@@ -1,28 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
-import MUITooltip from '@material-ui/core/Tooltip'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@material-ui/core/styles'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
-
-const useStyles = makeStyles(theme => ({
-  popper: {
-    fontSize: '0.8em',
-    zIndex: theme.zIndex.tooltip, // important to have a zIndex directly on the popper itself, material-ui Tooltip uses popper and has similar thing
-    pointerEvents: 'none', // needed to avoid rapid mouseLeave/mouseEnter on popper
-  },
-
-  hoverVertical: {
-    background: '#333',
-    border: 'none',
-    width: 1,
-    height: '100%',
-    top: 0,
-    cursor: 'default',
-    position: 'absolute',
-    pointerEvents: 'none',
-  },
-}))
+import { Tooltip } from '@jbrowse/plugin-wiggle'
 
 type Count = {
   [key: string]: {
@@ -31,13 +11,15 @@ type Count = {
   }
 }
 
+const en = (n: number) => n.toLocaleString('en-US')
+
 function TooltipContents({ feature }: { feature: Feature }) {
-  const refName = feature.get('refName')
-  const start = (feature.get('start') + 1).toLocaleString('en-US')
-  const end = feature.get('end').toLocaleString('en-US')
-  const loc = `${refName ? `${refName}:` : ''}${
-    start === end ? start : `${start}..${end}`
-  }`
+  const start = feature.get('start')
+  const end = feature.get('end')
+  const ref = feature.get('refName')
+  const loc = [ref, start === end ? en(start) : `${en(start)}..${en(end)}`]
+    .filter(f => !!f)
+    .join(':')
 
   const info = feature.get('snpinfo') as {
     ref: Count
@@ -48,7 +30,8 @@ function TooltipContents({ feature }: { feature: Feature }) {
     total: number
   }
 
-  const { total, ref, cov, noncov, lowqual, delskips } = info
+  const total = info.total
+
   return (
     <div>
       <table>
@@ -69,33 +52,27 @@ function TooltipContents({ feature }: { feature: Feature }) {
             <td />
           </tr>
 
-          {Object.entries({ ref, cov, noncov, delskips, lowqual }).map(
-            ([key, entry]) => {
+          {Object.entries(info).map(([key, entry]) => {
+            return Object.entries(entry).map(([base, score]) => {
+              const { strands } = score
               return (
-                <React.Fragment key={key}>
-                  {Object.entries(entry).map(([base, score]) => {
-                    const { strands } = score
-                    return (
-                      <tr key={base}>
-                        <td>{base.toUpperCase()}</td>
-                        <td>{score.total}</td>
-                        <td>
-                          {base === 'total'
-                            ? '---'
-                            : `${Math.floor((score.total / total) * 100)}%`}
-                        </td>
-                        <td>
-                          {strands['-1'] ? `${strands['-1']}(-)` : ''}
-                          {strands['1'] ? `${strands['1']}(+)` : ''}
-                        </td>
-                        <td>{key}</td>
-                      </tr>
-                    )
-                  })}
-                </React.Fragment>
+                <tr key={base}>
+                  <td>{base.toUpperCase()}</td>
+                  <td>{score.total}</td>
+                  <td>
+                    {base === 'total'
+                      ? '---'
+                      : `${Math.floor((score.total / total) * 100)}%`}
+                  </td>
+                  <td>
+                    {strands['-1'] ? `${strands['-1']}(-)` : ''}
+                    {strands['1'] ? `${strands['1']}(+)` : ''}
+                  </td>
+                  <td>{key}</td>
+                </tr>
               )
-            },
-          )}
+            })
+          })}
         </tbody>
       </table>
     </div>
@@ -103,44 +80,17 @@ function TooltipContents({ feature }: { feature: Feature }) {
 }
 
 type Coord = [number, number]
-const Tooltip = observer(
-  ({
-    model,
-    height,
-    mouseCoord,
-  }: {
+
+const SNPCoverageTooltip = observer(
+  (props: {
     model: any
     height: number
-    mouseCoord: Coord
+    offsetMouseCoord: Coord
+    clientMouseCoord: Coord
+    clientRect?: ClientRect
   }) => {
-    const { featureUnderMouse } = model
-    const classes = useStyles()
-
-    return featureUnderMouse ? (
-      <>
-        <MUITooltip
-          placement="right-start"
-          className={classes.popper}
-          open
-          title={<TooltipContents feature={featureUnderMouse} />}
-        >
-          <div
-            style={{
-              position: 'absolute',
-              left: mouseCoord[0],
-              top: 0,
-            }}
-          >
-            {' '}
-          </div>
-        </MUITooltip>
-        <div
-          className={classes.hoverVertical}
-          style={{ left: mouseCoord[0], height }}
-        />
-      </>
-    ) : null
+    return <Tooltip TooltipContents={TooltipContents} {...props} />
   },
 )
 
-export default Tooltip
+export default SNPCoverageTooltip
