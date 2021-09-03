@@ -6,7 +6,7 @@ export default ConfigurationSchema(
   {
     bedGzLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bed.gz' },
+      defaultValue: { uri: '/path/to/my.bed.gz', locationType: 'UriLocation' },
     },
 
     index: ConfigurationSchema('TabixIndex', {
@@ -17,7 +17,10 @@ export default ConfigurationSchema(
       },
       location: {
         type: 'fileLocation',
-        defaultValue: { uri: '/path/to/my.bed.gz.tbi' },
+        defaultValue: {
+          uri: '/path/to/my.bed.gz.tbi',
+          locationType: 'UriLocation',
+        },
       },
     }),
 

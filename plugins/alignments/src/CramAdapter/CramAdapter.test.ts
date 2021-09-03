@@ -23,9 +23,11 @@ test('adapter can fetch features from volvox-sorted.cram', async () => {
     configSchema.create({
       cramLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.cram'),
+        locationType: 'LocalPathLocation',
       },
       craiLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
+        locationType: 'LocalPathLocation',
       },
     }),
     getVolvoxSequenceSubAdapter,
@@ -55,9 +57,11 @@ test('test usage of cramSlightlyLazyFeature toJSON (used in the widget)', async 
     configSchema.create({
       cramLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.cram'),
+        locationType: 'LocalPathLocation',
       },
       craiLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
+        locationType: 'LocalPathLocation',
       },
     }),
     getVolvoxSequenceSubAdapter,

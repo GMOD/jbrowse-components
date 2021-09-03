@@ -41,16 +41,20 @@ export const Region = types.compose(
 )
 
 export const LocalPathLocation = types.model('LocalPathLocation', {
-  localPath: types.string, // TODO: refine
+  locationType: types.literal('LocalPathLocation'),
+  localPath: types.string,
 })
 
+// like how blobId is used to get a blob map
 export const BlobLocation = types.model('BlobLocation', {
-  name: types.string, // TODO: refine
+  locationType: types.literal('BlobLocation'),
+  name: types.string,
   blobId: types.string,
 })
 
 export const UriLocationRaw = types.model('UriLocation', {
-  uri: types.string, // TODO: refine
+  locationType: types.literal('UriLocation'),
+  uri: types.string,
   baseUri: types.maybe(types.string),
 })
 

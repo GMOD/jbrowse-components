@@ -8,13 +8,16 @@
         "adapter": {
           "type": "BgzipFastaAdapter",
           "faiLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz.fai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "fastaLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz.gzi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -29,11 +32,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/BGV006906.ont.v1.0.s.vcf.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/BGV006906.ont.v1.0.s.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/BGV006906.ont.v1.0.s.vcf.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/BGV006906.ont.v1.0.s.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -46,21 +51,26 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/BGV006906.cram"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/BGV006906.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/BGV006906.cram.crai"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/BGV006906.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "faiLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz.fai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "fastaLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz.gzi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -73,23 +83,28 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/BGV006906.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/BGV006906.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/BGV006906.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/BGV006906.bam.bai",
+            "locationType": "UriLocation"
           }
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "faiLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz.fai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "fastaLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz.gzi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }

@@ -5,6 +5,7 @@ exports[`plugin in a stock JBrowse 1`] = `Object {}`;
 exports[`test creating a text search adapter 1`] = `
 Object {
   "namesIndexLocation": Object {
+    "locationType": "UriLocation",
     "uri": "names/",
   },
   "textSearchAdapterId": "JBrowse1GenerateNamesAdapterTest",

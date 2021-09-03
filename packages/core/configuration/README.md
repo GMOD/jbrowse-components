@@ -18,11 +18,11 @@ These types are specific to configuration schemas.
 - `numberMap` - map of string -> number
 - `fileLocation` of the form
   ```
-  { uri: 'http://example.com/path/to/resource.file' }
+  { uri: 'http://example.com/path/to/resource.file', locationType: 'UriLocation' }
   ```
   or
   ```
-  { localPath: '/filesystem/path/to/resource.file' }
+  { localPath: '/filesystem/path/to/resource.file', locationType: 'LocalPathLocation' }
   ```
 - `frozen` - any data structure. assumed to be immutable; internal changes to it will not be noticed by any mobx observers
 

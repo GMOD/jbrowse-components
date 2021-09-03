@@ -128,14 +128,17 @@ export default {
       fastaLocation: {
         uri:
           'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz',
+        locationType: 'UriLocation',
       },
       faiLocation: {
         uri:
           'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.fai',
+        locationType: 'UriLocation',
       },
       gziLocation: {
         uri:
           'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.gzi',
+        locationType: 'UriLocation',
       },
     },
   },
@@ -145,6 +148,7 @@ export default {
       type: 'RefNameAliasAdapter',
       location: {
         uri: 'GRCh38.aliases.txt',
+        locationType: 'UriLocation',
       },
     },
   },

@@ -16,12 +16,15 @@ test('adapter can fetch output files', async () => {
     textSearchAdapterId: 'TrixTextSearchAdapterTest',
     ixFilePath: {
       uri: `${urlPath}/volvox.ix`,
+      locationType: 'UriLocation',
     },
     ixxFilePath: {
       uri: `${urlPath}/volvox.ixx`,
+      locationType: 'UriLocation',
     },
     metaFilePath: {
       uri: `${urlPath}/volvox_meta.json`,
+      locationType: 'UriLocation',
     },
   }
   // create adapter

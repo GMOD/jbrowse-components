@@ -5,7 +5,10 @@ export default ConfigurationSchema(
   {
     chromSizesLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/species.chrom.sizes' },
+      defaultValue: {
+        uri: '/path/to/species.chrom.sizes',
+        locationType: 'UriLocation',
+      },
     },
   },
   { explicitlyTyped: true },

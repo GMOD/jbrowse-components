@@ -99,7 +99,9 @@ const UrlChooser = (props: {
       fullWidth
       inputProps={{ 'data-testid': 'urlInput' }}
       defaultValue={location && isUriLocation(location) ? location.uri : ''}
-      onChange={event => setLocation({ uri: event.target.value })}
+      onChange={event =>
+        setLocation({ uri: event.target.value, locationType: 'UriLocation' })
+      }
     />
   )
 }
@@ -135,6 +137,7 @@ const LocalFileChooser = observer(
                 if (isElectron) {
                   setLocation({
                     localPath: (file as File & { path: string }).path,
+                    locationType: 'UriLocation',
                   })
                 } else {
                   setLocation(storeBlobLocation({ blob: file }))

@@ -5,11 +5,11 @@ export default ConfigurationSchema(
   {
     fastaLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/seq.fa' },
+      defaultValue: { uri: '/path/to/seq.fa', locationType: 'UriLocation' },
     },
     faiLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/seq.fa.fai' },
+      defaultValue: { uri: '/path/to/seq.fa.fai', locationType: 'UriLocation' },
     },
   },
   { explicitlyTyped: true },

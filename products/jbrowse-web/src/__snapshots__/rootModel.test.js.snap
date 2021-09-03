@@ -146,6 +146,10 @@ Object {
 exports[`Root MST model adds track and connection configs to an assembly 3`] = `
 Object {
   "connectionId": "connectionId0",
+  "dataDirLocation": Object {
+    "locationType": "UriLocation",
+    "uri": "http://mysite.com/jbrowse/data/",
+  },
   "type": "JBrowse1Connection",
 }
 `;

@@ -207,7 +207,10 @@ describe('configuration schemas', () => {
       {
         gffGzLocation: {
           type: 'fileLocation',
-          defaultValue: { uri: '/path/to/my.gff.gz' },
+          defaultValue: {
+            uri: '/path/to/my.gff.gz',
+            locationType: 'UriLocation',
+          },
         },
         index: ConfigurationSchema('Gff3TabixIndex', {
           indexType: {
@@ -217,7 +220,10 @@ describe('configuration schemas', () => {
           },
           location: {
             type: 'fileLocation',
-            defaultValue: { uri: '/path/to/my.gff.gz.tbi' },
+            defaultValue: {
+              uri: '/path/to/my.gff.gz.tbi',
+              locationType: 'UriLocation',
+            },
           },
         }),
         dontRedispatch: {

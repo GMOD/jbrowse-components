@@ -20,14 +20,17 @@ const assembly = {
       fastaLocation: {
         uri:
           'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
+        locationType: 'UriLocation',
       },
       faiLocation: {
         uri:
           'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.fai',
+        locationType: 'UriLocation',
       },
       gziLocation: {
         uri:
           'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.gzi',
+        locationType: 'UriLocation',
       },
     },
   },
@@ -38,6 +41,7 @@ const assembly = {
       location: {
         uri:
           'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+        locationType: 'UriLocation',
       },
     },
   },
@@ -55,11 +59,13 @@ const tracks = [
       gffGzLocation: {
         uri:
           'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
+        locationType: 'UriLocation',
       },
       index: {
         location: {
           uri:
             'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.tbi',
+          locationType: 'UriLocation',
         },
       },
     },

@@ -12,7 +12,8 @@
         "adapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       },
@@ -42,7 +43,8 @@
         "adapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -58,11 +60,13 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "au9_scaffold_subset_sync.gff3"
+          "uri": "au9_scaffold_subset_sync.gff3",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "au9_scaffold_subset_sync.gff3.tbi"
+            "uri": "au9_scaffold_subset_sync.gff3.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -76,11 +80,13 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "volvox.sort.gff3.gz"
+          "uri": "volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox.sort.gff3.gz.tbi"
+            "uri": "volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -94,11 +100,13 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "volvox.sort.gff3.gz"
+          "uri": "volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox.sort.gff3.gz.tbi"
+            "uri": "volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -112,11 +120,13 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz"
+          "uri": "https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz.tbi"
+            "uri": "https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -130,11 +140,13 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3"
+          "uri": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3.tbi"
+            "uri": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -148,7 +160,8 @@
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "volvox_genes_nclist/{refseq}/trackData.json"
+          "uri": "volvox_genes_nclist/{refseq}/trackData.json",
+          "locationType": "UriLocation"
         }
       }
     }

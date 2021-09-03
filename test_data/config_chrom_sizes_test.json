@@ -8,7 +8,8 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "grape.chrom.sizes.nonexist"
+            "uri": "grape.chrom.sizes.nonexist",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -21,7 +22,8 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "grape.chrom.sizes"
+            "uri": "grape.chrom.sizes",
+            "locationType": "UriLocation"
           }
         }
       }

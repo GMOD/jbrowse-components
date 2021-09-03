@@ -24,13 +24,16 @@
         "adapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       },
@@ -38,7 +41,8 @@
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -52,13 +56,16 @@
         "adapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       },
@@ -66,7 +73,8 @@
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -86,11 +94,13 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -104,7 +114,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
+          "uri": "https://jbrowse.org/genomes/hg19/repeats.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -117,7 +128,8 @@
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json"
+          "uri": "https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json",
+          "locationType": "UriLocation"
         },
         "refNames": [
           "chr1",
@@ -170,7 +182,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/gaps.bb"
+          "uri": "https://jbrowse.org/genomes/hg19/gaps.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -183,7 +196,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarCnv.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarCnv.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -285,7 +299,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -298,11 +313,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz"
+          "uri": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz.tbi"
+            "uri": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -316,11 +333,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz"
+          "uri": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz.tbi"
+            "uri": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -334,7 +353,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://jbrowse.org/genomes/GRCh38/repeats.bb"
+          "uri": "https://jbrowse.org/genomes/GRCh38/repeats.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -347,7 +367,8 @@
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/{refseq}/trackData.jsonz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/{refseq}/trackData.jsonz",
+          "locationType": "UriLocation"
         },
         "refNames": [
           "chr1",
@@ -400,7 +421,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -413,7 +435,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -426,7 +449,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.0.92.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.0.92.bb",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -451,7 +475,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/gdcCancer/gdcCancer.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/gdcCancer/gdcCancer.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -464,7 +489,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://jbrowse.org/genomes/GRCh38/gaps.bb"
+          "uri": "https://jbrowse.org/genomes/GRCh38/gaps.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -477,11 +503,13 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -495,11 +523,13 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -513,7 +543,8 @@
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq_analysis_set/{refseq}/trackData.jsonz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq_analysis_set/{refseq}/trackData.jsonz",
+          "locationType": "UriLocation"
         },
         "refNames": [
           "chr1",
@@ -555,21 +586,26 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.0.1.cram"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.0.1.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.0.1.cram.crai"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.0.1.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -584,21 +620,26 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.cram"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.cram.crai"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/nanopore_egfr.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -612,11 +653,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.marked.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.marked.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.marked.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/out.marked.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -631,11 +674,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/sample1-original.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/sample1-original.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/sample1-original.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/amplicon_deep_seq/sample1-original.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -649,11 +694,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -667,11 +714,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/NA12878-minion-ul_GRCh37.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/NA12878-minion-ul_GRCh37.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/NA12878-minion-ul_GRCh37.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/NA12878-minion-ul_GRCh37.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -685,11 +734,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.splitters.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.splitters.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.splitters.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.splitters.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -703,11 +754,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.down.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.down.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.down.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.down.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -721,21 +774,26 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.down.cram"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.down.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.down.cram.crai"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.down.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -749,7 +807,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -763,13 +822,16 @@
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -783,11 +845,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -801,11 +865,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam"
+          "uri": "https://jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam.bai"
+            "uri": "https://jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -819,23 +885,28 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/merged_ec_output_primary.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/merged_ec_output_primary.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/merged_ec_output_primary.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/merged_ec_output_primary.bam.bai",
+            "locationType": "UriLocation"
           }
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -849,21 +920,26 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram"
+          "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram.crai"
+          "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -877,11 +953,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam"
+          "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam.bai"
+            "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -895,23 +973,28 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/1000genomes/phase3/integrated_sv_map/supporting/CHM1/pacbio/data/aligned_reads.bam"
+          "uri": "https://s3.amazonaws.com/1000genomes/phase3/integrated_sv_map/supporting/CHM1/pacbio/data/aligned_reads.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/1000genomes/phase3/integrated_sv_map/supporting/CHM1/pacbio/data/aligned_reads.bam.bai"
+            "uri": "https://s3.amazonaws.com/1000genomes/phase3/integrated_sv_map/supporting/CHM1/pacbio/data/aligned_reads.bam.bai",
+            "locationType": "UriLocation"
           }
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -925,23 +1008,28 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/high_coverage_alignment/HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam"
+          "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/high_coverage_alignment/HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/high_coverage_alignment/HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam.bai"
+            "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/high_coverage_alignment/HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam.bai",
+            "locationType": "UriLocation"
           }
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -955,7 +1043,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam.regions.bw"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam.regions.bw",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -968,21 +1057,26 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.cram"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.cram.crai"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -996,23 +1090,28 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam.bai",
+            "locationType": "UriLocation"
           }
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1026,11 +1125,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/alignment/HG00096.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam"
+          "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/alignment/HG00096.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/alignment/HG00096.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam.bai"
+            "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/alignment/HG00096.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1045,7 +1146,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
+          "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -1065,7 +1167,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
+          "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1078,7 +1181,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://www.encodeproject.org/files/ENCFF082DRX/@@download/ENCFF082DRX.bigBed"
+          "uri": "https://www.encodeproject.org/files/ENCFF082DRX/@@download/ENCFF082DRX.bigBed",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1091,11 +1195,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/NA12878_high_quality_variant.vcf.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/NA12878_high_quality_variant.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/NA12878_high_quality_variant.vcf.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/NA12878_high_quality_variant.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1109,11 +1215,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1127,11 +1235,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "https://1000genomes.s3.amazonaws.com/phase1/analysis_results/consensus_call_sets/indels/ALL.wgs.VQSR_V2_GLs_polarized.20101123.indels.low_coverage.genotypes.vcf.gz"
+          "uri": "https://1000genomes.s3.amazonaws.com/phase1/analysis_results/consensus_call_sets/indels/ALL.wgs.VQSR_V2_GLs_polarized.20101123.indels.low_coverage.genotypes.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://1000genomes.s3.amazonaws.com/phase1/analysis_results/consensus_call_sets/indels/ALL.wgs.VQSR_V2_GLs_polarized.20101123.indels.low_coverage.genotypes.vcf.gz.tbi"
+            "uri": "https://1000genomes.s3.amazonaws.com/phase1/analysis_results/consensus_call_sets/indels/ALL.wgs.VQSR_V2_GLs_polarized.20101123.indels.low_coverage.genotypes.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1145,11 +1255,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
+          "uri": "breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
+            "uri": "breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1163,11 +1275,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/giab/HG002_SVs_Tier1_v0.6.vcf.gz"
+          "uri": "https://jbrowse.org/genomes/hg19/giab/HG002_SVs_Tier1_v0.6.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/genomes/hg19/giab/HG002_SVs_Tier1_v0.6.vcf.gz.tbi"
+            "uri": "https://jbrowse.org/genomes/hg19/giab/HG002_SVs_Tier1_v0.6.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1181,11 +1295,13 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/giab/variants_for_nstd175.sorted.bed.gz"
+          "uri": "https://jbrowse.org/genomes/hg19/giab/variants_for_nstd175.sorted.bed.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/genomes/hg19/giab/variants_for_nstd175.sorted.bed.gz.tbi"
+            "uri": "https://jbrowse.org/genomes/hg19/giab/variants_for_nstd175.sorted.bed.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1199,11 +1315,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/pacbio/chm.full.37d5.vcf.gz"
+          "uri": "https://jbrowse.org/genomes/hg19/pacbio/chm.full.37d5.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/genomes/hg19/pacbio/chm.full.37d5.vcf.gz.tbi"
+            "uri": "https://jbrowse.org/genomes/hg19/pacbio/chm.full.37d5.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1217,7 +1335,8 @@
       "adapter": {
         "type": "SPARQLAdapter",
         "endpoint": {
-          "uri": "https://togovar.biosciencedbc.jp/sparql"
+          "uri": "https://togovar.biosciencedbc.jp/sparql",
+          "locationType": "UriLocation"
         },
         "queryTemplate": "DEFINE sql:select-option \"order\"\n\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\nPREFIX obo: <http://purl.obolibrary.org/obo/>\nPREFIX sio: <http://semanticscience.org/resource/>\nPREFIX faldo: <http://biohackathon.org/resource/faldo#>\nPREFIX insdc: <http://ddbj.nig.ac.jp/ontologies/nucleotide/>\nPREFIX dct: <http://purl.org/dc/terms/>\nPREFIX so: <http://purl.obolibrary.org/obo/so#>\n\nSELECT DISTINCT ?uniqueId ?type ?start ?end ?sub_uniqueId ?sub_type ?sub_start ?sub_end ?sub_sub_uniqueId ?sub_sub_type ?sub_sub_start ?sub_sub_end ?strand ?name ?description ?sub_name ?sub_description ?sub_class ?sub_sub_name\nFROM <http://togovar.biosciencedbc.jp/graph/ensembl37>\nWHERE {\n  VALUES ?region_start { {start} }\n  VALUES ?region_end { {end} }\n  VALUES ?chr_id { <http://identifiers.org/hco/{refName}#GRCh37> }\n\n  # gene\n  BIND (\"gene\" AS ?type)\n  ?uniqueId so:part_of ?chr_id .\n  ?uniqueId faldo:location ?loc .\n  ?loc faldo:begin/rdf:type ?faldo_type .\n  ?loc faldo:begin/faldo:position ?start_pos .\n  ?loc faldo:end/faldo:position ?end_pos .\n\n  FILTER (?faldo_type IN (faldo:ForwardStrandPosition, faldo:ReverseStrandPosition, faldo:BothStrandsPosition))\n  BIND (IF (?faldo_type = faldo:ForwardStrandPosition, 1, IF (?faldo_type = faldo:ReverseStrandPosition, -1, 0)) AS ?strand)\n  BIND (IF (?faldo_type = faldo:ReverseStrandPosition, ?end_pos, ?start_pos) AS ?start)\n  BIND (IF (!(?faldo_type = faldo:ReverseStrandPosition), ?end_pos, ?start_pos) AS ?end)\n\n  FILTER (!(?start > ?region_end || ?end < ?region_start))\n\n  # transcript\n  BIND (\"mRNA\" AS ?sub_type)\n  ?sub_uniqueId so:part_of ?uniqueId .\n  ?sub_uniqueId rdf:type ?sub_class_orig .\n  FILTER (!strstarts(str(?sub_class_orig), \"http://rdf.ebi.ac.uk/terms/ensembl/\"))\n  BIND (IF (?sub_class_orig = obo:SO_0001217, obo:SO_0000316, ?sub_class_orig) AS ?sub_class)\n\n  ?sub_uniqueId faldo:location ?sub_loc .\n  ?sub_loc faldo:begin/faldo:position ?sub_start_pos .\n  ?sub_loc faldo:end/faldo:position ?sub_end_pos .\n  BIND (IF (?faldo_type = faldo:ReverseStrandPosition, ?sub_end_pos, ?sub_start_pos) AS ?sub_start)\n  BIND (IF (!(?faldo_type = faldo:ReverseStrandPosition), ?sub_end_pos, ?sub_start_pos) AS ?sub_end)\n\n  # sub_sub_\n  BIND (\"CDS\" AS ?sub_sub_type)\n  ?sub_uniqueId so:has_part ?sub_sub_uniqueId .\n\n  ?sub_sub_uniqueId faldo:location ?sub_sub_loc .\n  ?sub_sub_loc faldo:begin/faldo:position ?sub_sub_start_pos .\n  ?sub_sub_loc faldo:end/faldo:position ?sub_sub_end_pos .\n  BIND (IF (?faldo_type = faldo:ReverseStrandPosition, ?sub_sub_end_pos, ?sub_sub_start_pos) AS ?sub_sub_start)\n  BIND (IF (!(?faldo_type = faldo:ReverseStrandPosition), ?sub_sub_end_pos, ?sub_sub_start_pos) AS ?sub_sub_end)\n\n  OPTIONAL { ?uniqueId dct:identifier ?name . }\n  OPTIONAL { ?uniqueId rdfs:label ?description . }\n  OPTIONAL { ?sub_uniqueId dct:identifier ?sub_name . }\n  OPTIONAL { ?sub_uniqueId so:translates_to/dct:identifier ?sub_description . }\n  OPTIONAL { ?sub_sub_uniqueId dct:identifier ?sub_sub_name . }\n}",
         "refNames": [
@@ -1260,7 +1379,8 @@
       "adapter": {
         "type": "SPARQLAdapter",
         "endpoint": {
-          "uri": "https://togovar.biosciencedbc.jp/sparql"
+          "uri": "https://togovar.biosciencedbc.jp/sparql",
+          "locationType": "UriLocation"
         },
         "queryTemplate": "DEFINE sql:select-option \"order\"\nPREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX  m2r:  <http://med2rdf.org/ontology/med2rdf#>\nPREFIX  obo:  <http://purl.obolibrary.org/obo/>\nPREFIX  dct: <http://purl.org/dc/terms/>\nPREFIX  faldo: <http://biohackathon.org/resource/faldo#>\nSELECT DISTINCT  (?variant as ?uniqueId) ?hgvs ?name ?variant_type ?so_type ?start ?stop ?end ?ref ?alt\nFROM <http://togovar.biosciencedbc.jp/graph/variant>\nFROM <http://togovar.biosciencedbc.jp/graph/so>\nWHERE\n  { ?variant  a                     ?_vt ;\n              rdfs:label            ?hgvs ;\n              faldo:location        ?_loc ;\n              dct:identifier        ?name\n    VALUES ?_vt { obo:SO_0001483 obo:SO_0000667 obo:SO_0000159 obo:SO_1000032 obo:SO_1000002 }\n    ?_vt  rdfs:label  ?variant_type\n      { ?_loc_begin  faldo:reference  <http://identifiers.org/hco/{refName}#GRCh37> ;\n                  faldo:position   ?start .\n        ?_loc     faldo:begin      ?_loc_begin .\n        ?_loc faldo:end/faldo:position ?stop .\n      }\n    UNION\n      { ?_loc  faldo:reference  <http://identifiers.org/hco/{refName}#GRCh37> ;\n               faldo:position   ?start\n      }\n    FILTER ( ( ( ?start > {start} ) && ( ?start < {end} ) ) )\n    OPTIONAL\n      { ?variant  m2r:reference_allele  ?ref }\n    OPTIONAL\n      { ?variant  m2r:alternative_allele  ?alt }\n    BIND(replace(str(?_vt), \".*/\", \"\") AS ?so_type)\n    BIND(IF(?stop, ?stop, ?start + 1) AS ?end)\n  }",
         "refNames": [
@@ -1303,21 +1423,26 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.crai"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1331,23 +1456,28 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/HG002_ONTrel2_16x_RG_HP10xtrioRTG.bam.bai",
+            "locationType": "UriLocation"
           }
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1361,11 +1491,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/RTG.hg19.10x.trio-whatshap.vcf.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/RTG.hg19.10x.trio-whatshap.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/RTG.hg19.10x.trio-whatshap.vcf.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/RTG.hg19.10x.trio-whatshap.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1379,12 +1511,14 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/RTG.hg19.10x.trio-whatshap.vcf.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/RTG.hg19.10x.trio-whatshap.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "indexType": "CSI",
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/RTG.hg19.10x.trio-whatshap.vcf.gz.csi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg002/RTG.hg19.10x.trio-whatshap.vcf.gz.csi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1397,11 +1531,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/SKBR3_Feb17_GRCh38.sorted.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/SKBR3_Feb17_GRCh38.sorted.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/SKBR3_Feb17_GRCh38.sorted.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/SKBR3_Feb17_GRCh38.sorted.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1414,11 +1550,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.10x.sort.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.10x.sort.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.10x.sort.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.10x.sort.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1431,11 +1569,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1448,7 +1588,8 @@
       "adapter": {
         "type": "HicAdapter",
         "hicLocation": {
-          "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
+          "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1472,23 +1613,28 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.bam.bai",
+            "locationType": "UriLocation"
           }
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1502,21 +1648,26 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.cram"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.cram.crai"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/alzheimers_isoseq/hq_isoforms.fasta.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1530,23 +1681,28 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam.bai",
+            "locationType": "UriLocation"
           }
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1560,21 +1716,26 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.cram"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.cram.crai"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1587,21 +1748,26 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.mod.cram"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.mod.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.mod.cram.crai"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.mod.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1615,7 +1781,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign100mer.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign100mer.bigWig",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1628,7 +1795,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign24mer.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign24mer.bigWig",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1641,7 +1809,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign36mer.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign36mer.bigWig",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1654,7 +1823,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign40mer.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign40mer.bigWig",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1667,7 +1837,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign50mer.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign50mer.bigWig",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1680,7 +1851,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign75mer.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign75mer.bigWig",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1693,7 +1865,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeDukeMapabilityUniqueness20bp.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeDukeMapabilityUniqueness20bp.bigWig",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1706,7 +1879,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeDukeMapabilityUniqueness35bp.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeDukeMapabilityUniqueness35bp.bigWig",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1719,11 +1893,13 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/mappability/wgEncodeDukeMapabilityRegionsExcludable.bed.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/mappability/wgEncodeDukeMapabilityRegionsExcludable.bed.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/mappability/wgEncodeDukeMapabilityRegionsExcludable.bed.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/mappability/wgEncodeDukeMapabilityRegionsExcludable.bed.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }
@@ -1738,11 +1914,13 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/mappability/wgEncodeDacMapabilityConsensusExcludable.bed.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/mappability/wgEncodeDacMapabilityConsensusExcludable.bed.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/mappability/wgEncodeDacMapabilityConsensusExcludable.bed.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/mappability/wgEncodeDacMapabilityConsensusExcludable.bed.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }
@@ -1757,7 +1935,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinGen/clinGenGeneDisease.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinGen/clinGenGeneDisease.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1770,7 +1949,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinGen/clinGenHaplo.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinGen/clinGenHaplo.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1783,7 +1963,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinGen/clinGenTriplo.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinGen/clinGenTriplo.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1796,7 +1977,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenGeneDisease.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenGeneDisease.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1809,7 +1991,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenHaplo.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenHaplo.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1822,7 +2005,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenTriplo.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenTriplo.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1835,7 +2019,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipAliSwissprot.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipAliSwissprot.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1848,7 +2033,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipAliTrembl.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipAliTrembl.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1861,7 +2047,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipChain.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipChain.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1874,7 +2061,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipConflict.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipConflict.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1887,7 +2075,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipDisulfBond.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipDisulfBond.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1900,7 +2089,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipDomain.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipDomain.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1913,7 +2103,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipInterest.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipInterest.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1926,7 +2117,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipLocCytopl.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipLocCytopl.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1939,7 +2131,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipLocExtra.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipLocExtra.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1952,7 +2145,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipLocSignal.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipLocSignal.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1965,7 +2159,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipLocTransMemb.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipLocTransMemb.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1978,7 +2173,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipModif.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipModif.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1991,7 +2187,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipMut.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipMut.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2004,7 +2201,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipOther.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipOther.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2017,7 +2215,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipRepeat.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipRepeat.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2030,7 +2229,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipSplice.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipSplice.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2043,7 +2243,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipStruct.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipStruct.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2056,7 +2257,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipAliSwissprot.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipAliSwissprot.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2069,7 +2271,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipAliTrembl.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipAliTrembl.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2082,7 +2285,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipChain.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipChain.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2095,7 +2299,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipConflict.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipConflict.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2108,7 +2313,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipDisulfBond.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipDisulfBond.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2121,7 +2327,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipDomain.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipDomain.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2134,7 +2341,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipInterest.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipInterest.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2147,7 +2355,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipLocCytopl.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipLocCytopl.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2160,7 +2369,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipLocExtra.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipLocExtra.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2173,7 +2383,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipLocSignal.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipLocSignal.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2186,7 +2397,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipLocTransMemb.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipLocTransMemb.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2199,7 +2411,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipModif.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipModif.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2212,7 +2425,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipMut.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipMut.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2225,7 +2439,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipOther.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipOther.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2238,7 +2453,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipRepeat.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipRepeat.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2251,7 +2467,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipSplice.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipSplice.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2264,7 +2481,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipStruct.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipStruct.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2277,7 +2495,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/knownGene.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/knownGene.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2290,7 +2509,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/knownGene.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/knownGene.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2303,7 +2523,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/vai/snp151.bed4.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/vai/snp151.bed4.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2316,7 +2537,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/vai/snp137.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/vai/snp137.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2329,7 +2551,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/vai/snp151.bed4.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/vai/snp151.bed4.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2342,7 +2565,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gnomAD/structuralVariants/gnomad_v2.1_sv.sites.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gnomAD/structuralVariants/gnomad_v2.1_sv.sites.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2355,7 +2579,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gnomAD/missense/missenseConstrained.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gnomAD/missense/missenseConstrained.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2368,7 +2593,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gnomAD/pLI/pliByGene.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gnomAD/pLI/pliByGene.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2381,7 +2607,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/dgv/dgvGold.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/dgv/dgvGold.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2394,7 +2621,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/dgv/dgvMerged.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/dgv/dgvMerged.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2407,7 +2635,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/dgv/dgvSupporting.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/dgv/dgvSupporting.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2420,7 +2649,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/dgv/dgvMerged.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/dgv/dgvMerged.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2433,7 +2663,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/dgv/dgvSupporting.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/dgv/dgvSupporting.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -2446,11 +2677,13 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }
@@ -2477,11 +2710,13 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }
@@ -2508,11 +2743,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "https://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_study/vcf/nstd175.GRCh37.variant_call.vcf.gz"
+          "uri": "https://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_study/vcf/nstd175.GRCh37.variant_call.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_study/vcf/nstd175.GRCh37.variant_call.vcf.gz.tbi"
+            "uri": "https://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_study/vcf/nstd175.GRCh37.variant_call.vcf.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }
@@ -2527,24 +2764,29 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_15kb/alignment/HG002.Sequel.15kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam"
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_15kb/alignment/HG002.Sequel.15kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_15kb/alignment/HG002.Sequel.15kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam.bai"
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_15kb/alignment/HG002.Sequel.15kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -2558,24 +2800,29 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_10kb/alignment/HG002.Sequel.10kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam"
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_10kb/alignment/HG002.Sequel.10kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_10kb/alignment/HG002.Sequel.10kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam.bai"
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_10kb/alignment/HG002.Sequel.10kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -2589,24 +2836,29 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_15kb_20kb_chemistry2/GRCh37/HG002.SequelII.merged_15kb_20kb.pbmm2.hs37d5.haplotag.RTG.10x.trio.bam"
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_15kb_20kb_chemistry2/GRCh37/HG002.SequelII.merged_15kb_20kb.pbmm2.hs37d5.haplotag.RTG.10x.trio.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_15kb_20kb_chemistry2/GRCh37/HG002.SequelII.merged_15kb_20kb.pbmm2.hs37d5.haplotag.RTG.10x.trio.bam.bai"
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_15kb_20kb_chemistry2/GRCh37/HG002.SequelII.merged_15kb_20kb.pbmm2.hs37d5.haplotag.RTG.10x.trio.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -2620,24 +2872,29 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_SequelII_CCS_11kb/HG002.SequelII.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam"
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_SequelII_CCS_11kb/HG002.SequelII.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_SequelII_CCS_11kb/HG002.SequelII.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam.bai"
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_SequelII_CCS_11kb/HG002.SequelII.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -2651,24 +2908,29 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/UCSC_Ultralong_OxfordNanopore_Promethion/HG002_GRCh37_ONT-UL_UCSC_20200508.phased.bam"
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/UCSC_Ultralong_OxfordNanopore_Promethion/HG002_GRCh37_ONT-UL_UCSC_20200508.phased.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/UCSC_Ultralong_OxfordNanopore_Promethion/HG002_GRCh37_ONT-UL_UCSC_20200508.phased.bam.bai"
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/UCSC_Ultralong_OxfordNanopore_Promethion/HG002_GRCh37_ONT-UL_UCSC_20200508.phased.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -2682,24 +2944,29 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/guppy-V3.4.5/HG002_hs37d5_ONT-UL_GIAB_20200204.bam"
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/guppy-V3.4.5/HG002_hs37d5_ONT-UL_GIAB_20200204.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/guppy-V3.4.5/HG002_hs37d5_ONT-UL_GIAB_20200204.bam.bai"
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/guppy-V3.4.5/HG002_hs37d5_ONT-UL_GIAB_20200204.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -2713,24 +2980,29 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG003.hs37d5.consensusalignments.bam"
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG003.hs37d5.consensusalignments.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG003.hs37d5.consensusalignments.bam.bai"
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG003.hs37d5.consensusalignments.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -2744,24 +3016,29 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/UCSC_Ultralong_OxfordNanopore_Promethion/HG003_GRCh37_ONT-UL_UCSC_20200508.bam"
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/UCSC_Ultralong_OxfordNanopore_Promethion/HG003_GRCh37_ONT-UL_UCSC_20200508.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/UCSC_Ultralong_OxfordNanopore_Promethion/HG003_GRCh37_ONT-UL_UCSC_20200508.bam.bai"
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/UCSC_Ultralong_OxfordNanopore_Promethion/HG003_GRCh37_ONT-UL_UCSC_20200508.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -2775,24 +3052,29 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/UCSC_Ultralong_OxfordNanopore_Promethion/HG004_GRCh37_ONT-UL_UCSC_20200508.bam"
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/UCSC_Ultralong_OxfordNanopore_Promethion/HG004_GRCh37_ONT-UL_UCSC_20200508.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/UCSC_Ultralong_OxfordNanopore_Promethion/HG004_GRCh37_ONT-UL_UCSC_20200508.bam.bai"
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/UCSC_Ultralong_OxfordNanopore_Promethion/HG004_GRCh37_ONT-UL_UCSC_20200508.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -2806,24 +3088,29 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG004.hs37d5.consensusalignments.bam"
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG004.hs37d5.consensusalignments.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG004.hs37d5.consensusalignments.bam.bai"
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG004.hs37d5.consensusalignments.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -2837,24 +3124,29 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/NIST_Illumina_2x250bps/novoalign_bams/HG004.hs37d5.2x250.bam"
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/NIST_Illumina_2x250bps/novoalign_bams/HG004.hs37d5.2x250.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/NIST_Illumina_2x250bps/novoalign_bams/HG004.hs37d5.2x250.bam.bai"
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/NIST_Illumina_2x250bps/novoalign_bams/HG004.hs37d5.2x250.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -2868,24 +3160,29 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/NIST_Illumina_2x250bps/novoalign_bams/HG003.hs37d5.2x250.bam"
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/NIST_Illumina_2x250bps/novoalign_bams/HG003.hs37d5.2x250.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/NIST_Illumina_2x250bps/novoalign_bams/HG003.hs37d5.2x250.bam.bai"
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/NIST_Illumina_2x250bps/novoalign_bams/HG003.hs37d5.2x250.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -2899,24 +3196,29 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/NIST_Illumina_2x250bps/novoalign_bams/HG002.hs37d5.2x250.bam"
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/NIST_Illumina_2x250bps/novoalign_bams/HG002.hs37d5.2x250.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/NIST_Illumina_2x250bps/novoalign_bams/HG002.hs37d5.2x250.bam.bai"
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/NIST_Illumina_2x250bps/novoalign_bams/HG002.hs37d5.2x250.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -2930,11 +3232,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/analysis/NIST_UnionSVs_12122017/svanalyzer_union_171212_v0.5.0_annotated.vcf.gz"
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/analysis/NIST_UnionSVs_12122017/svanalyzer_union_171212_v0.5.0_annotated.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/analysis/NIST_UnionSVs_12122017/svanalyzer_union_171212_v0.5.0_annotated.vcf.gz.tbi"
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/analysis/NIST_UnionSVs_12122017/svanalyzer_union_171212_v0.5.0_annotated.vcf.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }
@@ -2949,24 +3253,29 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/NIST_HiSeq_HG002_Homogeneity-10953946/NHGRI_Illumina300X_AJtrio_novoalign_bams/HG002.hs37d5.300x.bam"
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/NIST_HiSeq_HG002_Homogeneity-10953946/NHGRI_Illumina300X_AJtrio_novoalign_bams/HG002.hs37d5.300x.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/NIST_HiSeq_HG002_Homogeneity-10953946/NHGRI_Illumina300X_AJtrio_novoalign_bams/HG002.hs37d5.300x.bam.bai"
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/NIST_HiSeq_HG002_Homogeneity-10953946/NHGRI_Illumina300X_AJtrio_novoalign_bams/HG002.hs37d5.300x.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -2980,7 +3289,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw"
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -3000,7 +3310,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw"
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -3020,7 +3331,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw"
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -3033,7 +3345,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.100way.phyloP100way.bw"
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.100way.phyloP100way.bw",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -3049,7 +3362,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/encode3/ccre/encodeCcreCombined.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/encode3/ccre/encodeCcreCombined.bb",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -3074,7 +3388,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/mastermind.bb"
+          "uri": "http://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/mastermind.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -3087,7 +3402,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/mastermind.bb"
+          "uri": "http://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/mastermind.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -3101,23 +3417,28 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.bam.bai",
+            "locationType": "UriLocation"
           }
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -3132,21 +3453,26 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.cram"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.cram.crai"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -3160,7 +3486,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://jbrowse.org/genomes/GRCh38/methylation/modified_bases.5mC.bb"
+          "uri": "https://jbrowse.org/genomes/GRCh38/methylation/modified_bases.5mC.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -3173,24 +3500,29 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/nanopolish_methylation_test/modbam_test.reference.bam"
+          "uri": "https://jbrowse.org/genomes/hg19/nanopolish_methylation_test/modbam_test.reference.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/genomes/hg19/nanopolish_methylation_test/modbam_test.reference.bam.bai"
+            "uri": "https://jbrowse.org/genomes/hg19/nanopolish_methylation_test/modbam_test.reference.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -3204,24 +3536,29 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/nanopolish_methylation_test/modbam_test.read.bam"
+          "uri": "https://jbrowse.org/genomes/hg19/nanopolish_methylation_test/modbam_test.read.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/genomes/hg19/nanopolish_methylation_test/modbam_test.read.bam.bai"
+            "uri": "https://jbrowse.org/genomes/hg19/nanopolish_methylation_test/modbam_test.read.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -3236,7 +3573,8 @@
       "adapter": {
         "type": "VcfAdapter",
         "vcfLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/truthset_somaticSVs_COLO829.vcf"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/truthset_somaticSVs_COLO829.vcf",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -3250,21 +3588,26 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.normal.ngmlr.sorted.merged.cram"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.normal.ngmlr.sorted.merged.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.normal.ngmlr.sorted.merged.cram.crai"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.normal.ngmlr.sorted.merged.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -3279,21 +3622,26 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.tumor.ngmlr.sorted.merged.cram"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.tumor.ngmlr.sorted.merged.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.tumor.ngmlr.sorted.merged.cram.crai"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/COLO829/colo829.tumor.ngmlr.sorted.merged.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -3308,7 +3656,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/COLO829/colo_normal.bw"
+          "uri": "https://jbrowse.org/genomes/hg19/COLO829/colo_normal.bw",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -3322,7 +3671,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/COLO829/colo_tumor.bw"
+          "uri": "https://jbrowse.org/genomes/hg19/COLO829/colo_tumor.bw",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -3336,11 +3686,13 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/lra.inv.bed.gz"
+          "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/lra.inv.bed.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/lra.inv.bed.gz.tbi"
+            "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/lra.inv.bed.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }
@@ -3356,11 +3708,13 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/mm2.inv.bed.gz"
+          "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/mm2.inv.bed.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/mm2.inv.bed.gz.tbi"
+            "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/mm2.inv.bed.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }
@@ -3376,11 +3730,13 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/ngmlr.inv.bed.gz"
+          "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/ngmlr.inv.bed.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/ngmlr.inv.bed.gz.tbi"
+            "uri": "https://jbrowse.org/genomes/hg19/hg002/inv/ngmlr.inv.bed.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }
@@ -3396,13 +3752,16 @@
       "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "hg19-index",
       "ixFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix"
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix",
+        "locationType": "UriLocation"
       },
       "ixxFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx"
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx",
+        "locationType": "UriLocation"
       },
       "metaFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json"
+        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json",
+        "locationType": "UriLocation"
       },
       "assemblies": ["hg19"]
     },
@@ -3410,13 +3769,16 @@
       "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "hg38-index",
       "ixFilePath": {
-        "uri": "https://jbrowse.org/genomes/GRCh38/trix/hg38.ix"
+        "uri": "https://jbrowse.org/genomes/GRCh38/trix/hg38.ix",
+        "locationType": "UriLocation"
       },
       "ixxFilePath": {
-        "uri": "https://jbrowse.org/genomes/GRCh38/trix/hg38.ixx"
+        "uri": "https://jbrowse.org/genomes/GRCh38/trix/hg38.ixx",
+        "locationType": "UriLocation"
       },
       "metaFilePath": {
-        "uri": "https://jbrowse.org/genomes/GRCh38/trix/meta.json"
+        "uri": "https://jbrowse.org/genomes/GRCh38/trix/meta.json",
+        "locationType": "UriLocation"
       },
       "assemblies": ["hg38"]
     }

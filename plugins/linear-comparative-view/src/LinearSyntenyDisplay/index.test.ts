@@ -15,17 +15,24 @@ test('create config', () => {
       adapter: {
         mcscanAnchorsLocation: {
           uri: 'test_data/grape.peach.anchors',
+          locationType: 'UriLocation',
         },
         subadapters: [
           {
             type: 'NCListAdapter',
-            rootUrlTemplate:
-              'https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json',
+            rootUrlTemplate: {
+              uri:
+                'https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json',
+              locationType: 'UriLocation',
+            },
           },
           {
             type: 'NCListAdapter',
-            rootUrlTemplate:
-              'https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json',
+            rootUrlTemplate: {
+              uri:
+                'https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json',
+              locationType: 'UriLocation',
+            },
           },
         ],
         type: 'MCScanAnchorsAdapter',

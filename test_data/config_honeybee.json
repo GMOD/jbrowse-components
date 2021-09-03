@@ -8,7 +8,8 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "amel_hav3.1.chrom.sizes"
+            "uri": "amel_hav3.1.chrom.sizes",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -24,7 +25,8 @@
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/apis_mellifera/NCBI_RefSeq_104/{refseq}/trackData.jsonz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/apis_mellifera/NCBI_RefSeq_104/{refseq}/trackData.jsonz",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -49,11 +51,13 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/apis_mellifera/NCBI_RefSeq_104.gff.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/apis_mellifera/NCBI_RefSeq_104.gff.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/apis_mellifera/NCBI_RefSeq_104.gff.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/apis_mellifera/NCBI_RefSeq_104.gff.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       },

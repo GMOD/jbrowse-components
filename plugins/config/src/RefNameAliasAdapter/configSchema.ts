@@ -5,7 +5,10 @@ export default ConfigurationSchema(
   {
     location: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my/aliases.txt' },
+      defaultValue: {
+        uri: '/path/to/my/aliases.txt',
+        locationType: 'UriLocation',
+      },
     },
   },
   { explicitlyTyped: true },
