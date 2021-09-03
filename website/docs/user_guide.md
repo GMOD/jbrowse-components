@@ -20,7 +20,13 @@ File->Add->Linear genome view
 - Enter syntax chr1:1-100 or chr1:1..100
 - You can also specify an assembly name with the locstring {hg19}chr1:1-100
 
-Note: searching by gene name is not yet available but will be added soon!
+You can also use the search box to search by gene name (if it is configured)
+
+<Figure caption="Search for gene names or other features via the location search box." src="/img/searching_lgv.png" />
+
+In order to enable name searching, you or the admin on the instance will need to
+create a "text index". See the [quickstart
+guide](quickstart_cli#indexing-feature-names-for-searching) for more info.
 
 #### Scrolling
 
