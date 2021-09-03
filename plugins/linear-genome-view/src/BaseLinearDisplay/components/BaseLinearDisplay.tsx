@@ -1,13 +1,20 @@
+import React, { useState, useRef, useMemo } from 'react'
+import { Portal, alpha, useTheme, makeStyles } from '@material-ui/core'
 import { getConf } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
-import { useTheme, makeStyles } from '@material-ui/core/styles'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { observer } from 'mobx-react'
-import React, { useState, useRef } from 'react'
-import MUITooltip from '@material-ui/core/Tooltip'
+import { usePopper } from 'react-popper'
+
+// locals
 import LinearBlocks from './LinearBlocks'
 import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
 
-const useStyles = makeStyles({
+function round(value: number) {
+  return Math.round(value * 1e5) / 1e5
+}
+
+const useStyles = makeStyles(theme => ({
   display: {
     position: 'relative',
     whiteSpace: 'nowrap',
@@ -15,26 +22,82 @@ const useStyles = makeStyles({
     width: '100%',
     minHeight: '100%',
   },
-})
+
+  // these styles come from
+  // https://github.com/mui-org/material-ui/blob/master/packages/material-ui/src/Tooltip/Tooltip.js
+  tooltip: {
+    position: 'absolute',
+    pointerEvents: 'none',
+    backgroundColor: alpha(theme.palette.grey[700], 0.9),
+    borderRadius: theme.shape.borderRadius,
+    color: theme.palette.common.white,
+    fontFamily: theme.typography.fontFamily,
+    padding: '4px 8px',
+    fontSize: theme.typography.pxToRem(10),
+    lineHeight: `${round(14 / 10)}em`,
+    maxWidth: 300,
+    wordWrap: 'break-word',
+    fontWeight: theme.typography.fontWeightMedium,
+  },
+}))
+
+const TooltipContents = ({
+  feature,
+  model,
+}: {
+  feature: Feature
+  model: BaseLinearDisplayModel
+}) => {
+  return getConf(model, 'mouseover', { feature })
+}
+
 const Tooltip = observer(
-  (props: { model: BaseLinearDisplayModel; mouseCoord: [number, number] }) => {
-    const { model, mouseCoord } = props
+  ({
+    model,
+    clientMouseCoord,
+  }: {
+    model: BaseLinearDisplayModel
+    clientMouseCoord: Coord
+    offsetMouseCoord: Coord
+    clientRect?: ClientRect
+    TooltipContents: React.FC<any>
+  }) => {
+    const classes = useStyles()
     const { featureUnderMouse } = model
-    const mouseover = featureUnderMouse
-      ? getConf(model, 'mouseover', { feature: featureUnderMouse })
-      : undefined
-    return mouseover ? (
-      <MUITooltip title={mouseover} open placement="right">
+
+    const [popperElement, setPopperElement] = useState<any>(null)
+
+    const virtElement = useMemo(
+      () => ({
+        getBoundingClientRect: () => {
+          const x = clientMouseCoord[0] + 40
+          const y = clientMouseCoord[1]
+          return {
+            top: y,
+            left: x,
+            bottom: y,
+            right: x,
+            width: 0,
+            height: 0,
+          }
+        },
+      }),
+      [clientMouseCoord],
+    )
+    const { styles, attributes } = usePopper(virtElement, popperElement)
+
+    return featureUnderMouse ? (
+      <Portal>
         <div
-          style={{
-            position: 'absolute',
-            left: mouseCoord[0],
-            top: mouseCoord[1],
-          }}
+          ref={setPopperElement}
+          className={classes.tooltip}
+          // zIndex needed to go over widget drawer
+          style={{ ...styles.popper, zIndex: 100000 }}
+          {...attributes.popper}
         >
-          {' '}
+          <TooltipContents model={model} feature={featureUnderMouse} />
         </div>
-      </MUITooltip>
+      </Portal>
     ) : null
   },
 )

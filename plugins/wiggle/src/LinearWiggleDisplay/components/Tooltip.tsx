@@ -98,11 +98,13 @@ const Tooltip = observer(
     const virtElement = useMemo(
       () => ({
         getBoundingClientRect: () => {
+          const y = clientRect?.top || 0
+          const x = clientMouseCoord[0] + 20
           return {
-            top: clientRect?.top || 0,
-            left: clientMouseCoord[0] + 20,
-            bottom: clientRect?.top || 0,
-            right: clientMouseCoord[0],
+            top: y,
+            left: x,
+            bottom: y,
+            right: x,
             width: 0,
             height: 0,
           }
