@@ -99,6 +99,7 @@ const Tooltip = observer(
 
     const [popperElement, setPopperElement] = useState<any>(null)
 
+    // must be memoized a la https://github.com/popperjs/react-popper/issues/391
     const virtElement = useMemo(
       () => ({
         getBoundingClientRect: () => {
@@ -129,7 +130,9 @@ const Tooltip = observer(
             {...attributes.popper}
           >
             <TooltipContents
-              ref={elt => setWidth(elt?.getBoundingClientRect().width || 0)}
+              ref={(elt: HTMLDivElement) => {
+                setWidth(elt?.getBoundingClientRect().width || 0)
+              }}
               feature={featureUnderMouse}
             />
           </div>

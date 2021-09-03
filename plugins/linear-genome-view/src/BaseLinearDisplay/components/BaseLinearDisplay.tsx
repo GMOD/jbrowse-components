@@ -48,7 +48,7 @@ const TooltipContents = ({
   feature: Feature
   model: BaseLinearDisplayModel
 }) => {
-  return getConf(model, 'mouseover', { feature })
+  return <div>{getConf(model, 'mouseover', { feature })}</div>
 }
 
 const Tooltip = observer(
@@ -60,13 +60,16 @@ const Tooltip = observer(
     clientMouseCoord: Coord
     offsetMouseCoord: Coord
     clientRect?: ClientRect
-    TooltipContents: React.FC<any>
+    TooltipContents: React.FC<{ feature: Feature }>
   }) => {
     const classes = useStyles()
     const { featureUnderMouse } = model
 
-    const [popperElement, setPopperElement] = useState<any>(null)
+    const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(
+      null,
+    )
 
+    // must be memoized a la https://github.com/popperjs/react-popper/issues/391
     const virtElement = useMemo(
       () => ({
         getBoundingClientRect: () => {
