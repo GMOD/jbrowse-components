@@ -13,71 +13,73 @@ type Count = {
 
 const en = (n: number) => n.toLocaleString('en-US')
 
-function TooltipContents({ feature }: { feature: Feature }) {
-  const start = feature.get('start')
-  const end = feature.get('end')
-  const ref = feature.get('refName')
-  const loc = [ref, start === end ? en(start) : `${en(start)}..${en(end)}`]
-    .filter(f => !!f)
-    .join(':')
+const TooltipContents = React.forwardRef(
+  ({ feature }: { feature: Feature }, ref: any) => {
+    const start = feature.get('start')
+    const end = feature.get('end')
+    const name = feature.get('refName')
+    const loc = [name, start === end ? en(start) : `${en(start)}..${en(end)}`]
+      .filter(f => !!f)
+      .join(':')
 
-  const info = feature.get('snpinfo') as {
-    ref: Count
-    cov: Count
-    lowqual: Count
-    noncov: Count
-    delskips: Count
-    total: number
-  }
+    const info = feature.get('snpinfo') as {
+      ref: Count
+      cov: Count
+      lowqual: Count
+      noncov: Count
+      delskips: Count
+      total: number
+    }
 
-  const total = info.total
+    const total = info.total
 
-  return (
-    <div>
-      <table>
-        <caption>{loc}</caption>
-        <thead>
-          <tr>
-            <th>Base</th>
-            <th>Count</th>
-            <th>% of Total</th>
-            <th>Strands</th>
-            <th>Source</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Total</td>
-            <td>{total}</td>
-            <td />
-          </tr>
+    return (
+      <div ref={ref}>
+        <table>
+          <caption>{loc}</caption>
+          <thead>
+            <tr>
+              <th>Base</th>
+              <th>Count</th>
+              <th>% of Total</th>
+              <th>Strands</th>
+              <th>Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Total</td>
+              <td>{total}</td>
+              <td />
+            </tr>
 
-          {Object.entries(info).map(([key, entry]) => {
-            return Object.entries(entry).map(([base, score]) => {
-              const { strands } = score
-              return (
-                <tr key={base}>
-                  <td>{base.toUpperCase()}</td>
-                  <td>{score.total}</td>
-                  <td>
-                    {base === 'total'
-                      ? '---'
-                      : `${Math.floor((score.total / total) * 100)}%`}
-                  </td>
-                  <td>
-                    {strands['-1'] ? `${strands['-1']}(-)` : ''}
-                    {strands['1'] ? `${strands['1']}(+)` : ''}
-                  </td>
-                  <td>{key}</td>
-                </tr>
-              )
-            })
-          })}
-        </tbody>
-      </table>
-    </div>
-  )
-}
+            {Object.entries(info).map(([key, entry]) => {
+              return Object.entries(entry).map(([base, score]) => {
+                const { strands } = score
+                return (
+                  <tr key={base}>
+                    <td>{base.toUpperCase()}</td>
+                    <td>{score.total}</td>
+                    <td>
+                      {base === 'total'
+                        ? '---'
+                        : `${Math.floor((score.total / total) * 100)}%`}
+                    </td>
+                    <td>
+                      {strands['-1'] ? `${strands['-1']}(-)` : ''}
+                      {strands['1'] ? `${strands['1']}(+)` : ''}
+                    </td>
+                    <td>{key}</td>
+                  </tr>
+                )
+              })
+            })}
+          </tbody>
+        </table>
+      </div>
+    )
+  },
+)
 
 type Coord = [number, number]
 

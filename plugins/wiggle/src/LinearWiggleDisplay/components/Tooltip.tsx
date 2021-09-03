@@ -14,6 +14,8 @@ function round(value: number) {
   return Math.round(value * 1e5) / 1e5
 }
 
+const en = (n: number) => n.toLocaleString('en-US')
+
 const useStyles = makeStyles(theme => ({
   // these styles come from
   // https://github.com/mui-org/material-ui/blob/master/packages/material-ui/src/Tooltip/Tooltip.js
@@ -44,33 +46,34 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function TooltipContents(props: { feature: Feature }) {
-  const { feature } = props
-  const ref = feature.get('refName')
-  const displayRef = `${ref ? `${ref}:` : ''}`
-  const start = (feature.get('start') + 1).toLocaleString('en-US')
-  const end = feature.get('end').toLocaleString('en-US')
-  const coord = start === end ? start : `${start}..${end}`
-  const loc = `${displayRef}${coord}`
+const TooltipContents = React.forwardRef(
+  ({ feature }: { feature: Feature }, ref: any) => {
+    const start = feature.get('start')
+    const end = feature.get('end')
+    const name = feature.get('refName')
+    const loc = [name, start === end ? en(start) : `${en(start)}..${en(end)}`]
+      .filter(f => !!f)
+      .join(':')
 
-  return feature.get('summary') !== undefined ? (
-    <div>
-      {loc}
-      <br />
-      Max: {toP(feature.get('maxScore'))}
-      <br />
-      Avg: {toP(feature.get('score'))}
-      <br />
-      Min: {toP(feature.get('minScore'))}
-    </div>
-  ) : (
-    <div>
-      {loc}
-      <br />
-      {`${toP(feature.get('score'))}`}
-    </div>
-  )
-}
+    return feature.get('summary') !== undefined ? (
+      <div ref={ref}>
+        {loc}
+        <br />
+        Max: {toP(feature.get('maxScore'))}
+        <br />
+        Avg: {toP(feature.get('score'))}
+        <br />
+        Min: {toP(feature.get('minScore'))}
+      </div>
+    ) : (
+      <div ref={ref}>
+        {loc}
+        <br />
+        {`${toP(feature.get('score'))}`}
+      </div>
+    )
+  },
+)
 
 type Coord = [number, number]
 
@@ -92,6 +95,7 @@ const Tooltip = observer(
   }) => {
     const { featureUnderMouse } = model
     const classes = useStyles()
+    const [width, setWidth] = useState(0)
 
     const [popperElement, setPopperElement] = useState<any>(null)
 
@@ -99,7 +103,7 @@ const Tooltip = observer(
       () => ({
         getBoundingClientRect: () => {
           const y = clientRect?.top || 0
-          const x = clientMouseCoord[0] + 20
+          const x = clientMouseCoord[0] + (width * 2) / 3
           return {
             top: y,
             left: x,
@@ -110,7 +114,7 @@ const Tooltip = observer(
           }
         },
       }),
-      [clientRect?.top, clientMouseCoord],
+      [clientRect?.top, clientMouseCoord, width],
     )
     const { styles, attributes } = usePopper(virtElement, popperElement)
 
@@ -124,7 +128,10 @@ const Tooltip = observer(
             style={{ ...styles.popper, zIndex: 100000 }}
             {...attributes.popper}
           >
-            <TooltipContents feature={featureUnderMouse} />
+            <TooltipContents
+              ref={elt => setWidth(elt?.getBoundingClientRect().width || 0)}
+              feature={featureUnderMouse}
+            />
           </div>
         </Portal>
 
