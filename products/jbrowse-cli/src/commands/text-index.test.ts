@@ -266,7 +266,13 @@ describe('check that volvox data is properly indexed, re-run text-index on volvo
       preVolvoxIxx = readText(ctx.dir, 'volvox.ixx')
       preVolvoxMeta = readJSON(ctx.dir, 'volvox_meta.json')
     })
-    .command(['text-index', '--target=config.json', '--force'])
+    .command([
+      'text-index',
+      '--target=config.json',
+      '--force',
+      '--attributes',
+      'Name,ID,Note',
+    ])
     .it('Indexes entire volvox config', ctx => {
       const postVolvoxIx = readText(ctx.dir, 'volvox.ix')
       const postVolvoxIxx = readText(ctx.dir, 'volvox.ixx')
