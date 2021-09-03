@@ -30,11 +30,29 @@ export function isURL(FileName: string) {
   return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
-// function supportedFile(filePath: string) {
-//   console.log('path', path)
-//   return true
-// }
-
+function getFileName(uri: string) {
+  return uri?.slice(uri.lastIndexOf('/') + 1)
+}
+export function supportedFile(filePath: string) {
+  const fileName = getFileName(filePath)
+  if (/\.vcf\.b?gz$/i.test(fileName)) {
+    return {
+      trackId: fileName,
+      adapter: { type: 'VcfTabixAdapter', vcfGzLocation: { uri: filePath } },
+    }
+  } else if (/\.gff3?\.b?gz$/i.test(fileName)) {
+    return {
+      trackId: fileName,
+      adapter: { type: 'Gff3TabixAdapter', gffGzLocation: { uri: filePath } },
+    }
+  } else if (/\.gtf?$/i.test(fileName)) {
+    return {
+      trackId: fileName,
+      adapter: { type: 'GtfTabixAdapter', gffGzLocation: { uri: filePath } },
+    }
+  }
+  return {}
+}
 export function supportedTrack(type: string) {
   return ['Gff3TabixAdapter', 'GtfTabixAdapter', 'VcfTabixAdapter'].includes(
     type,
