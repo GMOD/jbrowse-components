@@ -255,7 +255,7 @@ function RefNameAutocomplete({
               return component
             }
           }
-          return <Typography noWrap>{result.getLabel()}</Typography>
+          return <Typography noWrap>{result.getDisplayString()}</Typography>
         }}
         getOptionLabel={option => {
           // needed for filtering options and value
