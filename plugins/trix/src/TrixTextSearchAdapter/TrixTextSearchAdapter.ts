@@ -62,10 +62,15 @@ export default class TrixTextSearchAdapter
   formatResults(results: Array<any>) {
     return results.map(([term, result]) => {
       const [locString, trackId, name, id] = result
+      const label = name || id
+      let displayString = label
+      if (!displayString.toLowerCase().startsWith(term)) {
+        displayString += ` (${term})`
+      }
       return new LocStringResult({
         locString,
-        displayString: (name || id) + ` (${term})`,
-        label: name || id,
+        displayString,
+        label,
         matchedAttribute: 'name',
         matchedObject: result,
         trackId,
