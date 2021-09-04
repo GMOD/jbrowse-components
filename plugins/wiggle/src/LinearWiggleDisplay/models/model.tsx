@@ -65,6 +65,8 @@ const stateModelFactory = (
         resolution: types.optional(types.number, 1),
         fill: types.maybe(types.boolean),
         color: types.maybe(types.string),
+        posColor: types.maybe(types.string),
+        negColor: types.maybe(types.string),
         summaryScoreMode: types.maybe(types.string),
         rendererTypeNameState: types.maybe(types.string),
         scale: types.maybe(types.string),
@@ -93,6 +95,12 @@ const stateModelFactory = (
       },
       setColor(color: string) {
         self.color = color
+      },
+      setPosColor(color: string) {
+        self.posColor = color
+      },
+      setNegColor(color: string) {
+        self.negColor = color
       },
 
       setLoading(aborter: AbortController) {
@@ -215,6 +223,8 @@ const stateModelFactory = (
             displayCrossHatches: self.displayCrossHatches,
             summaryScoreMode: self.summaryScoreMode,
             color: self.color,
+            posColor: self.posColor,
+            negColor: self.negColor,
           },
           getEnv(self),
         )
