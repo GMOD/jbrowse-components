@@ -53,37 +53,12 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
     return features
   }
 
-  static makeFeature(data: SimpleFeatureSerialized): SimpleFeature {
+  static makeFeature(data: SimpleFeatureSerialized) {
     return new SimpleFeature(data)
   }
 
   async getRefNames() {
-    const refNames: Set<string> = new Set()
-    for (const [refName, features] of this.features) {
-      // add the feature's primary refname
-      refNames.add(refName)
-
-      // also look in the features for mate or breakend specifications, and add
-      // the refName targets of those
-      features.forEach(feature => {
-        // get refNames of generic "mate" records
-        const mate = feature.get('mate')
-        if (mate && mate.refName) {
-          refNames.add(mate.refName)
-        }
-        // get refNames of VCF BND and TRA records
-        const svType = ((feature.get('INFO') || {}).SVTYPE || [])[0]
-        if (svType === 'BND') {
-          const breakendSpecification = (feature.get('ALT') || [])[0]
-          const matePosition = breakendSpecification.MatePosition.split(':')
-          refNames.add(matePosition[0])
-        } else if (svType === 'TRA') {
-          const chr2 = ((feature.get('INFO') || {}).CHR2 || [])[0]
-          refNames.add(chr2)
-        }
-      })
-    }
-    return Array.from(refNames)
+    return [...new Set(Object.keys(this.features))]
   }
 
   async getRefNameAliases() {
