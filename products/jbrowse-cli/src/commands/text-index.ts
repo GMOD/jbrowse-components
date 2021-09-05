@@ -302,9 +302,8 @@ export default class TextIndex extends JBrowseCommand {
 
   /**
    * Given a readStream of data, indexes the stream into .ix and .ixx files
-    using ixIxx.  The ixIxx executable is required on the system path for
-    users, however tests use a local copy.  Returns a promise around ixIxx
-    completing (or erroring).
+   * using ixixx-js
+   *
    * @param readStream - Given a readStream of data
    * @param outLocation - path to ouput location
    * @param name -  assembly name or trackId
