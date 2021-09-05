@@ -10,9 +10,8 @@
   "dir": "src",
   "scripts": {
     "start": "concurrently \"yarn serve\" \"wait-on http://localhost:3000 && yarn develop\"",
-    "serve": "cross-env BROWSER=none yarn cra-start",
+    "serve": "cross-env BROWSER=none TSC_WATCHFILE=UseFsEventsWithFallbackDynamicPolling rescripts start",
     "develop": "electron .",
-    "cra-start": "rescripts start",
     "test": "rescripts test",
     "electron-ts": "yarn tsc --strict --esModuleInterop --skipLibCheck public/electron.ts",
     "prebuild": "npm run electron-ts",

@@ -6,7 +6,7 @@
   "main": "build",
   "dir": "src",
   "scripts": {
-    "start": "rescripts --max-http-header-size=100000 start",
+    "start": "cross-env TSC_WATCHFILE=UseFsEventsWithFallbackDynamicPolling rescripts start",
     "build": "cross-env NODE_OPTIONS='--max-old-space-size=7000' rescripts build",
     "test": "rescripts test",
     "eject": "rescripts eject",
