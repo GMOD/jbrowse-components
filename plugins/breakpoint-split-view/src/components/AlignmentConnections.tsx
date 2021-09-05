@@ -25,10 +25,6 @@ const AlignmentConnections = observer(
     const snap = getSnapshot(model)
     useNextFrame(snap)
     const assembly = assemblyManager.get(views[0].assemblyNames[0])
-    if (!assembly) {
-      return null
-    }
-
     const totalFeatures = model.getTrackFeatures(trackConfigId)
     const features = model.hasPairedReads(trackConfigId)
       ? model.getBadlyPairedAlignments(trackConfigId)
@@ -46,6 +42,10 @@ const AlignmentConnections = observer(
     if (parentRef.current) {
       const rect = parentRef.current.getBoundingClientRect()
       yOffset = rect.top
+    }
+
+    if (!assembly) {
+      return null
     }
     return (
       <g

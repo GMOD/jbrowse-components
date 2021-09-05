@@ -1,8 +1,7 @@
 import React from 'react'
 import { withSize } from 'react-sizeme'
 import { observer } from 'mobx-react'
-import IconButton from '@material-ui/core/IconButton'
-import { makeStyles } from '@material-ui/core/styles'
+import { IconButton, makeStyles } from '@material-ui/core'
 
 // icons
 import LocationSearching from '@material-ui/icons/LocationSearching'
@@ -14,8 +13,7 @@ import LinkOffIcon from '@material-ui/icons/LinkOff'
 
 import { BreakpointViewModel } from '../model'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const useStyles = makeStyles((theme: any) => ({
+const useStyles = makeStyles(theme => ({
   headerBar: {
     gridArea: '1/1/auto/span 2',
     display: 'flex',
