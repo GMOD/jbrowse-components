@@ -3,6 +3,10 @@ import { BaseFeatureDataAdapter } from './BaseAdapter'
 import { ObservableCreate } from '../util/rxjs'
 import SimpleFeature, { Feature } from '../util/simpleFeature'
 import { Region } from '../util/types'
+import { ConfigurationSchema } from '../configuration/configurationSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+
+const pluginManager = new PluginManager()
 
 describe('base data adapter', () => {
   it('properly propagates errors in feature fetching', async () => {
@@ -19,7 +23,10 @@ describe('base data adapter', () => {
 
       freeResources(): void {}
     }
-    const adapter = new Adapter()
+    const adapter = new Adapter(
+      ConfigurationSchema('empty', {}).create(),
+      pluginManager,
+    )
     const features = adapter.getFeatures({
       assemblyName: 'volvox',
       refName: 'ctgA',
@@ -53,7 +60,10 @@ describe('base data adapter', () => {
 
       freeResources(): void {}
     }
-    const adapter = new Adapter()
+    const adapter = new Adapter(
+      ConfigurationSchema('empty', {}).create(),
+      pluginManager,
+    )
     const features = adapter.getFeatures({
       assemblyName: 'volvox',
       refName: 'ctgA',

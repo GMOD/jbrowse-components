@@ -8,6 +8,7 @@ import { GenericFilehandle } from 'generic-filehandle'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { Instance } from 'mobx-state-tree'
 import MyConfigSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 export default class extends BaseAdapter implements RegionsAdapter {
   // the map of refSeq to length
@@ -15,8 +16,11 @@ export default class extends BaseAdapter implements RegionsAdapter {
 
   protected source: string
 
-  public constructor(config: Instance<typeof MyConfigSchema>) {
-    super(config)
+  public constructor(
+    config: Instance<typeof MyConfigSchema>,
+    pluginManager: PluginManager,
+  ) {
+    super(config, pluginManager)
     const chromSizesLocation = readConfObject(config, 'chromSizesLocation')
     if (!chromSizesLocation) {
       throw new Error('must provide chromSizesLocation')

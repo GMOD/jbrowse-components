@@ -1,5 +1,8 @@
 import Adapter from './RefNameAliasAdapter'
 import configSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+
+const pluginManager = new PluginManager()
 
 test('adapter can fetch a simple alias file', async () => {
   const adapter = new Adapter(
@@ -9,6 +12,7 @@ test('adapter can fetch a simple alias file', async () => {
         locationType: 'LocalPathLocation',
       },
     }),
+    pluginManager,
   )
   const result = await adapter.getRefNameAliases()
   expect(result[0].refName).toBe('chr1')

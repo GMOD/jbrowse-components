@@ -8,6 +8,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { LocStringResult } from '@jbrowse/core/TextSearch/BaseResults'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 export default class TrixTextSearchAdapter
   extends BaseAdapter
@@ -16,8 +17,8 @@ export default class TrixTextSearchAdapter
   trixJs: Trix
   tracksNames?: string[]
 
-  constructor(config: AnyConfigurationModel) {
-    super(config)
+  constructor(config: AnyConfigurationModel, pluginManager: PluginManager) {
+    super(config, pluginManager)
     const ixFilePath = readConfObject(config, 'ixFilePath')
     const ixxFilePath = readConfObject(config, 'ixxFilePath')
 

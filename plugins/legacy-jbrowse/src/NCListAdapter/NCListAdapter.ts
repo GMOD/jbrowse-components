@@ -13,6 +13,7 @@ import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import NCListFeature from './NCListFeature'
 import MyConfigSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 export default class NCListAdapter extends BaseFeatureDataAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -20,8 +21,11 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
 
   private configRefNames?: string[]
 
-  constructor(config: Instance<typeof MyConfigSchema>) {
-    super(config)
+  constructor(
+    config: Instance<typeof MyConfigSchema>,
+    pluginManager: PluginManager,
+  ) {
+    super(config, pluginManager)
     const refNames = readConfObject(config, 'refNames')
     const rootUrlTemplate = readConfObject(config, 'rootUrlTemplate')
     this.configRefNames = refNames

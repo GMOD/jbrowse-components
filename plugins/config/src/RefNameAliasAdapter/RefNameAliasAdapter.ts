@@ -9,6 +9,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 import { ConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import MyConfigAdapterSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 export default class RefNameAliasAdapter
   extends BaseAdapter
@@ -17,8 +18,11 @@ export default class RefNameAliasAdapter
 
   private promise: Promise<Alias[]>
 
-  constructor(config: ConfigurationModel<typeof MyConfigAdapterSchema>) {
-    super(config)
+  constructor(
+    config: ConfigurationModel<typeof MyConfigAdapterSchema>,
+    pluginManager: PluginManager,
+  ) {
+    super(config, pluginManager)
     this.location = openLocation(readConfObject(config, 'location'))
     this.promise = this.downloadResults()
   }

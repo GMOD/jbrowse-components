@@ -4,10 +4,14 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import IndexedFasta from '../IndexedFastaAdapter/IndexedFastaAdapter'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 export default class extends IndexedFasta {
-  public constructor(config: AnyConfigurationModel) {
-    super(config)
+  public constructor(
+    config: AnyConfigurationModel,
+    pluginManager: PluginManager,
+  ) {
+    super(config, pluginManager)
     const fastaLocation = readConfObject(config, 'fastaLocation')
     const faiLocation = readConfObject(config, 'faiLocation')
     const gziLocation = readConfObject(config, 'gziLocation')

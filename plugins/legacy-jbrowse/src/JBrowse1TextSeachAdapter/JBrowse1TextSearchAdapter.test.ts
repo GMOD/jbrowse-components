@@ -7,6 +7,9 @@ import first from '../../test_data/names/0.json'
 import last from '../../test_data/names/f.json'
 import Adapter from './JBrowse1TextSearchAdapter'
 import configSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+
+const pluginManager = new PluginManager()
 
 test('adapter can fetch files from names index', async () => {
   function mockFetch(url: string): Promise<Response> {
@@ -41,7 +44,7 @@ test('adapter can fetch files from names index', async () => {
     },
   }
   // create adapter
-  const adapter = new Adapter(configSchema.create(args))
+  const adapter = new Adapter(configSchema.create(args), pluginManager)
   // prefix search
   const results = await adapter.searchIndex({
     searchType: 'prefix',

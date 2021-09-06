@@ -14,6 +14,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { Instance } from 'mobx-state-tree'
 import configSchema from './configSchema'
 import { ucscProcessedTranscript } from '../util'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 interface BEDFeature {
   chrom: string
@@ -31,8 +32,11 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
 
   private parser: Promise<Parser>
 
-  public constructor(config: Instance<typeof configSchema>) {
-    super(config)
+  public constructor(
+    config: Instance<typeof configSchema>,
+    pluginManager: PluginManager,
+  ) {
+    super(config, pluginManager)
     const bigBedLocation = readConfObject(
       config,
       'bigBedLocation',

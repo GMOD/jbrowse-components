@@ -3,9 +3,13 @@ import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types'
 import { toArray } from 'rxjs/operators'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { ConfigurationSchema } from '@jbrowse/core/configuration/configurationSchema'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import Adapter from './MCScanAnchorsAdapter'
 import configSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+
+const pluginManager = new PluginManager()
 
 class CustomAdapter extends BaseFeatureDataAdapter {
   async getRefNames() {
@@ -47,7 +51,10 @@ class CustomAdapter extends BaseFeatureDataAdapter {
 
 const getSubAdapter: getSubAdapterType = async () => {
   return {
-    dataAdapter: new CustomAdapter(),
+    dataAdapter: new CustomAdapter(
+      ConfigurationSchema('empty', {}).create(),
+      pluginManager,
+    ),
     sessionIds: new Set(),
   }
 }
@@ -58,9 +65,13 @@ test('adapter can fetch features from volvox.bam', async () => {
         localPath: require.resolve('./test_data/grape.peach.anchors'),
         locationType: 'LocalPathLocation',
       },
-      subadapters: [new CustomAdapter(), new CustomAdapter()],
+      subadapters: [
+        ConfigurationSchema('empty', {}).create(),
+        ConfigurationSchema('empty', {}).create(),
+      ],
       assemblyNames: ['grape', 'peach'],
     }),
+    pluginManager,
     getSubAdapter,
   )
 
