@@ -97,8 +97,10 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   DialogComponent?: DialogComponentType
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DialogProps: any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setDialogComponent: (dlg?: DialogComponentType, props?: any) => void
+  queueDialog: (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    callback: (doneCallback: Function) => [DialogComponentType, any],
+  ) => void
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
@@ -278,8 +280,6 @@ export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
 export type FileLocation = LocalPathLocation | UriLocation | BlobLocation
-
-/* eslint-enable @typescript-eslint/no-empty-interface */
 
 // These types are slightly different than the MST models representing a
 // location because a blob cannot be stored in a MST, so this is the

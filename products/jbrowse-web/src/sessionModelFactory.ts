@@ -47,6 +47,10 @@ declare interface ReferringNode {
   key: string
 }
 
+declare interface ReactProps {
+  [key: string]: any
+}
+
 export default function sessionModelFactory(
   pluginManager: PluginManager,
   assemblyConfigSchemasType = types.frozen(), // if not using sessionAssemblies
@@ -97,10 +101,25 @@ export default function sessionModelFactory(
        */
       task: undefined,
 
-      DialogComponent: undefined as DialogComponentType | undefined,
-      DialogProps: undefined as any,
+      queueOfDialogs: observable.array(
+        [] as [DialogComponentType, ReactProps][],
+      ),
     }))
     .views(self => ({
+      get DialogComponent() {
+        if (self.queueOfDialogs.length) {
+          const firstInQueue = self.queueOfDialogs[0]
+          return firstInQueue && firstInQueue[0]
+        }
+        return undefined
+      },
+      get DialogProps() {
+        if (self.queueOfDialogs.length) {
+          const firstInQueue = self.queueOfDialogs[0]
+          return firstInQueue && firstInQueue[1]
+        }
+        return undefined
+      },
       get shareURL() {
         return getConf(getParent(self).jbrowse, 'shareURL')
       },
@@ -190,9 +209,13 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
-      setDialogComponent(comp?: DialogComponentType, props?: any) {
-        self.DialogComponent = comp
-        self.DialogProps = props
+      queueDialog(
+        callback: (doneCallback: Function) => [DialogComponentType, ReactProps],
+      ): void {
+        const [component, props] = callback(() => {
+          self.queueOfDialogs.shift()
+        })
+        self.queueOfDialogs.push([component, props])
       },
       setName(str: string) {
         self.name = str
@@ -658,7 +681,10 @@ export default function sessionModelFactory(
           {
             label: 'About track',
             onClick: () => {
-              session.setDialogComponent(AboutDialog, { config })
+              session.queueDialog((doneCallback: Function) => [
+                AboutDialog,
+                { config, handleClose: doneCallback },
+              ])
             },
             icon: InfoIcon,
           },
