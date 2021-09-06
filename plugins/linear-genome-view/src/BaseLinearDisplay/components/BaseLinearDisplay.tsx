@@ -40,16 +40,11 @@ const useStyles = makeStyles(theme => ({
     fontWeight: theme.typography.fontWeightMedium,
   },
 }))
-
-const TooltipContents = ({
-  feature,
-  model,
-}: {
-  feature: Feature
-  model: BaseLinearDisplayModel
-}) => {
-  return <div>{getConf(model, 'mouseover', { feature })}</div>
-}
+const TooltipContents = React.forwardRef(
+  ({ children }: { children?: string | React.ReactNode }, ref: any) => {
+    return <div ref={ref}>{children}</div>
+  },
+)
 
 const Tooltip = observer(
   ({
@@ -58,12 +53,10 @@ const Tooltip = observer(
   }: {
     model: BaseLinearDisplayModel
     clientMouseCoord: Coord
-    offsetMouseCoord: Coord
-    clientRect?: ClientRect
-    TooltipContents: React.FC<{ feature: Feature }>
   }) => {
     const classes = useStyles()
     const { featureUnderMouse } = model
+    const [width, setWidth] = useState(0)
 
     const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(
       null,
@@ -73,7 +66,7 @@ const Tooltip = observer(
     const virtElement = useMemo(
       () => ({
         getBoundingClientRect: () => {
-          const x = clientMouseCoord[0] + 40
+          const x = clientMouseCoord[0] + (width * 2) / 3
           const y = clientMouseCoord[1]
           return {
             top: y,
@@ -85,11 +78,15 @@ const Tooltip = observer(
           }
         },
       }),
-      [clientMouseCoord],
+      [clientMouseCoord, width],
     )
     const { styles, attributes } = usePopper(virtElement, popperElement)
 
-    return featureUnderMouse ? (
+    const contents = featureUnderMouse
+      ? getConf(model, 'mouseover', { feature: featureUnderMouse })
+      : undefined
+
+    return featureUnderMouse && contents ? (
       <Portal>
         <div
           ref={setPopperElement}
@@ -98,7 +95,13 @@ const Tooltip = observer(
           style={{ ...styles.popper, zIndex: 100000 }}
           {...attributes.popper}
         >
-          <TooltipContents model={model} feature={featureUnderMouse} />
+          <TooltipContents
+            ref={(elt: HTMLDivElement) => {
+              setWidth(elt?.getBoundingClientRect().width || 0)
+            }}
+          >
+            {contents}
+          </TooltipContents>
         </div>
       </Portal>
     ) : null
