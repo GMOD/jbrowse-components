@@ -83,7 +83,7 @@ export async function* indexVcf(
         encodeURIComponent(trackId),
         encodeURIComponent(''),
         encodeURIComponent(id || ''),
-      ])
+      ]).replace(/,/g, '|')
       yield `${record} ${[...new Set(attrs)].join(' ')}\n`
     }
   }

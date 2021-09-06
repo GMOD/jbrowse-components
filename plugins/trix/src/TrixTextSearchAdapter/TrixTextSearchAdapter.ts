@@ -42,7 +42,7 @@ export default class TrixTextSearchAdapter
   async searchIndex(args: BaseArgs) {
     const results = await this.trixJs.search(args.queryString)
     const formatted = results
-      .map(data => JSON.parse(data.replaceAll('|', ',')) as string[])
+      .map(data => JSON.parse(data.replace(/\|/g, ',')) as string[])
       .map(result => {
         const [loc, trackId, name, id] = result.map(record =>
           decodeURIComponent(record),
