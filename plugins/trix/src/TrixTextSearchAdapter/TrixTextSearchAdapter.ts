@@ -28,10 +28,8 @@ export default class TrixTextSearchAdapter
       throw new Error('must provide out.ixx')
     }
     this.trixJs = new Trix(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      openLocation(ixxFilePath) as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      openLocation(ixFilePath) as any,
+      openLocation(ixxFilePath),
+      openLocation(ixFilePath),
       200,
     )
   }
@@ -43,32 +41,28 @@ export default class TrixTextSearchAdapter
    */
   async searchIndex(args: BaseArgs) {
     const results = await this.trixJs.search(args.queryString)
-    const formatted = this.formatResults(
-      results.map(data => JSON.parse(data.replaceAll('|', ',')) as string[]),
-    )
+    const formatted = results
+      .map(data => JSON.parse(data.replaceAll('|', ',')) as string[])
+      .map(result => {
+        const [loc, trackId, name, id] = result.map(record =>
+          decodeURIComponent(record),
+        )
+        return new LocStringResult({
+          locString: loc,
+          label: name || id,
+          matchedAttribute: 'name',
+          matchedObject: result,
+          trackId,
+        })
+      })
+
     if (args.searchType === 'exact') {
       return formatted.filter(
-        result =>
-          result.getLabel().toLocaleLowerCase() ===
-          args.queryString.toLocaleLowerCase(),
+        res => res.getLabel().toLowerCase() === args.queryString.toLowerCase(),
       )
     }
     return formatted
   }
 
-  formatResults(results: string[][]) {
-    return results.map(result => {
-      const [loc, trackId, name, id] = result.map(record =>
-        decodeURIComponent(record),
-      )
-      return new LocStringResult({
-        locString: loc,
-        label: name || id,
-        matchedAttribute: 'name',
-        matchedObject: result,
-        trackId,
-      })
-    })
-  }
   freeResources() {}
 }
