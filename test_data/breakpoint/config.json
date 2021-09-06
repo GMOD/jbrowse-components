@@ -7,12 +7,16 @@
         "type": "ReferenceSequenceTrack",
         "trackId": "Pd8Wh30ei9R",
         "adapter": {
-          "type": "ChromSizesAdapter",
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.2bit"
+          },
           "chromSizesLocation": {
-            "uri": "../hg19.chrom.sizes"
+            "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.chrom.sizes"
           }
         }
       },
+
       "refNameAliases": {
         "adapter": {
           "type": "RefNameAliasAdapter",
