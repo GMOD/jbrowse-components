@@ -138,4 +138,5 @@ export * from './util'
 export { WiggleRendering }
 export { WiggleBaseRenderer }
 export { LinearWiggleDisplayReactComponent, linearWiggleDisplayModelFactory }
+export { Tooltip } from './LinearWiggleDisplay/components/Tooltip'
 export { YSCALEBAR_LABEL_OFFSET }
