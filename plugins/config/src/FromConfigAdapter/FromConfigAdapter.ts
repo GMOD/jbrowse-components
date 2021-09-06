@@ -5,9 +5,8 @@ import SimpleFeature, {
 } from '@jbrowse/core/util/simpleFeature'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { NoAssemblyRegion } from '@jbrowse/core/util/types'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { ConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'
 
 /**
  * Adapter that just returns the features defined in its `features` configuration
@@ -18,15 +17,10 @@ import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'
 export default class FromConfigAdapter extends BaseFeatureDataAdapter {
   protected features: Map<string, Feature[]>
 
-  constructor(
-    config: ConfigurationModel<typeof FromConfigAdapterConfigSchema>,
-  ) {
-    super(config)
-    const features = readConfObject(
-      config,
-      'features',
-    ) as SimpleFeatureSerialized[]
-    this.features = FromConfigAdapter.makeFeatures(features || [])
+  constructor(conf: AnyConfigurationModel) {
+    super(conf)
+    const feats = readConfObject(conf, 'features') as SimpleFeatureSerialized[]
+    this.features = FromConfigAdapter.makeFeatures(feats || [])
   }
 
   static makeFeatures(fdata: SimpleFeatureSerialized[]) {
@@ -58,7 +52,7 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
   }
 
   async getRefNames() {
-    return [...new Set(Object.keys(this.features))]
+    return [...this.features.keys()]
   }
 
   async getRefNameAliases() {
@@ -73,8 +67,9 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
 
     return ObservableCreate<Feature>(async observer => {
       const features = this.features.get(refName) || []
-      for (let i = 0; i < features.length; i += 1) {
+      for (let i = 0; i < features.length; i++) {
         const f = features[i]
+
         if (f.get('end') > start && f.get('start') < end) {
           observer.next(f)
         }
