@@ -1,11 +1,11 @@
 import { filter, ignoreElements, tap } from 'rxjs/operators'
-import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 import { checkAbortSignal, iterMap } from '../../util'
 import SimpleFeature, {
   Feature,
   SimpleFeatureSerialized,
 } from '../../util/simpleFeature'
 import { Region } from '../../util/types'
+import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import ServerSideRendererType, {
   RenderArgs as ServerSideRenderArgs,
   RenderArgsSerialized as ServerSideRenderArgsSerialized,
@@ -14,6 +14,8 @@ import ServerSideRendererType, {
   ResultsDeserialized as ServerSideResultsDeserialized,
   ResultsSerialized as ServerSideResultsSerialized,
 } from './ServerSideRendererType'
+import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
+import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
 export interface RenderArgs extends ServerSideRenderArgs {
   displayModel: { id: string; selectedFeatureId?: string }
@@ -29,10 +31,10 @@ export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
 
 export interface RenderArgsDeserialized
   extends ServerSideRenderArgsDeserialized {
-  dataAdapter: BaseFeatureDataAdapter
   displayModel: { id: string; selectedFeatureId?: string }
   regions: Region[]
   blockKey: string
+  adapterConfig: AnyConfigurationModel
 }
 
 export interface RenderResults extends ServerSideRenderResults {
@@ -136,7 +138,12 @@ export default class FeatureRendererType extends ServerSideRendererType {
   async getFeatures(
     renderArgs: RenderArgsDeserialized,
   ): Promise<Map<string, Feature>> {
-    const { dataAdapter, signal, regions } = renderArgs
+    const { signal, regions, sessionId, adapterConfig } = renderArgs
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
     const features = new Map()
 
     if (!regions || regions.length === 0) {
@@ -160,13 +167,16 @@ export default class FeatureRendererType extends ServerSideRendererType {
 
     const featureObservable =
       requestRegions.length === 1
-        ? dataAdapter.getFeatures(
+        ? (dataAdapter as BaseFeatureDataAdapter).getFeatures(
             this.getExpandedRegion(region, renderArgs),
             // @ts-ignore
             renderArgs,
           )
         : // @ts-ignore
-          dataAdapter.getFeaturesInMultipleRegions(requestRegions, renderArgs)
+          (dataAdapter as BaseFeatureDataAdapter).getFeaturesInMultipleRegions(
+            requestRegions,
+            renderArgs,
+          )
 
     await featureObservable
       .pipe(

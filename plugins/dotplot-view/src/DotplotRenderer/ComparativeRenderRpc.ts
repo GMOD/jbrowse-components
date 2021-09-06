@@ -1,7 +1,5 @@
 import { checkAbortSignal, renameRegionsIfNeeded } from '@jbrowse/core/util'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import ComparativeServerSideRendererType, {
   RenderArgs as ComparativeRenderArgs,
   RenderArgsSerialized as ComparativeRenderArgsSerialized,
@@ -63,23 +61,12 @@ export default class ComparativeRender extends RpcMethodType {
         rpcDriverClassName,
       )
     }
-    const { sessionId, adapterConfig, rendererType, signal } = deserializedArgs
+    const { sessionId, rendererType, signal } = deserializedArgs
     if (!sessionId) {
       throw new Error('must pass a unique session id')
     }
 
     checkAbortSignal(signal)
-
-    const { dataAdapter } = await getAdapter(
-      this.pluginManager,
-      sessionId,
-      adapterConfig,
-    )
-    if (!(dataAdapter instanceof BaseFeatureDataAdapter)) {
-      throw new Error(
-        `ComparativeRender cannot handle this type of data adapter ${dataAdapter}`,
-      )
-    }
 
     const RendererType = this.pluginManager.getRendererType(rendererType)
 
@@ -98,15 +85,10 @@ export default class ComparativeRender extends RpcMethodType {
       )
     }
 
-    const renderArgs = {
-      ...deserializedArgs,
-      dataAdapter,
-    }
-
     const result =
       rpcDriverClassName === 'MainThreadRpcDriver'
-        ? await RendererType.render(renderArgs)
-        : await RendererType.renderInWorker(renderArgs)
+        ? await RendererType.render(deserializedArgs)
+        : await RendererType.renderInWorker(deserializedArgs)
     checkAbortSignal(signal)
     return result
   }
