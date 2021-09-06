@@ -126,7 +126,13 @@ function BreakendPanel(props: {
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
   const [breakpointDialog, setBreakpointDialog] = useState(false)
-  const viewType = pluginManager.getViewType('BreakpointSplitView')
+  let viewType
+
+  try {
+    viewType = pluginManager.getViewType('BreakpointSplitView')
+  } catch (e) {
+    // ignore
+  }
 
   const simpleFeature = new SimpleFeature(feature)
   return (
