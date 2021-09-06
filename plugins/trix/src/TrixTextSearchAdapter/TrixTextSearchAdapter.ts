@@ -44,10 +44,7 @@ export default class TrixTextSearchAdapter
   async searchIndex(args: BaseArgs) {
     const results = await this.trixJs.search(args.queryString)
     const formatted = this.formatResults(
-      results.map(
-        data =>
-          JSON.parse(Buffer.from(data, 'base64').toString('utf8')) as string[],
-      ),
+      results.map(data => JSON.parse(decodeURIComponent(data)) as string[]),
     )
     if (args.searchType === 'exact') {
       return formatted.filter(
@@ -62,7 +59,9 @@ export default class TrixTextSearchAdapter
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formatResults(results: Array<any>) {
     return results.map(result => {
-      const [locString, trackId, name, id] = result
+      const [locString, trackId, name, id] = result.map((record: string) =>
+        decodeURIComponent(record),
+      )
       return new LocStringResult({
         locString,
         label: name || id,

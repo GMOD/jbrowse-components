@@ -78,9 +78,13 @@ export async function* indexVcf(
     for (let i = 0; i < ids.length; i++) {
       const id = ids[i]
       const attrs = [id]
-      const record = JSON.stringify([locStr, trackId, undefined, id])
-      const buff = Buffer.from(record).toString('base64')
-      yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
+      const record = JSON.stringify([
+        encodeURIComponent(locStr),
+        encodeURIComponent(trackId),
+        encodeURIComponent(''),
+        encodeURIComponent(id || ''),
+      ])
+      yield `${record} ${[...new Set(attrs)].join(' ')}\n`
     }
   }
 
