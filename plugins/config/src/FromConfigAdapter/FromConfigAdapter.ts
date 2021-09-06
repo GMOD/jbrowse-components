@@ -5,9 +5,8 @@ import SimpleFeature, {
 } from '@jbrowse/core/util/simpleFeature'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { NoAssemblyRegion } from '@jbrowse/core/util/types'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { ConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'
 
 /**
  * Adapter that just returns the features defined in its `features` configuration
@@ -18,15 +17,10 @@ import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'
 export default class FromConfigAdapter extends BaseFeatureDataAdapter {
   protected features: Map<string, Feature[]>
 
-  constructor(
-    config: ConfigurationModel<typeof FromConfigAdapterConfigSchema>,
-  ) {
-    super(config)
-    const features = readConfObject(
-      config,
-      'features',
-    ) as SimpleFeatureSerialized[]
-    this.features = FromConfigAdapter.makeFeatures(features || [])
+  constructor(conf: AnyConfigurationModel) {
+    super(conf)
+    const feats = readConfObject(conf, 'features') as SimpleFeatureSerialized[]
+    this.features = FromConfigAdapter.makeFeatures(feats || [])
   }
 
   static makeFeatures(fdata: SimpleFeatureSerialized[]) {
@@ -53,37 +47,12 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
     return features
   }
 
-  static makeFeature(data: SimpleFeatureSerialized): SimpleFeature {
+  static makeFeature(data: SimpleFeatureSerialized) {
     return new SimpleFeature(data)
   }
 
   async getRefNames() {
-    const refNames: Set<string> = new Set()
-    for (const [refName, features] of this.features) {
-      // add the feature's primary refname
-      refNames.add(refName)
-
-      // also look in the features for mate or breakend specifications, and add
-      // the refName targets of those
-      features.forEach(feature => {
-        // get refNames of generic "mate" records
-        const mate = feature.get('mate')
-        if (mate && mate.refName) {
-          refNames.add(mate.refName)
-        }
-        // get refNames of VCF BND and TRA records
-        const svType = ((feature.get('INFO') || {}).SVTYPE || [])[0]
-        if (svType === 'BND') {
-          const breakendSpecification = (feature.get('ALT') || [])[0]
-          const matePosition = breakendSpecification.MatePosition.split(':')
-          refNames.add(matePosition[0])
-        } else if (svType === 'TRA') {
-          const chr2 = ((feature.get('INFO') || {}).CHR2 || [])[0]
-          refNames.add(chr2)
-        }
-      })
-    }
-    return Array.from(refNames)
+    return [...this.features.keys()]
   }
 
   async getRefNameAliases() {
@@ -98,8 +67,9 @@ export default class FromConfigAdapter extends BaseFeatureDataAdapter {
 
     return ObservableCreate<Feature>(async observer => {
       const features = this.features.get(refName) || []
-      for (let i = 0; i < features.length; i += 1) {
+      for (let i = 0; i < features.length; i++) {
         const f = features[i]
+
         if (f.get('end') > start && f.get('start') < end) {
           observer.next(f)
         }

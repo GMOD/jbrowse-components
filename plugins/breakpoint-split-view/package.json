@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@material-ui/icons": "^4.9.1",
+    "@gmod/vcf": "^5.0.0",
     "clsx": "^1.0.4",
     "is-object": "^1.0.1",
     "react-sizeme": "^2.6.7",
