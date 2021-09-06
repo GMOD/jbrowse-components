@@ -2,7 +2,6 @@ import React, { useState, useRef, useMemo } from 'react'
 import { Portal, alpha, useTheme, makeStyles } from '@material-ui/core'
 import { getConf } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { observer } from 'mobx-react'
 import { usePopper } from 'react-popper'
 
@@ -26,7 +25,6 @@ const useStyles = makeStyles(theme => ({
   // these styles come from
   // https://github.com/mui-org/material-ui/blob/master/packages/material-ui/src/Tooltip/Tooltip.js
   tooltip: {
-    position: 'absolute',
     pointerEvents: 'none',
     backgroundColor: alpha(theme.palette.grey[700], 0.9),
     borderRadius: theme.shape.borderRadius,
@@ -40,11 +38,13 @@ const useStyles = makeStyles(theme => ({
     fontWeight: theme.typography.fontWeightMedium,
   },
 }))
-const TooltipContents = React.forwardRef(
-  ({ children }: { children?: string | React.ReactNode }, ref: any) => {
-    return <div ref={ref}>{children}</div>
-  },
-)
+
+const TooltipContents = React.forwardRef<
+  HTMLDivElement,
+  { message: React.ReactNode | string }
+>(({ message }: { message: React.ReactNode | string }, ref) => {
+  return <div ref={ref}>{message}</div>
+})
 
 const Tooltip = observer(
   ({
@@ -58,15 +58,13 @@ const Tooltip = observer(
     const { featureUnderMouse } = model
     const [width, setWidth] = useState(0)
 
-    const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(
-      null,
-    )
+    const [popperElt, setPopperElt] = useState<HTMLDivElement | null>(null)
 
     // must be memoized a la https://github.com/popperjs/react-popper/issues/391
     const virtElement = useMemo(
       () => ({
         getBoundingClientRect: () => {
-          const x = clientMouseCoord[0] + (width * 2) / 3
+          const x = clientMouseCoord[0] + width / 2 + 20
           const y = clientMouseCoord[1]
           return {
             top: y,
@@ -80,7 +78,7 @@ const Tooltip = observer(
       }),
       [clientMouseCoord, width],
     )
-    const { styles, attributes } = usePopper(virtElement, popperElement)
+    const { styles, attributes } = usePopper(virtElement, popperElt)
 
     const contents = featureUnderMouse
       ? getConf(model, 'mouseover', { feature: featureUnderMouse })
@@ -89,19 +87,18 @@ const Tooltip = observer(
     return featureUnderMouse && contents ? (
       <Portal>
         <div
-          ref={setPopperElement}
+          ref={setPopperElt}
           className={classes.tooltip}
           // zIndex needed to go over widget drawer
           style={{ ...styles.popper, zIndex: 100000 }}
           {...attributes.popper}
         >
           <TooltipContents
-            ref={(elt: HTMLDivElement) => {
+            ref={(elt: HTMLDivElement) =>
               setWidth(elt?.getBoundingClientRect().width || 0)
-            }}
-          >
-            {contents}
-          </TooltipContents>
+            }
+            message={contents}
+          />
         </div>
       </Portal>
     ) : null

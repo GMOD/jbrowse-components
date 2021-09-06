@@ -46,8 +46,8 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const TooltipContents = React.forwardRef(
-  ({ feature }: { feature: Feature }, ref: any) => {
+const TooltipContents = React.forwardRef<HTMLDivElement, { feature: Feature }>(
+  ({ feature }: { feature: Feature }, ref) => {
     const start = feature.get('start')
     const end = feature.get('end')
     const name = feature.get('refName')
@@ -103,8 +103,8 @@ const Tooltip = observer(
     const virtElement = useMemo(
       () => ({
         getBoundingClientRect: () => {
+          const x = clientMouseCoord[0] + width / 2 + 20
           const y = clientRect?.top || 0
-          const x = clientMouseCoord[0] + (width * 2) / 3
           return {
             top: y,
             left: x,
