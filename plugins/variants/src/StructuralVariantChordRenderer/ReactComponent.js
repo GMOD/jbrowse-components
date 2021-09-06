@@ -3,6 +3,7 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { polarToCartesian } from '@jbrowse/core/util'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { PropTypes as CommonPropTypes } from '@jbrowse/core/util/types/mst'
+import { parseBreakend } from '@gmod/vcf'
 import PropTypes from 'prop-types'
 
 function bpToRadians(block, pos) {
@@ -35,16 +36,17 @@ const Chord = observer(function Chord({
   }
   let endPosition
   let endBlock
-  if (svType === 'BND') {
+  const alt = feature.get('ALT')?.[0]
+  const bnd = parseBreakend(alt)
+  if (bnd) {
     // VCF BND
-    const breakendSpecification = (feature.get('ALT') || [])[0]
-    const matePosition = breakendSpecification.MatePosition.split(':')
-    endPosition = parseInt(matePosition[1], 10)
+    const matePosition = bnd.MatePosition.split(':')
+    endPosition = +matePosition[1]
     endBlock = blocksForRefs[matePosition[0]]
-  } else if (svType === 'TRA') {
+  } else if (alt === '<TRA>') {
     // VCF TRA
-    const chr2 = ((feature.get('INFO') || {}).CHR2 || [])[0]
-    const end = ((feature.get('INFO') || {}).END || [])[0]
+    const chr2 = feature.get('INFO')?.CHR2?.[0]
+    const end = feature.get('INFO')?.END?.[0]
     endPosition = parseInt(end, 10)
     endBlock = blocksForRefs[chr2]
   } else if (svType === 'mate') {
@@ -54,6 +56,7 @@ const Chord = observer(function Chord({
     endPosition = mate.start
     endBlock = blocksForRefs[chr2]
   }
+
   if (endBlock) {
     const startPos = feature.get('start')
     const startRadians = bpToRadians(startBlock, startPos)
@@ -65,12 +68,10 @@ const Chord = observer(function Chord({
       (endRadians + startRadians) / 2,
     )
 
-    let strokeColor
-    if (selected) {
-      strokeColor = readConfObject(config, 'strokeColorSelected', { feature })
-    } else {
-      strokeColor = readConfObject(config, 'strokeColor', { feature })
-    }
+    const strokeColor = selected
+      ? readConfObject(config, 'strokeColorSelected', { feature })
+      : readConfObject(config, 'strokeColor', { feature })
+
     const hoverStrokeColor = readConfObject(config, 'strokeColorHover', {
       feature,
     })
@@ -85,6 +86,7 @@ const Chord = observer(function Chord({
         onMouseOver={evt => {
           if (!selected) {
             evt.target.style.stroke = hoverStrokeColor
+            evt.target.style.strokeWidth = 3
           }
         }}
         onMouseOut={evt => {
