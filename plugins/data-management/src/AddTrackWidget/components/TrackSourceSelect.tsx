@@ -3,6 +3,8 @@ import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
 import React from 'react'
 import { AddTrackModel } from '../model'
+import { getRoot } from 'mobx-state-tree'
+import { observer } from 'mobx-react'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -16,6 +18,8 @@ const useStyles = makeStyles(theme => ({
 
 function TrackSourceSelect({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
+  const rootModel = getRoot(model)
+
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
@@ -24,16 +28,20 @@ function TrackSourceSelect({ model }: { model: AddTrackModel }) {
           description=""
           location={model.trackData}
           setLocation={model.setTrackData}
+          setName={model.setTrackName}
+          internetAccounts={rootModel.internetAccounts}
         />
         <FileSelector
           name="Index file"
           description="Automatically inferred from the URL if not supplied"
           location={model.indexTrackData}
           setLocation={model.setIndexTrackData}
+          setName={model.setTrackName}
+          internetAccounts={rootModel.internetAccounts}
         />
       </Paper>
     </div>
   )
 }
 
-export default TrackSourceSelect
+export default observer(TrackSourceSelect)

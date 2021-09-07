@@ -56,6 +56,9 @@ export default function JBrowseWeb(
       // track configuration is an array of track config schemas. multiple
       // instances of a track can exist that use the same configuration
       tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+      internetAccounts: types.array(
+        pluginManager.pluggableConfigSchemaType('internet account'),
+      ),
       aggregateTextSearchAdapters: types.array(
         pluginManager.pluggableConfigSchemaType('text search adapter'),
       ),
@@ -140,7 +143,6 @@ export default function JBrowseWeb(
         const length = self.connections.push(connectionConf)
         return self.connections[length - 1]
       },
-
       deleteConnectionConf(configuration) {
         const idx = self.connections.findIndex(
           conn => conn.id === configuration.id,
@@ -182,6 +184,23 @@ export default function JBrowseWeb(
         self.plugins = self.plugins.filter(plugin => plugin.url !== pluginUrl)
         const rootModel = getRoot(self)
         rootModel.setPluginsUpdated(true)
+      },
+      addInternetAccountConf(internetAccountConf) {
+        const { type } = internetAccountConf
+        if (!type) {
+          throw new Error(`unknown internetAccount type ${type}`)
+        }
+        const length = self.internetAccounts.push(internetAccountConf)
+        return self.internetAccounts[length - 1]
+      },
+      deleteInternetAccountConf(configuration) {
+        const idx = self.internetAccounts.findIndex(
+          acct => acct.id === configuration.id,
+        )
+        if (idx === -1) {
+          return undefined
+        }
+        return self.internetAccounts.splice(idx, 1)
       },
     }))
     .views(self => ({

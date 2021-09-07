@@ -24,9 +24,16 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
   return 'blobId' in location
 }
 
+// needs to take the rootmodel in as an optional parameter, use if there is no preauth information
+// calls that arent in data-adapters would need the rootmodel param added, main thread stuff
+// this does not exist right now
+
+// need plugin manger for openLocation now
 export function openLocation(
   location: FileLocation,
-  _pluginManager: PluginManager,
+  pluginManager?: PluginManager,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  rootModel?: any,
 ): GenericFilehandle {
   if (!location) {
     throw new Error('must provide a location to openLocation')
@@ -40,16 +47,53 @@ export function openLocation(
     } else {
       throw new Error("can't use local files in the browser")
     }
-  }
-  if (isUriLocation(location)) {
-    if (!location.uri) {
-      throw new Error('No URI provided')
+  } else {
+    if (isUriLocation(location)) {
+      if (!location.uri) {
+        throw new Error('No URI provided')
+      }
+      if (location.internetAccountId) {
+        if (!location.internetAccountPreAuthorization) {
+          if (rootModel) {
+            const modifiedLocation = JSON.parse(JSON.stringify(location))
+            const internetAccount = rootModel.findAppropriateInternetAccount(
+              location,
+            )
+            if (!internetAccount) {
+              throw new Error('Could not find associated internet account')
+            }
+            internetAccount.getPreAuthorizationInformation(location).then(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (preAuthInfo: any) =>
+                (modifiedLocation.internetAccountPreAuthorization = preAuthInfo),
+            )
+            return internetAccount.openLocation(modifiedLocation)
+          }
+        } else {
+          if (pluginManager) {
+            const internetAccountType = pluginManager.getInternetAccountType(
+              location.internetAccountPreAuthorization.internetAccountType,
+            )
+            const internetAccount = internetAccountType.stateModel.create({
+              type:
+                location.internetAccountPreAuthorization.internetAccountType,
+              configuration:
+                location.internetAccountPreAuthorization.authInfo.configuration,
+            })
+            if (!location.internetAccountPreAuthorization?.authInfo.token) {
+              throw new Error('Failed to obtain token from internet account')
+            }
+            return internetAccount.openLocation(location)
+          }
+        }
+      }
+
+      return new RemoteFile(
+        location.baseUri
+          ? new URL(location.uri, location.baseUri).href
+          : location.uri,
+      )
     }
-    return new RemoteFile(
-      location.baseUri
-        ? new URL(location.uri, location.baseUri).href
-        : location.uri,
-    )
   }
   if (isBlobLocation(location)) {
     // special case where blob is not directly stored on the model, use a getter

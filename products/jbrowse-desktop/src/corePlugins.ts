@@ -1,4 +1,5 @@
 import Alignments from '@jbrowse/plugin-alignments'
+import Authentication from '@jbrowse/plugin-authentication'
 import Bed from '@jbrowse/plugin-bed'
 import BreakpointSplitView from '@jbrowse/plugin-breakpoint-split-view'
 import CircularView from '@jbrowse/plugin-circular-view'
@@ -26,6 +27,7 @@ const corePlugins = [
   SVG,
   LinearGenomeView,
   Alignments,
+  Authentication,
   Bed,
   CircularView,
   Config,

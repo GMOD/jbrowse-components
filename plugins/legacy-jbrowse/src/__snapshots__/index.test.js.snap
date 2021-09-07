@@ -5,6 +5,8 @@ exports[`plugin in a stock JBrowse 1`] = `Object {}`;
 exports[`test creating a text search adapter 1`] = `
 Object {
   "namesIndexLocation": Object {
+    "internetAccountId": undefined,
+    "internetAccountPreAuthorization": undefined,
     "locationType": "UriLocation",
     "uri": "names/",
   },

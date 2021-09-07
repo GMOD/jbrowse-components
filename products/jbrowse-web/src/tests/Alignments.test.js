@@ -78,7 +78,7 @@ describe('alignments track', () => {
 
     // this is to confirm a alignment detail widget opened
     await findByTestId('alignment-side-drawer')
-  }, 20000)
+  }, 30000)
 
   // Note: tracks with assembly volvox don't have much soft clipping
   it('opens the track menu and enables soft clipping', async () => {
@@ -120,7 +120,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 30000)
 
   it('selects a sort, updates object and layout', async () => {
     const pluginManager = getPluginManager()
@@ -162,7 +162,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 30000)
 
   it('selects a color, updates object and layout', async () => {
     const pluginManager = getPluginManager()
@@ -202,7 +202,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 30000)
 
   it('colors by tag, updates object and layout', async () => {
     const pluginManager = getPluginManager()
@@ -229,7 +229,6 @@ describe('alignments track', () => {
       target: { value: 'HP' },
     })
     fireEvent.click(await findByText('Submit'))
-
     // wait for pileup track to render with color
     await findAllByTestId('pileup-tagHP', {}, delay)
 
@@ -245,7 +244,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 30000)
 
   it('test that bam with small max height displays message', async () => {
     const pluginManager = getPluginManager()
@@ -257,7 +256,7 @@ describe('alignments track', () => {
     )
 
     await findAllByText('Max height reached', {}, delay)
-  }, 20000)
+  }, 30000)
 
   it('test snpcoverage doesnt count snpcoverage', async () => {
     const pluginManager = getPluginManager()
@@ -304,5 +303,5 @@ describe('alignments track', () => {
         'base64',
       ),
     ).toMatchImageSnapshot()
-  }, 15000)
+  }, 30000)
 })

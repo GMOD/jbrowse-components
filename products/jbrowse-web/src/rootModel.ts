@@ -6,6 +6,7 @@ import {
   getType,
   getPropertyMembers,
   getChildType,
+  resolveIdentifier,
   IAnyStateTreeNode,
   IAnyType,
   Instance,
@@ -26,6 +27,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { AbstractSessionModel } from '@jbrowse/core/util'
+import { UriLocation } from '@jbrowse/core/util/types'
+
 // material ui
 import { MenuItem } from '@jbrowse/core/ui'
 import AddIcon from '@material-ui/icons/Add'
@@ -123,6 +126,9 @@ export default function RootModel(
       session: types.maybe(Session),
       assemblyManager: assemblyManagerType,
       version: types.maybe(types.string),
+      internetAccounts: types.array(
+        pluginManager.pluggableMstType('internet account', 'stateModel'),
+      ),
       isAssemblyEditing: false,
       isDefaultSessionEditing: false,
     })
@@ -227,6 +233,14 @@ export default function RootModel(
             { delay: 400 },
           ),
         )
+        addDisposer(
+          self,
+          autorun(() => {
+            self.jbrowse.internetAccounts.forEach(account => {
+              this.initializeInternetAccount(account.internetAccountId)
+            })
+          }),
+        )
       },
       setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
         const oldSession = self.session
@@ -241,6 +255,34 @@ export default function RootModel(
             throw error
           }
         }
+      },
+      initializeInternetAccount(
+        internetAccountId: string,
+        initialSnapshot = {},
+      ) {
+        const internetAccountConfigSchema = pluginManager.pluggableConfigSchemaType(
+          'internet account',
+        )
+        const configuration = resolveIdentifier(
+          internetAccountConfigSchema,
+          self,
+          internetAccountId,
+        )
+
+        const internetAccountType = pluginManager.getInternetAccountType(
+          configuration.type,
+        )
+        if (!internetAccountType) {
+          throw new Error(`unknown internet account type ${configuration.type}`)
+        }
+
+        const internetAccount = internetAccountType.stateModel.create({
+          ...initialSnapshot,
+          type: configuration.type,
+          configuration,
+        })
+        self.internetAccounts.push(internetAccount)
+        return internetAccount
       },
       setAssemblyEditing(flag: boolean) {
         self.isAssemblyEditing = flag
@@ -323,6 +365,30 @@ export default function RootModel(
 
       setError(error?: Error) {
         self.error = error
+      },
+      findAppropriateInternetAccount(location: UriLocation) {
+        let accountToUse = undefined
+
+        // find the existing account selected from menu
+        const selectedId = location.internetAccountId
+        if (selectedId) {
+          const selectedAccount = self.internetAccounts.find(account => {
+            return account.internetAccountId === selectedId
+          })
+          accountToUse = selectedAccount
+        }
+
+        // if no existing account or not found, try to find working account
+        if (!accountToUse) {
+          self.internetAccounts.forEach(account => {
+            const handleResult = account.handlesLocation(location)
+            if (handleResult) {
+              accountToUse = account
+            }
+          })
+        }
+
+        return accountToUse
       },
     }))
     .volatile(self => ({

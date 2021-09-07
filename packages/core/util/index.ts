@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { toByteArray, fromByteArray } from 'base64-js'
 import {
   getParent,
@@ -24,6 +25,7 @@ import {
   AssemblyManager,
 } from './types'
 import { isAbortException, checkAbortSignal } from './aborting'
+import deepEqual from 'fast-deep-equal'
 
 export * from './types'
 export * from './aborting'
@@ -109,7 +111,6 @@ export function useDebounce<T>(value: T, delay: number): T {
 }
 
 // https://stackoverflow.com/questions/56283920/how-to-debounce-a-callback-in-functional-component-using-hooks
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useDebouncedCallback<A extends any[]>(
   callback: (...args: A) => void,
   wait = 400,
@@ -613,12 +614,10 @@ export function iterMap<T, U>(
 
 interface Assembly {
   name: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
 }
 interface Track {
   trackId: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
 }
 interface Config {
@@ -1008,7 +1007,6 @@ export const defaultCodonTable = {
  *  take CodonTable above and generate larger codon table that includes
  *  all permutations of upper and lower case nucleotides
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function generateCodonTable(table: any) {
   const tempCodonTable: { [key: string]: string } = {}
   Object.keys(table).forEach(codon => {
@@ -1062,7 +1060,48 @@ export function hashCode(str: string) {
   return hash
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function objectHash(obj: Record<string, any>) {
   return `${hashCode(JSON.stringify(obj))}`
+}
+
+export function searchForLocationObjects(obj: { [key: string]: any }): any {
+  const locationObjects: { [key: string]: any }[] = []
+  for (const property in obj) {
+    if (property === 'locationType') {
+      locationObjects.push(obj)
+    } else if (typeof obj[property] === 'object') {
+      if (Array.isArray(obj[property])) {
+        obj[property].forEach((p: any) => {
+          return searchForLocationObjects(p)
+        })
+      } else {
+        return searchForLocationObjects(obj[property])
+      }
+    }
+  }
+  return locationObjects
+}
+
+// search through arg object for a specific key, optionally search a specific value
+// can move this to util/index.ts
+export function replaceInArgs(
+  obj: { [key: string]: any },
+  original: { [key: string]: any },
+  replace: { [key: string]: any },
+): any {
+  for (const property in obj) {
+    if (deepEqual(obj[property], original)) {
+      obj[property] = replace
+      return obj[property]
+    } else if (typeof obj[property] === 'object') {
+      if (Array.isArray(obj[property])) {
+        obj[property].forEach((p: any) => {
+          return replaceInArgs(p, original, replace)
+        })
+      } else {
+        return replaceInArgs(obj[property], original, replace)
+      }
+    }
+  }
+  return
 }

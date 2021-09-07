@@ -241,7 +241,7 @@ describe('valid file tests', () => {
           'volvox2',
         ),
       {
-        timeout: 10000,
+        timeout: 25000,
       },
     )
     autocomplete.focus()
@@ -273,7 +273,7 @@ describe('valid file tests', () => {
       { timeout: 10000 },
     )
     expect(getAllByText('Zoom in to see sequence')).toBeTruthy()
-  }, 10000)
+  }, 30000)
 
   it('click to display center line with correct value', async () => {
     const pluginManager = getPluginManager()

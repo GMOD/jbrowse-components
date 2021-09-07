@@ -9,6 +9,7 @@ Object {
   "defaultSession": Object {
     "name": "New session",
   },
+  "internetAccounts": Array [],
   "plugins": Array [],
   "tracks": Array [],
 }
@@ -22,14 +23,20 @@ Object {
         "volvox",
       ],
       "ixFilePath": Object {
+        "internetAccountId": undefined,
+        "internetAccountPreAuthorization": undefined,
         "locationType": "UriLocation",
         "uri": "trix/volvox.ix",
       },
       "ixxFilePath": Object {
+        "internetAccountId": undefined,
+        "internetAccountPreAuthorization": undefined,
         "locationType": "UriLocation",
         "uri": "trix/volvox.ixx",
       },
       "metaFilePath": Object {
+        "internetAccountId": undefined,
+        "internetAccountPreAuthorization": undefined,
         "locationType": "UriLocation",
         "uri": "trix/volvox_meta.json",
       },
@@ -70,10 +77,14 @@ Object {
       "sequence": Object {
         "adapter": Object {
           "chromSizesLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/default.chrom.sizes",
           },
           "twoBitLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -97,10 +108,14 @@ Object {
       "sequence": Object {
         "adapter": Object {
           "chromSizesLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/default.chrom.sizes",
           },
           "twoBitLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -121,10 +136,14 @@ Object {
       "sequence": Object {
         "adapter": Object {
           "chromSizesLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/default.chrom.sizes",
           },
           "twoBitLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit_404",
           },
@@ -173,18 +192,71 @@ Object {
       },
     },
   },
+  "internetAccounts": Array [
+    Object {
+      "authEndpoint": "https://www.dropbox.com/oauth2/authorize",
+      "clientId": "50knr6xrjfc39sk",
+      "description": "OAuth Info for Dropbox",
+      "hasRefreshToken": true,
+      "internetAccountId": "dropboxOAuth",
+      "name": "Dropbox",
+      "needsAuthorization": true,
+      "needsPKCE": true,
+      "tokenEndpoint": "https://api.dropbox.com/oauth2/token",
+      "type": "DropboxOAuthInternetAccount",
+      "validDomains": Array [
+        "addtodropbox.com",
+        "db.tt",
+        "dropbox.com",
+        "dropboxapi.com",
+        "dropboxbusiness.com",
+        "dropbox.tech",
+        "getdropbox.com",
+      ],
+    },
+    Object {
+      "authEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
+      "clientId": "109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com",
+      "description": "OAuth Info for Google Drive",
+      "internetAccountId": "googleOAuth",
+      "name": "Google",
+      "needsAuthorization": true,
+      "responseType": "token",
+      "scopes": "https://www.googleapis.com/auth/drive.readonly",
+      "type": "GoogleDriveOAuthInternetAccount",
+      "validDomains": Array [
+        "drive.google.com",
+      ],
+    },
+    Object {
+      "description": "External Token for testing",
+      "internetAccountId": "ExternalTokenTest",
+      "name": "External token",
+      "type": "ExternalTokenInternetAccount",
+    },
+    Object {
+      "description": "HTTPBasic",
+      "internetAccountId": "HTTPBasicTest",
+      "name": "HTTPBasic",
+      "type": "HTTPBasicInternetAccount",
+    },
+  ],
   "plugins": Array [],
   "tracks": Array [
     Object {
       "adapter": Object {
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.dup.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.dup.vcf.gz",
         },
@@ -213,12 +285,16 @@ Object {
       "adapter": Object {
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.dup.renamed.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.dup.renamed.vcf.gz",
         },
@@ -246,19 +322,27 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.cram.crai",
         },
         "cramLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.cram",
         },
         "sequenceAdapter": Object {
           "chromSizesLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/default.chrom.sizes",
           },
           "twoBitLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -293,19 +377,27 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.cram.crai",
         },
         "cramLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.cram",
         },
         "sequenceAdapter": Object {
           "chromSizesLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/default.chrom.sizes",
           },
           "twoBitLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -343,19 +435,27 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.cram.crai",
         },
         "cramLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.cram",
         },
         "sequenceAdapter": Object {
           "chromSizesLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/default.chrom.sizes",
           },
           "twoBitLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -390,19 +490,27 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram.crai",
         },
         "cramLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram",
         },
         "sequenceAdapter": Object {
           "chromSizesLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/default.chrom.sizes",
           },
           "twoBitLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -437,19 +545,27 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram.crai",
         },
         "cramLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram",
         },
         "sequenceAdapter": Object {
           "chromSizesLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/default.chrom.sizes",
           },
           "twoBitLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -484,19 +600,27 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram.crai",
         },
         "cramLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram",
         },
         "sequenceAdapter": Object {
           "chromSizesLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/default.chrom.sizes",
           },
           "twoBitLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -531,11 +655,15 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.bam",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sorted.bam.bai",
           },
@@ -575,11 +703,15 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.bam",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sorted-altname.bam.bai",
           },
@@ -613,11 +745,15 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.bam",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sorted-altname.bam.bai",
           },
@@ -651,11 +787,15 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.bam",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sorted.bam.bai",
           },
@@ -689,11 +829,15 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.bam",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sorted-altname.bam.bai",
           },
@@ -732,11 +876,15 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.bam",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sorted.bam.bai",
           },
@@ -781,12 +929,16 @@ Object {
       "adapter": Object {
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.test.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.test.vcf.gz",
         },
@@ -814,6 +966,8 @@ Object {
     Object {
       "adapter": Object {
         "rootUrlTemplate": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_long_names_nclist/{refseq}/trackData.json",
         },
@@ -838,11 +992,15 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.bam.nonexist",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sorted.bam.bai",
           },
@@ -876,11 +1034,15 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.bam",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sorted.bam.bai.nonexist",
           },
@@ -914,6 +1076,8 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.bw.nonexist",
         },
@@ -939,6 +1103,8 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray.bw",
         },
@@ -964,6 +1130,8 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": "dropboxOAuth",
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray.bw",
         },
@@ -989,6 +1157,8 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": "ExternalTokenTest",
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray.bw",
         },
@@ -1014,6 +1184,8 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": "HTTPBasicTest",
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray.bw",
         },
@@ -1039,6 +1211,8 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray.bw",
         },
@@ -1065,6 +1239,8 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray.bw",
         },
@@ -1091,6 +1267,8 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray.altname.bw",
         },
@@ -1183,11 +1361,15 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-long-reads-sv.bam",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-long-reads-sv.bam.bai",
           },
@@ -1221,19 +1403,27 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-long-reads-sv.cram.crai",
         },
         "cramLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-long-reads-sv.cram",
         },
         "sequenceAdapter": Object {
           "chromSizesLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/default.chrom.sizes",
           },
           "twoBitLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -1268,19 +1458,27 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-long-reads.fastq.sorted.cram.crai",
         },
         "cramLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-long-reads.fastq.sorted.cram",
         },
         "sequenceAdapter": Object {
           "chromSizesLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/default.chrom.sizes",
           },
           "twoBitLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -1315,11 +1513,15 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-long-reads.fastq.sorted.bam",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-long-reads.fastq.sorted.bam.bai",
           },
@@ -1353,19 +1555,27 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-samspec.cram.crai",
         },
         "cramLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-samspec.cram",
         },
         "sequenceAdapter": Object {
           "chromSizesLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/default.chrom.sizes",
           },
           "twoBitLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -1400,11 +1610,15 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-samspec.bam",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-samspec.bam.bai",
           },
@@ -1438,19 +1652,27 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sv.cram.crai",
         },
         "cramLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sv.cram",
         },
         "sequenceAdapter": Object {
           "chromSizesLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/default.chrom.sizes",
           },
           "twoBitLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -1485,11 +1707,15 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sv.bam",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sv.bam.bai",
           },
@@ -1523,11 +1749,15 @@ Object {
     Object {
       "adapter": Object {
         "gffGzLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.sort.gff3.gz",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.sort.gff3.gz.tbi",
           },
@@ -1553,19 +1783,27 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram.crai",
         },
         "cramLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.cram",
         },
         "sequenceAdapter": Object {
           "chromSizesLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/default.chrom.sizes",
           },
           "twoBitLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -1600,11 +1838,15 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.bam",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-sorted.bam.bai",
           },
@@ -1639,12 +1881,16 @@ Object {
       "adapter": Object {
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.filtered.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.filtered.vcf.gz",
         },
@@ -1673,6 +1919,8 @@ Object {
       "adapter": Object {
         "type": "VcfAdapter",
         "vcfLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.filtered.vcf",
         },
@@ -1701,12 +1949,16 @@ Object {
       "adapter": Object {
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.filtered.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.filtered.vcf.gz",
         },
@@ -1734,6 +1986,8 @@ Object {
     Object {
       "adapter": Object {
         "bigBedLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.bb",
         },
@@ -1758,11 +2012,15 @@ Object {
     Object {
       "adapter": Object {
         "bedGzLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-bed12.bed.gz",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-bed12.bed.gz.tbi",
           },
@@ -1788,6 +2046,8 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray.bw",
         },
@@ -1814,6 +2074,8 @@ Object {
     Object {
       "adapter": Object {
         "rootUrlTemplate": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_genes_nclist/{refseq}/trackData.json",
         },
@@ -1838,6 +2100,8 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray.bw",
         },
@@ -1864,6 +2128,8 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray.bw",
         },
@@ -1889,6 +2155,8 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray_negative.bw",
         },
@@ -1915,6 +2183,8 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray_negative.bw",
         },
@@ -1940,6 +2210,8 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray_posneg.bw",
         },
@@ -1966,6 +2238,8 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray_posneg_frac.bw",
         },
@@ -1992,6 +2266,8 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_microarray_posneg.bw",
         },
@@ -2017,6 +2293,8 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.bam.coverage.bw",
         },
@@ -2043,6 +2321,8 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-sorted.bam.coverage.bw",
         },
@@ -2071,6 +2351,8 @@ Object {
           "volvox",
         ],
         "pafLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox_fake_synteny.paf",
         },
@@ -2101,11 +2383,15 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-rg.bam",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox-rg.bam.bai",
           },
@@ -2146,19 +2432,27 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-rg.cram.crai",
         },
         "cramLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox-rg.cram",
         },
         "sequenceAdapter": Object {
           "chromSizesLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "/path/to/default.chrom.sizes",
           },
           "twoBitLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -2193,6 +2487,8 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.bw.nonexist",
         },
@@ -2218,12 +2514,16 @@ Object {
       "adapter": Object {
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.filtered.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.filtered.vcf.gz",
         },
@@ -2255,11 +2555,15 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "MM-chebi-volvox.bam",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "MM-chebi-volvox.bam.bai",
           },
@@ -2300,11 +2604,15 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "MM-double-volvox.bam",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "MM-double-volvox.bam.bai",
           },
@@ -2345,11 +2653,15 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "MM-multi-volvox.bam",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "MM-multi-volvox.bam.bai",
           },
@@ -2390,11 +2702,15 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "MM-orient-volvox.bam",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "MM-orient-volvox.bam.bai",
           },
@@ -2435,11 +2751,15 @@ Object {
     Object {
       "adapter": Object {
         "gffGzLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "single_exon_gene.sorted.gff.gz",
         },
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "single_exon_gene.sorted.gff.gz.tbi",
           },
@@ -2466,12 +2786,16 @@ Object {
       "adapter": Object {
         "index": Object {
           "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.inv.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
           "uri": "volvox.inv.vcf.gz",
         },

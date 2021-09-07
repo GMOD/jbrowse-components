@@ -73,6 +73,10 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
       statusCallback = () => {},
     } = opts
     return ObservableCreate<Feature>(async observer => {
+      // see where the opts are coming from, and see if there is any sensible way
+      // to lave out the data-adapter since it has a pluginManager now and
+      // that causes the circular refrrence since its in opts
+
       statusCallback('Downloading bigwig data')
       const ob = await this.bigwig.getFeatureStream(refName, start, end, {
         ...opts,

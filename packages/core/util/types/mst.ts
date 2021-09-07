@@ -56,6 +56,17 @@ export const UriLocationRaw = types.model('UriLocation', {
   locationType: types.literal('UriLocation'),
   uri: types.string,
   baseUri: types.maybe(types.string),
+
+  internetAccountId: types.maybe(types.string),
+
+  // auths information (such as tokens) needed for using this resource.
+  // if provided, these must be completely sufficient for using it
+  internetAccountPreAuthorization: types.maybe(
+    types.model('InternetAccountPreAuthorization', {
+      internetAccountType: types.string,
+      authInfo: types.frozen(),
+    }),
+  ),
 })
 
 export const UriLocation = types.snapshotProcessor(UriLocationRaw, {

@@ -8,9 +8,11 @@ import { MenuItem } from '@jbrowse/core/ui'
 import AddIcon from '@material-ui/icons/Add'
 import SettingsIcon from '@material-ui/icons/Settings'
 import AppsIcon from '@material-ui/icons/Apps'
+import { UriLocation } from '@jbrowse/core/util/types'
 import electron from 'electron'
 import {
   cast,
+  resolveIdentifier,
   getParent,
   getSnapshot,
   types,
@@ -53,6 +55,9 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       assemblyManager: assemblyManagerType,
       savedSessionNames: types.maybe(types.array(types.string)),
       version: types.maybe(types.string),
+      internetAccounts: types.array(
+        pluginManager.pluggableMstType('internet account', 'stateModel'),
+      ),
       isAssemblyEditing: false,
     })
     .volatile(() => ({
@@ -101,6 +106,68 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           snapshot.name = newSnapshotName
           this.setSession(snapshot)
         }
+      },
+      initializeInternetAccount(
+        internetAccountId: string,
+        initialSnapshot = {},
+      ) {
+        const internetAccountConfigSchema = pluginManager.pluggableConfigSchemaType(
+          'internet account',
+        )
+        const configuration = resolveIdentifier(
+          internetAccountConfigSchema,
+          self,
+          internetAccountId,
+        )
+
+        const internetAccountType = pluginManager.getInternetAccountType(
+          configuration.type,
+        )
+        if (!internetAccountType) {
+          throw new Error(`unknown internet account type ${configuration.type}`)
+        }
+
+        const internetAccount = internetAccountType.stateModel.create({
+          ...initialSnapshot,
+          type: configuration.type,
+          configuration,
+        })
+        self.internetAccounts.push(internetAccount)
+        return internetAccount
+      },
+      findAppropriateInternetAccount(location: UriLocation) {
+        let accountToUse = undefined
+
+        // find the existing account selected from menu
+        const selectedId = location.internetAccountId
+        if (selectedId) {
+          const selectedAccount = self.internetAccounts.find(account => {
+            return account.internetAccountId === selectedId
+          })
+          accountToUse = selectedAccount
+        }
+
+        // if no existing account or not found, try to find working account
+        if (!accountToUse) {
+          self.internetAccounts.forEach(account => {
+            const handleResult = account.handlesLocation(location)
+            if (handleResult) {
+              accountToUse = account
+            }
+          })
+        }
+
+        return accountToUse
+      },
+      afterCreate() {
+        addDisposer(
+          self,
+          autorun(() => {
+            self.jbrowse.internetAccounts.forEach(account => {
+              this.initializeInternetAccount(account.internetAccountId)
+            })
+          }),
+        )
       },
     }))
     .volatile(self => ({
