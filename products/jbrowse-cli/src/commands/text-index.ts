@@ -7,7 +7,11 @@ import { indexGff3 } from '../types/gff3Adapter'
 import { indexGtf } from '../types/gtfAdapter'
 import { indexVcf } from '../types/vcfAdapter'
 import JBrowseCommand, { Track, Config } from '../base'
-import { generateMeta, supportedTrack, supportedFile } from '../types/common'
+import {
+  generateMeta,
+  supported,
+  guessAdapterFromFileName,
+} from '../types/common'
 
 export default class TextIndex extends JBrowseCommand {
   static description = 'Make a text-indexing file for any given track(s).'
@@ -90,35 +94,45 @@ export default class TextIndex extends JBrowseCommand {
       },
     } = this.parse(TextIndex)
     const outFlag = target || out || '.'
-    const confFilePath = fs.lstatSync(outFlag).isDirectory()
-      ? path.join(outFlag, 'config.json')
-      : outFlag
-    const dir = path.dirname(confFilePath)
-    const config: Config = JSON.parse(fs.readFileSync(confFilePath, 'utf8'))
-    const configTracks = config.tracks || []
-    const assembliesToIndex =
-      assemblies?.split(',') || config.assemblies?.map(a => a.name) || []
+
     const attributesToIndex = attributes?.split(',') || []
-    const aggregateAdapters = config.aggregateTextSearchAdapters || []
-    const trixDir = path.join(dir, 'trix')
+    // const trixDir = path.join(dir, 'trix')
     // create trix directory if it doesn't exist
-    console.log(file)
-    console.log('files', this.getFileConfigs(file))
-    if (!fs.existsSync(trixDir)) {
-      fs.mkdirSync(trixDir)
-    }
     if (file) {
+      // const confFilePath = fs.lstatSync(outFlag).isDirectory()
+      //   ? path.join(outFlag, 'config.json')
+      //   : outFlag
+      const dir = path.dirname(outFlag)
+      const trixDir = path.join(dir, 'trix')
+      if (!fs.existsSync(trixDir)) {
+        fs.mkdirSync(trixDir)
+      }
       await this.indexDriver(
-        this.getFileConfigs(file),
+        [],
         attributesToIndex,
         dir,
         'aggregate', // name of index
         quiet,
         exclude?.split(','),
-        confFilePath,
+        outFlag,
         [],
+        file,
+        this.getPseudoFileConfigs(file, outFlag),
       )
     } else {
+      const confFilePath = fs.lstatSync(outFlag).isDirectory()
+        ? path.join(outFlag, 'config.json')
+        : outFlag
+      const dir = path.dirname(confFilePath)
+      const config: Config = JSON.parse(fs.readFileSync(confFilePath, 'utf8'))
+      const configTracks = config.tracks || []
+      const aggregateAdapters = config.aggregateTextSearchAdapters || []
+      const assembliesToIndex =
+        assemblies?.split(',') || config.assemblies?.map(a => a.name) || []
+      const trixDir = path.join(dir, 'trix')
+      if (!fs.existsSync(trixDir)) {
+        fs.mkdirSync(trixDir)
+      }
       if (perTrack) {
         if (assemblies) {
           throw new Error(
@@ -153,6 +167,7 @@ export default class TextIndex extends JBrowseCommand {
             exclude?.split(','),
             confFilePath,
             assemblyNames,
+            file,
           )
           if (!textSearching || !textSearching?.textSearchAdapter) {
             const newTrackConfig = {
@@ -218,6 +233,7 @@ export default class TextIndex extends JBrowseCommand {
             exclude?.split(','),
             confFilePath,
             [asm],
+            file,
           )
           // Checks through list of configs and checks the hash values if it
           // already exists it updates the entry and increments the check varible.
@@ -266,8 +282,7 @@ export default class TextIndex extends JBrowseCommand {
    * @param assemblies - assemblies covered by index
    */
   async indexDriver(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    configs: Track[] | any[],
+    configs: Track[],
     attributes: string[],
     out: string,
     name: string,
@@ -275,14 +290,17 @@ export default class TextIndex extends JBrowseCommand {
     exclude: string[],
     confFile: string,
     assemblies: string[],
+    file: string[],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    files?: any[],
   ) {
     const readable = Readable.from(
-      this.indexFiles(configs, attributes, out, quiet, exclude),
+      this.indexFiles(files ? files : configs, attributes, out, quiet, exclude),
     )
     const ixIxxStream = await this.runIxIxx(readable, out, name)
 
     await generateMeta(
-      configs,
+      files ? [] : configs,
       attributes,
       out,
       name,
@@ -290,6 +308,7 @@ export default class TextIndex extends JBrowseCommand {
       exclude,
       confFile,
       assemblies,
+      file,
     )
     return ixIxxStream
   }
@@ -338,8 +357,10 @@ export default class TextIndex extends JBrowseCommand {
     return ixIxxStream(readStream, ixFilename, ixxFilename)
   }
 
-  getFileConfigs(files: string[]) {
-    return files.map(file => supportedFile(file))
+  getPseudoFileConfigs(files: string[], outLocation: string) {
+    return files
+      .map(file => guessAdapterFromFileName(file, outLocation))
+      .filter(fileConfig => supported(fileConfig.adapter.type))
   }
 
   /**
@@ -369,7 +390,7 @@ export default class TextIndex extends JBrowseCommand {
         }
         return currentTrack
       })
-      .filter(track => supportedTrack(track.adapter.type))
+      .filter(track => supported(track.adapter.type))
       .filter(track =>
         assemblyName ? track.assemblyNames.includes(assemblyName) : true,
       )

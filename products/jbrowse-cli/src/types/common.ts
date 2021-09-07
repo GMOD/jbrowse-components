@@ -33,27 +33,38 @@ export function isURL(FileName: string) {
 function getFileName(uri: string) {
   return uri?.slice(uri.lastIndexOf('/') + 1)
 }
-export function supportedFile(filePath: string) {
+export function guessAdapterFromFileName(filePath: string, outFlag: string) {
   const fileName = getFileName(filePath)
+  let thePath = ''
+  if (isURL(filePath)) {
+    thePath = filePath
+  } else {
+    thePath = path.join(outFlag, filePath)
+  }
+  console.log('filename: ', fileName)
+  console.log('file path', thePath)
+  console.log(/\.gff3?\.b?gz$/i.test(fileName))
   if (/\.vcf\.b?gz$/i.test(fileName)) {
     return {
       trackId: fileName,
-      adapter: { type: 'VcfTabixAdapter', vcfGzLocation: { uri: filePath } },
+      adapter: { type: 'VcfTabixAdapter', vcfGzLocation: { uri: thePath } },
     }
   } else if (/\.gff3?\.b?gz$/i.test(fileName)) {
     return {
       trackId: fileName,
-      adapter: { type: 'Gff3TabixAdapter', gffGzLocation: { uri: filePath } },
+      adapter: { type: 'Gff3TabixAdapter', gffGzLocation: { uri: thePath } },
     }
   } else if (/\.gtf?$/i.test(fileName)) {
     return {
       trackId: fileName,
-      adapter: { type: 'GtfTabixAdapter', gffGzLocation: { uri: filePath } },
+      adapter: { type: 'GtfTabixAdapter', gffGzLocation: { uri: thePath } },
     }
   }
-  return {}
+  return {
+    adapter: { type: 'UNSUPPORTED' },
+  }
 }
-export function supportedTrack(type: string) {
+export function supported(type: string) {
   return ['Gff3TabixAdapter', 'GtfTabixAdapter', 'VcfTabixAdapter'].includes(
     type,
   )
@@ -64,7 +75,7 @@ export function supportedTrack(type: string) {
  * @param attributes -  attributes indexed
  * @param include -  feature types included from index
  * @param exclude -  feature types excluded from index
- * @param confFile -  path to config file
+ * @param confPath -  path to config file or root if not specified
  * @param configs - list of track
  */
 export async function generateMeta(
@@ -74,10 +85,11 @@ export async function generateMeta(
   name: string,
   quiet: boolean,
   exclude: string[],
-  confFile: string,
+  confPath: string,
   assemblies: string[],
+  files?: string[],
 ) {
-  const dir = path.dirname(confFile)
+  const dir = path.dirname(confPath)
 
   const tracks = configs.map(config => {
     const { trackId, textSearching, adapter } = config
@@ -101,6 +113,8 @@ export async function generateMeta(
         dateCreated: String(new Date()),
         tracks,
         assemblies,
+        out,
+        files: files ? files : [],
       },
       null,
       2,
