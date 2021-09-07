@@ -18,7 +18,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
 Object {
   "aggregateTextSearchAdapters": Array [
     Object {
-      "assemblies": Array [
+      "assemblyNames": Array [
         "volvox",
       ],
       "ixFilePath": Object {
