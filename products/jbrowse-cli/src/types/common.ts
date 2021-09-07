@@ -70,7 +70,7 @@ export async function generateMeta(
     path.join(dir, 'trix', `${name}_meta.json`),
     JSON.stringify(
       {
-        dateCreated: String(new Date()),
+        dateCreated: new Date().toISOString(),
         tracks,
         assemblies,
       },
