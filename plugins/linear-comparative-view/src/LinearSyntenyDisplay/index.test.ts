@@ -20,13 +20,19 @@ test('create config', () => {
         subadapters: [
           {
             type: 'NCListAdapter',
-            rootUrlTemplate:
-              'https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json',
+            rootUrlTemplate: {
+              uri:
+                'https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json',
+              locationType: 'UriLocation',
+            },
           },
           {
             type: 'NCListAdapter',
-            rootUrlTemplate:
-              'https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json',
+            rootUrlTemplate: {
+              uri:
+                'https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json',
+              locationType: 'UriLocation',
+            },
           },
         ],
         type: 'MCScanAnchorsAdapter',

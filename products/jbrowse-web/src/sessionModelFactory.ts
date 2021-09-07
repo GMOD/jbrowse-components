@@ -32,6 +32,7 @@ import {
   Instance,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
+import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'
@@ -136,6 +137,9 @@ export default function sessionModelFactory(
       },
       get tracks() {
         return [...self.sessionTracks, ...getParent(self).jbrowse.tracks]
+      },
+      get textSearchManager(): TextSearchManager {
+        return getParent(self).textSearchManager
       },
       get connections() {
         return [

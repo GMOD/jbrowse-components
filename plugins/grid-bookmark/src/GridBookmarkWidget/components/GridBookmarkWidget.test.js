@@ -53,7 +53,7 @@ describe('<GridBookmarkWidget />', () => {
 
     const { findByText } = render(<GridBookmarkWidget model={model} />)
 
-    expect(findByText('chr1:1-12')).toBeTruthy()
+    expect(await findByText('chr1:2..12')).toBeTruthy()
   })
 
   it('deletes individual bookmarks correctly', async () => {
@@ -84,7 +84,7 @@ describe('<GridBookmarkWidget />', () => {
 
     const { findByText } = render(<GridBookmarkWidget model={model} />)
 
-    fireEvent.click(await findByText('Clear bookmarks'))
+    fireEvent.click(await findByText('Clear'))
     fireEvent.click(await findByText('Confirm'))
 
     expect(await findByText('No rows')).toBeTruthy()

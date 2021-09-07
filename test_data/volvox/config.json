@@ -67,36 +67,21 @@
   ],
   "aggregateTextSearchAdapters": [
     {
-      "type": "JBrowse1TextSearchAdapter",
-      "textSearchAdapterId": "JBrowse1GenerateNamesAdapter",
-      "namesIndexLocation": {
-        "uri": "names/",
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "volvox-index",
+      "ixFilePath": {
+        "uri": "trix/volvox.ix",
         "locationType": "UriLocation"
       },
-      "tracks": [
-        "bedtabix_genes",
-        "volvox_test_vcf",
-        "gff3tabix_genes",
-        "volvox_filtered_vcf"
-      ],
-      "assemblies": ["volvox", "volvox2"]
-    },
-    {
-      "type": "JBrowse1TextSearchAdapter",
-      "textSearchAdapterId": "AdapterWithoutAssemblies",
-      "namesIndexLocation": {
-        "uri": "names/",
-        "locationType": "UriLocation"
-      }
-    },
-    {
-      "type": "JBrowse1TextSearchAdapter",
-      "textSearchAdapterId": "AdapterWithDiffAssemblies",
-      "namesIndexLocation": {
-        "uri": "names/",
+      "ixxFilePath": {
+        "uri": "trix/volvox.ixx",
         "locationType": "UriLocation"
       },
-      "assemblies": ["volvox3", "volvox4"]
+      "metaFilePath": {
+        "uri": "trix/volvox_meta.json",
+        "locationType": "UriLocation"
+      },
+      "assemblies": ["volvox"]
     }
   ],
   "tracks": [
@@ -118,15 +103,6 @@
             "locationType": "UriLocation"
           }
         }
-      },
-      "textSearchAdapter": {
-        "type": "JBrowse1TextSearchAdapter",
-        "textSearchAdapterId": "TrackAdapter",
-        "namesIndexLocation": {
-          "uri": "names/",
-          "locationType": "UriLocation"
-        },
-        "assemblies": ["NonExistantAssembly"]
       }
     },
     {
@@ -601,7 +577,7 @@
     {
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_dropbox",
-      "name": "wiggle_track xyplot",
+      "name": "wiggle_track xyplot dropbox",
       "category": ["Integration test", "Wiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
@@ -616,7 +592,7 @@
     {
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_externaltoken",
-      "name": "wiggle_track xyplot",
+      "name": "wiggle_track xyplot external token",
       "category": ["Integration test", "Wiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
@@ -631,7 +607,7 @@
     {
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_httpbasic",
-      "name": "wiggle_track xyplot",
+      "name": "wiggle_track xyplot httpbasic",
       "category": ["Integration test", "Wiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
@@ -1603,7 +1579,7 @@
       "needsAuthorization": true,
       "needsPKCE": true,
       "hasRefreshToken": true,
-      "clientId": "wyngfdvw0ntnj5b",
+      "clientId": "50knr6xrjfc39sk",
       "validDomains": [
         "addtodropbox.com",
         "db.tt",
@@ -1621,18 +1597,6 @@
       "description": "OAuth Info for Google Drive",
       "authEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
       "needsAuthorization": true,
-      "clientId": "20156747540-bes2tq75790efrskmb5pa3hupujgenb2.apps.googleusercontent.com",
-      "scopes": "https://www.googleapis.com/auth/drive.readonly",
-      "responseType": "token",
-      "validDomains": ["drive.google.com"]
-    },
-    {
-      "type": "GoogleDriveOAuthInternetAccount",
-      "internetAccountId": "googleOAuth2",
-      "name": "Google2",
-      "description": "OAuth Info for Google Drive2",
-      "authEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
-      "needsAuthorization": true,
       "clientId": "109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com",
       "scopes": "https://www.googleapis.com/auth/drive.readonly",
       "responseType": "token",
@@ -1643,16 +1607,14 @@
       "internetAccountId": "ExternalTokenTest",
       "name": "External token",
       "description": "External Token for testing",
-      "validDomains": ["externaltoken.com"],
-      "authHeader": "X-Auth-Token",
-      "customEndpoint": "http://localhost:8010/proxy"
+      "validDomains": []
     },
     {
       "type": "HTTPBasicInternetAccount",
       "internetAccountId": "HTTPBasicTest",
       "name": "HTTPBasic",
       "description": "HTTPBasic",
-      "validDomains": ["httpbasic.com"]
+      "validDomains": []
     }
   ]
 }

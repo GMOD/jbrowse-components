@@ -20,7 +20,10 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
 
   private configRefNames?: string[]
 
-  constructor(config: Instance<typeof MyConfigSchema>, pluginManager: PluginManager) {
+  constructor(
+    config: Instance<typeof MyConfigSchema>,
+    pluginManager: PluginManager,
+  ) {
     super(config, pluginManager)
     const refNames = readConfObject(config, 'refNames')
     const rootUrlTemplate = readConfObject(config, 'rootUrlTemplate')

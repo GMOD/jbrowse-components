@@ -37,8 +37,6 @@ const stateModelFactory = (
         return 'ExternalTokenInternetAccount'
       },
       handlesLocation(location: UriLocation): boolean {
-        // this will probably look at something in the config which indicates that it is an OAuth pathway,
-        // also look at location, if location is set to need authentication it would reutrn true
         const validDomains = self.accountConfig.validDomains || []
         return validDomains.some((domain: string) =>
           location?.uri.includes(domain),
@@ -122,7 +120,9 @@ const stateModelFactory = (
           opts?: RequestInit,
         ): Promise<Response> {
           if (!preAuthInfo || !preAuthInfo.authInfo) {
-            throw new Error('Auth Information Missing')
+            throw new Error(
+              'Failed to obtain authorization information needed to fetch',
+            )
           }
 
           let foundToken
@@ -174,7 +174,9 @@ const stateModelFactory = (
           }
 
           if (inWebWorker && !location.internetAccountPreAuthorization) {
-            throw new Error('Error')
+            throw new Error(
+              'Failed to obtain authorization information needed to fetch',
+            )
           }
           let accessToken
           try {

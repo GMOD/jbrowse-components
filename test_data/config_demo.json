@@ -3746,5 +3746,41 @@
   "connections": [],
   "defaultSession": {
     "name": "New Session"
-  }
+  },
+  "aggregateTextSearchAdapters": [
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "hg19-index",
+      "ixFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix",
+        "locationType": "UriLocation"
+      },
+      "ixxFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx",
+        "locationType": "UriLocation"
+      },
+      "metaFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json",
+        "locationType": "UriLocation"
+      },
+      "assemblies": ["hg19"]
+    },
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "hg38-index",
+      "ixFilePath": {
+        "uri": "https://jbrowse.org/genomes/GRCh38/trix/hg38.ix",
+        "locationType": "UriLocation"
+      },
+      "ixxFilePath": {
+        "uri": "https://jbrowse.org/genomes/GRCh38/trix/hg38.ixx",
+        "locationType": "UriLocation"
+      },
+      "metaFilePath": {
+        "uri": "https://jbrowse.org/genomes/GRCh38/trix/meta.json",
+        "locationType": "UriLocation"
+      },
+      "assemblies": ["hg38"]
+    }
+  ]
 }

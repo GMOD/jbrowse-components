@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Instance } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../../configuration'
 import PluginManager from '../../PluginManager'
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function createInternetAccountConfig(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'InternetAccount',
@@ -28,11 +28,6 @@ export function createInternetAccountConfig(pluginManager: PluginManager) {
         type: 'string',
         defaultValue: '',
       },
-      //   metadata: {
-      //     type: 'frozen',
-      //     description: 'anything to add about this internet account',
-      //     defaultValue: {},
-      //   },
     },
     { explicitIdentifier: 'internetAccountId' },
   )

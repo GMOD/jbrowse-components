@@ -7,7 +7,7 @@ import {
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
 import assemblyManager from '../../assemblyManager'
-import textSearchManager from '../../TextSearch/TextSearchManager'
+import TextSearchManager from '../../TextSearch/TextSearchManager'
 import { MenuItem } from '../../ui'
 import {
   NoAssemblyRegion as MUNoAssemblyRegion,
@@ -44,7 +44,7 @@ export function isViewContainer(
 export type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
 
 export type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
-export type TextSearchManager = Instance<ReturnType<typeof textSearchManager>>
+export type { TextSearchManager }
 export interface BasePlugin {
   version?: string
   name: string

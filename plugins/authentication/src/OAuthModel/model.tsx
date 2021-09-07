@@ -84,6 +84,7 @@ const stateModelFactory = (
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let preAuthInfo: any = {}
       return {
+        // opens external OAuth flow, popup for web and new browser window for desktop
         async useEndpointForAuthorization() {
           const config = self.accountConfig
           const data: OAuthData = {
@@ -125,9 +126,6 @@ const stateModelFactory = (
 
           const url = `${config.authEndpoint}?${params}`
 
-          // need the isElectron conditional to check desktop or web
-          // if desktop use  https://auth0.com/blog/securing-electron-applications-with-openid-connect-and-oauth-2/
-          // open new browser window
           if (isElectron) {
             const model = self
             const electron = require('electron')
@@ -323,6 +321,7 @@ const stateModelFactory = (
             )
           }
         },
+        // used to listen to child window for auth code/token
         addMessageChannel() {
           window.addEventListener('message', this.finishOAuthWindow)
         },
@@ -367,13 +366,14 @@ const stateModelFactory = (
             }
           }
         },
+        // modified fetch that includes the headers
         async getFetcher(
           url: RequestInfo,
           opts?: RequestInit,
         ): Promise<Response> {
           if (!preAuthInfo || !preAuthInfo.authInfo) {
             throw new Error(
-              'Authorization information not detected while trying to fetch',
+              'Failed to obtain authorization information needed to fetch',
             )
           }
 
@@ -390,7 +390,6 @@ const stateModelFactory = (
             if (!fileUrl) {
               try {
                 fileUrl = await self.fetchFile(String(url), foundToken)
-                console.log(fileUrl)
               } catch (e) {
                 await this.handleError(e)
               }
@@ -414,8 +413,6 @@ const stateModelFactory = (
             ...newOpts,
           })
         },
-        // called on the web worker, returns a generic filehandle with a modified fetch
-        // preauth info should be filled in by here
         openLocation(location: UriLocation) {
           preAuthInfo =
             location.internetAccountPreAuthorization || self.generateAuthInfo
@@ -423,7 +420,7 @@ const stateModelFactory = (
             fetch: this.getFetcher,
           })
         },
-        // on error it tries again once if there is a refresh token available
+        // fills in a locations preauth information with all necessary information
         async getPreAuthorizationInformation(
           location: UriLocation,
           retried = false,
@@ -431,10 +428,10 @@ const stateModelFactory = (
           if (!preAuthInfo.authInfo) {
             preAuthInfo = self.generateAuthInfo
           }
-
-          // if in worker && !location.preauthInto throw new error
           if (inWebWorker && !location.internetAccountPreAuthorization) {
-            throw new Error('Authorization information not detected')
+            throw new Error(
+              'Failed to obtain authorization information needed to fetch',
+            )
           }
           let accessToken
           try {

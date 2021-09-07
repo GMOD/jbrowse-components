@@ -399,18 +399,6 @@
   "internetAccounts": [
     {
       "type": "OAuthInternetAccount",
-      "internetAccountId": "googleOAuth",
-      "name": "Google",
-      "description": "OAuth Info for Google Drive",
-      "authEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
-      "needsAuthorization": true,
-      "clientId": "20156747540-bes2tq75790efrskmb5pa3hupujgenb2.apps.googleusercontent.com",
-      "scopes": "https://www.googleapis.com/auth/drive.readonly",
-      "responseType": "token",
-      "validDomains": ["drive.google.com"]
-    },
-    {
-      "type": "OAuthInternetAccount",
       "internetAccountId": "dropboxOAuth",
       "name": "Dropbox",
       "description": "OAuth Info for Dropbox",
@@ -419,7 +407,7 @@
       "needsAuthorization": true,
       "needsPKCE": true,
       "hasRefreshToken": true,
-      "clientId": "wyngfdvw0ntnj5b",
+      "clientId": "50knr6xrjfc39sk",
       "validDomains": [
         "addtodropbox.com",
         "db.tt",
@@ -431,20 +419,30 @@
       ]
     },
     {
+      "type": "OAuthInternetAccount",
+      "internetAccountId": "googleOAuth",
+      "name": "Google",
+      "description": "OAuth Info for Google Drive",
+      "authEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
+      "needsAuthorization": true,
+      "clientId": "109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com",
+      "scopes": "https://www.googleapis.com/auth/drive.readonly",
+      "responseType": "token",
+      "validDomains": ["drive.google.com"]
+    },
+    {
       "type": "ExternalTokenInternetAccount",
-      "internetAccountId": "GDCExternalToken",
-      "name": "GDC",
-      "description": "GDC External Token",
-      "validDomains": ["portal.gdc.cancer.gov", "api.gdc.cancer.gov"],
-      "authHeader": "X-Auth-Token",
-      "customEndpoint": "http://localhost:8010/proxy"
+      "internetAccountId": "ExternalTokenTest",
+      "name": "External token",
+      "description": "External Token for testing",
+      "validDomains": []
     },
     {
       "type": "HTTPBasicInternetAccount",
       "internetAccountId": "HTTPBasicTest",
       "name": "HTTPBasic",
       "description": "HTTPBasic",
-      "validDomains": ["httpbasic.com"]
+      "validDomains": []
     }
   ]
 }

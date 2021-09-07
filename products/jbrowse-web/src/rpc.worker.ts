@@ -94,7 +94,7 @@ function wrapForRpc(
 
     // uncomment below to log returns
     // retP.then(
-    //   result => logBuffer.push(['rpc-return', myId, funcName, result]),
+    //   result => console.error('rpc-return', myId, funcName, result),
     //   err => {},
     // )
 

@@ -66,14 +66,8 @@ test('adapter can fetch features from volvox.bam', async () => {
         locationType: 'LocalPathLocation',
       },
       subadapters: [
-        new CustomAdapter(
-          ConfigurationSchema('empty', {}).create(),
-          pluginManager,
-        ),
-        new CustomAdapter(
-          ConfigurationSchema('empty', {}).create(),
-          pluginManager,
-        ),
+        ConfigurationSchema('empty', {}).create(),
+        ConfigurationSchema('empty', {}).create(),
       ],
       assemblyNames: ['grape', 'peach'],
     }),

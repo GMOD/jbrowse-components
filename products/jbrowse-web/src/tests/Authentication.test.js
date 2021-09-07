@@ -45,7 +45,7 @@ describe('authentication', () => {
       'prerendered_canvas',
       {},
       {
-        timeout: 10000,
+        timeout: 20000,
       },
     )
     const bigwigImg = canvas[0].toDataURL()
@@ -55,7 +55,7 @@ describe('authentication', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 15000)
+  }, 25000)
 
   it('opens a bigwig track that needs external token authentication', async () => {
     const pluginManager = getPluginManager()
@@ -80,7 +80,7 @@ describe('authentication', () => {
       'prerendered_canvas',
       {},
       {
-        timeout: 10000,
+        timeout: 20000,
       },
     )
     const bigwigImg = canvas[0].toDataURL()
@@ -90,7 +90,7 @@ describe('authentication', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  })
+  }, 25000)
 
   it('opens a bigwig track that needs httpbasic authentication', async () => {
     const pluginManager = getPluginManager()
@@ -121,7 +121,7 @@ describe('authentication', () => {
       'prerendered_canvas',
       {},
       {
-        timeout: 10000,
+        timeout: 20000,
       },
     )
     const bigwigImg = canvas[0].toDataURL()
@@ -132,4 +132,4 @@ describe('authentication', () => {
       failureThresholdType: 'percent',
     })
   })
-})
+}, 25000)

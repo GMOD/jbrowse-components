@@ -40,7 +40,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     const rootModel: any = this.pluginManager.rootModel
 
     if (location.internetAccountPreAuthorization) {
-      throw new Error('PreAuthorization should not exist yet')
+      throw new Error('Failed to get clean internet account authorization info')
     }
     const account = rootModel?.findAppropriateInternetAccount(location)
 

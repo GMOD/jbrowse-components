@@ -25,7 +25,7 @@ import assemblyManagerFactory, {
 } from '@jbrowse/core/assemblyManager'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import TextSearchManagerF from '@jbrowse/core/TextSearch/TextSearchManager'
+import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 import { UriLocation } from '@jbrowse/core/util/types'
 
@@ -115,7 +115,6 @@ export default function RootModel(
     assemblyConfigSchemasType,
     pluginManager,
   )
-  const TextSearchManager = pluginManager.load(TextSearchManagerF)
   return types
     .model('Root', {
       jbrowse: jbrowseWebFactory(
@@ -144,7 +143,7 @@ export default function RootModel(
         },
       ),
       savedSessionsVolatile: observable.map({}),
-      textSearchManager: new TextSearchManager(),
+      textSearchManager: new TextSearchManager(pluginManager),
       pluginManager,
       error: undefined as undefined | Error,
     }))
