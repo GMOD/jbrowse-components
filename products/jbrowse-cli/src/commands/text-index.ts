@@ -150,7 +150,7 @@ export default class TextIndex extends JBrowseCommand {
                 metaFilePath: {
                   uri: `trix/${trackId}_meta.json`,
                 },
-                assemblies: assemblyNames,
+                assemblyNames,
               },
             },
           }
@@ -215,7 +215,7 @@ export default class TextIndex extends JBrowseCommand {
             metaFilePath: {
               uri: `trix/${asm}_meta.json`,
             },
-            assemblies: [asm],
+            assemblyNames: [asm],
           })
         }
       }
