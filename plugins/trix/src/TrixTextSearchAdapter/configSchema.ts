@@ -23,7 +23,7 @@ export default ConfigurationSchema(
       defaultValue: [],
       description: 'List of tracks covered by text search adapter',
     },
-    assemblies: {
+    assemblyNames: {
       type: 'stringArray',
       defaultValue: [],
       description: 'List of assemblies covered by text search adapter',
