@@ -120,11 +120,11 @@ export default class TextIndex extends JBrowseCommand {
       const confFilePath = fs.lstatSync(outFlag).isDirectory()
         ? path.join(outFlag, 'config.json')
         : outFlag
-      const dir = path.dirname(confFilePath)
+      const outDir = path.dirname(confFilePath)
       const config: Config = JSON.parse(fs.readFileSync(confFilePath, 'utf8'))
       const configTracks = config.tracks || []
 
-      const trixDir = path.join(dir, 'trix')
+      const trixDir = path.join(outDir, 'trix')
       if (!fs.existsSync(trixDir)) {
         fs.mkdirSync(trixDir)
       }
@@ -147,7 +147,6 @@ export default class TextIndex extends JBrowseCommand {
           )
           continue
         }
-        const outDir = path.dirname(confFilePath)
         this.log('Indexing track ' + trackId + '...')
 
         const id = trackId + '-index'
@@ -201,6 +200,11 @@ export default class TextIndex extends JBrowseCommand {
         : outFlag
       const outDir = path.dirname(confFilePath)
       const config: Config = JSON.parse(fs.readFileSync(confFilePath, 'utf8'))
+
+      const trixDir = path.join(outDir, 'trix')
+      if (!fs.existsSync(trixDir)) {
+        fs.mkdirSync(trixDir)
+      }
 
       const aggregateAdapters = config.aggregateTextSearchAdapters || []
       const asms = assemblies?.split(',') || config.assemblies?.map(a => a.name)
