@@ -48,20 +48,43 @@ export default class TrixTextSearchAdapter
         decodeURIComponent(record),
       )
 
-      const idx = rest.findIndex(elt => elt.toLowerCase().indexOf(term) !== -1)
-      const searchString = rest.find(elt => !!elt) as string
+      // gff3 fields are uri encoded so double decode
+      const fields = rest.map(elt => decodeURIComponent(elt))
 
-      let context = rest[idx]
-      const w = 15
-      if (context.length > 40) {
-        const tidx = context.indexOf(term)
-        context =
-          '...' + context.slice(tidx - w, tidx + term.length + w).trim() + '...'
+      const labelFieldIdx = fields.findIndex(elt => !!elt)
+      const contextIdx = fields.findIndex(
+        elt => elt.toLowerCase().indexOf(term) !== -1,
+      )
+
+      const labelField = fields[labelFieldIdx]
+      const contextField = fields[contextIdx]
+
+      let context
+      if (contextIdx !== labelFieldIdx) {
+        const w = 15
+        context = contextField
+        if (contextField.length > 40) {
+          const tidx = contextField.indexOf(term)
+          context =
+            '...' +
+            contextField
+              .slice(Math.max(0, tidx - w), tidx + term.length + w)
+              .trim() +
+            '...'
+        }
       }
+
+      const displayString =
+        !context || labelField.toLowerCase() === context.toLowerCase()
+          ? labelField.length > 40
+            ? labelField.slice(0, 40) + '...'
+            : labelField
+          : `${labelField} (${context})`
+
       return new LocStringResult({
         locString: loc,
-        label: rest.find(elt => !!elt) as string,
-        displayString: `${searchString} (${context})`,
+        label: labelField,
+        displayString,
         matchedObject: result,
         trackId,
       })

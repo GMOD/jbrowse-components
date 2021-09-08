@@ -66,13 +66,15 @@ export async function* indexGff3(
     const locStr = `${seq_id}:${start}..${end}`
 
     if (!typesToExclude.includes(type)) {
+      // turns gff3 attrs into a map, and converts the arrays into space
+      // separated strings
       const col9attrs = Object.fromEntries(
         col9
           .split(';')
           .map(f => f.trim())
           .filter(f => !!f)
           .map(f => f.split('='))
-          .map(([key, val]) => [key.trim(), val.trim()]),
+          .map(([key, val]) => [key.trim(), val.trim().split(',').join(' ')]),
       )
       const attrs = attributes
         .map(attr => col9attrs[attr])
