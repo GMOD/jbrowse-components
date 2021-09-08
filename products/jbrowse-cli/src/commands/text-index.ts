@@ -219,6 +219,7 @@ export default class TextIndex extends JBrowseCommand {
         assemblies?.split(',') ||
         config.assemblies?.map(a => a.name) ||
         (config.assembly ? [config.assembly.name] : [])
+
       if (!asms?.length) {
         throw new Error('No assemblies found')
       }

@@ -324,9 +324,10 @@ describe('run with a single assembly similar to embedded config', () => {
         fs.readFileSync(path.join(ctx.dir, 'config.json'), 'utf8'),
       )
       const assembly = volvoxConfig.assemblies[0]
+      delete volvoxConfig.assemblies
       fs.writeFileSync(
         path.join(ctx.dir, 'config.json'),
-        JSON.stringify(ctx.dir, { ...volvoxConfig, assembly }),
+        JSON.stringify({ ...volvoxConfig, assembly }),
       )
 
       preVolvoxIx = readText(ctx.dir, 'volvox.ix')
@@ -334,7 +335,7 @@ describe('run with a single assembly similar to embedded config', () => {
       preVolvoxMeta = readJSON(ctx.dir, 'volvox_meta.json')
     })
     .command(['text-index', '--target=config.json', '--force'])
-    .it('Indexes entire volvox config', ctx => {
+    .it('Indexes single assembly volvox config', ctx => {
       const postVolvoxIx = readText(ctx.dir, 'volvox.ix')
       const postVolvoxIxx = readText(ctx.dir, 'volvox.ixx')
       const postVolvoxMeta = readJSON(ctx.dir, 'volvox_meta.json')

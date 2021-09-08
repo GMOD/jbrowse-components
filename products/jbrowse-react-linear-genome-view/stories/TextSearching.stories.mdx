@@ -15,12 +15,26 @@ just be a single entry but could be multiple)
 If you use the `jbrowse text-index` command with the --files argument, you can
 create an aggregate index. E.g.
 
-```
+```sh
 jbrowse text-index --file myfile.gff3.gz --file myfile.vcf.gz
 ```
 
 This will output a directory "trix" with aggregate.ix, aggregate.ixx, and
-aggregate_meta.json which you can put into your embedded jbrowse config
+aggregate_meta.json which you can put into your embedded jbrowse config. The
+--file argument is helpful since you may not have an actual config. If you do
+have a config though, you can supply a config e.g.
+
+```json
+{ "assembly": {"name":"hg19",....}, "tracks":[...] }
+```
+
+Then you can use
+
+```
+jbrowse text-index --out yourfile.json --perTrack
+```
+
+This will create an aggregate index
 
 ## Per track search index
 
@@ -37,4 +51,18 @@ Similar to the aggregate use case above, you can use `jbrowse-text-index` with t
 jbrowse text-index --file myfile.gff3.gz
 ```
 
-then it will create a myfile.gff3.gz.ix, myfile.gff3.gz.ixx and myfile.gff3.gz_meta.json
+then it will create a myfile.gff3.gz.ix, myfile.gff3.gz.ixx and myfile.gff3.gz_meta.json. The
+--file argument is helpful since you may not have an actual config. If you do
+have a config though, e.g.
+
+```json
+{ "assembly": {"name":"hg19",....}, "tracks":[...] }
+```
+
+Then you can use
+
+```
+jbrowse text-index --out yourfile.json --perTrack
+```
+
+This will create the --perTrack indexes
