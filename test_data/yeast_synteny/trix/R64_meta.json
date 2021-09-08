@@ -1,5 +1,5 @@
 {
-  "dateCreated": "2021-09-07T21:53:07.805Z",
+  "dateCreated": "2021-09-08T14:14:37.342Z",
   "tracks": [
     {
       "trackId": "r64.sorted.gff",
@@ -19,5 +19,5 @@
       }
     }
   ],
-  "assemblies": ["R64"]
+  "assemblyNames": ["R64"]
 }

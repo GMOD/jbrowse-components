@@ -84,7 +84,7 @@ export default class TextSearchManager {
     adapterConfs: AnyConfigurationModel[],
   ) {
     return adapterConfs.filter(conf =>
-      readConfObject(conf, 'assemblies')?.includes(asmName),
+      readConfObject(conf, 'assemblyNames')?.includes(asmName),
     )
   }
 

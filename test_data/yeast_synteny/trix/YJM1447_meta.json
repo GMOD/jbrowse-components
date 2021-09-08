@@ -1,5 +1,5 @@
 {
-  "dateCreated": "2021-09-07T21:53:09.312Z",
+  "dateCreated": "2021-09-08T14:14:38.363Z",
   "tracks": [
     {
       "trackId": "yjm1447.sorted.gff",
@@ -19,5 +19,5 @@
       }
     }
   ],
-  "assemblies": ["YJM1447"]
+  "assemblyNames": ["YJM1447"]
 }

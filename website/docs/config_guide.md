@@ -683,7 +683,7 @@ Aggregate indexes may look like this
       "metaFilePath": {
         "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json"
       },
-      "assemblies": ["hg19"]
+      "assemblyNames": ["hg19"]
     }
 }
 ```
@@ -712,7 +712,7 @@ An example per-track config may look like this
       "metaFilePath": {
         "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json"
       },
-      "assemblies": ["hg19"]
+      "assemblyNames": ["hg19"]
     },
     "indexingAttributes": ["Name","ID"],
     "indexingFeatureTypesToExclude": ["CDS","exon"]
