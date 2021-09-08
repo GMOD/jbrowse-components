@@ -45,6 +45,6 @@
   },
   "private": true,
   "dependencies": {
-    "@gmod/trix": "^0.2.2"
+    "@gmod/trix": "^1.0.0"
   }
 }
