@@ -111,12 +111,16 @@ export default class TextIndex extends JBrowseCommand {
       await this.indexDriver({
         configs,
         outDir: outFlag,
-        name: 'aggregate',
+        name: configs.length > 1 ? 'aggregate' : path.basename(file[0]),
         quiet,
         attributes: attributes.split(','),
         exclude: exclude.split(','),
         assemblyNames: [],
       })
+
+      this.log(
+        'Successfully created index for these files. See https://jbrowse.org/storybook/lgv/main/?path=/story/text-searching--page for info about usage',
+      )
     }
 
     // indexing in pertrack mode
