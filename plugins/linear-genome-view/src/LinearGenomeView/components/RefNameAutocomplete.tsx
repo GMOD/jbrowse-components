@@ -117,7 +117,6 @@ function RefNameAutocomplete({
   const session = getSession(model)
   const { assemblyManager } = session
   const [open, setOpen] = useState(false)
-  const [error, setError] = useState<Error>()
   const [loaded, setLoaded] = useState<undefined | boolean>(undefined)
   const [currentSearch, setCurrentSearch] = useState('')
   const [searchOptions, setSearchOptions] = useState<Option[]>([])
@@ -164,7 +163,7 @@ function RefNameAutocomplete({
       } catch (e) {
         console.error(e)
         if (active) {
-          setError(e)
+          session.notify(`${e}`, 'error')
         }
       }
     })()
@@ -172,7 +171,7 @@ function RefNameAutocomplete({
     return () => {
       active = false
     }
-  }, [assemblyName, debouncedSearch, model])
+  }, [assemblyName, debouncedSearch, session, model])
 
   function onChange(selectedOption: Option | string) {
     if (selectedOption && assemblyName) {
@@ -193,104 +192,98 @@ function RefNameAutocomplete({
   // heuristic, text width + icon width, minimum 200
   const width = Math.min(Math.max(measureText(inputBoxVal, 16) + 25, 200), 550)
   return (
-    <>
-      <Autocomplete
-        id={`refNameAutocomplete-${model.id}`}
-        data-testid="autocomplete"
-        clearOnBlur
-        disableListWrap
-        disableClearable
-        PopperComponent={MyPopper}
-        disabled={!!error || !assemblyName}
-        freeSolo
-        includeInputInList
-        selectOnFocus
-        style={{ ...style, width }}
-        value={inputBoxVal}
-        loading={loaded !== undefined ? !loaded : false}
-        loadingText="loading results"
-        open={open}
-        onOpen={() => {
-          setOpen(true)
-        }}
-        onClose={() => {
-          setOpen(false)
-          setLoaded(undefined)
-          if (hasDisplayedRegions) {
-            setCurrentSearch('')
-            setSearchOptions([])
-          }
-        }}
-        onChange={(_, selectedOption) => onChange(selectedOption)}
-        options={searchOptions.length === 0 ? options : searchOptions}
-        getOptionDisabled={option => option?.group === 'limitOption'}
-        filterOptions={(options, params) => {
-          const searchQuery = params.inputValue.toLocaleLowerCase()
-          const filtered = filterOptions(options, searchQuery)
-          return filtered.length >= 100
-            ? filtered.slice(0, 100).concat([
-                {
-                  group: 'limitOption',
-                  result: new BaseResult({
-                    label: 'keep typing for more results',
-                    renderingComponent: (
-                      <Typography>{'keep typing for more results'}</Typography>
-                    ),
-                  }),
-                },
-              ])
-            : filtered
-        }}
-        renderInput={params => {
-          const { helperText, InputProps = {} } = TextFieldProps
-          const TextFieldInputProps = {
-            ...params.InputProps,
-            ...InputProps,
-            endAdornment: (
-              <>
-                {regions.length === 0 ? (
-                  <CircularProgress color="inherit" size={20} />
-                ) : (
-                  <InputAdornment position="end" style={{ marginRight: 7 }}>
-                    <SearchIcon />
-                  </InputAdornment>
-                )}
-                {params.InputProps.endAdornment}
-              </>
-            ),
-          }
-          return (
-            <TextField
-              {...params}
-              {...TextFieldProps}
-              helperText={helperText}
-              InputProps={TextFieldInputProps}
-              placeholder="Search for location"
-              onChange={e => {
-                setCurrentSearch(e.target.value)
-              }}
-            />
-          )
-        }}
-        renderOption={option => {
-          const { result } = option
-          const component = result.getRenderingComponent()
-          if (component) {
-            if (React.isValidElement(component)) {
-              return component
-            }
-          }
-          return <Typography noWrap>{result.getDisplayString()}</Typography>
-        }}
-        getOptionLabel={option =>
-          (typeof option === 'string' ? option : option.result.getLabel()) || ''
+    <Autocomplete
+      id={`refNameAutocomplete-${model.id}`}
+      data-testid="autocomplete"
+      clearOnBlur
+      disableListWrap
+      disableClearable
+      PopperComponent={MyPopper}
+      disabled={!assemblyName}
+      freeSolo
+      includeInputInList
+      selectOnFocus
+      style={{ ...style, width }}
+      value={inputBoxVal}
+      loading={loaded !== undefined ? !loaded : false}
+      loadingText="loading results"
+      open={open}
+      onOpen={() => {
+        setOpen(true)
+      }}
+      onClose={() => {
+        setOpen(false)
+        setLoaded(undefined)
+        if (hasDisplayedRegions) {
+          setCurrentSearch('')
+          setSearchOptions([])
         }
-      />
-      <br />
-      {error ? (
-        <Typography variant="h6" color="error">{`${error}`}</Typography>
-      ) : null}
-    </>
+      }}
+      onChange={(_, selectedOption) => onChange(selectedOption)}
+      options={searchOptions.length === 0 ? options : searchOptions}
+      getOptionDisabled={option => option?.group === 'limitOption'}
+      filterOptions={(options, params) => {
+        const searchQuery = params.inputValue.toLocaleLowerCase()
+        const filtered = filterOptions(options, searchQuery)
+        return filtered.length >= 100
+          ? filtered.slice(0, 100).concat([
+              {
+                group: 'limitOption',
+                result: new BaseResult({
+                  label: 'keep typing for more results',
+                  renderingComponent: (
+                    <Typography>{'keep typing for more results'}</Typography>
+                  ),
+                }),
+              },
+            ])
+          : filtered
+      }}
+      renderInput={params => {
+        const { helperText, InputProps = {} } = TextFieldProps
+        const TextFieldInputProps = {
+          ...params.InputProps,
+          ...InputProps,
+          endAdornment: (
+            <>
+              {regions.length === 0 ? (
+                <CircularProgress color="inherit" size={20} />
+              ) : (
+                <InputAdornment position="end" style={{ marginRight: 7 }}>
+                  <SearchIcon />
+                </InputAdornment>
+              )}
+              {params.InputProps.endAdornment}
+            </>
+          ),
+        }
+        return (
+          <TextField
+            {...params}
+            {...TextFieldProps}
+            helperText={helperText}
+            InputProps={TextFieldInputProps}
+            placeholder="Search for location"
+            onChange={e => {
+              setCurrentSearch(e.target.value)
+            }}
+          />
+        )
+      }}
+      renderOption={option => {
+        const { result } = option
+        const component = result.getRenderingComponent()
+        if (component) {
+          if (React.isValidElement(component)) {
+            return component
+          }
+        }
+        return <Typography noWrap>{result.getDisplayString()}</Typography>
+      }}
+      getOptionLabel={option =>
+        (typeof option === 'string' ? option : option.result.getLabel()) || ''
+      }
+    />
   )
 }
 
