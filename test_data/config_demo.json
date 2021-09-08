@@ -233,26 +233,16 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "genehancer_ucsc_hg38",
-      "name": "UCSC GeneHancer",
+      "trackId": "segdups_ucsc_hg38",
+      "name": "UCSC SegDups",
       "category": ["Annotation"],
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "UCSCAdapter",
-        "track": "geneHancerInteractionsDoubleElite"
+        "track": "genomicSuperDups"
       }
     },
-    {
-      "type": "FeatureTrack",
-      "trackId": "genehancer_ucsc_hg19",
-      "name": "UCSC GeneHancer",
-      "category": ["Annotation"],
-      "assemblyNames": ["hg19"],
-      "adapter": {
-        "type": "UCSCAdapter",
-        "track": "geneHancerInteractionsDoubleElite"
-      }
-    },
+
     {
       "type": "GDCTrack",
       "trackId": "gdc_plugin_track",
@@ -3404,7 +3394,7 @@
       "metaFilePath": {
         "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json"
       },
-      "assemblies": ["hg19"]
+      "assemblyNames": ["hg19"]
     },
     {
       "type": "TrixTextSearchAdapter",
@@ -3418,7 +3408,7 @@
       "metaFilePath": {
         "uri": "https://jbrowse.org/genomes/GRCh38/trix/meta.json"
       },
-      "assemblies": ["hg38"]
+      "assemblyNames": ["hg38"]
     }
   ]
 }

@@ -47,7 +47,7 @@ test('basic test of electron-mock-ipc', () => {
   ipcRenderer.send('test-event', testMessage)
 })
 
-describe('JBrowse Desktop', () => {
+xdescribe('JBrowse Desktop', () => {
   it('renders start screen', async () => {
     ipcMain.handle('listSessions', () => ({}))
 

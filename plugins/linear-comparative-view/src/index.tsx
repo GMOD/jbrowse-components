@@ -241,25 +241,37 @@ function WindowSizeDlg(props: {
   useEffect(() => {
     let done = false
     ;(async () => {
-      let p = preFeature
-      if (p.get('flags') & 2048) {
-        const SA: string = getTag(p, 'SA') || ''
-        const primaryAln = SA.split(';')[0]
-        const [saRef, saStart] = primaryAln.split(',')
-        const { rpcManager } = getSession(track)
-        const adapterConfig = getConf(track, 'adapter')
-        const sessionId = getRpcSessionId(track)
-        const feats = (await rpcManager.call(sessionId, 'CoreGetFeatures', {
-          adapterConfig,
-          sessionId,
-          region: { refName: saRef, start: +saStart - 1, end: +saStart },
-        })) as any[]
-        p = feats.find(
-          f => f.get('name') === p.get('name') && !(f.get('flags') & 2048),
-        )
-      }
-      if (!done) {
-        setPrimaryFeature(p)
+      try {
+        if (preFeature.get('flags') & 2048) {
+          const SA: string = getTag(preFeature, 'SA') || ''
+          const primaryAln = SA.split(';')[0]
+          const [saRef, saStart] = primaryAln.split(',')
+          const { rpcManager } = getSession(track)
+          const adapterConfig = getConf(track, 'adapter')
+          const sessionId = getRpcSessionId(track)
+          const feats = (await rpcManager.call(sessionId, 'CoreGetFeatures', {
+            adapterConfig,
+            sessionId,
+            region: { refName: saRef, start: +saStart - 1, end: +saStart },
+          })) as Feature[]
+          const result = feats.find(
+            f =>
+              f.get('name') === preFeature.get('name') &&
+              !(f.get('flags') & 2048),
+          )
+          if (result) {
+            if (!done) {
+              setPrimaryFeature(result)
+            }
+          } else {
+            throw new Error('primary feature not found')
+          }
+        } else {
+          setPrimaryFeature(preFeature)
+        }
+      } catch (e) {
+        console.error(e)
+        setError(e)
       }
     })()
 
@@ -284,9 +296,7 @@ function WindowSizeDlg(props: {
       const SA: string = getTag(feature, 'SA') || ''
       const readName = feature.get('name')
 
-      // the suffix -temp is used in the beforeDetach handler to automatically
-      // remove itself from the session when this view is destroyed
-      const readAssembly = `${readName}_assembly-temp`
+      const readAssembly = `${readName}_assembly_${Date.now()}`
       const [trackAssembly] = getConf(track, 'assemblyNames')
       const assemblyNames = [trackAssembly, readAssembly]
       const trackId = `track-${Date.now()}`

@@ -180,14 +180,14 @@ function onClick(feature: Feature, self: LinearPileupDisplayModel) {
     const clipPos = getClip(cigar, 1)
     const flags = feature.get('flags')
     const origStrand = feature.get('strand')
-    const SA: string = getTag(feature, 'SA') || ''
     const readName = feature.get('name')
-    const readAssembly = `${readName}_assembly`
+    const readAssembly = `${readName}_assembly_${Date.now()}`
     const { parentTrack } = self
     const [trackAssembly] = getConf(parentTrack, 'assemblyNames')
     const assemblyNames = [trackAssembly, readAssembly]
     const trackId = `track-${Date.now()}`
     const trackName = `${readName}_vs_${trackAssembly}`
+    const SA: string = getTag(feature, 'SA') || ''
     const supplementaryAlignments = SA.split(';')
       .filter(aln => !!aln)
       .map((aln, index) => {

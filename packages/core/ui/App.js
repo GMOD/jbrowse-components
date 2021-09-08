@@ -1,5 +1,16 @@
-import React, { Suspense } from 'react'
-import { AppBar, Fab, Toolbar, Tooltip, makeStyles } from '@material-ui/core'
+import React, { useState, Suspense } from 'react'
+import {
+  AppBar,
+  Button,
+  Fab,
+  MenuItem,
+  Paper,
+  Select,
+  Toolbar,
+  Tooltip,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 import LaunchIcon from '@material-ui/icons/Launch'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
@@ -76,6 +87,10 @@ const useStyles = makeStyles(theme => ({
     borderColor: theme.palette.secondary.main,
     backgroundColor: theme.palette.primary.light,
   },
+
+  selectPaper: {
+    padding: theme.spacing(4),
+  },
 }))
 
 const Logo = observer(({ session }) => {
@@ -88,9 +103,11 @@ const Logo = observer(({ session }) => {
   }
 })
 
-const App = observer(({ session, HeaderButtons }) => {
+const App = observer(({ session, HeaderButtons = null }) => {
   const classes = useStyles()
   const { pluginManager } = getEnv(session)
+  const viewTypes = pluginManager.getElementTypeRecord('view').all()
+  const [value, setValue] = useState(viewTypes[0]?.name)
   const {
     visibleWidget,
     drawerWidth,
@@ -164,28 +181,55 @@ const App = observer(({ session, HeaderButtons }) => {
           </AppBar>
         </div>
         <div className={classes.components}>
-          {views.map(view => {
-            const viewType = pluginManager.getViewType(view.type)
-            if (!viewType) {
-              throw new Error(`unknown view type ${view.type}`)
-            }
-            const { ReactComponent } = viewType
-            return (
-              <ViewContainer
-                key={`view-${view.id}`}
-                view={view}
-                onClose={() => session.removeView(view)}
+          {views.length ? (
+            views.map(view => {
+              const viewType = pluginManager.getViewType(view.type)
+              if (!viewType) {
+                throw new Error(`unknown view type ${view.type}`)
+              }
+              const { ReactComponent } = viewType
+              return (
+                <ViewContainer
+                  key={`view-${view.id}`}
+                  view={view}
+                  onClose={() => session.removeView(view)}
+                >
+                  <Suspense fallback={<div>Loading...</div>}>
+                    <ReactComponent
+                      model={view}
+                      session={session}
+                      getTrackType={pluginManager.getTrackType}
+                    />
+                  </Suspense>
+                </ViewContainer>
+              )
+            })
+          ) : (
+            <Paper className={classes.selectPaper}>
+              <Typography>Select a view to launch</Typography>
+              <Select
+                value={value}
+                onChange={event => setValue(event.target.value)}
               >
-                <Suspense fallback={<div>Loading...</div>}>
-                  <ReactComponent
-                    model={view}
-                    session={session}
-                    getTrackType={pluginManager.getTrackType}
-                  />
-                </Suspense>
-              </ViewContainer>
-            )
-          })}
+                {viewTypes.map(({ name }) => {
+                  return (
+                    <MenuItem key={name} value={name}>
+                      {name}
+                    </MenuItem>
+                  )
+                })}
+              </Select>
+              <Button
+                onClick={() => {
+                  session.addView(value, {})
+                }}
+                variant="contained"
+                color="primary"
+              >
+                Launch view
+              </Button>
+            </Paper>
+          )}
 
           {/* blank space at the bottom of screen allows scroll */}
           <div style={{ height: 300 }} />

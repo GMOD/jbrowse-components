@@ -39,9 +39,7 @@ export default class ComparativeRender extends RpcMethodType {
       return renamedArgs
     }
 
-    const { rendererType } = args
-
-    const RendererType = this.pluginManager.getRendererType(rendererType)
+    const RendererType = this.pluginManager.getRendererType(args.rendererType)
 
     if (!(RendererType instanceof ComparativeServerSideRendererType)) {
       throw new Error(
