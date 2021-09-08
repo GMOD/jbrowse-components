@@ -94,8 +94,8 @@ export default class TextIndex extends JBrowseCommand {
 
     // indexing individual files
     if (file) {
-      const out = path.dirname(outFlag)
-      const trixDir = path.join(out, 'trix')
+      const outDir = path.dirname(outFlag)
+      const trixDir = path.join(outDir, 'trix')
       if (!fs.existsSync(trixDir)) {
         fs.mkdirSync(trixDir)
       }
@@ -111,6 +111,7 @@ export default class TextIndex extends JBrowseCommand {
         quiet,
         attributes: attributes.split(','),
         exclude: exclude.split(','),
+        assemblyNames: [],
       })
     }
 
@@ -191,8 +192,10 @@ export default class TextIndex extends JBrowseCommand {
           JSON.stringify({ ...config, tracks: configTracks }, null, 2),
         )
       }
-    } else {
-      // creates an aggregate index per assembly
+    }
+
+    // creates an aggregate index per assembly
+    else {
       const confFilePath = fs.lstatSync(outFlag).isDirectory()
         ? path.join(outFlag, 'config.json')
         : outFlag
@@ -295,6 +298,7 @@ export default class TextIndex extends JBrowseCommand {
     const readable = Readable.from(
       this.indexFiles(configs, attributes, outDir, quiet, exclude),
     )
+
     const ixIxxStream = await this.runIxIxx(readable, outDir, name)
 
     await generateMeta({
