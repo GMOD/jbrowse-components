@@ -704,7 +704,7 @@
       "metaFilePath": {
         "uri": "trix/R64_meta.json"
       },
-      "assemblies": ["R64"]
+      "assemblyNames": ["R64"]
     },
     {
       "type": "TrixTextSearchAdapter",
@@ -718,7 +718,7 @@
       "metaFilePath": {
         "uri": "trix/YJM1447_meta.json"
       },
-      "assemblies": ["YJM1447"]
+      "assemblyNames": ["YJM1447"]
     }
   ]
 }
