@@ -30,27 +30,72 @@ export function isURL(FileName: string) {
   return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
+export function guessAdapterFromFileName(filePath: string): Track {
+  const uri = isURL(filePath) ? filePath : path.resolve(filePath)
+  const name = path.basename(uri)
+  if (/\.vcf\.b?gz$/i.test(filePath)) {
+    return {
+      trackId: name,
+      name: name,
+      assemblyNames: [],
+      adapter: {
+        type: 'VcfTabixAdapter',
+        vcfGzLocation: { uri },
+      },
+    }
+  } else if (/\.gff3?\.b?gz$/i.test(filePath)) {
+    return {
+      trackId: name,
+      name,
+      assemblyNames: [],
+      adapter: {
+        type: 'Gff3TabixAdapter',
+        gffGzLocation: { uri },
+      },
+    }
+  } else if (/\.gtf?$/i.test(filePath)) {
+    return {
+      trackId: name,
+      name,
+      assemblyNames: [],
+      adapter: {
+        type: 'GtfTabixAdapter',
+        gtfGzLocation: { uri },
+      },
+    }
+  } else {
+    throw new Error(`Unsupported file type ${filePath}`)
+  }
+}
+
+export function supported(type: string) {
+  return ['Gff3TabixAdapter', 'GtfTabixAdapter', 'VcfTabixAdapter'].includes(
+    type,
+  )
+}
 /**
  * Generates metadata of index given a filename (trackId or assembly)
  * @param name -  assembly name or trackId
  * @param attributes -  attributes indexed
  * @param include -  feature types included from index
  * @param exclude -  feature types excluded from index
- * @param confFile -  path to config file
  * @param configs - list of track
  */
-export async function generateMeta(
-  configs: Track[],
-  attributes: string[],
-  out: string,
-  name: string,
-  quiet: boolean,
-  exclude: string[],
-  confFile: string,
-  assemblyNames: string[],
-) {
-  const dir = path.dirname(confFile)
-
+export async function generateMeta({
+  configs,
+  attributes,
+  outDir,
+  name,
+  exclude,
+  assemblyNames,
+}: {
+  configs: Track[]
+  attributes: string[]
+  outDir: string
+  name: string
+  exclude: string[]
+  assemblyNames: string[]
+}) {
   const tracks = configs.map(config => {
     const { trackId, textSearching, adapter } = config
 
@@ -67,7 +112,7 @@ export async function generateMeta(
     }
   })
   fs.writeFileSync(
-    path.join(dir, 'trix', `${name}_meta.json`),
+    path.join(outDir, 'trix', `${name}_meta.json`),
     JSON.stringify(
       {
         dateCreated: new Date().toISOString(),
