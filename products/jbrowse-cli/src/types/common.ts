@@ -47,7 +47,7 @@ export async function generateMeta(
   quiet: boolean,
   exclude: string[],
   confFile: string,
-  assemblies: string[],
+  assemblyNames: string[],
 ) {
   const dir = path.dirname(confFile)
 
@@ -72,7 +72,7 @@ export async function generateMeta(
       {
         dateCreated: new Date().toISOString(),
         tracks,
-        assemblies,
+        assemblyNames,
       },
       null,
       2,
