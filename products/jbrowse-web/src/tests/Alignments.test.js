@@ -155,7 +155,7 @@ describe('alignments track', () => {
       await findByTestId('Blockset-pileup'),
     )
     const canvases = await findAllByTestId1('prerendered_canvas')
-    const img = canvases[1].toDataURL()
+    const img = canvases[0].toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
     expect(buf).toMatchImageSnapshot({
@@ -195,7 +195,7 @@ describe('alignments track', () => {
       await findByTestId('Blockset-pileup'),
     )
     const canvases = await findAllByTestId1('prerendered_canvas')
-    const img = canvases[1].toDataURL()
+    const img = canvases[0].toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
     expect(buf).toMatchImageSnapshot({

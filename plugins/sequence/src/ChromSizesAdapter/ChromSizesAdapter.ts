@@ -25,7 +25,10 @@ export default class extends BaseAdapter implements RegionsAdapter {
     if (!chromSizesLocation) {
       throw new Error('must provide chromSizesLocation')
     }
-    const file = openLocation(chromSizesLocation as FileLocation)
+    const file = openLocation(
+      chromSizesLocation as FileLocation,
+      this.pluginManager,
+    )
     this.source = file.toString()
     this.refSeqs = this.init(file)
   }

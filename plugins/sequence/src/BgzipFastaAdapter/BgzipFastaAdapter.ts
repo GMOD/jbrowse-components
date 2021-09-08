@@ -25,9 +25,9 @@ export default class extends IndexedFasta {
       throw new Error('must provide gziLocation')
     }
     const fastaOpts = {
-      fasta: openLocation(fastaLocation as FileLocation),
-      fai: openLocation(faiLocation as FileLocation),
-      gzi: openLocation(gziLocation as FileLocation),
+      fasta: openLocation(fastaLocation as FileLocation, this.pluginManager),
+      fai: openLocation(faiLocation as FileLocation, this.pluginManager),
+      gzi: openLocation(gziLocation as FileLocation, this.pluginManager),
     }
 
     this.fasta = new BgzipIndexedFasta(fastaOpts)

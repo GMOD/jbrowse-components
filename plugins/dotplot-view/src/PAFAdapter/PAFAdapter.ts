@@ -50,7 +50,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     super(config, pluginManager)
     const pafLocation = readConfObject(config, 'pafLocation') as FileLocation
     const assemblyNames = readConfObject(config, 'assemblyNames') as string[]
-    this.pafLocation = openLocation(pafLocation)
+    this.pafLocation = openLocation(pafLocation, this.pluginManager)
     this.assemblyNames = assemblyNames
   }
 

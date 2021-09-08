@@ -36,8 +36,8 @@ export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
     const fastaLocation = readConfObject(config, 'fastaLocation')
     const faiLocation = readConfObject(config, 'faiLocation')
     const fastaOpts = {
-      fasta: openLocation(fastaLocation as FileLocation),
-      fai: openLocation(faiLocation as FileLocation),
+      fasta: openLocation(fastaLocation as FileLocation, this.pluginManager),
+      fai: openLocation(faiLocation as FileLocation, this.pluginManager),
     }
 
     this.fasta = new IndexedFasta(fastaOpts)

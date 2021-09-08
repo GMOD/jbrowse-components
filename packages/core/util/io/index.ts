@@ -8,6 +8,7 @@ import {
 } from '../types'
 import { getBlob } from '../tracks'
 import { isElectron } from '../../util'
+import PluginManager from '../../PluginManager'
 
 function isUriLocation(location: FileLocation): location is UriLocation {
   return 'uri' in location
@@ -23,7 +24,10 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
   return 'blobId' in location
 }
 
-export function openLocation(location: FileLocation): GenericFilehandle {
+export function openLocation(
+  location: FileLocation,
+  _pluginManager: PluginManager,
+): GenericFilehandle {
   if (!location) {
     throw new Error('must provide a location to openLocation')
   }

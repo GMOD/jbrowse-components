@@ -42,7 +42,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       'bigBedLocation',
     ) as FileLocation
     this.bigbed = new BigBed({
-      filehandle: openLocation(bigBedLocation),
+      filehandle: openLocation(bigBedLocation, this.pluginManager),
     })
 
     this.parser = this.bigbed

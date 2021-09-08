@@ -34,7 +34,10 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
   ) {
     super(config, pluginManager)
     this.bigwig = new BigWig({
-      filehandle: openLocation(readConfObject(config, 'bigWigLocation')),
+      filehandle: openLocation(
+        readConfObject(config, 'bigWigLocation'),
+        this.pluginManager,
+      ),
     })
   }
 

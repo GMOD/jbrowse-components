@@ -23,7 +23,10 @@ export default class RefNameAliasAdapter
     pluginManager: PluginManager,
   ) {
     super(config, pluginManager)
-    this.location = openLocation(readConfObject(config, 'location'))
+    this.location = openLocation(
+      readConfObject(config, 'location'),
+      this.pluginManager,
+    )
     this.promise = this.downloadResults()
   }
 

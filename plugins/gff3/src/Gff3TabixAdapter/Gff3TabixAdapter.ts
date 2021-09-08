@@ -54,9 +54,15 @@ export default class extends BaseFeatureDataAdapter {
 
     this.dontRedispatch = dontRedispatch || ['chromosome', 'contig', 'region']
     this.gff = new TabixIndexedFile({
-      filehandle: openLocation(gffGzLocation),
-      csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
-      tbiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
+      filehandle: openLocation(gffGzLocation, this.pluginManager),
+      csiFilehandle:
+        indexType === 'CSI'
+          ? openLocation(location, this.pluginManager)
+          : undefined,
+      tbiFilehandle:
+        indexType !== 'CSI'
+          ? openLocation(location, this.pluginManager)
+          : undefined,
       chunkCacheSize: 50 * 2 ** 20,
       renameRefSeqs: (n: string) => n,
     })

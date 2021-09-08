@@ -48,7 +48,10 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       'vcfLocation',
     ) as FileLocation
 
-    let fileContents = await openLocation(vcfLocation).readFile()
+    let fileContents = await openLocation(
+      vcfLocation,
+      this.pluginManager,
+    ).readFile()
 
     if (
       typeof fileContents[0] === 'number' &&

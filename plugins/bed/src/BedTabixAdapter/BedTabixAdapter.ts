@@ -43,9 +43,15 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     const { location, indexType } = index
 
     this.bed = new TabixIndexedFile({
-      filehandle: openLocation(bedGzLocation),
-      csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
-      tbiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
+      filehandle: openLocation(bedGzLocation, this.pluginManager),
+      csiFilehandle:
+        indexType === 'CSI'
+          ? openLocation(location, this.pluginManager)
+          : undefined,
+      tbiFilehandle:
+        indexType !== 'CSI'
+          ? openLocation(location, this.pluginManager)
+          : undefined,
       chunkCacheSize: 50 * 2 ** 20,
     })
     this.columnNames = readConfObject(config, 'columnNames')

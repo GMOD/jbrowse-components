@@ -49,8 +49,10 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       throw new Error('missing craiLocation argument')
     }
     this.cram = new IndexedCramFile({
-      cramFilehandle: openLocation(cramLocation),
-      index: new CraiIndex({ filehandle: openLocation(craiLocation) }),
+      cramFilehandle: openLocation(cramLocation, this.pluginManager),
+      index: new CraiIndex({
+        filehandle: openLocation(craiLocation, this.pluginManager),
+      }),
       seqFetch: this.seqFetch.bind(this),
       checkSequenceMD5: false,
       fetchSizeLimit: this.config.fetchSizeLimit || 600000000,
