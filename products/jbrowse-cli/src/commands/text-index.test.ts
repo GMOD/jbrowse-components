@@ -224,6 +224,31 @@ describe('text-index tracks', () => {
     )
 })
 
+describe('text-index with --files', () => {
+  setup
+    .do(async ctx => {
+      await copyDir(
+        path.join(__dirname, '..', '..', '..', '..', 'test_data', 'volvox'),
+        ctx.dir,
+      )
+    })
+    .command(['text-index', '--file', 'volvox.sort.gff3.gz'])
+    .it('Indexes with --file', ctx => {
+      const ixdata = fs.readFileSync(
+        path.join(ctx.dir, 'trix', 'aggregate.ix'),
+        'utf8',
+      )
+      const ixxdata = fs.readFileSync(
+        path.join(ctx.dir, 'trix', 'aggregate.ixx'),
+        'utf8',
+      )
+      expect(ixdata.slice(0, 1000)).toMatchSnapshot()
+      expect(ixdata.slice(-1000)).toMatchSnapshot()
+      expect(ixdata.length).toMatchSnapshot()
+      expect(ixxdata).toMatchSnapshot()
+    })
+})
+
 // source https://stackoverflow.com/a/64255382/2129219
 async function copyDir(src: string, dest: string) {
   await fs.promises.mkdir(dest, { recursive: true })
@@ -238,23 +263,24 @@ async function copyDir(src: string, dest: string) {
       : await fs.promises.copyFile(srcPath, destPath)
   }
 }
-function readText(d: string, s: string) {
-  return fs.readFileSync(path.join(d, 'trix', s), 'utf8')
-}
-function readJSON(d: string, s: string) {
-  return JSON.parse(readText(d, s), function (key, value) {
-    if (key === 'dateCreated') {
-      return 'test'
-    } else {
-      return value
-    }
-  })
-}
 
 describe('check that volvox data is properly indexed, re-run text-index on volvox config if fails', () => {
   let preVolvoxIx = ''
   let preVolvoxIxx = ''
   let preVolvoxMeta = ''
+
+  function readText(d: string, s: string) {
+    return fs.readFileSync(path.join(d, 'trix', s), 'utf8')
+  }
+  function readJSON(d: string, s: string) {
+    return JSON.parse(readText(d, s), function (key, value) {
+      if (key === 'dateCreated') {
+        return 'test'
+      } else {
+        return value
+      }
+    })
+  }
 
   setup
     .do(async ctx => {
