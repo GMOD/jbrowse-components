@@ -16,17 +16,21 @@ import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 import BaseResult, {
   RefSequenceResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
+
 // material ui
 import {
+  CircularProgress,
+  InputAdornment,
+  Popper,
   TextField,
   TextFieldProps as TFP,
-  CircularProgress,
+  PopperProps,
   Typography,
-  InputAdornment,
 } from '@material-ui/core'
 import SearchIcon from '@material-ui/icons/Search'
 import Autocomplete from '@material-ui/lab/Autocomplete'
-// other
+
+// locals
 import { LinearGenomeViewModel } from '..'
 
 /**
@@ -69,10 +73,30 @@ function filterOptions(options: Option[], searchQuery: string) {
   return options.filter(option => {
     const { result } = option
     return (
-      result.getLabel().toLocaleLowerCase().includes(searchQuery) ||
+      result.getLabel().toLowerCase().includes(searchQuery) ||
       result.matchedObject
     )
   })
+}
+
+// MyPopper used to expand search results box wider if needed
+// xref https://stackoverflow.com/a/63583835/2129219
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const MyPopper = function (
+  props: PopperProps & { style?: { width?: unknown } },
+) {
+  const { style } = props
+  return (
+    <Popper
+      {...props}
+      style={{
+        width: 'fit-content',
+        minWidth: Math.min(+(style?.width || 0), 200),
+        background: 'white',
+      }}
+      placement="bottom-start"
+    />
+  )
 }
 
 function RefNameAutocomplete({
@@ -121,21 +145,20 @@ function RefNameAutocomplete({
 
     ;(async () => {
       try {
-        let results: BaseResult[] = []
         if (debouncedSearch && debouncedSearch !== '' && assemblyName) {
           setLoaded(false)
-          const searchResults = await fetchResults(
+          const results = await fetchResults(
             model,
             debouncedSearch,
             assemblyName,
           )
-          results = results.concat(searchResults)
-        }
-        if (results.length >= 0 && active) {
-          const adapterResults: Option[] = results.map(result => {
-            return { result }
-          })
-          setSearchOptions(adapterResults)
+          if (results.length >= 0 && active) {
+            setSearchOptions(
+              results.map(result => {
+                return { result }
+              }),
+            )
+          }
         }
         setLoaded(true)
       } catch (e) {
@@ -166,6 +189,7 @@ function RefNameAutocomplete({
     }
   }
   const inputBoxVal = coarseVisibleLocStrings || value || ''
+
   // heuristic, text width + icon width, minimum 200
   const width = Math.min(Math.max(measureText(inputBoxVal, 16) + 25, 200), 550)
   return (
@@ -176,6 +200,7 @@ function RefNameAutocomplete({
         clearOnBlur
         disableListWrap
         disableClearable
+        PopperComponent={MyPopper}
         disabled={!!error || !assemblyName}
         freeSolo
         includeInputInList
@@ -260,7 +285,8 @@ function RefNameAutocomplete({
         getOptionLabel={option =>
           (typeof option === 'string' ? option : option.result.getLabel()) || ''
         }
-      />{' '}
+      />
+      <br />
       {error ? (
         <Typography variant="h6" color="error">{`${error}`}</Typography>
       ) : null}
