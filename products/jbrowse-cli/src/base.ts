@@ -87,13 +87,11 @@ export interface Assembly {
 
 export interface TrixTextSearchAdapter {
   type: 'TrixTextSearchAdapter'
-
   textSearchAdapterId: string
   ixFilePath: UriLocation
   ixxFilePath: UriLocation
   metaFilePath: UriLocation
-
-  assemblies: string[]
+  assemblyNames: string[]
 }
 export interface TextSearching {
   indexingFeatureTypesToExclude: string[]

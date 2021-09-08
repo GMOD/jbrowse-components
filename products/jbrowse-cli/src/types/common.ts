@@ -30,20 +30,14 @@ export function isURL(FileName: string) {
   return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
-function getFileName(uri: string) {
-  return uri?.slice(uri.lastIndexOf('/') + 1)
-}
 export function guessAdapterFromFileName(filePath: string, outFlag: string) {
-  const fileName = getFileName(filePath)
+  const fileName = path.basename(filePath)
   let thePath = ''
   if (isURL(filePath)) {
     thePath = filePath
   } else {
     thePath = path.join(outFlag, filePath)
   }
-  console.log('filename: ', fileName)
-  console.log('file path', thePath)
-  console.log(/\.gff3?\.b?gz$/i.test(fileName))
   if (/\.vcf\.b?gz$/i.test(fileName)) {
     return {
       trackId: fileName,
@@ -64,6 +58,7 @@ export function guessAdapterFromFileName(filePath: string, outFlag: string) {
     adapter: { type: 'UNSUPPORTED' },
   }
 }
+
 export function supported(type: string) {
   return ['Gff3TabixAdapter', 'GtfTabixAdapter', 'VcfTabixAdapter'].includes(
     type,
@@ -86,7 +81,7 @@ export async function generateMeta(
   quiet: boolean,
   exclude: string[],
   confPath: string,
-  assemblies: string[],
+  assemblyNames: string[],
   files?: string[],
 ) {
   const dir = path.dirname(confPath)
@@ -110,9 +105,9 @@ export async function generateMeta(
     path.join(dir, 'trix', `${name}_meta.json`),
     JSON.stringify(
       {
-        dateCreated: String(new Date()),
+        dateCreated: new Date().toISOString(),
         tracks,
-        assemblies,
+        assemblyNames,
         out,
         files: files ? files : [],
       },

@@ -23,7 +23,7 @@ export async function* indexGff3(
   const progressBar = new SingleBar(
     {
       format: '{bar} ' + trackId + ' {percentage}% | ETA: {eta}s',
-      etaBuffer: 200,
+      etaBuffer: 2000,
     },
     Presets.shades_classic,
   )
@@ -86,9 +86,13 @@ export async function* indexGff3(
         )
         .filter(f => !!f)
       if (name || id) {
-        const record = JSON.stringify([locStr, trackId, name, id])
-        const buff = Buffer.from(record).toString('base64')
-        yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
+        const record = JSON.stringify([
+          encodeURIComponent(locStr),
+          encodeURIComponent(trackId),
+          encodeURIComponent(name || ''),
+          encodeURIComponent(id || ''),
+        ]).replace(/,/g, '|')
+        yield `${record} ${[...new Set(attrs)].join(' ')}\n`
       }
     }
   }
