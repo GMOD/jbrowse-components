@@ -49,12 +49,10 @@ export async function* indexGff3(
     progressBar.update(receivedBytes)
   })
 
-  const gzStream = uri.endsWith('.gz')
-    ? fileDataStream.pipe(createGunzip())
-    : fileDataStream
-
   const rl = readline.createInterface({
-    input: gzStream,
+    input: uri.endsWith('.gz')
+      ? fileDataStream.pipe(createGunzip())
+      : fileDataStream,
   })
 
   for await (const line of rl) {
@@ -68,29 +66,23 @@ export async function* indexGff3(
     const locStr = `${seq_id}:${start}..${end}`
 
     if (!typesToExclude.includes(type)) {
-      const col9attrs = col9.split(';')
-      const name = col9attrs
-        .find(f => f.startsWith('Name'))
-        ?.split('=')[1]
-        .trim()
-      const id = col9attrs
-        .find(f => f.startsWith('ID'))
-        ?.split('=')[1]
-        .trim()
+      const col9attrs = Object.fromEntries(
+        col9
+          .split(';')
+          .map(f => f.trim())
+          .filter(f => !!f)
+          .map(f => f.split('='))
+          .map(([key, val]) => [key.trim(), val.trim()]),
+      )
       const attrs = attributes
-        .map(attr =>
-          col9attrs
-            .find(f => f.startsWith(attr))
-            ?.split('=')[1]
-            .trim(),
-        )
-        .filter(f => !!f)
-      if (name || id) {
+        .map(attr => col9attrs[attr])
+        .filter((f): f is string => !!f)
+
+      if (attrs.length) {
         const record = JSON.stringify([
           encodeURIComponent(locStr),
           encodeURIComponent(trackId),
-          encodeURIComponent(name || ''),
-          encodeURIComponent(id || ''),
+          ...attrs.map(a => encodeURIComponent(a)),
         ]).replace(/,/g, '|')
         yield `${record} ${[...new Set(attrs)].join(' ')}\n`
       }

@@ -255,15 +255,11 @@ function RefNameAutocomplete({
               return component
             }
           }
-          return <Typography noWrap>{result.getLabel()}</Typography>
+          return <Typography noWrap>{result.getDisplayString()}</Typography>
         }}
-        getOptionLabel={option => {
-          // needed for filtering options and value
-          return (
-            (typeof option === 'string' ? option : option.result.getLabel()) ||
-            ''
-          )
-        }}
+        getOptionLabel={option =>
+          (typeof option === 'string' ? option : option.result.getLabel()) || ''
+        }
       />{' '}
       {error ? (
         <Typography variant="h6" color="error">{`${error}`}</Typography>

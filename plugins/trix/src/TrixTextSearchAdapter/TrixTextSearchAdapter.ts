@@ -41,20 +41,31 @@ export default class TrixTextSearchAdapter
    */
   async searchIndex(args: BaseArgs) {
     const results = await this.trixJs.search(args.queryString)
-    const formatted = results
-      .map(data => JSON.parse(data.replace(/\|/g, ',')) as string[])
-      .map(result => {
-        const [loc, trackId, name, id] = result.map(record =>
-          decodeURIComponent(record),
-        )
-        return new LocStringResult({
-          locString: loc,
-          label: name || id,
-          matchedAttribute: 'name',
-          matchedObject: result,
-          trackId,
-        })
+    const formatted = results.map(entry => {
+      const [term, data] = entry.split(',')
+      const result = JSON.parse(data.replace(/\|/g, ',')) as string[]
+      const [loc, trackId, ...rest] = result.map(record =>
+        decodeURIComponent(record),
+      )
+
+      const idx = rest.findIndex(elt => elt.toLowerCase().indexOf(term) !== -1)
+      const searchString = rest.find(elt => !!elt) as string
+
+      let context = rest[idx]
+      const w = 15
+      if (context.length > 40) {
+        const tidx = context.indexOf(term)
+        context =
+          '...' + context.slice(tidx - w, tidx + term.length + w).trim() + '...'
+      }
+      return new LocStringResult({
+        locString: loc,
+        label: rest.find(elt => !!elt) as string,
+        displayString: `${searchString} (${context})`,
+        matchedObject: result,
+        trackId,
       })
+    })
 
     if (args.searchType === 'exact') {
       return formatted.filter(
