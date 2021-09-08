@@ -31,26 +31,37 @@ export function isURL(FileName: string) {
 }
 
 export function guessAdapterFromFileName(filePath: string): Track {
+  const uri = path.resolve(filePath)
+  const name = path.basename(uri)
   if (/\.vcf\.b?gz$/i.test(filePath)) {
     return {
-      trackId: filePath,
-      name: filePath,
+      trackId: name,
+      name: name,
       assemblyNames: [],
-      adapter: { type: 'VcfTabixAdapter', vcfGzLocation: { uri: filePath } },
+      adapter: {
+        type: 'VcfTabixAdapter',
+        vcfGzLocation: { uri },
+      },
     }
   } else if (/\.gff3?\.b?gz$/i.test(filePath)) {
     return {
-      trackId: filePath,
-      name: filePath,
+      trackId: name,
+      name,
       assemblyNames: [],
-      adapter: { type: 'Gff3TabixAdapter', gffGzLocation: { uri: filePath } },
+      adapter: {
+        type: 'Gff3TabixAdapter',
+        gffGzLocation: { uri },
+      },
     }
   } else if (/\.gtf?$/i.test(filePath)) {
     return {
-      trackId: filePath,
+      trackId: name,
+      name,
       assemblyNames: [],
-      name: filePath,
-      adapter: { type: 'GtfTabixAdapter', gffGzLocation: { uri: filePath } },
+      adapter: {
+        type: 'GtfTabixAdapter',
+        gtfGzLocation: { uri },
+      },
     }
   } else {
     throw new Error(`Unsupported file type ${filePath}`)

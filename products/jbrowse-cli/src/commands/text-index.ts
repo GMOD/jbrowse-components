@@ -90,12 +90,12 @@ export default class TextIndex extends JBrowseCommand {
         file,
       },
     } = this.parse(TextIndex)
+
     const outFlag = target || out || '.'
 
-    // indexing individual files
+    // indexing individual files, assumes no config.json
     if (file) {
-      const outDir = path.dirname(outFlag)
-      const trixDir = path.join(outDir, 'trix')
+      const trixDir = path.join(outFlag, 'trix')
       if (!fs.existsSync(trixDir)) {
         fs.mkdirSync(trixDir)
       }
@@ -106,7 +106,7 @@ export default class TextIndex extends JBrowseCommand {
 
       await this.indexDriver({
         configs,
-        outDir,
+        outDir: outFlag,
         name: 'aggregate',
         quiet,
         attributes: attributes.split(','),
