@@ -28,6 +28,9 @@ export default class TextIndex extends JBrowseCommand {
     '',
     '# indexes only a specific assembly, and overwrite what was previously there using force (which is needed if a previous index already existed)',
     '$ jbrowse text-index -a hg19 --force',
+    '',
+    '# create index for some files for use in @jbrowse/react-linear-genome-view or similar',
+    '$ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes',
   ]
 
   static flags = {
@@ -70,7 +73,8 @@ export default class TextIndex extends JBrowseCommand {
       default: 'CDS,exon',
     }),
     file: flags.string({
-      description: 'File or files to index.',
+      description:
+        'File or files to index (can be used to create trix indexes for embedded component use cases not using a config.json for example)',
       multiple: true,
     }),
   }

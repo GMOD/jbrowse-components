@@ -432,7 +432,8 @@ OPTIONS
 
   --exclude=exclude            [default: CDS,exon] Adds gene type to list of excluded types
 
-  --file=file                  File or files to index.
+  --file=file                  File or files to index (can be used to create trix indexes for embedded component use
+                               cases not using a config.json for example)
 
   --force                      Overwrite previously existing indexes
 
@@ -458,6 +459,9 @@ EXAMPLES
   # indexes only a specific assembly, and overwrite what was previously there using force (which is needed if a previous
   index already existed)
   $ jbrowse text-index -a hg19 --force
+
+  # create index for some files for use in @jbrowse/react-linear-genome-view or similar
+  $ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes
 ```
 
 _See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.4/products/jbrowse-cli/src/commands/text-index.ts)_
