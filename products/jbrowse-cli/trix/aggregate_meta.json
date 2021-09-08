@@ -1,9 +1,0 @@
-{
-  "dateCreated": "Mon Sep 06 2021 17:47:58 GMT-0700 (Pacific Daylight Time)",
-  "tracks": [],
-  "assemblies": [],
-  "out": ".",
-  "files": [
-    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/test_data/volvox/volvox.test.vcf.gz"
-  ]
-}
