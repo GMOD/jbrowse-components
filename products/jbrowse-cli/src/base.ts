@@ -109,6 +109,11 @@ export interface Track {
   textSearching: TextSearching
 }
 
+export interface PseudoTrack {
+  trackId: string
+  adapter: Gff3TabixAdapter | GtfTabixAdapter | VcfTabixAdapter
+  textSearching?: TextSearching
+}
 export interface Config {
   assemblies?: Assembly[]
   configuration?: {}

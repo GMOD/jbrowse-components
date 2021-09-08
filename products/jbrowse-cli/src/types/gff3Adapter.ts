@@ -1,4 +1,4 @@
-import { Gff3TabixAdapter, Track } from '../base'
+import { Gff3TabixAdapter, Track, PseudoTrack } from '../base'
 import { isURL, createRemoteStream } from '../types/common'
 import { SingleBar, Presets } from 'cli-progress'
 import { createGunzip } from 'zlib'
@@ -7,7 +7,7 @@ import path from 'path'
 import fs from 'fs'
 
 export async function* indexGff3(
-  config: Track,
+  config: Track | PseudoTrack,
   attributes: string[],
   outLocation: string,
   typesToExclude: string[],

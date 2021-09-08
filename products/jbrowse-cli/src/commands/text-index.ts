@@ -6,7 +6,7 @@ import { flags } from '@oclif/command'
 import { indexGff3 } from '../types/gff3Adapter'
 import { indexGtf } from '../types/gtfAdapter'
 import { indexVcf } from '../types/vcfAdapter'
-import JBrowseCommand, { Track, Config } from '../base'
+import JBrowseCommand, { Track, Config, PseudoTrack } from '../base'
 import {
   generateMeta,
   supported,
@@ -94,32 +94,36 @@ export default class TextIndex extends JBrowseCommand {
       },
     } = this.parse(TextIndex)
     const outFlag = target || out || '.'
-
     const attributesToIndex = attributes?.split(',') || []
-    // const trixDir = path.join(dir, 'trix')
-    // create trix directory if it doesn't exist
     if (file) {
-      // const confFilePath = fs.lstatSync(outFlag).isDirectory()
-      //   ? path.join(outFlag, 'config.json')
-      //   : outFlag
-      const dir = path.dirname(outFlag)
-      const trixDir = path.join(dir, 'trix')
+      if (assemblies) {
+        throw new Error(
+          `Can't specify assemblies when indexing files, remove assemblies flag to continue.`,
+        )
+      }
+      if (tracks) {
+        throw new Error(
+          `Can't specify tracks when indexing files, remove tracks flag to continue.`,
+        )
+      }
+      const outDir = path.dirname(outFlag)
+      const trixDir = path.join(outDir, 'trix')
       if (!fs.existsSync(trixDir)) {
         fs.mkdirSync(trixDir)
       }
       await this.indexDriver(
-        [],
+        this.getPseudoTrackConfigs(file, outFlag) as PseudoTrack[],
         attributesToIndex,
-        dir,
-        'aggregate', // name of index
+        outDir,
+        'aggregate',
         quiet,
         exclude?.split(','),
         outFlag,
         [],
         file,
-        this.getPseudoFileConfigs(file, outFlag),
       )
     } else {
+      // config file
       const confFilePath = fs.lstatSync(outFlag).isDirectory()
         ? path.join(outFlag, 'config.json')
         : outFlag
@@ -133,6 +137,7 @@ export default class TextIndex extends JBrowseCommand {
       if (!fs.existsSync(trixDir)) {
         fs.mkdirSync(trixDir)
       }
+      // if perTrack flag is set, creates a per track index otherwise creates aggregate
       if (perTrack) {
         if (assemblies) {
           throw new Error(
@@ -275,14 +280,15 @@ export default class TextIndex extends JBrowseCommand {
    * @param configs - array of trackConfigs to index
    * @param attributes - array of attributes to index by
    * @param out - output directory
-   * @param name - assembly name or trackId to index
+   * @param name - assembly name or trackId or fileName to index
    * @param quiet - boolean flag to remove progress bars
-   * @param include - array of feature types to include on index
    * @param exclude - array of feature types to exclude on index
+   * @param confFile - path to config.json
    * @param assemblies - assemblies covered by index
+   * @param files - list of filePaths to index
    */
   async indexDriver(
-    configs: Track[],
+    configs: Track[] | PseudoTrack[],
     attributes: string[],
     out: string,
     name: string,
@@ -290,17 +296,15 @@ export default class TextIndex extends JBrowseCommand {
     exclude: string[],
     confFile: string,
     assemblies: string[],
-    file: string[],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    files?: any[],
+    files?: string[],
   ) {
     const readable = Readable.from(
-      this.indexFiles(files ? files : configs, attributes, out, quiet, exclude),
+      this.indexFiles(configs, attributes, out, quiet, exclude),
     )
     const ixIxxStream = await this.runIxIxx(readable, out, name)
 
     await generateMeta(
-      files ? [] : configs,
+      configs,
       attributes,
       out,
       name,
@@ -308,13 +312,13 @@ export default class TextIndex extends JBrowseCommand {
       exclude,
       confFile,
       assemblies,
-      file,
+      files,
     )
     return ixIxxStream
   }
 
   async *indexFiles(
-    trackConfigs: Track[],
+    trackConfigs: Track[] | PseudoTrack[],
     attributesToIndex: string[],
     outLocation: string,
     quiet: boolean,
@@ -348,7 +352,7 @@ export default class TextIndex extends JBrowseCommand {
     completing (or erroring).
    * @param readStream - Given a readStream of data
    * @param outLocation - path to ouput location
-   * @param name -  assembly name or trackId
+   * @param name -  assembly name or trackId or fileName
    */
   runIxIxx(readStream: Readable, outLocation: string, name: string) {
     const ixFilename = path.join(outLocation, 'trix', `${name}.ix`)
@@ -357,7 +361,7 @@ export default class TextIndex extends JBrowseCommand {
     return ixIxxStream(readStream, ixFilename, ixxFilename)
   }
 
-  getPseudoFileConfigs(files: string[], outLocation: string) {
+  getPseudoTrackConfigs(files: string[], outLocation: string) {
     return files
       .map(file => guessAdapterFromFileName(file, outLocation))
       .filter(fileConfig => supported(fileConfig.adapter.type))

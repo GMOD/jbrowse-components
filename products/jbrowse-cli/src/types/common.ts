@@ -1,7 +1,13 @@
 import { IncomingMessage } from 'http'
 import fs from 'fs'
 import { http, https, FollowResponse } from 'follow-redirects'
-import { Track } from '../base'
+import {
+  Track,
+  PseudoTrack,
+  GtfTabixAdapter,
+  Gff3TabixAdapter,
+  VcfTabixAdapter,
+} from '../base'
 import path from 'path'
 
 // Method for handing off the parsing of a gff3 file URL.
@@ -41,9 +47,6 @@ export function guessAdapterFromFileName(filePath: string, outFlag: string) {
   } else {
     thePath = path.join(outFlag, filePath)
   }
-  console.log('filename: ', fileName)
-  console.log('file path', thePath)
-  console.log(/\.gff3?\.b?gz$/i.test(fileName))
   if (/\.vcf\.b?gz$/i.test(fileName)) {
     return {
       trackId: fileName,
@@ -79,7 +82,7 @@ export function supported(type: string) {
  * @param configs - list of track
  */
 export async function generateMeta(
-  configs: Track[],
+  configs: Track[] | PseudoTrack[],
   attributes: string[],
   out: string,
   name: string,
@@ -87,31 +90,42 @@ export async function generateMeta(
   exclude: string[],
   confPath: string,
   assemblies: string[],
-  files?: string[],
+  files: string[] | undefined,
 ) {
   const dir = path.dirname(confPath)
-
-  const tracks = configs.map(config => {
+  const tracks: {
+    trackId: string
+    adapter: Gff3TabixAdapter | GtfTabixAdapter | VcfTabixAdapter
+    attributesIndexed: string[]
+    excludedTypes: string[]
+  }[] = []
+  configs.forEach((config: Track | PseudoTrack) => {
     const { trackId, textSearching, adapter } = config
 
     const includeExclude =
       textSearching?.indexingFeatureTypesToExclude || exclude
 
     const metaAttrs = textSearching?.indexingAttributes || attributes
-
-    return {
-      trackId: trackId,
+    tracks.push({
+      trackId,
+      adapter,
       attributesIndexed: metaAttrs,
       excludedTypes: includeExclude,
-      adapterConf: adapter,
-    }
+    })
+    // return {
+    //   trackId,
+    //   adapter,
+    //   attributesIndexed: metaAttrs,
+    //   excludedTypes: includeExclude,
+    // }
   })
+
   fs.writeFileSync(
     path.join(dir, 'trix', `${name}_meta.json`),
     JSON.stringify(
       {
         dateCreated: String(new Date()),
-        tracks,
+        tracks: files ? [] : tracks,
         assemblies,
         out,
         files: files ? files : [],

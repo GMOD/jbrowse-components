@@ -1,4 +1,4 @@
-import { Track, GtfTabixAdapter } from '../base'
+import { Track, GtfTabixAdapter, PseudoTrack } from '../base'
 import { isURL, createRemoteStream } from '../types/common'
 import { SingleBar, Presets } from 'cli-progress'
 import { createGunzip } from 'zlib'
@@ -7,7 +7,7 @@ import path from 'path'
 import fs from 'fs'
 
 export async function* indexGtf(
-  config: Track,
+  config: Track | PseudoTrack,
   attributes: string[],
   outLocation: string,
   typesToExclude: string[],
