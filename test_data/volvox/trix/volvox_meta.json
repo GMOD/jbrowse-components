@@ -1,5 +1,5 @@
 {
-  "dateCreated": "Mon Sep 06 2021 17:48:45 GMT-0700 (Pacific Daylight Time)",
+  "dateCreated": "2021-09-08T15:17:24.523Z",
   "tracks": [
     {
       "trackId": "volvox_sv_test",
@@ -131,7 +131,5 @@
       }
     }
   ],
-  "assemblies": ["volvox"],
-  "out": "../../test_data/volvox",
-  "files": []
+  "assemblyNames": ["volvox"]
 }

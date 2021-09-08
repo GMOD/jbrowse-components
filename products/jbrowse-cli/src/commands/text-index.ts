@@ -92,28 +92,26 @@ export default class TextIndex extends JBrowseCommand {
     } = this.parse(TextIndex)
     const outFlag = target || out || '.'
 
-    const attributesToIndex = attributes?.split(',') || []
-
     // indexing individual files
     if (file) {
-      const dir = path.dirname(outFlag)
-      console.log({ dir })
-      const trixDir = path.join(dir, 'trix')
+      const out = path.dirname(outFlag)
+      const trixDir = path.join(out, 'trix')
       if (!fs.existsSync(trixDir)) {
         fs.mkdirSync(trixDir)
       }
-      await this.indexDriver(
-        [],
-        attributesToIndex,
-        dir,
-        'aggregate', // name of index
+
+      const configs = file
+        .map(file => guessAdapterFromFileName(file))
+        .filter(fileConfig => supported(fileConfig.adapter.type))
+
+      await this.indexDriver({
+        configs,
+        outDir,
+        name: 'aggregate',
         quiet,
-        exclude?.split(','),
-        outFlag,
-        [],
-        file,
-        this.getPseudoFileConfigs(file, outFlag),
-      )
+        attributes: attributes.split(','),
+        exclude: exclude.split(','),
+      })
     }
 
     // indexing in pertrack mode
@@ -148,19 +146,19 @@ export default class TextIndex extends JBrowseCommand {
           )
           continue
         }
+        const outDir = path.dirname(confFilePath)
         this.log('Indexing track ' + trackId + '...')
+
         const id = trackId + '-index'
-        await this.indexDriver(
-          [trackConfig],
-          attributesToIndex,
-          dir,
-          trackId,
+        await this.indexDriver({
+          configs: [trackConfig],
+          attributes: attributes.split(','),
+          outDir,
           quiet,
-          exclude?.split(','),
-          confFilePath,
+          name: trackId,
+          exclude: exclude.split(','),
           assemblyNames,
-          file,
-        )
+        })
         if (!textSearching || !textSearching?.textSearchAdapter) {
           const newTrackConfig = {
             ...trackConfig,
@@ -198,45 +196,45 @@ export default class TextIndex extends JBrowseCommand {
       const confFilePath = fs.lstatSync(outFlag).isDirectory()
         ? path.join(outFlag, 'config.json')
         : outFlag
-      const dir = path.dirname(confFilePath)
+      const outDir = path.dirname(confFilePath)
       const config: Config = JSON.parse(fs.readFileSync(confFilePath, 'utf8'))
 
       const aggregateAdapters = config.aggregateTextSearchAdapters || []
-      const assembliesToIndex =
-        assemblies?.split(',') || config.assemblies?.map(a => a.name) || []
-      for (const asm of assembliesToIndex) {
-        const trackConfigs = await this.getTrackConfigs(
+      const asms = assemblies?.split(',') || config.assemblies?.map(a => a.name)
+
+      if (!asms?.length) {
+        throw new Error('No assemblies found')
+      }
+
+      for (const asm of asms) {
+        const configs = await this.getTrackConfigs(
           confFilePath,
           tracks?.split(','),
           asm,
         )
         this.log('Indexing assembly ' + asm + '...')
-        if (!trackConfigs.length) {
+        if (!configs.length) {
           continue
         }
         const id = asm + '-index'
-        const adapterAlreadyFound = aggregateAdapters.find(
-          x => x.textSearchAdapterId === id,
-        )
-        if (adapterAlreadyFound && !force) {
+        const found = aggregateAdapters.find(x => x.textSearchAdapterId === id)
+        if (found && !force) {
           this.log(
             `Note: ${asm} has already been indexed with this configuration, use --force to overwrite this assembly. Skipping for now`,
           )
           continue
         }
 
-        await this.indexDriver(
-          trackConfigs,
-          attributesToIndex,
-          dir,
-          asm,
+        await this.indexDriver({
+          configs,
+          outDir,
           quiet,
-          exclude?.split(','),
-          confFilePath,
-          [asm],
-          file,
-        )
-        if (!adapterAlreadyFound) {
+          name: asm,
+          attributes: attributes.split(','),
+          exclude: exclude.split(','),
+          assemblyNames: [asm],
+        })
+        if (!found) {
           aggregateAdapters.push({
             type: 'TrixTextSearchAdapter',
             textSearchAdapterId: id,
@@ -277,41 +275,42 @@ export default class TextIndex extends JBrowseCommand {
    * @param exclude - array of feature types to exclude on index
    * @param assemblies - assemblies covered by index
    */
-  async indexDriver(
-    configs: Track[],
-    attributes: string[],
-    out: string,
-    name: string,
-    quiet: boolean,
-    exclude: string[],
-    confFile: string,
-    assemblies: string[],
-    file: string[],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    files?: any[],
-  ) {
+  async indexDriver({
+    configs,
+    attributes,
+    outDir,
+    name,
+    quiet,
+    exclude,
+    assemblyNames,
+  }: {
+    configs: Track[]
+    attributes: string[]
+    outDir: string
+    name: string
+    quiet: boolean
+    exclude: string[]
+    assemblyNames: string[]
+  }) {
     const readable = Readable.from(
-      this.indexFiles(files ? files : configs, attributes, out, quiet, exclude),
+      this.indexFiles(configs, attributes, outDir, quiet, exclude),
     )
-    const ixIxxStream = await this.runIxIxx(readable, out, name)
+    const ixIxxStream = await this.runIxIxx(readable, outDir, name)
 
-    await generateMeta(
-      files ? [] : configs,
+    await generateMeta({
+      configs,
       attributes,
-      out,
+      outDir,
       name,
-      quiet,
       exclude,
-      confFile,
-      assemblies,
-      file,
-    )
+      assemblyNames,
+    })
     return ixIxxStream
   }
 
   async *indexFiles(
     trackConfigs: Track[],
-    attributesToIndex: string[],
+    attributes: string[],
     outLocation: string,
     quiet: boolean,
     typesToExclude: string[],
@@ -325,7 +324,7 @@ export default class TextIndex extends JBrowseCommand {
       const types =
         textSearching?.indexingFeatureTypesToExclude || typesToExclude
 
-      const attrs = textSearching?.indexingAttributes || attributesToIndex
+      const attrs = textSearching?.indexingAttributes || attributes
 
       if (type === 'Gff3TabixAdapter') {
         yield* indexGff3(config, attrs, outLocation, types, quiet)
@@ -350,12 +349,6 @@ export default class TextIndex extends JBrowseCommand {
     const ixxFilename = path.join(outLocation, 'trix', `${name}.ixx`)
 
     return ixIxxStream(readStream, ixFilename, ixxFilename)
-  }
-
-  getPseudoFileConfigs(files: string[], outLocation: string) {
-    return files
-      .map(file => guessAdapterFromFileName(file, outLocation))
-      .filter(fileConfig => supported(fileConfig.adapter.type))
   }
 
   /**

@@ -30,32 +30,30 @@ export function isURL(FileName: string) {
   return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
-export function guessAdapterFromFileName(filePath: string, outFlag: string) {
-  const fileName = path.basename(filePath)
-  let thePath = ''
-  if (isURL(filePath)) {
-    thePath = filePath
+export function guessAdapterFromFileName(filePath: string): Track {
+  if (/\.vcf\.b?gz$/i.test(filePath)) {
+    return {
+      trackId: filePath,
+      name: filePath,
+      assemblyNames: [],
+      adapter: { type: 'VcfTabixAdapter', vcfGzLocation: { uri: filePath } },
+    }
+  } else if (/\.gff3?\.b?gz$/i.test(filePath)) {
+    return {
+      trackId: filePath,
+      name: filePath,
+      assemblyNames: [],
+      adapter: { type: 'Gff3TabixAdapter', gffGzLocation: { uri: filePath } },
+    }
+  } else if (/\.gtf?$/i.test(filePath)) {
+    return {
+      trackId: filePath,
+      assemblyNames: [],
+      name: filePath,
+      adapter: { type: 'GtfTabixAdapter', gffGzLocation: { uri: filePath } },
+    }
   } else {
-    thePath = path.join(outFlag, filePath)
-  }
-  if (/\.vcf\.b?gz$/i.test(fileName)) {
-    return {
-      trackId: fileName,
-      adapter: { type: 'VcfTabixAdapter', vcfGzLocation: { uri: thePath } },
-    }
-  } else if (/\.gff3?\.b?gz$/i.test(fileName)) {
-    return {
-      trackId: fileName,
-      adapter: { type: 'Gff3TabixAdapter', gffGzLocation: { uri: thePath } },
-    }
-  } else if (/\.gtf?$/i.test(fileName)) {
-    return {
-      trackId: fileName,
-      adapter: { type: 'GtfTabixAdapter', gffGzLocation: { uri: thePath } },
-    }
-  }
-  return {
-    adapter: { type: 'UNSUPPORTED' },
+    throw new Error(`Unsupported file type ${filePath}`)
   }
 }
 
@@ -70,22 +68,23 @@ export function supported(type: string) {
  * @param attributes -  attributes indexed
  * @param include -  feature types included from index
  * @param exclude -  feature types excluded from index
- * @param confPath -  path to config file or root if not specified
  * @param configs - list of track
  */
-export async function generateMeta(
-  configs: Track[],
-  attributes: string[],
-  out: string,
-  name: string,
-  quiet: boolean,
-  exclude: string[],
-  confPath: string,
-  assemblyNames: string[],
-  files?: string[],
-) {
-  const dir = path.dirname(confPath)
-
+export async function generateMeta({
+  configs,
+  attributes,
+  outDir,
+  name,
+  exclude,
+  assemblyNames,
+}: {
+  configs: Track[]
+  attributes: string[]
+  outDir: string
+  name: string
+  exclude: string[]
+  assemblyNames: string[]
+}) {
   const tracks = configs.map(config => {
     const { trackId, textSearching, adapter } = config
 
@@ -102,14 +101,12 @@ export async function generateMeta(
     }
   })
   fs.writeFileSync(
-    path.join(dir, 'trix', `${name}_meta.json`),
+    path.join(outDir, 'trix', `${name}_meta.json`),
     JSON.stringify(
       {
         dateCreated: new Date().toISOString(),
         tracks,
         assemblyNames,
-        out,
-        files: files ? files : [],
       },
       null,
       2,
