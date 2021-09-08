@@ -3394,7 +3394,7 @@
       "metaFilePath": {
         "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json"
       },
-      "assemblies": ["hg19"]
+      "assemblyNames": ["hg19"]
     },
     {
       "type": "TrixTextSearchAdapter",
@@ -3408,7 +3408,7 @@
       "metaFilePath": {
         "uri": "https://jbrowse.org/genomes/GRCh38/trix/meta.json"
       },
-      "assemblies": ["hg38"]
+      "assemblyNames": ["hg38"]
     }
   ]
 }
