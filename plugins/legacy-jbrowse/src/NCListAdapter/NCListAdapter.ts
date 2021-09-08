@@ -1,5 +1,4 @@
 import NCListStore from '@gmod/nclist'
-import { openUrl } from '@jbrowse/core/util/io'
 import { Region } from '@jbrowse/core/util/types'
 import {
   BaseFeatureDataAdapter,
@@ -8,7 +7,7 @@ import {
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkAbortSignal } from '@jbrowse/core/util'
-
+import { RemoteFile } from 'generic-filehandle'
 import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import NCListFeature from './NCListFeature'
@@ -34,10 +33,12 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
       baseUrl: '',
       urlTemplate: rootUrlTemplate.uri,
       readFile: (url: string) =>
-        openUrl(
-          rootUrlTemplate.baseUri
-            ? new URL(url, rootUrlTemplate.baseUri).toString()
-            : url,
+        new RemoteFile(
+          String(
+            rootUrlTemplate.baseUri
+              ? new URL(url, rootUrlTemplate.baseUri).toString()
+              : url,
+          ),
         ).readFile(),
     })
   }

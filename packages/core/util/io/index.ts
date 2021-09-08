@@ -1,6 +1,5 @@
-import { BlobFile, GenericFilehandle } from 'generic-filehandle'
+import { BlobFile, GenericFilehandle, RemoteFile } from 'generic-filehandle'
 import LocalFile from './LocalFile'
-import { openUrl as rangeFetcherOpenUrl } from './rangeFetcher'
 import {
   FileLocation,
   LocalPathLocation,
@@ -9,10 +8,6 @@ import {
 } from '../types'
 import { getBlob } from '../tracks'
 import { isElectron } from '../../util'
-
-export const openUrl = (arg: string) => {
-  return rangeFetcherOpenUrl(arg)
-}
 
 function isUriLocation(location: FileLocation): location is UriLocation {
   return 'uri' in location
@@ -46,7 +41,7 @@ export function openLocation(location: FileLocation): GenericFilehandle {
     if (!location.uri) {
       throw new Error('No URI provided')
     }
-    return openUrl(
+    return new RemoteFile(
       location.baseUri
         ? new URL(location.uri, location.baseUri).href
         : location.uri,

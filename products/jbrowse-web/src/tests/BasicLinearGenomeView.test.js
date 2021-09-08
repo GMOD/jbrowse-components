@@ -11,7 +11,6 @@ import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
-import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { setup, generateReadBuffer, getPluginManager } from './util'
 import JBrowse from '../JBrowse'
@@ -32,7 +31,6 @@ setup()
 afterEach(cleanup)
 
 beforeEach(() => {
-  clearCache()
   clearAdapterCache()
   fetch.resetMocks()
   fetch.mockResponse(
@@ -224,6 +222,11 @@ describe('valid file tests', () => {
     const autocomplete = await findByTestId('autocomplete')
     const inputBox = await findByPlaceholderText('Search for location')
 
+    await waitFor(() =>
+      expect(state.session.views[0].coarseDynamicBlocks.length).toBeGreaterThan(
+        0,
+      ),
+    )
     autocomplete.focus()
     inputBox.focus()
     fireEvent.mouseDown(inputBox)
@@ -251,7 +254,9 @@ describe('valid file tests', () => {
     fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
     // test search results dialog opening
     await screen.findByText('Search Results')
-    expect(state.session.views[0].searchResults.length).toBeGreaterThan(0)
+    await waitFor(() =>
+      expect(state.session.views[0].searchResults.length).toBeGreaterThan(0),
+    )
   }, 30000)
 
   it('opens reference sequence track and expects zoom in message', async () => {
