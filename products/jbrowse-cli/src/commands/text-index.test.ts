@@ -295,7 +295,7 @@ async function copyDir(src: string, dest: string) {
   }
 }
 
-describe('check that volvox data is properly indexed, re-run text-index on volvox config if fails', () => {
+describe('run with a single assembly similar to embedded config', () => {
   let preVolvoxIx = ''
   let preVolvoxIxx = ''
   let preVolvoxMeta = ''
@@ -319,6 +319,56 @@ describe('check that volvox data is properly indexed, re-run text-index on volvo
         path.join(__dirname, '..', '..', '..', '..', 'test_data', 'volvox'),
         ctx.dir,
       )
+
+      const volvoxConfig = JSON.parse(
+        fs.readFileSync(path.join(ctx.dir, 'config.json'), 'utf8'),
+      )
+      const assembly = volvoxConfig.assemblies[0]
+      fs.writeFileSync(
+        path.join(ctx.dir, 'config.json'),
+        JSON.stringify(ctx.dir, { ...volvoxConfig, assembly }),
+      )
+
+      preVolvoxIx = readText(ctx.dir, 'volvox.ix')
+      preVolvoxIxx = readText(ctx.dir, 'volvox.ixx')
+      preVolvoxMeta = readJSON(ctx.dir, 'volvox_meta.json')
+    })
+    .command(['text-index', '--target=config.json', '--force'])
+    .it('Indexes entire volvox config', ctx => {
+      const postVolvoxIx = readText(ctx.dir, 'volvox.ix')
+      const postVolvoxIxx = readText(ctx.dir, 'volvox.ixx')
+      const postVolvoxMeta = readJSON(ctx.dir, 'volvox_meta.json')
+      expect(postVolvoxIx).toEqual(preVolvoxIx)
+      expect(postVolvoxIxx).toEqual(preVolvoxIxx)
+      expect(postVolvoxMeta).toEqual(preVolvoxMeta)
+    })
+})
+
+describe('run with a volvox config', () => {
+  let preVolvoxIx = ''
+  let preVolvoxIxx = ''
+  let preVolvoxMeta = ''
+
+  function readText(d: string, s: string) {
+    return fs.readFileSync(path.join(d, 'trix', s), 'utf8')
+  }
+  function readJSON(d: string, s: string) {
+    return JSON.parse(readText(d, s), function (key, value) {
+      if (key === 'dateCreated') {
+        return 'test'
+      } else {
+        return value
+      }
+    })
+  }
+
+  setup
+    .do(async ctx => {
+      await copyDir(
+        path.join(__dirname, '..', '..', '..', '..', 'test_data', 'volvox'),
+        ctx.dir,
+      )
+
       preVolvoxIx = readText(ctx.dir, 'volvox.ix')
       preVolvoxIxx = readText(ctx.dir, 'volvox.ixx')
       preVolvoxMeta = readJSON(ctx.dir, 'volvox_meta.json')

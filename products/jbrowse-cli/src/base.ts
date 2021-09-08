@@ -108,6 +108,7 @@ export interface Track {
 
 export interface Config {
   assemblies?: Assembly[]
+  assembly?: Assembly
   configuration?: {}
   aggregateTextSearchAdapters?: TrixTextSearchAdapter[]
   connections?: unknown[]
