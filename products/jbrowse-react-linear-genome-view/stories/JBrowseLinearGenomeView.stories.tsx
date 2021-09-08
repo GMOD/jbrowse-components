@@ -252,7 +252,7 @@ export const WithTextSearching = () => {
         metaFilePath: {
           uri: 'storybook_data/volvox_meta.json',
         },
-        assemblies: ['volvox'],
+        assemblyNames: ['volvox'],
       },
     ],
     tracks: [
@@ -358,7 +358,7 @@ export const WithPerTrackTextSearching = () => {
             metaFilePath: {
               uri: 'storybook_data/gff3tabix_genes_meta.json',
             },
-            assemblies: ['volvox'],
+            assemblyNames: ['volvox'],
           },
         },
       },
