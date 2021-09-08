@@ -4,6 +4,7 @@ import { PreFileLocation, FileLocation } from './types'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { readConfObject } from '../configuration'
 import { getEnv } from 'mobx-state-tree'
+import AddTrackModel from '@jbrowse/plugin-data-management'
 
 /* utility functions for use by track models and so forth */
 
@@ -123,34 +124,24 @@ export function guessAdapter(
   file: FileLocation,
   index: FileLocation | undefined,
   getFileName: (f: FileLocation) => string,
-  model?: any,
+  model?: AddTrackModel,
   adapterHint?: string,
 ) {
   const fileName = getFileName(file)
   const indexName = index && getFileName(index)
 
-  // unsure if this is necessary since the front end catches anything that isn't registered, think about this later
-  // const unsupportedList = [
-  //   /\.gff3?$/i,
-  //   /\.gtf?$/i,
-  //   /\.vcf\.idx$/i,
-  //   /\.bed$/i,
-  //   /\.sizes$/i,
-  // ]
-
   if (model) {
+    // @ts-ignore
     const session = getSession(model)
 
     const adapter = getEnv(session)
       .pluginManager.getElementTypesInGroup('adapter guess')
-      .find((adapter: any) => {
-        if (
+      .find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (adapter: any) =>
           (adapter.regexGuess && adapter.regexGuess.test(fileName)) ||
-          adapterHint === adapter.name
-        ) {
-          return adapter
-        }
-      })
+          adapterHint === adapter.name,
+      )
 
     if (adapter) {
       return adapter.fetchConfig(file, index, indexName)
@@ -162,17 +153,18 @@ export function guessAdapter(
   }
 }
 
-export function guessTrackType(adapterType: string, model?: any): string {
+export function guessTrackType(
+  adapterType: string,
+  model?: AddTrackModel,
+): string {
   if (model) {
+    // @ts-ignore
     const session = getSession(model)
 
     const adapter = getEnv(session)
       .pluginManager.getElementTypesInGroup('adapter guess')
-      .find((adapter: any) => {
-        if (adapterType === adapter.name) {
-          return adapter
-        }
-      })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .find((adapter: any) => adapterType === adapter.name)
 
     if (adapter) {
       return adapter.trackGuess

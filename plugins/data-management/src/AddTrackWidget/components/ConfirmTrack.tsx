@@ -48,7 +48,7 @@ function StatusMessage({
  * categorizeAdapters takes a list of adapters and sorts their menu item elements under an appropriate ListSubheader
  *  element. In this way, adapters that are from external plugins can have headers that differentiate them from the
  *  out-of-the-box plugins.
- * @param adaptersList a list of adapters found in the PluginManager
+ * @param adaptersList - a list of adapters found in the PluginManager
  * @returns a series of JSX elements that are ListSubheaders followed by the adapters
  *   found under that subheader
  */
@@ -56,6 +56,7 @@ function categorizeAdapters(
   adaptersList: { name: string; externalPluginName: string }[],
 ) {
   let currentPluginName = ''
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const items: any = []
   adaptersList.forEach(adapter => {
     if (adapter.externalPluginName) {
