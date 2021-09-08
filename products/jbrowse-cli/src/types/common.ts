@@ -31,7 +31,7 @@ export function isURL(FileName: string) {
 }
 
 export function guessAdapterFromFileName(filePath: string): Track {
-  const uri = path.resolve(filePath)
+  const uri = isURL(filePath) ? filePath : path.resolve(filePath)
   const name = path.basename(uri)
   if (/\.vcf\.b?gz$/i.test(filePath)) {
     return {
