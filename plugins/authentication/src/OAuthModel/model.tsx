@@ -1,6 +1,5 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { isElectron } from '@jbrowse/core/util'
 
 import { OAuthInternetAccountConfigModel } from './configSchema'
@@ -21,10 +20,7 @@ interface OAuthData {
 
 const inWebWorker = typeof sessionStorage === 'undefined'
 
-const stateModelFactory = (
-  pluginManager: PluginManager,
-  configSchema: OAuthInternetAccountConfigModel,
-) => {
+const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
   return types
     .compose(
       'OAuthInternetAccount',

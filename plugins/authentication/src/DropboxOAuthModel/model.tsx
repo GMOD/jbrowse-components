@@ -1,18 +1,16 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { Instance, types } from 'mobx-state-tree'
 import { DropboxOAuthInternetAccountConfigModel } from './configSchema'
 import baseModel from '../OAuthModel/model'
-import { configSchemaFactory as OAuthConfigSchemaFactory } from '../OAuthModel'
+import { configSchema as OAuthConfigSchema } from '../OAuthModel'
 
 const stateModelFactory = (
-  pluginManager: PluginManager,
   configSchema: DropboxOAuthInternetAccountConfigModel,
 ) => {
   return types
     .compose(
       'DropboxOAuthInternetAccount',
-      baseModel(pluginManager, OAuthConfigSchemaFactory(pluginManager)),
+      baseModel(OAuthConfigSchema),
       types.model({
         id: 'DropboxOAuth',
         type: types.literal('DropboxOAuthInternetAccount'),

@@ -1,6 +1,5 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { getParent } from 'mobx-state-tree'
 import { HTTPBasicInternetAccountConfigModel } from './configSchema'
@@ -17,7 +16,6 @@ import { RemoteFile } from 'generic-filehandle'
 const inWebWorker = typeof sessionStorage === 'undefined'
 
 const stateModelFactory = (
-  pluginManager: PluginManager,
   configSchema: HTTPBasicInternetAccountConfigModel,
 ) => {
   return types

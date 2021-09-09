@@ -1,18 +1,16 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { Instance, types } from 'mobx-state-tree'
 import { GoogleDriveOAuthInternetAccountConfigModel } from './configSchema'
 import baseModel from '../OAuthModel/model'
-import { configSchemaFactory as OAuthConfigSchemaFactory } from '../OAuthModel'
+import { configSchema as OAuthConfigSchema } from '../OAuthModel'
 
 const stateModelFactory = (
-  pluginManager: PluginManager,
   configSchema: GoogleDriveOAuthInternetAccountConfigModel,
 ) => {
   return types
     .compose(
       'GoogleDriveOAuthInternetAccount',
-      baseModel(pluginManager, OAuthConfigSchemaFactory(pluginManager)),
+      baseModel(OAuthConfigSchema),
       types.model({
         id: 'GoogleDriveOAuth',
         type: types.literal('GoogleDriveOAuthInternetAccount'),
