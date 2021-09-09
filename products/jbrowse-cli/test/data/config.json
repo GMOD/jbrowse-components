@@ -303,74 +303,6 @@
   "aggregateTextSearchAdapters": [
     {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "okwXtaVzvnJRJV0zePOwHA==",
-      "ixFilePath": {
-        "uri": "trix/volvox.ixx",
-        "locationType": "UriLocation"
-      },
-      "ixxFilePath": {
-        "uri": "trix/volvox.ixx",
-        "locationType": "UriLocation"
-      },
-      "metaFilePath": {
-        "uri": "trix/meta.json",
-        "locationType": "UriLocation"
-      },
-      "assemblies": ["volvox"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "/KQQTH8tYznZFJ6udRTLDQ==",
-      "ixFilePath": {
-        "uri": "trix/volvox.ixx",
-        "locationType": "UriLocation"
-      },
-      "ixxFilePath": {
-        "uri": "trix/volvox.ixx",
-        "locationType": "UriLocation"
-      },
-      "metaFilePath": {
-        "uri": "trix/meta.json",
-        "locationType": "UriLocation"
-      },
-      "assemblies": ["volvox"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "EjiayvSW9XtbhPzWLNoLmw==",
-      "ixFilePath": {
-        "uri": "trix/volvox.ixx",
-        "locationType": "UriLocation"
-      },
-      "ixxFilePath": {
-        "uri": "trix/volvox.ixx",
-        "locationType": "UriLocation"
-      },
-      "metaFilePath": {
-        "uri": "trix/meta.json",
-        "locationType": "UriLocation"
-      },
-      "assemblies": ["volvox"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "YBbj40MD53J09vnTcSM1qw==",
-      "ixFilePath": {
-        "uri": "trix/volvox.ix",
-        "locationType": "UriLocation"
-      },
-      "ixxFilePath": {
-        "uri": "trix/volvox.ixx",
-        "locationType": "UriLocation"
-      },
-      "metaFilePath": {
-        "uri": "trix/meta.json",
-        "locationType": "UriLocation"
-      },
-      "assemblies": ["volvox"]
-    },
-    {
-      "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "volvox-index",
       "ixFilePath": {
         "uri": "trix/volvox.ix",
@@ -381,7 +313,7 @@
         "locationType": "UriLocation"
       },
       "metaFilePath": {
-        "uri": "trix/meta.json",
+        "uri": "trix/volvox_meta.json",
         "locationType": "UriLocation"
       },
       "assemblies": ["volvox"]

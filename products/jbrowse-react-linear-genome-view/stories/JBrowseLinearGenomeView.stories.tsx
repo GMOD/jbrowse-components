@@ -259,7 +259,7 @@ export const WithTextSearching = () => {
           uri: 'storybook_data/volvox_meta.json',
           locationType: 'UriLocation',
         },
-        assemblies: ['volvox'],
+        assemblyNames: ['volvox'],
       },
     ],
     tracks: [
@@ -376,7 +376,7 @@ export const WithPerTrackTextSearching = () => {
               uri: 'storybook_data/gff3tabix_genes_meta.json',
               locationType: 'UriLocation',
             },
-            assemblies: ['volvox'],
+            assemblyNames: ['volvox'],
           },
         },
       },
