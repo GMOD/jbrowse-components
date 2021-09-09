@@ -136,13 +136,15 @@ const stateModelFactory = (
             const tokenInfoString = self.tokenType
               ? `${self.tokenType} ${preAuthInfo.authInfo.token}`
               : `${preAuthInfo.authInfo.token}`
-            const newHeaders = {
-              ...opts?.headers,
-              [self.authHeader]: `${tokenInfoString}`,
-            }
-            newOpts = {
-              ...opts,
-              headers: newHeaders,
+            if (self.authHeader) {
+              const newHeaders = {
+                ...opts?.headers,
+                [self.authHeader]: `${tokenInfoString}`,
+              }
+              newOpts = {
+                ...opts,
+                headers: newHeaders,
+              }
             }
           }
 
