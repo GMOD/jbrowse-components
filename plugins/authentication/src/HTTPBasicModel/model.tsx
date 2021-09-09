@@ -29,6 +29,9 @@ const stateModelFactory = (
       }),
     )
     .views(self => ({
+      get authHeader() {
+        return getConf(self, 'authHeader') || 'Authorization'
+      },
       get tokenType() {
         return getConf(self, 'tokenType') || 'Basic'
       },
@@ -118,7 +121,6 @@ const stateModelFactory = (
           if (!preAuthInfo || !preAuthInfo.authInfo) {
             throw new Error('Auth Information Missing')
           }
-
           let foundToken
           try {
             foundToken = await this.checkToken()
@@ -194,7 +196,6 @@ const stateModelFactory = (
             preAuthInfo = self.generateAuthInfo
             sessionStorage.removeItem(`${self.internetAccountId}-token`)
           }
-
           throw new Error('Could not access resource with token')
         },
       }

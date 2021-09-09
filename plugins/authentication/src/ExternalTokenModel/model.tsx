@@ -203,18 +203,6 @@ const stateModelFactory = (
           }
 
           return preAuthInfo
-          // switch (self.origin) {
-          //   case 'GDC': {
-          //     const query = (location as UriLocation).uri.split('/').pop() // should get id
-          //     const editedArgs = JSON.parse(JSON.stringify(args))
-          //     searchOrReplaceInArgs(
-          //       editedArgs,
-          //       'uri',
-          //       `${self.accountConfig.customEndpoint}/data/${query}`,
-          //     )
-          //     return editedArgs
-          //   }
-          // }
         },
         async handleError() {
           if (!inWebWorker) {
