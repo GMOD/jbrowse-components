@@ -55,22 +55,22 @@ function StatusMessage({
 function categorizeAdapters(
   adaptersList: {
     name: string
-    addTrackConfig: { externalPluginName: string }
+    addTrackConfig: { adapterCategoryHeader: string }
   }[],
 ) {
   let currentPluginName = ''
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const items: any = []
   adaptersList.forEach(adapter => {
-    if (adapter.addTrackConfig.externalPluginName) {
-      if (currentPluginName !== adapter.addTrackConfig.externalPluginName) {
-        currentPluginName = adapter.addTrackConfig.externalPluginName
+    if (adapter.addTrackConfig.adapterCategoryHeader) {
+      if (currentPluginName !== adapter.addTrackConfig.adapterCategoryHeader) {
+        currentPluginName = adapter.addTrackConfig.adapterCategoryHeader
         items.push(
           <ListSubheader
-            key={adapter.addTrackConfig.externalPluginName}
-            value={adapter.addTrackConfig.externalPluginName}
+            key={adapter.addTrackConfig.adapterCategoryHeader}
+            value={adapter.addTrackConfig.adapterCategoryHeader}
           >
-            {adapter.addTrackConfig.externalPluginName}
+            {adapter.addTrackConfig.adapterCategoryHeader}
           </ListSubheader>,
         )
       }
@@ -113,24 +113,24 @@ function TrackAdapterSelector({
       }}
     >
       {adapters
-        // Excludes any adapter with the 'excludeFromTrackSelector' property, and anything with the 'externalPluginName' property
+        // Excludes any adapter with the 'excludeFromTrackSelector' property, and anything with the 'adapterCategoryHeader' property
         .filter(
           (elt: {
             name: string
             addTrackConfig: {
               excludeFromTrackSelector: boolean
-              externalPluginName: string
+              adapterCategoryHeader: string
             }
           }) =>
             !elt.addTrackConfig.excludeFromTrackSelector &&
-            !elt.addTrackConfig.externalPluginName,
+            !elt.addTrackConfig.adapterCategoryHeader,
         )
         .map((elt: { name: string }) => (
           <MenuItem key={elt.name} value={elt.name}>
             {elt.name}
           </MenuItem>
         ))}
-      {/* adapters with the 'externalPluginName' property are categorized by the value of the property here */}
+      {/* adapters with the 'adapterCategoryHeader' property are categorized by the value of the property here */}
       {categorizeAdapters(adapters)}
     </TextField>
   )

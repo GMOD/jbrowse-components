@@ -6,7 +6,7 @@ import { AnyAdapter } from '../data_adapters/BaseAdapter'
 interface TrackConfig {
   [key: string]: unknown
   excludeFromTrackSelector?: boolean
-  externalPluginName?: string
+  adapterCategoryHeader?: string
   regexGuess?: RegExp | undefined
   trackGuess?: string | undefined
   fetchConfig?: Function

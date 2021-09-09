@@ -38,7 +38,6 @@ export default class VariantsPlugin extends Plugin {
           addTrackConfig: {
             regexGuess: /\.vcf\.b?gz$/i,
             trackGuess: 'VariantTrack',
-            externalPluginName: 'Variants Plugin',
             fetchConfig: (
               file: FileLocation,
               index: FileLocation,
