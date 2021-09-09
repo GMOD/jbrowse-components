@@ -35,7 +35,7 @@ export async function* indexGff3(
     fileDataStream = await createRemoteStream(uri)
     totalBytes = +(fileDataStream.headers['content-length'] || 0)
   } else {
-    const filename = path.join(outLocation, uri)
+    const filename = path.isAbsolute(uri) ? uri : path.join(outLocation, uri)
     totalBytes = fs.statSync(filename).size
     fileDataStream = fs.createReadStream(filename)
   }
