@@ -1,4 +1,4 @@
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { ExternalTokenInternetAccountConfigModel } from './configSchema'
@@ -31,6 +31,9 @@ const stateModelFactory = (
       needsToken: false,
     }))
     .views(self => ({
+      get authHeader() {
+        return getConf(self, 'authHeader')
+      },
       get internetAccountType() {
         return 'ExternalTokenInternetAccount'
       },

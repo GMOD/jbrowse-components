@@ -36,6 +36,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       errorMessage: '',
     }))
     .views(self => ({
+      get authHeader() {
+        return getConf(self, 'authHeader') || 'Authorization'
+      },
       get tokenType() {
         return getConf(self, 'tokenType') || 'Bearer'
       },

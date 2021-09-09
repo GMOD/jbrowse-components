@@ -16,9 +16,6 @@ export const InternetAccount = types
     get internetAccountId() {
       return getConf(self, 'internetAccountId')
     },
-    get authHeader() {
-      return getConf(self, 'authHeader')
-    },
     get tokenType() {
       return getConf(self, 'tokenType')
     },
