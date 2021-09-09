@@ -48,7 +48,7 @@ const stateModelFactory = (
         return {
           internetAccountType: this.internetAccountType,
           authInfo: {
-            authHeader: self.authHeader,
+            authHeader: this.authHeader,
             tokenType: this.tokenType,
             configuration: self.accountConfig,
           },

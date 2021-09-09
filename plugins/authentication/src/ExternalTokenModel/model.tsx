@@ -34,6 +34,9 @@ const stateModelFactory = (
       get authHeader() {
         return getConf(self, 'authHeader')
       },
+      get tokenType() {
+        return getConf(self, 'tokenType')
+      },
       get internetAccountType() {
         return 'ExternalTokenInternetAccount'
       },
@@ -47,8 +50,8 @@ const stateModelFactory = (
         return {
           internetAccountType: this.internetAccountType,
           authInfo: {
-            authHeader: self.authHeader,
-            tokenType: '',
+            authHeader: this.authHeader,
+            tokenType: this.tokenType,
             configuration: self.accountConfig,
           },
         }

@@ -55,7 +55,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         return {
           internetAccountType: this.internetAccountType,
           authInfo: {
-            authHeader: self.authHeader,
+            authHeader: this.authHeader,
             tokenType: this.tokenType,
             configuration: self.accountConfig,
           },
@@ -128,38 +128,21 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           if (isElectron) {
             const model = self
             const electron = require('electron')
-            const { BrowserWindow } = electron.remote
+            const { ipcRenderer } = electron
+            const redirectUri = await ipcRenderer.invoke('openAuthWindow', {
+              internetAccountId: self.internetAccountId,
+              data: data,
+              url: url,
+            })
 
-            const win = new BrowserWindow({
-              width: 1000,
-              height: 600,
-              webPreferences: {
-                nodeIntegration: true,
-                contextIsolation: false,
-                enableRemoteModule: false,
+            const eventFromDesktop = new MessageEvent('message', {
+              data: {
+                name: `JBrowseAuthWindow-${self.internetAccountId}`,
+                redirectUri: redirectUri,
               },
             })
-            win.title = `JBrowseAuthWindow-${self.internetAccountId}`
-            win.loadURL(url)
-
-            win.webContents.on(
-              'did-navigate',
-              function (event: Event, redirectUrl: string) {
-                if (redirectUrl.startsWith(data.redirect_uri)) {
-                  event.preventDefault()
-                  win.close()
-                  const eventFromDesktop = new MessageEvent('message', {
-                    data: {
-                      name: `JBrowseAuthWindow-${self.internetAccountId}`,
-                      redirectUri: redirectUrl,
-                    },
-                  })
-                  // @ts-ignore
-                  model.finishOAuthWindow(eventFromDesktop)
-                  win.destroy()
-                }
-              },
-            )
+            // @ts-ignore
+            model.finishOAuthWindow(eventFromDesktop)
             return
           } else {
             const options = `width=500,height=600,left=0,top=0`
@@ -275,8 +258,6 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               : null)
 
           if (foundRefreshToken) {
-            // need to set it so
-            // checks if it from webworker, and if it is use preauth config info
             const config = self.accountConfig
             const data = {
               grant_type: 'refresh_token',

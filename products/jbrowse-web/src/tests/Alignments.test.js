@@ -78,7 +78,7 @@ describe('alignments track', () => {
 
     // this is to confirm a alignment detail widget opened
     await findByTestId('alignment-side-drawer')
-  }, 30000)
+  }, 20000)
 
   // Note: tracks with assembly volvox don't have much soft clipping
   it('opens the track menu and enables soft clipping', async () => {

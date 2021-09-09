@@ -290,6 +290,15 @@ export interface LocalPathLocation
 
 export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
 
+export function isUriLocation(location: unknown): location is UriLocation {
+  return (
+    typeof location === 'object' &&
+    location !== null &&
+    'locationType' in location &&
+    'uri' in location
+  )
+}
+
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
 export type FileLocation = LocalPathLocation | UriLocation | BlobLocation

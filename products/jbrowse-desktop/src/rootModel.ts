@@ -17,11 +17,9 @@ import {
   getParent,
   getSnapshot,
   types,
-  addDisposer,
   SnapshotIn,
   Instance,
 } from 'mobx-state-tree'
-import { autorun } from 'mobx'
 import JBrowseDesktop from './jbrowseModel'
 // @ts-ignore
 import RenderWorker from './rpc.worker'

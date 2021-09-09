@@ -249,7 +249,9 @@ describe('valid file tests', () => {
     fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
     // test search results dialog opening
     await screen.findByText('Search Results')
-    expect(state.session.views[0].searchResults.length).toBeGreaterThan(0)
+    await waitFor(() =>
+      expect(state.session.views[0].searchResults.length).toBeGreaterThan(0),
+    )
   }, 30000)
 
   it('opens reference sequence track and expects zoom in message', async () => {
@@ -364,6 +366,11 @@ describe('valid file tests', () => {
 
     const autocomplete = await findByTestId('autocomplete')
     const inputBox = await findByPlaceholderText('Search for location')
+    await waitFor(() =>
+      expect(state.session.views[0].coarseDynamicBlocks.length).toBeGreaterThan(
+        0,
+      ),
+    )
     fireEvent.mouseDown(inputBox)
     autocomplete.focus()
     fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })

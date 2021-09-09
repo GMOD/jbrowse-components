@@ -228,6 +228,34 @@ ipcMain.handle('loadSession', (_event: unknown, sessionName: string) =>
   readFile(getPath(sessionName), 'utf8'),
 )
 
+ipcMain.handle(
+  'openAuthWindow',
+  (_event: unknown, { internetAccountId, data, url }) => {
+    const win = new BrowserWindow({
+      width: 1000,
+      height: 600,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+      },
+    })
+    win.title = `JBrowseAuthWindow-${internetAccountId}`
+    win.loadURL(url)
+
+    return new Promise(resolve => {
+      win.webContents.on(
+        'did-navigate',
+        function (event: Event, redirectUrl: string) {
+          if (redirectUrl.startsWith(data.redirect_uri)) {
+            event.preventDefault()
+            resolve(redirectUrl)
+            win.close()
+          }
+        },
+      )
+    })
+  },
+)
 ipcMain.on('saveSession', async (_event: unknown, snap: SessionSnap) => {
   const page = await mainWindow?.capturePage()
   if (page) {

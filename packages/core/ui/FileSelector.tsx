@@ -14,18 +14,15 @@ import { observer } from 'mobx-react'
 import { isElectron } from '../util'
 import {
   LocalPathLocation,
-  UriLocation,
   FileLocation,
   BlobLocation,
+  isUriLocation,
 } from '../util/types'
 import { getBlob, storeBlobLocation } from '../util/tracks'
 
 interface Account {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
-}
-function isUriLocation(location: FileLocation): location is UriLocation {
-  return 'uri' in location
 }
 
 function isLocalPathLocation(
@@ -102,7 +99,6 @@ const UrlChooser = (props: {
   internetAccounts?: Account[]
 }) => {
   const { location, setLocation, internetAccounts } = props
-  const [currentUrl, setCurrentUrl] = useState('')
   const [currentInternetAccount, setCurrentInternetAccount] = useState(
     'autoDetect',
   )
@@ -134,7 +130,6 @@ const UrlChooser = (props: {
         inputProps={{ 'data-testid': 'urlInput' }}
         defaultValue={location && isUriLocation(location) ? location.uri : ''}
         onChange={event => {
-          setCurrentUrl(event.target.value)
           if (event.target.value === '') {
             setCurrentInternetAccount('autoDetect')
           }
@@ -158,7 +153,7 @@ const UrlChooser = (props: {
           }
         }}
       />
-      {currentUrl !== '' && internetAccounts && (
+      {isUriLocation(location) && internetAccounts && (
         <div>
           <label htmlFor="internetAccountSelect">Select Internet Account</label>
           <Select
@@ -169,13 +164,13 @@ const UrlChooser = (props: {
               const internetAccountId: string = event.target.value as string
               setCurrentInternetAccount(event.target.value as string)
               const internetAccount = findChosenInternetAccount(
-                currentUrl,
+                location.uri,
                 internetAccountId,
               )
 
               setLocation({
-                uri: currentUrl,
-                baseAuthUri: currentUrl,
+                uri: location.uri,
+                baseAuthUri: location.uri,
                 internetAccountId: internetAccount?.internetAccountId || '',
                 locationType: 'UriLocation',
               })
@@ -185,11 +180,11 @@ const UrlChooser = (props: {
             <MenuItem value="">None</MenuItem>
             <MenuItem value="autoDetect">
               Auto Detect:{' '}
-              {findChosenInternetAccount(currentUrl, 'autoDetect')?.name}
+              {findChosenInternetAccount(location.uri, 'autoDetect')?.name}
             </MenuItem>
             {internetAccounts?.map(account => {
               try {
-                new URL(currentUrl)
+                new URL(location.uri)
                 return (
                   <MenuItem
                     key={account.internetAccountId}

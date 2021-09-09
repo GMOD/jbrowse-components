@@ -3,18 +3,14 @@ import LocalFile from './LocalFile'
 import {
   FileLocation,
   LocalPathLocation,
-  UriLocation,
   BlobLocation,
   isAppRootModel,
+  isUriLocation,
 } from '../types'
 import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
 import { getBlob } from '../tracks'
 import { isElectron } from '../../util'
 import PluginManager from '../../PluginManager'
-
-function isUriLocation(location: FileLocation): location is UriLocation {
-  return 'uri' in location
-}
 
 function isLocalPathLocation(
   location: FileLocation,
@@ -58,6 +54,8 @@ export function openLocation(
       throw new Error('No URI provided')
     }
     if (location.internetAccountId) {
+      // TODOAUTH: check internetaccountId is in arrya, if not need to make new config for HTTPBasic,
+      // which means you dont have to configure httpbasic
       if (!pluginManager) {
         throw new Error(
           'need plugin manager to open locations with an internet account',
