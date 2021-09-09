@@ -17,19 +17,8 @@ export function createInternetAccountConfig(pluginManager: PluginManager) {
         type: 'string',
         defaultValue: '',
       },
-      authHeader: {
-        description:
-          'the auth header to use during fetch, defaults to Authorization if not provided',
-        type: 'string',
-        defaultValue: 'Authorization',
-      },
-      tokenType: {
-        description: 'the token type to be prepended in the auth header',
-        type: 'string',
-        defaultValue: '',
-      },
     },
-    { explicitIdentifier: 'internetAccountId' },
+    { explicitIdentifier: 'internetAccountId', explicitlyTyped: true },
   )
 }
 
