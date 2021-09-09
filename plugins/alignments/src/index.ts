@@ -1,7 +1,6 @@
 import { lazy } from 'react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-import AdapterGuessType from '@jbrowse/core/pluggableElementTypes/AdapterGuessType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import {
   createBaseTrackConfig,
@@ -144,36 +143,34 @@ export default class AlignmentsPlugin extends Plugin {
       () =>
         new AdapterType({
           name: 'BamAdapter',
-          ...pluginManager.load(BamAdapterF),
-        }),
-    )
-    pluginManager.registerAdapterGuess(
-      () =>
-        new AdapterGuessType({
-          name: 'BamAdapter',
-          regexGuess: /\.bam$/i,
-          trackGuess: 'AlignmentsTrack',
-          fetchConfig: (
-            file: FileLocation,
-            index: FileLocation,
-            indexName: string,
-          ) => {
-            return {
-              type: 'BamAdapter',
-              bamLocation: file,
-              index: {
-                location: index || makeIndex(file, '.bai'),
-                indexType: makeIndexType(indexName, 'CSI', 'BAI'),
-              },
-            }
+          addTrackConfig: {
+            regexGuess: /\.bam$/i,
+            trackGuess: 'AlignmentsTrack',
+            fetchConfig: (
+              file: FileLocation,
+              index: FileLocation,
+              indexName: string,
+            ) => {
+              return {
+                type: 'BamAdapter',
+                bamLocation: file,
+                index: {
+                  location: index || makeIndex(file, '.bai'),
+                  indexType: makeIndexType(indexName, 'CSI', 'BAI'),
+                },
+              }
+            },
           },
+          ...pluginManager.load(BamAdapterF),
         }),
     )
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
           name: 'SNPCoverageAdapter',
-          excludeFromTrackSelector: true,
+          addTrackConfig: {
+            excludeFromTrackSelector: true,
+          },
           ...pluginManager.load(SNPCoverageAdapterF),
         }),
     )
@@ -181,22 +178,18 @@ export default class AlignmentsPlugin extends Plugin {
       () =>
         new AdapterType({
           name: 'CramAdapter',
-          ...pluginManager.load(CramAdapterF),
-        }),
-    )
-    pluginManager.registerAdapterGuess(
-      () =>
-        new AdapterGuessType({
-          name: 'CramAdapter',
-          regexGuess: /\.cram$/i,
-          trackGuess: 'AlignmentsTrack',
-          fetchConfig: (file: FileLocation, index: FileLocation) => {
-            return {
-              type: 'CramAdapter',
-              cramLocation: file,
-              craiLocation: index || makeIndex(file, '.crai'),
-            }
+          addTrackConfig: {
+            regexGuess: /\.cram$/i,
+            trackGuess: 'AlignmentsTrack',
+            fetchConfig: (file: FileLocation, index: FileLocation) => {
+              return {
+                type: 'CramAdapter',
+                cramLocation: file,
+                craiLocation: index || makeIndex(file, '.crai'),
+              }
+            },
           },
+          ...pluginManager.load(CramAdapterF),
         }),
     )
     pluginManager.addAdapterType(

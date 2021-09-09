@@ -53,21 +53,24 @@ function StatusMessage({
  *   found under that subheader
  */
 function categorizeAdapters(
-  adaptersList: { name: string; externalPluginName: string }[],
+  adaptersList: {
+    name: string
+    addTrackConfig: { externalPluginName: string }
+  }[],
 ) {
   let currentPluginName = ''
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const items: any = []
   adaptersList.forEach(adapter => {
-    if (adapter.externalPluginName) {
-      if (currentPluginName !== adapter.externalPluginName) {
-        currentPluginName = adapter.externalPluginName
+    if (adapter.addTrackConfig.externalPluginName) {
+      if (currentPluginName !== adapter.addTrackConfig.externalPluginName) {
+        currentPluginName = adapter.addTrackConfig.externalPluginName
         items.push(
           <ListSubheader
-            key={adapter.externalPluginName}
-            value={adapter.externalPluginName}
+            key={adapter.addTrackConfig.externalPluginName}
+            value={adapter.addTrackConfig.externalPluginName}
           >
-            {adapter.externalPluginName}
+            {adapter.addTrackConfig.externalPluginName}
           </ListSubheader>,
         )
       }
@@ -114,9 +117,13 @@ function TrackAdapterSelector({
         .filter(
           (elt: {
             name: string
-            excludeFromTrackSelector: boolean
-            externalPluginName: string
-          }) => !elt.excludeFromTrackSelector && !elt.externalPluginName,
+            addTrackConfig: {
+              excludeFromTrackSelector: boolean
+              externalPluginName: string
+            }
+          }) =>
+            !elt.addTrackConfig.excludeFromTrackSelector &&
+            !elt.addTrackConfig.externalPluginName,
         )
         .map((elt: { name: string }) => (
           <MenuItem key={elt.name} value={elt.name}>

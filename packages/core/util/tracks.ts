@@ -135,16 +135,17 @@ export function guessAdapter(
     const session = getSession(model)
 
     const adapter = getEnv(session)
-      .pluginManager.getElementTypesInGroup('adapter guess')
+      .pluginManager.getElementTypesInGroup('adapter')
       .find(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (adapter: any) =>
-          (adapter.regexGuess && adapter.regexGuess.test(fileName)) ||
+          (adapter.addTrackConfig.regexGuess &&
+            adapter.addTrackConfig.regexGuess.test(fileName)) ||
           adapterHint === adapter.name,
       )
 
     if (adapter) {
-      return adapter.fetchConfig(file, index, indexName)
+      return adapter.addTrackConfig.fetchConfig(file, index, indexName)
     }
   }
 
@@ -162,12 +163,12 @@ export function guessTrackType(
     const session = getSession(model)
 
     const adapter = getEnv(session)
-      .pluginManager.getElementTypesInGroup('adapter guess')
+      .pluginManager.getElementTypesInGroup('adapter')
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .find((adapter: any) => adapterType === adapter.name)
 
     if (adapter) {
-      return adapter.trackGuess
+      return adapter.addTrackConfig.trackGuess
     }
   }
   return 'FeatureTrack'

@@ -1,7 +1,6 @@
 import { lazy } from 'react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-import AdapterGuessType from '@jbrowse/core/pluggableElementTypes/AdapterGuessType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import {
   createBaseTrackConfig,
@@ -36,31 +35,27 @@ export default class VariantsPlugin extends Plugin {
         new AdapterType({
           name: 'VcfTabixAdapter',
           configSchema: vcfTabixAdapterConfigSchema,
+          addTrackConfig: {
+            regexGuess: /\.vcf\.b?gz$/i,
+            trackGuess: 'VariantTrack',
+            externalPluginName: 'Variants Plugin',
+            fetchConfig: (
+              file: FileLocation,
+              index: FileLocation,
+              indexName: string,
+            ) => {
+              return {
+                type: 'VcfTabixAdapter',
+                vcfGzLocation: file,
+                index: {
+                  location: index || makeIndex(file, '.tbi'),
+                  indexType: makeIndexType(indexName, 'CSI', 'TBI'),
+                },
+              }
+            },
+          },
           getAdapterClass: () =>
             import('./VcfTabixAdapter/VcfTabixAdapter').then(r => r.default),
-        }),
-    )
-
-    pluginManager.registerAdapterGuess(
-      () =>
-        new AdapterGuessType({
-          name: 'VcfTabixAdapter',
-          regexGuess: /\.vcf\.b?gz$/i,
-          trackGuess: 'VariantTrack',
-          fetchConfig: (
-            file: FileLocation,
-            index: FileLocation,
-            indexName: string,
-          ) => {
-            return {
-              type: 'VcfTabixAdapter',
-              vcfGzLocation: file,
-              index: {
-                location: index || makeIndex(file, '.tbi'),
-                indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-              },
-            }
-          },
         }),
     )
 
@@ -69,23 +64,18 @@ export default class VariantsPlugin extends Plugin {
         new AdapterType({
           name: 'VcfAdapter',
           configSchema: vcfAdapterConfigSchema,
+          addTrackConfig: {
+            regexGuess: /\.vcf$/i,
+            trackGuess: 'VariantTrack',
+            fetchConfig: (file: FileLocation) => {
+              return {
+                type: 'VcfAdapter',
+                vcfLocation: file,
+              }
+            },
+          },
           getAdapterClass: () =>
             import('./VcfAdapter/VcfAdapter').then(r => r.default),
-        }),
-    )
-
-    pluginManager.registerAdapterGuess(
-      () =>
-        new AdapterGuessType({
-          name: 'VcfAdapter',
-          regexGuess: /\.vcf$/i,
-          trackGuess: 'VariantTrack',
-          fetchConfig: (file: FileLocation) => {
-            return {
-              type: 'VcfAdapter',
-              vcfLocation: file,
-            }
-          },
         }),
     )
 

@@ -16,7 +16,6 @@ import { getConf } from '@jbrowse/core/configuration'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import TimelineIcon from '@material-ui/icons/Timeline'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
-import AdapterGuessType from '@jbrowse/core/pluggableElementTypes/AdapterGuessType'
 import { FileLocation } from '@jbrowse/core/util/types'
 import {
   configSchemaFactory as dotplotDisplayConfigSchemaFactory,
@@ -359,21 +358,17 @@ export default class DotplotPlugin extends Plugin {
         new AdapterType({
           name: 'PAFAdapter',
           configSchema: PAFAdapterConfigSchema,
-          AdapterClass: PAFAdapter,
-        }),
-    )
-    pluginManager.registerAdapterGuess(
-      () =>
-        new AdapterGuessType({
-          name: 'PAFAdapter',
-          regexGuess: /\.paf/i,
-          trackGuess: 'SyntenyTrack',
-          fetchConfig: (file: FileLocation) => {
-            return {
-              type: 'PAFAdapter',
-              pafLocation: file,
-            }
+          addTrackConfig: {
+            regexGuess: /\.paf/i,
+            trackGuess: 'SyntenyTrack',
+            fetchConfig: (file: FileLocation) => {
+              return {
+                type: 'PAFAdapter',
+                pafLocation: file,
+              }
+            },
           },
+          AdapterClass: PAFAdapter,
         }),
     )
 

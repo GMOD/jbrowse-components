@@ -6,7 +6,6 @@ import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
-import AdapterGuessType from '@jbrowse/core/pluggableElementTypes/AdapterGuessType'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { makeIndex } from '@jbrowse/core/util/tracks'
 import { configSchema as bgzipFastaAdapterConfigSchema } from './BgzipFastaAdapter'
@@ -46,23 +45,18 @@ export default class SequencePlugin extends Plugin {
         new AdapterType({
           name: 'TwoBitAdapter',
           configSchema: twoBitAdapterConfigSchema,
+          addTrackConfig: {
+            regexGuess: /\.2bit$/i,
+            trackGuess: 'ReferenceSequenceTrack',
+            fetchConfig: (file: FileLocation) => {
+              return {
+                type: 'TwoBitAdapter',
+                twoBitLocation: file,
+              }
+            },
+          },
           getAdapterClass: () =>
             import('./TwoBitAdapter/TwoBitAdapter').then(r => r.default),
-        }),
-    )
-
-    pluginManager.registerAdapterGuess(
-      () =>
-        new AdapterGuessType({
-          name: 'TwoBitAdapter',
-          regexGuess: /\.2bit$/i,
-          trackGuess: 'ReferenceSequenceTrack',
-          fetchConfig: (file: FileLocation) => {
-            return {
-              type: 'TwoBitAdapter',
-              twoBitLocation: file,
-            }
-          },
         }),
     )
 
@@ -83,26 +77,21 @@ export default class SequencePlugin extends Plugin {
         new AdapterType({
           name: 'IndexedFastaAdapter',
           configSchema: indexedFastaAdapterConfigSchema,
+          addTrackConfig: {
+            regexGuess: /\.(fa|fasta|fas|fna|mfa)$/i,
+            trackGuess: 'ReferenceSequenceTrack',
+            fetchConfig: (file: FileLocation, index: FileLocation) => {
+              return {
+                type: 'IndexedFastaAdapter',
+                fastaLocation: file,
+                faiLocation: index || makeIndex(file, '.fai'),
+              }
+            },
+          },
           getAdapterClass: () =>
             import('./IndexedFastaAdapter/IndexedFastaAdapter').then(
               r => r.default,
             ),
-        }),
-    )
-
-    pluginManager.registerAdapterGuess(
-      () =>
-        new AdapterGuessType({
-          name: 'IndexedFastaAdapter',
-          regexGuess: /\.(fa|fasta|fas|fna|mfa)$/i,
-          trackGuess: 'ReferenceSequenceTrack',
-          fetchConfig: (file: FileLocation, index: FileLocation) => {
-            return {
-              type: 'IndexedFastaAdapter',
-              fastaLocation: file,
-              faiLocation: index || makeIndex(file, '.fai'),
-            }
-          },
         }),
     )
 
@@ -111,27 +100,22 @@ export default class SequencePlugin extends Plugin {
         new AdapterType({
           name: 'BgzipFastaAdapter',
           configSchema: bgzipFastaAdapterConfigSchema,
+          addTrackConfig: {
+            regexGuess: /\.(fa|fasta|fas|fna|mfa)\.b?gz$/i,
+            trackGuess: 'ReferenceSequenceTrack',
+            fetchConfig: (file: FileLocation) => {
+              return {
+                type: 'BgzipFastaAdapter',
+                fastaLocation: file,
+                faiLocation: makeIndex(file, '.fai'),
+                gziLocation: makeIndex(file, '.gzi'),
+              }
+            },
+          },
           getAdapterClass: () =>
             import('./BgzipFastaAdapter/BgzipFastaAdapter').then(
               r => r.default,
             ),
-        }),
-    )
-
-    pluginManager.registerAdapterGuess(
-      () =>
-        new AdapterGuessType({
-          name: 'BgzipFastaAdapter',
-          regexGuess: /\.(fa|fasta|fas|fna|mfa)\.b?gz$/i,
-          trackGuess: 'ReferenceSequenceTrack',
-          fetchConfig: (file: FileLocation) => {
-            return {
-              type: 'BgzipFastaAdapter',
-              fastaLocation: file,
-              faiLocation: makeIndex(file, '.fai'),
-              gziLocation: makeIndex(file, '.gzi'),
-            }
-          },
         }),
     )
 

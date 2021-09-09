@@ -3,6 +3,15 @@ import PluggableElementBase from './PluggableElementBase'
 import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
 import { AnyAdapter } from '../data_adapters/BaseAdapter'
 
+interface TrackConfig {
+  [key: string]: unknown
+  excludeFromTrackSelector?: boolean
+  externalPluginName?: string
+  regexGuess?: RegExp | undefined
+  trackGuess?: string | undefined
+  fetchConfig?: Function
+}
+
 export default class AdapterType extends PluggableElementBase {
   AdapterClass?: AnyAdapter
 
@@ -12,17 +21,14 @@ export default class AdapterType extends PluggableElementBase {
 
   adapterCapabilities: string[]
 
-  externalPluginName: string | undefined
-
-  excludeFromTrackSelector: boolean
+  addTrackConfig: TrackConfig
 
   constructor(
     stuff: {
       name: string
       configSchema: AnyConfigurationSchemaType
       adapterCapabilities?: string[]
-      externalPluginName?: string
-      excludeFromTrackSelector?: boolean
+      addTrackConfig?: TrackConfig
     } & (
       | { AdapterClass: AnyAdapter }
       | { getAdapterClass: () => Promise<AnyAdapter> }
@@ -41,12 +47,12 @@ export default class AdapterType extends PluggableElementBase {
     this.configSchema = stuff.configSchema
     this.adapterCapabilities = stuff.adapterCapabilities || []
 
-    this.externalPluginName = stuff.externalPluginName
-
-    if (stuff.excludeFromTrackSelector === undefined) {
-      this.excludeFromTrackSelector = false
+    if (stuff.addTrackConfig) {
+      this.addTrackConfig = stuff.addTrackConfig
     } else {
-      this.excludeFromTrackSelector = stuff.excludeFromTrackSelector
+      this.addTrackConfig = {
+        excludeFromTrackSelector: false,
+      }
     }
   }
 }

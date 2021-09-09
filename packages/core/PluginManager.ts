@@ -18,7 +18,6 @@ import ConnectionType from './pluggableElementTypes/ConnectionType'
 import RpcMethodType from './pluggableElementTypes/RpcMethodType'
 import InternetAccountType from './pluggableElementTypes/InternetAccountType'
 import TextSearchAdapterType from './pluggableElementTypes/TextSearchAdapterType'
-import AdapterGuessType from './pluggableElementTypes/AdapterGuessType'
 
 import {
   ConfigurationSchema,
@@ -197,8 +196,6 @@ export default class PluginManager {
 
   rpcMethods = new TypeRecord('RpcMethodType', RpcMethodType)
 
-  adapterGuess = new TypeRecord('AdapterGuessType', AdapterGuessType)
-
   internetAccountTypes = new TypeRecord(
     'InternetAccountType',
     InternetAccountType,
@@ -306,8 +303,6 @@ export default class PluginManager {
         return this.viewTypes
       case 'rpc method':
         return this.rpcMethods
-      case 'adapter guess':
-        return this.adapterGuess
       case 'internet account':
         return this.internetAccountTypes
       default:
@@ -611,11 +606,5 @@ export default class PluginManager {
       }
     }
     return accumulator
-  }
-
-  registerAdapterGuess(
-    creationCallback: (pluginManager: PluginManager) => AdapterGuessType,
-  ): this {
-    return this.addElementType('adapter guess', creationCallback)
   }
 }
