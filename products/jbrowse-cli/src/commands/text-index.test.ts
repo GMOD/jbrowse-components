@@ -334,7 +334,13 @@ describe('run with a single assembly similar to embedded config', () => {
       preVolvoxIxx = readText(ctx.dir, 'volvox.ixx')
       preVolvoxMeta = readJSON(ctx.dir, 'volvox_meta.json')
     })
-    .command(['text-index', '--target=config.json', '--force'])
+    .command([
+      'text-index',
+      '--target=config.json',
+      '--force',
+      '--attributes',
+      'Name,ID,Note',
+    ])
     .it('Indexes single assembly volvox config', ctx => {
       const postVolvoxIx = readText(ctx.dir, 'volvox.ix')
       const postVolvoxIxx = readText(ctx.dir, 'volvox.ixx')
@@ -374,7 +380,13 @@ describe('run with a volvox config', () => {
       preVolvoxIxx = readText(ctx.dir, 'volvox.ixx')
       preVolvoxMeta = readJSON(ctx.dir, 'volvox_meta.json')
     })
-    .command(['text-index', '--target=config.json', '--force'])
+    .command([
+      'text-index',
+      '--target=config.json',
+      '--force',
+      '--attributes',
+      'Name,ID,Note',
+    ])
     .it('Indexes entire volvox config', ctx => {
       const postVolvoxIx = readText(ctx.dir, 'volvox.ix')
       const postVolvoxIxx = readText(ctx.dir, 'volvox.ixx')
