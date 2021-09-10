@@ -81,7 +81,6 @@ type PluggableElementTypeGroup =
   | 'rpc method'
   | 'internet account'
   | 'text search adapter'
-  | 'adapter guess'
 
 /** internal class that holds the info for a certain element type */
 class TypeRecord<ElementClass extends PluggableElementBase> {
@@ -171,7 +170,6 @@ export default class PluginManager {
     'view',
     'widget',
     'rpc method',
-    'adapter guess',
     'internet account',
   )
 
