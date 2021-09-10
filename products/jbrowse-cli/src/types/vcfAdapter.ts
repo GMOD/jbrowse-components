@@ -70,13 +70,14 @@ export async function* indexVcf(
       info
         .split(';')
         .map(f => f.trim())
+        .filter(f => !!f)
         .map(f => f.split('='))
-        .map(([key, val]) => [key.trim(), val.trim().split(',').join(' ')]),
+        .map(([key, val]) => [key.trim(), val?.trim().split(',').join(' ')]),
     )
 
     const end = fields.END
 
-    const locStr = `${ref}:${pos}..${end ? end[1] : +pos + 1}`
+    const locStr = `${ref}:${pos}..${end ? end : +pos + 1}`
     if (id === '.') {
       continue
     }
