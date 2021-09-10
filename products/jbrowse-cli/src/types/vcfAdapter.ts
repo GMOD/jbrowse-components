@@ -63,25 +63,28 @@ export async function* indexVcf(
     }
 
     const [ref, pos, id, _ref, _alt, _qual, _filter, info] = line.split('\t')
-    const fields = info
-      .split(';')
-      .map(f => f.trim())
-      .map(f => f.split('='))
 
-    const end = fields.find(f => f[0] === 'END')
+    // turns gff3 attrs into a map, and converts the arrays into space
+    // separated strings
+    const fields = Object.fromEntries(
+      info
+        .split(';')
+        .map(f => f.trim())
+        .map(f => f.split('='))
+        .map(([key, val]) => [key.trim(), val.trim().split(',').join(' ')]),
+    )
+
+    const end = fields.END
 
     const locStr = `${ref}:${pos}..${end ? end[1] : +pos + 1}`
     if (id === '.') {
       continue
     }
 
-    const attributes = attributesToIndex.filter(
-      attr => attr !== 'Name' && attr !== 'ID',
-    )
-    const infoFields = Object.fromEntries(fields)
-    const infoAttrs = attributes
-      .map(attr => infoFields[attr])
+    const infoAttrs = attributesToIndex
+      .map(attr => fields[attr])
       .filter((f): f is string => !!f)
+
     const ids = id.split(',')
     for (let i = 0; i < ids.length; i++) {
       const id = ids[i]
