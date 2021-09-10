@@ -1,6 +1,5 @@
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { ExternalTokenInternetAccountConfigModel } from './configSchema'
 import { Instance, types, getParent } from 'mobx-state-tree'
@@ -16,7 +15,6 @@ import { RemoteFile } from 'generic-filehandle'
 const inWebWorker = typeof sessionStorage === 'undefined'
 
 const stateModelFactory = (
-  pluginManager: PluginManager,
   configSchema: ExternalTokenInternetAccountConfigModel,
 ) => {
   return types
@@ -33,6 +31,12 @@ const stateModelFactory = (
       needsToken: false,
     }))
     .views(self => ({
+      get authHeader() {
+        return getConf(self, 'authHeader')
+      },
+      get tokenType() {
+        return getConf(self, 'tokenType')
+      },
       get internetAccountType() {
         return 'ExternalTokenInternetAccount'
       },
@@ -46,8 +50,8 @@ const stateModelFactory = (
         return {
           internetAccountType: this.internetAccountType,
           authInfo: {
-            authHeader: self.authHeader,
-            tokenType: '',
+            authHeader: this.authHeader,
+            tokenType: this.tokenType,
             configuration: self.accountConfig,
           },
         }
@@ -135,13 +139,15 @@ const stateModelFactory = (
             const tokenInfoString = self.tokenType
               ? `${self.tokenType} ${preAuthInfo.authInfo.token}`
               : `${preAuthInfo.authInfo.token}`
-            const newHeaders = {
-              ...opts?.headers,
-              [self.authHeader]: `${tokenInfoString}`,
-            }
-            newOpts = {
-              ...opts,
-              headers: newHeaders,
+            if (self.authHeader) {
+              const newHeaders = {
+                ...opts?.headers,
+                [self.authHeader]: `${tokenInfoString}`,
+              }
+              newOpts = {
+                ...opts,
+                headers: newHeaders,
+              }
             }
           }
 
@@ -200,18 +206,6 @@ const stateModelFactory = (
           }
 
           return preAuthInfo
-          // switch (self.origin) {
-          //   case 'GDC': {
-          //     const query = (location as UriLocation).uri.split('/').pop() // should get id
-          //     const editedArgs = JSON.parse(JSON.stringify(args))
-          //     searchOrReplaceInArgs(
-          //       editedArgs,
-          //       'uri',
-          //       `${self.accountConfig.customEndpoint}/data/${query}`,
-          //     )
-          //     return editedArgs
-          //   }
-          // }
         },
         async handleError() {
           if (!inWebWorker) {

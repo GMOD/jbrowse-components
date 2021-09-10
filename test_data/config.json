@@ -398,7 +398,7 @@
   },
   "internetAccounts": [
     {
-      "type": "OAuthInternetAccount",
+      "type": "DropboxOAuthInternetAccount",
       "internetAccountId": "dropboxOAuth",
       "name": "Dropbox",
       "description": "OAuth Info for Dropbox",
@@ -419,7 +419,7 @@
       ]
     },
     {
-      "type": "OAuthInternetAccount",
+      "type": "GoogleDriveOAuthInternetAccount",
       "internetAccountId": "googleOAuth",
       "name": "Google",
       "description": "OAuth Info for Google Drive",

@@ -755,7 +755,7 @@ Aggregate indexes may look like this
         "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json",
         "locationType": "UriLocation"
       },
-      "assemblies": ["hg19"]
+      "assemblyNames": ["hg19"]
     }
 }
 ```
@@ -789,7 +789,7 @@ An example per-track config may look like this
         "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json",
         "locationType": "UriLocation"
       },
-      "assemblies": ["hg19"]
+      "assemblyNames": ["hg19"]
     },
     "indexingAttributes": ["Name","ID"],
     "indexingFeatureTypesToExclude": ["CDS","exon"]

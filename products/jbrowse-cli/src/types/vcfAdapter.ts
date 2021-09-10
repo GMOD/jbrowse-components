@@ -23,6 +23,7 @@ export async function* indexVcf(
   const progressBar = new SingleBar(
     {
       format: '{bar} ' + trackId + ' {percentage}% | ETA: {eta}s',
+      etaBuffer: 2000,
     },
     Presets.shades_classic,
   )
@@ -34,7 +35,7 @@ export async function* indexVcf(
     fileDataStream = await createRemoteStream(uri)
     totalBytes = +(fileDataStream.headers['content-length'] || 0)
   } else {
-    const filename = path.join(outLocation, uri)
+    const filename = path.isAbsolute(uri) ? uri : path.join(outLocation, uri)
     totalBytes = fs.statSync(filename).size
     fileDataStream = fs.createReadStream(filename)
   }
@@ -77,9 +78,13 @@ export async function* indexVcf(
     for (let i = 0; i < ids.length; i++) {
       const id = ids[i]
       const attrs = [id]
-      const record = JSON.stringify([locStr, trackId, undefined, id])
-      const buff = Buffer.from(record).toString('base64')
-      yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
+      const record = JSON.stringify([
+        encodeURIComponent(locStr),
+        encodeURIComponent(trackId),
+        encodeURIComponent(''),
+        encodeURIComponent(id || ''),
+      ]).replace(/,/g, '|')
+      yield `${record} ${[...new Set(attrs)].join(' ')}\n`
     }
   }
 

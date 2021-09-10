@@ -747,7 +747,10 @@ const Renderer = observer(
       if (!pm.rootModel?.session) {
         return (
           <Suspense fallback={<div>Loading...</div>}>
-            <StartScreen root={pm.rootModel} onFactoryReset={factoryReset} />
+            <StartScreen
+              rootModel={pm.rootModel}
+              onFactoryReset={factoryReset}
+            />
           </Suspense>
         )
       }

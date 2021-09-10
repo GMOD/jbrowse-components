@@ -18,6 +18,7 @@ import {
 } from './mst'
 import RpcManager from '../../rpc/RpcManager'
 import { Feature } from '../simpleFeature'
+import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
 
 export * from './util'
 
@@ -237,6 +238,18 @@ export interface AppRootModel extends AbstractRootModel {
   isDefaultSessionEditing: boolean
   setAssemblyEditing: (arg: boolean) => boolean
   setDefaultSessionEditing: (arg: boolean) => boolean
+  findAppropriateInternetAccount(
+    location: UriLocation,
+  ): BaseInternetAccountModel | undefined
+}
+
+export function isAppRootModel(thing: unknown): thing is AppRootModel {
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'isAssemblyEditing' in thing &&
+    'findAppropriateInternetAccount' in thing
+  )
 }
 
 /** a root model that manages global menus */
@@ -276,6 +289,15 @@ export interface LocalPathLocation
   extends SnapshotIn<typeof MULocalPathLocation> {}
 
 export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
+
+export function isUriLocation(location: unknown): location is UriLocation {
+  return (
+    typeof location === 'object' &&
+    location !== null &&
+    'locationType' in location &&
+    'uri' in location
+  )
+}
 
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 

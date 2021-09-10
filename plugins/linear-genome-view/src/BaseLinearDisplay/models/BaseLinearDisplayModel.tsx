@@ -97,8 +97,7 @@ export const BaseLinearDisplay = types
      */
     get selectedFeatureId() {
       if (isAlive(self)) {
-        const session = getSession(self)
-        const { selection } = session
+        const { selection } = getSession(self)
         // does it quack like a feature?
         if (isFeature(selection)) {
           return selection.id()

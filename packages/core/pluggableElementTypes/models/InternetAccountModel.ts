@@ -2,7 +2,7 @@ import { Instance, types } from 'mobx-state-tree'
 import { getConf } from '../../configuration'
 import { ElementId } from '../../util/types/mst'
 import { GenericFilehandle, RemoteFile } from 'generic-filehandle'
-import { FileLocation } from '@jbrowse/core/util/types'
+import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
 
 export const InternetAccount = types
   .model('InternetAccount', {
@@ -15,9 +15,6 @@ export const InternetAccount = types
     },
     get internetAccountId() {
       return getConf(self, 'internetAccountId')
-    },
-    get authHeader() {
-      return getConf(self, 'authHeader')
     },
     get tokenType() {
       return getConf(self, 'tokenType')
@@ -32,8 +29,12 @@ export const InternetAccount = types
     },
   }))
   .actions(() => ({
-    openLocation(location: FileLocation): GenericFilehandle {
-      return new RemoteFile(String(location))
+    openLocation(location: UriLocation): GenericFilehandle {
+      return new RemoteFile(String(location.uri))
+    },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async getPreAuthorizationInformation(location: UriLocation) {
+      return {}
     },
   }))
 

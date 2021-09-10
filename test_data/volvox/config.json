@@ -81,7 +81,7 @@
         "uri": "trix/volvox_meta.json",
         "locationType": "UriLocation"
       },
-      "assemblies": ["volvox"]
+      "assemblyNames": ["volvox"]
     }
   ],
   "tracks": [

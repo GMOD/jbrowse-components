@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals, react-hooks/rules-of-hooks */
 import './workerPolyfill'
 
-import RpcServer from '@librpc/web'
+import RpcServer from 'librpc-web-mod'
 import { useStaticRendering } from 'mobx-react'
 
 import PluginManager from '@jbrowse/core/PluginManager'

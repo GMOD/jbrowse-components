@@ -28,7 +28,7 @@ import DeleteIcon from '@material-ui/icons/Delete'
 import AddIcon from '@material-ui/icons/Add'
 import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked'
 import { observer } from 'mobx-react'
-import { getPropertyMembers } from 'mobx-state-tree'
+import { getPropertyMembers, getEnv } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
 import CallbackEditor from './CallbackEditor'
 import ColorEditor from './ColorEditor'
@@ -341,6 +341,7 @@ const FileSelectorWrapper = observer(({ slot }) => {
       setLocation={location => slot.set(location)}
       name={slot.name}
       description={slot.description}
+      internetAccounts={getEnv(slot).pluginManager.rootModel.internetAccounts}
     />
   )
 })

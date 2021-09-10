@@ -31,14 +31,14 @@ const mockRootModel = {
 describe('AssemblyManager GUI', () => {
   it('renders succesfully', () => {
     const { getByText } = render(
-      <AssemblyManager rootModel={mockRootModel} open onClose={() => {}} />,
+      <AssemblyManager rootModel={mockRootModel} onClose={() => {}} />,
     )
     expect(getByText('Assembly manager')).toBeTruthy()
   })
 
   it('opens up the Add Assembly Form when clicked', () => {
     const { getByText } = render(
-      <AssemblyManager rootModel={mockRootModel} open onClose={() => {}} />,
+      <AssemblyManager rootModel={mockRootModel} onClose={() => {}} />,
     )
     fireEvent.click(getByText('Add new assembly'))
     expect(getByText('Create new assembly')).toBeTruthy()
@@ -46,7 +46,7 @@ describe('AssemblyManager GUI', () => {
 
   it('calls addAssemblyConf from the Add Assembly form', () => {
     const { getByText, getByTestId } = render(
-      <AssemblyManager rootModel={mockRootModel} open onClose={() => {}} />,
+      <AssemblyManager rootModel={mockRootModel} onClose={() => {}} />,
     )
     fireEvent.click(getByText('Add new assembly'))
 
@@ -63,7 +63,7 @@ describe('AssemblyManager GUI', () => {
 
   it("prompts the user for a name when adding assembly if they don't", () => {
     const { getByText } = render(
-      <AssemblyManager rootModel={mockRootModel} open onClose={() => {}} />,
+      <AssemblyManager rootModel={mockRootModel} onClose={() => {}} />,
     )
     fireEvent.click(getByText('Add new assembly'))
     fireEvent.click(getByText('Create new assembly'))
@@ -74,7 +74,7 @@ describe('AssemblyManager GUI', () => {
 
   it('deletes an assembly when delete button clicked', () => {
     const { getByTestId } = render(
-      <AssemblyManager rootModel={mockRootModel} open onClose={() => {}} />,
+      <AssemblyManager rootModel={mockRootModel} onClose={() => {}} />,
     )
     fireEvent.click(getByTestId('testAssembly-delete'))
     expect(mockRootModel.jbrowse.removeAssemblyConf).toHaveBeenCalledWith(
@@ -85,7 +85,7 @@ describe('AssemblyManager GUI', () => {
   it('closes when the Close button is clicked', () => {
     const onClose = jest.fn()
     const { getByText } = render(
-      <AssemblyManager rootModel={mockRootModel} open onClose={onClose} />,
+      <AssemblyManager rootModel={mockRootModel} onClose={onClose} />,
     )
     fireEvent.click(getByText('Close'))
     expect(onClose).toHaveBeenCalled()

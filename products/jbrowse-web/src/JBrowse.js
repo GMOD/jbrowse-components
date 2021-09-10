@@ -19,6 +19,7 @@ function deleteBaseUris(config) {
       }
     }
   }
+  return config
 }
 
 const JBrowse = observer(({ pluginManager }) => {
@@ -38,9 +39,10 @@ const JBrowse = observer(({ pluginManager }) => {
   useEffect(() => {
     onSnapshot(jbrowse, async snapshot => {
       if (adminKey) {
-        const config = JSON.parse(JSON.stringify(snapshot))
-        deleteBaseUris(config)
-        const payload = { adminKey, config }
+        const payload = {
+          adminKey,
+          config: deleteBaseUris(JSON.parse(JSON.stringify(snapshot))),
+        }
 
         const response = await fetch(adminServer || `/updateConfig`, {
           method: 'POST',

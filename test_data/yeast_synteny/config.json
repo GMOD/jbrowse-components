@@ -713,10 +713,10 @@
         "locationType": "UriLocation"
       },
       "metaFilePath": {
-        "uri": "trix/meta.json",
+        "uri": "trix/R64_meta.json",
         "locationType": "UriLocation"
       },
-      "assemblies": ["R64"]
+      "assemblyNames": ["R64"]
     },
     {
       "type": "TrixTextSearchAdapter",
@@ -730,20 +730,10 @@
         "locationType": "UriLocation"
       },
       "metaFilePath": {
-        "uri": "trix/meta.json",
+        "uri": "trix/YJM1447_meta.json",
         "locationType": "UriLocation"
       },
-      "assemblies": ["YJM1447"]
-    },
-    {
-      "type": "JBrowse1TextSearchAdapter",
-      "textSearchAdapterId": "JBrowse1YeastTextSearchAdapter",
-      "namesIndexLocation": {
-        "uri": "names/",
-        "locationType": "UriLocation"
-      },
-      "tracks": [],
-      "assemblies": ["YJM1447", "R64"]
+      "assemblyNames": ["YJM1447"]
     }
   ]
 }

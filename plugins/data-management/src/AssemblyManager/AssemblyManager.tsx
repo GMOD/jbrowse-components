@@ -1,15 +1,17 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from '@material-ui/core/styles'
-import Button from '@material-ui/core/Button'
-import Dialog from '@material-ui/core/Dialog'
-import DialogActions from '@material-ui/core/DialogActions'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import AddIcon from '@material-ui/icons/Add'
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+} from '@material-ui/core'
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos'
 import CloseIcon from '@material-ui/icons/Close'
-import { IconButton } from '@material-ui/core/'
+import AddIcon from '@material-ui/icons/Add'
 
 import AssemblyTable from './AssemblyTable'
 import AssemblyAddForm from './AssemblyAddForm'
@@ -41,12 +43,10 @@ const useStyles = makeStyles(theme => ({
 const AssemblyManager = observer(
   ({
     rootModel,
-    open,
     onClose,
   }: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rootModel: any
-    open: boolean
     onClose: (arg: boolean) => void
   }) => {
     const classes = useStyles()
@@ -57,7 +57,7 @@ const AssemblyManager = observer(
     const showAssemblyTable = !isFormOpen && !isAssemblyBeingEdited
 
     return (
-      <Dialog open={open} onClose={() => onClose(false)}>
+      <Dialog open onClose={() => onClose(false)}>
         <DialogTitle className={classes.titleBox}>
           {showAssemblyTable ? 'Assembly manager' : null}
           {isFormOpen ? (

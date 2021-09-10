@@ -3,16 +3,14 @@ import LocalFile from './LocalFile'
 import {
   FileLocation,
   LocalPathLocation,
-  UriLocation,
   BlobLocation,
+  isAppRootModel,
+  isUriLocation,
 } from '../types'
+import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
 import { getBlob } from '../tracks'
 import { isElectron } from '../../util'
 import PluginManager from '../../PluginManager'
-
-function isUriLocation(location: FileLocation): location is UriLocation {
-  return 'uri' in location
-}
 
 function isLocalPathLocation(
   location: FileLocation,
@@ -24,16 +22,9 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
   return 'blobId' in location
 }
 
-// needs to take the rootmodel in as an optional parameter, use if there is no preauth information
-// calls that arent in data-adapters would need the rootmodel param added, main thread stuff
-// this does not exist right now
-
-// need plugin manger for openLocation now
 export function openLocation(
   location: FileLocation,
   pluginManager?: PluginManager,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rootModel?: any,
 ): GenericFilehandle {
   if (!location) {
     throw new Error('must provide a location to openLocation')
@@ -47,52 +38,6 @@ export function openLocation(
     } else {
       throw new Error("can't use local files in the browser")
     }
-  } else {
-    if (isUriLocation(location)) {
-      if (!location.uri) {
-        throw new Error('No URI provided')
-      }
-      if (location.internetAccountId) {
-        if (!location.internetAccountPreAuthorization) {
-          if (rootModel) {
-            const modifiedLocation = JSON.parse(JSON.stringify(location))
-            const internetAccount = rootModel.findAppropriateInternetAccount(
-              location,
-            )
-            if (!internetAccount) {
-              throw new Error('Could not find associated internet account')
-            }
-            internetAccount.getPreAuthorizationInformation(location).then(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (preAuthInfo: any) =>
-                (modifiedLocation.internetAccountPreAuthorization = preAuthInfo),
-            )
-            return internetAccount.openLocation(modifiedLocation)
-          }
-        } else {
-          if (pluginManager) {
-            const internetAccountType = pluginManager.getInternetAccountType(
-              location.internetAccountPreAuthorization.internetAccountType,
-            )
-            const internetAccount = internetAccountType.stateModel.create({
-              type:
-                location.internetAccountPreAuthorization.internetAccountType,
-              configuration:
-                location.internetAccountPreAuthorization.authInfo.configuration,
-            })
-            if (!location.internetAccountPreAuthorization?.authInfo.token) {
-              throw new Error('Failed to obtain token from internet account')
-            }
-            return internetAccount.openLocation(location)
-          }
-        }
-      }
-
-      const url = location.baseUri
-        ? new URL(location.uri, location.baseUri).href
-        : location.uri
-      return new RemoteFile(String(url))
-    }
   }
   if (isBlobLocation(location)) {
     // special case where blob is not directly stored on the model, use a getter
@@ -103,6 +48,71 @@ export function openLocation(
       )
     }
     return new BlobFile(blob)
+  }
+  if (isUriLocation(location)) {
+    if (!location.uri) {
+      throw new Error('No URI provided')
+    }
+    if (location.internetAccountId) {
+      // TODOAUTH: check internetaccountId is in arrya, if not need to make new config for HTTPBasic,
+      // which means you dont have to configure httpbasic
+      if (!pluginManager) {
+        throw new Error(
+          'need plugin manager to open locations with an internet account',
+        )
+      }
+      const { rootModel } = pluginManager
+      if (rootModel && !isAppRootModel(rootModel)) {
+        throw new Error('This context does not support internet accounts')
+      }
+      if (location.internetAccountPreAuthorization) {
+        let internetAccount
+        if (rootModel) {
+          internetAccount = rootModel.findAppropriateInternetAccount(
+            location,
+          ) as BaseInternetAccountModel | undefined
+        } else {
+          const internetAccountType = pluginManager.getInternetAccountType(
+            location.internetAccountPreAuthorization.internetAccountType,
+          )
+
+          internetAccount = internetAccountType.stateModel.create({
+            type: location.internetAccountPreAuthorization.internetAccountType,
+            configuration:
+              location.internetAccountPreAuthorization.authInfo.configuration,
+          })
+          if (!location.internetAccountPreAuthorization.authInfo.token) {
+            throw new Error('Failed to obtain token from internet account')
+          }
+        }
+        if (!internetAccount) {
+          throw new Error('Could not find associated internet account')
+        }
+        return internetAccount.openLocation(location)
+      } else {
+        if (rootModel) {
+          const modifiedLocation = JSON.parse(JSON.stringify(location))
+          const internetAccount = rootModel.findAppropriateInternetAccount(
+            location,
+          ) as BaseInternetAccountModel | undefined
+          if (!internetAccount) {
+            throw new Error('Could not find associated internet account')
+          }
+          internetAccount.getPreAuthorizationInformation(location).then(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (preAuthInfo: any) =>
+              (modifiedLocation.internetAccountPreAuthorization = preAuthInfo),
+          )
+          return internetAccount.openLocation(modifiedLocation)
+        }
+        throw new Error('Could not pre-authorize location')
+      }
+    }
+
+    const url = location.baseUri
+      ? new URL(location.uri, location.baseUri).href
+      : location.uri
+    return new RemoteFile(url)
   }
   throw new Error('invalid fileLocation')
 }

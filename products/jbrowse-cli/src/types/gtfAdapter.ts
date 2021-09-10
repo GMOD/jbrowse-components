@@ -23,6 +23,7 @@ export async function* indexGtf(
   const progressBar = new SingleBar(
     {
       format: '{bar} ' + trackId + ' {percentage}% | ETA: {eta}s',
+      etaBuffer: 2000,
     },
     Presets.shades_classic,
   )

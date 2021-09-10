@@ -37,7 +37,7 @@ export default function assemblyManagerFactory(
         // hence the union with {name:string}
         const {
           jbrowse: { assemblies },
-          session: { sessionAssemblies = [] },
+          session: { sessionAssemblies = [] } = {},
         } = getParent(self)
         return [
           ...assemblies,

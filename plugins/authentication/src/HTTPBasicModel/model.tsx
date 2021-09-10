@@ -1,6 +1,5 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { getParent } from 'mobx-state-tree'
 import { HTTPBasicInternetAccountConfigModel } from './configSchema'
@@ -17,7 +16,6 @@ import { RemoteFile } from 'generic-filehandle'
 const inWebWorker = typeof sessionStorage === 'undefined'
 
 const stateModelFactory = (
-  pluginManager: PluginManager,
   configSchema: HTTPBasicInternetAccountConfigModel,
 ) => {
   return types
@@ -31,6 +29,9 @@ const stateModelFactory = (
       }),
     )
     .views(self => ({
+      get authHeader() {
+        return getConf(self, 'authHeader') || 'Authorization'
+      },
       get tokenType() {
         return getConf(self, 'tokenType') || 'Basic'
       },
@@ -47,7 +48,7 @@ const stateModelFactory = (
         return {
           internetAccountType: this.internetAccountType,
           authInfo: {
-            authHeader: self.authHeader,
+            authHeader: this.authHeader,
             tokenType: this.tokenType,
             configuration: self.accountConfig,
           },
@@ -120,7 +121,6 @@ const stateModelFactory = (
           if (!preAuthInfo || !preAuthInfo.authInfo) {
             throw new Error('Auth Information Missing')
           }
-
           let foundToken
           try {
             foundToken = await this.checkToken()
@@ -196,7 +196,6 @@ const stateModelFactory = (
             preAuthInfo = self.generateAuthInfo
             sessionStorage.removeItem(`${self.internetAccountId}-token`)
           }
-
           throw new Error('Could not access resource with token')
         },
       }
