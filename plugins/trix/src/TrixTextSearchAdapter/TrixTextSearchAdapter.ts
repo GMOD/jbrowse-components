@@ -41,20 +41,66 @@ export default class TrixTextSearchAdapter
    */
   async searchIndex(args: BaseArgs) {
     const results = await this.trixJs.search(args.queryString)
-    const formatted = results
-      .map(data => JSON.parse(data.replace(/\|/g, ',')) as string[])
-      .map(result => {
-        const [loc, trackId, name, id] = result.map(record =>
-          decodeURIComponent(record),
-        )
-        return new LocStringResult({
-          locString: loc,
-          label: name || id,
-          matchedAttribute: 'name',
-          matchedObject: result,
-          trackId,
-        })
+    const formatted = results.map(entry => {
+      const [term, data] = entry.split(',')
+      const result = JSON.parse(data.replace(/\|/g, ',')) as string[]
+      const [loc, trackId, ...rest] = result.map(record =>
+        decodeURIComponent(record),
+      )
+
+      // gff3 fields are uri encoded so double decode
+      const allAttributes = rest.map(elt => decodeURIComponent(elt))
+      const labelFieldIdx = allAttributes.findIndex(elt => !!elt)
+      const contextIdx = allAttributes.findIndex(
+        elt => elt.toLowerCase().indexOf(term.toLowerCase()) !== -1,
+      )
+
+      const labelField = allAttributes[labelFieldIdx]
+      let context
+      if (contextIdx !== labelFieldIdx) {
+        const w = 15
+        const contextField = allAttributes[contextIdx]
+        context = contextField
+        if (contextField) {
+          if (contextField.length > 40) {
+            const tidx = contextField.indexOf(term)
+            context =
+              '...' +
+              contextField
+                .slice(Math.max(0, tidx - w), tidx + term.length + w)
+                .trim() +
+              '...'
+          }
+        }
+      }
+      let shortenedLabelField = ''
+      if (labelField.length > 40) {
+        const w = 16
+        const tidx = labelField
+          .toLocaleLowerCase()
+          .indexOf(term.toLocaleLowerCase())
+        shortenedLabelField =
+          '...' +
+          labelField
+            .slice(Math.max(0, tidx - w), tidx + term.length + w)
+            .trim() +
+          '...'
+      }
+      const displayString =
+        !context || labelField.toLowerCase() === context.toLowerCase()
+          ? labelField.length > 40
+            ? shortenedLabelField
+            : labelField
+          : `${labelField} (${context})`
+
+      return new LocStringResult({
+        locString: loc,
+        label: labelField,
+        displayString,
+        matchedObject: result.map(record => decodeURIComponent(record)),
+        trackId,
       })
+    })
 
     if (args.searchType === 'exact') {
       return formatted.filter(

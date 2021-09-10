@@ -235,8 +235,10 @@ export default class TextIndex extends JBrowseCommand {
           continue
         }
         const id = asm + '-index'
-        const found = aggregateAdapters.find(x => x.textSearchAdapterId === id)
-        if (found && !force) {
+        const foundIdx = aggregateAdapters.findIndex(
+          x => x.textSearchAdapterId === id,
+        )
+        if (foundIdx !== -1 && !force) {
           this.log(
             `Note: ${asm} has already been indexed with this configuration, use --force to overwrite this assembly. Skipping for now`,
           )
@@ -252,7 +254,8 @@ export default class TextIndex extends JBrowseCommand {
           exclude: exclude.split(','),
           assemblyNames: [asm],
         })
-        if (!found) {
+
+        if (foundIdx === -1) {
           aggregateAdapters.push({
             type: 'TrixTextSearchAdapter',
             textSearchAdapterId: id,
@@ -267,6 +270,21 @@ export default class TextIndex extends JBrowseCommand {
             },
             assemblyNames: [asm],
           })
+        } else {
+          aggregateAdapters[foundIdx] = {
+            type: 'TrixTextSearchAdapter',
+            textSearchAdapterId: id,
+            ixFilePath: {
+              uri: `trix/${asm}.ix`,
+            },
+            ixxFilePath: {
+              uri: `trix/${asm}.ixx`,
+            },
+            metaFilePath: {
+              uri: `trix/${asm}_meta.json`,
+            },
+            assemblyNames: [asm],
+          }
         }
       }
       fs.writeFileSync(
