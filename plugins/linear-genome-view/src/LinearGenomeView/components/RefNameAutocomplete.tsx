@@ -4,7 +4,7 @@
  * Asynchronous Requests for autocomplete:
  *  https://material-ui.com/components/autocomplete/
  */
-import React, { useMemo, useEffect, useState } from 'react'
+import React, { useMemo, useRef, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 
@@ -117,18 +117,19 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
+  const ref = useRef<HTMLInputElement>(null)
   const session = getSession(model)
   const { assemblyManager } = session
   const [open, setOpen] = useState(false)
   const [loaded, setLoaded] = useState<undefined | boolean>(undefined)
   const [currentSearch, setCurrentSearch] = useState('')
-  const [searchOptions, setSearchOptions] = useState<Option[]>([])
+  const [searchOptions, setSearchOptions] = useState([] as Option[])
   const debouncedSearch = useDebounce(currentSearch, 300)
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const regions: Region[] = assembly?.regions || []
+  const regions = assembly?.regions || ([] as Region[])
 
   const options: Option[] = useMemo(
     () =>
@@ -147,20 +148,14 @@ function RefNameAutocomplete({
 
     ;(async () => {
       try {
-        if (debouncedSearch && debouncedSearch !== '' && assemblyName) {
-          setLoaded(false)
-          const results = await fetchResults(
-            model,
-            debouncedSearch,
-            assemblyName,
-          )
-          if (results.length >= 0 && active) {
-            setSearchOptions(
-              results.map(result => {
-                return { result }
-              }),
-            )
-          }
+        if (debouncedSearch === '' || !assemblyName) {
+          return
+        }
+
+        setLoaded(false)
+        const results = await fetchResults(model, debouncedSearch, assemblyName)
+        if (results.length >= 0 && active) {
+          setSearchOptions(results.map(result => ({ result })))
         }
         setLoaded(true)
       } catch (e) {
@@ -222,7 +217,13 @@ function RefNameAutocomplete({
           setSearchOptions([])
         }
       }}
-      onChange={(_, selectedOption) => onChange(selectedOption)}
+      onChange={(_event, selectedOption) => {
+        onChange(selectedOption)
+
+        // blur after selection so that selectOnFocus can re-trigger
+        // https://github.com/mui-org/material-ui/issues/28062
+        ref.current?.blur()
+      }}
       options={searchOptions.length === 0 ? options : searchOptions}
       getOptionDisabled={option => option?.group === 'limitOption'}
       filterOptions={(options, params) => {
@@ -247,6 +248,7 @@ function RefNameAutocomplete({
         const TextFieldInputProps = {
           ...params.InputProps,
           ...InputProps,
+
           endAdornment: (
             <>
               {regions.length === 0 ? (
@@ -262,6 +264,7 @@ function RefNameAutocomplete({
         }
         return (
           <TextField
+            inputRef={ref}
             {...params}
             {...TextFieldProps}
             helperText={helperText}
@@ -276,10 +279,8 @@ function RefNameAutocomplete({
       renderOption={option => {
         const { result } = option
         const component = result.getRenderingComponent()
-        if (component) {
-          if (React.isValidElement(component)) {
-            return component
-          }
+        if (component && React.isValidElement(component)) {
+          return component
         }
         const displayLabel = result.getDisplayString()
         if (displayLabel) {
