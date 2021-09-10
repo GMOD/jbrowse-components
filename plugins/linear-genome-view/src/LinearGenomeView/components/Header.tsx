@@ -149,22 +149,14 @@ const LinearGenomeViewHeader = observer(
           model.showAllRegions()
         } else {
           let location = result.getLocation()
+          let trackId = result.getTrackId()
           const results = await fetchResults(label)
           if (results && results.length > 1) {
             model.setSearchResults(results, label.toLowerCase())
           } else {
             if (results?.length === 1) {
               location = results[0].getLocation()
-              const trackId = results[0].getTrackId()
-              try {
-                if (trackId) {
-                  model.showTrack(trackId)
-                }
-              } catch (e) {
-                console.warn(
-                  `'${e}' occurred while attempting to show track: ${trackId}`,
-                )
-              }
+              trackId = results[0].getTrackId()
             }
             try {
               label !== '' && model.navToLocString(location)
@@ -175,6 +167,15 @@ const LinearGenomeViewHeader = observer(
                 console.warn(e)
                 session.notify(`${e}`, 'warning')
               }
+            }
+            try {
+              if (trackId) {
+                model.showTrack(trackId)
+              }
+            } catch (e) {
+              console.warn(
+                `'${e}' occurred while attempting to show track: ${trackId}`,
+              )
             }
           }
         }
