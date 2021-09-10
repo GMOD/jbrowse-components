@@ -138,6 +138,21 @@ const LinearGenomeViewHeader = observer(
       )
     }
 
+    /**
+     * We first check to see if the identifier/label is an appropriate region,
+     * if it is then we set that as our displayed region
+     * if the label was not a valid region, then
+     *  1) we get the trackId and the location/locStr of the option we chose
+     *  2) we then use the label to try and fetch for exact matches through our
+     * textSearchManager
+     *  3) if we get any hits by requerying the textSearchManager, then we either
+     *  navigate to the single hit location or pop open the the dialog with all
+     *  the results from the search
+     *  4) if there were no hits from requerying, then we use (1) the chosen options'
+     *  trackId and locStr to navigate and show that track
+     *  5) error handling
+     * @param result - result chosen from dropdown
+     */
     async function setDisplayedRegion(result: BaseResult) {
       if (result) {
         const label = result.getLabel()
