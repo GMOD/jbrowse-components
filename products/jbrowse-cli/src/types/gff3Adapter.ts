@@ -76,14 +76,18 @@ export async function* indexGff3(
           .map(f => f.split('='))
           .map(([key, val]) => [key.trim(), val.trim().split(',').join(' ')]),
       )
-      const attrs = attributes
-        .map(attr => col9attrs[attr])
-        .filter((f): f is string => !!f)
-
+      const restAttrs = attributes.filter(
+        attr => attr !== 'Name' && attr !== 'ID',
+      )
+      const attrs = restAttrs
+        .map(attr => col9attrs[attr] || '')
+        .filter(f => !!f)
       if (attrs.length) {
         const record = JSON.stringify([
           encodeURIComponent(locStr),
           encodeURIComponent(trackId),
+          encodeURIComponent(col9attrs['Name'] || ''),
+          encodeURIComponent(col9attrs['ID'] || ''),
           ...attrs.map(a => encodeURIComponent(a)),
         ]).replace(/,/g, '|')
         yield `${record} ${[...new Set(attrs)].join(' ')}\n`

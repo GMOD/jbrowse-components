@@ -132,7 +132,9 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                   model={model}
                   assemblyName={message ? undefined : selectedAsm}
                   value={selectedRegion}
-                  onSelect={option => setSelectedRegion(option.getLabel())}
+                  onSelect={option =>
+                    setSelectedRegion(option.getLocation() || option.getLabel())
+                  }
                   TextFieldProps={{
                     margin: 'normal',
                     variant: 'outlined',

@@ -140,7 +140,7 @@ const LinearGenomeViewHeader = observer(
 
     async function setDisplayedRegion(result: BaseResult) {
       if (result) {
-        let label = result.getLabel()
+        const label = result.getLabel()
         const newRegion = regions.find(region => label === region.refName)
         if (newRegion) {
           model.setDisplayedRegions([newRegion])
@@ -148,12 +148,13 @@ const LinearGenomeViewHeader = observer(
           // region visible, xref #1703
           model.showAllRegions()
         } else {
+          let location = result.getLocation()
           const results = await fetchResults(label)
           if (results && results.length > 1) {
             model.setSearchResults(results, label.toLowerCase())
           } else {
             if (results?.length === 1) {
-              label = results[0].getLocation()
+              location = results[0].getLocation()
               const trackId = results[0].getTrackId()
               try {
                 if (trackId) {
@@ -166,7 +167,7 @@ const LinearGenomeViewHeader = observer(
               }
             }
             try {
-              label !== '' && model.navToLocString(label)
+              label !== '' && model.navToLocString(location)
             } catch (e) {
               if (`${e}` === `Error: Unknown reference sequence "${label}"`) {
                 model.setSearchResults(results, label.toLowerCase())

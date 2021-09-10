@@ -278,7 +278,11 @@ function RefNameAutocomplete({
             return component
           }
         }
-        return <Typography noWrap>{result.getDisplayString()}</Typography>
+        const displayLabel = result.getDisplayString()
+        if (displayLabel) {
+          return <Typography noWrap>{displayLabel}</Typography>
+        }
+        return <Typography noWrap>{result.getLabel()}</Typography>
       }}
       getOptionLabel={option =>
         (typeof option === 'string' ? option : option.result.getLabel()) || ''
