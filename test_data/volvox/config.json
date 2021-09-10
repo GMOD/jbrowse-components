@@ -163,8 +163,7 @@
       },
       "displays": [
         {
-          "type": "LinearPileupDisplay",
-          "displayId": "volvox_cram_pileup_pileup"
+          "type": "LinearPileupDisplay"
         }
       ]
     },
@@ -191,8 +190,7 @@
       },
       "displays": [
         {
-          "type": "LinearSNPCoverageDisplay",
-          "displayId": "volvox_cram_snpcoverage_snpcoverage"
+          "type": "LinearSNPCoverageDisplay"
         }
       ]
     },
@@ -241,8 +239,7 @@
       },
       "displays": [
         {
-          "type": "LinearPileupDisplay",
-          "displayId": "volvox_cram_pileup_ctga_pileup"
+          "type": "LinearPileupDisplay"
         }
       ]
     },
@@ -269,8 +266,7 @@
       },
       "displays": [
         {
-          "type": "LinearSNPCoverageDisplay",
-          "displayId": "volvox_cram_pileup_ctga_snpcoverage"
+          "type": "LinearSNPCoverageDisplay"
         }
       ]
     },
@@ -294,10 +290,8 @@
       "displays": [
         {
           "type": "LinearAlignmentsDisplay",
-          "displayId": "volvox_alignments_alignments",
           "pileupDisplay": {
             "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_altname_alignments_pileup",
             "defaultRendering": "svg"
           }
         }
@@ -322,8 +316,7 @@
       },
       "displays": [
         {
-          "type": "LinearSNPCoverageDisplay",
-          "displayId": "volvox_bam_snpcoverage_snpcoverage"
+          "type": "LinearSNPCoverageDisplay"
         }
       ]
     },
@@ -346,8 +339,7 @@
       },
       "displays": [
         {
-          "type": "LinearPileupDisplay",
-          "displayId": "volvox_bam_pileup_pileup"
+          "type": "LinearPileupDisplay"
         }
       ]
     },
@@ -389,10 +381,8 @@
       "displays": [
         {
           "type": "LinearAlignmentsDisplay",
-          "displayId": "volvox_bam_altname_alignments",
           "pileupDisplay": {
             "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_altname_alignments_pileup",
             "defaultRendering": "svg"
           }
         }
@@ -418,10 +408,8 @@
       "displays": [
         {
           "type": "LinearAlignmentsDisplay",
-          "displayId": "volvox_bam_small_max_height_alignments",
           "pileupDisplay": {
             "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_small_max_height_alignments_pileup",
             "renderers": {
               "PileupRenderer": {
                 "type": "PileupRenderer",
@@ -540,7 +528,6 @@
       "displays": [
         {
           "type": "LinearWiggleDisplay",
-          "displayId": "volvox_microarray_line_line",
           "defaultRendering": "line"
         }
       ]
@@ -560,7 +547,6 @@
       "displays": [
         {
           "type": "LinearWiggleDisplay",
-          "displayId": "volvox_microarray_density_density",
           "defaultRendering": "density"
         }
       ]
@@ -633,7 +619,6 @@
       "displays": [
         {
           "type": "LinearLollipopDisplay",
-          "displayId": "lollipop_track_linear",
           "renderer": {
             "type": "LollipopRenderer"
           }
@@ -953,7 +938,6 @@
       "displays": [
         {
           "type": "LinearWiggleDisplay",
-          "displayId": "LrM3WWJR0tj_line",
           "defaultRendering": "line"
         }
       ]
@@ -986,7 +970,6 @@
       "displays": [
         {
           "type": "LinearWiggleDisplay",
-          "displayId": "VUyE25kYsQo_density",
           "defaultRendering": "density"
         }
       ]
@@ -1019,7 +1002,6 @@
       "displays": [
         {
           "type": "LinearWiggleDisplay",
-          "displayId": "oMVFQozR9NO_density",
           "defaultRendering": "density"
         }
       ]
@@ -1052,7 +1034,6 @@
       "displays": [
         {
           "type": "LinearWiggleDisplay",
-          "displayId": "wiggle_track_posneg_line",
           "defaultRendering": "line"
         }
       ]
@@ -1072,7 +1053,6 @@
       "displays": [
         {
           "type": "LinearWiggleDisplay",
-          "displayId": "wiggle_track_fractional_posneg_line",
           "defaultRendering": "line"
         }
       ]
@@ -1105,7 +1085,6 @@
       "displays": [
         {
           "type": "LinearWiggleDisplay",
-          "displayId": "p7FU-K6WqS__line",
           "defaultRendering": "line"
         }
       ]
@@ -1216,14 +1195,12 @@
       "displays": [
         {
           "type": "ChordVariantDisplay",
-          "displayId": "volvox_filtered_vcf_color-ChordVariantDisplay",
           "renderer": {
             "type": "StructuralVariantChordRenderer"
           }
         },
         {
           "type": "LinearVariantDisplay",
-          "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
           "renderer": {
             "type": "SvgFeatureRenderer",
             "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
