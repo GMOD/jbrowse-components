@@ -9,5 +9,5 @@ export const baseLinearDisplayConfigSchema = ConfigurationSchema(
       defaultValue: Number.MAX_VALUE,
     },
   },
-  { explicitIdentifier: 'displayId' },
+  { implicitIdentifier: 'displayId' },
 )

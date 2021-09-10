@@ -32,7 +32,7 @@ export function configSchemaFactory(pluginManager: any) {
         { type: 'DotplotRenderer' },
       ),
     },
-    { explicitIdentifier: 'displayId', explicitlyTyped: true },
+    { implicitIdentifier: 'displayId', explicitlyTyped: true },
   )
 }
 

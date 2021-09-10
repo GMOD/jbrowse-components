@@ -4,5 +4,5 @@ import { configSchema as divSequenceRendererConfigSchema } from '../DivSequenceR
 export const configSchema = ConfigurationSchema(
   'LinearReferenceSequenceDisplay',
   { renderer: divSequenceRendererConfigSchema },
-  { explicitIdentifier: 'displayId', explicitlyTyped: true },
+  { implicitIdentifier: 'displayId', explicitlyTyped: true },
 )

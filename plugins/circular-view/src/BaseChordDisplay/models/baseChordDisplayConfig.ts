@@ -11,7 +11,7 @@ const baseChordDisplayConfig = ConfigurationSchema(
       contextVariable: ['feature', 'track', 'pluginManager'],
     },
   },
-  { explicitIdentifier: 'displayId' },
+  { implicitIdentifier: 'displayId' },
 )
 
 export { baseChordDisplayConfig }

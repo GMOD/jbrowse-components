@@ -116,7 +116,6 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "displayId": "nclist_genes_hg19_linear",
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
@@ -221,7 +220,6 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "displayId": "gencode_nclist_hg38_linear",
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
@@ -272,7 +270,6 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "displayId": "mane_hg38_linear",
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
@@ -325,7 +322,18 @@
           },
           "indexType": "TBI"
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "jexl:get(feature,'gene_name')"
+            }
+          }
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -344,7 +352,18 @@
           },
           "indexType": "TBI"
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "jexl:get(feature,'gene_name')"
+            }
+          }
+        }
+      ]
     }
   ],
   "connections": [
