@@ -1,9 +1,9 @@
 {
-  "dateCreated": "2021-09-10T04:13:54.886Z",
+  "dateCreated": "2021-09-10T17:37:43.688Z",
   "tracks": [
     {
       "trackId": "volvox_sv_test",
-      "attributesIndexed": ["Name", "ID", "Note", "description"],
+      "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {
         "type": "VcfTabixAdapter",
@@ -19,7 +19,7 @@
     },
     {
       "trackId": "volvox_sv_test_renamed",
-      "attributesIndexed": ["Name", "ID", "Note", "description"],
+      "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {
         "type": "VcfTabixAdapter",
@@ -35,7 +35,7 @@
     },
     {
       "trackId": "volvox_test_vcf",
-      "attributesIndexed": ["Name", "ID", "Note", "description"],
+      "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {
         "type": "VcfTabixAdapter",
@@ -51,7 +51,7 @@
     },
     {
       "trackId": "gff3tabix_genes",
-      "attributesIndexed": ["Name", "ID", "Note", "description"],
+      "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {
         "type": "Gff3TabixAdapter",
@@ -67,7 +67,7 @@
     },
     {
       "trackId": "volvox_filtered_vcf",
-      "attributesIndexed": ["Name", "ID", "Note", "description"],
+      "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {
         "type": "VcfTabixAdapter",
@@ -83,7 +83,7 @@
     },
     {
       "trackId": "variant_colors",
-      "attributesIndexed": ["Name", "ID", "Note", "description"],
+      "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {
         "type": "VcfTabixAdapter",
@@ -99,7 +99,7 @@
     },
     {
       "trackId": "single_exon_gene",
-      "attributesIndexed": ["Name", "ID", "Note", "description"],
+      "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {
         "type": "Gff3TabixAdapter",
@@ -115,7 +115,7 @@
     },
     {
       "trackId": "volvox.inv.vcf",
-      "attributesIndexed": ["Name", "ID", "Note", "description"],
+      "attributesIndexed": ["Name", "ID"],
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {
         "type": "VcfTabixAdapter",
