@@ -85,7 +85,6 @@ function filterOptions(options: Option[], searchQuery: string) {
 
 // MyPopper used to expand search results box wider if needed
 // xref https://stackoverflow.com/a/63583835/2129219
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MyPopper = function (
   props: PopperProps & { style?: { width?: unknown } },
 ) {
