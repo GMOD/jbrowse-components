@@ -67,6 +67,7 @@ export async function* indexVcf(
       .split(';')
       .map(f => f.trim())
       .map(f => f.split('='))
+
     const end = fields.find(f => f[0] === 'END')
 
     const locStr = `${ref}:${pos}..${end ? end[1] : +pos + 1}`
@@ -74,6 +75,13 @@ export async function* indexVcf(
       continue
     }
 
+    const attributes = attributesToIndex.filter(
+      attr => attr !== 'Name' && attr !== 'ID',
+    )
+    const infoFields = Object.fromEntries(fields)
+    const infoAttrs = attributes
+      .map(attr => infoFields[attr])
+      .filter((f): f is string => !!f)
     const ids = id.split(',')
     for (let i = 0; i < ids.length; i++) {
       const id = ids[i]
@@ -83,6 +91,7 @@ export async function* indexVcf(
         encodeURIComponent(trackId),
         encodeURIComponent(''),
         encodeURIComponent(id || ''),
+        ...infoAttrs.map(a => encodeURIComponent(a || '')),
       ]).replace(/,/g, '|')
       yield `${record} ${[...new Set(attrs)].join(' ')}\n`
     }
