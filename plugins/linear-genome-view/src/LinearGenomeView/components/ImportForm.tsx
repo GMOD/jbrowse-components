@@ -58,7 +58,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const [mySelectedRegion, setSelectedRegion] = useState<string>()
   const [optionTrackId, setOptionTrackId] = useState<string>()
   const [optionLocation, setOptionLocation] = useState<string>()
-  // const [selectedOption, setSelectedOption] = useState<BaseResult>()
   const selectedRegion = mySelectedRegion || regions[0]?.refName
 
   async function fetchResults(queryString: string) {
@@ -80,7 +79,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     )
   }
   async function handleSelectedRegion(input: string) {
-    // console.log('selectedOption',)
     let trackId = optionTrackId
     let location = optionLocation
     const newRegion = regions.find(r => selectedRegion === r.refName)
