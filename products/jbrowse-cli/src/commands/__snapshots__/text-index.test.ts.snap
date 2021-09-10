@@ -40,21 +40,21 @@ exports[`text-index Indexes a local non-gz gff3 file 4`] = `
 
 exports[`text-index tracks Indexes a local gz gff3 file 1`] = `
 "agt221.3 [\\"ctgA%3A7500..8000\\"|\\"gff3tabix_genes\\"|\\"agt221.3\\"|\\"Match4\\"],1
-agt221.5 [\\"ctgA%3A1050..1500\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"|\\"\\"],1 [\\"ctgA%3A1050..7300\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"|\\"\\"],3 [\\"ctgA%3A7000..7300\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"|\\"\\"],4
+agt221.5 [\\"ctgA%3A1050..1500\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"],1 [\\"ctgA%3A1050..7300\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"],3 [\\"ctgA%3A7000..7300\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"],4
 agt767.3 [\\"ctgA%3A8000..9000\\"|\\"gff3tabix_genes\\"|\\"agt767.3\\"|\\"Match6\\"],1
-agt767.5 [\\"ctgA%3A1150..1500\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"|\\"\\"],1 [\\"ctgA%3A1150..7200\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"|\\"\\"],3 [\\"ctgA%3A7000..7200\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"|\\"\\"],4
-agt830.3 [\\"ctgA%3A5410..5500\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"|\\"\\"],1 [\\"ctgA%3A5410..7503\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"|\\"\\"],3
-agt830.5 [\\"ctgA%3A1050..1500\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"|\\"\\"],1 [\\"ctgA%3A1050..3202\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3000..3202\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"|\\"\\"],3
-apple2 [\\"ctgA%"
+agt767.5 [\\"ctgA%3A1150..1500\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"],1 [\\"ctgA%3A1150..7200\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"],3 [\\"ctgA%3A7000..7200\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"],4
+agt830.3 [\\"ctgA%3A5410..5500\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"],1 [\\"ctgA%3A5410..7503\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"],3
+agt830.5 [\\"ctgA%3A1050..1500\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"],1 [\\"ctgA%3A1050..3202\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3000..3202\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"],3
+apple2 [\\"ctgA%3A13000..17200\\"|\\"gff3tabix_gen"
 `;
 
 exports[`text-index tracks Indexes a local gz gff3 file 2`] = `
-"A%3A47449..47829\\"|\\"gff3tabix_genes\\"|\\"seg14\\"|\\"\\"],12
-seg15 [\\"ctgA%3A39265..39361\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],1 [\\"ctgA%3A39753..40034\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],2 [\\"ctgA%3A40515..40954\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],3 [\\"ctgA%3A41252..41365\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],4 [\\"ctgA%3A41492..41504\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],5 [\\"ctgA%3A41941..42377\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],6 [\\"ctgA%3A42748..42954\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],7 [\\"ctgA%3A43401..43897\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],8 [\\"ctgA%3A44043..44113\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],9 [\\"ctgA%3A44399..44888\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],10 [\\"ctgA%3A45281..45375\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],11 [\\"ctgA%3A45711..46041\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],12 [\\"ctgA%3A46425..46564\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],13 [\\"ctgA%3A46738..47087\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],14 [\\"ctgA%3A47329..47595\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],15 [\\"ctgA%3A47858..47979\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],16 [\\"ctgA%3A48169..48453\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],17
+"gA%3A46816..46992\\"|\\"gff3tabix_genes\\"|\\"seg14\\"],11 [\\"ctgA%3A47449..47829\\"|\\"gff3tabix_genes\\"|\\"seg14\\"],12
+seg15 [\\"ctgA%3A39265..39361\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],1 [\\"ctgA%3A39753..40034\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],2 [\\"ctgA%3A40515..40954\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],3 [\\"ctgA%3A41252..41365\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],4 [\\"ctgA%3A41492..41504\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],5 [\\"ctgA%3A41941..42377\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],6 [\\"ctgA%3A42748..42954\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],7 [\\"ctgA%3A43401..43897\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],8 [\\"ctgA%3A44043..44113\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],9 [\\"ctgA%3A44399..44888\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],10 [\\"ctgA%3A45281..45375\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],11 [\\"ctgA%3A45711..46041\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],12 [\\"ctgA%3A46425..46564\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],13 [\\"ctgA%3A46738..47087\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],14 [\\"ctgA%3A47329..47595\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],15 [\\"ctgA%3A47858..47979\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],16 [\\"ctgA%3A48169..48453\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],17
 "
 `;
 
-exports[`text-index tracks Indexes a local gz gff3 file 3`] = `12854`;
+exports[`text-index tracks Indexes a local gz gff3 file 3`] = `12254`;
 
 exports[`text-index tracks Indexes a local gz gff3 file 4`] = `
 "agt220000000000
@@ -63,44 +63,44 @@ exports[`text-index tracks Indexes a local gz gff3 file 4`] = `
 
 exports[`text-index tracks Indexes a remote and a local file 1`] = `
 "agt221.3 [\\"ctgA%3A7500..8000\\"|\\"gff3tabix_genes\\"|\\"agt221.3\\"|\\"Match4\\"],1
-agt221.5 [\\"ctgA%3A1050..1500\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"|\\"\\"],1 [\\"ctgA%3A1050..7300\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"|\\"\\"],3 [\\"ctgA%3A7000..7300\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"|\\"\\"],4
+agt221.5 [\\"ctgA%3A1050..1500\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"],1 [\\"ctgA%3A1050..7300\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"],3 [\\"ctgA%3A7000..7300\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"],4
 agt767.3 [\\"ctgA%3A8000..9000\\"|\\"gff3tabix_genes\\"|\\"agt767.3\\"|\\"Match6\\"],1
-agt767.5 [\\"ctgA%3A1150..1500\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"|\\"\\"],1 [\\"ctgA%3A1150..7200\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"|\\"\\"],3 [\\"ctgA%3A7000..7200\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"|\\"\\"],4
-agt830.3 [\\"ctgA%3A5410..5500\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"|\\"\\"],1 [\\"ctgA%3A5410..7503\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"|\\"\\"],3
-agt830.5 [\\"ctgA%3A1050..1500\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"|\\"\\"],1 [\\"ctgA%3A1050..3202\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3000..3202\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"|\\"\\"],3
-apple2 [\\"ctgA%"
+agt767.5 [\\"ctgA%3A1150..1500\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"],1 [\\"ctgA%3A1150..7200\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"],3 [\\"ctgA%3A7000..7200\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"],4
+agt830.3 [\\"ctgA%3A5410..5500\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"],1 [\\"ctgA%3A5410..7503\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"],3
+agt830.5 [\\"ctgA%3A1050..1500\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"],1 [\\"ctgA%3A1050..3202\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3000..3202\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"],3
+apple2 [\\"ctgA%3A13000..17200\\"|\\"gff3tabix_gen"
 `;
 
 exports[`text-index tracks Indexes a remote and a local file 2`] = `
-"A%3A47449..47829\\"|\\"gff3tabix_genes\\"|\\"seg14\\"|\\"\\"],12
-seg15 [\\"ctgA%3A39265..39361\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],1 [\\"ctgA%3A39753..40034\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],2 [\\"ctgA%3A40515..40954\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],3 [\\"ctgA%3A41252..41365\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],4 [\\"ctgA%3A41492..41504\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],5 [\\"ctgA%3A41941..42377\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],6 [\\"ctgA%3A42748..42954\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],7 [\\"ctgA%3A43401..43897\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],8 [\\"ctgA%3A44043..44113\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],9 [\\"ctgA%3A44399..44888\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],10 [\\"ctgA%3A45281..45375\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],11 [\\"ctgA%3A45711..46041\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],12 [\\"ctgA%3A46425..46564\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],13 [\\"ctgA%3A46738..47087\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],14 [\\"ctgA%3A47329..47595\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],15 [\\"ctgA%3A47858..47979\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],16 [\\"ctgA%3A48169..48453\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],17
+"gA%3A46816..46992\\"|\\"gff3tabix_genes\\"|\\"seg14\\"],11 [\\"ctgA%3A47449..47829\\"|\\"gff3tabix_genes\\"|\\"seg14\\"],12
+seg15 [\\"ctgA%3A39265..39361\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],1 [\\"ctgA%3A39753..40034\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],2 [\\"ctgA%3A40515..40954\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],3 [\\"ctgA%3A41252..41365\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],4 [\\"ctgA%3A41492..41504\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],5 [\\"ctgA%3A41941..42377\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],6 [\\"ctgA%3A42748..42954\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],7 [\\"ctgA%3A43401..43897\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],8 [\\"ctgA%3A44043..44113\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],9 [\\"ctgA%3A44399..44888\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],10 [\\"ctgA%3A45281..45375\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],11 [\\"ctgA%3A45711..46041\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],12 [\\"ctgA%3A46425..46564\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],13 [\\"ctgA%3A46738..47087\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],14 [\\"ctgA%3A47329..47595\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],15 [\\"ctgA%3A47858..47979\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],16 [\\"ctgA%3A48169..48453\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],17
 "
 `;
 
-exports[`text-index tracks Indexes a remote and a local file 3`] = `135374`;
+exports[`text-index tracks Indexes a remote and a local file 3`] = `134774`;
 
 exports[`text-index tracks Indexes a remote and a local file 4`] = `
 "agt220000000000
-au9.g000000046C
-seg0900000202D1
+au9.g000000044E
+seg090000020139
 "
 `;
 
 exports[`text-index tracks Indexes a remote gz gff3 file 1`] = `
 "agt221.3 [\\"ctgA%3A7500..8000\\"|\\"online_gff3tabix_genes\\"|\\"agt221.3\\"|\\"Match4\\"],1
-agt221.5 [\\"ctgA%3A1050..1500\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"|\\"\\"],1 [\\"ctgA%3A1050..7300\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"|\\"\\"],3 [\\"ctgA%3A7000..7300\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"|\\"\\"],4
+agt221.5 [\\"ctgA%3A1050..1500\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"],1 [\\"ctgA%3A1050..7300\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"],3 [\\"ctgA%3A7000..7300\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"],4
 agt767.3 [\\"ctgA%3A8000..9000\\"|\\"online_gff3tabix_genes\\"|\\"agt767.3\\"|\\"Match6\\"],1
-agt767.5 [\\"ctgA%3A1150..1500\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"|\\"\\"],1 [\\"ctgA%3A1150..7200\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"|\\"\\"],3 [\\"ctgA%3A7000..7200\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"|\\"\\"],4
-agt830.3 [\\"ctgA%3A5410..5500\\"|\\"online_gff3tabix_genes\\"|\\"agt830.3\\"|\\"\\"],1 [\\"ctgA%3A5410..7503\\"|\\"online_gff3tabix_genes\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"online_gff3tabix_genes\\"|\\"agt830.3\\"|\\"\\"],3
-agt830.5 [\\"ctgA%3A1050..1500\\"|\\"online_gff3tabix_genes\\"|\\"agt830.5\\"|\\"\\"],1 [\\"ctgA%3A1050..3202\\"|\\"online_gff3t"
+agt767.5 [\\"ctgA%3A1150..1500\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"],1 [\\"ctgA%3A1150..7200\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"],3 [\\"ctgA%3A7000..7200\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"],4
+agt830.3 [\\"ctgA%3A5410..5500\\"|\\"online_gff3tabix_genes\\"|\\"agt830.3\\"],1 [\\"ctgA%3A5410..7503\\"|\\"online_gff3tabix_genes\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"online_gff3tabix_genes\\"|\\"agt830.3\\"],3
+agt830.5 [\\"ctgA%3A1050..1500\\"|\\"online_gff3tabix_genes\\"|\\"agt830.5\\"],1 [\\"ctgA%3A1050..3202\\"|\\"online_gff3tabix_genes\\"|\\"agt830.5\\"|\\"Mat"
 `;
 
 exports[`text-index tracks Indexes a remote gz gff3 file 2`] = `
-"[\\"ctgA%3A39753..40034\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],2 [\\"ctgA%3A40515..40954\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],3 [\\"ctgA%3A41252..41365\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],4 [\\"ctgA%3A41492..41504\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],5 [\\"ctgA%3A41941..42377\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],6 [\\"ctgA%3A42748..42954\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],7 [\\"ctgA%3A43401..43897\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],8 [\\"ctgA%3A44043..44113\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],9 [\\"ctgA%3A44399..44888\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],10 [\\"ctgA%3A45281..45375\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],11 [\\"ctgA%3A45711..46041\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],12 [\\"ctgA%3A46425..46564\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],13 [\\"ctgA%3A46738..47087\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],14 [\\"ctgA%3A47329..47595\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],15 [\\"ctgA%3A47858..47979\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],16 [\\"ctgA%3A48169..48453\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],17
+"265..39361\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],1 [\\"ctgA%3A39753..40034\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],2 [\\"ctgA%3A40515..40954\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],3 [\\"ctgA%3A41252..41365\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],4 [\\"ctgA%3A41492..41504\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],5 [\\"ctgA%3A41941..42377\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],6 [\\"ctgA%3A42748..42954\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],7 [\\"ctgA%3A43401..43897\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],8 [\\"ctgA%3A44043..44113\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],9 [\\"ctgA%3A44399..44888\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],10 [\\"ctgA%3A45281..45375\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],11 [\\"ctgA%3A45711..46041\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],12 [\\"ctgA%3A46425..46564\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],13 [\\"ctgA%3A46738..47087\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],14 [\\"ctgA%3A47329..47595\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],15 [\\"ctgA%3A47858..47979\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],16 [\\"ctgA%3A48169..48453\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],17
 "
 `;
 
-exports[`text-index tracks Indexes a remote gz gff3 file 3`] = `14415`;
+exports[`text-index tracks Indexes a remote gz gff3 file 3`] = `13815`;
 
 exports[`text-index tracks Indexes a remote gz gff3 file 4`] = `
 "agt220000000000
@@ -144,42 +144,42 @@ exports[`text-index tracks Indexes a remote non-gz gff3 file 4`] = `
 `;
 
 exports[`text-index tracks Indexes a track using only the attributes tag 1`] = `
-"b101.2 [\\"ctgA%3A1000..20000\\"|\\"noAttributes\\"|\\"b101.2\\"|\\"b101.2\\"],1
-cds-apple2 [\\"ctgA%3A13000..17200\\"|\\"noAttributes\\"|\\"Apple2\\"|\\"cds-Apple2\\"],1
-eden [\\"ctgA%3A1050..9000\\"|\\"noAttributes\\"|\\"EDEN\\"|\\"EDEN\\"],1
-eden.1 [\\"ctgA%3A1050..9000\\"|\\"noAttributes\\"|\\"EDEN.1\\"|\\"EDEN.1\\"],1
-eden.2 [\\"ctgA%3A1050..9000\\"|\\"noAttributes\\"|\\"EDEN.2\\"|\\"EDEN.2\\"],1
-eden.3 [\\"ctgA%3A1300..9000\\"|\\"noAttributes\\"|\\"EDEN.3\\"|\\"EDEN.3\\"],1
-fakesnp1 [\\"ctgA%3A1000..1000\\"|\\"noAttributes\\"|\\"FakeSNP\\"|\\"FakeSNP1\\"],1
-match1 [\\"ctgA%3A1050..3202\\"|\\"noAttributes\\"|\\"agt830.5\\"|\\"Match1\\"],1
-match2 [\\"ctgA%3A5410..7503\\"|\\"noAttributes\\"|\\"agt830.3\\"|\\"Match2\\"],1
-match3 [\\"ctgA%3A1050..7300\\"|\\"noAttributes\\"|\\"agt221.5\\"|\\"Match3\\"],1
-match4 [\\"ctgA%3A7500..8000\\"|\\"noAttributes\\"|\\"agt221.3\\"|\\"Match4\\"],1
-match5 [\\"ctgA%3A1150..7200\\"|\\"noAttributes\\"|\\"agt767.5\\"|\\"Match5\\"],1
-match6 [\\"ctgA%3A8000..9000\\"|\\"noAttributes\\"|\\"agt767.3\\"|\\"Match6\\"],1
-rna-apple3 [\\"ctgA%3A17400..23000\\"|\\"noAttributes\\"|\\"Apple3\\"|\\"rna-Apple3\\"],1
+"b101.2 [\\"ctgA%3A1000..20000\\"|\\"noAttributes\\"|\\"b101.2\\"],1
+cds-apple2 [\\"ctgA%3A13000..17200\\"|\\"noAttributes\\"|\\"cds-Apple2\\"],1
+eden [\\"ctgA%3A1050..9000\\"|\\"noAttributes\\"|\\"EDEN\\"],1
+eden.1 [\\"ctgA%3A1050..9000\\"|\\"noAttributes\\"|\\"EDEN.1\\"],1
+eden.2 [\\"ctgA%3A1050..9000\\"|\\"noAttributes\\"|\\"EDEN.2\\"],1
+eden.3 [\\"ctgA%3A1300..9000\\"|\\"noAttributes\\"|\\"EDEN.3\\"],1
+fakesnp1 [\\"ctgA%3A1000..1000\\"|\\"noAttributes\\"|\\"FakeSNP1\\"],1
+match1 [\\"ctgA%3A1050..3202\\"|\\"noAttributes\\"|\\"Match1\\"],1
+match2 [\\"ctgA%3A5410..7503\\"|\\"noAttributes\\"|\\"Match2\\"],1
+match3 [\\"ctgA%3A1050..7300\\"|\\"noAttributes\\"|\\"Match3\\"],1
+match4 [\\"ctgA%3A7500..8000\\"|\\"noAttributes\\"|\\"Match4\\"],1
+match5 [\\"ctgA%3A1150..7200\\"|\\"noAttributes\\"|\\"Match5\\"],1
+match6 [\\"ctgA%3A8000..9000\\"|\\"noAttributes\\"|\\"Match6\\"],1
+rna-apple3 [\\"ctgA%3A17400..23000\\"|\\"noAttributes\\"|\\"rna-Apple3\\"],1
 "
 `;
 
 exports[`text-index tracks Indexes a track using only the attributes tag 2`] = `
-"b101.2 [\\"ctgA%3A1000..20000\\"|\\"noAttributes\\"|\\"b101.2\\"|\\"b101.2\\"],1
-cds-apple2 [\\"ctgA%3A13000..17200\\"|\\"noAttributes\\"|\\"Apple2\\"|\\"cds-Apple2\\"],1
-eden [\\"ctgA%3A1050..9000\\"|\\"noAttributes\\"|\\"EDEN\\"|\\"EDEN\\"],1
-eden.1 [\\"ctgA%3A1050..9000\\"|\\"noAttributes\\"|\\"EDEN.1\\"|\\"EDEN.1\\"],1
-eden.2 [\\"ctgA%3A1050..9000\\"|\\"noAttributes\\"|\\"EDEN.2\\"|\\"EDEN.2\\"],1
-eden.3 [\\"ctgA%3A1300..9000\\"|\\"noAttributes\\"|\\"EDEN.3\\"|\\"EDEN.3\\"],1
-fakesnp1 [\\"ctgA%3A1000..1000\\"|\\"noAttributes\\"|\\"FakeSNP\\"|\\"FakeSNP1\\"],1
-match1 [\\"ctgA%3A1050..3202\\"|\\"noAttributes\\"|\\"agt830.5\\"|\\"Match1\\"],1
-match2 [\\"ctgA%3A5410..7503\\"|\\"noAttributes\\"|\\"agt830.3\\"|\\"Match2\\"],1
-match3 [\\"ctgA%3A1050..7300\\"|\\"noAttributes\\"|\\"agt221.5\\"|\\"Match3\\"],1
-match4 [\\"ctgA%3A7500..8000\\"|\\"noAttributes\\"|\\"agt221.3\\"|\\"Match4\\"],1
-match5 [\\"ctgA%3A1150..7200\\"|\\"noAttributes\\"|\\"agt767.5\\"|\\"Match5\\"],1
-match6 [\\"ctgA%3A8000..9000\\"|\\"noAttributes\\"|\\"agt767.3\\"|\\"Match6\\"],1
-rna-apple3 [\\"ctgA%3A17400..23000\\"|\\"noAttributes\\"|\\"Apple3\\"|\\"rna-Apple3\\"],1
+"b101.2 [\\"ctgA%3A1000..20000\\"|\\"noAttributes\\"|\\"b101.2\\"],1
+cds-apple2 [\\"ctgA%3A13000..17200\\"|\\"noAttributes\\"|\\"cds-Apple2\\"],1
+eden [\\"ctgA%3A1050..9000\\"|\\"noAttributes\\"|\\"EDEN\\"],1
+eden.1 [\\"ctgA%3A1050..9000\\"|\\"noAttributes\\"|\\"EDEN.1\\"],1
+eden.2 [\\"ctgA%3A1050..9000\\"|\\"noAttributes\\"|\\"EDEN.2\\"],1
+eden.3 [\\"ctgA%3A1300..9000\\"|\\"noAttributes\\"|\\"EDEN.3\\"],1
+fakesnp1 [\\"ctgA%3A1000..1000\\"|\\"noAttributes\\"|\\"FakeSNP1\\"],1
+match1 [\\"ctgA%3A1050..3202\\"|\\"noAttributes\\"|\\"Match1\\"],1
+match2 [\\"ctgA%3A5410..7503\\"|\\"noAttributes\\"|\\"Match2\\"],1
+match3 [\\"ctgA%3A1050..7300\\"|\\"noAttributes\\"|\\"Match3\\"],1
+match4 [\\"ctgA%3A7500..8000\\"|\\"noAttributes\\"|\\"Match4\\"],1
+match5 [\\"ctgA%3A1150..7200\\"|\\"noAttributes\\"|\\"Match5\\"],1
+match6 [\\"ctgA%3A8000..9000\\"|\\"noAttributes\\"|\\"Match6\\"],1
+rna-apple3 [\\"ctgA%3A17400..23000\\"|\\"noAttributes\\"|\\"rna-Apple3\\"],1
 "
 `;
 
-exports[`text-index tracks Indexes a track using only the attributes tag 3`] = `928`;
+exports[`text-index tracks Indexes a track using only the attributes tag 3`] = `791`;
 
 exports[`text-index tracks Indexes a track using only the attributes tag 4`] = `
 "b101.0000000000
@@ -188,21 +188,22 @@ exports[`text-index tracks Indexes a track using only the attributes tag 4`] = `
 
 exports[`text-index tracks Indexes a track with no attributes in the config 1`] = `
 "agt221.3 [\\"ctgA%3A7500..8000\\"|\\"noAttributes\\"|\\"agt221.3\\"|\\"Match4\\"],1
-agt221.5 [\\"ctgA%3A1050..1500\\"|\\"noAttributes\\"|\\"agt221.5\\"|\\"\\"],1 [\\"ctgA%3A1050..7300\\"|\\"noAttributes\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"noAttributes\\"|\\"agt221.5\\"|\\"\\"],3 [\\"ctgA%3A7000..7300\\"|\\"noAttributes\\"|\\"agt221.5\\"|\\"\\"],4
+agt221.5 [\\"ctgA%3A1050..1500\\"|\\"noAttributes\\"|\\"agt221.5\\"],1 [\\"ctgA%3A1050..7300\\"|\\"noAttributes\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"noAttributes\\"|\\"agt221.5\\"],3 [\\"ctgA%3A7000..7300\\"|\\"noAttributes\\"|\\"agt221.5\\"],4
 agt767.3 [\\"ctgA%3A8000..9000\\"|\\"noAttributes\\"|\\"agt767.3\\"|\\"Match6\\"],1
-agt767.5 [\\"ctgA%3A1150..1500\\"|\\"noAttributes\\"|\\"agt767.5\\"|\\"\\"],1 [\\"ctgA%3A1150..7200\\"|\\"noAttributes\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"noAttributes\\"|\\"agt767.5\\"|\\"\\"],3 [\\"ctgA%3A7000..7200\\"|\\"noAttributes\\"|\\"agt767.5\\"|\\"\\"],4
-agt830.3 [\\"ctgA%3A5410..5500\\"|\\"noAttributes\\"|\\"agt830.3\\"|\\"\\"],1 [\\"ctgA%3A5410..7503\\"|\\"noAttributes\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"noAttributes\\"|\\"agt830.3\\"|\\"\\"],3
-agt830.5 [\\"ctgA%3A1050..1500\\"|\\"noAttributes\\"|\\"agt830.5\\"|\\"\\"],1 [\\"ctgA%3A1050..3202\\"|\\"noAttributes\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3000..3202\\"|\\"noAttributes\\"|\\"agt830.5\\"|\\"\\"],3
-apple2 [\\"ctgA%3A13000..17200\\"|\\"noAttributes\\"|\\"Apple2\\"|\\"cds-App"
+agt767.5 [\\"ctgA%3A1150..1500\\"|\\"noAttributes\\"|\\"agt767.5\\"],1 [\\"ctgA%3A1150..7200\\"|\\"noAttributes\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"noAttributes\\"|\\"agt767.5\\"],3 [\\"ctgA%3A7000..7200\\"|\\"noAttributes\\"|\\"agt767.5\\"],4
+agt830.3 [\\"ctgA%3A5410..5500\\"|\\"noAttributes\\"|\\"agt830.3\\"],1 [\\"ctgA%3A5410..7503\\"|\\"noAttributes\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"noAttributes\\"|\\"agt830.3\\"],3
+agt830.5 [\\"ctgA%3A1050..1500\\"|\\"noAttributes\\"|\\"agt830.5\\"],1 [\\"ctgA%3A1050..3202\\"|\\"noAttributes\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3000..3202\\"|\\"noAttributes\\"|\\"agt830.5\\"],3
+apple2 [\\"ctgA%3A13000..17200\\"|\\"noAttributes\\"|\\"Apple2\\"|\\"cds-Apple2\\"],1
+apple3 [\\"ctgA%3A17400."
 `;
 
 exports[`text-index tracks Indexes a track with no attributes in the config 2`] = `
-"gA%3A46816..46992\\"|\\"noAttributes\\"|\\"seg14\\"|\\"\\"],11 [\\"ctgA%3A47449..47829\\"|\\"noAttributes\\"|\\"seg14\\"|\\"\\"],12
-seg15 [\\"ctgA%3A39265..39361\\"|\\"noAttributes\\"|\\"seg15\\"|\\"\\"],1 [\\"ctgA%3A39753..40034\\"|\\"noAttributes\\"|\\"seg15\\"|\\"\\"],2 [\\"ctgA%3A40515..40954\\"|\\"noAttributes\\"|\\"seg15\\"|\\"\\"],3 [\\"ctgA%3A41252..41365\\"|\\"noAttributes\\"|\\"seg15\\"|\\"\\"],4 [\\"ctgA%3A41492..41504\\"|\\"noAttributes\\"|\\"seg15\\"|\\"\\"],5 [\\"ctgA%3A41941..42377\\"|\\"noAttributes\\"|\\"seg15\\"|\\"\\"],6 [\\"ctgA%3A42748..42954\\"|\\"noAttributes\\"|\\"seg15\\"|\\"\\"],7 [\\"ctgA%3A43401..43897\\"|\\"noAttributes\\"|\\"seg15\\"|\\"\\"],8 [\\"ctgA%3A44043..44113\\"|\\"noAttributes\\"|\\"seg15\\"|\\"\\"],9 [\\"ctgA%3A44399..44888\\"|\\"noAttributes\\"|\\"seg15\\"|\\"\\"],10 [\\"ctgA%3A45281..45375\\"|\\"noAttributes\\"|\\"seg15\\"|\\"\\"],11 [\\"ctgA%3A45711..46041\\"|\\"noAttributes\\"|\\"seg15\\"|\\"\\"],12 [\\"ctgA%3A46425..46564\\"|\\"noAttributes\\"|\\"seg15\\"|\\"\\"],13 [\\"ctgA%3A46738..47087\\"|\\"noAttributes\\"|\\"seg15\\"|\\"\\"],14 [\\"ctgA%3A47329..47595\\"|\\"noAttributes\\"|\\"seg15\\"|\\"\\"],15 [\\"ctgA%3A47858..47979\\"|\\"noAttributes\\"|\\"seg15\\"|\\"\\"],16 [\\"ctgA%3A48169..48453\\"|\\"noAttributes\\"|\\"seg15\\"|\\"\\"],17
+",9 [\\"ctgA%3A46092..46318\\"|\\"noAttributes\\"|\\"seg14\\"],10 [\\"ctgA%3A46816..46992\\"|\\"noAttributes\\"|\\"seg14\\"],11 [\\"ctgA%3A47449..47829\\"|\\"noAttributes\\"|\\"seg14\\"],12
+seg15 [\\"ctgA%3A39265..39361\\"|\\"noAttributes\\"|\\"seg15\\"],1 [\\"ctgA%3A39753..40034\\"|\\"noAttributes\\"|\\"seg15\\"],2 [\\"ctgA%3A40515..40954\\"|\\"noAttributes\\"|\\"seg15\\"],3 [\\"ctgA%3A41252..41365\\"|\\"noAttributes\\"|\\"seg15\\"],4 [\\"ctgA%3A41492..41504\\"|\\"noAttributes\\"|\\"seg15\\"],5 [\\"ctgA%3A41941..42377\\"|\\"noAttributes\\"|\\"seg15\\"],6 [\\"ctgA%3A42748..42954\\"|\\"noAttributes\\"|\\"seg15\\"],7 [\\"ctgA%3A43401..43897\\"|\\"noAttributes\\"|\\"seg15\\"],8 [\\"ctgA%3A44043..44113\\"|\\"noAttributes\\"|\\"seg15\\"],9 [\\"ctgA%3A44399..44888\\"|\\"noAttributes\\"|\\"seg15\\"],10 [\\"ctgA%3A45281..45375\\"|\\"noAttributes\\"|\\"seg15\\"],11 [\\"ctgA%3A45711..46041\\"|\\"noAttributes\\"|\\"seg15\\"],12 [\\"ctgA%3A46425..46564\\"|\\"noAttributes\\"|\\"seg15\\"],13 [\\"ctgA%3A46738..47087\\"|\\"noAttributes\\"|\\"seg15\\"],14 [\\"ctgA%3A47329..47595\\"|\\"noAttributes\\"|\\"seg15\\"],15 [\\"ctgA%3A47858..47979\\"|\\"noAttributes\\"|\\"seg15\\"],16 [\\"ctgA%3A48169..48453\\"|\\"noAttributes\\"|\\"seg15\\"],17
 "
 `;
 
-exports[`text-index tracks Indexes a track with no attributes in the config 3`] = `12185`;
+exports[`text-index tracks Indexes a track with no attributes in the config 3`] = `11585`;
 
 exports[`text-index tracks Indexes a track with no attributes in the config 4`] = `
 "agt220000000000
@@ -211,66 +212,67 @@ exports[`text-index tracks Indexes a track with no attributes in the config 4`] 
 
 exports[`text-index tracks Indexes multiple local gff3 files 1`] = `
 "agt221.3 [\\"ctgA%3A7500..8000\\"|\\"gff3tabix_genes\\"|\\"agt221.3\\"|\\"Match4\\"],1
-agt221.5 [\\"ctgA%3A1050..1500\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"|\\"\\"],1 [\\"ctgA%3A1050..7300\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"|\\"\\"],3 [\\"ctgA%3A7000..7300\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"|\\"\\"],4
+agt221.5 [\\"ctgA%3A1050..1500\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"],1 [\\"ctgA%3A1050..7300\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"],3 [\\"ctgA%3A7000..7300\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"],4
 agt767.3 [\\"ctgA%3A8000..9000\\"|\\"gff3tabix_genes\\"|\\"agt767.3\\"|\\"Match6\\"],1
-agt767.5 [\\"ctgA%3A1150..1500\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"|\\"\\"],1 [\\"ctgA%3A1150..7200\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"|\\"\\"],3 [\\"ctgA%3A7000..7200\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"|\\"\\"],4
-agt830.3 [\\"ctgA%3A5410..5500\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"|\\"\\"],1 [\\"ctgA%3A5410..7503\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"|\\"\\"],3
-agt830.5 [\\"ctgA%3A1050..1500\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"|\\"\\"],1 [\\"ctgA%3A1050..3202\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3000..3202\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"|\\"\\"],3
-apple2 [\\"ctgA%"
+agt767.5 [\\"ctgA%3A1150..1500\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"],1 [\\"ctgA%3A1150..7200\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"],3 [\\"ctgA%3A7000..7200\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"],4
+agt830.3 [\\"ctgA%3A5410..5500\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"],1 [\\"ctgA%3A5410..7503\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"],3
+agt830.5 [\\"ctgA%3A1050..1500\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"],1 [\\"ctgA%3A1050..3202\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3000..3202\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"],3
+apple2 [\\"ctgA%3A13000..17200\\"|\\"gff3tabix_gen"
 `;
 
 exports[`text-index tracks Indexes multiple local gff3 files 2`] = `
-"A%3A47449..47829\\"|\\"gff3tabix_genes\\"|\\"seg14\\"|\\"\\"],12
-seg15 [\\"ctgA%3A39265..39361\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],1 [\\"ctgA%3A39753..40034\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],2 [\\"ctgA%3A40515..40954\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],3 [\\"ctgA%3A41252..41365\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],4 [\\"ctgA%3A41492..41504\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],5 [\\"ctgA%3A41941..42377\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],6 [\\"ctgA%3A42748..42954\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],7 [\\"ctgA%3A43401..43897\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],8 [\\"ctgA%3A44043..44113\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],9 [\\"ctgA%3A44399..44888\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],10 [\\"ctgA%3A45281..45375\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],11 [\\"ctgA%3A45711..46041\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],12 [\\"ctgA%3A46425..46564\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],13 [\\"ctgA%3A46738..47087\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],14 [\\"ctgA%3A47329..47595\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],15 [\\"ctgA%3A47858..47979\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],16 [\\"ctgA%3A48169..48453\\"|\\"gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],17
+"gA%3A46816..46992\\"|\\"gff3tabix_genes\\"|\\"seg14\\"],11 [\\"ctgA%3A47449..47829\\"|\\"gff3tabix_genes\\"|\\"seg14\\"],12
+seg15 [\\"ctgA%3A39265..39361\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],1 [\\"ctgA%3A39753..40034\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],2 [\\"ctgA%3A40515..40954\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],3 [\\"ctgA%3A41252..41365\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],4 [\\"ctgA%3A41492..41504\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],5 [\\"ctgA%3A41941..42377\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],6 [\\"ctgA%3A42748..42954\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],7 [\\"ctgA%3A43401..43897\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],8 [\\"ctgA%3A44043..44113\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],9 [\\"ctgA%3A44399..44888\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],10 [\\"ctgA%3A45281..45375\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],11 [\\"ctgA%3A45711..46041\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],12 [\\"ctgA%3A46425..46564\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],13 [\\"ctgA%3A46738..47087\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],14 [\\"ctgA%3A47329..47595\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],15 [\\"ctgA%3A47858..47979\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],16 [\\"ctgA%3A48169..48453\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],17
 "
 `;
 
-exports[`text-index tracks Indexes multiple local gff3 files 3`] = `126302`;
+exports[`text-index tracks Indexes multiple local gff3 files 3`] = `125702`;
 
 exports[`text-index tracks Indexes multiple local gff3 files 4`] = `
 "agt220000000000
-au9.g000000046C
+au9.g000000044E
 "
 `;
 
 exports[`text-index tracks Indexes multiple remote gff3 file 1`] = `
 "agt221.3 [\\"ctgA%3A7500..8000\\"|\\"online_gff3tabix_genes\\"|\\"agt221.3\\"|\\"Match4\\"],1
-agt221.5 [\\"ctgA%3A1050..1500\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"|\\"\\"],1 [\\"ctgA%3A1050..7300\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"|\\"\\"],3 [\\"ctgA%3A7000..7300\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"|\\"\\"],4
+agt221.5 [\\"ctgA%3A1050..1500\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"],1 [\\"ctgA%3A1050..7300\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"],3 [\\"ctgA%3A7000..7300\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"],4
 agt767.3 [\\"ctgA%3A8000..9000\\"|\\"online_gff3tabix_genes\\"|\\"agt767.3\\"|\\"Match6\\"],1
-agt767.5 [\\"ctgA%3A1150..1500\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"|\\"\\"],1 [\\"ctgA%3A1150..7200\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"|\\"\\"],3 [\\"ctgA%3A7000..7200\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"|\\"\\"],4
-agt830.3 [\\"ctgA%3A5410..5500\\"|\\"online_gff3tabix_genes\\"|\\"agt830.3\\"|\\"\\"],1 [\\"ctgA%3A5410..7503\\"|\\"online_gff3tabix_genes\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"online_gff3tabix_genes\\"|\\"agt830.3\\"|\\"\\"],3
-agt830.5 [\\"ctgA%3A1050..1500\\"|\\"online_gff3tabix_genes\\"|\\"agt830.5\\"|\\"\\"],1 [\\"ctgA%3A1050..3202\\"|\\"online_gff3t"
+agt767.5 [\\"ctgA%3A1150..1500\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"],1 [\\"ctgA%3A1150..7200\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"],3 [\\"ctgA%3A7000..7200\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"],4
+agt830.3 [\\"ctgA%3A5410..5500\\"|\\"online_gff3tabix_genes\\"|\\"agt830.3\\"],1 [\\"ctgA%3A5410..7503\\"|\\"online_gff3tabix_genes\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"online_gff3tabix_genes\\"|\\"agt830.3\\"],3
+agt830.5 [\\"ctgA%3A1050..1500\\"|\\"online_gff3tabix_genes\\"|\\"agt830.5\\"],1 [\\"ctgA%3A1050..3202\\"|\\"online_gff3tabix_genes\\"|\\"agt830.5\\"|\\"Mat"
 `;
 
 exports[`text-index tracks Indexes multiple remote gff3 file 2`] = `
-"[\\"ctgA%3A39753..40034\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],2 [\\"ctgA%3A40515..40954\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],3 [\\"ctgA%3A41252..41365\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],4 [\\"ctgA%3A41492..41504\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],5 [\\"ctgA%3A41941..42377\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],6 [\\"ctgA%3A42748..42954\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],7 [\\"ctgA%3A43401..43897\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],8 [\\"ctgA%3A44043..44113\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],9 [\\"ctgA%3A44399..44888\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],10 [\\"ctgA%3A45281..45375\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],11 [\\"ctgA%3A45711..46041\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],12 [\\"ctgA%3A46425..46564\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],13 [\\"ctgA%3A46738..47087\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],14 [\\"ctgA%3A47329..47595\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],15 [\\"ctgA%3A47858..47979\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],16 [\\"ctgA%3A48169..48453\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"|\\"\\"],17
+"265..39361\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],1 [\\"ctgA%3A39753..40034\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],2 [\\"ctgA%3A40515..40954\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],3 [\\"ctgA%3A41252..41365\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],4 [\\"ctgA%3A41492..41504\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],5 [\\"ctgA%3A41941..42377\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],6 [\\"ctgA%3A42748..42954\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],7 [\\"ctgA%3A43401..43897\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],8 [\\"ctgA%3A44043..44113\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],9 [\\"ctgA%3A44399..44888\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],10 [\\"ctgA%3A45281..45375\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],11 [\\"ctgA%3A45711..46041\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],12 [\\"ctgA%3A46425..46564\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],13 [\\"ctgA%3A46738..47087\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],14 [\\"ctgA%3A47329..47595\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],15 [\\"ctgA%3A47858..47979\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],16 [\\"ctgA%3A48169..48453\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],17
 "
 `;
 
-exports[`text-index tracks Indexes multiple remote gff3 file 3`] = `136935`;
+exports[`text-index tracks Indexes multiple remote gff3 file 3`] = `136335`;
 
 exports[`text-index tracks Indexes multiple remote gff3 file 4`] = `
 "agt220000000000
-au9.g00000004EA
-seg070000020109
+au9.g00000004CC
+seg080000020289
 "
 `;
 
 exports[`text-index with multiple --files Indexes with --file 1`] = `
 "agt221.3 [\\"ctgA%3A7500..8000\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.3\\"|\\"Match4\\"],1
-agt221.5 [\\"ctgA%3A1050..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"|\\"\\"],1 [\\"ctgA%3A1050..7300\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"|\\"\\"],3 [\\"ctgA%3A7000..7300\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"|\\"\\"],4
+agt221.5 [\\"ctgA%3A1050..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"],1 [\\"ctgA%3A1050..7300\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"],3 [\\"ctgA%3A7000..7300\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"],4
 agt767.3 [\\"ctgA%3A8000..9000\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.3\\"|\\"Match6\\"],1
-agt767.5 [\\"ctgA%3A1150..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"|\\"\\"],1 [\\"ctgA%3A1150..7200\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"|\\"\\"],3 [\\"ctgA%3A7000..7200\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"|\\"\\"],4
-agt830.3 [\\"ctgA%3A5410..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"|\\"\\"],1 [\\"ctgA%3A5410..7503\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"|\\"\\"],3
-agt830.5 [\\"ctgA%3A1050..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.5\\"|\\"\\"],1 [\\"ctgA%3A1050..3202\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3"
+agt767.5 [\\"ctgA%3A1150..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"],1 [\\"ctgA%3A1150..7200\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"],3 [\\"ctgA%3A7000..7200\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"],4
+agt830.3 [\\"ctgA%3A5410..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"],1 [\\"ctgA%3A5410..7503\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"],3
+agt830.5 [\\"ctgA%3A1050..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.5\\"],1 [\\"ctgA%3A1050..3202\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3000..3202\\"|\\"volvox.sort.gff"
 `;
 
 exports[`text-index with multiple --files Indexes with --file 2`] = `
-"265..39361\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],1 [\\"ctgA%3A39753..40034\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],2 [\\"ctgA%3A40515..40954\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],3 [\\"ctgA%3A41252..41365\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],4 [\\"ctgA%3A41492..41504\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],5 [\\"ctgA%3A41941..42377\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],6 [\\"ctgA%3A42748..42954\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],7 [\\"ctgA%3A43401..43897\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],8 [\\"ctgA%3A44043..44113\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],9 [\\"ctgA%3A44399..44888\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],10 [\\"ctgA%3A45281..45375\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],11 [\\"ctgA%3A45711..46041\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],12 [\\"ctgA%3A46425..46564\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],13 [\\"ctgA%3A46738..47087\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],14 [\\"ctgA%3A47329..47595\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],15 [\\"ctgA%3A47858..47979\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],16 [\\"ctgA%3A48169..48453\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],17
+"\\"volvox.sort.gff3.gz\\"|\\"seg14\\"],12
+seg15 [\\"ctgA%3A39265..39361\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],1 [\\"ctgA%3A39753..40034\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],2 [\\"ctgA%3A40515..40954\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],3 [\\"ctgA%3A41252..41365\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],4 [\\"ctgA%3A41492..41504\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],5 [\\"ctgA%3A41941..42377\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],6 [\\"ctgA%3A42748..42954\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],7 [\\"ctgA%3A43401..43897\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],8 [\\"ctgA%3A44043..44113\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],9 [\\"ctgA%3A44399..44888\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],10 [\\"ctgA%3A45281..45375\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],11 [\\"ctgA%3A45711..46041\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],12 [\\"ctgA%3A46425..46564\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],13 [\\"ctgA%3A46738..47087\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],14 [\\"ctgA%3A47329..47595\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],15 [\\"ctgA%3A47858..47979\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],16 [\\"ctgA%3A48169..48453\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],17
 "
 `;
 
-exports[`text-index with multiple --files Indexes with --file 3`] = `13746`;
+exports[`text-index with multiple --files Indexes with --file 3`] = `13146`;
 
 exports[`text-index with multiple --files Indexes with --file 4`] = `
 "agt220000000000
@@ -279,19 +281,20 @@ exports[`text-index with multiple --files Indexes with --file 4`] = `
 
 exports[`text-index with single --file Indexes with --file 1`] = `
 "agt221.3 [\\"ctgA%3A7500..8000\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.3\\"|\\"Match4\\"],1
-agt221.5 [\\"ctgA%3A1050..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"|\\"\\"],1 [\\"ctgA%3A1050..7300\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"|\\"\\"],3 [\\"ctgA%3A7000..7300\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"|\\"\\"],4
+agt221.5 [\\"ctgA%3A1050..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"],1 [\\"ctgA%3A1050..7300\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"],3 [\\"ctgA%3A7000..7300\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"],4
 agt767.3 [\\"ctgA%3A8000..9000\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.3\\"|\\"Match6\\"],1
-agt767.5 [\\"ctgA%3A1150..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"|\\"\\"],1 [\\"ctgA%3A1150..7200\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"|\\"\\"],3 [\\"ctgA%3A7000..7200\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"|\\"\\"],4
-agt830.3 [\\"ctgA%3A5410..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"|\\"\\"],1 [\\"ctgA%3A5410..7503\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"|\\"\\"],3
-agt830.5 [\\"ctgA%3A1050..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.5\\"|\\"\\"],1 [\\"ctgA%3A1050..3202\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3"
+agt767.5 [\\"ctgA%3A1150..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"],1 [\\"ctgA%3A1150..7200\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"],3 [\\"ctgA%3A7000..7200\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"],4
+agt830.3 [\\"ctgA%3A5410..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"],1 [\\"ctgA%3A5410..7503\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"],3
+agt830.5 [\\"ctgA%3A1050..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.5\\"],1 [\\"ctgA%3A1050..3202\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3000..3202\\"|\\"volvox.sort.gff"
 `;
 
 exports[`text-index with single --file Indexes with --file 2`] = `
-"265..39361\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],1 [\\"ctgA%3A39753..40034\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],2 [\\"ctgA%3A40515..40954\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],3 [\\"ctgA%3A41252..41365\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],4 [\\"ctgA%3A41492..41504\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],5 [\\"ctgA%3A41941..42377\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],6 [\\"ctgA%3A42748..42954\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],7 [\\"ctgA%3A43401..43897\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],8 [\\"ctgA%3A44043..44113\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],9 [\\"ctgA%3A44399..44888\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],10 [\\"ctgA%3A45281..45375\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],11 [\\"ctgA%3A45711..46041\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],12 [\\"ctgA%3A46425..46564\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],13 [\\"ctgA%3A46738..47087\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],14 [\\"ctgA%3A47329..47595\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],15 [\\"ctgA%3A47858..47979\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],16 [\\"ctgA%3A48169..48453\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"|\\"\\"],17
+"\\"volvox.sort.gff3.gz\\"|\\"seg14\\"],12
+seg15 [\\"ctgA%3A39265..39361\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],1 [\\"ctgA%3A39753..40034\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],2 [\\"ctgA%3A40515..40954\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],3 [\\"ctgA%3A41252..41365\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],4 [\\"ctgA%3A41492..41504\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],5 [\\"ctgA%3A41941..42377\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],6 [\\"ctgA%3A42748..42954\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],7 [\\"ctgA%3A43401..43897\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],8 [\\"ctgA%3A44043..44113\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],9 [\\"ctgA%3A44399..44888\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],10 [\\"ctgA%3A45281..45375\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],11 [\\"ctgA%3A45711..46041\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],12 [\\"ctgA%3A46425..46564\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],13 [\\"ctgA%3A46738..47087\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],14 [\\"ctgA%3A47329..47595\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],15 [\\"ctgA%3A47858..47979\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],16 [\\"ctgA%3A48169..48453\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],17
 "
 `;
 
-exports[`text-index with single --file Indexes with --file 3`] = `13746`;
+exports[`text-index with single --file Indexes with --file 3`] = `13146`;
 
 exports[`text-index with single --file Indexes with --file 4`] = `
 "agt220000000000

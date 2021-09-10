@@ -89,7 +89,6 @@ export async function* indexVcf(
       const record = JSON.stringify([
         encodeURIComponent(locStr),
         encodeURIComponent(trackId),
-        encodeURIComponent(''),
         encodeURIComponent(id || ''),
         ...infoAttrs.map(a => encodeURIComponent(a || '')),
       ]).replace(/,/g, '|')

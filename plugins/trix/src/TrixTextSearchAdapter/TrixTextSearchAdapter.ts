@@ -44,13 +44,12 @@ export default class TrixTextSearchAdapter
     const formatted = results.map(entry => {
       const [term, data] = entry.split(',')
       const result = JSON.parse(data.replace(/\|/g, ',')) as string[]
-      const [loc, trackId, Name, ID, ...rest] = result.map(record =>
+      const [loc, trackId, ...rest] = result.map(record =>
         decodeURIComponent(record),
       )
 
       // gff3 fields are uri encoded so double decode
-      const fields = rest.map(elt => decodeURIComponent(elt))
-      const allAttributes = [Name, ID, ...fields]
+      const allAttributes = rest.map(elt => decodeURIComponent(elt))
       const labelFieldIdx = allAttributes.findIndex(elt => !!elt)
       const contextIdx = allAttributes.findIndex(
         elt => elt.toLowerCase().indexOf(term.toLowerCase()) !== -1,
@@ -93,6 +92,7 @@ export default class TrixTextSearchAdapter
             ? shortenedLabelField
             : labelField
           : `${labelField} (${context})`
+
       return new LocStringResult({
         locString: loc,
         label: labelField,
