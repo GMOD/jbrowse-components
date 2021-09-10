@@ -9,7 +9,6 @@ import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 
 // jbrowse core
-import { Region } from '@jbrowse/core/util/types'
 import { getSession, useDebounce, measureText } from '@jbrowse/core/util'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -129,7 +128,7 @@ function RefNameAutocomplete({
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const regions = assembly?.regions || ([] as Region[])
+  const regions = assembly?.regions || []
 
   const options: Option[] = useMemo(
     () =>
