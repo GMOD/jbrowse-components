@@ -65,7 +65,11 @@ async function fetchResults(
   // removes duplicate search results
   return searchResults?.filter(
     (elem, index, self) =>
-      index === self.findIndex(t => t.label === elem.label),
+      index ===
+      self.findIndex(
+        t =>
+          (t.displayString || t.label) === (elem.displayString || elem.label),
+      ),
   )
 }
 
