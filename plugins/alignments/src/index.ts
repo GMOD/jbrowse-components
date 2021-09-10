@@ -49,7 +49,13 @@ import {
   PileupGetGlobalValueForTag,
   PileupGetVisibleModifications,
 } from './PileupRPC/rpcMethods'
-import { makeIndex, makeIndexType } from '@jbrowse/core/util/tracks'
+import {
+  makeIndex,
+  makeIndexType,
+  AdapterGuesser,
+  getFileName,
+  TrackTypeGuesser,
+} from '@jbrowse/core/util/tracks'
 
 export { MismatchParser }
 export type { LinearPileupDisplayModel }
@@ -146,6 +152,44 @@ export default class AlignmentsPlugin extends Plugin {
           name: 'BamAdapter',
           ...pluginManager.load(BamAdapterF),
         }),
+    )
+
+    pluginManager.addToExtensionPoint(
+      'extendGuessAdapter',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.bam$/i
+          const adapterName = 'BamAdapter'
+          const fileName = getFileName(file)
+          const indexName = index && getFileName(index)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
+            return {
+              type: adapterName,
+              bamLocation: file,
+              index: {
+                location: index || makeIndex(file, '.bai'),
+                indexType: makeIndexType(indexName, 'CSI', 'BAI'),
+              },
+            }
+          }
+          return adapterGuesser(file, index)
+        }
+      },
+    )
+    pluginManager.addToExtensionPoint(
+      'extendGuessTrackType',
+      (trackTypeGuesser: TrackTypeGuesser) => {
+        return (adapterName: string) => {
+          if (adapterName === 'BamAdapter') {
+            return 'AlignmentsTrack'
+          }
+          return trackTypeGuesser(adapterName)
+        }
+      },
     )
     pluginManager.registerAdapterGuess(
       () =>
