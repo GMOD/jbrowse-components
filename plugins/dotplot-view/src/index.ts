@@ -16,7 +16,6 @@ import { getConf } from '@jbrowse/core/configuration'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import TimelineIcon from '@material-ui/icons/Timeline'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
-import AdapterGuessType from '@jbrowse/core/pluggableElementTypes/AdapterGuessType'
 import { FileLocation } from '@jbrowse/core/util/types'
 import {
   configSchemaFactory as dotplotDisplayConfigSchemaFactory,
@@ -36,6 +35,11 @@ import {
 import ComparativeRender from './DotplotRenderer/ComparativeRenderRpc'
 import { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
 import { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
+import {
+  AdapterGuesser,
+  getFileName,
+  TrackTypeGuesser,
+} from '@jbrowse/core/util/tracks'
 
 const { parseCigar } = MismatchParser
 
@@ -362,19 +366,37 @@ export default class DotplotPlugin extends Plugin {
           AdapterClass: PAFAdapter,
         }),
     )
-    pluginManager.registerAdapterGuess(
-      () =>
-        new AdapterGuessType({
-          name: 'PAFAdapter',
-          regexGuess: /\.paf/i,
-          trackGuess: 'SyntenyTrack',
-          fetchConfig: (file: FileLocation) => {
+    pluginManager.addToExtensionPoint(
+      'extendGuessAdapter',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.paf/i
+          const adapterName = 'PAFAdapter'
+          const fileName = getFileName(file)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
             return {
-              type: 'PAFAdapter',
+              type: adapterName,
               pafLocation: file,
             }
-          },
-        }),
+          }
+          return adapterGuesser(file, index)
+        }
+      },
+    )
+    pluginManager.addToExtensionPoint(
+      'extendGuessTrackType',
+      (trackTypeGuesser: TrackTypeGuesser) => {
+        return (adapterName: string) => {
+          if (adapterName === 'PAFAdapter') {
+            return 'SyntenyTrack'
+          }
+          return trackTypeGuesser(adapterName)
+        }
+      },
     )
 
     // install our comparative rendering rpc callback

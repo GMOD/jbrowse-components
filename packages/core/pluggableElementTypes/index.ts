@@ -8,7 +8,6 @@ import ViewType from './ViewType'
 import RpcMethodType from './RpcMethodType'
 import InternetAccountType from './InternetAccountType'
 import TextSearchAdapter from './TextSearchAdapterType'
-import AdapterGuessType from './AdapterGuessType'
 
 export type PluggableElementType =
   | AdapterType
@@ -21,7 +20,6 @@ export type PluggableElementType =
   | RpcMethodType
   | InternetAccountType
   | TextSearchAdapter
-  | AdapterGuessType
 
 export type PluggableElementMember =
   | keyof AdapterType
@@ -34,4 +32,3 @@ export type PluggableElementMember =
   | keyof RpcMethodType
   | keyof InternetAccountType
   | keyof TextSearchAdapter
-  | keyof AdapterGuessType

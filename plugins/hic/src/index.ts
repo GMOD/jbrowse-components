@@ -9,7 +9,6 @@ import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
-import AdapterGuessType from '@jbrowse/core/pluggableElementTypes/AdapterGuessType'
 import { FileLocation } from '@jbrowse/core/util/types'
 import Color from 'color'
 import HicRenderer, {
@@ -21,6 +20,11 @@ import {
   modelFactory as linearHicdisplayModelFactory,
 } from './LinearHicDisplay'
 import hicAdapterConfigSchema from './HicAdapter/configSchema'
+import {
+  AdapterGuesser,
+  getFileName,
+  TrackTypeGuesser,
+} from '@jbrowse/core/util/tracks'
 
 export default class HicPlugin extends Plugin {
   name = 'HicPlugin'
@@ -35,19 +39,37 @@ export default class HicPlugin extends Plugin {
             import('./HicAdapter/HicAdapter').then(r => r.default),
         }),
     )
-    pluginManager.registerAdapterGuess(
-      () =>
-        new AdapterGuessType({
-          name: 'HicAdapter',
-          regexGuess: /\.hic/i,
-          trackGuess: 'HicTrack',
-          fetchConfig: (file: FileLocation) => {
+    pluginManager.addToExtensionPoint(
+      'extendGuessAdapter',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.hic/i
+          const adapterName = 'HicAdapter'
+          const fileName = getFileName(file)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
             return {
-              type: 'HicAdapter',
+              type: adapterName,
               hicLocation: file,
             }
-          },
-        }),
+          }
+          return adapterGuesser(file, index)
+        }
+      },
+    )
+    pluginManager.addToExtensionPoint(
+      'extendGuessTrackType',
+      (trackTypeGuesser: TrackTypeGuesser) => {
+        return (adapterName: string) => {
+          if (adapterName === 'HicAdapter') {
+            return 'HicTrack'
+          }
+          return trackTypeGuesser(adapterName)
+        }
+      },
     )
     pluginManager.addRendererType(
       () =>

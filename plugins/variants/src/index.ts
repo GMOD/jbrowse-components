@@ -1,7 +1,6 @@
 import { lazy } from 'react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-import AdapterGuessType from '@jbrowse/core/pluggableElementTypes/AdapterGuessType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import {
   createBaseTrackConfig,
@@ -25,7 +24,13 @@ import {
 } from './VariantFeatureWidget'
 import { configSchema as vcfTabixAdapterConfigSchema } from './VcfTabixAdapter'
 import { configSchema as vcfAdapterConfigSchema } from './VcfAdapter'
-import { makeIndex, makeIndexType } from '@jbrowse/core/util/tracks'
+import {
+  makeIndex,
+  makeIndexType,
+  AdapterGuesser,
+  getFileName,
+  TrackTypeGuesser,
+} from '@jbrowse/core/util/tracks'
 
 export default class VariantsPlugin extends Plugin {
   name = 'VariantsPlugin'
@@ -40,28 +45,42 @@ export default class VariantsPlugin extends Plugin {
             import('./VcfTabixAdapter/VcfTabixAdapter').then(r => r.default),
         }),
     )
-
-    pluginManager.registerAdapterGuess(
-      () =>
-        new AdapterGuessType({
-          name: 'VcfTabixAdapter',
-          regexGuess: /\.vcf\.b?gz$/i,
-          trackGuess: 'VariantTrack',
-          fetchConfig: (
-            file: FileLocation,
-            index: FileLocation,
-            indexName: string,
-          ) => {
+    pluginManager.addToExtensionPoint(
+      'extendGuessAdapter',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.vcf\.b?gz$/i
+          const adapterName = 'VcfTabixAdapter'
+          const fileName = getFileName(file)
+          const indexName = index && getFileName(index)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
             return {
-              type: 'VcfTabixAdapter',
+              type: adapterName,
               vcfGzLocation: file,
               index: {
                 location: index || makeIndex(file, '.tbi'),
                 indexType: makeIndexType(indexName, 'CSI', 'TBI'),
               },
             }
-          },
-        }),
+          }
+          return adapterGuesser(file, index)
+        }
+      },
+    )
+    pluginManager.addToExtensionPoint(
+      'extendGuessTrackType',
+      (trackTypeGuesser: TrackTypeGuesser) => {
+        return (adapterName: string) => {
+          if (adapterName === 'VcfTabixAdapter') {
+            return 'VariantTrack'
+          }
+          return trackTypeGuesser(adapterName)
+        }
+      },
     )
 
     pluginManager.addAdapterType(
@@ -74,19 +93,26 @@ export default class VariantsPlugin extends Plugin {
         }),
     )
 
-    pluginManager.registerAdapterGuess(
-      () =>
-        new AdapterGuessType({
-          name: 'VcfAdapter',
-          regexGuess: /\.vcf$/i,
-          trackGuess: 'VariantTrack',
-          fetchConfig: (file: FileLocation) => {
+    pluginManager.addToExtensionPoint(
+      'extendGuessAdapter',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.vcf$/i
+          const adapterName = 'VcfAdapter'
+          const fileName = getFileName(file)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
             return {
-              type: 'VcfAdapter',
+              type: adapterName,
               vcfLocation: file,
             }
-          },
-        }),
+          }
+          return adapterGuesser(file, index)
+        }
+      },
     )
 
     pluginManager.addRendererType(() =>

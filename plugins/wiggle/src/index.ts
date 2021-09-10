@@ -9,7 +9,6 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import AdapterGuessType from '@jbrowse/core/pluggableElementTypes/AdapterGuessType'
 import { FileLocation } from '@jbrowse/core/util/types'
 import WiggleBaseRenderer from './WiggleBaseRenderer'
 import WiggleRendering from './WiggleRendering'
@@ -40,6 +39,11 @@ import {
   WiggleGetGlobalStats,
   WiggleGetMultiRegionStats,
 } from './WiggleRPC/rpcMethods'
+import {
+  AdapterGuesser,
+  getFileName,
+  TrackTypeGuesser,
+} from '@jbrowse/core/util/tracks'
 
 export default class WigglePlugin extends Plugin {
   name = 'WigglePlugin'
@@ -87,19 +91,37 @@ export default class WigglePlugin extends Plugin {
             import('./BigWigAdapter/BigWigAdapter').then(r => r.default),
         }),
     )
-    pluginManager.registerAdapterGuess(
-      () =>
-        new AdapterGuessType({
-          name: 'BigWigAdapter',
-          regexGuess: /\.(bw|bigwig)$/i,
-          trackGuess: 'QuantitativeTrack',
-          fetchConfig: (file: FileLocation) => {
+    pluginManager.addToExtensionPoint(
+      'extendGuessAdapter',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.(bw|bigwig)$/i
+          const adapterName = 'BigWigAdapter'
+          const fileName = getFileName(file)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
             return {
-              type: 'BigWigAdapter',
+              type: adapterName,
               bigWigLocation: file,
             }
-          },
-        }),
+          }
+          return adapterGuesser(file, index)
+        }
+      },
+    )
+    pluginManager.addToExtensionPoint(
+      'extendGuessTrackType',
+      (trackTypeGuesser: TrackTypeGuesser) => {
+        return (adapterName: string) => {
+          if (adapterName === 'BigWigAdapter') {
+            return 'QuantitativeTrack'
+          }
+          return trackTypeGuesser(adapterName)
+        }
+      },
     )
 
     pluginManager.addRendererType(

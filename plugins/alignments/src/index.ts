@@ -1,7 +1,6 @@
 import { lazy } from 'react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-import AdapterGuessType from '@jbrowse/core/pluggableElementTypes/AdapterGuessType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import {
   createBaseTrackConfig,
@@ -191,28 +190,7 @@ export default class AlignmentsPlugin extends Plugin {
         }
       },
     )
-    pluginManager.registerAdapterGuess(
-      () =>
-        new AdapterGuessType({
-          name: 'BamAdapter',
-          regexGuess: /\.bam$/i,
-          trackGuess: 'AlignmentsTrack',
-          fetchConfig: (
-            file: FileLocation,
-            index: FileLocation,
-            indexName: string,
-          ) => {
-            return {
-              type: 'BamAdapter',
-              bamLocation: file,
-              index: {
-                location: index || makeIndex(file, '.bai'),
-                indexType: makeIndexType(indexName, 'CSI', 'BAI'),
-              },
-            }
-          },
-        }),
-    )
+
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
@@ -228,21 +206,40 @@ export default class AlignmentsPlugin extends Plugin {
           ...pluginManager.load(CramAdapterF),
         }),
     )
-    pluginManager.registerAdapterGuess(
-      () =>
-        new AdapterGuessType({
-          name: 'CramAdapter',
-          regexGuess: /\.cram$/i,
-          trackGuess: 'AlignmentsTrack',
-          fetchConfig: (file: FileLocation, index: FileLocation) => {
+    pluginManager.addToExtensionPoint(
+      'extendGuessAdapter',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.cram$/i
+          const adapterName = 'CramAdapter'
+          const fileName = getFileName(file)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
             return {
-              type: 'CramAdapter',
+              type: adapterName,
               cramLocation: file,
               craiLocation: index || makeIndex(file, '.crai'),
             }
-          },
-        }),
+          }
+          return adapterGuesser(file, index)
+        }
+      },
     )
+    pluginManager.addToExtensionPoint(
+      'extendGuessTrackType',
+      (trackTypeGuesser: TrackTypeGuesser) => {
+        return (adapterName: string) => {
+          if (adapterName === 'CramAdapter') {
+            return 'AlignmentsTrack'
+          }
+          return trackTypeGuesser(adapterName)
+        }
+      },
+    )
+
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
