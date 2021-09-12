@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import {
   Button,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
@@ -70,7 +71,15 @@ export default function ExportSvgDlg({
             size may be large
           </Typography>
         )}
-
+      </DialogContent>
+      <DialogActions>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => handleClose()}
+        >
+          Cancel
+        </Button>
         <Button
           variant="contained"
           color="primary"
@@ -90,7 +99,7 @@ export default function ExportSvgDlg({
         >
           Submit
         </Button>
-      </DialogContent>
+      </DialogActions>
     </Dialog>
   )
 }

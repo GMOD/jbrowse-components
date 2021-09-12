@@ -148,7 +148,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
               >
                 <div
                   class="makeStyles-fieldDescription makeStyles-fieldName"
-                  title=" alternate base(s): Comma-separated list of alternate non-reference alleles"
+                  title="alternate base(s): Comma-separated list of alternate non-reference alleles"
                 >
                   ALT
                 </div>

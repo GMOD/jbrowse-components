@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
+// import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import {
   Button,
@@ -55,6 +56,8 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const regions = assembly?.regions || []
   const err = assemblyError || error
   const [mySelectedRegion, setSelectedRegion] = useState<string>()
+  const [optionTrackId, setOptionTrackId] = useState<string>()
+  const [optionLocation, setOptionLocation] = useState<string>()
   const selectedRegion = mySelectedRegion || regions[0]?.refName
 
   async function fetchResults(queryString: string) {
@@ -75,7 +78,23 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
         index === self.findIndex(t => t.getId() === elem.getId()),
     )
   }
+  /**
+   * We first check to see if the identifier/label is an appropriate region,
+   * if it is then we set that as our displayed region
+   * if the label was not a valid region, then
+   *  1) we get the trackId and the location/locStr of the option we chose
+   *  2) we then use the label to try and fetch for exact matches through our
+   * textSearchManager
+   *  3) if we get any hits by requerying the textSearchManager, then we either
+   *  navigate to single hit's location or pop open the the dialog with all the results
+   *  4) if there were no hits from requerying, then we use (1) the chosen options'
+   *  trackId and locStr to navigate and show that track
+   *  5) error handling
+   * @param input - selectedRegion/result label
+   */
   async function handleSelectedRegion(input: string) {
+    let trackId = optionTrackId
+    let location = optionLocation
     const newRegion = regions.find(r => selectedRegion === r.refName)
     if (newRegion) {
       model.setDisplayedRegions([newRegion])
@@ -88,14 +107,13 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
         model.setSearchResults(results, input.toLowerCase())
       } else {
         if (results?.length === 1) {
-          input = results[0].getLocation()
-          const trackId = results[0].getTrackId()
-          if (trackId) {
-            model.showTrack(trackId)
-          }
+          location = results[0].getLocation()
+          trackId = results[0].getTrackId()
         }
         try {
-          input && model.navToLocString(input, selectedAsm)
+          if (location) {
+            model.navToLocString(location, selectedAsm)
+          }
         } catch (e) {
           if (`${e}` === `Error: Unknown reference sequence "${input}"`) {
             model.setSearchResults(results, input.toLocaleLowerCase())
@@ -103,6 +121,15 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             console.warn(e)
             session.notify(`${e}`, 'warning')
           }
+        }
+        try {
+          if (trackId) {
+            model.showTrack(trackId)
+          }
+        } catch (e) {
+          console.warn(
+            `'${e}' occurred while attempting to show track: ${trackId}`,
+          )
         }
       }
     }
@@ -132,7 +159,11 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                   model={model}
                   assemblyName={message ? undefined : selectedAsm}
                   value={selectedRegion}
-                  onSelect={option => setSelectedRegion(option.getLabel())}
+                  onSelect={option => {
+                    setSelectedRegion(option.getLabel())
+                    setOptionTrackId(option.getTrackId() || '')
+                    setOptionLocation(option.getLocation())
+                  }}
                   TextFieldProps={{
                     margin: 'normal',
                     variant: 'outlined',

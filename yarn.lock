@@ -1899,10 +1899,10 @@
     long "^4.0.0"
     quick-lru "^2.0.0"
 
-"@gmod/trix@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-0.2.1.tgz#28e3296e39e18d4cb76d38f274c2ec558fc282a0"
-  integrity sha512-rkQI2K/QXzf0sIjsylcdQUVG/JGIT8K1EkjW4xX1TvUXp2jesngeyo8ZywUjkFHvg4Dtkn073gdYzmca8M8dRw==
+"@gmod/trix@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-1.0.0.tgz#48d8ab56090abefdce20e8d9ce8b4f43a3e7df81"
+  integrity sha512-nXjteSaiCPvbCi2hr43y6iqiPmvmUuGraS0FO4gK4u4bv8xmWh9PDqIZ+LMo5ODJaglibvFnxYrs7eYKYxiRgw==
 
 "@gmod/twobit@^1.1.10":
   version "1.1.10"
@@ -1918,10 +1918,10 @@
   resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-0.1.3.tgz#37d20b59be9e5153d68a529407237782ed15562d"
   integrity sha512-F60rkM5AdcOXiOqmiNG5ZdoMCwbAQAU6oGBs5UMFCE0vIX7X8i2Mv4X9HrQbmJupZJvyQRuXQNW6SEaUVa+KsQ==
 
-"@gmod/vcf@^4.0.0", "@gmod/vcf@^4.0.3":
-  version "4.0.3"
-  resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-4.0.3.tgz#f87d246c9aad82cf45943ec21fefe3a6ed690c5f"
-  integrity sha512-gMTI5f66M0kqspQJSvbuiJn54BZZ//LTl3bpfWkQYAQq5zHfzuV+QCZIXKul+Uby2vehFhMDoDgcNmjckctPZA==
+"@gmod/vcf@^5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-5.0.0.tgz#d883a28f1cf4a884c797c0c0e167e751e293a260"
+  integrity sha512-koF70T9r+/iaCpqi8A2ENID5AGXrzdnfPvHBF9XG7YtCDoEdvsGikp1LViElz8kLOf70JBDVvlfjEAPAocK9hw==
   dependencies:
     "@babel/runtime" "^7.3.1"
 
@@ -3047,12 +3047,6 @@
   resolved "https://registry.yarnpkg.com/@librpc/ee/-/ee-1.0.4.tgz#ce73a36279dc4cf93efa43f7e3564ec165947522"
   integrity sha512-vhPlbRwAKQC80h0k74tsOkMKIidZtqlFSOHRzCvC8n7Va9rzMDwpG26Pm84dAt0ZuGK0g1UEfPzxDiYo9ZQBrg==
 
-"@librpc/web@rbuels/librpc-web#737bb9706762a52a87169a12c9b59fb241febab0":
-  version "1.1.0"
-  resolved "https://codeload.github.com/rbuels/librpc-web/tar.gz/737bb9706762a52a87169a12c9b59fb241febab0"
-  dependencies:
-    "@librpc/ee" "1.0.4"
-
 "@mapbox/node-pre-gyp@^1.0.0":
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/@mapbox/node-pre-gyp/-/node-pre-gyp-1.0.5.tgz#2a0b32fcb416fb3f2250fd24cb2a81421a4f5950"
@@ -3492,6 +3486,11 @@
   version "2.9.2"
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.9.2.tgz#adea7b6953cbb34651766b0548468e743c6a2353"
   integrity sha512-VZMYa7+fXHdwIq1TDhSXoVmSPEGM/aa+6Aiq3nVVJ9bXr24zScr+NlKFKC3iPljA7ho/GAZr+d2jOf5GIRC30Q==
+
+"@popperjs/core@^2.9.3":
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.10.0.tgz#6f2f845cbb8f8f897236d9bf221379f14429c608"
+  integrity sha512-QWvCHtYwNIR3C/mxW9jGzOu1gbaZkq/6is2OedayPH7HsxI4CVuVzAZ1PmxRElXLwwwCN7aMjRhxtTAGLEZ8IQ==
 
 "@reach/router@^1.3.4":
   version "1.3.4"
@@ -13066,10 +13065,10 @@ iterate-value@^1.0.0:
     es-get-iterator "^1.0.2"
     iterate-iterator "^1.0.1"
 
-ixixx@^1.0.14:
-  version "1.0.14"
-  resolved "https://registry.yarnpkg.com/ixixx/-/ixixx-1.0.14.tgz#73e9c7386d2ac39334a10f45d8e7c4bd7cb8cdde"
-  integrity sha512-+yd38ikgqZX8Y7rCixV8RadBS8P89JTw1dmAjaEXIkTid+1kkV+xhXFi8GCiOFLFtIzTMRbCVvF7O0ZBaJ0XVA==
+ixixx@^1.0.15:
+  version "1.0.15"
+  resolved "https://registry.yarnpkg.com/ixixx/-/ixixx-1.0.15.tgz#e52cd9d18705a5cf8ae5c373b38750f73539e726"
+  integrity sha512-gA2pQjK5PINkAuTapymNp8fy7BsVHYZi+gjlgh0PricM2KH35T9Xq7xKKIXFoJC8my3e7jeLVPZEF9HFHo5g6w==
   dependencies:
     external-sorting "^1.2.0"
     tmp "^0.2.1"
@@ -14421,6 +14420,14 @@ levn@^0.4.1:
   dependencies:
     prelude-ls "^1.2.1"
     type-check "~0.4.0"
+
+librpc-web-mod@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/librpc-web-mod/-/librpc-web-mod-1.1.2.tgz#569931862e8f8d3d53fce59a0208487f4894c7fa"
+  integrity sha512-NSWi043ELYwzUfM3PJUxaGz/uEawOCO42YhuFGYGrKkYVtsTNwhQnvCqWIN9aqHudGZUJbaXgdrc+T5ZzDf04Q==
+  dependencies:
+    "@librpc/ee" "1.0.4"
+    serialize-error "^8.1.0"
 
 lines-and-columns@^1.1.6:
   version "1.1.6"
@@ -18234,6 +18241,14 @@ react-popper-tooltip@^3.1.1:
     "@popperjs/core" "^2.5.4"
     react-popper "^2.2.4"
 
+react-popper@^2.0.0:
+  version "2.2.5"
+  resolved "https://registry.yarnpkg.com/react-popper/-/react-popper-2.2.5.tgz#1214ef3cec86330a171671a4fbcbeeb65ee58e96"
+  integrity sha512-kxGkS80eQGtLl18+uig1UIf9MKixFSyPxglsgLBxlYnyDf65BiY9B3nZSc6C9XUNDgStROB0fMQlTEz1KxGddw==
+  dependencies:
+    react-fast-compare "^3.0.1"
+    warning "^4.0.2"
+
 react-popper@^2.2.4:
   version "2.2.4"
   resolved "https://registry.yarnpkg.com/react-popper/-/react-popper-2.2.4.tgz#d2ad3d2474ac9f1abf93df3099d408e5aa6a2e22"
@@ -19471,6 +19486,13 @@ serialize-error@^7.0.1:
   integrity sha512-8I8TjW5KMOKsZQTvoxjuSIa7foAwPWGOts+6o7sgjz41/qMD9VQHEDxi6PBvK2l0MXUmqZyNpUK+T2tQaaElvw==
   dependencies:
     type-fest "^0.13.1"
+
+serialize-error@^8.1.0:
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/serialize-error/-/serialize-error-8.1.0.tgz#3a069970c712f78634942ddd50fbbc0eaebe2f67"
+  integrity sha512-3NnuWfM6vBYoy5gZFvHiYsVbafvI9vZv/+jlIigFn4oP4zjNPK3LhcY0xSCgeb1a5L8jO71Mit9LlNoi2UfDDQ==
+  dependencies:
+    type-fest "^0.20.2"
 
 serialize-javascript@^2.1.2:
   version "2.1.2"

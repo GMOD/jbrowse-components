@@ -1,33 +1,37 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`text-index Indexes a local non-gz gff3 file 1`] = `
-"au9.g1000 WyJHcm91cDEuMzY6MTY4MjU1Li4xNzM5NTEiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzEwMDAiLCJhdTkuZzEwMDAiXQ==,1
-au9.g1000.t1 WyJHcm91cDEuMzY6MTY4MjU1Li4xNzM5NTEiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzEwMDAudDEiLCJhdTkuZzEwMDAudDEiXQ==,1
-au9.g1001 WyJHcm91cDEuMzY6MTc0MzY0Li4xNzYzMDQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzEwMDEiLCJhdTkuZzEwMDEiXQ==,1
-au9.g1001.t1 WyJHcm91cDEuMzY6MTc0MzY0Li4xNzYzMDQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzEwMDEudDEiLCJhdTkuZzEwMDEudDEiXQ==,1
-au9.g1002 WyJHcm91cDEuMzY6MTc2OTc1Li4xODA3NDQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzEwMDIiLCJhdTkuZzEwMDIiXQ==,1
-au9.g1002.t1 WyJHcm91cDEuMzY6MTc2OTc1Li4xODA3NDQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzEwMDIudDEiLCJhdTkuZzEwMDIudDEiXQ==,1
-au9.g1003 WyJHcm91cDEuMzY6MTgwODQ2Li4xODQ4NTQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzEwMDMiLCJhdTkuZzEwMDMiXQ==,1
-au9.g1003.t1 WyJHcm91cDEuMzY6MTgwODQ2Li4xODQ4NTQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzEwMDMudDEiLCJhdTkuZzEwMDMudDEiXQ==,1
-au9.g1004 WyJHcm91cDEuMzY6MTg3MTE1Li4xOTUyMjQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzEwMDQiLCJhdTkuZzEwMDQiXQ==,1
-au9.g1004.t"
+"au9.g1000 [\\"Group1.36%3A168255..173951\\"|\\"au9_scaffold\\"|\\"au9.g1000\\"|\\"au9.g1000\\"],1
+au9.g1000.t1 [\\"Group1.36%3A168255..173951\\"|\\"au9_scaffold\\"|\\"au9.g1000.t1\\"|\\"au9.g1000.t1\\"],1
+au9.g1001 [\\"Group1.36%3A174364..176304\\"|\\"au9_scaffold\\"|\\"au9.g1001\\"|\\"au9.g1001\\"],1
+au9.g1001.t1 [\\"Group1.36%3A174364..176304\\"|\\"au9_scaffold\\"|\\"au9.g1001.t1\\"|\\"au9.g1001.t1\\"],1
+au9.g1002 [\\"Group1.36%3A176975..180744\\"|\\"au9_scaffold\\"|\\"au9.g1002\\"|\\"au9.g1002\\"],1
+au9.g1002.t1 [\\"Group1.36%3A176975..180744\\"|\\"au9_scaffold\\"|\\"au9.g1002.t1\\"|\\"au9.g1002.t1\\"],1
+au9.g1003 [\\"Group1.36%3A180846..184854\\"|\\"au9_scaffold\\"|\\"au9.g1003\\"|\\"au9.g1003\\"],1
+au9.g1003.t1 [\\"Group1.36%3A180846..184854\\"|\\"au9_scaffold\\"|\\"au9.g1003.t1\\"|\\"au9.g1003.t1\\"],1
+au9.g1004 [\\"Group1.36%3A187115..195224\\"|\\"au9_scaffold\\"|\\"au9.g1004\\"|\\"au9.g1004\\"],1
+au9.g1004.t1 [\\"Group1.36%3A187115..195224\\"|\\"au9_scaffold\\"|\\"au9.g1004.t1\\"|\\"au9.g1004.t1\\"],1
+au9.g1004.t2 [\\"Group1.36%3A187115..195224\\"|\\"au9_scaffold\\"|\\"au9.g1004.t2\\"|\\"au9.g1004.t2\\"],1
+au9.g1005 [\\"Group1.36%3A195248..197254\\"|\\"au9"
 `;
 
 exports[`text-index Indexes a local non-gz gff3 file 2`] = `
-"NhZmZvbGQiLCJhdTkuZzk5NSIsImF1OS5nOTk1Il0=,1
-au9.g995.t1 WyJHcm91cDEuMzY6MTQ3NTIwLi4xNTA0MTQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzk5NS50MSIsImF1OS5nOTk1LnQxIl0=,1
-au9.g996 WyJHcm91cDEuMzY6MTUwNTM5Li4xNTI4NTQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzk5NiIsImF1OS5nOTk2Il0=,1
-au9.g996.t1 WyJHcm91cDEuMzY6MTUwNTM5Li4xNTI4NTQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzk5Ni50MSIsImF1OS5nOTk2LnQxIl0=,1
-au9.g997 WyJHcm91cDEuMzY6MTU0NDk1Li4xNTYyOTQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzk5NyIsImF1OS5nOTk3Il0=,1
-au9.g997.t1 WyJHcm91cDEuMzY6MTU0NDk1Li4xNTYyOTQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzk5Ny50MSIsImF1OS5nOTk3LnQxIl0=,1
-au9.g998 WyJHcm91cDEuMzY6MTU3NDk1Li4xNjQ2ODUiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzk5OCIsImF1OS5nOTk4Il0=,1
-au9.g998.t1 WyJHcm91cDEuMzY6MTU3NDk1Li4xNjQ2ODUiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzk5OC50MSIsImF1OS5nOTk4LnQxIl0=,1
-au9.g999 WyJHcm91cDEuMzY6MTY1NTU4Li4xNjY5ODQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzk5OSIsImF1OS5nOTk5Il0=,1
-au9.g999.t1 WyJHcm91cDEuMzY6MTY1NTU4Li4xNjY5ODQiLCJhdTlfc2NhZmZvbGQiLCJhdTkuZzk5OS50MSIsImF1OS5nOTk5LnQxIl0=,1
+"9.g994 [\\"Group1.36%3A135249..142374\\"|\\"au9_scaffold\\"|\\"au9.g994\\"|\\"au9.g994\\"],1
+au9.g994.t1 [\\"Group1.36%3A135249..142374\\"|\\"au9_scaffold\\"|\\"au9.g994.t1\\"|\\"au9.g994.t1\\"],1
+au9.g995 [\\"Group1.36%3A147520..150414\\"|\\"au9_scaffold\\"|\\"au9.g995\\"|\\"au9.g995\\"],1
+au9.g995.t1 [\\"Group1.36%3A147520..150414\\"|\\"au9_scaffold\\"|\\"au9.g995.t1\\"|\\"au9.g995.t1\\"],1
+au9.g996 [\\"Group1.36%3A150539..152854\\"|\\"au9_scaffold\\"|\\"au9.g996\\"|\\"au9.g996\\"],1
+au9.g996.t1 [\\"Group1.36%3A150539..152854\\"|\\"au9_scaffold\\"|\\"au9.g996.t1\\"|\\"au9.g996.t1\\"],1
+au9.g997 [\\"Group1.36%3A154495..156294\\"|\\"au9_scaffold\\"|\\"au9.g997\\"|\\"au9.g997\\"],1
+au9.g997.t1 [\\"Group1.36%3A154495..156294\\"|\\"au9_scaffold\\"|\\"au9.g997.t1\\"|\\"au9.g997.t1\\"],1
+au9.g998 [\\"Group1.36%3A157495..164685\\"|\\"au9_scaffold\\"|\\"au9.g998\\"|\\"au9.g998\\"],1
+au9.g998.t1 [\\"Group1.36%3A157495..164685\\"|\\"au9_scaffold\\"|\\"au9.g998.t1\\"|\\"au9.g998.t1\\"],1
+au9.g999 [\\"Group1.36%3A165558..166984\\"|\\"au9_scaffold\\"|\\"au9.g999\\"|\\"au9.g999\\"],1
+au9.g999.t1 [\\"Group1.36%3A165558..166984\\"|\\"au9_scaffold\\"|\\"au9.g999.t1\\"|\\"au9.g999.t1\\"],1
 "
 `;
 
-exports[`text-index Indexes a local non-gz gff3 file 3`] = `144314`;
+exports[`text-index Indexes a local non-gz gff3 file 3`] = `113448`;
 
 exports[`text-index Indexes a local non-gz gff3 file 4`] = `
 "au9.g0000000000
@@ -35,19 +39,22 @@ exports[`text-index Indexes a local non-gz gff3 file 4`] = `
 `;
 
 exports[`text-index tracks Indexes a local gz gff3 file 1`] = `
-"agt221.3 WyJjdGdBOjc1MDAuLjgwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3QyMjEuMyIsIk1hdGNoNCJd,1
-agt221.5 WyJjdGdBOjEwNTAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3QyMjEuNSIsbnVsbF0=,1 WyJjdGdBOjEwNTAuLjczMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3QyMjEuNSIsIk1hdGNoMyJd,2 WyJjdGdBOjUwMDAuLjU1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3QyMjEuNSIsbnVsbF0=,3 WyJjdGdBOjcwMDAuLjczMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3QyMjEuNSIsbnVsbF0=,4
-agt767.3 WyJjdGdBOjgwMDAuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q3NjcuMyIsIk1hdGNoNiJd,1
-agt767.5 WyJjdGdBOjExNTAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q3NjcuNSIsbnVsbF0=,1 WyJjdGdBOjExNTAuLjcyMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q3NjcuNSIsIk1hdGNoNSJd,2 WyJjdGdBOjUwMDAuLjU1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q3NjcuNSIsbnVsbF0=,3 WyJjdGdBOjcwMDAuLjcyMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q3NjcuNSIsbnVsbF0=,4
-agt830.3 WyJjdGdBOjU0MTAuLjU1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q4MzAuMyIsbnVsbF0=,1 WyJjdGdBOjU0MTAuLjc1MDMiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q4MzAuMyIsIk1hdGNoMiJd,2 WyJjdGdBOjcwMDAuLjc1MDMiLCJnZmYzdGF"
+"agt221.3 [\\"ctgA%3A7500..8000\\"|\\"gff3tabix_genes\\"|\\"agt221.3\\"|\\"Match4\\"],1
+agt221.5 [\\"ctgA%3A1050..1500\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"],1 [\\"ctgA%3A1050..7300\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"],3 [\\"ctgA%3A7000..7300\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"],4
+agt767.3 [\\"ctgA%3A8000..9000\\"|\\"gff3tabix_genes\\"|\\"agt767.3\\"|\\"Match6\\"],1
+agt767.5 [\\"ctgA%3A1150..1500\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"],1 [\\"ctgA%3A1150..7200\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"],3 [\\"ctgA%3A7000..7200\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"],4
+agt830.3 [\\"ctgA%3A5410..5500\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"],1 [\\"ctgA%3A5410..7503\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"],3
+agt830.5 [\\"ctgA%3A1050..1500\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"],1 [\\"ctgA%3A1050..3202\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3000..3202\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"],3
+apple2 [\\"ctgA%3A13000..17200\\"|\\"gff3tabix_gen"
 `;
 
 exports[`text-index tracks Indexes a local gz gff3 file 2`] = `
-"E1IixudWxsXQ==,4 WyJjdGdBOjQ1MjgxLi40NTM3NSIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,5 WyJjdGdBOjQ1NzExLi40NjA0MSIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,6 WyJjdGdBOjQ2NDI1Li40NjU2NCIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,7 WyJjdGdBOjQ2NzM4Li40NzA4NyIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,8 WyJjdGdBOjQ3MzI5Li40NzU5NSIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,9 WyJjdGdBOjQ3ODU4Li40Nzk3OSIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,10 WyJjdGdBOjQ4MTY5Li40ODQ1MyIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,11 WyJjdGdBOjQwNTE1Li40MDk1NCIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,12 WyJjdGdBOjQxMjUyLi40MTM2NSIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,13 WyJjdGdBOjQxNDkyLi40MTUwNCIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,14 WyJjdGdBOjQxOTQxLi40MjM3NyIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,15 WyJjdGdBOjQyNzQ4Li40Mjk1NCIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,16 WyJjdGdBOjQzNDAxLi40Mzg5NyIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,17
+"gA%3A46816..46992\\"|\\"gff3tabix_genes\\"|\\"seg14\\"],11 [\\"ctgA%3A47449..47829\\"|\\"gff3tabix_genes\\"|\\"seg14\\"],12
+seg15 [\\"ctgA%3A39265..39361\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],1 [\\"ctgA%3A39753..40034\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],2 [\\"ctgA%3A40515..40954\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],3 [\\"ctgA%3A41252..41365\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],4 [\\"ctgA%3A41492..41504\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],5 [\\"ctgA%3A41941..42377\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],6 [\\"ctgA%3A42748..42954\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],7 [\\"ctgA%3A43401..43897\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],8 [\\"ctgA%3A44043..44113\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],9 [\\"ctgA%3A44399..44888\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],10 [\\"ctgA%3A45281..45375\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],11 [\\"ctgA%3A45711..46041\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],12 [\\"ctgA%3A46425..46564\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],13 [\\"ctgA%3A46738..47087\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],14 [\\"ctgA%3A47329..47595\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],15 [\\"ctgA%3A47858..47979\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],16 [\\"ctgA%3A48169..48453\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],17
 "
 `;
 
-exports[`text-index tracks Indexes a local gz gff3 file 3`] = `17144`;
+exports[`text-index tracks Indexes a local gz gff3 file 3`] = `12254`;
 
 exports[`text-index tracks Indexes a local gz gff3 file 4`] = `
 "agt220000000000
@@ -55,41 +62,45 @@ exports[`text-index tracks Indexes a local gz gff3 file 4`] = `
 `;
 
 exports[`text-index tracks Indexes a remote and a local file 1`] = `
-"agt221.3 WyJjdGdBOjc1MDAuLjgwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3QyMjEuMyIsIk1hdGNoNCJd,1
-agt221.5 WyJjdGdBOjEwNTAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3QyMjEuNSIsbnVsbF0=,1 WyJjdGdBOjEwNTAuLjczMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3QyMjEuNSIsIk1hdGNoMyJd,2 WyJjdGdBOjUwMDAuLjU1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3QyMjEuNSIsbnVsbF0=,3 WyJjdGdBOjcwMDAuLjczMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3QyMjEuNSIsbnVsbF0=,4
-agt767.3 WyJjdGdBOjgwMDAuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q3NjcuMyIsIk1hdGNoNiJd,1
-agt767.5 WyJjdGdBOjExNTAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q3NjcuNSIsbnVsbF0=,1 WyJjdGdBOjExNTAuLjcyMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q3NjcuNSIsIk1hdGNoNSJd,2 WyJjdGdBOjUwMDAuLjU1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q3NjcuNSIsbnVsbF0=,3 WyJjdGdBOjcwMDAuLjcyMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q3NjcuNSIsbnVsbF0=,4
-agt830.3 WyJjdGdBOjU0MTAuLjU1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q4MzAuMyIsbnVsbF0=,1 WyJjdGdBOjU0MTAuLjc1MDMiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q4MzAuMyIsIk1hdGNoMiJd,2 WyJjdGdBOjcwMDAuLjc1MDMiLCJnZmYzdGF"
+"agt221.3 [\\"ctgA%3A7500..8000\\"|\\"gff3tabix_genes\\"|\\"agt221.3\\"|\\"Match4\\"],1
+agt221.5 [\\"ctgA%3A1050..1500\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"],1 [\\"ctgA%3A1050..7300\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"],3 [\\"ctgA%3A7000..7300\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"],4
+agt767.3 [\\"ctgA%3A8000..9000\\"|\\"gff3tabix_genes\\"|\\"agt767.3\\"|\\"Match6\\"],1
+agt767.5 [\\"ctgA%3A1150..1500\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"],1 [\\"ctgA%3A1150..7200\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"],3 [\\"ctgA%3A7000..7200\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"],4
+agt830.3 [\\"ctgA%3A5410..5500\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"],1 [\\"ctgA%3A5410..7503\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"],3
+agt830.5 [\\"ctgA%3A1050..1500\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"],1 [\\"ctgA%3A1050..3202\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3000..3202\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"],3
+apple2 [\\"ctgA%3A13000..17200\\"|\\"gff3tabix_gen"
 `;
 
 exports[`text-index tracks Indexes a remote and a local file 2`] = `
-"E1IixudWxsXQ==,4 WyJjdGdBOjQ1MjgxLi40NTM3NSIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,5 WyJjdGdBOjQ1NzExLi40NjA0MSIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,6 WyJjdGdBOjQ2NDI1Li40NjU2NCIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,7 WyJjdGdBOjQ2NzM4Li40NzA4NyIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,8 WyJjdGdBOjQ3MzI5Li40NzU5NSIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,9 WyJjdGdBOjQ3ODU4Li40Nzk3OSIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,10 WyJjdGdBOjQ4MTY5Li40ODQ1MyIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,11 WyJjdGdBOjQwNTE1Li40MDk1NCIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,12 WyJjdGdBOjQxMjUyLi40MTM2NSIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,13 WyJjdGdBOjQxNDkyLi40MTUwNCIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,14 WyJjdGdBOjQxOTQxLi40MjM3NyIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,15 WyJjdGdBOjQyNzQ4Li40Mjk1NCIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,16 WyJjdGdBOjQzNDAxLi40Mzg5NyIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,17
+"gA%3A46816..46992\\"|\\"gff3tabix_genes\\"|\\"seg14\\"],11 [\\"ctgA%3A47449..47829\\"|\\"gff3tabix_genes\\"|\\"seg14\\"],12
+seg15 [\\"ctgA%3A39265..39361\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],1 [\\"ctgA%3A39753..40034\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],2 [\\"ctgA%3A40515..40954\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],3 [\\"ctgA%3A41252..41365\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],4 [\\"ctgA%3A41492..41504\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],5 [\\"ctgA%3A41941..42377\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],6 [\\"ctgA%3A42748..42954\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],7 [\\"ctgA%3A43401..43897\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],8 [\\"ctgA%3A44043..44113\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],9 [\\"ctgA%3A44399..44888\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],10 [\\"ctgA%3A45281..45375\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],11 [\\"ctgA%3A45711..46041\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],12 [\\"ctgA%3A46425..46564\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],13 [\\"ctgA%3A46738..47087\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],14 [\\"ctgA%3A47329..47595\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],15 [\\"ctgA%3A47858..47979\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],16 [\\"ctgA%3A48169..48453\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],17
 "
 `;
 
-exports[`text-index tracks Indexes a remote and a local file 3`] = `172114`;
+exports[`text-index tracks Indexes a remote and a local file 3`] = `134774`;
 
 exports[`text-index tracks Indexes a remote and a local file 4`] = `
 "agt220000000000
-au9.g00000005BA
-b101.0000026314
+au9.g000000044E
+seg090000020139
 "
 `;
 
 exports[`text-index tracks Indexes a remote gz gff3 file 1`] = `
-"agt221.3 WyJjdGdBOjc1MDAuLjgwMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0MjIxLjMiLCJNYXRjaDQiXQ==,1
-agt221.5 WyJjdGdBOjEwNTAuLjE1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0MjIxLjUiLG51bGxd,1 WyJjdGdBOjEwNTAuLjczMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0MjIxLjUiLCJNYXRjaDMiXQ==,2 WyJjdGdBOjUwMDAuLjU1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0MjIxLjUiLG51bGxd,3 WyJjdGdBOjcwMDAuLjczMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0MjIxLjUiLG51bGxd,4
-agt767.3 WyJjdGdBOjgwMDAuLjkwMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0NzY3LjMiLCJNYXRjaDYiXQ==,1
-agt767.5 WyJjdGdBOjExNTAuLjE1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0NzY3LjUiLG51bGxd,1 WyJjdGdBOjExNTAuLjcyMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0NzY3LjUiLCJNYXRjaDUiXQ==,2 WyJjdGdBOjUwMDAuLjU1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0NzY3LjUiLG51bGxd,3 WyJjdGdBOjcwMDAuLjcyMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0NzY3LjUiLG51bGxd,4
-agt830.3 WyJjdGdBOjU0MTAuLjU1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0ODMwLjMiLG51bGxd,1 WyJjdGdBOj"
+"agt221.3 [\\"ctgA%3A7500..8000\\"|\\"online_gff3tabix_genes\\"|\\"agt221.3\\"|\\"Match4\\"],1
+agt221.5 [\\"ctgA%3A1050..1500\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"],1 [\\"ctgA%3A1050..7300\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"],3 [\\"ctgA%3A7000..7300\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"],4
+agt767.3 [\\"ctgA%3A8000..9000\\"|\\"online_gff3tabix_genes\\"|\\"agt767.3\\"|\\"Match6\\"],1
+agt767.5 [\\"ctgA%3A1150..1500\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"],1 [\\"ctgA%3A1150..7200\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"],3 [\\"ctgA%3A7000..7200\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"],4
+agt830.3 [\\"ctgA%3A5410..5500\\"|\\"online_gff3tabix_genes\\"|\\"agt830.3\\"],1 [\\"ctgA%3A5410..7503\\"|\\"online_gff3tabix_genes\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"online_gff3tabix_genes\\"|\\"agt830.3\\"],3
+agt830.5 [\\"ctgA%3A1050..1500\\"|\\"online_gff3tabix_genes\\"|\\"agt830.5\\"],1 [\\"ctgA%3A1050..3202\\"|\\"online_gff3tabix_genes\\"|\\"agt830.5\\"|\\"Mat"
 `;
 
 exports[`text-index tracks Indexes a remote gz gff3 file 2`] = `
-"dGdBOjQ1NzExLi40NjA0MSIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,6 WyJjdGdBOjQ2NDI1Li40NjU2NCIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,7 WyJjdGdBOjQ2NzM4Li40NzA4NyIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,8 WyJjdGdBOjQ3MzI5Li40NzU5NSIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,9 WyJjdGdBOjQ3ODU4Li40Nzk3OSIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,10 WyJjdGdBOjQ4MTY5Li40ODQ1MyIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,11 WyJjdGdBOjQwNTE1Li40MDk1NCIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,12 WyJjdGdBOjQxMjUyLi40MTM2NSIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,13 WyJjdGdBOjQxNDkyLi40MTUwNCIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,14 WyJjdGdBOjQxOTQxLi40MjM3NyIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,15 WyJjdGdBOjQyNzQ4Li40Mjk1NCIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,16 WyJjdGdBOjQzNDAxLi40Mzg5NyIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,17
+"265..39361\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],1 [\\"ctgA%3A39753..40034\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],2 [\\"ctgA%3A40515..40954\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],3 [\\"ctgA%3A41252..41365\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],4 [\\"ctgA%3A41492..41504\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],5 [\\"ctgA%3A41941..42377\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],6 [\\"ctgA%3A42748..42954\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],7 [\\"ctgA%3A43401..43897\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],8 [\\"ctgA%3A44043..44113\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],9 [\\"ctgA%3A44399..44888\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],10 [\\"ctgA%3A45281..45375\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],11 [\\"ctgA%3A45711..46041\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],12 [\\"ctgA%3A46425..46564\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],13 [\\"ctgA%3A46738..47087\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],14 [\\"ctgA%3A47329..47595\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],15 [\\"ctgA%3A47858..47979\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],16 [\\"ctgA%3A48169..48453\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],17
 "
 `;
 
-exports[`text-index tracks Indexes a remote gz gff3 file 3`] = `19004`;
+exports[`text-index tracks Indexes a remote gz gff3 file 3`] = `13815`;
 
 exports[`text-index tracks Indexes a remote gz gff3 file 4`] = `
 "agt220000000000
@@ -97,78 +108,102 @@ exports[`text-index tracks Indexes a remote gz gff3 file 4`] = `
 `;
 
 exports[`text-index tracks Indexes a remote non-gz gff3 file 1`] = `
-"au9.g1000 WyJHcm91cDEuMzY6MTY4MjU1Li4xNzM5NTEiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5LmcxMDAwIiwiYXU5LmcxMDAwIl0=,1
-au9.g1000.t1 WyJHcm91cDEuMzY6MTY4MjU1Li4xNzM5NTEiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5LmcxMDAwLnQxIiwiYXU5LmcxMDAwLnQxIl0=,1
-au9.g1001 WyJHcm91cDEuMzY6MTc0MzY0Li4xNzYzMDQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5LmcxMDAxIiwiYXU5LmcxMDAxIl0=,1
-au9.g1001.t1 WyJHcm91cDEuMzY6MTc0MzY0Li4xNzYzMDQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5LmcxMDAxLnQxIiwiYXU5LmcxMDAxLnQxIl0=,1
-au9.g1002 WyJHcm91cDEuMzY6MTc2OTc1Li4xODA3NDQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5LmcxMDAyIiwiYXU5LmcxMDAyIl0=,1
-au9.g1002.t1 WyJHcm91cDEuMzY6MTc2OTc1Li4xODA3NDQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5LmcxMDAyLnQxIiwiYXU5LmcxMDAyLnQxIl0=,1
-au9.g1003 WyJHcm91cDEuMzY6MTgwODQ2Li4xODQ4NTQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5LmcxMDAzIiwiYXU5LmcxMDAzIl0=,1
-au9.g1003.t1 WyJHcm91cDEuMzY6MTgwODQ2Li4xODQ4NTQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5LmcxMDAzLnQxIiwiYXU5LmcxMDAzLnQxIl0=,1
-au9.g1004 WyJHcm91cDEuMzY6MTg3MTE1Li4xOTUyMjQiLCJvbm"
+"au9.g1000 [\\"Group1.36%3A168255..173951\\"|\\"online_au9_scaffold\\"|\\"au9.g1000\\"|\\"au9.g1000\\"],1
+au9.g1000.t1 [\\"Group1.36%3A168255..173951\\"|\\"online_au9_scaffold\\"|\\"au9.g1000.t1\\"|\\"au9.g1000.t1\\"],1
+au9.g1001 [\\"Group1.36%3A174364..176304\\"|\\"online_au9_scaffold\\"|\\"au9.g1001\\"|\\"au9.g1001\\"],1
+au9.g1001.t1 [\\"Group1.36%3A174364..176304\\"|\\"online_au9_scaffold\\"|\\"au9.g1001.t1\\"|\\"au9.g1001.t1\\"],1
+au9.g1002 [\\"Group1.36%3A176975..180744\\"|\\"online_au9_scaffold\\"|\\"au9.g1002\\"|\\"au9.g1002\\"],1
+au9.g1002.t1 [\\"Group1.36%3A176975..180744\\"|\\"online_au9_scaffold\\"|\\"au9.g1002.t1\\"|\\"au9.g1002.t1\\"],1
+au9.g1003 [\\"Group1.36%3A180846..184854\\"|\\"online_au9_scaffold\\"|\\"au9.g1003\\"|\\"au9.g1003\\"],1
+au9.g1003.t1 [\\"Group1.36%3A180846..184854\\"|\\"online_au9_scaffold\\"|\\"au9.g1003.t1\\"|\\"au9.g1003.t1\\"],1
+au9.g1004 [\\"Group1.36%3A187115..195224\\"|\\"online_au9_scaffold\\"|\\"au9.g1004\\"|\\"au9.g1004\\"],1
+au9.g1004.t1 [\\"Group1.36%3A187115..195224\\"|\\"online_au9_scaffold\\"|\\"au9.g1004.t1\\"|\\"au9.g1004.t1\\"],1
+au9.g1004.t2 [\\"Group1.36%3A187115..195224\\"|\\"online_au9_scaffold\\"|"
 `;
 
 exports[`text-index tracks Indexes a remote non-gz gff3 file 2`] = `
-"6MTQ3NTIwLi4xNTA0MTQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5Lmc5OTUudDEiLCJhdTkuZzk5NS50MSJd,1
-au9.g996 WyJHcm91cDEuMzY6MTUwNTM5Li4xNTI4NTQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5Lmc5OTYiLCJhdTkuZzk5NiJd,1
-au9.g996.t1 WyJHcm91cDEuMzY6MTUwNTM5Li4xNTI4NTQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5Lmc5OTYudDEiLCJhdTkuZzk5Ni50MSJd,1
-au9.g997 WyJHcm91cDEuMzY6MTU0NDk1Li4xNTYyOTQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5Lmc5OTciLCJhdTkuZzk5NyJd,1
-au9.g997.t1 WyJHcm91cDEuMzY6MTU0NDk1Li4xNTYyOTQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5Lmc5OTcudDEiLCJhdTkuZzk5Ny50MSJd,1
-au9.g998 WyJHcm91cDEuMzY6MTU3NDk1Li4xNjQ2ODUiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5Lmc5OTgiLCJhdTkuZzk5OCJd,1
-au9.g998.t1 WyJHcm91cDEuMzY6MTU3NDk1Li4xNjQ2ODUiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5Lmc5OTgudDEiLCJhdTkuZzk5OC50MSJd,1
-au9.g999 WyJHcm91cDEuMzY6MTY1NTU4Li4xNjY5ODQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5Lmc5OTkiLCJhdTkuZzk5OSJd,1
-au9.g999.t1 WyJHcm91cDEuMzY6MTY1NTU4Li4xNjY5ODQiLCJvbmxpbmVfYXU5X3NjYWZmb2xkIiwiYXU5Lmc5OTkudDEiLCJhdTkuZzk5OS50MSJd,1
+"au9.g994.t1 [\\"Group1.36%3A135249..142374\\"|\\"online_au9_scaffold\\"|\\"au9.g994.t1\\"|\\"au9.g994.t1\\"],1
+au9.g995 [\\"Group1.36%3A147520..150414\\"|\\"online_au9_scaffold\\"|\\"au9.g995\\"|\\"au9.g995\\"],1
+au9.g995.t1 [\\"Group1.36%3A147520..150414\\"|\\"online_au9_scaffold\\"|\\"au9.g995.t1\\"|\\"au9.g995.t1\\"],1
+au9.g996 [\\"Group1.36%3A150539..152854\\"|\\"online_au9_scaffold\\"|\\"au9.g996\\"|\\"au9.g996\\"],1
+au9.g996.t1 [\\"Group1.36%3A150539..152854\\"|\\"online_au9_scaffold\\"|\\"au9.g996.t1\\"|\\"au9.g996.t1\\"],1
+au9.g997 [\\"Group1.36%3A154495..156294\\"|\\"online_au9_scaffold\\"|\\"au9.g997\\"|\\"au9.g997\\"],1
+au9.g997.t1 [\\"Group1.36%3A154495..156294\\"|\\"online_au9_scaffold\\"|\\"au9.g997.t1\\"|\\"au9.g997.t1\\"],1
+au9.g998 [\\"Group1.36%3A157495..164685\\"|\\"online_au9_scaffold\\"|\\"au9.g998\\"|\\"au9.g998\\"],1
+au9.g998.t1 [\\"Group1.36%3A157495..164685\\"|\\"online_au9_scaffold\\"|\\"au9.g998.t1\\"|\\"au9.g998.t1\\"],1
+au9.g999 [\\"Group1.36%3A165558..166984\\"|\\"online_au9_scaffold\\"|\\"au9.g999\\"|\\"au9.g999\\"],1
+au9.g999.t1 [\\"Group1.36%3A165558..166984\\"|\\"online_au9_scaffold\\"|\\"au9.g999.t1\\"|\\"au9.g999.t1\\"],1
 "
 `;
 
-exports[`text-index tracks Indexes a remote non-gz gff3 file 3`] = `154970`;
+exports[`text-index tracks Indexes a remote non-gz gff3 file 3`] = `122520`;
 
 exports[`text-index tracks Indexes a remote non-gz gff3 file 4`] = `
 "au9.g0000000000
 "
 `;
 
-exports[`text-index tracks Indexes a track using only the attributes tag 1`] = `" WyJjdGdBOjE0NTY0Li4xNDg5OSIsIm5vQXR0cmlidXRlcyIsInNlZzEyIixudWxsXQ==,1 WyJjdGdBOjE0NzMxLi4xNzIzOSIsIm5vQXR0cmlidXRlcyIsIm0xNCIsbnVsbF0=,2 WyJjdGdBOjE1MTg1Li4xNTI3NiIsIm5vQXR0cmlidXRlcyIsInNlZzEyIixudWxsXQ==,3 WyJjdGdBOjE1MzI5Li4xNTUzMyIsIm5vQXR0cmlidXRlcyIsImYxMCIsbnVsbF0=,4 WyJjdGdBOjE1Mzk2Li4xNjE1OSIsIm5vQXR0cmlidXRlcyIsIm0wMyIsbnVsbF0=,5 WyJjdGdBOjE1NjM5Li4xNTczNiIsIm5vQXR0cmlidXRlcyIsInNlZzEyIixudWxsXQ==,6 WyJjdGdBOjE1NzQ1Li4xNTg3MCIsIm5vQXR0cmlidXRlcyIsInNlZzEyIixudWxsXQ==,7 WyJjdGdBOjE2MDAuLjMwMDAiLCJub0F0dHJpYnV0ZXMiLCJHZW5lOmhnYiIsbnVsbF0=,8 WyJjdGdBOjE2NTkuLjE5ODQiLCJub0F0dHJpYnV0ZXMiLCJmMDciLG51bGxd,9 WyJjdGdBOjE3MDIzLi4xNzY3NSIsIm5vQXR0cmlidXRlcyIsIm0wOCIsbnVsbF0=,10 WyJjdGdBOjE3NjY3Li4xNzY5MCIsIm5vQXR0cmlidXRlcyIsIm0xMyIsbnVsbF0=,11 WyJjdGdBOjE4MDAuLjI5MDAiLCJub0F0dHJpYnV0ZXMiLCJQcm90ZWluOkhHQiIsbnVsbF0=,12 WyJjdGdBOjE4MDQ4Li4xODU1MiIsIm5vQXR0cmlidXRlcyIsIm0wNyIsbnVsbF0=,13 WyJjdGdBOjE4NTA5Li4xODk4NSIsIm5vQXR0cmlidXRlcyIsInNlZzA4IixudWxsXQ==,14 WyJjdGdBOjE4OTg5Li4xOTM4OCIs"`;
-
-exports[`text-index tracks Indexes a track using only the attributes tag 2`] = `
-"iXQ==,1
-eden WyJjdGdBOjEwNTAuLjkwMDAiLCJub0F0dHJpYnV0ZXMiLCJFREVOIiwiRURFTiJd,1
-eden.1 WyJjdGdBOjEwNTAuLjkwMDAiLCJub0F0dHJpYnV0ZXMiLCJFREVOLjEiLCJFREVOLjEiXQ==,1
-eden.2 WyJjdGdBOjEwNTAuLjkwMDAiLCJub0F0dHJpYnV0ZXMiLCJFREVOLjIiLCJFREVOLjIiXQ==,1
-eden.3 WyJjdGdBOjEzMDAuLjkwMDAiLCJub0F0dHJpYnV0ZXMiLCJFREVOLjMiLCJFREVOLjMiXQ==,1
-fakesnp1 WyJjdGdBOjEwMDAuLjEwMDAiLCJub0F0dHJpYnV0ZXMiLCJGYWtlU05QIiwiRmFrZVNOUDEiXQ==,1
-match1 WyJjdGdBOjEwNTAuLjMyMDIiLCJub0F0dHJpYnV0ZXMiLCJhZ3Q4MzAuNSIsIk1hdGNoMSJd,1
-match2 WyJjdGdBOjU0MTAuLjc1MDMiLCJub0F0dHJpYnV0ZXMiLCJhZ3Q4MzAuMyIsIk1hdGNoMiJd,1
-match3 WyJjdGdBOjEwNTAuLjczMDAiLCJub0F0dHJpYnV0ZXMiLCJhZ3QyMjEuNSIsIk1hdGNoMyJd,1
-match4 WyJjdGdBOjc1MDAuLjgwMDAiLCJub0F0dHJpYnV0ZXMiLCJhZ3QyMjEuMyIsIk1hdGNoNCJd,1
-match5 WyJjdGdBOjExNTAuLjcyMDAiLCJub0F0dHJpYnV0ZXMiLCJhZ3Q3NjcuNSIsIk1hdGNoNSJd,1
-match6 WyJjdGdBOjgwMDAuLjkwMDAiLCJub0F0dHJpYnV0ZXMiLCJhZ3Q3NjcuMyIsIk1hdGNoNiJd,1
-rna-apple3 WyJjdGdBOjE3NDAwLi4yMzAwMCIsIm5vQXR0cmlidXRlcyIsIkFwcGxlMyIsInJuYS1BcHBsZTMiXQ==,1
+exports[`text-index tracks Indexes a track using only the attributes tag 1`] = `
+"b101.2 [\\"ctgA%3A1000..20000\\"|\\"noAttributes\\"|\\"b101.2\\"],1
+cds-apple2 [\\"ctgA%3A13000..17200\\"|\\"noAttributes\\"|\\"cds-Apple2\\"],1
+eden [\\"ctgA%3A1050..9000\\"|\\"noAttributes\\"|\\"EDEN\\"],1
+eden.1 [\\"ctgA%3A1050..9000\\"|\\"noAttributes\\"|\\"EDEN.1\\"],1
+eden.2 [\\"ctgA%3A1050..9000\\"|\\"noAttributes\\"|\\"EDEN.2\\"],1
+eden.3 [\\"ctgA%3A1300..9000\\"|\\"noAttributes\\"|\\"EDEN.3\\"],1
+fakesnp1 [\\"ctgA%3A1000..1000\\"|\\"noAttributes\\"|\\"FakeSNP1\\"],1
+match1 [\\"ctgA%3A1050..3202\\"|\\"noAttributes\\"|\\"Match1\\"],1
+match2 [\\"ctgA%3A5410..7503\\"|\\"noAttributes\\"|\\"Match2\\"],1
+match3 [\\"ctgA%3A1050..7300\\"|\\"noAttributes\\"|\\"Match3\\"],1
+match4 [\\"ctgA%3A7500..8000\\"|\\"noAttributes\\"|\\"Match4\\"],1
+match5 [\\"ctgA%3A1150..7200\\"|\\"noAttributes\\"|\\"Match5\\"],1
+match6 [\\"ctgA%3A8000..9000\\"|\\"noAttributes\\"|\\"Match6\\"],1
+rna-apple3 [\\"ctgA%3A17400..23000\\"|\\"noAttributes\\"|\\"rna-Apple3\\"],1
 "
 `;
 
-exports[`text-index tracks Indexes a track using only the attributes tag 3`] = `15453`;
+exports[`text-index tracks Indexes a track using only the attributes tag 2`] = `
+"b101.2 [\\"ctgA%3A1000..20000\\"|\\"noAttributes\\"|\\"b101.2\\"],1
+cds-apple2 [\\"ctgA%3A13000..17200\\"|\\"noAttributes\\"|\\"cds-Apple2\\"],1
+eden [\\"ctgA%3A1050..9000\\"|\\"noAttributes\\"|\\"EDEN\\"],1
+eden.1 [\\"ctgA%3A1050..9000\\"|\\"noAttributes\\"|\\"EDEN.1\\"],1
+eden.2 [\\"ctgA%3A1050..9000\\"|\\"noAttributes\\"|\\"EDEN.2\\"],1
+eden.3 [\\"ctgA%3A1300..9000\\"|\\"noAttributes\\"|\\"EDEN.3\\"],1
+fakesnp1 [\\"ctgA%3A1000..1000\\"|\\"noAttributes\\"|\\"FakeSNP1\\"],1
+match1 [\\"ctgA%3A1050..3202\\"|\\"noAttributes\\"|\\"Match1\\"],1
+match2 [\\"ctgA%3A5410..7503\\"|\\"noAttributes\\"|\\"Match2\\"],1
+match3 [\\"ctgA%3A1050..7300\\"|\\"noAttributes\\"|\\"Match3\\"],1
+match4 [\\"ctgA%3A7500..8000\\"|\\"noAttributes\\"|\\"Match4\\"],1
+match5 [\\"ctgA%3A1150..7200\\"|\\"noAttributes\\"|\\"Match5\\"],1
+match6 [\\"ctgA%3A8000..9000\\"|\\"noAttributes\\"|\\"Match6\\"],1
+rna-apple3 [\\"ctgA%3A17400..23000\\"|\\"noAttributes\\"|\\"rna-Apple3\\"],1
+"
+`;
+
+exports[`text-index tracks Indexes a track using only the attributes tag 3`] = `791`;
 
 exports[`text-index tracks Indexes a track using only the attributes tag 4`] = `
-"     0000000000
+"b101.0000000000
 "
 `;
 
 exports[`text-index tracks Indexes a track with no attributes in the config 1`] = `
-"agt221.3 WyJjdGdBOjc1MDAuLjgwMDAiLCJub0F0dHJpYnV0ZXMiLCJhZ3QyMjEuMyIsIk1hdGNoNCJd,1
-agt221.5 WyJjdGdBOjEwNTAuLjE1MDAiLCJub0F0dHJpYnV0ZXMiLCJhZ3QyMjEuNSIsbnVsbF0=,1 WyJjdGdBOjEwNTAuLjczMDAiLCJub0F0dHJpYnV0ZXMiLCJhZ3QyMjEuNSIsIk1hdGNoMyJd,2 WyJjdGdBOjUwMDAuLjU1MDAiLCJub0F0dHJpYnV0ZXMiLCJhZ3QyMjEuNSIsbnVsbF0=,3 WyJjdGdBOjcwMDAuLjczMDAiLCJub0F0dHJpYnV0ZXMiLCJhZ3QyMjEuNSIsbnVsbF0=,4
-agt767.3 WyJjdGdBOjgwMDAuLjkwMDAiLCJub0F0dHJpYnV0ZXMiLCJhZ3Q3NjcuMyIsIk1hdGNoNiJd,1
-agt767.5 WyJjdGdBOjExNTAuLjE1MDAiLCJub0F0dHJpYnV0ZXMiLCJhZ3Q3NjcuNSIsbnVsbF0=,1 WyJjdGdBOjExNTAuLjcyMDAiLCJub0F0dHJpYnV0ZXMiLCJhZ3Q3NjcuNSIsIk1hdGNoNSJd,2 WyJjdGdBOjUwMDAuLjU1MDAiLCJub0F0dHJpYnV0ZXMiLCJhZ3Q3NjcuNSIsbnVsbF0=,3 WyJjdGdBOjcwMDAuLjcyMDAiLCJub0F0dHJpYnV0ZXMiLCJhZ3Q3NjcuNSIsbnVsbF0=,4
-agt830.3 WyJjdGdBOjU0MTAuLjU1MDAiLCJub0F0dHJpYnV0ZXMiLCJhZ3Q4MzAuMyIsbnVsbF0=,1 WyJjdGdBOjU0MTAuLjc1MDMiLCJub0F0dHJpYnV0ZXMiLCJhZ3Q4MzAuMyIsIk1hdGNoMiJd,2 WyJjdGdBOjcwMDAuLjc1MDMiLCJub0F0dHJpYnV0ZXMiLCJhZ3Q4MzAuMyIsbnVsbF0=,3
-agt830.5 WyJ"
+"agt221.3 [\\"ctgA%3A7500..8000\\"|\\"noAttributes\\"|\\"agt221.3\\"|\\"Match4\\"],1
+agt221.5 [\\"ctgA%3A1050..1500\\"|\\"noAttributes\\"|\\"agt221.5\\"],1 [\\"ctgA%3A1050..7300\\"|\\"noAttributes\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"noAttributes\\"|\\"agt221.5\\"],3 [\\"ctgA%3A7000..7300\\"|\\"noAttributes\\"|\\"agt221.5\\"],4
+agt767.3 [\\"ctgA%3A8000..9000\\"|\\"noAttributes\\"|\\"agt767.3\\"|\\"Match6\\"],1
+agt767.5 [\\"ctgA%3A1150..1500\\"|\\"noAttributes\\"|\\"agt767.5\\"],1 [\\"ctgA%3A1150..7200\\"|\\"noAttributes\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"noAttributes\\"|\\"agt767.5\\"],3 [\\"ctgA%3A7000..7200\\"|\\"noAttributes\\"|\\"agt767.5\\"],4
+agt830.3 [\\"ctgA%3A5410..5500\\"|\\"noAttributes\\"|\\"agt830.3\\"],1 [\\"ctgA%3A5410..7503\\"|\\"noAttributes\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"noAttributes\\"|\\"agt830.3\\"],3
+agt830.5 [\\"ctgA%3A1050..1500\\"|\\"noAttributes\\"|\\"agt830.5\\"],1 [\\"ctgA%3A1050..3202\\"|\\"noAttributes\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3000..3202\\"|\\"noAttributes\\"|\\"agt830.5\\"],3
+apple2 [\\"ctgA%3A13000..17200\\"|\\"noAttributes\\"|\\"Apple2\\"|\\"cds-Apple2\\"],1
+apple3 [\\"ctgA%3A17400."
 `;
 
 exports[`text-index tracks Indexes a track with no attributes in the config 2`] = `
-"JjdGdBOjQ0Mzk5Li40NDg4OCIsIm5vQXR0cmlidXRlcyIsInNlZzE1IixudWxsXQ==,4 WyJjdGdBOjQ1MjgxLi40NTM3NSIsIm5vQXR0cmlidXRlcyIsInNlZzE1IixudWxsXQ==,5 WyJjdGdBOjQ1NzExLi40NjA0MSIsIm5vQXR0cmlidXRlcyIsInNlZzE1IixudWxsXQ==,6 WyJjdGdBOjQ2NDI1Li40NjU2NCIsIm5vQXR0cmlidXRlcyIsInNlZzE1IixudWxsXQ==,7 WyJjdGdBOjQ2NzM4Li40NzA4NyIsIm5vQXR0cmlidXRlcyIsInNlZzE1IixudWxsXQ==,8 WyJjdGdBOjQ3MzI5Li40NzU5NSIsIm5vQXR0cmlidXRlcyIsInNlZzE1IixudWxsXQ==,9 WyJjdGdBOjQ3ODU4Li40Nzk3OSIsIm5vQXR0cmlidXRlcyIsInNlZzE1IixudWxsXQ==,10 WyJjdGdBOjQ4MTY5Li40ODQ1MyIsIm5vQXR0cmlidXRlcyIsInNlZzE1IixudWxsXQ==,11 WyJjdGdBOjQwNTE1Li40MDk1NCIsIm5vQXR0cmlidXRlcyIsInNlZzE1IixudWxsXQ==,12 WyJjdGdBOjQxMjUyLi40MTM2NSIsIm5vQXR0cmlidXRlcyIsInNlZzE1IixudWxsXQ==,13 WyJjdGdBOjQxNDkyLi40MTUwNCIsIm5vQXR0cmlidXRlcyIsInNlZzE1IixudWxsXQ==,14 WyJjdGdBOjQxOTQxLi40MjM3NyIsIm5vQXR0cmlidXRlcyIsInNlZzE1IixudWxsXQ==,15 WyJjdGdBOjQyNzQ4Li40Mjk1NCIsIm5vQXR0cmlidXRlcyIsInNlZzE1IixudWxsXQ==,16 WyJjdGdBOjQzNDAxLi40Mzg5NyIsIm5vQXR0cmlidXRlcyIsInNlZzE1IixudWxsXQ==,17
+",9 [\\"ctgA%3A46092..46318\\"|\\"noAttributes\\"|\\"seg14\\"],10 [\\"ctgA%3A46816..46992\\"|\\"noAttributes\\"|\\"seg14\\"],11 [\\"ctgA%3A47449..47829\\"|\\"noAttributes\\"|\\"seg14\\"],12
+seg15 [\\"ctgA%3A39265..39361\\"|\\"noAttributes\\"|\\"seg15\\"],1 [\\"ctgA%3A39753..40034\\"|\\"noAttributes\\"|\\"seg15\\"],2 [\\"ctgA%3A40515..40954\\"|\\"noAttributes\\"|\\"seg15\\"],3 [\\"ctgA%3A41252..41365\\"|\\"noAttributes\\"|\\"seg15\\"],4 [\\"ctgA%3A41492..41504\\"|\\"noAttributes\\"|\\"seg15\\"],5 [\\"ctgA%3A41941..42377\\"|\\"noAttributes\\"|\\"seg15\\"],6 [\\"ctgA%3A42748..42954\\"|\\"noAttributes\\"|\\"seg15\\"],7 [\\"ctgA%3A43401..43897\\"|\\"noAttributes\\"|\\"seg15\\"],8 [\\"ctgA%3A44043..44113\\"|\\"noAttributes\\"|\\"seg15\\"],9 [\\"ctgA%3A44399..44888\\"|\\"noAttributes\\"|\\"seg15\\"],10 [\\"ctgA%3A45281..45375\\"|\\"noAttributes\\"|\\"seg15\\"],11 [\\"ctgA%3A45711..46041\\"|\\"noAttributes\\"|\\"seg15\\"],12 [\\"ctgA%3A46425..46564\\"|\\"noAttributes\\"|\\"seg15\\"],13 [\\"ctgA%3A46738..47087\\"|\\"noAttributes\\"|\\"seg15\\"],14 [\\"ctgA%3A47329..47595\\"|\\"noAttributes\\"|\\"seg15\\"],15 [\\"ctgA%3A47858..47979\\"|\\"noAttributes\\"|\\"seg15\\"],16 [\\"ctgA%3A48169..48453\\"|\\"noAttributes\\"|\\"seg15\\"],17
 "
 `;
 
-exports[`text-index tracks Indexes a track with no attributes in the config 3`] = `16252`;
+exports[`text-index tracks Indexes a track with no attributes in the config 3`] = `11585`;
 
 exports[`text-index tracks Indexes a track with no attributes in the config 4`] = `
 "agt220000000000
@@ -176,45 +211,92 @@ exports[`text-index tracks Indexes a track with no attributes in the config 4`] 
 `;
 
 exports[`text-index tracks Indexes multiple local gff3 files 1`] = `
-"agt221.3 WyJjdGdBOjc1MDAuLjgwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3QyMjEuMyIsIk1hdGNoNCJd,1
-agt221.5 WyJjdGdBOjEwNTAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3QyMjEuNSIsbnVsbF0=,1 WyJjdGdBOjEwNTAuLjczMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3QyMjEuNSIsIk1hdGNoMyJd,2 WyJjdGdBOjUwMDAuLjU1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3QyMjEuNSIsbnVsbF0=,3 WyJjdGdBOjcwMDAuLjczMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3QyMjEuNSIsbnVsbF0=,4
-agt767.3 WyJjdGdBOjgwMDAuLjkwMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q3NjcuMyIsIk1hdGNoNiJd,1
-agt767.5 WyJjdGdBOjExNTAuLjE1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q3NjcuNSIsbnVsbF0=,1 WyJjdGdBOjExNTAuLjcyMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q3NjcuNSIsIk1hdGNoNSJd,2 WyJjdGdBOjUwMDAuLjU1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q3NjcuNSIsbnVsbF0=,3 WyJjdGdBOjcwMDAuLjcyMDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q3NjcuNSIsbnVsbF0=,4
-agt830.3 WyJjdGdBOjU0MTAuLjU1MDAiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q4MzAuMyIsbnVsbF0=,1 WyJjdGdBOjU0MTAuLjc1MDMiLCJnZmYzdGFiaXhfZ2VuZXMiLCJhZ3Q4MzAuMyIsIk1hdGNoMiJd,2 WyJjdGdBOjcwMDAuLjc1MDMiLCJnZmYzdGF"
+"agt221.3 [\\"ctgA%3A7500..8000\\"|\\"gff3tabix_genes\\"|\\"agt221.3\\"|\\"Match4\\"],1
+agt221.5 [\\"ctgA%3A1050..1500\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"],1 [\\"ctgA%3A1050..7300\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"],3 [\\"ctgA%3A7000..7300\\"|\\"gff3tabix_genes\\"|\\"agt221.5\\"],4
+agt767.3 [\\"ctgA%3A8000..9000\\"|\\"gff3tabix_genes\\"|\\"agt767.3\\"|\\"Match6\\"],1
+agt767.5 [\\"ctgA%3A1150..1500\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"],1 [\\"ctgA%3A1150..7200\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"],3 [\\"ctgA%3A7000..7200\\"|\\"gff3tabix_genes\\"|\\"agt767.5\\"],4
+agt830.3 [\\"ctgA%3A5410..5500\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"],1 [\\"ctgA%3A5410..7503\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"gff3tabix_genes\\"|\\"agt830.3\\"],3
+agt830.5 [\\"ctgA%3A1050..1500\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"],1 [\\"ctgA%3A1050..3202\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3000..3202\\"|\\"gff3tabix_genes\\"|\\"agt830.5\\"],3
+apple2 [\\"ctgA%3A13000..17200\\"|\\"gff3tabix_gen"
 `;
 
 exports[`text-index tracks Indexes multiple local gff3 files 2`] = `
-"E1IixudWxsXQ==,4 WyJjdGdBOjQ1MjgxLi40NTM3NSIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,5 WyJjdGdBOjQ1NzExLi40NjA0MSIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,6 WyJjdGdBOjQ2NDI1Li40NjU2NCIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,7 WyJjdGdBOjQ2NzM4Li40NzA4NyIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,8 WyJjdGdBOjQ3MzI5Li40NzU5NSIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,9 WyJjdGdBOjQ3ODU4Li40Nzk3OSIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,10 WyJjdGdBOjQ4MTY5Li40ODQ1MyIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,11 WyJjdGdBOjQwNTE1Li40MDk1NCIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,12 WyJjdGdBOjQxMjUyLi40MTM2NSIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,13 WyJjdGdBOjQxNDkyLi40MTUwNCIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,14 WyJjdGdBOjQxOTQxLi40MjM3NyIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,15 WyJjdGdBOjQyNzQ4Li40Mjk1NCIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,16 WyJjdGdBOjQzNDAxLi40Mzg5NyIsImdmZjN0YWJpeF9nZW5lcyIsInNlZzE1IixudWxsXQ==,17
+"gA%3A46816..46992\\"|\\"gff3tabix_genes\\"|\\"seg14\\"],11 [\\"ctgA%3A47449..47829\\"|\\"gff3tabix_genes\\"|\\"seg14\\"],12
+seg15 [\\"ctgA%3A39265..39361\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],1 [\\"ctgA%3A39753..40034\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],2 [\\"ctgA%3A40515..40954\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],3 [\\"ctgA%3A41252..41365\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],4 [\\"ctgA%3A41492..41504\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],5 [\\"ctgA%3A41941..42377\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],6 [\\"ctgA%3A42748..42954\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],7 [\\"ctgA%3A43401..43897\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],8 [\\"ctgA%3A44043..44113\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],9 [\\"ctgA%3A44399..44888\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],10 [\\"ctgA%3A45281..45375\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],11 [\\"ctgA%3A45711..46041\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],12 [\\"ctgA%3A46425..46564\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],13 [\\"ctgA%3A46738..47087\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],14 [\\"ctgA%3A47329..47595\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],15 [\\"ctgA%3A47858..47979\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],16 [\\"ctgA%3A48169..48453\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],17
 "
 `;
 
-exports[`text-index tracks Indexes multiple local gff3 files 3`] = `161458`;
+exports[`text-index tracks Indexes multiple local gff3 files 3`] = `125702`;
 
 exports[`text-index tracks Indexes multiple local gff3 files 4`] = `
 "agt220000000000
-au9.g00000005BA
-b101.0000023974
+au9.g000000044E
 "
 `;
 
 exports[`text-index tracks Indexes multiple remote gff3 file 1`] = `
-"agt221.3 WyJjdGdBOjc1MDAuLjgwMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0MjIxLjMiLCJNYXRjaDQiXQ==,1
-agt221.5 WyJjdGdBOjEwNTAuLjE1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0MjIxLjUiLG51bGxd,1 WyJjdGdBOjEwNTAuLjczMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0MjIxLjUiLCJNYXRjaDMiXQ==,2 WyJjdGdBOjUwMDAuLjU1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0MjIxLjUiLG51bGxd,3 WyJjdGdBOjcwMDAuLjczMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0MjIxLjUiLG51bGxd,4
-agt767.3 WyJjdGdBOjgwMDAuLjkwMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0NzY3LjMiLCJNYXRjaDYiXQ==,1
-agt767.5 WyJjdGdBOjExNTAuLjE1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0NzY3LjUiLG51bGxd,1 WyJjdGdBOjExNTAuLjcyMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0NzY3LjUiLCJNYXRjaDUiXQ==,2 WyJjdGdBOjUwMDAuLjU1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0NzY3LjUiLG51bGxd,3 WyJjdGdBOjcwMDAuLjcyMDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0NzY3LjUiLG51bGxd,4
-agt830.3 WyJjdGdBOjU0MTAuLjU1MDAiLCJvbmxpbmVfZ2ZmM3RhYml4X2dlbmVzIiwiYWd0ODMwLjMiLG51bGxd,1 WyJjdGdBOj"
+"agt221.3 [\\"ctgA%3A7500..8000\\"|\\"online_gff3tabix_genes\\"|\\"agt221.3\\"|\\"Match4\\"],1
+agt221.5 [\\"ctgA%3A1050..1500\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"],1 [\\"ctgA%3A1050..7300\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"],3 [\\"ctgA%3A7000..7300\\"|\\"online_gff3tabix_genes\\"|\\"agt221.5\\"],4
+agt767.3 [\\"ctgA%3A8000..9000\\"|\\"online_gff3tabix_genes\\"|\\"agt767.3\\"|\\"Match6\\"],1
+agt767.5 [\\"ctgA%3A1150..1500\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"],1 [\\"ctgA%3A1150..7200\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"],3 [\\"ctgA%3A7000..7200\\"|\\"online_gff3tabix_genes\\"|\\"agt767.5\\"],4
+agt830.3 [\\"ctgA%3A5410..5500\\"|\\"online_gff3tabix_genes\\"|\\"agt830.3\\"],1 [\\"ctgA%3A5410..7503\\"|\\"online_gff3tabix_genes\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"online_gff3tabix_genes\\"|\\"agt830.3\\"],3
+agt830.5 [\\"ctgA%3A1050..1500\\"|\\"online_gff3tabix_genes\\"|\\"agt830.5\\"],1 [\\"ctgA%3A1050..3202\\"|\\"online_gff3tabix_genes\\"|\\"agt830.5\\"|\\"Mat"
 `;
 
 exports[`text-index tracks Indexes multiple remote gff3 file 2`] = `
-"dGdBOjQ1NzExLi40NjA0MSIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,6 WyJjdGdBOjQ2NDI1Li40NjU2NCIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,7 WyJjdGdBOjQ2NzM4Li40NzA4NyIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,8 WyJjdGdBOjQ3MzI5Li40NzU5NSIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,9 WyJjdGdBOjQ3ODU4Li40Nzk3OSIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,10 WyJjdGdBOjQ4MTY5Li40ODQ1MyIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,11 WyJjdGdBOjQwNTE1Li40MDk1NCIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,12 WyJjdGdBOjQxMjUyLi40MTM2NSIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,13 WyJjdGdBOjQxNDkyLi40MTUwNCIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,14 WyJjdGdBOjQxOTQxLi40MjM3NyIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,15 WyJjdGdBOjQyNzQ4Li40Mjk1NCIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,16 WyJjdGdBOjQzNDAxLi40Mzg5NyIsIm9ubGluZV9nZmYzdGFiaXhfZ2VuZXMiLCJzZWcxNSIsbnVsbF0=,17
+"265..39361\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],1 [\\"ctgA%3A39753..40034\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],2 [\\"ctgA%3A40515..40954\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],3 [\\"ctgA%3A41252..41365\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],4 [\\"ctgA%3A41492..41504\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],5 [\\"ctgA%3A41941..42377\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],6 [\\"ctgA%3A42748..42954\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],7 [\\"ctgA%3A43401..43897\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],8 [\\"ctgA%3A44043..44113\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],9 [\\"ctgA%3A44399..44888\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],10 [\\"ctgA%3A45281..45375\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],11 [\\"ctgA%3A45711..46041\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],12 [\\"ctgA%3A46425..46564\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],13 [\\"ctgA%3A46738..47087\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],14 [\\"ctgA%3A47329..47595\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],15 [\\"ctgA%3A47858..47979\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],16 [\\"ctgA%3A48169..48453\\"|\\"online_gff3tabix_genes\\"|\\"seg15\\"],17
 "
 `;
 
-exports[`text-index tracks Indexes multiple remote gff3 file 3`] = `173974`;
+exports[`text-index tracks Indexes multiple remote gff3 file 3`] = `136335`;
 
 exports[`text-index tracks Indexes multiple remote gff3 file 4`] = `
 "agt220000000000
-au9.g0000000662
-b101.00000263BC
+au9.g00000004CC
+seg080000020289
+"
+`;
+
+exports[`text-index with multiple --files Indexes with --file 1`] = `
+"agt221.3 [\\"ctgA%3A7500..8000\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.3\\"|\\"Match4\\"],1
+agt221.5 [\\"ctgA%3A1050..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"],1 [\\"ctgA%3A1050..7300\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"],3 [\\"ctgA%3A7000..7300\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"],4
+agt767.3 [\\"ctgA%3A8000..9000\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.3\\"|\\"Match6\\"],1
+agt767.5 [\\"ctgA%3A1150..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"],1 [\\"ctgA%3A1150..7200\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"],3 [\\"ctgA%3A7000..7200\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"],4
+agt830.3 [\\"ctgA%3A5410..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"],1 [\\"ctgA%3A5410..7503\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"],3
+agt830.5 [\\"ctgA%3A1050..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.5\\"],1 [\\"ctgA%3A1050..3202\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3000..3202\\"|\\"volvox.sort.gff"
+`;
+
+exports[`text-index with multiple --files Indexes with --file 2`] = `
+"\\"volvox.sort.gff3.gz\\"|\\"seg14\\"],12
+seg15 [\\"ctgA%3A39265..39361\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],1 [\\"ctgA%3A39753..40034\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],2 [\\"ctgA%3A40515..40954\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],3 [\\"ctgA%3A41252..41365\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],4 [\\"ctgA%3A41492..41504\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],5 [\\"ctgA%3A41941..42377\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],6 [\\"ctgA%3A42748..42954\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],7 [\\"ctgA%3A43401..43897\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],8 [\\"ctgA%3A44043..44113\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],9 [\\"ctgA%3A44399..44888\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],10 [\\"ctgA%3A45281..45375\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],11 [\\"ctgA%3A45711..46041\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],12 [\\"ctgA%3A46425..46564\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],13 [\\"ctgA%3A46738..47087\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],14 [\\"ctgA%3A47329..47595\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],15 [\\"ctgA%3A47858..47979\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],16 [\\"ctgA%3A48169..48453\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],17
+"
+`;
+
+exports[`text-index with multiple --files Indexes with --file 3`] = `13146`;
+
+exports[`text-index with multiple --files Indexes with --file 4`] = `
+"agt220000000000
+"
+`;
+
+exports[`text-index with single --file Indexes with --file 1`] = `
+"agt221.3 [\\"ctgA%3A7500..8000\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.3\\"|\\"Match4\\"],1
+agt221.5 [\\"ctgA%3A1050..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"],1 [\\"ctgA%3A1050..7300\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"],3 [\\"ctgA%3A7000..7300\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"],4
+agt767.3 [\\"ctgA%3A8000..9000\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.3\\"|\\"Match6\\"],1
+agt767.5 [\\"ctgA%3A1150..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"],1 [\\"ctgA%3A1150..7200\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"|\\"Match5\\"],2 [\\"ctgA%3A5000..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"],3 [\\"ctgA%3A7000..7200\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.5\\"],4
+agt830.3 [\\"ctgA%3A5410..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"],1 [\\"ctgA%3A5410..7503\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"|\\"Match2\\"],2 [\\"ctgA%3A7000..7503\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"],3
+agt830.5 [\\"ctgA%3A1050..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.5\\"],1 [\\"ctgA%3A1050..3202\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3000..3202\\"|\\"volvox.sort.gff"
+`;
+
+exports[`text-index with single --file Indexes with --file 2`] = `
+"\\"volvox.sort.gff3.gz\\"|\\"seg14\\"],12
+seg15 [\\"ctgA%3A39265..39361\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],1 [\\"ctgA%3A39753..40034\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],2 [\\"ctgA%3A40515..40954\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],3 [\\"ctgA%3A41252..41365\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],4 [\\"ctgA%3A41492..41504\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],5 [\\"ctgA%3A41941..42377\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],6 [\\"ctgA%3A42748..42954\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],7 [\\"ctgA%3A43401..43897\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],8 [\\"ctgA%3A44043..44113\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],9 [\\"ctgA%3A44399..44888\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],10 [\\"ctgA%3A45281..45375\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],11 [\\"ctgA%3A45711..46041\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],12 [\\"ctgA%3A46425..46564\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],13 [\\"ctgA%3A46738..47087\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],14 [\\"ctgA%3A47329..47595\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],15 [\\"ctgA%3A47858..47979\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],16 [\\"ctgA%3A48169..48453\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],17
+"
+`;
+
+exports[`text-index with single --file Indexes with --file 3`] = `13146`;
+
+exports[`text-index with single --file Indexes with --file 4`] = `
+"agt220000000000
 "
 `;

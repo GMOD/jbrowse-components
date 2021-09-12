@@ -53,7 +53,7 @@ function PileupRendering(props: {
     }
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     const selectedRect = selectedFeatureId
-      ? displayModel.getFeatureByID?.(selectedFeatureId)
+      ? displayModel.getFeatureByID?.(blockKey, selectedFeatureId)
       : undefined
     if (selectedRect) {
       const [leftBp, topPx, rightBp, bottomPx] = selectedRect
@@ -75,7 +75,7 @@ function PileupRendering(props: {
     }
     const highlightedFeature = featureIdUnderMouse || contextMenuFeature?.id()
     const highlightedRect = highlightedFeature
-      ? displayModel.getFeatureByID?.(highlightedFeature)
+      ? displayModel.getFeatureByID?.(blockKey, highlightedFeature)
       : undefined
     if (highlightedRect) {
       const [leftBp, topPx, rightBp, bottomPx] = highlightedRect
@@ -88,6 +88,7 @@ function PileupRendering(props: {
   }, [
     bpPerPx,
     region,
+    blockKey,
     selectedFeatureId,
     displayModel,
     featureIdUnderMouse,

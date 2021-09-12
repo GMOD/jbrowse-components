@@ -70,24 +70,28 @@ interface RootModel {
   setSession: Function
 }
 
-export function NewEmptySession({ root }: { root: RootModel }) {
+export function NewEmptySession({ rootModel }: { rootModel: RootModel }) {
   return (
     <NewSessionCard
       name="Empty"
       onClick={() => {
-        root.setSession(emptySessionSnapshot)
+        rootModel.setSession(emptySessionSnapshot)
       }}
       image={emptyIcon}
     />
   )
 }
 
-export function NewLinearGenomeViewSession({ root }: { root: RootModel }) {
+export function NewLinearGenomeViewSession({
+  rootModel,
+}: {
+  rootModel: RootModel
+}) {
   return (
     <NewSessionCard
       name="Linear Genome View"
       onClick={() => {
-        root.setSession({
+        rootModel.setSession({
           ...emptySessionSnapshot,
           name: `New session ${new Date().toLocaleString()}`,
           views: [{ type: 'LinearGenomeView' }],
@@ -98,12 +102,12 @@ export function NewLinearGenomeViewSession({ root }: { root: RootModel }) {
   )
 }
 
-export function NewSVInspectorSession({ root }: { root: RootModel }) {
+export function NewSVInspectorSession({ rootModel }: { rootModel: RootModel }) {
   return (
     <NewSessionCard
       name="Structural Variant Inspector"
       onClick={() => {
-        root.setSession({
+        rootModel.setSession({
           ...emptySessionSnapshot,
           name: `New session ${new Date().toLocaleString()}`,
           views: [{ type: 'SvInspectorView' }],

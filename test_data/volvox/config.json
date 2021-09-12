@@ -75,7 +75,7 @@
       "metaFilePath": {
         "uri": "trix/volvox_meta.json"
       },
-      "assemblies": ["volvox"]
+      "assemblyNames": ["volvox"]
     }
   ],
   "tracks": [

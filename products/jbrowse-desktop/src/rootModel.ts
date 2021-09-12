@@ -1,6 +1,7 @@
 import assemblyManagerFactory, {
   assemblyConfigSchemas as AssemblyConfigSchemasFactory,
 } from '@jbrowse/core/assemblyManager'
+import { autorun } from 'mobx'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
@@ -12,8 +13,10 @@ import {
   cast,
   getParent,
   getSnapshot,
-  SnapshotIn,
   types,
+  addDisposer,
+  SnapshotIn,
+  Instance,
 } from 'mobx-state-tree'
 import JBrowseDesktop from './jbrowseModel'
 // @ts-ignore
@@ -26,7 +29,7 @@ interface Menu {
   menuItems: MenuItem[]
 }
 
-export default function RootModel(pluginManager: PluginManager) {
+export default function rootModelFactory(pluginManager: PluginManager) {
   const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
     pluginManager,
   )
@@ -67,12 +70,7 @@ export default function RootModel(pluginManager: PluginManager) {
         self.error = error
       },
       setDefaultSession() {
-        this.setSession({
-          ...self.jbrowse.defaultSession,
-          name: `${
-            self.jbrowse.defaultSession.name
-          } ${new Date().toLocaleString()}`,
-        })
+        this.setSession(self.jbrowse.defaultSession)
       },
       setAssemblyEditing(flag: boolean) {
         self.isAssemblyEditing = flag
@@ -114,13 +112,12 @@ export default function RootModel(pluginManager: PluginManager) {
             {
               label: 'New Session',
               icon: AddIcon,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick: (session: any) => {
+              onClick: (session: { setDefaultSession: () => void }) => {
                 session.setDefaultSession()
               },
             },
             {
-              label: 'Return to splash screen',
+              label: 'Return to start screen',
               icon: AppsIcon,
               onClick: () => {
                 self.setSession(undefined)
@@ -251,6 +248,7 @@ export default function RootModel(pluginManager: PluginManager) {
         })
         return subMenu.push(menuItem)
       },
+
       /**
        * Insert a menu item into a sub-menu
        * @param menuPath - Path to the sub-menu to add to, starting with the
@@ -290,5 +288,28 @@ export default function RootModel(pluginManager: PluginManager) {
         subMenu.splice(position, 0, menuItem)
         return subMenu.length
       },
+
+      afterCreate() {
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              // if (self.session) {
+              //   ipcRenderer.send('saveSession', getSnapshot(self.session))
+              // }
+              if (self.session) {
+                ipcRenderer.send('saveSession', {
+                  ...getSnapshot(self.jbrowse),
+                  defaultSession: getSnapshot(self.session),
+                })
+              }
+            },
+            { delay: 1000 },
+          ),
+        )
+      },
     }))
 }
+
+export type RootModelType = ReturnType<typeof rootModelFactory>
+export type RootModel = Instance<RootModelType>

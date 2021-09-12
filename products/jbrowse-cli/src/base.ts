@@ -87,18 +87,15 @@ export interface Assembly {
 
 export interface TrixTextSearchAdapter {
   type: 'TrixTextSearchAdapter'
-
   textSearchAdapterId: string
   ixFilePath: UriLocation
   ixxFilePath: UriLocation
   metaFilePath: UriLocation
-
-  assemblies: string[]
+  assemblyNames: string[]
 }
 export interface TextSearching {
   indexingFeatureTypesToExclude: string[]
   indexingAttributes: string[]
-
   textSearchAdapter: TrixTextSearchAdapter
 }
 export interface Track {
@@ -106,14 +103,14 @@ export interface Track {
   name: string
   assemblyNames: string[]
   adapter: Gff3TabixAdapter | GtfTabixAdapter | VcfTabixAdapter
-  textSearching: TextSearching
+  textSearching?: TextSearching
 }
 
 export interface Config {
   assemblies?: Assembly[]
+  assembly?: Assembly
   configuration?: {}
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  aggregateTextSearchAdapters?: any[]
+  aggregateTextSearchAdapters?: TrixTextSearchAdapter[]
   connections?: unknown[]
   defaultSession?: {}
   tracks?: Track[]

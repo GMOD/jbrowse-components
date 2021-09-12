@@ -1,23 +1,37 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react'
-import MUITooltip from '@material-ui/core/Tooltip'
+import React, { useMemo, useState } from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles, alpha, Portal } from '@material-ui/core'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { YSCALEBAR_LABEL_OFFSET } from '../models/model'
+import { usePopper } from 'react-popper'
 
-const toP = (s = 0) => parseFloat(s.toPrecision(6))
+function toP(s = 0) {
+  return parseFloat(s.toPrecision(6))
+}
+
+function round(value: number) {
+  return Math.round(value * 1e5) / 1e5
+}
+
+const en = (n: number) => n.toLocaleString('en-US')
 
 const useStyles = makeStyles(theme => ({
-  popper: {
-    fontSize: '0.8em',
-
-    // important to have a zIndex directly on the popper itself
-    // @material-ui/Tooltip uses popper and has similar thing
-    zIndex: theme.zIndex.tooltip,
-
-    // needed to avoid rapid mouseLeave/mouseEnter on popper
+  // these styles come from
+  // https://github.com/mui-org/material-ui/blob/master/packages/material-ui/src/Tooltip/Tooltip.js
+  tooltip: {
+    position: 'absolute',
     pointerEvents: 'none',
+    backgroundColor: alpha(theme.palette.grey[700], 0.9),
+    borderRadius: theme.shape.borderRadius,
+    color: theme.palette.common.white,
+    fontFamily: theme.typography.fontFamily,
+    padding: '4px 8px',
+    fontSize: theme.typography.pxToRem(10),
+    lineHeight: `${round(14 / 10)}em`,
+    maxWidth: 300,
+    wordWrap: 'break-word',
+    fontWeight: theme.typography.fontWeightMedium,
   },
 
   hoverVertical: {
@@ -32,70 +46,102 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function TooltipContents(props: { feature: Feature }) {
-  const { feature } = props
-  const ref = feature.get('refName')
-  const displayRef = `${ref ? `${ref}:` : ''}`
-  const start = (feature.get('start') + 1).toLocaleString('en-US')
-  const end = feature.get('end').toLocaleString('en-US')
-  const coord = start === end ? start : `${start}..${end}`
-  const loc = `${displayRef}${coord}`
+const TooltipContents = React.forwardRef<HTMLDivElement, { feature: Feature }>(
+  ({ feature }: { feature: Feature }, ref) => {
+    const start = feature.get('start')
+    const end = feature.get('end')
+    const name = feature.get('refName')
+    const loc = [name, start === end ? en(start) : `${en(start)}..${en(end)}`]
+      .filter(f => !!f)
+      .join(':')
 
-  return feature.get('summary') !== undefined ? (
-    <div>
-      {loc}
-      <br />
-      Max: {toP(feature.get('maxScore'))}
-      <br />
-      Avg: {toP(feature.get('score'))}
-      <br />
-      Min: {toP(feature.get('minScore'))}
-    </div>
-  ) : (
-    <div>
-      {loc}
-      <br />
-      {`${toP(feature.get('score'))}`}
-    </div>
-  )
-}
+    return feature.get('summary') !== undefined ? (
+      <div ref={ref}>
+        {loc}
+        <br />
+        Max: {toP(feature.get('maxScore'))}
+        <br />
+        Avg: {toP(feature.get('score'))}
+        <br />
+        Min: {toP(feature.get('minScore'))}
+      </div>
+    ) : (
+      <div ref={ref}>
+        {loc}
+        <br />
+        {`${toP(feature.get('score'))}`}
+      </div>
+    )
+  },
+)
 
 type Coord = [number, number]
+
 const Tooltip = observer(
   ({
     model,
     height,
-    mouseCoord,
+    clientMouseCoord,
+    offsetMouseCoord,
+    clientRect,
+    TooltipContents,
   }: {
     model: any
     height: number
-    mouseCoord: Coord
+    clientMouseCoord: Coord
+    offsetMouseCoord: Coord
+    clientRect?: ClientRect
+    TooltipContents: React.FC<any>
   }) => {
     const { featureUnderMouse } = model
     const classes = useStyles()
+    const [width, setWidth] = useState(0)
+
+    const [popperElement, setPopperElement] = useState<any>(null)
+
+    // must be memoized a la https://github.com/popperjs/react-popper/issues/391
+    const virtElement = useMemo(
+      () => ({
+        getBoundingClientRect: () => {
+          const x = clientMouseCoord[0] + width / 2 + 20
+          const y = clientRect?.top || 0
+          return {
+            top: y,
+            left: x,
+            bottom: y,
+            right: x,
+            width: 0,
+            height: 0,
+          }
+        },
+      }),
+      [clientRect?.top, clientMouseCoord, width],
+    )
+    const { styles, attributes } = usePopper(virtElement, popperElement)
 
     return featureUnderMouse ? (
       <>
-        <MUITooltip
-          placement="right-start"
-          className={classes.popper}
-          open
-          title={<TooltipContents feature={featureUnderMouse} />}
-        >
+        <Portal>
           <div
-            style={{
-              position: 'absolute',
-              left: mouseCoord[0],
-              top: 5,
-            }}
+            ref={setPopperElement}
+            className={classes.tooltip}
+            // zIndex needed to go over widget drawer
+            style={{ ...styles.popper, zIndex: 100000 }}
+            {...attributes.popper}
           >
-            {' '}
+            <TooltipContents
+              ref={(elt: HTMLDivElement) => {
+                setWidth(elt?.getBoundingClientRect().width || 0)
+              }}
+              feature={featureUnderMouse}
+            />
           </div>
-        </MUITooltip>
+        </Portal>
+
         <div
           className={classes.hoverVertical}
           style={{
-            left: mouseCoord[0],
+            left: offsetMouseCoord[0],
             height: height - YSCALEBAR_LABEL_OFFSET * 2,
           }}
         />
@@ -104,4 +150,16 @@ const Tooltip = observer(
   },
 )
 
-export default Tooltip
+const WiggleTooltip = observer(
+  (props: {
+    model: any
+    height: number
+    offsetMouseCoord: Coord
+    clientMouseCoord: Coord
+    clientRect?: ClientRect
+  }) => {
+    return <Tooltip TooltipContents={TooltipContents} {...props} />
+  },
+)
+export default WiggleTooltip
+export { Tooltip }
