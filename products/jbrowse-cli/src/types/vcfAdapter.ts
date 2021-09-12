@@ -72,7 +72,10 @@ export async function* indexVcf(
         .map(f => f.trim())
         .filter(f => !!f)
         .map(f => f.split('='))
-        .map(([key, val]) => [key.trim(), val?.trim().split(',').join(' ')]),
+        .map(([key, val]) => [
+          key.trim(),
+          val ? decodeURIComponent(val).trim().split(',').join(' ') : undefined,
+        ]),
     )
 
     const end = fields.END

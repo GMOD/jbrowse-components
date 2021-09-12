@@ -74,7 +74,10 @@ export async function* indexGff3(
           .map(f => f.trim())
           .filter(f => !!f)
           .map(f => f.split('='))
-          .map(([key, val]) => [key.trim(), val.trim().split(',').join(' ')]),
+          .map(([key, val]) => [
+            key.trim(),
+            decodeURIComponent(val).trim().split(',').join(' '),
+          ]),
       )
       const attrs = attributes
         .map(attr => col9attrs[attr])
@@ -86,6 +89,7 @@ export async function* indexGff3(
           encodeURIComponent(trackId),
           ...attrs.map(a => encodeURIComponent(a)),
         ]).replace(/,/g, '|')
+
         yield `${record} ${[...new Set(attrs)].join(' ')}\n`
       }
     }
