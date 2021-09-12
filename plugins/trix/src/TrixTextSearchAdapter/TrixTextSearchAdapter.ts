@@ -64,12 +64,13 @@ export default class TrixTextSearchAdapter
         if (contextField) {
           if (contextField.length > 40) {
             const tidx = contextField.indexOf(term)
+
             context =
-              '...' +
+              (Math.max(0, tidx - w) > 0 ? '...' : '') +
               contextField
                 .slice(Math.max(0, tidx - w), tidx + term.length + w)
                 .trim() +
-              '...'
+              (tidx + term.length < contextField.length ? '...' : '')
           }
         }
       }
