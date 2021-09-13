@@ -17,20 +17,27 @@ import {
   SnapshotIn,
   types,
 } from 'mobx-state-tree'
+
+import { saveAs } from 'file-saver'
 import { observable, autorun } from 'mobx'
-// jbrowse
 import assemblyManagerFactory, {
   assemblyConfigSchemas as AssemblyConfigSchemasFactory,
 } from '@jbrowse/core/assemblyManager'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import { AbstractSessionModel } from '@jbrowse/core/util'
-// material ui
+import { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
+
+// icons
 import AddIcon from '@material-ui/icons/Add'
 import SettingsIcon from '@material-ui/icons/Settings'
 import AppsIcon from '@material-ui/icons/Apps'
+import FileCopyIcon from '@material-ui/icons/FileCopy'
+import FolderOpenIcon from '@material-ui/icons/FolderOpen'
+import GetAppIcon from '@material-ui/icons/GetApp'
+import PublishIcon from '@material-ui/icons/Publish'
+import SaveIcon from '@material-ui/icons/Save'
 
 // other
 import corePlugins from './corePlugins'
@@ -341,6 +348,59 @@ export default function RootModel(
                   localStorage.setItem(self.previousAutosaveId, lastAutosave)
                 }
                 session.setDefaultSession()
+              },
+            },
+            {
+              label: 'Import session…',
+              icon: PublishIcon,
+              onClick: (session: SessionWithWidgets) => {
+                const widget = session.addWidget(
+                  'ImportSessionWidget',
+                  'importSessionWidget',
+                )
+                session.showWidget(widget)
+              },
+            },
+            {
+              label: 'Export session',
+              icon: GetAppIcon,
+              onClick: (session: IAnyStateTreeNode) => {
+                const sessionBlob = new Blob(
+                  [JSON.stringify({ session: getSnapshot(session) }, null, 2)],
+                  { type: 'text/plain;charset=utf-8' },
+                )
+                saveAs(sessionBlob, 'session.json')
+              },
+            },
+            {
+              label: 'Open session…',
+              icon: FolderOpenIcon,
+              onClick: (session: SessionWithWidgets) => {
+                const widget = session.addWidget(
+                  'SessionManager',
+                  'sessionManager',
+                )
+                session.showWidget(widget)
+              },
+            },
+            {
+              label: 'Save session',
+              icon: SaveIcon,
+              onClick: (session: SessionWithWidgets) => {
+                // @ts-ignore
+                if (session.saveSessionToLocalStorage) {
+                  // @ts-ignore
+                  session.saveSessionToLocalStorage()
+                  // @ts-ignore
+                  session.notify(`Saved session "${session.name}"`, 'success')
+                }
+              },
+            },
+            {
+              label: 'Duplicate session',
+              icon: FileCopyIcon,
+              onClick: (session: AbstractSessionModel) => {
+                session.duplicateCurrentSession?.()
               },
             },
             {
