@@ -4,14 +4,11 @@
  * Asynchronous Requests for autocomplete:
  *  https://material-ui.com/components/autocomplete/
  */
-import React, { useMemo, useRef, useEffect, useState } from 'react'
+import React, { useMemo, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
 
 // jbrowse core
 import { getSession, useDebounce, measureText } from '@jbrowse/core/util'
-import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 import BaseResult, {
   RefSequenceResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
@@ -46,32 +43,29 @@ async function fetchResults(
   query: string,
   assemblyName: string,
 ) {
-  const session = getSession(self)
-  const { pluginManager } = getEnv(session)
+  const { textSearchManager } = getSession(self)
   const { rankSearchResults } = self
-  const textSearchManager: TextSearchManager =
-    pluginManager.rootModel.textSearchManager
   const searchScope = self.searchScope(assemblyName)
-  const args = {
-    queryString: query,
-    searchType: 'prefix' as SearchType,
-  }
-  const searchResults = await textSearchManager?.search(
-    args,
-    searchScope,
-    rankSearchResults,
-  )
-  // removes duplicate search results
-  return searchResults?.filter(
-    (elem, index, self) =>
-      index ===
-      self.findIndex(
-        t =>
-          (t.displayString || t.label) === (elem.displayString || elem.label),
+  return textSearchManager
+    ?.search(
+      {
+        queryString: query,
+        searchType: 'prefix',
+      },
+      searchScope,
+      rankSearchResults,
+    )
+    .then(results =>
+      results.filter(
+        (elem, index, self) =>
+          index === self.findIndex(t => t.label === elem.label),
       ),
-  )
+    )
 }
 
+// the logic of this method is to only apply a filter to RefSequenceResults
+// because they do not have a matchedObject. the trix search results
+// already filter so don't need re-filtering
 function filterOptions(options: Option[], searchQuery: string) {
   return options.filter(option => {
     const { result } = option
@@ -116,11 +110,10 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
-  const ref = useRef<HTMLInputElement>(null)
   const session = getSession(model)
   const { assemblyManager } = session
   const [open, setOpen] = useState(false)
-  const [loaded, setLoaded] = useState<undefined | boolean>(undefined)
+  const [loaded, setLoaded] = useState(true)
   const [currentSearch, setCurrentSearch] = useState('')
   const [searchOptions, setSearchOptions] = useState([] as Option[])
   const debouncedSearch = useDebounce(currentSearch, 300)
@@ -130,7 +123,7 @@ function RefNameAutocomplete({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const regions = assembly?.regions || []
 
-  const options: Option[] = useMemo(
+  const options = useMemo(
     () =>
       regions.map(option => ({
         result: new RefSequenceResult({
@@ -153,7 +146,7 @@ function RefNameAutocomplete({
 
         setLoaded(false)
         const results = await fetchResults(model, debouncedSearch, assemblyName)
-        if (results.length >= 0 && active) {
+        if (results && results.length >= 0 && active) {
           setSearchOptions(results.map(result => ({ result })))
         }
         setLoaded(true)
@@ -170,29 +163,19 @@ function RefNameAutocomplete({
     }
   }, [assemblyName, debouncedSearch, session, model])
 
-  function onChange(selectedOption: Option | string) {
-    if (selectedOption && assemblyName) {
-      if (typeof selectedOption === 'string') {
-        // handles string inputs on keyPress enter
-        const newResult = new BaseResult({
-          label: selectedOption,
-        })
-        onSelect(newResult)
-      } else {
-        const { result } = selectedOption
-        onSelect(result)
-      }
-    }
-  }
   const inputBoxVal = coarseVisibleLocStrings || value || ''
 
   // heuristic, text width + icon width, minimum 200
   const width = Math.min(Math.max(measureText(inputBoxVal, 16) + 25, 200), 550)
+
+  // notes on implementation:
+  // selectOnFocus helps highlight the field when clicked
+  // blurOnSelect helps it so that when the user-re-clicks on the textfield,
+  // that selectOnFocus re-activates
   return (
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
       data-testid="autocomplete"
-      clearOnBlur
       disableListWrap
       disableClearable
       PopperComponent={MyPopper}
@@ -200,74 +183,81 @@ function RefNameAutocomplete({
       freeSolo
       includeInputInList
       selectOnFocus
+      blurOnSelect
       style={{ ...style, width }}
       value={inputBoxVal}
-      loading={loaded !== undefined ? !loaded : false}
+      loading={!loaded}
       loadingText="loading results"
       open={open}
-      onOpen={() => {
-        setOpen(true)
-      }}
+      onOpen={() => setOpen(true)}
       onClose={() => {
         setOpen(false)
-        setLoaded(undefined)
+        setLoaded(true)
         if (hasDisplayedRegions) {
           setCurrentSearch('')
           setSearchOptions([])
         }
       }}
       onChange={(_event, selectedOption) => {
-        onChange(selectedOption)
-
-        // blur after selection so that selectOnFocus can re-trigger
-        // https://github.com/mui-org/material-ui/issues/28062
-        ref.current?.blur()
+        if (!selectedOption || !assemblyName) {
+          return
+        }
+        if (typeof selectedOption === 'string') {
+          // handles string inputs on keyPress enter
+          const newResult = new BaseResult({
+            label: selectedOption,
+          })
+          onSelect(newResult)
+        } else {
+          const { result } = selectedOption
+          onSelect(result)
+        }
       }}
       options={searchOptions.length === 0 ? options : searchOptions}
       getOptionDisabled={option => option?.group === 'limitOption'}
       filterOptions={(options, params) => {
-        const searchQuery = params.inputValue.toLocaleLowerCase()
-        const filtered = filterOptions(options, searchQuery)
-        return filtered.length >= 100
-          ? filtered.slice(0, 100).concat([
-              {
-                group: 'limitOption',
-                result: new BaseResult({
-                  label: 'keep typing for more results',
-                  renderingComponent: (
-                    <Typography>{'keep typing for more results'}</Typography>
-                  ),
-                }),
-              },
-            ])
-          : filtered
+        const filtered = filterOptions(
+          options,
+          params.inputValue.toLocaleLowerCase(),
+        )
+        return [
+          ...filtered.slice(0, 100),
+          ...(filtered.length > 100
+            ? [
+                {
+                  group: 'limitOption',
+                  result: new BaseResult({
+                    label: 'keep typing for more results',
+                  }),
+                },
+              ]
+            : []),
+        ]
       }}
       renderInput={params => {
         const { helperText, InputProps = {} } = TextFieldProps
-        const TextFieldInputProps = {
-          ...params.InputProps,
-          ...InputProps,
-
-          endAdornment: (
-            <>
-              {regions.length === 0 ? (
-                <CircularProgress color="inherit" size={20} />
-              ) : (
-                <InputAdornment position="end" style={{ marginRight: 7 }}>
-                  <SearchIcon />
-                </InputAdornment>
-              )}
-              {params.InputProps.endAdornment}
-            </>
-          ),
-        }
         return (
           <TextField
-            inputRef={ref}
             {...params}
             {...TextFieldProps}
             helperText={helperText}
-            InputProps={TextFieldInputProps}
+            InputProps={{
+              ...params.InputProps,
+              ...InputProps,
+
+              endAdornment: (
+                <>
+                  {regions.length === 0 ? (
+                    <CircularProgress color="inherit" size={20} />
+                  ) : (
+                    <InputAdornment position="end" style={{ marginRight: 7 }}>
+                      <SearchIcon />
+                    </InputAdornment>
+                  )}
+                  {params.InputProps.endAdornment}
+                </>
+              ),
+            }}
             placeholder="Search for location"
             onChange={e => {
               setCurrentSearch(e.target.value)
@@ -281,11 +271,8 @@ function RefNameAutocomplete({
         if (component && React.isValidElement(component)) {
           return component
         }
-        const displayLabel = result.getDisplayString()
-        if (displayLabel) {
-          return <Typography noWrap>{displayLabel}</Typography>
-        }
-        return <Typography noWrap>{result.getLabel()}</Typography>
+
+        return <Typography noWrap>{result.getDisplayString()}</Typography>
       }}
       getOptionLabel={option =>
         (typeof option === 'string' ? option : option.result.getLabel()) || ''

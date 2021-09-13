@@ -59,7 +59,7 @@ export default class BaseResult {
   }
 
   getDisplayString() {
-    return this.displayString
+    return this.displayString || this.label
   }
 
   getLocation() {

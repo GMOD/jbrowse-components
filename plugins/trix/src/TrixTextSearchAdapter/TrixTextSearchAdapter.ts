@@ -9,6 +9,16 @@ import { LocStringResult } from '@jbrowse/core/TextSearch/BaseResults'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
+function shorten(str: string, term: string, w = 15) {
+  const tidx = str.indexOf(term)
+
+  return str.length < 40
+    ? str
+    : (Math.max(0, tidx - w) > 0 ? '...' : '') +
+        str.slice(Math.max(0, tidx - w), tidx + term.length + w).trim() +
+        (tidx + term.length < str.length ? '...' : '')
+}
+
 export default class TrixTextSearchAdapter
   extends BaseAdapter
   implements BaseTextSearchAdapter {
@@ -48,50 +58,22 @@ export default class TrixTextSearchAdapter
         decodeURIComponent(record),
       )
 
-      // gff3 fields are uri encoded so double decode
-      const allAttributes = rest.map(elt => decodeURIComponent(elt))
-      const labelFieldIdx = allAttributes.findIndex(elt => !!elt)
-      const contextIdx = allAttributes.findIndex(
-        elt => elt.toLowerCase().indexOf(term.toLowerCase()) !== -1,
-      )
+      const labelFieldIdx = rest.findIndex(elt => !!elt)
+      const contextIdx = rest
+        .map(elt => elt.toLowerCase())
+        .findIndex(f => f.indexOf(term.toLowerCase()) !== -1)
 
-      const labelField = allAttributes[labelFieldIdx]
-      let context
-      if (contextIdx !== labelFieldIdx) {
-        const w = 15
-        const contextField = allAttributes[contextIdx]
-        context = contextField
-        if (contextField) {
-          if (contextField.length > 40) {
-            const tidx = contextField.indexOf(term)
+      const labelField = rest[labelFieldIdx]
+      const contextField = rest[contextIdx]
+      const context =
+        contextIdx !== -1 && contextIdx !== labelFieldIdx
+          ? shorten(contextField, term)
+          : undefined
+      const label = shorten(labelField, term)
 
-            context =
-              (Math.max(0, tidx - w) > 0 ? '...' : '') +
-              contextField
-                .slice(Math.max(0, tidx - w), tidx + term.length + w)
-                .trim() +
-              (tidx + term.length < contextField.length ? '...' : '')
-          }
-        }
-      }
-      let shortenedLabelField = ''
-      if (labelField.length > 40) {
-        const w = 16
-        const tidx = labelField
-          .toLocaleLowerCase()
-          .indexOf(term.toLocaleLowerCase())
-        shortenedLabelField =
-          '...' +
-          labelField
-            .slice(Math.max(0, tidx - w), tidx + term.length + w)
-            .trim() +
-          '...'
-      }
       const displayString =
         !context || labelField.toLowerCase() === context.toLowerCase()
-          ? labelField.length > 40
-            ? shortenedLabelField
-            : labelField
+          ? label
           : `${labelField} (${context})`
 
       return new LocStringResult({
