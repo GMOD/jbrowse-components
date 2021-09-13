@@ -86,7 +86,7 @@ export interface Assembly {
 }
 
 export interface TrixTextSearchAdapter {
-  type: 'TrixTextSearchAdapter'
+  type: string
   textSearchAdapterId: string
   ixFilePath: UriLocation
   ixxFilePath: UriLocation
@@ -94,8 +94,8 @@ export interface TrixTextSearchAdapter {
   assemblyNames: string[]
 }
 export interface TextSearching {
-  indexingFeatureTypesToExclude: string[]
-  indexingAttributes: string[]
+  indexingFeatureTypesToExclude?: string[]
+  indexingAttributes?: string[]
   textSearchAdapter: TrixTextSearchAdapter
 }
 export interface Track {
