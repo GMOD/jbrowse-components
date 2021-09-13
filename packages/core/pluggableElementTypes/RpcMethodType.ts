@@ -35,7 +35,6 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   }
 
   async serializeNewAuthArguments(location: UriLocation) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rootModel: AbstractRootModel | undefined = this.pluginManager
       .rootModel
 
@@ -112,6 +111,10 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     if (typeof thing === 'object' && thing !== null) {
       const newThing: any = {}
       for (const [key, value] of Object.entries(thing)) {
+        // TODOAUTH: temp til i can find a better indicator
+        if (key === 'filters' || key === 'signal') {
+          continue
+        }
         if (Array.isArray(value)) {
           newThing[key] = await Promise.all(
             value.map((p: any) => this.augmentLocationObjects(p)),

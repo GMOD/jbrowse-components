@@ -163,16 +163,6 @@ const stateModelFactory = (
           return new RemoteFile(String(location.uri), {
             fetch: this.getFetcher,
           })
-
-          // switch (self.origin) {
-          //   case 'GDC': {
-          //     const query = (location as UriLocation).uri.split('/').pop() // should get id
-          //     const response = await fetch(
-          //       `${self.accountConfig.customEndpoint}/files/${query}?expand=index_files`,
-          //       {
-          //         method: 'GET',
-          //       },
-          //     )
         },
         async getPreAuthorizationInformation(location: UriLocation) {
           if (!preAuthInfo.authInfo) {

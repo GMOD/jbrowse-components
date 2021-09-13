@@ -135,29 +135,53 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         self.internetAccounts.push(internetAccount)
         return internetAccount
       },
+      createEphemeralInternetAccount(
+        internetAccountId: string,
+        initialSnapshot = {},
+      ) {
+        const internetAccountConfigSchema = pluginManager.pluggableConfigSchemaType(
+          'internet account',
+        )
+        const configuration = {
+          // TODOAUTH need to remove this hardcoded type
+          type: 'HTTPBasicInternetAccount',
+          internetAccountId: internetAccountId,
+          name: internetAccountId,
+          description: '',
+        }
+        const internetAccountType = pluginManager.getInternetAccountType(
+          configuration.type,
+        )
+        const internetAccount = internetAccountType.stateModel.create({
+          ...initialSnapshot,
+          type: configuration.type,
+          configuration,
+        })
+        self.internetAccounts.push(internetAccount)
+        return internetAccount
+      },
       findAppropriateInternetAccount(location: UriLocation) {
-        let accountToUse = undefined
-
         // find the existing account selected from menu
         const selectedId = location.internetAccountId
         if (selectedId) {
           const selectedAccount = self.internetAccounts.find(account => {
             return account.internetAccountId === selectedId
           })
-          accountToUse = selectedAccount
+          if (selectedAccount) {
+            return selectedAccount
+          }
         }
-
         // if no existing account or not found, try to find working account
-        if (!accountToUse) {
-          self.internetAccounts.forEach(account => {
-            const handleResult = account.handlesLocation(location)
-            if (handleResult) {
-              accountToUse = account
-            }
-          })
+
+        for (const account of self.internetAccounts) {
+          const handleResult = account.handlesLocation(location)
+          if (handleResult) {
+            return account
+          }
         }
 
-        return accountToUse
+        // if still no existing account, create ephemeral config to use
+        return this.createEphemeralInternetAccount(selectedId as string)
       },
       afterCreate() {
         addDisposer(
