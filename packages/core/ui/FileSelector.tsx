@@ -99,7 +99,7 @@ const UrlChooser = (props: {
       fullWidth
       inputProps={{ 'data-testid': 'urlInput' }}
       defaultValue={location && isUriLocation(location) ? location.uri : ''}
-      onChange={event => setLocation({ uri: event.target.value })}
+      onChange={event => setLocation({ uri: event.target.value.trim() })}
     />
   )
 }
