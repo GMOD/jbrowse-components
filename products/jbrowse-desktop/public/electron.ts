@@ -221,12 +221,13 @@ ipcMain.handle('listSessions', async () => {
   )
 })
 
-ipcMain.handle('loadExternalConfig', (_event: unknown, sessionPath) =>
-  readFile(sessionPath, 'utf8'),
-)
-ipcMain.handle('loadSession', (_event: unknown, sessionName: string) =>
-  readFile(getPath(sessionName), 'utf8'),
-)
+ipcMain.handle('loadExternalConfig', (_event: unknown, sessionPath) => {
+  return readFile(sessionPath, 'utf8')
+})
+
+ipcMain.handle('loadSession', (_event: unknown, sessionName: string) => {
+  return readFile(getPath(sessionName), 'utf8')
+})
 
 ipcMain.on('saveSession', async (_event: unknown, snap: SessionSnap) => {
   const page = await mainWindow?.capturePage()
