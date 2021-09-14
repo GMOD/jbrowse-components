@@ -49,6 +49,7 @@
     "@jbrowse/plugin-linear-genome-view": "^1.4.0",
     "@jbrowse/plugin-sequence": "^1.4.0",
     "@jbrowse/plugin-svg": "^1.4.0",
+    "@jbrowse/plugin-trix": "^1.4.0",
     "@jbrowse/plugin-variants": "^1.4.0",
     "@jbrowse/plugin-wiggle": "^1.4.0",
     "@material-ui/core": "^4.12.2",
