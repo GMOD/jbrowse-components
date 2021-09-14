@@ -4,6 +4,8 @@
   "url": "https://jbrowse.com",
   "baseUrl": "/jb2/",
   "favicon": "img/favicon.ico",
+  "trailingSlash": true,
+  "onBrokenLinks": "ignore",
   "organizationName": "GMOD",
   "projectName": "jbrowse-components",
   "customFields": {

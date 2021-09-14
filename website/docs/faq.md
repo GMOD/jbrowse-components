@@ -47,7 +47,7 @@ this.
 
 #### How can I setup JBrowse 2 on my web server
 
-We recommend following the steps in the [quickstart web](quickstart_web) guide.
+We recommend following the steps in the [quickstart web](../quickstart_web) guide.
 
 The general procedure is using the `jbrowse create /var/www/html/jb2` and this
 will download the latest version of jbrowse to your web folder e.g. in
@@ -92,7 +92,7 @@ directory
 For other things, like add-assembly and add-track, you can manually edit the
 config.json, reviewing the config docs and sample configs will be valuable
 
-Understanding the [config basics](config_guide#intro-to-the-configjson) will
+Understanding the [config basics](../config_guide#intro-to-the-configjson) will
 come in handy also because you can manually edit in advanced configs after your
 tracks are loaded however be careful because corrupt configs can produce hard
 to understand errors, because our config system is strongly typed
