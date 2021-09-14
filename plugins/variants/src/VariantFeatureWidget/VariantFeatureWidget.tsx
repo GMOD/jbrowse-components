@@ -143,7 +143,8 @@ function BreakendPanel(props: {
           <li key={`${JSON.stringify(locString)}`}>
             <Link
               href="#"
-              onClick={() => {
+              onClick={(event: any) => {
+                event.preventDefault()
                 const { view } = model
                 if (view) {
                   view.navToLocString?.(locString)
@@ -168,7 +169,13 @@ function BreakendPanel(props: {
           <ul>
             {locStrings.map(locString => (
               <li key={`${JSON.stringify(locString)}`}>
-                <Link href="#" onClick={() => setBreakpointDialog(true)}>
+                <Link
+                  href="#"
+                  onClick={(event: any) => {
+                    event.preventDefault()
+                    setBreakpointDialog(true)
+                  }}
+                >
                   {`${feature.refName}:${feature.start} // ${locString} (split view)`}
                 </Link>
               </li>
