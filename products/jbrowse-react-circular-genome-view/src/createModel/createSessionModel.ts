@@ -97,7 +97,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       get views() {
         return [self.view]
       },
-      get renderProps() {
+      renderProps() {
         return { theme: readConfObject(this.configuration, 'theme') }
       },
       get visibleWidget() {
