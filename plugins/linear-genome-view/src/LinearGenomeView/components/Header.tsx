@@ -138,9 +138,24 @@ const LinearGenomeViewHeader = observer(
       )
     }
 
+    /**
+     * We first check to see if the identifier/label is an appropriate region,
+     * if it is then we set that as our displayed region
+     * if the label was not a valid region, then
+     *  1) we get the trackId and the location/locStr of the option we chose
+     *  2) we then use the label to try and fetch for exact matches through our
+     * textSearchManager
+     *  3) if we get any hits by requerying the textSearchManager, then we either
+     *  navigate to the single hit location or pop open the the dialog with all
+     *  the results from the search
+     *  4) if there were no hits from requerying, then we use (1) the chosen options'
+     *  trackId and locStr to navigate and show that track
+     *  5) error handling
+     * @param result - result chosen from dropdown
+     */
     async function setDisplayedRegion(result: BaseResult) {
       if (result) {
-        let label = result.getLabel()
+        const label = result.getLabel()
         const newRegion = regions.find(region => label === region.refName)
         if (newRegion) {
           model.setDisplayedRegions([newRegion])
@@ -148,25 +163,18 @@ const LinearGenomeViewHeader = observer(
           // region visible, xref #1703
           model.showAllRegions()
         } else {
+          let location = result.getLocation()
+          let trackId = result.getTrackId()
           const results = await fetchResults(label)
           if (results && results.length > 1) {
             model.setSearchResults(results, label.toLowerCase())
           } else {
             if (results?.length === 1) {
-              label = results[0].getLocation()
-              const trackId = results[0].getTrackId()
-              try {
-                if (trackId) {
-                  model.showTrack(trackId)
-                }
-              } catch (e) {
-                console.warn(
-                  `'${e}' occurred while attempting to show track: ${trackId}`,
-                )
-              }
+              location = results[0].getLocation()
+              trackId = results[0].getTrackId()
             }
             try {
-              label !== '' && model.navToLocString(label)
+              label !== '' && model.navToLocString(location)
             } catch (e) {
               if (`${e}` === `Error: Unknown reference sequence "${label}"`) {
                 model.setSearchResults(results, label.toLowerCase())
@@ -174,6 +182,15 @@ const LinearGenomeViewHeader = observer(
                 console.warn(e)
                 session.notify(`${e}`, 'warning')
               }
+            }
+            try {
+              if (trackId) {
+                model.showTrack(trackId)
+              }
+            } catch (e) {
+              console.warn(
+                `'${e}' occurred while attempting to show track: ${trackId}`,
+              )
             }
           }
         }

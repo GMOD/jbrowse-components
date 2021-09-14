@@ -1899,10 +1899,10 @@
     long "^4.0.0"
     quick-lru "^2.0.0"
 
-"@gmod/trix@^0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-0.2.2.tgz#428601d3c79c1bae4555172a986d6dcbc810b28a"
-  integrity sha512-IArGHGLbatpHvV7uOMC3iYcFVa/Q8GLsgkyxwtd++2ZxsGeXxMoEEX8jRmqWJCjkLE2/Fafy5oa7t13MeSQbQw==
+"@gmod/trix@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-1.0.0.tgz#48d8ab56090abefdce20e8d9ce8b4f43a3e7df81"
+  integrity sha512-nXjteSaiCPvbCi2hr43y6iqiPmvmUuGraS0FO4gK4u4bv8xmWh9PDqIZ+LMo5ODJaglibvFnxYrs7eYKYxiRgw==
 
 "@gmod/twobit@^1.1.10":
   version "1.1.10"
@@ -8226,14 +8226,6 @@ cross-env@^7.0.2:
   dependencies:
     cross-spawn "^7.0.1"
 
-cross-fetch@^2.2.2:
-  version "2.2.3"
-  resolved "https://registry.yarnpkg.com/cross-fetch/-/cross-fetch-2.2.3.tgz#e8a0b3c54598136e037f8650f8e823ccdfac198e"
-  integrity sha512-PrWWNH3yL2NYIb/7WF/5vFG3DCQiXDOVf8k3ijatbrtnwNuhMWLC7YF7uqf53tbTFDzHIUD8oITw4Bxt8ST3Nw==
-  dependencies:
-    node-fetch "2.1.2"
-    whatwg-fetch "2.0.4"
-
 cross-fetch@^3.0.0, cross-fetch@^3.0.2, cross-fetch@^3.0.4:
   version "3.0.5"
   resolved "https://registry.yarnpkg.com/cross-fetch/-/cross-fetch-3.0.5.tgz#2739d2981892e7ab488a7ad03b92df2816e03f4c"
@@ -12023,17 +12015,6 @@ http-proxy@^1.17.0:
     follow-redirects "^1.0.0"
     requires-port "^1.0.0"
 
-http-range-fetcher@^1.2.2:
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/http-range-fetcher/-/http-range-fetcher-1.2.5.tgz#f6d28f6ebf49dd379680e6ccc74af65bde92d6d4"
-  integrity sha512-XOE+q+zcJdWL3dLPAKxz81/odp2SQK8rwbn3NKfaRtDm9snZje20jvu0mC7PKXxvpdzsyqCRFQ9TpKtYRZUJig==
-  dependencies:
-    "@babel/runtime" "^7.4.4"
-    abortcontroller-polyfill "^1.2.9"
-    cross-fetch "^2.2.2"
-    object.entries-ponyfill "^1.0.1"
-    quick-lru "^2.0.0"
-
 http-signature@~1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/http-signature/-/http-signature-1.2.0.tgz#9aecd925114772f3d95b65a60abb8f7c18fbace1"
@@ -15600,11 +15581,6 @@ node-fetch-npm@^2.0.2:
     encoding "^0.1.11"
     json-parse-better-errors "^1.0.0"
     safe-buffer "^5.1.1"
-
-node-fetch@2.1.2:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.1.2.tgz#ab884e8e7e57e38a944753cec706f788d1768bb5"
-  integrity sha1-q4hOjn5X44qUR1POxwb3iNF2i7U=
 
 node-fetch@2.6.0:
   version "2.6.0"
@@ -22120,11 +22096,6 @@ whatwg-encoding@^1.0.1, whatwg-encoding@^1.0.5:
   integrity sha512-b5lim54JOPN9HtzvK9HFXvBma/rnfFeqsic0hSpjtDbVxR3dJKLc+KB4V6GgiGOvl7CY/KNh8rxSo9DKQrnUEw==
   dependencies:
     iconv-lite "0.4.24"
-
-whatwg-fetch@2.0.4:
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/whatwg-fetch/-/whatwg-fetch-2.0.4.tgz#dde6a5df315f9d39991aa17621853d720b85566f"
-  integrity sha512-dcQ1GWpOD/eEQ97k66aiEVpNnapVj90/+R+SXTPYGHpYBBypfKJEQjLrvMZ7YXbKm21gXd4NcuxUTjiv1YtLng==
 
 whatwg-fetch@^3.0.0, whatwg-fetch@^3.4.1:
   version "3.6.2"

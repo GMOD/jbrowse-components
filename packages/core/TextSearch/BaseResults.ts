@@ -4,6 +4,8 @@ import { SearchType } from '../data_adapters/BaseAdapter'
 export interface BaseResultArgs {
   label: string
 
+  displayString?: string
+
   renderingComponent?: JSX.Element
 
   matchedAttribute?: string
@@ -27,6 +29,8 @@ export default class BaseResult {
 
   renderingComponent?: JSX.Element
 
+  displayString?: string
+
   matchedAttribute?: string
 
   matchedObject?: object
@@ -41,6 +45,7 @@ export default class BaseResult {
   constructor(args: BaseResultArgs) {
     this.label = args.label
     this.renderingComponent = args.renderingComponent
+    this.displayString = args.displayString
     this.matchedAttribute = args.matchedAttribute
     this.matchedObject = args.matchedObject
     this.textSearchAdapter = args.textSearchAdapter
@@ -51,6 +56,10 @@ export default class BaseResult {
 
   getLabel() {
     return this.label
+  }
+
+  getDisplayString() {
+    return this.displayString || this.label
   }
 
   getLocation() {

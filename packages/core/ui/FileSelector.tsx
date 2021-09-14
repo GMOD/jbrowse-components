@@ -118,9 +118,15 @@ const UrlChooser = (props: {
         return account.handlesLocation({ uri: urlInput })
       })
     }
-    return internetAccounts?.find(account => {
+    const foundSelection = internetAccounts?.find(account => {
       return account.internetAccountId === internetAccountSelection
     })
+
+    return foundSelection
+      ? foundSelection
+      : {
+          internetAccountId: `${internetAccountSelection}-${Date.now()}`,
+        }
   }
 
   return (
@@ -140,14 +146,14 @@ const UrlChooser = (props: {
             )
 
             setLocation({
-              uri: event.target.value,
-              baseAuthUri: event.target.value,
+              uri: event.target.value.trim(),
+              baseAuthUri: event.target.value.trim(),
               internetAccountId: internetAccount?.internetAccountId || '',
               locationType: 'UriLocation',
             })
           } else {
             setLocation({
-              uri: event.target.value,
+              uri: event.target.value.trim(),
               locationType: 'UriLocation',
             })
           }
@@ -180,8 +186,10 @@ const UrlChooser = (props: {
             <MenuItem value="">None</MenuItem>
             <MenuItem value="autoDetect">
               Auto Detect:{' '}
-              {findChosenInternetAccount(location.uri, 'autoDetect')?.name}
+              {findChosenInternetAccount(location.uri, 'autoDetect')?.name ||
+                'None'}
             </MenuItem>
+            <MenuItem value="HTTPBasic">New HTTPBasic</MenuItem>
             {internetAccounts?.map(account => {
               try {
                 new URL(location.uri)

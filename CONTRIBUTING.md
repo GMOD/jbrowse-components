@@ -250,3 +250,20 @@ When you want to use a built plugin, you can run `yarn useDist` in the plugin's
 example, the root-level `yarn build` that builds all the packages does this to
 build all the plugins and then build JBrowse Web and JBrowse Desktop using the
 built plugins.
+
+## Preparing sample data sets
+
+We have a number of sample datasets in our test_data folder
+
+### Text indexes
+
+The hg19 and hg38 text indexes were generated as follows for config_demo
+
+```
+
+jbrowse text-index --tracks ncbi_refseq_109_hg38_latest  --out config_demo.json --force --attributes Name,ID,Note,description,gene_synonym
+
+
+jbrowse text-index -a hg19 --tracks ncbi_gff_hg19 --out config_demo.json --force --attributes Name,ID,Note,description,gene_synonym
+
+```

@@ -231,7 +231,7 @@ export default function stateModelFactory(pluginManager: any) {
         const tracks = this.getMatchedTracks(trackConfigId)
 
         const calc = (track: any, feat: Feature) => {
-          return track.displays[0].getFeatureByID(feat.id())
+          return track.displays[0].searchFeatureByID(feat.id())
         }
 
         return features.map(c =>
