@@ -146,14 +146,14 @@ const UrlChooser = (props: {
             )
 
             setLocation({
-              uri: event.target.value,
-              baseAuthUri: event.target.value,
+              uri: event.target.value.trim(),
+              baseAuthUri: event.target.value.trim(),
               internetAccountId: internetAccount?.internetAccountId || '',
               locationType: 'UriLocation',
             })
           } else {
             setLocation({
-              uri: event.target.value,
+              uri: event.target.value.trim(),
               locationType: 'UriLocation',
             })
           }

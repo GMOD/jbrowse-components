@@ -32,7 +32,7 @@ const getView = () => {
             features: types.frozen(),
           })
           .views(self => ({
-            getFeatureByID(id: string) {
+            searchFeatureByID(id: string) {
               return self.layoutFeatures[id]
             },
           })),

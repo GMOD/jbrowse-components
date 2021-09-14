@@ -63,16 +63,31 @@ export async function* indexVcf(
     }
 
     const [ref, pos, id, _ref, _alt, _qual, _filter, info] = line.split('\t')
-    const fields = info
-      .split(';')
-      .map(f => f.trim())
-      .map(f => f.split('='))
-    const end = fields.find(f => f[0] === 'END')
 
-    const locStr = `${ref}:${pos}..${end ? end[1] : +pos + 1}`
+    // turns gff3 attrs into a map, and converts the arrays into space
+    // separated strings
+    const fields = Object.fromEntries(
+      info
+        .split(';')
+        .map(f => f.trim())
+        .filter(f => !!f)
+        .map(f => f.split('='))
+        .map(([key, val]) => [
+          key.trim(),
+          val ? decodeURIComponent(val).trim().split(',').join(' ') : undefined,
+        ]),
+    )
+
+    const end = fields.END
+
+    const locStr = `${ref}:${pos}..${end ? end : +pos + 1}`
     if (id === '.') {
       continue
     }
+
+    const infoAttrs = attributesToIndex
+      .map(attr => fields[attr])
+      .filter((f): f is string => !!f)
 
     const ids = id.split(',')
     for (let i = 0; i < ids.length; i++) {
@@ -81,8 +96,8 @@ export async function* indexVcf(
       const record = JSON.stringify([
         encodeURIComponent(locStr),
         encodeURIComponent(trackId),
-        encodeURIComponent(''),
         encodeURIComponent(id || ''),
+        ...infoAttrs.map(a => encodeURIComponent(a || '')),
       ]).replace(/,/g, '|')
       yield `${record} ${[...new Set(attrs)].join(' ')}\n`
     }

@@ -1,9 +1,9 @@
 {
-  "dateCreated": "2021-09-08T15:17:24.523Z",
+  "dateCreated": "2021-09-10T23:33:32.208Z",
   "tracks": [
     {
       "trackId": "volvox_sv_test",
-      "attributesIndexed": ["Name", "ID"],
+      "attributesIndexed": ["Name", "ID", "Note"],
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {
         "type": "VcfTabixAdapter",
@@ -21,7 +21,7 @@
     },
     {
       "trackId": "volvox_sv_test_renamed",
-      "attributesIndexed": ["Name", "ID"],
+      "attributesIndexed": ["Name", "ID", "Note"],
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {
         "type": "VcfTabixAdapter",
@@ -39,7 +39,7 @@
     },
     {
       "trackId": "volvox_test_vcf",
-      "attributesIndexed": ["Name", "ID"],
+      "attributesIndexed": ["Name", "ID", "Note"],
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {
         "type": "VcfTabixAdapter",
@@ -57,7 +57,7 @@
     },
     {
       "trackId": "gff3tabix_genes",
-      "attributesIndexed": ["Name", "ID"],
+      "attributesIndexed": ["Name", "ID", "Note"],
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {
         "type": "Gff3TabixAdapter",
@@ -75,7 +75,7 @@
     },
     {
       "trackId": "volvox_filtered_vcf",
-      "attributesIndexed": ["Name", "ID"],
+      "attributesIndexed": ["Name", "ID", "Note"],
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {
         "type": "VcfTabixAdapter",
@@ -93,7 +93,7 @@
     },
     {
       "trackId": "variant_colors",
-      "attributesIndexed": ["Name", "ID"],
+      "attributesIndexed": ["Name", "ID", "Note"],
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {
         "type": "VcfTabixAdapter",
@@ -111,7 +111,7 @@
     },
     {
       "trackId": "single_exon_gene",
-      "attributesIndexed": ["Name", "ID"],
+      "attributesIndexed": ["Name", "ID", "Note"],
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {
         "type": "Gff3TabixAdapter",
@@ -129,7 +129,7 @@
     },
     {
       "trackId": "volvox.inv.vcf",
-      "attributesIndexed": ["Name", "ID"],
+      "attributesIndexed": ["Name", "ID", "Note"],
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {
         "type": "VcfTabixAdapter",

@@ -1899,10 +1899,10 @@
     long "^4.0.0"
     quick-lru "^2.0.0"
 
-"@gmod/trix@^0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-0.2.2.tgz#428601d3c79c1bae4555172a986d6dcbc810b28a"
-  integrity sha512-IArGHGLbatpHvV7uOMC3iYcFVa/Q8GLsgkyxwtd++2ZxsGeXxMoEEX8jRmqWJCjkLE2/Fafy5oa7t13MeSQbQw==
+"@gmod/trix@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-1.0.0.tgz#48d8ab56090abefdce20e8d9ce8b4f43a3e7df81"
+  integrity sha512-nXjteSaiCPvbCi2hr43y6iqiPmvmUuGraS0FO4gK4u4bv8xmWh9PDqIZ+LMo5ODJaglibvFnxYrs7eYKYxiRgw==
 
 "@gmod/twobit@^1.1.10":
   version "1.1.10"

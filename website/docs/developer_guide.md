@@ -88,10 +88,7 @@ tracks, renderers, and so forth.
 
 ## Pluggable elements
 
-Pluggable elements are basic "extension points" that you can customize in
-JBrowse 2 plugins
-
-The pluggable types that we have in JBrowse 2 are
+Pluggable elements are pieces of functionality that plugins can add to JBrowse. Examples of pluggable types include:
 
 - Adapters
 - Track types

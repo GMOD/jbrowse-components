@@ -10,6 +10,16 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 
+function shorten(str: string, term: string, w = 15) {
+  const tidx = str.indexOf(term)
+
+  return str.length < 40
+    ? str
+    : (Math.max(0, tidx - w) > 0 ? '...' : '') +
+        str.slice(Math.max(0, tidx - w), tidx + term.length + w).trim() +
+        (tidx + term.length < str.length ? '...' : '')
+}
+
 export default class TrixTextSearchAdapter
   extends BaseAdapter
   implements BaseTextSearchAdapter {
@@ -42,20 +52,39 @@ export default class TrixTextSearchAdapter
    */
   async searchIndex(args: BaseArgs) {
     const results = await this.trixJs.search(args.queryString)
-    const formatted = results
-      .map(data => JSON.parse(data.replace(/\|/g, ',')) as string[])
-      .map(result => {
-        const [loc, trackId, name, id] = result.map(record =>
-          decodeURIComponent(record),
-        )
-        return new LocStringResult({
-          locString: loc,
-          label: name || id,
-          matchedAttribute: 'name',
-          matchedObject: result,
-          trackId,
-        })
+    const formatted = results.map(entry => {
+      const [term, data] = entry.split(',')
+      const result = JSON.parse(data.replace(/\|/g, ',')) as string[]
+      const [loc, trackId, ...rest] = result.map(record =>
+        decodeURIComponent(record),
+      )
+
+      const labelFieldIdx = rest.findIndex(elt => !!elt)
+      const contextIdx = rest
+        .map(elt => elt.toLowerCase())
+        .findIndex(f => f.indexOf(term.toLowerCase()) !== -1)
+
+      const labelField = rest[labelFieldIdx]
+      const contextField = rest[contextIdx]
+      const context =
+        contextIdx !== -1 && contextIdx !== labelFieldIdx
+          ? shorten(contextField, term)
+          : undefined
+      const label = shorten(labelField, term)
+
+      const displayString =
+        !context || labelField.toLowerCase() === context.toLowerCase()
+          ? label
+          : `${labelField} (${context})`
+
+      return new LocStringResult({
+        locString: loc,
+        label: labelField,
+        displayString,
+        matchedObject: result.map(record => decodeURIComponent(record)),
+        trackId,
       })
+    })
 
     if (args.searchType === 'exact') {
       return formatted.filter(
