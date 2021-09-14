@@ -62,9 +62,6 @@ export default function JBrowseWeb(
       aggregateTextSearchAdapters: types.array(
         pluginManager.pluggableConfigSchemaType('text search adapter'),
       ),
-      adapterGuess: types.array(
-        pluginManager.pluggableConfigSchemaType('adapter guess'),
-      ),
       connections: types.array(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),

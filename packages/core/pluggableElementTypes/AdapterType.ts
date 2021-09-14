@@ -12,7 +12,7 @@ export default class AdapterType extends PluggableElementBase {
 
   adapterCapabilities: string[]
 
-  externalPluginName: string | undefined
+  adapterCategoryHeader: string | undefined
 
   excludeFromTrackSelector: boolean
 
@@ -21,7 +21,7 @@ export default class AdapterType extends PluggableElementBase {
       name: string
       configSchema: AnyConfigurationSchemaType
       adapterCapabilities?: string[]
-      externalPluginName?: string
+      adapterCategoryHeader?: string
       excludeFromTrackSelector?: boolean
     } & (
       | { AdapterClass: AnyAdapter }
@@ -41,7 +41,7 @@ export default class AdapterType extends PluggableElementBase {
     this.configSchema = stuff.configSchema
     this.adapterCapabilities = stuff.adapterCapabilities || []
 
-    this.externalPluginName = stuff.externalPluginName
+    this.adapterCategoryHeader = stuff.adapterCategoryHeader
 
     if (stuff.excludeFromTrackSelector === undefined) {
       this.excludeFromTrackSelector = false

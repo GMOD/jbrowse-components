@@ -6,7 +6,6 @@ import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
-import AdapterGuessType from '@jbrowse/core/pluggableElementTypes/AdapterGuessType'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { makeIndex } from '@jbrowse/core/util/tracks'
 import { configSchema as bgzipFastaAdapterConfigSchema } from './BgzipFastaAdapter'
@@ -23,6 +22,11 @@ import {
 import { configSchema as twoBitAdapterConfigSchema } from './TwoBitAdapter'
 import GCContentAdapterF from './GCContentAdapter'
 import { createReferenceSeqTrackConfig } from './referenceSeqTrackConfig'
+import {
+  AdapterGuesser,
+  getFileName,
+  TrackTypeGuesser,
+} from '@jbrowse/core/util/tracks'
 
 /* adjust in both directions */
 class DivSequenceRenderer extends FeatureRendererType {
@@ -50,20 +54,38 @@ export default class SequencePlugin extends Plugin {
             import('./TwoBitAdapter/TwoBitAdapter').then(r => r.default),
         }),
     )
-
-    pluginManager.registerAdapterGuess(
-      () =>
-        new AdapterGuessType({
-          name: 'TwoBitAdapter',
-          regexGuess: /\.2bit$/i,
-          trackGuess: 'ReferenceSequenceTrack',
-          fetchConfig: (file: FileLocation) => {
+    pluginManager.addToExtensionPoint(
+      'extendGuessAdapter',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.2bit$/i
+          const adapterName = 'TwoBitAdapter'
+          const fileName = getFileName(file)
+          const indexName = index && getFileName(index)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
             return {
-              type: 'TwoBitAdapter',
+              type: adapterName,
               twoBitLocation: file,
             }
-          },
-        }),
+          }
+          return adapterGuesser(file, index)
+        }
+      },
+    )
+    pluginManager.addToExtensionPoint(
+      'extendGuessTrackType',
+      (trackTypeGuesser: TrackTypeGuesser) => {
+        return (adapterName: string) => {
+          if (adapterName === 'TwoBitAdapter') {
+            return 'ReferenceSequenceTrack'
+          }
+          return trackTypeGuesser(adapterName)
+        }
+      },
     )
 
     pluginManager.addAdapterType(
@@ -89,21 +111,38 @@ export default class SequencePlugin extends Plugin {
             ),
         }),
     )
-
-    pluginManager.registerAdapterGuess(
-      () =>
-        new AdapterGuessType({
-          name: 'IndexedFastaAdapter',
-          regexGuess: /\.(fa|fasta|fas|fna|mfa)$/i,
-          trackGuess: 'ReferenceSequenceTrack',
-          fetchConfig: (file: FileLocation, index: FileLocation) => {
+    pluginManager.addToExtensionPoint(
+      'extendGuessAdapter',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.(fa|fasta|fas|fna|mfa)$/i
+          const adapterName = 'IndexedFastaAdapter'
+          const fileName = getFileName(file)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
             return {
-              type: 'IndexedFastaAdapter',
+              type: adapterName,
               fastaLocation: file,
               faiLocation: index || makeIndex(file, '.fai'),
             }
-          },
-        }),
+          }
+          return adapterGuesser(file, index)
+        }
+      },
+    )
+    pluginManager.addToExtensionPoint(
+      'extendGuessTrackType',
+      (trackTypeGuesser: TrackTypeGuesser) => {
+        return (adapterName: string) => {
+          if (adapterName === 'IndexedFastaAdapter') {
+            return 'ReferenceSequenceTrack'
+          }
+          return trackTypeGuesser(adapterName)
+        }
+      },
     )
 
     pluginManager.addAdapterType(
@@ -118,21 +157,38 @@ export default class SequencePlugin extends Plugin {
         }),
     )
 
-    pluginManager.registerAdapterGuess(
-      () =>
-        new AdapterGuessType({
-          name: 'BgzipFastaAdapter',
-          regexGuess: /\.(fa|fasta|fas|fna|mfa)\.b?gz$/i,
-          trackGuess: 'ReferenceSequenceTrack',
-          fetchConfig: (file: FileLocation) => {
+    pluginManager.addToExtensionPoint(
+      'extendGuessAdapter',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.(fa|fasta|fas|fna|mfa)\.b?gz$/i
+          const adapterName = 'BgzipFastaAdapter'
+          const fileName = getFileName(file)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
             return {
-              type: 'BgzipFastaAdapter',
-              fastaLocation: file,
+              type: adapterName,
               faiLocation: makeIndex(file, '.fai'),
               gziLocation: makeIndex(file, '.gzi'),
             }
-          },
-        }),
+          }
+          return adapterGuesser(file, index)
+        }
+      },
+    )
+    pluginManager.addToExtensionPoint(
+      'extendGuessTrackType',
+      (trackTypeGuesser: TrackTypeGuesser) => {
+        return (adapterName: string) => {
+          if (adapterName === 'BgzipFastaAdapter') {
+            return 'ReferenceSequenceTrack'
+          }
+          return trackTypeGuesser(adapterName)
+        }
+      },
     )
 
     pluginManager.addAdapterType(

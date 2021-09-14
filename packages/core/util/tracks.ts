@@ -120,31 +120,56 @@ export function makeIndexType(
   return name?.toUpperCase().endsWith(typeA) ? typeA : typeB
 }
 
+export interface AdapterConfig {
+  type: string
+  [key: string]: any
+}
+
+export type AdapterGuesser = (
+  file: FileLocation,
+  index?: FileLocation,
+  adapterHint?: string,
+) => AdapterConfig | undefined
+
+export type TrackTypeGuesser = (adapterName: string) => string | undefined
+
+export function getFileName(track: FileLocation) {
+  const uri = 'uri' in track ? track.uri : undefined
+  const localPath = 'localPath' in track ? track.localPath : undefined
+  const blob = 'blobId' in track ? track : undefined
+  return (
+    blob?.name ||
+    uri?.slice(uri.lastIndexOf('/') + 1) ||
+    localPath?.slice(localPath.lastIndexOf('/') + 1) ||
+    ''
+  )
+}
+
 export function guessAdapter(
   file: FileLocation,
   index: FileLocation | undefined,
-  getFileName: (f: FileLocation) => string,
   model?: AddTrackModel,
   adapterHint?: string,
 ) {
-  const fileName = getFileName(file)
-  const indexName = index && getFileName(index)
-
   if (model) {
     // @ts-ignore
     const session = getSession(model)
 
-    const adapter = getEnv(session)
-      .pluginManager.getElementTypesInGroup('adapter guess')
-      .find(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (adapter: any) =>
-          (adapter.regexGuess && adapter.regexGuess.test(fileName)) ||
-          adapterHint === adapter.name,
-      )
+    const adapterGuesser = getEnv(session).pluginManager.evaluateExtensionPoint(
+      'extendGuessAdapter',
+      (
+        _file: FileLocation,
+        _index?: FileLocation,
+        _adapterHint?: string,
+      ): AdapterConfig | undefined => {
+        return undefined
+      },
+    ) as AdapterGuesser
+
+    const adapter = adapterGuesser(file, index, adapterHint)
 
     if (adapter) {
-      return adapter.fetchConfig(file, index, indexName)
+      return adapter
     }
   }
 
@@ -161,13 +186,19 @@ export function guessTrackType(
     // @ts-ignore
     const session = getSession(model)
 
-    const adapter = getEnv(session)
-      .pluginManager.getElementTypesInGroup('adapter guess')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .find((adapter: any) => adapterType === adapter.name)
+    const trackTypeGuesser = getEnv(
+      session,
+    ).pluginManager.evaluateExtensionPoint(
+      'extendGuessTrackType',
+      (_adapterName: string): AdapterConfig | undefined => {
+        return undefined
+      },
+    ) as TrackTypeGuesser
 
-    if (adapter) {
-      return adapter.trackGuess
+    const trackType = trackTypeGuesser(adapterType)
+
+    if (trackType) {
+      return trackType
     }
   }
   return 'FeatureTrack'

@@ -53,21 +53,21 @@ function StatusMessage({
  *   found under that subheader
  */
 function categorizeAdapters(
-  adaptersList: { name: string; externalPluginName: string }[],
+  adaptersList: { name: string; adapterCategoryHeader: string }[],
 ) {
   let currentPluginName = ''
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const items: any = []
   adaptersList.forEach(adapter => {
-    if (adapter.externalPluginName) {
-      if (currentPluginName !== adapter.externalPluginName) {
-        currentPluginName = adapter.externalPluginName
+    if (adapter.adapterCategoryHeader) {
+      if (currentPluginName !== adapter.adapterCategoryHeader) {
+        currentPluginName = adapter.adapterCategoryHeader
         items.push(
           <ListSubheader
-            key={adapter.externalPluginName}
-            value={adapter.externalPluginName}
+            key={adapter.adapterCategoryHeader}
+            value={adapter.adapterCategoryHeader}
           >
-            {adapter.externalPluginName}
+            {adapter.adapterCategoryHeader}
           </ListSubheader>,
         )
       }
@@ -110,20 +110,20 @@ function TrackAdapterSelector({
       }}
     >
       {adapters
-        // Excludes any adapter with the 'excludeFromTrackSelector' property, and anything with the 'externalPluginName' property
+        // Excludes any adapter with the 'excludeFromTrackSelector' property, and anything with the 'adapterCategoryHeader' property
         .filter(
           (elt: {
             name: string
             excludeFromTrackSelector: boolean
-            externalPluginName: string
-          }) => !elt.excludeFromTrackSelector && !elt.externalPluginName,
+            adapterCategoryHeader: string
+          }) => !elt.excludeFromTrackSelector && !elt.adapterCategoryHeader,
         )
         .map((elt: { name: string }) => (
           <MenuItem key={elt.name} value={elt.name}>
             {elt.name}
           </MenuItem>
         ))}
-      {/* adapters with the 'externalPluginName' property are categorized by the value of the property here */}
+      {/* adapters with the 'adapterCategoryHeader' property are categorized by the value of the property here */}
       {categorizeAdapters(adapters)}
     </TextField>
   )
