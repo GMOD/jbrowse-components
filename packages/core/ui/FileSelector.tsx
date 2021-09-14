@@ -125,7 +125,7 @@ const UrlChooser = (props: {
     return foundSelection
       ? foundSelection
       : {
-          internetAccountId: `${internetAccountSelection}-${Date.now()}`,
+          internetAccountId: `${internetAccountSelection}-${new Date().toLocaleDateString()},${new Date().getHours()}:${new Date().getMinutes()}`,
         }
   }
 

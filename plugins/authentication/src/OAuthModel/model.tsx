@@ -51,8 +51,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           location?.uri.includes(domain),
         )
       },
-      get generateAuthInfo() {
-        return {
+      generateAuthInfo() {
+        const generatedInfo = {
           internetAccountType: this.internetAccountType,
           authInfo: {
             authHeader: this.authHeader,
@@ -60,6 +60,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             configuration: self.accountConfig,
           },
         }
+        return generatedInfo
       },
     }))
     .actions(self => ({
@@ -82,6 +83,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       let openLocationPromise: Promise<string> | undefined = undefined
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let preAuthInfo: any = {}
+      const uriToPreAuthInfoMap = new Map()
       return {
         // opens external OAuth flow, popup for web and new browser window for desktop
         async useEndpointForAuthorization() {
@@ -168,17 +170,21 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           reject = () => {}
           this.deleteMessageChannel()
         },
-        async checkToken() {
+        async checkToken(authInfo: { token: string; refreshToken: string }) {
           let token =
-            preAuthInfo?.authInfo?.token ||
+            authInfo?.token ||
             (!inWebWorker
-              ? sessionStorage.getItem(`${self.internetAccountId}-token`)
-              : null)
+              ? (sessionStorage.getItem(
+                  `${self.internetAccountId}-token`,
+                ) as string)
+              : '')
           const refreshToken =
-            preAuthInfo.authInfo?.refreshToken ||
+            authInfo?.refreshToken ||
             (!inWebWorker
-              ? localStorage.getItem(`${self.internetAccountId}-refreshToken`)
-              : null)
+              ? (localStorage.getItem(
+                  `${self.internetAccountId}-refreshToken`,
+                ) as string)
+              : '')
 
           if (!token) {
             if (refreshToken) {
@@ -195,16 +201,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               }
             }
           }
-
-          if (!preAuthInfo.authInfo.token) {
-            preAuthInfo.authInfo.token = token
-          }
-          if (!preAuthInfo.authInfo.refreshToken && refreshToken) {
-            preAuthInfo.authInfo.refreshToken = refreshToken
-          }
           resolve()
           openLocationPromise = undefined
-          return token
+          return { token, refreshToken }
         },
         setRefreshToken(token: string) {
           const refreshTokenKey = `${self.internetAccountId}-refreshToken`
@@ -214,10 +213,6 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               `${self.internetAccountId}-refreshToken`,
               token,
             )
-          }
-
-          if (!preAuthInfo.authInfo.refreshToken) {
-            preAuthInfo.authInfo.refreshToken = token
           }
         },
         async exchangeAuthorizationForAccessToken(token: string) {
@@ -252,7 +247,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         },
         async exchangeRefreshForAccessToken() {
           const foundRefreshToken =
-            preAuthInfo.authInfo.refreshToken ||
+            preAuthInfo.authInfo?.refreshToken ||
             (!inWebWorker
               ? localStorage.getItem(`${self.internetAccountId}-refreshToken`)
               : null)
@@ -294,7 +289,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             if (!inWebWorker) {
               this.setAccessTokenInfo(accessToken.access_token, true)
             }
-            return accessToken
+            return accessToken.access_token
           } else {
             throw new Error(
               `Malformed or expired access token, and refresh token not found`,
@@ -358,25 +353,28 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
 
           let fileUrl = preAuthInfo.authInfo.fileUrl
-          let foundToken
+          let foundTokens = {
+            token: '',
+            refreshToken: '',
+          }
           try {
-            foundToken = await this.checkToken()
+            foundTokens = await this.checkToken(preAuthInfo.authInfo)
           } catch (e) {
             await this.handleError(e)
           }
           let newOpts = opts
 
-          if (foundToken) {
+          if (foundTokens.token) {
             if (!fileUrl) {
               try {
-                fileUrl = await self.fetchFile(String(url), foundToken)
+                fileUrl = await self.fetchFile(String(url), foundTokens.token)
               } catch (e) {
                 await this.handleError(e)
               }
             }
             const tokenInfoString = self.tokenType
-              ? `${self.tokenType} ${preAuthInfo.authInfo.token}`
-              : `${preAuthInfo.authInfo.token}`
+              ? `${self.tokenType} ${foundTokens.token}`
+              : `${foundTokens.token}`
             const newHeaders = {
               ...opts?.headers,
               [self.authHeader]: `${tokenInfoString}`,
@@ -395,7 +393,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         },
         openLocation(location: UriLocation) {
           preAuthInfo =
-            location.internetAccountPreAuthorization || self.generateAuthInfo
+            location.internetAccountPreAuthorization || self.generateAuthInfo()
           return new RemoteFile(String(location.uri), {
             fetch: this.getFetcher,
           })
@@ -405,40 +403,66 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           location: UriLocation,
           retried = false,
         ) {
-          if (!preAuthInfo.authInfo) {
-            preAuthInfo = self.generateAuthInfo
+          if (!uriToPreAuthInfoMap.get(location.uri)) {
+            uriToPreAuthInfoMap.set(location.uri, self.generateAuthInfo())
           }
           if (inWebWorker && !location.internetAccountPreAuthorization) {
             throw new Error(
               'Failed to obtain authorization information needed to fetch',
             )
           }
-          let accessToken
+
+          let foundTokens = {
+            token: '',
+            refreshToken: '',
+          }
           try {
-            accessToken = await this.checkToken()
+            foundTokens = await this.checkToken(
+              uriToPreAuthInfoMap.get(location.uri).authInfo,
+            )
+            uriToPreAuthInfoMap.set(location.uri, {
+              ...uriToPreAuthInfoMap.get(location.uri),
+              authInfo: {
+                ...uriToPreAuthInfoMap.get(location.uri).authInfo,
+                token: foundTokens.token,
+                refreshToken: foundTokens.refreshToken,
+              },
+            })
           } catch (error) {
             await this.handleError(error, retried)
           }
 
-          if (accessToken) {
-            let fileUrl
-            try {
-              fileUrl = await self.fetchFile(location.uri, accessToken)
-              preAuthInfo.authInfo.fileUrl = fileUrl
-            } catch (error) {
-              await this.handleError(error, retried)
-              if (!retried) {
-                await this.getPreAuthorizationInformation(location, true)
+          if (foundTokens.token) {
+            let fileUrl = uriToPreAuthInfoMap.get(location.uri).authInfo
+              ?.fileUrl
+            if (!fileUrl) {
+              try {
+                fileUrl = await self.fetchFile(location.uri, foundTokens.token)
+                uriToPreAuthInfoMap.set(location.uri, {
+                  ...uriToPreAuthInfoMap.get(location.uri),
+                  authInfo: {
+                    ...uriToPreAuthInfoMap.get(location.uri).authInfo,
+                    fileUrl: fileUrl,
+                  },
+                })
+              } catch (error) {
+                await this.handleError(error, retried, location)
+                if (!retried) {
+                  await this.getPreAuthorizationInformation(location, true)
+                }
               }
             }
           }
-
-          return preAuthInfo
+          return uriToPreAuthInfoMap.get(location.uri)
         },
-        async handleError(error: string, triedRefreshToken = false) {
-          if (!inWebWorker) {
-            preAuthInfo = self.generateAuthInfo // if it reaches here the token was bad
+        async handleError(
+          error: string,
+          triedRefreshToken = false,
+          location?: UriLocation,
+        ) {
+          if (!inWebWorker && location) {
             sessionStorage.removeItem(`${self.internetAccountId}-token`)
+            uriToPreAuthInfoMap.set(location.uri, self.generateAuthInfo()) // if it reaches here the token was bad
           }
           if (!triedRefreshToken) {
             await this.exchangeRefreshForAccessToken()

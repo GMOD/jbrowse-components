@@ -46,7 +46,7 @@ const stateModelFactory = (
           location?.uri.includes(domain),
         )
       },
-      get generateAuthInfo() {
+      generateAuthInfo() {
         return {
           internetAccountType: this.internetAccountType,
           authInfo: {
@@ -159,14 +159,14 @@ const stateModelFactory = (
         },
         openLocation(location: UriLocation) {
           preAuthInfo =
-            location.internetAccountPreAuthorization || self.generateAuthInfo
+            location.internetAccountPreAuthorization || self.generateAuthInfo()
           return new RemoteFile(String(location.uri), {
             fetch: this.getFetcher,
           })
         },
         async getPreAuthorizationInformation(location: UriLocation) {
           if (!preAuthInfo.authInfo) {
-            preAuthInfo = self.generateAuthInfo
+            preAuthInfo = self.generateAuthInfo()
           }
 
           if (inWebWorker && !location.internetAccountPreAuthorization) {
@@ -199,7 +199,7 @@ const stateModelFactory = (
         },
         async handleError() {
           if (!inWebWorker) {
-            preAuthInfo = self.generateAuthInfo
+            preAuthInfo = self.generateAuthInfo()
             sessionStorage.removeItem(`${self.internetAccountId}-token`)
           }
 
