@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { createViewState, JBrowseLinearGenomeView, loadPlugins } from '../src'
 import volvoxConfig from '../public/test_data/volvox/config.json'
 import volvoxSession from '../public/volvox-session.json'
+import nextstrainConfig from '../public/nextstrain_covid.json'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function addRelativeUris(config: any, baseUri: string) {
@@ -19,11 +20,8 @@ function addRelativeUris(config: any, baseUri: string) {
   }
 }
 
-addRelativeUris(
-  volvoxConfig,
-  new URL('test_data/volvox/config.json', window.location.href).href,
-)
-
+const configPath = 'test_data/volvox/config.json'
+addRelativeUris(volvoxConfig, new URL(configPath, window.location.href).href)
 const supportedTrackTypes = [
   'AlignmentsTrack',
   'PileupTrack',
@@ -44,7 +42,7 @@ const longReadsSession = {
   ...defaultSession,
   view: volvoxSession.session.views[0],
 }
-const aggregateTextSearchAdapters = volvoxConfig.aggregateTextSearchAdapters
+// const aggregateTextSearchAdapters = volvoxConfig.aggregateTextSearchAdapters
 export const OneLinearGenomeView = () => {
   const state = createViewState({
     assembly,
@@ -60,7 +58,7 @@ export const OneLinearGenomeView = () => {
   return <JBrowseLinearGenomeView viewState={state} />
 }
 
-export const OneLinearGenomeViewUsingLocObject = () => {
+export const UsingLocObject = () => {
   const state = createViewState({
     assembly,
     tracks,
@@ -68,43 +66,34 @@ export const OneLinearGenomeViewUsingLocObject = () => {
 
     // use 0-based coordinates for "location object" here
     location: { refName: 'ctgA', start: 10000, end: 20000 },
-    onChange: patch => {
-      // eslint-disable-next-line no-console
-      console.log('patch', patch)
-    },
   })
   return <JBrowseLinearGenomeView viewState={state} />
 }
-export const LinearViewWithLongReads = () => {
+export const WithLongReads = () => {
   const state = createViewState({
     assembly,
     tracks,
     defaultSession: longReadsSession,
     location: 'ctgA:1105..1221',
-    onChange: patch => {
-      // eslint-disable-next-line no-console
-      console.log('patch', patch)
-    },
   })
 
   return <JBrowseLinearGenomeView viewState={state} />
 }
 
-export const OneLinearGenomeViewWithOutsideStyling = () => {
+export const WithOutsideStyling = () => {
   const state = createViewState({
     assembly,
     tracks,
     defaultSession,
     location: 'ctgA:1105..1221',
-    onChange: patch => {
-      // eslint-disable-next-line no-console
-      console.log('patch', patch)
-    },
   })
 
   return (
     <div style={{ textAlign: 'center', fontFamily: 'monospace' }}>
-      <h2>Hello world, this is centered but not affecting the internal LGV</h2>
+      <h2>
+        This parent container has textAlign:'center' and a monospace font, but
+        these attributes are not affecting the internal LGV
+      </h2>
       <JBrowseLinearGenomeView viewState={state} />
     </div>
   )
@@ -136,10 +125,12 @@ export const TwoLinearGenomeViews = () => {
 
 export const WithPlugins = () => {
   // usage with buildtime plugins
+  // this plugins array is then passed to the createViewState constructor
   // import UCSCPlugin from 'jbrowse-plugin-ucsc'
   // const plugins = [UCSCPlugin]
 
-  // alternative usage with runtime plugins
+  // usage with runtime plugins
+  // this plugins array is then passed to the createViewState constructor
   const [plugins, setPlugins] = useState<PluginRecord[]>()
   useEffect(() => {
     async function getPlugins() {
@@ -245,19 +236,143 @@ export const WithPlugins = () => {
   })
   return <JBrowseLinearGenomeView viewState={state} />
 }
+
 export const WithTextSearching = () => {
-  const state = createViewState({
+  const textSearchConfig = {
     assembly,
-    tracks,
+    aggregateTextSearchAdapters: [
+      {
+        type: 'TrixTextSearchAdapter',
+        textSearchAdapterId: 'volvox-index',
+        ixFilePath: {
+          uri: 'storybook_data/volvox.ix',
+        },
+        ixxFilePath: {
+          uri: 'storybook_data/volvox.ixx',
+        },
+        metaFilePath: {
+          uri: 'storybook_data/volvox_meta.json',
+        },
+        assemblyNames: ['volvox'],
+      },
+    ],
+    tracks: [
+      {
+        type: 'FeatureTrack',
+        trackId: 'gff3tabix_genes',
+        assemblyNames: ['volvox'],
+        name: 'GFF3Tabix genes',
+        category: ['Miscellaneous'],
+        adapter: {
+          type: 'Gff3TabixAdapter',
+          gffGzLocation: {
+            uri: 'volvox.sort.gff3.gz',
+          },
+          index: {
+            location: {
+              uri: 'volvox.sort.gff3.gz.tbi',
+            },
+          },
+        },
+      },
+      {
+        type: 'FeatureTrack',
+        trackId: 'single_exon_gene',
+        category: ['Miscellaneous'],
+        name: 'Single exon gene',
+        assemblyNames: ['volvox'],
+        adapter: {
+          type: 'Gff3TabixAdapter',
+          gffGzLocation: {
+            uri: 'single_exon_gene.sorted.gff.gz',
+          },
+          index: {
+            location: {
+              uri: 'single_exon_gene.sorted.gff.gz.tbi',
+            },
+          },
+        },
+      },
+      {
+        type: 'VariantTrack',
+        trackId: 'volvox.inv.vcf',
+        name: 'volvox inversions',
+        category: ['VCF'],
+        assemblyNames: ['volvox'],
+        adapter: {
+          type: 'VcfTabixAdapter',
+          vcfGzLocation: {
+            uri: 'volvox.inv.vcf.gz',
+          },
+          index: {
+            location: {
+              uri: 'volvox.inv.vcf.gz.tbi',
+            },
+            indexType: 'TBI',
+          },
+        },
+      },
+    ],
     defaultSession,
-    aggregateTextSearchAdapters,
     // use 1-based coordinates for locstring
     location: 'ctgA:1..800',
-    onChange: patch => {
-      // eslint-disable-next-line no-console
-      console.log('patch', patch)
-    },
-  })
+  }
+  addRelativeUris(
+    textSearchConfig,
+    new URL(configPath, window.location.href).href,
+  )
+  const state = createViewState(textSearchConfig)
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const WithPerTrackTextSearching = () => {
+  const textSearchConfig = {
+    assembly,
+    tracks: [
+      {
+        type: 'FeatureTrack',
+        trackId: 'gff3tabix_genes',
+        assemblyNames: ['volvox'],
+        name: 'GFF3Tabix genes',
+        category: ['Miscellaneous'],
+        adapter: {
+          type: 'Gff3TabixAdapter',
+          gffGzLocation: {
+            uri: 'volvox.sort.gff3.gz',
+          },
+          index: {
+            location: {
+              uri: 'volvox.sort.gff3.gz.tbi',
+            },
+          },
+        },
+        textSearching: {
+          textSearchAdapter: {
+            type: 'TrixTextSearchAdapter',
+            textSearchAdapterId: 'gff3tabix_genes-index',
+            ixFilePath: {
+              uri: 'storybook_data/gff3tabix_genes.ix',
+            },
+            ixxFilePath: {
+              uri: 'storybook_data/gff3tabix_genes.ixx',
+            },
+            metaFilePath: {
+              uri: 'storybook_data/gff3tabix_genes_meta.json',
+            },
+            assemblyNames: ['volvox'],
+          },
+        },
+      },
+    ],
+    defaultSession,
+    // use 1-based coordinates for locstring
+    location: 'ctgA:1..800',
+  }
+  addRelativeUris(
+    textSearchConfig,
+    new URL(configPath, window.location.href).href,
+  )
+  const state = createViewState(textSearchConfig)
   return <JBrowseLinearGenomeView viewState={state} />
 }
 export const CustomTheme = () => {
@@ -307,6 +422,32 @@ export const CustomTheme = () => {
             C: { main: '#87CEEB' },
             G: { main: '#DAA520' },
             T: { main: '#DC143C' },
+          },
+        },
+      },
+    },
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+export const NextstrainExample = () => {
+  const { assembly, tracks, defaultSession } = nextstrainConfig
+  const state = createViewState({
+    assembly,
+    tracks,
+    defaultSession,
+    location: 'SARS-CoV-2:1..29,903',
+    onChange: patch => {
+      // eslint-disable-next-line no-console
+      console.log('patch', patch)
+    },
+    configuration: {
+      theme: {
+        palette: {
+          primary: {
+            main: '#5da8a3',
+          },
+          secondary: {
+            main: '#333',
           },
         },
       },

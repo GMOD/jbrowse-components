@@ -252,16 +252,14 @@ jbrowse text-index
 
 This will index relevant track types e.g. any track with Gff3TabixAdapter (gene
 names and IDs) or VcfTabixAdapter (e.g. variant IDs). The command will print
-out a progress bar for each track that it is indexing. It will output files to
-the TMPDIR while indexing to reduce memory usage so if the filesystem with /tmp
-is has low disk space you can set an alternative temporary directory using the
-environment variable `TMPDIR=~/alt_tmp_dir/ jbrowse text-index`
+out a progress bar for each track that it is indexing.
 
-After this command is run, you can type a gene name into the "search box" in
-the linear genome view or other views and quickly navigate to genes by gene
-name.
+This will also update your config.json so after it completes, you can type a
+gene name into the "search box" in the linear genome view or other views and
+quickly navigate to genes by gene name.
 
-See the [text-index](cli#text-index) command docs for more info
+See the [text-index](cli#jbrowse-text-index) command docs for more info. Also
+see the [FAQ entries for text searching](faq#text-searching)
 
 ## Conclusion
 

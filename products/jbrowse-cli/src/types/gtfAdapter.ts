@@ -23,6 +23,7 @@ export async function* indexGtf(
   const progressBar = new SingleBar(
     {
       format: '{bar} ' + trackId + ' {percentage}% | ETA: {eta}s',
+      etaBuffer: 2000,
     },
     Presets.shades_classic,
   )
@@ -56,8 +57,6 @@ export async function* indexGtf(
     input: gzStream,
   })
 
-  const regex = /(")+/g
-
   for await (const line of rl) {
     if (line.startsWith('#')) {
       continue
@@ -69,28 +68,38 @@ export async function* indexGtf(
     const locStr = `${seq_name}:${start}..${end}`
 
     if (!typesToExclude.includes(type)) {
-      const col9attrs = col9.split('; ')
-      const name = col9attrs
-        .find(f => f.startsWith('gene_name'))
-        ?.split(' ')[1]
-        .trim()
-        .replace(regex, '')
-      const id = col9attrs
-        .find(f => f.startsWith('gene_id'))
-        ?.split(' ')[1]
-        .trim()
-        .replace(regex, '')
-      const attrs = attributes.map(attr =>
-        col9attrs
-          .find(f => f.startsWith(attr))
-          ?.split(' ')[1]
-          .trim()
-          .replace(regex, ''),
+      const col9Attrs = Object.fromEntries(
+        col9
+          .split(';')
+          .map(f => f.trim())
+          .filter(f => !!f)
+          .map(f => f.split(' '))
+          .map(([key, val]) => {
+            return [
+              key.trim(),
+              val.trim().split(',').join(' ').replace(/("|')/g, ''),
+            ]
+          }),
       )
+      const name = col9Attrs['gene_name'] || ''
+      const id = col9Attrs['gene_id'] || ''
+      const attrs = attributes
+        .map(attr => col9Attrs[attr])
+        .filter((f): f is string => !!f)
+
+      const restAttrs = attributes
+        .filter(attr => attr !== 'gene_name' && attr !== 'gene_id')
+        .map(attr => col9Attrs[attr])
+        .filter((f): f is string => !!f)
       if (name || id) {
-        const record = JSON.stringify([locStr, trackId, name, id])
-        const buff = Buffer.from(record).toString('base64')
-        yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
+        const record = JSON.stringify([
+          encodeURIComponent(locStr),
+          encodeURIComponent(trackId),
+          encodeURIComponent(name),
+          encodeURIComponent(id),
+          ...restAttrs.map(a => encodeURIComponent(a || '')),
+        ]).replace(/,/g, '|')
+        yield `${record} ${[...new Set(attrs)].join(' ')}\n`
       }
     }
   }

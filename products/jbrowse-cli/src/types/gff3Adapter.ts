@@ -23,6 +23,7 @@ export async function* indexGff3(
   const progressBar = new SingleBar(
     {
       format: '{bar} ' + trackId + ' {percentage}% | ETA: {eta}s',
+      etaBuffer: 2000,
     },
     Presets.shades_classic,
   )
@@ -34,7 +35,7 @@ export async function* indexGff3(
     fileDataStream = await createRemoteStream(uri)
     totalBytes = +(fileDataStream.headers['content-length'] || 0)
   } else {
-    const filename = path.join(outLocation, uri)
+    const filename = path.isAbsolute(uri) ? uri : path.join(outLocation, uri)
     totalBytes = fs.statSync(filename).size
     fileDataStream = fs.createReadStream(filename)
   }
@@ -48,12 +49,10 @@ export async function* indexGff3(
     progressBar.update(receivedBytes)
   })
 
-  const gzStream = uri.endsWith('.gz')
-    ? fileDataStream.pipe(createGunzip())
-    : fileDataStream
-
   const rl = readline.createInterface({
-    input: gzStream,
+    input: uri.endsWith('.gz')
+      ? fileDataStream.pipe(createGunzip())
+      : fileDataStream,
   })
 
   for await (const line of rl) {
@@ -67,27 +66,31 @@ export async function* indexGff3(
     const locStr = `${seq_id}:${start}..${end}`
 
     if (!typesToExclude.includes(type)) {
-      const col9attrs = col9.split(';')
-      const name = col9attrs
-        .find(f => f.startsWith('Name'))
-        ?.split('=')[1]
-        .trim()
-      const id = col9attrs
-        .find(f => f.startsWith('ID'))
-        ?.split('=')[1]
-        .trim()
+      // turns gff3 attrs into a map, and converts the arrays into space
+      // separated strings
+      const col9attrs = Object.fromEntries(
+        col9
+          .split(';')
+          .map(f => f.trim())
+          .filter(f => !!f)
+          .map(f => f.split('='))
+          .map(([key, val]) => [
+            key.trim(),
+            decodeURIComponent(val).trim().split(',').join(' '),
+          ]),
+      )
       const attrs = attributes
-        .map(attr =>
-          col9attrs
-            .find(f => f.startsWith(attr))
-            ?.split('=')[1]
-            .trim(),
-        )
-        .filter(f => !!f)
-      if (name || id) {
-        const record = JSON.stringify([locStr, trackId, name, id])
-        const buff = Buffer.from(record).toString('base64')
-        yield `${buff} ${[...new Set(attrs)].join(' ')}\n`
+        .map(attr => col9attrs[attr])
+        .filter((f): f is string => !!f)
+
+      if (attrs.length) {
+        const record = JSON.stringify([
+          encodeURIComponent(locStr),
+          encodeURIComponent(trackId),
+          ...attrs.map(a => encodeURIComponent(a)),
+        ]).replace(/,/g, '|')
+
+        yield `${record} ${[...new Set(attrs)].join(' ')}\n`
       }
     }
   }

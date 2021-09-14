@@ -1,2 +1,2 @@
-declare module 'array-intersection'
 declare module 'svg-path-generator'
+declare module '@gmod/vcf'

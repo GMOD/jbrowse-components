@@ -6,7 +6,7 @@ on:
 name: Upload website
 jobs:
   build:
-    name: upload_web
+    name: build-upload
     runs-on: ubuntu-latest
     if: "contains(github.event.head_commit.message, 'update docs')"
     steps:

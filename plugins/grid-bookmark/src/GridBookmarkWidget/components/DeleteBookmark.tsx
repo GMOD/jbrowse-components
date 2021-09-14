@@ -1,11 +1,15 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 
+import { assembleLocString } from '@jbrowse/core/util'
+
 import {
   IconButton,
   Button,
   Dialog,
   DialogTitle,
+  DialogContent,
+  DialogActions,
   Typography,
   makeStyles,
 } from '@material-ui/core'
@@ -25,11 +29,11 @@ const useStyles = makeStyles(() => ({
 }))
 
 function DeleteBookmarkDialog({
-  locString,
+  rowNumber,
   model,
   onClose,
 }: {
-  locString: string | undefined
+  rowNumber: number | undefined
   model: GridBookmarkModel
   onClose: () => void
 }) {
@@ -38,8 +42,9 @@ function DeleteBookmarkDialog({
   const { removeBookmark } = model
 
   return (
-    <Dialog open={!!locString} onClose={onClose}>
+    <Dialog open={rowNumber !== undefined} onClose={onClose}>
       <DialogTitle>
+        Delete bookmark
         <IconButton
           className={classes.closeDialog}
           aria-label="close-dialog"
@@ -48,26 +53,41 @@ function DeleteBookmarkDialog({
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <div className={classes.dialogContainer}>
+      <DialogContent>
         <Typography>
-          Remove <code>{locString}</code>?
+          Remove{' '}
+          <code>
+            {rowNumber !== undefined
+              ? assembleLocString(model.bookmarkedRegions[rowNumber])
+              : ''}
+          </code>{' '}
+          ?
         </Typography>
-        <br />
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              if (locString) {
-                removeBookmark(locString)
-                onClose()
-              }
-            }}
-          >
-            Confirm
-          </Button>
-        </div>
-      </div>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => {
+            onClose()
+          }}
+        >
+          Cancel
+        </Button>
+
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            if (rowNumber !== undefined) {
+              removeBookmark(rowNumber)
+              onClose()
+            }
+          }}
+        >
+          Confirm
+        </Button>
+      </DialogActions>
     </Dialog>
   )
 }

@@ -19,18 +19,21 @@ This is an example of what a story looks like:
   <Story id="linear-view--one-linear-genome-view" />
 </Canvas>
 
-You can test out the various features of the component, and open tracks and interact with
-it as you would in your app.
-You can also click on the code button on the bottom right to see what the code looks
-like for the component being viewed.
+You can test out the various features of the component, and open tracks and
+interact with it as you would in your app. You can also click on the code
+button on the bottom right to see what the code looks like for the component
+being viewed.
 
 ## An overview of the LGV API
 
-The LGV component relies on the same [configuration](https://jbrowse.org/jb2/docs/config_guide)
-as the main JB2 app, with a few noteworthy differences.
-First, the component can be configured using a standalone JSON file like JB2, or can be
-configured with JavaScript objects in the source code of the app where it is being used, as
-shown [here](https://github.com/GMOD/jbrowse-components/blob/HEAD/products/jbrowse-react-linear-genome-view/docs/example.md).
+The LGV component relies on the same
+[configuration](https://jbrowse.org/jb2/docs/config_guide) as the main JB2 app,
+with a few noteworthy differences.
+
+First, the component can be configured using a standalone JSON file like JB2,
+or can be configured with JavaScript objects in the source code of the app
+where it is being used, as shown
+[here](https://github.com/GMOD/jbrowse-components/blob/HEAD/products/jbrowse-react-linear-genome-view/docs/example.md).
 
 Second, while this is the structure of a JB2 configuration file:
 
@@ -73,6 +76,12 @@ const state = createViewState({
   defaultSession,
 })
 ```
+
+Example
+
+<Canvas withSource="open">
+  <Story id="linear-view--using-loc-object" />
+</Canvas>
 
 ## Additional resources
 

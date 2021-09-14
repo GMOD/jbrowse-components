@@ -1,0 +1,55 @@
+{
+  "dateCreated": "2021-09-07T22:17:09.715Z",
+  "tracks": [
+    {
+      "trackId": "gff3tabix_genes",
+      "attributesIndexed": ["Name", "ID"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.gff3.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.gff3.gz.tbi"
+          }
+        }
+      }
+    },
+    {
+      "trackId": "single_exon_gene",
+      "attributesIndexed": ["Name", "ID"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "single_exon_gene.sorted.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "single_exon_gene.sorted.gff.gz.tbi"
+          }
+        }
+      }
+    },
+    {
+      "trackId": "volvox.inv.vcf",
+      "attributesIndexed": ["Name", "ID"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.inv.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.inv.vcf.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      }
+    }
+  ],
+  "assemblyNames": ["volvox"]
+}

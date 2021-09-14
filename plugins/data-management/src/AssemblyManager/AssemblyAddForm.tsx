@@ -8,35 +8,31 @@ import {
   MenuItem,
   Paper,
   TextField,
-  Theme,
   makeStyles,
-  createStyles,
 } from '@material-ui/core'
 import AddIcon from '@material-ui/icons/Add'
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      flexGrow: 1,
-      overflow: 'hidden',
-      padding: theme.spacing(0, 3),
-    },
-    paper: {
-      margin: `${theme.spacing(1)}px auto`,
-      padding: theme.spacing(2),
-    },
-    createButton: {
-      marginTop: '1em',
-      justifyContent: 'center',
-    },
-    paperContent: {
-      flex: 'auto',
-      margin: `${theme.spacing(1)}px auto`,
-      padding: theme.spacing(1),
-      overflow: 'auto',
-    },
-  }),
-)
+const useStyles = makeStyles(theme => ({
+  root: {
+    flexGrow: 1,
+    overflow: 'hidden',
+    padding: theme.spacing(0, 3),
+  },
+  paper: {
+    margin: `${theme.spacing(1)}px auto`,
+    padding: theme.spacing(2),
+  },
+  createButton: {
+    marginTop: '1em',
+    justifyContent: 'center',
+  },
+  paperContent: {
+    flex: 'auto',
+    margin: `${theme.spacing(1)}px auto`,
+    padding: theme.spacing(1),
+    overflow: 'auto',
+  },
+}))
 
 const AdapterSelector = observer(
   ({
@@ -46,7 +42,7 @@ const AdapterSelector = observer(
   }: {
     adapterSelection: string
     setAdapterSelection: Function
-    adapterTypes: Array<string>
+    adapterTypes: string[]
   }) => {
     return (
       <TextField
@@ -238,7 +234,6 @@ const AssemblyAddForm = observer(
           <TextField
             id="assembly-name"
             inputProps={{ 'data-testid': 'assembly-name' }}
-            defaultValue=""
             label="Assembly name"
             helperText="The assembly name e.g. hg38"
             variant="outlined"
@@ -251,7 +246,6 @@ const AssemblyAddForm = observer(
             label="Assembly display name"
             helperText='A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
             variant="outlined"
-            defaultValue=""
             value={assemblyDisplayName}
             onChange={event => setAssemblyDisplayName(event.target.value)}
           />

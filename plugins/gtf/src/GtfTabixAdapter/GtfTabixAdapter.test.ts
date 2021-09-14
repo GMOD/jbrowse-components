@@ -3,6 +3,7 @@ import Adapter from './GtfTabixAdapter'
 import path from 'path'
 
 test('adapter can fetch variants form demo.gtf', async () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const adapter = new Adapter(
     configSchema.create({
       gtfGzLocation: {

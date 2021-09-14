@@ -57,10 +57,6 @@ export default class TextSearchManager {
    * @param args - search options/arguments include: search query
    */
   relevantAdapters(searchScope: SearchScope) {
-    // Note: (in the future we can add a condition to check if not aggregate
-    // only return track text search adapters that cover relevant tracks, for
-    // now only returning text search adapters that cover configured
-    // assemblies) root level adapters and track adapters
     const { aggregateTextSearchAdapters, tracks } = this.pluginManager.rootModel
       ?.jbrowse as {
       tracks: AnyConfigurationModel[]
@@ -68,20 +64,19 @@ export default class TextSearchManager {
       aggregateTextSearchAdapters: any
     }
 
-    // get adapters that cover assemblies
-    const rootTextSearchAdapters = this.getAdaptersWithAssembly(
-      searchScope.assemblyName,
-      aggregateTextSearchAdapters,
-    )
-    const trackTextSearchConfs = tracks.map(track => track.textSearchConf)
-    const trackTextSearchAdapters = this.getAdaptersWithAssembly(
-      searchScope.assemblyName,
-      trackTextSearchConfs.filter(
-        conf =>
-          conf?.textSearchAdapter?.textSearchAdapterId !== 'placeholderId',
+    const { assemblyName } = searchScope
+    return [
+      ...this.getAdaptersWithAssembly(
+        assemblyName,
+        aggregateTextSearchAdapters,
       ),
-    )
-    return [...rootTextSearchAdapters, ...trackTextSearchAdapters]
+      ...this.getAdaptersWithAssembly(
+        assemblyName,
+        tracks.map(track =>
+          readConfObject(track, ['textSearching', 'textSearchAdapter']),
+        ),
+      ),
+    ]
   }
 
   getAdaptersWithAssembly(
@@ -89,7 +84,7 @@ export default class TextSearchManager {
     adapterConfs: AnyConfigurationModel[],
   ) {
     return adapterConfs.filter(conf =>
-      readConfObject(conf, 'assemblies')?.includes(asmName),
+      readConfObject(conf, 'assemblyNames')?.includes(asmName),
     )
   }
 

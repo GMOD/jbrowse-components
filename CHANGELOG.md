@@ -1,3 +1,90 @@
+## 1.4.4 (2021-09-14)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                          |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                           | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/plugin-alignments              | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-breakpoint-split-view   |                                                                   |
+| @jbrowse/plugin-config                  | https://www.npmjs.com/package/@jbrowse/plugin-config              |
+| @jbrowse/plugin-data-management         | https://www.npmjs.com/package/@jbrowse/plugin-data-management     |
+| @jbrowse/plugin-dotplot-view            |                                                                   |
+| @jbrowse/plugin-grid-bookmark           | https://www.npmjs.com/package/@jbrowse/plugin-grid-bookmark       |
+| @jbrowse/plugin-legacy-jbrowse          | https://www.npmjs.com/package/@jbrowse/plugin-legacy-jbrowse      |
+| @jbrowse/plugin-linear-comparative-view |                                                                   |
+| @jbrowse/plugin-linear-genome-view      | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/plugin-sequence                | https://www.npmjs.com/package/@jbrowse/plugin-sequence            |
+| @jbrowse/plugin-spreadsheet-view        |                                                                   |
+| @jbrowse/plugin-svg                     | https://www.npmjs.com/package/@jbrowse/plugin-svg                 |
+| @jbrowse/plugin-trix                    |                                                                   |
+| @jbrowse/plugin-variants                | https://www.npmjs.com/package/@jbrowse/plugin-variants            |
+| @jbrowse/plugin-wiggle                  | https://www.npmjs.com/package/@jbrowse/plugin-wiggle              |
+| @jbrowse/cli                            | https://www.npmjs.com/package/@jbrowse/cli                        |
+| @jbrowse/desktop                        |                                                                   |
+| @jbrowse/react-circular-genome-view     | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                            |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- Other
+  - [#2287](https://github.com/GMOD/jbrowse-components/pull/2287) Use react-popper to reduce tooltip lag on pages with many elements ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2294](https://github.com/GMOD/jbrowse-components/pull/2294) Don't rely on SVTYPE=BND for breakend split view options and thicker mouseover chords on circular views ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2272](https://github.com/GMOD/jbrowse-components/pull/2272) Auto adjust box RefNameAutocomplete width based on refName length ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2243](https://github.com/GMOD/jbrowse-components/pull/2243) Import bookmarks functionality for grid bookmark widget ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#2247](https://github.com/GMOD/jbrowse-components/pull/2247) New jbrowse-desktop start screen design ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2254](https://github.com/GMOD/jbrowse-components/pull/2254) Better error reporting from web worker and chrom sizes adapter errors ([@cmdcolin](https://github.com/cmdcolin))
+  - [#1881](https://github.com/GMOD/jbrowse-components/pull/1881) Add new text searching functionality to core, with `jbrowse text-index` CLI command to generate trix index ([@teresam856](https://github.com/teresam856))
+
+#### :bug: Bug Fix
+
+- `core`
+  - [#2320](https://github.com/GMOD/jbrowse-components/pull/2320) Fix issue where add track widget doesn't infer adapters on second usage ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2250](https://github.com/GMOD/jbrowse-components/pull/2250) Prevent the ToggleButton for the FileSelector toggling to local file when only URL should be available ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#2309](https://github.com/GMOD/jbrowse-components/pull/2309) Fix mouseover selection appearing across unrelated blocks ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2283](https://github.com/GMOD/jbrowse-components/pull/2283) Fix ability for the variant detail panel to create breakpoint split view for <TRA> elements ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2268](https://github.com/GMOD/jbrowse-components/pull/2268) Fix autocomplete height on small displays ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- [#2300](https://github.com/GMOD/jbrowse-components/pull/2300) Release announcement draft v1.4.0 ([@teresam856](https://github.com/teresam856))
+- [#2310](https://github.com/GMOD/jbrowse-components/pull/2310) Add cancer demos to the demos page on website ([@cmdcolin](https://github.com/cmdcolin))
+- [#2253](https://github.com/GMOD/jbrowse-components/pull/2253) Add note about legacy-peer-deps to embedded component readme ([@cmdcolin](https://github.com/cmdcolin))
+- [#2262](https://github.com/GMOD/jbrowse-components/pull/2262) Add more MDX documentation pages to @jbrowse/react-linear-genome-view storybooks ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- [#2263](https://github.com/GMOD/jbrowse-components/pull/2263) Force publish all packages on release ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 3
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Teresa Martinez ([@teresam856](https://github.com/teresam856))
+- [@Akusem](https://github.com/Akusem)
+
+## 1.4.3
+
+Failed NPM upload, partial release
+
+## 1.4.2
+
+Failed NPM upload, partial release
+
+## 1.4.1
+
+Broken releases missing some packages
+
+## 1.4.0
+
+Broken releases missing some packages
+
 ## 1.3.5 (2021-08-23)
 
 <details><summary>Packages in this release</summary>

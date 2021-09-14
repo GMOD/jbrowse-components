@@ -1,0 +1,22 @@
+{
+  "dateCreated": "2021-09-07T22:12:36.967Z",
+  "tracks": [
+    {
+      "trackId": "gff3tabix_genes",
+      "attributesIndexed": ["Name", "ID"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.gff3.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.gff3.gz.tbi"
+          }
+        }
+      }
+    }
+  ],
+  "assemblyNames": ["volvox"]
+}

@@ -1,15 +1,18 @@
-import { types, Instance } from 'mobx-state-tree'
-
+import { types, cast, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-
-import { assembleLocString } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 import { Region as RegionModel, ElementId } from '@jbrowse/core/util/types/mst'
 
-const LabeledRegionModel = types.compose(
-  RegionModel,
-  types.model('Label', { label: '' }),
-)
+const LabeledRegionModel = types
+  .compose(
+    RegionModel,
+    types.model('Label', { label: types.optional(types.string, '') }),
+  )
+  .actions(self => ({
+    setLabel(label: string) {
+      self.label = label
+    },
+  }))
 
 export default function f(pluginManager: PluginManager) {
   return types
@@ -20,52 +23,41 @@ export default function f(pluginManager: PluginManager) {
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
       bookmarkedRegions: types.array(LabeledRegionModel),
-      selectedAssembly: '',
+      modelSelectedAssembly: '',
     })
     .actions(self => ({
-      addBookmark(region: Region) {
-        const regionLocString = assembleLocString(region)
-        const index = self.bookmarkedRegions.findIndex(b => {
-          const bLocString = assembleLocString(b)
-          return bLocString === regionLocString
-        })
-        if (index === -1) {
-          self.bookmarkedRegions.push(region)
-          this.setSelectedAssembly(region.assemblyName)
-        }
+      importBookmarks(regions: Region[]) {
+        self.bookmarkedRegions = cast(self.bookmarkedRegions.concat(regions))
       },
-      removeBookmark(locString: string) {
-        const index = self.bookmarkedRegions.findIndex(b => {
-          const bLocString = assembleLocString(b)
-          return bLocString === locString
-        })
-        if (index !== -1) {
-          self.bookmarkedRegions.splice(index, 1)
-        }
+      addBookmark(region: Region) {
+        self.bookmarkedRegions.push(region)
+      },
+      removeBookmark(index: number) {
+        self.bookmarkedRegions.splice(index, 1)
       },
       clearAllBookmarks() {
         self.bookmarkedRegions.clear()
       },
-      updateBookmarkLabel(locString: string, label: string) {
-        const index = self.bookmarkedRegions.findIndex(b => {
-          const bLocString = assembleLocString(b)
-          return bLocString === locString
-        })
-        if (index !== -1) {
-          self.bookmarkedRegions[index].label = label
-        }
+      updateBookmarkLabel(index: number, label: string) {
+        self.bookmarkedRegions[index]?.setLabel(label)
       },
       setSelectedAssembly(assembly: string) {
-        self.selectedAssembly = assembly
+        self.modelSelectedAssembly = assembly
       },
     }))
     .views(self => ({
-      get assemblies() {
-        const assemblies = self.bookmarkedRegions.map(
-          region => region.assemblyName,
+      get selectedAssembly() {
+        return (
+          self.modelSelectedAssembly ||
+          (self.bookmarkedRegions.length
+            ? self.bookmarkedRegions[0].assemblyName
+            : '')
         )
-        const uniqueAssemblies = Array.from(new Set(assemblies))
-        return uniqueAssemblies
+      },
+      get assemblies() {
+        return [
+          ...new Set(self.bookmarkedRegions.map(region => region.assemblyName)),
+        ]
       },
     }))
 }

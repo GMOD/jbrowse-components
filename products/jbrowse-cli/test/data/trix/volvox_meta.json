@@ -1,35 +1,85 @@
 {
-  "dateCreated": "8/24/2021, 12:34:36 PM",
+  "dateCreated": "2021-09-07T21:59:33.512Z",
   "tracks": [
     {
       "trackId": "au9_scaffold",
       "attributesIndexed": ["Name", "ID", "type"],
       "excludedTypes": ["CDS", "exon"],
-      "fileLocation": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3"
+      "adapterConf": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "au9_scaffold_subset_sync.gff3"
+        },
+        "index": {
+          "location": {
+            "uri": "au9_scaffold_subset_sync.gff3.tbi"
+          }
+        }
+      }
     },
     {
       "trackId": "gff3tabix_genes",
       "attributesIndexed": ["Name", "ID", "type"],
       "excludedTypes": ["CDS", "exon"],
-      "fileLocation": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3"
+      "adapterConf": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.gff3.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.gff3.gz.tbi"
+          }
+        }
+      }
     },
     {
       "trackId": "online_gff3tabix_genes",
       "attributesIndexed": ["Name", "ID", "type"],
       "excludedTypes": ["CDS", "exon"],
-      "fileLocation": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3"
+      "adapterConf": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz.tbi"
+          }
+        }
+      }
     },
     {
       "trackId": "gtfdemo",
       "attributesIndexed": ["exon_id"],
       "excludedTypes": ["CDS", "exon"],
-      "fileLocation": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3"
+      "adapterConf": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "demo.gtf"
+        },
+        "index": {
+          "location": {
+            "uri": "demo.gtf.tbi"
+          }
+        }
+      }
     },
     {
       "trackId": "online_au9_scaffold",
       "attributesIndexed": ["Name", "ID", "type"],
       "excludedTypes": ["CDS", "exon"],
-      "fileLocation": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3"
+      "adapterConf": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3"
+        },
+        "index": {
+          "location": {
+            "uri": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3.tbi"
+          }
+        }
+      }
     }
   ],
   "assemblies": ["volvox"]

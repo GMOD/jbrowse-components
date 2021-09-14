@@ -1,15 +1,5 @@
 # JBrowse 2 feature overview
 
-One of the biggest features of JBrowse 2 is the ability to have multiple views
-on the same screen, or to compose multiple views together (e.g. a synteny view
-combines multiple single linear genome views)
-
-![](/img/linear_longread.png)
-Example showing multiple views on the same screen, an alignments track on top
-and a long read vs reference comparison with the "synteny" view
-
-For more screenshots see the [gallery](./gallery)
-
 ## New view types
 
 JBrowse 2 supports creating new "view types" that can be shown alongside other
@@ -53,7 +43,7 @@ The view types available by default with JBrowse 2 web include
 | Non-administrator users can open tracks and share them with others  | :heavy_check_mark:      | :x:                |
 | Embeddable in JavaScript projects using NPM                         | :heavy_check_mark: [^2] | :x:                |
 | Embeddable directly in React applications                           | :heavy_check_mark: [^2] | :x:                |
-| Name searching e.g. ability to type a gene name/ID to search for it | :x:                     | :heavy_check_mark: |
+| Ability to search by gene name/ID (added in 1.4.0)                  | :heavy_check_mark:      | :heavy_check_mark: |
 | URL query API e.g. specifying ?loc=chr1:1-100 in URL bar            | :x:                     | :heavy_check_mark: |
 
 [^1] If using with JBrowse 2 web, requires that trackhub server be configured to allow [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
@@ -62,7 +52,8 @@ The view types available by default with JBrowse 2 web include
 
 ## Supported data formats
 
-Here is a short list of data formats supported in core JBrowse 2. Plugins are available for additional data formats.
+Here is a short list of data formats supported in core JBrowse 2. Plugins are
+available for additional data formats.
 
 - CRAM
 - BAM
@@ -81,4 +72,9 @@ Here is a short list of data formats supported in core JBrowse 2. Plugins are av
 
 ## Integration and embedding
 
-The JBrowse 2 platform and plugins are designed from the ground up to be modular and reusable. For example, individual JBrowse 2 views (e.g. linear, circular, tabular, etc) can be packaged to be embeddable in other web applications (as demonstrated by the [JB2 Linear genome view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view).
+The JBrowse 2 platform and plugins are designed from the ground up to be
+modular and reusable. For example, individual JBrowse 2 views (e.g. linear,
+circular, tabular, etc) can be packaged to be embeddable in other web
+applications (as demonstrated by the
+[@jbrowse/react-linear-genome-view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
+package).

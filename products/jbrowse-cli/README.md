@@ -8,13 +8,14 @@ This document covers the CLI tools.
 
 ## Installation
 
-The command line tools can be installed using `npm` as follows
+The command line tools can be installed globally using `npm` as follows
 
 ```sh-session
 $ npm install -g @jbrowse/cli
 ```
 
-You can test your installation with
+A CLI tool called `jbrowse` should then be available in the path. You can test
+your installation with
 
 ```sh-session
 $ jbrowse --version
@@ -26,7 +27,7 @@ It is also possible to do one-off executions using npx, e.g.
 npx @jbrowse/cli create myfolder
 ```
 
-It is likely preferable in most cases to install the tools first however
+It is likely preferable in most cases to install the tools globally with `npm install @jbrowse/cli -g` however
 
 ## Commands
 
@@ -139,7 +140,7 @@ EXAMPLES
   $ jbrowse add-assembly GRCh38.fa --target /path/to/jb2/installation/customconfig.json --load copy
 ```
 
-_See code: [src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.4/products/jbrowse-cli/src/commands/add-assembly.ts)_
+_See code: [src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v1.4.4/products/jbrowse-cli/src/commands/add-assembly.ts)_
 
 ## `jbrowse add-connection CONNECTIONURLORPATH`
 
@@ -193,7 +194,7 @@ EXAMPLES
   /path/to/jb2/installation/config.json
 ```
 
-_See code: [src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.4/products/jbrowse-cli/src/commands/add-connection.ts)_
+_See code: [src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/v1.4.4/products/jbrowse-cli/src/commands/add-connection.ts)_
 
 ## `jbrowse add-track TRACK`
 
@@ -267,7 +268,7 @@ EXAMPLES
   $ jbrowse add-track /url/relative/path.bam --trackId AlignmentsTrack1 --load url --overwrite
 ```
 
-_See code: [src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.4/products/jbrowse-cli/src/commands/add-track.ts)_
+_See code: [src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v1.4.4/products/jbrowse-cli/src/commands/add-track.ts)_
 
 ## `jbrowse add-track-json TRACK`
 
@@ -292,7 +293,7 @@ EXAMPLES
   $ jbrowse add-track-json track.json --update
 ```
 
-_See code: [src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.4/products/jbrowse-cli/src/commands/add-track-json.ts)_
+_See code: [src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/v1.4.4/products/jbrowse-cli/src/commands/add-track-json.ts)_
 
 ## `jbrowse admin-server`
 
@@ -320,7 +321,7 @@ EXAMPLES
   $ jbrowse admin-server -p 8888
 ```
 
-_See code: [src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.4/products/jbrowse-cli/src/commands/admin-server.ts)_
+_See code: [src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v1.4.4/products/jbrowse-cli/src/commands/admin-server.ts)_
 
 ## `jbrowse create LOCALPATH`
 
@@ -355,7 +356,7 @@ EXAMPLES
   $ jbrowse create --listVersions # Lists out all available versions of JBrowse 2
 ```
 
-_See code: [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.4/products/jbrowse-cli/src/commands/create.ts)_
+_See code: [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v1.4.4/products/jbrowse-cli/src/commands/create.ts)_
 
 ## `jbrowse help [COMMAND]`
 
@@ -409,7 +410,7 @@ EXAMPLES
   $ jbrowse set-default-session --currentSession # Prints out current default session
 ```
 
-_See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.4/products/jbrowse-cli/src/commands/set-default-session.ts)_
+_See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v1.4.4/products/jbrowse-cli/src/commands/set-default-session.ts)_
 
 ## `jbrowse text-index`
 
@@ -429,7 +430,12 @@ OPTIONS
 
   --attributes=attributes      [default: Name,ID] Comma separated list of attributes to index
 
+  --dryrun                     Just print out tracks that will be indexed by the process, without doing any indexing
+
   --exclude=exclude            [default: CDS,exon] Adds gene type to list of excluded types
+
+  --file=file                  File or files to index (can be used to create trix indexes for embedded component use
+                               cases not using a config.json for example)
 
   --force                      Overwrite previously existing indexes
 
@@ -445,14 +451,22 @@ OPTIONS
 EXAMPLES
   # indexes all tracks that it can find in the current directory's config.json
   $ jbrowse text-index
+
   # indexes specific trackIds that it can find in the current directory's config.json
   $ jbrowse text-index --tracks=track1,track2,track3
+
   # indexes all tracks in a directory's config.json or in a specific config file
   $ jbrowse text-index --out /path/to/jb2/
-  $ jbrowse text-index --out /path/to/jb2/some_alt_config.json
+
+  # indexes only a specific assembly, and overwrite what was previously there using force (which is needed if a previous
+  index already existed)
+  $ jbrowse text-index -a hg19 --force
+
+  # create index for some files for use in @jbrowse/react-linear-genome-view or similar
+  $ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes
 ```
 
-_See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.3/products/jbrowse-cli/src/commands/text-index.ts)_
+_See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v1.4.4/products/jbrowse-cli/src/commands/text-index.ts)_
 
 ## `jbrowse upgrade [LOCALPATH]`
 
@@ -486,7 +500,7 @@ EXAMPLES
   $ jbrowse upgrade --url https://sample.com/jbrowse2.zip
 ```
 
-_See code: [src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.4/products/jbrowse-cli/src/commands/upgrade.ts)_
+_See code: [src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v1.4.4/products/jbrowse-cli/src/commands/upgrade.ts)_
 
 <!-- commandsstop -->
 

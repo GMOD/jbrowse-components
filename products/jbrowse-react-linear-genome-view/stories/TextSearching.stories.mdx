@@ -1,0 +1,68 @@
+import { Meta, Story, Canvas } from '@storybook/addon-docs/blocks'
+
+<Meta title="Text Searching" />
+
+## Aggregate search index
+
+An aggregate search index contains info for multiple tracks. This can be
+configured by passing the "aggregateTextSearchAdapters" (which would normally
+just be a single entry but could be multiple)
+
+<Canvas withSource="open">
+  <Story id="linear-view--with-text-searching" />
+</Canvas>
+
+If you use the `jbrowse text-index` command with the --files argument, you can
+create an aggregate index. E.g.
+
+```sh
+jbrowse text-index --file myfile.gff3.gz --file myfile.vcf.gz
+```
+
+This will output a directory "trix" with aggregate.ix, aggregate.ixx, and
+aggregate_meta.json which you can put into your embedded jbrowse config. The
+--file argument is helpful since you may not have an actual config. If you do
+have a config though, you can supply a config e.g.
+
+```json
+{ "assembly": {"name":"hg19",....}, "tracks":[...] }
+```
+
+Then you can use
+
+```
+jbrowse text-index --out yourfile.json --perTrack
+```
+
+This will create an aggregate index
+
+## Per track search index
+
+Per-track search indexes contains name searching info for a particular track.
+This can be configured by passing the "textSearching" in that track's config.
+
+<Canvas withSource="open">
+  <Story id="linear-view--with-per-track-text-searching" />
+</Canvas>
+
+Similar to the aggregate use case above, you can use `jbrowse-text-index` with the --files argument, but if it is just a single file supplied e.g.
+
+```
+jbrowse text-index --file myfile.gff3.gz
+```
+
+then it will create a myfile.gff3.gz.ix, myfile.gff3.gz.ixx and myfile.gff3.gz_meta.json. The
+--file argument is helpful since you may not have an actual config. If you do
+have a config though, e.g.
+
+```json
+{ "assembly": {"name":"hg19",....}, "tracks":[...] }
+```
+
+Then you can use
+
+```
+jbrowse text-index --out yourfile.json --perTrack
+```
+
+This will create the --perTrack indexes

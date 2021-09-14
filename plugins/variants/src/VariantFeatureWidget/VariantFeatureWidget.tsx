@@ -21,19 +21,7 @@ import {
   BaseCard,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import BreakendOptionDialog from './BreakendOptionDialog'
-import { Breakend } from '../VcfTabixAdapter/VcfFeature'
-
-// from vcf-js
-function toString(feat: string | Breakend) {
-  if (typeof feat === 'string') {
-    return feat
-  }
-  const char = feat.MateDirection === 'left' ? ']' : '['
-  if (feat.Join === 'left') {
-    return `${char}${feat.MatePosition}${char}${feat.Replacement}`
-  }
-  return `${feat.Replacement}${char}${feat.MatePosition}${char}`
-}
+import { parseBreakend } from '@gmod/vcf'
 
 function VariantSamples(props: any) {
   const [filter, setFilter] = useState<any>({})
@@ -138,11 +126,12 @@ function BreakendPanel(props: {
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
   const [breakpointDialog, setBreakpointDialog] = useState(false)
-  let viewType: any
+  let viewType
+
   try {
     viewType = pluginManager.getViewType('BreakpointSplitView')
   } catch (e) {
-    // plugin not added
+    // ignore
   }
 
   const simpleFeature = new SimpleFeature(feature)
@@ -150,49 +139,47 @@ function BreakendPanel(props: {
     <BaseCard {...props} title="Breakends">
       <Typography>Link to linear view of breakend endpoints</Typography>
       <ul>
-        {locStrings.map((locString, index) => {
-          return (
-            <li key={`${JSON.stringify(locString)}-${index}`}>
-              <Link
-                href="#"
-                onClick={() => {
-                  const { view } = model
-                  if (view) {
-                    view.navToLocString?.(locString)
-                  } else {
-                    session.notify(
-                      'No view associated with this feature detail panel anymore',
-                      'warning',
-                    )
-                  }
-                }}
-              >
-                {`LGV - ${locString}`}
-              </Link>
-            </li>
-          )
-        })}
+        {locStrings.map(locString => (
+          <li key={`${JSON.stringify(locString)}`}>
+            <Link
+              href="#"
+              onClick={(event: any) => {
+                event.preventDefault()
+                const { view } = model
+                if (view) {
+                  view.navToLocString?.(locString)
+                } else {
+                  session.notify(
+                    'No view associated with this feature detail panel anymore',
+                    'warning',
+                  )
+                }
+              }}
+            >
+              {`LGV - ${locString}`}
+            </Link>
+          </li>
+        ))}
       </ul>
       {viewType ? (
-        <>
+        <div>
           <Typography>
             Launch split views with breakend source and target
           </Typography>
           <ul>
-            {locStrings.map((locString, index) => {
-              return (
-                <li key={`${JSON.stringify(locString)}-${index}`}>
-                  <Link
-                    href="#"
-                    onClick={() => {
-                      setBreakpointDialog(true)
-                    }}
-                  >
-                    {`${feature.refName}:${feature.start} // ${locString} (split view)`}
-                  </Link>
-                </li>
-              )
-            })}
+            {locStrings.map(locString => (
+              <li key={`${JSON.stringify(locString)}`}>
+                <Link
+                  href="#"
+                  onClick={(event: any) => {
+                    event.preventDefault()
+                    setBreakpointDialog(true)
+                  }}
+                >
+                  {`${feature.refName}:${feature.start} // ${locString} (split view)`}
+                </Link>
+              </li>
+            ))}
           </ul>
           {breakpointDialog ? (
             <BreakendOptionDialog
@@ -204,7 +191,7 @@ function BreakendPanel(props: {
               }}
             />
           ) : null}
-        </>
+        </div>
       ) : null}
     </BaseCard>
   )
@@ -224,7 +211,7 @@ function VariantFeatureDetails(props: any) {
     REF:
       'reference base(s): Each base must be one of A,C,G,T,N (case insensitive).',
     ALT:
-      ' alternate base(s): Comma-separated list of alternate non-reference alleles',
+      'alternate base(s): Comma-separated list of alternate non-reference alleles',
     QUAL: 'quality: Phred-scaled quality score for the assertion made in ALT',
     FILTER:
       'filter status: PASS if this position has passed all filters, otherwise a semicolon-separated list of codes for filters that fail',
@@ -233,10 +220,7 @@ function VariantFeatureDetails(props: any) {
   return (
     <Paper data-testid="variant-side-drawer">
       <FeatureDetails
-        feature={{
-          ...rest,
-          ALT: rest.ALT?.map((alt: string | Breakend) => toString(alt)),
-        }}
+        feature={rest}
         descriptions={{ ...basicDescriptions, ...descriptions }}
         {...props}
       />
@@ -244,7 +228,9 @@ function VariantFeatureDetails(props: any) {
       {feat.type === 'breakend' ? (
         <BreakendPanel
           feature={feat}
-          locStrings={feat.ALT.map((alt: any) => alt.MatePosition)}
+          locStrings={feat.ALT.map(
+            (alt: string) => parseBreakend(alt).MatePosition,
+          )}
           model={model}
         />
       ) : null}

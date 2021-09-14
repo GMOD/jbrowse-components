@@ -22,6 +22,7 @@ import SanitizedHTML from '../ui/SanitizedHTML'
 import SequenceFeatureDetails from './SequenceFeatureDetails'
 import { BaseCardProps, BaseProps } from './types'
 import { SimpleFeatureSerialized } from '../util/simpleFeature'
+import { ellipses } from './util'
 
 // these are always omitted as too detailed
 const globalOmit = [
@@ -461,17 +462,14 @@ export const FeatureDetails = (props: {
   formatter?: (val: unknown, key: string) => JSX.Element
 }) => {
   const { omit = [], model, feature, depth = 0 } = props
-  const { name, id, type = '', subfeatures } = feature
-  const slug = name || id || ''
-  const shortName = slug.length > 20 ? `${slug}...` : slug
-  const title = `${shortName}${type ? ` - ${type}` : ''}`
+  const { name = '', id = '', type = '', subfeatures } = feature
   const session = getSession(model)
-  const defSeqTypes = ['mRNA', 'transcript']
+  const defaultSeqTypes = ['mRNA', 'transcript']
   const sequenceTypes =
-    getConf(session, ['featureDetails', 'sequenceTypes']) || defSeqTypes
+    getConf(session, ['featureDetails', 'sequenceTypes']) || defaultSeqTypes
 
   return (
-    <BaseCard title={title}>
+    <BaseCard title={[ellipses(name || id), type].filter(f => !!f).join(' - ')}>
       <Typography>Core details</Typography>
       <CoreDetails {...props} />
       <Divider />

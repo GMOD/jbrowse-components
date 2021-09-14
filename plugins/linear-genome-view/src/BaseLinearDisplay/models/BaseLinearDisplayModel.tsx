@@ -97,8 +97,7 @@ export const BaseLinearDisplay = types
      */
     get selectedFeatureId() {
       if (isAlive(self)) {
-        const session = getSession(self)
-        const { selection } = session
+        const { selection } = getSession(self)
         // does it quack like a feature?
         if (isFeature(selection)) {
           return selection.id()
@@ -140,7 +139,12 @@ export const BaseLinearDisplay = types
         return self.blockState.get(blockKey)?.layout?.getByCoord(x, y)
       },
 
-      getFeatureByID(id: string): [number, number, number, number] | undefined {
+      getFeatureByID(blockKey: string, id: string): LayoutRecord | undefined {
+        return self.blockState.get(blockKey)?.layout?.getByID(id)
+      },
+
+      // if block key is not supplied, can look at all blocks
+      searchFeatureByID(id: string): LayoutRecord | undefined {
         let ret
         self.blockState.forEach(block => {
           const val = block?.layout?.getByID(id)
