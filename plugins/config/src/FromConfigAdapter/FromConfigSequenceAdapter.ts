@@ -4,7 +4,7 @@ import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { toArray } from 'rxjs/operators'
 import FromConfigAdapter from './FromConfigAdapter'
 
-export default class FromSequenceConfigAdapter extends FromConfigAdapter {
+export default class FromConfigSequenceAdapter extends FromConfigAdapter {
   /**
    * Fetch features for a certain region
    * @param region - Region
@@ -72,9 +72,6 @@ export default class FromSequenceConfigAdapter extends FromConfigAdapter {
         regions.push(currentRegion)
       }
     }
-
-    // sort the regions by refName
-    regions.sort((a, b) => a.refName.localeCompare(b.refName))
 
     return regions
   }
