@@ -20,14 +20,14 @@ NPMUSER=$(npm whoami)
 [[ -n "$NPMUSER" ]] || { echo "No NPM user detected, please run 'npm adduser'" && exit 1; }
 MAINUPDATED=$(git rev-list --left-only --count origin/main...main)
 [[ "$MAINUPDATED" != 0 ]] && { echo "main is not up to date with origin/main. Please fetch and try again" && exit 1; }
-# LOCAL_CHANGES=$(git status --short)
-# [[ "$LOCAL_CHANGES" != "" ]] && { echo "Please discard or stash changes and try again." && exit 1; }
+LOCAL_CHANGES=$(git status --short)
+[[ "$LOCAL_CHANGES" != "" ]] && { echo "Please discard or stash changes and try again." && exit 1; }
 
 # make sure packages are all up to date
 yarn
 
 # make sure the tests are passing
-# yarn test --runInBand
+yarn test --runInBand
 
 # Get the version before release from lerna.json
 PREVIOUS_VERSION=$(node --print "const lernaJson = require('./lerna.json'); lernaJson.version")
@@ -44,15 +44,15 @@ RELEASE_TAG=$RELEASE_TAG node --print "const config = require('./website/docusau
 mv tmp.json website/docusaurus.config.json
 
 # Packages that have changed and will have their version bumped
-# CHANGED=$(yarn --silent lerna changed --all --json)
-# # Generates a changelog with a section added listing the packages that were
-# # included in this release
-# CHANGELOG=$(GITHUB_AUTH="$GITHUB_AUTH" node scripts/changelog.js "$CHANGED" "$VERSION")
-# # Add the changelog to the top of CHANGELOG.md
-# echo "$CHANGELOG" >tmp.md
-# echo "" >>tmp.md
-# cat CHANGELOG.md >>tmp.md
-# mv tmp.md CHANGELOG.md
+CHANGED=$(yarn --silent lerna changed --all --json)
+# Generates a changelog with a section added listing the packages that were
+# included in this release
+CHANGELOG=$(GITHUB_AUTH="$GITHUB_AUTH" node scripts/changelog.js "$CHANGED" "$VERSION")
+# Add the changelog to the top of CHANGELOG.md
+echo "$CHANGELOG" >tmp.md
+echo "" >>tmp.md
+cat CHANGELOG.md >>tmp.md
+mv tmp.md CHANGELOG.md
 
 # Blog post text
 NOTES=$(cat "$BLOGPOST_DRAFT")

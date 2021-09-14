@@ -1,44 +1,4 @@
-<details><summary>Packages in this release</summary>
-<p>
-
-| Package                             | Download                                                          |
-| ----------------------------------- | ----------------------------------------------------------------- |
-| @jbrowse/core                       | https://www.npmjs.com/package/@jbrowse/core                       |
-| @jbrowse/desktop                    |                                                                   |
-| @jbrowse/react-circular-genome-view | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
-| @jbrowse/react-linear-genome-view   | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
-| @jbrowse/web                        |                                                                   |
-
-</p>
-</details>
-
-## 1.4.1 (2021-09-14)
-
-<details><summary>Packages in this release</summary>
-<p>
-
-| Package                             | Download                                                          |
-| ----------------------------------- | ----------------------------------------------------------------- |
-| @jbrowse/plugin-spreadsheet-view    |                                                                   |
-| @jbrowse/plugin-trix                | https://www.npmjs.com/package/@jbrowse/plugin-trix                |
-| @jbrowse/plugin-variants            | https://www.npmjs.com/package/@jbrowse/plugin-variants            |
-| @jbrowse/desktop                    |                                                                   |
-| @jbrowse/react-circular-genome-view | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
-| @jbrowse/react-linear-genome-view   | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
-| @jbrowse/web                        |                                                                   |
-
-</p>
-</details>
-
-#### :bug: Bug Fix
-
-- [#2326](https://github.com/GMOD/jbrowse-components/pull/2326) Publish @jbrowse/plugin-trix and add as dependency to @jbrowse/react-linear-genome-view ([@cmdcolin](https://github.com/cmdcolin))
-
-#### Committers: 1
-
-- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
-
-## 1.4.0 (2021-09-13)
+## 1.4.4 (2021-09-14)
 
 <details><summary>Packages in this release</summary>
 <p>
@@ -108,6 +68,22 @@
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
 - Teresa Martinez ([@teresam856](https://github.com/teresam856))
 - [@Akusem](https://github.com/Akusem)
+
+## 1.4.3
+
+Failed NPM upload, partial release
+
+## 1.4.2
+
+Failed NPM upload, partial release
+
+## 1.4.1
+
+Broken releases missing some packages
+
+## 1.4.0
+
+Broken releases missing some packages
 
 ## 1.3.5 (2021-08-23)
 
