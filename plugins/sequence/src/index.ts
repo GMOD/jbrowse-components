@@ -65,7 +65,6 @@ export default class SequencePlugin extends Plugin {
           const regexGuess = /\.2bit$/i
           const adapterName = 'TwoBitAdapter'
           const fileName = getFileName(file)
-          const indexName = index && getFileName(index)
           if (regexGuess.test(fileName) || adapterHint === adapterName) {
             return {
               type: adapterName,
