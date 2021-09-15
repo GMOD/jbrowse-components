@@ -37,7 +37,7 @@
   "dependencies": {
     "@gmod/nclist": "^0.1.1",
     "get-value": "^3.0.1",
-    "set-value": "^3.0.0"
+    "set-value": "^4.0.1"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",
