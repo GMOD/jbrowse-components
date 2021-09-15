@@ -234,12 +234,6 @@ Object {
       "name": "External token",
       "type": "ExternalTokenInternetAccount",
     },
-    Object {
-      "description": "HTTPBasic",
-      "internetAccountId": "HTTPBasicTest",
-      "name": "HTTPBasic",
-      "type": "HTTPBasicInternetAccount",
-    },
   ],
   "plugins": Array [],
   "tracks": Array [

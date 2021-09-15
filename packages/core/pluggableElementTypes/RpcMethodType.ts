@@ -30,8 +30,8 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
     const blobMap = getBlobMap()
 
-    const modifiedArgs: any = await this.augmentLocationObjects(args)
-    return { ...modifiedArgs, blobMap }
+    await this.augmentLocationObjects(args)
+    return { ...args, blobMap }
   }
 
   async serializeNewAuthArguments(location: UriLocation) {
@@ -43,7 +43,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     }
 
     if (location.internetAccountPreAuthorization) {
-      throw new Error('Failed to get clean internet account authorization info')
+      return location
     }
     const account = rootModel?.findAppropriateInternetAccount(location)
 
@@ -52,12 +52,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
         location,
       )
 
-      const locationWithPreAuth = {
-        ...location,
-        internetAccountPreAuthorization: modifiedPreAuth,
-      }
-
-      return locationWithPreAuth
+      location.internetAccountPreAuthorization = modifiedPreAuth
     }
     return location
   }
@@ -103,30 +98,23 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   // TODOAUTH unit test this method
   private async augmentLocationObjects(thing: any): Promise<any> {
     if (isUriLocation(thing)) {
-      return this.serializeNewAuthArguments(thing)
+      await this.serializeNewAuthArguments(thing)
     }
     if (Array.isArray(thing)) {
-      return Promise.all(thing.map((p: any) => this.augmentLocationObjects(p)))
+      for (const val of thing) {
+        await this.augmentLocationObjects(val)
+      }
     }
     if (typeof thing === 'object' && thing !== null) {
-      const newThing: any = {}
       for (const [key, value] of Object.entries(thing)) {
-        // TODOAUTH: temp til i can find a better indicator
-        if (key === 'filters' || key === 'signal') {
-          continue
-        }
         if (Array.isArray(value)) {
-          newThing[key] = await Promise.all(
-            value.map((p: any) => this.augmentLocationObjects(p)),
-          )
+          for (const val of thing[key]) {
+            await this.augmentLocationObjects(val)
+          }
         } else if (typeof value === 'object' && value !== null) {
-          newThing[key] = await this.augmentLocationObjects(value)
-        } else {
-          newThing[key] = value
+          await this.augmentLocationObjects(thing[key])
         }
       }
-      return newThing
     }
-    return thing
   }
 }

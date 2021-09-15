@@ -28,13 +28,13 @@ export const InternetAccount = types
       return false
     },
   }))
-  .actions(() => ({
+  .actions(self => ({
     openLocation(location: UriLocation): GenericFilehandle {
       return new RemoteFile(String(location.uri))
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async getPreAuthorizationInformation(location: UriLocation) {
-      return {}
+      return { internetAccountType: self.type }
     },
   }))
 

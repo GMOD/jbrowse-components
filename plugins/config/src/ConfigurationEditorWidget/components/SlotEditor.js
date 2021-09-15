@@ -341,7 +341,7 @@ const FileSelectorWrapper = observer(({ slot }) => {
       setLocation={location => slot.set(location)}
       name={slot.name}
       description={slot.description}
-      internetAccounts={getEnv(slot).pluginManager.rootModel.internetAccounts}
+      internetAccounts={getEnv(slot).pluginManager?.rootModel.internetAccounts}
     />
   )
 })
