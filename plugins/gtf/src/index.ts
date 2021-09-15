@@ -3,8 +3,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
 import { configSchema as gtfTabixAdapterConfigSchema } from './GtfTabixAdapter'
 
-export default class extends Plugin {
-  name = 'GTFTabixAdapter'
+export default class GtfPlugin extends Plugin {
+  name = 'GtfPlugin'
 
   install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(

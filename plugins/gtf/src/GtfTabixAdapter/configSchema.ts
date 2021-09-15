@@ -2,7 +2,7 @@ import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 export default ConfigurationSchema(
-  'GTFTabixAdapter',
+  'GtfTabixAdapter',
   {
     gtfGzLocation: {
       type: 'fileLocation',

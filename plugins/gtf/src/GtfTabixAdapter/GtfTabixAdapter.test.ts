@@ -1,10 +1,9 @@
 import configSchema from './configSchema'
-import Adapter from './GtfTabixAdapter'
+import GtfTabixAdapter from './GtfTabixAdapter'
 import path from 'path'
 
 test('adapter can fetch variants form demo.gtf', async () => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const adapter = new Adapter(
+  const adapter = new GtfTabixAdapter(
     configSchema.create({
       gtfGzLocation: {
         localPath: path.join(
@@ -31,4 +30,5 @@ test('adapter can fetch variants form demo.gtf', async () => {
       },
     }),
   )
+  // console.log(adapter)
 })
