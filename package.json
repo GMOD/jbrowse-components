@@ -17,9 +17,10 @@
     "format": "prettier --write .",
     "check-format": "prettier --check .",
     "typecheck": "tsc --noEmit",
+    "pretest-ci": "cd products/jbrowse-react-linear-genome-view;yarn build;cd ../../",
     "test-ci": "jest --ci --coverage",
     "built-test-ci": "jest --ci integration.test.js",
-    "test": "DEBUG_PRINT_LIMIT=0 jest"
+    "test": "DEBUG_PRINT_LIMIT=0 jest --testPathIgnorePatterns  products/jbrowse-img"
   },
   "husky": {
     "hooks": {
