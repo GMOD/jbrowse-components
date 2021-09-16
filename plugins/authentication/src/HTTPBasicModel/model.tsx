@@ -39,7 +39,10 @@ const stateModelFactory = (
         return 'HTTPBasicInternetAccount'
       },
       handlesLocation(location: UriLocation): boolean {
-        return location.internetAccountId?.includes('HTTPBasic') ? true : false
+        const validDomains = self.accountConfig.domains || []
+        return validDomains.some((domain: string) =>
+          location?.uri.includes(domain),
+        )
       },
       generateAuthInfo() {
         return {

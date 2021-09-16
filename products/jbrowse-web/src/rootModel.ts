@@ -287,27 +287,38 @@ export default function RootModel(
       createEphemeralInternetAccount(
         internetAccountId: string,
         initialSnapshot = {},
+        location: UriLocation,
       ) {
-        const internetAccountConfigSchema = pluginManager.pluggableConfigSchemaType(
-          'internet account',
-        )
-        const configuration = {
-          // TODOAUTH need to remove this hardcoded type
-          type: 'HTTPBasicInternetAccount',
-          internetAccountId: internetAccountId,
-          name: internetAccountId,
-          description: '',
-        }
-        const internetAccountType = pluginManager.getInternetAccountType(
-          configuration.type,
-        )
-        const internetAccount = internetAccountType.stateModel.create({
-          ...initialSnapshot,
-          type: configuration.type,
-          configuration,
+        const internetAccountTypes = new Map([
+          ['HTTPBasic', 'HTTPBasicInternetAccount'],
+        ])
+        let ephemeralType
+        internetAccountTypes.forEach((value, key) => {
+          if (internetAccountId.includes(key)) {
+            ephemeralType = value
+          }
         })
-        self.internetAccounts.push(internetAccount)
-        return internetAccount
+
+        if (ephemeralType) {
+          const hostUri = new URL(location.uri).origin
+          const configuration = {
+            type: ephemeralType,
+            internetAccountId: internetAccountId,
+            name: `HTTPBasic-${hostUri}`,
+            description: '',
+            domains: [hostUri],
+          }
+          const internetAccountType = pluginManager.getInternetAccountType(
+            configuration.type,
+          )
+          const internetAccount = internetAccountType.stateModel.create({
+            ...initialSnapshot,
+            type: configuration.type,
+            configuration,
+          })
+          self.internetAccounts.push(internetAccount)
+          return internetAccount
+        }
       },
       setAssemblyEditing(flag: boolean) {
         self.isAssemblyEditing = flag
@@ -402,8 +413,8 @@ export default function RootModel(
             return selectedAccount
           }
         }
-        // if no existing account or not found, try to find working account
 
+        // if no existing account or not found, try to find working account
         for (const account of self.internetAccounts) {
           const handleResult = account.handlesLocation(location)
           if (handleResult) {
@@ -413,7 +424,7 @@ export default function RootModel(
 
         // if still no existing account, create ephemeral config to use
         return selectedId
-          ? this.createEphemeralInternetAccount(selectedId)
+          ? this.createEphemeralInternetAccount(selectedId, {}, location)
           : null
       },
     }))

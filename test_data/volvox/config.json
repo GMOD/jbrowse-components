@@ -1580,7 +1580,7 @@
       "needsPKCE": true,
       "hasRefreshToken": true,
       "clientId": "50knr6xrjfc39sk",
-      "validDomains": [
+      "domains": [
         "addtodropbox.com",
         "db.tt",
         "dropbox.com",
@@ -1600,14 +1600,14 @@
       "clientId": "109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com",
       "scopes": "https://www.googleapis.com/auth/drive.readonly",
       "responseType": "token",
-      "validDomains": ["drive.google.com"]
+      "domains": ["drive.google.com"]
     },
     {
       "type": "ExternalTokenInternetAccount",
       "internetAccountId": "ExternalTokenTest",
       "name": "External token",
       "description": "External Token for testing",
-      "validDomains": []
+      "domains": []
     }
   ]
 }

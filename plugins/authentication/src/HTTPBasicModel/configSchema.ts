@@ -10,7 +10,7 @@ const HTTPBasicConfigSchema = ConfigurationSchema(
       type: 'string',
       defaultValue: 'Authorization',
     },
-    validDomains: {
+    domains: {
       description:
         'array of valid domains the url can contain to use this account. Empty = all domains',
       type: 'stringArray',

@@ -555,6 +555,8 @@ const stateModelFactory = (
               superReload()
             }
           } catch (e) {
+            // TODOAUTH: the response comes from the remotefile package, may need to add response headers in the error message
+            // becasue I need to detect WWW-Authenticate: Basic when the response fails to try and add a HTTPBasic account
             self.setError(e)
           }
         },
@@ -585,6 +587,7 @@ const stateModelFactory = (
                     self.updateStats(stats)
                   }
                 } catch (e) {
+                  console.trace('e', e)
                   if (!isAbortException(e) && isAlive(self)) {
                     self.setError(e)
                   }

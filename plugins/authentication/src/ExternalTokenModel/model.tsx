@@ -41,7 +41,7 @@ const stateModelFactory = (
         return 'ExternalTokenInternetAccount'
       },
       handlesLocation(location: UriLocation): boolean {
-        const validDomains = self.accountConfig.validDomains || []
+        const validDomains = self.accountConfig.domains || []
         return validDomains.some((domain: string) =>
           location?.uri.includes(domain),
         )
