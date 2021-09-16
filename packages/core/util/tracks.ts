@@ -148,7 +148,8 @@ export function getFileName(track: FileLocation) {
 export function guessAdapter(
   file: FileLocation,
   index: FileLocation | undefined,
-  model?: AddTrackModel,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  model?: any,
   adapterHint?: string,
 ) {
   if (model) {
