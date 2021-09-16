@@ -144,14 +144,12 @@ The soft clipping indicators on these reads will appear black.
 
 ### Text searching
 
-#### What should I know before using jbrowse text-index
+#### Why I am running out of disk space while trix is running
 
 The `jbrowse text-index` program will output data to a TMP directory while
 indexing. If your filesystem has low diskspace for /tmp you can set an
 alternative temporary directory using the environment variable
-`TMPDIR=~/alt_tmp_dir/ jbrowse text-index`. By using the info in the ixx file,
-I can take a couple letters the user typed, jump to the that byte offset in the
-larger .ix file, and find what the user is interested in
+`TMPDIR=~/alt_tmp_dir/ jbrowse text-index`.
 
 #### How does the jbrowse text-index trix format work
 
@@ -184,7 +182,9 @@ in the file are e.g.
 signa000000435
 ```
 
-Note that JBrowse creates a specialized trix index also. Instead of creating a ix file with just the gene names, it also provides their name and location in base64 encoded format.
+Note that JBrowse creates a specialized trix index also. Instead of creating a
+ix file with just the gene names, it also provides their name and location in
+an encoded format.
 
 ### Developers
 
@@ -222,3 +222,13 @@ We build on a lot of great open source technology, some main ones include
 - web-workers
 - Typescript
 - Electron (for desktop specifically)
+
+#### Should I configure gzip on my web server
+
+Yes! JBrowse 2 may load ~5MB of JS resources (2.5MB for main thread bundle,
+2.5MB for worker bundle). If you have gzip enabled, the amount of data the user
+has to download though is only 1.4MB. We have worked on making bundle size
+small with lazy loading and other methods but adding gzip will help your users.
+
+It will depend on your particular server setup e.g. apache, nginx, cloudfront,
+etc. how this may be done, but it is recommended to look into this.
