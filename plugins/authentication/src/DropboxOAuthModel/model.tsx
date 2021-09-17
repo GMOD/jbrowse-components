@@ -82,23 +82,6 @@ const stateModelFactory = (
         )
       },
     }))
-    .actions(self => {
-      const superGetFetcher = self.getFetcher
-      return {
-        async getFetcher(
-          url: RequestInfo,
-          opts?: RequestInit,
-        ): Promise<Response> {
-          const headers = { 'Dropbox-API-Arg': JSON.stringify({ url }) }
-          const newOpts = { ...(opts || {}) }
-          newOpts.headers = { ...(newOpts.headers || {}), ...headers }
-          return superGetFetcher(
-            'https://content.dropboxapi.com/2/sharing/get_shared_link_file',
-            newOpts,
-          )
-        },
-      }
-    })
 }
 
 export default stateModelFactory
