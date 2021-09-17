@@ -37,7 +37,7 @@ const GoogleDriveOAuthConfigSchema = ConfigurationSchema(
     },
     domains: {
       description:
-        'array of valid domains the url can contain to use this account. Empty = all domains',
+        'array of valid domains the url can contain to use this account',
       type: 'stringArray',
       defaultValue: [],
     },

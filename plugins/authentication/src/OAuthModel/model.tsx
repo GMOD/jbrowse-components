@@ -36,10 +36,10 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       errorMessage: '',
     }))
     .views(self => ({
-      get authHeader() {
+      get authHeader(): string {
         return getConf(self, 'authHeader') || 'Authorization'
       },
-      get tokenType() {
+      get tokenType(): string {
         return getConf(self, 'tokenType') || 'Bearer'
       },
       get internetAccountType() {
@@ -77,13 +77,13 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         return locationUri
       },
     }))
+    .volatile(() => ({
+      uriToPreAuthInfoMap: new Map(),
+    }))
     .actions(self => {
       let resolve: Function = () => {}
       let reject: Function = () => {}
       let openLocationPromise: Promise<string> | undefined = undefined
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let preAuthInfo: any = {}
-      const uriToPreAuthInfoMap = new Map()
       return {
         // opens external OAuth flow, popup for web and new browser window for desktop
         async useEndpointForAuthorization() {
@@ -170,7 +170,10 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           reject = () => {}
           this.deleteMessageChannel()
         },
-        async checkToken(authInfo: { token: string; refreshToken: string }) {
+        async checkToken(
+          authInfo: { token: string; refreshToken: string },
+          location: UriLocation,
+        ) {
           let token =
             authInfo?.token ||
             (!inWebWorker
@@ -188,7 +191,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
 
           if (!token) {
             if (refreshToken) {
-              token = await this.exchangeRefreshForAccessToken()
+              token = await this.exchangeRefreshForAccessToken(location)
             } else {
               if (!openLocationPromise) {
                 openLocationPromise = new Promise(async (r, x) => {
@@ -245,9 +248,10 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             }
           }
         },
-        async exchangeRefreshForAccessToken() {
+        async exchangeRefreshForAccessToken(location: UriLocation) {
           const foundRefreshToken =
-            preAuthInfo.authInfo?.refreshToken ||
+            self.uriToPreAuthInfoMap.get(location.uri)?.authInfo
+              ?.refreshToken ||
             (!inWebWorker
               ? localStorage.getItem(`${self.internetAccountId}-refreshToken`)
               : null)
@@ -346,6 +350,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           url: RequestInfo,
           opts?: RequestInit,
         ): Promise<Response> {
+          const preAuthInfo = self.uriToPreAuthInfoMap.get(url)
           if (!preAuthInfo || !preAuthInfo.authInfo) {
             throw new Error(
               'Failed to obtain authorization information needed to fetch',
@@ -358,7 +363,10 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             refreshToken: '',
           }
           try {
-            foundTokens = await this.checkToken(preAuthInfo.authInfo)
+            foundTokens = await this.checkToken(preAuthInfo.authInfo, {
+              uri: String(url),
+              locationType: 'UriLocation',
+            })
           } catch (e) {
             await this.handleError(e)
           }
@@ -392,8 +400,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           })
         },
         openLocation(location: UriLocation) {
-          preAuthInfo =
+          const preAuthInfo =
             location.internetAccountPreAuthorization || self.generateAuthInfo()
+          self.uriToPreAuthInfoMap.set(location.uri, preAuthInfo)
           return new RemoteFile(String(location.uri), {
             fetch: this.getFetcher,
           })
@@ -403,8 +412,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           location: UriLocation,
           retried = false,
         ) {
-          if (!uriToPreAuthInfoMap.get(location.uri)) {
-            uriToPreAuthInfoMap.set(location.uri, self.generateAuthInfo())
+          if (!self.uriToPreAuthInfoMap.get(location.uri)) {
+            self.uriToPreAuthInfoMap.set(location.uri, self.generateAuthInfo())
           }
           if (inWebWorker && !location.internetAccountPreAuthorization) {
             throw new Error(
@@ -418,12 +427,13 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
           try {
             foundTokens = await this.checkToken(
-              uriToPreAuthInfoMap.get(location.uri).authInfo,
+              self.uriToPreAuthInfoMap.get(location.uri).authInfo,
+              location,
             )
-            uriToPreAuthInfoMap.set(location.uri, {
-              ...uriToPreAuthInfoMap.get(location.uri),
+            self.uriToPreAuthInfoMap.set(location.uri, {
+              ...self.uriToPreAuthInfoMap.get(location.uri),
               authInfo: {
-                ...uriToPreAuthInfoMap.get(location.uri).authInfo,
+                ...self.uriToPreAuthInfoMap.get(location.uri).authInfo,
                 token: foundTokens.token,
                 refreshToken: foundTokens.refreshToken,
               },
@@ -433,15 +443,15 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
 
           if (foundTokens.token) {
-            let fileUrl = uriToPreAuthInfoMap.get(location.uri).authInfo
+            let fileUrl = self.uriToPreAuthInfoMap.get(location.uri).authInfo
               ?.fileUrl
             if (!fileUrl) {
               try {
                 fileUrl = await self.fetchFile(location.uri, foundTokens.token)
-                uriToPreAuthInfoMap.set(location.uri, {
-                  ...uriToPreAuthInfoMap.get(location.uri),
+                self.uriToPreAuthInfoMap.set(location.uri, {
+                  ...self.uriToPreAuthInfoMap.get(location.uri),
                   authInfo: {
-                    ...uriToPreAuthInfoMap.get(location.uri).authInfo,
+                    ...self.uriToPreAuthInfoMap.get(location.uri).authInfo,
                     fileUrl: fileUrl,
                   },
                 })
@@ -453,7 +463,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               }
             }
           }
-          return uriToPreAuthInfoMap.get(location.uri)
+          return self.uriToPreAuthInfoMap.get(location.uri)
         },
         async handleError(
           error: string,
@@ -462,10 +472,10 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         ) {
           if (!inWebWorker && location) {
             sessionStorage.removeItem(`${self.internetAccountId}-token`)
-            uriToPreAuthInfoMap.set(location.uri, self.generateAuthInfo()) // if it reaches here the token was bad
+            self.uriToPreAuthInfoMap.set(location.uri, self.generateAuthInfo()) // if it reaches here the token was bad
           }
-          if (!triedRefreshToken) {
-            await this.exchangeRefreshForAccessToken()
+          if (!triedRefreshToken && location) {
+            await this.exchangeRefreshForAccessToken(location)
           } else {
             throw new Error(error)
           }

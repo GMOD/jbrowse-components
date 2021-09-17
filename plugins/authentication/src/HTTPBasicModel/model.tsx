@@ -29,10 +29,10 @@ const stateModelFactory = (
       }),
     )
     .views(self => ({
-      get authHeader() {
+      get authHeader(): string {
         return getConf(self, 'authHeader') || 'Authorization'
       },
-      get tokenType() {
+      get tokenType(): string {
         return getConf(self, 'tokenType') || 'Basic'
       },
       get internetAccountType() {
