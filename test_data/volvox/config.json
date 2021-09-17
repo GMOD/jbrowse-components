@@ -576,14 +576,14 @@
     },
     {
       "type": "QuantitativeTrack",
-      "trackId": "volvox_microarray_dropbox",
-      "name": "wiggle_track xyplot dropbox",
+      "trackId": "volvox_bigwig_dropbox",
+      "name": "Dropbox BigWig",
       "category": ["Integration test", "Wiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "volvox_microarray.bw",
+          "uri": "https://www.dropbox.com/s/96wflrzcbmf7nlj/volvox.bw?dl=0",
           "locationType": "UriLocation",
           "internetAccountId": "dropboxOAuth"
         }
