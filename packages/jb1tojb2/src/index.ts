@@ -279,7 +279,40 @@ interface Jb2Track {
   defaultRendering?: string
   assemblyNames?: string[]
   jb1Config?: string
+  displays?: Displays[]
 }
+
+interface Displays {
+  displayId?: string
+  type: string
+  renderer?: Renderer
+  maxScore?: number
+  minScore?: number
+}
+
+interface Renderer {
+  type?: string
+  comment?: string
+  DensityRenderer?: DensityRenderer
+  XYPlotRenderer?: XYPlotRenderer
+  color1?: string
+  height?: number
+}
+
+interface DensityRenderer {
+  type: string
+  posColor?: string
+  negColor?: string
+  height?: number
+}
+
+interface XYPlotRenderer {
+  type: string
+  posColor?: string
+  negColor?: string
+  height?: number
+}
+
 
 interface Jb2Adapter {
   type: string
@@ -426,17 +459,32 @@ export function convertTrackConfig(
       }
     }
     if (storeClass === 'JBrowse/Store/SeqFeature/NCList') {
-      jb2TrackConfig.adapter = {type: 'NCListAdapter', rootUrlTemplate: { uri: urlTemplate },}
+      jb2TrackConfig.adapter = {type: 'NCListAdapter', rootUrlTemplate: { uri: urlTemplate }}
+      var color
+      var height
       if (jb1TrackConfig.style && 
           jb1TrackConfig.style.color && 
           jb1TrackConfig.style.color.indexOf('{') < 0)  {
-        jb2TrackConfig.adapter.color = jb1TrackConfig.style.color
+        color = jb1TrackConfig.style.color
       }
       if (jb1TrackConfig.style &&
           jb1TrackConfig.style.height &&
           !isNaN( Number(jb1TrackConfig.style.height) ) )  {
-        jb2TrackConfig.adapter.height = Number(jb1TrackConfig.style.height)
+        height = Number(jb1TrackConfig.style.height)
       }
+      if (color || height) {
+        jb2TrackConfig.displays = []
+        jb2TrackConfig.displays[0] = {type: 'LinearBasicDisplay'}
+        jb2TrackConfig.displays[0].renderer = { type: "SvgFeatureRenderer" }
+        if (color) {
+          jb2TrackConfig.displays[0].renderer.color1 = color 
+       }
+        if (height) {
+          jb2TrackConfig.displays[0].renderer.height = height
+        }
+        jb2TrackConfig.displays[0].displayId = objectHash(jb2TrackConfig)
+      }
+
       return {
         ...jb2TrackConfig,
         type: 'FeatureTrack',
@@ -446,21 +494,72 @@ export function convertTrackConfig(
       storeClass === 'JBrowse/Store/SeqFeature/BigWig' ||
       storeClass === 'JBrowse/Store/BigWig'
     ) {
+      jb2TrackConfig.displays = []
+      jb2TrackConfig.displays[0] =  {type: 'LinearWiggleDisplay'}
+      jb2TrackConfig.displays[0].renderer = {comment: 'placeholder'}
+      let pos_color = 'blue'
+      let neg_color = ''
+      let height = 30
+      var max_score
+      var min_score
+      if (jb1TrackConfig.style &&
+          jb1TrackConfig.style.pos_color &&
+          jb1TrackConfig.style.pos_color.indexOf('{') < 0)  {
+        pos_color = jb1TrackConfig.style.pos_color 
+      }
+      if (jb1TrackConfig.style &&
+          jb1TrackConfig.style.neg_color &&
+          jb1TrackConfig.style.neg_color.indexOf('{') < 0)  {
+        neg_color = jb1TrackConfig.style.neg_color
+      }
+      if (jb1TrackConfig.style &&
+          jb1TrackConfig.style.height &&
+          !isNaN( Number(jb1TrackConfig.style.height) ) )  {
+        height = Number(jb1TrackConfig.style.height)
+      }
+      if (jb1TrackConfig.max_score &&
+          !isNaN( Number(jb1TrackConfig.max_score ) ) ) {
+        max_score = Number(jb1TrackConfig.max_score )
+      }
+      if (jb1TrackConfig.min_score &&
+          !isNaN( Number(jb1TrackConfig.min_score ) ) ) {
+        min_score = Number(jb1TrackConfig.min_score )
+      }
+
+      jb2TrackConfig.displays[0].renderer = {comment: 'placeholder'}
       if (jb1TrackConfig.type && jb1TrackConfig.type.endsWith('XYPlot')) {
         jb2TrackConfig.defaultRendering = 'xyplot'
+        jb2TrackConfig.displays[0].renderer.XYPlotRenderer = {height: height,
+          posColor: pos_color,
+          type: "XYPlotRenderer"}
+        if (neg_color) {
+            jb2TrackConfig.displays[0].renderer.XYPlotRenderer.negColor = neg_color
+        } 
       } else if (
         jb1TrackConfig.type &&
         jb1TrackConfig.type.endsWith('Density')
       ) {
         jb2TrackConfig.defaultRendering = 'density'
+        jb2TrackConfig.displays[0].renderer.DensityRenderer = {height: height,
+          posColor: pos_color,
+          type: "DesnsityRenderer"}
+        if (neg_color) {
+            jb2TrackConfig.displays[0].renderer.DensityRenderer.negColor = neg_color
+        }
       }
+      if (max_score) {
+        jb2TrackConfig.displays[0].maxScore = max_score
+      }
+      if (min_score) {
+        jb2TrackConfig.displays[0].minScore = min_score
+      }
+     
+      jb2TrackConfig.adapter = {type: 'BigWigAdapter', bigWigLocation: { uri: urlTemplate } } 
+
+      jb2TrackConfig.displays[0].displayId = objectHash(jb2TrackConfig)
       return {
         ...jb2TrackConfig,
-        type: 'QuantitativeTrack',
-        adapter: {
-          type: 'BigWigAdapter',
-          bigWigLocation: { uri: urlTemplate },
-        },
+        type: 'QuantitativeTrack'
       }
     }
     if (storeClass === 'JBrowse/Store/SeqFeature/VCFTabix') {

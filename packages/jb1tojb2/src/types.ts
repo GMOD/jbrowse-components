@@ -27,11 +27,15 @@ export interface ProtoTrack {
 export interface Track extends ProtoTrack {
   label: string
   style?: Style
+  min_score?: number
+  max_score?: number
 }
 
 export interface Style {
-  color: string
-  height: string
+  color?: string
+  height?: string
+  pos_color?: string
+  neg_color?: string 
 }
 
 export interface Metadata {
