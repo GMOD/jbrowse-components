@@ -43,7 +43,33 @@ const stateModelFactory = (
       },
     }))
     .actions(self => ({
-      makeFetcher(location: UriLocation, metadataOnly = false) {
+      // used to check if token is still valid for the file
+      async fetchFile(locationUri: string, accessToken: string) {
+        if (!locationUri || !accessToken) {
+          return
+        }
+        const urlId = locationUri.match(/[-\w]{25,}/)
+
+        const response = await fetch(
+          `https://www.googleapis.com/drive/v2/files/${urlId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+          },
+        )
+
+        if (!response.ok) {
+          throw new Error(
+            `Network response failure: ${
+              response.status
+            } (${await response.text()})`,
+          )
+        }
+        return locationUri
+      },
+      getFetcher(location: UriLocation, metadataOnly = false) {
         return async (
           url: RequestInfo,
           opts?: RequestInit,
@@ -100,8 +126,8 @@ const stateModelFactory = (
         return new GoogleDriveFile(
           `https://www.googleapis.com/drive/v3/files/${urlId}?alt=media`,
           {
-            fetch: this.makeFetcher(location),
-            sizeFetch: this.makeFetcher(location, true),
+            fetch: this.getFetcher(location),
+            sizeFetch: this.getFetcher(location, true),
           },
         )
       },

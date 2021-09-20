@@ -25,7 +25,7 @@ const stateModelFactory = (
       },
     }))
     .actions(self => ({
-      // for Dropbox, used to check if token is still valid
+      // for Dropbox, used to check if token is still valid for the file
       async fetchFile(locationUri: string, accessToken: string) {
         if (!locationUri || !accessToken) {
           return

@@ -465,6 +465,15 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
           return self.uriToPreAuthInfoMap.get(location.uri)
         },
+        // TODOAUTH: thoughts about tracks past the rpc boundary having an expired token
+        // also ask about thoughts during grooming/pairing
+        // if user has successful track -> leaves tab open for 4+ hours and comes back
+        // token will be expired, but refreshing will continue to use expired token
+        // since there is no logic to remove token from preAuthInformation/uriToPreAuthInfoMap
+        // if you are in the webworker (see below the conditional)
+        // may need some logic for if you are in webworker and go to handle error, specifically remove the token
+        // from preauth and uritopreauthInfoMap to allow for a refresh token attempt or relaunching
+        // auth flow
         async handleError(
           error: string,
           triedRefreshToken = false,
