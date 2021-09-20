@@ -466,6 +466,9 @@ export function convertTrackConfig(
           jb1TrackConfig.style.color && 
           jb1TrackConfig.style.color.indexOf('{') < 0)  {
         color = jb1TrackConfig.style.color
+        if (color == 'white') {
+          color = 'black';
+        }
       }
       if (jb1TrackConfig.style &&
           jb1TrackConfig.style.height &&
