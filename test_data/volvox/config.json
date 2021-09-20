@@ -591,6 +591,20 @@
     },
     {
       "type": "QuantitativeTrack",
+      "trackId": "google_bigwig",
+      "name": "Google Drive BigWig",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "locationType": "UriLocation",
+          "uri": "https://drive.google.com/file/d/1PIvZCOJioK9eBL1Vuvfa4L_Fv9zTooHk/view?usp=sharing",
+          "internetAccountId": "googleOAuth"
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_externaltoken",
       "name": "wiggle_track xyplot external token",
       "category": ["Integration test", "Wiggle"],
