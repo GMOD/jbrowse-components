@@ -4562,6 +4562,11 @@
   resolved "https://registry.yarnpkg.com/@types/deep-equal/-/deep-equal-1.0.1.tgz#71cfabb247c22bcc16d536111f50c0ed12476b03"
   integrity sha512-mMUu4nWHLBlHtxXY17Fg6+ucS/MnndyOWyOe7MmwkoMYxvfQU2ajtRaEvqSUv+aVkMqH/C0NCI8UoVfRNQ10yg==
 
+"@types/detect-node@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@types/detect-node/-/detect-node-2.0.0.tgz#696e024ddd105c72bbc6a2e3f97902a2886f2c3f"
+  integrity sha512-+BozjlbPTACYITf1PWf62HLtDV79HbmZosUN1mv1gGrnjDCRwBXkDKka1sf6YQJvspmfPXVcy+X6tFW62KteeQ==
+
 "@types/dompurify@^2.0.2":
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/@types/dompurify/-/dompurify-2.0.2.tgz#94b5c05dc9b8a682a0abb4a8d6f0b82df61baeac"
