@@ -8,7 +8,7 @@ import {
   BlobLocation,
 } from '../types'
 import { getBlob } from '../tracks'
-import { isElectron } from '../../util'
+import isNode from 'detect-node'
 
 export const openUrl = (arg: string) => {
   return rangeFetcherOpenUrl(arg)
@@ -36,7 +36,7 @@ export function openLocation(location: FileLocation): GenericFilehandle {
     if (!location.localPath) {
       throw new Error('No local path provided')
     }
-    if (isElectron || typeof jest !== 'undefined') {
+    if (isNode) {
       return new LocalFile(location.localPath)
     } else {
       throw new Error("can't use local files in the browser")
