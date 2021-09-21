@@ -1,34 +1,20 @@
 import configSchema from './configSchema'
 import GtfTabixAdapter from './GtfTabixAdapter'
-import path from 'path'
+// import { toArray } from 'rxjs/operators'
 
-test('adapter can fetch variants form demo.gtf', async () => {
+test('can instantiate new GtfTabixAdapter and check for data', async () => {
   const adapter = new GtfTabixAdapter(
     configSchema.create({
       gtfGzLocation: {
-        localPath: path.join(
-          __dirname,
-          '..',
-          '..',
-          '..',
-          'test_data',
-          'demo.gtf',
-        ),
+        localPath: require.resolve('./test_data/volvox.sorted.gtf.gz'),
       },
       index: {
-        indexType: 'TBI',
         location: {
-          localPath: path.join(
-            __dirname,
-            '..',
-            '..',
-            '..',
-            'test_data',
-            'demo.gtf.tbi',
-          ),
+          localPath: require.resolve('./test_data/volvox.sorted.gtf.gz.tbi'),
         },
       },
     }),
   )
-  // console.log(adapter)
+  expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
+  expect(await adapter.hasDataForRefName('ctgB')).toBe(false)
 })
