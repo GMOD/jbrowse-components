@@ -124,7 +124,7 @@ export default class extends BaseFeatureDataAdapter {
         }
       }
 
-      const gtf = lines
+      const gtfLines = lines
         .map((lineRecord: LineFeature) => {
           if (lineRecord.fields[8] && lineRecord.fields[8] !== '.') {
             if (!lineRecord.fields[8].includes('_lineHash')) {
@@ -137,8 +137,10 @@ export default class extends BaseFeatureDataAdapter {
         })
         .join('\n')
 
-      const features = this.gtfParseStringSync(gtf) as FeatureLoc[][]
-
+      // console.log(lines)
+      // console.log(typeof gtfLines)
+      const features = this.gtfParseStringSync(gtfLines) as FeatureLoc[][]
+      // TODO: fix bug with features not being parsed correctly
       features.forEach(featureLocs =>
         this.formatFeatures(featureLocs).forEach(f => {
           if (
@@ -232,8 +234,10 @@ export default class extends BaseFeatureDataAdapter {
   }
 
   private gtfParseStringSync(str: string) {
+    // TODO: fix bug with features not being parsed correctly
+
     if (!str) {
-      return {}
+      return []
     }
     const [
       seq_name,
