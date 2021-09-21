@@ -6,6 +6,17 @@ import {
   InputLabel,
   TextField,
   Typography,
+  Checkbox,
+  FormGroup,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  RadioGroup,
+  Radio,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   Select,
   MenuItem,
 } from '@material-ui/core'
@@ -47,6 +58,7 @@ const FileLocationEditor = observer(
     const { location, name, description } = props
     const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'
     const [fileOrUrlState, setFileOrUrlState] = useState(fileOrUrl)
+    const [internetAccountChecked, setInternetAccountChecked] = useState(false)
 
     return (
       <>
@@ -81,7 +93,28 @@ const FileLocationEditor = observer(
           </Grid>
           <Grid item>
             {fileOrUrlState === 'url' ? (
-              <UrlChooser {...props} />
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={internetAccountChecked}
+                      onChange={event => {
+                        setInternetAccountChecked(event.target.checked)
+                      }}
+                    />
+                  }
+                  label="Requires Login"
+                  labelPlacement="start"
+                />
+              </FormGroup>
+            ) : null}
+          </Grid>
+          <Grid item>
+            {fileOrUrlState === 'url' ? (
+              <UrlChooser
+                {...props}
+                internetAccountChecked={internetAccountChecked}
+              />
             ) : (
               <LocalFileChooser {...props} />
             )}
@@ -97,11 +130,24 @@ const UrlChooser = (props: {
   location?: FileLocation
   setLocation: Function
   internetAccounts?: Account[]
+  internetAccountChecked: boolean
 }) => {
-  const { location, setLocation, internetAccounts } = props
-  const [currentInternetAccount, setCurrentInternetAccount] = useState(
-    'autoDetect',
-  )
+  const {
+    location,
+    setLocation,
+    internetAccounts,
+    internetAccountChecked,
+  } = props
+  const [currentInternetAccount, setCurrentInternetAccount] = useState('')
+  const [suggestedInternetAccount, setSuggestedInternetAccount] = useState('')
+  const [
+    openNewInternetAccountDialog,
+    setOpenNewInternetAccountDialog,
+  ] = useState(false)
+  const [
+    additionalInternetAccountIds,
+    setAdditionalInternetAccountIds,
+  ] = useState<string[]>([])
 
   const findChosenInternetAccount = (
     urlInput: string,
@@ -125,8 +171,22 @@ const UrlChooser = (props: {
     return foundSelection
       ? foundSelection
       : {
-          internetAccountId: `${internetAccountSelection}-${new Date().toLocaleDateString()},${new Date().getHours()}:${new Date().getMinutes()}`,
+          internetAccountId: internetAccountSelection,
         }
+  }
+
+  const updateLocationWithAccountInfo = (
+    uri: string,
+    internetAccountId: string,
+  ) => {
+    const internetAccount = findChosenInternetAccount(uri, internetAccountId)
+
+    setLocation({
+      uri: uri,
+      baseAuthUri: uri,
+      internetAccountId: internetAccount?.internetAccountId || '',
+      locationType: 'UriLocation',
+    })
   }
 
   return (
@@ -137,20 +197,17 @@ const UrlChooser = (props: {
         defaultValue={location && isUriLocation(location) ? location.uri : ''}
         onChange={event => {
           if (event.target.value === '') {
-            setCurrentInternetAccount('autoDetect')
+            setCurrentInternetAccount('')
           }
+          setSuggestedInternetAccount(
+            findChosenInternetAccount(event.target.value, 'autoDetect')?.name ||
+              '',
+          )
           if (currentInternetAccount) {
-            const internetAccount = findChosenInternetAccount(
-              event.target.value,
+            updateLocationWithAccountInfo(
+              event.target.value.trim(),
               currentInternetAccount,
             )
-
-            setLocation({
-              uri: event.target.value.trim(),
-              baseAuthUri: event.target.value.trim(),
-              internetAccountId: internetAccount?.internetAccountId || '',
-              locationType: 'UriLocation',
-            })
           } else {
             setLocation({
               uri: event.target.value.trim(),
@@ -159,55 +216,89 @@ const UrlChooser = (props: {
           }
         }}
       />
-      {isUriLocation(location) && internetAccounts && (
-        <div>
-          <label htmlFor="internetAccountSelect">Select Internet Account</label>
-          <Select
-            id="internetAccountSelect"
-            value={currentInternetAccount}
-            style={{ margin: 5 }}
-            onChange={event => {
-              const internetAccountId: string = event.target.value as string
-              setCurrentInternetAccount(event.target.value as string)
-              const internetAccount = findChosenInternetAccount(
-                location.uri,
-                internetAccountId,
-              )
-
-              setLocation({
-                uri: location.uri,
-                baseAuthUri: location.uri,
-                internetAccountId: internetAccount?.internetAccountId || '',
-                locationType: 'UriLocation',
-              })
-            }}
-            displayEmpty
-          >
-            <MenuItem value="">None</MenuItem>
-            <MenuItem value="autoDetect">
-              Auto Detect:{' '}
-              {findChosenInternetAccount(location.uri, 'autoDetect')?.name ||
-                'None'}
-            </MenuItem>
-            <MenuItem value="HTTPBasic">New HTTPBasic</MenuItem>
-            {internetAccounts?.map(account => {
-              try {
-                new URL(location.uri)
-                return (
-                  <MenuItem
-                    key={account.internetAccountId}
-                    value={account.internetAccountId}
-                  >
-                    {account.name}
-                  </MenuItem>
-                )
-              } catch (e) {
-                return null
-              }
-            })}
-          </Select>
-        </div>
-      )}
+      <Grid item>
+        {internetAccountChecked && isUriLocation(location) ? (
+          <>
+            <FormControl component="fieldset">
+              <FormLabel component="legend">Select Internet Account</FormLabel>
+              <RadioGroup
+                value={currentInternetAccount}
+                name="internet-account-radio-buttons-group"
+                onChange={event => {
+                  const internetAccountId = event.target.value
+                  setCurrentInternetAccount(internetAccountId)
+                  updateLocationWithAccountInfo(
+                    location.uri,
+                    event.target.value,
+                  )
+                }}
+              >
+                <FormControlLabel
+                  key=""
+                  value=""
+                  control={<Radio />}
+                  label="None"
+                />
+                {suggestedInternetAccount && (
+                  <FormControlLabel
+                    key="suggestedInternetAccount"
+                    value={suggestedInternetAccount}
+                    control={<Radio />}
+                    label={`Suggested: ${suggestedInternetAccount}`}
+                  />
+                )}
+                {internetAccounts?.map(account => {
+                  try {
+                    // new URL(location.uri)
+                    return (
+                      <FormControlLabel
+                        key={account.internetAccountId}
+                        value={account.internetAccountId}
+                        control={<Radio />}
+                        label={account.name}
+                      />
+                    )
+                  } catch (e) {
+                    return null
+                  }
+                })}
+                {additionalInternetAccountIds?.map((accountId: string) => {
+                  return (
+                    <FormControlLabel
+                      key={accountId}
+                      value={accountId}
+                      control={<Radio />}
+                      label={accountId.split('-')[1]}
+                    />
+                  )
+                })}
+              </RadioGroup>
+              <Button
+                variant="outlined"
+                onClick={() => setOpenNewInternetAccountDialog(true)}
+              >
+                Add New Internet Account
+              </Button>
+            </FormControl>
+            {openNewInternetAccountDialog && (
+              <AddNewInternetAccountDialog
+                internetAccounts={internetAccounts}
+                handleClose={(newAddedId?: string) => {
+                  if (newAddedId) {
+                    setAdditionalInternetAccountIds([
+                      ...additionalInternetAccountIds,
+                      newAddedId,
+                    ])
+                    setCurrentInternetAccount(newAddedId)
+                    updateLocationWithAccountInfo(location.uri, newAddedId)
+                  }
+                  setOpenNewInternetAccountDialog(false)
+                }}
+              />
+            )}
+          </>
+        ) : null}
+      </Grid>
     </>
   )
 }
@@ -270,5 +361,82 @@ const LocalFileChooser = observer(
     )
   },
 )
+
+const AddNewInternetAccountDialog = ({
+  internetAccounts,
+  handleClose,
+}: {
+  internetAccounts: Account[] | undefined
+  handleClose: (arg?: string) => void
+}) => {
+  const [name, setName] = useState('')
+  const [type, setType] = useState('')
+  return (
+    <>
+      <Dialog open maxWidth="xl" data-testid="new-internet-account-modal">
+        <DialogTitle> Add New Internet Account</DialogTitle>
+        <DialogContent style={{ display: 'flex', flexDirection: 'column' }}>
+          <label htmlFor="nameTextField">Enter Name for Internet Account</label>
+          <TextField
+            id="nameTextField"
+            required
+            variant="outlined"
+            onChange={event => {
+              setName(event.target.value)
+            }}
+            margin="dense"
+            style={{ margin: 10 }}
+          />
+          <label htmlFor="internetAccountTypeSelect">
+            Select Internet Account Type
+          </label>
+          <Select
+            id="internetAccountTypeSelect"
+            value={type}
+            onChange={event => {
+              setType(event.target.value as string)
+            }}
+            displayEmpty
+          >
+            <MenuItem value="HTTPBasicInternetAccount">
+              HTTPBasicInternetAccount
+            </MenuItem>
+            {internetAccounts?.map(account => {
+              return (
+                <MenuItem key={account.type} value={account.type}>
+                  {account.type}
+                </MenuItem>
+              )
+            })}
+          </Select>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            color="primary"
+            type="submit"
+            disabled={!name || !type}
+            onClick={() => {
+              if (name && type) {
+                handleClose(`${type}-${name}`)
+              }
+            }}
+          >
+            Submit
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              handleClose(undefined)
+            }}
+          >
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  )
+}
 
 export default FileLocationEditor

@@ -289,36 +289,25 @@ export default function RootModel(
         initialSnapshot = {},
         location: UriLocation,
       ) {
-        const internetAccountTypes = new Map([
-          ['HTTPBasic', 'HTTPBasicInternetAccount'],
-        ])
-        let ephemeralType
-        internetAccountTypes.forEach((value, key) => {
-          if (internetAccountId.includes(key)) {
-            ephemeralType = value
-          }
-        })
-
-        if (ephemeralType) {
-          const hostUri = new URL(location.uri).origin
-          const configuration = {
-            type: ephemeralType,
-            internetAccountId: internetAccountId,
-            name: `HTTPBasic-${hostUri}`,
-            description: '',
-            domains: [hostUri],
-          }
-          const internetAccountType = pluginManager.getInternetAccountType(
-            configuration.type,
-          )
-          const internetAccount = internetAccountType.stateModel.create({
-            ...initialSnapshot,
-            type: configuration.type,
-            configuration,
-          })
-          self.internetAccounts.push(internetAccount)
-          return internetAccount
+        const hostUri = new URL(location.uri).origin
+        // id of a custom new internaccount is `${type}-${name}`
+        const configuration = {
+          type: internetAccountId.split('-')[0],
+          internetAccountId: internetAccountId,
+          name: internetAccountId.split('-')[1],
+          description: '',
+          domains: [hostUri],
         }
+        const internetAccountType = pluginManager.getInternetAccountType(
+          configuration.type,
+        )
+        const internetAccount = internetAccountType.stateModel.create({
+          ...initialSnapshot,
+          type: configuration.type,
+          configuration,
+        })
+        self.internetAccounts.push(internetAccount)
+        return internetAccount
       },
       setAssemblyEditing(flag: boolean) {
         self.isAssemblyEditing = flag
