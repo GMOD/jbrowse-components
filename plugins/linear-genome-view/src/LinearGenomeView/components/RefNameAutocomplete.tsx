@@ -183,7 +183,7 @@ function RefNameAutocomplete({
       freeSolo
       includeInputInList
       selectOnFocus
-      blurOnSelect
+      // blurOnSelect
       style={{ ...style, width }}
       value={inputBoxVal}
       loading={!loaded}

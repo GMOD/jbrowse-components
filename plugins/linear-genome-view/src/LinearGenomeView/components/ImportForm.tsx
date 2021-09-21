@@ -160,7 +160,9 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                   assemblyName={message ? undefined : selectedAsm}
                   value={selectedRegion}
                   onSelect={option => {
-                    setSelectedRegion(option.getLabel())
+                    setSelectedRegion(
+                      option.getDisplayString() || option.getLabel(),
+                    )
                     setOptionTrackId(option.getTrackId() || '')
                     setOptionLocation(option.getLocation())
                   }}
