@@ -197,14 +197,7 @@ Object {
       "authEndpoint": "https://www.dropbox.com/oauth2/authorize",
       "clientId": "50knr6xrjfc39sk",
       "description": "OAuth Info for Dropbox",
-      "hasRefreshToken": true,
-      "internetAccountId": "dropboxOAuth",
-      "name": "Dropbox",
-      "needsAuthorization": true,
-      "needsPKCE": true,
-      "tokenEndpoint": "https://api.dropbox.com/oauth2/token",
-      "type": "DropboxOAuthInternetAccount",
-      "validDomains": Array [
+      "domains": Array [
         "addtodropbox.com",
         "db.tt",
         "dropbox.com",
@@ -213,20 +206,27 @@ Object {
         "dropbox.tech",
         "getdropbox.com",
       ],
+      "hasRefreshToken": true,
+      "internetAccountId": "dropboxOAuth",
+      "name": "Dropbox",
+      "needsAuthorization": true,
+      "needsPKCE": true,
+      "tokenEndpoint": "https://api.dropbox.com/oauth2/token",
+      "type": "DropboxOAuthInternetAccount",
     },
     Object {
       "authEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
       "clientId": "109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com",
       "description": "OAuth Info for Google Drive",
+      "domains": Array [
+        "drive.google.com",
+      ],
       "internetAccountId": "googleOAuth",
       "name": "Google",
       "needsAuthorization": true,
       "responseType": "token",
       "scopes": "https://www.googleapis.com/auth/drive.readonly",
       "type": "GoogleDriveOAuthInternetAccount",
-      "validDomains": Array [
-        "drive.google.com",
-      ],
     },
     Object {
       "description": "External Token for testing",
@@ -1146,6 +1146,58 @@ Object {
       ],
       "name": "wiggle_track xyplot dropbox",
       "trackId": "volvox_microarray_dropbox",
+      "type": "QuantitativeTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bigWigLocation": Object {
+          "internetAccountId": "dropboxOAuth",
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "https://www.dropbox.com/s/96wflrzcbmf7nlj/volvox.bw?dl=0",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Authentication",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "dropbox_bigwig-LinearWiggleDisplay",
+          "type": "LinearWiggleDisplay",
+        },
+      ],
+      "name": "Dropbox BigWig",
+      "trackId": "dropbox_bigwig",
+      "type": "QuantitativeTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bigWigLocation": Object {
+          "internetAccountId": "googleOAuth",
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "https://drive.google.com/file/d/1PIvZCOJioK9eBL1Vuvfa4L_Fv9zTooHk/view?usp=sharing",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Authentication",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "google_bigwig-LinearWiggleDisplay",
+          "type": "LinearWiggleDisplay",
+        },
+      ],
+      "name": "Google Drive BigWig",
+      "trackId": "google_bigwig",
       "type": "QuantitativeTrack",
     },
     Object {
