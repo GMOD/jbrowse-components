@@ -2,9 +2,11 @@ import { renderRegion } from './renderRegion'
 import fs from 'fs'
 
 function hashCode(str) {
-  var hash = 0
+  let hash = 0
   let chr
-  if (str.length === 0) return hash
+  if (str.length === 0) {
+    return hash
+  }
   for (let i = 0; i < str.length; i++) {
     chr = str.charCodeAt(i)
     hash = (hash << 5) - hash + chr
@@ -15,7 +17,7 @@ function hashCode(str) {
 
 const timeout = 20000
 
-//commented out for using remote files currently
+// commented out for using remote files currently
 xtest(
   'renders a region with --session and --config args',
   async () => {
@@ -29,7 +31,7 @@ xtest(
   timeout,
 )
 
-//commented out for using remote files currently
+// commented out for using remote files currently
 xtest(
   'renders a region with --session, --tracks, and --assembly args',
   async () => {
@@ -74,7 +76,7 @@ test(
   timeout,
 )
 
-//commented out for using remote files currently
+// commented out for using remote files currently
 xtest(
   'configtracks arg with urls',
   async () => {

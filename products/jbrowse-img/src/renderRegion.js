@@ -1,6 +1,5 @@
 import 'regenerator-runtime/runtime'
 import { createViewState } from '@jbrowse/react-linear-genome-view'
-import { getSnapshot } from 'mobx-state-tree'
 import { renderToSvg } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 import path from 'path'
@@ -118,7 +117,7 @@ export function readData(opts) {
   }
 
   trackList.forEach(track => {
-    const [type, [file, opts]] = track
+    const [type, [file]] = track
 
     if (type === 'bam') {
       configData.tracks = [
