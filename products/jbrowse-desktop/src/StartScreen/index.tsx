@@ -80,8 +80,10 @@ function LogoWithVersion() {
 }
 export default function StartScreen({
   setPluginManager,
+  setError,
 }: {
   setPluginManager: (arg: PluginManager) => void
+  setError: (arg: Error) => void
 }) {
   const classes = useStyles()
   const [sessions, setSessions] = useState<Map<string, SessionStats>>()
@@ -90,7 +92,6 @@ export default function StartScreen({
   const [factoryResetDialogOpen, setFactoryResetDialogOpen] = useState(false)
   const [updateSessionsList, setUpdateSessionsList] = useState(true)
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
-  const [error, setError] = useState<Error>()
 
   const sessionNames = useMemo(() => Object.keys(sessions || {}), [sessions])
 
@@ -110,10 +111,9 @@ export default function StartScreen({
         }
       } catch (e) {
         setError(e)
-        console.error(e)
       }
     })()
-  }, [updateSessionsList])
+  }, [setError, updateSessionsList])
 
   if (!sessions) {
     return (
@@ -156,7 +156,6 @@ export default function StartScreen({
             setUpdateSessionsList(true)
           } catch (e) {
             setError(e)
-            console.error(e)
           } finally {
             setFactoryResetDialogOpen(false)
           }
@@ -175,9 +174,6 @@ export default function StartScreen({
       </IconButton>
 
       <LogoWithVersion />
-      {error ? (
-        <Typography color="error" variant="h6">{`${error}`}</Typography>
-      ) : null}
 
       <div className={classes.root}>
         <Grid container spacing={3}>
