@@ -241,56 +241,52 @@ const ShareDialog = observer(
           </DialogTitle>
           <Divider />
 
-          <>
-            <DialogContent>
-              <DialogContentText>
-                Copy the URL below to share your current JBrowse session.
-                <IconButton onClick={() => setSettingsDialogOpen(true)}>
-                  <SettingsIcon />
-                </IconButton>
-              </DialogContentText>
-            </DialogContent>
+          <DialogContent>
+            <DialogContentText>
+              Copy the URL below to share your current JBrowse session.
+              <IconButton onClick={() => setSettingsDialogOpen(true)}>
+                <SettingsIcon />
+              </IconButton>
+            </DialogContentText>
 
-            <DialogContent>
-              {currentSetting === 'short' ? (
-                error ? (
-                  <Typography color="error">{`${error}`}</Typography>
-                ) : loading ? (
-                  <Typography>Generating short URL...</Typography>
-                ) : (
-                  <TextField
-                    label="URL"
-                    value={shortUrl}
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                    inputProps={{ 'data-testid': 'share-url-text' }}
-                    variant="filled"
-                    style={{ width: '100%' }}
-                    onClick={event => {
-                      const target = event.target as HTMLTextAreaElement
-                      target.select()
-                    }}
-                    data-testid="share-url-field"
-                  />
-                )
+            {currentSetting === 'short' ? (
+              error ? (
+                <Typography color="error">{`${error}`}</Typography>
+              ) : loading ? (
+                <Typography>Generating short URL...</Typography>
               ) : (
                 <TextField
                   label="URL"
-                  value={longUrl.toString()}
+                  value={shortUrl}
                   InputProps={{
                     readOnly: true,
                   }}
+                  inputProps={{ 'data-testid': 'share-url-text' }}
                   variant="filled"
                   style={{ width: '100%' }}
                   onClick={event => {
                     const target = event.target as HTMLTextAreaElement
                     target.select()
                   }}
+                  data-testid="share-url-field"
                 />
-              )}
-            </DialogContent>
-          </>
+              )
+            ) : (
+              <TextField
+                label="URL"
+                value={longUrl.toString()}
+                InputProps={{
+                  readOnly: true,
+                }}
+                variant="filled"
+                style={{ width: '100%' }}
+                onClick={event => {
+                  const target = event.target as HTMLTextAreaElement
+                  target.select()
+                }}
+              />
+            )}
+          </DialogContent>
           <DialogActions>
             <Button
               onClick={() => {
@@ -322,35 +318,35 @@ const ShareDialog = observer(
   },
 )
 
-const ShareButton = observer((props: { session: AbstractSessionModel }) => {
-  const [open, setOpen] = useState(false)
+const ShareButton = observer(
+  (props: { session: AbstractSessionModel & { shareURL: string } }) => {
+    const [open, setOpen] = useState(false)
 
-  const { session } = props
-  const classes = useStyles()
+    const { session } = props
+    const classes = useStyles()
 
-  const handleClose = () => {
-    setOpen(false)
-  }
+    const handleClose = () => {
+      setOpen(false)
+    }
 
-  return (
-    <div className={classes.shareDiv}>
-      <Button
-        data-testid="share_button"
-        onClick={async () => {
-          setOpen(true)
-        }}
-        size="small"
-        color="inherit"
-        startIcon={<ShareIcon />}
-        classes={{ root: classes.shareButton }}
-      >
-        Share
-      </Button>
-      {open ? (
-        <ShareDialog handleClose={handleClose} session={session} />
-      ) : null}
-    </div>
-  )
-})
+    return (
+      <div className={classes.shareDiv}>
+        <Button
+          data-testid="share_button"
+          onClick={async () => setOpen(true)}
+          size="small"
+          color="inherit"
+          startIcon={<ShareIcon />}
+          classes={{ root: classes.shareButton }}
+        >
+          Share
+        </Button>
+        {open ? (
+          <ShareDialog handleClose={handleClose} session={session} />
+        ) : null}
+      </div>
+    )
+  },
+)
 
 export default ShareButton
