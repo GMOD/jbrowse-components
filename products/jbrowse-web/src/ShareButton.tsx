@@ -26,9 +26,8 @@ import copy from 'copy-to-clipboard'
 import { alpha } from '@material-ui/core/styles'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import { getSnapshot } from 'mobx-state-tree'
-import { toUrlSafeB64 } from '@jbrowse/core/util'
+import { toUrlSafeB64, AbstractSessionModel } from '@jbrowse/core/util'
 import { shareSessionToDynamo } from './sessionSharing'
-import { SessionModel } from './sessionModelFactory'
 
 const useStyles = makeStyles(theme => ({
   shareDiv: {
@@ -173,7 +172,7 @@ const ShareDialog = observer(
     session,
   }: {
     handleClose: () => void
-    session: SessionModel
+    session: AbstractSessionModel
   }) => {
     const classes = useStyles()
     const [shortUrl, setShortUrl] = useState('')
@@ -323,7 +322,7 @@ const ShareDialog = observer(
   },
 )
 
-const ShareButton = observer((props: { session: SessionModel }) => {
+const ShareButton = observer((props: { session: AbstractSessionModel }) => {
   const [open, setOpen] = useState(false)
 
   const { session } = props
