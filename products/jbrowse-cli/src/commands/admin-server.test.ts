@@ -203,4 +203,29 @@ describe('admin-server', () => {
       expect(response.status).toBe(500)
       expect(await response.text()).toMatch(/Could not write config file/)
     })
+
+  setupWithCreate
+    .command(['admin-server', '--port', '9096'])
+    .finally(async ctx => {
+      await killExpress(ctx, 9096)
+    })
+    .it('throws an error if unable to write to config.json', async ctx => {
+      const adminKey = ctx.stdoutWrite.mock.calls[0][0].match(
+        /adminKey=([a-zA-Z0-9]{10,12}) /,
+      )[1]
+      const configPath = '/etc/passwd'
+      const config = { foo: 'bar' }
+      const payload = { configPath, adminKey, config }
+      const response = await fetch('http://localhost:9096/updateConfig', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+      expect(response.status).toBe(500)
+      expect(await response.text()).toMatch(
+        /Cannot perform directory traversal/,
+      )
+    })
 })

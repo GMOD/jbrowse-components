@@ -40,18 +40,16 @@ const JBrowse = observer(({ pluginManager }) => {
   useEffect(() => {
     onSnapshot(jbrowse, async snapshot => {
       if (adminKey) {
-        const payload = {
-          adminKey,
-          configPath,
-          config: deleteBaseUris(JSON.parse(JSON.stringify(snapshot))),
-        }
-
         const response = await fetch(adminServer || `/updateConfig`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({
+            adminKey,
+            configPath,
+            config: deleteBaseUris(JSON.parse(JSON.stringify(snapshot))),
+          }),
         })
         if (!response.ok) {
           const message = await response.text()

@@ -82,12 +82,17 @@ export default class AdminServer extends JBrowseCommand {
       if (adminKey === req.body.adminKey) {
         this.debug('Admin key matches')
         try {
-          await this.writeJsonFile(
-            req.body.configPath
-              ? path.join(baseDir, req.body.configPath)
-              : outFile,
-            req.body.config,
-          )
+          // use directory traversal prevention
+          // https://nodejs.org/en/knowledge/file-system/security/introduction/#preventing-directory-traversal
+          const filename = req.body.configPath
+            ? path.join(baseDir, req.body.configPath)
+            : outFile
+          if (filename.indexOf(baseDir) !== 0) {
+            throw new Error(
+              `Cannot perform directory traversal outside of ${baseDir}`,
+            )
+          }
+          await this.writeJsonFile(filename, req.body.config)
           res.send('Config written to disk')
         } catch (e) {
           res.status(500).send(`Could not write config file ${e}`)
