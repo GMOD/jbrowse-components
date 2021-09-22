@@ -17,7 +17,8 @@
     "format": "prettier --write .",
     "check-format": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "test-ci": "jest --ci --coverage",
+    "pretest-ci": "cd products/jbrowse-react-linear-genome-view;yarn build;cd ../../",
+    "test-ci": "jest --ci --coverage && jest --testMatch '**/*testmod.js'",
     "built-test-ci": "jest --ci integration.test.js",
     "test": "DEBUG_PRINT_LIMIT=0 jest"
   },
