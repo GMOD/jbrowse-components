@@ -8,6 +8,7 @@
   "scripts": {
     "start": "rescripts --max-http-header-size=100000 start",
     "build": "cross-env NODE_OPTIONS='--max-old-space-size=7000' rescripts build",
+    "postbuild": "node -e \"fs.writeFileSync('build/version.txt',JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version)\"",
     "test": "rescripts test",
     "eject": "rescripts eject",
     "checktypes": "tsc --noEmit",
