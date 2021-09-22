@@ -172,7 +172,7 @@ const ShareDialog = observer(
     session,
   }: {
     handleClose: () => void
-    session: AbstractSessionModel
+    session: AbstractSessionModel & { shareURL: string }
   }) => {
     const classes = useStyles()
     const [shortUrl, setShortUrl] = useState('')

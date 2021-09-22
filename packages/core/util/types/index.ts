@@ -22,7 +22,7 @@ import { Feature } from '../simpleFeature'
 export * from './util'
 
 /** abstract type for a model that contains multiple views */
-export interface AbstractViewContainer {
+export interface AbstractViewContainer extends IAnyStateTreeNode {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
   addView(

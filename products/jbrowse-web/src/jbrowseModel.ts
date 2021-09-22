@@ -3,23 +3,33 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import PluginManager from '@jbrowse/core/PluginManager'
+import Plugin from '@jbrowse/core/Plugin'
 import {
   getParent,
   getRoot,
   getSnapshot,
   resolveIdentifier,
   types,
+  cast,
 } from 'mobx-state-tree'
 import { toJS } from 'mobx'
+import { SessionStateModel } from './sessionModelFactory'
+import {
+  AnyConfigurationModel,
+  AnyConfigurationSchemaType,
+} from '@jbrowse/core/configuration/configurationSchema'
 
 // poke some things for testing (this stuff will eventually be removed)
+// @ts-ignore
 window.getSnapshot = getSnapshot
+// @ts-ignore
 window.resolveIdentifier = resolveIdentifier
 
 export default function JBrowseWeb(
-  pluginManager,
-  Session,
-  assemblyConfigSchemasType,
+  pluginManager: PluginManager,
+  Session: SessionStateModel,
+  assemblyConfigSchemasType: AnyConfigurationSchemaType,
 ) {
   const JBrowseModel = types
     .model('JBrowseWeb', {
@@ -51,7 +61,7 @@ export default function JBrowseWeb(
         },
         ...pluginManager.pluginConfigurationSchemas(),
       }),
-      plugins: types.array(types.frozen()),
+      plugins: types.array(types.frozen<Plugin>()),
       assemblies: types.array(assemblyConfigSchemasType),
       // track configuration is an array of track config schemas. multiple
       // instances of a track can exist that use the same configuration
@@ -66,9 +76,18 @@ export default function JBrowseWeb(
         name: `New session`,
       }),
     })
+
+    .views(self => ({
+      get assemblyNames() {
+        return self.assemblies.map(assembly => readConfObject(assembly, 'name'))
+      },
+      get rpcManager() {
+        return getParent(self).rpcManager
+      },
+    }))
     .actions(self => ({
       afterCreate() {
-        const seen = []
+        const seen = [] as string[]
         self.assemblyNames.forEach(assemblyName => {
           if (!assemblyName) {
             throw new Error('Encountered an assembly with no "name" defined')
@@ -82,7 +101,7 @@ export default function JBrowseWeb(
           }
         })
       },
-      addAssemblyConf(assemblyConf) {
+      addAssemblyConf(assemblyConf: AnyConfigurationModel) {
         const { name } = assemblyConf
         if (!name) {
           throw new Error('Can\'t add assembly with no "name"')
@@ -101,7 +120,7 @@ export default function JBrowseWeb(
         })
         return self.assemblies[length - 1]
       },
-      removeAssemblyConf(assemblyName) {
+      removeAssemblyConf(assemblyName: string) {
         const toRemove = self.assemblies.find(
           assembly => assembly.name === assemblyName,
         )
@@ -109,7 +128,7 @@ export default function JBrowseWeb(
           self.assemblies.remove(toRemove)
         }
       },
-      addTrackConf(trackConf) {
+      addTrackConf(trackConf: AnyConfigurationModel) {
         const { type } = trackConf
         if (!type) {
           throw new Error(`unknown track type ${type}`)
@@ -121,7 +140,7 @@ export default function JBrowseWeb(
         const length = self.tracks.push(trackConf)
         return self.tracks[length - 1]
       },
-      addDisplayConf(trackId, displayConf) {
+      addDisplayConf(trackId: string, displayConf: AnyConfigurationModel) {
         const { type } = displayConf
         if (!type) {
           throw new Error(`unknown display type ${type}`)
@@ -132,7 +151,7 @@ export default function JBrowseWeb(
         }
         return track.addDisplayConf(displayConf)
       },
-      addConnectionConf(connectionConf) {
+      addConnectionConf(connectionConf: AnyConfigurationModel) {
         const { type } = connectionConf
         if (!type) {
           throw new Error(`unknown connection type ${type}`)
@@ -141,7 +160,7 @@ export default function JBrowseWeb(
         return self.connections[length - 1]
       },
 
-      deleteConnectionConf(configuration) {
+      deleteConnectionConf(configuration: AnyConfigurationModel) {
         const idx = self.connections.findIndex(
           conn => conn.id === configuration.id,
         )
@@ -151,7 +170,7 @@ export default function JBrowseWeb(
         return self.connections.splice(idx, 1)
       },
 
-      deleteTrackConf(trackConf) {
+      deleteTrackConf(trackConf: AnyConfigurationModel) {
         const { trackId } = trackConf
         const idx = self.tracks.findIndex(t => t.trackId === trackId)
         if (idx === -1) {
@@ -160,47 +179,43 @@ export default function JBrowseWeb(
 
         return self.tracks.splice(idx, 1)
       },
-      setDefaultSessionConf(sessionConf) {
+      setDefaultSessionConf(sessionConf: AnyConfigurationModel) {
         let newDefault
         if (getParent(self).session.name === sessionConf.name) {
           newDefault = getSnapshot(sessionConf)
         } else {
           newDefault = toJS(sessionConf)
         }
-        const { name } = newDefault
-        if (!name) {
-          throw new Error(`unable to set default session to ${name}`)
+
+        if (!newDefault.name) {
+          throw new Error(`unable to set default session to ${newDefault.name}`)
         }
-        self.defaultSession = newDefault
+
+        // @ts-ignore complains about name missing, but above line checks this
+        self.defaultSession = cast(newDefault)
       },
-      addPlugin(plugin) {
-        self.plugins = [...self.plugins, plugin]
+      addPlugin(plugin: Plugin) {
+        self.plugins = cast([...self.plugins, plugin])
         const rootModel = getRoot(self)
         rootModel.setPluginsUpdated(true)
       },
-      removePlugin(pluginUrl) {
-        self.plugins = self.plugins.filter(plugin => plugin.url !== pluginUrl)
+      removePlugin(pluginUrl: string) {
+        self.plugins = cast(
+          self.plugins.filter(plugin => plugin.url !== pluginUrl),
+        )
         const rootModel = getRoot(self)
         rootModel.setPluginsUpdated(true)
-      },
-    }))
-    .views(self => ({
-      get assemblyNames() {
-        return self.assemblies.map(assembly => readConfObject(assembly, 'name'))
-      },
-      get rpcManager() {
-        return getParent(self).rpcManager
       },
     }))
 
   return types.snapshotProcessor(JBrowseModel, {
     postProcessor(snapshot) {
-      function removeAttr(obj, attr) {
+      function removeAttr(obj: Record<string, any>, attr: string) {
         for (const prop in obj) {
           if (prop === attr) {
             delete obj[prop]
           } else if (typeof obj[prop] === 'object') {
-            removeAttr(obj[prop])
+            removeAttr(obj[prop], attr)
           }
         }
       }
