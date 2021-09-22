@@ -406,7 +406,7 @@ export default class TextIndex extends JBrowseCommand {
         }
         return currentTrack
       })
-      .filter(track => supported(track.adapter.type))
+      .filter(track => supported(track.adapter?.type))
       .filter(track =>
         assemblyName ? track.assemblyNames.includes(assemblyName) : true,
       )
