@@ -36,6 +36,7 @@ export function openLocation(location: FileLocation): GenericFilehandle {
     if (!location.localPath) {
       throw new Error('No local path provided')
     }
+
     if (isNode) {
       return new LocalFile(location.localPath)
     } else {

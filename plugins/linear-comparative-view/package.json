@@ -39,7 +39,7 @@
     "@rehooks/component-size": "^1.0.3",
     "abortable-promise-cache": "^1.1.3",
     "clsx": "^1.1.0",
-    "generic-filehandle": "^2.0.1",
+    "generic-filehandle": "^2.2.0",
     "json-stable-stringify": "^1.0.1",
     "react-sizeme": "^2.6.12"
   },
