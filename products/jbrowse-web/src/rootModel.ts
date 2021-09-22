@@ -387,13 +387,8 @@ export default function RootModel(
               label: 'Save session',
               icon: SaveIcon,
               onClick: (session: SessionWithWidgets) => {
-                // @ts-ignore
-                if (session.saveSessionToLocalStorage) {
-                  // @ts-ignore
-                  session.saveSessionToLocalStorage()
-                  // @ts-ignore
-                  session.notify(`Saved session "${session.name}"`, 'success')
-                }
+                self.saveSessionToLocalStorage()
+                session.notify(`Saved session "${session.name}"`, 'success')
               },
             },
             {
