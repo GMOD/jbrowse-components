@@ -25,6 +25,7 @@ function deleteBaseUris(config) {
 const JBrowse = observer(({ pluginManager }) => {
   const [adminKey] = useQueryParam('adminKey', StringParam)
   const [adminServer] = useQueryParam('adminServer', StringParam)
+  const [configPath] = useQueryParam('config', StringParam)
   const [, setSessionId] = useQueryParam('session', StringParam)
   const { rootModel } = pluginManager
   const { error, jbrowse, session } = rootModel || {}
@@ -39,17 +40,16 @@ const JBrowse = observer(({ pluginManager }) => {
   useEffect(() => {
     onSnapshot(jbrowse, async snapshot => {
       if (adminKey) {
-        const payload = {
-          adminKey,
-          config: deleteBaseUris(JSON.parse(JSON.stringify(snapshot))),
-        }
-
         const response = await fetch(adminServer || `/updateConfig`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({
+            adminKey,
+            configPath,
+            config: deleteBaseUris(JSON.parse(JSON.stringify(snapshot))),
+          }),
         })
         if (!response.ok) {
           const message = await response.text()
@@ -61,7 +61,7 @@ const JBrowse = observer(({ pluginManager }) => {
         }
       }
     })
-  }, [jbrowse, session, adminKey, adminServer])
+  }, [jbrowse, session, adminKey, adminServer, configPath])
 
   if (error) {
     throw error
