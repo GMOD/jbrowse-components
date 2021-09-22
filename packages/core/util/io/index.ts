@@ -1,5 +1,4 @@
-import { BlobFile, GenericFilehandle } from 'generic-filehandle'
-import LocalFile from './LocalFile'
+import { BlobFile, LocalFile, GenericFilehandle } from 'generic-filehandle'
 import { openUrl as rangeFetcherOpenUrl } from './rangeFetcher'
 import {
   FileLocation,
