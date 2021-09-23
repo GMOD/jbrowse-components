@@ -135,5 +135,5 @@ Congratulations! You're running JBrowse 2.
 
 Now that JBrowse 2 is set up, you can configure it with your own genomes and
 tracks. There are two ways you can configure JBrowse 2: with the JBrowse CLI
-(guide [here](quickstart_cli)) or with JBrowse 2's built-in graphical
-configuration editing (guide [here](quickstart_gui)).
+(guide [here](../quickstart_cli)) or with JBrowse 2's built-in graphical
+configuration editing (guide [here](../quickstart_gui)).

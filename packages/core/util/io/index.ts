@@ -1,5 +1,9 @@
-import { BlobFile, GenericFilehandle, RemoteFile } from 'generic-filehandle'
-import LocalFile from './LocalFile'
+import {
+  BlobFile,
+  LocalFile,
+  GenericFilehandle,
+  RemoteFile,
+} from 'generic-filehandle'
 import {
   FileLocation,
   LocalPathLocation,
@@ -10,8 +14,8 @@ import {
 } from '../types'
 import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
 import { getBlob } from '../tracks'
-import { isElectron } from '../../util'
 import PluginManager from '../../PluginManager'
+import isNode from 'detect-node'
 
 function isLocalPathLocation(
   location: FileLocation,
@@ -54,7 +58,8 @@ export function openLocation(
     if (!location.localPath) {
       throw new Error('No local path provided')
     }
-    if (isElectron || typeof jest !== 'undefined') {
+
+    if (isNode) {
       return new LocalFile(location.localPath)
     } else {
       throw new Error("can't use local files in the browser")

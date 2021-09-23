@@ -155,7 +155,7 @@ You can now visit http://localhost/jbrowse2 and your genome should be ready!
 This guide is meant to be a super-quick conceptual overview for getting JBrowse
 2 set up, but if you are new to the command line or to jbrowse in general, you
 might want to start with the slightly longer quick-start guide
-[here](quickstart_cli).
+[here](../quickstart_cli).
 
 ## Footnote
 
@@ -164,4 +164,4 @@ compatible" meaning it uses no server code and can run on any static
 website hosting. For example, you can upload the jbrowse folder that we
 prepared here in /var/www/html/jbrowse2 to Amazon S3, and it will work there
 too. See the FAQ for [what webserver do I
-need](faq#what-web-server-do-i-need-to-run-jbrowse-2) for more info.
+need](../faq#what-web-server-do-i-need-to-run-jbrowse-2) for more info.

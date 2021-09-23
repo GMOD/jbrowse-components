@@ -1,8 +1,11 @@
-import { FatalErrorDialog } from '@jbrowse/core/ui'
 import React from 'react'
 import ReactDOM from 'react-dom'
+import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from 'react-error-boundary'
+import { QueryParamProvider } from 'use-query-params'
+
 import 'fontsource-roboto'
+
 import factoryReset from './factoryReset'
 import Loader from './Loader'
 
@@ -25,7 +28,9 @@ const PlatformSpecificFatalErrorDialog = props => {
 
 ReactDOM.render(
   <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
-    <Loader initialTimestamp={initialTimestamp} />
+    <QueryParamProvider>
+      <Loader initialTimestamp={initialTimestamp} />
+    </QueryParamProvider>
   </ErrorBoundary>,
   document.getElementById('root'),
 )

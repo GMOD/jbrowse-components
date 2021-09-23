@@ -1,4 +1,4 @@
-## 1.4.0 (2021-09-13)
+## 1.4.4 (2021-09-14)
 
 <details><summary>Packages in this release</summary>
 <p>
@@ -68,6 +68,22 @@
 - Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
 - Teresa Martinez ([@teresam856](https://github.com/teresam856))
 - [@Akusem](https://github.com/Akusem)
+
+## 1.4.3
+
+Failed NPM upload, partial release
+
+## 1.4.2
+
+Failed NPM upload, partial release
+
+## 1.4.1
+
+Broken releases missing some packages
+
+## 1.4.0
+
+Broken releases missing some packages
 
 ## 1.3.5 (2021-08-23)
 

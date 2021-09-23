@@ -61,6 +61,9 @@ export default function JBrowseDesktop(
       internetAccounts: types.array(
         pluginManager.pluggableConfigSchemaType('internet account'),
       ),
+      aggregateTextSearchAdapters: types.array(
+        pluginManager.pluggableConfigSchemaType('text search adapter'),
+      ),
       connections: types.array(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),

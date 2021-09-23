@@ -1,0 +1,711 @@
+{
+  "session": {
+    "id": "ppIfyCvyl",
+    "name": "New session 3/7/2021, 9:03:55 AM",
+    "margin": 0,
+    "drawerWidth": 384,
+    "views": [
+      {
+        "id": "own86OTXO",
+        "type": "LinearGenomeView",
+        "offsetPx": -73,
+        "bpPerPx": 2400643.7588001224,
+        "displayedRegions": [
+          {
+            "refName": "1",
+            "start": 0,
+            "end": 249250621,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "2",
+            "start": 0,
+            "end": 243199373,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "3",
+            "start": 0,
+            "end": 198022430,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "4",
+            "start": 0,
+            "end": 191154276,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "5",
+            "start": 0,
+            "end": 180915260,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "6",
+            "start": 0,
+            "end": 171115067,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "7",
+            "start": 0,
+            "end": 159138663,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "8",
+            "start": 0,
+            "end": 146364022,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "9",
+            "start": 0,
+            "end": 141213431,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "10",
+            "start": 0,
+            "end": 135534747,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "11",
+            "start": 0,
+            "end": 135006516,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "12",
+            "start": 0,
+            "end": 133851895,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "13",
+            "start": 0,
+            "end": 115169878,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "14",
+            "start": 0,
+            "end": 107349540,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "15",
+            "start": 0,
+            "end": 102531392,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "16",
+            "start": 0,
+            "end": 90354753,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "17",
+            "start": 0,
+            "end": 81195210,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "18",
+            "start": 0,
+            "end": 78077248,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "19",
+            "start": 0,
+            "end": 59128983,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "20",
+            "start": 0,
+            "end": 63025520,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "21",
+            "start": 0,
+            "end": 48129895,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "22",
+            "start": 0,
+            "end": 51304566,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "X",
+            "start": 0,
+            "end": 155270560,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Y",
+            "start": 0,
+            "end": 59373566,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "6_ssto_hap7",
+            "start": 0,
+            "end": 4928567,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "6_mcf_hap5",
+            "start": 0,
+            "end": 4833398,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "6_cox_hap2",
+            "start": 0,
+            "end": 4795371,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "6_mann_hap4",
+            "start": 0,
+            "end": 4683263,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "6_apd_hap1",
+            "start": 0,
+            "end": 4622290,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "6_qbl_hap6",
+            "start": 0,
+            "end": 4611984,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "6_dbb_hap3",
+            "start": 0,
+            "end": 4610396,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "17_ctg5_hap1",
+            "start": 0,
+            "end": 1680828,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "4_ctg9_hap1",
+            "start": 0,
+            "end": 590426,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "1_gl000192_random",
+            "start": 0,
+            "end": 547496,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000225",
+            "start": 0,
+            "end": 211173,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "4_gl000194_random",
+            "start": 0,
+            "end": 191469,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "4_gl000193_random",
+            "start": 0,
+            "end": 189789,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "9_gl000200_random",
+            "start": 0,
+            "end": 187035,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000222",
+            "start": 0,
+            "end": 186861,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000212",
+            "start": 0,
+            "end": 186858,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "7_gl000195_random",
+            "start": 0,
+            "end": 182896,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000223",
+            "start": 0,
+            "end": 180455,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000224",
+            "start": 0,
+            "end": 179693,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000219",
+            "start": 0,
+            "end": 179198,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "17_gl000205_random",
+            "start": 0,
+            "end": 174588,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000215",
+            "start": 0,
+            "end": 172545,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000216",
+            "start": 0,
+            "end": 172294,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000217",
+            "start": 0,
+            "end": 172149,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "9_gl000199_random",
+            "start": 0,
+            "end": 169874,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000211",
+            "start": 0,
+            "end": 166566,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000213",
+            "start": 0,
+            "end": 164239,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000220",
+            "start": 0,
+            "end": 161802,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000218",
+            "start": 0,
+            "end": 161147,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "19_gl000209_random",
+            "start": 0,
+            "end": 159169,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000221",
+            "start": 0,
+            "end": 155397,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000214",
+            "start": 0,
+            "end": 137718,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000228",
+            "start": 0,
+            "end": 129120,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000227",
+            "start": 0,
+            "end": 128374,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "1_gl000191_random",
+            "start": 0,
+            "end": 106433,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "19_gl000208_random",
+            "start": 0,
+            "end": 92689,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "9_gl000198_random",
+            "start": 0,
+            "end": 90085,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "17_gl000204_random",
+            "start": 0,
+            "end": 81310,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000233",
+            "start": 0,
+            "end": 45941,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000237",
+            "start": 0,
+            "end": 45867,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000230",
+            "start": 0,
+            "end": 43691,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000242",
+            "start": 0,
+            "end": 43523,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000243",
+            "start": 0,
+            "end": 43341,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000241",
+            "start": 0,
+            "end": 42152,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000236",
+            "start": 0,
+            "end": 41934,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000240",
+            "start": 0,
+            "end": 41933,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "17_gl000206_random",
+            "start": 0,
+            "end": 41001,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000232",
+            "start": 0,
+            "end": 40652,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000234",
+            "start": 0,
+            "end": 40531,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "11_gl000202_random",
+            "start": 0,
+            "end": 40103,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000238",
+            "start": 0,
+            "end": 39939,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000244",
+            "start": 0,
+            "end": 39929,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000248",
+            "start": 0,
+            "end": 39786,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "8_gl000196_random",
+            "start": 0,
+            "end": 38914,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000249",
+            "start": 0,
+            "end": 38502,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000246",
+            "start": 0,
+            "end": 38154,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "17_gl000203_random",
+            "start": 0,
+            "end": 37498,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "8_gl000197_random",
+            "start": 0,
+            "end": 37175,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000245",
+            "start": 0,
+            "end": 36651,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000247",
+            "start": 0,
+            "end": 36422,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "9_gl000201_random",
+            "start": 0,
+            "end": 36148,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000235",
+            "start": 0,
+            "end": 34474,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000239",
+            "start": 0,
+            "end": 33824,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "21_gl000210_random",
+            "start": 0,
+            "end": 27682,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000231",
+            "start": 0,
+            "end": 27386,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000229",
+            "start": 0,
+            "end": 19913,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "M",
+            "start": 0,
+            "end": 16571,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "Un_gl000226",
+            "start": 0,
+            "end": 15008,
+            "reversed": false,
+            "assemblyName": "hg19"
+          },
+          {
+            "refName": "18_gl000207_random",
+            "start": 0,
+            "end": 4262,
+            "reversed": false,
+            "assemblyName": "hg19"
+          }
+        ],
+        "tracks": [
+          {
+            "id": "VAe1hqB6m",
+            "type": "QuantitativeTrack",
+            "configuration": "ngmlr_cov",
+            "displays": [
+              {
+                "id": "LrkLmPyAPc",
+                "type": "LinearWiggleDisplay",
+                "height": 275,
+                "configuration": "ngmlr_cov-LinearWiggleDisplay",
+                "selectedRendering": "",
+                "resolution": 25,
+                "fill": false,
+                "autoscale": "localsd",
+                "displayCrossHatches": true,
+                "constraints": {}
+              }
+            ]
+          }
+        ],
+        "hideHeader": false,
+        "hideHeaderOverview": false,
+        "trackSelectorType": "hierarchical",
+        "trackLabels": "overlapping",
+        "showCenterLine": false
+      }
+    ],
+    "widgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorWidget",
+        "collapsed": {},
+        "filterText": "",
+        "view": "own86OTXO"
+      }
+    },
+    "activeWidgets": {
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+    },
+    "connectionInstances": {},
+    "sessionTracks": [],
+    "sessionConnections": [],
+    "sessionAssemblies": []
+  }
+}

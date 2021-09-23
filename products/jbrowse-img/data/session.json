@@ -1,0 +1,102 @@
+{
+  "name": "My session",
+  "view": {
+    "id": "linearGenomeView",
+    "type": "LinearGenomeView",
+    "offsetPx": 752150,
+    "bpPerPx": 25.084820116171613,
+    "displayedRegions": [
+      { "assemblyName": "hg38", "refName": "1", "start": 0, "end": 248956422 }
+    ],
+    "tracks": [
+      {
+        "id": "MYkD7Sl3E",
+        "type": "FeatureTrack",
+        "configuration": "ncbi_refseq_109_hg38",
+        "displays": [
+          {
+            "id": "eKHbYEqbSZ",
+            "type": "LinearBasicDisplay",
+            "height": 218,
+            "configuration": "ncbi_refseq_109_hg38-LinearBasicDisplay"
+          }
+        ]
+      },
+      {
+        "id": "RmEVOSCDv",
+        "type": "FeatureTrack",
+        "configuration": "clinGenGeneDisease",
+        "displays": [
+          {
+            "id": "sXi9Yt_n7f",
+            "type": "LinearBasicDisplay",
+            "height": 100,
+            "configuration": "clinGenGeneDisease-LinearBasicDisplay"
+          }
+        ]
+      },
+      {
+        "id": "gTxauXvlF",
+        "type": "QuantitativeTrack",
+        "configuration": "hg38.100way.phyloP100way",
+        "displays": [
+          {
+            "id": "xYlBLNTFi3",
+            "type": "LinearWiggleDisplay",
+            "height": 100,
+            "configuration": "hg38.100way.phyloP100way-LinearWiggleDisplay",
+            "selectedRendering": "",
+            "resolution": 5,
+            "constraints": { "max": 10, "min": -10 }
+          }
+        ]
+      },
+      {
+        "id": "6ai9Zeeqq",
+        "type": "AlignmentsTrack",
+        "configuration": "skbr3.ont.sort.mod",
+        "displays": [
+          {
+            "id": "cdW7g9U6CX",
+            "type": "LinearAlignmentsDisplay",
+            "PileupDisplay": {
+              "id": "r2Hxu1gUyr",
+              "type": "LinearPileupDisplay",
+              "height": 100,
+              "configuration": {
+                "type": "LinearPileupDisplay",
+                "displayId": "skbr3.ont.sort.mod-LinearAlignmentsDisplay_pileup_xyz",
+                "renderers": {
+                  "PileupRenderer": { "type": "PileupRenderer" },
+                  "SvgFeatureRenderer": { "type": "SvgFeatureRenderer" }
+                }
+              },
+              "showSoftClipping": false,
+              "filterBy": { "flagInclude": 0, "flagExclude": 1536 }
+            },
+            "SNPCoverageDisplay": {
+              "id": "7ZQsC0O7tV",
+              "type": "LinearSNPCoverageDisplay",
+              "height": 45,
+              "configuration": {
+                "type": "LinearSNPCoverageDisplay",
+                "displayId": "skbr3.ont.sort.mod-LinearAlignmentsDisplay_snpcoverage_xyz",
+                "renderers": {
+                  "SNPCoverageRenderer": { "type": "SNPCoverageRenderer" }
+                }
+              },
+              "selectedRendering": "",
+              "resolution": 1,
+              "constraints": {},
+              "filterBy": { "flagInclude": 0, "flagExclude": 1536 }
+            },
+            "configuration": "skbr3.ont.sort.mod-LinearAlignmentsDisplay",
+            "height": 250,
+            "showCoverage": true,
+            "showPileup": true
+          }
+        ]
+      }
+    ]
+  }
+}

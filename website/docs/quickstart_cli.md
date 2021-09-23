@@ -14,15 +14,15 @@ the JBrowse CLI.
 :::note
 
 You can also do this configuration with graphical configuration editing
-interface built into JBrowse 2. See that guide [here](quickstart_gui).
+interface built into JBrowse 2. See that guide [here](../quickstart_gui).
 
 :::
 
 ## Pre-requisites
 
-- [JBrowse CLI](quickstart_web#installing-the-cli-tools)
+- [JBrowse CLI](../quickstart_web#installing-the-cli-tools)
 
-- [JBrowse 2 web application](quickstart_web#using-jbrowse-create-to-download-jbrowse-2)
+- [JBrowse 2 web application](../quickstart_web#using-jbrowse-create-to-download-jbrowse-2)
 
 ## Adding a genome assembly
 
@@ -63,7 +63,7 @@ options.
 
 JBrowse 2 also supports other assembly file formats, such as bgzip-compressed
 indexed FASTA (e.g. `.fa.gz`, `.fa.gz.fai`, and `.fa.gz.gzi` files) and 2BIT
-files. See [configuring assemblies](config_guide#assembly-config) for more info
+files. See [configuring assemblies](../config_guide#assembly-config) for more info
 on formats supported for the sequence file.
 
 :::note
@@ -88,7 +88,7 @@ For more info about `bgzip` and `samtools`, see https://www.htslib.org/.
 :::
 
 If you have your JBrowse 2
-[running as described](quickstart_web#running-jbrowse-2) in the JBrowse web
+[running as described](../quickstart_web#running-jbrowse-2) in the JBrowse web
 quickstart, you can refresh the page and an add a linear genome view. You will
 now see your config in the Assembly dropdown.
 
@@ -116,8 +116,8 @@ the file name with the names of your data files.
 For this track we will assume the data is on your computer at the locations
 `/data/volvox.bam` and `/data/volvox.bam.bai`. You can download these file here
 if you want to run this example:
-[BAM](http://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.bam) and
-[BAM index](http://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.bam.bai).
+[BAM](https://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.bam) and
+[BAM index](https://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.bam.bai).
 
 To add the track, run
 
@@ -151,7 +151,7 @@ For more info about `samtools`, see https://www.htslib.org/.
 :::
 
 If you have your JBrowse 2
-[running as described](quickstart_web#running-jbrowse-2) in the JBrowse web
+[running as described](../quickstart_web#running-jbrowse-2) in the JBrowse web
 quickstart, you can refresh the page and an add a linear genome view of the
 volvox assembly. Then open track selector, and you will see the alignments
 track.
@@ -165,8 +165,8 @@ example, we will use a VCF file for the track. JBrowse 2 expects VCFs to be
 compressed with `bgzip` and indexed. Similar to the above example, we will
 assume the files are at `/data/volvox.vcf.gz` and `/data/volvox.vcf.gz.tbi`. You
 can download these file here:
-[VCF](http://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.vcf.gz) and
-[VCF index](http://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.vcf.gz.tbi).
+[VCF](https://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.vcf.gz) and
+[VCF index](https://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.vcf.gz.tbi).
 
 To add the track, run
 
@@ -207,7 +207,7 @@ https://www.htslib.org/.
 :::
 
 If you have your JBrowse 2
-[running as described](quickstart_web#running-jbrowse-2) in the JBrowse web
+[running as described](../quickstart_web#running-jbrowse-2) in the JBrowse web
 quickstart, you can refresh the page and an add a linear genome view of the
 volvox assembly. Then open track selector, and you will see the variant track.
 
@@ -218,7 +218,7 @@ volvox assembly. Then open track selector, and you will see the variant track.
 Probably one of the most simple track types to load is a BigWig/BigBed file
 since it does not have any external index file, it is just a single file
 
-An example file is here http://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox-sorted.bam.coverage.bw
+An example file is here https://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox-sorted.bam.coverage.bw
 
 ```sh-session
 ## Download bigwig or bigbed file
@@ -258,12 +258,12 @@ This will also update your config.json so after it completes, you can type a
 gene name into the "search box" in the linear genome view or other views and
 quickly navigate to genes by gene name.
 
-See the [text-index](cli#jbrowse-text-index) command docs for more info. Also
-see the [FAQ entries for text searching](faq#text-searching)
+See the [text-index](../cli#jbrowse-text-index) command docs for more info. Also
+see the [FAQ entries for text searching](../faq#text-searching)
 
 ## Conclusion
 
 Now that you have JBrowse configured with an assembly and a couple of tracks,
 you can start customizing it further. Check out the rest of the docs for more
-information, especially the [JBrowse CLI](cli) docs for more details on some of
+information, especially the [JBrowse CLI](../cli) docs for more details on some of
 the steps shown here.

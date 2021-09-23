@@ -216,11 +216,47 @@ const preloadedConfigs = {
           },
         },
       },
+      {
+        type: 'FeatureTrack',
+        trackId: 'ncbi_refseq_109_hg38_latest',
+        name: 'NCBI RefSeq',
+        assemblyNames: ['hg38'],
+        category: ['Annotation'],
+        adapter: {
+          type: 'Gff3TabixAdapter',
+          gffGzLocation: {
+            uri:
+              'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz',
+          },
+          index: {
+            location: {
+              uri:
+                'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz.tbi',
+            },
+          },
+        },
+      },
     ],
 
     defaultSession: {
       name: 'New Session',
     },
+    aggregateTextSearchAdapters: [
+      {
+        type: 'TrixTextSearchAdapter',
+        textSearchAdapterId: 'hg38-index',
+        ixFilePath: {
+          uri: 'https://jbrowse.org/genomes/GRCh38/trix/hg38.ix',
+        },
+        ixxFilePath: {
+          uri: 'https://jbrowse.org/genomes/GRCh38/trix/hg38.ixx',
+        },
+        metaFilePath: {
+          uri: 'https://jbrowse.org/genomes/GRCh38/trix/meta.json',
+        },
+        assemblyNames: ['hg38'],
+      },
+    ],
   },
   hg19: {
     assemblies: [
@@ -260,6 +296,30 @@ const preloadedConfigs = {
       },
     ],
     tracks: [
+      {
+        type: 'FeatureTrack',
+        trackId: 'ncbi_gff_hg19',
+        name: 'NCBI RefSeq',
+        assemblyNames: ['hg19'],
+        category: ['Annotation'],
+        metadata: {
+          source: 'https://www.ncbi.nlm.nih.gov/genome/guide/human/',
+          dateaccessed: '12/03/2020',
+        },
+        adapter: {
+          type: 'Gff3TabixAdapter',
+          gffGzLocation: {
+            uri:
+              'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz',
+          },
+          index: {
+            location: {
+              uri:
+                'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz.tbi',
+            },
+          },
+        },
+      },
       {
         type: 'FeatureTrack',
         trackId: 'repeats_hg19',
@@ -423,6 +483,23 @@ const preloadedConfigs = {
     defaultSession: {
       name: 'New Session',
     },
+
+    aggregateTextSearchAdapters: [
+      {
+        type: 'TrixTextSearchAdapter',
+        textSearchAdapterId: 'hg19-index',
+        ixFilePath: {
+          uri: 'https://jbrowse.org/genomes/hg19/trix/hg19.ix',
+        },
+        ixxFilePath: {
+          uri: 'https://jbrowse.org/genomes/hg19/trix/hg19.ixx',
+        },
+        metaFilePath: {
+          uri: 'https://jbrowse.org/genomes/hg19/trix/meta.json',
+        },
+        assemblyNames: ['hg19'],
+      },
+    ],
   },
   mm10: {
     assemblies: [

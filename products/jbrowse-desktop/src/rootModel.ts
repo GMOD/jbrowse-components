@@ -5,8 +5,8 @@ import { autorun } from 'mobx'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
-import AddIcon from '@material-ui/icons/Add'
 import SettingsIcon from '@material-ui/icons/Settings'
+import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import AppsIcon from '@material-ui/icons/Apps'
 import { UriLocation } from '@jbrowse/core/util/types'
 import electron from 'electron'
@@ -61,10 +61,18 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       isAssemblyEditing: false,
     })
     .volatile(() => ({
-      pluginsUpdated: false,
       error: undefined as Error | undefined,
+      textSearchManager: new TextSearchManager(pluginManager),
     }))
     .actions(self => ({
+      async saveSession() {
+        if (self.session) {
+          await ipcRenderer.invoke('saveSession', {
+            ...getSnapshot(self.jbrowse),
+            defaultSession: getSnapshot(self.session),
+          })
+        }
+      },
       setSavedSessionNames(sessionNames: string[]) {
         self.savedSessionNames = cast(sessionNames)
       },
@@ -80,9 +88,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       setAssemblyEditing(flag: boolean) {
         self.isAssemblyEditing = flag
       },
-      setPluginsUpdated(flag: boolean) {
-        self.pluginsUpdated = flag
-      },
+
       renameCurrentSession(sessionName: string) {
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
@@ -206,13 +212,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           label: 'File',
           menuItems: [
             {
-              label: 'New Session',
-              icon: AddIcon,
-              onClick: (session: { setDefaultSession: () => void }) => {
-                session.setDefaultSession()
-              },
-            },
-            {
               label: 'Return to start screen',
               icon: AppsIcon,
               onClick: () => {
@@ -256,6 +255,12 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       },
       setMenus(newMenus: Menu[]) {
         self.menus = newMenus
+      },
+      async setPluginsUpdated() {
+        await self.saveSession()
+        const url = window.location.href.split('?')[0]
+        const name = self.session?.name || ''
+        window.location.href = `${url}?config=${encodeURIComponent(name)}`
       },
       /**
        * Add a top-level menu
@@ -388,20 +393,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       afterCreate() {
         addDisposer(
           self,
-          autorun(
-            () => {
-              // if (self.session) {
-              //   ipcRenderer.send('saveSession', getSnapshot(self.session))
-              // }
-              if (self.session) {
-                ipcRenderer.send('saveSession', {
-                  ...getSnapshot(self.jbrowse),
-                  defaultSession: getSnapshot(self.session),
-                })
-              }
-            },
-            { delay: 1000 },
-          ),
+          autorun(() => self.saveSession(), { delay: 1000 }),
         )
       },
     }))
