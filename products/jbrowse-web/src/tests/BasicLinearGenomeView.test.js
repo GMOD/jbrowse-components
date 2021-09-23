@@ -241,13 +241,7 @@ describe('valid file tests', () => {
         timeout: 10000,
       },
     )
-    autocomplete.focus()
-    fireEvent.mouseDown(inputBox)
-    fireEvent.change(inputBox, { target: { value: 'seg02' } })
-    fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-    await screen.findByText('Search Results')
-    expect(state.session.views[0].searchResults.length).toBeGreaterThan(0)
-  }, 30000)
+  })
 
   it('opens reference sequence track and expects zoom in message', async () => {
     const pluginManager = getPluginManager()

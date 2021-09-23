@@ -1,6 +1,12 @@
 // library
 import React from 'react'
-import { cleanup, waitFor, fireEvent, render } from '@testing-library/react'
+import {
+  screen,
+  cleanup,
+  waitFor,
+  fireEvent,
+  render,
+} from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
@@ -49,12 +55,13 @@ test('test trix from lgv header', async () => {
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
 
-  await waitFor(() =>
-    expect((input as HTMLInputElement).value).toBe('ctgA:1,055..9,005'),
+  await waitFor(
+    () => expect((input as HTMLInputElement).value).toBe('ctgA:1,055..9,005'),
+    { timeout: 10000 },
   )
 }, 30000)
 
-test('test trix from importform', async () => {
+test('test trix on import form', async () => {
   const pluginManager = getPluginManager()
   const state = pluginManager.rootModel
   const { findByTestId, findByPlaceholderText } = render(
@@ -66,22 +73,44 @@ test('test trix from importform', async () => {
 
   const auto = await findByTestId('autocomplete', {}, { timeout: 10000 })
   const input = await findByPlaceholderText('Search for location')
-
-  // wait for displayedRegions[0] to be volvox, required for searching header
-  // of lgv
-  await waitFor(() =>
+  await waitFor(() => {
     // @ts-ignore
-    expect(state.session.views[0].displayedRegions[0].assemblyName).toEqual(
-      'volvox',
-    ),
-  )
+    expect(state.assemblyManager.get('volvox').initialized)
+  })
 
   auto.focus()
   fireEvent.mouseDown(input)
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
 
-  await waitFor(() =>
-    expect((input as HTMLInputElement).value).toBe('ctgA:1,055..9,005'),
+  await waitFor(
+    async () => {
+      const newInput = await findByPlaceholderText('Search for location')
+      expect((newInput as HTMLInputElement).value).toBe('ctgA:1,055..9,005')
+    },
+    { timeout: 10000 },
   )
+}, 30000)
+
+test('opens a dialog with multiple results', async () => {
+  const pluginManager = getPluginManager()
+  const state = pluginManager.rootModel
+  const { findByTestId, findByPlaceholderText } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+
+  const auto = await findByTestId('autocomplete', {}, { timeout: 10000 })
+  const input = await findByPlaceholderText('Search for location')
+  await waitFor(() => {
+    // @ts-ignore
+    expect(state.assemblyManager.get('volvox').initialized)
+  })
+
+  auto.focus()
+  fireEvent.mouseDown(input)
+  fireEvent.change(input, { target: { value: 'seg02' } })
+  fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
+  await screen.findByText('Search Results')
+  // @ts-ignore
+  expect(state.session.views[0].searchResults.length).toBeGreaterThan(0)
 }, 30000)
