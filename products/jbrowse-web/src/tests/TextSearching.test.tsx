@@ -28,7 +28,7 @@ beforeEach(() => {
 })
 describe('Integration test for different text search adapters', () => {
   it('test Jb1 adapter', async () => {
-    const pluginManager = getPluginManager(jb1_config)
+    const pluginManager = getPluginManager()
     const { findByTestId, findByPlaceholderText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
@@ -40,11 +40,14 @@ describe('Integration test for different text search adapters', () => {
 
     auto.focus()
     fireEvent.mouseDown(input)
-    fireEvent.change(input, { target: { value: 'apple3' } })
+    fireEvent.change(input, { target: { value: 'eden.1' } })
     fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
 
-    await waitFor(() => {
-      expect((input as HTMLInputElement).value).toBe('ctgA:17,402..22,956')
-    })
+    await waitFor(
+      () => {
+        expect((input as HTMLInputElement).value).toBe('ctgA:1,055..9,005')
+      },
+      { timeout: 10000 },
+    )
   }, 30000)
 })
