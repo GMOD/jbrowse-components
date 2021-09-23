@@ -35,18 +35,16 @@ describe('Integration test for different text search adapters', () => {
 
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
 
-    const autocomplete = await findByTestId('autocomplete')
-    const inputBox = await findByPlaceholderText('Search for location')
+    const auto = await findByTestId('autocomplete', {}, { timeout: 10000 })
+    const input = await findByPlaceholderText('Search for location')
 
-    autocomplete.focus()
-    fireEvent.mouseDown(inputBox)
-    fireEvent.change(inputBox, {
-      target: { value: 'apple3' },
-    })
-    fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+    auto.focus()
+    fireEvent.mouseDown(input)
+    fireEvent.change(input, { target: { value: 'apple3' } })
+    fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
 
     waitFor(() => {
-      expect((inputBox as HTMLInputElement).value).toBe('ctgA:17,402..22,956')
+      expect((input as HTMLInputElement).value).toBe('ctgA:17,402..22,956')
     })
   }, 30000)
 })
