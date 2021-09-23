@@ -43,7 +43,7 @@ describe('Integration test for different text search adapters', () => {
     fireEvent.change(input, { target: { value: 'apple3' } })
     fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
 
-    waitFor(() => {
+    await waitFor(() => {
       expect((input as HTMLInputElement).value).toBe('ctgA:17,402..22,956')
     })
   }, 30000)
