@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import {
   Button,
@@ -15,6 +14,7 @@ import {
 import RefNameAutocomplete from './RefNameAutocomplete'
 import SearchResultsDialog from './SearchResultsDialog'
 import { LinearGenomeViewModel } from '..'
+import { dedupe } from './util'
 
 const useStyles = makeStyles(theme => ({
   importFormContainer: {
@@ -34,13 +34,6 @@ const ErrorDisplay = observer(({ error }: { error?: Error | string }) => {
     </Typography>
   )
 })
-
-function dedupe(results?: BaseResult[]) {
-  return results?.filter(
-    (elem, index, self) =>
-      index === self.findIndex(t => t.getId() === elem.getId()),
-  )
-}
 
 const ImportForm = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
@@ -111,85 +104,103 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     }
   }
 
+  // implementation notes:
+  // having this wrapped in a form allows intuitive use of enter key to submit
   return (
     <div>
       {err ? <ErrorDisplay error={err} /> : null}
       <Container className={classes.importFormContainer}>
-        <Grid container spacing={1} justifyContent="center" alignItems="center">
-          <Grid item>
-            <AssemblySelector
-              onChange={val => {
-                setError(undefined)
-                setSelectedAsm(val)
-              }}
-              session={session}
-              selected={selectedAsm}
-            />
-          </Grid>
-          <Grid item>
-            {selectedAsm ? (
-              err ? (
-                <Typography color="error">X</Typography>
-              ) : selectedRegion && model.volatileWidth ? (
-                <RefNameAutocomplete
-                  model={model}
-                  assemblyName={message ? undefined : selectedAsm}
-                  value={selectedRegion}
-                  onSelect={option => {
-                    // this happens if the user might just have hit enter after
-                    // typing a locstring, so try to navtolocstring
-                    if (!option.locString) {
-                      handleSelectedRegion(option.getLabel())
-                    }
+        <form
+          onSubmit={event => {
+            event.preventDefault()
+          }}
+        >
+          <Grid
+            container
+            spacing={1}
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Grid item>
+              <AssemblySelector
+                onChange={val => {
+                  setError(undefined)
+                  setSelectedAsm(val)
+                }}
+                session={session}
+                selected={selectedAsm}
+              />
+            </Grid>
+            <Grid item>
+              {selectedAsm ? (
+                err ? (
+                  <Typography color="error">X</Typography>
+                ) : selectedRegion && model.volatileWidth ? (
+                  <RefNameAutocomplete
+                    model={model}
+                    assemblyName={message ? undefined : selectedAsm}
+                    value={selectedRegion}
+                    onSelect={option => {
+                      // this happens if the user might just have hit enter after
+                      // typing a locstring, so try to navtolocstring
+                      if (!option.locString) {
+                        handleSelectedRegion(option.getLabel())
+                      }
 
-                    // otherwise we get an actual result type back from the
-                    // text search adapter
-                    else {
-                      setSelectedRegion(option.getDisplayString())
-                      setOptionTrackId(option.getTrackId() || '')
-                      setOptionLocation(option.getLocation())
-                    }
-                  }}
-                  TextFieldProps={{
-                    margin: 'normal',
-                    variant: 'outlined',
-                    helperText: 'Enter a sequence or location',
-                  }}
-                />
-              ) : (
-                <CircularProgress role="progressbar" size={20} disableShrink />
-              )
-            ) : null}
+                      // otherwise we get an actual result type back from the
+                      // text search adapter
+                      else {
+                        setSelectedRegion(option.getDisplayString())
+                        setOptionTrackId(option.getTrackId() || '')
+                        setOptionLocation(option.getLocation())
+                      }
+                    }}
+                    TextFieldProps={{
+                      margin: 'normal',
+                      variant: 'outlined',
+                      helperText: 'Enter a sequence or location',
+                    }}
+                  />
+                ) : (
+                  <CircularProgress
+                    role="progressbar"
+                    size={20}
+                    disableShrink
+                  />
+                )
+              ) : null}
+            </Grid>
+            <Grid item>
+              <Button
+                type="submit"
+                disabled={!selectedRegion}
+                className={classes.button}
+                onClick={() => {
+                  model.setError(undefined)
+                  if (selectedRegion) {
+                    handleSelectedRegion(selectedRegion)
+                  }
+                }}
+                variant="contained"
+                color="primary"
+              >
+                Open
+              </Button>
+              <Button
+                disabled={!selectedRegion}
+                className={classes.button}
+                onClick={() => {
+                  model.setError(undefined)
+                  model.showAllRegionsInAssembly(selectedAsm)
+                }}
+                variant="contained"
+                color="secondary"
+              >
+                Show all regions in assembly
+              </Button>
+            </Grid>
           </Grid>
-          <Grid item>
-            <Button
-              disabled={!selectedRegion}
-              className={classes.button}
-              onClick={() => {
-                model.setError(undefined)
-                if (selectedRegion) {
-                  handleSelectedRegion(selectedRegion)
-                }
-              }}
-              variant="contained"
-              color="primary"
-            >
-              Open
-            </Button>
-            <Button
-              disabled={!selectedRegion}
-              className={classes.button}
-              onClick={() => {
-                model.setError(undefined)
-                model.showAllRegionsInAssembly(selectedAsm)
-              }}
-              variant="contained"
-              color="secondary"
-            >
-              Show all regions in assembly
-            </Button>
-          </Grid>
-        </Grid>
+        </form>
       </Container>
       {isSearchDialogDisplayed ? (
         <SearchResultsDialog

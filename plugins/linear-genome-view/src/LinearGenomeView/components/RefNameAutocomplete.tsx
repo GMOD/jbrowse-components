@@ -4,7 +4,7 @@
  * Asynchronous Requests for autocomplete:
  *  https://material-ui.com/components/autocomplete/
  */
-import React, { useMemo, useEffect, useState } from 'react'
+import React, { useRef, useMemo, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 
 // jbrowse core
@@ -110,6 +110,7 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
+  const ref = useRef<HTMLInputElement>(null)
   const session = getSession(model)
   const { assemblyManager } = session
   const [open, setOpen] = useState(false)
@@ -170,9 +171,10 @@ function RefNameAutocomplete({
   const width = Math.min(Math.max(measureText(inputBoxVal, 16) + 25, 200), 550)
 
   // notes on implementation:
-  // selectOnFocus helps highlight the field when clicked
-  // blurOnSelect helps it so that when the user-re-clicks on the textfield,
-  // that selectOnFocus re-activates
+  // The selectOnFocus setting helps highlight the field when clicked. We also
+  // use a modified version of blurOnSelect (manually implemented with ref) to
+  // help it so that when the user-re-clicks on the textfield, that
+  // selectOnFocus re-activates
   return (
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
@@ -184,7 +186,6 @@ function RefNameAutocomplete({
       freeSolo
       includeInputInList
       selectOnFocus
-      blurOnSelect
       style={{ ...style, width }}
       value={inputBoxVal}
       loading={!loaded}
@@ -205,17 +206,15 @@ function RefNameAutocomplete({
         if (!selectedOption || !assemblyName) {
           return
         }
+
         if (typeof selectedOption === 'string') {
           // handles string inputs on keyPress enter
-          onSelect(
-            new BaseResult({
-              label: selectedOption,
-            }),
-          )
+          onSelect(new BaseResult({ label: selectedOption }))
         } else {
-          const { result } = selectedOption
-          onSelect(result)
+          onSelect(selectedOption.result)
         }
+
+        ref.current?.blur()
       }}
       options={searchOptions.length === 0 ? options : searchOptions}
       getOptionDisabled={option => option?.group === 'limitOption'}
