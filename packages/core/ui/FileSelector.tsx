@@ -137,7 +137,9 @@ const FileLocationEditor = observer(
                 <ToggleButton
                   value={displayedInternetAccount.internetAccountId}
                 >
-                  {displayedInternetAccount.name}
+                  {displayedInternetAccount.name.length > 12
+                    ? `${displayedInternetAccount.name.substring(0, 12)}...`
+                    : displayedInternetAccount.name}
                 </ToggleButton>
               )}
               <Button
@@ -190,7 +192,6 @@ const FileLocationEditor = observer(
                               setButtonOpen(false)
                             }}
                           >
-                            {placement}
                             {findChosenInternetAccount(
                               account.internetAccountId,
                               'autoDetect',
@@ -244,7 +245,7 @@ const FileLocationEditor = observer(
               )}
             </Popper>
           </Grid>
-          <Grid item style={{ paddingLeft: 20 }}>
+          <Grid item>
             <Tooltip title="Add Account for Authentication">
               <Button
                 color="primary"
@@ -256,21 +257,21 @@ const FileLocationEditor = observer(
               </Button>
             </Tooltip>
           </Grid>
-          <Grid item>
-            {currentState === 'file' ? (
-              <LocalFileChooser {...props} />
-            ) : (
-              <UrlChooser
-                {...props}
-                currentInternetAccount={
-                  currentState === displayedInternetAccount?.internetAccountId
-                    ? displayedInternetAccount
-                    : undefined
-                }
-              />
-            )}
-          </Grid>
         </Grid>
+        <div>
+          {currentState === 'file' ? (
+            <LocalFileChooser {...props} />
+          ) : (
+            <UrlChooser
+              {...props}
+              currentInternetAccount={
+                currentState === displayedInternetAccount?.internetAccountId
+                  ? displayedInternetAccount
+                  : undefined
+              }
+            />
+          )}
+        </div>
         {openNewInternetAccountDialog && (
           <AddNewInternetAccountDialog
             internetAccounts={internetAccounts}
@@ -306,6 +307,7 @@ const UrlChooser = (props: {
         fullWidth
         inputProps={{ 'data-testid': 'urlInput' }}
         defaultValue={location && isUriLocation(location) ? location.uri : ''}
+        label="Enter the URL of the data"
         onChange={event => {
           if (currentInternetAccount) {
             setLocation({
@@ -323,7 +325,7 @@ const UrlChooser = (props: {
         }}
       />
       {currentInternetAccount && (
-        <Grid item>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <Info />
           <Typography
             color="textSecondary"
@@ -332,7 +334,7 @@ const UrlChooser = (props: {
           >
             Your data will be authenticated using {currentInternetAccount.name}
           </Typography>
-        </Grid>
+        </div>
       )}
     </>
   )
