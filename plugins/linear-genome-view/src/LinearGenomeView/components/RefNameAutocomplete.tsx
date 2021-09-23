@@ -206,7 +206,6 @@ function RefNameAutocomplete({
           return
         }
         if (typeof selectedOption === 'string') {
-          console.log('wowowow')
           // handles string inputs on keyPress enter
           onSelect(
             new BaseResult({
