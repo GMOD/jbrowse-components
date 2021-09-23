@@ -141,19 +141,9 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                     assemblyName={message ? undefined : selectedAsm}
                     value={selectedRegion}
                     onSelect={option => {
-                      // this happens if the user might just have hit enter after
-                      // typing a locstring, so try to navtolocstring
-                      if (!option.locString) {
-                        handleSelectedRegion(option.getLabel())
-                      }
-
-                      // otherwise we get an actual result type back from the
-                      // text search adapter
-                      else {
-                        setSelectedRegion(option.getDisplayString())
-                        setOptionTrackId(option.getTrackId() || '')
-                        setOptionLocation(option.getLocation())
-                      }
+                      setSelectedRegion(option.getDisplayString())
+                      setOptionTrackId(option.getTrackId() || '')
+                      setOptionLocation(option.getLocation())
                     }}
                     TextFieldProps={{
                       margin: 'normal',
