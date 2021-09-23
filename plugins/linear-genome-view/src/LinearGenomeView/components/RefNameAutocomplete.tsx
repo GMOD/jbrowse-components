@@ -64,8 +64,8 @@ async function fetchResults(
 }
 
 // the logic of this method is to only apply a filter to RefSequenceResults
-// because they do not have a matchedObject. the trix search results
-// already filter so don't need re-filtering
+// because they do not have a matchedObject. the trix search results already
+// filter so don't need re-filtering
 function filterOptions(options: Option[], searchQuery: string) {
   return options.filter(option => {
     const { result } = option
@@ -115,6 +115,7 @@ function RefNameAutocomplete({
   const [open, setOpen] = useState(false)
   const [loaded, setLoaded] = useState(true)
   const [currentSearch, setCurrentSearch] = useState('')
+  const [inputValue, setInputValue] = useState('')
   const [searchOptions, setSearchOptions] = useState([] as Option[])
   const debouncedSearch = useDebounce(currentSearch, 300)
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
@@ -187,6 +188,8 @@ function RefNameAutocomplete({
       style={{ ...style, width }}
       value={inputBoxVal}
       loading={!loaded}
+      inputValue={inputValue}
+      onInputChange={(event, newInputValue) => setInputValue(newInputValue)}
       loadingText="loading results"
       open={open}
       onOpen={() => setOpen(true)}
@@ -203,11 +206,13 @@ function RefNameAutocomplete({
           return
         }
         if (typeof selectedOption === 'string') {
+          console.log('wowowow')
           // handles string inputs on keyPress enter
-          const newResult = new BaseResult({
-            label: selectedOption,
-          })
-          onSelect(newResult)
+          onSelect(
+            new BaseResult({
+              label: selectedOption,
+            }),
+          )
         } else {
           const { result } = selectedOption
           onSelect(result)
@@ -238,6 +243,9 @@ function RefNameAutocomplete({
         const { helperText, InputProps = {} } = TextFieldProps
         return (
           <TextField
+            onBlur={() => {
+              setInputValue(inputBoxVal)
+            }}
             {...params}
             {...TextFieldProps}
             helperText={helperText}

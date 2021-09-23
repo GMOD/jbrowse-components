@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import {
@@ -114,18 +114,16 @@ const LinearGenomeViewHeader = observer(
     const classes = useStyles()
     const theme = useTheme()
     const session = getSession(model)
-    const { assemblyManager, textSearchManager } = session
+
+    const { textSearchManager } = session
     const {
       coarseDynamicBlocks: contentBlocks,
       displayedRegions,
       rankSearchResults,
     } = model
     const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
-    const assembly = assemblyName
-      ? assemblyManager.get(assemblyName)
-      : undefined
-    const regions = assembly?.regions || []
     const searchScope = model.searchScope(assemblyName)
+    const displayVal = displayedRegions.length > 1 ? '' : refName
 
     async function fetchResults(queryString: string) {
       if (!textSearchManager) {
@@ -163,7 +161,6 @@ const LinearGenomeViewHeader = observer(
         session.notify(`${e}`, 'warning')
       }
     }
-
     const controls = (
       <div className={classes.headerBar}>
         <Controls model={model} />
@@ -173,7 +170,7 @@ const LinearGenomeViewHeader = observer(
           <RefNameAutocomplete
             onSelect={handleSelectedRegion}
             assemblyName={assemblyName}
-            value={displayedRegions.length > 1 ? '' : refName}
+            value={displayVal}
             model={model}
             TextFieldProps={{
               variant: 'outlined',

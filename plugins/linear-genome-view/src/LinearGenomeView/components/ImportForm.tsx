@@ -145,9 +145,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                     // otherwise we get an actual result type back from the
                     // text search adapter
                     else {
-                      setSelectedRegion(
-                        option.getDisplayString() || option.getLabel(),
-                      )
+                      setSelectedRegion(option.getDisplayString())
                       setOptionTrackId(option.getTrackId() || '')
                       setOptionLocation(option.getLocation())
                     }
@@ -156,11 +154,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                     margin: 'normal',
                     variant: 'outlined',
                     helperText: 'Enter a sequence or location',
-                    onBlur: event => {
-                      if (event.target.value === '') {
-                        setSelectedRegion(regions[0].refName)
-                      }
-                    },
                   }}
                 />
               ) : (
@@ -175,7 +168,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
               onClick={() => {
                 model.setError(undefined)
                 if (selectedRegion) {
-                  console.log('wowowow', selectedRegion)
                   handleSelectedRegion(selectedRegion)
                 }
               }}
