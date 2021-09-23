@@ -6,6 +6,7 @@ import {
   BlobLocation,
   isAppRootModel,
   isUriLocation,
+  AuthNeededError,
 } from '../types'
 import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
 import { getBlob } from '../tracks'
@@ -26,25 +27,25 @@ export function openLocation(
   location: FileLocation,
   pluginManager?: PluginManager,
 ): GenericFilehandle {
-  // async function newFetch(
-  //   url: RequestInfo,
-  //   opts?: RequestInit,
-  // ): Promise<Response> {
-  //   const response = await fetch(url, opts)
-  //   if (response.status === 401) {
-  //     console.log('in error case', response.headers)
-  //     const authHeaders = response.headers.get('WWW-Authenticate')
-  //     // if (authHeaders && authHeaders.includes('Basic')) {
-  //     // @ts-ignore
-  //     pluginManager?.rootModel?.createEphemeralInternetAccount(
-  //       `HTTPBasicInternetAccount-${Date.now()}`,
-  //       {},
-  //       location,
-  //     )
-  //     // }
-  //   }
-  //   return response
-  // }
+  async function newFetch(
+    url: RequestInfo,
+    opts?: RequestInit,
+  ): Promise<Response> {
+    const response = await fetch(url, opts)
+    if (response.status === 401) {
+      const authHeaders = response.headers.get('WWW-Authenticate')
+      // TODOAUTH: uncomment when done testing
+      // if (authHeaders && authHeaders.includes('Basic')) {
+      if (isUriLocation(location)) {
+        throw new AuthNeededError(
+          'Accessing HTTPBasic resource without authentication',
+          location,
+        )
+      }
+      // }
+    }
+    return response
+  }
 
   if (!location) {
     throw new Error('must provide a location to openLocation')
@@ -130,7 +131,7 @@ export function openLocation(
     const url = location.baseUri
       ? new URL(location.uri, location.baseUri).href
       : location.uri
-    return new RemoteFile(url)
+    return new RemoteFile(url, { fetch: newFetch })
   }
   throw new Error('invalid fileLocation')
 }

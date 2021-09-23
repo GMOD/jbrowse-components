@@ -7,6 +7,8 @@ import {
   AbstractRootModel,
   isAppRootModel,
   isUriLocation,
+  AuthNeededError,
+  RetryError,
 } from '../util/types'
 
 import {
@@ -91,12 +93,28 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     _args: unknown,
     _rpcDriverClassName: string,
   ): Promise<unknown> {
-    return serializedReturn
+    let r
+    try {
+      r = await serializedReturn
+    } catch (error) {
+      // if (error instanceof AuthNeededError) {
+      if (error && error.location) {
+        // @ts-ignore
+        const retryAccount = this.pluginManager?.rootModel?.createEphemeralInternetAccount(
+          `HTTPBasicInternetAccount-${new URL(error.location.uri).origin}`,
+          {},
+          error.location,
+        )
+        throw new RetryError('Retry', retryAccount.internetAccountId)
+      }
+      throw error
+    }
+    return r
   }
 
   // TODOAUTH unit test this method
   private async augmentLocationObjects(thing: any): Promise<any> {
-    if (isUriLocation(thing)) {
+    if (isUriLocation(thing) && thing.internetAccountId) {
       await this.serializeNewAuthArguments(thing)
     }
     if (Array.isArray(thing)) {

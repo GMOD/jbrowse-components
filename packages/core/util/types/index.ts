@@ -299,6 +299,26 @@ export function isUriLocation(location: unknown): location is UriLocation {
   )
 }
 
+export class AuthNeededError extends Error {
+  location: UriLocation
+  constructor(message: string, location: UriLocation) {
+    super(message)
+    this.location = location
+    this.name = 'AuthNeededError'
+
+    Object.setPrototypeOf(this, AuthNeededError.prototype)
+  }
+}
+
+export class RetryError extends Error {
+  internetAccountId: string
+  constructor(message: string, internetAccountId: string) {
+    super(message)
+    this.message = message
+    this.internetAccountId = internetAccountId
+  }
+}
+
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
 export type FileLocation = LocalPathLocation | UriLocation | BlobLocation

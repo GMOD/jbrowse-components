@@ -190,7 +190,6 @@ const FileLocationEditor = observer(
                               setButtonOpen(false)
                             }}
                           >
-                            {placement}
                             {findChosenInternetAccount(
                               account.internetAccountId,
                               'autoDetect',
