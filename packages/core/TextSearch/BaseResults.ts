@@ -42,8 +42,12 @@ export default class BaseResult {
   trackId?: string
 
   score: number
+
+  locString?: string
+
   constructor(args: BaseResultArgs) {
     this.label = args.label
+    this.locString = args.locString
     this.renderingComponent = args.renderingComponent
     this.displayString = args.displayString
     this.matchedAttribute = args.matchedAttribute
@@ -60,10 +64,6 @@ export default class BaseResult {
 
   getDisplayString() {
     return this.displayString || this.label
-  }
-
-  getLocation() {
-    return this.label
   }
 
   getRenderingComponent() {
@@ -86,26 +86,9 @@ export default class BaseResult {
   getId() {
     return `${this.getLabel()}-${this.getLocation()}-${this.getTrackId()}`
   }
-}
-
-/**
- * Future types of results
- * e.g: reference sequence results, track results,
- * feature results
- */
-export class LocStringResult extends BaseResult {
-  locString: string
-
-  constructor(args: BaseResultArgs) {
-    super(args)
-    if (!args.locString) {
-      throw new Error('must provide locString')
-    }
-    this.locString = args.locString ?? ''
-  }
 
   getLocation() {
-    return this.locString
+    return this.locString || this.label
   }
 }
 

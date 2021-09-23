@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
-// import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import {
   Button,
@@ -34,6 +34,13 @@ const ErrorDisplay = observer(({ error }: { error?: Error | string }) => {
     </Typography>
   )
 })
+
+function dedupe(results?: BaseResult[]) {
+  return results?.filter(
+    (elem, index, self) =>
+      index === self.findIndex(t => t.getId() === elem.getId()),
+  )
+}
 
 const ImportForm = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
@@ -73,65 +80,34 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       rankSearchResults,
     )
 
-    return results?.filter(
-      (elem, index, self) =>
-        index === self.findIndex(t => t.getId() === elem.getId()),
-    )
+    return dedupe(results)
   }
+
   /**
-   * We first check to see if the identifier/label is an appropriate region,
-   * if it is then we set that as our displayed region
-   * if the label was not a valid region, then
-   *  1) we get the trackId and the location/locStr of the option we chose
-   *  2) we then use the label to try and fetch for exact matches through our
-   * textSearchManager
-   *  3) if we get any hits by requerying the textSearchManager, then we either
-   *  navigate to single hit's location or pop open the the dialog with all the results
-   *  4) if there were no hits from requerying, then we use (1) the chosen options'
-   *  trackId and locStr to navigate and show that track
-   *  5) error handling
-   * @param input - selectedRegion/result label
+   * gets a string as input, or use stored option results from previous query,
+   * then re-query and
+   * 1) if it has multiple results: pop a dialog
+   * 2) if it's a single result navigate to it
+   * 3) else assume it's a locstring and navigate to it
    */
   async function handleSelectedRegion(input: string) {
     let trackId = optionTrackId
-    let location = optionLocation
-    const newRegion = regions.find(r => selectedRegion === r.refName)
-    if (newRegion) {
-      model.setDisplayedRegions([newRegion])
-      // we use showAllRegions after setDisplayedRegions to make the entire
-      // region visible, xref #1703
-      model.showAllRegions()
-    } else {
+    let location = input || optionLocation || ''
+    try {
       const results = await fetchResults(input)
       if (results && results.length > 1) {
         model.setSearchResults(results, input.toLowerCase())
-      } else {
-        if (results?.length === 1) {
-          location = results[0].getLocation()
-          trackId = results[0].getTrackId()
-        }
-        try {
-          if (location) {
-            model.navToLocString(location, selectedAsm)
-          }
-        } catch (e) {
-          if (`${e}` === `Error: Unknown reference sequence "${input}"`) {
-            model.setSearchResults(results, input.toLocaleLowerCase())
-          } else {
-            console.warn(e)
-            session.notify(`${e}`, 'warning')
-          }
-        }
-        try {
-          if (trackId) {
-            model.showTrack(trackId)
-          }
-        } catch (e) {
-          console.warn(
-            `'${e}' occurred while attempting to show track: ${trackId}`,
-          )
-        }
+      } else if (results?.length === 1) {
+        location = results[0].getLocation()
+        trackId = results[0].getTrackId()
       }
+      model.navToLocString(location, selectedAsm)
+      if (trackId) {
+        model.showTrack(trackId)
+      }
+    } catch (e) {
+      console.error(e)
+      session.notify(`${e}`, 'warning')
     }
   }
 
@@ -160,30 +136,29 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                   assemblyName={message ? undefined : selectedAsm}
                   value={selectedRegion}
                   onSelect={option => {
-                    setSelectedRegion(
-                      option.getDisplayString() || option.getLabel(),
-                    )
-                    setOptionTrackId(option.getTrackId() || '')
-                    setOptionLocation(option.getLocation())
+                    // this happens if the user might just have hit enter after
+                    // typing a locstring, so try to navtolocstring
+                    if (!option.locString) {
+                      handleSelectedRegion(option.getLabel())
+                    }
+
+                    // otherwise we get an actual result type back from the
+                    // text search adapter
+                    else {
+                      setSelectedRegion(
+                        option.getDisplayString() || option.getLabel(),
+                      )
+                      setOptionTrackId(option.getTrackId() || '')
+                      setOptionLocation(option.getLocation())
+                    }
                   }}
                   TextFieldProps={{
                     margin: 'normal',
                     variant: 'outlined',
                     helperText: 'Enter a sequence or location',
                     onBlur: event => {
-                      if (event.target.value !== '') {
-                        setSelectedRegion(event.target.value)
-                      } else {
+                      if (event.target.value === '') {
                         setSelectedRegion(regions[0].refName)
-                      }
-                    },
-                    onKeyPress: event => {
-                      const elt = event.target as HTMLInputElement
-                      // maybe check regular expression here to see if it's a
-                      // locstring try defaulting exact matches to first exact
-                      // match
-                      if (event.key === 'Enter') {
-                        handleSelectedRegion(elt.value)
                       }
                     },
                   }}
@@ -200,6 +175,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
               onClick={() => {
                 model.setError(undefined)
                 if (selectedRegion) {
+                  console.log('wowowow', selectedRegion)
                   handleSelectedRegion(selectedRegion)
                 }
               }}
