@@ -137,7 +137,9 @@ const FileLocationEditor = observer(
                 <ToggleButton
                   value={displayedInternetAccount.internetAccountId}
                 >
-                  {displayedInternetAccount.name}
+                  {displayedInternetAccount.name.length > 12
+                    ? `${displayedInternetAccount.name.substring(0, 12)}...`
+                    : displayedInternetAccount.name}
                 </ToggleButton>
               )}
               <Button
@@ -243,7 +245,7 @@ const FileLocationEditor = observer(
               )}
             </Popper>
           </Grid>
-          <Grid item style={{ paddingLeft: 20 }}>
+          <Grid>
             <Tooltip title="Add Account for Authentication">
               <Button
                 color="primary"
@@ -305,6 +307,7 @@ const UrlChooser = (props: {
         fullWidth
         inputProps={{ 'data-testid': 'urlInput' }}
         defaultValue={location && isUriLocation(location) ? location.uri : ''}
+        label="Enter URL"
         onChange={event => {
           if (currentInternetAccount) {
             setLocation({

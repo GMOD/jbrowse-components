@@ -33,7 +33,7 @@ function TrackSourceSelect({ model }: { model: AddTrackModel }) {
         />
         <FileSelector
           name="Index file"
-          description="Automatically inferred from the URL if not supplied"
+          description="The URL of the index file is automatically inferred from the URL of the main file if it is not supplied."
           location={model.indexTrackData}
           setLocation={model.setIndexTrackData}
           setName={model.setTrackName}
