@@ -87,10 +87,13 @@ test('test trix on import form', async () => {
   // needed in test currently. may be worth investigating
   fireEvent.click(await findByText('Open'))
 
-  await waitFor(async () => {
-    const newInput = await findByPlaceholderText('Search for location')
-    expect((newInput as HTMLInputElement).value).toBe('ctgA:1,055..9,005')
-  })
+  await waitFor(
+    async () => {
+      const newInput = await findByPlaceholderText('Search for location')
+      expect((newInput as HTMLInputElement).value).toBe('ctgA:1,055..9,005')
+    },
+    { timeout: 10000 },
+  )
 }, 30000)
 
 test('opens a dialog with multiple results', async () => {
