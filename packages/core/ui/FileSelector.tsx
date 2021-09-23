@@ -17,7 +17,6 @@ import {
   Popper,
   Grow,
   ClickAwayListener,
-  MenuList,
   Menu,
 } from '@material-ui/core'
 import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab'
@@ -175,12 +174,17 @@ const FileLocationEditor = observer(
                       <Menu
                         open={buttonOpen}
                         anchorEl={anchorRef.current}
-                        anchorOrigin={{
-                          vertical: 'bottom',
-                          horizontal: 'right',
-                        }}
                         id="split-button-menu"
                         onClose={() => setButtonOpen(false)}
+                        getContentAnchorEl={null}
+                        anchorOrigin={{
+                          vertical: 'bottom',
+                          horizontal: 'center',
+                        }}
+                        transformOrigin={{
+                          vertical: 'top',
+                          horizontal: 'center',
+                        }}
                       >
                         {internetAccounts?.map(account => (
                           <MenuItem
@@ -192,12 +196,12 @@ const FileLocationEditor = observer(
                               setButtonOpen(false)
                             }}
                           >
-                            {findChosenInternetAccount(
+                            {/* {findChosenInternetAccount(
                               account.internetAccountId,
                               'autoDetect',
                             )?.name === account.name
                               ? '(Suggested)'
-                              : ''}{' '}
+                              : ''}{' '} */}
                             {account.name}
                           </MenuItem>
                         ))}
@@ -210,35 +214,6 @@ const FileLocationEditor = observer(
                           </MenuItem>
                         ))}
                       </Menu>
-                      {/* <MenuList id="split-button-menu">
-                        {internetAccounts?.map(account => (
-                          <MenuItem
-                            key={account.internetAccountId}
-                            value={account.internetAccountId}
-                            onClick={() => {
-                              setDisplayedInternetAccount(account)
-                              setCurrentState(account.internetAccountId)
-                              setButtonOpen(false)
-                            }}
-                          >
-                            {findChosenInternetAccount(
-                              account.internetAccountId,
-                              'autoDetect',
-                            )?.name === account.name
-                              ? '(Suggested)'
-                              : ''}{' '}
-                            {account.name}
-                          </MenuItem>
-                        ))}
-                        {additionalInternetAccounts.map(account => (
-                          <MenuItem
-                            key={account.internetAccountId}
-                            value={account.internetAccountId}
-                          >
-                            {account.name}
-                          </MenuItem>
-                        ))}
-                      </MenuList> */}
                     </ClickAwayListener>
                   </Paper>
                 </Grow>
