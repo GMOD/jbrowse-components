@@ -1,5 +1,4 @@
-import { BlobFile, GenericFilehandle } from 'generic-filehandle'
-import LocalFile from './LocalFile'
+import { BlobFile, LocalFile, GenericFilehandle } from 'generic-filehandle'
 import { openUrl as rangeFetcherOpenUrl } from './rangeFetcher'
 import {
   FileLocation,
@@ -36,6 +35,7 @@ export function openLocation(location: FileLocation): GenericFilehandle {
     if (!location.localPath) {
       throw new Error('No local path provided')
     }
+
     if (isNode) {
       return new LocalFile(location.localPath)
     } else {

@@ -37,7 +37,7 @@
   "dependencies": {
     "@gmod/gff": "^1.1.2",
     "@gmod/tabix": "^1.5.0",
-    "generic-filehandle": "^2.0.0"
+    "generic-filehandle": "^2.2.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",

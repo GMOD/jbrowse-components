@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@material-ui/icons": "^4.9.1",
-    "generic-filehandle": "^2.0.1",
+    "generic-filehandle": "^2.2.0",
     "pluralize": "^8.0.0",
     "react-color": "^2.19.3",
     "react-simple-code-editor": "0.9.3",
