@@ -490,12 +490,15 @@ const preloadedConfigs = {
         textSearchAdapterId: 'hg19-index',
         ixFilePath: {
           uri: 'https://jbrowse.org/genomes/hg19/trix/hg19.ix',
+          locationType: 'UriLocation',
         },
         ixxFilePath: {
           uri: 'https://jbrowse.org/genomes/hg19/trix/hg19.ixx',
+          locationType: 'UriLocation',
         },
         metaFilePath: {
           uri: 'https://jbrowse.org/genomes/hg19/trix/meta.json',
+          locationType: 'UriLocation',
         },
         assemblyNames: ['hg19'],
       },

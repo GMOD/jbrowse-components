@@ -102,6 +102,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     callback: (doneCallback: Function) => [DialogComponentType, any],
   ) => void
+  name: string
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
