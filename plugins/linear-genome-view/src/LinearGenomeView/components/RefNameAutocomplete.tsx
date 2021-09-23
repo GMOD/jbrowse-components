@@ -1,10 +1,4 @@
-/**
- * Based on:
- *  https://material-ui.com/components/autocomplete/#Virtualize.tsx
- * Asynchronous Requests for autocomplete:
- *  https://material-ui.com/components/autocomplete/
- */
-import React, { useRef, useMemo, useEffect, useState } from 'react'
+import React, { useMemo, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 
 // jbrowse core
@@ -29,10 +23,6 @@ import Autocomplete from '@material-ui/lab/Autocomplete'
 // locals
 import { LinearGenomeViewModel } from '..'
 
-/**
- *  Option interface used to format results to display in dropdown
- *  of the materila ui interface
- */
 export interface Option {
   group?: string
   result: BaseResult
@@ -110,7 +100,6 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
-  const ref = useRef<HTMLInputElement>(null)
   const session = getSession(model)
   const { assemblyManager } = session
   const [open, setOpen] = useState(false)
@@ -171,10 +160,7 @@ function RefNameAutocomplete({
   const width = Math.min(Math.max(measureText(inputBoxVal, 16) + 25, 200), 550)
 
   // notes on implementation:
-  // The selectOnFocus setting helps highlight the field when clicked. We also
-  // use a modified version of blurOnSelect (manually implemented with ref) to
-  // help it so that when the user-re-clicks on the textfield, that
-  // selectOnFocus re-activates
+  // The selectOnFocus setting helps highlight the field when clicked
   return (
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
@@ -213,8 +199,7 @@ function RefNameAutocomplete({
         } else {
           onSelect(selectedOption.result)
         }
-
-        ref.current?.blur()
+        setInputValue(inputBoxVal)
       }}
       options={searchOptions.length === 0 ? options : searchOptions}
       getOptionDisabled={option => option?.group === 'limitOption'}
@@ -242,6 +227,8 @@ function RefNameAutocomplete({
         return (
           <TextField
             onBlur={() => {
+              // this is used to restore a refName or the non-user-typed input
+              // to the box on blurring
               setInputValue(inputBoxVal)
             }}
             {...params}
