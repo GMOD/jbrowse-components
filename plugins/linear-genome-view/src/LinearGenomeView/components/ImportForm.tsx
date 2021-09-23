@@ -90,10 +90,12 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       const results = await fetchResults(input)
       if (results && results.length > 1) {
         model.setSearchResults(results, input.toLowerCase())
+        return
       } else if (results?.length === 1) {
         location = results[0].getLocation()
         trackId = results[0].getTrackId()
       }
+
       model.navToLocString(location, selectedAsm)
       if (trackId) {
         model.showTrack(trackId)

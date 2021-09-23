@@ -64,7 +64,7 @@ test('test trix from lgv header', async () => {
 test('test trix on import form', async () => {
   const pluginManager = getPluginManager()
   const state = pluginManager.rootModel
-  const { findByTestId, findByPlaceholderText } = render(
+  const { findByTestId, findByText, findByPlaceholderText } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
 
@@ -83,13 +83,14 @@ test('test trix on import form', async () => {
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
 
-  await waitFor(
-    async () => {
-      const newInput = await findByPlaceholderText('Search for location')
-      expect((newInput as HTMLInputElement).value).toBe('ctgA:1,055..9,005')
-    },
-    { timeout: 10000 },
-  )
+  // should work to just have enter and no click on open in UI, but this is
+  // needed in test currently. may be worth investigating
+  fireEvent.click(await findByText('Open'))
+
+  await waitFor(async () => {
+    const newInput = await findByPlaceholderText('Search for location')
+    expect((newInput as HTMLInputElement).value).toBe('ctgA:1,055..9,005')
+  })
 }, 30000)
 
 test('opens a dialog with multiple results', async () => {
