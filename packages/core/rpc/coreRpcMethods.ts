@@ -162,6 +162,9 @@ export class CoreFreeResources extends RpcMethodType {
 
     return deleteCount
   }
+  async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
+    return args
+  }
 }
 
 export interface RenderArgs extends ServerSideRenderArgs {

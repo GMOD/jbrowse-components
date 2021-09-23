@@ -474,6 +474,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         // may need some logic for if you are in webworker and go to handle error, specifically remove the token
         // from preauth and uritopreauthInfoMap to allow for a refresh token attempt or relaunching
         // auth flow
+
+        // in the error message to the flow above, add a conditional that is like
+        // if inWebWorker try to reload the page
         async handleError(
           error: string,
           triedRefreshToken = false,

@@ -26,6 +26,26 @@ export function openLocation(
   location: FileLocation,
   pluginManager?: PluginManager,
 ): GenericFilehandle {
+  // async function newFetch(
+  //   url: RequestInfo,
+  //   opts?: RequestInit,
+  // ): Promise<Response> {
+  //   const response = await fetch(url, opts)
+  //   if (response.status === 401) {
+  //     console.log('in error case', response.headers)
+  //     const authHeaders = response.headers.get('WWW-Authenticate')
+  //     // if (authHeaders && authHeaders.includes('Basic')) {
+  //     // @ts-ignore
+  //     pluginManager?.rootModel?.createEphemeralInternetAccount(
+  //       `HTTPBasicInternetAccount-${Date.now()}`,
+  //       {},
+  //       location,
+  //     )
+  //     // }
+  //   }
+  //   return response
+  // }
+
   if (!location) {
     throw new Error('must provide a location to openLocation')
   }

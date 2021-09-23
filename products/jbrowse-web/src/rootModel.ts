@@ -291,10 +291,11 @@ export default function RootModel(
       ) {
         const hostUri = new URL(location.uri).origin
         // id of a custom new internaccount is `${type}-${name}`
+        const internetAccountSplit = internetAccountId.split('-')
         const configuration = {
-          type: internetAccountId.split('-')[0],
+          type: internetAccountSplit[0],
           internetAccountId: internetAccountId,
-          name: internetAccountId.split('-')[1],
+          name: internetAccountSplit.slice(1).join('-'),
           description: '',
           domains: [hostUri],
         }

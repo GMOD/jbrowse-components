@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import {
   Button,
   Grid,
@@ -6,19 +6,19 @@ import {
   InputLabel,
   TextField,
   Typography,
-  Checkbox,
-  FormGroup,
-  FormControl,
-  FormControlLabel,
-  FormLabel,
-  RadioGroup,
-  Radio,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Select,
   MenuItem,
+  Tooltip,
+  Paper,
+  Popper,
+  Grow,
+  ClickAwayListener,
+  MenuList,
+  Menu,
 } from '@material-ui/core'
 import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab'
 import { observer } from 'mobx-react'
@@ -30,6 +30,9 @@ import {
   isUriLocation,
 } from '../util/types'
 import { getBlob, storeBlobLocation } from '../util/tracks'
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
+import AddIcon from '@material-ui/icons/Add'
+import { Info } from '@material-ui/icons'
 
 interface Account {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -55,10 +58,57 @@ const FileLocationEditor = observer(
     name?: string
     description?: string
   }) => {
-    const { location, name, description } = props
+    const { location, name, description, internetAccounts } = props
     const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'
-    const [fileOrUrlState, setFileOrUrlState] = useState(fileOrUrl)
-    const [internetAccountChecked, setInternetAccountChecked] = useState(false)
+    const [currentState, setCurrentState] = useState(fileOrUrl)
+
+    // states for internet account logic
+    const [buttonOpen, setButtonOpen] = useState(false)
+    const [
+      openNewInternetAccountDialog,
+      setOpenNewInternetAccountDialog,
+    ] = useState(false)
+    const [
+      additionalInternetAccounts,
+      setAdditionalInternetAccounts,
+    ] = useState<Account[]>([])
+    const [displayedInternetAccount, setDisplayedInternetAccount] = useState<
+      Account | undefined
+    >(internetAccounts ? internetAccounts[0] : undefined)
+    const anchorRef = useRef(null)
+
+    const findChosenInternetAccount = (
+      urlInput: string,
+      internetAccountSelection: string,
+    ) => {
+      try {
+        new URL(urlInput)
+      } catch (error) {
+        return undefined
+      }
+
+      if (internetAccountSelection === 'autoDetect') {
+        return internetAccounts?.find(account => {
+          return account.handlesLocation({ uri: urlInput })
+        })
+      }
+      const foundSelection = internetAccounts?.find(account => {
+        return account.internetAccountId === internetAccountSelection
+      })
+
+      return foundSelection
+        ? foundSelection
+        : {
+            internetAccountId: internetAccountSelection,
+          }
+    }
+
+    const handleChange = async (
+      event: React.MouseEvent<HTMLElement>,
+      newState: string,
+    ) => {
+      setCurrentState(newState)
+    }
 
     return (
       <>
@@ -68,15 +118,9 @@ const FileLocationEditor = observer(
         <Grid container spacing={1} direction="row" alignItems="center">
           <Grid item>
             <ToggleButtonGroup
-              value={fileOrUrlState}
+              value={currentState}
               exclusive
-              onChange={(_, newValue) => {
-                if (newValue === 'url') {
-                  setFileOrUrlState('url')
-                } else if (newValue === 'file') {
-                  setFileOrUrlState('file')
-                }
-              }}
+              onChange={handleChange}
               aria-label="file or url picker"
             >
               {new URLSearchParams(window.location.search).get(
@@ -89,37 +133,160 @@ const FileLocationEditor = observer(
               <ToggleButton value="url" aria-label="url">
                 URL
               </ToggleButton>
+              {displayedInternetAccount && (
+                <ToggleButton
+                  value={displayedInternetAccount.internetAccountId}
+                >
+                  {displayedInternetAccount.name}
+                </ToggleButton>
+              )}
+              <Button
+                size="small"
+                variant="outlined"
+                value="selection"
+                onClick={() => {
+                  setButtonOpen((prevOpen: boolean) => !prevOpen)
+                }}
+                style={{ minWidth: 5 }}
+                ref={anchorRef}
+              >
+                <ArrowDropDownIcon />
+              </Button>
             </ToggleButtonGroup>
+            <Popper
+              open={buttonOpen}
+              anchorEl={anchorRef.current}
+              role={undefined}
+              transition
+              disablePortal
+            >
+              {({ TransitionProps, placement }) => (
+                <Grow
+                  {...TransitionProps}
+                  style={{
+                    transformOrigin:
+                      placement === 'bottom' ? 'center top' : 'center bottom',
+                  }}
+                >
+                  <Paper>
+                    <ClickAwayListener onClickAway={() => setButtonOpen(false)}>
+                      <Menu
+                        open={buttonOpen}
+                        anchorEl={anchorRef.current}
+                        anchorOrigin={{
+                          vertical: 'bottom',
+                          horizontal: 'right',
+                        }}
+                        id="split-button-menu"
+                        onClose={() => setButtonOpen(false)}
+                      >
+                        {internetAccounts?.map(account => (
+                          <MenuItem
+                            key={account.internetAccountId}
+                            value={account.internetAccountId}
+                            onClick={() => {
+                              setDisplayedInternetAccount(account)
+                              setCurrentState(account.internetAccountId)
+                              setButtonOpen(false)
+                            }}
+                          >
+                            {placement}
+                            {findChosenInternetAccount(
+                              account.internetAccountId,
+                              'autoDetect',
+                            )?.name === account.name
+                              ? '(Suggested)'
+                              : ''}{' '}
+                            {account.name}
+                          </MenuItem>
+                        ))}
+                        {additionalInternetAccounts.map(account => (
+                          <MenuItem
+                            key={account.internetAccountId}
+                            value={account.internetAccountId}
+                          >
+                            {account.name}
+                          </MenuItem>
+                        ))}
+                      </Menu>
+                      {/* <MenuList id="split-button-menu">
+                        {internetAccounts?.map(account => (
+                          <MenuItem
+                            key={account.internetAccountId}
+                            value={account.internetAccountId}
+                            onClick={() => {
+                              setDisplayedInternetAccount(account)
+                              setCurrentState(account.internetAccountId)
+                              setButtonOpen(false)
+                            }}
+                          >
+                            {findChosenInternetAccount(
+                              account.internetAccountId,
+                              'autoDetect',
+                            )?.name === account.name
+                              ? '(Suggested)'
+                              : ''}{' '}
+                            {account.name}
+                          </MenuItem>
+                        ))}
+                        {additionalInternetAccounts.map(account => (
+                          <MenuItem
+                            key={account.internetAccountId}
+                            value={account.internetAccountId}
+                          >
+                            {account.name}
+                          </MenuItem>
+                        ))}
+                      </MenuList> */}
+                    </ClickAwayListener>
+                  </Paper>
+                </Grow>
+              )}
+            </Popper>
+          </Grid>
+          <Grid item style={{ paddingLeft: 20 }}>
+            <Tooltip title="Add Account for Authentication">
+              <Button
+                color="primary"
+                variant="contained"
+                onClick={() => setOpenNewInternetAccountDialog(true)}
+                style={{ minWidth: 15 }}
+              >
+                <AddIcon />
+              </Button>
+            </Tooltip>
           </Grid>
           <Grid item>
-            {fileOrUrlState === 'url' ? (
-              <FormGroup>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={internetAccountChecked}
-                      onChange={event => {
-                        setInternetAccountChecked(event.target.checked)
-                      }}
-                    />
-                  }
-                  label="Requires Login"
-                  labelPlacement="start"
-                />
-              </FormGroup>
-            ) : null}
-          </Grid>
-          <Grid item>
-            {fileOrUrlState === 'url' ? (
+            {currentState === 'file' ? (
+              <LocalFileChooser {...props} />
+            ) : (
               <UrlChooser
                 {...props}
-                internetAccountChecked={internetAccountChecked}
+                currentInternetAccount={
+                  currentState === displayedInternetAccount?.internetAccountId
+                    ? displayedInternetAccount
+                    : undefined
+                }
               />
-            ) : (
-              <LocalFileChooser {...props} />
             )}
           </Grid>
         </Grid>
+        {openNewInternetAccountDialog && (
+          <AddNewInternetAccountDialog
+            internetAccounts={internetAccounts}
+            handleClose={(newAddedAccount: Account | undefined) => {
+              if (newAddedAccount) {
+                setDisplayedInternetAccount(newAddedAccount)
+                setCurrentState(newAddedAccount.internetAccountId)
+                setAdditionalInternetAccounts([
+                  ...additionalInternetAccounts,
+                  newAddedAccount,
+                ])
+              }
+              setOpenNewInternetAccountDialog(false)
+            }}
+          />
+        )}
         <FormHelperText>{description}</FormHelperText>
       </>
     )
@@ -129,65 +296,9 @@ const FileLocationEditor = observer(
 const UrlChooser = (props: {
   location?: FileLocation
   setLocation: Function
-  internetAccounts?: Account[]
-  internetAccountChecked: boolean
+  currentInternetAccount: Account | undefined
 }) => {
-  const {
-    location,
-    setLocation,
-    internetAccounts,
-    internetAccountChecked,
-  } = props
-  const [currentInternetAccount, setCurrentInternetAccount] = useState('')
-  const [suggestedInternetAccount, setSuggestedInternetAccount] = useState('')
-  const [
-    openNewInternetAccountDialog,
-    setOpenNewInternetAccountDialog,
-  ] = useState(false)
-  const [
-    additionalInternetAccountIds,
-    setAdditionalInternetAccountIds,
-  ] = useState<string[]>([])
-
-  const findChosenInternetAccount = (
-    urlInput: string,
-    internetAccountSelection: string,
-  ) => {
-    try {
-      new URL(urlInput)
-    } catch (error) {
-      return undefined
-    }
-
-    if (internetAccountSelection === 'autoDetect') {
-      return internetAccounts?.find(account => {
-        return account.handlesLocation({ uri: urlInput })
-      })
-    }
-    const foundSelection = internetAccounts?.find(account => {
-      return account.internetAccountId === internetAccountSelection
-    })
-
-    return foundSelection
-      ? foundSelection
-      : {
-          internetAccountId: internetAccountSelection,
-        }
-  }
-
-  const updateLocationWithAccountInfo = (
-    uri: string,
-    internetAccountId: string,
-  ) => {
-    const internetAccount = findChosenInternetAccount(uri, internetAccountId)
-
-    setLocation({
-      uri: uri,
-      baseAuthUri: uri,
-      internetAccountId: internetAccount?.internetAccountId || '',
-      locationType: 'UriLocation',
-    })
-  }
+  const { location, setLocation, currentInternetAccount } = props
 
   return (
     <>
@@ -196,18 +307,13 @@ const UrlChooser = (props: {
         inputProps={{ 'data-testid': 'urlInput' }}
         defaultValue={location && isUriLocation(location) ? location.uri : ''}
         onChange={event => {
-          if (event.target.value === '') {
-            setCurrentInternetAccount('')
-          }
-          setSuggestedInternetAccount(
-            findChosenInternetAccount(event.target.value, 'autoDetect')?.name ||
-              '',
-          )
           if (currentInternetAccount) {
-            updateLocationWithAccountInfo(
-              event.target.value.trim(),
-              currentInternetAccount,
-            )
+            setLocation({
+              uri: event.target.value,
+              baseAuthUri: event.target.value,
+              internetAccountId: currentInternetAccount.internetAccountId || '',
+              locationType: 'UriLocation',
+            })
           } else {
             setLocation({
               uri: event.target.value.trim(),
@@ -216,89 +322,18 @@ const UrlChooser = (props: {
           }
         }}
       />
-      <Grid item>
-        {internetAccountChecked && isUriLocation(location) ? (
-          <>
-            <FormControl component="fieldset">
-              <FormLabel component="legend">Select Internet Account</FormLabel>
-              <RadioGroup
-                value={currentInternetAccount}
-                name="internet-account-radio-buttons-group"
-                onChange={event => {
-                  const internetAccountId = event.target.value
-                  setCurrentInternetAccount(internetAccountId)
-                  updateLocationWithAccountInfo(
-                    location.uri,
-                    event.target.value,
-                  )
-                }}
-              >
-                <FormControlLabel
-                  key=""
-                  value=""
-                  control={<Radio />}
-                  label="None"
-                />
-                {suggestedInternetAccount && (
-                  <FormControlLabel
-                    key="suggestedInternetAccount"
-                    value={suggestedInternetAccount}
-                    control={<Radio />}
-                    label={`Suggested: ${suggestedInternetAccount}`}
-                  />
-                )}
-                {internetAccounts?.map(account => {
-                  try {
-                    // new URL(location.uri)
-                    return (
-                      <FormControlLabel
-                        key={account.internetAccountId}
-                        value={account.internetAccountId}
-                        control={<Radio />}
-                        label={account.name}
-                      />
-                    )
-                  } catch (e) {
-                    return null
-                  }
-                })}
-                {additionalInternetAccountIds?.map((accountId: string) => {
-                  return (
-                    <FormControlLabel
-                      key={accountId}
-                      value={accountId}
-                      control={<Radio />}
-                      label={accountId.split('-')[1]}
-                    />
-                  )
-                })}
-              </RadioGroup>
-              <Button
-                variant="outlined"
-                onClick={() => setOpenNewInternetAccountDialog(true)}
-              >
-                Add New Internet Account
-              </Button>
-            </FormControl>
-            {openNewInternetAccountDialog && (
-              <AddNewInternetAccountDialog
-                internetAccounts={internetAccounts}
-                handleClose={(newAddedId?: string) => {
-                  if (newAddedId) {
-                    setAdditionalInternetAccountIds([
-                      ...additionalInternetAccountIds,
-                      newAddedId,
-                    ])
-                    setCurrentInternetAccount(newAddedId)
-                    updateLocationWithAccountInfo(location.uri, newAddedId)
-                  }
-                  setOpenNewInternetAccountDialog(false)
-                }}
-              />
-            )}
-          </>
-        ) : null}
-      </Grid>
+      {currentInternetAccount && (
+        <Grid item>
+          <Info />
+          <Typography
+            color="textSecondary"
+            variant="caption"
+            style={{ paddingLeft: '4px' }}
+          >
+            Your data will be authenticated using {currentInternetAccount.name}
+          </Typography>
+        </Grid>
+      )}
     </>
   )
 }
@@ -367,7 +402,7 @@ const AddNewInternetAccountDialog = ({
   handleClose,
 }: {
   internetAccounts: Account[] | undefined
-  handleClose: (arg?: string) => void
+  handleClose: (arg?: Account) => void
 }) => {
   const [name, setName] = useState('')
   const [type, setType] = useState('')
@@ -418,7 +453,11 @@ const AddNewInternetAccountDialog = ({
             disabled={!name || !type}
             onClick={() => {
               if (name && type) {
-                handleClose(`${type}-${name}`)
+                handleClose({
+                  internetAccountId: `${type}-${name}`,
+                  name: name,
+                  type: type,
+                })
               }
             }}
           >
