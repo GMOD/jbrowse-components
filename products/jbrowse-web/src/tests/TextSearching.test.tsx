@@ -1,6 +1,6 @@
 // library
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import React from 'react'
+import { cleanup, waitFor, fireEvent, render } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
@@ -16,9 +16,12 @@ afterEach(cleanup)
 beforeEach(() => {
   clearCache()
   clearAdapterCache()
+
+  // @ts-ignore
   fetch.resetMocks()
+  // @ts-ignore
   fetch.mockResponse(
-    generateReadBuffer(url => {
+    generateReadBuffer((url: string) => {
       return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
     }),
   )
@@ -26,12 +29,10 @@ beforeEach(() => {
 describe('Integration test for different text search adapters', () => {
   it('test Jb1 adapter', async () => {
     const pluginManager = getPluginManager(jb1_config)
-    const state = pluginManager.rootModel
-    const { findByText, findByTestId, findByPlaceholderText } = render(
+    const { findByTestId, findByPlaceholderText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
-    fireEvent.click(await findByText('Help'))
-    // need this to complete before we can try to search
+
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
 
     const autocomplete = await findByTestId('autocomplete')
@@ -43,8 +44,9 @@ describe('Integration test for different text search adapters', () => {
       target: { value: 'apple3' },
     })
     fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-    // test search results dialog opening
-    await screen.findByText('Search Results')
-    expect(state.session.views[0].searchResults.length).toBeGreaterThan(0)
+
+    waitFor(() => {
+      expect((inputBox as HTMLInputElement).value).toBe('ctgA:17,402..22,956')
+    })
   }, 30000)
 })
