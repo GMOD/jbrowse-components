@@ -148,6 +148,7 @@ const LinearGenomeViewHeader = observer(
         const results = await fetchResults(label)
         if (results && results.length > 1) {
           model.setSearchResults(results, label.toLowerCase())
+          return
         } else if (results?.length === 1) {
           location = results[0].getLocation()
           trackId = results[0].getTrackId()
