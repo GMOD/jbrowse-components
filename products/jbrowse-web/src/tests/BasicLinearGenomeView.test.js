@@ -243,9 +243,7 @@ describe('valid file tests', () => {
     )
     autocomplete.focus()
     fireEvent.mouseDown(inputBox)
-    fireEvent.change(inputBox, {
-      target: { value: 'seg02' },
-    })
+    fireEvent.change(inputBox, { target: { value: 'seg02' } })
     fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
     await screen.findByText('Search Results')
     expect(state.session.views[0].searchResults.length).toBeGreaterThan(0)

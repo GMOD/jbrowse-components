@@ -116,14 +116,9 @@ const LinearGenomeViewHeader = observer(
     const session = getSession(model)
 
     const { textSearchManager } = session
-    const {
-      coarseDynamicBlocks: contentBlocks,
-      displayedRegions,
-      rankSearchResults,
-    } = model
-    const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
+    const { assemblyNames, rankSearchResults } = model
+    const assemblyName = assemblyNames[0]
     const searchScope = model.searchScope(assemblyName)
-    const displayVal = displayedRegions.length > 1 ? '' : refName
 
     async function fetchResults(queryString: string) {
       if (!textSearchManager) {
@@ -153,6 +148,7 @@ const LinearGenomeViewHeader = observer(
           location = results[0].getLocation()
           trackId = results[0].getTrackId()
         }
+
         model.navToLocString(location, assemblyName)
         if (trackId) {
           model.showTrack(trackId)
@@ -162,6 +158,7 @@ const LinearGenomeViewHeader = observer(
         session.notify(`${e}`, 'warning')
       }
     }
+
     const controls = (
       <div className={classes.headerBar}>
         <Controls model={model} />
@@ -171,7 +168,6 @@ const LinearGenomeViewHeader = observer(
           <RefNameAutocomplete
             onSelect={handleSelectedRegion}
             assemblyName={assemblyName}
-            value={displayVal}
             model={model}
             TextFieldProps={{
               variant: 'outlined',

@@ -7,7 +7,6 @@ import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { setup, generateReadBuffer, getPluginManager } from './util'
-import jb1_config from '../../test_data/volvox/volvox_jb1_text_config.json'
 import JBrowse from '../JBrowse'
 
 setup()
@@ -26,28 +25,63 @@ beforeEach(() => {
     }),
   )
 })
-describe('Integration test for different text search adapters', () => {
-  it('test Jb1 adapter', async () => {
-    const pluginManager = getPluginManager()
-    const { findByTestId, findByPlaceholderText } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
+test('test trix from lgv header', async () => {
+  const pluginManager = getPluginManager()
+  const state = pluginManager.rootModel
+  const { findByTestId, findByPlaceholderText } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
 
-    fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+  const auto = await findByTestId('autocomplete', {}, { timeout: 10000 })
+  const input = await findByPlaceholderText('Search for location')
 
-    const auto = await findByTestId('autocomplete', {}, { timeout: 10000 })
-    const input = await findByPlaceholderText('Search for location')
+  // wait for displayedRegions[0] to be volvox, required for searching header
+  // of lgv
+  await waitFor(() =>
+    // @ts-ignore
+    expect(state.session.views[0].displayedRegions[0].assemblyName).toEqual(
+      'volvox',
+    ),
+  )
 
-    auto.focus()
-    fireEvent.mouseDown(input)
-    fireEvent.change(input, { target: { value: 'eden.1' } })
-    fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
+  auto.focus()
+  fireEvent.mouseDown(input)
+  fireEvent.change(input, { target: { value: 'eden.1' } })
+  fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
 
-    await waitFor(
-      () => {
-        expect((input as HTMLInputElement).value).toBe('ctgA:1,055..9,005')
-      },
-      { timeout: 10000 },
-    )
-  }, 30000)
-})
+  await waitFor(() =>
+    expect((input as HTMLInputElement).value).toBe('ctgA:1,055..9,005'),
+  )
+}, 30000)
+
+test('test trix from importform', async () => {
+  const pluginManager = getPluginManager()
+  const state = pluginManager.rootModel
+  const { findByTestId, findByPlaceholderText } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+
+  // @ts-ignore
+  pluginManager.rootModel.session.views[0].clearView()
+
+  const auto = await findByTestId('autocomplete', {}, { timeout: 10000 })
+  const input = await findByPlaceholderText('Search for location')
+
+  // wait for displayedRegions[0] to be volvox, required for searching header
+  // of lgv
+  await waitFor(() =>
+    // @ts-ignore
+    expect(state.session.views[0].displayedRegions[0].assemblyName).toEqual(
+      'volvox',
+    ),
+  )
+
+  auto.focus()
+  fireEvent.mouseDown(input)
+  fireEvent.change(input, { target: { value: 'eden.1' } })
+  fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
+
+  await waitFor(() =>
+    expect((input as HTMLInputElement).value).toBe('ctgA:1,055..9,005'),
+  )
+}, 30000)
