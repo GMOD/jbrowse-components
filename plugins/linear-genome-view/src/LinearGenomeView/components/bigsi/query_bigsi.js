@@ -178,36 +178,30 @@ function toArrayBuffer(buffer) {
 }
 
 /**
- * @param { string } filename - name of binary dump bigsi file
+ * @param { Uint16Array } bigsi - flattened bigsi 
  * @param { array of numbers } rowFilter - array of row numbers for query rows
  * @param { number } numCols - number of columns in bigsi
  *
  * @returns { array of strings } submatrix - array of bitsets of query rows 
  * submatrix
  */
-async function getBinaryDumpBigsiSubmatrix(filename, rowFilter, numCols){
+async function getBinaryDumpBigsiSubmatrix(bigsi, rowFilter, numCols){
     const submatrix = []
 
     try {
-        const response = await fetch(filename)
-        const bigsiRowBuf = await response.arrayBuffer()
-        console.log('num bytes in the bigsirowbuf:', bigsiRowBuf.byteLength)
-
-        const array = new Uint16Array(bigsiRowBuf);
-        console.log('array size: ', array.length)
         const numSeqs = numCols/16
 
         for (const rowNum of rowFilter){
 
             const offsetStart = rowNum*numSeqs
             const offsetEnd = offsetStart + numSeqs
-            console.log('offsets: ', offsetStart, offsetEnd)
-            console.log('ints: ', array.slice(offsetStart, offsetEnd))
+            //console.log('offsets: ', offsetStart, offsetEnd)
+            //console.log('ints: ', bigsi.slice(offsetStart, offsetEnd))
 
-            const rowBitString = Array.from(array.slice(offsetStart, offsetEnd))
+            const rowBitString = Array.from(bigsi.slice(offsetStart, offsetEnd))
                 .map((num) => {return num.toString(2)})
                 .join('')
-            console.log('bitstring: ', rowBitString)
+            //console.log('bitstring: ', rowBitString)
             const bs = new BitSet(rowBitString)
             submatrix.push(bs);
         }
@@ -260,10 +254,17 @@ async function queryBinaryDumpBigsi(filename, queryFragmentsBloomFilters, numCol
     const numFragments = queryFragmentsBloomFilters.length
     console.log('number of query BFs: ', queryFragmentsBloomFilters.length)
 
+    const response = await fetch(filename)
+    const bigsiRowBuf = await response.arrayBuffer()
+    console.log('num bytes in the bigsirowbuf:', bigsiRowBuf.byteLength)
+
+    const array = new Uint16Array(bigsiRowBuf);
+    console.log('array size: ', array.length)
+
     for (let m = 0; m < queryFragmentsBloomFilters.length; m++){
         const queryBFOnesIndices = getQueryBloomFilterOnesIndices(queryFragmentsBloomFilters[m]._filter)
         
-        const querySubmatrix = await getBinaryDumpBigsiSubmatrix(filename, queryBFOnesIndices, numCols)
+        const querySubmatrix = await getBinaryDumpBigsiSubmatrix(array, queryBFOnesIndices, numCols)
         computeBitSubmatrixHits(querySubmatrix, bigsiHits)
     }
 

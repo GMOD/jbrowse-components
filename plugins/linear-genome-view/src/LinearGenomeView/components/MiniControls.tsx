@@ -24,6 +24,14 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
         >
           <ArrowDown />
         </IconButton>
+        <IconButton
+          color="secondary"
+          onClick={event => {
+            setAnchorEl(event.currentTarget)
+          }}
+        >
+          <ArrowDown />
+        </IconButton>
 
         <IconButton
           data-testid="zoom_out"
