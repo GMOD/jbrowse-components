@@ -7,8 +7,8 @@ import {
   AbstractRootModel,
   isAppRootModel,
   isUriLocation,
-  AuthNeededError,
   RetryError,
+  isAuthNeededException,
 } from '../util/types'
 
 import {
@@ -97,15 +97,17 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     try {
       r = await serializedReturn
     } catch (error) {
-      // if (error instanceof AuthNeededError) {
-      if (error && error.location) {
+      if (isAuthNeededException(error)) {
         // @ts-ignore
         const retryAccount = this.pluginManager?.rootModel?.createEphemeralInternetAccount(
           `HTTPBasicInternetAccount-${new URL(error.location.uri).origin}`,
           {},
           error.location,
         )
-        throw new RetryError('Retry', retryAccount.internetAccountId)
+        throw new RetryError(
+          'Retrying with created internet account',
+          retryAccount.internetAccountId,
+        )
       }
       throw error
     }

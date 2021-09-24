@@ -39,14 +39,16 @@ export function openLocation(
     if (response.status === 401) {
       const authHeaders = response.headers.get('WWW-Authenticate')
       // TODOAUTH: uncomment when done testing
-      // if (authHeaders && authHeaders.includes('Basic')) {
-      if (isUriLocation(location)) {
+      if (
+        isUriLocation(location) &&
+        authHeaders &&
+        authHeaders.includes('Basic')
+      ) {
         throw new AuthNeededError(
           'Accessing HTTPBasic resource without authentication',
           location,
         )
       }
-      // }
     }
     return response
   }

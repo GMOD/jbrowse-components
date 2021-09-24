@@ -317,7 +317,24 @@ export class RetryError extends Error {
     super(message)
     this.message = message
     this.internetAccountId = internetAccountId
+    this.name = 'RetryError'
   }
+}
+
+export function isAuthNeededException(exception: Error): boolean {
+  return (
+    // DOMException
+    exception.name === 'AuthNeededError' ||
+    (exception as AuthNeededError).location
+  )
+}
+
+export function isRetryException(exception: Error): boolean {
+  return (
+    // DOMException
+    exception.name === 'RetryError' ||
+    (exception as RetryError).internetAccountId
+  )
 }
 
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
