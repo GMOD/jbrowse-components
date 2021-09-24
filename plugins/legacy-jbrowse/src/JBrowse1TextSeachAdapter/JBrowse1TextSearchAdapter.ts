@@ -58,21 +58,23 @@ export default class JBrowse1TextSearchAdapter
   async searchIndex(args: BaseArgs) {
     const { searchType, queryString } = args
     const tracks = this.tracksNames || (await this.httpMap.getTrackNames())
-    const entries = await this.loadIndexFile(queryString)
+    const entries = await this.loadIndexFile(queryString.toLowerCase())
     if (entries[queryString]) {
       return this.formatResults(entries[queryString], tracks, searchType)
     }
     return []
   }
-  formatResults(results: any, tracksNames: string[], searchType: string) {
+  formatResults(results: any, tracksNames: string[], searchType?: string) {
     return [
-      ...results.prefix.map((result: { name: string } | string) => {
-        return new BaseResult({
-          label: typeof result === 'object' ? result.name : result,
-          matchedAttribute: 'name',
-          matchedObject: { result: result },
-        })
-      }),
+      ...(searchType === 'exact'
+        ? []
+        : results.prefix.map((result: { name: string } | string) => {
+            return new BaseResult({
+              label: typeof result === 'object' ? result.name : result,
+              matchedAttribute: 'name',
+              matchedObject: { result: result },
+            })
+          })),
       ...results.exact.map(
         (result: [string, number, string, string, number, number]) => {
           const name = result[0] as string
