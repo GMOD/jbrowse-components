@@ -22,6 +22,20 @@ interface GoogleDriveFilehandleOptions extends FilehandleOptions {
   ): Promise<PolyfilledResponse>
 }
 
+interface GoogleDriveError {
+  error: {
+    errors: {
+      domain: string
+      reason: string
+      message: string
+      locationType?: string
+      location?: string
+    }[]
+    code: number
+    message: string
+  }
+}
+
 class GoogleDriveFile extends RemoteFile {
   private statsPromise: Promise<{ size: number }>
   constructor(source: string, opts: GoogleDriveFilehandleOptions) {
@@ -62,6 +76,28 @@ const stateModelFactory = (
       },
     }))
     .actions(self => ({
+      async processBadResponse(response: Response) {
+        let errorMessage
+        try {
+          errorMessage = await response.text()
+        } catch (error) {
+          errorMessage = ''
+        }
+        if (errorMessage) {
+          let errorMessageParsed: GoogleDriveError | undefined
+          try {
+            errorMessageParsed = JSON.parse(errorMessage)
+          } catch (error) {
+            errorMessageParsed = undefined
+          }
+          if (errorMessageParsed) {
+            errorMessage = errorMessageParsed.error.message
+          }
+        }
+        throw new Error(
+          `Network response failure — ${response.status} (${errorMessage})`,
+        )
+      },
       // used to check if token is still valid for the file
       async fetchFile(locationUri: string, accessToken: string) {
         if (!locationUri || !accessToken) {
@@ -80,11 +116,7 @@ const stateModelFactory = (
         )
 
         if (!response.ok) {
-          throw new Error(
-            `Network response failure: ${
-              response.status
-            } (${await response.text()})`,
-          )
+          await this.processBadResponse(response)
         }
         return locationUri
       },
@@ -129,11 +161,15 @@ const stateModelFactory = (
         const driveUrl = `https://www.googleapis.com/drive/v3/files/${urlId}?${
           opts?.metadataOnly ? 'fields=size' : 'alt=media'
         }`
-        return fetch(driveUrl, {
+        const response = await fetch(driveUrl, {
           method: 'GET',
           credentials: 'same-origin',
           ...newOpts,
         })
+        if (!response.ok) {
+          await this.processBadResponse(response)
+        }
+        return response
       },
       openLocation(location: UriLocation) {
         const preAuthInfo =

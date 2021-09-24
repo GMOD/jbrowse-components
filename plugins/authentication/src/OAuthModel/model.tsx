@@ -489,7 +489,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           if (!triedRefreshToken && location) {
             await this.exchangeRefreshForAccessToken(location)
           } else {
-            throw new Error(error)
+            throw error
           }
         },
       }
