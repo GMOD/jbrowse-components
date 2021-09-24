@@ -66,6 +66,12 @@ export default class JBrowse1TextSearchAdapter
     const entries = await this.loadIndexFile(queryString)
     if (entries !== {} && entries[queryString]) {
       // note: defaults to exact if no searchType is provided
+      if (searchType === 'prefix') {
+        return this.formatResults(
+          entries[queryString][searchType],
+          tracks,
+        ).concat(this.formatResults(entries[queryString]['exact'], tracks))
+      }
       return this.formatResults(
         entries[queryString][searchType || 'exact'],
         tracks,
