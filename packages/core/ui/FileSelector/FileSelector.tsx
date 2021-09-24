@@ -5,7 +5,6 @@ import {
   FormHelperText,
   InputLabel,
   TextField,
-  Typography,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -21,31 +20,15 @@ import {
 } from '@material-ui/core'
 import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab'
 import { observer } from 'mobx-react'
-import { isElectron } from '../../util'
-import {
-  LocalPathLocation,
-  FileLocation,
-  BlobLocation,
-  isUriLocation,
-} from '../../util/types'
-import { getBlob, storeBlobLocation } from '../../util/tracks'
+import { FileLocation, isUriLocation } from '../../util/types'
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
 import AddIcon from '@material-ui/icons/Add'
-import { Info } from '@material-ui/icons'
+import LocalFileChooser from './LocalFileChooser'
+import UrlChooser from './UrlChooser'
 
 interface Account {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
-}
-
-function isLocalPathLocation(
-  location: FileLocation,
-): location is LocalPathLocation {
-  return 'localPath' in location
-}
-
-function isBlobLocation(location: FileLocation): location is BlobLocation {
-  return 'blobId' in location
 }
 
 const FileLocationEditor = observer(
@@ -268,111 +251,6 @@ const FileLocationEditor = observer(
           {description}
         </FormHelperText>
       </>
-    )
-  },
-)
-
-const UrlChooser = (props: {
-  location?: FileLocation
-  setLocation: Function
-  currentInternetAccount: Account | undefined
-}) => {
-  const { location, setLocation, currentInternetAccount } = props
-
-  return (
-    <>
-      <TextField
-        fullWidth
-        inputProps={{ 'data-testid': 'urlInput' }}
-        defaultValue={location && isUriLocation(location) ? location.uri : ''}
-        label="Enter URL"
-        onChange={event => {
-          if (currentInternetAccount) {
-            setLocation({
-              uri: event.target.value,
-              baseAuthUri: event.target.value,
-              internetAccountId: currentInternetAccount.internetAccountId || '',
-              locationType: 'UriLocation',
-            })
-          } else {
-            setLocation({
-              uri: event.target.value.trim(),
-              locationType: 'UriLocation',
-            })
-          }
-        }}
-      />
-      {currentInternetAccount && (
-        <Grid item>
-          <Info />
-          <Typography
-            color="textSecondary"
-            variant="caption"
-            style={{ paddingLeft: '4px' }}
-          >
-            Your data will be authenticated using {currentInternetAccount.name}
-          </Typography>
-        </Grid>
-      )}
-    </>
-  )
-}
-
-const LocalFileChooser = observer(
-  (props: { location?: FileLocation; setLocation: Function }) => {
-    const { location, setLocation } = props
-
-    const filename =
-      location &&
-      ((isBlobLocation(location) && location.name) ||
-        (isLocalPathLocation(location) && location.localPath))
-
-    const needToReload =
-      location && isBlobLocation(location) && !getBlob(location.blobId)
-
-    return (
-      <div style={{ position: 'relative' }}>
-        <Button variant="outlined" component="label">
-          Choose File
-          <input
-            type="file"
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              opacity: 0,
-            }}
-            onChange={({ target }) => {
-              const file = target && target.files && target.files[0]
-              if (file) {
-                if (isElectron) {
-                  setLocation({
-                    localPath: (file as File & { path: string }).path,
-                    locationType: 'LocalPathLocation',
-                  })
-                } else {
-                  setLocation(storeBlobLocation({ blob: file }))
-                }
-              }
-            }}
-          />
-        </Button>
-        {filename ? (
-          <>
-            <Typography
-              style={{ marginLeft: '0.4rem' }}
-              variant="body1"
-              component="span"
-            >
-              {filename}
-            </Typography>
-            {needToReload ? (
-              <Typography color="error">(need to reload)</Typography>
-            ) : null}
-          </>
-        ) : null}
-      </div>
     )
   },
 )
