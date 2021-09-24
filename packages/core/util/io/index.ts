@@ -1,9 +1,5 @@
-import {
-  BlobFile,
-  LocalFile,
-  GenericFilehandle,
-  RemoteFile,
-} from 'generic-filehandle'
+import { BlobFile, LocalFile, GenericFilehandle } from 'generic-filehandle'
+import { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache'
 import {
   FileLocation,
   LocalPathLocation,
@@ -16,6 +12,8 @@ import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
 import { getBlob } from '../tracks'
 import PluginManager from '../../PluginManager'
 import isNode from 'detect-node'
+
+export { RemoteFileWithRangeCache }
 
 function isLocalPathLocation(
   location: FileLocation,
@@ -148,7 +146,7 @@ export function openLocation(
     const url = location.baseUri
       ? new URL(location.uri, location.baseUri).href
       : location.uri
-    return new RemoteFile(url, { fetch: checkAuthNeededFetch })
+    return new RemoteFileWithRangeCache(url, { fetch: checkAuthNeededFetch })
   }
   throw new Error('invalid fileLocation')
 }

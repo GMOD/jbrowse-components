@@ -1150,6 +1150,32 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
+          "internetAccountId": "dropboxOAuth",
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "https://www.dropbox.com/s/96wflrzcbmf7nlj/volvox.bw?dl=0",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Authentication",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "dropbox_bigwig-LinearWiggleDisplay",
+          "type": "LinearWiggleDisplay",
+        },
+      ],
+      "name": "Dropbox BigWig",
+      "trackId": "dropbox_bigwig",
+      "type": "QuantitativeTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bigWigLocation": Object {
           "internetAccountId": "googleOAuth",
           "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
@@ -1159,6 +1185,9 @@ Object {
       },
       "assemblyNames": Array [
         "volvox",
+      ],
+      "category": Array [
+        "Authentication",
       ],
       "displays": Array [
         Object {

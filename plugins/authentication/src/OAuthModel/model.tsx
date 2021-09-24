@@ -5,8 +5,8 @@ import { isElectron } from '@jbrowse/core/util'
 import { OAuthInternetAccountConfigModel } from './configSchema'
 import crypto from 'crypto'
 import { Instance, types } from 'mobx-state-tree'
+import { RemoteFileWithRangeCache } from '@jbrowse/core/util/io'
 import { UriLocation } from '@jbrowse/core/util/types'
-import { RemoteFile } from 'generic-filehandle'
 
 interface OAuthData {
   client_id: string
@@ -403,7 +403,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           const preAuthInfo =
             location.internetAccountPreAuthorization || self.generateAuthInfo()
           self.uriToPreAuthInfoMap.set(location.uri, preAuthInfo)
-          return new RemoteFile(String(location.uri), {
+          return new RemoteFileWithRangeCache(String(location.uri), {
             fetch: this.getFetcher,
           })
         },
@@ -479,7 +479,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           if (!triedRefreshToken && location) {
             await this.exchangeRefreshForAccessToken(location)
           } else {
-            throw new Error(error)
+            throw error
           }
         },
       }
