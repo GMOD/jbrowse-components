@@ -13,6 +13,12 @@ export interface TooManyHits {
   name: string
   hitLimit: number
 }
+
+interface SearchResults {
+  prefix: ({ name: string } | string)[]
+  exact: [string, number, string, string, number, number][]
+}
+
 export type NamesIndexRecord = string | Array<string | number>
 
 //  Jbrowse1 text search adapter
@@ -42,19 +48,10 @@ export default class JBrowse1TextSearchAdapter
    * else it returns empty
    * @param query - string query
    */
-  async loadIndexFile(
-    query: string,
-  ): Promise<
-    Record<string, Record<string, Array<NamesIndexRecord | TooManyHits>>>
-  > {
+  async loadIndexFile(query: string): Promise<Record<string, SearchResults>> {
     return this.httpMap.getBucket(query)
   }
 
-  /**
-   * Returns list of results
-   * @param args - search options/arguments include: search query
-   * limit of results to return, SearchType...prefix | full | exact", etc.
-   */
   async searchIndex(args: BaseArgs) {
     const { searchType, queryString } = args
     const tracks = this.tracksNames || (await this.httpMap.getTrackNames())
@@ -64,34 +61,32 @@ export default class JBrowse1TextSearchAdapter
     }
     return []
   }
-  formatResults(results: any, tracksNames: string[], searchType?: string) {
+  formatResults(results: SearchResults, tracks: string[], searchType?: string) {
     return [
       ...(searchType === 'exact'
         ? []
-        : results.prefix.map((result: { name: string } | string) => {
+        : results.prefix.map(result => {
             return new BaseResult({
               label: typeof result === 'object' ? result.name : result,
               matchedAttribute: 'name',
               matchedObject: { result: result },
             })
           })),
-      ...results.exact.map(
-        (result: [string, number, string, string, number, number]) => {
-          const name = result[0] as string
-          const trackIndex = result[1] as number
-          const refName = result[3] as string
-          const start = result[4] as number
-          const end = result[5] as number
-          const locstring = `${refName || name}:${start}-${end}`
-          return new BaseResult({
-            locString: locstring,
-            label: name,
-            matchedAttribute: 'name',
-            matchedObject: result,
-            trackId: tracksNames[trackIndex],
-          })
-        },
-      ),
+      ...results.exact.map(result => {
+        const name = result[0] as string
+        const trackIndex = result[1] as number
+        const refName = result[3] as string
+        const start = result[4] as number
+        const end = result[5] as number
+        const locstring = `${refName || name}:${start}-${end}`
+        return new BaseResult({
+          locString: locstring,
+          label: name,
+          matchedAttribute: 'name',
+          matchedObject: result,
+          trackId: tracks[trackIndex],
+        })
+      }),
     ].filter(result => result.getLabel() !== 'too many matches')
   }
 
