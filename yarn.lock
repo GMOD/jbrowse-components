@@ -4480,6 +4480,13 @@
   resolved "https://registry.yarnpkg.com/@types/braces/-/braces-3.0.0.tgz#7da1c0d44ff1c7eb660a36ec078ea61ba7eb42cb"
   integrity sha512-TbH79tcyi9FHwbyboOKeRachRq63mSuWYXOflsNO9ZyE5ClQ/JaozNKl+aWUq87qPNsXasXxi2AbgfwIJ+8GQw==
 
+"@types/buffer-crc32@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@types/buffer-crc32/-/buffer-crc32-0.2.0.tgz#a4d94b1a4f01ea414268e9ef7576c7d32a1a14e4"
+  integrity sha512-6lBhJ55o2DKVCxTanyS6ohWRyebCcyivIK7pRHiwZuOYbUhivcByYBrvm2dc9f72LZP12mH5mGxUhG7JQ64lQg==
+  dependencies:
+    "@types/node" "*"
+
 "@types/chai@*":
   version "4.2.12"
   resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.2.12.tgz#6160ae454cd89dae05adc3bb97997f488b608201"

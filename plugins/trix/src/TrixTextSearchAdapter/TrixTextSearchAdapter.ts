@@ -5,7 +5,7 @@ import {
   BaseAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
-import { LocStringResult } from '@jbrowse/core/TextSearch/BaseResults'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -77,7 +77,7 @@ export default class TrixTextSearchAdapter
           ? label
           : `${labelField} (${context})`
 
-      return new LocStringResult({
+      return new BaseResult({
         locString: loc,
         label: labelField,
         displayString,
