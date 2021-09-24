@@ -114,9 +114,8 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     return r
   }
 
-  // TODOAUTH unit test this method
   private async augmentLocationObjects(thing: any): Promise<any> {
-    if (isUriLocation(thing) && thing.internetAccountId) {
+    if (isUriLocation(thing)) {
       await this.serializeNewAuthArguments(thing)
     }
     if (Array.isArray(thing)) {

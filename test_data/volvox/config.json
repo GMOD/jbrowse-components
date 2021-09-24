@@ -578,7 +578,7 @@
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_dropbox",
       "name": "wiggle_track xyplot dropbox",
-      "category": ["Integration test", "Wiggle"],
+      "category": ["Integration test"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
@@ -607,7 +607,7 @@
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_externaltoken",
       "name": "wiggle_track xyplot external token",
-      "category": ["Integration test", "Wiggle"],
+      "category": ["Integration test"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
@@ -622,14 +622,14 @@
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_httpbasic",
       "name": "wiggle_track xyplot httpbasic",
-      "category": ["Integration test", "Wiggle"],
+      "category": ["Integration test"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
           "uri": "volvox_microarray.bw",
           "locationType": "UriLocation",
-          "internetAccountId": "HTTPBasicTest"
+          "internetAccountId": "HTTPBasicInternetAccount-HTTPBasicTest"
         }
       }
     },

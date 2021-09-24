@@ -1,7 +1,7 @@
 // library
 import { cleanup, fireEvent, render } from '@testing-library/react'
 import React from 'react'
-import { LocalFile } from 'generic-filehandle'
+import { LocalFile, RemoteFile } from 'generic-filehandle'
 
 // locals
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -36,6 +36,9 @@ describe('authentication', () => {
     state.internetAccounts[0].fetchFile = jest
       .fn()
       .mockReturnValue('volvox_microarray_dropbox.bw')
+    state.internetAccounts[0].openLocation = jest
+      .fn()
+      .mockReturnValue(new RemoteFile('volvox_microarray_dropbox.bw'))
     await findByText('Help')
     state.session.views[0].setNewView(5, 0)
     fireEvent.click(
@@ -114,8 +117,12 @@ describe('authentication', () => {
     })
     fireEvent.click(await findByText('Submit'))
 
-    expect(Object.keys(sessionStorage)).toContain('HTTPBasicTest-token')
-    expect(Object.values(sessionStorage)).toContain(btoa(`username:password`))
+    expect(Object.keys(sessionStorage)).toContain(
+      'HTTPBasicInternetAccount-HTTPBasicTest-token',
+    )
+    expect(
+      sessionStorage.getItem('HTTPBasicInternetAccount-HTTPBasicTest-token'),
+    ).toContain(btoa(`username:password`))
 
     const canvas = await findAllByTestId(
       'prerendered_canvas',

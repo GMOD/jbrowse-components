@@ -3,7 +3,10 @@ import { types, getParent, isAlive, cast, Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types/mst'
-import { AbstractDisplayModel } from '@jbrowse/core/util/types'
+import {
+  AbstractDisplayModel,
+  isRetryException,
+} from '@jbrowse/core/util/types'
 import React from 'react'
 
 import {
@@ -143,6 +146,9 @@ const blockState = types
         self.error = error
         self.renderProps = undefined
         renderInProgress = undefined
+        if (isRetryException(error)) {
+          this.reload()
+        }
       },
       reload() {
         self.renderInProgress = undefined

@@ -76,31 +76,32 @@ const FileLocationEditor = observer(
     >(internetAccounts ? internetAccounts[0] : undefined)
     const anchorRef = useRef(null)
 
-    const findChosenInternetAccount = (
-      urlInput: string,
-      internetAccountSelection: string,
-    ) => {
-      try {
-        new URL(urlInput)
-      } catch (error) {
-        return undefined
-      }
+    // left out for now, no use for suggested
+    // const findChosenInternetAccount = (
+    //   urlInput: string,
+    //   internetAccountSelection: string,
+    // ) => {
+    //   try {
+    //     new URL(urlInput)
+    //   } catch (error) {
+    //     return undefined
+    //   }
 
-      if (internetAccountSelection === 'autoDetect') {
-        return internetAccounts?.find(account => {
-          return account.handlesLocation({ uri: urlInput })
-        })
-      }
-      const foundSelection = internetAccounts?.find(account => {
-        return account.internetAccountId === internetAccountSelection
-      })
+    //   if (internetAccountSelection === 'autoDetect') {
+    //     return internetAccounts?.find(account => {
+    //       return account.handlesLocation({ uri: urlInput })
+    //     })
+    //   }
+    //   const foundSelection = internetAccounts?.find(account => {
+    //     return account.internetAccountId === internetAccountSelection
+    //   })
 
-      return foundSelection
-        ? foundSelection
-        : {
-            internetAccountId: internetAccountSelection,
-          }
-    }
+    //   return foundSelection
+    //     ? foundSelection
+    //     : {
+    //         internetAccountId: internetAccountSelection,
+    //       }
+    // }
 
     const handleChange = async (
       event: React.MouseEvent<HTMLElement>,

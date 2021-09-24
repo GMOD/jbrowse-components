@@ -79,7 +79,6 @@ export const UriLocation = types.snapshotProcessor(UriLocationRaw, {
   },
 })
 
-// TODOAUTH: try adding pre-process snapshot to this union
 export const FileLocation = types.snapshotProcessor(
   types.union(LocalPathLocation, UriLocation, BlobLocation),
   {

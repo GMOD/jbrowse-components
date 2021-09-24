@@ -99,7 +99,61 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 class="MuiTouchRipple-root"
               />
             </button>
+            <button
+              class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
+              style="min-width: 5px;"
+              tabindex="0"
+              type="button"
+              value="selection"
+            >
+              <span
+                class="MuiButton-label"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M7 10l5 5 5-5z"
+                  />
+                </svg>
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
           </div>
+        </div>
+        <div
+          class="MuiGrid-root"
+        >
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+            style="min-width: 15px;"
+            tabindex="0"
+            title="Add Account for Authentication"
+            type="button"
+          >
+            <span
+              class="MuiButton-label"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                />
+              </svg>
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
         </div>
         <div
           class="MuiGrid-root MuiGrid-item"
@@ -107,6 +161,12 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
           <div
             class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
           >
+            <label
+              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
+              data-shrink="true"
+            >
+              Enter URL
+            </label>
             <div
               class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
             >

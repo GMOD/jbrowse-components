@@ -146,7 +146,13 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         initialSnapshot = {},
         location: UriLocation,
       ) {
-        const hostUri = new URL(location.uri).origin
+        let hostUri
+
+        try {
+          hostUri = new URL(location.uri).origin
+        } catch (e) {
+          // ignore
+        }
         // id of a custom new internaccount is `${type}-${name}`
         const internetAccountSplit = internetAccountId.split('-')
         const configuration = {

@@ -325,7 +325,7 @@ export function isAuthNeededException(exception: Error): boolean {
   return (
     // DOMException
     exception.name === 'AuthNeededError' ||
-    (exception as AuthNeededError).location
+    (exception as AuthNeededError).location !== undefined
   )
 }
 
@@ -333,7 +333,7 @@ export function isRetryException(exception: Error): boolean {
   return (
     // DOMException
     exception.name === 'RetryError' ||
-    (exception as RetryError).internetAccountId
+    (exception as RetryError).internetAccountId !== undefined
   )
 }
 

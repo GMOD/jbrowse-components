@@ -162,7 +162,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 30000)
+  }, 35000)
 
   it('selects a color, updates object and layout', async () => {
     const pluginManager = getPluginManager()

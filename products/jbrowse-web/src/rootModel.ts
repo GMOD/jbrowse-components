@@ -297,7 +297,13 @@ export default function RootModel(
         initialSnapshot = {},
         location: UriLocation,
       ) {
-        const hostUri = new URL(location.uri).origin
+        let hostUri
+
+        try {
+          hostUri = new URL(location.uri).origin
+        } catch (e) {
+          // ignore
+        }
         // id of a custom new internaccount is `${type}-${name}`
         const internetAccountSplit = internetAccountId.split('-')
         const configuration = {
@@ -305,7 +311,7 @@ export default function RootModel(
           internetAccountId: internetAccountId,
           name: internetAccountSplit.slice(1).join('-'),
           description: '',
-          domains: [hostUri],
+          domains: hostUri ? [hostUri] : [],
         }
         const internetAccountType = pluginManager.getInternetAccountType(
           configuration.type,
