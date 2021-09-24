@@ -4,7 +4,6 @@ import {
   BaseAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import { isElectron } from '@jbrowse/core/util'
 import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import MyConfigSchema from './configSchema'
@@ -14,14 +13,19 @@ export interface TooManyHits {
   name: string
   hitLimit: number
 }
+
+interface SearchResults {
+  prefix: ({ name: string } | string)[]
+  exact: [string, number, string, string, number, number][]
+}
+
 export type NamesIndexRecord = string | Array<string | number>
+
+//  Jbrowse1 text search adapter
+// Uses index built by generate-names.pl
 export default class JBrowse1TextSearchAdapter
   extends BaseAdapter
   implements BaseTextSearchAdapter {
-  /*
-  Jbrowse1 text search adapter
-  Uses index built by generate-names.pl
-   */
   httpMap: HttpMap
 
   tracksNames?: string[]
@@ -36,7 +40,6 @@ export default class JBrowse1TextSearchAdapter
       url: namesIndexLocation.baseUri
         ? new URL(namesIndexLocation.uri, namesIndexLocation.baseUri).href
         : namesIndexLocation.uri,
-      isElectron,
     })
   }
 
@@ -45,70 +48,46 @@ export default class JBrowse1TextSearchAdapter
    * else it returns empty
    * @param query - string query
    */
-  async loadIndexFile(query: string) {
-    const bucketContents: Record<
-      string,
-      Record<string, Array<NamesIndexRecord | TooManyHits>>
-    > = await this.httpMap.getBucket(query)
-    return bucketContents
+  async loadIndexFile(query: string): Promise<Record<string, SearchResults>> {
+    return this.httpMap.getBucket(query)
   }
 
-  /**
-   * Returns list of results
-   * @param args - search options/arguments include: search query
-   * limit of results to return, SearchType...prefix | full | exact", etc.
-   */
   async searchIndex(args: BaseArgs) {
     const { searchType, queryString } = args
-    const tracks = this.tracksNames
-      ? this.tracksNames
-      : await this.httpMap.getTrackNames()
-    const entries = await this.loadIndexFile(queryString)
-    if (entries !== {} && entries[queryString]) {
-      // note: defaults to exact if no searchType is provided
-      return this.formatResults(
-        entries[queryString][searchType || 'exact'],
-        tracks,
-      )
+    const tracks = this.tracksNames || (await this.httpMap.getTrackNames())
+    const entries = await this.loadIndexFile(queryString.toLowerCase())
+    if (entries[queryString]) {
+      return this.formatResults(entries[queryString], tracks, searchType)
     }
     return []
   }
-  formatResults(
-    results: Array<NamesIndexRecord | TooManyHits>,
-    tracksNames: string[],
-  ) {
-    if (results.length === 0) {
-      return []
-    }
-    const formattedResults = results.map(result => {
-      if (result && Array.isArray(result)) {
+  formatResults(results: SearchResults, tracks: string[], searchType?: string) {
+    return [
+      ...(searchType === 'exact'
+        ? []
+        : results.prefix.map(result => {
+            return new BaseResult({
+              label: typeof result === 'object' ? result.name : result,
+              matchedAttribute: 'name',
+              matchedObject: { result: result },
+            })
+          })),
+      ...results.exact.map(result => {
         const name = result[0] as string
         const trackIndex = result[1] as number
         const refName = result[3] as string
         const start = result[4] as number
         const end = result[5] as number
         const locstring = `${refName || name}:${start}-${end}`
-        const formattedResult = new BaseResult({
+        return new BaseResult({
           locString: locstring,
           label: name,
           matchedAttribute: 'name',
           matchedObject: result,
-          trackId: tracksNames[trackIndex],
+          trackId: tracks[trackIndex],
         })
-        return formattedResult
-      }
-      // {"name":"too many matches","hitLimit":1}
-      const defaultLabel = typeof result === 'object' ? result.name : result
-      const defaultResult = new BaseResult({
-        label: defaultLabel,
-        matchedAttribute: 'name',
-        matchedObject: { result: result },
-      })
-      return defaultResult
-    })
-    return formattedResults.filter(
-      result => result.getLabel() !== 'too many matches',
-    )
+      }),
+    ].filter(result => result.getLabel() !== 'too many matches')
   }
 
   freeResources() {}
