@@ -52,62 +52,55 @@ const stateModelFactory = (
         }
         return locationUri
       },
-      getFetcher(location: UriLocation) {
-        return async (
-          url: RequestInfo,
-          opts?: RequestInit,
-        ): Promise<Response> => {
-          const preAuthInfo = self.uriToPreAuthInfoMap.get(location.uri)
-          if (!preAuthInfo || !preAuthInfo.authInfo) {
-            throw new Error(
-              'Failed to obtain authorization information needed to fetch',
-            )
-          }
-
-          let foundTokens = {
-            token: '',
-            refreshToken: '',
-          }
-          try {
-            foundTokens = await self.checkToken(preAuthInfo.authInfo, {
-              uri: String(url),
-              locationType: 'UriLocation',
-            })
-          } catch (e) {
-            await self.handleError(e)
-          }
-
-          const newOpts = opts || {}
-
-          if (foundTokens.token) {
-            const tokenInfoString = self.tokenType
-              ? `${self.tokenType} ${foundTokens.token}`
-              : `${foundTokens.token}`
-            const headers = new Headers(opts?.headers)
-            headers.append(self.authHeader, tokenInfoString)
-            headers.append(
-              'Dropbox-API-Arg',
-              JSON.stringify({ url: location.uri }),
-            )
-
-            newOpts.headers = headers
-          }
-
-          return fetch(url, {
-            method: 'GET',
-            credentials: 'same-origin',
-            ...newOpts,
-          })
+      async dropboxFetch(
+        url: RequestInfo,
+        opts?: RequestInit,
+      ): Promise<Response> {
+        const preAuthInfo = self.uriToPreAuthInfoMap.get(url)
+        if (!preAuthInfo || !preAuthInfo.authInfo) {
+          throw new Error(
+            'Failed to obtain authorization information needed to fetch',
+          )
         }
+
+        let foundTokens = {
+          token: '',
+          refreshToken: '',
+        }
+        try {
+          foundTokens = await self.checkToken(preAuthInfo.authInfo, {
+            uri: String(url),
+            locationType: 'UriLocation',
+          })
+        } catch (e) {
+          await self.handleError(e)
+        }
+
+        const newOpts = opts || {}
+
+        if (foundTokens.token) {
+          const tokenInfoString = self.tokenType
+            ? `${self.tokenType} ${foundTokens.token}`
+            : `${foundTokens.token}`
+          const headers = new Headers(opts?.headers)
+          headers.append(self.authHeader, tokenInfoString)
+          headers.append('Dropbox-API-Arg', JSON.stringify({ url }))
+
+          newOpts.headers = headers
+        }
+
+        return fetch(
+          'https://content.dropboxapi.com/2/sharing/get_shared_link_file',
+          { method: 'GET', credentials: 'same-origin', ...newOpts },
+        )
       },
       openLocation(location: UriLocation) {
         const preAuthInfo =
           location.internetAccountPreAuthorization || self.generateAuthInfo()
         self.uriToPreAuthInfoMap.set(location.uri, preAuthInfo)
-        return new RemoteFile(
-          'https://content.dropboxapi.com/2/sharing/get_shared_link_file',
-          { fetch: this.getFetcher(location) },
-        )
+        return new RemoteFile(location.uri, {
+          fetch: this.dropboxFetch,
+        })
       },
     }))
 }
