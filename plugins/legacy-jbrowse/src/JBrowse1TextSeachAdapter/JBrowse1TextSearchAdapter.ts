@@ -3,9 +3,7 @@ import {
   BaseArgs,
   BaseAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import BaseResult, {
-  LocStringResult,
-} from '@jbrowse/core/TextSearch/BaseResults'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { isElectron } from '@jbrowse/core/util'
 import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -90,7 +88,7 @@ export default class JBrowse1TextSearchAdapter
         const start = result[4] as number
         const end = result[5] as number
         const locstring = `${refName || name}:${start}-${end}`
-        const formattedResult = new LocStringResult({
+        const formattedResult = new BaseResult({
           locString: locstring,
           label: name,
           matchedAttribute: 'name',
