@@ -13,6 +13,7 @@ import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { setup, generateReadBuffer, getPluginManager } from './util'
+import jb1_config from '../../test_data/volvox/volvox_jb1_text_config.json'
 import JBrowse from '../JBrowse'
 
 setup()
@@ -113,6 +114,29 @@ test('opens a dialog with multiple results', async () => {
   auto.focus()
   fireEvent.mouseDown(input)
   fireEvent.change(input, { target: { value: 'seg02' } })
+  fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
+  await screen.findByText('Search Results')
+  // @ts-ignore
+  expect(state.session.views[0].searchResults.length).toBeGreaterThan(0)
+}, 30000)
+
+test('opens a dialog with multiple results with jb1 adapter results', async () => {
+  const pluginManager = getPluginManager(jb1_config)
+  const state = pluginManager.rootModel
+  const { findByTestId, findByPlaceholderText } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+
+  const auto = await findByTestId('autocomplete', {}, { timeout: 10000 })
+  const input = await findByPlaceholderText('Search for location')
+  await waitFor(() => {
+    // @ts-ignore
+    expect(state.assemblyManager.get('volvox').initialized)
+  })
+
+  auto.focus()
+  fireEvent.mouseDown(input)
+  fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
   await screen.findByText('Search Results')
   // @ts-ignore
