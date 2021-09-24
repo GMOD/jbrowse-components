@@ -353,7 +353,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           const preAuthInfo = self.uriToPreAuthInfoMap.get(url)
           if (!preAuthInfo || !preAuthInfo.authInfo) {
             throw new Error(
-              'Failed to obtain authorization information needed to fetch',
+              `Failed to obtain authorization information needed to fetch ${
+                inWebWorker ? '. Try reloading the page' : ''
+              }`,
             )
           }
 
