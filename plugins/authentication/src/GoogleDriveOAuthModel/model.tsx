@@ -1,8 +1,8 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { Instance, types } from 'mobx-state-tree'
+import { RemoteFileWithRangeCache } from '@jbrowse/core/util/io'
 import { UriLocation } from '@jbrowse/core/util/types'
 import {
-  RemoteFile,
   FilehandleOptions,
   Stats,
   PolyfilledResponse,
@@ -36,7 +36,7 @@ interface GoogleDriveError {
   }
 }
 
-class GoogleDriveFile extends RemoteFile {
+class GoogleDriveFile extends RemoteFileWithRangeCache {
   private statsPromise: Promise<{ size: number }>
   constructor(source: string, opts: GoogleDriveFilehandleOptions) {
     super(source, opts)

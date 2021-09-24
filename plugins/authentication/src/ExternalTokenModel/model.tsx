@@ -1,5 +1,6 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
+import { RemoteFileWithRangeCache } from '@jbrowse/core/util/io'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { ExternalTokenInternetAccountConfigModel } from './configSchema'
 import { Instance, types, getParent } from 'mobx-state-tree'
@@ -10,7 +11,6 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import DialogActions from '@material-ui/core/DialogActions'
 import TextField from '@material-ui/core/TextField'
-import { RemoteFile } from 'generic-filehandle'
 
 const inWebWorker = typeof sessionStorage === 'undefined'
 
@@ -160,7 +160,7 @@ const stateModelFactory = (
         openLocation(location: UriLocation) {
           preAuthInfo =
             location.internetAccountPreAuthorization || self.generateAuthInfo()
-          return new RemoteFile(String(location.uri), {
+          return new RemoteFileWithRangeCache(String(location.uri), {
             fetch: this.getFetcher,
           })
         },

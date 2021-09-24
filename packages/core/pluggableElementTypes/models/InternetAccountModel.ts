@@ -1,7 +1,8 @@
 import { Instance, types } from 'mobx-state-tree'
 import { getConf } from '../../configuration'
+import { RemoteFileWithRangeCache } from '../../util/io'
 import { ElementId } from '../../util/types/mst'
-import { GenericFilehandle, RemoteFile } from 'generic-filehandle'
+import { GenericFilehandle } from 'generic-filehandle'
 import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
 
 export const InternetAccount = types
@@ -30,7 +31,7 @@ export const InternetAccount = types
   }))
   .actions(self => ({
     openLocation(location: UriLocation): GenericFilehandle {
-      return new RemoteFile(String(location.uri))
+      return new RemoteFileWithRangeCache(String(location.uri))
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async getPreAuthorizationInformation(location: UriLocation) {

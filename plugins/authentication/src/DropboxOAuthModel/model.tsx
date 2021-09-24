@@ -1,7 +1,7 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { RemoteFileWithRangeCache } from '@jbrowse/core/util/io'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { Instance, types } from 'mobx-state-tree'
-import { RemoteFile } from 'generic-filehandle'
 import { DropboxOAuthInternetAccountConfigModel } from './configSchema'
 import baseModel from '../OAuthModel/model'
 import { configSchema as OAuthConfigSchema } from '../OAuthModel'
@@ -138,7 +138,7 @@ const stateModelFactory = (
         const preAuthInfo =
           location.internetAccountPreAuthorization || self.generateAuthInfo()
         self.uriToPreAuthInfoMap.set(location.uri, preAuthInfo)
-        return new RemoteFile(location.uri, {
+        return new RemoteFileWithRangeCache(location.uri, {
           fetch: this.dropboxFetch,
         })
       },
