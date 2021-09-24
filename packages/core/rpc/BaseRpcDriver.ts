@@ -272,12 +272,6 @@ export default abstract class BaseRpcDriver {
     // the result is a race between the actual result promise, and the "killed"
     // promise. the killed promise will only actually win if the worker was
     // killed before the call could return
-
-    // const result = await Promise.race([callP, killedP])
-    // return rpcMethod.deserializeReturn(result, args, this.name)
-    // TODOAUTH: below is code so that error is received by deserializedReturn,
-    // but does break other tracks from loading. above the commented out code is the original
-    // code
     const resultP = Promise.race([callP, killedP])
     return rpcMethod.deserializeReturn(resultP, args, this.name)
   }

@@ -100,8 +100,13 @@ export default class ComparativeRender extends RpcMethodType {
     args: RenderArgs,
     rpcDriverClassName: string,
   ): Promise<unknown> {
+    const superDeserialized = await super.deserializeReturn(
+      serializedReturn,
+      args,
+      rpcDriverClassName,
+    )
     if (rpcDriverClassName === 'MainThreadRpcDriver') {
-      return serializedReturn
+      return superDeserialized
     }
 
     const { rendererType } = args
@@ -120,7 +125,7 @@ export default class ComparativeRender extends RpcMethodType {
       )
     }
     return RendererType.deserializeResultsInClient(
-      serializedReturn as ResultsSerialized,
+      superDeserialized as ResultsSerialized,
       args,
     )
   }
