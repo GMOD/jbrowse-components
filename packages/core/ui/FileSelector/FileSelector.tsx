@@ -21,14 +21,14 @@ import {
 } from '@material-ui/core'
 import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab'
 import { observer } from 'mobx-react'
-import { isElectron } from '../util'
+import { isElectron } from '../../util'
 import {
   LocalPathLocation,
   FileLocation,
   BlobLocation,
   isUriLocation,
-} from '../util/types'
-import { getBlob, storeBlobLocation } from '../util/tracks'
+} from '../../util/types'
+import { getBlob, storeBlobLocation } from '../../util/tracks'
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
 import AddIcon from '@material-ui/icons/Add'
 import { Info } from '@material-ui/icons'
