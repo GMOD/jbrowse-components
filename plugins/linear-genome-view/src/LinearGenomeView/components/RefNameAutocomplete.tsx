@@ -253,7 +253,7 @@ function RefNameAutocomplete({
             }}
             placeholder="Search for location"
             onChange={e => {
-              setCurrentSearch(e.target.value)
+              setCurrentSearch(e.target.value.toLocaleLowerCase())
             }}
           />
         )
