@@ -1,6 +1,8 @@
+import React from 'react'
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { RemoteFileWithRangeCache } from '@jbrowse/core/util/io'
 import { UriLocation } from '@jbrowse/core/util/types'
+import { SvgIconProps, SvgIcon } from '@material-ui/core'
 import { Instance, types } from 'mobx-state-tree'
 import { DropboxOAuthInternetAccountConfigModel } from './configSchema'
 import baseModel from '../OAuthModel/model'
@@ -23,6 +25,14 @@ const dropboxErrorMessages: Record<string, string | undefined> = {
   shared_link_is_directory: 'Directories cannot be retrieved by this endpoint.',
 }
 
+export function DropboxIcon(props: SvgIconProps) {
+  return (
+    <SvgIcon {...props}>
+      <path d="M3 6.2L8 9.39L13 6.2L8 3L3 6.2M13 6.2L18 9.39L23 6.2L18 3L13 6.2M3 12.55L8 15.74L13 12.55L8 9.35L3 12.55M18 9.35L13 12.55L18 15.74L23 12.55L18 9.35M8.03 16.8L13.04 20L18.04 16.8L13.04 13.61L8.03 16.8Z" />
+    </SvgIcon>
+  )
+}
+
 const stateModelFactory = (
   configSchema: DropboxOAuthInternetAccountConfigModel,
 ) => {
@@ -39,6 +49,12 @@ const stateModelFactory = (
     .views(() => ({
       get internetAccountType() {
         return 'DropboxOAuthInternetAccount'
+      },
+      get toggleContents() {
+        return <DropboxIcon />
+      },
+      get selectorLabel() {
+        return 'Enter Dropbox share link'
       },
     }))
     .actions(self => ({

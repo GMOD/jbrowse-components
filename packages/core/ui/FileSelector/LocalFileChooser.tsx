@@ -1,5 +1,11 @@
 import React from 'react'
-import { Button, Typography } from '@material-ui/core'
+import {
+  Box,
+  Button,
+  Typography,
+  FormControl,
+  makeStyles,
+} from '@material-ui/core'
 import { isElectron } from '../../util'
 import { LocalPathLocation, FileLocation, BlobLocation } from '../../util/types'
 import { getBlob, storeBlobLocation } from '../../util/tracks'
@@ -14,10 +20,17 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
   return 'blobId' in location
 }
 
+const useStyles = makeStyles(theme => ({
+  filename: {
+    marginLeft: theme.spacing(1),
+  },
+}))
+
 function LocalFileChooser(props: {
   location?: FileLocation
   setLocation: Function
 }) {
+  const classes = useStyles()
   const { location, setLocation } = props
 
   const filename =
@@ -29,48 +42,44 @@ function LocalFileChooser(props: {
     location && isBlobLocation(location) && !getBlob(location.blobId)
 
   return (
-    <div style={{ position: 'relative' }}>
-      <Button variant="outlined" component="label">
-        Choose File
-        <input
-          type="file"
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            opacity: 0,
-          }}
-          onChange={({ target }) => {
-            const file = target && target.files && target.files[0]
-            if (file) {
-              if (isElectron) {
-                setLocation({
-                  localPath: (file as File & { path: string }).path,
-                  locationType: 'LocalPathLocation',
-                })
-              } else {
-                setLocation(storeBlobLocation({ blob: file }))
-              }
-            }
-          }}
-        />
-      </Button>
-      {filename ? (
-        <>
-          <Typography
-            style={{ marginLeft: '0.4rem' }}
-            variant="body1"
-            component="span"
-          >
-            {filename}
-          </Typography>
-          {needToReload ? (
-            <Typography color="error">(need to reload)</Typography>
-          ) : null}
-        </>
-      ) : null}
-    </div>
+    <Box display="flex" flexDirection="row" alignItems="center">
+      <Box>
+        <FormControl fullWidth>
+          <Button variant="outlined" component="label">
+            Choose File
+            <input
+              type="file"
+              hidden
+              onChange={({ target }) => {
+                const file = target && target.files && target.files[0]
+                if (file) {
+                  if (isElectron) {
+                    setLocation({
+                      localPath: (file as File & { path: string }).path,
+                      locationType: 'LocalPathLocation',
+                    })
+                  } else {
+                    setLocation(storeBlobLocation({ blob: file }))
+                  }
+                }
+              }}
+            />
+          </Button>
+        </FormControl>
+      </Box>
+      <Box>
+        <Typography
+          component="span"
+          className={classes.filename}
+          color={filename ? 'initial' : 'textSecondary'}
+        >
+          {filename || 'No file chosen'}
+        </Typography>
+        {needToReload ? (
+          <Typography color="error">(need to reload)</Typography>
+        ) : null}
+      </Box>
+    </Box>
   )
 }
 

@@ -1,15 +1,8 @@
 import React, { useState, useRef } from 'react'
 import {
-  Button,
-  Grid,
+  Box,
   FormHelperText,
   InputLabel,
-  TextField,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Select,
   MenuItem,
   Tooltip,
   Paper,
@@ -18,11 +11,20 @@ import {
   ClickAwayListener,
   Menu,
 } from '@material-ui/core'
-import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab'
+
+import {
+  ToggleButtonGroup,
+  ToggleButton,
+  ToggleButtonProps,
+} from '@material-ui/lab'
 import { observer } from 'mobx-react'
-import { FileLocation, isUriLocation } from '../../util/types'
+import {
+  FileLocation,
+  isUriLocation,
+  AbstractRootModel,
+  isAppRootModel,
+} from '../../util/types'
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
-import AddIcon from '@material-ui/icons/Add'
 import LocalFileChooser from './LocalFileChooser'
 import UrlChooser from './UrlChooser'
 
@@ -31,80 +33,76 @@ interface Account {
   [key: string]: any
 }
 
-const FileLocationEditor = observer(
+function ToggleButtonWithTooltip(props: ToggleButtonProps) {
+  const { title, children, ...other } = props
+  return (
+    <Tooltip title={title || ''}>
+      <ToggleButton {...other}>{children}</ToggleButton>
+    </Tooltip>
+  )
+}
+
+const FileSelector = observer(
   (props: {
     location?: FileLocation
     setLocation: (param: FileLocation) => void
     setName?: (str: string) => void
-    internetAccounts?: Account[]
     name?: string
     description?: string
+    rootModel?: AbstractRootModel
   }) => {
-    const { location, name, description, internetAccounts } = props
+    const { location, name, description, rootModel } = props
     const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'
-    const [currentState, setCurrentState] = useState(fileOrUrl)
+    const [toggleButtonValue, setToggleButtonValue] = useState(fileOrUrl)
+    const internetAccounts = isAppRootModel(rootModel)
+      ? rootModel.internetAccounts.slice()
+      : []
+    const numAccountsShown = 2
+    const [shownInternetAccounts, setShownInternetAccounts] = useState(
+      internetAccounts.slice(0, numAccountsShown),
+    )
+    const [hiddenInternetAccounts, setHiddenInternetAccounts] = useState(
+      internetAccounts.slice(numAccountsShown),
+    )
+    const [moreMenuOpen, setMoreMenuOpen] = useState(false)
+    const moreMenuRef = useRef(null)
 
-    // states for internet account logic
-    const [buttonOpen, setButtonOpen] = useState(false)
-    const [
-      openNewInternetAccountDialog,
-      setOpenNewInternetAccountDialog,
-    ] = useState(false)
-    const [
-      additionalInternetAccounts,
-      setAdditionalInternetAccounts,
-    ] = useState<Account[]>([])
-    const [displayedInternetAccount, setDisplayedInternetAccount] = useState<
-      Account | undefined
-    >(internetAccounts ? internetAccounts[0] : undefined)
-    const anchorRef = useRef(null)
+    const selectedInternetAccount = internetAccounts.find(
+      ia => ia.internetAccountId === toggleButtonValue,
+    )
 
-    // left out for now, no use for suggested
-    // const findChosenInternetAccount = (
-    //   urlInput: string,
-    //   internetAccountSelection: string,
-    // ) => {
-    //   try {
-    //     new URL(urlInput)
-    //   } catch (error) {
-    //     return undefined
-    //   }
+    let locationInput = (
+      <UrlChooser {...props} label={selectedInternetAccount?.selectorLabel} />
+    )
+    if (toggleButtonValue === 'file') {
+      locationInput = <LocalFileChooser {...props} />
+    }
+    if (selectedInternetAccount?.SelectorComponent) {
+      const { SelectorComponent } = selectedInternetAccount
+      locationInput = <SelectorComponent {...props} />
+    }
 
-    //   if (internetAccountSelection === 'autoDetect') {
-    //     return internetAccounts?.find(account => {
-    //       return account.handlesLocation({ uri: urlInput })
-    //     })
-    //   }
-    //   const foundSelection = internetAccounts?.find(account => {
-    //     return account.internetAccountId === internetAccountSelection
-    //   })
-
-    //   return foundSelection
-    //     ? foundSelection
-    //     : {
-    //         internetAccountId: internetAccountSelection,
-    //       }
-    // }
-
-    const handleChange = async (
-      event: React.MouseEvent<HTMLElement>,
+    const handleChange = (
+      _event: React.MouseEvent<HTMLElement>,
       newState: string,
     ) => {
-      setCurrentState(newState)
+      if (newState) {
+        setToggleButtonValue(newState)
+      }
     }
 
     return (
       <>
-        <InputLabel shrink htmlFor="callback-editor">
-          {name}
-        </InputLabel>
-        <Grid container spacing={1} direction="row" alignItems="center">
-          <Grid item>
+        <Box display="flex">
+          <InputLabel shrink>{name}</InputLabel>
+        </Box>
+        <Box display="flex" flexDirection="row">
+          <Box>
             <ToggleButtonGroup
-              value={currentState}
+              value={toggleButtonValue}
               exclusive
               onChange={handleChange}
-              aria-label="file or url picker"
+              aria-label="file, url, or account picker"
             >
               {new URLSearchParams(window.location.search).get(
                 'adminKey',
@@ -116,31 +114,45 @@ const FileLocationEditor = observer(
               <ToggleButton value="url" aria-label="url">
                 URL
               </ToggleButton>
-              {displayedInternetAccount && (
+              {shownInternetAccounts?.map(internetAccount => {
+                const {
+                  toggleContents: customToggleContents,
+                  name,
+                } = internetAccount
+                let toggleContents = customToggleContents || name
+                const maxLength = 5
+                if (
+                  typeof toggleContents === 'string' &&
+                  toggleContents.length > maxLength
+                ) {
+                  toggleContents = `${toggleContents.substring(0, maxLength)}…`
+                }
+                return (
+                  <ToggleButtonWithTooltip
+                    value={internetAccount.internetAccountId}
+                    aria-label={internetAccount.name}
+                    title={name}
+                  >
+                    {toggleContents}
+                  </ToggleButtonWithTooltip>
+                )
+              })}
+              {hiddenInternetAccounts.length ? (
                 <ToggleButton
-                  value={displayedInternetAccount.internetAccountId}
+                  onClick={() => {
+                    setMoreMenuOpen((prevOpen: boolean) => !prevOpen)
+                  }}
+                  selected={false}
+                  ref={moreMenuRef}
                 >
-                  {displayedInternetAccount.name.length > 12
-                    ? `${displayedInternetAccount.name.substring(0, 12)}...`
-                    : displayedInternetAccount.name}
+                  More
+                  <ArrowDropDownIcon />
                 </ToggleButton>
-              )}
-              <Button
-                size="small"
-                variant="outlined"
-                value="selection"
-                onClick={() => {
-                  setButtonOpen((prevOpen: boolean) => !prevOpen)
-                }}
-                style={{ minWidth: 5 }}
-                ref={anchorRef}
-              >
-                <ArrowDropDownIcon />
-              </Button>
+              ) : null}
             </ToggleButtonGroup>
             <Popper
-              open={buttonOpen}
-              anchorEl={anchorRef.current}
+              open={moreMenuOpen}
+              anchorEl={moreMenuRef.current}
               role={undefined}
               transition
               disablePortal
@@ -154,12 +166,14 @@ const FileLocationEditor = observer(
                   }}
                 >
                   <Paper>
-                    <ClickAwayListener onClickAway={() => setButtonOpen(false)}>
+                    <ClickAwayListener
+                      onClickAway={() => setMoreMenuOpen(false)}
+                    >
                       <Menu
-                        open={buttonOpen}
-                        anchorEl={anchorRef.current}
+                        open={moreMenuOpen}
+                        anchorEl={moreMenuRef.current}
                         id="split-button-menu"
-                        onClose={() => setButtonOpen(false)}
+                        onClose={() => setMoreMenuOpen(false)}
                         getContentAnchorEl={null}
                         anchorOrigin={{
                           vertical: 'bottom',
@@ -170,29 +184,32 @@ const FileLocationEditor = observer(
                           horizontal: 'center',
                         }}
                       >
-                        {internetAccounts?.map(account => (
+                        {hiddenInternetAccounts?.map((account, idx) => (
                           <MenuItem
                             key={account.internetAccountId}
                             value={account.internetAccountId}
                             onClick={() => {
-                              setDisplayedInternetAccount(account)
-                              setCurrentState(account.internetAccountId)
-                              setButtonOpen(false)
+                              const newlySelectedInternetAccount =
+                                hiddenInternetAccounts[idx]
+                              const lastShownInternetAccount =
+                                shownInternetAccounts[
+                                  shownInternetAccounts.length - 1
+                                ]
+                              setShownInternetAccounts([
+                                ...shownInternetAccounts.slice(
+                                  0,
+                                  shownInternetAccounts.length - 1,
+                                ),
+                                newlySelectedInternetAccount,
+                              ])
+                              setHiddenInternetAccounts([
+                                lastShownInternetAccount,
+                                ...hiddenInternetAccounts.slice(0, idx),
+                                ...hiddenInternetAccounts.slice(idx + 1),
+                              ])
+                              setToggleButtonValue(account.internetAccountId)
+                              setMoreMenuOpen(false)
                             }}
-                          >
-                            {/* {findChosenInternetAccount(
-                              account.internetAccountId,
-                              'autoDetect',
-                            )?.name === account.name
-                              ? '(Suggested)'
-                              : ''}{' '} */}
-                            {account.name}
-                          </MenuItem>
-                        ))}
-                        {additionalInternetAccounts.map(account => (
-                          <MenuItem
-                            key={account.internetAccountId}
-                            value={account.internetAccountId}
                           >
                             {account.name}
                           </MenuItem>
@@ -203,137 +220,13 @@ const FileLocationEditor = observer(
                 </Grow>
               )}
             </Popper>
-          </Grid>
-          <Grid>
-            <Tooltip title="Add Account for Authentication">
-              <Button
-                color="primary"
-                variant="contained"
-                onClick={() => setOpenNewInternetAccountDialog(true)}
-                style={{ minWidth: 15 }}
-              >
-                <AddIcon />
-              </Button>
-            </Tooltip>
-          </Grid>
-          <Grid item>
-            {currentState === 'file' ? (
-              <LocalFileChooser {...props} />
-            ) : (
-              <UrlChooser
-                {...props}
-                currentInternetAccount={
-                  currentState === displayedInternetAccount?.internetAccountId
-                    ? displayedInternetAccount
-                    : undefined
-                }
-              />
-            )}
-          </Grid>
-        </Grid>
-        {openNewInternetAccountDialog && (
-          <AddNewInternetAccountDialog
-            internetAccounts={internetAccounts}
-            handleClose={(newAddedAccount: Account | undefined) => {
-              if (newAddedAccount) {
-                setDisplayedInternetAccount(newAddedAccount)
-                setCurrentState(newAddedAccount.internetAccountId)
-                setAdditionalInternetAccounts([
-                  ...additionalInternetAccounts,
-                  newAddedAccount,
-                ])
-              }
-              setOpenNewInternetAccountDialog(false)
-            }}
-          />
-        )}
-        <FormHelperText style={{ marginBottom: 10 }}>
-          {description}
-        </FormHelperText>
+          </Box>
+        </Box>
+        {locationInput}
+        <FormHelperText>{description}</FormHelperText>
       </>
     )
   },
 )
 
-const AddNewInternetAccountDialog = ({
-  internetAccounts,
-  handleClose,
-}: {
-  internetAccounts: Account[] | undefined
-  handleClose: (arg?: Account) => void
-}) => {
-  const [name, setName] = useState('')
-  const [type, setType] = useState('')
-  return (
-    <>
-      <Dialog open maxWidth="xl" data-testid="new-internet-account-modal">
-        <DialogTitle> Add New Internet Account</DialogTitle>
-        <DialogContent style={{ display: 'flex', flexDirection: 'column' }}>
-          <label htmlFor="nameTextField">Enter Name for Internet Account</label>
-          <TextField
-            id="nameTextField"
-            required
-            variant="outlined"
-            onChange={event => {
-              setName(event.target.value)
-            }}
-            margin="dense"
-            style={{ margin: 10 }}
-          />
-          <label htmlFor="internetAccountTypeSelect">
-            Select Internet Account Type
-          </label>
-          <Select
-            id="internetAccountTypeSelect"
-            value={type}
-            onChange={event => {
-              setType(event.target.value as string)
-            }}
-            displayEmpty
-          >
-            <MenuItem value="HTTPBasicInternetAccount">
-              HTTPBasicInternetAccount
-            </MenuItem>
-            {internetAccounts?.map(account => {
-              return (
-                <MenuItem key={account.type} value={account.type}>
-                  {account.type}
-                </MenuItem>
-              )
-            })}
-          </Select>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            variant="contained"
-            color="primary"
-            type="submit"
-            disabled={!name || !type}
-            onClick={() => {
-              if (name && type) {
-                handleClose({
-                  internetAccountId: `${type}-${name}`,
-                  name: name,
-                  type: type,
-                })
-              }
-            }}
-          >
-            Submit
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              handleClose(undefined)
-            }}
-          >
-            Cancel
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
-  )
-}
-
-export default FileLocationEditor
+export default FileSelector
