@@ -264,7 +264,9 @@ const FileLocationEditor = observer(
             }}
           />
         )}
-        <FormHelperText>{description}</FormHelperText>
+        <FormHelperText style={{ marginBottom: 10 }}>
+          {description}
+        </FormHelperText>
       </>
     )
   },

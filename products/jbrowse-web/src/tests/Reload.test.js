@@ -7,8 +7,8 @@ import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import JBrowse from '../JBrowse'
 import { setup, getPluginManager, generateReadBuffer } from './util'
 
