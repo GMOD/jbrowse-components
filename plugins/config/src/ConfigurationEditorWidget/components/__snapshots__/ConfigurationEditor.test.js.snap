@@ -183,6 +183,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
       </div>
       <p
         class="MuiFormHelperText-root"
+        style="margin-bottom: 10px;"
       >
         fileLocationTest
       </p>

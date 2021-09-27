@@ -203,6 +203,7 @@ exports[`<AddTrackWidget /> renders 1`] = `
                   </div>
                   <p
                     class="MuiFormHelperText-root"
+                    style="margin-bottom: 10px;"
                   />
                   <label
                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiInputLabel-shrink"
@@ -340,6 +341,7 @@ exports[`<AddTrackWidget /> renders 1`] = `
                   </div>
                   <p
                     class="MuiFormHelperText-root"
+                    style="margin-bottom: 10px;"
                   >
                     The URL of the index file is automatically inferred from the URL of the main file if it is not supplied.
                   </p>
