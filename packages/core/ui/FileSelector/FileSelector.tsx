@@ -129,6 +129,7 @@ const FileSelector = observer(
                 }
                 return (
                   <ToggleButtonWithTooltip
+                    key={internetAccount.internetAccountId}
                     value={internetAccount.internetAccountId}
                     aria-label={internetAccount.name}
                     title={name}
@@ -139,6 +140,7 @@ const FileSelector = observer(
               })}
               {hiddenInternetAccounts.length ? (
                 <ToggleButton
+                  value="moreMenu"
                   onClick={() => {
                     setMoreMenuOpen((prevOpen: boolean) => !prevOpen)
                   }}
