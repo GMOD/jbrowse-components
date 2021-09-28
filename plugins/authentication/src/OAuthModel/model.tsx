@@ -350,8 +350,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               }
               this.exchangeAuthorizationForAccessToken(
                 code,
-                '',
-                // redirectUri.origin + redirectUri.pathname,
+                redirectUri.origin + redirectUri.pathname,
               )
             }
             if (redirectUriWithInfo.includes('access_denied')) {
