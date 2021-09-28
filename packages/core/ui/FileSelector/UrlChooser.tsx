@@ -3,11 +3,6 @@ import { TextField } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import { FileLocation, isUriLocation } from '../../util/types'
 
-interface Account {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
-}
-
 function UrlChooser(props: {
   location?: FileLocation
   setLocation: Function

@@ -16,7 +16,7 @@ interface BinaryRangeResponse {
   buffer: Buffer
 }
 
-let fetchers: Record<string, BinaryRangeFetch> = {}
+const fetchers: Record<string, BinaryRangeFetch> = {}
 
 function binaryRangeFetch(
   url: string,
@@ -39,9 +39,9 @@ const globalRangeCache = new HttpRangeFetcher({
   minimumTTL: 24 * 60 * 60 * 1000, // 1 day
 })
 
+// TODOAUTH: readd clearCache and test it out on all files
 export function clearCache() {
   globalRangeCache.reset()
-  fetchers = {}
 }
 
 export class RemoteFileWithRangeCache extends RemoteFile {

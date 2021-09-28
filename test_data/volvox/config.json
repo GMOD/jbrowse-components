@@ -576,21 +576,6 @@
     },
     {
       "type": "QuantitativeTrack",
-      "trackId": "volvox_microarray_dropbox",
-      "name": "wiggle_track xyplot dropbox",
-      "category": ["Integration test"],
-      "assemblyNames": ["volvox"],
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "volvox_microarray.bw",
-          "locationType": "UriLocation",
-          "internetAccountId": "dropboxOAuth"
-        }
-      }
-    },
-    {
-      "type": "QuantitativeTrack",
       "trackId": "dropbox_bigwig",
       "name": "Dropbox BigWig",
       "category": ["Authentication"],
@@ -616,36 +601,6 @@
           "locationType": "UriLocation",
           "uri": "https://drive.google.com/file/d/1PIvZCOJioK9eBL1Vuvfa4L_Fv9zTooHk/view?usp=sharing",
           "internetAccountId": "googleOAuth"
-        }
-      }
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "volvox_microarray_externaltoken",
-      "name": "wiggle_track xyplot external token",
-      "category": ["Integration test"],
-      "assemblyNames": ["volvox"],
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "volvox_microarray.bw",
-          "locationType": "UriLocation",
-          "internetAccountId": "ExternalTokenTest"
-        }
-      }
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "volvox_microarray_httpbasic",
-      "name": "wiggle_track xyplot httpbasic",
-      "category": ["Integration test"],
-      "assemblyNames": ["volvox"],
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "volvox_microarray.bw",
-          "locationType": "UriLocation",
-          "internetAccountId": "HTTPBasicInternetAccount-HTTPBasicTest"
         }
       }
     },
@@ -1631,13 +1586,6 @@
       "scopes": "https://www.googleapis.com/auth/drive.readonly",
       "responseType": "token",
       "domains": ["drive.google.com"]
-    },
-    {
-      "type": "ExternalTokenInternetAccount",
-      "internetAccountId": "ExternalTokenTest",
-      "name": "External token",
-      "description": "External Token for testing",
-      "domains": []
     }
   ]
 }

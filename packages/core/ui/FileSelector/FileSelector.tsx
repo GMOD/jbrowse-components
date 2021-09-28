@@ -20,6 +20,7 @@ import {
 import { observer } from 'mobx-react'
 import {
   FileLocation,
+  UriLocation,
   isUriLocation,
   AbstractRootModel,
   isAppRootModel,
@@ -27,11 +28,6 @@ import {
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
 import LocalFileChooser from './LocalFileChooser'
 import UrlChooser from './UrlChooser'
-
-interface Account {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
-}
 
 function ToggleButtonWithTooltip(props: ToggleButtonProps) {
   const { title, children, ...other } = props
@@ -51,9 +47,13 @@ const FileSelector = observer(
     description?: string
     rootModel?: AbstractRootModel
   }) => {
-    const { location, name, description, rootModel } = props
+    const { location, name, description, rootModel, setLocation } = props
     const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'
-    const [toggleButtonValue, setToggleButtonValue] = useState(fileOrUrl)
+    const [toggleButtonValue, setToggleButtonValue] = useState(
+      location && 'internetAccountId' in location && location.internetAccountId
+        ? location.internetAccountId
+        : fileOrUrl,
+    )
     const internetAccounts = isAppRootModel(rootModel)
       ? rootModel.internetAccounts.slice()
       : []
@@ -71,15 +71,40 @@ const FileSelector = observer(
       ia => ia.internetAccountId === toggleButtonValue,
     )
 
+    const setLocationWithAccount = (location: UriLocation) => {
+      setLocation({
+        ...location,
+        internetAccountId: selectedInternetAccount
+          ? selectedInternetAccount.internetAccountId
+          : undefined,
+      })
+    }
+
+    // if you swap account selection after inputting url
+    if (
+      location &&
+      selectedInternetAccount &&
+      isUriLocation(location) &&
+      location.internetAccountId !== selectedInternetAccount.internetAccountId
+    ) {
+      setLocationWithAccount(location)
+    }
+
     let locationInput = (
-      <UrlChooser {...props} label={selectedInternetAccount?.selectorLabel} />
+      <UrlChooser
+        {...props}
+        setLocation={setLocationWithAccount}
+        label={selectedInternetAccount?.selectorLabel}
+      />
     )
     if (toggleButtonValue === 'file') {
       locationInput = <LocalFileChooser {...props} />
     }
     if (selectedInternetAccount?.SelectorComponent) {
       const { SelectorComponent } = selectedInternetAccount
-      locationInput = <SelectorComponent {...props} />
+      locationInput = (
+        <SelectorComponent {...props} setLocation={setLocationWithAccount} />
+      )
     }
 
     const handleChange = (
@@ -88,6 +113,9 @@ const FileSelector = observer(
     ) => {
       if (newState) {
         setToggleButtonValue(newState)
+      }
+      if (isUriLocation(location)) {
+        setLocationWithAccount(location)
       }
     }
 

@@ -6,7 +6,7 @@ import { LocalFile, RemoteFile } from 'generic-filehandle'
 // locals
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
-
+import config from '../../test_data/volvox/config.json'
 import { setup, generateReadBuffer, getPluginManager } from './util'
 import JBrowse from '../JBrowse'
 
@@ -27,7 +27,26 @@ beforeEach(() => {
 
 describe('authentication', () => {
   it('open a bigwig track that needs oauth authentication and has existing token', async () => {
-    const pluginManager = getPluginManager()
+    const pluginManager = getPluginManager({
+      ...config,
+      tracks: [
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'volvox_microarray_dropbox',
+          name: 'wiggle_track xyplot dropbox',
+          category: ['Integration test'],
+          assemblyNames: ['volvox'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'volvox_microarray.bw',
+              locationType: 'UriLocation',
+              internetAccountId: 'dropboxOAuth',
+            },
+          },
+        },
+      ],
+    })
     const state = pluginManager.rootModel
     const { findByTestId, findAllByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
@@ -61,7 +80,35 @@ describe('authentication', () => {
   }, 25000)
 
   it('opens a bigwig track that needs external token authentication', async () => {
-    const pluginManager = getPluginManager()
+    const pluginManager = getPluginManager({
+      ...config,
+      internetAccounts: [
+        {
+          type: 'ExternalTokenInternetAccount',
+          internetAccountId: 'ExternalTokenTest',
+          name: 'External token',
+          description: 'External Token for testing',
+          domains: [],
+        },
+      ],
+      tracks: [
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'volvox_microarray_externaltoken',
+          name: 'wiggle_track xyplot external token',
+          category: ['Integration test'],
+          assemblyNames: ['volvox'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'volvox_microarray.bw',
+              locationType: 'UriLocation',
+              internetAccountId: 'ExternalTokenTest',
+            },
+          },
+        },
+      ],
+    })
     const state = pluginManager.rootModel
     const { findByTestId, findAllByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
@@ -96,7 +143,26 @@ describe('authentication', () => {
   }, 25000)
 
   it('opens a bigwig track that needs httpbasic authentication', async () => {
-    const pluginManager = getPluginManager()
+    const pluginManager = getPluginManager({
+      ...config,
+      tracks: [
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'volvox_microarray_httpbasic',
+          name: 'wiggle_track xyplot httpbasic',
+          category: ['Integration test'],
+          assemblyNames: ['volvox'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'volvox_microarray.bw',
+              locationType: 'UriLocation',
+              internetAccountId: 'HTTPBasicInternetAccount-HTTPBasicTest',
+            },
+          },
+        },
+      ],
+    })
     const state = pluginManager.rootModel
     const { findByTestId, findAllByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
