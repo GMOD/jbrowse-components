@@ -58,6 +58,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             authHeader: this.authHeader,
             tokenType: this.tokenType,
             configuration: self.accountConfig,
+            redirectUri: window.location.origin + window.location.pathname,
           },
         }
         return generatedInfo
@@ -86,11 +87,14 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       let openLocationPromise: Promise<string> | undefined = undefined
       return {
         // opens external OAuth flow, popup for web and new browser window for desktop
-        async useEndpointForAuthorization() {
+        async useEndpointForAuthorization(location: UriLocation) {
           const config = self.accountConfig
           const data: OAuthData = {
             client_id: config.clientId,
-            redirect_uri: window.location.origin,
+            redirect_uri: !inWebWorker
+              ? window.location.origin + window.location.pathname
+              : self.uriToPreAuthInfoMap.get(location.uri)?.authInfo
+                  ?.redirectUri,
             response_type: config.responseType || 'code',
           }
 
@@ -196,7 +200,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               if (!openLocationPromise) {
                 openLocationPromise = new Promise(async (r, x) => {
                   this.addMessageChannel()
-                  this.useEndpointForAuthorization()
+                  this.useEndpointForAuthorization(location)
                   resolve = r
                   reject = x
                 })
@@ -218,14 +222,17 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             )
           }
         },
-        async exchangeAuthorizationForAccessToken(token: string) {
+        async exchangeAuthorizationForAccessToken(
+          token: string,
+          redirectUri: string,
+        ) {
           const config = self.accountConfig
           const data = {
             code: token,
             grant_type: 'authorization_code',
             client_id: config.clientId,
             code_verifier: self.codeVerifierPKCE,
-            redirect_uri: window.location.origin,
+            redirect_uri: redirectUri,
           }
 
           const params = Object.entries(data)
@@ -239,6 +246,11 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             },
             body: params,
           })
+
+          if (!response.ok) {
+            resolve()
+            await this.handleError('Failed to obtain token from endpoint')
+          }
 
           const accessToken = await response.json()
           if (!inWebWorker) {
@@ -311,9 +323,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           if (
             event.data.name === `JBrowseAuthWindow-${self.internetAccountId}`
           ) {
-            const redirectUri = event.data.redirectUri
-            if (redirectUri.includes('access_token')) {
-              const fixedQueryString = redirectUri.replace('#', '?')
+            const redirectUriWithInfo = event.data.redirectUri
+            if (redirectUriWithInfo.includes('access_token')) {
+              const fixedQueryString = redirectUriWithInfo.replace('#', '?')
               const queryStringSearch = new URL(fixedQueryString).search
               const urlParams = new URLSearchParams(queryStringSearch)
               const token = urlParams.get('access_token')
@@ -325,8 +337,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               }
               this.setAccessTokenInfo(token, true)
             }
-            if (redirectUri.includes('code')) {
-              const queryString = new URL(redirectUri).search
+            if (redirectUriWithInfo.includes('code')) {
+              const redirectUri = new URL(redirectUriWithInfo)
+              const queryString = redirectUri.search
               const urlParams = new URLSearchParams(queryString)
               const code = urlParams.get('code')
               if (!code) {
@@ -335,9 +348,13 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
                 openLocationPromise = undefined
                 return
               }
-              this.exchangeAuthorizationForAccessToken(code)
+              this.exchangeAuthorizationForAccessToken(
+                code,
+                '',
+                // redirectUri.origin + redirectUri.pathname,
+              )
             }
-            if (redirectUri.includes('access_denied')) {
+            if (redirectUriWithInfo.includes('access_denied')) {
               self.setErrorMessage('OAuth flow was cancelled')
               reject(self.errorMessage)
               openLocationPromise = undefined
