@@ -239,6 +239,7 @@ export interface AppRootModel extends AbstractRootModel {
   isDefaultSessionEditing: boolean
   setAssemblyEditing: (arg: boolean) => boolean
   setDefaultSessionEditing: (arg: boolean) => boolean
+  internetAccounts: BaseInternetAccountModel[]
   findAppropriateInternetAccount(
     location: UriLocation,
   ): BaseInternetAccountModel | undefined

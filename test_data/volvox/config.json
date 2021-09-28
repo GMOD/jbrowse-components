@@ -1623,7 +1623,7 @@
     {
       "type": "GoogleDriveOAuthInternetAccount",
       "internetAccountId": "googleOAuth",
-      "name": "Google",
+      "name": "Google Drive",
       "description": "OAuth Info for Google Drive",
       "authEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
       "needsAuthorization": true,
@@ -1631,13 +1631,6 @@
       "scopes": "https://www.googleapis.com/auth/drive.readonly",
       "responseType": "token",
       "domains": ["drive.google.com"]
-    },
-    {
-      "type": "ExternalTokenInternetAccount",
-      "internetAccountId": "ExternalTokenTest",
-      "name": "External token",
-      "description": "External Token for testing",
-      "domains": []
     }
   ]
 }
