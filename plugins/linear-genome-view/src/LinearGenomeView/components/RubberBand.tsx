@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useMemo } from 'react'
 import ReactPropTypes from 'prop-types'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
@@ -198,6 +198,21 @@ function RubberBand({
     model.setOffsets(leftOffset, rightOffset)
   }
 
+  async function getBigsiQuerySequence() {
+    if (startX === undefined || anchorPosition === undefined) {
+      return
+    }
+    let leftPx = startX
+    let rightPx = anchorPosition.offsetX
+    // handles clicking and draging to the left
+    if (rightPx < leftPx) {
+      ;[leftPx, rightPx] = [rightPx, leftPx]
+    }
+    const leftBigsiOffset = model.pxToBp(leftPx)
+    const rightBigsiOffset = model.pxToBp(rightPx)
+    model.setBigsiOffsets(leftBigsiOffset, rightBigsiOffset)
+  }
+
   function handleClose() {
     setAnchorPosition(undefined)
     setStartX(undefined)
@@ -229,6 +244,18 @@ function RubberBand({
       icon: MenuOpenIcon,
       onClick: () => {
         getSequence()
+        handleClose()
+      },
+    },
+    {
+      label: 'Sequence Search',
+      disabled:
+        currentX !== undefined &&
+        startX !== undefined &&
+        Math.abs(currentX - startX) * model.bpPerPx > 500_000_000,
+      icon: MenuOpenIcon,
+      onClick: () => {
+        getBigsiQuerySequence()
         handleClose()
       },
     },

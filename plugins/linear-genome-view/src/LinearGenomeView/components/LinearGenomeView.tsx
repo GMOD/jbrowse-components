@@ -19,6 +19,7 @@ import ImportForm from './ImportForm'
 import MiniControls from './MiniControls'
 import AboutDialog from './AboutDialog'
 import SequenceDialog from './SequenceDialog'
+import BigsiDialog from './BigsiDialog'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -76,6 +77,14 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
       ) : null}
       {model.isSeqDialogDisplayed ? (
         <SequenceDialog
+          model={model}
+          handleClose={() => {
+            model.setOffsets(undefined, undefined)
+          }}
+        />
+      ) : null}
+      {model.isBigsiDialogDisplayed ? (
+        <BigsiDialog
           model={model}
           handleClose={() => {
             model.setOffsets(undefined, undefined)

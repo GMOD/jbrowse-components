@@ -15,6 +15,7 @@ import { LinearGenomeViewStateModel, HEADER_BAR_HEIGHT } from '..'
 import RefNameAutocomplete from './RefNameAutocomplete'
 import OverviewScaleBar from './OverviewScaleBar'
 import ZoomControls from './ZoomControls'
+import SequenceSearchButton from './SequenceSearchButton'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -132,6 +133,7 @@ export default observer(({ model }: { model: LGV }) => {
       <Controls model={model} />
       <div className={classes.spacer} />
       <FormGroup row className={classes.headerForm}>
+        <SequenceSearchButton model={model} />
         <PanControls model={model} />
         <RefNameAutocomplete
           onSelect={setDisplayedRegion}

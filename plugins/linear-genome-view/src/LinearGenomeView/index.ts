@@ -125,6 +125,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
+      leftBigsiOffset: undefined as undefined | BpOffset,
+      rightBigsiOffset: undefined as undefined | BpOffset,
       DialogComponent: undefined as
         | React.FC<{ handleClose: () => void; model: { clearView: Function } }>
         | undefined,
@@ -165,6 +167,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       get isSeqDialogDisplayed() {
         return self.leftOffset && self.rightOffset
+      },
+      get isBigsiDialogDisplayed() {
+        return self.leftBigsiOffset && self.rightBigsiOffset
       },
       get scaleBarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
@@ -499,6 +504,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // sets offsets used in the get sequence dialog
         self.leftOffset = left
         self.rightOffset = right
+      },
+
+      setBigsiOffsets(left: undefined | BpOffset, right: undefined | BpOffset) {
+        // sets offsets used in the bigsi dialog
+        self.leftBigsiOffset = left
+        self.rightBigsiOffset = right
       },
 
       setNewView(bpPerPx: number, offsetPx: number) {
