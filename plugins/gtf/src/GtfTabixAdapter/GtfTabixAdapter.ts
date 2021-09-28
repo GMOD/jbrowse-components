@@ -21,12 +21,12 @@ interface FeatureLoc {
   seq_name: string
   source: string
   feature: string
-  start: number
-  end: number
-  score: number
+  start: number | null
+  end: number | null
+  score: number | null
   strand: Strand
-  frame: number
-  attributes: { [key: string]: unknown[] }
+  frame: number | null
+  attributes: { [key: string]: string }
 }
 
 interface LineFeature {
@@ -124,22 +124,24 @@ export default class extends BaseFeatureDataAdapter {
         }
       }
 
-      const gtfLines = lines
-        .map((lineRecord: LineFeature) => {
-          if (lineRecord.fields[8] && lineRecord.fields[8] !== '.') {
-            if (!lineRecord.fields[8].includes('_lineHash')) {
-              lineRecord.fields[8] += `;_lineHash =${lineRecord.lineHash}`
-            }
-          } else {
-            lineRecord.fields[8] = `_lineHash=${lineRecord.lineHash}`
+      lines.forEach((lineRecord: LineFeature) => {
+        if (lineRecord.fields[8] && lineRecord.fields[8] !== '.') {
+          if (!lineRecord.fields[8].includes('_lineHash')) {
+            lineRecord.fields[8] += `;_lineHash ${lineRecord.lineHash}`
           }
-          return lineRecord.fields.join('\t')
-        })
-        .join('\n')
+        } else {
+          lineRecord.fields[8] = `_lineHash ${lineRecord.lineHash}`
+        }
+      })
 
-      // console.log(lines)
+      // console.log('lines', lines)
+      // console.log('gtf lines', gtfLines)
+      // console.log('==================')
       // console.log(typeof gtfLines)
-      const features = this.gtfParseStringSync(gtfLines) as FeatureLoc[][]
+      // console.log(typeof gtfLines)
+      // const features = this.gtfParseStringSync(gtfLines) as FeatureLoc[][]
+      // this.gtfParseLineFeatures(lines)
+      const features = this.gtfParseStringSync(lines)
       // TODO: fix bug with features not being parsed correctly
       features.forEach(featureLocs =>
         this.formatFeatures(featureLocs).forEach(f => {
@@ -175,7 +177,7 @@ export default class extends BaseFeatureDataAdapter {
     const f: Record<string, unknown> = { ...data }
     ;(f.start as number) -= 1 // convert to interbase
     f.strand = { '+': 1, '-': -1, '.': 0, '?': undefined }[data.strand] // convert strand
-    f.phase = Number(data.phase)
+    f.phase = !!Number(data.phase) ? Number(data.phase) : null
     f.refName = data.seq_name
     if (data.score === null) {
       delete f.score
@@ -233,38 +235,86 @@ export default class extends BaseFeatureDataAdapter {
     }
   }
 
-  private gtfParseStringSync(str: string) {
-    // TODO: fix bug with features not being parsed correctly
+  private gtfParseStringSync(linesFeatures: LineFeature[]) {
+    return linesFeatures.map(lineFeature => {
+      const { fields } = lineFeature
+      const [
+        seq_name,
+        source,
+        feature,
+        start,
+        end,
+        score,
+        strand,
+        frame,
+        attributes,
+      ] = fields
+      // add line hash to attributes
 
-    if (!str) {
-      return []
-    }
-    const [
-      seq_name,
-      source,
-      feature,
-      start,
-      end,
-      score,
-      strand,
-      frame,
-      attributes,
-    ] = str.split('\t')
-
-    const attrs = attributes.split(';')
-    const items = {
-      seq_name: seq_name,
-      source: source,
-      feature: feature,
-      start: start,
-      end: end,
-      score: score,
-      strand: strand,
-      frame: frame,
-      attributes: attrs,
-    }
-
-    return items
+      const col9Attrs = attributes
+        ? Object.fromEntries(
+            attributes
+              .split(';')
+              .map(f => f.trim())
+              .filter(f => !!f)
+              .map(f => f.split(' '))
+              .map(([key, val]) => {
+                return [
+                  key.trim(),
+                  val.trim().split(',').join(' ').replace(/("|')/g, ''),
+                ]
+              }),
+          )
+        : {}
+      return [
+        {
+          seq_name,
+          source,
+          feature,
+          start: start !== '.' ? +start : null,
+          end: end !== '.' ? +end : null,
+          score: score !== '.' ? +score : null,
+          strand: strand as Strand,
+          frame: frame !== '.' ? +frame : null,
+          attributes: col9Attrs,
+        },
+      ]
+    })
   }
+  // private gtfParseStringSync(str: string) {
+  //   // TODO: fix bug with features not being parsed correctly
+
+  //   if (!str) {
+  //     return []
+  //   }
+  //   const [
+  //     seq_name,
+  //     source,
+  //     feature,
+  //     start,
+  //     end,
+  //     score,
+  //     strand,
+  //     frame,
+  //     attributes,
+  //   ] = str.split('\t')
+
+  //   // console.log(str.split('\n'))
+  //   const attrs = attributes.split(';').map(attr => attr.split(''))
+  //   // console.log(attrs)
+  //   const items = {
+  //     seq_name: seq_name,
+  //     source: source,
+  //     feature: feature,
+  //     start: start,
+  //     end: end,
+  //     score: score,
+  //     strand: strand,
+  //     frame: frame,
+  //     attributes: attrs,
+  //   }
+
+  //   return items
+  // }
   public freeResources(/* { region } */) {}
 }
