@@ -507,7 +507,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       setBigsiOffsets(left: undefined | BpOffset, right: undefined | BpOffset) {
-        // sets offsets used in the get sequence dialog
+        // sets offsets used in the bigsi dialog
         self.leftBigsiOffset = left
         self.rightBigsiOffset = right
       },
