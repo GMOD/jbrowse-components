@@ -77,11 +77,18 @@ async function getBigsiHitsFeatures(
   query: string,
 ) {
     
-  const response = await queryBigsi.runBinaryBigsiQuery(query)
-       
-  const allFeatures = makeBigsiHitsFeatures(self, response)
+ 
+ 
+  const myWorker = new Worker("bigsi/query_bigsi.js");
 
-  return allFeatures
+  myWorker.postMessage(query)
+  myWorker.onmessage = function(event) {
+    const response = event.data
+    const allFeatures = makeBigsiHitsFeatures(self, response)
+    return allFeatures
+  };
+       
+
 }
 
 function constructBigsiTrack(
