@@ -228,12 +228,6 @@ Object {
       "scopes": "https://www.googleapis.com/auth/drive.readonly",
       "type": "GoogleDriveOAuthInternetAccount",
     },
-    Object {
-      "description": "External Token for testing",
-      "internetAccountId": "ExternalTokenTest",
-      "name": "External token",
-      "type": "ExternalTokenInternetAccount",
-    },
   ],
   "plugins": Array [],
   "tracks": Array [
@@ -1127,32 +1121,6 @@ Object {
           "internetAccountId": "dropboxOAuth",
           "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
-          "uri": "volvox_microarray.bw",
-        },
-        "type": "BigWigAdapter",
-      },
-      "assemblyNames": Array [
-        "volvox",
-      ],
-      "category": Array [
-        "Integration test",
-      ],
-      "displays": Array [
-        Object {
-          "displayId": "volvox_microarray_dropbox-LinearWiggleDisplay",
-          "type": "LinearWiggleDisplay",
-        },
-      ],
-      "name": "wiggle_track xyplot dropbox",
-      "trackId": "volvox_microarray_dropbox",
-      "type": "QuantitativeTrack",
-    },
-    Object {
-      "adapter": Object {
-        "bigWigLocation": Object {
-          "internetAccountId": "dropboxOAuth",
-          "internetAccountPreAuthorization": undefined,
-          "locationType": "UriLocation",
           "uri": "https://www.dropbox.com/s/96wflrzcbmf7nlj/volvox.bw?dl=0",
         },
         "type": "BigWigAdapter",
@@ -1197,58 +1165,6 @@ Object {
       ],
       "name": "Google Drive BigWig",
       "trackId": "google_bigwig",
-      "type": "QuantitativeTrack",
-    },
-    Object {
-      "adapter": Object {
-        "bigWigLocation": Object {
-          "internetAccountId": "ExternalTokenTest",
-          "internetAccountPreAuthorization": undefined,
-          "locationType": "UriLocation",
-          "uri": "volvox_microarray.bw",
-        },
-        "type": "BigWigAdapter",
-      },
-      "assemblyNames": Array [
-        "volvox",
-      ],
-      "category": Array [
-        "Integration test",
-      ],
-      "displays": Array [
-        Object {
-          "displayId": "volvox_microarray_externaltoken-LinearWiggleDisplay",
-          "type": "LinearWiggleDisplay",
-        },
-      ],
-      "name": "wiggle_track xyplot external token",
-      "trackId": "volvox_microarray_externaltoken",
-      "type": "QuantitativeTrack",
-    },
-    Object {
-      "adapter": Object {
-        "bigWigLocation": Object {
-          "internetAccountId": "HTTPBasicInternetAccount-HTTPBasicTest",
-          "internetAccountPreAuthorization": undefined,
-          "locationType": "UriLocation",
-          "uri": "volvox_microarray.bw",
-        },
-        "type": "BigWigAdapter",
-      },
-      "assemblyNames": Array [
-        "volvox",
-      ],
-      "category": Array [
-        "Integration test",
-      ],
-      "displays": Array [
-        Object {
-          "displayId": "volvox_microarray_httpbasic-LinearWiggleDisplay",
-          "type": "LinearWiggleDisplay",
-        },
-      ],
-      "name": "wiggle_track xyplot httpbasic",
-      "trackId": "volvox_microarray_httpbasic",
       "type": "QuantitativeTrack",
     },
     Object {

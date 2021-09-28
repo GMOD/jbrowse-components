@@ -8,6 +8,7 @@ import { LocalFile } from 'generic-filehandle'
 
 // locals
 import { readConfObject } from '@jbrowse/core/configuration'
+import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import JBrowse from '../JBrowse'
 import masterConfig from '../../test_data/volvox/connection_test.json'
@@ -23,6 +24,7 @@ masterConfig.configuration = {
 
 setup()
 beforeEach(() => {
+  clearCache()
   clearAdapterCache()
   fetch.resetMocks()
   fetch.mockResponse(
