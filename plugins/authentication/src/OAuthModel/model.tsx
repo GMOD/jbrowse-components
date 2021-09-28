@@ -90,7 +90,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           const config = self.accountConfig
           const data: OAuthData = {
             client_id: config.clientId,
-            redirect_uri: 'http://localhost:3000',
+            redirect_uri: window.location.origin,
             response_type: config.responseType || 'code',
           }
 
@@ -225,7 +225,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             grant_type: 'authorization_code',
             client_id: config.clientId,
             code_verifier: self.codeVerifierPKCE,
-            redirect_uri: 'http://localhost:3000',
+            redirect_uri: window.location.origin,
           }
 
           const params = Object.entries(data)

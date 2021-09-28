@@ -39,7 +39,6 @@ const globalRangeCache = new HttpRangeFetcher({
   minimumTTL: 24 * 60 * 60 * 1000, // 1 day
 })
 
-// TODOAUTH: readd clearCache and test it out on all files
 export function clearCache() {
   globalRangeCache.reset()
 }
