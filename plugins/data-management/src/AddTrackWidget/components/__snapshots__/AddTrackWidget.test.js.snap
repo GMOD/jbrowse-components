@@ -62,290 +62,201 @@ exports[`<AddTrackWidget /> renders 1`] = `
               class="MuiCollapse-wrapperInner"
             >
               <div
-                class="makeStyles-root"
+                class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
               >
                 <div
-                  class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
+                  class="MuiBox-root MuiBox-root"
                 >
                   <label
                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiInputLabel-shrink"
                     data-shrink="true"
-                    for="callback-editor"
                   >
                     Main file
                   </label>
+                </div>
+                <div
+                  class="MuiBox-root MuiBox-root"
+                >
                   <div
-                    class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center"
+                    class="MuiBox-root MuiBox-root"
                   >
                     <div
-                      class="MuiGrid-root MuiGrid-item"
-                    >
-                      <div
-                        aria-label="file or url picker"
-                        class="MuiToggleButtonGroup-root"
-                        role="group"
-                      >
-                        <button
-                          aria-label="local file"
-                          aria-pressed="false"
-                          class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal"
-                          tabindex="0"
-                          type="button"
-                          value="file"
-                        >
-                          <span
-                            class="MuiToggleButton-label"
-                          >
-                            File
-                          </span>
-                          <span
-                            class="MuiTouchRipple-root"
-                          />
-                        </button>
-                        <button
-                          aria-label="url"
-                          aria-pressed="true"
-                          class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected"
-                          tabindex="0"
-                          type="button"
-                          value="url"
-                        >
-                          <span
-                            class="MuiToggleButton-label"
-                          >
-                            URL
-                          </span>
-                          <span
-                            class="MuiTouchRipple-root"
-                          />
-                        </button>
-                        <button
-                          class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
-                          style="min-width: 5px;"
-                          tabindex="0"
-                          type="button"
-                          value="selection"
-                        >
-                          <span
-                            class="MuiButton-label"
-                          >
-                            <svg
-                              aria-hidden="true"
-                              class="MuiSvgIcon-root"
-                              focusable="false"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                d="M7 10l5 5 5-5z"
-                              />
-                            </svg>
-                          </span>
-                          <span
-                            class="MuiTouchRipple-root"
-                          />
-                        </button>
-                      </div>
-                    </div>
-                    <div
-                      class="MuiGrid-root"
+                      aria-label="file, url, or account picker"
+                      class="MuiToggleButtonGroup-root"
+                      role="group"
                     >
                       <button
-                        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
-                        style="min-width: 15px;"
+                        aria-label="local file"
+                        aria-pressed="false"
+                        class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal"
                         tabindex="0"
-                        title="Add Account for Authentication"
                         type="button"
+                        value="file"
                       >
                         <span
-                          class="MuiButton-label"
+                          class="MuiToggleButton-label"
                         >
-                          <svg
-                            aria-hidden="true"
-                            class="MuiSvgIcon-root"
-                            focusable="false"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-                            />
-                          </svg>
+                          File
+                        </span>
+                        <span
+                          class="MuiTouchRipple-root"
+                        />
+                      </button>
+                      <button
+                        aria-label="url"
+                        aria-pressed="true"
+                        class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected"
+                        tabindex="0"
+                        type="button"
+                        value="url"
+                      >
+                        <span
+                          class="MuiToggleButton-label"
+                        >
+                          URL
                         </span>
                         <span
                           class="MuiTouchRipple-root"
                         />
                       </button>
                     </div>
-                    <div
-                      class="MuiGrid-root MuiGrid-item"
-                    >
-                      <div
-                        class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
-                      >
-                        <label
-                          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
-                          data-shrink="false"
-                        >
-                          Enter URL
-                        </label>
-                        <div
-                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
-                        >
-                          <input
-                            aria-invalid="false"
-                            class="MuiInputBase-input MuiInput-input"
-                            data-testid="urlInput"
-                            type="text"
-                            value=""
-                          />
-                        </div>
-                      </div>
-                    </div>
                   </div>
-                  <p
-                    class="MuiFormHelperText-root"
-                    style="margin-bottom: 10px;"
-                  />
+                </div>
+                <div
+                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+                >
+                  <label
+                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined"
+                    data-shrink="false"
+                  >
+                    Enter URL
+                  </label>
+                  <div
+                    class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-fullWidth MuiInputBase-formControl"
+                  >
+                    <input
+                      aria-invalid="false"
+                      class="MuiInputBase-input MuiOutlinedInput-input"
+                      data-testid="urlInput"
+                      type="text"
+                      value=""
+                    />
+                    <fieldset
+                      aria-hidden="true"
+                      class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+                    >
+                      <legend
+                        class="PrivateNotchedOutline-legendLabelled"
+                      >
+                        <span>
+                          Enter URL
+                        </span>
+                      </legend>
+                    </fieldset>
+                  </div>
+                </div>
+                <p
+                  class="MuiFormHelperText-root"
+                />
+                <div
+                  class="makeStyles-spacer"
+                />
+                <div
+                  class="MuiBox-root MuiBox-root"
+                >
                   <label
                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiInputLabel-shrink"
                     data-shrink="true"
-                    for="callback-editor"
                   >
                     Index file
                   </label>
+                </div>
+                <div
+                  class="MuiBox-root MuiBox-root"
+                >
                   <div
-                    class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center"
+                    class="MuiBox-root MuiBox-root"
                   >
                     <div
-                      class="MuiGrid-root MuiGrid-item"
-                    >
-                      <div
-                        aria-label="file or url picker"
-                        class="MuiToggleButtonGroup-root"
-                        role="group"
-                      >
-                        <button
-                          aria-label="local file"
-                          aria-pressed="false"
-                          class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal"
-                          tabindex="0"
-                          type="button"
-                          value="file"
-                        >
-                          <span
-                            class="MuiToggleButton-label"
-                          >
-                            File
-                          </span>
-                          <span
-                            class="MuiTouchRipple-root"
-                          />
-                        </button>
-                        <button
-                          aria-label="url"
-                          aria-pressed="true"
-                          class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected"
-                          tabindex="0"
-                          type="button"
-                          value="url"
-                        >
-                          <span
-                            class="MuiToggleButton-label"
-                          >
-                            URL
-                          </span>
-                          <span
-                            class="MuiTouchRipple-root"
-                          />
-                        </button>
-                        <button
-                          class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
-                          style="min-width: 5px;"
-                          tabindex="0"
-                          type="button"
-                          value="selection"
-                        >
-                          <span
-                            class="MuiButton-label"
-                          >
-                            <svg
-                              aria-hidden="true"
-                              class="MuiSvgIcon-root"
-                              focusable="false"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                d="M7 10l5 5 5-5z"
-                              />
-                            </svg>
-                          </span>
-                          <span
-                            class="MuiTouchRipple-root"
-                          />
-                        </button>
-                      </div>
-                    </div>
-                    <div
-                      class="MuiGrid-root"
+                      aria-label="file, url, or account picker"
+                      class="MuiToggleButtonGroup-root"
+                      role="group"
                     >
                       <button
-                        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
-                        style="min-width: 15px;"
+                        aria-label="local file"
+                        aria-pressed="false"
+                        class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal"
                         tabindex="0"
-                        title="Add Account for Authentication"
                         type="button"
+                        value="file"
                       >
                         <span
-                          class="MuiButton-label"
+                          class="MuiToggleButton-label"
                         >
-                          <svg
-                            aria-hidden="true"
-                            class="MuiSvgIcon-root"
-                            focusable="false"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-                            />
-                          </svg>
+                          File
+                        </span>
+                        <span
+                          class="MuiTouchRipple-root"
+                        />
+                      </button>
+                      <button
+                        aria-label="url"
+                        aria-pressed="true"
+                        class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected"
+                        tabindex="0"
+                        type="button"
+                        value="url"
+                      >
+                        <span
+                          class="MuiToggleButton-label"
+                        >
+                          URL
                         </span>
                         <span
                           class="MuiTouchRipple-root"
                         />
                       </button>
                     </div>
-                    <div
-                      class="MuiGrid-root MuiGrid-item"
-                    >
-                      <div
-                        class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
-                      >
-                        <label
-                          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
-                          data-shrink="false"
-                        >
-                          Enter URL
-                        </label>
-                        <div
-                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
-                        >
-                          <input
-                            aria-invalid="false"
-                            class="MuiInputBase-input MuiInput-input"
-                            data-testid="urlInput"
-                            type="text"
-                            value=""
-                          />
-                        </div>
-                      </div>
-                    </div>
                   </div>
-                  <p
-                    class="MuiFormHelperText-root"
-                    style="margin-bottom: 10px;"
-                  >
-                    The URL of the index file is automatically inferred from the URL of the main file if it is not supplied.
-                  </p>
                 </div>
+                <div
+                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+                >
+                  <label
+                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined"
+                    data-shrink="false"
+                  >
+                    Enter URL
+                  </label>
+                  <div
+                    class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-fullWidth MuiInputBase-formControl"
+                  >
+                    <input
+                      aria-invalid="false"
+                      class="MuiInputBase-input MuiOutlinedInput-input"
+                      data-testid="urlInput"
+                      type="text"
+                      value=""
+                    />
+                    <fieldset
+                      aria-hidden="true"
+                      class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+                    >
+                      <legend
+                        class="PrivateNotchedOutline-legendLabelled"
+                      >
+                        <span>
+                          Enter URL
+                        </span>
+                      </legend>
+                    </fieldset>
+                  </div>
+                </div>
+                <p
+                  class="MuiFormHelperText-root"
+                >
+                  (Optional) The URL of the index file is automatically inferred from the URL of the main file if it is not supplied.
+                </p>
               </div>
               <div
                 class="makeStyles-actionsContainer"

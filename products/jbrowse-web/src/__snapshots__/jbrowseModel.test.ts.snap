@@ -222,7 +222,7 @@ Object {
         "drive.google.com",
       ],
       "internetAccountId": "googleOAuth",
-      "name": "Google",
+      "name": "Google Drive",
       "needsAuthorization": true,
       "responseType": "token",
       "scopes": "https://www.googleapis.com/auth/drive.readonly",

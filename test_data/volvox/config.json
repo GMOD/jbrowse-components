@@ -1631,6 +1631,13 @@
       "scopes": "https://www.googleapis.com/auth/drive.readonly",
       "responseType": "token",
       "domains": ["drive.google.com"]
+    },
+    {
+      "type": "ExternalTokenInternetAccount",
+      "internetAccountId": "ExternalTokenTest",
+      "name": "External token",
+      "description": "External Token for testing",
+      "domains": []
     }
   ]
 }
