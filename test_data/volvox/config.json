@@ -819,6 +819,28 @@
       }
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "gtf3tabix_genes",
+      "assemblyNames": ["volvox"],
+      "name": "GTFTabix genes",
+      "category": ["Miscellaneous"],
+      "adapter": {
+        "type": "GtfTabixAdapter",
+        "gtfGzLocation": {
+          "uri": "volvox.sorted.gtf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sorted.gtf.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "renderer": {
+        "type": "SvgFeatureRenderer"
+      }
+    },
+    {
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram",
       "name": "volvox-sorted.cram",

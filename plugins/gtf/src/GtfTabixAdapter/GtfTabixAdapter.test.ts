@@ -22,12 +22,13 @@ describe('adapter can fetch features from volvox.sorted.gtf', () => {
     const features = adapter.getFeatures({
       refName: 'ctgA',
       start: 0,
-      end: 20000,
+      end: 100000,
     })
     expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
     expect(await adapter.hasDataForRefName('ctgB')).toBe(false)
     const featuresArray = await features.pipe(toArray()).toPromise()
     const featuresJsonArray = featuresArray.map(f => f.toJSON())
+    console.log(featuresJsonArray)
     expect(featuresJsonArray).toMatchSnapshot()
   })
 })
@@ -50,7 +51,7 @@ test('can instantiate new GtfTabixAdapter and check for demo data', async () => 
   const features = adapter.getFeatures({
     refName: 'GeneScaffold_10',
     start: 0,
-    end: 40000,
+    end: 110000,
   })
   const featuresArray = await features.pipe(toArray()).toPromise()
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
