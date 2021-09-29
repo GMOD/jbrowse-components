@@ -39,13 +39,14 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     const rootModel: AbstractRootModel | undefined = this.pluginManager
       .rootModel
 
-    if (!isAppRootModel(rootModel)) {
-      throw new Error('This app does not support authentication')
-    }
-
-    if (location.internetAccountPreAuthorization) {
+    // args dont need auth or already have auth
+    if (
+      !isAppRootModel(rootModel) ||
+      location.internetAccountPreAuthorization
+    ) {
       return location
     }
+
     const account = rootModel?.findAppropriateInternetAccount(location)
 
     if (account) {
