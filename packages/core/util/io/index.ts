@@ -78,7 +78,6 @@ export function openLocation(
     if (!location.uri) {
       throw new Error('No URI provided')
     }
-    // if (location.internetAccountId) {
     if (location.internetAccountPreAuthorization) {
       if (!pluginManager) {
         throw new Error(
@@ -141,7 +140,6 @@ export function openLocation(
       }
       throw new Error('Could not pre-authorize location')
     }
-    // }
 
     const url = location.baseUri
       ? new URL(location.uri, location.baseUri).href
