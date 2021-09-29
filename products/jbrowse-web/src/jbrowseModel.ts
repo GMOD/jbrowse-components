@@ -19,6 +19,7 @@ import {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration/configurationSchema'
+import clone from 'clone'
 
 // poke some things for testing (this stuff will eventually be removed)
 // @ts-ignore
@@ -210,17 +211,17 @@ export default function JBrowseWeb(
 
   return types.snapshotProcessor(JBrowseModel, {
     postProcessor(snapshot) {
-      function removeAttr(obj: Record<string, any>, attr: string) {
+      function removeAttr(obj: Record<string, unknown>, attr: string) {
         for (const prop in obj) {
           if (prop === attr) {
             delete obj[prop]
           } else if (typeof obj[prop] === 'object') {
-            removeAttr(obj[prop], attr)
+            removeAttr(obj[prop] as Record<string, unknown>, attr)
           }
         }
+        return obj
       }
-      removeAttr(snapshot, 'baseUri')
-      return snapshot
+      return removeAttr(clone(snapshot), 'baseUri')
     },
   })
 }

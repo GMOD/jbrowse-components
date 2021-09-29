@@ -5,6 +5,7 @@ import configSnapshot from '../test_data/volvox/config.json'
 import corePlugins from './corePlugins'
 import jbrowseModelFactory from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
+import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 
 type JBrowseModelType = ReturnType<typeof jbrowseModelFactory>
 
@@ -29,7 +30,7 @@ describe('JBrowse model', () => {
     JBrowseModel = jbrowseModelFactory(
       pluginManager,
       Session,
-      assemblyConfigSchemasType,
+      assemblyConfigSchemasType as AnyConfigurationSchemaType,
     )
   })
 

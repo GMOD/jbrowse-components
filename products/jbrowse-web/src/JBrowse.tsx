@@ -12,19 +12,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 // locals
 import ShareButton from './ShareButton'
 import AdminComponent from './AdminComponent'
-
-function deleteBaseUris(config: any) {
-  if (typeof config === 'object') {
-    for (const key of Object.keys(config)) {
-      if (typeof config[key] === 'object') {
-        deleteBaseUris(config[key])
-      } else if (key === 'uri') {
-        delete config.baseUri
-      }
-    }
-  }
-  return config
-}
+import { SessionModel } from './sessionModelFactory'
 
 const JBrowse = observer(
   ({ pluginManager }: { pluginManager: PluginManager }) => {
@@ -33,8 +21,9 @@ const JBrowse = observer(
     const [configPath] = useQueryParam('config', StringParam)
     const [, setSessionId] = useQueryParam('session', StringParam)
     const { rootModel } = pluginManager
-    const { error, jbrowse, session } = rootModel || {}
-    const { id: currentSessionId } = session || {}
+    const { error, jbrowse } = rootModel || {}
+    const session = rootModel?.session as SessionModel
+    const currentSessionId = session.id
 
     useEffect(() => {
       setSessionId(`local-${currentSessionId}`)
@@ -58,7 +47,7 @@ const JBrowse = observer(
             body: JSON.stringify({
               adminKey,
               configPath,
-              config: deleteBaseUris(JSON.parse(JSON.stringify(snapshot))),
+              config: snapshot,
             }),
           })
           if (!response.ok) {

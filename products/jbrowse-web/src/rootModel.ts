@@ -6,16 +6,16 @@ import {
   getType,
   getPropertyMembers,
   getChildType,
-  IAnyStateTreeNode,
-  IAnyType,
-  Instance,
   isArrayType,
   isModelType,
   isReferenceType,
   isValidReference,
   isMapType,
-  SnapshotIn,
   types,
+  IAnyStateTreeNode,
+  IAnyType,
+  Instance,
+  SnapshotIn,
 } from 'mobx-state-tree'
 
 import { saveAs } from 'file-saver'
@@ -28,6 +28,7 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
+import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 
 // icons
 import AddIcon from '@material-ui/icons/Add'
@@ -124,7 +125,7 @@ export default function RootModel(
       jbrowse: jbrowseWebFactory(
         pluginManager,
         Session,
-        assemblyConfigSchemasType,
+        assemblyConfigSchemasType as AnyConfigurationSchemaType,
       ),
       configPath: types.maybe(types.string),
       session: types.maybe(Session),

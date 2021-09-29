@@ -100,7 +100,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setDialogComponent: (dlg?: DialogComponentType, props?: any) => void
   name: string
-  id: string
+  id?: string
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
