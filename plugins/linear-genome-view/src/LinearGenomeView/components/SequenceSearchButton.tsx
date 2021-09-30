@@ -6,6 +6,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import Search from '@material-ui/icons/Search'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import { LinearGenomeViewModel } from '..'
+import BigsiDialog from './BigsiDialog'
 
 /* eslint-disable no-nested-ternary */
 import {
@@ -45,17 +46,19 @@ function SequenceSearchButton({ model }: { model: LinearGenomeViewModel }) {
       <Dialog open={trigger} onClose={() => setTrigger(false)}>
         <p>Enter your sequence here</p>
         <input
-          type="text"
+          type="textarea"
           value={sequence}
           onChange={() => setSequence(event.target.value)}
         />
         <button
           onClick={async () => {
             const sessionId = 'bigsiQuery'
+            const querySequence = sequence
             const params = {
                 sessionId,
-                sequence
+                querySequence
             }
+            console.log(params)
             const results = await rpcManager.call(
               sessionId,
               "BigsiQueryRPC",
