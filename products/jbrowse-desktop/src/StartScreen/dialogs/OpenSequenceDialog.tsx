@@ -308,6 +308,44 @@ const OpenSequenceDialog = ({
                 defaultSession: {
                   name: 'New Session ' + new Date().toLocaleString('en-US'),
                 },
+
+                internetAccounts: [
+                  {
+                    type: 'DropboxOAuthInternetAccount',
+                    internetAccountId: 'dropboxOAuth',
+                    name: 'Dropbox',
+                    description: 'OAuth Info for Dropbox',
+                    authEndpoint: 'https://www.dropbox.com/oauth2/authorize',
+                    tokenEndpoint: 'https://api.dropbox.com/oauth2/token',
+                    needsAuthorization: true,
+                    needsPKCE: true,
+                    hasRefreshToken: true,
+                    clientId: '50knr6xrjfc39sk',
+                    domains: [
+                      'addtodropbox.com',
+                      'db.tt',
+                      'dropbox.com',
+                      'dropboxapi.com',
+                      'dropboxbusiness.com',
+                      'dropbox.tech',
+                      'getdropbox.com',
+                    ],
+                  },
+                  {
+                    type: 'GoogleDriveOAuthInternetAccount',
+                    internetAccountId: 'googleOAuth',
+                    name: 'Google',
+                    description: 'OAuth Info for Google Drive',
+                    authEndpoint:
+                      'https://accounts.google.com/o/oauth2/v2/auth',
+                    needsAuthorization: true,
+                    clientId:
+                      '109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com',
+                    scopes: 'https://www.googleapis.com/auth/drive.readonly',
+                    responseType: 'token',
+                    domains: ['drive.google.com'],
+                  },
+                ],
               })
               setPluginManager(pm)
               onClose()
