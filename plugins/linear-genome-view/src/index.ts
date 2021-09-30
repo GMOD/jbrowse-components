@@ -32,6 +32,7 @@ import {
   ReactComponent as LinearGenomeViewReactComponent,
   stateModelFactory as linearGenomeViewStateModelFactory,
 } from './LinearGenomeView'
+import { BigsiQueryRPC } from './BigsiQueryRPC/rpcMethods'
 
 import {
   configSchema as linearBasicDisplayConfigSchemaFactory,
@@ -130,6 +131,8 @@ export default class LinearGenomeViewPlugin extends Plugin {
           ReactComponent: BaseFeatureWidgetReactComponent,
         }),
     )
+
+    pluginManager.addRpcMethod(() => new BigsiQueryRPC(pluginManager))
   }
 
   configure(pluginManager: PluginManager) {

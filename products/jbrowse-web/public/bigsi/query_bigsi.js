@@ -1,8 +1,13 @@
-const cdf = require('binomial-cdf')
-const matrix = require('matrix-js')
-const BitSet = require('bitset')
-const fs = require('fs')
-const commonFunc = require('./common_func.js')
+import { cdf } from 'binomial-cdf'
+import { matrix } from 'matrix-js'
+import { Bitset } from 'bitset'
+import { fs } from 'fs'
+import { commonFunc } from './common_func.js'
+//const cdf = require('binomial-cdf')
+//const matrix = require('matrix-js')
+//const BitSet = require('bitset')
+//const fs = require('fs')
+//const commonFunc = require('./common_func.js')
 
 async function makeQueryFragsMinimizers(querySeq, fragmentSize=2500){
     /* Inputs:
@@ -303,7 +308,9 @@ async function queryBitBigsi(root, queryFragmentsBloomFilters){
     return bigsiHits
 }
 
-onmessage = async function runBinaryBigsiQuery(querySeq){
+onmessage = async function runBinaryBigsiQuery(e){
+    const querySeq = e.data
+    console.log('message recieved by worker', querySeq.slice(0,15))
     const queryFragmentsMinimizers = await makeQueryFragsMinimizers(querySeq)
     const queryBloomFilter = await makeQueryFragsBloomFilters(queryFragmentsMinimizers)
 

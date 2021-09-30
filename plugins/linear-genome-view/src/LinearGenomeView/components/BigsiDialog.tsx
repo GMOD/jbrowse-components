@@ -74,22 +74,27 @@ function makeBigsiHitsFeatures(
 
 async function getBigsiHitsFeatures(
   self: LinearGenomeViewModel,
-  query: string,
+  querySequence: string,
 ) {
-    
- 
- 
-  const myWorker = new Worker("bigsi/query_bigsi.js");
+    const session = getSession(self)
+    const { rpcManager, assemblyManager } = session
 
-  myWorker.postMessage(query)
-  myWorker.onmessage = function(event) {
-    const response = event.data
+    const sessionId = 'bigsiQuery'
+
+    const params = {
+        sessionId,
+        querySequence
+        }
+    const response = await rpcManager.call(
+        sessionId,
+        "BigsiQueryRPC",
+        params
+        )
     const allFeatures = makeBigsiHitsFeatures(self, response)
     return allFeatures
+
   };
        
-
-}
 
 function constructBigsiTrack(
     self: LinearGenomeViewModel,
