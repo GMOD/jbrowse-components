@@ -22,7 +22,7 @@ import { Feature } from '../simpleFeature'
 export * from './util'
 
 /** abstract type for a model that contains multiple views */
-export interface AbstractViewContainer {
+export interface AbstractViewContainer extends IAnyStateTreeNode {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
   addView(
@@ -100,6 +100,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setDialogComponent: (dlg?: DialogComponentType, props?: any) => void
   name: string
+  id?: string
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
@@ -228,6 +229,7 @@ export interface AbstractRootModel {
   session?: AbstractSessionModel
   setDefaultSession?(): void
   adminMode?: boolean
+  error?: Error
 }
 
 /** root model with more included for the heavier JBrowse web and desktop app */
