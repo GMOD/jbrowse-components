@@ -166,7 +166,7 @@ export default (pluginManager: PluginManager) => {
             }
           })
         } catch (e: any) {
-          // if stat() fails then the filesize cannot be determined and we continue
+          console.warn(e)
         }
         await filehandle
           .readFile()
