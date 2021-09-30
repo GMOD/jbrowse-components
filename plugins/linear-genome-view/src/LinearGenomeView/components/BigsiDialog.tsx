@@ -90,6 +90,7 @@ async function getBigsiHitsFeatures(
         "BigsiQueryRPC",
         params
         )
+    console.log('raw response', response)
     const allFeatures = makeBigsiHitsFeatures(self, response)
     return allFeatures
 
