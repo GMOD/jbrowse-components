@@ -165,7 +165,7 @@ export default (pluginManager: PluginManager) => {
               )
             }
           })
-        } catch (e: any) {
+        } catch (e) {
           console.warn(e)
         }
         await filehandle
