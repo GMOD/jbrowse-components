@@ -17,6 +17,7 @@ import {
   Menu,
   MenuItem,
   TextField,
+  Tooltip,
   Typography,
   makeStyles,
 } from '@material-ui/core'
@@ -121,6 +122,7 @@ const Node = props => {
   const marginLeft = nestingLevel * width + (isLeaf ? width : 0)
   const unsupported =
     name && (name.endsWith('(Unsupported)') || name.endsWith('(Unknown)'))
+  const description = (conf && readConfObject(conf, ['description'])) || ''
 
   return (
     <div style={style} className={!isLeaf ? classes.accordionBase : undefined}>
@@ -153,22 +155,24 @@ const Node = props => {
             </div>
           ) : (
             <>
-              <FormControlLabel
-                className={classes.checkboxLabel}
-                control={
-                  <Checkbox
-                    className={classes.compactCheckbox}
-                    checked={checked}
-                    onChange={() => onChange(id)}
-                    color="primary"
-                    disabled={unsupported}
-                    inputProps={{
-                      'data-testid': `htsTrackEntry-${id}`,
-                    }}
-                  />
-                }
-                label={name}
-              />
+              <Tooltip title={description} placement="left">
+                <FormControlLabel
+                  className={classes.checkboxLabel}
+                  control={
+                    <Checkbox
+                      className={classes.compactCheckbox}
+                      checked={checked}
+                      onChange={() => onChange(id)}
+                      color="primary"
+                      disabled={unsupported}
+                      inputProps={{
+                        'data-testid': `htsTrackEntry-${id}`,
+                      }}
+                    />
+                  }
+                  label={name}
+                />
+              </Tooltip>
               <IconButton
                 onClick={e => onMoreInfo({ target: e.currentTarget, id, conf })}
                 color="secondary"
