@@ -37,9 +37,4 @@ test('can update score of result and throw appropriate errors', () => {
   expect(refSeqResult.getScore()).toBe(1)
   refSeqResult.updateScore(1000)
   expect(refSeqResult.getScore()).toBe(1000)
-  expect(() => {
-    new RefSequenceResult({
-      label: 'chromosome 1',
-    })
-  }).toThrow('must provide refName')
 })

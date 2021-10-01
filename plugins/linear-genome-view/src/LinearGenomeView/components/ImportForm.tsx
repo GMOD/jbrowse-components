@@ -102,7 +102,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     let trackId = option.getTrackId()
     let location = input || option.getLocation() || ''
     try {
-      if (option instanceof RefSequenceResult) {
+      if (assembly?.refNames?.includes(location)) {
         model.navToLocString(location, selectedAsm)
       } else {
         const results = await fetchResults(input)
