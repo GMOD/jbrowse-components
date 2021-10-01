@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
+import { BaseResult,RefSequenceResult } from '@jbrowse/core/TextSearch/BaseResults'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import {
-  Button,
+  Button,,
   CircularProgress,
   Container,
   Grid,
@@ -55,10 +56,11 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     : 'No configured assemblies'
   const regions = assembly?.regions || []
   const err = assemblyError || error
-  const [mySelectedRegion, setSelectedRegion] = useState<string>()
-  const [optionTrackId, setOptionTrackId] = useState<string>()
-  const [optionLocation, setOptionLocation] = useState<string>()
-  const selectedRegion = mySelectedRegion || regions[0]?.refName
+  const [option, setOption] = useState<BaseResult>(
+    new RefSequenceResult({
+      refName: regions[0]?.refName,
+    }),
+  )
 
   async function fetchResults(queryString: string) {
     if (!textSearchManager) {
@@ -84,21 +86,29 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
    * 3) else assume it's a locstring and navigate to it
    */
   async function handleSelectedRegion(input: string) {
+    console.log({ optionTrackId })
     let trackId = optionTrackId
     let location = input || optionLocation || ''
     try {
-      const results = await fetchResults(input)
-      if (results && results.length > 1) {
-        model.setSearchResults(results, input.toLowerCase())
-        return
-      } else if (results?.length === 1) {
-        location = results[0].getLocation()
-        trackId = results[0].getTrackId()
-      }
+      console.log({ option })
+      if (option instanceof RefSequenceResult) {
+        console.log('here')
+        model.navToLocString(location, selectedAsm)
+      } else {
+        const results = await fetchResults(input)
+        if (results && results.length > 1) {
+          model.setSearchResults(results, input.toLowerCase())
+          return
+        } else if (results?.length === 1) {
+          location = results[0].getLocation()
+          trackId = results[0].getTrackId()
+        }
 
-      model.navToLocString(location, selectedAsm)
-      if (trackId) {
-        model.showTrack(trackId)
+        model.navToLocString(location, selectedAsm)
+        console.log({ trackId })
+        if (trackId) {
+          model.showTrack(trackId)
+        }
       }
     } catch (e) {
       console.error(e)
@@ -143,6 +153,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                     assemblyName={message ? undefined : selectedAsm}
                     value={selectedRegion}
                     onSelect={option => {
+                      setOption(option)
                       setSelectedRegion(option.getDisplayString())
                       setOptionTrackId(option.getTrackId() || '')
                       setOptionLocation(option.getLocation())
