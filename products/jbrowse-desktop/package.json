@@ -8,6 +8,7 @@
   "author": "JBrowse Team",
   "main": "public/electron.js",
   "dir": "src",
+  "repository": "https://github.com/GMOD/jbrowse-components.git",
   "scripts": {
     "start": "concurrently \"yarn serve\" \"wait-on http://localhost:3000 && yarn develop\"",
     "serve": "cross-env BROWSER=none yarn cra-start",
@@ -101,15 +102,24 @@
     "productName": "JBrowse 2",
     "copyright": "Copyright © 2019",
     "win": {
+      "publish": [
+        "github"
+      ],
       "target": "nsis",
       "artifactName": "jbrowse-desktop-${version}-win.${ext}"
     },
     "linux": {
+      "publish": [
+        "github"
+      ],
       "executableName": "jbrowse-desktop",
       "target": "AppImage",
       "artifactName": "jbrowse-desktop-${version}-linux.AppImage"
     },
     "mac": {
+      "publish": [
+        "github"
+      ],
       "category": "public.app-category.utilities",
       "target": "dmg",
       "artifactName": "jbrowse-desktop-${version}-mac.${ext}"

@@ -25,7 +25,7 @@ jobs:
           WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
           WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
         run: |
-          yarn build-electron:win
+          yarn build-electron:win --publish always
         working-directory: products/jbrowse-desktop
       - name: Set release version
         run: echo "RELEASE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV

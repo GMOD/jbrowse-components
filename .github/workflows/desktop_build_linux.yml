@@ -19,7 +19,7 @@ jobs:
           sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Build app
         run: |
-          yarn build-electron:linux
+          yarn build-electron:linux --publish always
         working-directory: products/jbrowse-desktop
       - name: Set release version
         run: echo "RELEASE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
