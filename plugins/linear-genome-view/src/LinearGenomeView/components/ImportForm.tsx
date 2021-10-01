@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
-import { BaseResult,RefSequenceResult } from '@jbrowse/core/TextSearch/BaseResults'
+import BaseResult, {
+  RefSequenceResult,
+} from '@jbrowse/core/TextSearch/BaseResults'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import {
-  Button,,
+  Button,
   CircularProgress,
   Container,
   Grid,
@@ -56,11 +58,19 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     : 'No configured assemblies'
   const regions = assembly?.regions || []
   const err = assemblyError || error
-  const [option, setOption] = useState<BaseResult>(
+
+  const [myOption, setOption] = useState<BaseResult | undefined>()
+
+  // use this instead of useState initializer because the useState initializer
+  // won't update in response to an observable
+  const option =
+    myOption ||
     new RefSequenceResult({
       refName: regions[0]?.refName,
-    }),
-  )
+      label: regions[0]?.refName,
+    })
+
+  const selectedRegion = option?.getLocation()
 
   async function fetchResults(queryString: string) {
     if (!textSearchManager) {
@@ -86,13 +96,13 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
    * 3) else assume it's a locstring and navigate to it
    */
   async function handleSelectedRegion(input: string) {
-    console.log({ optionTrackId })
-    let trackId = optionTrackId
-    let location = input || optionLocation || ''
+    if (!option) {
+      return
+    }
+    let trackId = option.getTrackId()
+    let location = input || option.getLocation() || ''
     try {
-      console.log({ option })
       if (option instanceof RefSequenceResult) {
-        console.log('here')
         model.navToLocString(location, selectedAsm)
       } else {
         const results = await fetchResults(input)
@@ -105,7 +115,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
         }
 
         model.navToLocString(location, selectedAsm)
-        console.log({ trackId })
         if (trackId) {
           model.showTrack(trackId)
         }
@@ -154,9 +163,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                     value={selectedRegion}
                     onSelect={option => {
                       setOption(option)
-                      setSelectedRegion(option.getDisplayString())
-                      setOptionTrackId(option.getTrackId() || '')
-                      setOptionLocation(option.getLocation())
                     }}
                     TextFieldProps={{
                       margin: 'normal',
