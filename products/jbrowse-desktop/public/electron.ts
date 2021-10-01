@@ -225,8 +225,9 @@ ipcMain.handle('loadExternalConfig', (_event: unknown, sessionPath) => {
   return readFile(sessionPath, 'utf8')
 })
 
-ipcMain.handle('loadSession', (_event: unknown, sessionName: string) => {
-  return readFile(getPath(sessionName), 'utf8')
+ipcMain.handle('loadSession', async (_event: unknown, sessionName: string) => {
+  const data = await readFile(getPath(sessionName), 'utf8')
+  return JSON.parse(data)
 })
 
 ipcMain.handle(
