@@ -23,6 +23,7 @@ jobs:
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           APPLEID: ${{ secrets.APPLEID }}
           APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           yarn build-electron:mac --publish always
         working-directory: products/jbrowse-desktop

@@ -18,6 +18,8 @@ jobs:
         run: |
           sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Build app
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           yarn build-electron:linux --publish always
         working-directory: products/jbrowse-desktop
@@ -39,6 +41,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.get_release.outputs.upload_url }}
           asset_path: ./products/jbrowse-desktop/dist/jbrowse-desktop-${{ env.RELEASE_VERSION }}-linux.AppImage
