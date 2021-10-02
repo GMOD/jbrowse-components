@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/desktop",
-  "version": "1.4.6",
+  "version": "1.4.5",
   "description": "JBrowse desktop application specialized to inspect structural variants",
   "license": "Apache-2.0",
   "homepage": "./",
@@ -111,7 +111,7 @@
         "github"
       ],
       "executableName": "jbrowse-desktop",
-      "artifactName": "jbrowse-desktop-${version}-linux.AppImage"
+      "artifactName": "jbrowse-desktop-${version}-linux.${ext}"
     },
     "mac": {
       "publish": [
