@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: '12'
       - name: Set release version
-        run: echo "RELEASE_VERSION=$(node -p "require('./package.json').desktopBeta")" >> $GITHUB_ENV
+        run: echo "RELEASE_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
         working-directory: products/jbrowse-desktop
       - name: Create Release
         id: create_release
@@ -21,7 +21,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.RELEASE_VERSION }}
+          tag_name: v${{ env.RELEASE_VERSION }}
           release_name: Release desktop ${{ env.RELEASE_VERSION }}
           draft: true
           prerelease: true
