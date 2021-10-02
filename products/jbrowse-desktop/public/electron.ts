@@ -26,7 +26,8 @@ autoUpdater.on('update-available', () => {
     .showMessageBox({
       type: 'info',
       title: 'Found updates',
-      message: 'Found updates, do you want update now?',
+      message:
+        'Found updates, do you want update now? Hit yes to download the update. No status will appear while the update downloads, but a dialog will appear once it completes downloading and you can restart the app after this to complete the update',
       buttons: ['Yes', 'No'],
     })
     .then(buttonIndex => {
@@ -34,13 +35,6 @@ autoUpdater.on('update-available', () => {
         autoUpdater.downloadUpdate()
       }
     })
-})
-
-autoUpdater.on('update-not-available', () => {
-  dialog.showMessageBox({
-    title: 'No updates',
-    message: 'Current version is up-to-date',
-  })
 })
 
 debug({ showDevTools: false })
@@ -206,7 +200,11 @@ async function createWindow() {
     },
   ])
 
-  Menu.setApplicationMenu(mainMenu)
+  if (isMac) {
+    Menu.setApplicationMenu(mainMenu)
+  } else {
+    Menu.setApplicationMenu(null)
+  }
 
   mainWindow.on('closed', () => {
     mainWindow = null
@@ -218,7 +216,7 @@ async function createWindow() {
 }
 
 function sendStatusToWindow(text: string) {
-  console.log(text)
+  console.error(text)
   if (mainWindow) {
     mainWindow.webContents.send('message', text)
   }
@@ -320,4 +318,14 @@ autoUpdater.on('checking-for-update', () => {
 
 autoUpdater.on('error', err => {
   sendStatusToWindow('Error in auto-updater. ' + err)
+})
+
+autoUpdater.on('update-downloaded', () => {
+  dialog.showMessageBox({
+    type: 'info',
+    title: 'Update completed',
+    message:
+      'Update downloaded, the update will take place when you restart the app',
+    buttons: ['OK'],
+  })
 })
