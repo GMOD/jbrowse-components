@@ -27,7 +27,7 @@ autoUpdater.on('update-available', () => {
       type: 'info',
       title: 'Found updates',
       message: 'Found updates, do you want update now?',
-      buttons: ['Sure', 'No'],
+      buttons: ['Yes', 'No'],
     })
     .then(buttonIndex => {
       if (((buttonIndex as unknown) as number) === 0) {
@@ -317,12 +317,7 @@ ipcMain.handle(
 autoUpdater.on('checking-for-update', () => {
   sendStatusToWindow('Checking for update...')
 })
-autoUpdater.on('update-available', info => {
-  sendStatusToWindow('Update available.')
-})
-autoUpdater.on('update-not-available', info => {
-  sendStatusToWindow('Update not available.')
-})
+
 autoUpdater.on('error', err => {
   sendStatusToWindow('Error in auto-updater. ' + err)
 })
