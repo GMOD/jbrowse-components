@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/desktop",
-  "version": "1.4.6",
+  "version": "1.4.5",
   "description": "JBrowse desktop application specialized to inspect structural variants",
   "license": "Apache-2.0",
   "homepage": "./",
@@ -104,7 +104,6 @@
       "publish": [
         "github"
       ],
-      "target": "nsis",
       "artifactName": "jbrowse-desktop-${version}-win.${ext}"
     },
     "linux": {
@@ -112,7 +111,6 @@
         "github"
       ],
       "executableName": "jbrowse-desktop",
-      "target": "AppImage",
       "artifactName": "jbrowse-desktop-${version}-linux.AppImage"
     },
     "mac": {
@@ -120,7 +118,6 @@
         "github"
       ],
       "category": "public.app-category.utilities",
-      "target": "dmg",
       "artifactName": "jbrowse-desktop-${version}-mac.${ext}"
     },
     "files": [
