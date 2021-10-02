@@ -30,7 +30,7 @@ autoUpdater.on('update-available', () => {
       buttons: ['Yes', 'No'],
     })
     .then(buttonIndex => {
-      if (((buttonIndex as unknown) as number) === 0) {
+      if (buttonIndex.response === 0) {
         autoUpdater.downloadUpdate()
       }
     })
