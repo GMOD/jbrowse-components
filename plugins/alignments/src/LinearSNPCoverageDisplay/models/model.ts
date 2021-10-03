@@ -160,7 +160,7 @@ const stateModelFactory = (
                   )
                   self.updateModificationColorMap(vals)
                 }
-              } catch (error) {
+              } catch (error: any) {
                 console.error(error)
                 self.setError(error)
               }

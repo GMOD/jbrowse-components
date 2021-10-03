@@ -75,7 +75,8 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
         if (!killed) {
           setPluginArray(array.plugins)
         }
-      } catch (e) {
+      } catch (e: any) {
+        console.error(e)
         setError(e)
       }
     })()

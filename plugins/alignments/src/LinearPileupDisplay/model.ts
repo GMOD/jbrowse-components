@@ -216,9 +216,9 @@ const stateModelFactory = (
                 } else {
                   self.setReady(true)
                 }
-              } catch (error) {
-                console.error(error)
-                self.setError(error)
+              } catch (e: any) {
+                console.error(e)
+                self.setError(e)
               }
             },
             { delay: 1000 },
@@ -244,10 +244,9 @@ const stateModelFactory = (
 
       // uses copy-to-clipboard and generates notification
       copyFeatureToClipboard(feature: Feature) {
-        const copiedFeature = feature.toJSON()
-        delete copiedFeature.uniqueId
+        const { uniqueId, ...rest } = feature.toJSON()
         const session = getSession(self)
-        copy(JSON.stringify(copiedFeature, null, 4))
+        copy(JSON.stringify(rest, null, 4))
         session.notify('Copied to clipboard', 'success')
       },
 

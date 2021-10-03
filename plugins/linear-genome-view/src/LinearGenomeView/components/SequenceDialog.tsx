@@ -152,7 +152,7 @@ function SequenceDialog({
         } else {
           throw new Error('Selected region is out of bounds')
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error(e)
         if (active) {
           setError(e)

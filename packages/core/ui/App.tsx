@@ -113,7 +113,7 @@ const App = observer(
     session,
     HeaderButtons = <div />,
   }: {
-    HeaderButtons: React.ReactElement
+    HeaderButtons?: React.ReactElement
     session: any
   }) => {
     const classes = useStyles()

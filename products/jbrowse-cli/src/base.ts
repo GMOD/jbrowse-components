@@ -137,8 +137,8 @@ export default abstract class JBrowseCommand extends Command {
     let contents
     try {
       contents = await fsPromises.readFile(location, { encoding: 'utf8' })
-    } catch (error) {
-      this.error(error instanceof Error ? error : error.message, {
+    } catch (error: any) {
+      this.error(error instanceof Error ? error : `${error}`, {
         suggestions: [
           `Make sure the file "${location}" exists or use --out to point to a directory with a config.json`,
           'Run `jbrowse add-assembly` to create a config file',
@@ -149,8 +149,8 @@ export default abstract class JBrowseCommand extends Command {
     let result
     try {
       result = parseJSON(contents)
-    } catch (error) {
-      this.error(error instanceof Error ? error : error.message, {
+    } catch (error: any) {
+      this.error(error instanceof Error ? error : `${error}`, {
         suggestions: [`Make sure "${location}" is a valid JSON file`],
         exit: 50,
       })

@@ -109,7 +109,8 @@ export default function StartScreen({
           setUpdateSessionsList(false)
           setSessions(sessions)
         }
-      } catch (e) {
+      } catch (e: any) {
+        console.error(e)
         setError(e)
       }
     })()
@@ -154,7 +155,8 @@ export default function StartScreen({
           try {
             await ipcRenderer.invoke('reset')
             setUpdateSessionsList(true)
-          } catch (e) {
+          } catch (e: any) {
+            console.error(e)
             setError(e)
           } finally {
             setFactoryResetDialogOpen(false)

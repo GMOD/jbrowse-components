@@ -230,11 +230,11 @@ function WindowSizeDlg(props: {
 
   // window size stored as string, because it corresponds to a textfield which
   // is parsed as number on submit
-  const [window, setWindowSize] = useState('0')
+  const [windowSizeText, setWindowSize] = useState('0')
   const [error, setError] = useState<Error>()
-  const windowSize = +window
   const [primaryFeature, setPrimaryFeature] = useState<Feature>()
   const [qualTrack, setQualTrack] = useState(false)
+  const windowSize = +windowSizeText
 
   // we need to fetch the primary alignment if the selected feature is 2048.
   // this should be the first in the list of the SA tag
@@ -269,7 +269,7 @@ function WindowSizeDlg(props: {
         } else {
           setPrimaryFeature(preFeature)
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error(e)
         setError(e)
       }
@@ -533,7 +533,7 @@ function WindowSizeDlg(props: {
         displayName: `${readName} vs ${trackAssembly}`,
       })
       handleClose()
-    } catch (e) {
+    } catch (e: any) {
       console.error(e)
       setError(e)
     }

@@ -708,8 +708,8 @@ export function makeAbortableReaction<T, U, V>(
     () => {
       try {
         return dataFunction(self)
-      } catch (error) {
-        handleError(error)
+      } catch (e: any) {
+        handleError(e)
         return undefined
       }
     },
@@ -736,11 +736,11 @@ export function makeAbortableReaction<T, U, V>(
         if (isAlive(self)) {
           successFunction(result)
         }
-      } catch (error) {
+      } catch (e: any) {
         if (thisInProgress && !thisInProgress.signal.aborted) {
           thisInProgress.abort()
         }
-        handleError(error)
+        handleError(e)
       }
     },
     reactionOptions,

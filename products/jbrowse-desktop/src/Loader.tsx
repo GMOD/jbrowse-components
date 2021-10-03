@@ -88,7 +88,7 @@ const Loader = observer(() => {
           const data = await ipcRenderer.invoke('loadSession', config)
           const pm = await createPluginManager(JSON.parse(data))
           handleSetPluginManager(pm)
-        } catch (e) {
+        } catch (e: any) {
           handleError(e)
         }
       }

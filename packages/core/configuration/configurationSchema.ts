@@ -7,7 +7,6 @@ import {
   Instance,
   IAnyType,
   SnapshotOut,
-  ModelPropertiesDeclaration,
 } from 'mobx-state-tree'
 
 import { ElementId } from '../util/types/mst'
@@ -151,7 +150,7 @@ function makeConfigurationSchemaModel<
         )
       } catch (e) {
         throw new Error(
-          `invalid config slot definition for ${modelName}.${slotName}: ${e.message}`,
+          `invalid config slot definition for ${modelName}.${slotName}: ${e}`,
         )
       }
     } else {
@@ -164,10 +163,7 @@ function makeConfigurationSchemaModel<
   let completeModel = types
     .model(`${modelName}ConfigurationSchema`, modelDefinition)
     .actions(self => ({
-      setSubschema(
-        slotName: string,
-        data: ModelPropertiesDeclaration | AnyConfigurationSchemaType,
-      ) {
+      setSubschema(slotName: string, data: any) {
         if (!isConfigurationSchemaType(modelDefinition[slotName])) {
           throw new Error(`${slotName} is not a subschema, cannot replace`)
         }
@@ -241,6 +237,7 @@ export interface AnyConfigurationSchemaType
   isJBrowseConfigurationSchema: boolean
   jbrowseSchemaDefinition: ConfigurationSchemaDefinition
   jbrowseSchemaOptions: ConfigurationSchemaOptions
+  type: string
 }
 
 export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>
@@ -256,7 +253,7 @@ export function ConfigurationSchema<
   modelName: string,
   inputSchemaDefinition: DEFINITION,
   inputOptions?: OPTIONS,
-): AnyConfigurationSchemaType {
+) {
   const { schemaDefinition, options } = preprocessConfigurationSchemaArguments(
     modelName,
     inputSchemaDefinition,

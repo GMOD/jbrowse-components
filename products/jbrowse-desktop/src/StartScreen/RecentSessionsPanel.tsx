@@ -107,7 +107,7 @@ function RecentSessionsList({
                 const data = await ipcRenderer.invoke('loadSession', value)
                 const pm = await createPluginManager(JSON.parse(data))
                 setPluginManager(pm)
-              } catch (e) {
+              } catch (e: any) {
                 console.error(e)
                 setError(e)
               }
@@ -188,7 +188,7 @@ function RecentSessionsCards({
                 const data = await ipcRenderer.invoke('loadSession', name)
                 const pm = await createPluginManager(JSON.parse(data))
                 setPluginManager(pm)
-              } catch (e) {
+              } catch (e: any) {
                 console.error(e)
                 setError(e)
               }

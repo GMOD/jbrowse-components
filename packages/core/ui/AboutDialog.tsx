@@ -52,7 +52,7 @@ export default function AboutDialog({
         if (!cancelled) {
           setInfo(result as FileInfo)
         }
-      } catch (e) {
+      } catch (e: any) {
         if (!cancelled) {
           console.error(e)
           setError(e)

@@ -134,7 +134,7 @@ function ImportBookmarks({
                   })
                 model.importBookmarks(regions)
                 setDialogOpen(false)
-              } catch (e) {
+              } catch (e: any) {
                 console.error(e)
                 setError(e)
               }

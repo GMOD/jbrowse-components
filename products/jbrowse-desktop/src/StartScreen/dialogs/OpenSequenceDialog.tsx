@@ -296,7 +296,7 @@ const OpenSequenceDialog = ({
               })
               setPluginManager(pm)
               onClose()
-            } catch (e) {
+            } catch (e: any) {
               setError(e)
               console.error(e)
             }

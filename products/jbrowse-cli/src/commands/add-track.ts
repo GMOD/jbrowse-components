@@ -308,7 +308,7 @@ export default class AddTrack extends JBrowseCommand {
               if (force && fs.existsSync(dest)) {
                 await fsPromises.unlink(dest)
               }
-            } catch (e) {
+            } catch (e: any) {
               this.error(e)
             }
             return fsPromises.copyFile(
@@ -328,7 +328,7 @@ export default class AddTrack extends JBrowseCommand {
               if (force && fs.existsSync(dest)) {
                 await fsPromises.unlink(dest)
               }
-            } catch (e) {
+            } catch (e: any) {
               this.error(e)
             }
             return fsPromises.symlink(filePath, dest)
@@ -344,7 +344,7 @@ export default class AddTrack extends JBrowseCommand {
               if (force && fs.existsSync(dest)) {
                 await fsPromises.unlink(dest)
               }
-            } catch (e) {
+            } catch (e: any) {
               this.error(e)
             }
             return fsPromises.rename(filePath, dest)
