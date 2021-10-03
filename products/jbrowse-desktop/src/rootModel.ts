@@ -60,13 +60,11 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       textSearchManager: new TextSearchManager(pluginManager),
     }))
     .actions(self => ({
-      async saveSession() {
-        if (self.session) {
-          await ipcRenderer.invoke('saveSession', {
-            ...getSnapshot(self.jbrowse),
-            defaultSession: getSnapshot(self.session),
-          })
-        }
+      async saveSession(val: unknown) {
+        await ipcRenderer.invoke('saveSession', {
+          ...getSnapshot(self.jbrowse),
+          defaultSession: val,
+        })
       },
       setSavedSessionNames(sessionNames: string[]) {
         self.savedSessionNames = cast(sessionNames)
@@ -161,7 +159,10 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         self.menus = newMenus
       },
       async setPluginsUpdated() {
-        await self.saveSession()
+        if (self.session) {
+          await self.saveSession(getSnapshot(self.session))
+        }
+
         const url = window.location.href.split('?')[0]
         const name = self.session?.name || ''
         window.location.href = `${url}?config=${encodeURIComponent(name)}`
@@ -297,7 +298,14 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       afterCreate() {
         addDisposer(
           self,
-          autorun(() => self.saveSession(), { delay: 1000 }),
+          autorun(
+            async () => {
+              if (self.session) {
+                await self.saveSession(getSnapshot(self.session))
+              }
+            },
+            { delay: 1000 },
+          ),
         )
       },
     }))
