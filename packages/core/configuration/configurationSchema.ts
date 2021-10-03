@@ -1,13 +1,13 @@
 import {
   types,
   isStateTreeNode,
-  Instance,
-  IAnyType,
   isType,
   isLateType,
+  getSnapshot,
+  Instance,
+  IAnyType,
   SnapshotOut,
   ModelPropertiesDeclaration,
-  getSnapshot,
 } from 'mobx-state-tree'
 
 import { ElementId } from '../util/types/mst'

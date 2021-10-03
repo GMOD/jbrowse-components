@@ -198,16 +198,16 @@ const ShareDialog = observer(
               locationUrl.href,
             )
             if (!cancelled) {
-              setLoading(false)
               const params = new URLSearchParams(locationUrl.search)
               params.set('session', `share-${result.json.sessionId}`)
               params.set('password', result.password)
               locationUrl.search = params.toString()
               setShortUrl(locationUrl.href)
             }
-          } catch (e) {
-            setLoading(false)
+          } catch (e: any) {
             setError(e)
+          } finally {
+            setLoading(false)
           }
         }
       })()

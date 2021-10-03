@@ -170,6 +170,8 @@ export default class PluginManager {
     'rpc method',
   )
 
+  elementCreationScheduleRan = false
+
   rendererTypes = new TypeRecord('RendererType', RendererType)
 
   adapterTypes = new TypeRecord('AdapterType', AdapterType)
@@ -249,7 +251,7 @@ export default class PluginManager {
     // run the creation callbacks for each element type in order.
     // see elementCreationSchedule above for the creation order
     this.elementCreationSchedule.run()
-    delete this.elementCreationSchedule
+    this.elementCreationScheduleRan = true
     return this
   }
 
@@ -348,15 +350,10 @@ export default class PluginManager {
     fieldName: PluggableElementMember,
     fallback: IAnyType = types.maybe(types.null),
   ) {
-    const pluggableTypes: IAnyModelType[] = []
-    this.getElementTypeRecord(typeGroup)
+    const pluggableTypes = this.getElementTypeRecord(typeGroup)
       .all()
-      .forEach(t => {
-        const thing = t[fieldName]
-        if (isType(thing) && isModelType(thing)) {
-          pluggableTypes.push(thing)
-        }
-      })
+      .map(t => t[fieldName])
+      .filter(t => isType(t) && isModelType(t)) as IAnyType[]
 
     // try to smooth over the case when no types are registered, mostly
     // encountered in tests
@@ -374,15 +371,11 @@ export default class PluginManager {
     typeGroup: PluggableElementTypeGroup,
     fieldName: PluggableElementMember = 'configSchema',
   ) {
-    const pluggableTypes: AnyConfigurationSchemaType[] = []
-    this.getElementTypeRecord(typeGroup)
+    const pluggableTypes = this.getElementTypeRecord(typeGroup)
       .all()
-      .forEach(t => {
-        const thing = t[fieldName]
-        if (isBareConfigurationSchemaType(thing)) {
-          pluggableTypes.push(thing)
-        }
-      })
+      .map(t => t[fieldName])
+      .filter(t => isBareConfigurationSchemaType(t)) as IAnyType[]
+
     if (pluggableTypes.length === 0) {
       pluggableTypes.push(ConfigurationSchema('Null', {}))
     }

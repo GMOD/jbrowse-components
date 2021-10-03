@@ -174,7 +174,7 @@ const ArrayValue = ({
   name,
   value,
   description,
-  prefix,
+  prefix = [],
 }: {
   description?: React.ReactNode
   name: string

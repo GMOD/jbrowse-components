@@ -237,7 +237,7 @@ const SessionLoader = types
         pluginLoader.installGlobalReExports(window)
         const runtimePlugins = await pluginLoader.load()
         self.setRuntimePlugins([...runtimePlugins])
-      } catch (e) {
+      } catch (e: any) {
         console.error(e)
         self.setConfigError(e)
       }
@@ -248,7 +248,7 @@ const SessionLoader = types
         pluginLoader.installGlobalReExports(window)
         const plugins = await pluginLoader.load()
         self.setSessionPlugins([...plugins])
-      } catch (e) {
+      } catch (e: any) {
         console.error(e)
         self.setConfigError(e)
       }
@@ -274,7 +274,7 @@ const SessionLoader = types
             reason: sessionPlugins,
           })
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error(e)
         self.setConfigError(e)
       }
@@ -398,13 +398,13 @@ const SessionLoader = types
           localStorage.setItem(`previousAutosave-${configPath}`, lastAutosave)
         }
       } catch (e) {
-        console.error('failed to create previousAutosave')
+        console.error('failed to create previousAutosave', e)
       }
 
       try {
         // fetch config
         await this.fetchConfig()
-      } catch (e) {
+      } catch (e: any) {
         console.error(e)
         self.setConfigError(e)
         return
@@ -443,7 +443,7 @@ const SessionLoader = types
                 }
               }
             }
-          } catch (e) {
+          } catch (e: any) {
             console.error(e)
             self.setSessionError(e)
           }
@@ -617,7 +617,7 @@ const Renderer = observer(
             } else if (sessionSnapshot && !shareWarningOpen) {
               try {
                 rootModel.setSession(loader.sessionSnapshot)
-              } catch (err) {
+              } catch (err: any) {
                 console.error(err)
                 rootModel.setDefaultSession()
                 const errorMessage = (err.message || '')
@@ -664,7 +664,7 @@ const Renderer = observer(
             setPassword(undefined)
           }
         }
-      } catch (e) {
+      } catch (e: any) {
         const match = e.message.match(
           /.*at path "(.*)" snapshot `(.*)` is not assignable/,
         )

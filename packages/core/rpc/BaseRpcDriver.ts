@@ -262,7 +262,7 @@ export default abstract class BaseRpcDriver {
             ),
           )
         } else if (done) {
-          resolve()
+          resolve(true)
         }
       }, this.workerCheckFrequency)
     }).finally(() => {
