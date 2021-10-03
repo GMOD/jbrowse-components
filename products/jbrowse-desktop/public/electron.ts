@@ -27,7 +27,7 @@ autoUpdater.on('update-available', () => {
       type: 'info',
       title: 'Found updates',
       message:
-        'Found updates, do you want update now? Hit yes to download the update. No status will appear while the update downloads, but a dialog will appear once it completes downloading and you can restart the app after this to complete the update',
+        'Found updates, do you want update now? No status will appear while the update downloads, but a dialog will appear once complete',
       buttons: ['Yes', 'No'],
     })
     .then(buttonIndex => {
