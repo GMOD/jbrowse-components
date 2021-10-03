@@ -6,17 +6,17 @@ import {
   getType,
   getPropertyMembers,
   getChildType,
-  resolveIdentifier,
-  IAnyStateTreeNode,
-  IAnyType,
-  Instance,
   isArrayType,
   isModelType,
   isReferenceType,
   isValidReference,
   isMapType,
-  SnapshotIn,
+  resolveIdentifier,
   types,
+  IAnyStateTreeNode,
+  IAnyType,
+  Instance,
+  SnapshotIn,
 } from 'mobx-state-tree'
 
 import { saveAs } from 'file-saver'
@@ -27,11 +27,10 @@ import assemblyManagerFactory, {
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
 import { UriLocation } from '@jbrowse/core/util/types'
-
-// material ui
+import { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
+import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 
 // icons
 import AddIcon from '@material-ui/icons/Add'
@@ -128,7 +127,7 @@ export default function RootModel(
       jbrowse: jbrowseWebFactory(
         pluginManager,
         Session,
-        assemblyConfigSchemasType,
+        assemblyConfigSchemasType as AnyConfigurationSchemaType,
       ),
       configPath: types.maybe(types.string),
       session: types.maybe(Session),
@@ -564,10 +563,7 @@ export default function RootModel(
       insertMenu(menuName: string, position: number) {
         const insertPosition =
           position < 0 ? self.menus.length + position : position
-        self.menus.splice(insertPosition, 0, {
-          label: menuName,
-          menuItems: [],
-        })
+        self.menus.splice(insertPosition, 0, { label: menuName, menuItems: [] })
         return self.menus.length
       },
       /**

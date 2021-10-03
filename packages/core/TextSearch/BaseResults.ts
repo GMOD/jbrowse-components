@@ -97,9 +97,6 @@ export class RefSequenceResult extends BaseResult {
 
   constructor(args: BaseResultArgs) {
     super(args)
-    if (!args.refName) {
-      throw new Error('must provide refName')
-    }
     this.refName = args.refName ?? ''
   }
 

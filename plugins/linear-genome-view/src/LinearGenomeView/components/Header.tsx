@@ -115,9 +115,10 @@ const LinearGenomeViewHeader = observer(
     const theme = useTheme()
     const session = getSession(model)
 
-    const { textSearchManager } = session
+    const { textSearchManager, assemblyManager } = session
     const { assemblyNames, rankSearchResults } = model
     const assemblyName = assemblyNames[0]
+    const assembly = assemblyManager.get(assemblyName)
     const searchScope = model.searchScope(assemblyName)
 
     async function fetchResults(queryString: string) {
@@ -140,18 +141,22 @@ const LinearGenomeViewHeader = observer(
       let location = option.getLocation()
       const label = option.getLabel()
       try {
-        const results = await fetchResults(label)
-        if (results && results.length > 1) {
-          model.setSearchResults(results, label.toLowerCase())
-          return
-        } else if (results?.length === 1) {
-          location = results[0].getLocation()
-          trackId = results[0].getTrackId()
-        }
+        if (assembly?.refNames?.includes(location)) {
+          model.navToLocString(location)
+        } else {
+          const results = await fetchResults(label)
+          if (results && results.length > 1) {
+            model.setSearchResults(results, label.toLowerCase())
+            return
+          } else if (results?.length === 1) {
+            location = results[0].getLocation()
+            trackId = results[0].getTrackId()
+          }
 
-        model.navToLocString(location, assemblyName)
-        if (trackId) {
-          model.showTrack(trackId)
+          model.navToLocString(location, assemblyName)
+          if (trackId) {
+            model.showTrack(trackId)
+          }
         }
       } catch (e) {
         console.error(e)

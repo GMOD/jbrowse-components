@@ -44,6 +44,7 @@
     "@material-ui/data-grid": "^4.0.0-alpha.37",
     "@material-ui/icons": "^4.0.0",
     "@material-ui/lab": "^4.0.0-alpha.56",
+    "clone": "^2.1.2",
     "clsx": "^1.0.4",
     "copy-to-clipboard": "^3.3.1",
     "core-js": "^3.2.1",

@@ -23,7 +23,7 @@ import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
 export * from './util'
 
 /** abstract type for a model that contains multiple views */
-export interface AbstractViewContainer {
+export interface AbstractViewContainer extends IAnyStateTreeNode {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
   addView(
@@ -103,6 +103,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
     callback: (doneCallback: Function) => [DialogComponentType, any],
   ) => void
   name: string
+  id?: string
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
@@ -231,6 +232,7 @@ export interface AbstractRootModel {
   session?: AbstractSessionModel
   setDefaultSession?(): void
   adminMode?: boolean
+  error?: Error
 }
 
 /** root model with more included for the heavier JBrowse web and desktop app */
