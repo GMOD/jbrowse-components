@@ -3638,7 +3638,7 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@storybook/addon-actions@^6.3.8":
+"@storybook/addon-actions@^6.3.9":
   version "6.3.9"
   resolved "https://registry.yarnpkg.com/@storybook/addon-actions/-/addon-actions-6.3.9.tgz#dd4b834b7734bc4c19142cf623b665f02e2d38b9"
   integrity sha512-r02sSxkd2csKb69PVi8541e6hYGJ+FXOEBUnvLPyf5IULs7tRWPJekNd6cHxP1hoUBnmmj2f8CXmmbsXzr6rrQ==
@@ -3661,7 +3661,7 @@
     util-deprecate "^1.0.2"
     uuid-browser "^3.1.0"
 
-"@storybook/addon-docs@^6.3.8":
+"@storybook/addon-docs@^6.3.9":
   version "6.3.9"
   resolved "https://registry.yarnpkg.com/@storybook/addon-docs/-/addon-docs-6.3.9.tgz#34b87eb5c5059bb98bf09700b60470c8d35fbb58"
   integrity sha512-UgujxJei5xejFpAfW40TdoDJnnfeKUPrp6QWMjMRcMG3+uW69VWviw4p3qzS9phO5vQJsINpRT8Bu0aGz2TpJw==
@@ -3711,7 +3711,7 @@
     ts-dedent "^2.0.0"
     util-deprecate "^1.0.2"
 
-"@storybook/addon-links@^6.3.8":
+"@storybook/addon-links@^6.3.9":
   version "6.3.9"
   resolved "https://registry.yarnpkg.com/@storybook/addon-links/-/addon-links-6.3.9.tgz#a7342d80c26f81bc8d5fdab4906521786bc99343"
   integrity sha512-n5Ox9x70gUSHZebbCYRUMMAXddmf1WW5raDP424dtdUzfKDnES+/v/dgyp3pnJshWO/muTEB1ytP4QV0J1+jVA==
@@ -3729,7 +3729,7 @@
     regenerator-runtime "^0.13.7"
     ts-dedent "^2.0.0"
 
-"@storybook/addons@6.3.9", "@storybook/addons@^6.3.8":
+"@storybook/addons@6.3.9", "@storybook/addons@^6.3.9":
   version "6.3.9"
   resolved "https://registry.yarnpkg.com/@storybook/addons/-/addons-6.3.9.tgz#e12c8d4351b861d67cb6b8d64ed33b1f6b90994f"
   integrity sha512-5tRkeHgdb/I/rp3GBkxonDLVsA45Vpgh/vFrsecrS/98wkSYfPEhqrDGLOosJHFrN3J2pznAuNFaA05158uBsw==
@@ -4176,7 +4176,7 @@
     react-docgen-typescript "^2.0.0"
     tslib "^2.0.0"
 
-"@storybook/react@^6.3.8":
+"@storybook/react@^6.3.9":
   version "6.3.9"
   resolved "https://registry.yarnpkg.com/@storybook/react/-/react-6.3.9.tgz#3d93a3606a6a9ae1ece8d0d56f382a9c15df5254"
   integrity sha512-LYlAURnKvFsf3CZG2CDvQwvlF/vy5VsKuNiNmyTk6zggmkbitXrwkuT7KoElYrz4REkyhd/HA6Uw6lfkPsyuHA==
