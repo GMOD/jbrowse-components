@@ -24,7 +24,7 @@ const defaultInternetAccounts = [
     needsAuthorization: true,
     needsPKCE: true,
     hasRefreshToken: true,
-    clientId: '50knr6xrjfc39sk',
+    clientId: 'ykjqg1kr23pl1i7',
     domains: [
       'addtodropbox.com',
       'db.tt',
@@ -43,7 +43,7 @@ const defaultInternetAccounts = [
     authEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
     needsAuthorization: true,
     clientId:
-      '109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com',
+      '109518325434-m86s8a5og8ijc5m6n7n8dk7e9586bg9i.apps.googleusercontent.com',
     scopes: 'https://www.googleapis.com/auth/drive.readonly',
     responseType: 'token',
     domains: ['drive.google.com'],
