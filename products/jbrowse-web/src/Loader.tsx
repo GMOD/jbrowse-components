@@ -153,8 +153,8 @@ const SessionLoader = types
     sessionSnapshot: undefined as any,
     runtimePlugins: [] as PluginRecord[],
     sessionPlugins: [] as PluginRecord[],
-    sessionError: undefined as Error | undefined,
-    configError: undefined as Error | undefined,
+    sessionError: undefined as unknown,
+    configError: undefined as unknown,
     bc1:
       window.BroadcastChannel &&
       new window.BroadcastChannel('jb_request_session'),
@@ -200,10 +200,10 @@ const SessionLoader = types
     setSessionQuery(session?: any) {
       self.sessionQuery = session
     },
-    setConfigError(error: Error) {
+    setConfigError(error: unknown) {
       self.configError = error
     },
-    setSessionError(error: Error) {
+    setSessionError(error: unknown) {
       self.sessionError = error
     },
     setRuntimePlugins(plugins: PluginRecord[]) {
@@ -237,7 +237,7 @@ const SessionLoader = types
         pluginLoader.installGlobalReExports(window)
         const runtimePlugins = await pluginLoader.load()
         self.setRuntimePlugins([...runtimePlugins])
-      } catch (e: any) {
+      } catch (e) {
         console.error(e)
         self.setConfigError(e)
       }
@@ -248,7 +248,7 @@ const SessionLoader = types
         pluginLoader.installGlobalReExports(window)
         const plugins = await pluginLoader.load()
         self.setSessionPlugins([...plugins])
-      } catch (e: any) {
+      } catch (e) {
         console.error(e)
         self.setConfigError(e)
       }
@@ -274,7 +274,7 @@ const SessionLoader = types
             reason: sessionPlugins,
           })
         }
-      } catch (e: any) {
+      } catch (e) {
         console.error(e)
         self.setConfigError(e)
       }
@@ -404,7 +404,7 @@ const SessionLoader = types
       try {
         // fetch config
         await this.fetchConfig()
-      } catch (e: any) {
+      } catch (e) {
         console.error(e)
         self.setConfigError(e)
         return
@@ -443,7 +443,7 @@ const SessionLoader = types
                 }
               }
             }
-          } catch (e: any) {
+          } catch (e) {
             console.error(e)
             self.setSessionError(e)
           }
@@ -487,16 +487,17 @@ const ErrorMessage = ({
   err,
   snapshotError,
 }: {
-  err: Error
+  err: unknown
   snapshotError?: string
 }) => {
   const classes = useStyles()
+  const str = `${err}`
   return (
     <div>
       <NoConfigMessage />
-      {err && err.message === 'HTTP 404 fetching config.json' ? (
+      {str === 'HTTP 404 fetching config.json' ? (
         <div className={classes.message} style={{ background: '#9f9' }}>
-          No config detected ({`${err}`})
+          No config detected ({str})
           <br />
           <p>
             If you want to learn how to complete your setup, visit our{' '}
@@ -507,7 +508,7 @@ const ErrorMessage = ({
         </div>
       ) : (
         <div className={classes.message} style={{ background: '#f88' }}>
-          {`${err}`}
+          {str}
           {snapshotError ? (
             <>
               ... Failed element had snapshot:
@@ -608,7 +609,7 @@ const Renderer = observer(
               // setDefaultSession, even though we know this exists now
               if (rootModel.session) {
                 rootModel.session.notify(
-                  `Error loading session: ${sessionError.message}. If you
+                  `Error loading session: ${sessionError}. If you
                 received this URL from another user, request that they send you
                 a session generated with the "Share" button instead of copying
                 and pasting their URL`,
@@ -617,10 +618,11 @@ const Renderer = observer(
             } else if (sessionSnapshot && !shareWarningOpen) {
               try {
                 rootModel.setSession(loader.sessionSnapshot)
-              } catch (err: any) {
+              } catch (err) {
                 console.error(err)
                 rootModel.setDefaultSession()
-                const errorMessage = (err.message || '')
+                const str = `${err}`
+                const errorMessage = str
                   .replace('[mobx-state-tree] ', '')
                   .replace(/\(.+/, '')
                 rootModel.session?.notify(
@@ -664,8 +666,9 @@ const Renderer = observer(
             setPassword(undefined)
           }
         }
-      } catch (e: any) {
-        const match = e.message.match(
+      } catch (e) {
+        const str = `${e}`
+        const match = str.match(
           /.*at path "(.*)" snapshot `(.*)` is not assignable/,
         )
         // best effort to make a better error message than the default
@@ -674,7 +677,7 @@ const Renderer = observer(
           setError(new Error(`Failed to load element at ${match[1]}`))
           setSnapshotError(match[2])
         } else {
-          setError(new Error(e.message.slice(0, 10000)))
+          setError(new Error(str.slice(0, 10000)))
         }
         console.error(e)
       }

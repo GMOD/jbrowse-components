@@ -229,7 +229,7 @@ export interface AbstractRootModel {
   session?: AbstractSessionModel
   setDefaultSession?(): void
   adminMode?: boolean
-  error?: Error
+  error?: unknown
 }
 
 /** root model with more included for the heavier JBrowse web and desktop app */

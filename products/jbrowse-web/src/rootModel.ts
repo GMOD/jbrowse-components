@@ -147,7 +147,7 @@ export default function RootModel(
       savedSessionsVolatile: observable.map({}),
       textSearchManager: new TextSearchManager(pluginManager),
       pluginManager,
-      error: undefined as undefined | Error,
+      error: undefined as unknown,
     }))
     .views(self => ({
       get savedSessions() {
@@ -195,7 +195,8 @@ export default function RootModel(
               try {
                 const key = self.localStorageId(val.name)
                 localStorage.setItem(key, JSON.stringify({ session: val }))
-              } catch (e: any) {
+              } catch (e) {
+                // @ts-ignore
                 if (e.code === '22' || e.code === '1024') {
                   alert(
                     'Local storage is full! Please use the "Open sessions" panel to remove old sessions',
@@ -329,7 +330,7 @@ export default function RootModel(
         this.setSession(autosavedSession)
       },
 
-      setError(error?: Error) {
+      setError(error?: unknown) {
         self.error = error
       },
     }))

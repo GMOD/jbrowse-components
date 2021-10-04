@@ -16,7 +16,7 @@ const DeleteSessionDialog = ({
 }: {
   sessionToDelete?: string
   onClose: (arg0: boolean) => void
-  setError: (e: Error) => void
+  setError: (e: unknown) => void
 }) => {
   return (
     <Dialog open={!!sessionToDelete} onClose={() => onClose(false)}>
@@ -33,7 +33,7 @@ const DeleteSessionDialog = ({
             try {
               await ipcRenderer.invoke('deleteSession', sessionToDelete)
               onClose(true)
-            } catch (e: any) {
+            } catch (e) {
               console.error(e)
               setError(e)
             }

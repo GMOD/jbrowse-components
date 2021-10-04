@@ -35,7 +35,7 @@ export default function ExportSvgDlg({
   const offscreenCanvas = typeof OffscreenCanvas !== 'undefined'
   const [rasterizeLayers, setRasterizeLayers] = useState(offscreenCanvas)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<Error>()
+  const [error, setError] = useState<unknown>()
   const classes = useStyles()
   return (
     <Dialog open onClose={handleClose}>
@@ -89,7 +89,7 @@ export default function ExportSvgDlg({
             try {
               await model.exportSvg({ rasterizeLayers })
               handleClose()
-            } catch (e: any) {
+            } catch (e) {
               console.error(e)
               setError(e)
             } finally {

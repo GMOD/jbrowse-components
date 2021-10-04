@@ -177,7 +177,7 @@ const ShareDialog = observer(
     const classes = useStyles()
     const [shortUrl, setShortUrl] = useState('')
     const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<Error>()
+    const [error, setError] = useState<unknown>()
     const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
 
     const url = session.shareURL
@@ -204,7 +204,7 @@ const ShareDialog = observer(
               locationUrl.search = params.toString()
               setShortUrl(locationUrl.href)
             }
-          } catch (e: any) {
+          } catch (e) {
             setError(e)
           } finally {
             setLoading(false)

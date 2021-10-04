@@ -23,7 +23,7 @@ const RenameSessionDialog = ({
   onClose: (arg0: boolean) => void
 }) => {
   const [newSessionName, setNewSessionName] = useState('')
-  const [error, setError] = useState<Error>()
+  const [error, setError] = useState<unknown>()
 
   return (
     <Dialog open={!!sessionToRename} onClose={() => onClose(false)}>
@@ -59,7 +59,7 @@ const RenameSessionDialog = ({
                 newSessionName,
               )
               onClose(true)
-            } catch (e: any) {
+            } catch (e) {
               console.error(e)
               setError(e)
             }

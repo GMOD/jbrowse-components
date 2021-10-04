@@ -736,7 +736,7 @@ export function makeAbortableReaction<T, U, V>(
         if (isAlive(self)) {
           successFunction(result)
         }
-      } catch (e: any) {
+      } catch (e) {
         if (thisInProgress && !thisInProgress.signal.aborted) {
           thisInProgress.abort()
         }

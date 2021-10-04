@@ -533,7 +533,7 @@ function WindowSizeDlg(props: {
         displayName: `${readName} vs ${trackAssembly}`,
       })
       handleClose()
-    } catch (e: any) {
+    } catch (e) {
       console.error(e)
       setError(e)
     }

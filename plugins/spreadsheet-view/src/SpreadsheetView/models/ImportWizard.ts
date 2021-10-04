@@ -40,7 +40,7 @@ export default () => {
       fileTypes,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       fileSource: undefined as any,
-      error: undefined as Error | undefined,
+      error: undefined as unknown,
       loading: false,
     }))
     .views(self => ({
@@ -115,8 +115,7 @@ export default () => {
         self.fileType = typeName
       },
 
-      setError(error: Error) {
-        console.error(error)
+      setError(error: unknown) {
         self.loading = false
         self.error = error
       },
@@ -172,7 +171,7 @@ export default () => {
               this.setLoaded()
               getParent(self).displaySpreadsheet(spreadsheet)
             })
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error(error)
           this.setError(error)
         }

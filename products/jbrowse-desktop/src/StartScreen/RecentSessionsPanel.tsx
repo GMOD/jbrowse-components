@@ -49,7 +49,7 @@ function RecentSessionsList({
   setSessionToRename,
   setPluginManager,
 }: {
-  setError: (e: Error) => void
+  setError: (e: unknown) => void
   setSessionToDelete: (e: string) => void
   setSessionToRename: (e: string) => void
   setPluginManager: (pm: PluginManager) => void
@@ -107,7 +107,7 @@ function RecentSessionsList({
                 const data = await ipcRenderer.invoke('loadSession', value)
                 const pm = await createPluginManager(JSON.parse(data))
                 setPluginManager(pm)
-              } catch (e: any) {
+              } catch (e) {
                 console.error(e)
                 setError(e)
               }
@@ -169,7 +169,7 @@ function RecentSessionsCards({
   setSessionToRename,
   setPluginManager,
 }: {
-  setError: (e: Error) => void
+  setError: (e: unknown) => void
   setSessionToDelete: (e: string) => void
   setSessionToRename: (e: string) => void
   setPluginManager: (pm: PluginManager) => void
@@ -188,7 +188,7 @@ function RecentSessionsCards({
                 const data = await ipcRenderer.invoke('loadSession', name)
                 const pm = await createPluginManager(JSON.parse(data))
                 setPluginManager(pm)
-              } catch (e: any) {
+              } catch (e) {
                 console.error(e)
                 setError(e)
               }
@@ -218,7 +218,7 @@ export default function RecentSessionPanel({
   setSessionToDelete,
   setPluginManager,
 }: {
-  setError: (e: Error) => void
+  setError: (e: unknown) => void
   sortedSessions: Session[]
   setSessionToRename: (e: string) => void
   setSessionToDelete: (e: string) => void
