@@ -192,11 +192,9 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         }
 
         // if still no existing account, create ephemeral config to use
-        return this.createEphemeralInternetAccount(
-          selectedId as string,
-          {},
-          location,
-        )
+        return selectedId
+          ? this.createEphemeralInternetAccount(selectedId, {}, location)
+          : null
       },
       afterCreate() {
         addDisposer(
