@@ -16,6 +16,7 @@ import {
   ToggleButtonProps,
 } from '@material-ui/lab'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { format } from 'timeago.js'
 import { ipcRenderer } from 'electron'
 
 // icons
@@ -121,8 +122,22 @@ function RecentSessionsList({
     {
       field: 'lastModified',
       headerName: 'Last modified',
-      renderCell: ({ value }: GridCellParams) =>
-        !value ? null : `${value.toLocaleString('en-US')}`,
+      renderCell: ({ value }: GridCellParams) => {
+        if (!value) {
+          return null
+        }
+        const lastModified = value as Date
+        const now = Date.now()
+        const oneDayLength = 24 * 60 * 60 * 1000
+        if (now - lastModified.getTime() < oneDayLength) {
+          return (
+            <Tooltip title={lastModified.toLocaleString('en-US')}>
+              <div>{format(lastModified)}</div>
+            </Tooltip>
+          )
+        }
+        return lastModified.toLocaleString('en-US')
+      },
       width: 150,
     },
   ]
