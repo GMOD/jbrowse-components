@@ -17,6 +17,9 @@ module.exports = {
       options: { scriptsPackageName: 'react-scripts' },
     },
   ],
+  typescript: {
+    reactDocgen: 'none',
+  },
   // This uses similar logic to products/jbrowse-web/rescripts/yarnWorkspacesRescript.js
   webpackFinal: async config => {
     config.module.rules.push(
