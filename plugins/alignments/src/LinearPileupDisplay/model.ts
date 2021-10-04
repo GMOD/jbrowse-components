@@ -216,7 +216,7 @@ const stateModelFactory = (
                 } else {
                   self.setReady(true)
                 }
-              } catch (e: any) {
+              } catch (e) {
                 console.error(e)
                 self.setError(e)
               }

@@ -114,7 +114,7 @@ export function stateModelFactory(configSchema: any) {
           self.renderingComponent = renderingComponent
           renderInProgress = undefined
         },
-        setError(error: Error) {
+        setError(error: unknown) {
           console.error(error)
           if (renderInProgress && !renderInProgress.signal.aborted) {
             renderInProgress.abort()

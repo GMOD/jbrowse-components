@@ -55,7 +55,7 @@ const useStyles = makeStyles(theme => ({
 function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
   const classes = useStyles()
   const [pluginArray, setPluginArray] = useState<JBrowsePlugin[]>([])
-  const [error, setError] = useState<Error>()
+  const [error, setError] = useState<unknown>()
   const [customPluginFormOpen, setCustomPluginFormOpen] = useState(false)
   const { adminMode } = getSession(model)
   const { pluginManager } = getEnv(model)
@@ -75,7 +75,7 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
         if (!killed) {
           setPluginArray(array.plugins)
         }
-      } catch (e: any) {
+      } catch (e) {
         console.error(e)
         setError(e)
       }

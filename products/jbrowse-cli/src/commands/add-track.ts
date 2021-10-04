@@ -308,8 +308,8 @@ export default class AddTrack extends JBrowseCommand {
               if (force && fs.existsSync(dest)) {
                 await fsPromises.unlink(dest)
               }
-            } catch (e: any) {
-              this.error(e)
+            } catch (e) {
+              this.error(e instanceof Error ? e : `${e}`)
             }
             return fsPromises.copyFile(
               filePath,
@@ -328,8 +328,8 @@ export default class AddTrack extends JBrowseCommand {
               if (force && fs.existsSync(dest)) {
                 await fsPromises.unlink(dest)
               }
-            } catch (e: any) {
-              this.error(e)
+            } catch (e) {
+              this.error(e instanceof Error ? e : `${e}`)
             }
             return fsPromises.symlink(filePath, dest)
           }),
@@ -344,8 +344,8 @@ export default class AddTrack extends JBrowseCommand {
               if (force && fs.existsSync(dest)) {
                 await fsPromises.unlink(dest)
               }
-            } catch (e: any) {
-              this.error(e)
+            } catch (e) {
+              this.error(e instanceof Error ? e : `${e}`)
             }
             return fsPromises.rename(filePath, dest)
           }),

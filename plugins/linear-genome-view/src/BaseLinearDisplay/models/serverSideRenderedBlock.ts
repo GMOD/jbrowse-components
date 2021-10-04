@@ -36,7 +36,7 @@ const blockState = types
     features: undefined as Map<string, Feature> | undefined,
     layout: undefined as any,
     status: '',
-    error: undefined as Error | undefined,
+    error: undefined as unknown,
     message: undefined as string | undefined,
     maxHeightReached: false,
     ReactComponent: ServerSideRenderedBlockContent,
@@ -128,7 +128,7 @@ const blockState = types
         self.renderProps = renderProps
         renderInProgress = undefined
       },
-      setError(error: Error) {
+      setError(error: unknown) {
         console.error(error)
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()

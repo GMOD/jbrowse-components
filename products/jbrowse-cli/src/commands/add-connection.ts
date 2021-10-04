@@ -91,7 +91,7 @@ export default class AddConnection extends JBrowseCommand {
     const { args: runArgs, flags: runFlags } = this.parse(AddConnection)
 
     const output = runFlags.target || runFlags.out || '.'
-    const isDir = (await fsPromises.lstat(output)).isDirectory()
+    const isDir = fs.lstatSync(output).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
 
     const { connectionUrlOrPath: argsPath } = runArgs as {

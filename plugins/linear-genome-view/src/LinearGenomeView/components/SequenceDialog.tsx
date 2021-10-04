@@ -101,7 +101,7 @@ function SequenceDialog({
 }) {
   const classes = useStyles()
   const session = getSession(model)
-  const [error, setError] = useState<Error>()
+  const [error, setError] = useState<unknown>()
   const [sequence, setSequence] = useState<string>()
   const loading = Boolean(sequence === undefined)
   const { leftOffset, rightOffset } = model
@@ -152,7 +152,7 @@ function SequenceDialog({
         } else {
           throw new Error('Selected region is out of bounds')
         }
-      } catch (e: any) {
+      } catch (e) {
         console.error(e)
         if (active) {
           setError(e)

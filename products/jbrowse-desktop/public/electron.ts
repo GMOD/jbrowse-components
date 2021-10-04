@@ -49,14 +49,8 @@ function getPath(sessionName: string, ext = 'json') {
   return path.join(sessionDir, `${encodeURIComponent(sessionName)}.${ext}`)
 }
 
-try {
-  fs.statSync(sessionDir)
-} catch (error: any) {
-  if (error.code === 'ENOENT' || error.code === 'ENOTDIR') {
-    fs.mkdirSync(sessionDir, { recursive: true })
-  } else {
-    throw error
-  }
+if (!fs.lstatSync(sessionDir).isDirectory()) {
+  fs.mkdirSync(sessionDir, { recursive: true })
 }
 
 interface SessionSnap {

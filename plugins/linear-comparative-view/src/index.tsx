@@ -231,7 +231,7 @@ function WindowSizeDlg(props: {
   // window size stored as string, because it corresponds to a textfield which
   // is parsed as number on submit
   const [windowSizeText, setWindowSize] = useState('0')
-  const [error, setError] = useState<Error>()
+  const [error, setError] = useState<unknown>()
   const [primaryFeature, setPrimaryFeature] = useState<Feature>()
   const [qualTrack, setQualTrack] = useState(false)
   const windowSize = +windowSizeText
@@ -269,7 +269,7 @@ function WindowSizeDlg(props: {
         } else {
           setPrimaryFeature(preFeature)
         }
-      } catch (e: any) {
+      } catch (e) {
         console.error(e)
         setError(e)
       }

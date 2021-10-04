@@ -577,7 +577,7 @@ const stateModelFactory = (
                   if (isAlive(self)) {
                     self.updateStats(stats)
                   }
-                } catch (e: any) {
+                } catch (e) {
                   if (!isAbortException(e) && isAlive(self)) {
                     console.error(e)
                     self.setError(e)

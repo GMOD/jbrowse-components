@@ -690,11 +690,11 @@ export function makeAbortableReaction<T, U, V>(
   reactionOptions: IReactionOptions,
   startedFunction: (aborter: AbortController) => void,
   successFunction: (arg: V) => void,
-  errorFunction: (err: Error) => void,
+  errorFunction: (err: unknown) => void,
 ) {
   let inProgress: AbortController | undefined
 
-  function handleError(error: Error) {
+  function handleError(error: unknown) {
     if (!isAbortException(error)) {
       if (isAlive(self)) {
         errorFunction(error)
@@ -708,7 +708,7 @@ export function makeAbortableReaction<T, U, V>(
     () => {
       try {
         return dataFunction(self)
-      } catch (e: any) {
+      } catch (e) {
         handleError(e)
         return undefined
       }

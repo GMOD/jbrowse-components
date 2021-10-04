@@ -33,7 +33,7 @@ export default function AboutDialog({
 }) {
   const classes = useStyles()
   const [info, setInfo] = useState<FileInfo>()
-  const [error, setError] = useState<Error>()
+  const [error, setError] = useState<unknown>()
   const session = getSession(config)
   const { rpcManager } = session
   const conf = readConfObject(config)
@@ -52,7 +52,7 @@ export default function AboutDialog({
         if (!cancelled) {
           setInfo(result as FileInfo)
         }
-      } catch (e: any) {
+      } catch (e) {
         if (!cancelled) {
           console.error(e)
           setError(e)
