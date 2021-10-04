@@ -37,7 +37,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function RecentSessionsTable({
+function RecentSessionsList({
   setError,
   sortedSessions,
   setSessionToDelete,
@@ -193,7 +193,7 @@ export default function RecentSessionPanel({
   setPluginManager: (pm: PluginManager) => void
 }) {
   const classes = useStyles()
-  const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'table')
+  const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
   return (
     <div>
       <FormControl className={classes.formControl}>
@@ -207,8 +207,8 @@ export default function RecentSessionPanel({
               <ViewComfyIcon />
             </Tooltip>
           </ToggleButton>
-          <ToggleButton value={'table'}>
-            <Tooltip title="Table view">
+          <ToggleButton value={'list'}>
+            <Tooltip title="List view">
               <ListIcon />
             </Tooltip>
           </ToggleButton>
@@ -225,7 +225,7 @@ export default function RecentSessionPanel({
             setSessionToRename={setSessionToRename}
           />
         ) : (
-          <RecentSessionsTable
+          <RecentSessionsList
             setPluginManager={setPluginManager}
             sortedSessions={sortedSessions}
             setError={setError}
