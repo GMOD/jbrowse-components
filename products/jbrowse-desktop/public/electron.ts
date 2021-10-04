@@ -246,7 +246,7 @@ ipcMain.handle(
 
     return new Promise(resolve => {
       win.webContents.on(
-        'did-navigate',
+        'will-redirect',
         function (event: Event, redirectUrl: string) {
           if (redirectUrl.startsWith(data.redirect_uri)) {
             event.preventDefault()

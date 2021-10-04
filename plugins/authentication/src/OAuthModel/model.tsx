@@ -88,13 +88,22 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       return {
         // opens external OAuth flow, popup for web and new browser window for desktop
         async useEndpointForAuthorization(location: UriLocation) {
+          const determineRedirectUri = () => {
+            if (!inWebWorker) {
+              if (isElectron) {
+                return 'http://localhost/auth'
+              } else {
+                return window.location.origin + window.location.pathname
+              }
+            } else {
+              return self.uriToPreAuthInfoMap.get(location.uri)?.authInfo
+                ?.redirectUri
+            }
+          }
           const config = self.accountConfig
           const data: OAuthData = {
             client_id: config.clientId,
-            redirect_uri: !inWebWorker
-              ? window.location.origin + window.location.pathname
-              : self.uriToPreAuthInfoMap.get(location.uri)?.authInfo
-                  ?.redirectUri,
+            redirect_uri: determineRedirectUri(),
             response_type: config.responseType || 'code',
           }
 
