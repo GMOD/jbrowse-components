@@ -10,7 +10,11 @@ import {
   makeStyles,
 } from '@material-ui/core'
 import { DataGrid, GridCellParams } from '@material-ui/data-grid'
-import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab'
+import {
+  ToggleButtonGroup,
+  ToggleButton,
+  ToggleButtonProps,
+} from '@material-ui/lab'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ipcRenderer } from 'electron'
 
@@ -179,6 +183,15 @@ function RecentSessionsCards({
   )
 }
 
+function ToggleButtonWithTooltip(props: ToggleButtonProps) {
+  const { title, children, ...other } = props
+  return (
+    <Tooltip title={title || ''}>
+      <ToggleButton {...other}>{children}</ToggleButton>
+    </Tooltip>
+  )
+}
+
 export default function RecentSessionPanel({
   setError,
   sortedSessions,
@@ -202,16 +215,12 @@ export default function RecentSessionPanel({
           value={displayMode}
           onChange={(_, newVal) => setDisplayMode(newVal)}
         >
-          <ToggleButton value={'grid'}>
-            <Tooltip title="Grid view">
-              <ViewComfyIcon />
-            </Tooltip>
-          </ToggleButton>
-          <ToggleButton value={'list'}>
-            <Tooltip title="List view">
-              <ListIcon />
-            </Tooltip>
-          </ToggleButton>
+          <ToggleButtonWithTooltip value="grid" title="Grid view">
+            <ViewComfyIcon />
+          </ToggleButtonWithTooltip>
+          <ToggleButtonWithTooltip value="list" title="List view">
+            <ListIcon />
+          </ToggleButtonWithTooltip>
         </ToggleButtonGroup>
       </FormControl>
 
