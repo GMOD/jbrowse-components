@@ -58,9 +58,11 @@ function RecentSessionsList({
   const columns = [
     {
       field: 'delete',
+      minWidth: 40,
       width: 40,
       sortable: false,
       filterable: false,
+      headerName: ' ',
       renderCell: (params: GridCellParams) => {
         const { value } = params
         return (
@@ -74,9 +76,11 @@ function RecentSessionsList({
     },
     {
       field: 'rename',
+      minWidth: 40,
       width: 40,
       sortable: false,
       filterable: false,
+      headerName: ' ',
       renderCell: (params: GridCellParams) => {
         const { value } = params
         return (
