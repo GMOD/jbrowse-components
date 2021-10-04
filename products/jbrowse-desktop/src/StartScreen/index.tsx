@@ -7,6 +7,7 @@ import {
   ListItemIcon,
   Menu,
   MenuItem,
+  Paper,
   Typography,
   makeStyles,
 } from '@material-ui/core'
@@ -46,7 +47,6 @@ const useStyles = makeStyles(theme => ({
   panel: {
     margin: theme.spacing(1),
     padding: theme.spacing(4),
-    border: '1px solid black',
   },
 
   settings: {
@@ -178,13 +178,13 @@ export default function StartScreen({
       <div className={classes.root}>
         <Grid container spacing={3}>
           <Grid item xs={4}>
-            <div className={classes.panel}>
+            <Paper elevation={6} className={classes.panel}>
               <Typography variant="h5">Launch new session</Typography>
               <LauncherPanel setPluginManager={setPluginManager} />
-            </div>
+            </Paper>
           </Grid>
           <Grid item xs={8}>
-            <div className={classes.panel}>
+            <Paper elevation={6} className={classes.panel}>
               <Typography variant="h5">Recently opened sessions</Typography>
               <RecentSessionPanel
                 setPluginManager={setPluginManager}
@@ -193,7 +193,7 @@ export default function StartScreen({
                 setSessionToRename={setSessionToRename}
                 setError={setError}
               />
-            </div>
+            </Paper>
           </Grid>
         </Grid>
       </div>
