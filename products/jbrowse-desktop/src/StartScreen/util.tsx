@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import { readConfObject } from '@jbrowse/core/configuration'
+import deepmerge from 'deepmerge'
 
 import JBrowseRootModelFactory from '../rootModel'
 import corePlugins from '../corePlugins'
@@ -11,6 +12,43 @@ import {
   writeAWSAnalytics,
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
+
+const defaultInternetAccounts = [
+  {
+    type: 'DropboxOAuthInternetAccount',
+    internetAccountId: 'dropboxOAuth',
+    name: 'Dropbox',
+    description: 'OAuth Info for Dropbox',
+    authEndpoint: 'https://www.dropbox.com/oauth2/authorize',
+    tokenEndpoint: 'https://api.dropbox.com/oauth2/token',
+    needsAuthorization: true,
+    needsPKCE: true,
+    hasRefreshToken: true,
+    clientId: '50knr6xrjfc39sk',
+    domains: [
+      'addtodropbox.com',
+      'db.tt',
+      'dropbox.com',
+      'dropboxapi.com',
+      'dropboxbusiness.com',
+      'dropbox.tech',
+      'getdropbox.com',
+    ],
+  },
+  {
+    type: 'GoogleDriveOAuthInternetAccount',
+    internetAccountId: 'googleOAuth',
+    name: 'Google',
+    description: 'OAuth Info for Google Drive',
+    authEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
+    needsAuthorization: true,
+    clientId:
+      '109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com',
+    scopes: 'https://www.googleapis.com/auth/drive.readonly',
+    responseType: 'token',
+    domains: ['drive.google.com'],
+  },
+]
 
 export async function createPluginManager(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -34,9 +72,21 @@ export async function createPluginManager(
   pm.createPluggableElements()
 
   const JBrowseRootModel = JBrowseRootModelFactory(pm)
+
+  const jbrowse = deepmerge(configSnapshot, {
+    internetAccounts: defaultInternetAccounts,
+  })
+
+  const ids = jbrowse.internetAccounts.map(o => o.internetAccountId)
+
+  jbrowse.internetAccounts = jbrowse.internetAccounts.filter(
+    ({ internetAccountId }, index) =>
+      !ids.includes(internetAccountId, index + 1),
+  )
+
   const rootModel = JBrowseRootModel.create(
     {
-      jbrowse: configSnapshot,
+      jbrowse,
       assemblyManager: {},
       version,
     },
