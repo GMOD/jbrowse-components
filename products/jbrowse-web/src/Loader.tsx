@@ -495,16 +495,13 @@ const ErrorMessage = ({
   return (
     <div>
       <NoConfigMessage />
-      {str === 'HTTP 404 fetching config.json' ? (
+      {str.match(/HTTP 404 fetching config.json/) ? (
         <div className={classes.message} style={{ background: '#9f9' }}>
-          No config detected ({str})
-          <br />
-          <p>
-            If you want to learn how to complete your setup, visit our{' '}
-            <a href="https://jbrowse.org/jb2/docs/quickstart_web">
-              Quick start guide
-            </a>
-          </p>
+          No config detected. If you want to learn how to complete your setup,
+          visit our{' '}
+          <a href="https://jbrowse.org/jb2/docs/quickstart_web">
+            Quick start guide
+          </a>
         </div>
       ) : (
         <div className={classes.message} style={{ background: '#f88' }}>
