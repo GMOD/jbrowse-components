@@ -13,9 +13,8 @@ export default pluginManager => {
     '@jbrowse/core/util/mst-reflection',
   )
 
-  const { compareLocs, getSession, parseLocString } = jbrequire(
-    '@jbrowse/core/util',
-  )
+  const { compareLocs, getSession, parseLocString } =
+    jbrequire('@jbrowse/core/util')
 
   const MakeSpreadsheetColumnType = jbrequire(MakeSpreadsheetColumnTypeFactory)
 

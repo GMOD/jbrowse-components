@@ -9,8 +9,7 @@ test('adapter can fetch sequences when there is just one feature representing wh
       refName: 'ctgA',
       start: 0,
       end: 150,
-      seq:
-        'ccaaaccgtcaattaaccggtatcttctcggaaacggcggttctctcctagatagcgatctgtggtctcaccatgcaatttaaacaggtgagtaaagattgctacaaatacgagactagctgtcaccagatgctgttcatctgttggctc',
+      seq: 'ccaaaccgtcaattaaccggtatcttctcggaaacggcggttctctcctagatagcgatctgtggtctcaccatgcaatttaaacaggtgagtaaagattgctacaaatacgagactagctgtcaccagatgctgttcatctgttggctc',
     },
   ]
   const adapter = new Adapter(sequenceConfigSchema.create({ features }))
@@ -40,8 +39,7 @@ test("adapter can fetch sequences when the config's sequence doesn't start at 0"
       refName: 'ctgA',
       start: 5000,
       end: 5150,
-      seq:
-        'ccaaaccgtcaattaaccggtatcttctcggaaacggcggttctctcctagatagcgatctgtggtctcaccatgcaatttaaacaggtgagtaaagattgctacaaatacgagactagctgtcaccagatgctgttcatctgttggctc',
+      seq: 'ccaaaccgtcaattaaccggtatcttctcggaaacggcggttctctcctagatagcgatctgtggtctcaccatgcaatttaaacaggtgagtaaagattgctacaaatacgagactagctgtcaccagatgctgttcatctgttggctc',
     },
   ]
   const adapter = new Adapter(sequenceConfigSchema.create({ features }))

@@ -133,19 +133,19 @@ export default abstract class BaseRpcDriver {
     sessionId: string,
   ): THING_TYPE {
     if (Array.isArray(thing)) {
-      return (thing
+      return thing
         .filter(isClonable)
         .map(t =>
           this.filterArgs(t, pluginManager, sessionId),
-        ) as unknown) as THING_TYPE
+        ) as unknown as THING_TYPE
     }
     if (typeof thing === 'object' && thing !== null) {
       // AbortSignals are specially handled
       if (thing instanceof AbortSignal) {
-        return (serializeAbortSignal(
+        return serializeAbortSignal(
           thing,
           this.remoteAbort.bind(this, pluginManager, sessionId),
-        ) as unknown) as THING_TYPE
+        ) as unknown as THING_TYPE
       }
 
       if (isStateTreeNode(thing) && !isAlive(thing)) {

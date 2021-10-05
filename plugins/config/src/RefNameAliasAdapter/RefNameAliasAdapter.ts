@@ -12,7 +12,8 @@ import MyConfigAdapterSchema from './configSchema'
 
 export default class RefNameAliasAdapter
   extends BaseAdapter
-  implements BaseRefNameAliasAdapter {
+  implements BaseRefNameAliasAdapter
+{
   private location: GenericFilehandle
 
   private promise: Promise<Alias[]>

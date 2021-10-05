@@ -16,9 +16,8 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
   )
   pluginManager.createPluggableElements()
   const Session = createSessionModel(pluginManager)
-  const { assemblyConfigSchemas, dispatcher } = createAssemblyConfigSchemas(
-    pluginManager,
-  )
+  const { assemblyConfigSchemas, dispatcher } =
+    createAssemblyConfigSchemas(pluginManager)
   const assemblyConfigSchemasType = types.union(
     { dispatcher },
     ...assemblyConfigSchemas,

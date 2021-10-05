@@ -66,11 +66,11 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     const drawIndicators = readConfObject(cfg, 'drawIndicators')
 
     // get the y coordinate that we are plotting at, this can be log scale
-    const toY = (n: number) => height - viewScale(n) + offset
+    const toY = (n: number) => height - (viewScale(n) || 0) + offset
     const toHeight = (n: number) => toY(originY) - toY(n)
 
     // this is always linear scale, even when plotted on top of log scale
-    const snpToY = (n: number) => height - snpViewScale(n) + offset
+    const snpToY = (n: number) => height - (snpViewScale(n) || 0) + offset
     const snpToHeight = (n: number) => snpToY(snpOriginY) - snpToY(n)
 
     const colorForBase: { [key: string]: string } = {

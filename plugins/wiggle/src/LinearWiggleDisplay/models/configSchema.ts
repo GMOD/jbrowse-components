@@ -4,15 +4,12 @@ import { types } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 export default function WiggleConfigFactory(pluginManager: PluginManager) {
-  const XYPlotRendererConfigSchema = pluginManager.getRendererType(
-    'XYPlotRenderer',
-  ).configSchema
-  const DensityRendererConfigSchema = pluginManager.getRendererType(
-    'DensityRenderer',
-  ).configSchema
-  const LinePlotRendererConfigSchema = pluginManager.getRendererType(
-    'LinePlotRenderer',
-  ).configSchema
+  const XYPlotRendererConfigSchema =
+    pluginManager.getRendererType('XYPlotRenderer').configSchema
+  const DensityRendererConfigSchema =
+    pluginManager.getRendererType('DensityRenderer').configSchema
+  const LinePlotRendererConfigSchema =
+    pluginManager.getRendererType('LinePlotRenderer').configSchema
 
   return ConfigurationSchema(
     'LinearWiggleDisplay',

@@ -394,16 +394,14 @@ function generateFromConfigTrackConfig(
   jb2TrackConfig: Jb2Track,
 ): Jb2Track {
   const jb1Features = jb1TrackConfig.features || []
-  const jb2Features = jb1Features.map(
-    (feature): Jb2Feature => {
-      const jb2Feature: Jb2Feature = JSON.parse(JSON.stringify(feature))
-      jb2Feature.refName = feature.seq_id
-      jb2Feature.uniqueId = `${feature.seq_id}:${feature.start}-${
-        feature.end
-      }:${feature.name || ''}`
-      return jb2Feature
-    },
-  )
+  const jb2Features = jb1Features.map((feature): Jb2Feature => {
+    const jb2Feature: Jb2Feature = JSON.parse(JSON.stringify(feature))
+    jb2Feature.refName = feature.seq_id
+    jb2Feature.uniqueId = `${feature.seq_id}:${feature.start}-${feature.end}:${
+      feature.name || ''
+    }`
+    return jb2Feature
+  })
   jb2TrackConfig.adapter = {
     type: 'FromConfigAdapter',
     features: jb2Features,

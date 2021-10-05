@@ -286,16 +286,12 @@ async function renderBlockEffect(
     return undefined
   }
 
-  const {
-    reactElement,
-    features,
-    layout,
-    maxHeightReached,
-  } = await rendererType.renderInClient(rpcManager, {
-    ...renderArgs,
-    ...renderProps,
-    signal,
-  })
+  const { reactElement, features, layout, maxHeightReached } =
+    await rendererType.renderInClient(rpcManager, {
+      ...renderArgs,
+      ...renderProps,
+      signal,
+    })
   return {
     reactElement,
     features,

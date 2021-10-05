@@ -230,7 +230,7 @@ export function springAnimate(
 
 /** find the first node in the hierarchy that matches the given 'is' typescript type guard predicate */
 export function findParentThatIs<
-  PREDICATE extends (thing: IAnyStateTreeNode) => boolean
+  PREDICATE extends (thing: IAnyStateTreeNode) => boolean,
 >(
   node: IAnyStateTreeNode,
   predicate: PREDICATE,
@@ -787,7 +787,7 @@ export async function renameRegionsIfNeeded<
     adapterConfig: unknown
     sessionId: string
     statusCallback?: Function
-  }
+  },
 >(assemblyManager: AssemblyManager, args: ARGTYPE) {
   const { regions = [], adapterConfig } = args
   if (!args.sessionId) {

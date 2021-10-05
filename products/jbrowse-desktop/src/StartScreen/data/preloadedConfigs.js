@@ -14,12 +14,10 @@ const preloadedConfigs = {
               uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
             },
             faiLocation: {
-              uri:
-                'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai',
+              uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai',
             },
             gziLocation: {
-              uri:
-                'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi',
+              uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi',
             },
           },
         },
@@ -27,8 +25,7 @@ const preloadedConfigs = {
           adapter: {
             type: 'RefNameAliasAdapter',
             location: {
-              uri:
-                'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+              uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
             },
           },
         },
@@ -57,8 +54,7 @@ const preloadedConfigs = {
         adapter: {
           type: 'NCListAdapter',
           rootUrlTemplate: {
-            uri:
-              'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/{refseq}/trackData.jsonz',
+            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/{refseq}/trackData.jsonz',
           },
           refNames: [
             'chr1',
@@ -111,8 +107,7 @@ const preloadedConfigs = {
         adapter: {
           type: 'BigBedAdapter',
           bigBedLocation: {
-            uri:
-              'https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb',
+            uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb',
           },
         },
       },
@@ -125,8 +120,7 @@ const preloadedConfigs = {
         adapter: {
           type: 'BigBedAdapter',
           bigBedLocation: {
-            uri:
-              'https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb',
+            uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb',
           },
         },
       },
@@ -164,8 +158,7 @@ const preloadedConfigs = {
         adapter: {
           type: 'BigBedAdapter',
           bigBedLocation: {
-            uri:
-              'https://hgdownload.soe.ucsc.edu/gbdb/hg38/gdcCancer/gdcCancer.bb',
+            uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/gdcCancer/gdcCancer.bb',
           },
         },
       },
@@ -191,13 +184,11 @@ const preloadedConfigs = {
         adapter: {
           type: 'Gff3TabixAdapter',
           gffGzLocation: {
-            uri:
-              'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz',
+            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz',
           },
           index: {
             location: {
-              uri:
-                'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz.tbi',
+              uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz.tbi',
             },
             indexType: 'TBI',
           },
@@ -212,13 +203,11 @@ const preloadedConfigs = {
         adapter: {
           type: 'Gff3TabixAdapter',
           gffGzLocation: {
-            uri:
-              'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz',
+            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz',
           },
           index: {
             location: {
-              uri:
-                'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz.tbi',
+              uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz.tbi',
             },
           },
         },
@@ -271,8 +260,7 @@ const preloadedConfigs = {
           adapter: {
             type: 'RefNameAliasAdapter',
             location: {
-              uri:
-                'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
+              uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
             },
           },
         },
@@ -292,13 +280,11 @@ const preloadedConfigs = {
         adapter: {
           type: 'Gff3TabixAdapter',
           gffGzLocation: {
-            uri:
-              'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz',
+            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz',
           },
           index: {
             location: {
-              uri:
-                'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz.tbi',
+              uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz.tbi',
             },
           },
         },
@@ -325,8 +311,7 @@ const preloadedConfigs = {
         adapter: {
           type: 'NCListAdapter',
           rootUrlTemplate: {
-            uri:
-              'https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json',
+            uri: 'https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json',
           },
           refNames: [
             'chr1',
@@ -392,8 +377,7 @@ const preloadedConfigs = {
         adapter: {
           type: 'BigBedAdapter',
           bigBedLocation: {
-            uri:
-              'https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarCnv.bb',
+            uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarCnv.bb',
           },
         },
       },
@@ -406,8 +390,7 @@ const preloadedConfigs = {
         adapter: {
           type: 'BigBedAdapter',
           bigBedLocation: {
-            uri:
-              'https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb',
+            uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb',
           },
         },
       },
@@ -420,13 +403,11 @@ const preloadedConfigs = {
         adapter: {
           type: 'Gff3TabixAdapter',
           gffGzLocation: {
-            uri:
-              'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz',
+            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz',
           },
           index: {
             location: {
-              uri:
-                'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz.tbi',
+              uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz.tbi',
             },
             indexType: 'TBI',
           },
@@ -441,13 +422,11 @@ const preloadedConfigs = {
         adapter: {
           type: 'Gff3TabixAdapter',
           gffGzLocation: {
-            uri:
-              'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz',
+            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz',
           },
           index: {
             location: {
-              uri:
-                'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz.tbi',
+              uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz.tbi',
             },
             indexType: 'TBI',
           },

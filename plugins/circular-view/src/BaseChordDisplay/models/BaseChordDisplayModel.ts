@@ -187,10 +187,8 @@ export const BaseChordDisplayModel = types
   }))
   .actions(self => {
     const { pluginManager } = getEnv(self)
-    const {
-      renderReactionData,
-      renderReactionEffect,
-    } = pluginManager.jbrequire(renderReactionFactory)
+    const { renderReactionData, renderReactionEffect } =
+      pluginManager.jbrequire(renderReactionFactory)
     return {
       afterAttach() {
         makeAbortableReaction(

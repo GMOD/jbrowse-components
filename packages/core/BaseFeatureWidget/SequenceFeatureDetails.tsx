@@ -264,7 +264,7 @@ export const SequencePanel = React.forwardRef<
 // to not be 100% accurate
 export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
   const classes = useStyles()
-  const parentFeature = (feature as unknown) as ParentFeat
+  const parentFeature = feature as unknown as ParentFeat
   const hasCDS = parentFeature.subfeatures?.find(sub => sub.type === 'CDS')
   const seqPanelRef = useRef<HTMLDivElement>(null)
 
