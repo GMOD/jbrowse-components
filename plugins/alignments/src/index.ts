@@ -175,7 +175,7 @@ export default class AlignmentsPlugin extends Plugin {
               },
             }
           }
-          return adapterGuesser(file, index)
+          return adapterGuesser(file, index, adapterHint)
         }
       },
     )
@@ -224,7 +224,7 @@ export default class AlignmentsPlugin extends Plugin {
               craiLocation: index || makeIndex(file, '.crai'),
             }
           }
-          return adapterGuesser(file, index)
+          return adapterGuesser(file, index, adapterHint)
         }
       },
     )

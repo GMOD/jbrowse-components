@@ -56,7 +56,7 @@ export default class HicPlugin extends Plugin {
               hicLocation: file,
             }
           }
-          return adapterGuesser(file, index)
+          return adapterGuesser(file, index, adapterHint)
         }
       },
     )

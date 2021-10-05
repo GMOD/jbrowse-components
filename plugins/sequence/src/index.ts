@@ -71,7 +71,7 @@ export default class SequencePlugin extends Plugin {
               twoBitLocation: file,
             }
           }
-          return adapterGuesser(file, index)
+          return adapterGuesser(file, index, adapterHint)
         }
       },
     )
@@ -128,7 +128,7 @@ export default class SequencePlugin extends Plugin {
               faiLocation: index || makeIndex(file, '.fai'),
             }
           }
-          return adapterGuesser(file, index)
+          return adapterGuesser(file, index, adapterHint)
         }
       },
     )
@@ -174,7 +174,7 @@ export default class SequencePlugin extends Plugin {
               gziLocation: makeIndex(file, '.gzi'),
             }
           }
-          return adapterGuesser(file, index)
+          return adapterGuesser(file, index, adapterHint)
         }
       },
     )

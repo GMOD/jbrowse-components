@@ -46,7 +46,7 @@ export default class extends Plugin {
               },
             }
           }
-          return adapterGuesser(file, index)
+          return adapterGuesser(file, index, adapterHint)
         }
       },
     )

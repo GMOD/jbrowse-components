@@ -108,7 +108,7 @@ export default class WigglePlugin extends Plugin {
               bigWigLocation: file,
             }
           }
-          return adapterGuesser(file, index)
+          return adapterGuesser(file, index, adapterHint)
         }
       },
     )

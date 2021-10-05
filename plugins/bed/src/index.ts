@@ -41,7 +41,7 @@ export default class BedPlugin extends Plugin {
               bigBedLocation: file,
             }
           }
-          return adapterGuesser(file, index)
+          return adapterGuesser(file, index, adapterHint)
         }
       },
     )
@@ -77,7 +77,7 @@ export default class BedPlugin extends Plugin {
               },
             }
           }
-          return adapterGuesser(file, index)
+          return adapterGuesser(file, index, adapterHint)
         }
       },
     )

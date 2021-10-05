@@ -383,7 +383,7 @@ export default class DotplotPlugin extends Plugin {
               pafLocation: file,
             }
           }
-          return adapterGuesser(file, index)
+          return adapterGuesser(file, index, adapterHint)
         }
       },
     )

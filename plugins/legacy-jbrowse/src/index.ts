@@ -46,7 +46,7 @@ export default class LegacyJBrowsePlugin extends Plugin {
               rootUrlTemplate: file,
             }
           }
-          return adapterGuesser(file, index)
+          return adapterGuesser(file, index, adapterHint)
         }
       },
     )

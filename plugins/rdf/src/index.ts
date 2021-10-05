@@ -37,7 +37,7 @@ export default class RdfPlugin extends Plugin {
               endpoint: file,
             }
           }
-          return adapterGuesser(file, index)
+          return adapterGuesser(file, index, adapterHint)
         }
       },
     )

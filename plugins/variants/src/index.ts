@@ -67,7 +67,7 @@ export default class VariantsPlugin extends Plugin {
               },
             }
           }
-          return adapterGuesser(file, index)
+          return adapterGuesser(file, index, adapterHint)
         }
       },
     )
@@ -110,7 +110,7 @@ export default class VariantsPlugin extends Plugin {
               vcfLocation: file,
             }
           }
-          return adapterGuesser(file, index)
+          return adapterGuesser(file, index, adapterHint)
         }
       },
     )

@@ -135,8 +135,8 @@ function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
   return (
     <>
       <Typography className={classes.spacing}>
-        Was not able to guess the adapter type for this data, but it may be in
-        the list below. If not, you can{' '}
+        JBrowse was not able to guess the adapter type for this data, but it may
+        be in the list below. If not, you can{' '}
         <Link
           href="https://github.com/GMOD/jbrowse-components/releases"
           target="_blank"
