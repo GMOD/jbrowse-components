@@ -172,6 +172,9 @@ export interface AbstractViewModel {
   type: string
   width: number
   setWidth(width: number): void
+  displayName: string | undefined
+  setDisplayName: (arg: string) => void
+  menuItems: () => MenuItem[]
 }
 export function isViewModel(thing: unknown): thing is AbstractViewModel {
   return (

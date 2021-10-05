@@ -24,6 +24,8 @@ import EditableTypography from './EditableTypography'
 import { LogoFull } from './Logo'
 import Snackbar from './Snackbar'
 import ViewContainer from './ViewContainer'
+import { AbstractSessionModel, NotificationLevel } from '../util'
+import { MenuItem as JBMenuItem } from './index'
 
 const useStyles = makeStyles(theme => ({
   '@global': {
@@ -108,13 +110,26 @@ const Logo = observer(
   },
 )
 
+type SnackbarMessage = [string, NotificationLevel]
+
 const App = observer(
   ({
     session,
     HeaderButtons = <div />,
   }: {
     HeaderButtons?: React.ReactElement
-    session: any
+    session: AbstractSessionModel & {
+      visibleWidget: unknown
+      drawerWidth: number
+      minimized: boolean
+      activeWidgets: Map<string, unknown>
+      savedSessionNames: string[]
+      menus: { label: string; menuItems: JBMenuItem[] }[]
+      renameCurrentSession: (arg: string) => void
+      snackbarMessages: SnackbarMessage[]
+      showWidgetDrawer: () => void
+      popSnackbarMessage: () => unknown
+    }
   }) => {
     const classes = useStyles()
     const { pluginManager } = getEnv(session)
@@ -165,7 +180,7 @@ const App = observer(
           <div className={classes.menuBar}>
             <AppBar className={classes.appBar} position="static">
               <Toolbar>
-                {menus.map((menu: any) => (
+                {menus.map(menu => (
                   <DropDownMenu
                     key={menu.label}
                     menuTitle={menu.label}
@@ -196,7 +211,7 @@ const App = observer(
           </div>
           <div className={classes.components}>
             {views.length ? (
-              views.map((view: any) => {
+              views.map(view => {
                 const viewType = pluginManager.getViewType(view.type)
                 if (!viewType) {
                   throw new Error(`unknown view type ${view.type}`)

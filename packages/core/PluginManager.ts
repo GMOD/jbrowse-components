@@ -1,10 +1,4 @@
-import {
-  types,
-  IAnyType,
-  IAnyModelType,
-  isModelType,
-  isType,
-} from 'mobx-state-tree'
+import { types, IAnyType, isModelType, isType } from 'mobx-state-tree'
 
 // Pluggable elements
 import PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
@@ -30,7 +24,6 @@ import {
   PluggableElementType,
   PluggableElementMember,
 } from './pluggableElementTypes'
-import { AnyConfigurationSchemaType } from './configuration/configurationSchema'
 import { AbstractRootModel } from './util'
 import CorePlugin from './CorePlugin'
 import createJexlInstance from './util/jexl'

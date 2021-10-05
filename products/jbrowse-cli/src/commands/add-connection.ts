@@ -5,7 +5,6 @@ import path from 'path'
 import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
 
-const fsPromises = fs.promises
 interface Connection {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
