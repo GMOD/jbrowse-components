@@ -171,7 +171,7 @@ export default () => {
               this.setLoaded()
               getParent(self).displaySpreadsheet(spreadsheet)
             })
-        } catch (error: unknown) {
+        } catch (error) {
           console.error(error)
           this.setError(error)
         }
