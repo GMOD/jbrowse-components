@@ -12,6 +12,7 @@ import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readConfObject } from '@jbrowse/core/configuration'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 type RowToGeneNames = {
   name1: string
@@ -47,18 +48,24 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public async configure() {
-    const subadapters = readConfObject(this.config, 'subadapters')
+    const getSubAdapter = this.getSubAdapter
+    if (!getSubAdapter) {
+      throw new Error('Need support for getSubAdapter')
+    }
+    const subadapters = readConfObject(
+      this.config,
+      'subadapters',
+    ) as AnyConfigurationModel[]
     const assemblyNames = readConfObject(this.config, 'assemblyNames')
     this.mcscanAnchorsLocation = openLocation(
-      readConfObject(this.config, 'mcscanAnchorsLocation') as FileLocation,
+      readConfObject(this.config, 'mcscanAnchorsLocation'),
     )
 
     this.subadapters = await Promise.all(
-      subadapters.map(async (subadapter: any) => {
-        const dataAdapter = (await this.getSubAdapter?.(subadapter))
-          ?.dataAdapter
-        if (dataAdapter instanceof BaseFeatureDataAdapter) {
-          return dataAdapter
+      subadapters.map(async subadapter => {
+        const res = await getSubAdapter(subadapter)
+        if (res.dataAdapter instanceof BaseFeatureDataAdapter) {
+          return res.dataAdapter
         }
         throw new Error(
           `invalid subadapter type '${this.config.subadapter.type}'`,
