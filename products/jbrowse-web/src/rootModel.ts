@@ -396,7 +396,9 @@ export default function RootModel(
               label: 'Duplicate session',
               icon: FileCopyIcon,
               onClick: (session: AbstractSessionModel) => {
-                session.duplicateCurrentSession?.()
+                if (session.duplicateCurrentSession) {
+                  session.duplicateCurrentSession()
+                }
               },
             },
             {

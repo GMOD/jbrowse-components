@@ -56,7 +56,7 @@ export default function ServerSideRenderedContent(
         unmountComponentAtNode(domNode)
       }
     }
-  }, [html, jbrowseTheme, rest])
+  }, [html, jbrowseTheme, rest, RenderingComponent])
 
   return (
     <div

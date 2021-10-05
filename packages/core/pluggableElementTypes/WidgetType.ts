@@ -1,3 +1,4 @@
+import React from 'react'
 import { ComponentType, LazyExoticComponent } from 'react'
 import { IAnyModelType, IAnyStateTreeNode } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'

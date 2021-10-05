@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region, FileLocation } from '@jbrowse/core/util/types'
+import { Region } from '@jbrowse/core/util/types'
 import { GenericFilehandle } from 'generic-filehandle'
 import { tap } from 'rxjs/operators'
 import { openLocation } from '@jbrowse/core/util/io'

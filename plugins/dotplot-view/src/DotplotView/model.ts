@@ -71,15 +71,6 @@ const DotplotVView = Dotplot1DView.extend(self => ({
   },
 }))
 
-interface BasicTrack {
-  type: string
-  configuration: AnyConfigurationModel
-  displays: {
-    type: string
-    configuration: AnyConfigurationModel
-  }[]
-}
-
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(

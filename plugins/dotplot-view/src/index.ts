@@ -37,24 +37,6 @@ import { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
 
 const { parseCigar } = MismatchParser
 
-interface Track {
-  id: string
-  type: string
-  displays: {
-    id: string
-    type: string
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    PileupDisplay: any
-  }[]
-}
-interface View {
-  tracks: Track[]
-  views?: View[]
-  type: string
-}
-interface Session {
-  views: View[]
-}
 function getLengthOnRef(cigar: string) {
   const cigarOps = parseCigar(cigar)
   let lengthOnRef = 0

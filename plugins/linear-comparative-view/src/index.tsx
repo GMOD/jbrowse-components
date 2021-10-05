@@ -64,23 +64,6 @@ import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
 const { parseCigar } = MismatchParser
 
-interface Track {
-  id: string
-  type: string
-  displays: {
-    id: string
-    type: string
-    PileupDisplay: any
-  }[]
-}
-interface View {
-  tracks: Track[]
-  views?: View[]
-  type: string
-}
-interface Session {
-  views: View[]
-}
 function getLengthOnRef(cigar: string) {
   const cigarOps = parseCigar(cigar)
   let lengthOnRef = 0

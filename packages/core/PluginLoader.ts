@@ -93,7 +93,7 @@ export default class PluginLoader {
     )
   }
 
-  installGlobalReExports(target: WindowOrWorkerGlobalScope | NodeJS.Global) {
+  installGlobalReExports(target: WindowOrWorkerGlobalScope) {
     // @ts-ignore
     target.JBrowseExports = Object.fromEntries(
       Object.entries(ReExports).map(([moduleName, module]) => {

@@ -31,7 +31,7 @@ function MessageSnackbar({
     : null
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timer
+    let timeoutId: ReturnType<typeof setTimeout>
 
     if (snackbarMessage) {
       if (!latestMessage) {

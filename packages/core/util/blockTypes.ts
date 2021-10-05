@@ -72,8 +72,7 @@ export class BlockSet {
 }
 
 export class BaseBlock {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
+  public reversed?: boolean
 
   public refName: string
 
@@ -86,6 +85,10 @@ export class BaseBlock {
   public key: string
 
   public offsetPx: number
+
+  public widthPx = 0
+
+  public variant?: string
 
   /**
    * a block that should be shown as filled with data
@@ -136,13 +139,15 @@ export class ContentBlock extends BaseBlock {}
 export class ElidedBlock extends BaseBlock {
   public widthPx: number
 
+  public elidedBlockCount = 0
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(data: Record<string, any>) {
     super(data)
     this.widthPx = data.widthPx
   }
 
-  push(otherBlock: BaseBlock) {
+  push(otherBlock: ElidedBlock) {
     this.elidedBlockCount += 1
 
     if (otherBlock) {

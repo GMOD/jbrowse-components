@@ -304,25 +304,27 @@ export default class PluginManager {
     }
     const typeRecord = this.getElementTypeRecord(groupName)
 
-    this.elementCreationSchedule?.add(groupName, () => {
-      let newElement = creationCallback(this)
-      if (!newElement.name) {
-        throw new Error(`cannot add a ${groupName} with no name`)
-      }
+    if (this.elementCreationSchedule) {
+      this.elementCreationSchedule.add(groupName, () => {
+        let newElement = creationCallback(this)
+        if (!newElement.name) {
+          throw new Error(`cannot add a ${groupName} with no name`)
+        }
 
-      if (typeRecord.has(newElement.name)) {
-        throw new Error(
-          `${groupName} ${newElement.name} already registered, cannot register it again`,
-        )
-      }
+        if (typeRecord.has(newElement.name)) {
+          throw new Error(
+            `${groupName} ${newElement.name} already registered, cannot register it again`,
+          )
+        }
 
-      newElement = this.evaluateExtensionPoint(
-        'Core-extendPluggableElement',
-        newElement,
-      ) as PluggableElementType
+        newElement = this.evaluateExtensionPoint(
+          'Core-extendPluggableElement',
+          newElement,
+        ) as PluggableElementType
 
-      typeRecord.add(newElement.name, newElement)
-    })
+        typeRecord.add(newElement.name, newElement)
+      })
+    }
 
     return this
   }

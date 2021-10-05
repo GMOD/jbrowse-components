@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import React from 'react'
 import { IAnyModelType, Instance } from 'mobx-state-tree'
 import PluginManager from '../../PluginManager'
 
