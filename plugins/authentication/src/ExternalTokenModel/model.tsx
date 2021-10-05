@@ -1,5 +1,6 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
+import { RemoteFileWithRangeCache } from '@jbrowse/core/util/io'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { ExternalTokenInternetAccountConfigModel } from './configSchema'
 import { Instance, types, getParent } from 'mobx-state-tree'
@@ -10,7 +11,6 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import DialogActions from '@material-ui/core/DialogActions'
 import TextField from '@material-ui/core/TextField'
-import { RemoteFile } from 'generic-filehandle'
 
 const inWebWorker = typeof sessionStorage === 'undefined'
 
@@ -31,22 +31,22 @@ const stateModelFactory = (
       needsToken: false,
     }))
     .views(self => ({
-      get authHeader() {
+      get authHeader(): string {
         return getConf(self, 'authHeader')
       },
-      get tokenType() {
+      get tokenType(): string {
         return getConf(self, 'tokenType')
       },
       get internetAccountType() {
         return 'ExternalTokenInternetAccount'
       },
       handlesLocation(location: UriLocation): boolean {
-        const validDomains = self.accountConfig.validDomains || []
+        const validDomains = self.accountConfig.domains || []
         return validDomains.some((domain: string) =>
           location?.uri.includes(domain),
         )
       },
-      get generateAuthInfo() {
+      generateAuthInfo() {
         return {
           internetAccountType: this.internetAccountType,
           authInfo: {
@@ -159,14 +159,14 @@ const stateModelFactory = (
         },
         openLocation(location: UriLocation) {
           preAuthInfo =
-            location.internetAccountPreAuthorization || self.generateAuthInfo
-          return new RemoteFile(String(location.uri), {
+            location.internetAccountPreAuthorization || self.generateAuthInfo()
+          return new RemoteFileWithRangeCache(String(location.uri), {
             fetch: this.getFetcher,
           })
         },
         async getPreAuthorizationInformation(location: UriLocation) {
           if (!preAuthInfo.authInfo) {
-            preAuthInfo = self.generateAuthInfo
+            preAuthInfo = self.generateAuthInfo()
           }
 
           if (inWebWorker && !location.internetAccountPreAuthorization) {
@@ -199,7 +199,7 @@ const stateModelFactory = (
         },
         async handleError() {
           if (!inWebWorker) {
-            preAuthInfo = self.generateAuthInfo
+            preAuthInfo = self.generateAuthInfo()
             sessionStorage.removeItem(`${self.internetAccountId}-token`)
           }
 

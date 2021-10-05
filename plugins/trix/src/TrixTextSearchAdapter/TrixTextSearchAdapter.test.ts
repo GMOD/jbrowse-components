@@ -1,6 +1,4 @@
-import BaseResult, {
-  LocStringResult,
-} from '@jbrowse/core/TextSearch/BaseResults'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import path from 'path'
 import Adapter from './TrixTextSearchAdapter'
 import configSchema from './configSchema'
@@ -50,6 +48,5 @@ test('adapter can fetch output files', async () => {
   const test2 = results2[0]
   expect(test2 instanceof BaseResult).toBeTruthy()
   expect(test2.getLabel()).toEqual('Apple3')
-  expect(test2 instanceof LocStringResult).toBeTruthy()
   expect(test2.getLocation()).toEqual('ctgA:17400..23000')
 })

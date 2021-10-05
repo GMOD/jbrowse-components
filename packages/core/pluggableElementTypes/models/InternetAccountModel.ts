@@ -1,8 +1,13 @@
 import { Instance, types } from 'mobx-state-tree'
 import { getConf } from '../../configuration'
+import { RemoteFileWithRangeCache } from '../../util/io'
 import { ElementId } from '../../util/types/mst'
-import { GenericFilehandle, RemoteFile } from 'generic-filehandle'
-import { FileLocation, UriLocation } from '@jbrowse/core/util/types'
+import { GenericFilehandle } from 'generic-filehandle'
+import {
+  FileLocation,
+  UriLocation,
+  AnyReactComponentType,
+} from '@jbrowse/core/util/types'
 
 export const InternetAccount = types
   .model('InternetAccount', {
@@ -22,19 +27,28 @@ export const InternetAccount = types
     get accountConfig() {
       return getConf(self)
     },
+    get toggleContents(): React.ReactNode {
+      return null
+    },
+    get SelectorComponent(): AnyReactComponentType | undefined {
+      return undefined
+    },
+    get selectorLabel(): string | undefined {
+      return undefined
+    },
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     handlesLocation(location: FileLocation): boolean {
       return false
     },
   }))
-  .actions(() => ({
+  .actions(self => ({
     openLocation(location: UriLocation): GenericFilehandle {
-      return new RemoteFile(String(location.uri))
+      return new RemoteFileWithRangeCache(String(location.uri))
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async getPreAuthorizationInformation(location: UriLocation) {
-      return {}
+      return { internetAccountType: self.type }
     },
   }))
 

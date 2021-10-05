@@ -1,5 +1,6 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
+import { RemoteFileWithRangeCache } from '@jbrowse/core/util/io'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { getParent } from 'mobx-state-tree'
 import { HTTPBasicInternetAccountConfigModel } from './configSchema'
@@ -11,7 +12,6 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import DialogActions from '@material-ui/core/DialogActions'
 import TextField from '@material-ui/core/TextField'
-import { RemoteFile } from 'generic-filehandle'
 
 const inWebWorker = typeof sessionStorage === 'undefined'
 
@@ -29,19 +29,22 @@ const stateModelFactory = (
       }),
     )
     .views(self => ({
-      get authHeader() {
+      get authHeader(): string {
         return getConf(self, 'authHeader') || 'Authorization'
       },
-      get tokenType() {
+      get tokenType(): string {
         return getConf(self, 'tokenType') || 'Basic'
       },
       get internetAccountType() {
         return 'HTTPBasicInternetAccount'
       },
       handlesLocation(location: UriLocation): boolean {
-        return location.internetAccountId?.includes('HTTPBasic') ? true : false
+        const validDomains = self.accountConfig.domains || []
+        return validDomains.some((domain: string) =>
+          location?.uri.includes(domain),
+        )
       },
-      get generateAuthInfo() {
+      generateAuthInfo() {
         return {
           internetAccountType: this.internetAccountType,
           authInfo: {
@@ -148,14 +151,14 @@ const stateModelFactory = (
         },
         openLocation(location: UriLocation) {
           preAuthInfo =
-            location.internetAccountPreAuthorization || self.generateAuthInfo
-          return new RemoteFile(String(location.uri), {
+            location.internetAccountPreAuthorization || self.generateAuthInfo()
+          return new RemoteFileWithRangeCache(String(location.uri), {
             fetch: this.getFetcher,
           })
         },
         async getPreAuthorizationInformation(location: UriLocation) {
           if (!preAuthInfo.authInfo) {
-            preAuthInfo = self.generateAuthInfo
+            preAuthInfo = self.generateAuthInfo()
           }
 
           if (inWebWorker && !location.internetAccountPreAuthorization) {
@@ -190,7 +193,7 @@ const stateModelFactory = (
         },
         handleError() {
           if (!inWebWorker) {
-            preAuthInfo = self.generateAuthInfo
+            preAuthInfo = self.generateAuthInfo()
             sessionStorage.removeItem(`${self.internetAccountId}-token`)
           }
           throw new Error('Could not access resource with token')
@@ -209,58 +212,60 @@ const HTTPBasicLoginForm = ({
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
+  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    if (username && password) {
+      handleClose(btoa(`${username}:${password}`))
+    } else {
+      handleClose()
+    }
+    event.preventDefault()
+  }
+
   return (
     <>
       <Dialog open maxWidth="xl" data-testid="login-httpbasic">
         <DialogTitle>Log In for {internetAccountId}</DialogTitle>
-        <DialogContent style={{ display: 'flex', flexDirection: 'column' }}>
-          <TextField
-            required
-            label="Username"
-            variant="outlined"
-            inputProps={{ 'data-testid': 'login-httpbasic-username' }}
-            onChange={event => {
-              setUsername(event.target.value)
-            }}
-            margin="dense"
-          />
-          <TextField
-            required
-            label="Password"
-            type="password"
-            autoComplete="current-password"
-            variant="outlined"
-            inputProps={{ 'data-testid': 'login-httpbasic-password' }}
-            onChange={event => {
-              setPassword(event.target.value)
-            }}
-            margin="dense"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            variant="contained"
-            color="primary"
-            type="submit"
-            disabled={!username || !password}
-            onClick={() => {
-              if (username && password) {
-                handleClose(btoa(`${username}:${password}`))
-              }
-            }}
-          >
-            Submit
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              handleClose()
-            }}
-          >
-            Cancel
-          </Button>
-        </DialogActions>
+        <form onSubmit={onSubmit}>
+          <DialogContent style={{ display: 'flex', flexDirection: 'column' }}>
+            <TextField
+              required
+              label="Username"
+              variant="outlined"
+              inputProps={{ 'data-testid': 'login-httpbasic-username' }}
+              onChange={event => {
+                setUsername(event.target.value)
+              }}
+              margin="dense"
+            />
+            <TextField
+              required
+              label="Password"
+              type="password"
+              autoComplete="current-password"
+              variant="outlined"
+              inputProps={{ 'data-testid': 'login-httpbasic-password' }}
+              onChange={event => {
+                setPassword(event.target.value)
+              }}
+              margin="dense"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button variant="contained" color="primary" type="submit">
+              Submit
+            </Button>
+            <Button
+              variant="contained"
+              color="default"
+              type="submit"
+              onClick={() => {
+                handleClose()
+              }}
+            >
+              Cancel
+            </Button>
+          </DialogActions>
+        </form>
       </Dialog>
     </>
   )

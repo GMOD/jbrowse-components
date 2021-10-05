@@ -6,8 +6,6 @@ import { useStaticRendering } from 'mobx-react'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { remoteAbortRpcHandler } from '@jbrowse/core/rpc/remoteAbortSignals'
-import { isAbortException } from '@jbrowse/core/util'
-import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import corePlugins from './corePlugins'
 
@@ -23,8 +21,8 @@ interface WorkerConfiguration {
 
 let jbPluginManager: PluginManager | undefined
 
-// waits for a message from the main thread containing our configuration,
-// which must be sent on boot
+// waits for a message from the main thread containing our configuration, which
+// must be sent on boot
 function receiveConfiguration(): Promise<WorkerConfiguration> {
   return new Promise(resolve => {
     // listen for the configuration
@@ -45,9 +43,7 @@ async function getPluginManager() {
   pluginLoader.installGlobalReExports(self)
   const runtimePlugins = await pluginLoader.load()
   const plugins = [...corePlugins.map(p => ({ plugin: p })), ...runtimePlugins]
-  const pluginManager = new PluginManager(
-    plugins.map(({ plugin: P }) => new P()),
-  )
+  const pluginManager = new PluginManager(plugins.map(P => new P.plugin()))
   pluginManager.createPluggableElements()
   pluginManager.configure()
   jbPluginManager = pluginManager
@@ -60,62 +56,32 @@ interface WrappedFuncArgs {
   [key: string]: unknown
 }
 
-let callCounter = 0
-function wrapForRpc(
-  func: (args: unknown, rpcDriverClassName: string) => unknown,
-  funcName: string = func.name,
-) {
+type RpcFunc = (args: unknown, rpcDriverClassName: string) => unknown
+
+function wrapForRpc(func: RpcFunc) {
   return (args: WrappedFuncArgs) => {
-    callCounter += 1
-    const myId = callCounter
-    // logBuffer.push(['rpc-call', myId, funcName, args])
-    const retP = Promise.resolve()
-      .then(() => getPluginManager())
-      .then(() =>
-        func(
-          {
-            ...args,
-            statusCallback: (message: string) => {
-              // @ts-ignore
-              self.rpcServer.emit(args.channel, message)
-            },
-          },
-          args.rpcDriverClassName,
-        ),
-      )
-      .catch(error => {
-        if (isAbortException(error)) {
-          // logBuffer.push(['rpc-abort', myId, funcName, args])
-        } else {
-          console.error('rpc-error', myId, funcName, error)
-        }
-        throw error
-      })
-
-    // uncomment below to log returns
-    // retP.then(
-    //   result => console.error('rpc-return', myId, funcName, result),
-    //   err => {},
-    // )
-
-    return retP
+    const { channel, rpcDriverClassName } = args
+    return func(
+      {
+        ...args,
+        statusCallback: (message: string) => {
+          // @ts-ignore
+          self.rpcServer.emit(channel, message)
+        },
+      },
+      rpcDriverClassName,
+    )
   }
 }
 
 getPluginManager()
   .then(pluginManager => {
-    const rpcConfig: { [methodName: string]: Function } = {}
-    const rpcMethods = pluginManager.getElementTypesInGroup('rpc method')
-    rpcMethods.forEach(rpcMethod => {
-      if (!(rpcMethod instanceof RpcMethodType)) {
-        throw new Error('invalid rpc method??')
-      }
-
-      rpcConfig[rpcMethod.name] = wrapForRpc(
-        rpcMethod.execute.bind(rpcMethod),
-        rpcMethod.name,
-      )
-    })
+    const rpcConfig = Object.fromEntries(
+      pluginManager.getElementTypesInGroup('rpc method').map(entry => {
+        const { execute, name } = entry
+        return [name, wrapForRpc((execute as RpcFunc).bind(entry))]
+      }),
+    )
 
     // @ts-ignore
     self.rpcServer = new RpcServer.Server({

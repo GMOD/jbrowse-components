@@ -111,7 +111,7 @@ below
 
 Adapters basically are parsers for a given data format. We will review
 what adapters the alignments plugin has (to write your own adapter,
-see [creating adapters](developer_guide#creating-adapters))
+see [creating adapters](#creating-adapters))
 
 Example adapters: the `@jbrowse/plugin-alignments` plugin creates
 multiple adapter types
@@ -150,7 +150,7 @@ Renderers are a new concept in JBrowse 2, and are related to the concept of
 server side rendering (SSR), but can be used not just on the server but also in
 contexts like the web worker (e.g. the webworker can draw the features to an
 OffscreenCanvas). For more info see [creating
-renderers](developer_guide#creating-custom-renderers)
+renderers](#creating-custom-renderers)
 
 Example renderers: the `@jbrowse/plugin-alignments` exports several
 renderer types
@@ -921,7 +921,7 @@ like human chromosomes which have, for example, chr1 vs 1.
 
 Returning the refNames used by a given file or resource allows JBrowse to
 automatically smooth these small naming disparities over. See [reference
-renaming](config_guide#configuring-reference-renaming)
+renaming](../config_guide#configuring-reference-renaming)
 
 #### getFeatures
 
@@ -996,7 +996,7 @@ JBrowse 2 plugins can be used to add new pluggable elements (views, tracks,
 adapters, etc), and to modify behavior of the application by adding code
 that watches the application's state. For the full list of what kinds of
 pluggable element types plugins can add, see the [pluggable
-elements](developer_guide#pluggable-elements) page.
+elements](#pluggable-elements) page.
 
 The first thing that we have is a `src/index.js` which exports a default class
 containing the plugin registration code

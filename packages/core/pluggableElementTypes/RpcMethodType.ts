@@ -7,6 +7,8 @@ import {
   AbstractRootModel,
   isAppRootModel,
   isUriLocation,
+  RetryError,
+  isAuthNeededException,
 } from '../util/types'
 
 import {
@@ -29,22 +31,22 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
   async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
     const blobMap = getBlobMap()
-
-    const modifiedArgs: any = await this.augmentLocationObjects(args)
-    return { ...modifiedArgs, blobMap }
+    await this.augmentLocationObjects(args)
+    return { ...args, blobMap }
   }
 
   async serializeNewAuthArguments(location: UriLocation) {
     const rootModel: AbstractRootModel | undefined = this.pluginManager
       .rootModel
 
-    if (!isAppRootModel(rootModel)) {
-      throw new Error('This app does not support authentication')
+    // args dont need auth or already have auth
+    if (
+      !isAppRootModel(rootModel) ||
+      location.internetAccountPreAuthorization
+    ) {
+      return location
     }
 
-    if (location.internetAccountPreAuthorization) {
-      throw new Error('Failed to get clean internet account authorization info')
-    }
     const account = rootModel?.findAppropriateInternetAccount(location)
 
     if (account) {
@@ -52,12 +54,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
         location,
       )
 
-      const locationWithPreAuth = {
-        ...location,
-        internetAccountPreAuthorization: modifiedPreAuth,
-      }
-
-      return locationWithPreAuth
+      location.internetAccountPreAuthorization = modifiedPreAuth
     }
     return location
   }
@@ -97,36 +94,46 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     _args: unknown,
     _rpcDriverClassName: string,
   ): Promise<unknown> {
-    return serializedReturn
+    let r
+    try {
+      r = await serializedReturn
+    } catch (error) {
+      if (isAuthNeededException(error)) {
+        // @ts-ignore
+        const retryAccount = this.pluginManager?.rootModel?.createEphemeralInternetAccount(
+          `HTTPBasicInternetAccount-${new URL(error.location.uri).origin}`,
+          {},
+          error.location,
+        )
+        throw new RetryError(
+          'Retrying with created internet account',
+          retryAccount.internetAccountId,
+        )
+      }
+      throw error
+    }
+    return r
   }
 
-  // TODOAUTH unit test this method
   private async augmentLocationObjects(thing: any): Promise<any> {
     if (isUriLocation(thing)) {
-      return this.serializeNewAuthArguments(thing)
+      await this.serializeNewAuthArguments(thing)
     }
     if (Array.isArray(thing)) {
-      return Promise.all(thing.map((p: any) => this.augmentLocationObjects(p)))
+      for (const val of thing) {
+        await this.augmentLocationObjects(val)
+      }
     }
     if (typeof thing === 'object' && thing !== null) {
-      const newThing: any = {}
       for (const [key, value] of Object.entries(thing)) {
-        // TODOAUTH: temp til i can find a better indicator
-        if (key === 'filters' || key === 'signal') {
-          continue
-        }
         if (Array.isArray(value)) {
-          newThing[key] = await Promise.all(
-            value.map((p: any) => this.augmentLocationObjects(p)),
-          )
+          for (const val of thing[key]) {
+            await this.augmentLocationObjects(val)
+          }
         } else if (typeof value === 'object' && value !== null) {
-          newThing[key] = await this.augmentLocationObjects(value)
-        } else {
-          newThing[key] = value
+          await this.augmentLocationObjects(thing[key])
         }
       }
-      return newThing
     }
-    return thing
   }
 }

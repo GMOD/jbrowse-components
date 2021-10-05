@@ -576,14 +576,14 @@
     },
     {
       "type": "QuantitativeTrack",
-      "trackId": "volvox_microarray_dropbox",
-      "name": "wiggle_track xyplot dropbox",
-      "category": ["Integration test", "Wiggle"],
+      "trackId": "dropbox_bigwig",
+      "name": "Dropbox BigWig",
+      "category": ["Authentication"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "volvox_microarray.bw",
+          "uri": "https://www.dropbox.com/s/96wflrzcbmf7nlj/volvox.bw?dl=0",
           "locationType": "UriLocation",
           "internetAccountId": "dropboxOAuth"
         }
@@ -591,31 +591,16 @@
     },
     {
       "type": "QuantitativeTrack",
-      "trackId": "volvox_microarray_externaltoken",
-      "name": "wiggle_track xyplot external token",
-      "category": ["Integration test", "Wiggle"],
+      "trackId": "google_bigwig",
+      "name": "Google Drive BigWig",
+      "category": ["Authentication"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "volvox_microarray.bw",
           "locationType": "UriLocation",
-          "internetAccountId": "ExternalTokenTest"
-        }
-      }
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "volvox_microarray_httpbasic",
-      "name": "wiggle_track xyplot httpbasic",
-      "category": ["Integration test", "Wiggle"],
-      "assemblyNames": ["volvox"],
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "volvox_microarray.bw",
-          "locationType": "UriLocation",
-          "internetAccountId": "HTTPBasicTest"
+          "uri": "https://drive.google.com/file/d/1PIvZCOJioK9eBL1Vuvfa4L_Fv9zTooHk/view?usp=sharing",
+          "internetAccountId": "googleOAuth"
         }
       }
     },
@@ -1580,7 +1565,7 @@
       "needsPKCE": true,
       "hasRefreshToken": true,
       "clientId": "50knr6xrjfc39sk",
-      "validDomains": [
+      "domains": [
         "addtodropbox.com",
         "db.tt",
         "dropbox.com",
@@ -1593,21 +1578,14 @@
     {
       "type": "GoogleDriveOAuthInternetAccount",
       "internetAccountId": "googleOAuth",
-      "name": "Google",
+      "name": "Google Drive",
       "description": "OAuth Info for Google Drive",
       "authEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
       "needsAuthorization": true,
       "clientId": "109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com",
       "scopes": "https://www.googleapis.com/auth/drive.readonly",
       "responseType": "token",
-      "validDomains": ["drive.google.com"]
-    },
-    {
-      "type": "ExternalTokenInternetAccount",
-      "internetAccountId": "ExternalTokenTest",
-      "name": "External token",
-      "description": "External Token for testing",
-      "validDomains": []
+      "domains": ["drive.google.com"]
     }
   ]
 }

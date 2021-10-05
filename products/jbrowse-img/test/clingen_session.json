@@ -1,0 +1,27 @@
+{
+  "name": "My session",
+  "view": {
+    "id": "linearGenomeView",
+    "type": "LinearGenomeView",
+    "offsetPx": 752150,
+    "bpPerPx": 25.084820116171613,
+    "displayedRegions": [
+      { "assemblyName": "hg38", "refName": "1", "start": 0, "end": 248956422 }
+    ],
+    "tracks": [
+      {
+        "id": "RmEVOSCDv",
+        "type": "FeatureTrack",
+        "configuration": "clinGenGeneDisease",
+        "displays": [
+          {
+            "id": "sXi9Yt_n7f",
+            "type": "LinearBasicDisplay",
+            "height": 100,
+            "configuration": "clinGenGeneDisease-LinearBasicDisplay"
+          }
+        ]
+      }
+    ]
+  }
+}

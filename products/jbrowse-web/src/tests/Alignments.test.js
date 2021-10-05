@@ -10,6 +10,7 @@ import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
+import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { setup, generateReadBuffer, getPluginManager } from './util'
@@ -20,6 +21,7 @@ setup()
 afterEach(cleanup)
 
 beforeEach(() => {
+  clearCache()
   clearAdapterCache()
   fetch.resetMocks()
   fetch.mockResponse(
@@ -162,7 +164,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 30000)
+  }, 35000)
 
   it('selects a color, updates object and layout', async () => {
     const pluginManager = getPluginManager()

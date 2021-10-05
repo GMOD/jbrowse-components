@@ -1,9 +1,3 @@
-/**
- * Based on:
- *  https://material-ui.com/components/autocomplete/#Virtualize.tsx
- * Asynchronous Requests for autocomplete:
- *  https://material-ui.com/components/autocomplete/
- */
 import React, { useMemo, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 
@@ -29,10 +23,6 @@ import Autocomplete from '@material-ui/lab/Autocomplete'
 // locals
 import { LinearGenomeViewModel } from '..'
 
-/**
- *  Option interface used to format results to display in dropdown
- *  of the materila ui interface
- */
 export interface Option {
   group?: string
   result: BaseResult
@@ -64,8 +54,8 @@ async function fetchResults(
 }
 
 // the logic of this method is to only apply a filter to RefSequenceResults
-// because they do not have a matchedObject. the trix search results
-// already filter so don't need re-filtering
+// because they do not have a matchedObject. the trix search results already
+// filter so don't need re-filtering
 function filterOptions(options: Option[], searchQuery: string) {
   return options.filter(option => {
     const { result } = option
@@ -115,6 +105,7 @@ function RefNameAutocomplete({
   const [open, setOpen] = useState(false)
   const [loaded, setLoaded] = useState(true)
   const [currentSearch, setCurrentSearch] = useState('')
+  const [inputValue, setInputValue] = useState('')
   const [searchOptions, setSearchOptions] = useState([] as Option[])
   const debouncedSearch = useDebounce(currentSearch, 300)
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
@@ -169,9 +160,7 @@ function RefNameAutocomplete({
   const width = Math.min(Math.max(measureText(inputBoxVal, 16) + 25, 200), 550)
 
   // notes on implementation:
-  // selectOnFocus helps highlight the field when clicked
-  // blurOnSelect helps it so that when the user-re-clicks on the textfield,
-  // that selectOnFocus re-activates
+  // The selectOnFocus setting helps highlight the field when clicked
   return (
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
@@ -183,10 +172,11 @@ function RefNameAutocomplete({
       freeSolo
       includeInputInList
       selectOnFocus
-      blurOnSelect
       style={{ ...style, width }}
       value={inputBoxVal}
       loading={!loaded}
+      inputValue={inputValue}
+      onInputChange={(event, newInputValue) => setInputValue(newInputValue)}
       loadingText="loading results"
       open={open}
       onOpen={() => setOpen(true)}
@@ -202,16 +192,14 @@ function RefNameAutocomplete({
         if (!selectedOption || !assemblyName) {
           return
         }
+
         if (typeof selectedOption === 'string') {
           // handles string inputs on keyPress enter
-          const newResult = new BaseResult({
-            label: selectedOption,
-          })
-          onSelect(newResult)
+          onSelect(new BaseResult({ label: selectedOption }))
         } else {
-          const { result } = selectedOption
-          onSelect(result)
+          onSelect(selectedOption.result)
         }
+        setInputValue(inputBoxVal)
       }}
       options={searchOptions.length === 0 ? options : searchOptions}
       getOptionDisabled={option => option?.group === 'limitOption'}
@@ -238,6 +226,11 @@ function RefNameAutocomplete({
         const { helperText, InputProps = {} } = TextFieldProps
         return (
           <TextField
+            onBlur={() => {
+              // this is used to restore a refName or the non-user-typed input
+              // to the box on blurring
+              setInputValue(inputBoxVal)
+            }}
             {...params}
             {...TextFieldProps}
             helperText={helperText}

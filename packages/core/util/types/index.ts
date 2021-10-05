@@ -23,7 +23,7 @@ import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
 export * from './util'
 
 /** abstract type for a model that contains multiple views */
-export interface AbstractViewContainer {
+export interface AbstractViewContainer extends IAnyStateTreeNode {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
   addView(
@@ -102,6 +102,8 @@ export interface AbstractSessionModel extends AbstractViewContainer {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     callback: (doneCallback: Function) => [DialogComponentType, any],
   ) => void
+  name: string
+  id?: string
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
@@ -230,6 +232,7 @@ export interface AbstractRootModel {
   session?: AbstractSessionModel
   setDefaultSession?(): void
   adminMode?: boolean
+  error?: Error
 }
 
 /** root model with more included for the heavier JBrowse web and desktop app */
@@ -238,6 +241,7 @@ export interface AppRootModel extends AbstractRootModel {
   isDefaultSessionEditing: boolean
   setAssemblyEditing: (arg: boolean) => boolean
   setDefaultSessionEditing: (arg: boolean) => boolean
+  internetAccounts: BaseInternetAccountModel[]
   findAppropriateInternetAccount(
     location: UriLocation,
   ): BaseInternetAccountModel | undefined
@@ -296,6 +300,43 @@ export function isUriLocation(location: unknown): location is UriLocation {
     location !== null &&
     'locationType' in location &&
     'uri' in location
+  )
+}
+
+export class AuthNeededError extends Error {
+  location: UriLocation
+  constructor(message: string, location: UriLocation) {
+    super(message)
+    this.location = location
+    this.name = 'AuthNeededError'
+
+    Object.setPrototypeOf(this, AuthNeededError.prototype)
+  }
+}
+
+export class RetryError extends Error {
+  internetAccountId: string
+  constructor(message: string, internetAccountId: string) {
+    super(message)
+    this.message = message
+    this.internetAccountId = internetAccountId
+    this.name = 'RetryError'
+  }
+}
+
+export function isAuthNeededException(exception: Error): boolean {
+  return (
+    // DOMException
+    exception.name === 'AuthNeededError' ||
+    (exception as AuthNeededError).location !== undefined
+  )
+}
+
+export function isRetryException(exception: Error): boolean {
+  return (
+    // DOMException
+    exception.name === 'RetryError' ||
+    (exception as RetryError).internetAccountId !== undefined
   )
 }
 

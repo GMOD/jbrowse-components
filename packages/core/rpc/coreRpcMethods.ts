@@ -104,8 +104,17 @@ export class CoreGetMetadata extends RpcMethodType {
 export class CoreGetFeatures extends RpcMethodType {
   name = 'CoreGetFeatures'
 
-  async deserializeReturn(feats: SimpleFeatureSerialized[]) {
-    return feats.map(feat => new SimpleFeature(feat))
+  async deserializeReturn(
+    feats: SimpleFeatureSerialized[],
+    args: unknown,
+    rpcDriverClassName: string,
+  ) {
+    const superDeserialized = (await super.deserializeReturn(
+      feats,
+      args,
+      rpcDriverClassName,
+    )) as SimpleFeatureSerialized[]
+    return superDeserialized.map(feat => new SimpleFeature(feat))
   }
 
   async execute(
@@ -161,6 +170,9 @@ export class CoreFreeResources extends RpcMethodType {
     })
 
     return deleteCount
+  }
+  async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
+    return args
   }
 }
 
@@ -244,8 +256,13 @@ export class CoreRender extends RpcMethodType {
     args: RenderArgs,
     rpcDriverClassName: string,
   ): Promise<unknown> {
+    const superDeserialized = await super.deserializeReturn(
+      serializedReturn,
+      args,
+      rpcDriverClassName,
+    )
     if (rpcDriverClassName === 'MainThreadRpcDriver') {
-      return serializedReturn
+      return superDeserialized
     }
 
     const { rendererType } = args
@@ -254,7 +271,7 @@ export class CoreRender extends RpcMethodType {
       this.pluginManager.getRendererType(rendererType),
     )
     return RendererType.deserializeResultsInClient(
-      serializedReturn as ResultsSerialized,
+      superDeserialized as ResultsSerialized,
       args,
     )
   }

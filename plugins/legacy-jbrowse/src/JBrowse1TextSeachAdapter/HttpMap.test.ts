@@ -22,19 +22,13 @@ describe('test JBrowse1 hash implementation', () => {
     spy.mockImplementation(mockFetch as any)
     const hashMap = new HttpMap({
       url: rootTemplate,
-      isElectron: false,
     })
-    const headers = {
-      'Access-Control-Allow-Origin': '*',
-      'Content-Type': 'application/json',
-    }
+
     await hashMap.getBucket('apple')
-    expect(spy).toHaveBeenNthCalledWith(1, `${rootTemplate}/meta.json`, {
-      headers,
-    })
+
     // test compress and hash hex characters are set after initial search
-    expect(hashMap.compress).toBe(0)
-    expect(hashMap.hash_hex_characters).toBe(1)
+    expect(await hashMap.getHashHexCharacters()).toBe(1)
+    expect(await hashMap.getCompress()).toBe(0)
   })
   test('get bucket contents', async () => {
     function mockFetch(url: string): Promise<Response> {
@@ -59,18 +53,12 @@ describe('test JBrowse1 hash implementation', () => {
     spy.mockImplementation(mockFetch as any)
     const hashMap = new HttpMap({
       url: rootTemplate,
-      isElectron: false,
     })
-    const headers = {
-      'Access-Control-Allow-Origin': '*',
-      'Content-Type': 'application/json',
-    }
+
     await hashMap.getBucket('apple')
-    expect(spy).toHaveBeenNthCalledWith(1, `${rootTemplate}/meta.json`, {
-      headers,
-    })
-    expect(spy).toHaveBeenLastCalledWith(`${rootTemplate}/0.json`, { headers })
+    expect(spy).toHaveBeenLastCalledWith(`${rootTemplate}/0.json`)
+
     await hashMap.getBucket('apple3')
-    expect(spy).toHaveBeenLastCalledWith(`${rootTemplate}/f.json`, { headers })
+    expect(spy).toHaveBeenLastCalledWith(`${rootTemplate}/f.json`)
   })
 })

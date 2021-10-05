@@ -47,21 +47,24 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
     <div
       class="makeStyles-paperContent"
     >
-      <label
-        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiInputLabel-shrink"
-        data-shrink="true"
-        for="callback-editor"
-      >
-        fileLocationTest
-      </label>
       <div
-        class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center"
+        class="MuiBox-root MuiBox-root"
+      >
+        <label
+          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiInputLabel-shrink"
+          data-shrink="true"
+        >
+          fileLocationTest
+        </label>
+      </div>
+      <div
+        class="MuiBox-root MuiBox-root"
       >
         <div
-          class="MuiGrid-root MuiGrid-item"
+          class="MuiBox-root MuiBox-root"
         >
           <div
-            aria-label="file or url picker"
+            aria-label="file, url, or account picker"
             class="MuiToggleButtonGroup-root"
             role="group"
           >
@@ -101,24 +104,38 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
             </button>
           </div>
         </div>
-        <div
-          class="MuiGrid-root MuiGrid-item"
+      </div>
+      <div
+        class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+      >
+        <label
+          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-filled"
+          data-shrink="true"
         >
-          <div
-            class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+          Enter URL
+        </label>
+        <div
+          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-fullWidth MuiInputBase-formControl"
+        >
+          <input
+            aria-invalid="false"
+            class="MuiInputBase-input MuiOutlinedInput-input"
+            data-testid="urlInput"
+            type="text"
+            value="/path/to/my.file"
+          />
+          <fieldset
+            aria-hidden="true"
+            class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
           >
-            <div
-              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+            <legend
+              class="PrivateNotchedOutline-legendLabelled PrivateNotchedOutline-legendNotched"
             >
-              <input
-                aria-invalid="false"
-                class="MuiInputBase-input MuiInput-input"
-                data-testid="urlInput"
-                type="text"
-                value="/path/to/my.file"
-              />
-            </div>
-          </div>
+              <span>
+                Enter URL
+              </span>
+            </legend>
+          </fieldset>
         </div>
       </div>
       <p

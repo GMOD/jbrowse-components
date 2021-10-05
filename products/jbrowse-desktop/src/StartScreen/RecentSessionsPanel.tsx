@@ -96,7 +96,7 @@ function RecentSessionsTable({
             onClick={async () => {
               try {
                 const data = await ipcRenderer.invoke('loadSession', value)
-                const pm = await createPluginManager(JSON.parse(data))
+                const pm = await createPluginManager(data)
                 setPluginManager(pm)
               } catch (e) {
                 console.error(e)
@@ -163,7 +163,7 @@ function RecentSessionsCards({
             onClick={async () => {
               try {
                 const data = await ipcRenderer.invoke('loadSession', name)
-                const pm = await createPluginManager(JSON.parse(data))
+                const pm = await createPluginManager(data)
                 setPluginManager(pm)
               } catch (e) {
                 console.error(e)
