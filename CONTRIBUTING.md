@@ -104,6 +104,11 @@ can copy the content of the blog post that was generated (it will be named
 something like `website/blog/${DATE}-${RELEASE_TAG}-release.md`), removing the
 "Downloads" section. Finally, click "Publish release."
 
+Also, it is important as a final manual step for the release process to try to
+install and use @jbrowse/react-linear-genome-view after release because we need
+to ensure that the package does not have any unsatified imports, which can only
+be revealed currently by installing it manually.
+
 ## Desktop beta releases
 
 These are the steps needed to create a new beta release of `jbrowse-desktop`:
