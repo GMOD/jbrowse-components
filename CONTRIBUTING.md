@@ -108,17 +108,15 @@ something like `website/blog/${DATE}-${RELEASE_TAG}-release.md`), removing the
 
 These are the steps needed to create a new beta release of `jbrowse-desktop`:
 
-1. Increment the version of `desktopBeta` in the `package.json` of the desktop
-   directory. This can be done from a PR, or from main.
-2. Make a commit (ideally with only this change) with a commit message that
+1. Make a commit (ideally with only this change) with a commit message that
    begins with `[desktop beta]`.
-3. Push the commit to Github. This will trigger the workflow runs that will:
+2. Push the commit to Github. This will trigger the workflow runs that will:
    1. Create a draft release for the beta release
    2. Create desktop platform-specific (Linux, Mac, Windows) builds and upload
       each build artifact to the draft release.
-4. Review the draft release on Github, and add any necessary notes or
+3. Review the draft release on Github, and add any necessary notes or
    description.
-5. Publish the release.
+4. Publish the release.
 
 That's it! You've succesfully created a new desktop beta release.
 

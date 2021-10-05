@@ -1,13 +1,13 @@
 {
   "name": "@jbrowse/desktop",
   "version": "1.4.4",
-  "desktopBeta": "1.3.5-beta.0",
   "description": "JBrowse desktop application specialized to inspect structural variants",
   "license": "Apache-2.0",
   "homepage": "./",
   "author": "JBrowse Team",
   "main": "public/electron.js",
   "dir": "src",
+  "repository": "https://github.com/GMOD/jbrowse-components.git",
   "scripts": {
     "start": "concurrently \"yarn serve\" \"wait-on http://localhost:3000 && yarn develop\"",
     "serve": "cross-env BROWSER=none yarn cra-start",
@@ -72,6 +72,7 @@
     "deepmerge": "^4.2.2",
     "electron-debug": "^3.0.1",
     "electron-is-dev": "^1.1.0",
+    "electron-updater": "^4.3.9",
     "electron-window-state": "^5.0.3",
     "fontsource-roboto": "3.0.3",
     "json-stable-stringify": "^1.0.1",
@@ -101,17 +102,23 @@
     "productName": "JBrowse 2",
     "copyright": "Copyright © 2019",
     "win": {
-      "target": "nsis",
+      "publish": [
+        "github"
+      ],
       "artifactName": "jbrowse-desktop-${version}-win.${ext}"
     },
     "linux": {
+      "publish": [
+        "github"
+      ],
       "executableName": "jbrowse-desktop",
-      "target": "AppImage",
-      "artifactName": "jbrowse-desktop-${version}-linux.AppImage"
+      "artifactName": "jbrowse-desktop-${version}-linux.${ext}"
     },
     "mac": {
+      "publish": [
+        "github"
+      ],
       "category": "public.app-category.utilities",
-      "target": "dmg",
       "artifactName": "jbrowse-desktop-${version}-mac.${ext}"
     },
     "files": [

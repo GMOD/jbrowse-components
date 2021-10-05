@@ -1,14 +1,41 @@
-import electron from 'electron'
+import electron, { dialog } from 'electron'
 import debug from 'electron-debug'
 import isDev from 'electron-is-dev'
-import windowStateKeeper from 'electron-window-state'
 import fs from 'fs'
 import path from 'path'
 import url from 'url'
+import windowStateKeeper from 'electron-window-state'
+import { autoUpdater } from 'electron-updater'
 
 const { unlink, rename, readdir, readFile, writeFile } = fs.promises
 
 const { app, ipcMain, shell, BrowserWindow, Menu } = electron
+
+// manual auto-updates https://github.com/electron-userland/electron-builder/blob/docs/encapsulated%20manual%20update%20via%20menu.js
+autoUpdater.autoDownload = false
+
+autoUpdater.on('error', error => {
+  dialog.showErrorBox(
+    'Error: ',
+    error == null ? 'unknown' : (error.stack || error).toString(),
+  )
+})
+
+autoUpdater.on('update-available', () => {
+  dialog
+    .showMessageBox({
+      type: 'info',
+      title: 'Found updates',
+      message:
+        'Found updates, do you want update now? No status will appear while the update downloads, but a dialog will appear once complete',
+      buttons: ['Yes', 'No'],
+    })
+    .then(buttonIndex => {
+      if (buttonIndex.response === 0) {
+        autoUpdater.downloadUpdate()
+      }
+    })
+})
 
 debug({ showDevTools: false })
 
@@ -101,12 +128,10 @@ async function createWindow() {
           },
         ]
       : []),
-    // { role: 'fileMenu' }
     {
       label: 'File',
       submenu: [isMac ? { role: 'close' } : { role: 'quit' }],
     },
-    // { role: 'editMenu' }
     {
       label: 'Edit',
       submenu: [
@@ -130,7 +155,6 @@ async function createWindow() {
           : [{ role: 'delete' }, { type: 'separator' }, { role: 'selectAll' }]),
       ],
     },
-    // { role: 'viewMenu' }
     {
       label: 'View',
       submenu: [
@@ -145,7 +169,6 @@ async function createWindow() {
         { role: 'togglefullscreen' },
       ],
     },
-    // { role: 'windowMenu' }
     {
       label: 'Window',
       submenu: [
@@ -162,13 +185,16 @@ async function createWindow() {
       ],
     },
     {
+      label: 'Help',
       role: 'help',
       submenu: [
         {
           label: 'Learn More',
-          click: async () => {
-            await electron.shell.openExternal('https://jbrowse.org')
-          },
+          click: () => electron.shell.openExternal('https://jbrowse.org'),
+        },
+        {
+          label: 'Check for updates...',
+          click: () => autoUpdater.checkForUpdates(),
         },
       ],
     },
@@ -183,6 +209,17 @@ async function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null
   })
+
+  mainWindow.once('ready-to-show', () => {
+    autoUpdater.checkForUpdatesAndNotify()
+  })
+}
+
+function sendStatusToWindow(text: string) {
+  console.error(text)
+  if (mainWindow) {
+    mainWindow.webContents.send('message', text)
+  }
 }
 
 app.on('ready', createWindow)
@@ -273,3 +310,23 @@ ipcMain.handle(
     return unlink(getPath(sessionName))
   },
 )
+
+/// from https://github.com/iffy/electron-updater-example/blob/master/main.js
+//
+autoUpdater.on('checking-for-update', () => {
+  sendStatusToWindow('Checking for update...')
+})
+
+autoUpdater.on('error', err => {
+  sendStatusToWindow('Error in auto-updater. ' + err)
+})
+
+autoUpdater.on('update-downloaded', () => {
+  dialog.showMessageBox({
+    type: 'info',
+    title: 'Update completed',
+    message:
+      'Update downloaded, the update will take place when you restart the app',
+    buttons: ['OK'],
+  })
+})
