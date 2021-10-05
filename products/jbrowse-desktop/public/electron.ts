@@ -233,7 +233,8 @@ ipcMain.handle('saveSession', async (_event: unknown, snap: SessionSnap) => {
   const page = await mainWindow?.capturePage()
   const name = snap.defaultSession.name
   if (page) {
-    await writeFile(getPath(name, 'thumbnail'), page.toDataURL())
+    const resizedPage = page.resize({ width: 250 })
+    await writeFile(getPath(name, 'thumbnail'), resizedPage.toDataURL())
   }
   await writeFile(getPath(name), JSON.stringify(snap, null, 2))
 })

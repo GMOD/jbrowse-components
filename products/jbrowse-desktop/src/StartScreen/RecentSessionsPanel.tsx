@@ -10,8 +10,13 @@ import {
   makeStyles,
 } from '@material-ui/core'
 import { DataGrid, GridCellParams } from '@material-ui/data-grid'
-import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab'
+import {
+  ToggleButtonGroup,
+  ToggleButton,
+  ToggleButtonProps,
+} from '@material-ui/lab'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { format } from 'timeago.js'
 import { ipcRenderer } from 'electron'
 
 // icons
@@ -37,7 +42,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function RecentSessionsTable({
+function RecentSessionsList({
   setError,
   sortedSessions,
   setSessionToDelete,
@@ -54,9 +59,11 @@ function RecentSessionsTable({
   const columns = [
     {
       field: 'delete',
+      minWidth: 40,
       width: 40,
       sortable: false,
       filterable: false,
+      headerName: ' ',
       renderCell: (params: GridCellParams) => {
         const { value } = params
         return (
@@ -70,9 +77,11 @@ function RecentSessionsTable({
     },
     {
       field: 'rename',
+      minWidth: 40,
       width: 40,
       sortable: false,
       filterable: false,
+      headerName: ' ',
       renderCell: (params: GridCellParams) => {
         const { value } = params
         return (
@@ -113,8 +122,22 @@ function RecentSessionsTable({
     {
       field: 'lastModified',
       headerName: 'Last modified',
-      renderCell: ({ value }: GridCellParams) =>
-        !value ? null : `${value.toLocaleString('en-US')}`,
+      renderCell: ({ value }: GridCellParams) => {
+        if (!value) {
+          return null
+        }
+        const lastModified = value as Date
+        const now = Date.now()
+        const oneDayLength = 24 * 60 * 60 * 1000
+        if (now - lastModified.getTime() < oneDayLength) {
+          return (
+            <Tooltip title={lastModified.toLocaleString('en-US')}>
+              <div>{format(lastModified)}</div>
+            </Tooltip>
+          )
+        }
+        return lastModified.toLocaleString('en-US')
+      },
       width: 150,
     },
   ]
@@ -179,6 +202,15 @@ function RecentSessionsCards({
   )
 }
 
+function ToggleButtonWithTooltip(props: ToggleButtonProps) {
+  const { title, children, ...other } = props
+  return (
+    <Tooltip title={title || ''}>
+      <ToggleButton {...other}>{children}</ToggleButton>
+    </Tooltip>
+  )
+}
+
 export default function RecentSessionPanel({
   setError,
   sortedSessions,
@@ -193,7 +225,7 @@ export default function RecentSessionPanel({
   setPluginManager: (pm: PluginManager) => void
 }) {
   const classes = useStyles()
-  const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'table')
+  const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
   return (
     <div>
       <FormControl className={classes.formControl}>
@@ -202,16 +234,12 @@ export default function RecentSessionPanel({
           value={displayMode}
           onChange={(_, newVal) => setDisplayMode(newVal)}
         >
-          <ToggleButton value={'grid'}>
-            <Tooltip title="Grid view">
-              <ViewComfyIcon />
-            </Tooltip>
-          </ToggleButton>
-          <ToggleButton value={'table'}>
-            <Tooltip title="Table view">
-              <ListIcon />
-            </Tooltip>
-          </ToggleButton>
+          <ToggleButtonWithTooltip value="grid" title="Grid view">
+            <ViewComfyIcon />
+          </ToggleButtonWithTooltip>
+          <ToggleButtonWithTooltip value="list" title="List view">
+            <ListIcon />
+          </ToggleButtonWithTooltip>
         </ToggleButtonGroup>
       </FormControl>
 
@@ -225,7 +253,7 @@ export default function RecentSessionPanel({
             setSessionToRename={setSessionToRename}
           />
         ) : (
-          <RecentSessionsTable
+          <RecentSessionsList
             setPluginManager={setPluginManager}
             sortedSessions={sortedSessions}
             setError={setError}

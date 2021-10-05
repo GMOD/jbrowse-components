@@ -498,6 +498,9 @@ const preloadedConfigs = {
         },
       },
     ],
+    defaultSession: {
+      name: 'New Session',
+    },
   },
 }
 
