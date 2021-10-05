@@ -271,7 +271,7 @@ export const BaseCoreDetails = (props: BaseProps) => {
 interface AttributeProps {
   attributes: Record<string, any>
   omit?: string[]
-  formatter?: (val: unknown, key: string) => React.Element
+  formatter?: (val: unknown, key: string) => React.ReactElement
   descriptions?: Record<string, React.ReactNode>
   prefix?: string[]
 }
@@ -447,7 +447,7 @@ export interface BaseInputProps extends BaseCardProps {
   omit?: string[]
   model: any
   descriptions?: Record<string, React.ReactNode>
-  formatter?: (val: unknown, key: string) => React.Element
+  formatter?: (val: unknown, key: string) => React.ReactElement
 }
 
 function isEmpty(obj: Record<string, unknown>) {
@@ -459,7 +459,7 @@ export const FeatureDetails = (props: {
   feature: SimpleFeatureSerialized & { name?: string; id?: string }
   depth?: number
   omit?: string[]
-  formatter?: (val: unknown, key: string) => React.Element
+  formatter?: (val: unknown, key: string) => React.ReactElement
 }) => {
   const { omit = [], model, feature, depth = 0 } = props
   const { name = '', id = '', type = '', subfeatures } = feature

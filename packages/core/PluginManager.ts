@@ -347,6 +347,7 @@ export default class PluginManager {
   ) {
     const pluggableTypes = this.getElementTypeRecord(typeGroup)
       .all()
+      // @ts-ignore
       .map(t => t[fieldName])
       .filter(t => isType(t) && isModelType(t)) as IAnyType[]
 
@@ -368,6 +369,7 @@ export default class PluginManager {
   ) {
     const pluggableTypes = this.getElementTypeRecord(typeGroup)
       .all()
+      // @ts-ignore
       .map(t => t[fieldName])
       .filter(t => isBareConfigurationSchemaType(t)) as IAnyType[]
 

@@ -72,6 +72,8 @@ export class BlockSet {
 }
 
 export class BaseBlock {
+  public regionNumber?: number
+
   public reversed?: boolean
 
   public refName: string
@@ -89,6 +91,8 @@ export class BaseBlock {
   public widthPx = 0
 
   public variant?: string
+
+  public isLeftEndOfDisplayedRegion?: boolean
 
   /**
    * a block that should be shown as filled with data
