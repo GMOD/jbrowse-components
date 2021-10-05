@@ -270,7 +270,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
 
   const { ref, inView } = useInView()
   const [sequence, setSequence] = useState<SeqState>()
-  const [error, setError] = useState<Error>()
+  const [error, setError] = useState<unknown>()
   const [mode, setMode] = useState(hasCDS ? 'cds' : 'cdna')
   const [copied, setCopied] = useState(false)
   const [copiedHtml, setCopiedHtml] = useState(false)
@@ -316,7 +316,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
           setSequence({ seq, upstream: up, downstream: down })
         }
       } catch (e) {
-        setError(e as Error)
+        setError(e)
       }
     })()
 

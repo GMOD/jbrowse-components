@@ -168,9 +168,7 @@ export default class PluginManager {
     'view',
     'widget',
     'rpc method',
-  )
-
-  elementCreationScheduleRan = false
+  ) as PhasedScheduler<PluggableElementTypeGroup> | undefined
 
   rendererTypes = new TypeRecord('RendererType', RendererType)
 
@@ -250,8 +248,10 @@ export default class PluginManager {
   createPluggableElements() {
     // run the creation callbacks for each element type in order.
     // see elementCreationSchedule above for the creation order
-    this.elementCreationSchedule.run()
-    this.elementCreationScheduleRan = true
+    if (this.elementCreationSchedule) {
+      this.elementCreationSchedule.run()
+      delete this.elementCreationSchedule
+    }
     return this
   }
 
@@ -311,7 +311,7 @@ export default class PluginManager {
     }
     const typeRecord = this.getElementTypeRecord(groupName)
 
-    this.elementCreationSchedule.add(groupName, () => {
+    this.elementCreationSchedule?.add(groupName, () => {
       let newElement = creationCallback(this)
       if (!newElement.name) {
         throw new Error(`cannot add a ${groupName} with no name`)
