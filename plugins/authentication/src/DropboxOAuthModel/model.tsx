@@ -143,7 +143,7 @@ const stateModelFactory = (
 
         const response = await fetch(
           'https://content.dropboxapi.com/2/sharing/get_shared_link_file',
-          { method: 'GET', credentials: 'same-origin', ...newOpts },
+          { method: 'POST', credentials: 'same-origin', ...newOpts },
         )
         if (!response.ok) {
           await this.processBadResponse(response)
