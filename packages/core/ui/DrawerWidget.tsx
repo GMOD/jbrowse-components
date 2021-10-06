@@ -11,13 +11,14 @@ import {
   makeStyles,
   alpha,
 } from '@material-ui/core'
+import { observer } from 'mobx-react'
+import { getEnv } from 'mobx-state-tree'
+import { SessionWithDrawerWidgets } from '@jbrowse/core/util/types'
+
 import DeleteIcon from '@material-ui/icons/Delete'
 import CloseIcon from '@material-ui/icons/Close'
 import MinimizeIcon from '@material-ui/icons/Minimize'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
-import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
-import { SessionWithDrawerWidgets } from '@jbrowse/core/util/types'
 import Drawer from './Drawer'
 
 const useStyles = makeStyles(theme => ({

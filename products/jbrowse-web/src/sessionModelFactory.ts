@@ -396,6 +396,9 @@ export default function sessionModelFactory(
       },
 
       resizeDrawer(distance: number) {
+        if (self.drawerPosition === 'left') {
+          distance *= -1
+        }
         const oldDrawerWidth = self.drawerWidth
         const newDrawerWidth = this.updateDrawerWidth(oldDrawerWidth - distance)
         const actualDistance = oldDrawerWidth - newDrawerWidth
