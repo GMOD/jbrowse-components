@@ -28,15 +28,13 @@
     "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-unused-vars": ["warn"],
     "@typescript-eslint/no-unused-expressions": "off",
-    "no-use-before-define": "off",
     "@typescript-eslint/no-use-before-define": "off",
     "@typescript-eslint/no-var-requires": "off",
     "@typescript-eslint/no-redeclare": "off",
+
+    "no-use-before-define": "off",
     "curly": "error",
     "no-global-assign": "warn",
-    "react/no-danger": "warn",
-    "import/no-anonymous-default-export": "off",
-    "monorepo/no-internal-import": "off",
     "no-console": [
       "warn",
       {
@@ -46,6 +44,12 @@
     "no-debugger": "warn",
     "no-undef": "error",
     "no-underscore-dangle": "warn",
+
+    "import/no-extraneous-dependencies": "error",
+    "import/no-anonymous-default-export": "off",
+    "monorepo/no-internal-import": "off",
+
+    "react/no-danger": "warn",
     "react/destructuring-assignment": "error",
     "react/no-unused-prop-types": "error",
     "react/no-unused-state": "error",
@@ -58,13 +62,6 @@
         "markers": ["/"]
       }
     ]
-  },
-  "settings": {
-    "import/resolver": {
-      "node": {
-        "extensions": [".js", ".jsx", ".ts", ".tsx"]
-      }
-    }
   },
   "overrides": [
     {
@@ -80,7 +77,14 @@
       }
     },
     {
-      "files": ["**/test/**", "**/*.test.[t,j]s", "**/*.test.[t,j]sx"],
+      "files": [
+        "**/test/**",
+        "**/*.test.[t,j]s",
+        "**/*.test.[t,j]sx",
+        "**/rescripts/*",
+        "**/test/util.js",
+        "**/webpack.config.js"
+      ],
       "env": {
         "jest": true
       },
