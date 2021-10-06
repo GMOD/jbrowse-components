@@ -51,7 +51,7 @@ function makeBigsiHitsFeatures(
   const refName =
     self.leftBigsiOffset?.refName || self.rightBigsiOffset?.refName || ''
 
-  const numBuckets = 10
+  const numBuckets = 32
   const featureLength = (self.rightBigsiOffset.coord - self.leftBigsiOffset.coord)/numBuckets
 
   let uniqueId = 0
