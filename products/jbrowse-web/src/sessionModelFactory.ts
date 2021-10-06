@@ -89,7 +89,7 @@ export default function sessionModelFactory(
 
       drawerPosition: types.optional(
         types.string,
-        localStorage.get('drawerPosition') || 'right',
+        localStorage.getItem('drawerPosition') || 'right',
       ),
     })
     .volatile((/* self */) => ({
@@ -216,7 +216,7 @@ export default function sessionModelFactory(
     .actions(self => ({
       setDrawerPosition(arg: string) {
         self.drawerPosition = arg
-        localStorage.set('drawerPosition', arg)
+        localStorage.setItem('drawerPosition', arg)
       },
       queueDialog(
         callback: (doneCallback: Function) => [DialogComponentType, ReactProps],
