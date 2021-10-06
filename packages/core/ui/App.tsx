@@ -24,7 +24,7 @@ import EditableTypography from './EditableTypography'
 import { LogoFull } from './Logo'
 import Snackbar from './Snackbar'
 import ViewContainer from './ViewContainer'
-import { AbstractSessionModel, NotificationLevel } from '../util'
+import { NotificationLevel, SessionWithDrawerWidgets } from '../util'
 import { MenuItem as JBMenuItem } from './index'
 
 const useStyles = makeStyles(theme => ({
@@ -118,16 +118,11 @@ const App = observer(
     HeaderButtons = <div />,
   }: {
     HeaderButtons?: React.ReactElement
-    session: AbstractSessionModel & {
-      visibleWidget: unknown
-      drawerWidth: number
-      minimized: boolean
-      activeWidgets: Map<string, unknown>
+    session: SessionWithDrawerWidgets & {
       savedSessionNames: string[]
       menus: { label: string; menuItems: JBMenuItem[] }[]
       renameCurrentSession: (arg: string) => void
       snackbarMessages: SnackbarMessage[]
-      showWidgetDrawer: () => void
       popSnackbarMessage: () => unknown
     }
   }) => {
@@ -157,13 +152,17 @@ const App = observer(
       }
     }
 
+    const drawerVisible = visibleWidget && !minimized
     return (
       <div
         className={classes.root}
         style={{
-          gridTemplateColumns: `[main] 1fr${
-            visibleWidget && !minimized ? ` [drawer] ${drawerWidth}px` : ''
-          }`,
+          gridTemplateColumns: [
+            `[main] 1fr`,
+            drawerVisible ? `[drawer] ${drawerWidth}px` : undefined,
+          ]
+            .filter(f => !!f)
+            .join(' '),
         }}
       >
         {session.DialogComponent ? (
