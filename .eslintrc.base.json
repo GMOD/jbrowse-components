@@ -82,8 +82,10 @@
         "**/*.test.[t,j]s",
         "**/*.test.[t,j]sx",
         "**/rescripts/*",
-        "**/test/util.js",
-        "**/webpack.config.js"
+        "**/tests/util.js",
+        "**/webpack.config.js",
+        "**/scripts/notarize.js",
+        "**/src/testUtil.ts"
       ],
       "env": {
         "jest": true
