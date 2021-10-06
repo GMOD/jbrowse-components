@@ -1,4 +1,3 @@
-import 'regenerator-runtime/runtime'
 import { createViewState } from '@jbrowse/react-linear-genome-view'
 import { renderToSvg } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'

@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
 import fs from 'fs'
 import yargs from 'yargs'
 import { standardizeArgv, parseArgv } from './parseArgv'

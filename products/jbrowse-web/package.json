@@ -18,6 +18,7 @@
   "dependencies": {
     "@jbrowse/core": "^1.4.4",
     "@jbrowse/plugin-alignments": "^1.4.4",
+    "@jbrowse/plugin-authentication": "^1.4.4",
     "@jbrowse/plugin-bed": "^1.4.4",
     "@jbrowse/plugin-breakpoint-split-view": "^1.4.4",
     "@jbrowse/plugin-circular-view": "^1.4.4",
@@ -38,6 +39,7 @@
     "@jbrowse/plugin-sv-inspector": "^1.4.4",
     "@jbrowse/plugin-svg": "^1.4.4",
     "@jbrowse/plugin-trackhub-registry": "^1.4.4",
+    "@jbrowse/plugin-trix": "^1.4.4",
     "@jbrowse/plugin-variants": "^1.4.4",
     "@jbrowse/plugin-wiggle": "^1.4.4",
     "@material-ui/core": "^4.12.2",
@@ -49,6 +51,7 @@
     "copy-to-clipboard": "^3.3.1",
     "core-js": "^3.2.1",
     "crypto-js": "^3.0.0",
+    "file-saver": "^2.0.0",
     "fontsource-roboto": "3.0.3",
     "json-stable-stringify": "^1.0.1",
     "librpc-web-mod": "^1.1.2",
