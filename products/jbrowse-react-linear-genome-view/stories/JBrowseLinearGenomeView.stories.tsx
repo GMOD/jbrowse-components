@@ -175,8 +175,7 @@ export const WithPlugins = () => {
         adapter: {
           type: 'RefNameAliasAdapter',
           location: {
-            uri:
-              'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
+            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
             locationType: 'UriLocation',
           },
         },

@@ -131,7 +131,7 @@ const blockState = types
         self.renderProps = renderProps
         renderInProgress = undefined
       },
-      setError(error: unknown) {
+      setError(error: Error | unknown) {
         console.error(error)
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
@@ -146,7 +146,7 @@ const blockState = types
         self.error = error
         self.renderProps = undefined
         renderInProgress = undefined
-        if (isRetryException(error)) {
+        if (isRetryException(error as Error)) {
           this.reload()
         }
       },

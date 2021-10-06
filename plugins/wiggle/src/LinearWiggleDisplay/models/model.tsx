@@ -162,7 +162,7 @@ const stateModelFactory = (
     }))
     .views(self => ({
       get TooltipComponent(): React.FC {
-        return Tooltip as unknown as React.FC
+        return (Tooltip as unknown) as React.FC
       },
 
       get adapterTypeName() {

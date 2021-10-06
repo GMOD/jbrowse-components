@@ -395,7 +395,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               locationType: 'UriLocation',
             })
           } catch (e) {
-            await this.handleError(e)
+            await this.handleError(e as string)
           }
           let newOpts = opts
 
@@ -404,7 +404,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               try {
                 fileUrl = await self.fetchFile(String(url), foundTokens.token)
               } catch (e) {
-                await this.handleError(e)
+                await this.handleError(e as string)
               }
             }
             const tokenInfoString = self.tokenType
@@ -466,7 +466,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               },
             })
           } catch (error) {
-            await this.handleError(error, retried)
+            await this.handleError(error as string, retried)
           }
 
           if (foundTokens.token) {
@@ -483,7 +483,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
                   },
                 })
               } catch (error) {
-                await this.handleError(error, retried, location)
+                await this.handleError(error as string, retried, location)
                 if (!retried) {
                   await this.getPreAuthorizationInformation(location, true)
                 }

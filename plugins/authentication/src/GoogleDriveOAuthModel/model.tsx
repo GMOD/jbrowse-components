@@ -159,7 +159,7 @@ const stateModelFactory = (
             locationType: 'UriLocation',
           })
         } catch (e) {
-          await self.handleError(e)
+          await self.handleError(e as string)
         }
 
         const newOpts: RequestInit = opts || {}

@@ -114,9 +114,8 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         internetAccountId: string,
         initialSnapshot = {},
       ) {
-        const internetAccountConfigSchema = pluginManager.pluggableConfigSchemaType(
-          'internet account',
-        )
+        const internetAccountConfigSchema =
+          pluginManager.pluggableConfigSchemaType('internet account')
         const configuration = resolveIdentifier(
           internetAccountConfigSchema,
           self,

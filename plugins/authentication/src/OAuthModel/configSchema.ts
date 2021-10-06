@@ -59,5 +59,6 @@ const OAuthConfigSchema = ConfigurationSchema(
 )
 
 export type OAuthInternetAccountConfigModel = typeof OAuthConfigSchema
-export type OAuthInternetAccountConfig = Instance<OAuthInternetAccountConfigModel>
+export type OAuthInternetAccountConfig =
+  Instance<OAuthInternetAccountConfigModel>
 export default OAuthConfigSchema

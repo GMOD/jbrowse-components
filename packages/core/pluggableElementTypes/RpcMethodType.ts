@@ -7,6 +7,7 @@ import {
   AbstractRootModel,
   isAppRootModel,
   isUriLocation,
+  AuthNeededError,
   RetryError,
   isAuthNeededException,
 } from '../util/types'
@@ -36,8 +37,8 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   }
 
   async serializeNewAuthArguments(location: UriLocation) {
-    const rootModel: AbstractRootModel | undefined = this.pluginManager
-      .rootModel
+    const rootModel: AbstractRootModel | undefined =
+      this.pluginManager.rootModel
 
     // args dont need auth or already have auth
     if (
@@ -98,13 +99,16 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     try {
       r = await serializedReturn
     } catch (error) {
-      if (isAuthNeededException(error)) {
-        // @ts-ignore
-        const retryAccount = this.pluginManager?.rootModel?.createEphemeralInternetAccount(
-          `HTTPBasicInternetAccount-${new URL(error.location.uri).origin}`,
-          {},
-          error.location,
-        )
+      if (isAuthNeededException(error as Error)) {
+        const retryAccount =
+          // @ts-ignore
+          this.pluginManager?.rootModel?.createEphemeralInternetAccount(
+            `HTTPBasicInternetAccount-${
+              new URL((error as AuthNeededError).location.uri).origin
+            }`,
+            {},
+            (error as AuthNeededError).location,
+          )
         throw new RetryError(
           'Retrying with created internet account',
           retryAccount.internetAccountId,
