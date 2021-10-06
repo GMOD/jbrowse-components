@@ -69,6 +69,11 @@ export default function sessionModelFactory(
       sessionAssemblies: types.array(assemblyConfigSchemasType),
 
       minimized: types.optional(types.boolean, false),
+
+      drawerPosition: types.optional(
+        types.string,
+        localStorage.get('drawerPosition') || 'right',
+      ),
     })
     .volatile((/* self */) => ({
       /**
@@ -180,6 +185,10 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
+      setDrawerPosition(arg: string) {
+        self.drawerPosition = arg
+        localStorage.set('drawerPosition', arg)
+      },
       queueDialog(
         callback: (doneCallback: Function) => [DialogComponentType, any],
       ): void {
