@@ -35,6 +35,7 @@ test('adapter can fetch files from names index', async () => {
     textSearchAdapterId: 'JBrowse1GenerateNamesAdapterTest',
     namesIndexLocation: {
       uri: urlPath,
+      locationType: 'UriLocation',
     },
   }
   // create adapter

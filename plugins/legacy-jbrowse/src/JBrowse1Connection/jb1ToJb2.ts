@@ -51,6 +51,7 @@ interface Jb2Location {
   uri?: string
   localPath?: string
   blobId?: string
+  locationType?: string
 }
 
 export function convertTrackConfig(
@@ -102,19 +103,27 @@ export function convertTrackConfig(
     if (storeClass === 'JBrowse/Store/SeqFeature/BAM') {
       const adapter: Jb2Adapter = {
         type: 'BamAdapter',
-        bamLocation: { uri: urlTemplate },
+        bamLocation: { uri: urlTemplate, locationType: 'UriLocation' },
       }
       if (jb1TrackConfig.baiUrlTemplate) {
         adapter.index = {
-          location: { uri: resolveUrlTemplate(jb1TrackConfig.baiUrlTemplate) },
+          location: {
+            uri: resolveUrlTemplate(jb1TrackConfig.baiUrlTemplate),
+            locationType: 'UriLocation',
+          },
         }
       } else if (jb1TrackConfig.csiUrlTemplate) {
         adapter.index = {
-          location: { uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate) },
+          location: {
+            uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate),
+            locationType: 'UriLocation',
+          },
           indexType: 'CSI',
         }
       } else {
-        adapter.index = { location: { uri: `${urlTemplate}.bai` } }
+        adapter.index = {
+          location: { uri: `${urlTemplate}.bai`, locationType: 'UriLocation' },
+        }
       }
       return {
         ...jb2TrackConfig,
@@ -125,15 +134,19 @@ export function convertTrackConfig(
     if (storeClass === 'JBrowse/Store/SeqFeature/CRAM') {
       const adapter: Jb2Adapter = {
         type: 'CramAdapter',
-        cramLocation: { uri: urlTemplate },
+        cramLocation: { uri: urlTemplate, locationType: 'UriLocation' },
         sequenceAdapter,
       }
       if (jb1TrackConfig.craiUrlTemplate) {
         adapter.craiLocation = {
           uri: resolveUrlTemplate(jb1TrackConfig.craiUrlTemplate),
+          locationType: 'UriLocation',
         }
       } else {
-        adapter.craiLocation = { uri: `${urlTemplate}.crai` }
+        adapter.craiLocation = {
+          uri: `${urlTemplate}.crai`,
+          locationType: 'UriLocation',
+        }
       }
       return {
         ...jb2TrackConfig,
@@ -147,7 +160,7 @@ export function convertTrackConfig(
         type: 'FeatureTrack',
         adapter: {
           type: 'NCListAdapter',
-          rootUrlTemplate: { uri: urlTemplate },
+          rootUrlTemplate: { uri: urlTemplate, locationType: 'UriLocation' },
         },
       }
     }
@@ -168,26 +181,34 @@ export function convertTrackConfig(
         type: 'QuantitativeTrack',
         adapter: {
           type: 'BigWigAdapter',
-          bigWigLocation: { uri: urlTemplate },
+          bigWigLocation: { uri: urlTemplate, locationType: 'UriLocation' },
         },
       }
     }
     if (storeClass === 'JBrowse/Store/SeqFeature/VCFTabix') {
       const adapter: Jb2Adapter = {
         type: 'VcfTabixAdapter',
-        vcfGzLocation: { uri: urlTemplate },
+        vcfGzLocation: { uri: urlTemplate, locationType: 'UriLocation' },
       }
       if (jb1TrackConfig.tbiUrlTemplate) {
         adapter.index = {
-          location: { uri: resolveUrlTemplate(jb1TrackConfig.tbiUrlTemplate) },
+          location: {
+            uri: resolveUrlTemplate(jb1TrackConfig.tbiUrlTemplate),
+            locationType: 'UriLocation',
+          },
         }
       } else if (jb1TrackConfig.csiUrlTemplate) {
         adapter.index = {
-          location: { uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate) },
+          location: {
+            uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate),
+            locationType: 'UriLocation',
+          },
           indexType: 'CSI',
         }
       } else {
-        adapter.index = { location: { uri: `${urlTemplate}.tbi` } }
+        adapter.index = {
+          location: { uri: `${urlTemplate}.tbi`, locationType: 'UriLocation' },
+        }
       }
       return {
         ...jb2TrackConfig,
@@ -215,26 +236,34 @@ export function convertTrackConfig(
         type: 'FeatureTrack',
         adapter: {
           type: 'BigBedAdapter',
-          bigBedLocation: { uri: urlTemplate },
+          bigBedLocation: { uri: urlTemplate, locationType: 'UriLocation' },
         },
       }
     }
     if (storeClass === 'JBrowse/Store/SeqFeature/GFF3Tabix') {
       const adapter: Jb2Adapter = {
         type: 'Gff3TabixAdapter',
-        gffGzLocation: { uri: urlTemplate },
+        gffGzLocation: { uri: urlTemplate, locationType: 'UriLocation' },
       }
       if (jb1TrackConfig.tbiUrlTemplate) {
         adapter.index = {
-          location: { uri: resolveUrlTemplate(jb1TrackConfig.tbiUrlTemplate) },
+          location: {
+            uri: resolveUrlTemplate(jb1TrackConfig.tbiUrlTemplate),
+            locationType: 'UriLocation',
+          },
         }
       } else if (jb1TrackConfig.csiUrlTemplate) {
         adapter.index = {
-          location: { uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate) },
+          location: {
+            uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate),
+            locationType: 'UriLocation',
+          },
           indexType: 'CSI',
         }
       } else {
-        adapter.index = { location: { uri: `${urlTemplate}.tbi` } }
+        adapter.index = {
+          location: { uri: `${urlTemplate}.tbi`, locationType: 'UriLocation' },
+        }
       }
       return {
         ...jb2TrackConfig,
@@ -252,19 +281,27 @@ export function convertTrackConfig(
     if (storeClass === 'JBrowse/Store/SeqFeature/BEDTabix') {
       const adapter: Jb2Adapter = {
         type: 'BedTabixAdapter',
-        bedGzLocation: { uri: urlTemplate },
+        bedGzLocation: { uri: urlTemplate, locationType: 'UriLocation' },
       }
       if (jb1TrackConfig.tbiUrlTemplate) {
         adapter.index = {
-          location: { uri: resolveUrlTemplate(jb1TrackConfig.tbiUrlTemplate) },
+          location: {
+            uri: resolveUrlTemplate(jb1TrackConfig.tbiUrlTemplate),
+            locationType: 'UriLocation',
+          },
         }
       } else if (jb1TrackConfig.csiUrlTemplate) {
         adapter.index = {
-          location: { uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate) },
+          location: {
+            uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate),
+            locationType: 'UriLocation',
+          },
           indexType: 'CSI',
         }
       } else {
-        adapter.index = { location: { uri: `${urlTemplate}.tbi` } }
+        adapter.index = {
+          location: { uri: `${urlTemplate}.tbi`, locationType: 'UriLocation' },
+        }
       }
       return {
         ...jb2TrackConfig,
@@ -299,14 +336,18 @@ export function convertTrackConfig(
     if (storeClass === 'JBrowse/Store/SeqFeature/IndexedFasta') {
       const adapter: Jb2Adapter = {
         type: 'IndexedFastaAdapter',
-        fastaLocation: { uri: urlTemplate },
+        fastaLocation: { uri: urlTemplate, locationType: 'UriLocation' },
       }
       if (jb1TrackConfig.faiUrlTemplate) {
         adapter.faiLocation = {
           uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
+          locationType: 'UriLocation',
         }
       } else {
-        adapter.faiLocation = { uri: `${urlTemplate}.fai` }
+        adapter.faiLocation = {
+          uri: `${urlTemplate}.fai`,
+          locationType: 'UriLocation',
+        }
       }
       return {
         ...jb2TrackConfig,
@@ -317,21 +358,29 @@ export function convertTrackConfig(
     if (storeClass === 'JBrowse/Store/SeqFeature/BgzipIndexedFasta') {
       const adapter: Jb2Adapter = {
         type: 'BgzipFastaAdapter',
-        fastaLocation: { uri: urlTemplate },
+        fastaLocation: { uri: urlTemplate, locationType: 'UriLocation' },
       }
       if (jb1TrackConfig.faiUrlTemplate) {
         adapter.faiLocation = {
           uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
+          locationType: 'UriLocation',
         }
       } else {
-        adapter.faiLocation = { uri: `${urlTemplate}.fai` }
+        adapter.faiLocation = {
+          uri: `${urlTemplate}.fai`,
+          locationType: 'UriLocation',
+        }
       }
       if (jb1TrackConfig.gziUrlTemplate) {
         adapter.gziLocation = {
           uri: resolveUrlTemplate(jb1TrackConfig.gziUrlTemplate),
+          locationType: 'UriLocation',
         }
       } else {
-        adapter.gziLocation = { uri: `${urlTemplate}.gzi` }
+        adapter.gziLocation = {
+          uri: `${urlTemplate}.gzi`,
+          locationType: 'UriLocation',
+        }
       }
       return {
         ...jb2TrackConfig,
@@ -345,7 +394,7 @@ export function convertTrackConfig(
         type: 'ReferenceSequenceTrack',
         adapter: {
           type: 'TwoBitAdapter',
-          twoBitLocation: { uri: urlTemplate },
+          twoBitLocation: { uri: urlTemplate, locationType: 'UriLocation' },
         },
       }
     }
@@ -353,7 +402,7 @@ export function convertTrackConfig(
 
   // If we don't recogize the store class, make a best effort to guess by file type
   jb2TrackConfig.adapter = guessAdapter(
-    { uri: urlTemplate },
+    { uri: urlTemplate, locationType: 'UriLocation' },
     undefined,
     () => urlTemplate,
   )
@@ -427,16 +476,18 @@ export async function createRefSeqsAdapter(
         type: 'IndexedFastaAdapter',
         fastaLocation: {
           uri: refSeqs.url.slice(0, -4),
+          locationType: 'UriLocation',
         },
         faiLocation: {
           uri: refSeqs.url,
+          locationType: 'UriLocation',
         },
       }
     }
     if (refSeqs.url.match(/.2bit$/)) {
       return {
         type: 'TwoBitAdapter',
-        twoBitLocation: { uri: refSeqs.url },
+        twoBitLocation: { uri: refSeqs.url, locationType: 'UriLocation' },
       }
     }
     if (refSeqs.url.match(/.fa$/)) {
@@ -445,9 +496,10 @@ export async function createRefSeqsAdapter(
     if (refSeqs.url.match(/.sizes/)) {
       throw new Error('chromosome SIZES adapter not available')
     }
-    const refSeqsJson = await openLocation({ uri: refSeqs.url }).readFile(
-      'utf8',
-    )
+    const refSeqsJson = await openLocation({
+      uri: refSeqs.url,
+      locationType: 'UriLocation',
+    }).readFile('utf8')
     const refSeqsData: RefSeq[] = JSON.parse(refSeqsJson as string)
     return refSeqAdapterFromConfig(refSeqsData)
   }

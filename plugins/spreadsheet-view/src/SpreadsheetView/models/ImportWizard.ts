@@ -1,11 +1,12 @@
 import { types, getParent } from 'mobx-state-tree'
 import { openLocation } from '@jbrowse/core/util/io'
 import { getSession } from '@jbrowse/core/util'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 // 30MB
 const IMPORT_SIZE_LIMIT = 30_000_000
 
-export default () => {
+export default (pluginManager: PluginManager) => {
   const fileTypes = ['CSV', 'TSV', 'VCF', 'BED', 'BEDPE', 'STAR-Fusion']
   const fileTypeParsers = {
     CSV: () =>
@@ -152,7 +153,7 @@ export default () => {
 
           const { unzip } = await import('@gmod/bgzf-filehandle')
 
-          const filehandle = openLocation(self.fileSource)
+          const filehandle = openLocation(self.fileSource, pluginManager)
           await filehandle
             .stat()
             .then(stat => {

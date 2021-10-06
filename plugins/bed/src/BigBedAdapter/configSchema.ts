@@ -5,7 +5,7 @@ export default ConfigurationSchema(
   {
     bigBedLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bb' },
+      defaultValue: { uri: '/path/to/my.bb', locationType: 'UriLocation' },
     },
   },
   { explicitlyTyped: true },

@@ -19,6 +19,7 @@ import {
 } from './mst'
 import RpcManager from '../../rpc/RpcManager'
 import { Feature } from '../simpleFeature'
+import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
 
 export * from './util'
 
@@ -98,8 +99,10 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   DialogComponent?: DialogComponentType
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DialogProps: any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setDialogComponent: (dlg?: DialogComponentType, props?: any) => void
+  queueDialog: (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    callback: (doneCallback: Function) => [DialogComponentType, any],
+  ) => void
   name: string
   id?: string
 }
@@ -259,6 +262,19 @@ export interface AppRootModel extends AbstractRootModel {
   isDefaultSessionEditing: boolean
   setAssemblyEditing: (arg: boolean) => boolean
   setDefaultSessionEditing: (arg: boolean) => boolean
+  internetAccounts: BaseInternetAccountModel[]
+  findAppropriateInternetAccount(
+    location: UriLocation,
+  ): BaseInternetAccountModel | undefined
+}
+
+export function isAppRootModel(thing: unknown): thing is AppRootModel {
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'isAssemblyEditing' in thing &&
+    'findAppropriateInternetAccount' in thing
+  )
 }
 
 /** a root model that manages global menus */
@@ -299,11 +315,55 @@ export interface LocalPathLocation
 
 export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
 
+export function isUriLocation(location: unknown): location is UriLocation {
+  return (
+    typeof location === 'object' &&
+    location !== null &&
+    'locationType' in location &&
+    'uri' in location
+  )
+}
+
+export class AuthNeededError extends Error {
+  location: UriLocation
+  constructor(message: string, location: UriLocation) {
+    super(message)
+    this.location = location
+    this.name = 'AuthNeededError'
+
+    Object.setPrototypeOf(this, AuthNeededError.prototype)
+  }
+}
+
+export class RetryError extends Error {
+  internetAccountId: string
+  constructor(message: string, internetAccountId: string) {
+    super(message)
+    this.message = message
+    this.internetAccountId = internetAccountId
+    this.name = 'RetryError'
+  }
+}
+
+export function isAuthNeededException(exception: Error): boolean {
+  return (
+    // DOMException
+    exception.name === 'AuthNeededError' ||
+    (exception as AuthNeededError).location !== undefined
+  )
+}
+
+export function isRetryException(exception: Error): boolean {
+  return (
+    // DOMException
+    exception.name === 'RetryError' ||
+    (exception as RetryError).internetAccountId !== undefined
+  )
+}
+
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
 export type FileLocation = LocalPathLocation | UriLocation | BlobLocation
-
-/* eslint-enable @typescript-eslint/no-empty-interface */
 
 // These types are slightly different than the MST models representing a
 // location because a blob cannot be stored in a MST, so this is the

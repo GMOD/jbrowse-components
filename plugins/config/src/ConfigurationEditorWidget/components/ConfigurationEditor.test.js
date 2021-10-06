@@ -35,7 +35,7 @@ describe('ConfigurationEditor widget', () => {
         name: 'fileLocationTest',
         description: 'fileLocationTest',
         type: 'fileLocation',
-        defaultValue: { uri: '/path/to/my.file' },
+        defaultValue: { uri: '/path/to/my.file', locationType: 'UriLocation' },
       },
       stringArrayTest: {
         name: 'stringArrayTest',

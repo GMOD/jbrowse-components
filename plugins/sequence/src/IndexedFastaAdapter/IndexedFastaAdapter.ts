@@ -12,6 +12,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import LRU from '@jbrowse/core/util/QuickLRU'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
   protected fasta: typeof IndexedFasta
@@ -27,13 +29,17 @@ export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
     },
   })
 
-  public constructor(config: AnyConfigurationModel) {
-    super(config)
+  public constructor(
+    config: AnyConfigurationModel,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    super(config, getSubAdapter, pluginManager)
     const fastaLocation = readConfObject(config, 'fastaLocation')
     const faiLocation = readConfObject(config, 'faiLocation')
     const fastaOpts = {
-      fasta: openLocation(fastaLocation as FileLocation),
-      fai: openLocation(faiLocation as FileLocation),
+      fasta: openLocation(fastaLocation as FileLocation, this.pluginManager),
+      fai: openLocation(faiLocation as FileLocation, this.pluginManager),
     }
 
     this.fasta = new IndexedFasta(fastaOpts)

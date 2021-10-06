@@ -45,6 +45,7 @@ function makeTrackConfig(track, trackDbUrl, sequenceAdapter) {
   const { bigDataUrl } = track
   const bigDataLocation = {
     uri: new URL(bigDataUrl, trackDbUrl).href,
+    locationType: 'UriLocation',
   }
   const { categories } = track
   let bigDataIndexLocation
@@ -54,14 +55,19 @@ function makeTrackConfig(track, trackDbUrl, sequenceAdapter) {
         bigDataIndexLocation = track.bigDataIndex
           ? {
               uri: new URL(track.bigDataIndex, trackDbUrl).href,
+              locationType: 'UriLocation',
             }
           : {
               uri: new URL(`${track.bigDataUrl}.bai`, trackDbUrl).href,
+              locationType: 'UriLocation',
             }
       } else {
         bigDataIndexLocation = track.bigDataIndex
-          ? { localPath: track.bigDataIndex }
-          : { localPath: `${track.bigDataUrl}.bai` }
+          ? { localPath: track.bigDataIndex, locationType: 'LocalPathLocation' }
+          : {
+              localPath: `${track.bigDataUrl}.bai`,
+              locationType: 'LocalPathLocation',
+            }
       }
       return {
         type: 'AlignmentsTrack',
@@ -169,14 +175,19 @@ function makeTrackConfig(track, trackDbUrl, sequenceAdapter) {
         bigDataIndexLocation = track.bigDataIndex
           ? {
               uri: new URL(track.bigDataIndex, trackDbUrl).href,
+              locationType: 'UriLocation',
             }
           : {
               uri: new URL(`${track.bigDataUrl}.bai`, trackDbUrl).href,
+              locationType: 'UriLocation',
             }
       } else {
         bigDataIndexLocation = track.bigDataIndex
-          ? { localPath: track.bigDataIndex }
-          : { localPath: `${track.bigDataUrl}.bai` }
+          ? { localPath: track.bigDataIndex, locationType: 'LocalPathLocation' }
+          : {
+              localPath: `${track.bigDataUrl}.bai`,
+              locationType: 'LocalPathLocation',
+            }
       }
       return {
         type: 'AlignmentsTrack',

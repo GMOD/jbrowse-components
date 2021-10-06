@@ -111,17 +111,20 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: 'simple.bam',
+              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: 'simple.bam.bai',
+                locationType: 'UriLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
+                locationType: 'UriLocation',
               },
             },
           },
@@ -145,17 +148,20 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: '/testing/in/place.bam',
+              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: '/testing/in/place.bam.bai',
+                locationType: 'UriLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
+                locationType: 'UriLocation',
               },
             },
           },
@@ -185,17 +191,20 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: '/testing/in/place.bam',
+              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: '/something/else/random.bai',
+                locationType: 'UriLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
+                locationType: 'UriLocation',
               },
             },
           },
@@ -228,17 +237,20 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: 'simple.bam',
+              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: 'simple.bai',
+                locationType: 'UriLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
+                locationType: 'UriLocation',
               },
             },
           },
@@ -261,17 +273,20 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: 'bam/simple.bam',
+              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: 'bam/simple.bam.bai',
+                locationType: 'UriLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
+                locationType: 'UriLocation',
               },
             },
           },
@@ -303,17 +318,20 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               localPath: 'bam/simple.bam',
+              locationType: 'LocalPathLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 localPath: 'bam/simple.bam.bai',
+                locationType: 'LocalPathLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
+                locationType: 'UriLocation',
               },
             },
           },
@@ -357,11 +375,13 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: 'simple.bam',
+              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: 'simple.bam.bai',
+                locationType: 'UriLocation',
               },
             },
           },
@@ -385,17 +405,20 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: 'https://mysite.com/data/simple.bam',
+              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: 'https://mysite.com/data/simple.bam.bai',
+                locationType: 'UriLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
+                locationType: 'UriLocation',
               },
             },
           },
@@ -439,17 +462,20 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: 'simple.bam',
+              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: 'simple.bam.bai',
+                locationType: 'UriLocation',
               },
             },
 
             sequenceAdapter: {
               twoBitLocation: {
                 uri: 'test.2bit',
+                locationType: 'UriLocation',
               },
               type: 'testSeqAdapter',
             },

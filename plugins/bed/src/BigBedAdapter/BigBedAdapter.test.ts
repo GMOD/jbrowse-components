@@ -5,7 +5,10 @@ import configSchema from './configSchema'
 test('adapter can fetch features from volvox.bb', async () => {
   const adapter = new BigBedAdapter(
     configSchema.create({
-      bigBedLocation: { localPath: require.resolve('./test_data/volvox.bb') },
+      bigBedLocation: {
+        localPath: require.resolve('./test_data/volvox.bb'),
+        locationType: 'LocalPathLocation',
+      },
     }),
   )
 

@@ -7,9 +7,11 @@ test('adapter can fetch sequence from volvox.fa', async () => {
     configSchema.create({
       fastaLocation: {
         localPath: require.resolve('../../test_data/volvox.fa'),
+        locationType: 'LocalPathLocation',
       },
       faiLocation: {
         localPath: require.resolve('../../test_data/volvox.fa.fai'),
+        locationType: 'LocalPathLocation',
       },
     }),
   )

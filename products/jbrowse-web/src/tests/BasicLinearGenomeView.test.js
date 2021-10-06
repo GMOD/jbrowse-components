@@ -11,7 +11,7 @@ import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
-import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
+import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { setup, generateReadBuffer, getPluginManager } from './util'
 import JBrowse from '../JBrowse'
@@ -238,7 +238,7 @@ describe('valid file tests', () => {
           'volvox2',
         ),
       {
-        timeout: 10000,
+        timeout: 25000,
       },
     )
   })
@@ -257,7 +257,7 @@ describe('valid file tests', () => {
       { timeout: 10000 },
     )
     expect(getAllByText('Zoom in to see sequence')).toBeTruthy()
-  }, 10000)
+  }, 30000)
 
   it('click to display center line with correct value', async () => {
     const pluginManager = getPluginManager()
@@ -355,6 +355,11 @@ describe('valid file tests', () => {
 
     const autocomplete = await findByTestId('autocomplete')
     const inputBox = await findByPlaceholderText('Search for location')
+    await waitFor(() =>
+      expect(state.session.views[0].coarseDynamicBlocks.length).toBeGreaterThan(
+        0,
+      ),
+    )
     fireEvent.mouseDown(inputBox)
     autocomplete.focus()
     fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })

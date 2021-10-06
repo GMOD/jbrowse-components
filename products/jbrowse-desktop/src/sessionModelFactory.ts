@@ -83,11 +83,23 @@ export default function sessionModelFactory(
        * `{ taskName: "configure", target: thing_being_configured }`
        */
       task: undefined,
-
-      DialogComponent: undefined as DialogComponentType | undefined,
-      DialogProps: undefined as any,
+      queueOfDialogs: observable.array([] as [DialogComponentType, any][]),
     }))
     .views(self => ({
+      get DialogComponent() {
+        if (self.queueOfDialogs.length) {
+          const firstInQueue = self.queueOfDialogs[0]
+          return firstInQueue && firstInQueue[0]
+        }
+        return undefined
+      },
+      get DialogProps() {
+        if (self.queueOfDialogs.length) {
+          const firstInQueue = self.queueOfDialogs[0]
+          return firstInQueue && firstInQueue[1]
+        }
+        return undefined
+      },
       get rpcManager() {
         return getParent(self).jbrowse.rpcManager
       },
@@ -168,11 +180,14 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
-      setDialogComponent(comp?: DialogComponentType, props?: unknown) {
-        self.DialogComponent = comp
-        self.DialogProps = props
+      queueDialog(
+        callback: (doneCallback: Function) => [DialogComponentType, any],
+      ): void {
+        const [component, props] = callback(() => {
+          self.queueOfDialogs.shift()
+        })
+        self.queueOfDialogs.push([component, props])
       },
-
       makeConnection(
         configuration: AnyConfigurationModel,
         initialSnapshot = {},
@@ -552,7 +567,10 @@ export default function sessionModelFactory(
           {
             label: 'About track',
             onClick: () => {
-              session.setDialogComponent(AboutDialog, { config })
+              session.queueDialog((doneCallback: Function) => [
+                AboutDialog,
+                { config, handleClose: doneCallback },
+              ])
             },
             icon: InfoIcon,
           },

@@ -9,6 +9,7 @@ test('adapter can fetch variants from volvox.vcf', async () => {
     configSchema.create({
       vcfLocation: {
         localPath: require.resolve('./test_data/volvox.filtered.vcf'),
+        locationType: 'LocalPathLocation',
       },
     }),
   )

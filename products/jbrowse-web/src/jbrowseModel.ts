@@ -58,7 +58,7 @@ export default function JBrowseWeb(
         theme: { type: 'frozen', defaultValue: {} },
         logoPath: {
           type: 'fileLocation',
-          defaultValue: { uri: '' },
+          defaultValue: { uri: '', locationType: 'UriLocation' },
         },
         ...pluginManager.pluginConfigurationSchemas(),
       }),
@@ -67,6 +67,9 @@ export default function JBrowseWeb(
       // track configuration is an array of track config schemas. multiple
       // instances of a track can exist that use the same configuration
       tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+      internetAccounts: types.array(
+        pluginManager.pluggableConfigSchemaType('internet account'),
+      ),
       aggregateTextSearchAdapters: types.array(
         pluginManager.pluggableConfigSchemaType('text search adapter'),
       ),
@@ -206,6 +209,23 @@ export default function JBrowseWeb(
         )
         const rootModel = getRoot(self)
         rootModel.setPluginsUpdated(true)
+      },
+      addInternetAccountConf(internetAccountConf: AnyConfigurationModel) {
+        const { type } = internetAccountConf
+        if (!type) {
+          throw new Error(`unknown internetAccount type ${type}`)
+        }
+        const length = self.internetAccounts.push(internetAccountConf)
+        return self.internetAccounts[length - 1]
+      },
+      deleteInternetAccountConf(configuration: AnyConfigurationModel) {
+        const idx = self.internetAccounts.findIndex(
+          acct => acct.id === configuration.id,
+        )
+        if (idx === -1) {
+          return undefined
+        }
+        return self.internetAccounts.splice(idx, 1)
       },
     }))
 

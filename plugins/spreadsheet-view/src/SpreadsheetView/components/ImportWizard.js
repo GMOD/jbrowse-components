@@ -17,6 +17,7 @@ import {
 } from '@material-ui/core'
 
 import { observer } from 'mobx-react'
+import { getRoot } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import { FileSelector } from '@jbrowse/core/ui'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
@@ -72,6 +73,7 @@ const ImportForm = observer(({ model }) => {
   const [selected, setSelected] = useState(assemblyNames[0])
   const err = assemblyManager.get(selected)?.error
   const showRowControls = model.fileType === 'CSV' || model.fileType === 'TSV'
+  const rootModel = getRoot(model)
 
   return (
     <Container>
@@ -90,6 +92,7 @@ const ImportForm = observer(({ model }) => {
               <FileSelector
                 location={model.fileSource}
                 setLocation={model.setFileSource}
+                rootModel={rootModel}
               />
             </FormGroup>
           </FormControl>

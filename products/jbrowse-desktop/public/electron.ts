@@ -262,10 +262,39 @@ ipcMain.handle('loadExternalConfig', (_event: unknown, sessionPath) => {
   return readFile(sessionPath, 'utf8')
 })
 
-ipcMain.handle('loadSession', (_event: unknown, sessionName: string) => {
-  return readFile(getPath(sessionName), 'utf8')
+ipcMain.handle('loadSession', async (_event: unknown, sessionName: string) => {
+  const data = await readFile(getPath(sessionName), 'utf8')
+  return JSON.parse(data)
 })
 
+ipcMain.handle(
+  'openAuthWindow',
+  (_event: unknown, { internetAccountId, data, url }) => {
+    const win = new BrowserWindow({
+      width: 1000,
+      height: 600,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+      },
+    })
+    win.title = `JBrowseAuthWindow-${internetAccountId}`
+    win.loadURL(url)
+
+    return new Promise(resolve => {
+      win.webContents.on(
+        'will-redirect',
+        function (event: Event, redirectUrl: string) {
+          if (redirectUrl.startsWith(data.redirect_uri)) {
+            event.preventDefault()
+            resolve(redirectUrl)
+            win.close()
+          }
+        },
+      )
+    })
+  },
+)
 ipcMain.handle('saveSession', async (_event: unknown, snap: SessionSnap) => {
   const page = await mainWindow?.capturePage()
   const name = snap.defaultSession.name

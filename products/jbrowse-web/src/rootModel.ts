@@ -11,6 +11,7 @@ import {
   isReferenceType,
   isValidReference,
   isMapType,
+  resolveIdentifier,
   types,
   IAnyStateTreeNode,
   IAnyType,
@@ -26,6 +27,7 @@ import assemblyManagerFactory, {
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import { UriLocation } from '@jbrowse/core/util/types'
 import { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
@@ -130,6 +132,9 @@ export default function RootModel(
       session: types.maybe(Session),
       assemblyManager: assemblyManagerType,
       version: types.maybe(types.string),
+      internetAccounts: types.array(
+        pluginManager.pluggableMstType('internet account', 'stateModel'),
+      ),
       isAssemblyEditing: false,
       isDefaultSessionEditing: false,
     })
@@ -235,6 +240,14 @@ export default function RootModel(
             { delay: 400 },
           ),
         )
+        addDisposer(
+          self,
+          autorun(() => {
+            self.jbrowse.internetAccounts.forEach(account => {
+              this.initializeInternetAccount(account.internetAccountId)
+            })
+          }),
+        )
       },
       setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
         const oldSession = self.session
@@ -249,6 +262,65 @@ export default function RootModel(
             throw error
           }
         }
+      },
+      initializeInternetAccount(
+        internetAccountId: string,
+        initialSnapshot = {},
+      ) {
+        const internetAccountConfigSchema =
+          pluginManager.pluggableConfigSchemaType('internet account')
+        const configuration = resolveIdentifier(
+          internetAccountConfigSchema,
+          self,
+          internetAccountId,
+        )
+
+        const internetAccountType = pluginManager.getInternetAccountType(
+          configuration.type,
+        )
+        if (!internetAccountType) {
+          throw new Error(`unknown internet account type ${configuration.type}`)
+        }
+
+        const internetAccount = internetAccountType.stateModel.create({
+          ...initialSnapshot,
+          type: configuration.type,
+          configuration,
+        })
+        self.internetAccounts.push(internetAccount)
+        return internetAccount
+      },
+      createEphemeralInternetAccount(
+        internetAccountId: string,
+        initialSnapshot = {},
+        location: UriLocation,
+      ) {
+        let hostUri
+
+        try {
+          hostUri = new URL(location.uri).origin
+        } catch (e) {
+          // ignore
+        }
+        // id of a custom new internaccount is `${type}-${name}`
+        const internetAccountSplit = internetAccountId.split('-')
+        const configuration = {
+          type: internetAccountSplit[0],
+          internetAccountId: internetAccountId,
+          name: internetAccountSplit.slice(1).join('-'),
+          description: '',
+          domains: hostUri ? [hostUri] : [],
+        }
+        const internetAccountType = pluginManager.getInternetAccountType(
+          configuration.type,
+        )
+        const internetAccount = internetAccountType.stateModel.create({
+          ...initialSnapshot,
+          type: configuration.type,
+          configuration,
+        })
+        self.internetAccounts.push(internetAccount)
+        return internetAccount
       },
       setAssemblyEditing(flag: boolean) {
         self.isAssemblyEditing = flag
@@ -331,6 +403,31 @@ export default function RootModel(
 
       setError(error?: unknown) {
         self.error = error
+      },
+      findAppropriateInternetAccount(location: UriLocation) {
+        // find the existing account selected from menu
+        const selectedId = location.internetAccountId
+        if (selectedId) {
+          const selectedAccount = self.internetAccounts.find(account => {
+            return account.internetAccountId === selectedId
+          })
+          if (selectedAccount) {
+            return selectedAccount
+          }
+        }
+
+        // if no existing account or not found, try to find working account
+        for (const account of self.internetAccounts) {
+          const handleResult = account.handlesLocation(location)
+          if (handleResult) {
+            return account
+          }
+        }
+
+        // if still no existing account, create ephemeral config to use
+        return selectedId
+          ? this.createEphemeralInternetAccount(selectedId, {}, location)
+          : null
       },
     }))
     .volatile(self => ({

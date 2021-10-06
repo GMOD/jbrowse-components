@@ -37,9 +37,13 @@ export default function UCSCTrackHubConnection(pluginManager) {
                 genomesFileLocation = {
                   uri: new URL(hubFile.get('genomesFile'), hubFileLocation.uri)
                     .href,
+                  locationType: 'UriLocation',
                 }
               } else {
-                genomesFileLocation = { localPath: hubFile.get('genomesFile') }
+                genomesFileLocation = {
+                  localPath: hubFile.get('genomesFile'),
+                  locationType: 'LocalPathLocation',
+                }
               }
               return Promise.all([
                 hubFile,
@@ -74,10 +78,12 @@ export default function UCSCTrackHubConnection(pluginManager) {
                       genome.get('trackDb'),
                       new URL(hubFile.get('genomesFile'), hubFileLocation.uri),
                     ).href,
+                    locationType: 'UriLocation',
                   }
                 } else {
                   trackDbFileLocation = {
                     localPath: genome.get('trackDb'),
+                    locationType: 'LocalPathLocation',
                   }
                 }
                 trackDbData.push(

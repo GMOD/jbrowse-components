@@ -1,5 +1,4 @@
 import NCListStore from '@gmod/nclist'
-import { openUrl } from '@jbrowse/core/util/io'
 import { Region } from '@jbrowse/core/util/types'
 import {
   BaseFeatureDataAdapter,
@@ -8,11 +7,13 @@ import {
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkAbortSignal } from '@jbrowse/core/util'
-
+import { RemoteFile } from 'generic-filehandle'
 import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import NCListFeature from './NCListFeature'
 import MyConfigSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 export default class NCListAdapter extends BaseFeatureDataAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -20,8 +21,12 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
 
   private configRefNames?: string[]
 
-  constructor(config: Instance<typeof MyConfigSchema>) {
-    super(config)
+  constructor(
+    config: Instance<typeof MyConfigSchema>,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    super(config, getSubAdapter, pluginManager)
     const refNames = readConfObject(config, 'refNames')
     const rootUrlTemplate = readConfObject(config, 'rootUrlTemplate')
     this.configRefNames = refNames
@@ -30,10 +35,12 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
       baseUrl: '',
       urlTemplate: rootUrlTemplate.uri,
       readFile: (url: string) =>
-        openUrl(
-          rootUrlTemplate.baseUri
-            ? new URL(url, rootUrlTemplate.baseUri).toString()
-            : url,
+        new RemoteFile(
+          String(
+            rootUrlTemplate.baseUri
+              ? new URL(url, rootUrlTemplate.baseUri).toString()
+              : url,
+          ),
         ).readFile(),
     })
   }

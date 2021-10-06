@@ -58,7 +58,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
     }
   }
 
-  function handleNext() {
+  async function handleNext() {
     if (activeStep !== steps.length - 1) {
       setActiveStep(activeStep + 1)
       return

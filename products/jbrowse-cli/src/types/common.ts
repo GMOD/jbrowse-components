@@ -40,7 +40,7 @@ export function guessAdapterFromFileName(filePath: string): Track {
       assemblyNames: [],
       adapter: {
         type: 'VcfTabixAdapter',
-        vcfGzLocation: { uri },
+        vcfGzLocation: { uri, locationType: 'UriLocation' },
       },
     }
   } else if (/\.gff3?\.b?gz$/i.test(filePath)) {
@@ -50,7 +50,7 @@ export function guessAdapterFromFileName(filePath: string): Track {
       assemblyNames: [],
       adapter: {
         type: 'Gff3TabixAdapter',
-        gffGzLocation: { uri },
+        gffGzLocation: { uri, locationType: 'UriLocation' },
       },
     }
   } else if (/\.gtf?$/i.test(filePath)) {
@@ -60,7 +60,7 @@ export function guessAdapterFromFileName(filePath: string): Track {
       assemblyNames: [],
       adapter: {
         type: 'GtfTabixAdapter',
-        gtfGzLocation: { uri },
+        gtfGzLocation: { uri, locationType: 'UriLocation' },
       },
     }
   } else {

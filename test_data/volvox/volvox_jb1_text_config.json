@@ -12,7 +12,8 @@
         "adapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       },
@@ -43,7 +44,8 @@
         "adapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -56,7 +58,8 @@
         "adapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit_404"
+            "uri": "volvox.2bit_404",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -67,7 +70,8 @@
       "type": "JBrowse1TextSearchAdapter",
       "textSearchAdapterId": "JBrowse1GenerateNamesAdapter",
       "namesIndexLocation": {
-        "uri": "names/"
+        "uri": "names/",
+        "locationType": "UriLocation"
       },
       "tracks": [
         "bedtabix_genes",
@@ -88,15 +92,18 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "volvox-sorted.cram"
+          "uri": "volvox-sorted.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "volvox-sorted.cram.crai"
+          "uri": "volvox-sorted.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -110,15 +117,18 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "volvox-sorted.cram"
+          "uri": "volvox-sorted.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "volvox-sorted.cram.crai"
+          "uri": "volvox-sorted.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       },
@@ -138,15 +148,18 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "volvox-sorted.cram"
+          "uri": "volvox-sorted.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "volvox-sorted.cram.crai"
+          "uri": "volvox-sorted.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       },
@@ -166,11 +179,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "volvox-sorted.bam"
+          "uri": "volvox-sorted.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox-sorted.bam.bai"
+            "uri": "volvox-sorted.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       },
@@ -195,11 +210,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "volvox-sorted-altname.bam"
+          "uri": "volvox-sorted-altname.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox-sorted-altname.bam.bai"
+            "uri": "volvox-sorted-altname.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       },
@@ -219,11 +236,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "volvox-sorted-altname.bam"
+          "uri": "volvox-sorted-altname.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox-sorted-altname.bam.bai"
+            "uri": "volvox-sorted-altname.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       },
@@ -243,7 +262,8 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "volvox-sorted.bam"
+          "uri": "volvox-sorted.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
@@ -261,11 +281,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "volvox-sorted-altname.bam"
+          "uri": "volvox-sorted-altname.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox-sorted-altname.bam.bai"
+            "uri": "volvox-sorted-altname.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       },
@@ -290,11 +312,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "volvox-sorted.bam"
+          "uri": "volvox-sorted.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox-sorted.bam.bai"
+            "uri": "volvox-sorted.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       },
@@ -324,11 +348,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "volvox.test.vcf.gz"
+          "uri": "volvox.test.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox.test.vcf.gz.tbi"
+            "uri": "volvox.test.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -342,7 +368,8 @@
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "volvox_long_names_nclist/{refseq}/trackData.json"
+          "uri": "volvox_long_names_nclist/{refseq}/trackData.json",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -355,11 +382,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "volvox-sorted.bam.nonexist"
+          "uri": "volvox-sorted.bam.nonexist",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox-sorted.bam.bai"
+            "uri": "volvox-sorted.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -373,11 +402,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "volvox-sorted.bam"
+          "uri": "volvox-sorted.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox-sorted.bam.bai.nonexist"
+            "uri": "volvox-sorted.bam.bai.nonexist",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -391,7 +422,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "volvox.bw.nonexist"
+          "uri": "volvox.bw.nonexist",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -404,7 +436,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "volvox_microarray.bw"
+          "uri": "volvox_microarray.bw",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -417,7 +450,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "volvox_microarray.bw"
+          "uri": "volvox_microarray.bw",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -437,7 +471,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "volvox_microarray.bw"
+          "uri": "volvox_microarray.bw",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -457,7 +492,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "volvox_microarray.altname.bw"
+          "uri": "volvox_microarray.altname.bw",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -532,11 +568,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "volvox-long-reads-sv.bam"
+          "uri": "volvox-long-reads-sv.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox-long-reads-sv.bam.bai"
+            "uri": "volvox-long-reads-sv.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -550,15 +588,18 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "volvox-long-reads-sv.cram"
+          "uri": "volvox-long-reads-sv.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "volvox-long-reads-sv.cram.crai"
+          "uri": "volvox-long-reads-sv.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -572,15 +613,18 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "volvox-long-reads.fastq.sorted.cram"
+          "uri": "volvox-long-reads.fastq.sorted.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "volvox-long-reads.fastq.sorted.cram.crai"
+          "uri": "volvox-long-reads.fastq.sorted.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -594,11 +638,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "volvox-long-reads.fastq.sorted.bam"
+          "uri": "volvox-long-reads.fastq.sorted.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox-long-reads.fastq.sorted.bam.bai"
+            "uri": "volvox-long-reads.fastq.sorted.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -612,15 +658,18 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "volvox-samspec.cram"
+          "uri": "volvox-samspec.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "volvox-samspec.cram.crai"
+          "uri": "volvox-samspec.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -634,11 +683,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "volvox-samspec.bam"
+          "uri": "volvox-samspec.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox-samspec.bam.bai"
+            "uri": "volvox-samspec.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -652,15 +703,18 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "volvox-sv.cram"
+          "uri": "volvox-sv.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "volvox-sv.cram.crai"
+          "uri": "volvox-sv.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -674,11 +728,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "volvox-sv.bam"
+          "uri": "volvox-sv.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox-sv.bam.bai"
+            "uri": "volvox-sv.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -692,11 +748,13 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "volvox.sort.gff3.gz"
+          "uri": "volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox.sort.gff3.gz.tbi"
+            "uri": "volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -710,15 +768,18 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "volvox-sorted.cram"
+          "uri": "volvox-sorted.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "volvox-sorted.cram.crai"
+          "uri": "volvox-sorted.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -732,11 +793,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "volvox-sorted.bam"
+          "uri": "volvox-sorted.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox-sorted.bam.bai"
+            "uri": "volvox-sorted.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -750,11 +813,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "volvox.filtered.vcf.gz"
+          "uri": "volvox.filtered.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox.filtered.vcf.gz.tbi"
+            "uri": "volvox.filtered.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -768,7 +833,8 @@
       "adapter": {
         "type": "VcfAdapter",
         "vcfLocation": {
-          "uri": "volvox.filtered.vcf"
+          "uri": "volvox.filtered.vcf",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -781,11 +847,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "volvox.filtered.vcf.gz"
+          "uri": "volvox.filtered.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox.filtered.vcf.gz.tbi"
+            "uri": "volvox.filtered.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -799,7 +867,8 @@
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "volvox.bb"
+          "uri": "volvox.bb",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -812,11 +881,13 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "bedGzLocation": {
-          "uri": "volvox-bed12.bed.gz"
+          "uri": "volvox-bed12.bed.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox-bed12.bed.gz.tbi"
+            "uri": "volvox-bed12.bed.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -830,7 +901,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "volvox_microarray.bw"
+          "uri": "volvox_microarray.bw",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -850,7 +922,8 @@
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "volvox_genes_nclist/{refseq}/trackData.json"
+          "uri": "volvox_genes_nclist/{refseq}/trackData.json",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -863,7 +936,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "volvox_microarray.bw"
+          "uri": "volvox_microarray.bw",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -883,7 +957,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "volvox_microarray.bw"
+          "uri": "volvox_microarray.bw",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -896,7 +971,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "volvox_microarray_negative.bw"
+          "uri": "volvox_microarray_negative.bw",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -916,7 +992,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "volvox_microarray_negative.bw"
+          "uri": "volvox_microarray_negative.bw",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -929,7 +1006,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "volvox_microarray_posneg.bw"
+          "uri": "volvox_microarray_posneg.bw",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -949,7 +1027,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "volvox_microarray_posneg_frac.bw"
+          "uri": "volvox_microarray_posneg_frac.bw",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -969,7 +1048,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "volvox_microarray_posneg.bw"
+          "uri": "volvox_microarray_posneg.bw",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -982,7 +1062,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "volvox-sorted.bam.coverage.bw"
+          "uri": "volvox-sorted.bam.coverage.bw",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -1002,7 +1083,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "volvox-sorted.bam.coverage.bw"
+          "uri": "volvox-sorted.bam.coverage.bw",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1014,7 +1096,8 @@
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
-          "uri": "volvox_fake_synteny.paf"
+          "uri": "volvox_fake_synteny.paf",
+          "locationType": "UriLocation"
         },
         "assemblyNames": ["volvox", "volvox"]
       }
@@ -1028,18 +1111,21 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "volvox-rg.bam"
+          "uri": "volvox-rg.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox-rg.bam.bai"
+            "uri": "volvox-rg.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1053,15 +1139,18 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "volvox-rg.cram"
+          "uri": "volvox-rg.cram",
+          "locationType": "UriLocation"
         },
         "craiLocation": {
-          "uri": "volvox-rg.cram.crai"
+          "uri": "volvox-rg.cram.crai",
+          "locationType": "UriLocation"
         },
         "sequenceAdapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1075,7 +1164,8 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "volvox.bw.nonexist"
+          "uri": "volvox.bw.nonexist",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -1088,11 +1178,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "volvox.filtered.vcf.gz"
+          "uri": "volvox.filtered.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox.filtered.vcf.gz.tbi"
+            "uri": "volvox.filtered.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       },
@@ -1123,18 +1215,21 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "MM-chebi-volvox.bam"
+          "uri": "MM-chebi-volvox.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "MM-chebi-volvox.bam.bai"
+            "uri": "MM-chebi-volvox.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1148,18 +1243,21 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "MM-double-volvox.bam"
+          "uri": "MM-double-volvox.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "MM-double-volvox.bam.bai"
+            "uri": "MM-double-volvox.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1173,18 +1271,21 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "MM-multi-volvox.bam"
+          "uri": "MM-multi-volvox.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "MM-multi-volvox.bam.bai"
+            "uri": "MM-multi-volvox.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1198,18 +1299,21 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "MM-orient-volvox.bam"
+          "uri": "MM-orient-volvox.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "MM-orient-volvox.bam.bai"
+            "uri": "MM-orient-volvox.bam.bai",
+            "locationType": "UriLocation"
           },
           "indexType": "BAI"
         },
         "sequenceAdapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1223,11 +1327,13 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "single_exon_gene.sorted.gff.gz"
+          "uri": "single_exon_gene.sorted.gff.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "single_exon_gene.sorted.gff.gz.tbi"
+            "uri": "single_exon_gene.sorted.gff.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -1241,11 +1347,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "volvox.inv.vcf.gz"
+          "uri": "volvox.inv.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox.inv.vcf.gz.tbi"
+            "uri": "volvox.inv.vcf.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }

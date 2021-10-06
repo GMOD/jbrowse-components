@@ -32,6 +32,7 @@ test('test creating a text search adapter', () => {
     textSearchAdapterId: 'JBrowse1GenerateNamesAdapterTest',
     namesIndexLocation: {
       uri: 'names/',
+      locationType: 'UriLocation',
     },
     tracks: [],
     assemblies: [],

@@ -13,6 +13,7 @@ import { Region, NoAssemblyRegion } from '../util/types'
 import { blankStats, rectifyStats, scoresToStats } from '../util/stats'
 import BaseResult from '../TextSearch/BaseResults'
 import idMaker from '../util/idMaker'
+import PluginManager from '../PluginManager'
 
 export interface BaseOptions {
   signal?: AbortSignal
@@ -39,6 +40,7 @@ export interface AnyAdapter {
   new (
     config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager | undefined,
   ): AnyDataAdapter
 }
 
@@ -59,12 +61,16 @@ export abstract class BaseAdapter {
 
   getSubAdapter?: getSubAdapterType
 
+  pluginManager: PluginManager | undefined
+
   constructor(
     config: AnyConfigurationModel = ConfigurationSchema('empty', {}).create(),
     getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
   ) {
     this.config = config
     this.getSubAdapter = getSubAdapter
+    this.pluginManager = pluginManager
     // note: we use switch on jest here for more simple feature IDs
     // in test environment
     if (typeof jest === 'undefined') {

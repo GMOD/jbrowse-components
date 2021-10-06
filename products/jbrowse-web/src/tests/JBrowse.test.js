@@ -18,7 +18,7 @@ import { TextEncoder } from 'web-encoding'
 import FileSaver from 'file-saver'
 
 // locals
-import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
+import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { readConfObject, getConf } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'

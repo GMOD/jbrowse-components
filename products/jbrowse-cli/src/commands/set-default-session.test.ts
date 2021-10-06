@@ -19,6 +19,7 @@ const defaultConfig = {
           type: 'testSeqAdapter',
           twoBitLocation: {
             uri: 'test.2bit',
+            locationType: 'UriLocation',
           },
         },
       },
@@ -39,17 +40,20 @@ const defaultConfig = {
         type: 'BamAdapter',
         bamLocation: {
           uri: 'simple.bam',
+          locationType: 'UriLocation',
         },
         index: {
           indexType: 'BAI',
           location: {
             uri: 'simple.bam.bai',
+            locationType: 'UriLocation',
           },
         },
         sequenceAdapter: {
           type: 'testSeqAdapter',
           twoBitLocation: {
             uri: 'test.2bit',
+            locationType: 'UriLocation',
           },
         },
       },

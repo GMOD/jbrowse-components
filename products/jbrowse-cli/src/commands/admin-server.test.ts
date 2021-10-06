@@ -39,6 +39,7 @@ const testConfigContents = {
           type: 'testSeqAdapter',
           twoBitLocation: {
             uri: 'test.2bit',
+            locationType: 'UriLocation',
           },
         },
       },

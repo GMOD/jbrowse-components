@@ -21,11 +21,11 @@ function isLocalPathLocation(
 }
 
 export async function fetchJb1(
-  dataRoot: JBLocation = { uri: '' },
+  dataRoot: JBLocation = { uri: '', locationType: 'UriLocation' },
   baseConfig: Config = {
     include: ['{dataRoot}/trackList.json', '{dataRoot}/tracks.conf'],
   },
-  baseConfigRoot: JBLocation = { uri: '' },
+  baseConfigRoot: JBLocation = { uri: '', locationType: 'UriLocation' },
 ): Promise<Config> {
   const protocol = 'uri' in dataRoot ? 'uri' : 'localPath'
   const dataRootReg = JSON.parse(JSON.stringify(dataRoot))
@@ -228,6 +228,7 @@ async function loadIncludes(inputConfig: Config): Promise<Config> {
       include.cacheBuster = inputConfig.cacheBuster
       const includedData = await fetchConfigFile({
         uri: new URL(include.url, sourceUrl).href,
+        locationType: 'UriLocation',
       })
       return loadRecur(includedData, newUpstreamConf)
     })

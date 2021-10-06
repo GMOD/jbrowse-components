@@ -53,6 +53,7 @@ describe('JBrowseWebSessionModel', () => {
       connectionId: 'TestConnection-test1-1',
       hubTxtLocation: {
         uri: 'https://example.com',
+        locationType: 'UriLocation',
       },
       type: 'JBrowse1Connection',
     })

@@ -8,6 +8,7 @@ export const exampleAssembly = {
       type: 'TwoBitAdapter',
       twoBitLocation: {
         uri: 'test_data/volvox/volvox.2bit',
+        locationType: 'UriLocation',
       },
     },
     rendering: {
@@ -44,10 +45,12 @@ export const exampleTracks = [
       type: 'VcfTabixAdapter',
       vcfGzLocation: {
         uri: 'test_data/volvox/volvox.test.vcf.gz',
+        locationType: 'UriLocation',
       },
       index: {
         location: {
           uri: 'test_data/volvox/volvox.test.vcf.gz.tbi',
+          locationType: 'UriLocation',
         },
       },
     },
@@ -62,10 +65,12 @@ export const exampleTracks = [
       type: 'VcfTabixAdapter',
       vcfGzLocation: {
         uri: 'test_data/volvox/volvox.filtered.vcf.gz',
+        locationType: 'UriLocation',
       },
       index: {
         location: {
           uri: 'test_data/volvox/volvox.filtered.vcf.gz.tbi',
+          locationType: 'UriLocation',
         },
       },
     },
@@ -89,10 +94,12 @@ export const exampleTracks = [
       type: 'BamAdapter',
       bamLocation: {
         uri: 'test_data/volvox/volvox-long-reads-sv.bam',
+        locationType: 'UriLocation',
       },
       index: {
         location: {
           uri: 'test_data/volvox/volvox-long-reads-sv.bam.bai',
+          locationType: 'UriLocation',
         },
       },
     },
@@ -115,14 +122,17 @@ export const exampleTracks = [
       type: 'CramAdapter',
       cramLocation: {
         uri: 'test_data/volvox/volvox-long-reads-sv.cram',
+        locationType: 'UriLocation',
       },
       craiLocation: {
         uri: 'test_data/volvox/volvox-long-reads-sv.cram.crai',
+        locationType: 'UriLocation',
       },
       sequenceAdapter: {
         type: 'TwoBitAdapter',
         twoBitLocation: {
           uri: 'test_data/volvox/volvox.2bit',
+          locationType: 'UriLocation',
         },
       },
     },
@@ -145,14 +155,17 @@ export const exampleTracks = [
       type: 'CramAdapter',
       cramLocation: {
         uri: 'test_data/volvox/volvox-long-reads.fastq.sorted.cram',
+        locationType: 'UriLocation',
       },
       craiLocation: {
         uri: 'test_data/volvox/volvox-long-reads.fastq.sorted.cram.crai',
+        locationType: 'UriLocation',
       },
       sequenceAdapter: {
         type: 'TwoBitAdapter',
         twoBitLocation: {
           uri: 'test_data/volvox/volvox.2bit',
+          locationType: 'UriLocation',
         },
       },
     },
@@ -175,10 +188,12 @@ export const exampleTracks = [
       type: 'BamAdapter',
       bamLocation: {
         uri: 'test_data/volvox/volvox-long-reads.fastq.sorted.bam',
+        locationType: 'UriLocation',
       },
       index: {
         location: {
           uri: 'test_data/volvox/volvox-long-reads.fastq.sorted.bam.bai',
+          locationType: 'UriLocation',
         },
       },
     },
@@ -201,14 +216,17 @@ export const exampleTracks = [
       type: 'CramAdapter',
       cramLocation: {
         uri: 'test_data/volvox/volvox-samspec.cram',
+        locationType: 'UriLocation',
       },
       craiLocation: {
         uri: 'test_data/volvox/volvox-samspec.cram.crai',
+        locationType: 'UriLocation',
       },
       sequenceAdapter: {
         type: 'TwoBitAdapter',
         twoBitLocation: {
           uri: 'test_data/volvox/volvox.2bit',
+          locationType: 'UriLocation',
         },
       },
     },
@@ -231,10 +249,12 @@ export const exampleTracks = [
       type: 'BamAdapter',
       bamLocation: {
         uri: 'test_data/volvox/volvox-samspec.bam',
+        locationType: 'UriLocation',
       },
       index: {
         location: {
           uri: 'test_data/volvox/volvox-samspec.bam.bai',
+          locationType: 'UriLocation',
         },
       },
     },
@@ -257,14 +277,17 @@ export const exampleTracks = [
       type: 'CramAdapter',
       cramLocation: {
         uri: 'test_data/volvox/volvox-sv.cram',
+        locationType: 'UriLocation',
       },
       craiLocation: {
         uri: 'test_data/volvox/volvox-sv.cram.crai',
+        locationType: 'UriLocation',
       },
       sequenceAdapter: {
         type: 'TwoBitAdapter',
         twoBitLocation: {
           uri: 'test_data/volvox/volvox.2bit',
+          locationType: 'UriLocation',
         },
       },
     },
@@ -287,10 +310,12 @@ export const exampleTracks = [
       type: 'BamAdapter',
       bamLocation: {
         uri: 'test_data/volvox/volvox-sv.bam',
+        locationType: 'UriLocation',
       },
       index: {
         location: {
           uri: 'test_data/volvox/volvox-sv.bam.bai',
+          locationType: 'UriLocation',
         },
       },
     },
@@ -313,10 +338,12 @@ export const exampleTracks = [
       type: 'Gff3TabixAdapter',
       gffGzLocation: {
         uri: 'test_data/volvox/volvox.sort.gff3.gz',
+        locationType: 'UriLocation',
       },
       index: {
         location: {
           uri: 'test_data/volvox/volvox.sort.gff3.gz.tbi',
+          locationType: 'UriLocation',
         },
       },
     },
@@ -334,14 +361,17 @@ export const exampleTracks = [
       type: 'CramAdapter',
       cramLocation: {
         uri: 'test_data/volvox/volvox-sorted.cram',
+        locationType: 'UriLocation',
       },
       craiLocation: {
         uri: 'test_data/volvox/volvox-sorted.cram.crai',
+        locationType: 'UriLocation',
       },
       sequenceAdapter: {
         type: 'TwoBitAdapter',
         twoBitLocation: {
           uri: 'test_data/volvox/volvox.2bit',
+          locationType: 'UriLocation',
         },
       },
     },
@@ -364,10 +394,12 @@ export const exampleTracks = [
       type: 'BamAdapter',
       bamLocation: {
         uri: 'test_data/volvox/volvox-sorted.bam',
+        locationType: 'UriLocation',
       },
       index: {
         location: {
           uri: 'test_data/volvox/volvox-sorted.bam.bai',
+          locationType: 'UriLocation',
         },
       },
     },
@@ -393,10 +425,12 @@ export const exampleTracks = [
       type: 'VcfTabixAdapter',
       vcfGzLocation: {
         uri: 'test_data/volvox/volvox.filtered.vcf.gz',
+        locationType: 'UriLocation',
       },
       index: {
         location: {
           uri: 'test_data/volvox/volvox.filtered.vcf.gz.tbi',
+          locationType: 'UriLocation',
         },
       },
     },
@@ -419,6 +453,7 @@ export const exampleTracks = [
       type: 'BigBedAdapter',
       bigBedLocation: {
         uri: 'test_data/volvox/volvox.bb',
+        locationType: 'UriLocation',
       },
     },
     renderer: {
@@ -435,11 +470,13 @@ export const exampleTracks = [
       type: 'BedTabixAdapter',
       bedGzLocation: {
         uri: 'test_data/volvox/volvox-bed12.bed.gz',
+        locationType: 'UriLocation',
       },
       index: {
         type: 'TBI',
         location: {
           uri: 'test_data/volvox/volvox-bed12.bed.gz.tbi',
+          locationType: 'UriLocation',
         },
       },
     },
@@ -457,6 +494,7 @@ export const exampleTracks = [
       type: 'BigWigAdapter',
       bigWigLocation: {
         uri: 'test_data/volvox/volvox_microarray.bw',
+        locationType: 'UriLocation',
       },
     },
     defaultRendering: 'line',
@@ -471,6 +509,7 @@ export const exampleTracks = [
       type: 'BigWigAdapter',
       bigWigLocation: {
         uri: 'test_data/volvox/volvox_microarray.bw',
+        locationType: 'UriLocation',
       },
     },
     defaultRendering: 'density',
@@ -485,6 +524,7 @@ export const exampleTracks = [
       type: 'BigWigAdapter',
       bigWigLocation: {
         uri: 'test_data/volvox/volvox_microarray.bw',
+        locationType: 'UriLocation',
       },
     },
   },
@@ -498,6 +538,7 @@ export const exampleTracks = [
       type: 'BigWigAdapter',
       bigWigLocation: {
         uri: 'test_data/volvox/volvox_microarray_negative.bw',
+        locationType: 'UriLocation',
       },
     },
     defaultRendering: 'density',
@@ -512,6 +553,7 @@ export const exampleTracks = [
       type: 'BigWigAdapter',
       bigWigLocation: {
         uri: 'test_data/volvox/volvox_microarray_negative.bw',
+        locationType: 'UriLocation',
       },
     },
   },
@@ -525,6 +567,7 @@ export const exampleTracks = [
       type: 'BigWigAdapter',
       bigWigLocation: {
         uri: 'test_data/volvox/volvox_microarray_posneg.bw',
+        locationType: 'UriLocation',
       },
     },
     defaultRendering: 'line',
@@ -539,6 +582,7 @@ export const exampleTracks = [
       type: 'BigWigAdapter',
       bigWigLocation: {
         uri: 'test_data/volvox/volvox_microarray_posneg_frac.bw',
+        locationType: 'UriLocation',
       },
     },
     defaultRendering: 'line',
@@ -553,6 +597,7 @@ export const exampleTracks = [
       type: 'BigWigAdapter',
       bigWigLocation: {
         uri: 'test_data/volvox/volvox_microarray_posneg.bw',
+        locationType: 'UriLocation',
       },
     },
   },
@@ -566,6 +611,7 @@ export const exampleTracks = [
       type: 'BigWigAdapter',
       bigWigLocation: {
         uri: 'test_data/volvox/volvox-sorted.bam.coverage.bw',
+        locationType: 'UriLocation',
       },
     },
     defaultRendering: 'line',
@@ -580,6 +626,7 @@ export const exampleTracks = [
       type: 'BigWigAdapter',
       bigWigLocation: {
         uri: 'test_data/volvox/volvox-sorted.bam.coverage.bw',
+        locationType: 'UriLocation',
       },
     },
   },

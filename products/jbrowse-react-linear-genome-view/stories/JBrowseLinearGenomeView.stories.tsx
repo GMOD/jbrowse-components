@@ -159,12 +159,15 @@ export const WithPlugins = () => {
           type: 'BgzipFastaAdapter',
           fastaLocation: {
             uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
+            locationType: 'UriLocation',
           },
           faiLocation: {
             uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai',
+            locationType: 'UriLocation',
           },
           gziLocation: {
             uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi',
+            locationType: 'UriLocation',
           },
         },
       },
@@ -173,6 +176,7 @@ export const WithPlugins = () => {
           type: 'RefNameAliasAdapter',
           location: {
             uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
+            locationType: 'UriLocation',
           },
         },
       },
@@ -243,12 +247,15 @@ export const WithTextSearching = () => {
         textSearchAdapterId: 'volvox-index',
         ixFilePath: {
           uri: 'storybook_data/volvox.ix',
+          locationType: 'UriLocation',
         },
         ixxFilePath: {
           uri: 'storybook_data/volvox.ixx',
+          locationType: 'UriLocation',
         },
         metaFilePath: {
           uri: 'storybook_data/volvox_meta.json',
+          locationType: 'UriLocation',
         },
         assemblyNames: ['volvox'],
       },
@@ -264,10 +271,12 @@ export const WithTextSearching = () => {
           type: 'Gff3TabixAdapter',
           gffGzLocation: {
             uri: 'volvox.sort.gff3.gz',
+            locationType: 'UriLocation',
           },
           index: {
             location: {
               uri: 'volvox.sort.gff3.gz.tbi',
+              locationType: 'UriLocation',
             },
           },
         },
@@ -282,10 +291,12 @@ export const WithTextSearching = () => {
           type: 'Gff3TabixAdapter',
           gffGzLocation: {
             uri: 'single_exon_gene.sorted.gff.gz',
+            locationType: 'UriLocation',
           },
           index: {
             location: {
               uri: 'single_exon_gene.sorted.gff.gz.tbi',
+              locationType: 'UriLocation',
             },
           },
         },
@@ -300,10 +311,12 @@ export const WithTextSearching = () => {
           type: 'VcfTabixAdapter',
           vcfGzLocation: {
             uri: 'volvox.inv.vcf.gz',
+            locationType: 'UriLocation',
           },
           index: {
             location: {
               uri: 'volvox.inv.vcf.gz.tbi',
+              locationType: 'UriLocation',
             },
             indexType: 'TBI',
           },
@@ -336,10 +349,12 @@ export const WithPerTrackTextSearching = () => {
           type: 'Gff3TabixAdapter',
           gffGzLocation: {
             uri: 'volvox.sort.gff3.gz',
+            locationType: 'UriLocation',
           },
           index: {
             location: {
               uri: 'volvox.sort.gff3.gz.tbi',
+              locationType: 'UriLocation',
             },
           },
         },
@@ -349,12 +364,15 @@ export const WithPerTrackTextSearching = () => {
             textSearchAdapterId: 'gff3tabix_genes-index',
             ixFilePath: {
               uri: 'storybook_data/gff3tabix_genes.ix',
+              locationType: 'UriLocation',
             },
             ixxFilePath: {
               uri: 'storybook_data/gff3tabix_genes.ixx',
+              locationType: 'UriLocation',
             },
             metaFilePath: {
               uri: 'storybook_data/gff3tabix_genes_meta.json',
+              locationType: 'UriLocation',
             },
             assemblyNames: ['volvox'],
           },
