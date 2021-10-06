@@ -26,6 +26,7 @@ import {
   LinearGenomeViewStateModel,
   stateModelFactory as linearGenomeViewStateModelFactory,
   renderToSvg,
+  RefNameAutocomplete
 } from './LinearGenomeView'
 
 import {
@@ -140,6 +141,7 @@ export {
   linearBasicDisplayConfigSchemaFactory,
   linearBasicDisplayModelFactory,
   renderToSvg,
+  RefNameAutocomplete,
 }
 
 export type { LinearGenomeViewModel, LinearGenomeViewStateModel, BlockModel }
