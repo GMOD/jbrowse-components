@@ -12,6 +12,7 @@ import VcfFeature from '../VcfTabixAdapter/VcfFeature'
 import VCF from '@gmod/vcf'
 import { unzip } from '@gmod/bgzf-filehandle'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 const readVcf = (f: string) => {
   const lines = f.split('\n')
@@ -37,9 +38,10 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
   public constructor(
     config: AnyConfigurationModel,
-    pluginManager: PluginManager,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
   ) {
-    super(config, pluginManager)
+    super(config, getSubAdapter, pluginManager)
   }
 
   private async decodeFileContents() {

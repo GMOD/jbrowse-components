@@ -7,9 +7,6 @@ import refNamesResponse from './test_data/refNamesResponse.json'
 import 'core-js/stable'
 
 import configSchema from './configSchema'
-import PluginManager from '@jbrowse/core/PluginManager'
-
-const pluginManager = new PluginManager()
 
 // window.fetch = jest.fn(url => new Promise(resolve => resolve()))
 
@@ -42,7 +39,6 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
       additionalQueryParams: ['format=json'],
       refNames: [],
     }),
-    pluginManager,
   )
 
   const refNames = await adapter.getRefNames()

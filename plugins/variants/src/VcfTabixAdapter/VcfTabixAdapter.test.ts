@@ -1,9 +1,6 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './VcfTabixAdapter'
 import configSchema from './configSchema'
-import PluginManager from '@jbrowse/core/PluginManager'
-
-const pluginManager = new PluginManager()
 
 test('adapter can fetch variants from volvox.vcf.gz', async () => {
   const adapter = new Adapter(
@@ -20,7 +17,6 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
         },
       },
     }),
-    pluginManager,
   )
 
   const csiAdapter = new Adapter(
@@ -37,7 +33,6 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
         },
       },
     }),
-    pluginManager,
   )
 
   const csiFeatures = csiAdapter.getFeatures({

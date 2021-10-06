@@ -30,8 +30,8 @@ test('adapter can fetch features from volvox-sorted.cram', async () => {
         locationType: 'LocalPathLocation',
       },
     }),
-    pluginManager,
     getVolvoxSequenceSubAdapter,
+    pluginManager,
   )
 
   const features = adapter.getFeatures({
@@ -65,8 +65,8 @@ test('test usage of cramSlightlyLazyFeature toJSON (used in the widget)', async 
         locationType: 'LocalPathLocation',
       },
     }),
-    pluginManager,
     getVolvoxSequenceSubAdapter,
+    pluginManager,
   )
 
   const features = adapter.getFeatures({

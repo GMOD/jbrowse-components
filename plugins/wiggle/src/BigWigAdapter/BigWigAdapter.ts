@@ -14,6 +14,7 @@ import { rectifyStats, UnrectifiedFeatureStats } from '@jbrowse/core/util/stats'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import configSchema from './configSchema'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 interface WiggleOptions extends BaseOptions {
   resolution?: number
@@ -30,9 +31,10 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
 
   public constructor(
     config: Instance<typeof configSchema>,
-    pluginManager: PluginManager,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
   ) {
-    super(config, pluginManager)
+    super(config, getSubAdapter, pluginManager)
     this.bigwig = new BigWig({
       filehandle: openLocation(
         readConfObject(config, 'bigWigLocation'),

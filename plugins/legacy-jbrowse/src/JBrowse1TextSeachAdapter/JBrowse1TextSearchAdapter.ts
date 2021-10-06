@@ -9,6 +9,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import MyConfigSchema from './configSchema'
 import HttpMap from './HttpMap'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 export interface TooManyHits {
   name: string
@@ -34,9 +35,10 @@ export default class JBrowse1TextSearchAdapter
 
   constructor(
     config: Instance<typeof MyConfigSchema>,
-    pluginManager: PluginManager,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
   ) {
-    super(config, pluginManager)
+    super(config, getSubAdapter, pluginManager)
     const namesIndexLocation = readConfObject(config, 'namesIndexLocation')
     if (!namesIndexLocation) {
       throw new Error('must provide namesIndexLocation')

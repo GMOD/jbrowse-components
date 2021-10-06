@@ -7,9 +7,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration/configurationSc
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import Adapter from './MCScanAnchorsAdapter'
 import configSchema from './configSchema'
-import PluginManager from '@jbrowse/core/PluginManager'
-
-const pluginManager = new PluginManager()
 
 class CustomAdapter extends BaseFeatureDataAdapter {
   async getRefNames() {
@@ -51,10 +48,7 @@ class CustomAdapter extends BaseFeatureDataAdapter {
 
 const getSubAdapter: getSubAdapterType = async () => {
   return {
-    dataAdapter: new CustomAdapter(
-      ConfigurationSchema('empty', {}).create(),
-      pluginManager,
-    ),
+    dataAdapter: new CustomAdapter(ConfigurationSchema('empty', {}).create()),
     sessionIds: new Set(),
   }
 }
@@ -71,7 +65,6 @@ test('adapter can fetch features from volvox.bam', async () => {
       ],
       assemblyNames: ['grape', 'peach'],
     }),
-    pluginManager,
     getSubAdapter,
   )
 

@@ -39,8 +39,8 @@ export interface BaseArgs {
 export interface AnyAdapter {
   new (
     config: AnyConfigurationModel,
-    pluginManager: PluginManager,
     getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager | undefined,
   ): AnyDataAdapter
 }
 
@@ -61,12 +61,12 @@ export abstract class BaseAdapter {
 
   getSubAdapter?: getSubAdapterType
 
-  pluginManager: PluginManager
+  pluginManager: PluginManager | undefined
 
   constructor(
     config: AnyConfigurationModel = ConfigurationSchema('empty', {}).create(),
-    pluginManager: PluginManager,
     getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
   ) {
     this.config = config
     this.getSubAdapter = getSubAdapter

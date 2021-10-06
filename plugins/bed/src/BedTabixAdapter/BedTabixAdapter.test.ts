@@ -1,9 +1,6 @@
 import { toArray } from 'rxjs/operators'
 import BedTabixAdapter from './BedTabixAdapter'
 import MyConfigSchema from './configSchema'
-import PluginManager from '@jbrowse/core/PluginManager'
-
-const pluginManager = new PluginManager()
 
 test('adapter can fetch features from volvox-bed12.bed.gz', async () => {
   const adapter = new BedTabixAdapter(
@@ -19,7 +16,6 @@ test('adapter can fetch features from volvox-bed12.bed.gz', async () => {
         },
       },
     }),
-    pluginManager,
   )
 
   const features = adapter.getFeatures({
@@ -50,7 +46,6 @@ test('adapter can fetch features from volvox.sort.bed.gz simple bed3', async () 
         },
       },
     }),
-    pluginManager,
   )
 
   const features = adapter.getFeatures({
@@ -122,7 +117,6 @@ test('adapter can fetch features bed with autosql', async () => {
     lstring case_id;                "Case ID number"
 )`,
     }),
-    pluginManager,
   )
   const features = adapter.getFeatures({
     refName: 'ctgA',
@@ -156,7 +150,6 @@ test('adapter can fetch bed with header', async () => {
         },
       },
     }),
-    pluginManager,
   )
 
   const features = adapter.getFeatures({
@@ -187,7 +180,6 @@ test('adapter can use gwas header', async () => {
         },
       },
     }),
-    pluginManager,
   )
 
   const features = adapter.getFeatures({

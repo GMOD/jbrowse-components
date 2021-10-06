@@ -1,9 +1,6 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './PAFAdapter'
 import MyConfigSchema from './configSchema'
-import PluginManager from '@jbrowse/core/PluginManager'
-
-const pluginManager = new PluginManager()
 
 test('adapter can fetch features from peach_grape.paf', async () => {
   const adapter = new Adapter(
@@ -14,7 +11,6 @@ test('adapter can fetch features from peach_grape.paf', async () => {
       },
       assemblyNames: ['peach', 'grape'],
     }),
-    pluginManager,
   )
 
   const features1 = adapter.getFeatures({

@@ -1,8 +1,6 @@
 import Adapter from './ChromSizesAdapter'
 import configSchema from './configSchema'
-import PluginManager from '@jbrowse/core/PluginManager'
 
-const pluginManager = new PluginManager()
 test('adapter can fetch sequence from volvox.chrom.sizes', async () => {
   const adapter = new Adapter(
     configSchema.create({
@@ -11,7 +9,6 @@ test('adapter can fetch sequence from volvox.chrom.sizes', async () => {
         locationType: 'LocalPathLocation',
       },
     }),
-    pluginManager,
   )
 
   const regions = await adapter.getRegions()

@@ -23,19 +23,12 @@ async function newSNPCoverageWithBam(
 ) {
   const BamAdapter = await getBamAdapter()
   const SNPCoverageAdapter = await getSNPCoverageAdapter()
-  return new SNPCoverageAdapter(
-    configSchema.create({}),
-    pluginManager,
-    async () => {
-      return {
-        dataAdapter: new BamAdapter(
-          BamConfigSchema.create(bamConf),
-          pluginManager,
-        ),
-        sessionIds: new Set(),
-      }
-    },
-  )
+  return new SNPCoverageAdapter(configSchema.create({}), async () => {
+    return {
+      dataAdapter: new BamAdapter(BamConfigSchema.create(bamConf)),
+      sessionIds: new Set(),
+    }
+  })
 }
 
 test('SNP adapter can fetch features from volvox.bam using bam subadapter', async () => {
@@ -155,25 +148,20 @@ async function newSNPCoverageWithCram(
 ) {
   const CramAdapter = await getCramAdapter()
   const SNPCoverageAdapter = await getSNPCoverageAdapter()
-  return new SNPCoverageAdapter(
-    configSchema.create({}),
-    pluginManager,
-    async () => {
-      return {
-        dataAdapter: new CramAdapter(
-          CramConfigSchema.create(cramConf),
-          pluginManager,
-          async () => {
-            return {
-              dataAdapter: new SequenceAdapter(new LocalFile(sequenceFileName)),
-              sessionIds: new Set(),
-            }
-          },
-        ),
-        sessionIds: new Set(),
-      }
-    },
-  )
+  return new SNPCoverageAdapter(configSchema.create({}), async () => {
+    return {
+      dataAdapter: new CramAdapter(
+        CramConfigSchema.create(cramConf),
+        async () => {
+          return {
+            dataAdapter: new SequenceAdapter(new LocalFile(sequenceFileName)),
+            sessionIds: new Set(),
+          }
+        },
+      ),
+      sessionIds: new Set(),
+    }
+  })
 }
 
 test('SNP adapter can fetch features from volvox.cram using cram subadapter', async () => {
