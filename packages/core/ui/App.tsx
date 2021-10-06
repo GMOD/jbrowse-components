@@ -174,6 +174,10 @@ const App = observer(
           gridTemplateColumns: grid?.filter(f => !!f).join(' '),
         }}
       >
+        {drawerVisible && drawerPosition === 'left' ? (
+          <DrawerWidget session={session} />
+        ) : null}
+
         {session.DialogComponent ? (
           <Suspense fallback={<div />}>
             <session.DialogComponent {...session.DialogProps} />
@@ -284,7 +288,7 @@ const App = observer(
           </div>
         ) : null}
 
-        {visibleWidget && !minimized ? (
+        {drawerVisible && drawerPosition === 'right' ? (
           <DrawerWidget session={session} />
         ) : null}
 

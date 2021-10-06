@@ -145,9 +145,7 @@ const DrawerHeader = observer(
             <IconButton
               data-testid="drawer-close"
               color="inherit"
-              onClick={() => {
-                setAnchorEl(event.currentTarget)
-              }}
+              onClick={event => setAnchorEl(event.currentTarget)}
             >
               <MoreVertIcon />
             </IconButton>
