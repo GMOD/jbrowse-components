@@ -22,14 +22,14 @@ import {
   getRoot,
   getSnapshot,
   getType,
-  IAnyStateTreeNode,
   isAlive,
   isModelType,
   isReferenceType,
-  SnapshotIn,
   types,
   walk,
+  IAnyStateTreeNode,
   Instance,
+  SnapshotIn,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
@@ -86,6 +86,7 @@ export default function sessionModelFactory(
       sessionAssemblies: types.array(assemblyConfigSchemasType),
       sessionPlugins: types.array(types.frozen()),
       minimized: types.optional(types.boolean, false),
+      drawerPosition: types.optional(types.string, 'right'),
     })
     .volatile((/* self */) => ({
       /**
@@ -209,6 +210,9 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
+      setDrawerPosition(arg: string) {
+        self.drawerPosition = arg
+      },
       queueDialog(
         callback: (doneCallback: Function) => [DialogComponentType, ReactProps],
       ): void {

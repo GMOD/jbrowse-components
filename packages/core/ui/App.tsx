@@ -139,6 +139,7 @@ const App = observer(
       name,
       menus,
       views,
+      drawerPosition,
     } = session
 
     function handleNameChange(newName: string) {
@@ -153,16 +154,24 @@ const App = observer(
     }
 
     const drawerVisible = visibleWidget && !minimized
+
+    let grid
+    if (drawerPosition === 'right') {
+      grid = [
+        `[main] 1fr`,
+        drawerVisible ? `[drawer] ${drawerWidth}px` : undefined,
+      ]
+    } else if (drawerPosition === 'left') {
+      grid = [
+        drawerVisible ? `[drawer] ${drawerWidth}px` : undefined,
+        `[main] 1fr`,
+      ]
+    }
     return (
       <div
         className={classes.root}
         style={{
-          gridTemplateColumns: [
-            `[main] 1fr`,
-            drawerVisible ? `[drawer] ${drawerWidth}px` : undefined,
-          ]
-            .filter(f => !!f)
-            .join(' '),
+          gridTemplateColumns: grid?.filter(f => !!f).join(' '),
         }}
       >
         {session.DialogComponent ? (
