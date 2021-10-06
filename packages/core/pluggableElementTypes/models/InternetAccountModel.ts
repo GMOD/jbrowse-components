@@ -1,3 +1,4 @@
+import React from 'react'
 import { Instance, types } from 'mobx-state-tree'
 import { getConf } from '../../configuration'
 import { RemoteFileWithRangeCache } from '../../util/io'
@@ -37,7 +38,6 @@ export const InternetAccount = types
       return undefined
     },
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     handlesLocation(location: FileLocation): boolean {
       return false
     },
@@ -46,7 +46,6 @@ export const InternetAccount = types
     openLocation(location: UriLocation): GenericFilehandle {
       return new RemoteFileWithRangeCache(String(location.uri))
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async getPreAuthorizationInformation(location: UriLocation) {
       return { internetAccountType: self.type }
     },

@@ -4,7 +4,6 @@ import { ObservableCreate } from '../util/rxjs'
 import SimpleFeature, { Feature } from '../util/simpleFeature'
 import { Region } from '../util/types'
 import { ConfigurationSchema } from '../configuration/configurationSchema'
-import PluginManager from '@jbrowse/core/PluginManager'
 
 describe('base data adapter', () => {
   it('properly propagates errors in feature fetching', async () => {
