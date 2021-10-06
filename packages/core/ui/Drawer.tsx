@@ -21,7 +21,13 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function Drawer({ children, session }) {
+function Drawer({
+  children,
+  session,
+}: {
+  children: React.ReactNode
+  session: { resizeDrawer: (arg: number) => number }
+}) {
   const classes = useStyles()
 
   return (
