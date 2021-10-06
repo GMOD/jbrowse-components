@@ -29,7 +29,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     SERIALIZED extends {
       signal?: RemoteAbortSignal
       blobMap?: Record<string, File>
-    }
+    },
   >(serializedArgs: SERIALIZED, _rpcDriverClassName: string) {
     if (serializedArgs.blobMap) {
       setBlobMap(serializedArgs.blobMap)
@@ -42,7 +42,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     return { ...serializedArgs, signal: undefined }
   }
 
-  abstract async execute(
+  abstract execute(
     serializedArgs: unknown,
     rpcDriverClassName: string,
   ): Promise<unknown>

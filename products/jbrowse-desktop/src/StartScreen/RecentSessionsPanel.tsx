@@ -49,7 +49,7 @@ function RecentSessionsList({
   setSessionToRename,
   setPluginManager,
 }: {
-  setError: (e: Error) => void
+  setError: (e: unknown) => void
   setSessionToDelete: (e: string) => void
   setSessionToRename: (e: string) => void
   setPluginManager: (pm: PluginManager) => void
@@ -169,7 +169,7 @@ function RecentSessionsCards({
   setSessionToRename,
   setPluginManager,
 }: {
-  setError: (e: Error) => void
+  setError: (e: unknown) => void
   setSessionToDelete: (e: string) => void
   setSessionToRename: (e: string) => void
   setPluginManager: (pm: PluginManager) => void
@@ -218,7 +218,7 @@ export default function RecentSessionPanel({
   setSessionToDelete,
   setPluginManager,
 }: {
-  setError: (e: Error) => void
+  setError: (e: unknown) => void
   sortedSessions: Session[]
   setSessionToRename: (e: string) => void
   setSessionToDelete: (e: string) => void

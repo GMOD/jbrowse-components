@@ -83,7 +83,7 @@ export default function StartScreen({
   setError,
 }: {
   setPluginManager: (arg: PluginManager) => void
-  setError: (arg: Error) => void
+  setError: (arg: unknown) => void
 }) {
   const classes = useStyles()
   const [sessions, setSessions] = useState<Map<string, SessionStats>>()
@@ -110,6 +110,7 @@ export default function StartScreen({
           setSessions(sessions)
         }
       } catch (e) {
+        console.error(e)
         setError(e)
       }
     })()
@@ -155,6 +156,7 @@ export default function StartScreen({
             await ipcRenderer.invoke('reset')
             setUpdateSessionsList(true)
           } catch (e) {
+            console.error(e)
             setError(e)
           } finally {
             setFactoryResetDialogOpen(false)

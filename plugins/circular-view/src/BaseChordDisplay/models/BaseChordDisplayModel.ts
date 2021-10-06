@@ -37,7 +37,6 @@ export const BaseChordDisplayModel = types
       reactElement: undefined as React.ReactElement | undefined,
       data: undefined,
       message: '',
-      error: undefined as Error | undefined,
       renderingComponent: undefined as undefined | AnyReactComponentType,
       refNameMap: undefined as Record<string, string> | undefined,
     }
@@ -171,7 +170,7 @@ export const BaseChordDisplayModel = types
         self.renderingComponent = renderingComponent
       }
     },
-    renderError(error: Error) {
+    renderError(error: unknown) {
       console.error(error)
       // the rendering failed for some reason
       self.filled = false
@@ -185,16 +184,11 @@ export const BaseChordDisplayModel = types
     setRefNameMap(refNameMap: Record<string, string>) {
       self.refNameMap = refNameMap
     },
-    setError(error: Error) {
-      self.error = error
-    },
   }))
   .actions(self => {
     const { pluginManager } = getEnv(self)
-    const {
-      renderReactionData,
-      renderReactionEffect,
-    } = pluginManager.jbrequire(renderReactionFactory)
+    const { renderReactionData, renderReactionEffect } =
+      pluginManager.jbrequire(renderReactionFactory)
     return {
       afterAttach() {
         makeAbortableReaction(

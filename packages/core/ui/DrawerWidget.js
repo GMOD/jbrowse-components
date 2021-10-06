@@ -68,10 +68,8 @@ const DrawerHeader = observer(props => {
           className={classes.drawerSelect}
           classes={{ icon: classes.dropDownIcon }}
           renderValue={selected => {
-            const {
-              HeadingComponent: HeadingComp,
-              heading: headingText,
-            } = getEnv(session).pluginManager.getWidgetType(selected.type)
+            const { HeadingComponent: HeadingComp, heading: headingText } =
+              getEnv(session).pluginManager.getWidgetType(selected.type)
             return (
               <Typography variant="h6" color="inherit">
                 {HeadingComp ? (
@@ -87,10 +85,8 @@ const DrawerHeader = observer(props => {
           }}
         >
           {Array.from(activeWidgets.values()).map((widget, index) => {
-            const {
-              HeadingComponent: HeadingComp,
-              heading: headingText,
-            } = getEnv(session).pluginManager.getWidgetType(widget.type)
+            const { HeadingComponent: HeadingComp, heading: headingText } =
+              getEnv(session).pluginManager.getWidgetType(widget.type)
             return (
               <MenuItem
                 data-testid={`widget-drawer-selects-item-${widget.type}`}

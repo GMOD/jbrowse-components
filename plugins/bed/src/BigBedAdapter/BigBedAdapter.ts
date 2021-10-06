@@ -113,14 +113,12 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
               if (r.uniqueId === undefined) {
                 throw new Error('invalid bbi feature')
               }
-              delete data.chromStart
-              delete data.chromEnd
-              delete data.chrom
+              const { chromStart, chromEnd, chrom, ...rest } = data
 
               const f = new SimpleFeature({
                 id: `${this.id}-${r.uniqueId}`,
                 data: {
-                  ...data,
+                  ...rest,
                   start: r.start,
                   end: r.end,
                   refName,

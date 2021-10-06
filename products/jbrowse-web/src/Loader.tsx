@@ -153,8 +153,8 @@ const SessionLoader = types
     sessionSnapshot: undefined as any,
     runtimePlugins: [] as PluginRecord[],
     sessionPlugins: [] as PluginRecord[],
-    sessionError: undefined as Error | undefined,
-    configError: undefined as Error | undefined,
+    sessionError: undefined as unknown,
+    configError: undefined as unknown,
     bc1:
       window.BroadcastChannel &&
       new window.BroadcastChannel('jb_request_session'),
@@ -200,10 +200,10 @@ const SessionLoader = types
     setSessionQuery(session?: any) {
       self.sessionQuery = session
     },
-    setConfigError(error: Error) {
+    setConfigError(error: unknown) {
       self.configError = error
     },
-    setSessionError(error: Error) {
+    setSessionError(error: unknown) {
       self.sessionError = error
     },
     setRuntimePlugins(plugins: PluginRecord[]) {
@@ -398,7 +398,7 @@ const SessionLoader = types
           localStorage.setItem(`previousAutosave-${configPath}`, lastAutosave)
         }
       } catch (e) {
-        console.error('failed to create previousAutosave')
+        console.error('failed to create previousAutosave', e)
       }
 
       try {
@@ -487,27 +487,25 @@ const ErrorMessage = ({
   err,
   snapshotError,
 }: {
-  err: Error
+  err: unknown
   snapshotError?: string
 }) => {
   const classes = useStyles()
+  const str = `${err}`
   return (
     <div>
       <NoConfigMessage />
-      {err && err.message === 'HTTP 404 fetching config.json' ? (
+      {str.match(/HTTP 404 fetching config.json/) ? (
         <div className={classes.message} style={{ background: '#9f9' }}>
-          No config detected ({`${err}`})
-          <br />
-          <p>
-            If you want to learn how to complete your setup, visit our{' '}
-            <a href="https://jbrowse.org/jb2/docs/quickstart_web">
-              Quick start guide
-            </a>
-          </p>
+          No config detected. If you want to learn how to complete your setup,
+          visit our{' '}
+          <a href="https://jbrowse.org/jb2/docs/quickstart_web">
+            Quick start guide
+          </a>
         </div>
       ) : (
         <div className={classes.message} style={{ background: '#f88' }}>
-          {`${err}`}
+          {str}
           {snapshotError ? (
             <>
               ... Failed element had snapshot:
@@ -608,7 +606,7 @@ const Renderer = observer(
               // setDefaultSession, even though we know this exists now
               if (rootModel.session) {
                 rootModel.session.notify(
-                  `Error loading session: ${sessionError.message}. If you
+                  `Error loading session: ${sessionError}. If you
                 received this URL from another user, request that they send you
                 a session generated with the "Share" button instead of copying
                 and pasting their URL`,
@@ -620,7 +618,8 @@ const Renderer = observer(
               } catch (err) {
                 console.error(err)
                 rootModel.setDefaultSession()
-                const errorMessage = (err.message || '')
+                const str = `${err}`
+                const errorMessage = str
                   .replace('[mobx-state-tree] ', '')
                   .replace(/\(.+/, '')
                 rootModel.session?.notify(
@@ -665,7 +664,8 @@ const Renderer = observer(
           }
         }
       } catch (e) {
-        const match = e.message.match(
+        const str = `${e}`
+        const match = str.match(
           /.*at path "(.*)" snapshot `(.*)` is not assignable/,
         )
         // best effort to make a better error message than the default
@@ -674,7 +674,7 @@ const Renderer = observer(
           setError(new Error(`Failed to load element at ${match[1]}`))
           setSnapshotError(match[2])
         } else {
-          setError(new Error(e.message.slice(0, 10000)))
+          setError(new Error(str.slice(0, 10000)))
         }
         console.error(e)
       }

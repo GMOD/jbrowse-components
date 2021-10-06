@@ -1,3 +1,4 @@
+import React from 'react'
 import { IAnyModelType, IAnyStateTreeNode } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
 import DisplayType from './DisplayType'

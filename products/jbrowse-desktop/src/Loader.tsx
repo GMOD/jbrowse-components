@@ -55,8 +55,9 @@ const Loader = observer(() => {
   const [error, setError] = useState<Error>()
   const [snapshotError, setSnapshotError] = useState('')
 
-  function handleError(e: Error) {
-    const match = e.message.match(
+  function handleError(e: unknown) {
+    const str = `${e}`
+    const match = str.match(
       /.*at path "(.*)" snapshot `(.*)` is not assignable/,
     )
 
@@ -66,7 +67,7 @@ const Loader = observer(() => {
       setError(new Error(`Failed to load element at ${match[1]}`))
       setSnapshotError(match[2])
     } else {
-      setError(new Error(e.message.slice(0, 10000)))
+      setError(new Error(str.slice(0, 10000)))
     }
     console.error(e)
   }

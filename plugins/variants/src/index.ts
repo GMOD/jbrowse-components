@@ -73,9 +73,8 @@ export default class VariantsPlugin extends Plugin {
     )
 
     pluginManager.addDisplayType(() => {
-      const configSchema = linearVariantDisplayConfigSchemaFactory(
-        pluginManager,
-      )
+      const configSchema =
+        linearVariantDisplayConfigSchemaFactory(pluginManager)
       return new DisplayType({
         name: 'LinearVariantDisplay',
         configSchema,

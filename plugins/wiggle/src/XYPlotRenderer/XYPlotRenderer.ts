@@ -43,7 +43,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
     const originY = getOrigin(scaleOpts.scaleType)
     const [niceMin, niceMax] = scale.domain()
 
-    const toY = (n: number) => height - scale(n) + offset
+    const toY = (n: number) => height - (scale(n) || 0) + offset
     const toHeight = (n: number) => toY(originY) - toY(n)
 
     const colorCallback =

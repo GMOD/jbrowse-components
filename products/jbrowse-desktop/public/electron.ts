@@ -49,14 +49,8 @@ function getPath(sessionName: string, ext = 'json') {
   return path.join(sessionDir, `${encodeURIComponent(sessionName)}.${ext}`)
 }
 
-try {
-  fs.statSync(sessionDir)
-} catch (error) {
-  if (error.code === 'ENOENT' || error.code === 'ENOTDIR') {
-    fs.mkdirSync(sessionDir, { recursive: true })
-  } else {
-    throw error
-  }
+if (!fs.lstatSync(sessionDir).isDirectory()) {
+  fs.mkdirSync(sessionDir, { recursive: true })
 }
 
 interface SessionSnap {
@@ -110,6 +104,7 @@ async function createWindow() {
   // @ts-ignore
   const mainMenu = Menu.buildFromTemplate([
     // { role: 'appMenu' }
+    // @ts-ignore
     ...(isMac
       ? [
           {
@@ -130,6 +125,7 @@ async function createWindow() {
       : []),
     {
       label: 'File',
+      // @ts-ignore
       submenu: [isMac ? { role: 'close' } : { role: 'quit' }],
     },
     {
@@ -141,6 +137,7 @@ async function createWindow() {
         { role: 'cut' },
         { role: 'copy' },
         { role: 'paste' },
+        // @ts-ignore
         ...(isMac
           ? [
               { role: 'pasteAndMatchStyle' },
@@ -159,11 +156,12 @@ async function createWindow() {
       label: 'View',
       submenu: [
         { role: 'reload' },
-        { role: 'forcereload' },
+        // @ts-ignore
         { role: 'toggledevtools' },
         { type: 'separator' },
-        { role: 'resetzoom' },
+        // @ts-ignore
         { role: 'zoomin' },
+        // @ts-ignore
         { role: 'zoomout' },
         { type: 'separator' },
         { role: 'togglefullscreen' },
@@ -174,6 +172,7 @@ async function createWindow() {
       submenu: [
         { role: 'minimize' },
         { role: 'zoom' },
+        // @ts-ignore
         ...(isMac
           ? [
               { type: 'separator' },
@@ -187,6 +186,7 @@ async function createWindow() {
     {
       label: 'Help',
       role: 'help',
+      // @ts-ignore
       submenu: [
         {
           label: 'Learn More',

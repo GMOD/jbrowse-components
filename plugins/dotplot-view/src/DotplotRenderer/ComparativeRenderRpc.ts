@@ -29,8 +29,8 @@ export default class ComparativeRender extends RpcMethodType {
   name = 'ComparativeRender'
 
   async serializeArguments(args: RenderArgs, rpcDriverClassName: string) {
-    const assemblyManager = this.pluginManager.rootModel?.session
-      ?.assemblyManager
+    const assemblyManager =
+      this.pluginManager.rootModel?.session?.assemblyManager
     const renamedArgs = assemblyManager
       ? await renameRegionsIfNeeded(assemblyManager, args)
       : args

@@ -39,11 +39,13 @@ export default class PluginLoader {
   }
 
   loadScript(scriptUrl: string): Promise<void> {
+    // @ts-ignore doesn't understand we could be in webworker
     if (document && document.getElementsByTagName) {
       return domLoadScript(scriptUrl)
     }
+
     // @ts-ignore
-    if (self && self.importScripts) {
+    if (self?.importScripts) {
       return new Promise((resolve, reject) => {
         try {
           // @ts-ignore
@@ -60,7 +62,7 @@ export default class PluginLoader {
     )
   }
 
-  async loadPlugin(definition: PluginDefinition): Promise<PluginConstructor> {
+  async loadPlugin(definition: PluginDefinition) {
     const parsedUrl = url.parse(definition.url)
     if (
       !parsedUrl.protocol ||
@@ -91,21 +93,24 @@ export default class PluginLoader {
     )
   }
 
-  installGlobalReExports(target: WindowOrWorkerGlobalScope | NodeJS.Global) {
+  installGlobalReExports(target: WindowOrWorkerGlobalScope) {
     // @ts-ignore
-    target.JBrowseExports = {}
-    Object.entries(ReExports).forEach(([moduleName, module]) => {
-      // @ts-ignore
-      target.JBrowseExports[moduleName] = module
-    })
+    target.JBrowseExports = Object.fromEntries(
+      Object.entries(ReExports).map(([moduleName, module]) => {
+        return [moduleName, module]
+      }),
+    )
   }
 
-  async load(): Promise<PluginRecord[]> {
+  async load() {
     return Promise.all(
-      this.definitions.map(async definition => ({
-        plugin: await this.loadPlugin(definition),
-        definition,
-      })),
+      this.definitions.map(
+        async definition =>
+          ({
+            plugin: await this.loadPlugin(definition),
+            definition,
+          } as PluginRecord),
+      ),
     )
   }
 }

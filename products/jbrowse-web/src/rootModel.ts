@@ -108,9 +108,8 @@ export default function RootModel(
   pluginManager: PluginManager,
   adminMode = false,
 ) {
-  const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
-    pluginManager,
-  )
+  const { assemblyConfigSchemas, dispatcher } =
+    AssemblyConfigSchemasFactory(pluginManager)
   const assemblyConfigSchemasType = types.union(
     { dispatcher },
     ...assemblyConfigSchemas,
@@ -147,7 +146,7 @@ export default function RootModel(
       savedSessionsVolatile: observable.map({}),
       textSearchManager: new TextSearchManager(pluginManager),
       pluginManager,
-      error: undefined as undefined | Error,
+      error: undefined as unknown,
     }))
     .views(self => ({
       get savedSessions() {
@@ -196,6 +195,7 @@ export default function RootModel(
                 const key = self.localStorageId(val.name)
                 localStorage.setItem(key, JSON.stringify({ session: val }))
               } catch (e) {
+                // @ts-ignore
                 if (e.code === '22' || e.code === '1024') {
                   alert(
                     'Local storage is full! Please use the "Open sessions" panel to remove old sessions',
@@ -329,7 +329,7 @@ export default function RootModel(
         this.setSession(autosavedSession)
       },
 
-      setError(error?: Error) {
+      setError(error?: unknown) {
         self.error = error
       },
     }))
@@ -396,7 +396,9 @@ export default function RootModel(
               label: 'Duplicate session',
               icon: FileCopyIcon,
               onClick: (session: AbstractSessionModel) => {
-                session.duplicateCurrentSession?.()
+                if (session.duplicateCurrentSession) {
+                  session.duplicateCurrentSession()
+                }
               },
             },
             {

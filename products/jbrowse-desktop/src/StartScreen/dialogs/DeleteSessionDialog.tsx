@@ -16,7 +16,7 @@ const DeleteSessionDialog = ({
 }: {
   sessionToDelete?: string
   onClose: (arg0: boolean) => void
-  setError: (e: Error) => void
+  setError: (e: unknown) => void
 }) => {
   return (
     <Dialog open={!!sessionToDelete} onClose={() => onClose(false)}>

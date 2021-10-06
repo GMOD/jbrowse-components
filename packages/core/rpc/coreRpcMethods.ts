@@ -183,8 +183,8 @@ export class CoreRender extends RpcMethodType {
   name = 'CoreRender'
 
   async serializeArguments(args: RenderArgs, rpcDriverClassName: string) {
-    const assemblyManager = this.pluginManager.rootModel?.session
-      ?.assemblyManager
+    const assemblyManager =
+      this.pluginManager.rootModel?.session?.assemblyManager
     const renamedArgs = assemblyManager
       ? await renameRegionsIfNeeded(assemblyManager, args)
       : args
