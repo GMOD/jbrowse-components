@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   isStateTreeNode,
   Instance,
@@ -175,6 +176,9 @@ export interface AbstractViewModel {
   type: string
   width: number
   setWidth(width: number): void
+  displayName: string | undefined
+  setDisplayName: (arg: string) => void
+  menuItems: () => MenuItem[]
 }
 export function isViewModel(thing: unknown): thing is AbstractViewModel {
   return (
@@ -232,7 +236,7 @@ export interface AbstractRootModel {
   session?: AbstractSessionModel
   setDefaultSession?(): void
   adminMode?: boolean
-  error?: Error
+  error?: unknown
 }
 
 /** root model with more included for the heavier JBrowse web and desktop app */

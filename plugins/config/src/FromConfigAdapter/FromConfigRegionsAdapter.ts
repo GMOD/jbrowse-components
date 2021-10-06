@@ -19,7 +19,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
  */
 export default class FromConfigRegionsAdapter
   extends BaseAdapter
-  implements RegionsAdapter {
+  implements RegionsAdapter
+{
   private features: Map<string, Feature[]>
 
   constructor(

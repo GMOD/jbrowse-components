@@ -71,15 +71,6 @@ const DotplotVView = Dotplot1DView.extend(self => ({
   },
 }))
 
-interface BasicTrack {
-  type: string
-  configuration: AnyConfigurationModel
-  displays: {
-    type: string
-    configuration: AnyConfigurationModel
-  }[]
-}
-
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
@@ -228,9 +219,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       showTrack(trackId: string, initialSnapshot = {}) {
-        const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
-          'track',
-        )
+        const trackConfigSchema =
+          pluginManager.pluggableConfigSchemaType('track')
         const configuration = resolveIdentifier(
           trackConfigSchema,
           getRoot(self),
@@ -268,9 +258,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       hideTrack(trackId: string) {
-        const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
-          'track',
-        )
+        const trackConfigSchema =
+          pluginManager.pluggableConfigSchemaType('track')
         const configuration = resolveIdentifier(
           trackConfigSchema,
           getRoot(self),

@@ -208,19 +208,17 @@ export function regularizeConf(conf: Config, url: string): Config {
     }
 
     // coerce any string source defs to be URLs, and try to detect their types
-    meta.sources = meta.sources.map(
-      (sourceDef: string | Source): Source => {
-        if (typeof sourceDef === 'string') {
-          const newSourceDef: Source = { url: sourceDef }
-          const typeMatch = sourceDef.match(/\.(\w+)$/)
-          if (typeMatch) {
-            newSourceDef.type = typeMatch[1].toLowerCase()
-          }
-          return newSourceDef
+    meta.sources = meta.sources.map((sourceDef: string | Source): Source => {
+      if (typeof sourceDef === 'string') {
+        const newSourceDef: Source = { url: sourceDef }
+        const typeMatch = sourceDef.match(/\.(\w+)$/)
+        if (typeMatch) {
+          newSourceDef.type = typeMatch[1].toLowerCase()
         }
-        return sourceDef
-      },
-    )
+        return newSourceDef
+      }
+      return sourceDef
+    })
   }
 
   conf.sourceUrl = conf.sourceUrl || url

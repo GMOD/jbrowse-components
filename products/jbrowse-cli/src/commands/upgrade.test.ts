@@ -88,8 +88,10 @@ describe('upgrade', () => {
     .exit(10)
     .it('fails if user selects a directory that does not exist')
   setup
-    .nock('https://api.github.com', mockReleases)
-    .nock('https://example.com', mockV2Zip)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .nock('https://api.github.com', mockReleases as any)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .nock('https://example.com', mockV2Zip as any)
     .add('prevStat', ctx =>
       fsPromises.stat(path.join(ctx.dir, 'manifest.json')),
     )
@@ -100,25 +102,30 @@ describe('upgrade', () => {
       expect(await fsPromises.stat('manifest.json')).not.toEqual(ctx.prevStat)
     })
   setup
-    .nock('https://api.github.com', mockTagSuccess)
-    .nock('https://example.com', mockV1Zip)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .nock('https://api.github.com', mockTagSuccess as any)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .nock('https://example.com', mockV1Zip as any)
     .command(['upgrade', '--tag', 'v0.0.1'])
     .it('upgrades a directory with a specific version', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
     })
   setup
-    .nock('https://example.com', mockV1Zip)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .nock('https://example.com', mockV1Zip as any)
     .command(['upgrade', '--url', 'https://example.com/JBrowse2-0.0.1.zip'])
     .it('upgrades a directory from a url', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
     })
   setup
-    .nock('https://api.github.com', mockTagFail)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .nock('https://api.github.com', mockTagFail as any)
     .command(['upgrade', '--tag', 'v999.999.999'])
     .catch(/Could not find version/)
     .it('fails to upgrade if version does not exist')
   setup
-    .nock('https://example.com', mockWrongSite)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .nock('https://example.com', mockWrongSite as any)
     .command(['upgrade', '--url', 'https://example.com/JBrowse2-0.0.1.json'])
     .exit(2)
     .it('fails if the fetch does not return the right file')

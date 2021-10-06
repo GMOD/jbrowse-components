@@ -1,3 +1,4 @@
+import React from 'react'
 import TextSearchAdapterType from '../pluggableElementTypes/TextSearchAdapterType'
 import { SearchType } from '../data_adapters/BaseAdapter'
 
@@ -6,7 +7,7 @@ export interface BaseResultArgs {
 
   displayString?: string
 
-  renderingComponent?: JSX.Element
+  renderingComponent?: React.ReactElement
 
   matchedAttribute?: string
 
@@ -27,7 +28,7 @@ export interface BaseResultArgs {
 export default class BaseResult {
   label: string
 
-  renderingComponent?: JSX.Element
+  renderingComponent?: React.ReactElement
 
   displayString?: string
 

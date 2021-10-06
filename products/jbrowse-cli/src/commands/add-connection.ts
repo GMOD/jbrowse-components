@@ -5,7 +5,6 @@ import path from 'path'
 import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
 
-const fsPromises = fs.promises
 interface Connection {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
@@ -91,7 +90,7 @@ export default class AddConnection extends JBrowseCommand {
     const { args: runArgs, flags: runFlags } = this.parse(AddConnection)
 
     const output = runFlags.target || runFlags.out || '.'
-    const isDir = (await fsPromises.lstat(output)).isDirectory()
+    const isDir = fs.lstatSync(output).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
 
     const { connectionUrlOrPath: argsPath } = runArgs as {

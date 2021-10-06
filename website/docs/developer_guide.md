@@ -1230,13 +1230,8 @@ export const ReactComponent = props => {
 // which draws to a canvas and returns the results in a React component
 export default class ArcRenderer extends ServerSideRendererType {
   async render(renderProps) {
-    const {
-      features,
-      config,
-      regions,
-      bpPerPx,
-      highResolutionScaling,
-    } = renderProps
+    const { features, config, regions, bpPerPx, highResolutionScaling } =
+      renderProps
     const region = regions[0]
     const width = (region.end - region.start) / bpPerPx
     const height = 500

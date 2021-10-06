@@ -62,6 +62,7 @@ export async function* indexVcf(
       continue
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [ref, pos, id, _ref, _alt, _qual, _filter, info] = line.split('\t')
 
     // turns gff3 attrs into a map, and converts the arrays into space

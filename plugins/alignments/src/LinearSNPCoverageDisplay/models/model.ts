@@ -225,12 +225,8 @@ const stateModelFactory = (
         get filters() {
           let filters: string[] = []
           if (self.filterBy) {
-            const {
-              flagInclude,
-              flagExclude,
-              tagFilter,
-              readName,
-            } = self.filterBy
+            const { flagInclude, flagExclude, tagFilter, readName } =
+              self.filterBy
             filters = [
               `jexl:get(feature,'snpinfo') != undefined ? true : ` +
                 `((get(feature,'flags')&${flagInclude})==${flagInclude}) && ` +

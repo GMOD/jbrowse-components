@@ -46,7 +46,7 @@ export function stateModelFactory(configSchema: any) {
       reactElement: undefined as React.ReactElement | undefined,
       message: undefined as string | undefined,
       renderingComponent: undefined as any,
-      ReactComponent2: (ServerSideRenderedBlockContent as unknown) as React.FC,
+      ReactComponent2: ServerSideRenderedBlockContent as unknown as React.FC,
     }))
     .views(self => ({
       get rendererTypeName() {
@@ -114,7 +114,7 @@ export function stateModelFactory(configSchema: any) {
           self.renderingComponent = renderingComponent
           renderInProgress = undefined
         },
-        setError(error: Error) {
+        setError(error: unknown) {
           console.error(error)
           if (renderInProgress && !renderInProgress.signal.aborted) {
             renderInProgress.abort()

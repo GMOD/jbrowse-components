@@ -5,6 +5,7 @@ import RpcServer from 'librpc-web-mod'
 import { useStaticRendering } from 'mobx-react'
 
 import PluginManager from '@jbrowse/core/PluginManager'
+import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { remoteAbortRpcHandler } from '@jbrowse/core/rpc/remoteAbortSignals'
 import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import corePlugins from './corePlugins'
@@ -78,7 +79,7 @@ getPluginManager()
   .then(pluginManager => {
     const rpcConfig = Object.fromEntries(
       pluginManager.getElementTypesInGroup('rpc method').map(entry => {
-        const { execute, name } = entry
+        const { execute, name } = entry as RpcMethodType
         return [name, wrapForRpc((execute as RpcFunc).bind(entry))]
       }),
     )

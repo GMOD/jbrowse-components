@@ -83,9 +83,8 @@ class AlignmentsPlugin extends Plugin {
     })
 
     pluginManager.addDisplayType(() => {
-      const configSchema = linearSNPCoverageDisplayConfigSchemaFactory(
-        pluginManager,
-      )
+      const configSchema =
+        linearSNPCoverageDisplayConfigSchemaFactory(pluginManager)
       return new DisplayType({
         name: 'LinearSNPCoverageDisplay',
         configSchema,

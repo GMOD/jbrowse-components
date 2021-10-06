@@ -41,7 +41,7 @@ export default (pluginManager: PluginManager) => {
       fileTypes,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       fileSource: undefined as any,
-      error: undefined as Error | undefined,
+      error: undefined as unknown,
       loading: false,
     }))
     .views(self => ({
@@ -116,8 +116,7 @@ export default (pluginManager: PluginManager) => {
         self.fileType = typeName
       },
 
-      setError(error: Error) {
-        console.error(error)
+      setError(error: unknown) {
         self.loading = false
         self.error = error
       },
@@ -135,47 +134,48 @@ export default (pluginManager: PluginManager) => {
       // fetch and parse the file, make a new Spreadsheet model for it,
       // then set the parent to display it
       async import(assemblyName: string) {
-        if (!self.fileSource) {
-          return
-        }
-
-        if (self.loading) {
-          throw new Error('Cannot import, load already in progress')
-        }
-
-        self.selectedAssemblyName = assemblyName
-        self.loading = true
-        const type = self.fileType as keyof typeof fileTypeParsers
-        const typeParser = await fileTypeParsers[type]()
-        if (!typeParser) {
-          throw new Error(`cannot open files of type '${self.fileType}'`)
-        }
-
-        const { unzip } = await import('@gmod/bgzf-filehandle')
-
-        const filehandle = openLocation(self.fileSource, pluginManager)
-
         try {
-          await filehandle.stat().then(stat => {
-            if (stat.size > IMPORT_SIZE_LIMIT) {
-              throw new Error(
-                `File is too big. Tabular files are limited to at most ${(
-                  IMPORT_SIZE_LIMIT / 1000
-                ).toLocaleString()}kb.`,
-              )
-            }
-          })
-        } catch (e) {
-          console.warn(e)
+          if (!self.fileSource) {
+            return
+          }
+
+          if (self.loading) {
+            throw new Error('Cannot import, load already in progress')
+          }
+
+          self.selectedAssemblyName = assemblyName
+          self.loading = true
+          const type = self.fileType as keyof typeof fileTypeParsers
+          const typeParser = await fileTypeParsers[type]()
+          if (!typeParser) {
+            throw new Error(`cannot open files of type '${self.fileType}'`)
+          }
+
+          const { unzip } = await import('@gmod/bgzf-filehandle')
+
+          const filehandle = openLocation(self.fileSource, pluginManager)
+          await filehandle
+            .stat()
+            .then(stat => {
+              if (stat.size > IMPORT_SIZE_LIMIT) {
+                throw new Error(
+                  `File is too big. Tabular files are limited to at most ${(
+                    IMPORT_SIZE_LIMIT / 1000
+                  ).toLocaleString()}kb.`,
+                )
+              }
+            })
+            .then(() => filehandle.readFile())
+            .then(buffer => (self.requiresUnzip ? unzip(buffer) : buffer))
+            .then(buffer => typeParser(buffer as Buffer, self))
+            .then(spreadsheet => {
+              this.setLoaded()
+              getParent(self).displaySpreadsheet(spreadsheet)
+            })
+        } catch (error) {
+          console.error(error)
+          this.setError(error)
         }
-        await filehandle
-          .readFile()
-          .then(buffer => (self.requiresUnzip ? unzip(buffer) : buffer))
-          .then(buffer => typeParser(buffer as Buffer, self))
-          .then(spreadsheet => {
-            this.setLoaded()
-            getParent(self).displaySpreadsheet(spreadsheet)
-          })
       },
     }))
 }

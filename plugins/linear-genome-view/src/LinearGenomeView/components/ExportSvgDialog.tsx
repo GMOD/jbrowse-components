@@ -31,11 +31,11 @@ export default function ExportSvgDlg({
   model: LGV
   handleClose: () => void
 }) {
-  const [rasterizeLayers, setRasterizeLayers] = useState(
-    typeof OffscreenCanvas !== 'undefined',
-  )
+  // @ts-ignore
+  const offscreenCanvas = typeof OffscreenCanvas !== 'undefined'
+  const [rasterizeLayers, setRasterizeLayers] = useState(offscreenCanvas)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<Error>()
+  const [error, setError] = useState<unknown>()
   const classes = useStyles()
   return (
     <Dialog open onClose={handleClose}>
@@ -54,8 +54,7 @@ export default function ExportSvgDlg({
             <Typography display="inline">Creating SVG</Typography>
           </div>
         ) : null}
-
-        {typeof OffscreenCanvas !== 'undefined' ? (
+        {offscreenCanvas ? (
           <FormControlLabel
             control={
               <Checkbox
@@ -91,6 +90,7 @@ export default function ExportSvgDlg({
               await model.exportSvg({ rasterizeLayers })
               handleClose()
             } catch (e) {
+              console.error(e)
               setError(e)
             } finally {
               setLoading(false)

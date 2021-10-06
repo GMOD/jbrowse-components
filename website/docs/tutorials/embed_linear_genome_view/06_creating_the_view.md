@@ -30,10 +30,8 @@ We're now ready to create the state of the view in "index.html".
     <script type="module">
       import assembly from './assembly.js'
       import tracks from './tracks.js'
-      const {
-        createViewState,
-        JBrowseLinearGenomeView,
-      } = JBrowseReactLinearGenomeView
+      const { createViewState, JBrowseLinearGenomeView } =
+        JBrowseReactLinearGenomeView
       const state = new createViewState({
         assembly,
         tracks,
@@ -72,10 +70,8 @@ page. This is done using React's `createElement` and `render`.
     <script type="module">
       import assembly from './assembly.js'
       import tracks from './tracks.js'
-      const {
-        createViewState,
-        JBrowseLinearGenomeView,
-      } = JBrowseReactLinearGenomeView
+      const { createViewState, JBrowseLinearGenomeView } =
+        JBrowseReactLinearGenomeView
       const { createElement } = React
       const { render } = ReactDOM
       const state = new createViewState({
@@ -140,10 +136,8 @@ Modify "index.html" so that it looks like the following:
     <script type="module">
       import assembly from './assembly.js'
       import tracks from './tracks.js'
-      const {
-        createViewState,
-        JBrowseLinearGenomeView,
-      } = JBrowseReactLinearGenomeView
+      const { createViewState, JBrowseLinearGenomeView } =
+        JBrowseReactLinearGenomeView
       const { createElement } = React
       const { render } = ReactDOM
       const state = new createViewState({

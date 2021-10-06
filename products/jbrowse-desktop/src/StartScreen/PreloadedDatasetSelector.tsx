@@ -56,8 +56,10 @@ function PreloadedDatasetSelector({
         className={classes.button}
         onClick={async () => {
           const config = deepmerge.all(
-            // @ts-ignore
-            Object.keys(selected).map(name => preloadedConfigs[name]),
+            Object.keys(selected).map(name =>
+              // @ts-ignore
+              selected[name] ? preloadedConfigs[name] : {},
+            ),
           )
 
           // @ts-ignore
@@ -69,6 +71,7 @@ function PreloadedDatasetSelector({
         }}
         variant="contained"
         color="primary"
+        disabled={!Object.values(selected).some(Boolean)}
       >
         Go
       </Button>

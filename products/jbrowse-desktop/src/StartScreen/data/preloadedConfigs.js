@@ -227,11 +227,13 @@ const preloadedConfigs = {
           gffGzLocation: {
             uri:
               'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz',
+            locationType: 'UriLocation',
           },
           index: {
             location: {
               uri:
                 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz.tbi',
+              locationType: 'UriLocation',
             },
           },
         },
@@ -247,12 +249,15 @@ const preloadedConfigs = {
         textSearchAdapterId: 'hg38-index',
         ixFilePath: {
           uri: 'https://jbrowse.org/genomes/GRCh38/trix/hg38.ix',
+          locationType: 'UriLocation',
         },
         ixxFilePath: {
           uri: 'https://jbrowse.org/genomes/GRCh38/trix/hg38.ixx',
+          locationType: 'UriLocation',
         },
         metaFilePath: {
           uri: 'https://jbrowse.org/genomes/GRCh38/trix/meta.json',
+          locationType: 'UriLocation',
         },
         assemblyNames: ['hg38'],
       },
@@ -311,11 +316,13 @@ const preloadedConfigs = {
           gffGzLocation: {
             uri:
               'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz',
+            locationType: 'UriLocation',
           },
           index: {
             location: {
               uri:
                 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz.tbi',
+              locationType: 'UriLocation',
             },
           },
         },
@@ -530,6 +537,9 @@ const preloadedConfigs = {
         },
       },
     ],
+    defaultSession: {
+      name: 'New Session',
+    },
   },
 }
 

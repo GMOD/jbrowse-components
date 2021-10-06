@@ -13,7 +13,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 export default class RefNameAliasAdapter
   extends BaseAdapter
-  implements BaseRefNameAliasAdapter {
+  implements BaseRefNameAliasAdapter
+{
   private location: GenericFilehandle
 
   private promise: Promise<Alias[]>

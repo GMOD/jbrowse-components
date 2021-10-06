@@ -136,8 +136,7 @@ export const WithPlugins = () => {
       const loadedPlugins = await loadPlugins([
         {
           name: 'UCSC',
-          url:
-            'https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js',
+          url: 'https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js',
         },
       ])
       setPlugins(loadedPlugins)

@@ -1,10 +1,4 @@
-import {
-  types,
-  IAnyType,
-  IAnyModelType,
-  isModelType,
-  isType,
-} from 'mobx-state-tree'
+import { types, IAnyType, isModelType, isType } from 'mobx-state-tree'
 
 // Pluggable elements
 import PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
@@ -31,7 +25,6 @@ import {
   PluggableElementType,
   PluggableElementMember,
 } from './pluggableElementTypes'
-import { AnyConfigurationSchemaType } from './configuration/configurationSchema'
 import { AbstractRootModel } from './util'
 import CorePlugin from './CorePlugin'
 import createJexlInstance from './util/jexl'
@@ -171,7 +164,7 @@ export default class PluginManager {
     'widget',
     'rpc method',
     'internet account',
-  )
+  ) as PhasedScheduler<PluggableElementTypeGroup> | undefined
 
   rendererTypes = new TypeRecord('RendererType', RendererType)
 
@@ -256,8 +249,10 @@ export default class PluginManager {
   createPluggableElements() {
     // run the creation callbacks for each element type in order.
     // see elementCreationSchedule above for the creation order
-    this.elementCreationSchedule.run()
-    delete this.elementCreationSchedule
+    if (this.elementCreationSchedule) {
+      this.elementCreationSchedule.run()
+      delete this.elementCreationSchedule
+    }
     return this
   }
 
@@ -319,25 +314,27 @@ export default class PluginManager {
     }
     const typeRecord = this.getElementTypeRecord(groupName)
 
-    this.elementCreationSchedule.add(groupName, () => {
-      let newElement = creationCallback(this)
-      if (!newElement.name) {
-        throw new Error(`cannot add a ${groupName} with no name`)
-      }
+    if (this.elementCreationSchedule) {
+      this.elementCreationSchedule.add(groupName, () => {
+        let newElement = creationCallback(this)
+        if (!newElement.name) {
+          throw new Error(`cannot add a ${groupName} with no name`)
+        }
 
-      if (typeRecord.has(newElement.name)) {
-        throw new Error(
-          `${groupName} ${newElement.name} already registered, cannot register it again`,
-        )
-      }
+        if (typeRecord.has(newElement.name)) {
+          throw new Error(
+            `${groupName} ${newElement.name} already registered, cannot register it again`,
+          )
+        }
 
-      newElement = this.evaluateExtensionPoint(
-        'Core-extendPluggableElement',
-        newElement,
-      ) as PluggableElementType
+        newElement = this.evaluateExtensionPoint(
+          'Core-extendPluggableElement',
+          newElement,
+        ) as PluggableElementType
 
-      typeRecord.add(newElement.name, newElement)
-    })
+        typeRecord.add(newElement.name, newElement)
+      })
+    }
 
     return this
   }
@@ -358,15 +355,11 @@ export default class PluginManager {
     fieldName: PluggableElementMember,
     fallback: IAnyType = types.maybe(types.null),
   ) {
-    const pluggableTypes: IAnyModelType[] = []
-    this.getElementTypeRecord(typeGroup)
+    const pluggableTypes = this.getElementTypeRecord(typeGroup)
       .all()
-      .forEach(t => {
-        const thing = t[fieldName]
-        if (isType(thing) && isModelType(thing)) {
-          pluggableTypes.push(thing)
-        }
-      })
+      // @ts-ignore
+      .map(t => t[fieldName])
+      .filter(t => isType(t) && isModelType(t)) as IAnyType[]
 
     // try to smooth over the case when no types are registered, mostly
     // encountered in tests
@@ -384,15 +377,12 @@ export default class PluginManager {
     typeGroup: PluggableElementTypeGroup,
     fieldName: PluggableElementMember = 'configSchema',
   ) {
-    const pluggableTypes: AnyConfigurationSchemaType[] = []
-    this.getElementTypeRecord(typeGroup)
+    const pluggableTypes = this.getElementTypeRecord(typeGroup)
       .all()
-      .forEach(t => {
-        const thing = t[fieldName]
-        if (isBareConfigurationSchemaType(thing)) {
-          pluggableTypes.push(thing)
-        }
-      })
+      // @ts-ignore
+      .map(t => t[fieldName])
+      .filter(t => isBareConfigurationSchemaType(t)) as IAnyType[]
+
     if (pluggableTypes.length === 0) {
       pluggableTypes.push(ConfigurationSchema('Null', {}))
     }

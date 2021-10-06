@@ -311,7 +311,7 @@ export default class AddTrack extends JBrowseCommand {
                 await fsPromises.unlink(dest)
               }
             } catch (e) {
-              this.error(e)
+              this.error(e instanceof Error ? e : `${e}`)
             }
             return fsPromises.copyFile(
               filePath,
@@ -331,7 +331,7 @@ export default class AddTrack extends JBrowseCommand {
                 await fsPromises.unlink(dest)
               }
             } catch (e) {
-              this.error(e)
+              this.error(e instanceof Error ? e : `${e}`)
             }
             return fsPromises.symlink(filePath, dest)
           }),
@@ -347,7 +347,7 @@ export default class AddTrack extends JBrowseCommand {
                 await fsPromises.unlink(dest)
               }
             } catch (e) {
-              this.error(e)
+              this.error(e instanceof Error ? e : `${e}`)
             }
             return fsPromises.rename(filePath, dest)
           }),
