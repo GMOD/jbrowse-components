@@ -14,11 +14,11 @@ import electron from 'electron'
 const { ipcRenderer } = electron
 
 const RenameQuickstartDialog = ({
-  sessionNames,
+  quickstartNames,
   quickstartToRename,
   onClose,
 }: {
-  sessionNames: string[]
+  quickstartNames: string[]
   quickstartToRename?: string
   onClose: (arg0: boolean) => void
 }) => {
@@ -32,7 +32,7 @@ const RenameQuickstartDialog = ({
         <DialogContentText>
           Please enter a new name for the session:
         </DialogContentText>
-        {sessionNames.includes(newQuickstartName) ? (
+        {quickstartNames.includes(newQuickstartName) ? (
           <DialogContentText color="error">
             There is already a session named &quot;{newQuickstartName}&quot;
           </DialogContentText>
@@ -67,7 +67,7 @@ const RenameQuickstartDialog = ({
           color="primary"
           variant="contained"
           disabled={
-            !quickstartToRename || sessionNames.includes(newQuickstartName)
+            !quickstartToRename || quickstartNames.includes(newQuickstartName)
           }
         >
           OK

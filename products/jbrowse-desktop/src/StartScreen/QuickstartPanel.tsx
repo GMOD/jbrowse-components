@@ -15,8 +15,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import SearchIcon from '@material-ui/icons/Search'
 import MoreIcon from '@material-ui/icons/MoreHoriz'
 
-import DeleteQuickstartDialog from './DeleteQuickstartDialog'
-import RenameQuickstartDialog from './RenameQuickstartDialog'
+import DeleteQuickstartDialog from './dialogs/DeleteQuickstartDialog'
+import RenameQuickstartDialog from './dialogs/RenameQuickstartDialog'
 
 import { ipcRenderer } from 'electron'
 import deepmerge from 'deepmerge'
@@ -29,6 +29,9 @@ const useStyles = makeStyles(theme => ({
     float: 'right',
     height: '3em',
     margin: theme.spacing(2),
+  },
+  checkboxContainer: {
+    display: 'flex',
   },
   checkbox: {
     display: 'block',
@@ -126,9 +129,8 @@ function PreloadedDatasetSelector({
               search ? name.match(new RegExp(search, 'i')) : true,
             )
             .map(name => (
-              <div style={{ display: 'flex' }}>
+              <div key={name} className={classes.checkboxContainer}>
                 <FormControlLabel
-                  key={name}
                   className={classes.checkbox}
                   control={
                     <Checkbox
@@ -156,36 +158,43 @@ function PreloadedDatasetSelector({
         )}
       </div>
 
-      <Menu
-        keepMounted
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={() => setAnchorEl(null)}
-      >
-        <MenuItem
-          onClick={() => {
-            setDeleteDialogOpen(currentEl)
-          }}
+      {anchorEl ? (
+        <Menu
+          keepMounted
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={() => setAnchorEl(null)}
         >
-          <Typography>Delete</Typography>
-        </MenuItem>
-        <MenuItem
-          onClick={async () => {
-            setRenameDialogOpen(currentEl)
-          }}
-        >
-          <Typography>Rename</Typography>
-        </MenuItem>
-      </Menu>
+          <MenuItem
+            onClick={() => {
+              setDeleteDialogOpen(currentEl)
+              setAnchorEl(null)
+            }}
+          >
+            <Typography>Delete</Typography>
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              setRenameDialogOpen(currentEl)
+              setAnchorEl(null)
+            }}
+          >
+            <Typography>Rename</Typography>
+          </MenuItem>
+        </Menu>
+      ) : null}
 
-      {deleteDialogOpen ? (
+      {deleteDialogOpen && currentEl ? (
         <DeleteQuickstartDialog
+          quickstartToDelete={currentEl}
           onClose={() => setDeleteDialogOpen(undefined)}
         />
       ) : null}
 
-      {renameDialogOpen ? (
+      {renameDialogOpen && currentEl && quickstarts ? (
         <RenameQuickstartDialog
+          quickstartNames={quickstarts}
+          quickstartToRename={currentEl}
           onClose={() => setRenameDialogOpen(undefined)}
         />
       ) : null}

@@ -294,6 +294,17 @@ ipcMain.handle('listQuickstarts', async (_event: unknown) => {
     .map(f => [decodeURIComponent(path.basename(f, '.json'))])
 })
 
+ipcMain.handle('deleteQuickstart', async (_event: unknown, name: string) => {
+  return fs.unlinkSync(getQuickstartPath(name))
+})
+
+ipcMain.handle(
+  'renameQuickstart',
+  async (_event: unknown, oldName: string, newName: string) => {
+    return fs.renameSync(getQuickstartPath(oldName), getQuickstartPath(newName))
+  },
+)
+
 ipcMain.handle('getQuickstart', async (_event: unknown, name: string) => {
   return JSON.parse(await readFile(getQuickstartPath(name), 'utf8'))
 })
