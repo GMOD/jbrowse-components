@@ -10,10 +10,12 @@ import { TwoBitFile } from '@gmod/twobit'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 export default class TwoBitAdapter
   extends BaseFeatureDataAdapter
-  implements SequenceAdapter {
+  implements SequenceAdapter
+{
   private twobit: typeof TwoBitFile
 
   // the chromSizesData can be used to speed up loading since TwoBit has to do
@@ -41,8 +43,12 @@ export default class TwoBitAdapter
     return undefined
   }
 
-  constructor(config: AnyConfigurationModel, pluginManager: PluginManager) {
-    super(config, pluginManager)
+  constructor(
+    config: AnyConfigurationModel,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    super(config, getSubAdapter, pluginManager)
     this.chromSizesData = this.initChromSizes()
     this.twobit = new TwoBitFile({
       filehandle: openLocation(

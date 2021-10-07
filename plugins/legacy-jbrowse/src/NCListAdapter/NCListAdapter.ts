@@ -13,6 +13,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import NCListFeature from './NCListFeature'
 import MyConfigSchema from './configSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 export default class NCListAdapter extends BaseFeatureDataAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,9 +23,10 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
 
   constructor(
     config: Instance<typeof MyConfigSchema>,
-    pluginManager: PluginManager,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
   ) {
-    super(config, pluginManager)
+    super(config, getSubAdapter, pluginManager)
     const refNames = readConfObject(config, 'refNames')
     const rootUrlTemplate = readConfObject(config, 'rootUrlTemplate')
     this.configRefNames = refNames

@@ -1,9 +1,6 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './BamAdapter'
 import configSchema from './configSchema'
-import PluginManager from '@jbrowse/core/PluginManager'
-
-const pluginManager = new PluginManager()
 
 test('adapter can fetch features from volvox.bam', async () => {
   const adapter = new Adapter(
@@ -19,7 +16,6 @@ test('adapter can fetch features from volvox.bam', async () => {
         },
       },
     }),
-    pluginManager,
   )
 
   const features = adapter.getFeatures({
@@ -54,7 +50,6 @@ test('adapter can fetch features from volvox.bam', async () => {
         },
       },
     }),
-    pluginManager,
   )
 
   const featuresCSI = adapterCSI.getFeatures({
@@ -83,7 +78,6 @@ test('test usage of BamSlightlyLazyFeature toJSON (used in the widget)', async (
         indexType: 'BAI',
       },
     }),
-    pluginManager,
   )
 
   const features = adapter.getFeatures({
@@ -115,7 +109,6 @@ test('test usage of BamSlightlyLazyFeature for extended CIGAR', async () => {
         indexType: 'BAI',
       },
     }),
-    pluginManager,
   )
 
   const features = adapter.getFeatures({

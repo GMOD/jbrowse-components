@@ -1,9 +1,6 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './BgzipFastaAdapter'
 import configSchema from './configSchema'
-import PluginManager from '@jbrowse/core/PluginManager'
-
-const pluginManager = new PluginManager()
 
 test('can use a indexed fasta with gzi', async () => {
   const adapter = new Adapter(
@@ -21,7 +18,6 @@ test('can use a indexed fasta with gzi', async () => {
         locationType: 'LocalPathLocation',
       },
     }),
-    pluginManager,
   )
 
   const features = adapter.getFeatures({

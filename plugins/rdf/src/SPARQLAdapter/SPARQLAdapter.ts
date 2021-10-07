@@ -11,6 +11,7 @@ import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import MyConfigSchema from './configSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 interface SPARQLEntry {
   type: string
@@ -64,9 +65,10 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
 
   public constructor(
     config: Instance<typeof MyConfigSchema>,
-    pluginManager: PluginManager,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
   ) {
-    super(config, pluginManager)
+    super(config, getSubAdapter, pluginManager)
     this.endpoint = readConfObject(config, 'endpoint').uri
     this.queryTemplate = readConfObject(config, 'queryTemplate')
     this.additionalQueryParams = readConfObject(config, 'additionalQueryParams')

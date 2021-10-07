@@ -73,6 +73,9 @@ const Tooltip = observer(
             right: x,
             width: 0,
             height: 0,
+            x,
+            y,
+            toJSON() {},
           }
         },
       }),

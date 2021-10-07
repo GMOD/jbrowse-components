@@ -4,8 +4,8 @@ import { Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 const HicTrackConfigFactory = (pluginManager: PluginManager) => {
-  const HicRendererConfigSchema = pluginManager.getRendererType('HicRenderer')
-    .configSchema
+  const HicRendererConfigSchema =
+    pluginManager.getRendererType('HicRenderer').configSchema
 
   return ConfigurationSchema(
     'LinearHicDisplay',

@@ -32,9 +32,8 @@ interface Menu {
 }
 
 export default function rootModelFactory(pluginManager: PluginManager) {
-  const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
-    pluginManager,
-  )
+  const { assemblyConfigSchemas, dispatcher } =
+    AssemblyConfigSchemasFactory(pluginManager)
   const assemblyConfigSchemasType = types.union(
     { dispatcher },
     ...assemblyConfigSchemas,
@@ -115,9 +114,8 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         internetAccountId: string,
         initialSnapshot = {},
       ) {
-        const internetAccountConfigSchema = pluginManager.pluggableConfigSchemaType(
-          'internet account',
-        )
+        const internetAccountConfigSchema =
+          pluginManager.pluggableConfigSchemaType('internet account')
         const configuration = resolveIdentifier(
           internetAccountConfigSchema,
           self,

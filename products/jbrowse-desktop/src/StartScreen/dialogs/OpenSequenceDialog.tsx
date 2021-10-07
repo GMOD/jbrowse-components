@@ -164,7 +164,7 @@ const OpenSequenceDialog = ({
     'BgzipFastaAdapter',
     'TwoBitAdapter',
   ]
-  const [error, setError] = useState<Error>()
+  const [error, setError] = useState<unknown>()
   const [assemblyName, setAssemblyName] = useState('')
   const [assemblyDisplayName, setAssemblyDisplayName] = useState('')
   const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0])

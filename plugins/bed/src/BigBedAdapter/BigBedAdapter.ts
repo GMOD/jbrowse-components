@@ -15,6 +15,7 @@ import { Instance } from 'mobx-state-tree'
 import configSchema from './configSchema'
 import { ucscProcessedTranscript } from '../util'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 interface BEDFeature {
   chrom: string
@@ -34,9 +35,10 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
 
   public constructor(
     config: Instance<typeof configSchema>,
-    pluginManager: PluginManager,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
   ) {
-    super(config, pluginManager)
+    super(config, getSubAdapter, pluginManager)
     const bigBedLocation = readConfObject(
       config,
       'bigBedLocation',
@@ -117,14 +119,12 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
               if (r.uniqueId === undefined) {
                 throw new Error('invalid bbi feature')
               }
-              delete data.chromStart
-              delete data.chromEnd
-              delete data.chrom
+              const { chromStart, chromEnd, chrom, ...rest } = data
 
               const f = new SimpleFeature({
                 id: `${this.id}-${r.uniqueId}`,
                 data: {
-                  ...data,
+                  ...rest,
                   start: r.start,
                   end: r.end,
                   refName,

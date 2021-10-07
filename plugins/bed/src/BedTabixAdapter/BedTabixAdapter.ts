@@ -14,6 +14,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { ucscProcessedTranscript } from '../util'
 import MyConfigSchema from './configSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   private parser: any
@@ -28,9 +29,10 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
 
   public constructor(
     config: Instance<typeof MyConfigSchema>,
-    pluginManager: PluginManager,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
   ) {
-    super(config, pluginManager)
+    super(config, getSubAdapter, pluginManager)
     const bedGzLocation = readConfObject(
       config,
       'bedGzLocation',

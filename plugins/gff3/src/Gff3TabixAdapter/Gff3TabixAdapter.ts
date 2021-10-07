@@ -16,6 +16,7 @@ import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import MyConfigSchema from './configSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 type Strand = '+' | '-' | '.' | '?'
 interface FeatureLoc {
@@ -44,9 +45,10 @@ export default class extends BaseFeatureDataAdapter {
 
   public constructor(
     config: Instance<typeof MyConfigSchema>,
-    pluginManager: PluginManager,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
   ) {
-    super(config, pluginManager)
+    super(config, getSubAdapter, pluginManager)
     const gffGzLocation = readConfObject(config, 'gffGzLocation')
     const indexType = readConfObject(config, ['index', 'indexType'])
     const location = readConfObject(config, ['index', 'location'])

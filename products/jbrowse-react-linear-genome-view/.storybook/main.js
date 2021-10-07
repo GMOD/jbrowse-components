@@ -17,6 +17,7 @@ module.exports = {
       options: { scriptsPackageName: 'react-scripts' },
     },
   ],
+
   // This uses similar logic to products/jbrowse-web/rescripts/yarnWorkspacesRescript.js
   webpackFinal: async config => {
     config.module.rules.push(
@@ -27,7 +28,6 @@ module.exports = {
             loader: require.resolve('ts-loader'),
             options: { transpileOnly: true },
           },
-          { loader: require.resolve('react-docgen-typescript-loader') },
         ],
       },
       {

@@ -76,8 +76,8 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
     args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },
     rpcDriverClassName: string,
   ) {
-    const assemblyManager = this.pluginManager.rootModel?.session
-      ?.assemblyManager
+    const assemblyManager =
+      this.pluginManager.rootModel?.session?.assemblyManager
     if (!assemblyManager) {
       return args
     }

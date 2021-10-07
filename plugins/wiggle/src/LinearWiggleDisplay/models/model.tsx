@@ -162,7 +162,7 @@ const stateModelFactory = (
     }))
     .views(self => ({
       get TooltipComponent(): React.FC {
-        return (Tooltip as unknown) as React.FC
+        return Tooltip as unknown as React.FC
       },
 
       get adapterTypeName() {
@@ -586,6 +586,7 @@ const stateModelFactory = (
                   }
                 } catch (e) {
                   if (!isAbortException(e) && isAlive(self)) {
+                    console.error(e)
                     self.setError(e)
                   }
                 }

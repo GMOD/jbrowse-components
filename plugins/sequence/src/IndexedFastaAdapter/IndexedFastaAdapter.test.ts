@@ -1,9 +1,6 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './IndexedFastaAdapter'
 import configSchema from './configSchema'
-import PluginManager from '@jbrowse/core/PluginManager'
-
-const pluginManager = new PluginManager()
 
 test('adapter can fetch sequence from volvox.fa', async () => {
   const adapter = new Adapter(
@@ -17,7 +14,6 @@ test('adapter can fetch sequence from volvox.fa', async () => {
         locationType: 'LocalPathLocation',
       },
     }),
-    pluginManager,
   )
 
   const features = adapter.getFeatures({

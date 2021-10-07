@@ -113,18 +113,15 @@ export default {
     adapter: {
       type: 'BgzipFastaAdapter',
       fastaLocation: {
-        uri:
-          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
+        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
         locationType: 'UriLocation',
       },
       faiLocation: {
-        uri:
-          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.fai',
+        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.fai',
         locationType: 'UriLocation',
       },
       gziLocation: {
-        uri:
-          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.gzi',
+        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.gzi',
         locationType: 'UriLocation',
       },
     },
@@ -134,8 +131,7 @@ export default {
     adapter: {
       type: 'RefNameAliasAdapter',
       location: {
-        uri:
-          'http://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/GRCh38.aliases.txt',
+        uri: 'http://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/GRCh38.aliases.txt',
         locationType: 'UriLocation',
       },
     },

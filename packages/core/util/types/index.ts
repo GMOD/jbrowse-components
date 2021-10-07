@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   isStateTreeNode,
   Instance,
@@ -124,18 +125,35 @@ export function isSessionModelWithConfigEditing(
   return isSessionModel(thing) && 'editConfiguration' in thing
 }
 
+export interface Widget {
+  type: string
+  id: string
+}
+
 /** abstract interface for a session that manages widgets */
 export interface SessionWithWidgets extends AbstractSessionModel {
-  visibleWidget?: { id: string }
-  widgets: Map<string, unknown>
+  minimized: boolean
+  visibleWidget?: Widget
+  widgets: Map<string, Widget>
+  activeWidgets: Map<string, Widget>
   addWidget(
     typeName: string,
     id: string,
     initialState?: Record<string, unknown>,
     configuration?: { type: string },
-  ): void
+  ): Widget
   showWidget(widget: unknown): void
+  hideWidget(widget: unknown): void
 }
+
+/* only some sessions with widgets use a drawer widget */
+export interface SessionWithDrawerWidgets extends SessionWithWidgets {
+  drawerWidth: number
+  resizeDrawer(arg: number): number
+  minimizeWidgetDrawer(): void
+  showWidgetDrawer: () => void
+}
+
 export function isSessionModelWithWidgets(
   thing: unknown,
 ): thing is SessionWithWidgets {
@@ -175,6 +193,9 @@ export interface AbstractViewModel {
   type: string
   width: number
   setWidth(width: number): void
+  displayName: string | undefined
+  setDisplayName: (arg: string) => void
+  menuItems: () => MenuItem[]
 }
 export function isViewModel(thing: unknown): thing is AbstractViewModel {
   return (
@@ -232,7 +253,7 @@ export interface AbstractRootModel {
   session?: AbstractSessionModel
   setDefaultSession?(): void
   adminMode?: boolean
-  error?: Error
+  error?: unknown
 }
 
 /** root model with more included for the heavier JBrowse web and desktop app */

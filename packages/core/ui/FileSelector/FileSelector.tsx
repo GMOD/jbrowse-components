@@ -143,10 +143,8 @@ const FileSelector = observer(
                 URL
               </ToggleButton>
               {shownInternetAccounts?.map(internetAccount => {
-                const {
-                  toggleContents: customToggleContents,
-                  name,
-                } = internetAccount
+                const { toggleContents: customToggleContents, name } =
+                  internetAccount
                 let toggleContents = customToggleContents || name
                 const maxLength = 5
                 if (

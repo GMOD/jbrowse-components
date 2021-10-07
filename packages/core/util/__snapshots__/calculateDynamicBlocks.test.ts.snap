@@ -20,6 +20,7 @@ Array [
     "regionNumber": 0,
     "reversed": false,
     "start": 26.05,
+    "variant": undefined,
     "widthPx": 927.0000000000001,
   },
 ]
@@ -30,9 +31,12 @@ Array [
   InterRegionPaddingBlock {
     "assemblyName": undefined,
     "end": undefined,
+    "isLeftEndOfDisplayedRegion": undefined,
     "key": "{test}ctgA:1..250-0-beforeFirstRegion",
     "offsetPx": -100,
     "refName": undefined,
+    "regionNumber": undefined,
+    "reversed": undefined,
     "start": undefined,
     "variant": "boundary",
     "widthPx": 100,
@@ -54,6 +58,7 @@ Array [
     "regionNumber": 0,
     "reversed": undefined,
     "start": 0,
+    "variant": undefined,
     "widthPx": 250,
   },
 ]
@@ -64,9 +69,12 @@ Array [
   InterRegionPaddingBlock {
     "assemblyName": undefined,
     "end": undefined,
+    "isLeftEndOfDisplayedRegion": undefined,
     "key": "{test}ctgA:1..200-0-beforeFirstRegion",
     "offsetPx": 0,
     "refName": undefined,
+    "regionNumber": undefined,
+    "reversed": undefined,
     "start": undefined,
     "variant": "boundary",
     "widthPx": -0,
@@ -88,6 +96,7 @@ Array [
     "regionNumber": 0,
     "reversed": undefined,
     "start": 0,
+    "variant": undefined,
     "widthPx": 200,
   },
 ]
@@ -98,9 +107,12 @@ Array [
   InterRegionPaddingBlock {
     "assemblyName": undefined,
     "end": undefined,
+    "isLeftEndOfDisplayedRegion": undefined,
     "key": "{test}ctgA:49,901..50,000-0-reversed-beforeFirstRegion",
     "offsetPx": -100,
     "refName": undefined,
+    "regionNumber": undefined,
+    "reversed": undefined,
     "start": undefined,
     "variant": "boundary",
     "widthPx": 100,
@@ -123,6 +135,7 @@ Array [
     "regionNumber": 0,
     "reversed": true,
     "start": 49900,
+    "variant": undefined,
     "widthPx": 100,
   },
 ]
@@ -133,9 +146,12 @@ Array [
   InterRegionPaddingBlock {
     "assemblyName": undefined,
     "end": undefined,
+    "isLeftEndOfDisplayedRegion": undefined,
     "key": "{test}ctgA:49,801..50,000-0-reversed-beforeFirstRegion",
     "offsetPx": 0,
     "refName": undefined,
+    "regionNumber": undefined,
+    "reversed": undefined,
     "start": undefined,
     "variant": "boundary",
     "widthPx": -0,
@@ -158,6 +174,7 @@ Array [
     "regionNumber": 0,
     "reversed": true,
     "start": 49800,
+    "variant": undefined,
     "widthPx": 200,
   },
 ]

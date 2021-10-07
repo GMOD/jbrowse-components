@@ -9,6 +9,7 @@ import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 function shorten(str: string, term: string, w = 15) {
   const tidx = str.indexOf(term)
@@ -22,13 +23,18 @@ function shorten(str: string, term: string, w = 15) {
 
 export default class TrixTextSearchAdapter
   extends BaseAdapter
-  implements BaseTextSearchAdapter {
+  implements BaseTextSearchAdapter
+{
   indexingAttributes?: string[]
   trixJs: Trix
   tracksNames?: string[]
 
-  constructor(config: AnyConfigurationModel, pluginManager: PluginManager) {
-    super(config, pluginManager)
+  constructor(
+    config: AnyConfigurationModel,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    super(config, getSubAdapter, pluginManager)
     const ixFilePath = readConfObject(config, 'ixFilePath')
     const ixxFilePath = readConfObject(config, 'ixxFilePath')
 

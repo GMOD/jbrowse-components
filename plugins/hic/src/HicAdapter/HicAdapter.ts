@@ -11,6 +11,7 @@ import type { GenericFilehandle } from 'generic-filehandle'
 import HicStraw from 'hic-straw'
 import MyConfigSchema from './configSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 interface ContactRecord {
   bin1: number
@@ -76,9 +77,10 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
 
   public constructor(
     config: Instance<typeof MyConfigSchema>,
-    pluginManager: PluginManager,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
   ) {
-    super(config, pluginManager)
+    super(config, getSubAdapter, pluginManager)
     const hicLocation = readConfObject(config, 'hicLocation')
     this.hic = new HicStraw({
       file: openFilehandleWrapper(hicLocation),

@@ -39,7 +39,7 @@ const blockState = types
     features: undefined as Map<string, Feature> | undefined,
     layout: undefined as any,
     status: '',
-    error: undefined as Error | undefined,
+    error: undefined as unknown,
     message: undefined as string | undefined,
     maxHeightReached: false,
     ReactComponent: ServerSideRenderedBlockContent,
@@ -131,7 +131,7 @@ const blockState = types
         self.renderProps = renderProps
         renderInProgress = undefined
       },
-      setError(error: Error) {
+      setError(error: Error | unknown) {
         console.error(error)
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
@@ -146,7 +146,7 @@ const blockState = types
         self.error = error
         self.renderProps = undefined
         renderInProgress = undefined
-        if (isRetryException(error)) {
+        if (isRetryException(error as Error)) {
           this.reload()
         }
       },
@@ -292,16 +292,12 @@ async function renderBlockEffect(
     return undefined
   }
 
-  const {
-    reactElement,
-    features,
-    layout,
-    maxHeightReached,
-  } = await rendererType.renderInClient(rpcManager, {
-    ...renderArgs,
-    ...renderProps,
-    signal,
-  })
+  const { reactElement, features, layout, maxHeightReached } =
+    await rendererType.renderInClient(rpcManager, {
+      ...renderArgs,
+      ...renderProps,
+      signal,
+    })
   return {
     reactElement,
     features,

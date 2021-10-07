@@ -343,6 +343,7 @@ async function loadAssemblyReaction(
   }
   const adapter = new CLASS(
     sequenceAdapterConfig,
+    undefined,
     pluginManager,
   ) as RegionsAdapter
   const adapterRegions = (await adapter.getRegions({ signal })) as Region[]
@@ -367,7 +368,6 @@ async function loadAssemblyReaction(
     }
     const refNameAliasAdapter = new REFCLASS(
       refNameAliasesAdapterConfig,
-      pluginManager,
     ) as BaseRefNameAliasAdapter
     const refNameAliasesList = (await refNameAliasAdapter.getRefNameAliases({
       signal,

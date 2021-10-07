@@ -64,23 +64,6 @@ import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
 const { parseCigar } = MismatchParser
 
-interface Track {
-  id: string
-  type: string
-  displays: {
-    id: string
-    type: string
-    PileupDisplay: any
-  }[]
-}
-interface View {
-  tracks: Track[]
-  views?: View[]
-  type: string
-}
-interface Session {
-  views: View[]
-}
 function getLengthOnRef(cigar: string) {
   const cigarOps = parseCigar(cigar)
   let lengthOnRef = 0
@@ -230,11 +213,11 @@ function WindowSizeDlg(props: {
 
   // window size stored as string, because it corresponds to a textfield which
   // is parsed as number on submit
-  const [window, setWindowSize] = useState('0')
-  const [error, setError] = useState<Error>()
-  const windowSize = +window
+  const [windowSizeText, setWindowSize] = useState('0')
+  const [error, setError] = useState<unknown>()
   const [primaryFeature, setPrimaryFeature] = useState<Feature>()
   const [qualTrack, setQualTrack] = useState(false)
+  const windowSize = +windowSizeText
 
   // we need to fetch the primary alignment if the selected feature is 2048.
   // this should be the first in the list of the SA tag
@@ -632,9 +615,8 @@ export default class extends Plugin {
       })
     })
     pluginManager.addDisplayType(() => {
-      const configSchema = linearComparativeDisplayConfigSchemaFactory(
-        pluginManager,
-      )
+      const configSchema =
+        linearComparativeDisplayConfigSchemaFactory(pluginManager)
       return new DisplayType({
         name: 'LinearComparativeDisplay',
         configSchema,
@@ -645,9 +627,8 @@ export default class extends Plugin {
       })
     })
     pluginManager.addDisplayType(() => {
-      const configSchema = linearSyntenyDisplayConfigSchemaFactory(
-        pluginManager,
-      )
+      const configSchema =
+        linearSyntenyDisplayConfigSchemaFactory(pluginManager)
       return new DisplayType({
         name: 'LinearSyntenyDisplay',
         configSchema,

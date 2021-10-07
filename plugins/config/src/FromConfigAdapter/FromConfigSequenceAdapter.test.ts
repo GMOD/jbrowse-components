@@ -1,9 +1,6 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './FromConfigSequenceAdapter'
 import { sequenceConfigSchema } from './configSchema'
-import PluginManager from '@jbrowse/core/PluginManager'
-
-const pluginManager = new PluginManager()
 test('adapter can fetch sequences when there is just one feature representing whole refseq', async () => {
   const features = [
     {
@@ -11,14 +8,10 @@ test('adapter can fetch sequences when there is just one feature representing wh
       refName: 'ctgA',
       start: 0,
       end: 150,
-      seq:
-        'ccaaaccgtcaattaaccggtatcttctcggaaacggcggttctctcctagatagcgatctgtggtctcaccatgcaatttaaacaggtgagtaaagattgctacaaatacgagactagctgtcaccagatgctgttcatctgttggctc',
+      seq: 'ccaaaccgtcaattaaccggtatcttctcggaaacggcggttctctcctagatagcgatctgtggtctcaccatgcaatttaaacaggtgagtaaagattgctacaaatacgagactagctgtcaccagatgctgttcatctgttggctc',
     },
   ]
-  const adapter = new Adapter(
-    sequenceConfigSchema.create({ features }),
-    pluginManager,
-  )
+  const adapter = new Adapter(sequenceConfigSchema.create({ features }))
   const result = adapter.getFeatures({
     refName: 'ctgA',
     start: 0,
@@ -45,14 +38,10 @@ test("adapter can fetch sequences when the config's sequence doesn't start at 0"
       refName: 'ctgA',
       start: 5000,
       end: 5150,
-      seq:
-        'ccaaaccgtcaattaaccggtatcttctcggaaacggcggttctctcctagatagcgatctgtggtctcaccatgcaatttaaacaggtgagtaaagattgctacaaatacgagactagctgtcaccagatgctgttcatctgttggctc',
+      seq: 'ccaaaccgtcaattaaccggtatcttctcggaaacggcggttctctcctagatagcgatctgtggtctcaccatgcaatttaaacaggtgagtaaagattgctacaaatacgagactagctgtcaccagatgctgttcatctgttggctc',
     },
   ]
-  const adapter = new Adapter(
-    sequenceConfigSchema.create({ features }),
-    pluginManager,
-  )
+  const adapter = new Adapter(sequenceConfigSchema.create({ features }))
   const result = adapter.getFeatures({
     refName: 'ctgA',
     start: 4950,
