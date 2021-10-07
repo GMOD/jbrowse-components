@@ -54,11 +54,11 @@ function getQuickstartPath(sessionName: string, ext = 'json') {
   return path.join(quickstartDir, `${encodeURIComponent(sessionName)}.${ext}`)
 }
 
-if (!fs.lstatSync(sessionDir).isDirectory()) {
+if (!fs.existsSync(sessionDir)) {
   fs.mkdirSync(sessionDir, { recursive: true })
 }
 
-if (!fs.lstatSync(quickstartDir).isDirectory()) {
+if (!fs.existsSync(quickstartDir)) {
   fs.mkdirSync(quickstartDir, { recursive: true })
 }
 
