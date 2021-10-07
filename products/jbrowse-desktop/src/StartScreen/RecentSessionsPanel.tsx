@@ -25,7 +25,6 @@ import DeleteIcon from '@material-ui/icons/Delete'
 import EditIcon from '@material-ui/icons/Edit'
 import ViewComfyIcon from '@material-ui/icons/ViewComfy'
 import ListIcon from '@material-ui/icons/List'
-import StarIcon from '@material-ui/icons/Star'
 
 // locals
 import RenameSessionDialog from './dialogs/RenameSessionDialog'
@@ -59,13 +58,11 @@ function RecentSessionsList({
   setSelectedSessions,
   setSessionToRename,
   setPluginManager,
-  addToQuickstartList,
 }: {
   setError: (e: unknown) => void
   setSessionToRename: (e: string) => void
   setPluginManager: (pm: PluginManager) => void
   setSelectedSessions: (arg: string[]) => void
-  addToQuickstartList: (arg: string) => void
   sortedSessions: Session[]
 }) {
   const classes = useStyles()
@@ -83,24 +80,6 @@ function RecentSessionsList({
           <IconButton onClick={() => setSessionToRename(value as string)}>
             <Tooltip title="Rename session">
               <EditIcon />
-            </Tooltip>
-          </IconButton>
-        )
-      },
-    },
-    {
-      field: 'quickstart',
-      minWidth: 40,
-      width: 40,
-      sortable: false,
-      filterable: false,
-      headerName: ' ',
-      renderCell: (params: GridCellParams) => {
-        const { value } = params
-        return (
-          <IconButton onClick={() => addToQuickstartList(value as string)}>
-            <Tooltip title="Add to quickstart list">
-              <StarIcon />
             </Tooltip>
           </IconButton>
         )
@@ -182,14 +161,12 @@ function RecentSessionsCards({
   setSessionsToDelete,
   setSessionToRename,
   setPluginManager,
-  addToQuickstartList,
 }: {
   setError: (e: unknown) => void
   setSessionsToDelete: (e: string[]) => void
   setSessionToRename: (e: string) => void
   setPluginManager: (pm: PluginManager) => void
   sortedSessions: Session[]
-  addToQuickstartList: (arg: string) => void
 }) {
   return (
     <Grid container spacing={4}>
@@ -211,7 +188,6 @@ function RecentSessionsCards({
             }}
             onDelete={(del: string) => setSessionsToDelete([del])}
             onRename={setSessionToRename}
-            onAddToQuickstartList={addToQuickstartList}
           />
         </Grid>
       ))}
@@ -285,10 +261,6 @@ export default function RecentSessionPanel({
     )
   }
 
-  async function addToQuickstartList(arg: string) {
-    await ipcRenderer.invoke('addToQuickstartList', arg)
-  }
-
   return (
     <div>
       <RenameSessionDialog
@@ -340,7 +312,6 @@ export default function RecentSessionPanel({
       {sortedSessions.length ? (
         displayMode === 'grid' ? (
           <RecentSessionsCards
-            addToQuickstartList={addToQuickstartList}
             setPluginManager={setPluginManager}
             sortedSessions={sortedSessions}
             setError={setError}
@@ -349,7 +320,6 @@ export default function RecentSessionPanel({
           />
         ) : (
           <RecentSessionsList
-            addToQuickstartList={addToQuickstartList}
             setPluginManager={setPluginManager}
             sortedSessions={sortedSessions}
             setError={setError}

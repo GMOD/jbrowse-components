@@ -96,6 +96,7 @@ const libs = {
   // end special case
   '@material-ui/lab': MUILab,
   '@mui/x-data-grid': MUIDataGrid,
+  '@material-ui/data-grid': MUIDataGrid,
 
   // material-ui subcomponents, should get rid of these
   '@material-ui/core/colors': MUIColors,
