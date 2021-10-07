@@ -179,10 +179,8 @@ export function guessAdapter(
   }
 }
 
-export function guessTrackType(
-  adapterType: string,
-  model?: AddTrackModel,
-): string {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function guessTrackType(adapterType: string, model?: any): string {
   if (model) {
     // @ts-ignore
     const session = getSession(model)

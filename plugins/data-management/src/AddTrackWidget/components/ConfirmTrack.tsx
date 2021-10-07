@@ -200,7 +200,7 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
     return <UnknownAdapterPrompt model={model} />
   }
 
-  if (adapterHint === '') {
+  if (adapterHint === '' && trackAdapter) {
     model.setAdapterHint(trackAdapter.type)
   }
 
