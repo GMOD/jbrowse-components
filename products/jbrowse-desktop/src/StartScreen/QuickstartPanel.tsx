@@ -16,11 +16,6 @@ import preloadedConfigs from './data/preloadedConfigs'
 import deepmerge from 'deepmerge'
 
 const useStyles = makeStyles(theme => ({
-  container: {
-    margin: theme.spacing(2),
-    padding: theme.spacing(2),
-  },
-
   button: {
     float: 'right',
     height: '3em',
@@ -28,6 +23,10 @@ const useStyles = makeStyles(theme => ({
   },
   checkbox: {
     display: 'block',
+  },
+  panel: {
+    marginTop: theme.spacing(2),
+    maxHeight: 500,
   },
 }))
 
@@ -42,10 +41,9 @@ function PreloadedDatasetSelector({
   const [filterShown, setFilterShown] = useState(false)
 
   return (
-    <div className={classes.container}>
-      <Typography>
-        Select assembly (or multiple assemblies) for your session, and then hit
-        "Go"
+    <div>
+      <Typography variant="h6">
+        Select from this quickstart list
         <IconButton onClick={() => setFilterShown(!filterShown)}>
           <Tooltip title="Show filter?">
             <SearchIcon />
@@ -82,24 +80,25 @@ function PreloadedDatasetSelector({
           onChange={event => setSearch(event.target.value as string)}
         />
       ) : null}
-      <br />
-      {Object.keys(preloadedConfigs)
-        .filter(name => (search ? name.match(new RegExp(search, 'i')) : true))
-        .map(name => (
-          <FormControlLabel
-            key={name}
-            className={classes.checkbox}
-            control={
-              <Checkbox
-                checked={selected[name] || false}
-                onChange={() =>
-                  setSelected({ ...selected, [name]: !selected[name] })
-                }
-              />
-            }
-            label={name}
-          />
-        ))}
+      <div className={classes.panel}>
+        {Object.keys(preloadedConfigs)
+          .filter(name => (search ? name.match(new RegExp(search, 'i')) : true))
+          .map(name => (
+            <FormControlLabel
+              key={name}
+              className={classes.checkbox}
+              control={
+                <Checkbox
+                  checked={selected[name] || false}
+                  onChange={() =>
+                    setSelected({ ...selected, [name]: !selected[name] })
+                  }
+                />
+              }
+              label={name}
+            />
+          ))}
+      </div>
     </div>
   )
 }

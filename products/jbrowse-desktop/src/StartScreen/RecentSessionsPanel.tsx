@@ -164,8 +164,8 @@ function RecentSessionsList({
         rows={sortedSessions.map(([sessionName, session]) => ({
           id: sessionName,
           name: sessionName,
+          quickstart: sessionName,
           rename: sessionName,
-          delete: sessionName,
           lastModified: session.stats?.mtime,
         }))}
         rowHeight={25}
