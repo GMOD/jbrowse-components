@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Grid, Paper, Typography, makeStyles } from '@material-ui/core'
 
 import { LogoFull } from '@jbrowse/core/ui/Logo'

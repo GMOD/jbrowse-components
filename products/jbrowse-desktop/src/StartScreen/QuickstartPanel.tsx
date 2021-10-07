@@ -61,7 +61,7 @@ function PreloadedDatasetSelector({
 
   useEffect(() => {
     let cancelled = false
-    ;(async () => {
+    async function updateQuickstarts() {
       try {
         const quick = await ipcRenderer.invoke('listQuickstarts')
         if (!cancelled) {
@@ -70,17 +70,26 @@ function PreloadedDatasetSelector({
       } catch (e) {
         setError(e)
       }
-    })()
+    }
+
+    const interval = setInterval(() => {
+      updateQuickstarts()
+    }, 500)
 
     return () => {
       cancelled = true
+      clearInterval(interval)
     }
   }, [])
 
   return (
     <div>
-      <Typography variant="h6">
-        Select from this quickstart list
+      <Typography variant="h6" style={{ marginBottom: 5 }}>
+        Quickstart list
+      </Typography>
+      <Typography>
+        Select one or more entries from this quickstart list to start your
+        session
         <IconButton onClick={() => setFilterShown(!filterShown)}>
           <Tooltip title="Show filter?">
             <SearchIcon />
