@@ -27,7 +27,7 @@ export default function LauncherPanel({
   const [sequenceDialogOpen, setSequenceDialogOpen] = useState(false)
   return (
     <div className={classes.form}>
-      <Typography variant="h6">
+      <Typography variant="h6" style={{ marginBottom: 5 }}>
         Select a sequence file e.g. FASTA file
       </Typography>
       <Button

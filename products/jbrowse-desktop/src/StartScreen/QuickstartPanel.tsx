@@ -89,7 +89,7 @@ function PreloadedDatasetSelector({
       </Typography>
       <Typography>
         Select one or more entries from this quickstart list to start your
-        session
+        session. If more than one entry is selected, they will be combined
         <IconButton onClick={() => setFilterShown(!filterShown)}>
           <Tooltip title="Show filter?">
             <SearchIcon />

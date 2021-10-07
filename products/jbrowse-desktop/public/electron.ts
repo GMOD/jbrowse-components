@@ -80,11 +80,15 @@ async function createWindow() {
   }
   const data = await response.json()
   Object.entries(data).forEach(([key, value]) => {
-    fs.writeFileSync(
-      getQuickstartPath(key),
-      JSON.stringify(value, null, 2),
-      'utf8',
-    )
+    // if there is not a 'gravestone' (.deleted file), then repopulate it on
+    // startup
+    if (!fs.existsSync(getQuickstartPath(key) + '.deleted')) {
+      fs.writeFileSync(
+        getQuickstartPath(key),
+        JSON.stringify(value, null, 2),
+        'utf8',
+      )
+    }
   })
 
   const mainWindowState = windowStateKeeper({
@@ -291,11 +295,16 @@ ipcMain.handle(
 ipcMain.handle('listQuickstarts', async (_event: unknown) => {
   return (await readdir(quickstartDir))
     .filter(f => path.extname(f) === '.json')
-    .map(f => [decodeURIComponent(path.basename(f, '.json'))])
+    .map(f => decodeURIComponent(path.basename(f, '.json')))
 })
 
 ipcMain.handle('deleteQuickstart', async (_event: unknown, name: string) => {
-  return fs.unlinkSync(getQuickstartPath(name))
+  fs.unlinkSync(getQuickstartPath(name))
+
+  // add a gravestone '.deleted' file when we delete a session, so that if it
+  // comes from the https://jbrowse.org/genomes/sessions.json, we don't
+  // recreate it
+  fs.writeFileSync(getQuickstartPath(name) + '.deleted', '', 'utf8')
 })
 
 ipcMain.handle(
