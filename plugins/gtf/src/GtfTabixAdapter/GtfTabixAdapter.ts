@@ -9,6 +9,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
+import gff from '@gmod/gff'
 import { Observer, Observable } from 'rxjs'
 
 import { Instance } from 'mobx-state-tree'
@@ -75,6 +76,93 @@ export default class extends BaseFeatureDataAdapter {
     }, opts.signal)
   }
 
+  // private async getFeaturesHelper(
+  //   query: NoAssemblyRegion,
+  //   opts: BaseOptions = {},
+  //   metadata: { columnNumbers: { start: number; end: number } },
+  //   observer: Observer<Feature>,
+  //   allowRedispatch: boolean,
+  //   originalQuery = query,
+  // ) {
+  //   try {
+  //     const lines: LineFeature[] = []
+
+  //     await this.gtf.getLines(
+  //       query.refName,
+  //       query.start,
+  //       query.end,
+  //       (line: string, fileOffset: number) => {
+  //         lines.push(this.parseLine(metadata.columnNumbers, line, fileOffset))
+  //       },
+  //     )
+  //     if (allowRedispatch && lines.length) {
+  //       let minStart = Infinity
+  //       let maxEnd = -Infinity
+
+  //       lines.forEach(line => {
+  //         const featureType = line.fields[2]
+
+  //         if (!this.dontRedispatch.includes(featureType)) {
+  //           const start = line.start - 1
+  //           if (start < minStart) {
+  //             minStart = start
+  //           }
+  //           if (line.end > maxEnd) {
+  //             maxEnd = line.end
+  //           }
+  //         }
+  //       })
+  //       if (maxEnd > query.end || minStart < query.start) {
+  //         this.getFeaturesHelper(
+  //           { ...query, start: minStart, end: maxEnd },
+  //           opts,
+  //           metadata,
+  //           observer,
+  //           false,
+  //           query,
+  //         )
+  //         return
+  //       }
+  //     }
+
+  //     lines.forEach((lineRecord: LineFeature) => {
+  //       if (lineRecord.fields[8] && lineRecord.fields[8] !== '.') {
+  //         if (!lineRecord.fields[8].includes('_lineHash')) {
+  //           lineRecord.fields[8] += `;_lineHash ${lineRecord.lineHash}`
+  //         }
+  //       } else {
+  //         lineRecord.fields[8] = `_lineHash ${lineRecord.lineHash}`
+  //       }
+  //     })
+
+  //     // console.log('lines', lines)
+  //     // console.log('gtf lines', gtfLines)
+  //     // console.log('==================')
+  //     // console.log(typeof gtfLines)
+  //     // console.log(typeof gtfLines)
+  //     // const features = this.gtfParseStringSync(gtfLines) as FeatureLoc[][]
+  //     // this.gtfParseLineFeatures(lines)
+  //     const features = this.gtfParseStringSync(lines)
+  //     // TODO: fix bug with features not being parsed correctly
+  //     features.forEach(featureLocs =>
+  //       this.formatFeatures(featureLocs).forEach(f => {
+  //         if (
+  //           doesIntersect2(
+  //             f.get('start'),
+  //             f.get('end'),
+  //             originalQuery.start,
+  //             originalQuery.end,
+  //           )
+  //         ) {
+  //           observer.next(f)
+  //         }
+  //       }),
+  //     )
+  //     observer.complete()
+  //   } catch (e) {
+  //     observer.error(e)
+  //   }
+  // }
   private async getFeaturesHelper(
     query: NoAssemblyRegion,
     opts: BaseOptions = {},
@@ -97,12 +185,12 @@ export default class extends BaseFeatureDataAdapter {
       if (allowRedispatch && lines.length) {
         let minStart = Infinity
         let maxEnd = -Infinity
-
         lines.forEach(line => {
           const featureType = line.fields[2]
-
+          // only expand redispatch range if feature is not a "dontRedispatch" type
+          // skips large regions like chromosome,region
           if (!this.dontRedispatch.includes(featureType)) {
-            const start = line.start - 1
+            const start = line.start - 1 // gff is 1-based
             if (start < minStart) {
               minStart = start
             }
@@ -112,6 +200,12 @@ export default class extends BaseFeatureDataAdapter {
           }
         })
         if (maxEnd > query.end || minStart < query.start) {
+          // console.log(
+          //   `redispatching ${query.start}-${query.end} => ${minStart}-${maxEnd}`,
+          // )
+          // make a new feature callback to only return top-level features
+          // in the original query range
+
           this.getFeaturesHelper(
             { ...query, start: minStart, end: maxEnd },
             opts,
@@ -124,25 +218,27 @@ export default class extends BaseFeatureDataAdapter {
         }
       }
 
-      lines.forEach((lineRecord: LineFeature) => {
-        if (lineRecord.fields[8] && lineRecord.fields[8] !== '.') {
-          if (!lineRecord.fields[8].includes('_lineHash')) {
-            lineRecord.fields[8] += `;_lineHash ${lineRecord.lineHash}`
+      const gff3 = lines
+        .map((lineRecord: LineFeature) => {
+          if (lineRecord.fields[8] && lineRecord.fields[8] !== '.') {
+            if (!lineRecord.fields[8].includes('_lineHash')) {
+              lineRecord.fields[8] += `;_lineHash=${lineRecord.lineHash}`
+            }
+          } else {
+            lineRecord.fields[8] = `_lineHash=${lineRecord.lineHash}`
           }
-        } else {
-          lineRecord.fields[8] = `_lineHash ${lineRecord.lineHash}`
-        }
-      })
+          return lineRecord.fields.join('\t')
+        })
+        .join('\n')
 
-      // console.log('lines', lines)
-      // console.log('gtf lines', gtfLines)
-      // console.log('==================')
-      // console.log(typeof gtfLines)
-      // console.log(typeof gtfLines)
-      // const features = this.gtfParseStringSync(gtfLines) as FeatureLoc[][]
-      // this.gtfParseLineFeatures(lines)
-      const features = this.gtfParseStringSync(lines)
-      // TODO: fix bug with features not being parsed correctly
+      const features = gff.parseStringSync(gff3, {
+        parseFeatures: true,
+        parseComments: false,
+        parseDirectives: false,
+        parseSequences: false,
+      }) as FeatureLoc[][]
+
+      console.log('features', features)
       features.forEach(featureLocs =>
         this.formatFeatures(featureLocs).forEach(f => {
           if (
@@ -162,7 +258,6 @@ export default class extends BaseFeatureDataAdapter {
       observer.error(e)
     }
   }
-
   private formatFeatures(featureLocs: FeatureLoc[]) {
     return featureLocs.map(
       featureLoc =>
