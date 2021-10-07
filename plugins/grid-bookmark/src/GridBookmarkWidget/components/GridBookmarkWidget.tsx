@@ -7,7 +7,7 @@ import {
   Button,
   makeStyles,
 } from '@material-ui/core'
-import { DataGrid, GridCellParams } from '@material-ui/data-grid'
+import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import { getSession, assembleLocString, measureText } from '@jbrowse/core/util'
 import DeleteIcon from '@material-ui/icons/Delete'
 import ViewCompactIcon from '@material-ui/icons/ViewCompact'

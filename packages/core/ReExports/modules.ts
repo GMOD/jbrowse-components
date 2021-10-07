@@ -13,7 +13,7 @@ import * as MUICore from '@material-ui/core'
 import * as MUIUtils from '@material-ui/core/utils'
 import MUISvgIcon from '@material-ui/core/SvgIcon'
 import * as MUILab from '@material-ui/lab'
-import * as MUIDataGrid from '@material-ui/data-grid'
+import * as MUIDataGrid from '@mui/x-data-grid'
 import MUIBox from '@material-ui/core/Box'
 import MUIButton from '@material-ui/core/Button'
 import MUIButtonGroup from '@material-ui/core/ButtonGroup'
@@ -95,7 +95,7 @@ const libs = {
   '@material-ui/core/utils': MUIUtils,
   // end special case
   '@material-ui/lab': MUILab,
-  '@material-ui/data-grid': MUIDataGrid,
+  '@mui/x-data-grid': MUIDataGrid,
 
   // material-ui subcomponents, should get rid of these
   '@material-ui/core/colors': MUIColors,
