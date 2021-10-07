@@ -8,11 +8,13 @@
       "adapterConf": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "volvox.dup.vcf.gz"
+          "uri": "volvox.dup.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox.dup.vcf.gz.tbi"
+            "uri": "volvox.dup.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -24,11 +26,13 @@
       "adapterConf": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "volvox.dup.renamed.vcf.gz"
+          "uri": "volvox.dup.renamed.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox.dup.renamed.vcf.gz.tbi"
+            "uri": "volvox.dup.renamed.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -40,11 +44,13 @@
       "adapterConf": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "volvox.test.vcf.gz"
+          "uri": "volvox.test.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox.test.vcf.gz.tbi"
+            "uri": "volvox.test.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -56,11 +62,13 @@
       "adapterConf": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "volvox.sort.gff3.gz"
+          "uri": "volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox.sort.gff3.gz.tbi"
+            "uri": "volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -72,11 +80,13 @@
       "adapterConf": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "volvox.filtered.vcf.gz"
+          "uri": "volvox.filtered.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox.filtered.vcf.gz.tbi"
+            "uri": "volvox.filtered.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -88,11 +98,13 @@
       "adapterConf": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "volvox.filtered.vcf.gz"
+          "uri": "volvox.filtered.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox.filtered.vcf.gz.tbi"
+            "uri": "volvox.filtered.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -104,11 +116,13 @@
       "adapterConf": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "single_exon_gene.sorted.gff.gz"
+          "uri": "single_exon_gene.sorted.gff.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "single_exon_gene.sorted.gff.gz.tbi"
+            "uri": "single_exon_gene.sorted.gff.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -120,11 +134,13 @@
       "adapterConf": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "volvox.inv.vcf.gz"
+          "uri": "volvox.inv.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox.inv.vcf.gz.tbi"
+            "uri": "volvox.inv.vcf.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }

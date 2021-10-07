@@ -7,7 +7,10 @@ describe('adapter can fetch features from volvox.bw', () => {
   beforeEach(() => {
     adapter = new BigWigAdapter(
       configSchema.create({
-        bigWigLocation: { localPath: require.resolve('./test_data/volvox.bw') },
+        bigWigLocation: {
+          localPath: require.resolve('./test_data/volvox.bw'),
+          locationType: 'LocalPathLocation',
+        },
       }),
     )
   })

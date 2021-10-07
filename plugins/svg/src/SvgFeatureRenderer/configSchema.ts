@@ -34,6 +34,10 @@ export default ConfigurationSchema(
       type: 'boolean',
       defaultValue: true,
     },
+    showDescriptions: {
+      type: 'boolean',
+      defaultValue: true,
+    },
     labels: ConfigurationSchema('SvgFeatureLabels', {
       name: {
         type: 'string',

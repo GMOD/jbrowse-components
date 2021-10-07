@@ -5,16 +5,18 @@ import { autorun } from 'mobx'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
-import AddIcon from '@material-ui/icons/Add'
 import SettingsIcon from '@material-ui/icons/Settings'
+import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import AppsIcon from '@material-ui/icons/Apps'
+import { UriLocation } from '@jbrowse/core/util/types'
 import electron from 'electron'
 import {
+  addDisposer,
   cast,
+  resolveIdentifier,
   getParent,
   getSnapshot,
   types,
-  addDisposer,
   SnapshotIn,
   Instance,
 } from 'mobx-state-tree'
@@ -30,9 +32,8 @@ interface Menu {
 }
 
 export default function rootModelFactory(pluginManager: PluginManager) {
-  const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
-    pluginManager,
-  )
+  const { assemblyConfigSchemas, dispatcher } =
+    AssemblyConfigSchemasFactory(pluginManager)
   const assemblyConfigSchemasType = types.union(
     { dispatcher },
     ...assemblyConfigSchemas,
@@ -53,13 +54,22 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       assemblyManager: assemblyManagerType,
       savedSessionNames: types.maybe(types.array(types.string)),
       version: types.maybe(types.string),
+      internetAccounts: types.array(
+        pluginManager.pluggableMstType('internet account', 'stateModel'),
+      ),
       isAssemblyEditing: false,
     })
     .volatile(() => ({
-      pluginsUpdated: false,
       error: undefined as Error | undefined,
+      textSearchManager: new TextSearchManager(pluginManager),
     }))
     .actions(self => ({
+      async saveSession(val: unknown) {
+        await ipcRenderer.invoke('saveSession', {
+          ...getSnapshot(self.jbrowse),
+          defaultSession: val,
+        })
+      },
       setSavedSessionNames(sessionNames: string[]) {
         self.savedSessionNames = cast(sessionNames)
       },
@@ -75,9 +85,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       setAssemblyEditing(flag: boolean) {
         self.isAssemblyEditing = flag
       },
-      setPluginsUpdated(flag: boolean) {
-        self.pluginsUpdated = flag
-      },
+
       renameCurrentSession(sessionName: string) {
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
@@ -102,6 +110,100 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           this.setSession(snapshot)
         }
       },
+      initializeInternetAccount(
+        internetAccountId: string,
+        initialSnapshot = {},
+      ) {
+        const internetAccountConfigSchema =
+          pluginManager.pluggableConfigSchemaType('internet account')
+        const configuration = resolveIdentifier(
+          internetAccountConfigSchema,
+          self,
+          internetAccountId,
+        )
+
+        const internetAccountType = pluginManager.getInternetAccountType(
+          configuration.type,
+        )
+        if (!internetAccountType) {
+          throw new Error(`unknown internet account type ${configuration.type}`)
+        }
+
+        const internetAccount = internetAccountType.stateModel.create({
+          ...initialSnapshot,
+          type: configuration.type,
+          configuration,
+        })
+        self.internetAccounts.push(internetAccount)
+        return internetAccount
+      },
+      createEphemeralInternetAccount(
+        internetAccountId: string,
+        initialSnapshot = {},
+        location: UriLocation,
+      ) {
+        let hostUri
+
+        try {
+          hostUri = new URL(location.uri).origin
+        } catch (e) {
+          // ignore
+        }
+        // id of a custom new internaccount is `${type}-${name}`
+        const internetAccountSplit = internetAccountId.split('-')
+        const configuration = {
+          type: internetAccountSplit[0],
+          internetAccountId: internetAccountId,
+          name: internetAccountSplit.slice(1).join('-'),
+          description: '',
+          domains: [hostUri],
+        }
+        const internetAccountType = pluginManager.getInternetAccountType(
+          configuration.type,
+        )
+        const internetAccount = internetAccountType.stateModel.create({
+          ...initialSnapshot,
+          type: configuration.type,
+          configuration,
+        })
+        self.internetAccounts.push(internetAccount)
+        return internetAccount
+      },
+      findAppropriateInternetAccount(location: UriLocation) {
+        // find the existing account selected from menu
+        const selectedId = location.internetAccountId
+        if (selectedId) {
+          const selectedAccount = self.internetAccounts.find(account => {
+            return account.internetAccountId === selectedId
+          })
+          if (selectedAccount) {
+            return selectedAccount
+          }
+        }
+
+        // if no existing account or not found, try to find working account
+        for (const account of self.internetAccounts) {
+          const handleResult = account.handlesLocation(location)
+          if (handleResult) {
+            return account
+          }
+        }
+
+        // if still no existing account, create ephemeral config to use
+        return selectedId
+          ? this.createEphemeralInternetAccount(selectedId, {}, location)
+          : null
+      },
+      afterCreate() {
+        addDisposer(
+          self,
+          autorun(() => {
+            self.jbrowse.internetAccounts.forEach(account => {
+              this.initializeInternetAccount(account.internetAccountId)
+            })
+          }),
+        )
+      },
     }))
     .volatile(self => ({
       history: {},
@@ -109,13 +211,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         {
           label: 'File',
           menuItems: [
-            {
-              label: 'New Session',
-              icon: AddIcon,
-              onClick: (session: { setDefaultSession: () => void }) => {
-                session.setDefaultSession()
-              },
-            },
             {
               label: 'Return to start screen',
               icon: AppsIcon,
@@ -160,6 +255,15 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       },
       setMenus(newMenus: Menu[]) {
         self.menus = newMenus
+      },
+      async setPluginsUpdated() {
+        if (self.session) {
+          await self.saveSession(getSnapshot(self.session))
+        }
+
+        const url = window.location.href.split('?')[0]
+        const name = self.session?.name || ''
+        window.location.href = `${url}?config=${encodeURIComponent(name)}`
       },
       /**
        * Add a top-level menu
@@ -293,15 +397,9 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(
-            () => {
-              // if (self.session) {
-              //   ipcRenderer.send('saveSession', getSnapshot(self.session))
-              // }
+            async () => {
               if (self.session) {
-                ipcRenderer.send('saveSession', {
-                  ...getSnapshot(self.jbrowse),
-                  defaultSession: getSnapshot(self.session),
-                })
+                await self.saveSession(getSnapshot(self.session))
               }
             },
             { delay: 1000 },

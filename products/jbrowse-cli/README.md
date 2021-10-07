@@ -160,7 +160,7 @@ OPTIONS
                                    file
 
   -c, --config=config              Any extra config settings to add to connection in JSON object format, such as
-                                   '{"uri":"url":"https://sample.com"}}'
+                                   '{"uri":"url":"https://sample.com"}, "locationType": "UriLocation"}'
 
   -f, --force                      Equivalent to `--skipCheck --overwrite`
 
@@ -189,7 +189,7 @@ EXAMPLES
   $ jbrowse add-connection http://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection --assemblyName
   hg19
   $ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config
-  '{"uri":{"url":"https://mysite.com/path/to/custom"}}' --assemblyName hg19
+  '{"uri":{"url":"https://mysite.com/path/to/custom"}, "locationType": "UriLocation"}' --assemblyName hg19
   $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target
   /path/to/jb2/installation/config.json
 ```
@@ -311,8 +311,6 @@ OPTIONS
 
   --out=out        synonym for target
 
-  --skipCheck      Don't check whether or not you are in a JBrowse directory
-
   --target=target  path to config file in JB2 installation directory to write out to.
                    Creates ./config.json if nonexistent
 
@@ -373,7 +371,7 @@ OPTIONS
   --all  see all commands in CLI
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.0/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.3/src/commands/help.ts)_
 
 ## `jbrowse set-default-session`
 

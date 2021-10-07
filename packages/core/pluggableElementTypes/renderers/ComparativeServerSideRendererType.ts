@@ -11,6 +11,8 @@ import ServerSideRenderer, {
   ResultsDeserialized as ServerSideResultsDeserialized,
 } from './ServerSideRendererType'
 import RpcManager from '../../rpc/RpcManager'
+import { getAdapter } from '../../data_adapters/dataAdapterCache'
+import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 
 export interface RenderArgs extends ServerSideRenderArgs {
   displayModel: {}
@@ -93,7 +95,12 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
   }
 
   async getFeatures(renderArgs: any) {
-    const { dataAdapter, signal } = renderArgs
+    const { signal, sessionId, adapterConfig } = renderArgs
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
 
     let regions = [] as Region[]
 
@@ -119,12 +126,11 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
     })
 
     // note that getFeaturesInMultipleRegions does not do glyph expansion
-    const featureObservable = dataAdapter.getFeaturesInMultipleRegions(
-      requestRegions,
-      {
-        signal,
-      },
-    )
+    const featureObservable = (
+      dataAdapter as BaseFeatureDataAdapter
+    ).getFeaturesInMultipleRegions(requestRegions, {
+      signal,
+    })
 
     return featureObservable
       .pipe(

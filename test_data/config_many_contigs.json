@@ -9,7 +9,8 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "large.chrom.sizes"
+            "uri": "large.chrom.sizes",
+            "locationType": "UriLocation"
           }
         }
       }

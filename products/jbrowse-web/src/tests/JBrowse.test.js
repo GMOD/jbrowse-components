@@ -18,7 +18,7 @@ import { TextEncoder } from 'web-encoding'
 import FileSaver from 'file-saver'
 
 // locals
-import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
+import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { readConfObject, getConf } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -213,12 +213,8 @@ describe('test configuration editor', () => {
   it('change color on track', async () => {
     const pluginManager = getPluginManager(undefined, true)
     const state = pluginManager.rootModel
-    const {
-      getByTestId,
-      findByTestId,
-      findByText,
-      findByDisplayValue,
-    } = render(<JBrowse pluginManager={pluginManager} />)
+    const { getByTestId, findByTestId, findByText, findByDisplayValue } =
+      render(<JBrowse pluginManager={pluginManager} />)
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))

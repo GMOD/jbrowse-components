@@ -50,7 +50,7 @@ const DeleteSessionDialog = ({
   rootModel,
 }: {
   sessionToDelete?: string
-  onClose: (arg0: boolean) => void
+  onClose: (_arg0: boolean) => void
   rootModel: any
 }) => {
   const [deleteSession, setDeleteSession] = useState(false)

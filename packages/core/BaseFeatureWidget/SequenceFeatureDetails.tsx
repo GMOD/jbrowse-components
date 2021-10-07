@@ -29,6 +29,12 @@ import {
   revlist,
 } from './util'
 
+interface CoordFeat extends SimpleFeatureSerialized {
+  refName: string
+  start: number
+  end: number
+}
+
 const useStyles = makeStyles(theme => ({
   button: {
     margin: theme.spacing(1),
@@ -258,13 +264,13 @@ export const SequencePanel = React.forwardRef<
 // to not be 100% accurate
 export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
   const classes = useStyles()
-  const parentFeature = (feature as unknown) as ParentFeat
+  const parentFeature = feature as unknown as ParentFeat
   const hasCDS = parentFeature.subfeatures?.find(sub => sub.type === 'CDS')
   const seqPanelRef = useRef<HTMLDivElement>(null)
 
   const { ref, inView } = useInView()
   const [sequence, setSequence] = useState<SeqState>()
-  const [error, setError] = useState<string>()
+  const [error, setError] = useState<unknown>()
   const [mode, setMode] = useState(hasCDS ? 'cds' : 'cdna')
   const [copied, setCopied] = useState(false)
   const [copiedHtml, setCopiedHtml] = useState(false)
@@ -302,20 +308,12 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
     }
     ;(async () => {
       try {
-        const {
-          start: s,
-          end: e,
-          refName,
-        } = feature as SimpleFeatureSerialized & {
-          refName: string
-          start: number
-          end: number
-        }
-        const seq = await fetchSeq(s, e, refName)
-        const upstream = await fetchSeq(Math.max(0, s - 500), s, refName)
-        const downstream = await fetchSeq(e, e + 500, refName)
+        const { start, end, refName } = feature as CoordFeat
+        const seq = await fetchSeq(start, end, refName)
+        const up = await fetchSeq(Math.max(0, start - 500), start, refName)
+        const down = await fetchSeq(end, end + 500, refName)
         if (!finished) {
-          setSequence({ seq, upstream, downstream })
+          setSequence({ seq, upstream: up, downstream: down })
         }
       } catch (e) {
         setError(e)

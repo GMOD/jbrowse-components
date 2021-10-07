@@ -62,7 +62,7 @@
   },
   "devDependencies": {
     "@types/follow-redirects": "^1.13.0",
-    "typescript": "^3.0.0"
+    "typescript": "^4.0.0"
   },
   "oclif": {
     "commands": "./lib/commands",

@@ -7,6 +7,8 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { readConfObject } from '@jbrowse/core/configuration'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 /**
  * Adapter that just returns the features defined in its `features` configuration
@@ -17,8 +19,12 @@ import { readConfObject } from '@jbrowse/core/configuration'
 export default class FromConfigAdapter extends BaseFeatureDataAdapter {
   protected features: Map<string, Feature[]>
 
-  constructor(conf: AnyConfigurationModel) {
-    super(conf)
+  constructor(
+    conf: AnyConfigurationModel,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    super(conf, getSubAdapter, pluginManager)
     const feats = readConfObject(conf, 'features') as SimpleFeatureSerialized[]
     this.features = FromConfigAdapter.makeFeatures(feats || [])
   }

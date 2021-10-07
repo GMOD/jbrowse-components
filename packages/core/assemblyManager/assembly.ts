@@ -341,7 +341,11 @@ async function loadAssemblyReaction(
   if (!CLASS) {
     throw new Error('Failed to get adapter class')
   }
-  const adapter = new CLASS(sequenceAdapterConfig) as RegionsAdapter
+  const adapter = new CLASS(
+    sequenceAdapterConfig,
+    undefined,
+    pluginManager,
+  ) as RegionsAdapter
   const adapterRegions = (await adapter.getRegions({ signal })) as Region[]
 
   const adapterRegionsWithAssembly = adapterRegions.map(adapterRegion => {

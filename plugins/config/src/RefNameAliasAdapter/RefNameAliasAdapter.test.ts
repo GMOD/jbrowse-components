@@ -4,7 +4,10 @@ import configSchema from './configSchema'
 test('adapter can fetch a simple alias file', async () => {
   const adapter = new Adapter(
     configSchema.create({
-      location: { localPath: require.resolve('./test_data/simple_alias.txt') },
+      location: {
+        localPath: require.resolve('./test_data/simple_alias.txt'),
+        locationType: 'LocalPathLocation',
+      },
     }),
   )
   const result = await adapter.getRefNameAliases()

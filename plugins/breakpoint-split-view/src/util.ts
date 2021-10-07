@@ -63,7 +63,7 @@ export function yPos(
 // re-render once the useEffect is called, which is generally the
 // "next frame". If we removed the below use
 export const useNextFrame = (variable: unknown) => {
-  const [, setNextFrameState] = useState()
+  const [, setNextFrameState] = useState<unknown>()
   useEffect(() => {
     setNextFrameState(variable)
   }, [variable])

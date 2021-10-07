@@ -7,6 +7,7 @@ test('adapter can fetch features from volvox.2bit', async () => {
     configSchema.create({
       twoBitLocation: {
         localPath: require.resolve('../../test_data/volvox.2bit'),
+        locationType: 'LocalPathLocation',
       },
     }),
   )
@@ -44,6 +45,7 @@ test('adapter can fetch regions from with chrom.sizes', async () => {
     configSchema.create({
       chromSizesLocation: {
         localPath: require.resolve('../../test_data/volvox.chrom.sizes'),
+        locationType: 'LocalPathLocation',
       },
     }),
   )

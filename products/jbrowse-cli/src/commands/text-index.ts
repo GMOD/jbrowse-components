@@ -176,12 +176,15 @@ export default class TextIndex extends JBrowseCommand {
           textSearchAdapterId: id,
           ixFilePath: {
             uri: `trix/${asm}.ix`,
+            locationType: 'UriLocation',
           },
           ixxFilePath: {
             uri: `trix/${asm}.ixx`,
+            locationType: 'UriLocation',
           },
           metaFilePath: {
             uri: `trix/${asm}_meta.json`,
+            locationType: 'UriLocation',
           },
           assemblyNames: [asm],
         } as TrixTextSearchAdapter
@@ -270,12 +273,15 @@ export default class TextIndex extends JBrowseCommand {
               textSearchAdapterId: id,
               ixFilePath: {
                 uri: `trix/${trackId}.ix`,
+                locationType: 'UriLocation' as const,
               },
               ixxFilePath: {
                 uri: `trix/${trackId}.ixx`,
+                locationType: 'UriLocation' as const,
               },
               metaFilePath: {
                 uri: `trix/${trackId}_meta.json`,
+                locationType: 'UriLocation' as const,
               },
               assemblyNames: assemblyNames,
             },
@@ -406,7 +412,7 @@ export default class TextIndex extends JBrowseCommand {
         }
         return currentTrack
       })
-      .filter(track => supported(track.adapter.type))
+      .filter(track => supported(track.adapter?.type))
       .filter(track =>
         assemblyName ? track.assemblyNames.includes(assemblyName) : true,
       )

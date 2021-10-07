@@ -7,11 +7,13 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     configSchema.create({
       vcfGzLocation: {
         localPath: require.resolve('./test_data/volvox.filtered.vcf.gz'),
+        locationType: 'LocalPathLocation',
       },
       index: {
         indexType: 'TBI',
         location: {
           localPath: require.resolve('./test_data/volvox.filtered.vcf.gz.tbi'),
+          locationType: 'LocalPathLocation',
         },
       },
     }),
@@ -21,11 +23,13 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     configSchema.create({
       vcfGzLocation: {
         localPath: require.resolve('./test_data/volvox.filtered.vcf.gz'),
+        locationType: 'LocalPathLocation',
       },
       index: {
         indexType: 'CSI',
         location: {
           localPath: require.resolve('./test_data/volvox.filtered.vcf.gz.csi'),
+          locationType: 'LocalPathLocation',
         },
       },
     }),

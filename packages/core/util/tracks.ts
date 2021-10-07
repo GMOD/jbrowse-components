@@ -90,7 +90,7 @@ export function storeBlobLocation(location: PreFileLocation) {
     // @ts-ignore
     const blobId = `b${+Date.now()}`
     blobMap[blobId] = location.blob
-    return { name: location?.blob.name, blobId }
+    return { name: location?.blob.name, blobId, locationType: 'BlobLocation' }
   }
   return location
 }
@@ -103,10 +103,13 @@ export function guessAdapter(
 ) {
   function makeIndex(location: FileLocation, suffix: string) {
     if ('uri' in location) {
-      return { uri: location.uri + suffix }
+      return { uri: location.uri + suffix, locationType: 'UriLocation' }
     }
     if ('localPath' in location) {
-      return { localPath: location.localPath + suffix }
+      return {
+        localPath: location.localPath + suffix,
+        locationType: 'LocalPathLocation',
+      }
     }
     return location
   }

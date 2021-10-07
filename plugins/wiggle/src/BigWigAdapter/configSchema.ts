@@ -5,7 +5,10 @@ export default ConfigurationSchema(
   {
     bigWigLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bw' },
+      defaultValue: {
+        uri: '/path/to/my.bw',
+        locationType: 'UriLocation',
+      },
     },
   },
   { explicitlyTyped: true },

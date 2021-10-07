@@ -5,11 +5,14 @@ export default ConfigurationSchema(
   {
     twoBitLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.2bit' },
+      defaultValue: { uri: '/path/to/my.2bit', locationType: 'UriLocation' },
     },
     chromSizesLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/default.chrom.sizes' },
+      defaultValue: {
+        uri: '/path/to/default.chrom.sizes',
+        locationType: 'UriLocation',
+      },
       description:
         'An optional chrom.sizes file can be supplied to speed up loading since parsing the twobit file can take time',
     },

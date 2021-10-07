@@ -7,6 +7,7 @@ import {
   ListItemIcon,
   Menu,
   MenuItem,
+  Paper,
   Typography,
   makeStyles,
 } from '@material-ui/core'
@@ -46,7 +47,6 @@ const useStyles = makeStyles(theme => ({
   panel: {
     margin: theme.spacing(1),
     padding: theme.spacing(4),
-    border: '1px solid black',
   },
 
   settings: {
@@ -80,8 +80,10 @@ function LogoWithVersion() {
 }
 export default function StartScreen({
   setPluginManager,
+  setError,
 }: {
   setPluginManager: (arg: PluginManager) => void
+  setError: (arg: unknown) => void
 }) {
   const classes = useStyles()
   const [sessions, setSessions] = useState<Map<string, SessionStats>>()
@@ -90,7 +92,6 @@ export default function StartScreen({
   const [factoryResetDialogOpen, setFactoryResetDialogOpen] = useState(false)
   const [updateSessionsList, setUpdateSessionsList] = useState(true)
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
-  const [error, setError] = useState<Error>()
 
   const sessionNames = useMemo(() => Object.keys(sessions || {}), [sessions])
 
@@ -109,11 +110,11 @@ export default function StartScreen({
           setSessions(sessions)
         }
       } catch (e) {
-        setError(e)
         console.error(e)
+        setError(e)
       }
     })()
-  }, [updateSessionsList])
+  }, [setError, updateSessionsList])
 
   if (!sessions) {
     return (
@@ -155,8 +156,8 @@ export default function StartScreen({
             await ipcRenderer.invoke('reset')
             setUpdateSessionsList(true)
           } catch (e) {
-            setError(e)
             console.error(e)
+            setError(e)
           } finally {
             setFactoryResetDialogOpen(false)
           }
@@ -175,20 +176,17 @@ export default function StartScreen({
       </IconButton>
 
       <LogoWithVersion />
-      {error ? (
-        <Typography color="error" variant="h6">{`${error}`}</Typography>
-      ) : null}
 
       <div className={classes.root}>
         <Grid container spacing={3}>
           <Grid item xs={4}>
-            <div className={classes.panel}>
+            <Paper elevation={6} className={classes.panel}>
               <Typography variant="h5">Launch new session</Typography>
               <LauncherPanel setPluginManager={setPluginManager} />
-            </div>
+            </Paper>
           </Grid>
           <Grid item xs={8}>
-            <div className={classes.panel}>
+            <Paper elevation={6} className={classes.panel}>
               <Typography variant="h5">Recently opened sessions</Typography>
               <RecentSessionPanel
                 setPluginManager={setPluginManager}
@@ -197,7 +195,7 @@ export default function StartScreen({
                 setSessionToRename={setSessionToRename}
                 setError={setError}
               />
-            </div>
+            </Paper>
           </Grid>
         </Grid>
       </div>

@@ -1,75 +1,38 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /*
  * Helper class allows reading names index generated in JBrowse1
  * Adapted from https://github.com/GMOD/jbrowse/blob/master/src/JBrowse/Store/Hash.js
  */
-import { crc32 } from './Crc32'
+import crc32 from 'buffer-crc32'
 
 export default class HttpMap {
   url: string
 
-  isElectron: boolean
-
-  hash_hex_characters?: number
-
-  compress?: number
-
-  tracks?: string[]
-
-  constructor(args: { url: string; isElectron: boolean }) {
+  constructor(args: { url: string }) {
     // make sure url has a trailing slash
     this.url = /\/$/.test(args.url) ? args.url : `${args.url}/`
-
-    this.isElectron = args.isElectron
   }
 
   /**
    * loads meta.json file from names directory and reads number of hash_bits used
    */
   async readMeta() {
-    try {
-      const meta = await this.loadFile('meta.json')
-      if (meta !== {}) {
-        const { compress, track_names: tracks } = meta
-        this.compress = compress
-        const hashHexCharacters = Math.ceil(meta.hash_bits / 4)
-        this.hash_hex_characters = hashHexCharacters
-        this.tracks = tracks
-        return { hashHexCharacters, compress, tracks }
-      }
-      throw new Error('Error parsing meta.json')
-
-      // const { compress } = meta
-      // this.compress = compress
-      // const hashHexCharacters = Math.ceil(meta.hash_bits / 4)
-      // this.hash_hex_characters = hashHexCharacters
-    } catch (err) {
-      // throw Error(err)
-      console.warn(`Error: ${err}`)
-    }
-    return {}
+    const meta = await this.loadFile('meta.json')
+    const { compress, track_names: tracks } = meta
+    const hashHexCharacters = Math.ceil(meta.hash_bits / 4)
+    return { hashHexCharacters, compress, tracks }
   }
 
   async getHashHexCharacters() {
-    if (this.hash_hex_characters) {
-      return this.hash_hex_characters
-    }
     const meta = await this.readMeta()
     return meta.hashHexCharacters
   }
 
   async getCompress() {
-    if (this.compress) {
-      return this.compress
-    }
     const meta = await this.readMeta()
     return meta.compress
   }
 
   async getTrackNames() {
-    if (this.tracks) {
-      return this.tracks
-    }
     const meta = await this.readMeta()
     return meta.tracks
   }
@@ -79,7 +42,7 @@ export default class HttpMap {
    * @param key - string
    */
   async get(key: string) {
-    const bucket: Record<string, any> = await this.getBucket(key)
+    const bucket = await this.getBucket(key)
     return bucket[key]
   }
 
@@ -89,17 +52,8 @@ export default class HttpMap {
    */
   async getBucket(key: string) {
     const bucketIdent = this.hash(key)
-    try {
-      const hexToDirPath = await this.hexToDirPath(bucketIdent)
-      const value = await this.loadFile(hexToDirPath)
-      return value
-    } catch (err) {
-      if (this.isElectron || err.status === 404) {
-        // 404 is expected if the name is not in the store
-        return {}
-      }
-    }
-    return {}
+    const hexToDirPath = await this.hexToDirPath(bucketIdent)
+    return this.loadFile(hexToDirPath)
   }
 
   /**
@@ -108,21 +62,11 @@ export default class HttpMap {
    * @param id - string
    */
   async loadFile(id: string) {
-    const response = await fetch(`${this.url}${id}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-    })
-    try {
-      const data = await response.json()
-      return data
-    } catch (err) {
-      // handle error
-      // throw Error(err)
-      console.warn(`Error: ${err}`)
+    const response = await fetch(`${this.url}${id}`)
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} ${response.statusText}`)
     }
-    return {}
+    return response.json()
   }
 
   /**
@@ -147,12 +91,10 @@ export default class HttpMap {
     return ''
   }
 
-  /**
-   * Returns crc32 hash given a string.
-   * (Note: this is using JBrowse1 implementation of crc32.)
-   * @param data - string
-   */
   hash(data: string) {
-    return crc32(data).toString(16).toLowerCase().replace('-', 'n')
+    return crc32(Buffer.from(data))
+      .toString('hex')
+      .toLowerCase()
+      .replace('-', 'n')
   }
 }

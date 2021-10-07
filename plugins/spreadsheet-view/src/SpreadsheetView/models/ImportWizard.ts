@@ -1,11 +1,12 @@
 import { types, getParent } from 'mobx-state-tree'
 import { openLocation } from '@jbrowse/core/util/io'
 import { getSession } from '@jbrowse/core/util'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 // 30MB
 const IMPORT_SIZE_LIMIT = 30_000_000
 
-export default () => {
+export default (pluginManager: PluginManager) => {
   const fileTypes = ['CSV', 'TSV', 'VCF', 'BED', 'BEDPE', 'STAR-Fusion']
   const fileTypeParsers = {
     CSV: () =>
@@ -40,7 +41,7 @@ export default () => {
       fileTypes,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       fileSource: undefined as any,
-      error: undefined as Error | undefined,
+      error: undefined as unknown,
       loading: false,
     }))
     .views(self => ({
@@ -115,8 +116,7 @@ export default () => {
         self.fileType = typeName
       },
 
-      setError(error: Error) {
-        console.error(error)
+      setError(error: unknown) {
         self.loading = false
         self.error = error
       },
@@ -153,7 +153,7 @@ export default () => {
 
           const { unzip } = await import('@gmod/bgzf-filehandle')
 
-          const filehandle = openLocation(self.fileSource)
+          const filehandle = openLocation(self.fileSource, pluginManager)
           await filehandle
             .stat()
             .then(stat => {
@@ -173,6 +173,7 @@ export default () => {
               getParent(self).displaySpreadsheet(spreadsheet)
             })
         } catch (error) {
+          console.error(error)
           this.setError(error)
         }
       },

@@ -10,6 +10,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { ConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'
 import FromConfigAdapter from './FromConfigAdapter'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 /**
  * Adapter that just returns the features defined in its `features` configuration
@@ -18,13 +20,16 @@ import FromConfigAdapter from './FromConfigAdapter'
  */
 export default class FromConfigRegionsAdapter
   extends BaseAdapter
-  implements RegionsAdapter {
+  implements RegionsAdapter
+{
   private features: Map<string, Feature[]>
 
   constructor(
     config: ConfigurationModel<typeof FromConfigAdapterConfigSchema>,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
   ) {
-    super(config)
+    super(config, getSubAdapter, pluginManager)
     const features = readConfObject(
       config,
       'features',

@@ -1,0 +1,39 @@
+{
+  "name": "@jbrowse/img",
+  "version": "1.4.0",
+  "main": "index.js",
+  "author": "JBrowse Team",
+  "license": "Apache-2.0",
+  "bin": {
+    "jb2export": "./dist/bin.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "pretest": "cd ../jbrowse-react-linear-genome-view; yarn build; cd ../jb2export",
+    "test": "jest",
+    "prebuild": "rm -rf dist",
+    "build": "babel src -d dist",
+    "preversion": "npm run build",
+    "snap": "npm run build && node dist/index.js --config data/config.json --defaultSession --out out.svg",
+    "snappng": "npm run build && node dist/index.js --config data/config.json --defaultSession --out out.png",
+    "snappdf": "npm run build && node dist/index.js --config data/config.json --defaultSession --out out.pdf",
+    "snapjpg": "npm run build && node dist/index.js --config data/config.json --defaultSession --out out.jpg",
+    "tiny": "npm run build && node dist/index.js --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam --loc ctgA:1-5000 --out tiny.svg",
+    "tinypng": "npm run build && node dist/index.js --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam --loc ctgA:1-5000 --out out.png",
+    "postversion": "git push --follow-tags"
+  },
+  "dependencies": {
+    "@jbrowse/react-linear-genome-view": "^1.4.4",
+    "@jbrowse/plugin-linear-genome-view": "^1.4.4",
+    "mobx": "^5.10.1",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "tmp": "^0.2.1",
+    "yargs": "^16.2.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

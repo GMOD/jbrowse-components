@@ -142,10 +142,14 @@ const libs = {
   '@jbrowse/core/pluggableElementTypes/WidgetType': WidgetType,
 
   '@jbrowse/core/pluggableElementTypes/models': pluggableElementTypeModels,
-  '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType': ServerSideRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType': CircularChordRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType': BoxRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType': FeatureRendererType,
+  '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType':
+    ServerSideRendererType,
+  '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType':
+    CircularChordRendererType,
+  '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType':
+    BoxRendererType,
+  '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType':
+    FeatureRendererType,
   '@jbrowse/core/pluggableElementTypes/renderers/RendererType': RendererType,
   '@jbrowse/core/configuration': Configuration,
   '@jbrowse/core/util/types/mst': mstTypes,

@@ -11,8 +11,10 @@ import { map, mergeAll } from 'rxjs/operators'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { Instance } from 'mobx-state-tree'
 import { rectifyStats, UnrectifiedFeatureStats } from '@jbrowse/core/util/stats'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 import configSchema from './configSchema'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 interface WiggleOptions extends BaseOptions {
   resolution?: number
@@ -27,10 +29,17 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     'hasGlobalStats',
   ]
 
-  public constructor(config: Instance<typeof configSchema>) {
-    super(config)
+  public constructor(
+    config: Instance<typeof configSchema>,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    super(config, getSubAdapter, pluginManager)
     this.bigwig = new BigWig({
-      filehandle: openLocation(readConfObject(config, 'bigWigLocation')),
+      filehandle: openLocation(
+        readConfObject(config, 'bigWigLocation'),
+        this.pluginManager,
+      ),
     })
   }
 

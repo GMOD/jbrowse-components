@@ -16,6 +16,8 @@ module.exports = {
       }),
     )
     config.target = 'electron-renderer'
+    config.resolve.mainFields = ['module', 'main']
+    config.resolve.aliasFields = []
     return config
   },
 }

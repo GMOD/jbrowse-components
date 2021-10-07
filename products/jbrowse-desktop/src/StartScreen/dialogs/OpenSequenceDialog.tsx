@@ -164,15 +164,30 @@ const OpenSequenceDialog = ({
     'BgzipFastaAdapter',
     'TwoBitAdapter',
   ]
-  const [error, setError] = useState<Error>()
+  const [error, setError] = useState<unknown>()
   const [assemblyName, setAssemblyName] = useState('')
   const [assemblyDisplayName, setAssemblyDisplayName] = useState('')
   const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0])
-  const [fastaLocation, setFastaLocation] = useState({ uri: '' })
-  const [faiLocation, setFaiLocation] = useState({ uri: '' })
-  const [gziLocation, setGziLocation] = useState({ uri: '' })
-  const [twoBitLocation, setTwoBitLocation] = useState({ uri: '' })
-  const [chromSizesLocation, setChromSizesLocation] = useState({ uri: '' })
+  const [fastaLocation, setFastaLocation] = useState<FileLocation>({
+    uri: '',
+    locationType: 'UriLocation',
+  })
+  const [faiLocation, setFaiLocation] = useState<FileLocation>({
+    uri: '',
+    locationType: 'UriLocation',
+  })
+  const [gziLocation, setGziLocation] = useState<FileLocation>({
+    uri: '',
+    locationType: 'UriLocation',
+  })
+  const [twoBitLocation, setTwoBitLocation] = useState<FileLocation>({
+    uri: '',
+    locationType: 'UriLocation',
+  })
+  const [chromSizesLocation, setChromSizesLocation] = useState<FileLocation>({
+    uri: '',
+    locationType: 'UriLocation',
+  })
 
   function createAssemblyConfig() {
     if (adapterSelection === 'IndexedFastaAdapter') {
