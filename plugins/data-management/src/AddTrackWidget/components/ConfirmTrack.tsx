@@ -90,6 +90,7 @@ function TrackAdapterSelector({
 }) {
   const classes = useStyles()
   const session = getSession(model)
+  // prettier-ignore
   const adapters = getEnv(session).pluginManager.getElementTypesInGroup(
     'adapter',
   )
