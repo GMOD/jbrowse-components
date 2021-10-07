@@ -4,6 +4,8 @@ import {
   Checkbox,
   FormControlLabel,
   IconButton,
+  Menu,
+  MenuItem,
   TextField,
   Tooltip,
   Typography,
@@ -11,6 +13,7 @@ import {
 } from '@material-ui/core'
 import PluginManager from '@jbrowse/core/PluginManager'
 import SearchIcon from '@material-ui/icons/Search'
+import MoreIcon from '@material-ui/icons/MoreHoriz'
 import { ipcRenderer } from 'electron'
 import deepmerge from 'deepmerge'
 
@@ -25,6 +28,7 @@ const useStyles = makeStyles(theme => ({
   },
   checkbox: {
     display: 'block',
+    marginRight: 0,
   },
   panel: {
     marginTop: theme.spacing(2),
@@ -42,6 +46,7 @@ function PreloadedDatasetSelector({
   const [search, setSearch] = useState('')
   const [filterShown, setFilterShown] = useState(false)
   const [quickstarts, setQuickstarts] = useState<string[]>()
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -105,24 +110,46 @@ function PreloadedDatasetSelector({
               search ? name.match(new RegExp(search, 'i')) : true,
             )
             .map(name => (
-              <FormControlLabel
-                key={name}
-                className={classes.checkbox}
-                control={
-                  <Checkbox
-                    checked={selected[name] || false}
-                    onChange={() =>
-                      setSelected({ ...selected, [name]: !selected[name] })
-                    }
-                  />
-                }
-                label={name}
-              />
+              <div style={{ display: 'flex' }}>
+                <FormControlLabel
+                  key={name}
+                  className={classes.checkbox}
+                  control={
+                    <Checkbox
+                      checked={selected[name] || false}
+                      onChange={() =>
+                        setSelected({ ...selected, [name]: !selected[name] })
+                      }
+                    />
+                  }
+                  label={name}
+                />
+                <IconButton
+                  onClick={e => setAnchorEl(e.currentTarget)}
+                  color="secondary"
+                >
+                  <MoreIcon />
+                </IconButton>
+              </div>
             ))
         ) : (
           <Typography>Loading...</Typography>
         )}
       </div>
+
+      <Menu
+        keepMounted
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(null)}
+      >
+        <MenuItem onClick={() => {}}>
+          <Typography>Delete</Typography>
+        </MenuItem>
+        <MenuItem onClick={() => {}}>
+          <Typography>Rename</Typography>
+        </MenuItem>
+      </Menu>
     </div>
   )
 }
