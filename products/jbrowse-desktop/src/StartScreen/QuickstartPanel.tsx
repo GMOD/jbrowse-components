@@ -14,6 +14,10 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 import SearchIcon from '@material-ui/icons/Search'
 import MoreIcon from '@material-ui/icons/MoreHoriz'
+
+import DeleteQuickstartDialog from './DeleteQuickstartDialog'
+import RenameQuickstartDialog from './RenameQuickstartDialog'
+
 import { ipcRenderer } from 'electron'
 import deepmerge from 'deepmerge'
 
@@ -44,16 +48,24 @@ function PreloadedDatasetSelector({
   const classes = useStyles()
   const [selected, setSelected] = useState({} as Record<string, boolean>)
   const [search, setSearch] = useState('')
+  const [error, setError] = useState<unknown>()
   const [filterShown, setFilterShown] = useState(false)
   const [quickstarts, setQuickstarts] = useState<string[]>()
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const [currentEl, setCurrentEl] = useState<string>()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<string>()
+  const [renameDialogOpen, setRenameDialogOpen] = useState<string>()
 
   useEffect(() => {
     let cancelled = false
     ;(async () => {
-      const quick = await ipcRenderer.invoke('listQuickstarts')
-      if (!cancelled) {
-        setQuickstarts(quick)
+      try {
+        const quick = await ipcRenderer.invoke('listQuickstarts')
+        if (!cancelled) {
+          setQuickstarts(quick)
+        }
+      } catch (e) {
+        setError(e)
       }
     })()
 
@@ -104,6 +116,10 @@ function PreloadedDatasetSelector({
         />
       ) : null}
       <div className={classes.panel}>
+        {error ? (
+          <Typography variant="h6" color="error">{`${error}`}</Typography>
+        ) : null}
+
         {quickstarts ? (
           quickstarts
             .filter(name =>
@@ -125,7 +141,10 @@ function PreloadedDatasetSelector({
                   label={name}
                 />
                 <IconButton
-                  onClick={e => setAnchorEl(e.currentTarget)}
+                  onClick={e => {
+                    setCurrentEl(name)
+                    setAnchorEl(e.currentTarget)
+                  }}
                   color="secondary"
                 >
                   <MoreIcon />
@@ -143,13 +162,33 @@ function PreloadedDatasetSelector({
         open={Boolean(anchorEl)}
         onClose={() => setAnchorEl(null)}
       >
-        <MenuItem onClick={() => {}}>
+        <MenuItem
+          onClick={() => {
+            setDeleteDialogOpen(currentEl)
+          }}
+        >
           <Typography>Delete</Typography>
         </MenuItem>
-        <MenuItem onClick={() => {}}>
+        <MenuItem
+          onClick={async () => {
+            setRenameDialogOpen(currentEl)
+          }}
+        >
           <Typography>Rename</Typography>
         </MenuItem>
       </Menu>
+
+      {deleteDialogOpen ? (
+        <DeleteQuickstartDialog
+          onClose={() => setDeleteDialogOpen(undefined)}
+        />
+      ) : null}
+
+      {renameDialogOpen ? (
+        <RenameQuickstartDialog
+          onClose={() => setRenameDialogOpen(undefined)}
+        />
+      ) : null}
     </div>
   )
 }
