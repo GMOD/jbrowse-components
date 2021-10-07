@@ -73,6 +73,19 @@ interface SessionSnap {
 let mainWindow: electron.BrowserWindow | null
 
 async function createWindow() {
+  const response = await fetch('https://jbrowse.org/genomes/sessions.json')
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status} ${response.statusText}`)
+  }
+  const data = await response.json()
+  Object.entries(data).forEach(([key, value]) => {
+    fs.writeFileSync(
+      getQuickstartPath(key),
+      JSON.stringify(value, null, 2),
+      'utf8',
+    )
+  })
+
   const mainWindowState = windowStateKeeper({
     defaultWidth: 1400,
     defaultHeight: 800,
@@ -273,6 +286,12 @@ ipcMain.handle(
     await copyFile(getPath(sessionName), getQuickstartPath(sessionName))
   },
 )
+
+ipcMain.handle('listQuickstarts', async (_event: unknown) => {
+  return (await readdir(quickstartDir))
+    .filter(f => path.extname(f) === '.json')
+    .map(f => [decodeURIComponent(path.basename(f, '.json'))])
+})
 
 ipcMain.handle('loadExternalConfig', (_event: unknown, sessionPath) => {
   return readFile(sessionPath, 'utf8')

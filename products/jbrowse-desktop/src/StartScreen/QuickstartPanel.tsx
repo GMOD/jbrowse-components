@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Button,
   Checkbox,
@@ -14,6 +14,7 @@ import SearchIcon from '@material-ui/icons/Search'
 import { createPluginManager } from './util'
 import preloadedConfigs from './data/preloadedConfigs'
 import deepmerge from 'deepmerge'
+import { ipcRenderer } from 'electron'
 
 const useStyles = makeStyles(theme => ({
   button: {
@@ -39,6 +40,21 @@ function PreloadedDatasetSelector({
   const [selected, setSelected] = useState({} as Record<string, boolean>)
   const [search, setSearch] = useState('')
   const [filterShown, setFilterShown] = useState(false)
+  const [quickstarts, setQuickstarts] = useState<string[]>()
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      const quick = await ipcRenderer.invoke('listQuickstarts')
+      if (!cancelled) {
+        setQuickstarts(quick)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   return (
     <div>
@@ -81,8 +97,10 @@ function PreloadedDatasetSelector({
         />
       ) : null}
       <div className={classes.panel}>
-        {Object.keys(preloadedConfigs)
-          .filter(name => (search ? name.match(new RegExp(search, 'i')) : true))
+        {quickstarts
+          ?.filter(name =>
+            search ? name.match(new RegExp(search, 'i')) : true,
+          )
           .map(name => (
             <FormControlLabel
               key={name}
