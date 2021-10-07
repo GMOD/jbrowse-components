@@ -6,6 +6,7 @@ import path from 'path'
 import url from 'url'
 import windowStateKeeper from 'electron-window-state'
 import { autoUpdater } from 'electron-updater'
+import fetch from 'node-fetch'
 
 const { unlink, rename, readdir, readFile, copyFile, writeFile } = fs.promises
 
@@ -291,6 +292,10 @@ ipcMain.handle('listQuickstarts', async (_event: unknown) => {
   return (await readdir(quickstartDir))
     .filter(f => path.extname(f) === '.json')
     .map(f => [decodeURIComponent(path.basename(f, '.json'))])
+})
+
+ipcMain.handle('getQuickstart', async (_event: unknown, name: string) => {
+  return JSON.parse(await readFile(getQuickstartPath(name), 'utf8'))
 })
 
 ipcMain.handle('loadExternalConfig', (_event: unknown, sessionPath) => {

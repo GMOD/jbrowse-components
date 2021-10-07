@@ -11,10 +11,11 @@ import {
 } from '@material-ui/core'
 import PluginManager from '@jbrowse/core/PluginManager'
 import SearchIcon from '@material-ui/icons/Search'
-import { createPluginManager } from './util'
-import preloadedConfigs from './data/preloadedConfigs'
-import deepmerge from 'deepmerge'
 import { ipcRenderer } from 'electron'
+import deepmerge from 'deepmerge'
+
+// locals
+import { createPluginManager } from './util'
 
 const useStyles = makeStyles(theme => ({
   button: {
@@ -70,9 +71,10 @@ function PreloadedDatasetSelector({
         className={classes.button}
         onClick={async () => {
           const config = deepmerge.all(
-            Object.keys(selected).map(name =>
-              // @ts-ignore
-              selected[name] ? preloadedConfigs[name] : {},
+            await Promise.all(
+              Object.keys(selected)
+                .filter(name => selected[name])
+                .map(entry => ipcRenderer.invoke('getQuickstart', entry)),
             ),
           )
 
@@ -93,29 +95,33 @@ function PreloadedDatasetSelector({
         <TextField
           label="Filter datasets"
           value={search}
-          onChange={event => setSearch(event.target.value as string)}
+          onChange={event => setSearch(event.target.value)}
         />
       ) : null}
       <div className={classes.panel}>
-        {quickstarts
-          ?.filter(name =>
-            search ? name.match(new RegExp(search, 'i')) : true,
-          )
-          .map(name => (
-            <FormControlLabel
-              key={name}
-              className={classes.checkbox}
-              control={
-                <Checkbox
-                  checked={selected[name] || false}
-                  onChange={() =>
-                    setSelected({ ...selected, [name]: !selected[name] })
-                  }
-                />
-              }
-              label={name}
-            />
-          ))}
+        {quickstarts ? (
+          quickstarts
+            .filter(name =>
+              search ? name.match(new RegExp(search, 'i')) : true,
+            )
+            .map(name => (
+              <FormControlLabel
+                key={name}
+                className={classes.checkbox}
+                control={
+                  <Checkbox
+                    checked={selected[name] || false}
+                    onChange={() =>
+                      setSelected({ ...selected, [name]: !selected[name] })
+                    }
+                  />
+                }
+                label={name}
+              />
+            ))
+        ) : (
+          <Typography>Loading...</Typography>
+        )}
       </div>
     </div>
   )
