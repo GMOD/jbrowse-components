@@ -7,7 +7,7 @@ import url from 'url'
 import windowStateKeeper from 'electron-window-state'
 import { autoUpdater } from 'electron-updater'
 
-const { unlink, rename, readdir, readFile, writeFile } = fs.promises
+const { unlink, rename, readdir, readFile, copyFile, writeFile } = fs.promises
 
 const { app, ipcMain, shell, BrowserWindow, Menu } = electron
 
@@ -44,13 +44,22 @@ const devServerUrl = url.parse(
 )
 
 const sessionDir = path.join(app.getPath('userData'), 'sessions')
+const quickstartDir = path.join(app.getPath('userData'), 'quickstart')
 
 function getPath(sessionName: string, ext = 'json') {
   return path.join(sessionDir, `${encodeURIComponent(sessionName)}.${ext}`)
 }
 
+function getQuickstartPath(sessionName: string, ext = 'json') {
+  return path.join(quickstartDir, `${encodeURIComponent(sessionName)}.${ext}`)
+}
+
 if (!fs.lstatSync(sessionDir).isDirectory()) {
   fs.mkdirSync(sessionDir, { recursive: true })
+}
+
+if (!fs.lstatSync(quickstartDir).isDirectory()) {
+  fs.mkdirSync(quickstartDir, { recursive: true })
 }
 
 interface SessionSnap {
@@ -258,13 +267,19 @@ ipcMain.handle('listSessions', async () => {
   )
 })
 
+ipcMain.handle(
+  'addToQuickstartList',
+  async (_event: unknown, sessionName: string) => {
+    await copyFile(getPath(sessionName), getQuickstartPath(sessionName))
+  },
+)
+
 ipcMain.handle('loadExternalConfig', (_event: unknown, sessionPath) => {
   return readFile(sessionPath, 'utf8')
 })
 
 ipcMain.handle('loadSession', async (_event: unknown, sessionName: string) => {
-  const data = await readFile(getPath(sessionName), 'utf8')
-  return JSON.parse(data)
+  return JSON.parse(await readFile(getPath(sessionName), 'utf8'))
 })
 
 ipcMain.handle(

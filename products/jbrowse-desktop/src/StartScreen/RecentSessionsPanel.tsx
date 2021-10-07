@@ -25,6 +25,7 @@ import DeleteIcon from '@material-ui/icons/Delete'
 import EditIcon from '@material-ui/icons/Edit'
 import ViewComfyIcon from '@material-ui/icons/ViewComfy'
 import ListIcon from '@material-ui/icons/List'
+import StarIcon from '@material-ui/icons/Star'
 
 // locals
 import RenameSessionDialog from './dialogs/RenameSessionDialog'
@@ -45,18 +46,27 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+interface SessionStats {
+  screenshot: string
+  stats: fs.Stats
+}
+
+type Session = [string, SessionStats]
+
 function RecentSessionsList({
   setError,
   sortedSessions,
   setSelectedSessions,
   setSessionToRename,
   setPluginManager,
+  addToQuickstartList,
 }: {
   setError: (e: unknown) => void
   setSessionToRename: (e: string) => void
   setPluginManager: (pm: PluginManager) => void
   setSelectedSessions: (arg: string[]) => void
-  sortedSessions: [string, { stats: fs.Stats }][]
+  addToQuickstartList: (arg: string) => void
+  sortedSessions: Session[]
 }) {
   const classes = useStyles()
   const columns = [
@@ -73,6 +83,24 @@ function RecentSessionsList({
           <IconButton onClick={() => setSessionToRename(value as string)}>
             <Tooltip title="Rename session">
               <EditIcon />
+            </Tooltip>
+          </IconButton>
+        )
+      },
+    },
+    {
+      field: 'quickstart',
+      minWidth: 40,
+      width: 40,
+      sortable: false,
+      filterable: false,
+      headerName: ' ',
+      renderCell: (params: GridCellParams) => {
+        const { value } = params
+        return (
+          <IconButton onClick={() => addToQuickstartList(value as string)}>
+            <Tooltip title="Add to quickstart list">
+              <StarIcon />
             </Tooltip>
           </IconButton>
         )
@@ -131,13 +159,14 @@ function RecentSessionsList({
     <div style={{ height: 400, width: '100%' }}>
       <DataGrid
         checkboxSelection
+        disableSelectionOnClick
         onSelectionModelChange={args => setSelectedSessions(args as string[])}
-        rows={sortedSessions.map(([sessionName, { stats }]) => ({
+        rows={sortedSessions.map(([sessionName, session]) => ({
           id: sessionName,
           name: sessionName,
           rename: sessionName,
           delete: sessionName,
-          lastModified: stats?.mtime,
+          lastModified: session.stats?.mtime,
         }))}
         rowHeight={25}
         headerHeight={33}
@@ -147,20 +176,20 @@ function RecentSessionsList({
   )
 }
 
-type Session = [string, { screenshot: string; stats: fs.Stats }]
-
 function RecentSessionsCards({
   sortedSessions,
   setError,
   setSessionsToDelete,
   setSessionToRename,
   setPluginManager,
+  addToQuickstartList,
 }: {
   setError: (e: unknown) => void
   setSessionsToDelete: (e: string[]) => void
   setSessionToRename: (e: string) => void
   setPluginManager: (pm: PluginManager) => void
   sortedSessions: Session[]
+  addToQuickstartList: (arg: string) => void
 }) {
   return (
     <Grid container spacing={4}>
@@ -182,6 +211,7 @@ function RecentSessionsCards({
             }}
             onDelete={(del: string) => setSessionsToDelete([del])}
             onRename={setSessionToRename}
+            onAddToQuickstartList={addToQuickstartList}
           />
         </Grid>
       ))}
@@ -189,22 +219,20 @@ function RecentSessionsCards({
   )
 }
 
+// note: span helps with https://stackoverflow.com/a/66713470/2129219
 function ToggleButtonWithTooltip(props: ToggleButtonProps) {
-  const { title, children, ...other } = props
+  const { title = '', children, ...other } = props
   return (
-    <Tooltip title={title || ''}>
-      <ToggleButton {...other}>{children}</ToggleButton>
+    <Tooltip title={title}>
+      <span>
+        <ToggleButton {...other}>{children}</ToggleButton>
+      </span>
     </Tooltip>
   )
 }
 
-const getTime = (a: [string, SessionStats]) => {
+const getTime = (a: Session) => {
   return +a[1].stats?.mtime
-}
-
-interface SessionStats {
-  screenshot: string
-  stats: fs.Stats
 }
 
 export default function RecentSessionPanel({
@@ -216,7 +244,7 @@ export default function RecentSessionPanel({
 }) {
   const classes = useStyles()
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
-  const [sessions, setSessions] = useState<Map<string, SessionStats>>()
+  const [sessions, setSessions] = useState<Map<string, SessionStats>>(new Map())
   const [sessionsToDelete, setSessionsToDelete] = useState<string[]>()
   const [sessionToRename, setSessionToRename] = useState<string>()
   const [updateSessionsList, setUpdateSessionsList] = useState(0)
@@ -255,6 +283,10 @@ export default function RecentSessionPanel({
         size={50}
       />
     )
+  }
+
+  async function addToQuickstartList(arg: string) {
+    await ipcRenderer.invoke('addToQuickstartList', arg)
   }
 
   return (
@@ -308,6 +340,7 @@ export default function RecentSessionPanel({
       {sortedSessions.length ? (
         displayMode === 'grid' ? (
           <RecentSessionsCards
+            addToQuickstartList={addToQuickstartList}
             setPluginManager={setPluginManager}
             sortedSessions={sortedSessions}
             setError={setError}
@@ -316,6 +349,7 @@ export default function RecentSessionPanel({
           />
         ) : (
           <RecentSessionsList
+            addToQuickstartList={addToQuickstartList}
             setPluginManager={setPluginManager}
             sortedSessions={sortedSessions}
             setError={setError}
