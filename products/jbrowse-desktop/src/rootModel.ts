@@ -218,11 +218,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                 self.setSession(undefined)
               },
             },
-          ],
-        },
-        {
-          label: 'Edit',
-          menuItems: [
             {
               label: 'Open assembly manager',
               icon: SettingsIcon,

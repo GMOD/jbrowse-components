@@ -707,7 +707,7 @@ export default class extends Plugin {
 
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
-      pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
+      pluginManager.rootModel.appendToSubMenu(['File', 'Add view'], {
         label: 'Linear synteny view',
         icon: CalendarIcon,
         onClick: (session: AbstractSessionModel) => {
