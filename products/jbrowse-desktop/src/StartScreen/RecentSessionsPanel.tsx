@@ -96,7 +96,10 @@ function RecentSessionsList({
             className={classes.pointer}
             onClick={async () => {
               try {
-                const data = await ipcRenderer.invoke('loadSession', value)
+                const data = await ipcRenderer.invoke(
+                  'loadSession',
+                  params.row.path,
+                )
                 const pm = await createPluginManager(data)
                 setPluginManager(pm)
               } catch (e) {
@@ -146,6 +149,7 @@ function RecentSessionsList({
           rename: session.name,
           delete: session.name,
           lastModified: session.updated,
+          path: session.path,
         }))}
         rowHeight={25}
         headerHeight={33}
@@ -170,17 +174,15 @@ function RecentSessionsCards({
 }) {
   return (
     <Grid container spacing={4}>
-      {sessions?.map(sessionData => (
-        <Grid item key={sessionData.path}>
+      {sessions?.map(session => (
+        <Grid item key={session.path}>
           <SessionCard
-            sessionData={sessionData}
+            sessionData={session}
             onClick={async () => {
               try {
-                const data = await ipcRenderer.invoke(
-                  'loadSession',
-                  sessionData.path,
+                const pm = await createPluginManager(
+                  await ipcRenderer.invoke('loadSession', session.path),
                 )
-                const pm = await createPluginManager(data)
                 setPluginManager(pm)
               } catch (e) {
                 console.error(e)
