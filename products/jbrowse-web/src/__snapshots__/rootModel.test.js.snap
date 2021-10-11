@@ -78,6 +78,29 @@ Array [
         "onClick": [Function],
       },
       Object {
+        "type": "divider",
+      },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Open track...",
+        "onClick": [Function],
+      },
+      Object {
+        "icon": [Function],
+        "label": "Open connection...",
+        "onClick": [Function],
+      },
+      Object {
+        "type": "divider",
+      },
+      Object {
         "icon": Object {
           "$$typeof": Symbol(react.memo),
           "compare": null,
@@ -170,6 +193,29 @@ Array [
         },
         "label": "Duplicate session",
         "onClick": [Function],
+      },
+      Object {
+        "type": "divider",
+      },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Open track...",
+        "onClick": [Function],
+      },
+      Object {
+        "icon": [Function],
+        "label": "Open connection...",
+        "onClick": [Function],
+      },
+      Object {
+        "type": "divider",
       },
       Object {
         "icon": Object {
