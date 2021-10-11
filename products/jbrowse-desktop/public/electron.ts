@@ -11,6 +11,10 @@ const { unlink, readFile, writeFile } = fs.promises
 
 const { app, ipcMain, shell, BrowserWindow, Menu } = electron
 
+function stringify(obj: unknown) {
+  return JSON.stringify(obj, null, 2)
+}
+
 // manual auto-updates https://github.com/electron-userland/electron-builder/blob/docs/encapsulated%20manual%20update%20via%20menu.js
 autoUpdater.autoDownload = false
 
@@ -21,20 +25,18 @@ autoUpdater.on('error', error => {
   )
 })
 
-autoUpdater.on('update-available', () => {
-  dialog
-    .showMessageBox({
-      type: 'info',
-      title: 'Found updates',
-      message:
-        'Found updates, do you want update now? No status will appear while the update downloads, but a dialog will appear once complete',
-      buttons: ['Yes', 'No'],
-    })
-    .then(buttonIndex => {
-      if (buttonIndex.response === 0) {
-        autoUpdater.downloadUpdate()
-      }
-    })
+autoUpdater.on('update-available', async () => {
+  const result = await dialog.showMessageBox({
+    type: 'info',
+    title: 'Found updates',
+    message:
+      'Found updates, do you want update now? Note: the update will download in the background, and a dialog will appear once complete',
+    buttons: ['Yes', 'No'],
+  })
+
+  if (result.response === 0) {
+    autoUpdater.downloadUpdate()
+  }
 })
 
 debug({ showDevTools: false })
@@ -49,7 +51,7 @@ const recentSessionsPath = path.join(
 )
 
 if (!fs.existsSync(recentSessionsPath)) {
-  fs.writeFileSync(recentSessionsPath, JSON.stringify([], null, 2), 'utf8')
+  fs.writeFileSync(recentSessionsPath, stringify([]), 'utf8')
 }
 
 interface SessionSnap {
@@ -296,8 +298,8 @@ ipcMain.handle(
       rows[idx] = entry
     }
     await Promise.all([
-      writeFile(recentSessionsPath, JSON.stringify(rows, null, 2)),
-      writeFile(path, JSON.stringify(snap, null, 2)),
+      writeFile(recentSessionsPath, stringify(rows)),
+      writeFile(path, stringify(snap)),
     ])
   },
 )
@@ -337,3 +339,26 @@ autoUpdater.on('update-downloaded', () => {
     buttons: ['OK'],
   })
 })
+
+ipcMain.handle(
+  'renameSession',
+  async (_event: unknown, path: string, newName: string) => {
+    const sessions = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as {
+      path: string
+      name: string
+    }[]
+    const session = JSON.parse(await readFile(path, 'utf8'))
+    const idx = sessions.findIndex(row => row.path === path)
+    if (idx !== -1) {
+      sessions[idx].name = newName
+      session.defaultSession.name = newName
+    } else {
+      throw new Error(`Session at ${path} not found`)
+    }
+
+    await Promise.all([
+      writeFile(recentSessionsPath, stringify(sessions)),
+      writeFile(path, stringify(session)),
+    ])
+  },
+)

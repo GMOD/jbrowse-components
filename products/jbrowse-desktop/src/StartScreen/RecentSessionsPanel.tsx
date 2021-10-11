@@ -113,7 +113,15 @@ function RecentSessionsList({
         )
       },
     },
-
+    {
+      field: 'path',
+      headerName: 'Session path',
+      flex: 0.7,
+      renderCell: (params: GridCellParams) => {
+        const { value } = params
+        return value
+      },
+    },
     {
       field: 'lastModified',
       headerName: 'Last modified',
