@@ -328,7 +328,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               label: 'Exit',
               icon: MeetingRoomIcon,
               onClick: () => {
-                self.setSession(undefined)
+                ipcRenderer.invoke('quit')
               },
             },
           ],

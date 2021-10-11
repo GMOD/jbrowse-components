@@ -239,6 +239,10 @@ app.on('activate', () => {
   }
 })
 
+ipcMain.handle('quit', () => {
+  app.quit()
+})
+
 ipcMain.handle('listSessions', async () => {
   return JSON.parse(await readFile(recentSessionsPath, 'utf8'))
 })
