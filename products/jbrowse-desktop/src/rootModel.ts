@@ -107,13 +107,10 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         self.isAssemblyEditing = flag
       },
 
-      renameCurrentSession(sessionName: string) {
+      async renameCurrentSession(newName: string) {
         if (self.session) {
-          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-          const oldName = snapshot.name
-          snapshot.name = sessionName
-          this.setSession(snapshot)
-          ipcRenderer.invoke('renameSession', oldName, sessionName)
+          this.setSession({ ...getSnapshot(self.session), name: newName })
+          await this.saveSession(getSaveSession(self as RootModel))
         }
       },
       duplicateCurrentSession() {

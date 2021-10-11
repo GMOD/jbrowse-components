@@ -52,6 +52,8 @@ interface RecentSessionData {
   updated: number
 }
 
+type RecentSessions = RecentSessionData[]
+
 function RecentSessionsList({
   setError,
   sessions,
@@ -60,9 +62,9 @@ function RecentSessionsList({
   setPluginManager,
 }: {
   setError: (e: unknown) => void
-  setSessionToRename: (e: string) => void
+  setSessionToRename: (arg: RecentSessionData) => void
   setPluginManager: (pm: PluginManager) => void
-  setSelectedSessions: (arg: string[]) => void
+  setSelectedSessions: (arg: RecentSessionData[]) => void
   sessions: RecentSessionData[]
 }) {
   const classes = useStyles()
@@ -75,9 +77,10 @@ function RecentSessionsList({
       filterable: false,
       headerName: ' ',
       renderCell: (params: GridCellParams) => {
-        const { value } = params
         return (
-          <IconButton onClick={() => setSessionToRename(value as string)}>
+          <IconButton
+            onClick={() => setSessionToRename(params.row as RecentSessionData)}
+          >
             <Tooltip title="Rename session">
               <EditIcon />
             </Tooltip>
@@ -150,9 +153,14 @@ function RecentSessionsList({
       <DataGrid
         checkboxSelection
         disableSelectionOnClick
-        onSelectionModelChange={args => setSelectedSessions(args as string[])}
+        onSelectionModelChange={args => {
+          console.log(sessions.filter(session => args.includes(session.path)))
+          setSelectedSessions(
+            sessions.filter(session => args.includes(session.path)),
+          )
+        }}
         rows={sessions.map(session => ({
-          id: session.name,
+          id: session.path,
           name: session.name,
           rename: session.name,
           delete: session.name,
@@ -175,8 +183,8 @@ function RecentSessionsCards({
   setPluginManager,
 }: {
   setError: (e: unknown) => void
-  setSessionsToDelete: (e: string[]) => void
-  setSessionToRename: (e: string) => void
+  setSessionsToDelete: (e: RecentSessionData[]) => void
+  setSessionToRename: (arg: RecentSessionData) => void
   setPluginManager: (pm: PluginManager) => void
   sessions: RecentSessionData[]
 }) {
@@ -197,7 +205,7 @@ function RecentSessionsCards({
                 setError(e)
               }
             }}
-            onDelete={(del: string) => setSessionsToDelete([del])}
+            onDelete={del => setSessionsToDelete([del])}
             onRename={setSessionToRename}
           />
         </Grid>
@@ -227,13 +235,11 @@ export default function RecentSessionPanel({
 }) {
   const classes = useStyles()
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
-  const [sessions, setSessions] = useState<RecentSessionData[]>([])
-  const [sessionsToDelete, setSessionsToDelete] = useState<string[]>()
-  const [sessionToRename, setSessionToRename] = useState<string>()
+  const [sessions, setSessions] = useState<RecentSessions>([])
+  const [sessionToRename, setSessionToRename] = useState<RecentSessionData>()
   const [updateSessionsList, setUpdateSessionsList] = useState(0)
-  const [selectedSessions, setSelectedSessions] = useState<string[]>()
-
-  const sessionNames = useMemo(() => Object.keys(sessions || {}), [sessions])
+  const [selectedSessions, setSelectedSessions] = useState<RecentSessions>()
+  const [sessionsToDelete, setSessionsToDelete] = useState<RecentSessions>()
 
   const sortedSessions = useMemo(
     () => sessions?.sort((a, b) => b.updated - a.updated),
@@ -271,7 +277,6 @@ export default function RecentSessionPanel({
     <div>
       <RenameSessionDialog
         sessionToRename={sessionToRename}
-        sessionNames={sessionNames}
         onClose={() => {
           setSessionToRename(undefined)
           setUpdateSessionsList(s => s + 1)

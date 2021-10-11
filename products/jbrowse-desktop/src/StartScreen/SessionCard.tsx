@@ -41,9 +41,9 @@ function RecentSessionCard({
   onRename,
 }: {
   sessionData: RecentSessionData
-  onClick: Function
-  onDelete: Function
-  onRename: Function
+  onClick: (arg: RecentSessionData) => void
+  onDelete: (arg: RecentSessionData) => void
+  onRename: (arg: RecentSessionData) => void
 }) {
   const classes = useStyles()
   const [hovered, setHovered] = useState(false)
@@ -56,7 +56,7 @@ function RecentSessionCard({
         className={classes.card}
         onMouseOver={() => setHovered(true)}
         onMouseOut={() => setHovered(false)}
-        onClick={() => onClick(sessionData.name)}
+        onClick={() => onClick(sessionData)}
         raised={Boolean(hovered)}
       >
         <CardMedia
@@ -98,7 +98,6 @@ function RecentSessionCard({
         />
       </Card>
       <Menu
-        id="simple-menu"
         anchorEl={menuAnchorEl}
         keepMounted
         open={Boolean(menuAnchorEl)}
@@ -107,7 +106,7 @@ function RecentSessionCard({
         <MenuItem
           onClick={() => {
             setMenuAnchorEl(null)
-            onRename(sessionName)
+            onRename(sessionData)
           }}
         >
           <ListItemIcon>
@@ -117,7 +116,7 @@ function RecentSessionCard({
         </MenuItem>
         <MenuItem
           onClick={() => {
-            onDelete(sessionName)
+            onDelete(sessionData)
             setMenuAnchorEl(null)
           }}
         >
