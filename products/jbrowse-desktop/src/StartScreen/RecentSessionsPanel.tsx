@@ -52,11 +52,9 @@ interface RecentSessionData {
   updated: number
 }
 
-type Session = [string, RecentSessionData]
-
 function RecentSessionsList({
   setError,
-  sortedSessions,
+  sessions,
   setSelectedSessions,
   setSessionToRename,
   setPluginManager,
@@ -65,7 +63,7 @@ function RecentSessionsList({
   setSessionToRename: (e: string) => void
   setPluginManager: (pm: PluginManager) => void
   setSelectedSessions: (arg: string[]) => void
-  sortedSessions: Session[]
+  sessions: RecentSessionData[]
 }) {
   const classes = useStyles()
   const columns = [
@@ -120,7 +118,7 @@ function RecentSessionsList({
         if (!value) {
           return null
         }
-        const lastModified = value as Date
+        const lastModified = new Date(value as string)
         const now = Date.now()
         const oneDayLength = 24 * 60 * 60 * 1000
         if (now - lastModified.getTime() < oneDayLength) {
@@ -142,11 +140,11 @@ function RecentSessionsList({
         checkboxSelection
         disableSelectionOnClick
         onSelectionModelChange={args => setSelectedSessions(args as string[])}
-        rows={sortedSessions.map(([sessionName, session]) => ({
-          id: sessionName,
-          name: sessionName,
-          rename: sessionName,
-          delete: sessionName,
+        rows={sessions.map(session => ({
+          id: session.name,
+          name: session.name,
+          rename: session.name,
+          delete: session.name,
           lastModified: session.updated,
         }))}
         rowHeight={25}
@@ -158,7 +156,7 @@ function RecentSessionsList({
 }
 
 function RecentSessionsCards({
-  sortedSessions,
+  sessions,
   setError,
   setSessionsToDelete,
   setSessionToRename,
@@ -168,11 +166,11 @@ function RecentSessionsCards({
   setSessionsToDelete: (e: string[]) => void
   setSessionToRename: (e: string) => void
   setPluginManager: (pm: PluginManager) => void
-  sortedSessions: RecentSessionData[]
+  sessions: RecentSessionData[]
 }) {
   return (
     <Grid container spacing={4}>
-      {sortedSessions?.map(sessionData => (
+      {sessions?.map(sessionData => (
         <Grid item key={sessionData.path}>
           <SessionCard
             sessionData={sessionData}
@@ -311,7 +309,7 @@ export default function RecentSessionPanel({
         displayMode === 'grid' ? (
           <RecentSessionsCards
             setPluginManager={setPluginManager}
-            sortedSessions={sortedSessions}
+            sessions={sortedSessions}
             setError={setError}
             setSessionsToDelete={setSessionsToDelete}
             setSessionToRename={setSessionToRename}
@@ -319,7 +317,7 @@ export default function RecentSessionPanel({
         ) : (
           <RecentSessionsList
             setPluginManager={setPluginManager}
-            sortedSessions={sortedSessions}
+            sessions={sortedSessions}
             setError={setError}
             setSelectedSessions={setSelectedSessions}
             setSessionToRename={setSessionToRename}

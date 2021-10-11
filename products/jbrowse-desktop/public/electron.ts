@@ -244,8 +244,7 @@ ipcMain.handle('loadExternalConfig', (_event: unknown, sessionPath) => {
 })
 
 ipcMain.handle('loadSession', async (_event: unknown, sessionPath: string) => {
-  const data = await readFile(sessionPath, 'utf8')
-  return JSON.parse(data)
+  return JSON.parse(await readFile(sessionPath, 'utf8'))
 })
 
 ipcMain.handle(
@@ -296,8 +295,10 @@ ipcMain.handle(
     } else {
       rows[idx] = entry
     }
-
-    await writeFile(path, JSON.stringify({ ...snap }, null, 2))
+    await Promise.all([
+      writeFile(recentSessionsPath, JSON.stringify(rows, null, 2)),
+      writeFile(path, JSON.stringify(snap, null, 2)),
+    ])
   },
 )
 
