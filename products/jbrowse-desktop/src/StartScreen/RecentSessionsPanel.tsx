@@ -45,12 +45,14 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-interface SessionStats {
-  screenshot: string
-  stats: fs.Stats
+interface RecentSessionData {
+  path: string
+  name: string
+  screenshot?: string
+  updated: number
 }
 
-type Session = [string, SessionStats]
+type Session = [string, RecentSessionData]
 
 function RecentSessionsList({
   setError,
@@ -145,7 +147,7 @@ function RecentSessionsList({
           name: sessionName,
           rename: sessionName,
           delete: sessionName,
-          lastModified: session.stats?.mtime,
+          lastModified: session.updated,
         }))}
         rowHeight={25}
         headerHeight={33}
@@ -166,19 +168,20 @@ function RecentSessionsCards({
   setSessionsToDelete: (e: string[]) => void
   setSessionToRename: (e: string) => void
   setPluginManager: (pm: PluginManager) => void
-  sortedSessions: Session[]
+  sortedSessions: RecentSessionData[]
 }) {
   return (
     <Grid container spacing={4}>
-      {sortedSessions?.map(([name, sessionData]) => (
-        <Grid item key={name}>
+      {sortedSessions?.map(sessionData => (
+        <Grid item key={sessionData.path}>
           <SessionCard
-            sessionName={name}
-            sessionStats={sessionData.stats}
-            sessionScreenshot={sessionData.screenshot}
+            sessionData={sessionData}
             onClick={async () => {
               try {
-                const data = await ipcRenderer.invoke('loadSession', name)
+                const data = await ipcRenderer.invoke(
+                  'loadSession',
+                  sessionData.path,
+                )
                 const pm = await createPluginManager(data)
                 setPluginManager(pm)
               } catch (e) {
@@ -207,10 +210,6 @@ function ToggleButtonWithTooltip(props: ToggleButtonProps) {
   )
 }
 
-const getTime = (a: Session) => {
-  return +a[1].stats?.mtime
-}
-
 export default function RecentSessionPanel({
   setError,
   setPluginManager,
@@ -220,7 +219,7 @@ export default function RecentSessionPanel({
 }) {
   const classes = useStyles()
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
-  const [sessions, setSessions] = useState<Map<string, SessionStats>>(new Map())
+  const [sessions, setSessions] = useState<RecentSessionData[]>([])
   const [sessionsToDelete, setSessionsToDelete] = useState<string[]>()
   const [sessionToRename, setSessionToRename] = useState<string>()
   const [updateSessionsList, setUpdateSessionsList] = useState(0)
@@ -228,11 +227,10 @@ export default function RecentSessionPanel({
 
   const sessionNames = useMemo(() => Object.keys(sessions || {}), [sessions])
 
-  const sortedSessions = useMemo(() => {
-    return sessions
-      ? [...sessions.entries()].sort((a, b) => getTime(b) - getTime(a))
-      : []
-  }, [sessions])
+  const sortedSessions = useMemo(
+    () => sessions?.sort((a, b) => b.updated - a.updated),
+    [sessions],
+  )
 
   useEffect(() => {
     ;(async () => {

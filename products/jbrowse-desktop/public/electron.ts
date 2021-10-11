@@ -7,7 +7,7 @@ import url from 'url'
 import windowStateKeeper from 'electron-window-state'
 import { autoUpdater } from 'electron-updater'
 
-const { unlink, rename, readdir, readFile, writeFile } = fs.promises
+const { unlink, readFile, writeFile } = fs.promises
 
 const { app, ipcMain, shell, BrowserWindow, Menu } = electron
 
@@ -47,6 +47,10 @@ const recentSessionsPath = path.join(
   app.getPath('userData'),
   'recent_sessions.json',
 )
+
+if (!fs.existsSync(recentSessionsPath)) {
+  fs.writeFileSync(recentSessionsPath, JSON.stringify([], null, 2), 'utf8')
+}
 
 interface SessionSnap {
   defaultSession: {
@@ -280,20 +284,20 @@ ipcMain.handle(
       { path: string; updated: number },
     ]
     const idx = rows.findIndex(r => r.path === path)
+    const screenshot = page?.resize({ width: 250 }).toDataURL()
+    const entry = {
+      path,
+      screenshot,
+      updated: +Date.now(),
+      name: snap.defaultSession?.name,
+    }
     if (idx === -1) {
-      rows.unshift({ path, updated: +Date.now() })
+      rows.unshift(entry)
     } else {
-      rows[idx].updated = +Date.now()
+      rows[idx] = entry
     }
 
-    await writeFile(
-      path,
-      JSON.stringify(
-        { ...snap, screenshot: page?.resize({ width: 250 }).toDataURL() },
-        null,
-        2,
-      ),
-    )
+    await writeFile(path, JSON.stringify({ ...snap }, null, 2))
   },
 )
 

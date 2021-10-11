@@ -21,26 +21,26 @@ const useStyles = makeStyles({
     width: 250,
     cursor: 'pointer',
   },
-  cardHeader: {
-    width: 200,
-  },
   media: {
     height: 0,
     paddingTop: '56.25%', // 16:9
   },
 })
 
+interface RecentSessionData {
+  path: string
+  name: string
+  screenshot?: string
+  updated: number
+}
+
 function RecentSessionCard({
-  sessionName,
-  sessionStats,
-  sessionScreenshot = defaultSessionScreenshot,
+  sessionData,
   onClick,
   onDelete,
   onRename,
 }: {
-  sessionName: string
-  sessionStats?: { mtime: Date }
-  sessionScreenshot: string
+  sessionData: RecentSessionData
   onClick: Function
   onDelete: Function
   onRename: Function
@@ -48,6 +48,7 @@ function RecentSessionCard({
   const classes = useStyles()
   const [hovered, setHovered] = useState(false)
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
+  const sessionName = sessionData.name
 
   return (
     <>
@@ -55,10 +56,13 @@ function RecentSessionCard({
         className={classes.card}
         onMouseOver={() => setHovered(true)}
         onMouseOut={() => setHovered(false)}
-        onClick={() => onClick(sessionName)}
+        onClick={() => onClick(sessionData.name)}
         raised={Boolean(hovered)}
       >
-        <CardMedia className={classes.media} image={sessionScreenshot} />
+        <CardMedia
+          className={classes.media}
+          image={sessionData.screenshot || defaultSessionScreenshot}
+        />
         <CardHeader
           action={
             <IconButton
@@ -86,8 +90,8 @@ function RecentSessionCard({
               style={{ width: 178 }}
             >
               Last modified{' '}
-              {sessionStats
-                ? `${sessionStats.mtime.toLocaleString('en-US')}`
+              {sessionData
+                ? `${new Date(sessionData.updated).toLocaleString('en-US')}`
                 : null}
             </Typography>
           }
