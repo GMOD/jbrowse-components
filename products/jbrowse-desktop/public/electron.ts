@@ -243,15 +243,11 @@ ipcMain.handle('listSessions', async () => {
       .map(f => {
         const base = path.basename(f, '.json')
         const json = path.join(sessionDir, base + '.json')
-        const thumb = path.join(sessionDir, base + '.thumbnail')
 
         return [
           decodeURIComponent(base),
           {
             stats: fs.existsSync(json) ? fs.statSync(json) : undefined,
-            screenshot: fs.existsSync(thumb)
-              ? fs.readFileSync(thumb, 'utf8')
-              : undefined,
           },
         ]
       }),
@@ -295,27 +291,34 @@ ipcMain.handle(
     })
   },
 )
-ipcMain.handle('saveSession', async (_event: unknown, snap: SessionSnap) => {
-  const page = await mainWindow?.capturePage()
-  const name = snap.defaultSession.name
-  if (page) {
-    const resizedPage = page.resize({ width: 250 })
-    await writeFile(getPath(name, 'thumbnail'), resizedPage.toDataURL())
-  }
-  await writeFile(getPath(name), JSON.stringify(snap, null, 2))
+ipcMain.handle(
+  'saveSession',
+  async (_event: unknown, path: string, snap: SessionSnap) => {
+    const page = await mainWindow?.capturePage()
+    await writeFile(
+      path,
+      JSON.stringify(
+        { ...snap, screenshot: page?.resize({ width: 250 }).toDataURL() },
+        null,
+        2,
+      ),
+    )
+  },
+)
+
+ipcMain.handle('promptSessionSaveAs', async (_event: unknown) => {
+  const toLocalPath = path.join(app.getPath('desktop'), `session.json`)
+  const choice = await dialog.showSaveDialog({
+    defaultPath: toLocalPath,
+  })
+
+  return choice.filePath
 })
 
 ipcMain.handle(
   'renameSession',
   async (_event: unknown, oldName: string, newName: string) => {
-    try {
-      await rename(getPath(oldName, 'thumbnail'), getPath(newName, 'thumbnail'))
-    } catch (e) {
-      console.error('rename thumbnail failed', e)
-    }
-
     const snap = JSON.parse(await readFile(getPath(oldName), 'utf8'))
-
     snap.defaultSession.name = newName
     await unlink(getPath(oldName))
     await writeFile(getPath(newName), JSON.stringify(snap, null, 2))
@@ -331,11 +334,6 @@ ipcMain.handle('reset', async () => {
 ipcMain.handle(
   'deleteSession',
   async (_event: unknown, sessionName: string) => {
-    try {
-      await unlink(getPath(sessionName, 'thumbnail'))
-    } catch (e) {
-      console.error('delete thumbnail failed', e)
-    }
     return unlink(getPath(sessionName))
   },
 )

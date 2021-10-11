@@ -22,6 +22,7 @@ import { UriLocation } from '@jbrowse/core/util/types'
 import { ipcRenderer } from 'electron'
 
 // icons
+import OpenIcon from '@material-ui/icons/FolderOpen'
 import ExtensionIcon from '@material-ui/icons/Extension'
 import AppsIcon from '@material-ui/icons/Apps'
 import PowerIcon from '@material-ui/icons/Power'
@@ -35,6 +36,13 @@ import JBrowseDesktop from './jbrowseModel'
 import OpenSequenceDialog from './OpenSequenceDialog'
 // @ts-ignore
 import RenderWorker from './rpc.worker'
+
+function getSaveSession(model: RootModel) {
+  return {
+    ...getSnapshot(model.jbrowse),
+    defaultSession: model.session ? getSnapshot(model.session) : {},
+  }
+}
 
 interface Menu {
   label: string
@@ -68,25 +76,26 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         pluginManager.pluggableMstType('internet account', 'stateModel'),
       ),
       isAssemblyEditing: false,
+      sessionPath: types.optional(types.string, ''),
     })
     .volatile(() => ({
-      error: undefined as Error | undefined,
+      error: undefined as unknown,
       textSearchManager: new TextSearchManager(pluginManager),
     }))
     .actions(self => ({
       async saveSession(val: unknown) {
-        await ipcRenderer.invoke('saveSession', {
-          ...getSnapshot(self.jbrowse),
-          defaultSession: val,
-        })
+        await ipcRenderer.invoke('saveSession', self.sessionPath, val)
       },
       setSavedSessionNames(sessionNames: string[]) {
         self.savedSessionNames = cast(sessionNames)
       },
+      setSessionPath(path: string) {
+        self.sessionPath = path
+      },
       setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
         self.session = cast(sessionSnapshot)
       },
-      setError(error: Error) {
+      setError(error: unknown) {
         self.error = error
       },
       setDefaultSession() {
@@ -223,27 +232,37 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           menuItems: [
             {
               label: 'Open',
-              icon: AppsIcon,
-              onClick: () => {
-                self.setSession(undefined)
-              },
+              icon: OpenIcon,
+              onClick: () => {},
             },
             {
               label: 'Save',
               icon: Save,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick: (session: any) => {
-                const rootModel = getParent(session)
-                rootModel.setAssemblyEditing(true)
+              onClick: async () => {
+                if (self.session) {
+                  try {
+                    await self.saveSession(getSaveSession(self as RootModel))
+                  } catch (e) {
+                    console.error(e)
+                    self.session?.notify(`${e}`, 'error')
+                  }
+                }
               },
             },
             {
               label: 'Save as...',
               icon: SaveAs,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick: (session: any) => {
-                const rootModel = getParent(session)
-                rootModel.setAssemblyEditing(true)
+              onClick: async () => {
+                try {
+                  const saveAsPath = await ipcRenderer.invoke(
+                    'promptSessionSaveAs',
+                  )
+                  self.setSessionPath(saveAsPath)
+                  await self.saveSession(getSaveSession(self as RootModel))
+                } catch (e) {
+                  console.error(e)
+                  self.session?.notify(`${e}`, 'error')
+                }
               },
             },
             {
@@ -252,10 +271,13 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             {
               label: 'Open assembly...',
               icon: DNA,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick: (session: any) => {
-                const rootModel = getParent(session)
-                rootModel.setAssemblyEditing(true)
+              onClick: () => {
+                if (self.session) {
+                  self.session.queueDialog(doneCallback => [
+                    OpenSequenceDialog,
+                    { model: self, handleClose: doneCallback },
+                  ])
+                }
               },
             },
             {
@@ -495,7 +517,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           autorun(
             async () => {
               if (self.session) {
-                await self.saveSession(getSnapshot(self.session))
+                await self.saveSession(getSaveSession(self as RootModel))
               }
             },
             { delay: 1000 },

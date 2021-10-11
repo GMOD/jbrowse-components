@@ -3,6 +3,7 @@ import { Button, makeStyles } from '@material-ui/core'
 import PluginManager from '@jbrowse/core/PluginManager'
 import PreloadedDatasetSelector from './PreloadedDatasetSelector'
 import OpenSequenceDialog from '../OpenSequenceDialog'
+import { createPluginManager } from './util'
 
 const useStyles = makeStyles(theme => ({
   form: {
@@ -36,8 +37,20 @@ export default function StartScreenOptionsPanel({
       <PreloadedDatasetSelector setPluginManager={setPluginManager} />
       {sequenceDialogOpen ? (
         <OpenSequenceDialog
-          onClose={() => setSequenceDialogOpen(false)}
-          setPluginManager={setPluginManager}
+          onClose={async (conf: unknown) => {
+            if (conf) {
+              // note this can throw before dialog closes, but this is handled
+              // by the dialog itself
+              const pm = await createPluginManager({
+                assemblies: [conf],
+                defaultSession: {
+                  name: 'New Session ' + new Date().toLocaleString('en-US'),
+                },
+              })
+              setPluginManager(pm)
+            }
+            setSequenceDialogOpen(false)
+          }}
         />
       ) : null}
     </div>
