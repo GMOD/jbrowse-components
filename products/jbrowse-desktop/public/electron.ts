@@ -43,15 +43,10 @@ const devServerUrl = url.parse(
   process.env.DEV_SERVER_URL || 'http://localhost:3000',
 )
 
-const sessionDir = path.join(app.getPath('userData'), 'sessions')
-
-function getPath(sessionName: string, ext = 'json') {
-  return path.join(sessionDir, `${encodeURIComponent(sessionName)}.${ext}`)
-}
-
-if (!fs.lstatSync(sessionDir).isDirectory()) {
-  fs.mkdirSync(sessionDir, { recursive: true })
-}
+const recentSessionsPath = path.join(
+  app.getPath('userData'),
+  'recent_sessions.json',
+)
 
 interface SessionSnap {
   defaultSession: {
@@ -237,29 +232,15 @@ app.on('activate', () => {
 })
 
 ipcMain.handle('listSessions', async () => {
-  return new Map(
-    (await readdir(sessionDir))
-      .filter(f => path.extname(f) === '.json')
-      .map(f => {
-        const base = path.basename(f, '.json')
-        const json = path.join(sessionDir, base + '.json')
-
-        return [
-          decodeURIComponent(base),
-          {
-            stats: fs.existsSync(json) ? fs.statSync(json) : undefined,
-          },
-        ]
-      }),
-  )
+  return JSON.parse(await readFile(recentSessionsPath, 'utf8'))
 })
 
 ipcMain.handle('loadExternalConfig', (_event: unknown, sessionPath) => {
   return readFile(sessionPath, 'utf8')
 })
 
-ipcMain.handle('loadSession', async (_event: unknown, sessionName: string) => {
-  const data = await readFile(getPath(sessionName), 'utf8')
+ipcMain.handle('loadSession', async (_event: unknown, sessionPath: string) => {
+  const data = await readFile(sessionPath, 'utf8')
   return JSON.parse(data)
 })
 
@@ -295,6 +276,16 @@ ipcMain.handle(
   'saveSession',
   async (_event: unknown, path: string, snap: SessionSnap) => {
     const page = await mainWindow?.capturePage()
+    const rows = JSON.parse(fs.readFileSync(recentSessionsPath, 'utf8')) as [
+      { path: string; updated: number },
+    ]
+    const idx = rows.findIndex(r => r.path === path)
+    if (idx === -1) {
+      rows.unshift({ path, updated: +Date.now() })
+    } else {
+      rows[idx].updated = +Date.now()
+    }
+
     await writeFile(
       path,
       JSON.stringify(
@@ -307,7 +298,7 @@ ipcMain.handle(
 )
 
 ipcMain.handle('promptSessionSaveAs', async (_event: unknown) => {
-  const toLocalPath = path.join(app.getPath('desktop'), `session.json`)
+  const toLocalPath = path.join(app.getPath('desktop'), `jbrowse_session.json`)
   const choice = await dialog.showSaveDialog({
     defaultPath: toLocalPath,
   })
@@ -316,25 +307,9 @@ ipcMain.handle('promptSessionSaveAs', async (_event: unknown) => {
 })
 
 ipcMain.handle(
-  'renameSession',
-  async (_event: unknown, oldName: string, newName: string) => {
-    const snap = JSON.parse(await readFile(getPath(oldName), 'utf8'))
-    snap.defaultSession.name = newName
-    await unlink(getPath(oldName))
-    await writeFile(getPath(newName), JSON.stringify(snap, null, 2))
-  },
-)
-
-ipcMain.handle('reset', async () => {
-  await Promise.all(
-    (await readdir(sessionDir)).map(f => unlink(path.join(sessionDir, f))),
-  )
-})
-
-ipcMain.handle(
   'deleteSession',
-  async (_event: unknown, sessionName: string) => {
-    return unlink(getPath(sessionName))
+  async (_event: unknown, sessionPath: string) => {
+    return unlink(sessionPath)
   },
 )
 

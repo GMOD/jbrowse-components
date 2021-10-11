@@ -84,7 +84,9 @@ export default function rootModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       async saveSession(val: unknown) {
-        await ipcRenderer.invoke('saveSession', self.sessionPath, val)
+        if (self.sessionPath) {
+          await ipcRenderer.invoke('saveSession', self.sessionPath, val)
+        }
       },
       setSavedSessionNames(sessionNames: string[]) {
         self.savedSessionNames = cast(sessionNames)
