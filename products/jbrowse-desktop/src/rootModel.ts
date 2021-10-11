@@ -24,11 +24,15 @@ import { ipcRenderer } from 'electron'
 // icons
 import ExtensionIcon from '@material-ui/icons/Extension'
 import AppsIcon from '@material-ui/icons/Apps'
-import { Save, SaveAs } from '@jbrowse/core/ui/Icons'
+import PowerIcon from '@material-ui/icons/Power'
+import StorageIcon from '@material-ui/icons/Storage'
+import MeetingRoomIcon from '@material-ui/icons/MeetingRoom'
+import { Save, SaveAs, DNA } from '@jbrowse/core/ui/Icons'
 
 // locals
 import sessionModelFactory from './sessionModelFactory'
 import JBrowseDesktop from './jbrowseModel'
+import OpenSequenceDialog from './OpenSequenceDialog'
 // @ts-ignore
 import RenderWorker from './rpc.worker'
 
@@ -247,6 +251,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             },
             {
               label: 'Open assembly...',
+              icon: DNA,
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: (session: any) => {
                 const rootModel = getParent(session)
@@ -255,14 +260,29 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             },
             {
               label: 'Open track...',
+              icon: StorageIcon,
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: (session: any) => {
-                const rootModel = getParent(session)
-                rootModel.setAssemblyEditing(true)
+                if (session.views.length === 0) {
+                  session.notify('Please open a view to add a track first')
+                } else if (session.views.length >= 1) {
+                  const widget = session.addWidget(
+                    'AddTrackWidget',
+                    'addTrackWidget',
+                    { view: session.views[0].id },
+                  )
+                  session.showWidget(widget)
+                  if (session.views.length > 1) {
+                    session.notify(
+                      `This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right`,
+                    )
+                  }
+                }
               },
             },
             {
               label: 'Open connection...',
+              icon: PowerIcon,
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: (session: any) => {
                 const rootModel = getParent(session)
@@ -281,6 +301,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             },
             {
               label: 'Exit',
+              icon: MeetingRoomIcon,
               onClick: () => {
                 self.setSession(undefined)
               },
