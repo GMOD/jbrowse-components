@@ -25,7 +25,7 @@ import DeleteIcon from '@material-ui/icons/Delete'
 import EditIcon from '@material-ui/icons/Edit'
 import ViewComfyIcon from '@material-ui/icons/ViewComfy'
 import ListIcon from '@material-ui/icons/List'
-import StarIcon from '@material-ui/icons/Star'
+import PlaylistAddIcon from '@material-ui/icons/PlaylistAdd'
 
 // locals
 import RenameSessionDialog from './dialogs/RenameSessionDialog'
@@ -59,13 +59,11 @@ function RecentSessionsList({
   setSelectedSessions,
   setSessionToRename,
   setPluginManager,
-  addToQuickstartList,
 }: {
   setError: (e: unknown) => void
   setSessionToRename: (e: string) => void
   setPluginManager: (pm: PluginManager) => void
   setSelectedSessions: (arg: string[]) => void
-  addToQuickstartList: (arg: string) => void
   sortedSessions: Session[]
 }) {
   const classes = useStyles()
@@ -83,24 +81,6 @@ function RecentSessionsList({
           <IconButton onClick={() => setSessionToRename(value as string)}>
             <Tooltip title="Rename session">
               <EditIcon />
-            </Tooltip>
-          </IconButton>
-        )
-      },
-    },
-    {
-      field: 'quickstart',
-      minWidth: 40,
-      width: 40,
-      sortable: false,
-      filterable: false,
-      headerName: ' ',
-      renderCell: (params: GridCellParams) => {
-        const { value } = params
-        return (
-          <IconButton onClick={() => addToQuickstartList(value as string)}>
-            <Tooltip title="Add to quickstart list">
-              <StarIcon />
             </Tooltip>
           </IconButton>
         )
@@ -249,7 +229,6 @@ export default function RecentSessionPanel({
   const [sessionToRename, setSessionToRename] = useState<string>()
   const [updateSessionsList, setUpdateSessionsList] = useState(0)
   const [selectedSessions, setSelectedSessions] = useState<string[]>()
-
   const sessionNames = useMemo(() => Object.keys(sessions || {}), [sessions])
 
   const sortedSessions = useMemo(() => {
@@ -285,8 +264,10 @@ export default function RecentSessionPanel({
     )
   }
 
-  async function addToQuickstartList(arg: string) {
-    await ipcRenderer.invoke('addToQuickstartList', arg)
+  async function addToQuickstartList(arg: string[]) {
+    await Promise.all(
+      arg.map(session => ipcRenderer.invoke('addToQuickstartList', session)),
+    )
   }
 
   return (
@@ -334,13 +315,21 @@ export default function RecentSessionPanel({
           >
             <DeleteIcon />
           </ToggleButtonWithTooltip>
+          <ToggleButtonWithTooltip
+            value="quickstart"
+            title="Add sessions to quickstart list"
+            disabled={!selectedSessions?.length}
+            onClick={() => addToQuickstartList(selectedSessions || [])}
+          >
+            <PlaylistAddIcon />
+          </ToggleButtonWithTooltip>
         </ToggleButtonGroup>
       </FormControl>
 
       {sortedSessions.length ? (
         displayMode === 'grid' ? (
           <RecentSessionsCards
-            addToQuickstartList={addToQuickstartList}
+            addToQuickstartList={entry => addToQuickstartList([entry])}
             setPluginManager={setPluginManager}
             sortedSessions={sortedSessions}
             setError={setError}
@@ -349,7 +338,6 @@ export default function RecentSessionPanel({
           />
         ) : (
           <RecentSessionsList
-            addToQuickstartList={addToQuickstartList}
             setPluginManager={setPluginManager}
             sortedSessions={sortedSessions}
             setError={setError}
