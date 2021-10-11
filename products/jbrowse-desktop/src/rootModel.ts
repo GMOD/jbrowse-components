@@ -1,15 +1,3 @@
-import assemblyManagerFactory, {
-  assemblyConfigSchemas as AssemblyConfigSchemasFactory,
-} from '@jbrowse/core/assemblyManager'
-import { autorun } from 'mobx'
-import PluginManager from '@jbrowse/core/PluginManager'
-import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { MenuItem } from '@jbrowse/core/ui'
-import SettingsIcon from '@material-ui/icons/Settings'
-import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import AppsIcon from '@material-ui/icons/Apps'
-import { UriLocation } from '@jbrowse/core/util/types'
-import electron from 'electron'
 import {
   addDisposer,
   cast,
@@ -20,12 +8,30 @@ import {
   SnapshotIn,
   Instance,
 } from 'mobx-state-tree'
+
+import { autorun } from 'mobx'
+
+import assemblyManagerFactory, {
+  assemblyConfigSchemas as AssemblyConfigSchemasFactory,
+} from '@jbrowse/core/assemblyManager'
+import PluginManager from '@jbrowse/core/PluginManager'
+import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import { MenuItem } from '@jbrowse/core/ui'
+import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import { UriLocation } from '@jbrowse/core/util/types'
+import { ipcRenderer } from 'electron'
+
+// icons
+import ExtensionIcon from '@material-ui/icons/Extension'
+import AppsIcon from '@material-ui/icons/Apps'
+import { Save, SaveAs } from '@jbrowse/core/ui/Icons'
+
+// locals
+import sessionModelFactory from './sessionModelFactory'
 import JBrowseDesktop from './jbrowseModel'
 // @ts-ignore
 import RenderWorker from './rpc.worker'
-import sessionModelFactory from './sessionModelFactory'
 
-const { ipcRenderer } = electron
 interface Menu {
   label: string
   menuItems: MenuItem[]
@@ -212,6 +218,61 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           label: 'File',
           menuItems: [
             {
+              label: 'Open',
+              icon: AppsIcon,
+              onClick: () => {
+                self.setSession(undefined)
+              },
+            },
+            {
+              label: 'Save',
+              icon: Save,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onClick: (session: any) => {
+                const rootModel = getParent(session)
+                rootModel.setAssemblyEditing(true)
+              },
+            },
+            {
+              label: 'Save as...',
+              icon: SaveAs,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onClick: (session: any) => {
+                const rootModel = getParent(session)
+                rootModel.setAssemblyEditing(true)
+              },
+            },
+            {
+              type: 'divider',
+            },
+            {
+              label: 'Open assembly...',
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onClick: (session: any) => {
+                const rootModel = getParent(session)
+                rootModel.setAssemblyEditing(true)
+              },
+            },
+            {
+              label: 'Open track...',
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onClick: (session: any) => {
+                const rootModel = getParent(session)
+                rootModel.setAssemblyEditing(true)
+              },
+            },
+            {
+              label: 'Open connection...',
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onClick: (session: any) => {
+                const rootModel = getParent(session)
+                rootModel.setAssemblyEditing(true)
+              },
+            },
+            {
+              type: 'divider',
+            },
+            {
               label: 'Return to start screen',
               icon: AppsIcon,
               onClick: () => {
@@ -219,12 +280,31 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               },
             },
             {
-              label: 'Open assembly manager',
-              icon: SettingsIcon,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick: (session: any) => {
-                const rootModel = getParent(session)
-                rootModel.setAssemblyEditing(true)
+              label: 'Exit',
+              onClick: () => {
+                self.setSession(undefined)
+              },
+            },
+          ],
+        },
+        {
+          label: 'Add',
+          menuItems: [],
+        },
+        {
+          label: 'Tools',
+          menuItems: [
+            {
+              label: 'Plugin store',
+              icon: ExtensionIcon,
+              onClick: () => {
+                if (self.session) {
+                  const widget = self.session.addWidget(
+                    'PluginStoreWidget',
+                    'pluginStoreWidget',
+                  )
+                  self.session.showWidget(widget)
+                }
               },
             },
           ],
