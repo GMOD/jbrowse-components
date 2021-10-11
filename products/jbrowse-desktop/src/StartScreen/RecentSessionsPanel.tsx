@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import fs from 'fs'
 import {
   CircularProgress,
   FormControl,
@@ -154,7 +153,6 @@ function RecentSessionsList({
         checkboxSelection
         disableSelectionOnClick
         onSelectionModelChange={args => {
-          console.log(sessions.filter(session => args.includes(session.path)))
           setSelectedSessions(
             sessions.filter(session => args.includes(session.path)),
           )

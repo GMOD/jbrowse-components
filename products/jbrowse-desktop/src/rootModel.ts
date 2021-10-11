@@ -2,7 +2,6 @@ import {
   addDisposer,
   cast,
   resolveIdentifier,
-  getParent,
   getSnapshot,
   types,
   SnapshotIn,

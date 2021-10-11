@@ -3,9 +3,6 @@ import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { SessionWithWidgets, isAbstractMenuManager } from '@jbrowse/core/util'
-import NoteAddIcon from '@material-ui/icons/NoteAdd'
-import InputIcon from '@material-ui/icons/Input'
 import {
   configSchema as ucscConfigSchema,
   modelFactory as ucscModelFactory,
