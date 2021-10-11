@@ -41,8 +41,8 @@ import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 import GetAppIcon from '@material-ui/icons/GetApp'
 import PublishIcon from '@material-ui/icons/Publish'
 import StorageIcon from '@material-ui/icons/Storage'
-import PowerIcon from '@material-ui/icons/Power'
 import SaveIcon from '@material-ui/icons/Save'
+import { Cable } from '@jbrowse/core/ui/Icons'
 
 // other
 import corePlugins from './corePlugins'
@@ -525,7 +525,7 @@ export default function RootModel(
             },
             {
               label: 'Open connection...',
-              icon: PowerIcon,
+              icon: Cable,
               onClick: () => {
                 if (self.session) {
                   const widget = self.session.addWidget(

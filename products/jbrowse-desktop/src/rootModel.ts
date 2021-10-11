@@ -24,10 +24,9 @@ import { ipcRenderer } from 'electron'
 import OpenIcon from '@material-ui/icons/FolderOpen'
 import ExtensionIcon from '@material-ui/icons/Extension'
 import AppsIcon from '@material-ui/icons/Apps'
-import PowerIcon from '@material-ui/icons/Power'
 import StorageIcon from '@material-ui/icons/Storage'
 import MeetingRoomIcon from '@material-ui/icons/MeetingRoom'
-import { Save, SaveAs, DNA } from '@jbrowse/core/ui/Icons'
+import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 
 // locals
 import sessionModelFactory from './sessionModelFactory'
@@ -302,7 +301,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             },
             {
               label: 'Open connection...',
-              icon: PowerIcon,
+              icon: Cable,
               onClick: () => {
                 if (self.session) {
                   const widget = self.session.addWidget(
