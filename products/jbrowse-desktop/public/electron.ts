@@ -45,6 +45,8 @@ const devServerUrl = url.parse(
   process.env.DEV_SERVER_URL || 'http://localhost:3000',
 )
 
+const defaultSessionName = `jbrowse_session.json`
+
 const recentSessionsPath = path.join(
   app.getPath('userData'),
   'recent_sessions.json',
@@ -305,7 +307,7 @@ ipcMain.handle(
 )
 
 ipcMain.handle('promptSessionSaveAs', async (_event: unknown) => {
-  const toLocalPath = path.join(app.getPath('desktop'), `jbrowse_session.json`)
+  const toLocalPath = path.join(app.getPath('desktop'), defaultSessionName)
   const choice = await dialog.showSaveDialog({
     defaultPath: toLocalPath,
   })
@@ -316,12 +318,26 @@ ipcMain.handle('promptSessionSaveAs', async (_event: unknown) => {
 ipcMain.handle(
   'deleteSession',
   async (_event: unknown, sessionPath: string) => {
-    return unlink(sessionPath)
+    const sessions = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as {
+      path: string
+      name: string
+    }[]
+
+    const idx = sessions.findIndex(row => row.path === sessionPath)
+    if (idx !== -1) {
+      sessions.splice(idx, 1)
+    } else {
+      throw new Error(`Session at ${path} not found`)
+    }
+
+    await Promise.all([
+      writeFile(recentSessionsPath, stringify(sessions)),
+      unlink(sessionPath).catch(e => console.error(e)),
+    ])
   },
 )
 
 /// from https://github.com/iffy/electron-updater-example/blob/master/main.js
-//
 autoUpdater.on('checking-for-update', () => {
   sendStatusToWindow('Checking for update...')
 })

@@ -274,7 +274,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                 if (self.session) {
                   self.session.queueDialog(doneCallback => [
                     OpenSequenceDialog,
-                    { model: self, handleClose: doneCallback },
+                    { model: self, onClose: doneCallback },
                   ])
                 }
               },
@@ -304,10 +304,14 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             {
               label: 'Open connection...',
               icon: PowerIcon,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick: (session: any) => {
-                const rootModel = getParent(session)
-                rootModel.setAssemblyEditing(true)
+              onClick: () => {
+                if (self.session) {
+                  const widget = self.session.addWidget(
+                    'AddConnectionWidget',
+                    'addConnectionWidget',
+                  )
+                  self.session.showWidget(widget)
+                }
               },
             },
             {
