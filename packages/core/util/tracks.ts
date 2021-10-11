@@ -160,6 +160,17 @@ export function guessAdapter(
     }
   }
 
+  if (/\.gtf?\.b?gz$/i.test(fileName) || adapterHint === 'GtfTabixAdapter') {
+    return {
+      type: 'GtfTabixAdapter',
+      gffGzLocation: file,
+      index: {
+        location: index || makeIndex(file, '.tbi'),
+        indexType: makeIndexType(indexName, 'CSI', 'TBI'),
+      },
+    }
+  }
+
   if (/\.gtf?$/i.test(fileName)) {
     return {
       type: 'UNSUPPORTED',
