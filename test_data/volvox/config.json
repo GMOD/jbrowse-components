@@ -1502,6 +1502,26 @@
       }
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "gtf_test",
+      "category": ["Miscellaneous"],
+      "name": "the gtf test",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "GtfTabixAdapter",
+        "gtfGzLocation": {
+          "uri": "volvox.sorted.gtf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sorted.gtf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
       "type": "VariantTrack",
       "trackId": "volvox.inv.vcf",
       "name": "volvox inversions",
