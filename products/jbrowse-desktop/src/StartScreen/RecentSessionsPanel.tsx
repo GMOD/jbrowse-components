@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import {
+  Checkbox,
   CircularProgress,
   FormControl,
+  FormControlLabel,
   Grid,
   IconButton,
   Link,
@@ -29,7 +31,7 @@ import PlaylistAddIcon from '@material-ui/icons/PlaylistAdd'
 // locals
 import RenameSessionDialog from './dialogs/RenameSessionDialog'
 import DeleteSessionDialog from './dialogs/DeleteSessionDialog'
-import { useLocalStorage, createPluginManager } from './util'
+import { useLocalStorage, loadPluginManager } from './util'
 import SessionCard from './SessionCard'
 
 const useStyles = makeStyles(theme => ({
@@ -99,12 +101,7 @@ function RecentSessionsList({
             className={classes.pointer}
             onClick={async () => {
               try {
-                const data = await ipcRenderer.invoke(
-                  'loadSession',
-                  params.row.path,
-                )
-                const pm = await createPluginManager(data)
-                setPluginManager(pm)
+                setPluginManager(await loadPluginManager(params.row.path))
               } catch (e) {
                 console.error(e)
                 setError(e)
@@ -197,9 +194,7 @@ function RecentSessionsCards({
             sessionData={session}
             onClick={async () => {
               try {
-                const pm = await createPluginManager(
-                  await ipcRenderer.invoke('loadSession', session.path),
-                )
+                const pm = await loadPluginManager(session.path)
                 setPluginManager(pm)
               } catch (e) {
                 console.error(e)
@@ -242,6 +237,10 @@ export default function RecentSessionPanel({
   const [updateSessionsList, setUpdateSessionsList] = useState(0)
   const [selectedSessions, setSelectedSessions] = useState<RecentSessions>()
   const [sessionsToDelete, setSessionsToDelete] = useState<RecentSessions>()
+  const [showAutosaves, setShowAutosaves] = useLocalStorage(
+    'showAutosaves',
+    'false',
+  )
 
   const sortedSessions = useMemo(
     () => sessions?.sort((a, b) => b.updated - a.updated),
@@ -251,14 +250,17 @@ export default function RecentSessionPanel({
   useEffect(() => {
     ;(async () => {
       try {
-        const sessions = await ipcRenderer.invoke('listSessions')
+        const sessions = await ipcRenderer.invoke(
+          'listSessions',
+          showAutosaves === 'true',
+        )
         setSessions(sessions)
       } catch (e) {
         console.error(e)
         setError(e)
       }
     })()
-  }, [setError, updateSessionsList])
+  }, [setError, updateSessionsList, showAutosaves])
 
   if (!sessions) {
     return (
@@ -337,6 +339,18 @@ export default function RecentSessionPanel({
           </ToggleButtonWithTooltip>
         </ToggleButtonGroup>
       </FormControl>
+
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={showAutosaves === 'true'}
+            onChange={() =>
+              setShowAutosaves(showAutosaves === 'true' ? 'false' : 'true')
+            }
+          />
+        }
+        label="Show autosaves"
+      />
 
       {sortedSessions.length ? (
         displayMode === 'grid' ? (

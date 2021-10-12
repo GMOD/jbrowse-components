@@ -3,6 +3,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import { readConfObject } from '@jbrowse/core/configuration'
 import deepmerge from 'deepmerge'
+import { ipcRenderer } from 'electron'
 
 import JBrowseRootModelFactory from '../rootModel'
 import corePlugins from '../corePlugins'
@@ -50,6 +51,14 @@ const defaultInternetAccounts = [
   },
 ]
 
+export async function loadPluginManager(filePath: string) {
+  const snap = await ipcRenderer.invoke('loadSession', filePath)
+  const pm = await createPluginManager(snap)
+  // @ts-ignore
+  pm.rootModel?.setSessionPath(filePath)
+  return pm
+}
+
 export async function createPluginManager(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   configSnapshot: any,
@@ -79,9 +88,9 @@ export async function createPluginManager(
 
   const ids = jbrowse.internetAccounts.map(o => o.internetAccountId)
 
+  // remove duplicates while mixing in default internet accounts
   jbrowse.internetAccounts = jbrowse.internetAccounts.filter(
-    ({ internetAccountId }, index) =>
-      !ids.includes(internetAccountId, index + 1),
+    (arg, index) => !ids.includes(arg.internetAccountId, index + 1),
   )
 
   const rootModel = JBrowseRootModel.create(

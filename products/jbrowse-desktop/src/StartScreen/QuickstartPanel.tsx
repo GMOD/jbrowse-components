@@ -22,7 +22,7 @@ import { ipcRenderer } from 'electron'
 import deepmerge from 'deepmerge'
 
 // locals
-import { createPluginManager } from './util'
+import { loadPluginManager } from './util'
 
 const useStyles = makeStyles(theme => ({
   button: {
@@ -43,7 +43,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function PreloadedDatasetSelector({
+function QuickstartPanel({
   setPluginManager,
 }: {
   setPluginManager: (arg0: PluginManager) => void
@@ -111,8 +111,11 @@ function PreloadedDatasetSelector({
           config.defaultSession.name = `New session ${new Date().toLocaleString(
             'en-US',
           )}`
-          const pm = await createPluginManager(config)
-          setPluginManager(pm)
+          const path = await ipcRenderer.invoke(
+            'createInitialAutosaveFile',
+            config,
+          )
+          setPluginManager(await loadPluginManager(path))
         }}
         variant="contained"
         color="primary"
@@ -211,4 +214,4 @@ function PreloadedDatasetSelector({
   )
 }
 
-export default PreloadedDatasetSelector
+export default QuickstartPanel

@@ -51,9 +51,14 @@ const defaultSessionName = `jbrowse_session.json`
 const userData = app.getPath('userData')
 const recentSessionsPath = path.join(userData, 'recent_sessions.json')
 const quickstartDir = path.join(userData, 'quickstart')
+const autosaveDir = path.join(userData, 'autosaved')
 
 function getQuickstartPath(sessionName: string, ext = 'json') {
   return path.join(quickstartDir, `${encodeURIComponent(sessionName)}.${ext}`)
+}
+
+function getAutosavePath(sessionName: string, ext = 'json') {
+  return path.join(autosaveDir, `${encodeURIComponent(sessionName)}.${ext}`)
 }
 
 if (!fs.existsSync(recentSessionsPath)) {
@@ -62,6 +67,10 @@ if (!fs.existsSync(recentSessionsPath)) {
 
 if (!fs.existsSync(quickstartDir)) {
   fs.mkdirSync(quickstartDir, { recursive: true })
+}
+
+if (!fs.existsSync(autosaveDir)) {
+  fs.mkdirSync(autosaveDir, { recursive: true })
 }
 
 interface SessionSnap {
@@ -268,9 +277,20 @@ ipcMain.handle('quit', () => {
   app.quit()
 })
 
-ipcMain.handle('listSessions', async () => {
-  return JSON.parse(await readFile(recentSessionsPath, 'utf8'))
-})
+ipcMain.handle(
+  'listSessions',
+  async (_event: unknown, showAutosaves: boolean) => {
+    const sessions = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as {
+      path: string
+    }[]
+
+    if (!showAutosaves) {
+      return sessions.filter(f => !f.path.startsWith(autosaveDir))
+    } else {
+      return sessions
+    }
+  },
+)
 
 ipcMain.handle('loadExternalConfig', (_event: unknown, sessionPath) => {
   return readFile(sessionPath, 'utf8')
@@ -341,6 +361,36 @@ ipcMain.handle(
     })
   },
 )
+
+// creates an initial entry in autosave folder
+ipcMain.handle(
+  'createInitialAutosaveFile',
+  async (_event: unknown, snap: SessionSnap) => {
+    const rows = JSON.parse(fs.readFileSync(recentSessionsPath, 'utf8')) as [
+      { path: string; updated: number },
+    ]
+    const idx = rows.findIndex(r => r.path === path)
+    const path = getAutosavePath(`${+Date.now()}`)
+    const entry = {
+      path,
+      updated: +Date.now(),
+      name: snap.defaultSession?.name,
+    }
+    if (idx === -1) {
+      rows.unshift(entry)
+    } else {
+      rows[idx] = entry
+    }
+    await Promise.all([
+      writeFile(recentSessionsPath, stringify(rows)),
+      writeFile(path, stringify(snap)),
+    ])
+
+    return path
+  },
+)
+
+// snapshots page and saves to path
 ipcMain.handle(
   'saveSession',
   async (_event: unknown, path: string, snap: SessionSnap) => {
@@ -367,7 +417,6 @@ ipcMain.handle(
     ])
   },
 )
-
 
 ipcMain.handle('promptOpenFile', async (_event: unknown) => {
   const toLocalPath = path.join(app.getPath('desktop'), defaultSessionName)

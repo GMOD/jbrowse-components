@@ -5,7 +5,7 @@ import { CssBaseline, ThemeProvider, makeStyles } from '@material-ui/core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { StringParam, useQueryParam } from 'use-query-params'
 import { ipcRenderer } from 'electron'
-import { createPluginManager } from './StartScreen/util'
+import { loadPluginManager } from './StartScreen/util'
 
 import JBrowse from './JBrowse'
 import StartScreen from './StartScreen'
@@ -77,10 +77,10 @@ const Loader = observer(() => {
       // @ts-ignore
       pm.rootModel?.setOpenNewSessionCallback(async () => {
         const path = await ipcRenderer.invoke('promptOpenFile')
-        const data = await ipcRenderer.invoke('loadSession', path)
-        const pm = await createPluginManager(data)
-        handleSetPluginManager(pm)
+        handleSetPluginManager(await loadPluginManager(path))
       })
+
+      // @ts-ignore
       setPluginManager(pm)
       setError(undefined)
       setSnapshotError('')
@@ -93,9 +93,7 @@ const Loader = observer(() => {
     ;(async () => {
       if (config) {
         try {
-          const data = await ipcRenderer.invoke('loadSession', config)
-          const pm = await createPluginManager(data)
-          handleSetPluginManager(pm)
+          handleSetPluginManager(await loadPluginManager(config))
         } catch (e) {
           handleError(e)
         }

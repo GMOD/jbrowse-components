@@ -79,7 +79,9 @@ export default function rootModelFactory(pluginManager: PluginManager) {
     .volatile(() => ({
       error: undefined as unknown,
       textSearchManager: new TextSearchManager(pluginManager),
-      openNewSessionCallback: () => { console.error('openNewSessionCallback unimplemented') }
+      openNewSessionCallback: () => {
+        console.error('openNewSessionCallback unimplemented')
+      },
     }))
     .actions(self => ({
       async saveSession(val: unknown) {
@@ -237,7 +239,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               onClick: async () => {
                 try {
                   await self.openNewSessionCallback()
-                } catch(e) {
+                } catch (e) {
                   console.error(e)
                   self.session?.notify(`${e}`, 'error')
                 }
@@ -392,8 +394,13 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         }
 
         const url = window.location.href.split('?')[0]
-        const name = self.session?.name || ''
-        window.location.href = `${url}?config=${encodeURIComponent(name)}`
+        if (!self.sessionPath) {
+          self.session?.notify('You must save your session first')
+        } else {
+          window.location.href = `${url}?config=${encodeURIComponent(
+            self.sessionPath,
+          )}`
+        }
       },
       /**
        * Add a top-level menu

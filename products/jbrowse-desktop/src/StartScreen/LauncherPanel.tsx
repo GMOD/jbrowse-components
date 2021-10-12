@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { Button, Typography, makeStyles } from '@material-ui/core'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { ipcRenderer } from 'electron'
 import QuickstartPanel from './QuickstartPanel'
 import OpenSequenceDialog from '../OpenSequenceDialog'
-import { createPluginManager } from './util'
+import { loadPluginManager } from './util'
 
 const useStyles = makeStyles(theme => ({
   form: {
@@ -50,13 +51,16 @@ export default function StartScreenOptionsPanel({
             if (conf) {
               // note this can throw before dialog closes, but this is handled
               // by the dialog itself
-              const pm = await createPluginManager({
-                assemblies: [conf],
-                defaultSession: {
-                  name: 'New Session ' + new Date().toLocaleString('en-US'),
+              const path = await ipcRenderer.invoke(
+                'createInitialAutosaveFile',
+                {
+                  assemblies: [conf],
+                  defaultSession: {
+                    name: 'New Session ' + new Date().toLocaleString('en-US'),
+                  },
                 },
-              })
-              setPluginManager(pm)
+              )
+              setPluginManager(await loadPluginManager(path))
             }
             setSequenceDialogOpen(false)
           }}
