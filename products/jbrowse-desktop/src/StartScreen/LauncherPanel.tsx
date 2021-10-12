@@ -26,6 +26,9 @@ export default function StartScreenOptionsPanel({
   const [sequenceDialogOpen, setSequenceDialogOpen] = useState(false)
   return (
     <div className={classes.form}>
+      <Typography variant="h6" style={{ marginBottom: 5 }}>
+        Select a sequence file e.g. FASTA file
+      </Typography>
       <Button
         variant="contained"
         color="primary"
@@ -34,7 +37,13 @@ export default function StartScreenOptionsPanel({
       >
         Open sequence file
       </Button>
-      <PreloadedDatasetSelector setPluginManager={setPluginManager} />
+      <div style={{ width: '50%' }}>
+        <Typography style={{ textAlign: 'center' }} variant="h6">
+          -or-
+        </Typography>
+      </div>
+      <QuickstartPanel setPluginManager={setPluginManager} />
+
       {sequenceDialogOpen ? (
         <OpenSequenceDialog
           onClose={async (conf: unknown) => {

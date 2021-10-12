@@ -12,6 +12,7 @@ import {
   makeStyles,
 } from '@material-ui/core'
 
+import PlaylistAddIcon from '@material-ui/icons/PlaylistAdd'
 import DeleteIcon from '@material-ui/icons/Delete'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import TextFieldsIcon from '@material-ui/icons/TextFields'
@@ -44,6 +45,7 @@ function RecentSessionCard({
   onClick: (arg: RecentSessionData) => void
   onDelete: (arg: RecentSessionData) => void
   onRename: (arg: RecentSessionData) => void
+  onAddToQuickstartList: (arg: RecentSessionData) => void
 }) {
   const classes = useStyles()
   const [hovered, setHovered] = useState(false)
@@ -124,6 +126,17 @@ function RecentSessionCard({
             <DeleteIcon color="secondary" />
           </ListItemIcon>
           <Typography variant="inherit">Delete</Typography>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            onAddToQuickstartList(sessionData)
+            setMenuAnchorEl(null)
+          }}
+        >
+          <ListItemIcon>
+            <PlaylistAddIcon color="secondary" />
+          </ListItemIcon>
+          <Typography variant="inherit">Add to quickstart list</Typography>
         </MenuItem>
       </Menu>
     </>

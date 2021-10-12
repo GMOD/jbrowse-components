@@ -24,6 +24,7 @@ import DeleteIcon from '@material-ui/icons/Delete'
 import EditIcon from '@material-ui/icons/Edit'
 import ViewComfyIcon from '@material-ui/icons/ViewComfy'
 import ListIcon from '@material-ui/icons/List'
+import PlaylistAddIcon from '@material-ui/icons/PlaylistAdd'
 
 // locals
 import RenameSessionDialog from './dialogs/RenameSessionDialog'
@@ -179,12 +180,14 @@ function RecentSessionsCards({
   setSessionsToDelete,
   setSessionToRename,
   setPluginManager,
+  addToQuickstartList,
 }: {
   setError: (e: unknown) => void
   setSessionsToDelete: (e: RecentSessionData[]) => void
   setSessionToRename: (arg: RecentSessionData) => void
   setPluginManager: (pm: PluginManager) => void
   sessions: RecentSessionData[]
+  addToQuickstartList: (arg: RecentSessionData) => void
 }) {
   return (
     <Grid container spacing={4}>
@@ -205,6 +208,7 @@ function RecentSessionsCards({
             }}
             onDelete={del => setSessionsToDelete([del])}
             onRename={setSessionToRename}
+            onAddToQuickstartList={addToQuickstartList}
           />
         </Grid>
       ))}
@@ -271,6 +275,12 @@ export default function RecentSessionPanel({
     )
   }
 
+  async function addToQuickstartList(arg: string[]) {
+    await Promise.all(
+      arg.map(session => ipcRenderer.invoke('addToQuickstartList', session)),
+    )
+  }
+
   return (
     <div>
       <RenameSessionDialog
@@ -315,12 +325,21 @@ export default function RecentSessionPanel({
           >
             <DeleteIcon />
           </ToggleButtonWithTooltip>
+          <ToggleButtonWithTooltip
+            value="quickstart"
+            title="Add sessions to quickstart list"
+            disabled={!selectedSessions?.length}
+            onClick={() => addToQuickstartList(selectedSessions || [])}
+          >
+            <PlaylistAddIcon />
+          </ToggleButtonWithTooltip>
         </ToggleButtonGroup>
       </FormControl>
 
       {sortedSessions.length ? (
         displayMode === 'grid' ? (
           <RecentSessionsCards
+            addToQuickstartList={entry => addToQuickstartList([entry])}
             setPluginManager={setPluginManager}
             sessions={sortedSessions}
             setError={setError}

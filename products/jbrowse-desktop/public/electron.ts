@@ -6,8 +6,9 @@ import path from 'path'
 import url from 'url'
 import windowStateKeeper from 'electron-window-state'
 import { autoUpdater } from 'electron-updater'
+import fetch from 'node-fetch'
 
-const { unlink, readFile, writeFile } = fs.promises
+const { unlink, readFile, copyFile, writeFile } = fs.promises
 
 const { app, ipcMain, shell, BrowserWindow, Menu } = electron
 
@@ -52,8 +53,16 @@ const recentSessionsPath = path.join(
   'recent_sessions.json',
 )
 
+function getQuickstartPath(sessionName: string, ext = 'json') {
+  return path.join(quickstartDir, `${encodeURIComponent(sessionName)}.${ext}`)
+}
+
 if (!fs.existsSync(recentSessionsPath)) {
   fs.writeFileSync(recentSessionsPath, stringify([]), 'utf8')
+}
+
+if (!fs.existsSync(quickstartDir)) {
+  fs.mkdirSync(quickstartDir, { recursive: true })
 }
 
 interface SessionSnap {
@@ -67,6 +76,23 @@ interface SessionSnap {
 let mainWindow: electron.BrowserWindow | null
 
 async function createWindow() {
+  const response = await fetch('https://jbrowse.org/genomes/sessions.json')
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status} ${response.statusText}`)
+  }
+  const data = await response.json()
+  Object.entries(data).forEach(([key, value]) => {
+    // if there is not a 'gravestone' (.deleted file), then repopulate it on
+    // startup, this allows the user to delete even defaults if they want to
+    if (!fs.existsSync(getQuickstartPath(key) + '.deleted')) {
+      fs.writeFileSync(
+        getQuickstartPath(key),
+        JSON.stringify(value, null, 2),
+        'utf8',
+      )
+    }
+  })
+
   const mainWindowState = windowStateKeeper({
     defaultWidth: 1400,
     defaultHeight: 800,
@@ -341,24 +367,6 @@ ipcMain.handle(
   },
 )
 
-/// from https://github.com/iffy/electron-updater-example/blob/master/main.js
-autoUpdater.on('checking-for-update', () => {
-  sendStatusToWindow('Checking for update...')
-})
-
-autoUpdater.on('error', err => {
-  sendStatusToWindow('Error in auto-updater. ' + err)
-})
-
-autoUpdater.on('update-downloaded', () => {
-  dialog.showMessageBox({
-    type: 'info',
-    title: 'Update completed',
-    message:
-      'Update downloaded, the update will take place when you restart the app',
-    buttons: ['OK'],
-  })
-})
 
 ipcMain.handle(
   'renameSession',
@@ -382,3 +390,24 @@ ipcMain.handle(
     ])
   },
 )
+
+
+/// from https://github.com/iffy/electron-updater-example/blob/master/main.js
+autoUpdater.on('checking-for-update', () => {
+  sendStatusToWindow('Checking for update...')
+})
+
+autoUpdater.on('error', err => {
+  sendStatusToWindow('Error in auto-updater. ' + err)
+})
+
+autoUpdater.on('update-downloaded', () => {
+  dialog.showMessageBox({
+    type: 'info',
+    title: 'Update completed',
+    message:
+      'Update downloaded, the update will take place when you restart the app',
+    buttons: ['OK'],
+  })
+})
+
