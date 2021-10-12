@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { Button, makeStyles } from '@material-ui/core'
+import { Button, Typography, makeStyles } from '@material-ui/core'
 import PluginManager from '@jbrowse/core/PluginManager'
-import PreloadedDatasetSelector from './PreloadedDatasetSelector'
+import QuickstartPanel from './QuickstartPanel'
 import OpenSequenceDialog from '../OpenSequenceDialog'
 import { createPluginManager } from './util'
 

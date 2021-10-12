@@ -40,6 +40,7 @@ function RecentSessionCard({
   onClick,
   onDelete,
   onRename,
+  onAddToQuickstartList,
 }: {
   sessionData: RecentSessionData
   onClick: (arg: RecentSessionData) => void

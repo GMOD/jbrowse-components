@@ -48,10 +48,9 @@ const devServerUrl = url.parse(
 
 const defaultSessionName = `jbrowse_session.json`
 
-const recentSessionsPath = path.join(
-  app.getPath('userData'),
-  'recent_sessions.json',
-)
+const userData = app.getPath('userData')
+const recentSessionsPath = path.join(userData, 'recent_sessions.json')
+const quickstartDir = path.join(userData, 'quickstart')
 
 function getQuickstartPath(sessionName: string, ext = 'json') {
   return path.join(quickstartDir, `${encodeURIComponent(sessionName)}.${ext}`)
@@ -367,7 +366,6 @@ ipcMain.handle(
   },
 )
 
-
 ipcMain.handle(
   'renameSession',
   async (_event: unknown, path: string, newName: string) => {
@@ -391,7 +389,6 @@ ipcMain.handle(
   },
 )
 
-
 /// from https://github.com/iffy/electron-updater-example/blob/master/main.js
 autoUpdater.on('checking-for-update', () => {
   sendStatusToWindow('Checking for update...')
@@ -410,4 +407,3 @@ autoUpdater.on('update-downloaded', () => {
     buttons: ['OK'],
   })
 })
-
