@@ -81,7 +81,7 @@ async function createWindow() {
   const data = await response.json()
   Object.entries(data).forEach(([key, value]) => {
     // if there is not a 'gravestone' (.deleted file), then repopulate it on
-    // startup
+    // startup, this allows the user to delete even defaults if they want to
     if (!fs.existsSync(getQuickstartPath(key) + '.deleted')) {
       fs.writeFileSync(
         getQuickstartPath(key),
