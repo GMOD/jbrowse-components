@@ -923,6 +923,20 @@
       }
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "gff_plain_text",
+      "assemblyNames": ["volvox"],
+      "name": "GFF3 Plain Text",
+      "category": ["Miscellaneous"],
+      "adapter": {
+        "type": "Gff3Adapter",
+        "gffLocation": {
+          "uri": "volvox.gff3",
+          "locationType": "UriLocation"
+        }
+      }
+    },
+    {
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram",
       "name": "volvox-sorted.cram",

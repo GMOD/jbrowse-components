@@ -145,7 +145,8 @@ export function guessAdapter(
 
   if (/\.gff3?$/i.test(fileName)) {
     return {
-      type: 'UNSUPPORTED',
+      type: 'Gff3dapter',
+      gffLocation: file,
     }
   }
 
