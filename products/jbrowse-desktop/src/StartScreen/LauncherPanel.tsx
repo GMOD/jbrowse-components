@@ -1,12 +1,14 @@
 import React, { useState } from 'react'
-import { Button, makeStyles } from '@material-ui/core'
+import { Button, Typography, makeStyles } from '@material-ui/core'
 import PluginManager from '@jbrowse/core/PluginManager'
-import PreloadedDatasetSelector from './PreloadedDatasetSelector'
+import QuickstartPanel from './QuickstartPanel'
 import OpenSequenceDialog from './dialogs/OpenSequenceDialog'
 
 const useStyles = makeStyles(theme => ({
   form: {
     marginTop: theme.spacing(4),
+    margin: theme.spacing(2),
+    padding: theme.spacing(2),
   },
   button: {
     display: 'block',
@@ -16,7 +18,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-export default function StartScreenOptionsPanel({
+export default function LauncherPanel({
   setPluginManager,
 }: {
   setPluginManager: (arg0: PluginManager) => void
@@ -25,6 +27,9 @@ export default function StartScreenOptionsPanel({
   const [sequenceDialogOpen, setSequenceDialogOpen] = useState(false)
   return (
     <div className={classes.form}>
+      <Typography variant="h6" style={{ marginBottom: 5 }}>
+        Select a sequence file e.g. FASTA file
+      </Typography>
       <Button
         variant="contained"
         color="primary"
@@ -33,7 +38,13 @@ export default function StartScreenOptionsPanel({
       >
         Open sequence file
       </Button>
-      <PreloadedDatasetSelector setPluginManager={setPluginManager} />
+      <div style={{ width: '50%' }}>
+        <Typography style={{ textAlign: 'center' }} variant="h6">
+          -or-
+        </Typography>
+      </div>
+      <QuickstartPanel setPluginManager={setPluginManager} />
+
       {sequenceDialogOpen ? (
         <OpenSequenceDialog
           onClose={() => setSequenceDialogOpen(false)}

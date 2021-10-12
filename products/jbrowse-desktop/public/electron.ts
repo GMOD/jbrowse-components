@@ -6,8 +6,9 @@ import path from 'path'
 import url from 'url'
 import windowStateKeeper from 'electron-window-state'
 import { autoUpdater } from 'electron-updater'
+import fetch from 'node-fetch'
 
-const { unlink, rename, readdir, readFile, writeFile } = fs.promises
+const { unlink, rename, readdir, readFile, copyFile, writeFile } = fs.promises
 
 const { app, ipcMain, shell, BrowserWindow, Menu } = electron
 
@@ -44,13 +45,22 @@ const devServerUrl = url.parse(
 )
 
 const sessionDir = path.join(app.getPath('userData'), 'sessions')
+const quickstartDir = path.join(app.getPath('userData'), 'quickstart')
 
 function getPath(sessionName: string, ext = 'json') {
   return path.join(sessionDir, `${encodeURIComponent(sessionName)}.${ext}`)
 }
 
-if (!fs.lstatSync(sessionDir).isDirectory()) {
+function getQuickstartPath(sessionName: string, ext = 'json') {
+  return path.join(quickstartDir, `${encodeURIComponent(sessionName)}.${ext}`)
+}
+
+if (!fs.existsSync(sessionDir)) {
   fs.mkdirSync(sessionDir, { recursive: true })
+}
+
+if (!fs.existsSync(quickstartDir)) {
+  fs.mkdirSync(quickstartDir, { recursive: true })
 }
 
 interface SessionSnap {
@@ -64,6 +74,23 @@ interface SessionSnap {
 let mainWindow: electron.BrowserWindow | null
 
 async function createWindow() {
+  const response = await fetch('https://jbrowse.org/genomes/sessions.json')
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status} ${response.statusText}`)
+  }
+  const data = await response.json()
+  Object.entries(data).forEach(([key, value]) => {
+    // if there is not a 'gravestone' (.deleted file), then repopulate it on
+    // startup, this allows the user to delete even defaults if they want to
+    if (!fs.existsSync(getQuickstartPath(key) + '.deleted')) {
+      fs.writeFileSync(
+        getQuickstartPath(key),
+        JSON.stringify(value, null, 2),
+        'utf8',
+      )
+    }
+  })
+
   const mainWindowState = windowStateKeeper({
     defaultWidth: 1400,
     defaultHeight: 800,
@@ -258,13 +285,45 @@ ipcMain.handle('listSessions', async () => {
   )
 })
 
+ipcMain.handle(
+  'addToQuickstartList',
+  async (_event: unknown, sessionName: string) => {
+    await copyFile(getPath(sessionName), getQuickstartPath(sessionName))
+  },
+)
+
+ipcMain.handle('listQuickstarts', async (_event: unknown) => {
+  return (await readdir(quickstartDir))
+    .filter(f => path.extname(f) === '.json')
+    .map(f => decodeURIComponent(path.basename(f, '.json')))
+})
+
+ipcMain.handle('deleteQuickstart', async (_event: unknown, name: string) => {
+  fs.unlinkSync(getQuickstartPath(name))
+
+  // add a gravestone '.deleted' file when we delete a session, so that if it
+  // comes from the https://jbrowse.org/genomes/sessions.json, we don't
+  // recreate it
+  fs.writeFileSync(getQuickstartPath(name) + '.deleted', '', 'utf8')
+})
+
+ipcMain.handle(
+  'renameQuickstart',
+  async (_event: unknown, oldName: string, newName: string) => {
+    return fs.renameSync(getQuickstartPath(oldName), getQuickstartPath(newName))
+  },
+)
+
+ipcMain.handle('getQuickstart', async (_event: unknown, name: string) => {
+  return JSON.parse(await readFile(getQuickstartPath(name), 'utf8'))
+})
+
 ipcMain.handle('loadExternalConfig', (_event: unknown, sessionPath) => {
   return readFile(sessionPath, 'utf8')
 })
 
 ipcMain.handle('loadSession', async (_event: unknown, sessionName: string) => {
-  const data = await readFile(getPath(sessionName), 'utf8')
-  return JSON.parse(data)
+  return JSON.parse(await readFile(getPath(sessionName), 'utf8'))
 })
 
 ipcMain.handle(
