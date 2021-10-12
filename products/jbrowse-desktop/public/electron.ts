@@ -368,6 +368,16 @@ ipcMain.handle(
   },
 )
 
+
+ipcMain.handle('promptOpenFile', async (_event: unknown) => {
+  const toLocalPath = path.join(app.getPath('desktop'), defaultSessionName)
+  const choice = await dialog.showOpenDialog({
+    defaultPath: toLocalPath,
+  })
+
+  return choice.filePaths[0]
+})
+
 ipcMain.handle('promptSessionSaveAs', async (_event: unknown) => {
   const toLocalPath = path.join(app.getPath('desktop'), defaultSessionName)
   const choice = await dialog.showSaveDialog({

@@ -79,12 +79,16 @@ export default function rootModelFactory(pluginManager: PluginManager) {
     .volatile(() => ({
       error: undefined as unknown,
       textSearchManager: new TextSearchManager(pluginManager),
+      openNewSessionCallback: () => { console.error('openNewSessionCallback unimplemented') }
     }))
     .actions(self => ({
       async saveSession(val: unknown) {
         if (self.sessionPath) {
           await ipcRenderer.invoke('saveSession', self.sessionPath, val)
         }
+      },
+      setOpenNewSessionCallback(cb: () => Promise<void>) {
+        self.openNewSessionCallback = cb
       },
       setSavedSessionNames(sessionNames: string[]) {
         self.savedSessionNames = cast(sessionNames)
@@ -230,7 +234,14 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             {
               label: 'Open',
               icon: OpenIcon,
-              onClick: () => {},
+              onClick: async () => {
+                try {
+                  await self.openNewSessionCallback()
+                } catch(e) {
+                  console.error(e)
+                  self.session?.notify(`${e}`, 'error')
+                }
+              },
             },
             {
               label: 'Save',

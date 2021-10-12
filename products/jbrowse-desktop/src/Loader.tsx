@@ -30,7 +30,7 @@ const ErrorMessage = ({
   error,
   snapshotError,
 }: {
-  error: Error
+  error: unknown
   snapshotError?: string
 }) => {
   const classes = useStyles()
@@ -52,7 +52,7 @@ const ErrorMessage = ({
 const Loader = observer(() => {
   const [pluginManager, setPluginManager] = useState<PluginManager>()
   const [config, setConfig] = useQueryParam('config', StringParam)
-  const [error, setError] = useState<Error>()
+  const [error, setError] = useState<unknown>()
   const [snapshotError, setSnapshotError] = useState('')
 
   function handleError(e: unknown) {
@@ -74,6 +74,13 @@ const Loader = observer(() => {
 
   const handleSetPluginManager = useCallback(
     (pm: PluginManager) => {
+      // @ts-ignore
+      pm.rootModel?.setOpenNewSessionCallback(async () => {
+        const path = await ipcRenderer.invoke('promptOpenFile')
+        const data = await ipcRenderer.invoke('loadSession', path)
+        const pm = await createPluginManager(data)
+        handleSetPluginManager(pm)
+      })
       setPluginManager(pm)
       setError(undefined)
       setSnapshotError('')

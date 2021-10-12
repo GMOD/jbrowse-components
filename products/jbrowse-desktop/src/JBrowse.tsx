@@ -10,7 +10,7 @@ import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import { RootModel } from './rootModel'
 
 const JBrowse = observer(
-  ({ pluginManager }: { pluginManager: PluginManager }) => {
+  ({ pluginManager }: { pluginManager: PluginManager; }) => {
     const { rootModel } = pluginManager
 
     return rootModel ? (
