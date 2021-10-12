@@ -112,7 +112,7 @@ describe('authentication', () => {
       ],
     })
     const state = pluginManager.rootModel
-    const { findByTestId, findAllByTestId, findByText } = render(
+    const { findByTestId, findAllByTestId } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     state.session.views[0].setNewView(5, 0)

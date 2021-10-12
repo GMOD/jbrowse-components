@@ -278,7 +278,7 @@ export default function RecentSessionPanel({
   async function addToQuickstartList(arg: RecentSessionData[]) {
     await Promise.all(
       arg.map(session =>
-        ipcRenderer.invoke('addToQuickstartList', session.path),
+        ipcRenderer.invoke('addToQuickstartList', session.path, session.name),
       ),
     )
   }
