@@ -104,6 +104,7 @@ export default class extends BaseFeatureDataAdapter {
           lines.push(this.parseLine(metadata.columnNumbers, line, fileOffset))
         },
       )
+      console.log('lines', lines)
       if (allowRedispatch && lines.length) {
         let minStart = Infinity
         let maxEnd = -Infinity

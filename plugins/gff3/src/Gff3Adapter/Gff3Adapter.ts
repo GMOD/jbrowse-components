@@ -34,9 +34,12 @@ interface FeatureLoc {
 export default class extends BaseFeatureDataAdapter {
   protected gff: string | undefined
 
-  protected features: FeatureLoc[][] | undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  protected gffFeatures: any
 
   protected dontRedispatch: string[]
+
+  protected uri: string
 
   protected filehandle: GenericFilehandle
 
@@ -47,6 +50,8 @@ export default class extends BaseFeatureDataAdapter {
   ) {
     super(config, getSubAdapter, pluginManager)
     const gffLocation = readConfObject(config, 'gffLocation')
+    const { uri } = gffLocation
+    this.uri = uri
     const dontRedispatch = readConfObject(config, 'dontRedispatch')
     this.dontRedispatch = dontRedispatch || ['chromosome', 'contig', 'region']
     this.filehandle = openLocation(gffLocation, this.pluginManager)
@@ -55,17 +60,32 @@ export default class extends BaseFeatureDataAdapter {
   private async loadData() {
     if (!this.gff) {
       this.gff = (await this.filehandle.readFile('utf8')) as string
-      this.features = gff.parseStringSync(this.gff, {
+      const gffFeatures = gff.parseStringSync(this.gff, {
         parseFeatures: true,
         parseComments: false,
         parseDirectives: false,
         parseSequences: false,
       }) as FeatureLoc[][]
+
+      this.gffFeatures = gffFeatures
+        .flat()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .reduce(function (acc: Record<string, any>, obj: FeatureLoc) {
+          const key = obj['seq_id']
+          if (!acc[key]) {
+            acc[key] = []
+          }
+          acc[key].push(obj)
+          return acc
+        }, {})
     }
   }
   public async getRefNames(opts: BaseOptions = {}) {
-    // return this.gff.getReferenceSequenceNames(opts)
-    return [] // TODO: fix getRefNames
+    await this.loadData()
+    if (this.gffFeatures) {
+      return Object.keys(this.gffFeatures)
+    }
+    return []
   }
 
   public async getHeader() {
@@ -73,6 +93,23 @@ export default class extends BaseFeatureDataAdapter {
     return '' // TODO: fix get header
   }
 
+  // private async getValidFeatures(
+  //   refname: string,
+  //   start: number,
+  //   end: number,
+  //   callback: Function,
+  // ) {
+  //   // return this.gff.getHeader()
+  //   const regionFeatures = this.gffFeatures[refname]
+  //   // return regionFeatures.filter(feature => {
+  //   //   // feature that matches start and end
+  //   //   if (feature.start <= start) {
+  //   //     if (feature.end <= end)
+  //   //   }
+  //   // })
+  //   console.log()
+  //   return '' // TODO: fix get header
+  // }
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       this.getFeaturesHelper(query, opts, observer, true)
@@ -87,12 +124,23 @@ export default class extends BaseFeatureDataAdapter {
     originalQuery = query,
   ) {
     await this.loadData()
+    // console.log(this.gffFeatures)
+    // console.log(query)
+    // console.log(originalQuery)
     try {
-      const validFeatures: FeatureLoc[][] = []
+      const features: FeatureLoc[][] = []
+      // const validFeatures: FeatureLoc[] = []
       // TODO: fix get features that match the query
+      // await this.getValidFeatures(
+      //   query.refName,
+      //   query.start,
+      //   query.end,
+      //   (feature: FeatureLoc) => {
+      //     validFeatures.push(feature)
+      //   },
+      // )
 
-
-      // if (allowRedispatch && lines.length) {
+      // if (allowRedispatch && features.length) {
       //   let minStart = Infinity
       //   let maxEnd = -Infinity
       //   lines.forEach(line => {
@@ -121,7 +169,7 @@ export default class extends BaseFeatureDataAdapter {
       //   }
       // }
       // TODO: format features
-      validFeatures.forEach(featureLocs =>
+      features.forEach(featureLocs =>
         this.formatFeatures(featureLocs).forEach(f => {
           if (
             doesIntersect2(
