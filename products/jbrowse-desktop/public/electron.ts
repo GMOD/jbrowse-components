@@ -51,10 +51,15 @@ const defaultSessionName = `jbrowse_session.json`
 const userData = app.getPath('userData')
 const recentSessionsPath = path.join(userData, 'recent_sessions.json')
 const quickstartDir = path.join(userData, 'quickstart')
+const thumbnailDir = path.join(userData, 'thumbnails')
 const autosaveDir = path.join(userData, 'autosaved')
 
 function getQuickstartPath(sessionName: string, ext = 'json') {
   return path.join(quickstartDir, `${encodeURIComponent(sessionName)}.${ext}`)
+}
+
+function getThumbnailPath(name: string) {
+  return path.join(thumbnailDir, `${encodeURIComponent(name)}.data`)
 }
 
 function getAutosavePath(sessionName: string, ext = 'json') {
@@ -67,6 +72,10 @@ if (!fs.existsSync(recentSessionsPath)) {
 
 if (!fs.existsSync(quickstartDir)) {
   fs.mkdirSync(quickstartDir, { recursive: true })
+}
+
+if (!fs.existsSync(thumbnailDir)) {
+  fs.mkdirSync(thumbnailDir, { recursive: true })
 }
 
 if (!fs.existsSync(autosaveDir)) {
@@ -399,10 +408,9 @@ ipcMain.handle(
       { path: string; updated: number },
     ]
     const idx = rows.findIndex(r => r.path === path)
-    const screenshot = page?.resize({ width: 500 }).toDataURL()
+    const png = page?.resize({ width: 500 }).toDataURL()
     const entry = {
       path,
-      screenshot,
       updated: +Date.now(),
       name: snap.defaultSession?.name,
     }
@@ -412,11 +420,20 @@ ipcMain.handle(
       rows[idx] = entry
     }
     await Promise.all([
+      ...(png ? [writeFile(getThumbnailPath(path), png)] : []),
       writeFile(recentSessionsPath, stringify(rows)),
       writeFile(path, stringify(snap)),
     ])
   },
 )
+
+ipcMain.handle('loadThumbnail', (_event: unknown, name: string) => {
+  const path = getThumbnailPath(name)
+  if (fs.existsSync(path)) {
+    return readFile(path, 'utf8')
+  }
+  return undefined
+})
 
 ipcMain.handle('promptOpenFile', async (_event: unknown) => {
   const toLocalPath = path.join(app.getPath('desktop'), defaultSessionName)

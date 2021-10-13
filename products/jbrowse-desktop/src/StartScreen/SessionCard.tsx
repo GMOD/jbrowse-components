@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Card,
   CardHeader,
@@ -11,6 +11,7 @@ import {
   Typography,
   makeStyles,
 } from '@material-ui/core'
+import { ipcRenderer } from 'electron'
 
 import PlaylistAddIcon from '@material-ui/icons/PlaylistAdd'
 import DeleteIcon from '@material-ui/icons/Delete'
@@ -31,8 +32,8 @@ const useStyles = makeStyles({
 interface RecentSessionData {
   path: string
   name: string
-  screenshot?: string
   updated: number
+  screenshotPath?: string
 }
 
 function RecentSessionCard({
@@ -51,7 +52,24 @@ function RecentSessionCard({
   const classes = useStyles()
   const [hovered, setHovered] = useState(false)
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
-  const sessionName = sessionData.name
+  const [screenshot, setScreenshot] = useState<string>()
+  const { name, path } = sessionData
+
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const data = await ipcRenderer.invoke('loadThumbnail', path)
+        if (data) {
+          setScreenshot(data)
+        } else {
+          setScreenshot(defaultSessionScreenshot)
+        }
+      } catch (e) {
+        console.error(e)
+        setScreenshot(defaultSessionScreenshot)
+      }
+    })()
+  }, [path])
 
   return (
     <>
@@ -62,10 +80,12 @@ function RecentSessionCard({
         onClick={() => onClick(sessionData)}
         raised={Boolean(hovered)}
       >
-        <CardMedia
-          className={classes.media}
-          image={sessionData.screenshot || defaultSessionScreenshot}
-        />
+        {screenshot ? (
+          <CardMedia
+            className={classes.media}
+            image={screenshot || defaultSessionScreenshot}
+          />
+        ) : null}
         <CardHeader
           action={
             <IconButton
@@ -79,9 +99,9 @@ function RecentSessionCard({
           }
           disableTypography
           title={
-            <Tooltip title={sessionName} enterDelay={300}>
+            <Tooltip title={name} enterDelay={300}>
               <Typography variant="body2" noWrap style={{ width: 178 }}>
-                {sessionName}
+                {name}
               </Typography>
             </Tooltip>
           }
