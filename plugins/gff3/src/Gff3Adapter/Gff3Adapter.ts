@@ -91,6 +91,7 @@ export default class extends BaseFeatureDataAdapter {
       const validFeatures: FeatureLoc[][] = []
       // TODO: fix get features that match the query
 
+
       // if (allowRedispatch && lines.length) {
       //   let minStart = Infinity
       //   let maxEnd = -Infinity
