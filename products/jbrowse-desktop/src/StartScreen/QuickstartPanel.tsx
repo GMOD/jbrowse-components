@@ -68,6 +68,7 @@ function PreloadedDatasetSelector({
           setQuickstarts(quick)
         }
       } catch (e) {
+        console.error(e)
         setError(e)
       }
     }
@@ -99,20 +100,25 @@ function PreloadedDatasetSelector({
       <Button
         className={classes.button}
         onClick={async () => {
-          const config = deepmerge.all(
-            await Promise.all(
-              Object.keys(selected)
-                .filter(name => selected[name])
-                .map(entry => ipcRenderer.invoke('getQuickstart', entry)),
-            ),
-          )
+          try {
+            const config = deepmerge.all(
+              await Promise.all(
+                Object.keys(selected)
+                  .filter(name => selected[name] && quickstarts?.includes(name))
+                  .map(entry => ipcRenderer.invoke('getQuickstart', entry)),
+              ),
+            )
 
-          // @ts-ignore
-          config.defaultSession.name = `New session ${new Date().toLocaleString(
-            'en-US',
-          )}`
-          const pm = await createPluginManager(config)
-          setPluginManager(pm)
+            // @ts-ignore
+            config.defaultSession.name = `New session ${new Date().toLocaleString(
+              'en-US',
+            )}`
+            const pm = await createPluginManager(config)
+            setPluginManager(pm)
+          } catch (e) {
+            console.error(e)
+            setError(e)
+          }
         }}
         variant="contained"
         color="primary"
