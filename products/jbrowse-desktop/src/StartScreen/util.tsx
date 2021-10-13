@@ -84,13 +84,34 @@ export async function createPluginManager(
 
   const jbrowse = deepmerge(configSnapshot, {
     internetAccounts: defaultInternetAccounts,
-  })
+    assemblies: [],
+    tracks: []
+  }) as {
+    internetAccounts: { internetAccountId: string }[]
+    assemblies: { name: string }[]
+    tracks: { trackId: string }[]
+  }
 
-  const ids = jbrowse.internetAccounts.map(o => o.internetAccountId)
+  const internetAccountIds = jbrowse.internetAccounts.map(
+    o => o.internetAccountId,
+  )
 
   // remove duplicates while mixing in default internet accounts
   jbrowse.internetAccounts = jbrowse.internetAccounts.filter(
-    (arg, index) => !ids.includes(arg.internetAccountId, index + 1),
+    ({ internetAccountId }, index) =>
+      !internetAccountIds.includes(internetAccountId, index + 1),
+  )
+
+  const assemblyNames = jbrowse.assemblies.map(o => o.name)
+
+  jbrowse.assemblies = jbrowse.assemblies.filter(
+    ({ name }, index) => !assemblyNames.includes(name, index + 1),
+  )
+
+  const trackIds = jbrowse.tracks.map(o => o.trackId)
+
+  jbrowse.tracks = jbrowse.tracks.filter(
+    ({ trackId }, index) => !trackIds.includes(trackId, index + 1),
   )
 
   const rootModel = JBrowseRootModel.create(
