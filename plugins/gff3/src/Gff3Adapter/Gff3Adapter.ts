@@ -17,28 +17,12 @@ import { Observer } from 'rxjs'
 import { GenericFilehandle } from 'generic-filehandle'
 
 import MyConfigSchema from './configSchema'
-
-type Strand = '+' | '-' | '.' | '?'
-interface FeatureLoc {
-  [key: string]: unknown
-  start: number
-  end: number
-  strand: Strand
-  seq_id: string
-  child_features: FeatureLoc[][]
-  data: unknown
-  derived_features: unknown
-  attributes: { [key: string]: unknown[] }
-}
+import { FeatureLoc } from '../util'
 
 export default class extends BaseFeatureDataAdapter {
   protected gff: string | undefined
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected gffFeatures: any
-  // protected gffFeatures: FeatureLoc[][] | undefined
-
-  protected dontRedispatch: string[]
+  protected gffFeatures: Record<string, FeatureLoc[]> | undefined
 
   protected uri: string
 
@@ -53,17 +37,15 @@ export default class extends BaseFeatureDataAdapter {
     const gffLocation = readConfObject(config, 'gffLocation')
     const { uri } = gffLocation
     this.uri = uri
-    const dontRedispatch = readConfObject(config, 'dontRedispatch')
-    this.dontRedispatch = dontRedispatch || ['chromosome', 'contig', 'region']
     this.filehandle = openLocation(gffLocation, this.pluginManager)
   }
 
   private async loadData() {
     const { size } = await this.filehandle.stat()
+    // Add a warning to avoid crashing the browser, recommend indexing
     if (size > 500000000) {
       throw new Error('This file is too large. Consider using Gff3Tabix')
     }
-    //  TODO: add a warning to avoid crashing the browser, recommend indexing
     if (!this.gff) {
       this.gff = (await this.filehandle.readFile('utf8')) as string
       const gffFeatures = gff.parseStringSync(this.gff, {
@@ -75,8 +57,7 @@ export default class extends BaseFeatureDataAdapter {
 
       this.gffFeatures = gffFeatures
         .flat()
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .reduce(function (acc: Record<string, any>, obj: FeatureLoc) {
+        .reduce(function (acc: Record<string, FeatureLoc[]>, obj: FeatureLoc) {
           const key = obj['seq_id']
           if (!acc[key]) {
             acc[key] = []
@@ -107,22 +88,24 @@ export default class extends BaseFeatureDataAdapter {
   ) {
     try {
       await this.loadData()
-      const refNameFeatures = this.gffFeatures[query.refName] as FeatureLoc[]
-      // format features
-      const formattedFeatures = this.formatFeatures(refNameFeatures)
-      // TODO: if more time sort if and check appropriate ranges
-      formattedFeatures.forEach(f => {
-        if (
-          doesIntersect2(
-            f.get('start'),
-            f.get('end'),
-            originalQuery.start,
-            originalQuery.end,
-          )
-        ) {
-          observer.next(f)
-        }
-      })
+      if (this.gffFeatures) {
+        const refNameFeatures = this.gffFeatures[query.refName] as FeatureLoc[]
+        // format features
+        const formattedFeatures = this.formatFeatures(refNameFeatures)
+        // TODO: if more time sort if and check appropriate ranges
+        formattedFeatures.forEach(f => {
+          if (
+            doesIntersect2(
+              f.get('start'),
+              f.get('end'),
+              originalQuery.start,
+              originalQuery.end,
+            )
+          ) {
+            observer.next(f)
+          }
+        })
+      }
       observer.complete()
     } catch (e) {
       observer.error(e)
