@@ -8,7 +8,7 @@ describe('adapter can fetch features from volvox.gff3', () => {
     adapter = new Gff3Adapter(
       configSchema.create({
         gffLocation: {
-          localPath: require.resolve('./test_data/volvox.gff3'),
+          localPath: require.resolve('../test_data/volvox.sort.gff3'),
         },
       }),
     )

@@ -5,7 +5,7 @@ import { configSchema as gff3TabixAdapterConfigSchema } from './Gff3TabixAdapter
 import { configSchema as gff3AdapterConfigSchema } from './Gff3Adapter'
 
 export default class extends Plugin {
-  name = 'GFF3TabixPlugin'
+  name = 'GFF3Plugin'
 
   install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
