@@ -40,6 +40,7 @@ import FileCopyIcon from '@material-ui/icons/FileCopy'
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 import GetAppIcon from '@material-ui/icons/GetApp'
 import PublishIcon from '@material-ui/icons/Publish'
+import ExtensionIcon from '@material-ui/icons/Extension'
 import StorageIcon from '@material-ui/icons/Storage'
 import SaveIcon from '@material-ui/icons/Save'
 import { Cable } from '@jbrowse/core/ui/Icons'
@@ -573,6 +574,28 @@ export default function RootModel(
               },
             ]
           : []),
+        {
+          label: 'Add',
+          menuItems: [],
+        },
+        {
+          label: 'Tools',
+          menuItems: [
+            {
+              label: 'Plugin store',
+              icon: ExtensionIcon,
+              onClick: () => {
+                if (self.session) {
+                  const widget = self.session.addWidget(
+                    'PluginStoreWidget',
+                    'pluginStoreWidget',
+                  )
+                  self.session.showWidget(widget)
+                }
+              },
+            },
+          ],
+        },
       ] as Menu[],
       adminMode,
     }))

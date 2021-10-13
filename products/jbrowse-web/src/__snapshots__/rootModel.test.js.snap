@@ -114,6 +114,27 @@ Array [
       },
     ],
   },
+  Object {
+    "label": "Add",
+    "menuItems": Array [],
+  },
+  Object {
+    "label": "Tools",
+    "menuItems": Array [
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Plugin store",
+        "onClick": [Function],
+      },
+    ],
+  },
 ]
 `;
 
@@ -227,6 +248,27 @@ Array [
           },
         },
         "label": "Return to splash screen",
+        "onClick": [Function],
+      },
+    ],
+  },
+  Object {
+    "label": "Add",
+    "menuItems": Array [],
+  },
+  Object {
+    "label": "Tools",
+    "menuItems": Array [
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Plugin store",
         "onClick": [Function],
       },
     ],
