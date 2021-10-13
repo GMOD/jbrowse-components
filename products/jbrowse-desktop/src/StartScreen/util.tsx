@@ -85,7 +85,7 @@ export async function createPluginManager(
   const jbrowse = deepmerge(configSnapshot, {
     internetAccounts: defaultInternetAccounts,
     assemblies: [],
-    tracks: []
+    tracks: [],
   }) as {
     internetAccounts: { internetAccountId: string }[]
     assemblies: { name: string }[]
