@@ -14,7 +14,7 @@ const DeleteSessionDialog = ({
   onClose,
   setError,
 }: {
-  sessionsToDelete: string[]
+  sessionsToDelete: { path: string }[]
   onClose: (arg0: boolean) => void
   setError: (e: unknown) => void
 }) => {
@@ -32,8 +32,8 @@ const DeleteSessionDialog = ({
           onClick={async () => {
             try {
               await Promise.all(
-                sessionsToDelete.map(sessionName =>
-                  ipcRenderer.invoke('deleteSession', sessionName),
+                sessionsToDelete.map(session =>
+                  ipcRenderer.invoke('deleteSession', session.path),
                 ),
               )
               onClose(true)

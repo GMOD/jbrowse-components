@@ -1,5 +1,5 @@
 // library
-import { cleanup, fireEvent, render } from '@testing-library/react'
+import { cleanup, fireEvent, render, within } from '@testing-library/react'
 import React from 'react'
 import { LocalFile, RemoteFile } from 'generic-filehandle'
 
@@ -112,18 +112,20 @@ describe('authentication', () => {
       ],
     })
     const state = pluginManager.rootModel
-    const { findByTestId, findAllByTestId, findByText } = render(
+    const { findByTestId, findAllByTestId } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     state.session.views[0].setNewView(5, 0)
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_microarray_externaltoken'),
     )
-    await findByTestId('externalToken-form')
+    const { findByText: findByTextWithin } = within(
+      await findByTestId('externalToken-form'),
+    )
     fireEvent.change(await findByTestId('entry-externalToken'), {
       target: { value: 'testentry' },
     })
-    fireEvent.click(await findByText('Add'))
+    fireEvent.click(await findByTextWithin('Add'))
 
     expect(Object.keys(sessionStorage)).toContain('ExternalTokenTest-token')
     expect(Object.values(sessionStorage)).toContain('testentry')
