@@ -26,7 +26,7 @@ import {
   LinearGenomeViewStateModel,
   stateModelFactory as linearGenomeViewStateModelFactory,
   renderToSvg,
-  RefNameAutocomplete
+  RefNameAutocomplete,
 } from './LinearGenomeView'
 
 import {
