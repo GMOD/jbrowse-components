@@ -68,6 +68,7 @@ function QuickstartPanel({
           setQuickstarts(quick)
         }
       } catch (e) {
+        console.error(e)
         setError(e)
       }
     }
@@ -99,23 +100,28 @@ function QuickstartPanel({
       <Button
         className={classes.button}
         onClick={async () => {
-          const config = deepmerge.all(
-            await Promise.all(
-              Object.keys(selected)
-                .filter(name => selected[name])
-                .map(entry => ipcRenderer.invoke('getQuickstart', entry)),
-            ),
-          )
+          try {
+            const config = deepmerge.all(
+              await Promise.all(
+                Object.keys(selected)
+                  .filter(name => selected[name] && quickstarts?.includes(name))
+                  .map(entry => ipcRenderer.invoke('getQuickstart', entry)),
+              ),
+            )
 
-          // @ts-ignore
-          config.defaultSession.name = `New session ${new Date().toLocaleString(
-            'en-US',
-          )}`
-          const path = await ipcRenderer.invoke(
-            'createInitialAutosaveFile',
-            config,
-          )
-          setPluginManager(await loadPluginManager(path))
+            // @ts-ignore
+            config.defaultSession.name = `New session ${new Date().toLocaleString(
+              'en-US',
+            )}`
+            const path = await ipcRenderer.invoke(
+              'createInitialAutosaveFile',
+              config,
+            )
+            setPluginManager(await loadPluginManager(path))
+          } catch (e) {
+            console.error(e)
+            setError(e)
+          }
         }}
         variant="contained"
         color="primary"
