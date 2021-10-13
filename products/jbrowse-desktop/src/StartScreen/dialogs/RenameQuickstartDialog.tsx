@@ -13,27 +13,34 @@ import electron from 'electron'
 
 const { ipcRenderer } = electron
 
-const RenameSessionDialog = ({
-  sessionToRename,
+const RenameQuickstartDialog = ({
+  quickstartNames,
+  quickstartToRename,
   onClose,
 }: {
-  sessionToRename?: { path: string; name: string }
+  quickstartNames: string[]
+  quickstartToRename?: string
   onClose: (arg0: boolean) => void
 }) => {
-  const [newSessionName, setNewSessionName] = useState('')
+  const [newQuickstartName, setNewQuickstartName] = useState('')
   const [error, setError] = useState<unknown>()
 
   return (
-    <Dialog open={!!sessionToRename} onClose={() => onClose(false)}>
-      <DialogTitle>Rename session</DialogTitle>
+    <Dialog open={!!quickstartToRename} onClose={() => onClose(false)}>
+      <DialogTitle>Rename quickstart</DialogTitle>
       <DialogContent>
         <DialogContentText>
           Please enter a new name for the session:
         </DialogContentText>
+        {quickstartNames.includes(newQuickstartName) ? (
+          <DialogContentText color="error">
+            There is already a session named &quot;{newQuickstartName}&quot;
+          </DialogContentText>
+        ) : null}
         <Input
           autoFocus
-          defaultValue={sessionToRename?.name}
-          onChange={event => setNewSessionName(event.target.value)}
+          defaultValue={quickstartToRename}
+          onChange={event => setNewQuickstartName(event.target.value)}
         />
         {error ? (
           <Typography color="error" variant="h6">{`${error}`}</Typography>
@@ -47,9 +54,9 @@ const RenameSessionDialog = ({
           onClick={async () => {
             try {
               await ipcRenderer.invoke(
-                'renameSession',
-                sessionToRename?.path,
-                newSessionName,
+                'renameQuickstart',
+                quickstartToRename,
+                newQuickstartName,
               )
               onClose(true)
             } catch (e) {
@@ -59,6 +66,9 @@ const RenameSessionDialog = ({
           }}
           color="primary"
           variant="contained"
+          disabled={
+            !quickstartToRename || quickstartNames.includes(newQuickstartName)
+          }
         >
           OK
         </Button>
@@ -67,4 +77,4 @@ const RenameSessionDialog = ({
   )
 }
 
-export default RenameSessionDialog
+export default RenameQuickstartDialog

@@ -48,7 +48,7 @@ describe('circular views', () => {
     await findByText('Help')
     // try opening a track before opening the actual view
     fireEvent.click(await findByText('File'))
-    fireEvent.click(await findByText('Open track'))
+    fireEvent.click(await findByText(/Open track/))
 
     fireEvent.click(await findByText('Open'))
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Card,
   CardHeader,
@@ -11,7 +11,9 @@ import {
   Typography,
   makeStyles,
 } from '@material-ui/core'
+import { ipcRenderer } from 'electron'
 
+import PlaylistAddIcon from '@material-ui/icons/PlaylistAdd'
 import DeleteIcon from '@material-ui/icons/Delete'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import TextFieldsIcon from '@material-ui/icons/TextFields'
@@ -21,33 +23,53 @@ const useStyles = makeStyles({
     width: 250,
     cursor: 'pointer',
   },
-  cardHeader: {
-    width: 200,
-  },
   media: {
     height: 0,
     paddingTop: '56.25%', // 16:9
   },
 })
 
+interface RecentSessionData {
+  path: string
+  name: string
+  updated: number
+  screenshotPath?: string
+}
+
 function RecentSessionCard({
-  sessionName,
-  sessionStats,
-  sessionScreenshot = defaultSessionScreenshot,
+  sessionData,
   onClick,
   onDelete,
   onRename,
+  onAddToQuickstartList,
 }: {
-  sessionName: string
-  sessionStats?: { mtime: Date }
-  sessionScreenshot: string
-  onClick: Function
-  onDelete: Function
-  onRename: Function
+  sessionData: RecentSessionData
+  onClick: (arg: RecentSessionData) => void
+  onDelete: (arg: RecentSessionData) => void
+  onRename: (arg: RecentSessionData) => void
+  onAddToQuickstartList: (arg: RecentSessionData) => void
 }) {
   const classes = useStyles()
   const [hovered, setHovered] = useState(false)
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
+  const [screenshot, setScreenshot] = useState<string>()
+  const { name, path } = sessionData
+
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const data = await ipcRenderer.invoke('loadThumbnail', path)
+        if (data) {
+          setScreenshot(data)
+        } else {
+          setScreenshot(defaultSessionScreenshot)
+        }
+      } catch (e) {
+        console.error(e)
+        setScreenshot(defaultSessionScreenshot)
+      }
+    })()
+  }, [path])
 
   return (
     <>
@@ -55,10 +77,15 @@ function RecentSessionCard({
         className={classes.card}
         onMouseOver={() => setHovered(true)}
         onMouseOut={() => setHovered(false)}
-        onClick={() => onClick(sessionName)}
+        onClick={() => onClick(sessionData)}
         raised={Boolean(hovered)}
       >
-        <CardMedia className={classes.media} image={sessionScreenshot} />
+        {screenshot ? (
+          <CardMedia
+            className={classes.media}
+            image={screenshot || defaultSessionScreenshot}
+          />
+        ) : null}
         <CardHeader
           action={
             <IconButton
@@ -72,9 +99,9 @@ function RecentSessionCard({
           }
           disableTypography
           title={
-            <Tooltip title={sessionName} enterDelay={300}>
+            <Tooltip title={name} enterDelay={300}>
               <Typography variant="body2" noWrap style={{ width: 178 }}>
-                {sessionName}
+                {name}
               </Typography>
             </Tooltip>
           }
@@ -86,15 +113,14 @@ function RecentSessionCard({
               style={{ width: 178 }}
             >
               Last modified{' '}
-              {sessionStats
-                ? `${sessionStats.mtime.toLocaleString('en-US')}`
+              {sessionData
+                ? `${new Date(sessionData.updated).toLocaleString('en-US')}`
                 : null}
             </Typography>
           }
         />
       </Card>
       <Menu
-        id="simple-menu"
         anchorEl={menuAnchorEl}
         keepMounted
         open={Boolean(menuAnchorEl)}
@@ -103,7 +129,7 @@ function RecentSessionCard({
         <MenuItem
           onClick={() => {
             setMenuAnchorEl(null)
-            onRename(sessionName)
+            onRename(sessionData)
           }}
         >
           <ListItemIcon>
@@ -113,7 +139,7 @@ function RecentSessionCard({
         </MenuItem>
         <MenuItem
           onClick={() => {
-            onDelete(sessionName)
+            onDelete(sessionData)
             setMenuAnchorEl(null)
           }}
         >
@@ -121,6 +147,17 @@ function RecentSessionCard({
             <DeleteIcon color="secondary" />
           </ListItemIcon>
           <Typography variant="inherit">Delete</Typography>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            onAddToQuickstartList(sessionData)
+            setMenuAnchorEl(null)
+          }}
+        >
+          <ListItemIcon>
+            <PlaylistAddIcon color="secondary" />
+          </ListItemIcon>
+          <Typography variant="inherit">Add to quickstart list</Typography>
         </MenuItem>
       </Menu>
     </>

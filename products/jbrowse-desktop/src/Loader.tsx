@@ -5,7 +5,7 @@ import { CssBaseline, ThemeProvider, makeStyles } from '@material-ui/core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { StringParam, useQueryParam } from 'use-query-params'
 import { ipcRenderer } from 'electron'
-import { createPluginManager } from './StartScreen/util'
+import { loadPluginManager } from './StartScreen/util'
 
 import JBrowse from './JBrowse'
 import StartScreen from './StartScreen'
@@ -30,7 +30,7 @@ const ErrorMessage = ({
   error,
   snapshotError,
 }: {
-  error: Error
+  error: unknown
   snapshotError?: string
 }) => {
   const classes = useStyles()
@@ -52,7 +52,7 @@ const ErrorMessage = ({
 const Loader = observer(() => {
   const [pluginManager, setPluginManager] = useState<PluginManager>()
   const [config, setConfig] = useQueryParam('config', StringParam)
-  const [error, setError] = useState<Error>()
+  const [error, setError] = useState<unknown>()
   const [snapshotError, setSnapshotError] = useState('')
 
   function handleError(e: unknown) {
@@ -74,6 +74,13 @@ const Loader = observer(() => {
 
   const handleSetPluginManager = useCallback(
     (pm: PluginManager) => {
+      // @ts-ignore
+      pm.rootModel?.setOpenNewSessionCallback(async () => {
+        const path = await ipcRenderer.invoke('promptOpenFile')
+        handleSetPluginManager(await loadPluginManager(path))
+      })
+
+      // @ts-ignore
       setPluginManager(pm)
       setError(undefined)
       setSnapshotError('')
@@ -86,9 +93,7 @@ const Loader = observer(() => {
     ;(async () => {
       if (config) {
         try {
-          const data = await ipcRenderer.invoke('loadSession', config)
-          const pm = await createPluginManager(data)
-          handleSetPluginManager(pm)
+          handleSetPluginManager(await loadPluginManager(config))
         } catch (e) {
           handleError(e)
         }
