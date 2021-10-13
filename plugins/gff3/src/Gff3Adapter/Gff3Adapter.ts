@@ -36,6 +36,7 @@ export default class extends BaseFeatureDataAdapter {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected gffFeatures: any
+  // protected gffFeatures: FeatureLoc[][] | undefined
 
   protected dontRedispatch: string[]
 
@@ -58,6 +59,11 @@ export default class extends BaseFeatureDataAdapter {
   }
 
   private async loadData() {
+    const { size } = await this.filehandle.stat()
+    if (size > 500000000) {
+      throw new Error('This file is too large. Consider using Gff3Tabix')
+    }
+    //  TODO: add a warning to avoid crashing the browser, recommend indexing
     if (!this.gff) {
       this.gff = (await this.filehandle.readFile('utf8')) as string
       const gffFeatures = gff.parseStringSync(this.gff, {
@@ -87,32 +93,9 @@ export default class extends BaseFeatureDataAdapter {
     }
     return []
   }
-
-  public async getHeader() {
-    // return this.gff.getHeader()
-    return '' // TODO: fix get header
-  }
-
-  // private async getValidFeatures(
-  //   refname: string,
-  //   start: number,
-  //   end: number,
-  //   callback: Function,
-  // ) {
-  //   // return this.gff.getHeader()
-  //   const regionFeatures = this.gffFeatures[refname]
-  //   // return regionFeatures.filter(feature => {
-  //   //   // feature that matches start and end
-  //   //   if (feature.start <= start) {
-  //   //     if (feature.end <= end)
-  //   //   }
-  //   // })
-  //   console.log()
-  //   return '' // TODO: fix get header
-  // }
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      this.getFeaturesHelper(query, opts, observer, true)
+      this.getFeaturesHelper(query, opts, observer)
     }, opts.signal)
   }
 
@@ -120,69 +103,26 @@ export default class extends BaseFeatureDataAdapter {
     query: NoAssemblyRegion,
     opts: BaseOptions = {},
     observer: Observer<Feature>,
-    allowRedispatch: boolean,
     originalQuery = query,
   ) {
-    await this.loadData()
-    // console.log(this.gffFeatures)
-    // console.log(query)
-    // console.log(originalQuery)
     try {
-      const features: FeatureLoc[][] = []
-      // const validFeatures: FeatureLoc[] = []
-      // TODO: fix get features that match the query
-      // await this.getValidFeatures(
-      //   query.refName,
-      //   query.start,
-      //   query.end,
-      //   (feature: FeatureLoc) => {
-      //     validFeatures.push(feature)
-      //   },
-      // )
-
-      // if (allowRedispatch && features.length) {
-      //   let minStart = Infinity
-      //   let maxEnd = -Infinity
-      //   lines.forEach(line => {
-      //     const featureType = line.fields[2]
-      //     // only expand redispatch range if feature is not a "dontRedispatch" type
-      //     // skips large regions like chromosome,region
-      //     if (!this.dontRedispatch.includes(featureType)) {
-      //       const start = line.start - 1 // gff is 1-based
-      //       if (start < minStart) {
-      //         minStart = start
-      //       }
-      //       if (line.end > maxEnd) {
-      //         maxEnd = line.end
-      //       }
-      //     }
-      //   })
-      //   if (maxEnd > query.end || minStart < query.start) {
-      //     this.getFeaturesHelper(
-      //       { ...query, start: minStart, end: maxEnd },
-      //       opts,
-      //       observer,
-      //       false,
-      //       query,
-      //     )
-      //     return
-      //   }
-      // }
-      // TODO: format features
-      features.forEach(featureLocs =>
-        this.formatFeatures(featureLocs).forEach(f => {
-          if (
-            doesIntersect2(
-              f.get('start'),
-              f.get('end'),
-              originalQuery.start,
-              originalQuery.end,
-            )
-          ) {
-            observer.next(f)
-          }
-        }),
-      )
+      await this.loadData()
+      const refNameFeatures = this.gffFeatures[query.refName] as FeatureLoc[]
+      // format features
+      const formattedFeatures = this.formatFeatures(refNameFeatures)
+      // TODO: if more time sort if and check appropriate ranges
+      formattedFeatures.forEach(f => {
+        if (
+          doesIntersect2(
+            f.get('start'),
+            f.get('end'),
+            originalQuery.start,
+            originalQuery.end,
+          )
+        ) {
+          observer.next(f)
+        }
+      })
       observer.complete()
     } catch (e) {
       observer.error(e)
