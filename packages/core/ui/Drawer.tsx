@@ -1,9 +1,9 @@
 import React from 'react'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import PropTypes from 'prop-types'
+import { observer } from 'mobx-react'
 import ResizeHandle from './ResizeHandle'
+import { SessionWithDrawerWidgets } from '../util/types'
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -26,29 +26,31 @@ function Drawer({
   session,
 }: {
   children: React.ReactNode
-  session: { resizeDrawer: (arg: number) => number }
+  session: SessionWithDrawerWidgets
 }) {
+  const { drawerPosition, drawerWidth } = session
   const classes = useStyles()
 
   return (
     <Paper className={classes.paper} elevation={16} square>
-      <ResizeHandle
-        onDrag={session.resizeDrawer}
-        className={classes.resizeHandle}
-        vertical
-      />
+      {drawerPosition === 'right' ? (
+        <ResizeHandle
+          onDrag={session.resizeDrawer}
+          className={classes.resizeHandle}
+          vertical
+        />
+      ) : null}
       {children}
+      {drawerPosition === 'left' ? (
+        <ResizeHandle
+          onDrag={session.resizeDrawer}
+          className={classes.resizeHandle}
+          style={{ left: drawerWidth }}
+          vertical
+        />
+      ) : null}
     </Paper>
   )
-}
-
-Drawer.propTypes = {
-  children: PropTypes.node,
-  session: MobxPropTypes.observableObject.isRequired,
-}
-
-Drawer.defaultProps = {
-  children: null,
 }
 
 export default observer(Drawer)

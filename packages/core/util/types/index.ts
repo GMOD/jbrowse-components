@@ -152,6 +152,8 @@ export interface SessionWithDrawerWidgets extends SessionWithWidgets {
   resizeDrawer(arg: number): number
   minimizeWidgetDrawer(): void
   showWidgetDrawer: () => void
+  drawerPosition: string
+  setDrawerPosition(arg: string): void
 }
 
 export function isSessionModelWithWidgets(
