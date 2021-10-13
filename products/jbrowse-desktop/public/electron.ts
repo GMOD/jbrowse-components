@@ -399,7 +399,7 @@ ipcMain.handle(
       { path: string; updated: number },
     ]
     const idx = rows.findIndex(r => r.path === path)
-    const screenshot = page?.resize({ width: 250 }).toDataURL()
+    const screenshot = page?.resize({ width: 500 }).toDataURL()
     const entry = {
       path,
       screenshot,
