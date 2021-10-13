@@ -78,7 +78,6 @@ function ResizeHandle({
 
   return (
     <div
-      id="testing"
       data-resizer="true"
       onMouseDown={event => {
         event.preventDefault()
