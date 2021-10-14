@@ -15,3 +15,4 @@ yalc.lock
 **/__diff_output__/
 **/dist/
 lerna-debug.log
+**/bigsis/
