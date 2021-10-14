@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react'
+import React, { useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import {
   Accordion,
@@ -96,9 +96,11 @@ export function BaseCard({
   defaultExpanded = true,
 }: BaseCardProps) {
   const classes = useStyles()
+  const [expanded, setExpanded] = useState(defaultExpanded)
   return (
     <Accordion
-      defaultExpanded={defaultExpanded}
+      expanded={expanded}
+      onChange={() => setExpanded(s => !s)}
       TransitionProps={{ unmountOnExit: true }}
     >
       <AccordionSummary
