@@ -11,7 +11,7 @@ Array [
     "start": 0,
     "strand": undefined,
     "type": "contig",
-    "uniqueId": "test-offset-0",
+    "uniqueId": "test-offset-187",
   },
   Object {
     "end": 1984,
@@ -23,7 +23,7 @@ Array [
     "start": 1658,
     "strand": 1,
     "type": "remark",
-    "uniqueId": "test-offset-1",
+    "uniqueId": "test-offset-188",
   },
   Object {
     "end": 6130,
@@ -35,7 +35,7 @@ Array [
     "start": 3013,
     "strand": 1,
     "type": "remark",
-    "uniqueId": "test-offset-2",
+    "uniqueId": "test-offset-189",
   },
   Object {
     "end": 5968,
@@ -47,7 +47,7 @@ Array [
     "start": 4714,
     "strand": -1,
     "type": "remark",
-    "uniqueId": "test-offset-3",
+    "uniqueId": "test-offset-190",
   },
 ]
 `;
