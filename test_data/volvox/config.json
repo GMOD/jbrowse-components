@@ -904,6 +904,21 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "gff3_genes",
+      "assemblyNames": ["volvox"],
+      "name": "GFF3 genes",
+      "category": ["Miscellaneous"],
+      "adapter": {
+        "type": "Gff3Adapter",
+        "gffLocation": {
+          "uri": "volvox.sort.gff3",
+          "locationType": "UriLocation"
+        }
+      }
+    },
+
+    {
+      "type": "FeatureTrack",
       "trackId": "gff3tabix_genes",
       "assemblyNames": ["volvox"],
       "name": "GFF3Tabix genes",
