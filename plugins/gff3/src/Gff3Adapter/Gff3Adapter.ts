@@ -13,7 +13,6 @@ import IntervalTree from '@flatten-js/interval-tree'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 
 import gff from '@gmod/gff'
-import { Observer } from 'rxjs'
 import { GenericFilehandle } from 'generic-filehandle'
 
 import MyConfigSchema from './configSchema'
@@ -89,14 +88,10 @@ export default class extends BaseFeatureDataAdapter {
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       try {
+        const { start, end, refName } = query
         const gffFeatures = await this.loadData()
-        const tree = gffFeatures[query.refName]
-        // format features
-        // const formattedFeatures = this.formatFeatures(refNameFeatures)
-        const { start, end } = query
-
-        const feats = tree.search([start, end]) //  expected array ['val1']
-        // TODO: if more time sort if and check appropriate ranges
+        const tree = gffFeatures[refName]
+        const feats = tree.search([start, end])
         feats.forEach(f => {
           observer.next(f)
         })
