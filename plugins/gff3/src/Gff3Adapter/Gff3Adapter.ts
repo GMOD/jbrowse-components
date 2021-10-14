@@ -20,9 +20,7 @@ import MyConfigSchema from './configSchema'
 import { FeatureLoc } from '../util'
 
 export default class extends BaseFeatureDataAdapter {
-  protected gff: string | undefined
-
-  protected gffFeatures: Record<string, FeatureLoc[]> | undefined
+  protected gffFeatures?: Promise<Record<string, FeatureLoc[]>>
 
   protected uri: string
 
@@ -43,36 +41,40 @@ export default class extends BaseFeatureDataAdapter {
   private async loadData() {
     const { size } = await this.filehandle.stat()
     // Add a warning to avoid crashing the browser, recommend indexing
-    if (size > 500000000) {
-      throw new Error('This file is too large. Consider using Gff3Tabix')
+    if (size > 500_000_000) {
+      throw new Error('This file is too large. Consider using Gff3TabixAdapter')
     }
-    if (!this.gff) {
-      this.gff = (await this.filehandle.readFile('utf8')) as string
-      const gffFeatures = gff.parseStringSync(this.gff, {
-        parseFeatures: true,
-        parseComments: false,
-        parseDirectives: false,
-        parseSequences: false,
-      }) as FeatureLoc[][]
+    if (!this.gffFeatures) {
+      this.gffFeatures = this.filehandle.readFile('utf8').then(data => {
+        const gffFeatures = gff.parseStringSync(data, {
+          parseFeatures: true,
+          parseComments: false,
+          parseDirectives: false,
+          parseSequences: false,
+        }) as FeatureLoc[][]
 
-      this.gffFeatures = gffFeatures
-        .flat()
-        .reduce(function (acc: Record<string, FeatureLoc[]>, obj: FeatureLoc) {
-          const key = obj['seq_id']
-          if (!acc[key]) {
-            acc[key] = []
-          }
-          acc[key].push(obj)
-          return acc
-        }, {})
+        return gffFeatures
+          .flat()
+          .reduce(function (
+            acc: Record<string, FeatureLoc[]>,
+            obj: FeatureLoc,
+          ) {
+            const key = obj['seq_id']
+            if (!acc[key]) {
+              acc[key] = []
+            }
+            acc[key].push(obj)
+            return acc
+          },
+          {})
+      })
     }
+
+    return this.gffFeatures
   }
   public async getRefNames(opts: BaseOptions = {}) {
-    await this.loadData()
-    if (this.gffFeatures) {
-      return Object.keys(this.gffFeatures)
-    }
-    return []
+    const gffFeatures = await this.loadData()
+    return Object.keys(gffFeatures)
   }
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
@@ -87,25 +89,23 @@ export default class extends BaseFeatureDataAdapter {
     originalQuery = query,
   ) {
     try {
-      await this.loadData()
-      if (this.gffFeatures) {
-        const refNameFeatures = this.gffFeatures[query.refName] as FeatureLoc[]
-        // format features
-        const formattedFeatures = this.formatFeatures(refNameFeatures)
-        // TODO: if more time sort if and check appropriate ranges
-        formattedFeatures.forEach(f => {
-          if (
-            doesIntersect2(
-              f.get('start'),
-              f.get('end'),
-              originalQuery.start,
-              originalQuery.end,
-            )
-          ) {
-            observer.next(f)
-          }
-        })
-      }
+      const gffFeatures = await this.loadData()
+      const refNameFeatures = gffFeatures[query.refName] as FeatureLoc[]
+      // format features
+      const formattedFeatures = this.formatFeatures(refNameFeatures)
+      // TODO: if more time sort if and check appropriate ranges
+      formattedFeatures.forEach(f => {
+        if (
+          doesIntersect2(
+            f.get('start'),
+            f.get('end'),
+            originalQuery.start,
+            originalQuery.end,
+          )
+        ) {
+          observer.next(f)
+        }
+      })
       observer.complete()
     } catch (e) {
       observer.error(e)
