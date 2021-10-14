@@ -1,0 +1,23 @@
+name: Integration
+
+on: push
+
+jobs:
+  integration:
+    name: Run integration tests
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 10.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+      - name: Install deps (with cache)
+        uses: bahmutov/npm-install@v1
+      - name: Get latest JBrowse
+        run: mkdir .jbrowse && yarn run jbrowse create --force .jbrowse
+      - name: Run unit tests
+        run: yarn test --passWithNoTests
+      - name: Test plugin
+        run: yarn run e2e
