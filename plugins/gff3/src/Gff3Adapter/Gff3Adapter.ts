@@ -45,29 +45,35 @@ export default class extends BaseFeatureDataAdapter {
       throw new Error('This file is too large. Consider using Gff3TabixAdapter')
     }
     if (!this.gffFeatures) {
-      this.gffFeatures = this.filehandle.readFile('utf8').then(data => {
-        const gffFeatures = gff.parseStringSync(data, {
-          parseFeatures: true,
-          parseComments: false,
-          parseDirectives: false,
-          parseSequences: false,
-        }) as FeatureLoc[][]
+      this.gffFeatures = this.filehandle
+        .readFile('utf8')
+        .then(data => {
+          const gffFeatures = gff.parseStringSync(data, {
+            parseFeatures: true,
+            parseComments: false,
+            parseDirectives: false,
+            parseSequences: false,
+          }) as FeatureLoc[][]
 
-        return gffFeatures
-          .flat()
-          .reduce(function (
-            acc: Record<string, FeatureLoc[]>,
-            obj: FeatureLoc,
-          ) {
-            const key = obj['seq_id']
-            if (!acc[key]) {
-              acc[key] = []
-            }
-            acc[key].push(obj)
-            return acc
-          },
-          {})
-      })
+          return gffFeatures
+            .flat()
+            .reduce(function (
+              acc: Record<string, FeatureLoc[]>,
+              obj: FeatureLoc,
+            ) {
+              const key = obj['seq_id']
+              if (!acc[key]) {
+                acc[key] = []
+              }
+              acc[key].push(obj)
+              return acc
+            },
+            {})
+        })
+        .catch(e => {
+          this.gffFeatures = undefined
+          throw e
+        })
     }
 
     return this.gffFeatures
