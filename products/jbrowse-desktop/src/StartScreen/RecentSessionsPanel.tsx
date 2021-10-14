@@ -45,6 +45,11 @@ const useStyles = makeStyles(theme => ({
   header: {
     margin: theme.spacing(2),
   },
+  toggleButton: {
+    '&.Mui-disabled': {
+      pointerEvents: 'auto',
+    },
+  },
 }))
 
 interface RecentSessionData {
@@ -211,14 +216,25 @@ function RecentSessionsCards({
   )
 }
 
-// note: span helps with https://stackoverflow.com/a/66713470/2129219
+// note: adjust props so disabled button can have a tooltip and not lose styling
+// https://stackoverflow.com/a/63276424
 function ToggleButtonWithTooltip(props: ToggleButtonProps) {
-  const { title = '', children, ...other } = props
+  const classes = useStyles()
+  const { title = '', children, disabled, onClick, ...other } = props
+  const adjustedButtonProps = {
+    disabled: disabled,
+    component: disabled ? 'div' : undefined,
+    onClick: disabled ? undefined : onClick,
+  }
   return (
     <Tooltip title={title}>
-      <span>
-        <ToggleButton {...other}>{children}</ToggleButton>
-      </span>
+      <ToggleButton
+        {...other}
+        {...adjustedButtonProps}
+        classes={{ root: classes.toggleButton }}
+      >
+        {children}
+      </ToggleButton>
     </Tooltip>
   )
 }
