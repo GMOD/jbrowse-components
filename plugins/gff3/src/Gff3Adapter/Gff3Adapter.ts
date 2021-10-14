@@ -6,21 +6,20 @@ import {
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import IntervalTree from '@flatten-js/interval-tree'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 
 import gff from '@gmod/gff'
-import { Observer } from 'rxjs'
 import { GenericFilehandle } from 'generic-filehandle'
 
 import MyConfigSchema from './configSchema'
 import { FeatureLoc } from '../util'
 
 export default class extends BaseFeatureDataAdapter {
-  protected gffFeatures?: Promise<Record<string, FeatureLoc[]>>
+  protected gffFeatures?: Promise<Record<string, IntervalTree>>
 
   protected uri: string
 
@@ -57,18 +56,21 @@ export default class extends BaseFeatureDataAdapter {
 
           return gffFeatures
             .flat()
-            .reduce(function (
-              acc: Record<string, FeatureLoc[]>,
-              obj: FeatureLoc,
-            ) {
-              const key = obj['seq_id']
+            .map(
+              (f, i) =>
+                new SimpleFeature({
+                  data: this.featureData(f),
+                  id: `${this.id}-offset-${i}`,
+                }),
+            )
+            .reduce((acc: Record<string, IntervalTree>, obj: SimpleFeature) => {
+              const key = obj.get('refName')
               if (!acc[key]) {
-                acc[key] = []
+                acc[key] = new IntervalTree()
               }
-              acc[key].push(obj)
+              acc[key].insert([obj.get('start'), obj.get('end')], obj)
               return acc
-            },
-            {})
+            }, {})
         })
         .catch(e => {
           this.gffFeatures = undefined
@@ -78,53 +80,26 @@ export default class extends BaseFeatureDataAdapter {
 
     return this.gffFeatures
   }
+
   public async getRefNames(opts: BaseOptions = {}) {
     const gffFeatures = await this.loadData()
     return Object.keys(gffFeatures)
   }
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      this.getFeaturesHelper(query, opts, observer)
-    }, opts.signal)
-  }
-
-  private async getFeaturesHelper(
-    query: NoAssemblyRegion,
-    opts: BaseOptions = {},
-    observer: Observer<Feature>,
-    originalQuery = query,
-  ) {
-    try {
-      const gffFeatures = await this.loadData()
-      const refNameFeatures = gffFeatures[query.refName] as FeatureLoc[]
-      // format features
-      const formattedFeatures = this.formatFeatures(refNameFeatures)
-      // TODO: if more time sort if and check appropriate ranges
-      formattedFeatures.forEach(f => {
-        if (
-          doesIntersect2(
-            f.get('start'),
-            f.get('end'),
-            originalQuery.start,
-            originalQuery.end,
-          )
-        ) {
+      try {
+        const { start, end, refName } = query
+        const gffFeatures = await this.loadData()
+        const tree = gffFeatures[refName]
+        const feats = tree.search([start, end])
+        feats.forEach(f => {
           observer.next(f)
-        }
-      })
-      observer.complete()
-    } catch (e) {
-      observer.error(e)
-    }
-  }
-  private formatFeatures(featureLocs: FeatureLoc[]) {
-    return featureLocs.map(
-      (featureLoc, index) =>
-        new SimpleFeature({
-          data: this.featureData(featureLoc),
-          id: `${this.id}-offset-${index}`,
-        }),
-    )
+        })
+        observer.complete()
+      } catch (e) {
+        observer.error(e)
+      }
+    }, opts.signal)
   }
 
   private featureData(data: FeatureLoc) {
