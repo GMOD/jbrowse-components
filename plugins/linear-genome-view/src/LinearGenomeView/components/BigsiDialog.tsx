@@ -48,23 +48,30 @@ function makeBigsiHitsFeatures(
   response: any,
 ) {
 
+
   const refName =
     self.leftBigsiOffset?.refName || self.rightBigsiOffset?.refName || ''
 
-  const numBuckets = 32
+  const numBuckets = 16 
   const featureLength = (self.rightBigsiOffset.coord - self.leftBigsiOffset.coord)/numBuckets
 
   let uniqueId = 0
   let allFeatures = []
   for (let bucket in response) {
-    const bigsiFeatures = response[bucket]
-    bigsiFeatures.uniqueId = uniqueId
-    bigsiFeatures.bucketStart = bucketmap[bucket].bucketStart
-    bigsiFeatures.bucketEnd = bucketmap[bucket].bucketEnd
-    bigsiFeatures.name = `${bucketmap[bucket].refName}:${bucketmap[bucket].bucketStart}-${bucketmap[bucket].bucketEnd}`
-    bigsiFeatures.start = self.leftBigsiOffset.coord + (parseInt(bucket%10) * featureLength)
-    bigsiFeatures.end = bigsiFeatures.start + featureLength - 1
-    bigsiFeatures.refName = refName
+    const startCoord = self.leftBigsiOffset.coord + (parseInt(bucket%numBuckets) * featureLength)
+    const endCoord = startCoord + featureLength - 1
+    const bigsiFeatures = {
+        'uniqueId': uniqueId,
+        'refName': refName,
+        'start': startCoord,
+        'end': endCoord,
+        'bucketStart': bucketmap[bucket].bucketStart,
+        'bucketEnd': bucketmap[bucket].bucketEnd,
+        'name': `${bucketmap[bucket].refName}:${bucketmap[bucket].bucketStart}-${bucketmap[bucket].bucketEnd}`,
+        'hits': response[bucket].hits,
+        'score': response[bucket].score,
+    }
+
     allFeatures.push(bigsiFeatures)
     uniqueId++
     }
