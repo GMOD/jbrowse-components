@@ -46,13 +46,18 @@ const devServerUrl = url.parse(
   process.env.DEV_SERVER_URL || 'http://localhost:3000',
 )
 
-const defaultSessionName = `jbrowse_session.json`
-
 const userData = app.getPath('userData')
 const recentSessionsPath = path.join(userData, 'recent_sessions.json')
 const quickstartDir = path.join(userData, 'quickstart')
 const thumbnailDir = path.join(userData, 'thumbnails')
 const autosaveDir = path.join(userData, 'autosaved')
+const jbrowseDocDir = path.join(app.getPath('documents'), 'JBrowse')
+const defaultSavePath = path.join(jbrowseDocDir, 'untitled.jbrowse')
+
+const fileFilters = [
+  { name: 'JBrowse Session', extensions: ['jbrowse'] },
+  { name: 'All Files', extensions: ['*'] },
+]
 
 function getQuickstartPath(sessionName: string, ext = 'json') {
   return path.join(quickstartDir, `${encodeURIComponent(sessionName)}.${ext}`)
@@ -80,6 +85,10 @@ if (!fs.existsSync(thumbnailDir)) {
 
 if (!fs.existsSync(autosaveDir)) {
   fs.mkdirSync(autosaveDir, { recursive: true })
+}
+
+if (!fs.existsSync(jbrowseDocDir)) {
+  fs.mkdirSync(jbrowseDocDir, { recursive: true })
 }
 
 interface SessionSnap {
@@ -436,20 +445,23 @@ ipcMain.handle('loadThumbnail', (_event: unknown, name: string) => {
 })
 
 ipcMain.handle('promptOpenFile', async (_event: unknown) => {
-  const toLocalPath = path.join(app.getPath('desktop'), defaultSessionName)
   const choice = await dialog.showOpenDialog({
-    defaultPath: toLocalPath,
+    defaultPath: jbrowseDocDir,
+    filters: fileFilters,
   })
 
   return choice.filePaths[0]
 })
 
 ipcMain.handle('promptSessionSaveAs', async (_event: unknown) => {
-  const toLocalPath = path.join(app.getPath('desktop'), defaultSessionName)
   const choice = await dialog.showSaveDialog({
-    defaultPath: toLocalPath,
+    defaultPath: path.join(defaultSavePath),
+    filters: fileFilters,
   })
 
+  if (choice.filePath && !choice.filePath.endsWith('.jbrowse')) {
+    choice.filePath = `${choice.filePath}.jbrowse`
+  }
   return choice.filePath
 })
 
