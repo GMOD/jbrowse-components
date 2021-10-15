@@ -42,8 +42,14 @@
   background-position: center;
 }
 
+.navbar__brand:hover {
+  color: rgb(70, 203, 174);
+}
+
 .navbar-social-github:hover:after {
-  opacity: 0.5;
+  filter: invert(62%) sepia(57%) saturate(419%) hue-rotate(117deg)
+    brightness(101%) contrast(87%);
+  opacity: 0.8;
 }
 
 .navbar-social-github:after,
@@ -66,7 +72,9 @@
 }
 
 .navbar-social-twitter:hover:after {
-  opacity: 0.5;
+  filter: invert(62%) sepia(57%) saturate(419%) hue-rotate(117deg)
+    brightness(101%) contrast(87%);
+  opacity: 0.8;
 }
 
 .navbar-social-twitter:after,

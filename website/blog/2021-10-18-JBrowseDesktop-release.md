@@ -23,6 +23,16 @@ Here's a few things you can do with it:
 
 With JBrowse desktop, your genome browser and your web browser can finally live in harmony on your taskbar! :heart:
 
+## Downloads
+
+Visit our [downloads page](/jb2/download/) for some updated links, or download directly for your operating system here:
+
+- [Download JBrowse Desktop for Mac](https://github.com/GMOD/jbrowse-components/releases/download/tag/v1.4.5/jbrowse-desktop-1.4.5-mac.dmg)
+- [Download JBrowse Desktop for Windows](https://github.com/GMOD/jbrowse-components/releases/download/tag/v1.4.5/jbrowse-desktop-1.4.5-win.exe)
+- [Download JBrowse Desktop for Linux](https://github.com/GMOD/jbrowse-components/releases/download/tag/v1.4.5/jbrowse-desktop-1.4.5-linux.AppImage)
+
+Other formats also available on the [v1.4.5 release page](https://github.com/GMOD/jbrowse-components/releases/tag/v1.4.5)
+
 For more information on getting started, check out the following resources:
 
 - [Quick-start guide](/docs/quickstart_desktop/)

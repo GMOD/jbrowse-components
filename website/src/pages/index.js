@@ -47,7 +47,7 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     gap: '10px',
   },
-  productButtonContainer: {
+  rowEvenlyContainer: {
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-evenly',
@@ -66,6 +66,18 @@ const useStyles = makeStyles(theme => ({
     width: '150px',
     height: '150px',
   },
+  containRow: {
+    display: 'flex',
+    flexDirection: 'row',
+  },
+  containColumn: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  screenshot: {
+    borderRadius: '8px',
+    border: '4px solid #e0e0e0',
+  },
 }))
 
 function Home() {
@@ -78,7 +90,16 @@ function Home() {
     <Layout title={`${siteConfig.title}`}>
       <div className={classes.header}>
         <div className={classes.container}>
-          <div style={{ flex: '55%', justifyContent: 'center' }}>
+          <div
+            className={classes.blurbAndButtonsContainer}
+            style={{
+              flex: '55%',
+              justifyContent: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px',
+            }}
+          >
             {/* <div
               style={{
                 display: 'flex',
@@ -92,36 +113,43 @@ function Home() {
                 src="img/color_full.png"
               />
             </div> */}
-            <div style={{ display: 'flex', flexDirection: 'row' }}>
-              <img
+            <div className={classes.containRow}>
+              {/* <img
                 alt="JBrowse 2 logo"
                 src="img/color_logo.svg"
                 style={{ width: '100px', height: '100px' }}
-              />
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', flexDirection: 'row' }}>
-                  <Typography
+              /> */}
+              <div
+                className={classes.containColumn}
+                style={{ marginLeft: '50px' }}
+              >
+                <div className={classes.containRow}>
+                  {/* <Typography
                     variant="h6"
-                    style={{
-                      fontWeight: 'bold',
-                      // textTransform: 'uppercase',
-                      color: '#135560',
-                    }}
+                    style={
+                      {
+                        // fontWeight: 'bold',
+                        // textTransform: 'uppercase',
+                        // color: '#135560',
+                      }
+                    }
                   >
                     JBrowse:&nbsp;
-                  </Typography>
+                  </Typography> */}
                   <Typography
-                    variant="h6"
-                    style={{
-                      fontWeight: 'bold',
-                      // textTransform: 'uppercase',
-                    }}
+                    variant="h5"
+                    style={
+                      {
+                        // fontWeight: 'bold',
+                        // textTransform: 'uppercase',
+                      }
+                    }
                   >
-                    The next generation genome browser
+                    JBrowse: The next generation genome browser
                   </Typography>
                 </div>
 
-                <p>
+                {/* <p>
                   A pluggable, open-source platform for{' '}
                   <b>visualizing and integrating biological data.</b>
                 </p>
@@ -129,19 +157,19 @@ function Home() {
                   JBrowse is available as full-featured desktop and web
                   applications, and also offers embeddable components for
                   developers.
-                </p>
-                {/* <p>
+                </p> */}
+                <p>
                   The mission of the JBrowse Consortium is to develop a
                   comprehensive, pluggable, open-source&nbsp;
-                  <b>
-                    computational platform for visualizing and integrating
-                    biological data.
-                  </b>
-                </p> */}
+                  {/* <b> */}
+                  computational platform for visualizing and integrating
+                  biological data.
+                  {/* </b> */}
+                </p>
               </div>
             </div>
             <div className={classes.productContainer}>
-              <div className={classes.productButtonContainer}>
+              <div className={classes.rowEvenlyContainer}>
                 <Button
                   variant="contained"
                   color="primary"
@@ -179,9 +207,10 @@ function Home() {
           </div>
           <div style={{ flex: '45%', paddingLeft: '20px' }}>
             <img
-              style={{ borderRadius: '8px', border: '4px solid #e0e0e0' }}
+              className={classes.screenshot}
               alt="screenshot of jbrowse 2"
-              src="img/desktop-multi-view.png"
+              src="img/screenshot.png"
+              // src="/img/sv_inspector_importform_loaded.png"
             />
           </div>
         </div>
@@ -190,7 +219,7 @@ function Home() {
         <Typography
           variant="h4"
           style={{
-            letterSpacing: '5px',
+            // letterSpacing: '5px',
             fontWeight: 'bold',
             // textTransform: 'uppercase',
           }}
@@ -241,10 +270,10 @@ function Home() {
             </div>
             <div style={{ flex: '50%', paddingLeft: '20px' }}>
               <img
-                style={{ borderRadius: '8px', border: '4px solid #e0e0e0' }}
+                className={classes.screenshot}
                 alt="screenshot of jbrowse 2"
-                // src="/img/desktop-multi-view.png"
-                src="img/screenshot.png"
+                src="/img/sv_inspector_importform_loaded.png"
+                // src="img/screenshot.png"
               />
             </div>
           </div>
@@ -274,29 +303,30 @@ function Home() {
             <a href="https://www.apache.org/licenses/LICENSE-2.0">
               Apache License, Version 2.0
             </a>
+            .
           </Typography>
         </div>
         <div className={classes.section}>
           <Typography variant="h4">Funding and Collaboration</Typography>
           <hr />
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-evenly',
-            }}
-          >
-            <img className={classes.logo} src="/img/nih.png" />
+          <div className={classes.rowEvenlyContainer}>
+            <img className={classes.logo} src="/img/nih.png" alt="NIH logo" />
             <img
               style={{ width: '350px', height: '150px' }}
               src="/img/nci.png"
+              alt="NCI logo"
             />
             <img
               style={{ width: '250px', height: '150px' }}
               src="/img/chan.png"
+              alt="Chan-Zuckerburg logo"
             />
-            <img className={classes.logo} src="/img/oicr.svg" />
-            <img className={classes.logo} src="/img/berkeley.png" />
+            <img className={classes.logo} src="/img/oicr.svg" alt="OICR logo" />
+            <img
+              className={classes.logo}
+              src="/img/berkeley.png"
+              alt="UC Berkeley logo"
+            />
           </div>
           <br />
           <Typography variant="caption">
