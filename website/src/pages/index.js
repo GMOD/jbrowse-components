@@ -117,14 +117,13 @@ function Home() {
                   variant="contained"
                   color="primary"
                   startIcon={<GetAppIcon />}
-                  href="jb2/download/#jbrowse-2-desktop"
+                  href="/jb2/download/#jbrowse-2-desktop"
                   className={classes.noHoverButtonA}
                 >
                   Download JBrowse Desktop
                 </Button>
                 <Button
                   variant="contained"
-                  color="tertiary"
                   startIcon={<OpenInBrowserIcon />}
                   href={`https://jbrowse.org/code/jb2/${currentVersion}/`}
                   className={classes.noHoverButtonB}

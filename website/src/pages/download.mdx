@@ -1,5 +1,12 @@
 import config from '../../docusaurus.config.json'
-import { Button, Card, CardContent, Typography, Link } from '@material-ui/core'
+import {
+  Button,
+  Card,
+  CardContent,
+  Typography,
+  Link,
+  Box,
+} from '@material-ui/core'
 import { Apple, DesktopWindows, ArrowDownward } from '@material-ui/icons'
 
 export const GithubLink = () => {
@@ -18,7 +25,7 @@ export const GithubLink = () => {
 export const DownloadCard = ({ os, icon, link }) => {
   const downloadLink = `https://github.com/GMOD/jbrowse-components/releases/download/tag/${config.customFields.currentVersion}/jbrowse-desktop-${config.customFields.currentVersionNo}-${link}`
   return (
-    <div>
+    <Box sx={{ display: { xs: 'none', sm: 'none', md: 'flex' } }}>
       <Card style={{ background: '#F0F0F0' }}>
         <CardContent
           style={{
@@ -38,7 +45,7 @@ export const DownloadCard = ({ os, icon, link }) => {
           </Button>
         </CardContent>
       </Card>
-    </div>
+    </Box>
   )
 }
 
@@ -69,7 +76,9 @@ export const DownloadCardContainer = () => {
       </div>
       <Typography
         variant="caption"
-        style={{ display: 'flex', alignSelf: 'center' }}
+        style={{
+          alignSelf: 'center',
+        }}
       >
         Can't find what you're looking for? Checkout&nbsp;
         <Link href={downloadLink}>other platforms</Link>.
