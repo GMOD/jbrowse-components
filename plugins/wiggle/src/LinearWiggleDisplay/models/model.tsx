@@ -509,7 +509,7 @@ const stateModelFactory = (
               regions: dynamicBlocks.contentBlocks.map(region => {
                 const { start, end } = region
                 return {
-                  ...region,
+                  ...JSON.parse(JSON.stringify(region)),
                   start: Math.floor(start),
                   end: Math.ceil(end),
                 }
