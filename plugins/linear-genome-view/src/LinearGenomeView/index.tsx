@@ -45,6 +45,7 @@ import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { saveAs } from 'file-saver'
 import { renderToSvg } from './components/LinearGenomeView'
+import RefNameAutocomplete from './components/RefNameAutocomplete'
 import ExportSvgDlg from './components/ExportSvgDialog'
 import ReturnToImportFormDlg from './components/ReturnToImportFormDialog'
 
@@ -1415,6 +1416,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
 }
 
-export { renderToSvg }
+export { renderToSvg, RefNameAutocomplete }
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>
