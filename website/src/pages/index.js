@@ -2,7 +2,7 @@ import React from 'react'
 import Layout from '@theme/Layout'
 
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
-import { Link, Typography, Button, makeStyles } from '@material-ui/core'
+import { Link, Typography, Button, makeStyles, Box } from '@material-ui/core'
 import GetAppIcon from '@material-ui/icons/GetApp'
 import OpenInBrowserIcon from '@material-ui/icons/OpenInBrowser'
 
@@ -26,8 +26,7 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'row',
     justifyContent: 'space-around',
     backgroundColor: '#F0F0F0',
-    paddingTop: '25px',
-    paddingBottom: '25px',
+    padding: '25px',
   },
   header: {
     display: 'flex',
@@ -37,10 +36,7 @@ const useStyles = makeStyles(theme => ({
     margin: '3em',
   },
   body: {
-    marginLeft: '5em',
-    marginRight: '5em',
-    marginTop: '3em',
-    marginBottom: '5em',
+    margin: '3em',
   },
   productContainer: {
     display: 'flex',
@@ -78,6 +74,13 @@ const useStyles = makeStyles(theme => ({
     borderRadius: '8px',
     border: '4px solid #e0e0e0',
   },
+  blurbAndButtonsContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    flex: '55%',
+    justifyContent: 'center',
+    gap: '20px',
+  },
 }))
 
 function Home() {
@@ -90,81 +93,21 @@ function Home() {
     <Layout title={`${siteConfig.title}`}>
       <div className={classes.header}>
         <div className={classes.container}>
-          <div
-            className={classes.blurbAndButtonsContainer}
-            style={{
-              flex: '55%',
-              justifyContent: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '20px',
-            }}
-          >
-            {/* <div
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                width: '75%',
-              }}
-            >
-              <img
-                style={{ width: '415px', height: '138px' }}
-                alt="JBrowse 2"
-                src="img/color_full.png"
-              />
-            </div> */}
+          <div className={classes.blurbAndButtonsContainer}>
             <div className={classes.containRow}>
-              {/* <img
-                alt="JBrowse 2 logo"
-                src="img/color_logo.svg"
-                style={{ width: '100px', height: '100px' }}
-              /> */}
               <div
                 className={classes.containColumn}
                 style={{ marginLeft: '50px' }}
               >
                 <div className={classes.containRow}>
-                  {/* <Typography
-                    variant="h6"
-                    style={
-                      {
-                        // fontWeight: 'bold',
-                        // textTransform: 'uppercase',
-                        // color: '#135560',
-                      }
-                    }
-                  >
-                    JBrowse:&nbsp;
-                  </Typography> */}
-                  <Typography
-                    variant="h5"
-                    style={
-                      {
-                        // fontWeight: 'bold',
-                        // textTransform: 'uppercase',
-                      }
-                    }
-                  >
+                  <Typography variant="h5">
                     JBrowse: The next generation genome browser
                   </Typography>
                 </div>
-
-                {/* <p>
-                  A pluggable, open-source platform for{' '}
-                  <b>visualizing and integrating biological data.</b>
-                </p>
-                <p>
-                  JBrowse is available as full-featured desktop and web
-                  applications, and also offers embeddable components for
-                  developers.
-                </p> */}
                 <p>
                   The mission of the JBrowse Consortium is to develop a
-                  comprehensive, pluggable, open-source&nbsp;
-                  {/* <b> */}
-                  computational platform for visualizing and integrating
-                  biological data.
-                  {/* </b> */}
+                  comprehensive, pluggable, open-source computational platform
+                  for visualizing and integrating biological data.
                 </p>
               </div>
             </div>
@@ -210,7 +153,6 @@ function Home() {
               className={classes.screenshot}
               alt="screenshot of jbrowse 2"
               src="img/screenshot.png"
-              // src="/img/sv_inspector_importform_loaded.png"
             />
           </div>
         </div>
@@ -219,9 +161,7 @@ function Home() {
         <Typography
           variant="h4"
           style={{
-            // letterSpacing: '5px',
             fontWeight: 'bold',
-            // textTransform: 'uppercase',
           }}
         >
           {bannerBulletin}
@@ -273,7 +213,6 @@ function Home() {
                 className={classes.screenshot}
                 alt="screenshot of jbrowse 2"
                 src="/img/sv_inspector_importform_loaded.png"
-                // src="img/screenshot.png"
               />
             </div>
           </div>
@@ -309,15 +248,24 @@ function Home() {
         <div className={classes.section}>
           <Typography variant="h4">Funding and Collaboration</Typography>
           <hr />
-          <div className={classes.rowEvenlyContainer}>
+          <Box
+            style={{ justifyContent: 'space-evenly' }}
+            sx={{ display: { xs: 'none', sm: 'none', md: 'flex' } }}
+          >
             <img className={classes.logo} src="/img/nih.png" alt="NIH logo" />
             <img
-              style={{ width: '350px', height: '150px' }}
+              style={{
+                width: '350px',
+                height: '150px',
+              }}
               src="/img/nci.png"
               alt="NCI logo"
             />
             <img
-              style={{ width: '250px', height: '150px' }}
+              style={{
+                width: '250px',
+                height: '150px',
+              }}
               src="/img/chan.png"
               alt="Chan-Zuckerburg logo"
             />
@@ -327,7 +275,7 @@ function Home() {
               src="/img/berkeley.png"
               alt="UC Berkeley logo"
             />
-          </div>
+          </Box>
           <br />
           <Typography variant="caption">
             JBrowse development is supported by the US National Institutes of
