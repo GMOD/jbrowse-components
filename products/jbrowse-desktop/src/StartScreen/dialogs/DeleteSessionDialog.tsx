@@ -31,10 +31,9 @@ const DeleteSessionDialog = ({
         <Button
           onClick={async () => {
             try {
-              await Promise.all(
-                sessionsToDelete.map(session =>
-                  ipcRenderer.invoke('deleteSession', session.path),
-                ),
+              ipcRenderer.invoke(
+                'deleteSessions',
+                sessionsToDelete.map(session => session.path),
               )
               onClose(true)
             } catch (e) {

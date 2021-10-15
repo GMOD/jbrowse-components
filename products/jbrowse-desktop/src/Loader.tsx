@@ -77,7 +77,9 @@ const Loader = observer(() => {
       // @ts-ignore
       pm.rootModel?.setOpenNewSessionCallback(async () => {
         const path = await ipcRenderer.invoke('promptOpenFile')
-        handleSetPluginManager(await loadPluginManager(path))
+        if (path) {
+          handleSetPluginManager(await loadPluginManager(path))
+        }
       })
 
       // @ts-ignore

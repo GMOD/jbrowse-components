@@ -58,8 +58,8 @@ function getQuickstartPath(sessionName: string, ext = 'json') {
   return path.join(quickstartDir, `${encodeURIComponent(sessionName)}.${ext}`)
 }
 
-function getThumbnailPath(name: string) {
-  return path.join(thumbnailDir, `${encodeURIComponent(name)}.data`)
+function getThumbnailPath(sessionPath: string) {
+  return path.join(thumbnailDir, `${encodeURIComponent(sessionPath)}.data`)
 }
 
 function getAutosavePath(sessionName: string, ext = 'json') {
@@ -454,6 +454,36 @@ ipcMain.handle('promptSessionSaveAs', async (_event: unknown) => {
 })
 
 ipcMain.handle(
+  'deleteSessions',
+  async (_event: unknown, sessionPaths: string[]) => {
+    const sessions = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as {
+      path: string
+      name: string
+    }[]
+
+    const indexes: number[] = []
+    sessions.forEach((row, idx) => {
+      if (sessionPaths.includes(row.path)) {
+        indexes.push(idx)
+      }
+    })
+    for (let i = indexes.length - 1; i >= 0; i--) {
+      sessions.splice(indexes[i], 1)
+    }
+
+    await Promise.all([
+      writeFile(recentSessionsPath, stringify(sessions)),
+      ...sessionPaths.map(sessionPath =>
+        unlink(getThumbnailPath(sessionPath)).catch(e => console.error(e)),
+      ),
+      ...sessionPaths.map(sessionPath =>
+        unlink(sessionPath).catch(e => console.error(e)),
+      ),
+    ])
+  },
+)
+
+ipcMain.handle(
   'deleteSession',
   async (_event: unknown, sessionPath: string) => {
     const sessions = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as {
@@ -470,6 +500,7 @@ ipcMain.handle(
 
     await Promise.all([
       writeFile(recentSessionsPath, stringify(sessions)),
+      unlink(getThumbnailPath(sessionPath)).catch(e => console.error(e)),
       unlink(sessionPath).catch(e => console.error(e)),
     ])
   },
