@@ -8,11 +8,11 @@ We are excited to announce the official release of [JBrowse desktop](https://git
 
 JBrowse desktop is our fully featured desktop application available for Mac, Windows, and Linux.
 
-Everything you could do on JBrowse web, well, you can do with JBrowse desktop!
+Everything you can do with JBrowse web, you can do with JBrowse desktop! In fact, because it runs as a desktop app, JBrowse desktop can sometimes do things that the web version of JBrowse can't.
 
 ![JBrowse Desktop session](/img/desktop-session.png)
 
-JBrowse desktop features a slick new landing page to help you manage your work.
+JBrowse desktop features a new landing page designed to help you manage your work.
 Here's a few things you can do with it:
 
 - quick-launch a new session from the landing page using a list of assemblies
