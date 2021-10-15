@@ -104,7 +104,7 @@ function Home() {
                     variant="h6"
                     style={{
                       fontWeight: 'bold',
-                      textTransform: 'uppercase',
+                      // textTransform: 'uppercase',
                       color: '#135560',
                     }}
                   >
@@ -114,21 +114,30 @@ function Home() {
                     variant="h6"
                     style={{
                       fontWeight: 'bold',
-                      textTransform: 'uppercase',
+                      // textTransform: 'uppercase',
                     }}
                   >
-                    the next generation genome browser
+                    The next generation genome browser
                   </Typography>
                 </div>
 
                 <p>
+                  A pluggable, open-source platform for{' '}
+                  <b>visualizing and integrating biological data.</b>
+                </p>
+                <p>
+                  JBrowse is available as full-featured desktop and web
+                  applications, and also offers embeddable components for
+                  developers.
+                </p>
+                {/* <p>
                   The mission of the JBrowse Consortium is to develop a
                   comprehensive, pluggable, open-source&nbsp;
                   <b>
                     computational platform for visualizing and integrating
                     biological data.
                   </b>
-                </p>
+                </p> */}
               </div>
             </div>
             <div className={classes.productContainer}>
@@ -172,7 +181,7 @@ function Home() {
             <img
               style={{ borderRadius: '8px', border: '4px solid #e0e0e0' }}
               alt="screenshot of jbrowse 2"
-              src="img/screenshot.png"
+              src="img/desktop-multi-view.png"
             />
           </div>
         </div>
@@ -183,7 +192,7 @@ function Home() {
           style={{
             letterSpacing: '5px',
             fontWeight: 'bold',
-            textTransform: 'uppercase',
+            // textTransform: 'uppercase',
           }}
         >
           {bannerBulletin}
@@ -202,8 +211,11 @@ function Home() {
         <div className={classes.section}>
           <Typography variant="h4">Features</Typography>
           <hr />
-          <div className={classes.container}>
-            <div style={{ flex: '45%', paddingLeft: '20px' }}>
+          <div
+            className={classes.container}
+            style={{ alignItems: 'flex-start' }}
+          >
+            <div style={{ flex: '50%' }}>
               <ul>
                 <li>
                   Improved <b>structural variant</b> and{' '}
@@ -227,11 +239,12 @@ function Home() {
                 </li>
               </ul>
             </div>
-            <div style={{ flex: '65%', paddingLeft: '20px' }}>
+            <div style={{ flex: '50%', paddingLeft: '20px' }}>
               <img
                 style={{ borderRadius: '8px', border: '4px solid #e0e0e0' }}
                 alt="screenshot of jbrowse 2"
-                src="/img/sv_inspector_importform_loaded.png"
+                // src="/img/desktop-multi-view.png"
+                src="img/screenshot.png"
               />
             </div>
           </div>
@@ -244,7 +257,7 @@ function Home() {
             Research citations are one of the main metrics the JBrowse project
             uses to demonstrate our relevance and utility when applying for
             funding to continue our work. If you use JBrowse in research that
-            you publish, please cite the most recent JBrowse paper
+            you publish, please cite the most recent JBrowse paper:
           </Typography>
           <br />
           <Typography variant="overline">
