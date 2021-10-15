@@ -137,10 +137,12 @@ function RefNameAutocomplete({
 
         setLoaded(false)
         const results = await fetchResults(model, debouncedSearch, assemblyName)
-        if (results && results.length >= 0 && active) {
-          setSearchOptions(results.map(result => ({ result })))
+        if (active) {
+          if (results && results.length >= 0) {
+            setSearchOptions(results.map(result => ({ result })))
+          }
+          setLoaded(true)
         }
-        setLoaded(true)
       } catch (e) {
         console.error(e)
         if (active) {
