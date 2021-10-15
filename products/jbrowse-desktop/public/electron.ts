@@ -58,8 +58,8 @@ function getQuickstartPath(sessionName: string, ext = 'json') {
   return path.join(quickstartDir, `${encodeURIComponent(sessionName)}.${ext}`)
 }
 
-function getThumbnailPath(name: string) {
-  return path.join(thumbnailDir, `${encodeURIComponent(name)}.data`)
+function getThumbnailPath(sessionPath: string) {
+  return path.join(thumbnailDir, `${encodeURIComponent(sessionPath)}.data`)
 }
 
 function getAutosavePath(sessionName: string, ext = 'json') {
@@ -474,6 +474,9 @@ ipcMain.handle(
     await Promise.all([
       writeFile(recentSessionsPath, stringify(sessions)),
       ...sessionPaths.map(sessionPath =>
+        unlink(getThumbnailPath(sessionPath)).catch(e => console.error(e)),
+      ),
+      ...sessionPaths.map(sessionPath =>
         unlink(sessionPath).catch(e => console.error(e)),
       ),
     ])
@@ -497,6 +500,7 @@ ipcMain.handle(
 
     await Promise.all([
       writeFile(recentSessionsPath, stringify(sessions)),
+      unlink(getThumbnailPath(sessionPath)).catch(e => console.error(e)),
       unlink(sessionPath).catch(e => console.error(e)),
     ])
   },
