@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import {
-  Checkbox,
   CircularProgress,
   FormControl,
-  FormControlLabel,
   Grid,
   IconButton,
   Link,
@@ -237,10 +235,6 @@ export default function RecentSessionPanel({
   const [updateSessionsList, setUpdateSessionsList] = useState(0)
   const [selectedSessions, setSelectedSessions] = useState<RecentSessions>()
   const [sessionsToDelete, setSessionsToDelete] = useState<RecentSessions>()
-  const [showAutosaves, setShowAutosaves] = useLocalStorage(
-    'showAutosaves',
-    'false',
-  )
 
   const sortedSessions = useMemo(
     () => sessions?.sort((a, b) => b.updated - a.updated),
@@ -250,17 +244,14 @@ export default function RecentSessionPanel({
   useEffect(() => {
     ;(async () => {
       try {
-        const sessions = await ipcRenderer.invoke(
-          'listSessions',
-          showAutosaves === 'true',
-        )
+        const sessions = await ipcRenderer.invoke('listSessions')
         setSessions(sessions)
       } catch (e) {
         console.error(e)
         setError(e)
       }
     })()
-  }, [setError, updateSessionsList, showAutosaves])
+  }, [setError, updateSessionsList])
 
   if (!sessions) {
     return (
@@ -339,18 +330,6 @@ export default function RecentSessionPanel({
           </ToggleButtonWithTooltip>
         </ToggleButtonGroup>
       </FormControl>
-
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={showAutosaves === 'true'}
-            onChange={() =>
-              setShowAutosaves(showAutosaves === 'true' ? 'false' : 'true')
-            }
-          />
-        }
-        label="Show autosaves"
-      />
 
       {sortedSessions.length ? (
         displayMode === 'grid' ? (

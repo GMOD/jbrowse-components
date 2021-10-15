@@ -227,6 +227,54 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         )
       },
     }))
+    .volatile(() => ({
+      saved: true,
+    }))
+    .actions(self => ({
+      setSaved() {
+        self.saved = true
+        const { menus } = self as unknown as { menus: Menu[] }
+        const fileMenu = menus.find(menu => menu.label === 'File')
+        const saveMenuIndex = fileMenu?.menuItems.findIndex(
+          menuItem => 'label' in menuItem && menuItem.label === 'Save',
+        )
+        if (fileMenu && saveMenuIndex && saveMenuIndex !== -1) {
+          fileMenu.menuItems[saveMenuIndex] = {
+            label: 'Autosaved',
+            icon: Save,
+            onClick: async () => {},
+            disabled: true,
+          }
+        }
+      },
+      setUnsaved() {
+        self.saved = false
+        const { menus } = self as unknown as { menus: Menu[] }
+        const fileMenu = menus.find(menu => menu.label === 'File')
+        const saveMenuIndex = fileMenu?.menuItems.findIndex(
+          menuItem => 'label' in menuItem && menuItem.label === 'Autosaved',
+        )
+        if (fileMenu && saveMenuIndex && saveMenuIndex !== -1) {
+          fileMenu.menuItems[saveMenuIndex] = {
+            label: 'Save',
+            icon: Save,
+            onClick: async () => {
+              try {
+                const saveAsPath = await ipcRenderer.invoke(
+                  'promptSessionSaveAs',
+                )
+                self.setSessionPath(saveAsPath)
+                await self.saveSession(getSaveSession(self as RootModel))
+                this.setSaved()
+              } catch (e) {
+                console.error(e)
+                self.session?.notify(`${e}`, 'error')
+              }
+            },
+          }
+        }
+      },
+    }))
     .volatile(self => ({
       history: {},
       menus: [
@@ -238,7 +286,16 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               icon: OpenIcon,
               onClick: async () => {
                 try {
-                  await self.openNewSessionCallback()
+                  if (self.saved) {
+                    await self.openNewSessionCallback()
+                    return
+                  }
+                  const response = await ipcRenderer.invoke(
+                    'promptSaveBeforeQuit',
+                  )
+                  if (response) {
+                    await self.openNewSessionCallback()
+                  }
                 } catch (e) {
                   console.error(e)
                   self.session?.notify(`${e}`, 'error')
@@ -246,21 +303,13 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               },
             },
             {
-              label: 'Save',
+              label: 'Autosaved',
               icon: Save,
-              onClick: async () => {
-                if (self.session) {
-                  try {
-                    await self.saveSession(getSaveSession(self as RootModel))
-                  } catch (e) {
-                    console.error(e)
-                    self.session?.notify(`${e}`, 'error')
-                  }
-                }
-              },
+              onClick: async () => {},
+              disabled: true,
             },
             {
-              label: 'Save as...',
+              label: 'Save as…',
               icon: SaveAs,
               onClick: async () => {
                 try {
@@ -269,6 +318,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                   )
                   self.setSessionPath(saveAsPath)
                   await self.saveSession(getSaveSession(self as RootModel))
+                  self.setSaved()
                 } catch (e) {
                   console.error(e)
                   self.session?.notify(`${e}`, 'error')
@@ -279,7 +329,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               type: 'divider',
             },
             {
-              label: 'Open assembly...',
+              label: 'Open assembly…',
               icon: DNA,
               onClick: () => {
                 if (self.session) {
@@ -291,7 +341,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               },
             },
             {
-              label: 'Open track...',
+              label: 'Open track…',
               icon: StorageIcon,
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: (session: any) => {
@@ -313,7 +363,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               },
             },
             {
-              label: 'Open connection...',
+              label: 'Open connection…',
               icon: Cable,
               onClick: () => {
                 if (self.session) {
@@ -331,8 +381,17 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             {
               label: 'Return to start screen',
               icon: AppsIcon,
-              onClick: () => {
-                self.setSession(undefined)
+              onClick: async () => {
+                if (self.saved) {
+                  self.setSession(undefined)
+                  return
+                }
+                const response = await ipcRenderer.invoke(
+                  'promptSaveBeforeQuit',
+                )
+                if (response) {
+                  self.setSession(undefined)
+                }
               },
             },
             {

@@ -5,6 +5,7 @@ import { ipcRenderer } from 'electron'
 import QuickstartPanel from './QuickstartPanel'
 import OpenSequenceDialog from '../OpenSequenceDialog'
 import { loadPluginManager } from './util'
+import { DesktopRootModel } from './types'
 
 const useStyles = makeStyles(theme => ({
   form: {
@@ -51,16 +52,19 @@ export default function StartScreenOptionsPanel({
             if (conf) {
               // note this can throw before dialog closes, but this is handled
               // by the dialog itself
-              const path = await ipcRenderer.invoke(
-                'createInitialAutosaveFile',
-                {
-                  assemblies: [conf],
-                  defaultSession: {
-                    name: 'New Session ' + new Date().toLocaleString('en-US'),
-                  },
+              const path = await ipcRenderer.invoke('createUnsavedFile', {
+                assemblies: [conf],
+                defaultSession: {
+                  name: 'New Session ' + new Date().toLocaleString('en-US'),
+                  saved: false,
                 },
-              )
-              setPluginManager(await loadPluginManager(path))
+              })
+              const pluginManager = await loadPluginManager(path)
+              const { rootModel } = pluginManager
+              if (rootModel) {
+                ;(rootModel as DesktopRootModel).setUnsaved()
+              }
+              setPluginManager(pluginManager)
             }
             setSequenceDialogOpen(false)
           }}

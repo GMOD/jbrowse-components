@@ -23,6 +23,7 @@ import deepmerge from 'deepmerge'
 
 // locals
 import { loadPluginManager } from './util'
+import { DesktopRootModel } from './types'
 
 const useStyles = makeStyles(theme => ({
   button: {
@@ -113,11 +114,15 @@ function QuickstartPanel({
             config.defaultSession.name = `New session ${new Date().toLocaleString(
               'en-US',
             )}`
-            const path = await ipcRenderer.invoke(
-              'createInitialAutosaveFile',
-              config,
-            )
-            setPluginManager(await loadPluginManager(path))
+            // @ts-ignore
+            config.defaultSession.saved = false
+            const path = await ipcRenderer.invoke('createUnsavedFile', config)
+            const pluginManager = await loadPluginManager(path)
+            const { rootModel } = pluginManager
+            if (rootModel) {
+              ;(rootModel as DesktopRootModel).setUnsaved()
+            }
+            setPluginManager(pluginManager)
           } catch (e) {
             console.error(e)
             setError(e)

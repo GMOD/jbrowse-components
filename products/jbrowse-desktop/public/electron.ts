@@ -8,7 +8,7 @@ import windowStateKeeper from 'electron-window-state'
 import { autoUpdater } from 'electron-updater'
 import fetch from 'node-fetch'
 
-const { unlink, readFile, copyFile, readdir, writeFile } = fs.promises
+const { unlink, readFile, copyFile, readdir, rename, writeFile } = fs.promises
 
 const { app, ipcMain, shell, BrowserWindow, Menu } = electron
 
@@ -50,7 +50,7 @@ const userData = app.getPath('userData')
 const recentSessionsPath = path.join(userData, 'recent_sessions.json')
 const quickstartDir = path.join(userData, 'quickstart')
 const thumbnailDir = path.join(userData, 'thumbnails')
-const autosaveDir = path.join(userData, 'autosaved')
+const unsavedPath = path.join(userData, 'unsaved.jbrowse')
 const jbrowseDocDir = path.join(app.getPath('documents'), 'JBrowse')
 const defaultSavePath = path.join(jbrowseDocDir, 'untitled.jbrowse')
 
@@ -67,10 +67,6 @@ function getThumbnailPath(name: string) {
   return path.join(thumbnailDir, `${encodeURIComponent(name)}.data`)
 }
 
-function getAutosavePath(sessionName: string, ext = 'json') {
-  return path.join(autosaveDir, `${encodeURIComponent(sessionName)}.${ext}`)
-}
-
 if (!fs.existsSync(recentSessionsPath)) {
   fs.writeFileSync(recentSessionsPath, stringify([]), 'utf8')
 }
@@ -81,10 +77,6 @@ if (!fs.existsSync(quickstartDir)) {
 
 if (!fs.existsSync(thumbnailDir)) {
   fs.mkdirSync(thumbnailDir, { recursive: true })
-}
-
-if (!fs.existsSync(autosaveDir)) {
-  fs.mkdirSync(autosaveDir, { recursive: true })
 }
 
 if (!fs.existsSync(jbrowseDocDir)) {
@@ -100,6 +92,50 @@ interface SessionSnap {
 }
 
 let mainWindow: electron.BrowserWindow | null
+
+async function promptSave() {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const choice = await dialog.showMessageBox(mainWindow!, {
+    message: 'Would you like to save this session?',
+    detail: "Your changes will be lost if you don't save them",
+    type: 'warning',
+    buttons: ["Don't save", 'Cancel', 'Save as…'],
+    defaultId: 2,
+    cancelId: 1,
+  })
+  if (choice.response === 0) {
+    await unlink(unsavedPath)
+    return true
+  }
+  if (choice.response === 2) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const savePath = await dialog.showSaveDialog(mainWindow!, {
+      defaultPath: path.join(defaultSavePath),
+      filters: fileFilters,
+    })
+    if (savePath.filePath) {
+      const page = await mainWindow?.capturePage()
+      const rows = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as [
+        { path: string; updated: number },
+      ]
+      const png = page?.resize({ width: 500 }).toDataURL()
+      const snap = JSON.parse(await readFile(unsavedPath, 'utf-8'))
+      const entry = {
+        path: savePath.filePath,
+        updated: +Date.now(),
+        name: snap.defaultSession?.name,
+      }
+      rows.unshift(entry)
+      await Promise.all([
+        ...(png ? [writeFile(getThumbnailPath(savePath.filePath), png)] : []),
+        writeFile(recentSessionsPath, stringify(rows)),
+        rename(unsavedPath, savePath.filePath),
+      ])
+      return true
+    }
+  }
+  return false
+}
 
 async function createWindow() {
   const response = await fetch('https://jbrowse.org/genomes/sessions.json')
@@ -261,6 +297,18 @@ async function createWindow() {
     Menu.setApplicationMenu(null)
   }
 
+  mainWindow.on('close', async event => {
+    const hasUnsaved = fs.existsSync(unsavedPath)
+    if (!hasUnsaved) {
+      return
+    }
+    event.preventDefault()
+    const continueClose = await promptSave()
+    if (continueClose) {
+      mainWindow?.close()
+    }
+  })
+
   mainWindow.on('closed', () => {
     mainWindow = null
   })
@@ -295,20 +343,13 @@ ipcMain.handle('quit', () => {
   app.quit()
 })
 
-ipcMain.handle(
-  'listSessions',
-  async (_event: unknown, showAutosaves: boolean) => {
-    const sessions = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as {
-      path: string
-    }[]
+ipcMain.handle('listSessions', async (_event: unknown) => {
+  const sessions = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as {
+    path: string
+  }[]
 
-    if (!showAutosaves) {
-      return sessions.filter(f => !f.path.startsWith(autosaveDir))
-    } else {
-      return sessions
-    }
-  },
-)
+  return sessions
+})
 
 ipcMain.handle('loadExternalConfig', (_event: unknown, sessionPath) => {
   return readFile(sessionPath, 'utf8')
@@ -366,45 +407,24 @@ ipcMain.handle(
     win.loadURL(url)
 
     return new Promise(resolve => {
-      win.webContents.on(
-        'will-redirect',
-        function (event: Event, redirectUrl: string) {
-          if (redirectUrl.startsWith(data.redirect_uri)) {
-            event.preventDefault()
-            resolve(redirectUrl)
-            win.close()
-          }
-        },
-      )
+      win.webContents.on('will-redirect', (event, redirectUrl) => {
+        if (redirectUrl.startsWith(data.redirect_uri)) {
+          event.preventDefault()
+          resolve(redirectUrl)
+          win.close()
+        }
+      })
     })
   },
 )
 
-// creates an initial entry in autosave folder
+// creates an "unsaved" file
 ipcMain.handle(
-  'createInitialAutosaveFile',
+  'createUnsavedFile',
   async (_event: unknown, snap: SessionSnap) => {
-    const rows = JSON.parse(fs.readFileSync(recentSessionsPath, 'utf8')) as [
-      { path: string; updated: number },
-    ]
-    const idx = rows.findIndex(r => r.path === path)
-    const path = getAutosavePath(`${+Date.now()}`)
-    const entry = {
-      path,
-      updated: +Date.now(),
-      name: snap.defaultSession?.name,
-    }
-    if (idx === -1) {
-      rows.unshift(entry)
-    } else {
-      rows[idx] = entry
-    }
-    await Promise.all([
-      writeFile(recentSessionsPath, stringify(rows)),
-      writeFile(path, stringify(snap)),
-    ])
+    await writeFile(unsavedPath, stringify(snap))
 
-    return path
+    return unsavedPath
   },
 )
 
@@ -412,8 +432,24 @@ ipcMain.handle(
 ipcMain.handle(
   'saveSession',
   async (_event: unknown, path: string, snap: SessionSnap) => {
+    const isUnsaved = path === unsavedPath
+    if (isUnsaved) {
+      await writeFile(path, stringify(snap))
+      return
+    }
+    try {
+      await unlink(unsavedPath)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      if (!('code' in error)) {
+        throw error
+      }
+      if (error.code !== 'ENOENT') {
+        throw error
+      }
+    }
     const page = await mainWindow?.capturePage()
-    const rows = JSON.parse(fs.readFileSync(recentSessionsPath, 'utf8')) as [
+    const rows = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as [
       { path: string; updated: number },
     ]
     const idx = rows.findIndex(r => r.path === path)
@@ -445,7 +481,8 @@ ipcMain.handle('loadThumbnail', (_event: unknown, name: string) => {
 })
 
 ipcMain.handle('promptOpenFile', async (_event: unknown) => {
-  const choice = await dialog.showOpenDialog({
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const choice = await dialog.showOpenDialog(mainWindow!, {
     defaultPath: jbrowseDocDir,
     filters: fileFilters,
   })
@@ -453,8 +490,13 @@ ipcMain.handle('promptOpenFile', async (_event: unknown) => {
   return choice.filePaths[0]
 })
 
+ipcMain.handle('promptSaveBeforeQuit', async (_event: unknown) => {
+  return promptSave()
+})
+
 ipcMain.handle('promptSessionSaveAs', async (_event: unknown) => {
-  const choice = await dialog.showSaveDialog({
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const choice = await dialog.showSaveDialog(mainWindow!, {
     defaultPath: path.join(defaultSavePath),
     filters: fileFilters,
   })
