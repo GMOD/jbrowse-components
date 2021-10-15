@@ -9,6 +9,7 @@ Welcome to the JBrowse 2 documentation.
 
 We provide
 
+- [Quick start for desktop](quickstart_desktop) - a quick-start guide to getting JBrowse desktop running on your machine
 - [Super-quick start guide](superquickstart_web) - super brief setup
   instructions e.g. 10 lines of CLI commands to help admins who are familiar
   with jbrowse with getting set up

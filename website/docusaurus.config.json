@@ -9,7 +9,9 @@
   "organizationName": "GMOD",
   "projectName": "jbrowse-components",
   "customFields": {
-    "currentVersion": "v1.4.4"
+    "currentVersionNo": "1.4.5",
+    "currentVersion": "v1.4.5",
+    "bannerBulletin": "introducing jbrowse desktop"
   },
   "themeConfig": {
     "colorMode": {
@@ -69,9 +71,14 @@
           "position": "right"
         },
         {
-          "href": "https://github.com/GMOD/jbrowse-components",
-          "label": "GitHub",
-          "position": "right"
+          "className": "navbar-social-github",
+          "position": "right",
+          "href": "https://github.com/GMOD/jbrowse-components"
+        },
+        {
+          "className": "navbar-social-twitter",
+          "position": "right",
+          "href": "https://twitter.com/usejbrowse"
         }
       ]
     },
