@@ -6,11 +6,6 @@ toplevel: true
 
 import Figure from './figure'
 
-**_Important note on JBrowse desktop_**
-
-We do not have downloads of JBrowse 2 Desktop yet, it is expecting a release
-in late 2020
-
 ### Installing JBrowse desktop
 
 This guide will walk you through installing jbrowse 2 on the desktop
