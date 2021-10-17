@@ -315,7 +315,13 @@ ipcMain.handle('loadExternalConfig', (_event: unknown, sessionPath) => {
 })
 
 ipcMain.handle('loadSession', async (_event: unknown, sessionPath: string) => {
-  return JSON.parse(await readFile(sessionPath, 'utf8'))
+  const sessionSnapshot = JSON.parse(await readFile(sessionPath, 'utf8'))
+  if (!sessionSnapshot.assemblies) {
+    throw new Error(
+      `File at ${sessionPath} does not appear to be a JBrowse session. It does not contain any assemblies.`,
+    )
+  }
+  return sessionSnapshot
 })
 
 ipcMain.handle(
