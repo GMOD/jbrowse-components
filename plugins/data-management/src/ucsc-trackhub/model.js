@@ -2,6 +2,7 @@ import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes/
 import {
   ConfigurationReference,
   readConfObject,
+  getConf,
 } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { types } from 'mobx-state-tree'
@@ -24,27 +25,23 @@ export default function UCSCTrackHubConnection(pluginManager) {
       })
       .actions(self => ({
         connect() {
-          const connectionName = readConfObject(self.configuration, 'name')
-          const hubFileLocation = readConfObject(
-            self.configuration,
-            'hubTxtLocation',
-          )
+          const connectionName = getConf(self, 'name')
+          const hubFileLocation = getConf(self, 'hubTxtLocation')
           const session = getSession(self)
           fetchHubFile(hubFileLocation)
             .then(hubFile => {
-              let genomesFileLocation
-              if (hubFileLocation.uri) {
-                genomesFileLocation = {
-                  uri: new URL(hubFile.get('genomesFile'), hubFileLocation.uri)
-                    .href,
-                  locationType: 'UriLocation',
-                }
-              } else {
-                genomesFileLocation = {
-                  localPath: hubFile.get('genomesFile'),
-                  locationType: 'LocalPathLocation',
-                }
-              }
+              const genomesFileLocation = hubFileLocation.uri
+                ? {
+                    uri: new URL(
+                      hubFile.get('genomesFile'),
+                      hubFileLocation.uri,
+                    ).href,
+                    locationType: 'UriLocation',
+                  }
+                : {
+                    localPath: hubFile.get('genomesFile'),
+                    locationType: 'LocalPathLocation',
+                  }
               return Promise.all([
                 hubFile,
                 fetchGenomesFile(genomesFileLocation),
@@ -53,10 +50,7 @@ export default function UCSCTrackHubConnection(pluginManager) {
             .then(([hubFile, genomesFile]) => {
               const trackDbData = []
               for (const [genomeName, genome] of genomesFile) {
-                const assemblyNames = readConfObject(
-                  self.configuration,
-                  'assemblyNames',
-                )
+                const assemblyNames = getConf(self, 'assemblyNames')
                 if (
                   assemblyNames.length > 0 &&
                   !assemblyNames.includes(genomeName)
@@ -71,21 +65,21 @@ export default function UCSCTrackHubConnection(pluginManager) {
                     `Cannot find assembly for "${genomeName}" from the genomes file for connection "${connectionName}"`,
                   )
                 }
-                let trackDbFileLocation
-                if (hubFileLocation.uri) {
-                  trackDbFileLocation = {
-                    uri: new URL(
-                      genome.get('trackDb'),
-                      new URL(hubFile.get('genomesFile'), hubFileLocation.uri),
-                    ).href,
-                    locationType: 'UriLocation',
-                  }
-                } else {
-                  trackDbFileLocation = {
-                    localPath: genome.get('trackDb'),
-                    locationType: 'LocalPathLocation',
-                  }
-                }
+                const trackDbFileLocation = hubFileLocation.uri
+                  ? {
+                      uri: new URL(
+                        genome.get('trackDb'),
+                        new URL(
+                          hubFile.get('genomesFile'),
+                          hubFileLocation.uri,
+                        ),
+                      ).href,
+                      locationType: 'UriLocation',
+                    }
+                  : {
+                      localPath: genome.get('trackDb'),
+                      locationType: 'LocalPathLocation',
+                    }
                 trackDbData.push(
                   Promise.all([
                     trackDbFileLocation,
