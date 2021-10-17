@@ -1,12 +1,14 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { isElectron } from '@jbrowse/core/util'
-
-import { OAuthInternetAccountConfigModel } from './configSchema'
-import crypto from 'crypto'
+import sha256 from 'crypto-js/sha256'
+import Base64 from 'crypto-js/enc-base64'
 import { Instance, types } from 'mobx-state-tree'
 import { RemoteFileWithRangeCache } from '@jbrowse/core/util/io'
 import { UriLocation } from '@jbrowse/core/util/types'
+
+// locals
+import { OAuthInternetAccountConfigModel } from './configSchema'
 
 interface OAuthData {
   client_id: string
@@ -112,21 +114,18 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
 
           if (config.needsPKCE) {
-            const base64Encode = (buf: Buffer) => {
+            const fixup = (buf: string) => {
               return buf
-                .toString('base64')
                 .replace(/\+/g, '-')
                 .replace(/\//g, '_')
                 .replace(/=/g, '')
             }
-            const codeVerifier = base64Encode(crypto.randomBytes(32))
-            const sha256 = (str: string) => {
-              return crypto.createHash('sha256').update(str).digest()
-            }
-            const codeChallenge = base64Encode(sha256(codeVerifier))
+            const array = new Uint8Array(32)
+            window.crypto.getRandomValues(array)
+            const codeVerifier = fixup(Buffer.from(array).toString('base64'))
+            const codeChallenge = fixup(Base64.stringify(sha256(codeVerifier)))
             data.code_challenge = codeChallenge
             data.code_challenge_method = 'S256'
-
             self.setCodeVerifierPKCE(codeVerifier)
           }
 
