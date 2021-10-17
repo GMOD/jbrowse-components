@@ -136,10 +136,7 @@ const stateModelFactory = (
         }
         return locationUri
       },
-      async googleDriveFetch(
-        url: RequestInfo,
-        opts?: RequestInitWithMetadata,
-      ): Promise<Response> {
+      async googleDriveFetch(url: RequestInfo, opts?: RequestInitWithMetadata) {
         const urlId = String(url).match(/[-\w]{25,}/)
 
         const preAuthInfo = self.uriToPreAuthInfoMap.get(url)

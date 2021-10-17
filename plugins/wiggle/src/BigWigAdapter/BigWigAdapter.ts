@@ -94,5 +94,3 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
 
   public freeResources(): void {}
 }
-const adapterCapabilities = BigWigAdapter.capabilities
-export { adapterCapabilities }
