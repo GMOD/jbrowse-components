@@ -41,26 +41,20 @@ function StatusMessage({
   )
 }
 
-function TrackAdapterSelector({
-  adapterHint,
-  model,
-}: {
-  adapterHint: string
-  model: AddTrackModel
-}) {
+const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
   const classes = useStyles()
   const session = getSession(model)
+  const { trackAdapter } = model
+
   return (
     <TextField
       className={classes.spacing}
-      value={adapterHint}
+      value={trackAdapter?.type}
       label="adapterType"
       helperText="An adapter type"
       select
       fullWidth
-      onChange={event => {
-        model.setAdapterHint(event.target.value)
-      }}
+      onChange={event => model.setAdapterHint(event.target.value)}
       SelectProps={{
         // @ts-ignore
         SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
@@ -77,11 +71,10 @@ function TrackAdapterSelector({
         ))}
     </TextField>
   )
-}
+})
 
 function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
-  const { adapterHint } = model
   return (
     <>
       <Typography className={classes.spacing}>
@@ -104,22 +97,77 @@ function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
         </Link>{' '}
         and add a feature request for this data type.
       </Typography>
-      <TrackAdapterSelector adapterHint={adapterHint} model={model} />
+      <TrackAdapterSelector model={model} />
     </>
   )
 }
 
-function ConfirmTrack({ model }: { model: AddTrackModel }) {
+const TrackTypeSelector = observer(({ model }: { model: AddTrackModel }) => {
   const classes = useStyles()
   const session = getSession(model)
-  const {
-    trackName,
-    trackAdapter,
-    trackType,
-    assembly,
-    warningMessage,
-    adapterHint,
-  } = model
+  const { trackType } = model
+
+  return (
+    <TextField
+      className={classes.spacing}
+      value={trackType}
+      label="trackType"
+      helperText="A track type"
+      select
+      fullWidth
+      onChange={event => {
+        model.setTrackType(event.target.value)
+      }}
+      SelectProps={{
+        // @ts-ignore
+        SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
+      }}
+    >
+      {getEnv(session)
+        .pluginManager.getElementTypesInGroup('track')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map(({ name }: any) => (
+          <MenuItem key={name} value={name}>
+            {name}
+          </MenuItem>
+        ))}
+    </TextField>
+  )
+})
+
+const TrackAssemblySelector = observer(
+  ({ model }: { model: AddTrackModel }) => {
+    const session = getSession(model)
+    const { assembly } = model
+    return (
+      <TextField
+        value={assembly}
+        label="assemblyName"
+        helperText="Assembly to which the track will be added"
+        select
+        fullWidth
+        onChange={event => model.setAssembly(event.target.value)}
+        SelectProps={{
+          // @ts-ignore
+          SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
+        }}
+      >
+        {session.assemblies.map(conf => {
+          const name = readConfObject(conf, 'name')
+          return (
+            <MenuItem key={name} value={name}>
+              {name}
+            </MenuItem>
+          )
+        })}
+      </TextField>
+    )
+  },
+)
+
+function ConfirmTrack({ model }: { model: AddTrackModel }) {
+  const classes = useStyles()
+  const { trackName, trackAdapter, trackType, warningMessage } = model
 
   if (model.unsupported) {
     return (
@@ -155,14 +203,13 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
   }
 
   return (
-    <>
+    <div>
       {trackAdapter ? (
         <StatusMessage trackAdapter={trackAdapter} trackType={trackType} />
       ) : null}
       {warningMessage ? (
         <Typography style={{ color: 'orange' }}>{warningMessage}</Typography>
       ) : null}
-      <TrackAdapterSelector adapterHint={adapterHint} model={model} />
       <TextField
         className={classes.spacing}
         label="trackName"
@@ -172,54 +219,10 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
         onChange={event => model.setTrackName(event.target.value)}
         inputProps={{ 'data-testid': 'trackNameInput' }}
       />
-      <TextField
-        className={classes.spacing}
-        value={trackType}
-        label="trackType"
-        helperText="A track type"
-        select
-        fullWidth
-        onChange={event => {
-          model.setTrackType(event.target.value)
-        }}
-        SelectProps={{
-          // @ts-ignore
-          SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
-        }}
-      >
-        {getEnv(session)
-          .pluginManager.getElementTypesInGroup('track')
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .map(({ name }: any) => (
-            <MenuItem key={name} value={name}>
-              {name}
-            </MenuItem>
-          ))}
-      </TextField>
-      <TextField
-        value={assembly}
-        label="assemblyName"
-        helperText="Assembly to which the track will be added"
-        select
-        fullWidth
-        onChange={event => {
-          model.setAssembly(event.target.value)
-        }}
-        SelectProps={{
-          // @ts-ignore
-          SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
-        }}
-      >
-        {session.assemblies.map(assemblyConf => {
-          const assemblyName = readConfObject(assemblyConf, 'name')
-          return (
-            <MenuItem key={assemblyName} value={assemblyName}>
-              {assemblyName}
-            </MenuItem>
-          )
-        })}
-      </TextField>
-    </>
+      <TrackAdapterSelector model={model} />
+      <TrackTypeSelector model={model} />
+      <TrackAssemblySelector model={model} />
+    </div>
   )
 }
 
