@@ -26,7 +26,7 @@ export function b64PadSuffix(b64: string): string {
  * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
  * @param b64 - a base64 string to decode and inflate
  */
-export async function fromUrlSafeB64(b64: string): Promise<string> {
+export async function fromUrlSafeB64(b64: string) {
   const originalB64 = b64PadSuffix(b64.replace(/-/g, '+').replace(/_/g, '/'))
   const { toByteArray } = await import('base64-js')
   const { inflate } = await import('pako')
@@ -40,7 +40,7 @@ export async function fromUrlSafeB64(b64: string): Promise<string> {
  * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
  * @param str-  a string to compress and encode
  */
-export function toUrlSafeB64(str: string): string {
+export async function toUrlSafeB64(str: string) {
   const bytes = new TextEncoder().encode(str)
   const { deflate } = await import('pako')
   const { fromByteArray } = await import('base64-js')

@@ -52,7 +52,6 @@
     "librpc-web-mod": "^1.1.2",
     "load-script2": "^2.0.5",
     "object.fromentries": "^2.0.0",
-    "pako": "^1.0.10",
     "rbush": "^3.0.1",
     "react-error-boundary": "^3.0.0",
     "react-intersection-observer": "^8.31.0",
