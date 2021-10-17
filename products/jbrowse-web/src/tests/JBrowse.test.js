@@ -69,8 +69,6 @@ describe('<JBrowse />', () => {
   })
 })
 
-describe('max height test', () => {})
-
 test('lollipop track test', async () => {
   const pluginManager = getPluginManager()
   const state = pluginManager.rootModel
@@ -81,9 +79,9 @@ test('lollipop track test', async () => {
   state.session.views[0].setNewView(1, 150)
   fireEvent.click(await findByTestId('htsTrackEntry-lollipop_track'))
 
-  await findByTestId('display-lollipop_track_linear')
+  await findByTestId('display-lollipop_track_linear', {}, { timeout: 10000 })
   await findByTestId('three')
-})
+}, 10000)
 
 test('toplevel configuration', () => {
   const pluginManager = new PluginManager(
