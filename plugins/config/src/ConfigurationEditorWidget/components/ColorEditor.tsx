@@ -1,9 +1,10 @@
+import React, { lazy, useState } from 'react'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import TextField from '@material-ui/core/TextField'
-import { makeStyles } from '@material-ui/core/styles'
-import { ChromePicker, Color, ColorResult, RGBColor } from 'react-color'
-import React, { useState } from 'react'
+import { Color, RGBColor } from 'react-color'
+
+const ColorPicker = lazy(() => import('./ColorPicker'))
 
 // this is needed because passing a entire color object into the react-color
 // for alpha, can't pass in an rgba string for example
@@ -13,51 +14,6 @@ function serializeColor(color: Color) {
     return `rgb(${r},${g},${b},${a})`
   }
   return color
-}
-const useStyles = makeStyles({
-  popover: {
-    position: 'absolute',
-    zIndex: 2,
-  },
-  cover: {
-    position: 'fixed',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-  },
-})
-
-export function ColorPicker(props: {
-  color: Color
-  onChange: (color: ColorResult) => void
-}) {
-  const { color, onChange } = props
-  const classes = useStyles()
-  const [displayColorPicker, setDisplayColorPicker] = useState(true)
-
-  const handleClose = () => {
-    setDisplayColorPicker(false)
-  }
-  return (
-    <div>
-      {displayColorPicker ? (
-        <div className={classes.popover}>
-          <div
-            role="presentation"
-            className={classes.cover}
-            onClick={handleClose}
-          />
-          <ChromePicker color={color} onChange={onChange} />
-        </div>
-      ) : null}
-    </div>
-  )
-}
-
-ColorPicker.propTypes = {
-  color: ReactPropTypes.string.isRequired,
-  onChange: ReactPropTypes.func.isRequired,
 }
 
 export const ColorSlot = (props: {
@@ -92,12 +48,14 @@ export const ColorSlot = (props: {
         {...TextFieldProps}
       />
       {displayed ? (
-        <ColorPicker
-          color={value}
-          onChange={(event: ColorResult) => {
-            onChange(serializeColor(event.rgb))
-          }}
-        />
+        <React.Suspense fallback={<div />}>
+          <ColorPicker
+            color={value}
+            onChange={event => {
+              onChange(serializeColor(event.rgb))
+            }}
+          />
+        </React.Suspense>
       ) : null}
     </>
   )
