@@ -180,6 +180,7 @@ const ShareDialog = observer(
   }) => {
     const classes = useStyles()
     const [shortUrl, setShortUrl] = useState('')
+    const [longUrl, setLongUrl] = useState('')
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<unknown>()
     const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
@@ -221,12 +222,28 @@ const ShareDialog = observer(
       }
     }, [currentSetting, url, snap])
 
-    // generate long URL
-    const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`
-    const longUrl = new URL(window.location.href)
-    const longParams = new URLSearchParams(longUrl.search)
-    longParams.set('session', `encoded-${sess}`)
-    longUrl.search = longParams.toString()
+    useEffect(() => {
+      let cancelled = false
+      ;(async () => {
+        try {
+          // generate long URL
+          const sess = await toUrlSafeB64(JSON.stringify(getSnapshot(session)))
+          const longUrl = new URL(window.location.href)
+          const longParams = new URLSearchParams(longUrl.search)
+          longParams.set('session', `encoded-${sess}`)
+          longUrl.search = longParams.toString()
+          if (!cancelled) {
+            setLongUrl(longUrl.toString())
+          }
+        } catch (e) {
+          setError(e)
+        }
+      })()
+      return () => {
+        cancelled = true
+      }
+    }, [session])
+
     return (
       <>
         <Dialog
@@ -278,7 +295,7 @@ const ShareDialog = observer(
             ) : (
               <TextField
                 label="URL"
-                value={longUrl.toString()}
+                value={longUrl}
                 InputProps={{
                   readOnly: true,
                 }}

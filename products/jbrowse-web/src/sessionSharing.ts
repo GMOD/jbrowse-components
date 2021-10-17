@@ -38,7 +38,7 @@ export async function shareSessionToDynamo(
   url: string,
   referer: string,
 ) {
-  const sess = `${toUrlSafeB64(JSON.stringify(session))}`
+  const sess = await toUrlSafeB64(JSON.stringify(session))
   const password = generateUID(5)
   const encryptedSession = encrypt(sess, password)
 
@@ -73,7 +73,6 @@ export async function readSessionFromDynamo(
 ) {
   const sessionId = sessionQueryParam.split('share-')[1]
   const url = `${baseUrl}?sessionId=${sessionId}`
-
   const response = await fetch(url, {
     signal,
   })
