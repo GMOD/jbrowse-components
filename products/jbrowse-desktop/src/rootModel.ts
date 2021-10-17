@@ -17,6 +17,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { ipcRenderer } from 'electron'
 
@@ -64,7 +65,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       jbrowse: JBrowseDesktop(
         pluginManager,
         Session,
-        assemblyConfigSchemasType,
+        assemblyConfigSchemasType as AnyConfigurationSchemaType,
       ),
       session: types.maybe(Session),
       assemblyManager: assemblyManagerType,
