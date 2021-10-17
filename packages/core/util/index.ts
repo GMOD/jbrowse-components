@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { toByteArray, fromByteArray } from 'base64-js'
 import {
   getParent,
   isAlive,
