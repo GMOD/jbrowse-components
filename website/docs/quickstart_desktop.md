@@ -27,27 +27,11 @@ terminal with
 #### Installing on MacOS
 
 Visit http://github.com/gmod/jbrowse-components/releases/latest and find the
-latest MacOS release artifact in our latest builds
+latest MacOS release artifact in our latest builds.
 
-You can then unzip this download and the "JBrowse 2" app will be unzipped to
-this folder. You can then run JBrowse 2 from clicking this file.
+Download the .dmg file for MacOS, double click, and drag JBrowse 2 into 'applications'.
 
-<Figure caption="Screenshot of the Finder window showing the downloaded zip file and unzipped contents" src="/img/installation_mac_download.png"/>
-
-To run JBrowse 2, you can launch the unzipped app, however if you double click
-on the file it may give you a warning about running a program from an
-unauthorized developer since JBrowse 2 isn't registered with Mac's app store
-
-In order to properly launch JBrowse 2
-
-1. Right-click or hold control and click "JBrowse 2" app in the Finder
-2. Select "Open" from the context menu
-3. The warning will pop up again but with the option to run icon
-
-Reference
-https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unidentified-developer-mh40616/mac
-
-<Figure caption="Screenshot of the 'open app from unauthorized developer' after right-clicking and selecting 'open'" src="/img/installation_mac_protect2.png"/>
+You can now open JBrowse 2 like any other application on your Mac.
 
 #### Installing on Windows
 
