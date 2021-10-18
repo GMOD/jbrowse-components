@@ -145,6 +145,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
               description=""
               location={trackData}
               setLocation={loc => setTrackData(loc)}
+              session={session}
             />
           </Grid>
         </Grid>

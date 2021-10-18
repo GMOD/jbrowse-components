@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import FileSelector from '@jbrowse/core/ui/FileSelector'
-import { FileLocation } from '@jbrowse/core/util/types'
+import { FileLocation, AbstractSessionModel } from '@jbrowse/core/util/types'
 import {
   Button,
   Grid,
@@ -78,6 +78,7 @@ const AdapterInput = observer(
     setTwoBitLocation,
     chromSizesLocation,
     setChromSizesLocation,
+    session,
   }: {
     adapterSelection: string
     fastaLocation: FileLocation
@@ -90,6 +91,7 @@ const AdapterInput = observer(
     setTwoBitLocation: Function
     chromSizesLocation: FileLocation
     setChromSizesLocation: Function
+    session?: AbstractSessionModel
   }) => {
     if (
       adapterSelection === 'IndexedFastaAdapter' ||
@@ -102,6 +104,7 @@ const AdapterInput = observer(
               name="fastaLocation"
               location={fastaLocation}
               setLocation={loc => setFastaLocation(loc)}
+              session={session}
             />
           </Grid>
           <Grid item>
@@ -109,6 +112,7 @@ const AdapterInput = observer(
               name="faiLocation"
               location={faiLocation}
               setLocation={loc => setFaiLocation(loc)}
+              session={session}
             />
           </Grid>
           {adapterSelection === 'BgzipFastaAdapter' ? (
@@ -117,6 +121,7 @@ const AdapterInput = observer(
                 name="gziLocation"
                 location={gziLocation}
                 setLocation={loc => setGziLocation(loc)}
+                session={session}
               />
             </Grid>
           ) : null}
@@ -132,6 +137,7 @@ const AdapterInput = observer(
               name="twoBitLocation"
               location={twoBitLocation}
               setLocation={loc => setTwoBitLocation(loc)}
+              session={session}
             />
           </Grid>
           <Grid item>
@@ -139,6 +145,7 @@ const AdapterInput = observer(
               name="chromSizesLocation (optional, can be added to speed up loading 2bit files with many contigs)"
               location={chromSizesLocation}
               setLocation={loc => setChromSizesLocation(loc)}
+              session={session}
             />
           </Grid>
         </Grid>
@@ -153,11 +160,11 @@ const blank = { uri: '' } as FileLocation
 
 const AssemblyAddForm = observer(
   ({
-    rootModel,
+    session,
     setFormOpen,
   }: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rootModel: any
+    session: any
     setFormOpen: Function
   }) => {
     const classes = useStyles()
@@ -179,7 +186,7 @@ const AssemblyAddForm = observer(
 
     function createAssembly() {
       if (assemblyName === '') {
-        rootModel.session.notify("Can't create an assembly without a name")
+        session.notify("Can't create an assembly without a name")
       } else {
         setFormOpen(false)
         let newAssembly
@@ -221,8 +228,8 @@ const AssemblyAddForm = observer(
             },
           }
         }
-        rootModel.jbrowse.addAssemblyConf(newAssembly)
-        rootModel.session.notify(
+        session.addAssemblyConf(newAssembly)
+        session.notify(
           `Successfully added ${assemblyName} assembly to JBrowse 2`,
           'success',
         )
@@ -268,6 +275,7 @@ const AssemblyAddForm = observer(
               setTwoBitLocation={setTwoBitLocation}
               chromSizesLocation={chromSizesLocation}
               setChromSizesLocation={setChromSizesLocation}
+              session={session}
             />
           </div>
         </Paper>

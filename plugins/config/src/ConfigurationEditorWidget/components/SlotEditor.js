@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
-import { getPropertyMembers, getEnv } from 'mobx-state-tree'
+import { getPropertyMembers } from 'mobx-state-tree'
 import { FileSelector } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import {
   getPropertyType,
   getSubType,
@@ -338,13 +339,15 @@ const stringEnumEditor = observer(({ slot, slotSchema }) => {
 })
 
 const FileSelectorWrapper = observer(({ slot }) => {
+  const { value, name, description } = slot
+  const session = getSession(slot)
   return (
     <FileSelector
-      location={slot.value}
+      name={name}
+      description={description}
+      location={value}
       setLocation={location => slot.set(location)}
-      name={slot.name}
-      description={slot.description}
-      rootModel={getEnv(slot).pluginManager?.rootModel}
+      session={session}
     />
   )
 })

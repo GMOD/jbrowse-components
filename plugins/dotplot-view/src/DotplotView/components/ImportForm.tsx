@@ -114,6 +114,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
                   description=""
                   location={trackData}
                   setLocation={loc => setTrackData(loc)}
+                  session={session}
                 />
               </Grid>
             </Grid>

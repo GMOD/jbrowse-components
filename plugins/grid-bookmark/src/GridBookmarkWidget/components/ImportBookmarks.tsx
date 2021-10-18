@@ -78,6 +78,7 @@ function ImportBookmarks({
           <FileSelector
             location={location}
             setLocation={setLocation}
+            session={session}
             name="File"
           />
           <Typography>Select assembly that your data belongs to</Typography>

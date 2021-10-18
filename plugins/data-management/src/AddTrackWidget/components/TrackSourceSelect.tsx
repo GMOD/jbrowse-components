@@ -1,9 +1,11 @@
 import React from 'react'
 import { FileSelector } from '@jbrowse/core/ui'
 import { Paper, makeStyles } from '@material-ui/core'
-import { AddTrackModel } from '../model'
-import { getRoot } from 'mobx-state-tree'
+import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
+
+// locals
+import { AddTrackModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -18,7 +20,7 @@ const useStyles = makeStyles(theme => ({
 
 function TrackSourceSelect({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
-  const rootModel = getRoot(model)
+  const session = getSession(model)
 
   return (
     <Paper className={classes.paper}>
@@ -28,7 +30,7 @@ function TrackSourceSelect({ model }: { model: AddTrackModel }) {
         location={model.trackData}
         setLocation={model.setTrackData}
         setName={model.setTrackName}
-        rootModel={rootModel}
+        session={session}
       />
       <div className={classes.spacer} />
       <FileSelector
@@ -37,7 +39,7 @@ function TrackSourceSelect({ model }: { model: AddTrackModel }) {
         location={model.indexTrackData}
         setLocation={model.setIndexTrackData}
         setName={model.setTrackName}
-        rootModel={rootModel}
+        session={session}
       />
     </Paper>
   )
