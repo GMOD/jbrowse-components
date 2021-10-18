@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/core",
-  "version": "1.4.4",
+  "version": "1.5.0",
   "description": "JBrowse 2 core libraries used by plugins",
   "keywords": [
     "jbrowse",
@@ -63,8 +63,8 @@
   },
   "peerDependencies": {
     "@material-ui/core": "^4.12.2",
-    "@mui/x-data-grid": "^4.0.0",
     "@material-ui/lab": "^4.0.0-alpha.45",
+    "@mui/x-data-grid": "^4.0.0",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "^3.14.1",
