@@ -6,6 +6,8 @@
  */
 
 /* You can override the default Infima variables here. */
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
 :root {
   --ifm-color-primary: #25c2a0;
   --ifm-color-primary-dark: rgb(33, 175, 144);
@@ -17,6 +19,7 @@
   --ifm-code-font-size: 95%;
   --ifm-navbar-background-color: #0d223f;
   --ifm-navbar-link-color: white;
+  --ifm-font-family-base: 'Roboto';
 }
 
 .docusaurus-highlight-code-line {
