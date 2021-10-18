@@ -111,21 +111,21 @@
       "publish": [
         "github"
       ],
-      "artifactName": "jbrowse-desktop-${version}-win.${ext}"
+      "artifactName": "jbrowse-desktop-v${version}-win.${ext}"
     },
     "linux": {
       "publish": [
         "github"
       ],
       "executableName": "jbrowse-desktop",
-      "artifactName": "jbrowse-desktop-${version}-linux.${ext}"
+      "artifactName": "jbrowse-desktop-v${version}-linux.${ext}"
     },
     "mac": {
       "publish": [
         "github"
       ],
       "category": "public.app-category.utilities",
-      "artifactName": "jbrowse-desktop-${version}-mac.${ext}"
+      "artifactName": "jbrowse-desktop-v${version}-mac.${ext}"
     },
     "files": [
       "build/**/*",
