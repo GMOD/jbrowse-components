@@ -86,6 +86,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   addAssembly?: Function
   removeAssembly?: Function
   textSearchManager?: TextSearchManager
+  internetAccounts?: BaseInternetAccountModel[]
   connections: AnyConfigurationModel[]
   deleteConnection?: Function
   sessionConnections?: AnyConfigurationModel[]

@@ -146,6 +146,9 @@ export default function sessionModelFactory(
       get textSearchManager(): TextSearchManager {
         return getParent(self).textSearchManager
       },
+      get internetAccounts(): TextSearchManager {
+        return getParent(self).internetAccounts
+      },
       get connections() {
         return [
           ...self.sessionConnections,

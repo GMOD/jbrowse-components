@@ -33,6 +33,7 @@ import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
 import InfoIcon from '@material-ui/icons/Info'
+import { BaseInternetAccountModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -122,6 +123,9 @@ export default function sessionModelFactory(
       },
       get textSearchManager(): TextSearchManager {
         return getParent(self).textSearchManager
+      },
+      get internetAccounts(): BaseInternetAccountModel[] {
+        return getParent(self).internetAccounts
       },
       get connections() {
         return getParent(self).jbrowse.connections
