@@ -21,9 +21,8 @@ import { observer } from 'mobx-react'
 import {
   FileLocation,
   UriLocation,
+  AbstractSessionModel,
   isUriLocation,
-  AbstractRootModel,
-  isAppRootModel,
 } from '../../util/types'
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
 import LocalFileChooser from './LocalFileChooser'
@@ -45,18 +44,16 @@ const FileSelector = observer(
     setName?: (str: string) => void
     name?: string
     description?: string
-    rootModel?: AbstractRootModel
+    session?: AbstractSessionModel
   }) => {
-    const { location, name, description, rootModel, setLocation } = props
+    const { location, name, description, session, setLocation } = props
     const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'
     const [toggleButtonValue, setToggleButtonValue] = useState(
       location && 'internetAccountId' in location && location.internetAccountId
         ? location.internetAccountId
         : fileOrUrl,
     )
-    const internetAccounts = isAppRootModel(rootModel)
-      ? rootModel.internetAccounts.slice()
-      : []
+    const { internetAccounts = [] } = session || {}
     const numAccountsShown = 2
     const [shownInternetAccounts, setShownInternetAccounts] = useState(
       internetAccounts.slice(0, numAccountsShown),
