@@ -50,18 +50,8 @@ You can now open JBrowse 2 like any other application on your Mac.
 
 #### Installing on Windows
 
-Visit http://github.com/gmod/jbrowse-components/releases/latest
+Visit http://github.com/gmod/jbrowse-components/releases/latest and download the
+latest Windows installer executable (will end with `win.exe`).
 
-You can then unzip this file and run the file that comes from unzipping it.
-Moving this file to the Applications folder is also equivalent to "installing"
-JBrowse 2
-
-<Figure caption="Unzip the zip archive" src="/img/installation_win_unzip.png"/>
-<Figure caption="You can then double click the exe application in the unzipped archive" src="/img/installation_win_run.png"/>
-
-Then open up the Windows Explorer in the unzipped directory and run "JBrowse
-2.exe". This may give a "Windows protected your PC" warning, but select "More
-info..." and then "Run anyway"
-
-<Figure caption="You can skip windows protection to run the app by clicking the 'More info...' link" src="/img/installation_win_protect2.png"/>
-<Figure caption="After clicking 'More info...' the button to run is revealed" src="/img/installation_win_protect.png"/>
+Double-click the downloaded installer and it will install and open JBrowse.
+You can now open JBrowse like any other program.
