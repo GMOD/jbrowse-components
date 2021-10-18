@@ -91,14 +91,15 @@ guide](../quickstart_gui)
 
 ### Sharing sessions
 
-The main menu bar has a "Share" button to enable users to share their sessions
-with other people. The share button generates a URL that can be sent to other
-users. It is not possible to copy your URL bar and send this to another user
-currently, because sessions can become too large for the address bar in many
-cases.
+On JBrowse Web, the main menu bar has a "Share" button to enable users to share
+their sessions with other people. The share button generates a URL that can be
+sent to other users.
 
-Note that you can copy and paste URLs between different tabs in your local
-browser though
+Note: Share sessions is not available on JBrowse Desktop.
+
+Also note: you can't copy the literal URL in your address bar and send it to other
+users, you must use the "Share" button to do that, but you can copy and paste
+the URL in your URL bar between different tabs in your local browser though
 
 <Figure caption="The session share dialog, which gives you a short URL to share your session with other users. It is important to use these URLs generated here rather than simply copying and pasting your URL to other users" src="/img/share_button.png" />
 

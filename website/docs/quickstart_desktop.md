@@ -21,8 +21,11 @@ keep it and then start it in one of two ways:
 
 ##### In the terminal
 
+Using the AppImage file on linux, all that is needed is to make the file
+executable which you can do in a terminal
+
 ```sh
-# Make it executable, only need to do this once
+# Make the AppImage file executable, only need to do this once
 chmod  a+x jbrowse-desktop-*-linux.AppImage
 # Run!
 ./jbrowse-desktop-*-linux.AppImage
@@ -55,3 +58,9 @@ latest Windows installer executable (will end with `win.exe`).
 
 Double-click the downloaded installer and it will install and open JBrowse.
 You can now open JBrowse like any other program.
+
+### Next steps
+
+Check out the [user guide](user_guide) for more info on how to use JBrowse
+Desktop. This covers all the features that are available with screenshots and
+instructions.
