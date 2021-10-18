@@ -5,7 +5,7 @@ toplevel: true
 ---
 
 import Figure from './figure'
-import PlaylistAddIcon from '@material-ui/icons/PlaylistAdd'
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 
 ## Installing JBrowse desktop
 

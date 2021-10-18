@@ -2,34 +2,26 @@ import React from 'react'
 import Layout from '@theme/Layout'
 
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
-import { Link, Typography, Button, makeStyles, Box } from '@material-ui/core'
-import GetAppIcon from '@material-ui/icons/GetApp'
-import OpenInBrowserIcon from '@material-ui/icons/OpenInBrowser'
+import {
+  Link,
+  ThemeProvider,
+  Typography,
+  Button,
+  Box,
+  useTheme,
+  createTheme,
+} from '@mui/material'
+import { makeStyles } from '@mui/styles'
+import GetAppIcon from '@mui/icons-material/GetApp'
+import OpenInBrowserIcon from '@mui/icons-material/OpenInBrowser'
 
 const useStyles = makeStyles(theme => ({
-  button: {
-    textTransform: 'none',
-  },
   section: {
     marginTop: '24px',
     marginBottom: '32px',
   },
-  container: {
-    display: 'flex',
-    [theme.breakpoints.down('md')]: {
-      flexDirection: 'column',
-    },
-    alignItems: 'center',
-  },
-  banner: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: '#F0F0F0',
-    padding: '25px',
-    alignItems: 'center',
-  },
   bannerText: {
+    fontWeight: 'bold',
     [theme.breakpoints.down('xs')]: {
       fontSize: 'large',
     },
@@ -47,21 +39,12 @@ const useStyles = makeStyles(theme => ({
       maxWidth: 'min-content',
     },
   },
-  body: {
-    [theme.breakpoints.down('md')]: {
-      margin: '0.5em',
-    },
-    margin: '3em',
-  },
-  productContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px',
-  },
+
   rowEvenlyContainer: {
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-evenly',
+    gap: 10,
   },
   noHoverButtonA: {
     [theme.breakpoints.down('xs')]: {
@@ -85,29 +68,6 @@ const useStyles = makeStyles(theme => ({
       color: 'black',
     },
   },
-  logo: {
-    width: '150px',
-    height: '150px',
-  },
-  containRow: {
-    display: 'flex',
-    flexDirection: 'row',
-  },
-  containColumn: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  screenshot: {
-    borderRadius: '8px',
-    border: '4px solid #e0e0e0',
-  },
-  blurbAndButtonsContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: '55%',
-    justifyContent: 'center',
-    gap: '20px',
-  },
 }))
 
 function Home() {
@@ -115,12 +75,36 @@ function Home() {
   const { siteConfig = {} } = context
   const { currentVersion, bannerBulletin } = siteConfig.customFields
   const classes = useStyles()
+  const theme = useTheme()
 
   return (
     <Layout title={`${siteConfig.title}`}>
-      <div className={classes.body}>
-        <div className={classes.container}>
-          <div className={classes.blurbAndButtonsContainer}>
+      <div
+        style={{
+          [theme.breakpoints.down('md')]: {
+            margin: '0.5em',
+          },
+          margin: '3em',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            [theme.breakpoints.down('md')]: {
+              flexDirection: 'column',
+            },
+            alignItems: 'center',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              flex: '50%',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              gap: 20,
+            }}
+          >
             <Box sx={{ marginLeft: { xs: '0px', sm: '0px', md: '50px' } }}>
               <Typography variant="h5">
                 JBrowse: The next generation genome browser
@@ -131,93 +115,106 @@ function Home() {
                 visualizing and integrating biological data.
               </Typography>
             </Box>
-            <div className={classes.productContainer}>
-              <div
-                className={classes.rowEvenlyContainer}
-                style={{ gap: '10px' }}
+            <div className={classes.rowEvenlyContainer}>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<GetAppIcon width={20} />}
+                href="/jb2/download/#jbrowse-2-desktop"
+                className={classes.noHoverButtonA}
               >
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<GetAppIcon width={20} />}
-                  href="/jb2/download/#jbrowse-2-desktop"
-                  className={classes.noHoverButtonA}
-                >
-                  Download JBrowse Desktop
-                </Button>
-                <Button
-                  variant="contained"
-                  startIcon={<OpenInBrowserIcon />}
-                  href={`https://jbrowse.org/code/jb2/${currentVersion}/`}
-                  className={classes.noHoverButtonB}
-                >
-                  Browse web demo instance
-                </Button>
-              </div>
-              <div style={{ display: 'flex', alignSelf: 'center' }}>
-                <Typography variant="caption">
-                  Also check out our&nbsp;
-                  <Link href="/jb2/blog">latest release blogpost</Link>,
-                  our&nbsp;
-                  <Link href="/jb2/download/#jbrowse-2-embedded-components">
-                    embedded components
-                  </Link>
-                  , and our&nbsp;
-                  <Link href="/jb2/download/#jbrowse-2-web">
-                    command line tools
-                  </Link>
-                  .
-                </Typography>
-              </div>
+                Download JBrowse Desktop
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<OpenInBrowserIcon />}
+                href={`https://jbrowse.org/code/jb2/${currentVersion}/`}
+                className={classes.noHoverButtonB}
+              >
+                Browse web demo instance
+              </Button>
             </div>
+            <Typography
+              variant="caption"
+              style={{
+                textAlign: 'center',
+              }}
+            >
+              Also check out our&nbsp;
+              <Link href="/jb2/blog">latest release blogpost</Link>, our&nbsp;
+              <Link href="/jb2/download/#jbrowse-2-embedded-components">
+                embedded components
+              </Link>
+              , and our&nbsp;
+              <Link href="/jb2/download/#jbrowse-2-web">
+                command line tools
+              </Link>
+              .
+            </Typography>
           </div>
-          <div style={{ flex: '45%', paddingLeft: '20px' }}>
+          <div style={{ flex: '50%', paddingLeft: '20px' }}>
             <img
-              className={classes.screenshot}
+              style={{
+                borderRadius: '8px',
+                border: '4px solid #e0e0e0',
+
+                // see https://web.dev/optimize-cls/#modern-best-practice
+                // the width/height attributes are set on the image and sized using css here
+                height: 'auto',
+                width: '100%',
+              }}
+              width={1362}
+              height={731}
               alt="screenshot of jbrowse 2"
               src="img/screenshot.png"
             />
           </div>
         </div>
-      </div>
-      <div className={classes.banner}>
-        <Typography
-          variant="h4"
+        <div
           style={{
-            fontWeight: 'bold',
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-around',
+            backgroundColor: '#F0F0F0',
+            padding: '25px',
+            alignItems: 'center',
           }}
-          className={classes.bannerText}
         >
-          {bannerBulletin}
-        </Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          size="large"
-          href={`https://github.com/GMOD/jbrowse-components/releases/tag/${currentVersion}/`}
-          className={classes.bannerButton}
-        >
-          Learn more
-        </Button>
-      </div>
-      <div className={classes.body}>
+          <Typography variant="h4" className={classes.bannerText}>
+            {bannerBulletin}
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            href={`https://github.com/GMOD/jbrowse-components/releases/tag/${currentVersion}/`}
+            className={classes.bannerButton}
+          >
+            Learn more
+          </Button>
+        </div>
         <div className={classes.section}>
           <Typography variant="h4">Features</Typography>
           <hr />
           <div
-            className={classes.container}
-            style={{ alignItems: 'flex-start' }}
+            style={{
+              display: 'flex',
+              [theme.breakpoints.down('md')]: {
+                flexDirection: 'column',
+              },
+              alignItems: 'flex-start',
+            }}
           >
             <div style={{ flex: '50%' }}>
               <ul>
                 <li>
                   Improved <b>structural variant</b> and{' '}
-                  <b> compariative genomics visualization</b> with linear,
+                  <b>compariative genomics visualization</b> with linear,
                   circular, dotplot, and synteny views
                 </li>
                 <li>
-                  <b>Support for many common data types </b> including BAM,
-                  CRAM, tabix indexed VCF, GFF, BED, BigBed, BigWig, and several
+                  <b>Support for many common data types</b> including BAM, CRAM,
+                  tabix indexed VCF, GFF, BED, BigBed, BigWig, and several
                   specialized formats
                 </li>
                 <li>
@@ -234,7 +231,17 @@ function Home() {
             </div>
             <div style={{ flex: '50%', paddingLeft: '20px' }}>
               <img
-                className={classes.screenshot}
+                style={{
+                  borderRadius: '8px',
+                  border: '4px solid #e0e0e0',
+
+                  // see https://web.dev/optimize-cls/#modern-best-practice
+                  // the width/height attributes are set on the image and sized using css here
+                  height: 'auto',
+                  width: '100%',
+                }}
+                width={1377}
+                height={614}
                 alt="screenshot of jbrowse 2"
                 src="img/sv_inspector_importform_loaded.png"
               />
@@ -263,9 +270,9 @@ function Home() {
           <hr />
           <Typography>
             JBrowse is released under the{' '}
-            <a href="https://www.apache.org/licenses/LICENSE-2.0">
+            <Link href="https://www.apache.org/licenses/LICENSE-2.0">
               Apache License, Version 2.0
-            </a>
+            </Link>
             .
           </Typography>
         </div>
@@ -284,4 +291,10 @@ function Home() {
   )
 }
 
-export default Home
+export default () => {
+  return (
+    <ThemeProvider theme={createTheme()}>
+      <Home />
+    </ThemeProvider>
+  )
+}
