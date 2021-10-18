@@ -211,7 +211,7 @@ function Home() {
               <img
                 className={classes.screenshot}
                 alt="screenshot of jbrowse 2"
-                src="/img/sv_inspector_importform_loaded.png"
+                src="img/sv_inspector_importform_loaded.png"
               />
             </div>
           </div>
@@ -251,13 +251,18 @@ function Home() {
             style={{ justifyContent: 'space-evenly' }}
             sx={{ display: { xs: 'none', sm: 'none', md: 'flex' } }}
           >
-            <img className={classes.logo} src="/img/nih.png" alt="NIH logo" />
+            <img
+              className={classes.logo}
+              alt="NIH logo"
+              src={`img/nih.png`}
+              alt="NIH logo"
+            />
             <img
               style={{
                 width: '350px',
                 height: '150px',
               }}
-              src="/img/nci.png"
+              src={`img/nci.png`}
               alt="NCI logo"
             />
             <img
@@ -265,13 +270,13 @@ function Home() {
                 width: '250px',
                 height: '150px',
               }}
-              src="/img/chan.png"
+              src={`img/chan.png`}
               alt="Chan-Zuckerburg logo"
             />
             <img className={classes.logo} src="/img/oicr.svg" alt="OICR logo" />
             <img
               className={classes.logo}
-              src="/img/berkeley.png"
+              src={`img/berkeley.png`}
               alt="UC Berkeley logo"
             />
           </Box>
