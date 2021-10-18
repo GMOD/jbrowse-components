@@ -108,7 +108,7 @@ function Home() {
                 <Button
                   variant="contained"
                   color="primary"
-                  startIcon={<GetAppIcon />}
+                  startIcon={<GetAppIcon width={20} />}
                   href="/jb2/download/#jbrowse-2-desktop"
                   className={classes.noHoverButtonA}
                 >
