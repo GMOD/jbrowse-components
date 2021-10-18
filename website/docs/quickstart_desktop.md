@@ -61,6 +61,6 @@ You can now open JBrowse like any other program.
 
 ### Next steps
 
-Check out the [user guide](user_guide) for more info on how to use JBrowse
+Check out the [user guide](../user_guide) for more info on how to use JBrowse
 Desktop. This covers all the features that are available with screenshots and
 instructions.
