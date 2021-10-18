@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { BaseInternetAccountModel } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   readConfObject,
   getConf,
@@ -146,7 +147,7 @@ export default function sessionModelFactory(
       get textSearchManager(): TextSearchManager {
         return getParent(self).textSearchManager
       },
-      get internetAccounts(): TextSearchManager {
+      get internetAccounts(): BaseInternetAccountModel[] {
         return getParent(self).internetAccounts
       },
       get connections() {

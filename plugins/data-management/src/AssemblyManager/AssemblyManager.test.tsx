@@ -20,25 +20,27 @@ const mockRootModel = {
         },
       },
     ],
-    addAssemblyConf: jest.fn(),
-    removeAssemblyConf: jest.fn(),
   },
   session: {
     notify: jest.fn(),
+    addAssemblyConf: jest.fn(),
+    removeAssemblyConf: jest.fn(),
   },
 }
+
+const session = mockRootModel.session
 
 describe('AssemblyManager GUI', () => {
   it('renders succesfully', () => {
     const { getByText } = render(
-      <AssemblyManager rootModel={mockRootModel} onClose={() => {}} />,
+      <AssemblyManager session={session} onClose={() => {}} />,
     )
     expect(getByText('Assembly manager')).toBeTruthy()
   })
 
   it('opens up the Add Assembly Form when clicked', () => {
     const { getByText } = render(
-      <AssemblyManager rootModel={mockRootModel} onClose={() => {}} />,
+      <AssemblyManager session={session} onClose={() => {}} />,
     )
     fireEvent.click(getByText('Add new assembly'))
     expect(getByText('Create new assembly')).toBeTruthy()
@@ -46,7 +48,7 @@ describe('AssemblyManager GUI', () => {
 
   it('calls addAssemblyConf from the Add Assembly form', () => {
     const { getByText, getByTestId } = render(
-      <AssemblyManager rootModel={mockRootModel} onClose={() => {}} />,
+      <AssemblyManager session={session} onClose={() => {}} />,
     )
     fireEvent.click(getByText('Add new assembly'))
 
@@ -58,12 +60,12 @@ describe('AssemblyManager GUI', () => {
     })
     fireEvent.click(getByText('Create new assembly'))
 
-    expect(mockRootModel.jbrowse.addAssemblyConf).toHaveBeenCalledTimes(1)
+    expect(mockRootModel.session.addAssemblyConf).toHaveBeenCalledTimes(1)
   })
 
   it("prompts the user for a name when adding assembly if they don't", () => {
     const { getByText } = render(
-      <AssemblyManager rootModel={mockRootModel} onClose={() => {}} />,
+      <AssemblyManager session={session} onClose={() => {}} />,
     )
     fireEvent.click(getByText('Add new assembly'))
     fireEvent.click(getByText('Create new assembly'))

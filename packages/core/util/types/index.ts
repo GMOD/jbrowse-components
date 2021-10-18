@@ -105,6 +105,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   ) => void
   name: string
   id?: string
+  removeAssemblyConf: (name: string) => void
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (

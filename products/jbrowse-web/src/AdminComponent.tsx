@@ -22,16 +22,15 @@ function AdminComponent({ pluginManager }: { pluginManager: PluginManager }) {
     setDefaultSessionEditing,
     setAssemblyEditing,
     jbrowse,
+    session,
   } = rootModel as AppRootModel
 
   return (
     <>
       {isAssemblyEditing ? (
         <AssemblyManager
-          rootModel={rootModel}
-          onClose={() => {
-            setAssemblyEditing(false)
-          }}
+          session={session}
+          onClose={() => setAssemblyEditing(false)}
         />
       ) : null}
       <SetDefaultSession

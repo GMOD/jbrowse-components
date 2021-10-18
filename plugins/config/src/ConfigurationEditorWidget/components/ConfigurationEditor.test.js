@@ -1,6 +1,6 @@
 import React from 'react'
 import { render } from '@testing-library/react'
-
+import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import Alignments from '@jbrowse/plugin-alignments'
@@ -10,15 +10,17 @@ import ConfigurationEditor from './ConfigurationEditor'
 
 describe('ConfigurationEditor widget', () => {
   it('renders with just the required model elements', () => {
-    const TestSchema = ConfigurationSchema('TestThing', {
-      foo: {
-        type: 'string',
-        defaultValue: 'bar',
-      },
+    const TestSchema = types.model({
+      config: ConfigurationSchema('TestThing', {
+        foo: {
+          type: 'string',
+          defaultValue: 'bar',
+        },
+      }),
     })
 
     const { container } = render(
-      <ConfigurationEditor model={{ target: TestSchema.create() }} />,
+      <ConfigurationEditor model={{ target: TestSchema.create().config }} />,
     )
     expect(container.firstChild).toMatchSnapshot()
   })

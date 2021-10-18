@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@material-ui/core/styles'
 import {
   Button,
   Dialog,
@@ -8,11 +7,17 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  makeStyles,
 } from '@material-ui/core'
+import { AbstractSessionModel } from '@jbrowse/core/util/types'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+
+// icons
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos'
 import CloseIcon from '@material-ui/icons/Close'
 import AddIcon from '@material-ui/icons/Add'
 
+// locals
 import AssemblyTable from './AssemblyTable'
 import AssemblyAddForm from './AssemblyAddForm'
 import AssemblyEditor from './AssemblyEditor'
@@ -42,18 +47,17 @@ const useStyles = makeStyles(theme => ({
 
 const AssemblyManager = observer(
   ({
-    rootModel,
+    session,
     onClose,
   }: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rootModel: any
+    session?: AbstractSessionModel
     onClose: (arg: boolean) => void
   }) => {
     const classes = useStyles()
     const [isFormOpen, setFormOpen] = useState(false)
     const [isAssemblyBeingEdited, setIsAssemblyBeingEdited] = useState(false)
-    const [assemblyBeingEdited, setAssemblyBeingEdited] = useState()
-
+    const [assemblyBeingEdited, setAssemblyBeingEdited] =
+      useState<AnyConfigurationModel>()
     const showAssemblyTable = !isFormOpen && !isAssemblyBeingEdited
 
     return (
@@ -94,9 +98,9 @@ const AssemblyManager = observer(
         </DialogTitle>
         <DialogContent>
           <div className={classes.dialogContent}>
-            {showAssemblyTable ? (
+            {showAssemblyTable && session ? (
               <AssemblyTable
-                rootModel={rootModel}
+                session={session}
                 setIsAssemblyBeingEdited={setIsAssemblyBeingEdited}
                 setAssemblyBeingEdited={setAssemblyBeingEdited}
               />
@@ -105,10 +109,7 @@ const AssemblyManager = observer(
               <AssemblyEditor assembly={assemblyBeingEdited} />
             ) : null}
             {isFormOpen ? (
-              <AssemblyAddForm
-                rootModel={rootModel}
-                setFormOpen={setFormOpen}
-              />
+              <AssemblyAddForm session={session} setFormOpen={setFormOpen} />
             ) : null}
           </div>
         </DialogContent>
