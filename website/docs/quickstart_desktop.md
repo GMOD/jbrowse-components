@@ -15,14 +15,29 @@ we can jump right in
 
 #### Installing on Linux
 
-Visit http://github.com/gmod/jbrowse-components/releases/latest
+Visit http://github.com/gmod/jbrowse-components/releases/latest and find the
+latest Linux AppImage release. Download that file to wherever you would like to
+keep it and then start it in one of two ways:
 
-Download the latest release artifact with linux in the name
+##### In the terminal
 
-Unzip the file, open the directory, and run the file named "JBrowse 2" in the
-terminal with
+```sh
+# Make it executable, only need to do this once
+chmod  a+x jbrowse-desktop-*-linux.AppImage
+# Run!
+./jbrowse-desktop-*-linux.AppImage
+```
 
-    ./JBrowse\ 2
+##### In your file explorer
+
+This may vary slightly depending on your distribution but should basically
+follow these steps:
+
+1. Right-click on the AppImage file and select "Properties"
+2. Go to the "Permissions" tab
+3. Check "Allow executing file as program" and close
+
+You can now double-click the AppImage file to launch JBrowse.
 
 #### Installing on MacOS
 
