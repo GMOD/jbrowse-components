@@ -10,7 +10,7 @@
   "projectName": "jbrowse-components",
   "customFields": {
     "currentVersion": "v1.5.0",
-    "bannerBulletin": "Introducing JBrowse desktop"
+    "bannerBulletin": "Introducing JBrowse Desktop"
   },
   "themeConfig": {
     "colorMode": {

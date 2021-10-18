@@ -28,14 +28,10 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: '#F0F0F0',
     padding: '25px',
   },
-  header: {
-    display: 'flex',
+  body: {
     [theme.breakpoints.down('md')]: {
       margin: '0.5em',
     },
-    margin: '3em',
-  },
-  body: {
     margin: '3em',
   },
   productContainer: {
@@ -91,28 +87,24 @@ function Home() {
 
   return (
     <Layout title={`${siteConfig.title}`}>
-      <div className={classes.header}>
+      <div className={classes.body}>
         <div className={classes.container}>
           <div className={classes.blurbAndButtonsContainer}>
-            <div className={classes.containRow}>
-              <div
-                className={classes.containColumn}
-                style={{ marginLeft: '50px' }}
-              >
-                <div className={classes.containRow}>
-                  <Typography variant="h5">
-                    JBrowse: The next generation genome browser
-                  </Typography>
-                </div>
-                <p>
-                  The mission of the JBrowse Consortium is to develop a
-                  comprehensive, pluggable, open-source computational platform
-                  for visualizing and integrating biological data.
-                </p>
-              </div>
-            </div>
+            <Box sx={{ marginLeft: { xs: '0px', sm: '0px', md: '50px' } }}>
+              <Typography variant="h5">
+                JBrowse: The next generation genome browser
+              </Typography>
+              <Typography variant="body1">
+                The mission of the JBrowse Consortium is to develop a
+                comprehensive, pluggable, open-source computational platform for
+                visualizing and integrating biological data.
+              </Typography>
+            </Box>
             <div className={classes.productContainer}>
-              <div className={classes.rowEvenlyContainer}>
+              <div
+                className={classes.rowEvenlyContainer}
+                style={{ gap: '10px' }}
+              >
                 <Button
                   variant="contained"
                   color="primary"
@@ -134,7 +126,8 @@ function Home() {
               <div style={{ display: 'flex', alignSelf: 'center' }}>
                 <Typography variant="caption">
                   Also check out our&nbsp;
-                  <Link href="/jb2/blog">latest web release</Link>, our&nbsp;
+                  <Link href="/jb2/blog">latest release blogpost</Link>,
+                  our&nbsp;
                   <Link href="/jb2/download/#jbrowse-2-embedded-components">
                     embedded components
                   </Link>
@@ -254,7 +247,7 @@ function Home() {
             <img
               className={classes.logo}
               alt="NIH logo"
-              src={`img/nih.png`}
+              src="img/nih.png"
               alt="NIH logo"
             />
             <img
@@ -262,7 +255,7 @@ function Home() {
                 width: '350px',
                 height: '150px',
               }}
-              src={`img/nci.png`}
+              src="img/nci.png"
               alt="NCI logo"
             />
             <img
@@ -270,13 +263,13 @@ function Home() {
                 width: '250px',
                 height: '150px',
               }}
-              src={`img/chan.png`}
+              src="img/chan.png"
               alt="Chan-Zuckerburg logo"
             />
-            <img className={classes.logo} src="/img/oicr.svg" alt="OICR logo" />
+            <img className={classes.logo} src="img/oicr.svg" alt="OICR logo" />
             <img
               className={classes.logo}
-              src={`img/berkeley.png`}
+              src="img/berkeley.png"
               alt="UC Berkeley logo"
             />
           </Box>
