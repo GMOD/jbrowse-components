@@ -30,6 +30,11 @@ import CorePlugin from './CorePlugin'
 import createJexlInstance from './util/jexl'
 import { PluginDefinition } from './PluginLoader'
 
+type UNKNOWN_EXTENSION_POINT = {
+  name: string
+  dataType: unknown
+}
+
 /** little helper class that keeps groups of callbacks that are
 then run in a specified order by group */
 class PhasedScheduler<PhaseName extends string> {
@@ -581,9 +586,30 @@ export default class PluginManager {
     callbacks.push(callback)
   }
 
-  evaluateExtensionPoint(extensionPointName: string, extendee: unknown) {
-    const callbacks = this.extensionPoints.get(extensionPointName)
-    let accumulator = extendee
+  /**
+   * Run the callbacks in an extension point, starting with the given initial
+   * value. Returns the Callbacks are run in the order in which they are registered.
+   *
+   * Callbacks are run like:
+   *
+   * ```
+   * let a = initialValue
+   * for (const callback of callbacks) {
+   *    a = callback(a)
+   * }
+   * return a
+   * ```
+   */
+  evaluateExtensionPoint<EP_TYPE extends UNKNOWN_EXTENSION_POINT>(
+    extensionPointName: EP_TYPE['name'],
+    initialValue: EP_TYPE['dataType'],
+  ) {
+    type DATA = EP_TYPE['dataType']
+    type CALLBACK = (d: DATA) => DATA
+    const callbacks = this.extensionPoints.get(extensionPointName) as
+      | CALLBACK[]
+      | undefined
+    let accumulator = initialValue
     if (callbacks) {
       for (const callback of callbacks) {
         try {
