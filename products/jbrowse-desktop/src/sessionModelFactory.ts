@@ -299,6 +299,15 @@ export default function sessionModelFactory(
         self.views.remove(view)
       },
 
+      removeAssembly(assemblyName: string) {
+        const index = self.sessionAssemblies.findIndex(
+          asm => asm.name === assemblyName,
+        )
+        if (index !== -1) {
+          self.sessionAssemblies.splice(index, 1)
+        }
+      },
+
       addAssembly(assemblyConfig: any) {
         self.sessionAssemblies.push(assemblyConfig)
       },

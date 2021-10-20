@@ -27,7 +27,7 @@ function AdminComponent({ pluginManager }: { pluginManager: PluginManager }) {
 
   return (
     <>
-      {isAssemblyEditing ? (
+      {isAssemblyEditing && session ? (
         <AssemblyManager
           session={session}
           onClose={() => setAssemblyEditing(false)}

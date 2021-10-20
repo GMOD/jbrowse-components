@@ -83,8 +83,10 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   assemblyManager: AssemblyManager
   version: string
   getTrackActionMenuItems?: Function
-  addAssembly?: Function
-  removeAssembly?: Function
+
+  addAssembly?: (arg: AnyConfigurationModel) => void
+  removeAssembly?: (arg: string) => void
+
   textSearchManager?: TextSearchManager
   internetAccounts?: BaseInternetAccountModel[]
   connections: AnyConfigurationModel[]
@@ -105,7 +107,6 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   ) => void
   name: string
   id?: string
-  removeAssemblyConf: (name: string) => void
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (

@@ -124,7 +124,7 @@ export default function JBrowseWeb(
         })
         return self.assemblies[length - 1]
       },
-      removeAssemblyConf(assemblyName: string) {
+      removeAssembly(assemblyName: string) {
         const toRemove = self.assemblies.find(
           assembly => assembly.name === assemblyName,
         )

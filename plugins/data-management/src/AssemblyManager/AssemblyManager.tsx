@@ -50,7 +50,7 @@ const AssemblyManager = observer(
     session,
     onClose,
   }: {
-    session?: AbstractSessionModel
+    session: { removeAssembly?: (arg: string) => void }
     onClose: (arg: boolean) => void
   }) => {
     const classes = useStyles()

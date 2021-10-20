@@ -12,7 +12,6 @@ import {
   Typography,
   makeStyles,
 } from '@material-ui/core'
-import { AbstractSessionModel } from '@jbrowse/core/util/types'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { readConfObject } from '@jbrowse/core/configuration'
 
@@ -44,7 +43,7 @@ const AssemblyTable = observer(
   }: {
     session: {
       assemblies: AnyConfigurationModel[]
-      removeAssemblyConf: (arg: string) => void
+      removeAssembly?: (arg: string) => void
     }
     setIsAssemblyBeingEdited(arg: boolean): void
     setAssemblyBeingEdited(arg: AnyConfigurationModel): void
@@ -73,9 +72,7 @@ const AssemblyTable = observer(
             <IconButton
               data-testid={`${name}-delete`}
               className={classes.button}
-              onClick={() => {
-                session.removeAssemblyConf(name)
-              }}
+              onClick={() => session.removeAssembly?.(name)}
             >
               <DeleteIcon color="error" />
             </IconButton>
