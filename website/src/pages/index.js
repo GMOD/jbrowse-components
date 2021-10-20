@@ -8,88 +8,29 @@ import {
   Typography,
   Button,
   Box,
-  useTheme,
   createTheme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import OpenInBrowserIcon from '@mui/icons-material/OpenInBrowser'
-
-const useStyles = makeStyles(theme => ({
-  section: {
-    marginTop: '24px',
-    marginBottom: '32px',
-  },
-  bannerText: {
-    fontWeight: 'bold',
-    [theme.breakpoints.down('xs')]: {
-      fontSize: 'large',
-    },
-    [theme.breakpoints.down('sm')]: {
-      fontSize: 'large',
-    },
-  },
-  bannerButton: {
-    [theme.breakpoints.down('xs')]: {
-      fontSize: 'x-small',
-      maxWidth: 'min-content',
-    },
-    [theme.breakpoints.down('sm')]: {
-      fontSize: 'x-small',
-      maxWidth: 'min-content',
-    },
-  },
-
-  rowEvenlyContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    gap: 10,
-  },
-  noHoverButton: {
-    [theme.breakpoints.down('xs')]: {
-      fontSize: 'x-small',
-    },
-    [theme.breakpoints.down('sm')]: {
-      fontSize: 'x-small',
-    },
-    '&:hover, &:focus': {
-      color: 'white',
-    },
-  },
-}))
 
 function Home() {
   const context = useDocusaurusContext()
   const { siteConfig = {} } = context
   const { currentVersion, bannerBulletin } = siteConfig.customFields
-  const classes = useStyles()
-  const theme = useTheme()
+  const classes = {}
 
   return (
     <Layout title={`${siteConfig.title}`}>
-      <div
-        style={{
-          margin: theme.breakpoints.down('md') ? '0.5em' : '3em',
-        }}
-      >
-        <div
-          style={{
+      <Box sx={{ margin: { xs: '0.5em', sm: '0.5em', md: '3em' } }}>
+        <Box
+          sx={{
             display: 'flex',
-            flexDirection: theme.breakpoints.down('md') ? 'column' : 'row',
+            flexDirection: { xs: 'column', sm: 'column', md: 'row' },
             alignItems: 'center',
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              flex: '50%',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              gap: 20,
-            }}
-          >
-            <Box sx={{ marginLeft: { xs: '0px', sm: '0px', md: '50px' } }}>
+          <Box sx={{ flex: '50%' }}>
+            <Box sx={{ marginLeft: { xs: 0, sm: 0, md: 4 }, margin: 2 }}>
               <Typography variant="h5">
                 JBrowse: The next generation genome browser
               </Typography>
@@ -99,12 +40,23 @@ function Home() {
                 visualizing and integrating biological data.
               </Typography>
             </Box>
-            <div className={classes.rowEvenlyContainer}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-evenly',
+                gap: 1,
+                margin: { xs: 0, sm: 0, md: 2 },
+              }}
+            >
               <Button
                 variant="contained"
                 startIcon={<GetAppIcon />}
                 href="/jb2/download/#jbrowse-2-desktop"
-                className={classes.noHoverButton}
+                sx={{ fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' } }}
+                style={{
+                  color: 'white',
+                }}
               >
                 Download JBrowse Desktop
               </Button>
@@ -112,30 +64,30 @@ function Home() {
                 variant="contained"
                 startIcon={<OpenInBrowserIcon />}
                 href={`https://jbrowse.org/code/jb2/${currentVersion}/`}
-                className={classes.noHoverButton}
+                sx={{ fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' } }}
+                style={{
+                  color: 'white',
+                }}
               >
                 Browse web demo instance
               </Button>
-            </div>
-            <Typography
-              variant="caption"
-              style={{
-                textAlign: 'center',
-              }}
-            >
-              Also check out our&nbsp;
-              <Link href="/jb2/blog">latest release blogpost</Link>, our&nbsp;
-              <Link href="/jb2/download/#jbrowse-2-embedded-components">
-                embedded components
-              </Link>
-              , and our&nbsp;
-              <Link href="/jb2/download/#jbrowse-2-web">
-                command line tools
-              </Link>
-              .
-            </Typography>
-          </div>
-          <div style={{ flex: '50%', paddingLeft: '20px' }}>
+            </Box>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="caption">
+                Also check out our&nbsp;
+                <Link href="/jb2/blog">latest release blogpost</Link>, our&nbsp;
+                <Link href="/jb2/download/#jbrowse-2-embedded-components">
+                  embedded components
+                </Link>
+                , and our&nbsp;
+                <Link href="/jb2/download/#jbrowse-2-web">
+                  command line tools
+                </Link>
+                .
+              </Typography>
+            </Box>
+          </Box>
+          <Box sx={{ flex: '50%' }}>
             <img
               style={{
                 borderRadius: '8px',
@@ -151,10 +103,10 @@ function Home() {
               alt="screenshot of jbrowse 2"
               src="img/screenshot.png"
             />
-          </div>
-        </div>
-        <div
-          style={{
+          </Box>
+        </Box>
+        <Box
+          sx={{
             display: 'flex',
             flexDirection: 'row',
             justifyContent: 'space-around',
@@ -163,30 +115,37 @@ function Home() {
             alignItems: 'center',
           }}
         >
-          <Typography variant="h4" className={classes.bannerText}>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 'bold',
+              fontSize: { xs: 'medium', sm: 'medium', md: 'x-large' },
+            }}
+          >
             {bannerBulletin}
           </Typography>
           <Button
             variant="contained"
-            color="primary"
-            size="large"
             href={`https://github.com/GMOD/jbrowse-components/releases/tag/${currentVersion}/`}
-            className={classes.bannerButton}
+            sx={{ fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' } }}
+            style={{
+              color: 'white',
+            }}
           >
             Learn more
           </Button>
-        </div>
-        <div className={classes.section}>
+        </Box>
+        <Box>
           <Typography variant="h4">Features</Typography>
           <hr />
-          <div
-            style={{
+          <Box
+            sx={{
               display: 'flex',
-              flexDirection: theme.breakpoints.down('md') ? 'column' : 'row',
+              flexDirection: { xs: 'column', sm: 'column', md: 'row' },
               alignItems: 'flex-start',
             }}
           >
-            <div style={{ flex: '50%' }}>
+            <Box sx={{ flex: '50%' }}>
               <ul>
                 <li>
                   Improved <b>structural variant</b> and{' '}
@@ -209,13 +168,12 @@ function Home() {
                   </Link>
                 </li>
               </ul>
-            </div>
-            <div style={{ flex: '50%', paddingLeft: '20px' }}>
+            </Box>
+            <Box sx={{ flex: '50%', paddingLeft: '20px' }}>
               <img
                 style={{
-                  borderRadius: '8px',
                   border: '4px solid #e0e0e0',
-
+                  borderRadius: '8px',
                   // see https://web.dev/optimize-cls/#modern-best-practice
                   // the width/height attributes are set on the image and sized using css here
                   height: 'auto',
@@ -226,11 +184,11 @@ function Home() {
                 alt="screenshot of jbrowse 2"
                 src="img/sv_inspector_importform_loaded.png"
               />
-            </div>
-          </div>
-        </div>
+            </Box>
+          </Box>
+        </Box>
 
-        <div className={classes.section}>
+        <Box>
           <Typography variant="h4">Citation</Typography>
           <hr />
           <Typography variant="body1">
@@ -240,13 +198,13 @@ function Home() {
             you publish, please cite the most recent JBrowse paper:
           </Typography>
           <br />
-          <Typography variant="overline">
+          <Typography variant="body1">
             Buels, Robert, et al. &quot;JBrowse: a dynamic web platform for
             genome visualization and analysis.&quot; Genome Biology 17.1 (2016):
             66.
           </Typography>
-        </div>
-        <div className={classes.section}>
+        </Box>
+        <Box>
           <Typography variant="h4">License</Typography>
           <hr />
           <Typography>
@@ -256,8 +214,8 @@ function Home() {
             </Link>
             .
           </Typography>
-        </div>
-        <div className={classes.section}>
+        </Box>
+        <Box>
           <Typography variant="h4">Funding and Collaboration</Typography>
           <hr />
           <Typography variant="body1">
@@ -266,15 +224,17 @@ function Home() {
             Institute for Cancer Research, and the University of California,
             Berkeley.
           </Typography>
-        </div>
-      </div>
+        </Box>
+      </Box>
     </Layout>
   )
 }
 
+const theme = createTheme({ palette: { primary: { main: '#3f51b5' } } })
+
 export default () => {
   return (
-    <ThemeProvider theme={createTheme()}>
+    <ThemeProvider theme={theme}>
       <Home />
     </ThemeProvider>
   )
