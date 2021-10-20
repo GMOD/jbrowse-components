@@ -27,6 +27,25 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'space-around',
     backgroundColor: '#F0F0F0',
     padding: '25px',
+    alignItems: 'center',
+  },
+  bannerText: {
+    [theme.breakpoints.down('xs')]: {
+      fontSize: 'large',
+    },
+    [theme.breakpoints.down('sm')]: {
+      fontSize: 'large',
+    },
+  },
+  bannerButton: {
+    [theme.breakpoints.down('xs')]: {
+      fontSize: 'x-small',
+      maxWidth: 'min-content',
+    },
+    [theme.breakpoints.down('sm')]: {
+      fontSize: 'x-small',
+      maxWidth: 'min-content',
+    },
   },
   body: {
     [theme.breakpoints.down('md')]: {
@@ -45,11 +64,23 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'space-evenly',
   },
   noHoverButtonA: {
+    [theme.breakpoints.down('xs')]: {
+      fontSize: 'x-small',
+    },
+    [theme.breakpoints.down('sm')]: {
+      fontSize: 'x-small',
+    },
     '&:hover, &:focus': {
       color: 'white',
     },
   },
   noHoverButtonB: {
+    [theme.breakpoints.down('xs')]: {
+      fontSize: 'x-small',
+    },
+    [theme.breakpoints.down('sm')]: {
+      fontSize: 'x-small',
+    },
     '&:hover, &:focus': {
       color: 'black',
     },
@@ -155,6 +186,7 @@ function Home() {
           style={{
             fontWeight: 'bold',
           }}
+          className={classes.bannerText}
         >
           {bannerBulletin}
         </Typography>
@@ -163,7 +195,7 @@ function Home() {
           color="primary"
           size="large"
           href={`https://github.com/GMOD/jbrowse-components/releases/tag/${currentVersion}/`}
-          className={classes.noHoverButtonA}
+          className={classes.bannerButton}
         >
           Learn more
         </Button>
@@ -240,41 +272,7 @@ function Home() {
         <div className={classes.section}>
           <Typography variant="h4">Funding and Collaboration</Typography>
           <hr />
-          <Box
-            style={{ justifyContent: 'space-evenly' }}
-            sx={{ display: { xs: 'none', sm: 'none', md: 'flex' } }}
-          >
-            <img
-              className={classes.logo}
-              alt="NIH logo"
-              src="img/nih.png"
-              alt="NIH logo"
-            />
-            <img
-              style={{
-                width: '350px',
-                height: '150px',
-              }}
-              src="img/nci.png"
-              alt="NCI logo"
-            />
-            <img
-              style={{
-                width: '250px',
-                height: '150px',
-              }}
-              src="img/chan.png"
-              alt="Chan-Zuckerburg logo"
-            />
-            <img className={classes.logo} src="img/oicr.svg" alt="OICR logo" />
-            <img
-              className={classes.logo}
-              src="img/berkeley.png"
-              alt="UC Berkeley logo"
-            />
-          </Box>
-          <br />
-          <Typography variant="caption">
+          <Typography variant="body1">
             JBrowse development is supported by the US National Institutes of
             Health (U41 HG003751), The Chan Zuckerberg Initiative, The Ontario
             Institute for Cancer Research, and the University of California,
