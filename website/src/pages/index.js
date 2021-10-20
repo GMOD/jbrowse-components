@@ -46,7 +46,7 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'space-evenly',
     gap: 10,
   },
-  noHoverButtonA: {
+  noHoverButton: {
     [theme.breakpoints.down('xs')]: {
       fontSize: 'x-small',
     },
@@ -55,17 +55,6 @@ const useStyles = makeStyles(theme => ({
     },
     '&:hover, &:focus': {
       color: 'white',
-    },
-  },
-  noHoverButtonB: {
-    [theme.breakpoints.down('xs')]: {
-      fontSize: 'x-small',
-    },
-    [theme.breakpoints.down('sm')]: {
-      fontSize: 'x-small',
-    },
-    '&:hover, &:focus': {
-      color: 'black',
     },
   },
 }))
@@ -81,18 +70,13 @@ function Home() {
     <Layout title={`${siteConfig.title}`}>
       <div
         style={{
-          [theme.breakpoints.down('md')]: {
-            margin: '0.5em',
-          },
-          margin: '3em',
+          margin: theme.breakpoints.down('md') ? '0.5em' : '3em',
         }}
       >
         <div
           style={{
             display: 'flex',
-            [theme.breakpoints.down('md')]: {
-              flexDirection: 'column',
-            },
+            flexDirection: theme.breakpoints.down('md') ? 'column' : 'row',
             alignItems: 'center',
           }}
         >
@@ -118,10 +102,9 @@ function Home() {
             <div className={classes.rowEvenlyContainer}>
               <Button
                 variant="contained"
-                color="primary"
-                startIcon={<GetAppIcon width={20} />}
+                startIcon={<GetAppIcon />}
                 href="/jb2/download/#jbrowse-2-desktop"
-                className={classes.noHoverButtonA}
+                className={classes.noHoverButton}
               >
                 Download JBrowse Desktop
               </Button>
@@ -129,7 +112,7 @@ function Home() {
                 variant="contained"
                 startIcon={<OpenInBrowserIcon />}
                 href={`https://jbrowse.org/code/jb2/${currentVersion}/`}
-                className={classes.noHoverButtonB}
+                className={classes.noHoverButton}
               >
                 Browse web demo instance
               </Button>
@@ -199,9 +182,7 @@ function Home() {
           <div
             style={{
               display: 'flex',
-              [theme.breakpoints.down('md')]: {
-                flexDirection: 'column',
-              },
+              flexDirection: theme.breakpoints.down('md') ? 'column' : 'row',
               alignItems: 'flex-start',
             }}
           >
