@@ -17,7 +17,6 @@ function Home() {
   const context = useDocusaurusContext()
   const { siteConfig = {} } = context
   const { currentVersion, bannerBulletin } = siteConfig.customFields
-  const classes = {}
 
   return (
     <Layout title={`${siteConfig.title}`}>
@@ -53,9 +52,9 @@ function Home() {
                 variant="contained"
                 startIcon={<GetAppIcon />}
                 href="/jb2/download/#jbrowse-2-desktop"
-                sx={{ fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' } }}
-                style={{
+                sx={{
                   color: 'white',
+                  fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' },
                 }}
               >
                 Download JBrowse Desktop
@@ -64,9 +63,9 @@ function Home() {
                 variant="contained"
                 startIcon={<OpenInBrowserIcon />}
                 href={`https://jbrowse.org/code/jb2/${currentVersion}/`}
-                sx={{ fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' } }}
-                style={{
+                sx={{
                   color: 'white',
+                  fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' },
                 }}
               >
                 Browse web demo instance
@@ -127,9 +126,9 @@ function Home() {
           <Button
             variant="contained"
             href={`https://github.com/GMOD/jbrowse-components/releases/tag/${currentVersion}/`}
-            sx={{ fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' } }}
-            style={{
+            sx={{
               color: 'white',
+              fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' },
             }}
           >
             Learn more
