@@ -17,14 +17,18 @@ import {
 import { observer } from 'mobx-react'
 import { saveAs } from 'file-saver'
 import { Region } from '@jbrowse/core/util/types'
-import { readConfObject } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import copy from 'copy-to-clipboard'
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import CloseIcon from '@material-ui/icons/Close'
-import GetAppIcon from '@material-ui/icons/GetApp'
 import { getSession } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
+
+// icons
+import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
+import CloseIcon from '@material-ui/icons/Close'
+import GetAppIcon from '@material-ui/icons/GetApp'
+
+// locals
 import { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles(theme => ({

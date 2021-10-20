@@ -10,14 +10,12 @@ import {
 
 import { autorun } from 'mobx'
 
-import assemblyManagerFactory, {
-  assemblyConfigSchemas as AssemblyConfigSchemasFactory,
-} from '@jbrowse/core/assemblyManager'
+import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
+import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { ipcRenderer } from 'electron'
 

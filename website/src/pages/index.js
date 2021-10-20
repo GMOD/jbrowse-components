@@ -244,12 +244,7 @@ function Home() {
             style={{ justifyContent: 'space-evenly' }}
             sx={{ display: { xs: 'none', sm: 'none', md: 'flex' } }}
           >
-            <img
-              className={classes.logo}
-              alt="NIH logo"
-              src="img/nih.png"
-              alt="NIH logo"
-            />
+            <img className={classes.logo} alt="NIH logo" src="img/nih.png" />
             <img
               style={{
                 width: '350px',
