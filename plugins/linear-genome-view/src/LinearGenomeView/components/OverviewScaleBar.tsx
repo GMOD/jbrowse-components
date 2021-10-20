@@ -98,7 +98,9 @@ const useStyles = makeStyles(theme => {
       height: HEADER_BAR_HEIGHT,
       position: 'relative',
     },
-    overviewSvg: { position: 'absolute' },
+    overviewSvg: {
+      position: 'absolute',
+    },
   }
 })
 
@@ -303,21 +305,26 @@ const ChromosomeOverview = observer(
           {refName}
         </Typography>
 
-        {tickLabels.map((tickLabel, labelIdx) => (
-          <Typography
-            key={`${JSON.stringify(block)}-${tickLabel}-${labelIdx}`}
-            className={classes.scaleBarLabel}
-            variant="body2"
-            style={{
-              left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
-              pointerEvents: 'none',
-              color: refNameColor,
-            }}
-          >
-            {tickLabel.toLocaleString('en-US')}
-          </Typography>
-        ))}
-        <Cytobands overview={overview} assembly={assembly} block={block} />
+        {!assembly?.cytobands
+          ? tickLabels.map((tickLabel, labelIdx) => (
+              <Typography
+                key={`${JSON.stringify(block)}-${tickLabel}-${labelIdx}`}
+                className={classes.scaleBarLabel}
+                variant="body2"
+                style={{
+                  left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
+                  pointerEvents: 'none',
+                  color: refNameColor,
+                }}
+              >
+                {tickLabel.toLocaleString('en-US')}
+              </Typography>
+            ))
+          : null}
+
+        {assembly?.cytobands ? (
+          <Cytobands overview={overview} assembly={assembly} block={block} />
+        ) : null}
       </div>
     )
   },
