@@ -26,6 +26,7 @@ function Home() {
             display: 'flex',
             flexDirection: { xs: 'column', sm: 'column', md: 'row' },
             alignItems: 'center',
+            marginBottom: 6,
           }}
         >
           <Box sx={{ flex: '50%' }}>
@@ -53,20 +54,21 @@ function Home() {
                 startIcon={<GetAppIcon />}
                 href="/jb2/download/#jbrowse-2-desktop"
                 sx={{
-                  color: 'white',
                   fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' },
                 }}
+                style={{ color: 'white' }}
               >
                 Download JBrowse Desktop
               </Button>
               <Button
                 variant="contained"
+                color="secondary"
                 startIcon={<OpenInBrowserIcon />}
                 href={`https://jbrowse.org/code/jb2/${currentVersion}/`}
                 sx={{
-                  color: 'white',
                   fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' },
                 }}
+                style={{ color: 'black' }}
               >
                 Browse web demo instance
               </Button>
@@ -112,6 +114,7 @@ function Home() {
             backgroundColor: '#F0F0F0',
             padding: '25px',
             alignItems: 'center',
+            marginBottom: 6,
           }}
         >
           <Typography
@@ -134,7 +137,7 @@ function Home() {
             Learn more
           </Button>
         </Box>
-        <Box>
+        <Box sx={{ marginBottom: 6 }}>
           <Typography variant="h4">Features</Typography>
           <hr />
           <Box
@@ -187,7 +190,7 @@ function Home() {
           </Box>
         </Box>
 
-        <Box>
+        <Box sx={{ marginBottom: 6 }}>
           <Typography variant="h4">Citation</Typography>
           <hr />
           <Typography variant="body1">
@@ -203,7 +206,7 @@ function Home() {
             66.
           </Typography>
         </Box>
-        <Box>
+        <Box sx={{ marginBottom: 6 }}>
           <Typography variant="h4">License</Typography>
           <hr />
           <Typography>
@@ -214,7 +217,7 @@ function Home() {
             .
           </Typography>
         </Box>
-        <Box>
+        <Box sx={{ marginBottom: 6 }}>
           <Typography variant="h4">Funding and Collaboration</Typography>
           <hr />
           <Typography variant="body1">
@@ -229,7 +232,9 @@ function Home() {
   )
 }
 
-const theme = createTheme({ palette: { primary: { main: '#3f51b5' } } })
+const theme = createTheme({
+  palette: { secondary: { main: '#ccc' }, primary: { main: '#3f51b5' } },
+})
 
 export default () => {
   return (
