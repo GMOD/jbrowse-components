@@ -581,9 +581,24 @@ export default class PluginManager {
     callbacks.push(callback)
   }
 
-  evaluateExtensionPoint(extensionPointName: string, extendee: unknown) {
+  /**
+   * Run the callbacks in an extension point, starting with the given initial
+   * value. Callbacks are run in the order in which they are registered.
+   * 
+   * Callbacks are run like:
+   * 
+   * ```
+   * let a = initialValue
+   * for (const callback of callbacks) {
+   *    a = callback(a)
+   * }
+   * return a
+   * ```
+   */
+  type UNKNOWN_EP_CALLBACK = (u: unknown) => unknown
+  evaluateExtensionPoint<EP_CALLBACK_TYPE = UNKNOWN_EP_CALLBACK>(extensionPointName: string, initialValue: unknown) {
     const callbacks = this.extensionPoints.get(extensionPointName)
-    let accumulator = extendee
+    let accumulator = initialValue
     if (callbacks) {
       for (const callback of callbacks) {
         try {
