@@ -1,0 +1,73 @@
+{
+  "version": "0.0.1",
+  "name": "jbrowse-plugin-flashmap",
+  "description": "In browser approximate sequence search",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "main": "dist/index.js",
+  "module": "dist/jbrowse-plugin-my-project.esm.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "setup": "node scripts/setup.js && npm run browse-install",
+    "clean": "rimraf dist",
+    "start": "tsdx watch --verbose --noClean --format umd --name JBrowsePluginMyProject --onFirstSuccess \"serve --cors --listen 9000 .\"",
+    "prebuild": "npm run clean",
+    "build": "tsdx build --format cjs,esm,umd --name JBrowsePluginMyProject",
+    "browse-install": "cd .jbrowse && rm -rf * && jbrowse create .",
+    "browse": "cd .jbrowse && cp ../jbrowse_config.json . && mv jbrowse_config.json config.json && npx serve .",
+    "test": "tsdx test",
+    "test:cy": "cypress run --headless --browser chrome",
+    "e2e": "start-test start 9000 browse 5000 test:cy",
+    "cypress": "cypress open",
+    "lint": "tsdx lint",
+    "prepublishOnly": "npm test",
+    "prepare": "npm run build",
+    "postinstall": "jbrowse-plugin-postinstall",
+    "postversion": "git push --follow-tags"
+  },
+  "jbrowse-plugin": {
+    "name": "Flashmap"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all"
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "<rootDir>/cypress/"
+    ]
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "@jbrowse/core": "^1.0.4"
+  },
+  "devDependencies": {
+    "@babel/preset-react": "^7.10.4",
+    "@jbrowse/cli": "^1.0.3",
+    "@jbrowse/core": "^1.0.4",
+    "@jbrowse/development-tools": "^1.0.3",
+    "@material-ui/core": "^4.9.13",
+    "@material-ui/lab": "^4.0.0-alpha.45",
+    "@types/react": "^17.0.0",
+    "cypress": "^6.2.1",
+    "mobx": "^5.0.0",
+    "mobx-react": "^6.0.0",
+    "mobx-state-tree": "3.14.1",
+    "react": "^16.8.0",
+    "rimraf": "^3.0.2",
+    "rxjs": "^6.0.0",
+    "serve": "^11.3.2",
+    "start-server-and-test": "^1.11.7",
+    "tslib": "^2.0.3",
+    "typescript": "^4.1.3"
+  },
+  "private": true,
+  "license": "MIT"
+}

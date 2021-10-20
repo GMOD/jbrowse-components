@@ -2,15 +2,21 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { NoAssemblyRegion, Region } from '@jbrowse/core/util/types'
+import {
+  FileLocation,
+  NoAssemblyRegion,
+  Region,
+} from '@jbrowse/core/util/types'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
+import { GenericFilehandle } from 'generic-filehandle'
+import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { MashmapHitsConfigSchema } from './configSchema'
+import { MashmapOutputSchema } from './configSchema'
 
 interface MashmapRecord {
   records: NoAssemblyRegion[]
@@ -20,7 +26,7 @@ interface MashmapRecord {
   }
 }
 
-export default class MashmapHitsAdapter extends BaseFeatureDataAdapter {
+export default class MashmapOutputAdapter extends BaseFeatureDataAdapter {
   private cache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 1 }),
     fill: (data: BaseOptions, signal?: AbortSignal) => {
@@ -30,20 +36,23 @@ export default class MashmapHitsAdapter extends BaseFeatureDataAdapter {
 
   private assemblyNames: string[]
 
-  private rawHits: string[]
+  private outLocation: GenericFilehandle
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: Instance<typeof MashmapHitsConfigSchema>) {
+  public constructor(config: Instance<typeof MashmapOutputSchema>) {
     super(config)
-    const rawHits = readConfObject(config, 'rawHits')
+    const outLocation = readConfObject(config, 'outLocation') as FileLocation
     const assemblyNames = readConfObject(config, 'assemblyNames') as string[]
+    this.outLocation = openLocation(outLocation)
     this.assemblyNames = assemblyNames
-    this.rawHits = rawHits
   }
 
   async setup(opts?: BaseOptions) {
-    const text = this.rawHits as string
+    const text = (await this.outLocation.readFile({
+      encoding: 'utf8',
+      ...opts,
+    })) as string
     const mashmapRecords: MashmapRecord[] = []
     text.split('\n').forEach((line: string, index: number) => {
       if (line.length) {
@@ -63,7 +72,7 @@ export default class MashmapHitsAdapter extends BaseFeatureDataAdapter {
           end2,
           mappingIdentity,
           ...fields
-        ] = line.split(' ')
+        ] = line.split('\t')
 
         const rest = Object.fromEntries(
           fields.map((field) => {
@@ -104,14 +113,18 @@ export default class MashmapHitsAdapter extends BaseFeatureDataAdapter {
 
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async (observer) => {
-      const pafRecords = await this.cache.get('initialize', opts, opts.signal)
+      const mashmapRecords = await this.cache.get(
+        'initialize',
+        opts,
+        opts.signal,
+      )
 
       // The index of the assembly name in the region list corresponds to
       // the adapter in the subadapters list
       const index = this.assemblyNames.indexOf(region.assemblyName)
       if (index !== -1) {
-        for (let i = 0; i < pafRecords.length; i++) {
-          const { extra, records } = pafRecords[i]
+        for (let i = 0; i < mashmapRecords.length; i++) {
+          const { extra, records } = mashmapRecords[i]
           const { start, end, refName } = records[index]
           if (records[index].refName === region.refName) {
             if (doesIntersect2(region.start, region.end, start, end)) {
