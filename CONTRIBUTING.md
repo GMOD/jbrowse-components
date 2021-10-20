@@ -96,34 +96,21 @@ scripts/release.sh myGitHubAuthToken versionIncreaseLevel
 
 If you don't provide `versionIncreaseLevel`, it will default to "patch".
 
-This will trigger a GitHub workflow that will build JBrowse Web and create a
-draft release on GitHub. Once the draft release has been created (you can look
-for it [here](https://github.com/GMOD/jbrowse-components/releases)), go to the
-release and click "Edit," then add a description to the release. Usually you
+This will trigger a GitHub workflow that will create a draft release on GitHub,
+build JBrowse Web, and upload the build to that release. It will also trigger
+workflows that will build JBrowse Desktop for Windows, Mac, and Linux and upload
+those to the release as well. Once the draft release has been created (you can
+look for it [here](https://github.com/GMOD/jbrowse-components/releases)), go to
+the release and click "Edit," then add a description to the release. Usually you
 can copy the content of the blog post that was generated (it will be named
 something like `website/blog/${DATE}-${RELEASE_TAG}-release.md`), removing the
-"Downloads" section. Finally, click "Publish release."
+"Downloads" section. Finally, once you have confirmed that the build artifacts
+from all four workflows have been added to the release, click "Publish release."
 
 Also, it is important as a final manual step for the release process to try to
 install and use @jbrowse/react-linear-genome-view after release because we need
 to ensure that the package does not have any unsatified imports, which can only
 be revealed currently by installing it manually.
-
-## Desktop beta releases
-
-These are the steps needed to create a new beta release of `jbrowse-desktop`:
-
-1. Make a commit (ideally with only this change) with a commit message that
-   begins with `[desktop beta]`.
-2. Push the commit to Github. This will trigger the workflow runs that will:
-   1. Create a draft release for the beta release
-   2. Create desktop platform-specific (Linux, Mac, Windows) builds and upload
-      each build artifact to the draft release.
-3. Review the draft release on Github, and add any necessary notes or
-   description.
-4. Publish the release.
-
-That's it! You've succesfully created a new desktop beta release.
 
 ## Monorepo code organization
 

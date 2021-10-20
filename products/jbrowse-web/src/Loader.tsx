@@ -6,7 +6,7 @@ import PluginLoader, {
   PluginRecord,
 } from '@jbrowse/core/PluginLoader'
 import { observer } from 'mobx-react'
-import { inDevelopment, fromUrlSafeB64 } from '@jbrowse/core/util'
+import { inDevelopment } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ErrorBoundary } from 'react-error-boundary'
 import {
@@ -34,6 +34,8 @@ import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
 import { makeStyles } from '@material-ui/core'
+
+import { fromUrlSafeB64 } from './util'
 import packagedef from '../package.json'
 import factoryReset from './factoryReset'
 
@@ -366,7 +368,7 @@ const SessionLoader = types
         self.password || '',
       )
 
-      const session = JSON.parse(fromUrlSafeB64(decryptedSession))
+      const session = JSON.parse(await fromUrlSafeB64(decryptedSession))
 
       await this.setSessionSnapshot({ ...session, id: shortid() })
     },
@@ -374,7 +376,7 @@ const SessionLoader = types
     async decodeEncodedUrlSession() {
       const session = JSON.parse(
         // @ts-ignore
-        fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
+        await fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
       )
       await this.setSessionSnapshot({ ...session, id: shortid() })
     },

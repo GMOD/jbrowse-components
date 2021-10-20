@@ -12,7 +12,7 @@ import {
 import SimpleFeature, {
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
-import { DataGrid } from '@material-ui/data-grid'
+import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import { getEnv } from 'mobx-state-tree'

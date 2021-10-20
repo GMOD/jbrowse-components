@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-gff3",
-  "version": "1.4.4",
+  "version": "1.5.0",
   "description": "JBrowse 2 gff3.",
   "keywords": [
     "jbrowse",
@@ -35,6 +35,7 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
+    "@flatten-js/interval-tree": "^1.0.14",
     "@gmod/gff": "^1.1.2",
     "@gmod/tabix": "^1.5.0",
     "generic-filehandle": "^2.2.0"

@@ -1,12 +1,11 @@
-import csv from 'csvtojson'
-
 import { parseLocString } from '@jbrowse/core/util'
 
 export function bufferToString(buffer: Buffer) {
   return new TextDecoder('utf-8', { fatal: true }).decode(buffer)
 }
 
-function parseWith(buffer: Buffer, options = {}) {
+async function parseWith(buffer: Buffer, options = {}) {
+  const csv = await import('csvtojson').then(module => module.default)
   return csv({ noheader: true, output: 'csv', ...options }).fromString(
     bufferToString(buffer),
   )

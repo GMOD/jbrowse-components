@@ -17,7 +17,7 @@ jobs:
       - name: Test codebase
         run: yarn test-ci
       - name: Upload coverage
-        run: bash <(curl -s https://codecov.io/bash)
+        uses: codecov/codecov-action@v2
       - name: Typecheck codebase
         run: yarn typecheck
 

@@ -22,14 +22,14 @@ import {
   getRoot,
   getSnapshot,
   getType,
-  IAnyStateTreeNode,
   isAlive,
   isModelType,
   isReferenceType,
-  SnapshotIn,
   types,
   walk,
+  IAnyStateTreeNode,
   Instance,
+  SnapshotIn,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
@@ -86,6 +86,11 @@ export default function sessionModelFactory(
       sessionAssemblies: types.array(assemblyConfigSchemasType),
       sessionPlugins: types.array(types.frozen()),
       minimized: types.optional(types.boolean, false),
+
+      drawerPosition: types.optional(
+        types.string,
+        localStorage.getItem('drawerPosition') || 'right',
+      ),
     })
     .volatile((/* self */) => ({
       /**
@@ -209,6 +214,10 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
+      setDrawerPosition(arg: string) {
+        self.drawerPosition = arg
+        localStorage.setItem('drawerPosition', arg)
+      },
       queueDialog(
         callback: (doneCallback: Function) => [DialogComponentType, ReactProps],
       ): void {
@@ -387,6 +396,9 @@ export default function sessionModelFactory(
       },
 
       resizeDrawer(distance: number) {
+        if (self.drawerPosition === 'left') {
+          distance *= -1
+        }
         const oldDrawerWidth = self.drawerWidth
         const newDrawerWidth = this.updateDrawerWidth(oldDrawerWidth - distance)
         const actualDistance = oldDrawerWidth - newDrawerWidth

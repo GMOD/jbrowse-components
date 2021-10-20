@@ -9,9 +9,10 @@ import {
   AdapterGuesser,
   getFileName,
 } from '@jbrowse/core/util/tracks'
+import { configSchema as gff3AdapterConfigSchema } from './Gff3Adapter'
 
 export default class extends Plugin {
-  name = 'GFF3TabixPlugin'
+  name = 'GFF3Plugin'
 
   install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
@@ -44,6 +45,36 @@ export default class extends Plugin {
                 location: index || makeIndex(file, '.tbi'),
                 indexType: makeIndexType(indexName, 'CSI', 'TBI'),
               },
+            }
+          }
+          return adapterGuesser(file, index, adapterHint)
+        }
+      },
+    )
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'Gff3Adapter',
+          configSchema: gff3AdapterConfigSchema,
+          getAdapterClass: () =>
+            import('./Gff3Adapter/Gff3Adapter').then(r => r.default),
+        }),
+    )
+    pluginManager.addToExtensionPoint(
+      'extendGuessAdapter',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.gff3?$/i
+          const adapterName = 'Gff3Adapter'
+          const fileName = getFileName(file)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
+            return {
+              type: adapterName,
+              gffLocation: file,
             }
           }
           return adapterGuesser(file, index, adapterHint)

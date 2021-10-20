@@ -1,5 +1,4 @@
 import { objectHash } from '@jbrowse/core/util'
-import { GenomesFile, HubFile, TrackDbFile } from '@gmod/ucsc-hub'
 import { openLocation } from '@jbrowse/core/util/io'
 import {
   generateUnsupportedTrackConf,
@@ -12,6 +11,7 @@ export { ucscAssemblies }
 export async function fetchHubFile(hubFileLocation) {
   try {
     const hubFileText = await openLocation(hubFileLocation).readFile('utf8')
+    const { HubFile } = await import('@gmod/ucsc-hub')
     return new HubFile(hubFileText)
   } catch (error) {
     throw new Error(`Not a valid hub.txt file, got error: '${error}'`)
@@ -22,14 +22,14 @@ export async function fetchGenomesFile(genomesFileLocation) {
   const genomesFileText = await openLocation(genomesFileLocation).readFile(
     'utf8',
   )
+  const { GenomesFile } = await import('@gmod/ucsc-hub')
   return new GenomesFile(genomesFileText)
 }
 
 export async function fetchTrackDbFile(trackDbFileLocation) {
-  const trackDbFileText = await openLocation(trackDbFileLocation).readFile(
-    'utf8',
-  )
-  return new TrackDbFile(trackDbFileText)
+  const text = await openLocation(trackDbFileLocation).readFile('utf8')
+  const { TrackDbFile } = await import('@gmod/ucsc-hub')
+  return new TrackDbFile(text)
 }
 
 export function generateTracks(

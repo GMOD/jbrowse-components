@@ -115,6 +115,7 @@ const Node = props => {
     toggleCollapse,
     conf,
     onMoreInfo,
+    drawerPosition,
   } = data
 
   const classes = useStyles()
@@ -155,7 +156,10 @@ const Node = props => {
             </div>
           ) : (
             <>
-              <Tooltip title={description} placement="left">
+              <Tooltip
+                title={description}
+                placement={drawerPosition === 'left' ? 'right' : 'left'}
+              >
                 <FormControlLabel
                   className={classes.checkboxLabel}
                   control={
@@ -212,14 +216,16 @@ const HierarchicalTree = observer(({ height, tree, model }) => {
   const treeRef = useRef(null)
   const [info, setMoreInfo] = useState()
   const session = getSession(model)
+  const { drawerPosition } = session
 
   const extra = useMemo(
     () => ({
       onChange: trackId => view.toggleTrack(trackId),
       toggleCollapse: pathName => model.toggleCategory(pathName),
       onMoreInfo: setMoreInfo,
+      drawerPosition,
     }),
-    [view, model],
+    [view, model, drawerPosition],
   )
   const treeWalker = useCallback(
     function* treeWalker() {

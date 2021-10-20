@@ -17,19 +17,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import MyConfigSchema from './configSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-
-type Strand = '+' | '-' | '.' | '?'
-interface FeatureLoc {
-  [key: string]: unknown
-  start: number
-  end: number
-  strand: Strand
-  seq_id: string
-  child_features: FeatureLoc[][]
-  data: unknown
-  derived_features: unknown
-  attributes: { [key: string]: unknown[] }
-}
+import { FeatureLoc } from '../util'
 
 interface LineFeature {
   start: number

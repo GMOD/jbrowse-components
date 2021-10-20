@@ -84,6 +84,10 @@ export const FileLocation = types.snapshotProcessor(
   {
     // @ts-ignore
     preProcessor(snapshot) {
+      if (!snapshot) {
+        return undefined
+      }
+
       // @ts-ignore
       const { locationType, ...rest } = snapshot
       if (!locationType) {

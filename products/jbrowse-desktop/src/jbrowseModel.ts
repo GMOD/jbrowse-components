@@ -2,22 +2,33 @@ import {
   ConfigurationSchema,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import {
+  AnyConfigurationModel,
+  AnyConfigurationSchemaType,
+} from '@jbrowse/core/configuration/configurationSchema'
+import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import {
+  cast,
   getParent,
   getSnapshot,
   resolveIdentifier,
   types,
 } from 'mobx-state-tree'
+import { SessionStateModel } from './sessionModelFactory'
 
 // poke some things for testing (this stuff will eventually be removed)
+// @ts-ignore
 window.getSnapshot = getSnapshot
+
+// @ts-ignore
 window.resolveIdentifier = resolveIdentifier
 
 export default function JBrowseDesktop(
-  pluginManager,
-  Session,
-  assemblyConfigSchemasType,
+  pluginManager: PluginManager,
+  Session: SessionStateModel,
+  assemblyConfigSchemasType: AnyConfigurationSchemaType,
 ) {
   return types
     .model('JBrowseDesktop', {
@@ -71,9 +82,20 @@ export default function JBrowseDesktop(
         name: `New Session`,
       }),
     })
+    .views(self => ({
+      get savedSessionNames() {
+        return getParent(self).savedSessionNames
+      },
+      get assemblyNames() {
+        return self.assemblies.map(assembly => readConfObject(assembly, 'name'))
+      },
+      get rpcManager() {
+        return getParent(self).rpcManager
+      },
+    }))
     .actions(self => ({
       afterCreate() {
-        const seen = []
+        const seen = [] as string[]
         self.assemblyNames.forEach(assemblyName => {
           if (!assemblyName) {
             throw new Error('Encountered an assembly with no "name" defined')
@@ -87,20 +109,8 @@ export default function JBrowseDesktop(
           }
         })
       },
-      addSavedSession(sessionSnapshot) {
-        const length = self.savedSessions.push(sessionSnapshot)
-        return self.savedSessions[length - 1]
-      },
-      removeSavedSession(sessionSnapshot) {
-        self.savedSessions.remove(sessionSnapshot)
-      },
-      replaceSavedSession(oldName, snapshot) {
-        const savedSessionIndex = self.savedSessions.findIndex(
-          savedSession => savedSession.name === oldName,
-        )
-        self.savedSessions[savedSessionIndex] = snapshot
-      },
-      addAssemblyConf(assemblyConf) {
+
+      addAssemblyConf(assemblyConf: AnyConfigurationModel) {
         const { name } = assemblyConf
         if (!name) {
           throw new Error('Can\'t add assembly with no "name"')
@@ -120,7 +130,7 @@ export default function JBrowseDesktop(
         })
         return self.assemblies[length - 1]
       },
-      removeAssemblyConf(assemblyName) {
+      removeAssemblyConf(assemblyName: string) {
         const toRemove = self.assemblies.find(
           assembly => assembly.name === assemblyName,
         )
@@ -128,7 +138,7 @@ export default function JBrowseDesktop(
           self.assemblies.remove(toRemove)
         }
       },
-      addTrackConf(trackConf) {
+      addTrackConf(trackConf: AnyConfigurationModel) {
         const { type } = trackConf
         if (!type) {
           throw new Error(`unknown track type ${type}`)
@@ -136,7 +146,7 @@ export default function JBrowseDesktop(
         const length = self.tracks.push(trackConf)
         return self.tracks[length - 1]
       },
-      addConnectionConf(connectionConf) {
+      addConnectionConf(connectionConf: AnyConfigurationModel) {
         const { type } = connectionConf
         if (!type) {
           throw new Error(`unknown connection type ${type}`)
@@ -144,13 +154,13 @@ export default function JBrowseDesktop(
         const length = self.connections.push(connectionConf)
         return self.connections[length - 1]
       },
-      deleteConnectionConf(configuration) {
+      deleteConnectionConf(configuration: AnyConfigurationModel) {
         const idx = self.connections.findIndex(
           conn => conn.id === configuration.id,
         )
         return self.connections.splice(idx, 1)
       },
-      deleteTrackConf(trackConf) {
+      deleteTrackConf(trackConf: AnyConfigurationModel) {
         const { trackId } = trackConf
         const idx = self.tracks.findIndex(t => t.trackId === trackId)
         if (idx === -1) {
@@ -159,17 +169,19 @@ export default function JBrowseDesktop(
 
         return self.tracks.splice(idx, 1)
       },
-      addPlugin(plugin) {
-        self.plugins = [...self.plugins, plugin]
+      addPlugin(plugin: Plugin) {
+        self.plugins = cast([...self.plugins, plugin])
         const rootModel = getParent(self)
         rootModel.setPluginsUpdated(true)
       },
-      removePlugin(pluginUrl) {
-        self.plugins = self.plugins.filter(plugin => plugin.url !== pluginUrl)
+      removePlugin(pluginUrl: string) {
+        self.plugins = cast(
+          self.plugins.filter(plugin => plugin.url !== pluginUrl),
+        )
         const rootModel = getParent(self)
         rootModel.setPluginsUpdated(true)
       },
-      addInternetAccountConf(internetAccountConf) {
+      addInternetAccountConf(internetAccountConf: AnyConfigurationModel) {
         const { type } = internetAccountConf
         if (!type) {
           throw new Error(`unknown internetAccount type ${type}`)
@@ -177,7 +189,7 @@ export default function JBrowseDesktop(
         const length = self.internetAccounts.push(internetAccountConf)
         return self.internetAccounts[length - 1]
       },
-      deleteInternetAccountConf(configuration) {
+      deleteInternetAccountConf(configuration: AnyConfigurationModel) {
         const idx = self.internetAccounts.findIndex(
           acct => acct.id === configuration.id,
         )
@@ -185,17 +197,6 @@ export default function JBrowseDesktop(
           return undefined
         }
         return self.internetAccounts.splice(idx, 1)
-      },
-    }))
-    .views(self => ({
-      get savedSessionNames() {
-        return getParent(self).savedSessionNames
-      },
-      get assemblyNames() {
-        return self.assemblies.map(assembly => readConfObject(assembly, 'name'))
-      },
-      get rpcManager() {
-        return getParent(self).rpcManager
       },
     }))
 }

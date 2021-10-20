@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react'
+import React, { useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import {
   Accordion,
@@ -11,7 +11,7 @@ import {
 } from '@material-ui/core'
 import ExpandMore from '@material-ui/icons/ExpandMore'
 import { makeStyles } from '@material-ui/core/styles'
-import { DataGrid } from '@material-ui/data-grid'
+import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 import clsx from 'clsx'
 import isObject from 'is-object'
@@ -96,9 +96,11 @@ export function BaseCard({
   defaultExpanded = true,
 }: BaseCardProps) {
   const classes = useStyles()
+  const [expanded, setExpanded] = useState(defaultExpanded)
   return (
     <Accordion
-      defaultExpanded={defaultExpanded}
+      expanded={expanded}
+      onChange={() => setExpanded(s => !s)}
       TransitionProps={{ unmountOnExit: true }}
     >
       <AccordionSummary

@@ -1,31 +1,48 @@
-import assemblyManagerFactory, {
-  assemblyConfigSchemas as AssemblyConfigSchemasFactory,
-} from '@jbrowse/core/assemblyManager'
-import { autorun } from 'mobx'
-import PluginManager from '@jbrowse/core/PluginManager'
-import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { MenuItem } from '@jbrowse/core/ui'
-import SettingsIcon from '@material-ui/icons/Settings'
-import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import AppsIcon from '@material-ui/icons/Apps'
-import { UriLocation } from '@jbrowse/core/util/types'
-import electron from 'electron'
 import {
   addDisposer,
   cast,
   resolveIdentifier,
-  getParent,
   getSnapshot,
   types,
   SnapshotIn,
   Instance,
 } from 'mobx-state-tree'
+
+import { autorun } from 'mobx'
+
+import assemblyManagerFactory, {
+  assemblyConfigSchemas as AssemblyConfigSchemasFactory,
+} from '@jbrowse/core/assemblyManager'
+import PluginManager from '@jbrowse/core/PluginManager'
+import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import { MenuItem } from '@jbrowse/core/ui'
+import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
+import { UriLocation } from '@jbrowse/core/util/types'
+import { ipcRenderer } from 'electron'
+
+// icons
+import OpenIcon from '@material-ui/icons/FolderOpen'
+import ExtensionIcon from '@material-ui/icons/Extension'
+import AppsIcon from '@material-ui/icons/Apps'
+import StorageIcon from '@material-ui/icons/Storage'
+import MeetingRoomIcon from '@material-ui/icons/MeetingRoom'
+import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
+
+// locals
+import sessionModelFactory from './sessionModelFactory'
 import JBrowseDesktop from './jbrowseModel'
+import OpenSequenceDialog from './OpenSequenceDialog'
 // @ts-ignore
 import RenderWorker from './rpc.worker'
-import sessionModelFactory from './sessionModelFactory'
 
-const { ipcRenderer } = electron
+function getSaveSession(model: RootModel) {
+  return {
+    ...getSnapshot(model.jbrowse),
+    defaultSession: model.session ? getSnapshot(model.session) : {},
+  }
+}
+
 interface Menu {
   label: string
   menuItems: MenuItem[]
@@ -48,7 +65,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       jbrowse: JBrowseDesktop(
         pluginManager,
         Session,
-        assemblyConfigSchemasType,
+        assemblyConfigSchemasType as AnyConfigurationSchemaType,
       ),
       session: types.maybe(Session),
       assemblyManager: assemblyManagerType,
@@ -58,25 +75,34 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         pluginManager.pluggableMstType('internet account', 'stateModel'),
       ),
       isAssemblyEditing: false,
+      sessionPath: types.optional(types.string, ''),
     })
     .volatile(() => ({
-      error: undefined as Error | undefined,
+      error: undefined as unknown,
       textSearchManager: new TextSearchManager(pluginManager),
+      openNewSessionCallback: () => {
+        console.error('openNewSessionCallback unimplemented')
+      },
     }))
     .actions(self => ({
       async saveSession(val: unknown) {
-        await ipcRenderer.invoke('saveSession', {
-          ...getSnapshot(self.jbrowse),
-          defaultSession: val,
-        })
+        if (self.sessionPath) {
+          await ipcRenderer.invoke('saveSession', self.sessionPath, val)
+        }
+      },
+      setOpenNewSessionCallback(cb: () => Promise<void>) {
+        self.openNewSessionCallback = cb
       },
       setSavedSessionNames(sessionNames: string[]) {
         self.savedSessionNames = cast(sessionNames)
       },
+      setSessionPath(path: string) {
+        self.sessionPath = path
+      },
       setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
         self.session = cast(sessionSnapshot)
       },
-      setError(error: Error) {
+      setError(error: unknown) {
         self.error = error
       },
       setDefaultSession() {
@@ -86,13 +112,10 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         self.isAssemblyEditing = flag
       },
 
-      renameCurrentSession(sessionName: string) {
+      async renameCurrentSession(newName: string) {
         if (self.session) {
-          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-          const oldName = snapshot.name
-          snapshot.name = sessionName
-          this.setSession(snapshot)
-          ipcRenderer.invoke('renameSession', oldName, sessionName)
+          this.setSession({ ...getSnapshot(self.session), name: newName })
+          await this.saveSession(getSaveSession(self as RootModel))
         }
       },
       duplicateCurrentSession() {
@@ -212,24 +235,134 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           label: 'File',
           menuItems: [
             {
+              label: 'Open',
+              icon: OpenIcon,
+              onClick: async () => {
+                try {
+                  await self.openNewSessionCallback()
+                } catch (e) {
+                  console.error(e)
+                  self.session?.notify(`${e}`, 'error')
+                }
+              },
+            },
+            {
+              label: 'Save',
+              icon: Save,
+              onClick: async () => {
+                if (self.session) {
+                  try {
+                    await self.saveSession(getSaveSession(self as RootModel))
+                  } catch (e) {
+                    console.error(e)
+                    self.session?.notify(`${e}`, 'error')
+                  }
+                }
+              },
+            },
+            {
+              label: 'Save as...',
+              icon: SaveAs,
+              onClick: async () => {
+                try {
+                  const saveAsPath = await ipcRenderer.invoke(
+                    'promptSessionSaveAs',
+                  )
+                  self.setSessionPath(saveAsPath)
+                  await self.saveSession(getSaveSession(self as RootModel))
+                } catch (e) {
+                  console.error(e)
+                  self.session?.notify(`${e}`, 'error')
+                }
+              },
+            },
+            {
+              type: 'divider',
+            },
+            {
+              label: 'Open assembly...',
+              icon: DNA,
+              onClick: () => {
+                if (self.session) {
+                  self.session.queueDialog(doneCallback => [
+                    OpenSequenceDialog,
+                    { model: self, onClose: doneCallback },
+                  ])
+                }
+              },
+            },
+            {
+              label: 'Open track...',
+              icon: StorageIcon,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onClick: (session: any) => {
+                if (session.views.length === 0) {
+                  session.notify('Please open a view to add a track first')
+                } else if (session.views.length >= 1) {
+                  const widget = session.addWidget(
+                    'AddTrackWidget',
+                    'addTrackWidget',
+                    { view: session.views[0].id },
+                  )
+                  session.showWidget(widget)
+                  if (session.views.length > 1) {
+                    session.notify(
+                      `This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right`,
+                    )
+                  }
+                }
+              },
+            },
+            {
+              label: 'Open connection...',
+              icon: Cable,
+              onClick: () => {
+                if (self.session) {
+                  const widget = self.session.addWidget(
+                    'AddConnectionWidget',
+                    'addConnectionWidget',
+                  )
+                  self.session.showWidget(widget)
+                }
+              },
+            },
+            {
+              type: 'divider',
+            },
+            {
               label: 'Return to start screen',
               icon: AppsIcon,
               onClick: () => {
                 self.setSession(undefined)
               },
             },
+            {
+              label: 'Exit',
+              icon: MeetingRoomIcon,
+              onClick: () => {
+                ipcRenderer.invoke('quit')
+              },
+            },
           ],
         },
         {
-          label: 'Edit',
+          label: 'Add',
+          menuItems: [],
+        },
+        {
+          label: 'Tools',
           menuItems: [
             {
-              label: 'Open assembly manager',
-              icon: SettingsIcon,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick: (session: any) => {
-                const rootModel = getParent(session)
-                rootModel.setAssemblyEditing(true)
+              label: 'Plugin store',
+              icon: ExtensionIcon,
+              onClick: () => {
+                if (self.session) {
+                  const widget = self.session.addWidget(
+                    'PluginStoreWidget',
+                    'pluginStoreWidget',
+                  )
+                  self.session.showWidget(widget)
+                }
               },
             },
           ],
@@ -262,8 +395,13 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         }
 
         const url = window.location.href.split('?')[0]
-        const name = self.session?.name || ''
-        window.location.href = `${url}?config=${encodeURIComponent(name)}`
+        if (!self.sessionPath) {
+          self.session?.notify('You must save your session first')
+        } else {
+          window.location.href = `${url}?config=${encodeURIComponent(
+            self.sessionPath,
+          )}`
+        }
       },
       /**
        * Add a top-level menu
@@ -399,7 +537,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           autorun(
             async () => {
               if (self.session) {
-                await self.saveSession(getSnapshot(self.session))
+                await self.saveSession(getSaveSession(self as RootModel))
               }
             },
             { delay: 1000 },

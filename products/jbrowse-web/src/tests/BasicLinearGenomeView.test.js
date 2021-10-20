@@ -18,10 +18,10 @@ import JBrowse from '../JBrowse'
 
 // need to mock out data grid and force all columns to render
 // https://github.com/mui-org/material-ui-x/issues/1151
-jest.mock('@material-ui/data-grid', () => {
-  const { DataGrid } = jest.requireActual('@material-ui/data-grid')
+jest.mock('@mui/x-data-grid', () => {
+  const { DataGrid } = jest.requireActual('@mui/x-data-grid')
   return {
-    ...jest.requireActual('@material-ui/data-grid'),
+    ...jest.requireActual('@mui/x-data-grid'),
     DataGrid: props => {
       return <DataGrid {...props} columnBuffer={6} />
     },

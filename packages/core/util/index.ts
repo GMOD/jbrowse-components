@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { toByteArray, fromByteArray } from 'base64-js'
 import {
   getParent,
   isAlive,
@@ -10,7 +9,6 @@ import {
   isStateTreeNode,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
-import { inflate, deflate } from 'pako'
 import fromEntries from 'object.fromentries'
 import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
@@ -43,56 +41,6 @@ export const inDevelopment =
   process.env &&
   process.env.NODE_ENV === 'development'
 export const inProduction = !inDevelopment
-
-/**
- * Compress and encode a string as url-safe base64
- * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
- * @param str-  a string to compress and encode
- */
-export function toUrlSafeB64(str: string): string {
-  const bytes = new TextEncoder().encode(str)
-  const deflated = deflate(bytes)
-  const encoded = fromByteArray(deflated)
-  const pos = encoded.indexOf('=')
-  return pos > 0
-    ? encoded.slice(0, pos).replace(/\+/g, '-').replace(/\//g, '_')
-    : encoded.replace(/\+/g, '-').replace(/\//g, '_')
-}
-
-/**
- * Decode and inflate a url-safe base64 to a string
- * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
- * @param b64 - a base64 string to decode and inflate
- */
-export function fromUrlSafeB64(b64: string): string {
-  const originalB64 = b64PadSuffix(b64.replace(/-/g, '+').replace(/_/g, '/'))
-  const bytes = toByteArray(originalB64)
-  const inflated = inflate(bytes)
-  return new TextDecoder().decode(inflated)
-}
-
-/**
- * Pad the end of a base64 string with "=" to make it valid
- * @param b64 - unpadded b64 string
- */
-function b64PadSuffix(b64: string): string {
-  let num = 0
-  const mo = b64.length % 4
-  switch (mo) {
-    case 3:
-      num = 1
-      break
-    case 2:
-      num = 2
-      break
-    case 0:
-      num = 0
-      break
-    default:
-      throw new Error('base64 not a valid length')
-  }
-  return b64 + '='.repeat(num)
-}
 
 export function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value)
