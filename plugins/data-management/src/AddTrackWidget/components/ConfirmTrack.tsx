@@ -13,6 +13,7 @@ import { getEnv } from 'mobx-state-tree'
 import React from 'react'
 import { UNKNOWN } from '@jbrowse/core/util/tracks'
 import { AddTrackModel } from '../model'
+import { AdapterMetaData } from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
 const useStyles = makeStyles(theme => ({
   spacing: {
@@ -53,27 +54,40 @@ function StatusMessage({
  *   found under that subheader
  */
 function categorizeAdapters(
-  adaptersList: { name: string; adapterCategoryHeader: string }[],
+  adaptersList: { name: string; adapterMetaData: AdapterMetaData }[],
 ) {
-  let currentPluginName = ''
+  let currentCategory = ''
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const items: any = []
   adaptersList.forEach(adapter => {
-    if (adapter.adapterCategoryHeader) {
-      if (currentPluginName !== adapter.adapterCategoryHeader) {
-        currentPluginName = adapter.adapterCategoryHeader
+    if (adapter.adapterMetaData?.category) {
+      if (currentCategory !== adapter.adapterMetaData?.category) {
+        currentCategory = adapter.adapterMetaData?.category
         items.push(
           <ListSubheader
-            key={adapter.adapterCategoryHeader}
-            value={adapter.adapterCategoryHeader}
+            key={adapter.adapterMetaData?.category}
+            value={adapter.adapterMetaData?.category}
           >
-            {adapter.adapterCategoryHeader}
+            {adapter.adapterMetaData?.category}
           </ListSubheader>,
         )
       }
       items.push(
-        <MenuItem key={adapter.name} value={adapter.name}>
-          {adapter.name}
+        <MenuItem
+          key={
+            adapter.adapterMetaData?.displayName
+              ? adapter.adapterMetaData?.displayName
+              : adapter.name
+          }
+          value={
+            adapter.adapterMetaData?.displayName
+              ? adapter.adapterMetaData?.displayName
+              : adapter.name
+          }
+        >
+          {adapter.adapterMetaData?.displayName
+            ? adapter.adapterMetaData?.displayName
+            : adapter.name}
         </MenuItem>,
       )
     }
@@ -92,9 +106,9 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
   return (
     <TextField
       className={classes.spacing}
-      value={trackAdapter?.type}
+      value={trackAdapter?.type !== 'UNKNOWN' ? trackAdapter?.type : ''}
       label="adapterType"
-      helperText="An adapter type"
+      helperText="Select an adapter type"
       select
       fullWidth
       onChange={event => model.setAdapterHint(event.target.value)}
@@ -104,21 +118,37 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
       }}
     >
       {adapters
-        // Excludes any adapter with the 'excludeFromTrackSelector' property, and anything with the 'adapterCategoryHeader' property
+        // Excludes any adapter with the 'adapterMetaData.hiddenFromGUI' property, and anything with the 'adapterMetaData.category' property
         .filter(
-          (elt: {
-            name: string
-            excludeFromTrackSelector: boolean
-            adapterCategoryHeader: string
-          }) => !elt.excludeFromTrackSelector && !elt.adapterCategoryHeader,
+          (elt: { name: string; adapterMetaData: AdapterMetaData }) =>
+            !elt.adapterMetaData?.hiddenFromGUI &&
+            !elt.adapterMetaData?.category,
         )
-        .map((elt: { name: string }) => (
-          <MenuItem key={elt.name} value={elt.name}>
-            {elt.name}
+        .map((elt: { name: string; adapterMetaData: AdapterMetaData }) => (
+          <MenuItem
+            key={
+              elt.adapterMetaData?.displayName
+                ? elt.adapterMetaData?.displayName
+                : elt.name
+            }
+            value={
+              elt.adapterMetaData?.displayName
+                ? elt.adapterMetaData?.displayName
+                : elt.name
+            }
+          >
+            {elt.adapterMetaData?.displayName
+              ? elt.adapterMetaData?.displayName
+              : elt.name}
           </MenuItem>
         ))}
-      {/* adapters with the 'adapterCategoryHeader' property are categorized by the value of the property here */}
-      {categorizeAdapters(adapters)}
+      {/* adapters with the 'adapterMetaData.category' property are categorized by the value of the property here */}
+      {categorizeAdapters(
+        adapters.filter(
+          (elt: { adapterMetaData: AdapterMetaData }) =>
+            !elt.adapterMetaData?.hiddenFromGUI,
+        ),
+      )}
     </TextField>
   )
 })
