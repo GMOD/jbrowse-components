@@ -191,7 +191,7 @@ const Cytobands = observer(
               firstCent = false
               return (
                 <polygon
-                  key={start + '-' + end + '-' + type}
+                  key={`${start}-${end}-${type}`}
                   points={[
                     [start, 0],
                     [end, (HEADER_OVERVIEW_HEIGHT - 2) / 2],
@@ -204,7 +204,7 @@ const Cytobands = observer(
             if (type === 'acen' && !firstCent) {
               return (
                 <polygon
-                  key={start + '-' + end + '-' + type}
+                  key={`${start}-${end}-${type}`}
                   points={[
                     [start, (HEADER_OVERVIEW_HEIGHT - 2) / 2],
                     [end, 0],
@@ -216,7 +216,7 @@ const Cytobands = observer(
             }
             return (
               <rect
-                key={start + '-' + end + '-' + type}
+                key={`${start}-${end}-${type}`}
                 x={Math.min(start, end)}
                 y={0}
                 width={Math.abs(end - start)}
