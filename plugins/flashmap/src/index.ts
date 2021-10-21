@@ -43,6 +43,42 @@ export default class FlashmapPlugin extends Plugin {
         }),
     )
 
-    pluginManager.addRpcMethod(() => new BigsiQueryRPC(pluginManager))
+    pluginManager.addToExtensionPoint(
+      'Core-extendPluggableElement',
+      pluggableElement => {
+        if (pluggableElement.name === 'LinearPileupDisplay') {
+          const { stateModel } = pluggableElement
+          const newStateModel = stateModel.extend(self => {
+            const superContextMenuItems = self.contextMenuItems
+            return {
+              views: {
+                contextMenuItems() {
+                  const feature = self.contextMenuFeature
+                  if (!feature) {
+                    // we're not adding any menu items since the click was not
+                    // on a feature
+                    return superContextMenuItems()
+                  }
+                  return [
+                    ...superContextMenuItems(),
+                    {
+                      label: 'Sequence search against bucket',
+                      onClick: () => {
+                        console.log('Dummy mashmap results')
+                      },
+                    },
+                  ]
+                },
+              },
+            }
+          })
+
+          pluggableElement.stateModel = newStateModel
+        }
+        return pluggableElement
+      },
+    )
+
+    // pluginManager.addRpcMethod(() => new BigsiQueryRPC(pluginManager))
   }
 }
