@@ -171,6 +171,8 @@ export default class PluginManager {
 
   rootModel?: AbstractRootModel
 
+  extensionPoints: Map<string, Function[]> = new Map()
+
   constructor(initialPlugins: (Plugin | PluginLoadRecord)[] = []) {
     // add the core plugin
     this.addPlugin({ plugin: new CorePlugin(), metadata: { isCore: true } })
@@ -500,5 +502,17 @@ export default class PluginManager {
     creationCallback: (pluginManager: PluginManager) => RpcMethodType,
   ): this {
     return this.addElementType('rpc method', creationCallback)
+  }
+
+  addToExtensionPoint<T>(
+    extensionPointName: string,
+    callback: (extendee: T) => T,
+  ) {
+    let callbacks = this.extensionPoints.get(extensionPointName)
+    if (!callbacks) {
+      callbacks = []
+      this.extensionPoints.set(extensionPointName, callbacks)
+    }
+    callbacks.push(callback)
   }
 }

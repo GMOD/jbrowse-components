@@ -21,7 +21,7 @@ import Wiggle from '@jbrowse/plugin-wiggle'
 import SpreadsheetViewPlugin from '@jbrowse/plugin-spreadsheet-view'
 import SvInspectorPlugin from '@jbrowse/plugin-sv-inspector'
 import HicPlugin from '@jbrowse/plugin-hic'
-//import Flashmap from 'jbrowse-plugin-flashmap'
+import FlashmapPlugin from '@jbrowse/plugin-flashmap'
 
 export default [
   SVG,
@@ -47,5 +47,5 @@ export default [
   SvInspectorPlugin,
   BreakpointSplitView,
   HicPlugin,
-  Flashmap,
+  FlashmapPlugin,
 ]
