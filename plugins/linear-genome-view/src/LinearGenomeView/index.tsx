@@ -123,7 +123,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ),
         trackLabels: 'overlapping' as 'overlapping' | 'hidden' | 'offset',
         showCenterLine: false,
-        showIdeogram: true,
+        showIdeogramSetting: true,
       }),
     )
     .volatile(() => ({
@@ -472,7 +472,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       setShowIdeogram(flag: boolean) {
-        self.showIdeogram = flag
+        self.showIdeogramSetting = flag
       },
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
@@ -1220,6 +1220,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       return { zoom }
     })
+    .views(self => ({
+      get canShowIdeograms() {
+        return self.displayedRegions.length === 1
+      },
+      get showIdeogram() {
+        return this.canShowIdeograms && self.showIdeogramSetting
+      },
+    }))
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
@@ -1316,7 +1324,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 },
               ],
             },
-            ...(anyIdeograms
+            ...(anyIdeograms && self.canShowIdeograms
               ? [
                   {
                     label: showIdeogram ? 'Hide ideogram' : 'Show ideograms',
