@@ -412,3 +412,5 @@ function OverviewScaleBar({
 }
 
 export default observer(OverviewScaleBar)
+
+export { Cytobands }

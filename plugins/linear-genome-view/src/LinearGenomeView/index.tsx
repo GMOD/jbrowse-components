@@ -47,7 +47,7 @@ import ZoomInIcon from '@material-ui/icons/ZoomIn'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 
 // locals
-import { renderToSvg } from './components/LinearGenomeView'
+import { renderToSvg } from './components/LinearGenomeViewSvg'
 import RefNameAutocomplete from './components/RefNameAutocomplete'
 import ExportSvgDlg from './components/ExportSvgDialog'
 import ReturnToImportFormDlg from './components/ReturnToImportFormDialog'
