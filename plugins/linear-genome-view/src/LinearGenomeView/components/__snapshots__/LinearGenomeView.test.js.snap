@@ -24,12 +24,12 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
           />
           <div
-            class="makeStyles-scaleBarContig"
+            class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward"
             style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
           >
             <p
               class="MuiTypography-root makeStyles-scaleBarRefName MuiTypography-body1"
-              style="color: rgb(153, 102, 0); z-index: 100;"
+              style="color: rgb(153, 102, 0);"
             >
               ctgA
             </p>
@@ -65,7 +65,11 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             </p>
             <svg
               style="width: 100%;"
-            />
+            >
+              <g
+                transform="translate(-0)"
+              />
+            </svg>
           </div>
           <div
             class="makeStyles-scaleBarContig"
@@ -590,30 +594,26 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
           />
           <div
-            class="makeStyles-scaleBarContig"
+            class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward"
             style="left: 0px; width: 72.72727272727273px; border-color: rgb(153, 102, 0);"
           >
             <p
               class="MuiTypography-root makeStyles-scaleBarRefName MuiTypography-body1"
-              style="color: rgb(153, 102, 0); z-index: 100;"
+              style="color: rgb(153, 102, 0);"
             >
               ctgA
             </p>
-            <svg
-              style="width: 100%;"
-            />
           </div>
           <div
             class="makeStyles-scaleBarContig"
             style="width: 0px; left: 72.72727272727273px; background-color: rgb(153, 153, 153);"
           />
           <div
-            class="makeStyles-scaleBarContig"
+            class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward"
             style="left: 72.72727272727273px; width: 727.2727272727273px;"
           >
             <p
               class="MuiTypography-root makeStyles-scaleBarRefName MuiTypography-body1"
-              style="z-index: 100;"
             >
               ctgB
             </p>
@@ -647,9 +647,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             >
               2,000
             </p>
-            <svg
-              style="width: 100%;"
-            />
           </div>
           <div
             class="makeStyles-scaleBarContig"
