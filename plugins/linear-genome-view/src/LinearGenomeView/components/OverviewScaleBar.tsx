@@ -15,6 +15,7 @@ import {
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
 } from '..'
+import clsx from 'clsx'
 import { chooseGridPitch } from '../util'
 import OverviewRubberBand from './OverviewRubberBand'
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -193,6 +194,7 @@ const Cytobands = observer(
     assembly?: Assembly
     block: ContentBlock
   }) => {
+    console.log({ block })
     const cytobands = assembly?.cytobands
       ?.map(f => ({
         refName: assembly.getCanonicalRefName(f.get('refName')),
@@ -216,45 +218,47 @@ const Cytobands = observer(
     let firstCent = true
     return cytobands ? (
       <svg style={{ width: '100%' }}>
-        {cytobands.map(([start, end, type]) => {
-          if (type === 'acen' && firstCent) {
-            firstCent = false
+        <g transform={`translate(-${block.offsetPx})`}>
+          {cytobands.map(([start, end, type]) => {
+            if (type === 'acen' && firstCent) {
+              firstCent = false
+              return (
+                <polygon
+                  key={start + '-' + end + '-' + type}
+                  points={[
+                    [start, 0],
+                    [end, (HEADER_OVERVIEW_HEIGHT - 2) / 2],
+                    [start, HEADER_OVERVIEW_HEIGHT - 2],
+                  ].toString()}
+                  fill={colorMap[type]}
+                />
+              )
+            }
+            if (type === 'acen' && !firstCent) {
+              return (
+                <polygon
+                  key={start + '-' + end + '-' + type}
+                  points={[
+                    [start, (HEADER_OVERVIEW_HEIGHT - 2) / 2],
+                    [end, 0],
+                    [end, HEADER_OVERVIEW_HEIGHT - 2],
+                  ].toString()}
+                  fill={colorMap[type]}
+                />
+              )
+            }
             return (
-              <polygon
+              <rect
                 key={start + '-' + end + '-' + type}
-                points={[
-                  [start, 0],
-                  [end, (HEADER_OVERVIEW_HEIGHT - 2) / 2],
-                  [start, HEADER_OVERVIEW_HEIGHT - 2],
-                ].toString()}
+                x={Math.min(start, end)}
+                y={0}
+                width={Math.abs(end - start)}
+                height={HEADER_OVERVIEW_HEIGHT - 2}
                 fill={colorMap[type]}
               />
             )
-          }
-          if (type === 'acen' && !firstCent) {
-            return (
-              <polygon
-                key={start + '-' + end + '-' + type}
-                points={[
-                  [start, (HEADER_OVERVIEW_HEIGHT - 2) / 2],
-                  [end, 0],
-                  [end, HEADER_OVERVIEW_HEIGHT - 2],
-                ].toString()}
-                fill={colorMap[type]}
-              />
-            )
-          }
-          return (
-            <rect
-              key={start + '-' + end + '-' + type}
-              x={start}
-              y={0}
-              width={end - start}
-              height={HEADER_OVERVIEW_HEIGHT - 2}
-              fill={colorMap[type]}
-            />
-          )
-        })}
+          })}
+        </g>
       </svg>
     ) : null
   },
@@ -291,7 +295,14 @@ const ChromosomeOverview = observer(
 
     return (
       <div
-        className={classes.scaleBarContig}
+        className={clsx(
+          classes.scaleBarContig,
+          assembly?.cytobands?.length
+            ? undefined
+            : block.reversed
+            ? classes.scaleBarContigReverse
+            : classes.scaleBarContigForward,
+        )}
         style={{
           left: offsetPx,
           width: widthPx,
@@ -305,7 +316,7 @@ const ChromosomeOverview = observer(
           {refName}
         </Typography>
 
-        {!assembly?.cytobands
+        {!assembly?.cytobands?.length
           ? tickLabels.map((tickLabel, labelIdx) => (
               <Typography
                 key={`${JSON.stringify(block)}-${tickLabel}-${labelIdx}`}
