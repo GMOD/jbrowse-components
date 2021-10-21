@@ -84,16 +84,12 @@ const useStyles = makeStyles(theme => {
       pointerEvents: 'none',
     },
     scaleBarVisibleRegion: {
-      background: alpha(scaleBarColor, 0.3),
+      background: alpha(scaleBarColor, 0.1),
       position: 'absolute',
       height: HEADER_OVERVIEW_HEIGHT,
       pointerEvents: 'none',
-      top: -1,
       zIndex: 100,
-      borderWidth: 1,
-      borderStyle: 'solid',
-      borderColor: alpha(scaleBarColor, 0.8),
-      boxSizing: 'content-box',
+      border: '1px solid red',
     },
     overview: {
       height: HEADER_BAR_HEIGHT,
@@ -123,7 +119,10 @@ const Polygon = observer(
     } = model
 
     const pal = theme.palette
-    const polygonColor = pal.tertiary ? pal.tertiary.light : pal.primary.light
+    const polygonColor = alpha(
+      pal.tertiary ? pal.tertiary.light : pal.primary.light,
+      0.3,
+    )
 
     if (!contentBlocks.length) {
       return null
@@ -194,7 +193,6 @@ const Cytobands = observer(
     assembly?: Assembly
     block: ContentBlock
   }) => {
-    console.log({ block })
     const cytobands = assembly?.cytobands
       ?.map(f => ({
         refName: assembly.getCanonicalRefName(f.get('refName')),
@@ -271,12 +269,14 @@ const ChromosomeOverview = observer(
     assembly,
     scale,
     overview,
+    showIdeogram,
   }: {
     block: ContentBlock
     assembly?: Assembly
     scale: number
     gridPitch: { majorPitch: number }
     overview: Base1DViewModel
+    showIdeogram
   }) => {
     const classes = useStyles()
     const { offsetPx, widthPx, refName, start, end, reversed } = block
@@ -316,7 +316,7 @@ const ChromosomeOverview = observer(
           {refName}
         </Typography>
 
-        {!assembly?.cytobands?.length
+        {!assembly?.cytobands?.length || !showIdeogram
           ? tickLabels.map((tickLabel, labelIdx) => (
               <Typography
                 key={`${JSON.stringify(block)}-${tickLabel}-${labelIdx}`}
@@ -333,7 +333,7 @@ const ChromosomeOverview = observer(
             ))
           : null}
 
-        {assembly?.cytobands ? (
+        {assembly?.cytobands && showIdeogram ? (
           <Cytobands overview={overview} assembly={assembly} block={block} />
         ) : null}
       </div>
@@ -353,7 +353,7 @@ const ScaleBar = observer(
   }) => {
     const classes = useStyles()
     const { assemblyManager } = getSession(model)
-    const { dynamicBlocks: visibleRegions } = model
+    const { showIdeogram, dynamicBlocks: visibleRegions } = model
     const { dynamicBlocks: overviewVisibleRegions } = overview
     const gridPitch = chooseGridPitch(scale, 120, 15)
 
@@ -386,6 +386,7 @@ const ScaleBar = observer(
             left: firstOverviewPx,
           }}
         />
+
         {/* this is the entire scale bar */}
         {overviewVisibleRegions.map((block, idx) => {
           const assembly = assemblyManager.get(block.assemblyName)
@@ -409,6 +410,7 @@ const ScaleBar = observer(
               assembly={assembly}
               scale={scale}
               overview={overview}
+              showIdeogram={showIdeogram}
             />
           )
         })}
@@ -425,7 +427,8 @@ function OverviewScaleBar({
   children: React.ReactNode
 }) {
   const classes = useStyles()
-  const { width, displayedRegions } = model
+  const { width, assemblyNames, displayedRegions } = model
+  const { assemblyManager } = getSession(model)
 
   const overview = Base1DView.create({
     displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
@@ -437,6 +440,10 @@ function OverviewScaleBar({
 
   const scale =
     model.totalBp / (width - (displayedRegions.length - 1) * wholeSeqSpacer)
+
+  const anyIdeos = assemblyNames.some(
+    asm => assemblyManager.get(asm)?.cytobands?.length,
+  )
 
   return !displayedRegions.length ? (
     <>
@@ -461,6 +468,14 @@ function OverviewScaleBar({
         <Polygon model={model} overview={overview} />
         {children}
       </div>
+      {anyIdeos ? (
+        <input
+          type="checkbox"
+          checked={model.showIdeogram}
+          onChange={event => model.setShowIdeogram(event.target.checked)}
+          style={{ position: 'absolute', top: 0, right: 0 }}
+        />
+      ) : null}
     </div>
   )
 }

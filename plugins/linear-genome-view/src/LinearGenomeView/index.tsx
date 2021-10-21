@@ -122,6 +122,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ),
         trackLabels: 'overlapping' as 'overlapping' | 'hidden' | 'offset',
         showCenterLine: false,
+        showIdeogram: true,
       }),
     )
     .volatile(() => ({
@@ -469,6 +470,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      setShowIdeogram(flag: boolean) {
+        self.showIdeogram = flag
+      },
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
       },
