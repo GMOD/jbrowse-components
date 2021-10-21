@@ -5,6 +5,7 @@
 import { setup } from '../testUtil'
 import fs from 'fs'
 import path from 'path'
+import { Scope } from 'nock'
 
 const configPath = path.join(
   __dirname,
@@ -14,6 +15,34 @@ const configPath = path.join(
   'data',
   'indexing_config.json',
 )
+
+function mockRemote1(exampleSite: Scope) {
+  return exampleSite
+    .get('/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3')
+    .replyWithFile(
+      200,
+      path.join(
+        __dirname,
+        '..',
+        '..',
+        'test',
+        'data',
+        'au9_scaffold_subset_sync.gff3',
+      ),
+    )
+}
+
+function mockRemote2(exampleSite: Scope) {
+  return exampleSite
+    .get(
+      '/GMOD/jbrowse-components/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz',
+    )
+    .replyWithFile(
+      200,
+      path.join(__dirname, '..', '..', 'test', 'data', 'volvox.sort.gff3.gz'),
+    )
+}
+
 const ixLoc = (loc: string) => path.join(loc, 'trix', 'volvox.ix')
 const ixxLoc = (loc: string) => path.join(loc, 'trix', 'volvox.ixx')
 
@@ -83,6 +112,8 @@ describe('text-index tracks', () => {
 // Remote GZ
 describe('text-index tracks', () => {
   setup
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .nock('https://raw.githubusercontent.com', mockRemote2 as any)
     .do(async ctx => {
       fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
     })
@@ -98,6 +129,8 @@ describe('text-index tracks', () => {
 
 describe('text-index tracks', () => {
   setup
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .nock('https://raw.githubusercontent.com', mockRemote1 as any)
     .do(async ctx => {
       fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
     })
@@ -144,6 +177,10 @@ describe('text-index tracks', () => {
 
 describe('text-index tracks', () => {
   setup
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .nock('https://raw.githubusercontent.com', mockRemote1 as any)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .nock('https://raw.githubusercontent.com', mockRemote2 as any)
     .do(async ctx => {
       fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
     })
