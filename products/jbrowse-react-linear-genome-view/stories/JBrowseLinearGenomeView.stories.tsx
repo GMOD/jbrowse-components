@@ -1,6 +1,7 @@
+import React, { useEffect, useState } from 'react'
 import { PluginRecord } from '@jbrowse/core/PluginLoader'
 import { observer } from 'mobx-react'
-import React, { useEffect, useState } from 'react'
+import { Region } from '@jbrowse/core/util/types'
 import { createViewState, JBrowseLinearGenomeView, loadPlugins } from '../src'
 import volvoxConfig from '../public/test_data/volvox/config.json'
 import volvoxSession from '../public/volvox-session.json'
@@ -472,17 +473,19 @@ export const NextstrainExample = () => {
   return <JBrowseLinearGenomeView viewState={state} />
 }
 
-const VisibleRegions = observer(({ state }) => {
-  const locstrings = state.session.views[0].coarseDynamicBlocks
-    .map(
-      region =>
-        `${region.refName}:${Math.floor(region.start)}-${Math.floor(
-          region.end,
-        )}`,
-    )
-    .join(',')
-  return <p>Visible region: {locstrings}</p>
-})
+const VisibleRegions = observer(
+  ({ state }: { state: ReturnType<typeof createViewState> }) => {
+    const locstrings = state.session.views[0].coarseDynamicBlocks
+      .map(
+        (region: Region) =>
+          `${region.refName}:${Math.floor(region.start)}-${Math.floor(
+            region.end,
+          )}`,
+      )
+      .join(',')
+    return <p>Visible region: {locstrings}</p>
+  },
+)
 
 export const VisibleRegionsExample = () => {
   const state = createViewState({
