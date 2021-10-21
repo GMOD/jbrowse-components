@@ -106,37 +106,40 @@ function Home() {
             />
           </Box>
         </Box>
-        <Box
+      </Box>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-around',
+          backgroundColor: '#F0F0F0',
+          padding: '25px',
+          alignItems: 'center',
+          marginBottom: 6,
+        }}
+      >
+        <Typography
+          variant="h4"
           sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-around',
-            backgroundColor: '#F0F0F0',
-            padding: '25px',
-            alignItems: 'center',
-            marginBottom: 6,
+            fontWeight: 'bold',
+            fontSize: { xs: 'medium', sm: 'medium', md: 'x-large' },
           }}
         >
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: 'bold',
-              fontSize: { xs: 'medium', sm: 'medium', md: 'x-large' },
-            }}
-          >
-            {bannerBulletin}
-          </Typography>
-          <Button
-            variant="contained"
-            href={`https://github.com/GMOD/jbrowse-components/releases/tag/${currentVersion}/`}
-            sx={{
-              color: 'white',
-              fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' },
-            }}
-          >
-            Learn more
-          </Button>
-        </Box>
+          {bannerBulletin}
+        </Typography>
+        <Button
+          variant="contained"
+          href={`https://github.com/GMOD/jbrowse-components/releases/tag/${currentVersion}/`}
+          sx={{
+            fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' },
+            maxWidth: { xs: 'min-content', sm: 'min-content', md: 'inherit' },
+          }}
+          style={{ color: 'white' }}
+        >
+          Learn more
+        </Button>
+      </Box>
+      <Box sx={{ margin: { xs: '0.5em', sm: '0.5em', md: '3em' } }}>
         <Box sx={{ marginBottom: 6 }}>
           <Typography variant="h4">Features</Typography>
           <hr />
