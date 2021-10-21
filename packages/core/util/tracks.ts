@@ -96,6 +96,12 @@ export function storeBlobLocation(location: PreFileLocation) {
   return location
 }
 
+/**
+ * creates a new location from the provided location including the appropriate suffix and location type
+ * @param location the FileLocation
+ * @param suffix the file suffix (e.g. .bam)
+ * @returns the constructed location object from the provided prameters
+ */
 export function makeIndex(location: FileLocation, suffix: string) {
   if ('uri' in location) {
     return { uri: location.uri + suffix, locationType: 'UriLocation' }
@@ -111,6 +117,13 @@ export function makeIndex(location: FileLocation, suffix: string) {
   return location
 }
 
+/**
+ * constructs a potential index file (with suffix) from the provided file name
+ * @param name the name of the index file
+ * @param typeA one option of a potential two file suffix (e.g. CSI, BAI)
+ * @param typeB the second option of a potential two file suffix (e.g. CSI, BAI)
+ * @returns a likely name of the index file for a given filename
+ */
 export function makeIndexType(
   name: string | undefined,
   typeA: string,
@@ -147,8 +160,7 @@ export function getFileName(track: FileLocation) {
 export function guessAdapter(
   file: FileLocation,
   index: FileLocation | undefined,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  model?: any,
+  model?: IAnyStateTreeNode,
   adapterHint?: string,
 ) {
   if (model) {
@@ -156,7 +168,7 @@ export function guessAdapter(
     const session = getSession(model)
 
     const adapterGuesser = getEnv(session).pluginManager.evaluateExtensionPoint(
-      'extendGuessAdapter',
+      'Core-guessAdapterForLocation',
       (
         _file: FileLocation,
         _index?: FileLocation,
@@ -178,8 +190,10 @@ export function guessAdapter(
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function guessTrackType(adapterType: string, model?: any): string {
+export function guessTrackType(
+  adapterType: string,
+  model?: IAnyStateTreeNode,
+): string {
   if (model) {
     // @ts-ignore
     const session = getSession(model)
@@ -187,7 +201,7 @@ export function guessTrackType(adapterType: string, model?: any): string {
     const trackTypeGuesser = getEnv(
       session,
     ).pluginManager.evaluateExtensionPoint(
-      'extendGuessTrackType',
+      'Core-guessTrackTypeForLocation',
       (_adapterName: string): AdapterConfig | undefined => {
         return undefined
       },

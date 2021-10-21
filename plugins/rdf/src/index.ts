@@ -21,7 +21,7 @@ export default class RdfPlugin extends Plugin {
         }),
     )
     pluginManager.addToExtensionPoint(
-      'extendGuessAdapter',
+      'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (
           file: FileLocation,

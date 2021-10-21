@@ -40,7 +40,7 @@ export default class HicPlugin extends Plugin {
         }),
     )
     pluginManager.addToExtensionPoint(
-      'extendGuessAdapter',
+      'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (
           file: FileLocation,
@@ -61,7 +61,7 @@ export default class HicPlugin extends Plugin {
       },
     )
     pluginManager.addToExtensionPoint(
-      'extendGuessTrackType',
+      'Core-guessTrackTypeForLocation',
       (trackTypeGuesser: TrackTypeGuesser) => {
         return (adapterName: string) => {
           if (adapterName === 'HicAdapter') {

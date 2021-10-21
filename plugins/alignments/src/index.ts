@@ -152,7 +152,7 @@ export default class AlignmentsPlugin extends Plugin {
     )
 
     pluginManager.addToExtensionPoint(
-      'extendGuessAdapter',
+      'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (
           file: FileLocation,
@@ -178,7 +178,7 @@ export default class AlignmentsPlugin extends Plugin {
       },
     )
     pluginManager.addToExtensionPoint(
-      'extendGuessTrackType',
+      'Core-guessTrackTypeForLocation',
       (trackTypeGuesser: TrackTypeGuesser) => {
         return (adapterName: string) => {
           if (adapterName === 'BamAdapter') {
@@ -210,7 +210,7 @@ export default class AlignmentsPlugin extends Plugin {
         }),
     )
     pluginManager.addToExtensionPoint(
-      'extendGuessAdapter',
+      'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (
           file: FileLocation,
@@ -232,7 +232,7 @@ export default class AlignmentsPlugin extends Plugin {
       },
     )
     pluginManager.addToExtensionPoint(
-      'extendGuessTrackType',
+      'Core-guessTrackTypeForLocation',
       (trackTypeGuesser: TrackTypeGuesser) => {
         return (adapterName: string) => {
           if (adapterName === 'CramAdapter') {
