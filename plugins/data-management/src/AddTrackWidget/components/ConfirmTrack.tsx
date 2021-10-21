@@ -1,14 +1,19 @@
+import React from 'react'
+import {
+  Link,
+  MenuItem,
+  TextField,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
-import Link from '@material-ui/core/Link'
-import MenuItem from '@material-ui/core/MenuItem'
-import { makeStyles } from '@material-ui/core/styles'
-import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import React from 'react'
 import { UNKNOWN } from '@jbrowse/core/util/tracks'
+
+// locals
 import { AddTrackModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
@@ -41,15 +46,23 @@ function StatusMessage({
   )
 }
 
+function getAdapterTypes(pluginManager: PluginManager) {
+  return pluginManager.getElementTypesInGroup('adapter') as { name: string }[]
+}
+
+function getTrackTypes(pluginManager: PluginManager) {
+  return pluginManager.getElementTypesInGroup('track') as { name: string }[]
+}
+
 const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
   const classes = useStyles()
   const session = getSession(model)
   const { trackAdapter } = model
-
+  const type = trackAdapter?.type
   return (
     <TextField
       className={classes.spacing}
-      value={trackAdapter?.type}
+      value={type === 'UNKNOWN' ? '' : type}
       label="adapterType"
       helperText="An adapter type"
       select
@@ -60,15 +73,17 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
         SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
       }}
     >
-      {getEnv(session)
-        .pluginManager.getElementTypesInGroup('adapter')
+      {
         // Exclude SNPCoverageAdapter from primary adapter user selection
-        .filter((elt: { name: string }) => elt.name !== 'SNPCoverageAdapter')
-        .map((elt: { name: string }) => (
-          <MenuItem key={elt.name} value={elt.name}>
-            {elt.name}
-          </MenuItem>
-        ))}
+        getAdapterTypes(getEnv(session).pluginManager)
+          .filter(elt => elt.name !== 'SNPCoverageAdapter')
+          .map(elt => elt.name)
+          .map(name => (
+            <MenuItem key={name} value={name}>
+              {name}
+            </MenuItem>
+          ))
+      }
     </TextField>
   )
 })
@@ -123,14 +138,11 @@ const TrackTypeSelector = observer(({ model }: { model: AddTrackModel }) => {
         SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
       }}
     >
-      {getEnv(session)
-        .pluginManager.getElementTypesInGroup('track')
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map(({ name }: any) => (
-          <MenuItem key={name} value={name}>
-            {name}
-          </MenuItem>
-        ))}
+      {getTrackTypes(getEnv(session).pluginManager).map(({ name }) => (
+        <MenuItem key={name} value={name}>
+          {name}
+        </MenuItem>
+      ))}
     </TextField>
   )
 })
@@ -152,14 +164,13 @@ const TrackAssemblySelector = observer(
           SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
         }}
       >
-        {session.assemblies.map(conf => {
-          const name = readConfObject(conf, 'name')
-          return (
+        {session.assemblies
+          .map(conf => readConfObject(conf, 'name'))
+          .map(name => (
             <MenuItem key={name} value={name}>
               {name}
             </MenuItem>
-          )
-        })}
+          ))}
       </TextField>
     )
   },
