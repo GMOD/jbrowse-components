@@ -76,18 +76,7 @@ function categorizeAdapters(
         )
       }
       items.push(
-        <MenuItem
-          key={
-            adapter.adapterMetaData?.displayName
-              ? adapter.adapterMetaData?.displayName
-              : adapter.name
-          }
-          value={
-            adapter.adapterMetaData?.displayName
-              ? adapter.adapterMetaData?.displayName
-              : adapter.name
-          }
-        >
+        <MenuItem key={adapter.name} value={adapter.name}>
           {adapter.adapterMetaData?.displayName
             ? adapter.adapterMetaData?.displayName
             : adapter.name}
@@ -137,18 +126,7 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
             !elt.adapterMetaData?.category,
         )
         .map(elt => (
-          <MenuItem
-            key={
-              elt.adapterMetaData?.displayName
-                ? elt.adapterMetaData?.displayName
-                : elt.name
-            }
-            value={
-              elt.adapterMetaData?.displayName
-                ? elt.adapterMetaData?.displayName
-                : elt.name
-            }
-          >
+          <MenuItem key={elt.name} value={elt.name}>
             {elt.adapterMetaData?.displayName
               ? elt.adapterMetaData?.displayName
               : elt.name}
