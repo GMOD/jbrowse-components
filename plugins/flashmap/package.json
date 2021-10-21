@@ -1,24 +1,17 @@
 {
-  "name": "@jbrowse/plugin-gff3",
-  "version": "1.0.4",
-  "description": "JBrowse 2 gff3.",
+  "name": "@jbrowse/plugin-flashmap",
+  "version": "1.0.0",
+  "description": "In browser approximate sequence search",
   "keywords": [
     "jbrowse",
     "jbrowse2"
   ],
   "license": "Apache-2.0",
-  "homepage": "https://jbrowse.org",
-  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/GMOD/jbrowse-components.git",
-    "directory": "plugins/gff3"
-  },
-  "author": "JBrowse Team",
+  "author": "Shihab Dider",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/plugin-gff3.esm.js",
+  "distModule": "dist/plugin-flashmap.esm.js",
   "module": "",
   "files": [
     "dist",
@@ -27,7 +20,7 @@
   "scripts": {
     "start": "tsdx watch --verbose --noClean",
     "build": "tsdx build",
-    "test": "cd ../..; jest plugins/gff3 --passWithNoTests",
+    "test": "cd ../..; jest plugins/flashmap --passWithNoTests",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",
@@ -35,13 +28,10 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@gmod/gff": "^1.1.2",
-    "@gmod/tabix": "^1.5.0",
     "generic-filehandle": "^2.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",
-    "@jbrowse/plugin-linear-genome-view": "^1.0.0",
     "@material-ui/core": "^4.9.13",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",

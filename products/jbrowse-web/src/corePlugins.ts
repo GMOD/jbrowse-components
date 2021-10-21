@@ -47,5 +47,4 @@ export default [
   SvInspectorPlugin,
   BreakpointSplitView,
   HicPlugin,
-  Flashmap,
 ]

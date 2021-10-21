@@ -1,1 +1,1 @@
-declare module '@gmod/gff'
+declare module '*.json'
