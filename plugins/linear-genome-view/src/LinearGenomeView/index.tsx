@@ -19,20 +19,24 @@ import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-// misc
 import { transaction, autorun } from 'mobx'
 import {
-  getSnapshot,
-  types,
+  addDisposer,
   cast,
-  Instance,
+  getSnapshot,
   getRoot,
   resolveIdentifier,
-  addDisposer,
+  types,
+  Instance,
 } from 'mobx-state-tree'
 
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import PluginManager from '@jbrowse/core/PluginManager'
+import clone from 'clone'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { saveAs } from 'file-saver'
+
+// icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'
@@ -41,15 +45,12 @@ import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 import PhotoCameraIcon from '@material-ui/icons/PhotoCamera'
 import ZoomInIcon from '@material-ui/icons/ZoomIn'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
-import clone from 'clone'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { saveAs } from 'file-saver'
+
+// locals
 import { renderToSvg } from './components/LinearGenomeView'
 import RefNameAutocomplete from './components/RefNameAutocomplete'
 import ExportSvgDlg from './components/ExportSvgDialog'
 import ReturnToImportFormDlg from './components/ReturnToImportFormDialog'
-
-export { default as ReactComponent } from './components/LinearGenomeView'
 
 export interface BpOffset {
   refName?: string
@@ -1224,6 +1225,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
         menuItems(): MenuItem[] {
+          const { assemblyManager } = getSession(self)
+          const { assemblyNames, showIdeogram } = self
+          const anyIdeograms = assemblyNames.some(
+            asm => assemblyManager.get(asm)?.cytobands?.length,
+          )
           const menuItems: MenuItem[] = [
             {
               label: 'Return to import form',
@@ -1310,6 +1316,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 },
               ],
             },
+            ...(anyIdeograms
+              ? [
+                  {
+                    label: showIdeogram ? 'Hide ideogram' : 'Show ideograms',
+                    onClick: () => {
+                      self.setShowIdeogram(!showIdeogram)
+                    },
+                  },
+                ]
+              : []),
           ]
 
           // add track's view level menu options
@@ -1403,8 +1419,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
             label: 'Zoom to region',
             icon: ZoomInIcon,
             onClick: () => {
-              if (self.leftOffset && self.rightOffset) {
-                self.moveTo(self.leftOffset, self.rightOffset)
+              const { leftOffset, rightOffset } = self
+              if (leftOffset && rightOffset) {
+                self.moveTo(leftOffset, rightOffset)
               }
             },
           },
@@ -1423,3 +1440,4 @@ export function stateModelFactory(pluginManager: PluginManager) {
 export { renderToSvg, RefNameAutocomplete }
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>
+export { default as ReactComponent } from './components/LinearGenomeView'

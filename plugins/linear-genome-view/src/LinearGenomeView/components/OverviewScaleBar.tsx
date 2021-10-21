@@ -1,24 +1,24 @@
 import React from 'react'
+import { Typography, makeStyles, useTheme, alpha } from '@material-ui/core'
+import { observer } from 'mobx-react'
+import { Instance } from 'mobx-state-tree'
+import clsx from 'clsx'
+
 import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import { getSession } from '@jbrowse/core/util'
-import {
-  LinearProgress,
-  Typography,
-  alpha,
-  makeStyles,
-  useTheme,
-} from '@material-ui/core'
 import { ContentBlock } from '@jbrowse/core/util/blockTypes'
-import { observer } from 'mobx-react'
+import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+
+// locals
 import {
-  LinearGenomeViewModel,
+  LinearGenomeViewStateModel,
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
 } from '..'
-import clsx from 'clsx'
 import { chooseGridPitch } from '../util'
 import OverviewRubberBand from './OverviewRubberBand'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+
+const wholeSeqSpacer = 2
 
 const useStyles = makeStyles(theme => {
   const scaleBarColor = theme.palette.tertiary
@@ -46,34 +46,14 @@ const useStyles = makeStyles(theme => {
       backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M6 0L0 4.5L6 9' fill='none' stroke='%23ddd'/%3E%3C/svg%3E")`,
       backgroundRepeat: 'repeat',
     },
-    scaleBarRegionIncompleteLeft: {
-      width: 10,
-      height: 17.5,
-      background: `linear-gradient(-225deg,black 3px, transparent 1px),
-      linear-gradient(45deg, black 3px, transparent 1px)`,
-      backgroundRepeat: 'repeat-y',
-      backgroundSize: '10px 8px',
-      borderTopLeftRadius: '2px',
-      borderBottomLeftRadius: '2px',
-      float: 'left',
-    },
-    scaleBarRegionIncompleteRight: {
-      width: 10,
-      height: 17.5,
-      background: `linear-gradient(225deg, black 3px, transparent 1px),
-      linear-gradient(-45deg, black 3px, transparent 1px)`,
-      backgroundRepeat: 'repeat-y',
-      backgroundSize: '10px 8px',
-      borderTopRightRadius: '2px',
-      borderBottomRightRadius: '2px',
-      float: 'right',
-    },
+
     scaleBarRefName: {
       position: 'absolute',
       fontWeight: 'bold',
       lineHeight: 'normal',
       pointerEvents: 'none',
       left: 5,
+      zIndex: 100,
     },
     scaleBarLabel: {
       height: HEADER_OVERVIEW_HEIGHT,
@@ -101,51 +81,40 @@ const useStyles = makeStyles(theme => {
   }
 })
 
-const wholeSeqSpacer = 2
-
 const Polygon = observer(
   ({
     model,
     overview,
   }: {
-    model: LinearGenomeViewModel
-    overview: Base1DViewModel
+    model: LGV
+    overview: Instance<Base1DViewModel>
   }) => {
     const theme = useTheme()
     const classes = useStyles()
-    const {
-      offsetPx,
-      dynamicBlocks: { contentBlocks, totalWidthPxWithoutBorders },
-    } = model
-
-    const pal = theme.palette
-    const polygonColor = alpha(
-      pal.tertiary ? pal.tertiary.light : pal.primary.light,
-      0.3,
-    )
+    const { interRegionPaddingWidth, offsetPx, dynamicBlocks } = model
+    const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
+    const { tertiary, primary } = theme.palette
+    const polygonColor = tertiary ? tertiary.light : primary.light
 
     if (!contentBlocks.length) {
       return null
     }
-
-    const firstBlock = contentBlocks[0]
-    const lastBlock = contentBlocks[contentBlocks.length - 1]
+    const first = contentBlocks[0]
+    const last = contentBlocks[contentBlocks.length - 1]
     const topLeft = overview.bpToPx({
-      refName: firstBlock.refName,
-      coord: firstBlock.reversed ? firstBlock.end : firstBlock.start,
-      regionNumber: firstBlock.regionNumber,
+      ...first,
+      coord: first.reversed ? first.end : first.start,
     })
     const topRight = overview.bpToPx({
-      refName: lastBlock.refName,
-      coord: lastBlock.reversed ? lastBlock.start : lastBlock.end,
-      regionNumber: lastBlock.regionNumber,
+      ...last,
+      coord: last.reversed ? last.start : last.end,
     })
 
     const startPx = Math.max(0, -offsetPx)
     const endPx =
       startPx +
       totalWidthPxWithoutBorders +
-      (contentBlocks.length * model.interRegionPaddingWidth) / 2
+      (contentBlocks.length * interRegionPaddingWidth) / 2
 
     const points = [
       [startPx, HEADER_BAR_HEIGHT],
@@ -160,17 +129,17 @@ const Polygon = observer(
         width="100%"
         className={classes.overviewSvg}
       >
-        {points && (
-          <polygon
-            points={points.toString()}
-            fill={alpha(polygonColor, 0.3)}
-            stroke={alpha(polygonColor, 0.8)}
-          />
-        )}
+        <polygon
+          points={points.toString()}
+          fill={alpha(polygonColor, 0.3)}
+          stroke={alpha(polygonColor, 0.8)}
+        />
       </svg>
     )
   },
 )
+
+type LGV = Instance<LinearGenomeViewStateModel>
 
 const colorMap: { [key: string]: string | undefined } = {
   gneg: '#ccc',
@@ -262,34 +231,29 @@ const Cytobands = observer(
   },
 )
 
-const ChromosomeOverview = observer(
+const OverviewBox = observer(
   ({
-    block,
-    gridPitch,
-    assembly,
     scale,
+    model,
+    block,
     overview,
-    showIdeogram,
   }: {
-    block: ContentBlock
-    assembly?: Assembly
     scale: number
-    gridPitch: { majorPitch: number }
+    model: LGV
+    block: ContentBlock
     overview: Base1DViewModel
-    showIdeogram
   }) => {
     const classes = useStyles()
-    const { offsetPx, widthPx, refName, start, end, reversed } = block
+    const { showIdeogram } = model
+    const { start, end, reversed, refName, assemblyName } = block
+    const { majorPitch } = chooseGridPitch(scale, 120, 15)
+    const { assemblyManager } = getSession(model)
+    const assembly = assemblyManager.get(assemblyName)
     const refNameColor = assembly?.getRefNameColor(refName)
 
-    const regionLength = end - start
     const tickLabels = []
-    for (
-      let index = 0;
-      index < Math.floor(regionLength / gridPitch.majorPitch);
-      index++
-    ) {
-      const offsetLabel = (index + 1) * gridPitch.majorPitch
+    for (let i = 0; i < Math.floor((end - start) / majorPitch); i++) {
+      const offsetLabel = (i + 1) * majorPitch
       tickLabels.push(reversed ? end - offsetLabel : start + offsetLabel)
     }
 
@@ -297,18 +261,17 @@ const ChromosomeOverview = observer(
       <div
         className={clsx(
           classes.scaleBarContig,
-          assembly?.cytobands?.length
-            ? undefined
-            : block.reversed
+          reversed
             ? classes.scaleBarContigReverse
             : classes.scaleBarContigForward,
         )}
         style={{
-          left: offsetPx,
-          width: widthPx,
+          left: block.offsetPx,
+          width: block.widthPx,
           borderColor: refNameColor,
         }}
       >
+        {/* name of sequence */}
         <Typography
           style={{ color: refNameColor }}
           className={classes.scaleBarRefName}
@@ -323,7 +286,7 @@ const ChromosomeOverview = observer(
                 className={classes.scaleBarLabel}
                 variant="body2"
                 style={{
-                  left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
+                  left: ((labelIdx + 1) * majorPitch) / scale,
                   pointerEvents: 'none',
                   color: refNameColor,
                 }}
@@ -347,34 +310,29 @@ const ScaleBar = observer(
     scale,
     overview,
   }: {
-    model: LinearGenomeViewModel
+    model: LGV
     overview: Base1DViewModel
     scale: number
   }) => {
     const classes = useStyles()
-    const { assemblyManager } = getSession(model)
-    const { showIdeogram, dynamicBlocks: visibleRegions } = model
-    const { dynamicBlocks: overviewVisibleRegions } = overview
-    const gridPitch = chooseGridPitch(scale, 120, 15)
+    const visibleRegions = model.dynamicBlocks.contentBlocks
+    const overviewVisibleRegions = overview.dynamicBlocks
 
-    if (!visibleRegions.contentBlocks.length) {
+    if (!visibleRegions.length) {
       return null
     }
-    const firstBlock = visibleRegions.contentBlocks[0]
+    const first = visibleRegions[0]
     const firstOverviewPx =
       overview.bpToPx({
-        refName: firstBlock.refName,
-        regionNumber: firstBlock.regionNumber,
-        coord: firstBlock.reversed ? firstBlock.end : firstBlock.start,
+        ...first,
+        coord: first.reversed ? first.end : first.start,
       }) || 0
 
-    const lastBlock =
-      visibleRegions.contentBlocks[visibleRegions.contentBlocks.length - 1]
+    const last = visibleRegions[visibleRegions.length - 1]
     const lastOverviewPx =
       overview.bpToPx({
-        refName: lastBlock.refName,
-        coord: lastBlock.reversed ? lastBlock.start : lastBlock.end,
-        regionNumber: lastBlock.regionNumber,
+        ...last,
+        coord: last.reversed ? last.start : last.end,
       }) || 0
 
     return (
@@ -386,10 +344,8 @@ const ScaleBar = observer(
             left: firstOverviewPx,
           }}
         />
-
         {/* this is the entire scale bar */}
         {overviewVisibleRegions.map((block, idx) => {
-          const assembly = assemblyManager.get(block.assemblyName)
           return !(block instanceof ContentBlock) ? (
             <div
               key={`${JSON.stringify(block)}-${idx}`}
@@ -403,14 +359,12 @@ const ScaleBar = observer(
               }}
             />
           ) : (
-            <ChromosomeOverview
-              key={`${JSON.stringify(block)}-${idx}`}
-              gridPitch={gridPitch}
-              block={block}
-              assembly={assembly}
+            <OverviewBox
               scale={scale}
+              block={block}
+              model={model}
               overview={overview}
-              showIdeogram={showIdeogram}
+              key={`${JSON.stringify(block)}-${idx}`}
             />
           )
         })}
@@ -423,12 +377,11 @@ function OverviewScaleBar({
   model,
   children,
 }: {
-  model: LinearGenomeViewModel
+  model: LGV
   children: React.ReactNode
 }) {
   const classes = useStyles()
-  const { width, assemblyNames, displayedRegions } = model
-  const { assemblyManager } = getSession(model)
+  const { totalBp, width, displayedRegions } = model
 
   const overview = Base1DView.create({
     displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
@@ -439,23 +392,9 @@ function OverviewScaleBar({
   overview.showAllRegions()
 
   const scale =
-    model.totalBp / (width - (displayedRegions.length - 1) * wholeSeqSpacer)
+    totalBp / (width - (displayedRegions.length - 1) * wholeSeqSpacer)
 
-  const anyIdeos = assemblyNames.some(
-    asm => assemblyManager.get(asm)?.cytobands?.length,
-  )
-
-  return !displayedRegions.length ? (
-    <>
-      <div className={classes.scaleBar}>
-        <LinearProgress
-          variant="indeterminate"
-          style={{ marginTop: 4, width: '100%' }}
-        />
-      </div>
-      <div>{children}</div>
-    </>
-  ) : (
+  return (
     <div>
       <OverviewRubberBand
         model={model}
@@ -468,14 +407,6 @@ function OverviewScaleBar({
         <Polygon model={model} overview={overview} />
         {children}
       </div>
-      {anyIdeos ? (
-        <input
-          type="checkbox"
-          checked={model.showIdeogram}
-          onChange={event => model.setShowIdeogram(event.target.checked)}
-          style={{ position: 'absolute', top: 0, right: 0 }}
-        />
-      ) : null}
     </div>
   )
 }
