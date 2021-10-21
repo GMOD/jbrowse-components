@@ -16,6 +16,7 @@ const releaseArray = [
     assets: [
       {
         browser_download_url: 'https://example.com/JBrowse2-0.0.2.zip',
+        name: 'jbrowse-web-v0.0.2.zip',
       },
     ],
   },
@@ -25,6 +26,7 @@ const releaseArray = [
     assets: [
       {
         browser_download_url: 'https://example.com/JBrowse2-0.0.1.zip',
+        name: 'jbrowse-web-v0.0.1.zip',
       },
     ],
   },

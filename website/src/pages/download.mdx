@@ -1,13 +1,6 @@
 import config from '../../docusaurus.config.json'
-import {
-  Button,
-  Card,
-  CardContent,
-  Typography,
-  Link,
-  Box,
-} from '@material-ui/core'
-import { Apple, DesktopWindows, ArrowDownward } from '@material-ui/icons'
+import { Button, Card, CardContent, Typography, Link, Box } from '@mui/material'
+import { Apple, DesktopWindows, ArrowDownward } from '@mui/icons-material'
 
 export const GithubLink = () => {
   const curr = `https://github.com/GMOD/jbrowse-components/releases/tag/${config.customFields.currentVersion}`
@@ -39,6 +32,9 @@ export const DownloadCard = ({ os, icon, link }) => {
           color="primary"
           startIcon={icon}
           href={downloadLink}
+          style={{
+            backgroundColor: '#3f51b5',
+          }}
         >
           download
         </Button>
@@ -100,8 +96,11 @@ export const DownloadCardContainer = () => {
             <Link href="/jb2/docs/quickstart_desktop/">
               instructions after downloading
             </Link>
-            . Can't find what you're looking for? Checkout&nbsp;
-            <Link href={downloadLink}>other platforms</Link>.
+            . Can't find what you're looking for? Checkout <Link
+              href={downloadLink}
+            >
+              other platforms
+            </Link>.
           </Typography>
         </div>
       </Box>

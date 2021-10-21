@@ -1,3 +1,4 @@
+import React from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import {
@@ -8,10 +9,12 @@ import {
   Typography,
   makeStyles,
 } from '@material-ui/core'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import React from 'react'
 import { UNKNOWN } from '@jbrowse/core/util/tracks'
+
+// locals
 import { AddTrackModel } from '../model'
 import { AdapterMetaData } from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
@@ -95,14 +98,23 @@ function categorizeAdapters(
   return items
 }
 
+function getAdapterTypes(pluginManager: PluginManager) {
+  return pluginManager.getElementTypesInGroup('adapter') as {
+    name: string
+    adapterMetaData: AdapterMetaData
+  }[]
+}
+
+function getTrackTypes(pluginManager: PluginManager) {
+  return pluginManager.getElementTypesInGroup('track') as { name: string }[]
+}
+
 const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
   const classes = useStyles()
   const session = getSession(model)
   const { trackAdapter } = model
   // prettier-ignore
-  const adapters = getEnv(session).pluginManager.getElementTypesInGroup(
-    'adapter',
-  )
+  const adapters = getAdapterTypes(getEnv(session).pluginManager)
   return (
     <TextField
       className={classes.spacing}
@@ -120,11 +132,11 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
       {adapters
         // Excludes any adapter with the 'adapterMetaData.hiddenFromGUI' property, and anything with the 'adapterMetaData.category' property
         .filter(
-          (elt: { name: string; adapterMetaData: AdapterMetaData }) =>
+          elt =>
             !elt.adapterMetaData?.hiddenFromGUI &&
             !elt.adapterMetaData?.category,
         )
-        .map((elt: { name: string; adapterMetaData: AdapterMetaData }) => (
+        .map(elt => (
           <MenuItem
             key={
               elt.adapterMetaData?.displayName
@@ -144,10 +156,7 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
         ))}
       {/* adapters with the 'adapterMetaData.category' property are categorized by the value of the property here */}
       {categorizeAdapters(
-        adapters.filter(
-          (elt: { adapterMetaData: AdapterMetaData }) =>
-            !elt.adapterMetaData?.hiddenFromGUI,
-        ),
+        adapters.filter(elt => !elt.adapterMetaData?.hiddenFromGUI),
       )}
     </TextField>
   )
@@ -186,13 +195,14 @@ const TrackTypeSelector = observer(({ model }: { model: AddTrackModel }) => {
   const classes = useStyles()
   const session = getSession(model)
   const { trackType } = model
+  const trackTypes = getTrackTypes(getEnv(session).pluginManager)
 
   return (
     <TextField
       className={classes.spacing}
       value={trackType}
       label="trackType"
-      helperText="A track type"
+      helperText="Select a track type"
       select
       fullWidth
       onChange={event => {
@@ -203,14 +213,11 @@ const TrackTypeSelector = observer(({ model }: { model: AddTrackModel }) => {
         SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
       }}
     >
-      {getEnv(session)
-        .pluginManager.getElementTypesInGroup('track')
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map(({ name }: any) => (
-          <MenuItem key={name} value={name}>
-            {name}
-          </MenuItem>
-        ))}
+      {trackTypes.map(({ name }) => (
+        <MenuItem key={name} value={name}>
+          {name}
+        </MenuItem>
+      ))}
     </TextField>
   )
 })
@@ -232,14 +239,13 @@ const TrackAssemblySelector = observer(
           SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
         }}
       >
-        {session.assemblies.map(conf => {
-          const name = readConfObject(conf, 'name')
-          return (
+        {session.assemblies
+          .map(conf => readConfObject(conf, 'name'))
+          .map(name => (
             <MenuItem key={name} value={name}>
               {name}
             </MenuItem>
-          )
-        })}
+          ))}
       </TextField>
     )
   },
