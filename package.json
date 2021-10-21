@@ -120,7 +120,6 @@
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
     "nock": "^12.0.3",
-    "node-sass": "^4.14.1",
     "open-cli": "^6.0.1",
     "postcss-flexbugs-fixes": "^4.1.0",
     "postcss-loader": "^3.0.0",
@@ -148,5 +147,8 @@
     "whatwg-fetch": "^3.0.0",
     "worker-loader": "^2.0.0"
   },
-  "version": "0.0.0"
+  "version": "0.0.0",
+  "dependencies": {
+    "node-sass": "6.0.1"
+  }
 }
