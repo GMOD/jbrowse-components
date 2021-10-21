@@ -15,7 +15,8 @@ const releaseArray = [
     prerelease: false,
     assets: [
       {
-        browser_download_url: 'https://example.com/JBrowse2-0.0.1.zip',
+        browser_download_url: 'https://example.com/jbrowse-web-v0.0.1.zip',
+        name: 'jbrowse-web-v0.0.1.zip',
       },
     ],
   },
@@ -49,7 +50,7 @@ function mockReleasesListVersions(gitHubApi: Scope) {
 
 function mockZip(exampleSite: Scope) {
   return exampleSite
-    .get('/JBrowse2-0.0.1.zip')
+    .get('/jbrowse-web-v0.0.1.zip')
     .replyWithFile(
       200,
       path.join(__dirname, '..', '..', 'test', 'data', 'JBrowse2.zip'),
@@ -59,7 +60,7 @@ function mockZip(exampleSite: Scope) {
 
 function mockWrongSite(exampleSite: Scope) {
   return exampleSite
-    .get('/JBrowse2-0.0.1.json')
+    .get('/jbrowse-web-v0.0.1.json')
     .reply(200, 'I am the wrong type', { 'Content-Type': 'application/json' })
 }
 
@@ -97,7 +98,7 @@ describe('create', () => {
       'create',
       'jbrowse',
       '--url',
-      'https://example.com/JBrowse2-0.0.1.json',
+      'https://example.com/jbrowse-web-v0.0.1.json',
     ])
     .exit(2)
     .it('fails if the fetch does not return the right file')
@@ -119,7 +120,7 @@ describe('create', () => {
       'create',
       'jbrowse',
       '--url',
-      'https://example.com/JBrowse2-0.0.1.zip',
+      'https://example.com/jbrowse-web-v0.0.1.zip',
     ])
     .it('upgrades a directory from a url', async ctx => {
       expect(await fsPromises.readdir(path.join(ctx.dir, 'jbrowse'))).toContain(

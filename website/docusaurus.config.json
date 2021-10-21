@@ -72,10 +72,12 @@
         {
           "className": "navbar-social-github",
           "position": "right",
+          "alt": "Github",
           "href": "https://github.com/GMOD/jbrowse-components"
         },
         {
           "className": "navbar-social-twitter",
+          "alt": "Twitter",
           "position": "right",
           "href": "https://twitter.com/usejbrowse"
         }

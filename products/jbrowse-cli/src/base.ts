@@ -123,6 +123,7 @@ interface GithubRelease {
   assets?: [
     {
       browser_download_url: string
+      name: string
     },
   ]
 }
@@ -239,7 +240,14 @@ export default abstract class JBrowseCommand extends Command {
 
       if (nonprereleases.length !== 0) {
         // @ts-ignore
-        return nonprereleases[0].assets[0].browser_download_url
+        const file = nonprereleases[0].assets.find(f =>
+          f.name.includes('jbrowse-web'),
+        )?.browser_download_url
+
+        if (!file) {
+          throw new Error('no jbrowse-web download found')
+        }
+        return file
       }
     }
 
@@ -270,13 +278,18 @@ export default abstract class JBrowseCommand extends Command {
       `https://api.github.com/repos/GMOD/jbrowse-components/releases/tags/${tag}`,
     )
     if (response.ok) {
-      const result = await response.json()
-      return result && result.assets
-        ? result.assets[0].browser_download_url
-        : this.error(
-            'Could not find version specified. Use --listVersions to see all available versions',
-            { exit: 90 },
-          )
+      const result = (await response.json()) as GithubRelease
+      const file = result?.assets?.find(f =>
+        f.name.includes('jbrowse-web'),
+      )?.browser_download_url
+
+      if (!file) {
+        this.error(
+          'Could not find version specified. Use --listVersions to see all available versions',
+          { exit: 90 },
+        )
+      }
+      return file
     }
     return this.error(`Error: Could not find version: ${response.statusText}`, {
       exit: 90,
