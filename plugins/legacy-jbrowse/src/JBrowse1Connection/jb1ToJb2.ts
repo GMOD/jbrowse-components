@@ -404,7 +404,7 @@ export function convertTrackConfig(
   jb2TrackConfig.adapter = guessAdapter(
     { uri: urlTemplate, locationType: 'UriLocation' },
     undefined,
-    () => urlTemplate,
+    urlTemplate,
   )
   if (!jb2TrackConfig.adapter) {
     throw new Error('Could not determine adapter')

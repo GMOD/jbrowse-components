@@ -160,8 +160,8 @@ export function getFileName(track: FileLocation) {
 export function guessAdapter(
   file: FileLocation,
   index: FileLocation | undefined,
-  model?: IAnyStateTreeNode,
   adapterHint?: string,
+  model?: IAnyStateTreeNode,
 ) {
   if (model) {
     // @ts-ignore

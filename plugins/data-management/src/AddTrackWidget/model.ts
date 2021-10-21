@@ -77,7 +77,7 @@ export default function f(pluginManager: PluginManager) {
         const { trackData, indexTrackData, adapterHint } = self
 
         return trackData
-          ? guessAdapter(trackData, indexTrackData, self, adapterHint)
+          ? guessAdapter(trackData, indexTrackData, adapterHint, self)
           : undefined
       },
 
