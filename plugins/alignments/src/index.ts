@@ -247,6 +247,12 @@ export default class AlignmentsPlugin extends Plugin {
       () =>
         new AdapterType({
           name: 'HtsgetBamAdapter',
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
           ...pluginManager.load(HtsgetBamAdapterF),
         }),
     )

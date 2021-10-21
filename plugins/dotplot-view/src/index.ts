@@ -345,6 +345,12 @@ export default class DotplotPlugin extends Plugin {
         new AdapterType({
           name: 'PAFAdapter',
           configSchema: PAFAdapterConfigSchema,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
           AdapterClass: PAFAdapter,
         }),
     )

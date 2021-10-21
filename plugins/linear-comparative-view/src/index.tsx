@@ -649,6 +649,12 @@ export default class extends Plugin {
         new AdapterType({
           name: 'MCScanAnchorsAdapter',
           configSchema: MCScanAnchorsConfigSchema,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
           AdapterClass: MCScanAnchorsAdapter,
         }),
     )

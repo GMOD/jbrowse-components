@@ -50,6 +50,12 @@ export default class SequencePlugin extends Plugin {
         new AdapterType({
           name: 'TwoBitAdapter',
           configSchema: twoBitAdapterConfigSchema,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
           getAdapterClass: () =>
             import('./TwoBitAdapter/TwoBitAdapter').then(r => r.default),
         }),
@@ -92,6 +98,12 @@ export default class SequencePlugin extends Plugin {
         new AdapterType({
           name: 'ChromSizesAdapter',
           configSchema: chromSizesAdapterConfigSchema,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
           getAdapterClass: () =>
             import('./ChromSizesAdapter/ChromSizesAdapter').then(
               r => r.default,
@@ -104,6 +116,12 @@ export default class SequencePlugin extends Plugin {
         new AdapterType({
           name: 'IndexedFastaAdapter',
           configSchema: indexedFastaAdapterConfigSchema,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
           getAdapterClass: () =>
             import('./IndexedFastaAdapter/IndexedFastaAdapter').then(
               r => r.default,
@@ -149,6 +167,12 @@ export default class SequencePlugin extends Plugin {
         new AdapterType({
           name: 'BgzipFastaAdapter',
           configSchema: bgzipFastaAdapterConfigSchema,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
           getAdapterClass: () =>
             import('./BgzipFastaAdapter/BgzipFastaAdapter').then(
               r => r.default,
@@ -194,6 +218,12 @@ export default class SequencePlugin extends Plugin {
       () =>
         new AdapterType({
           name: 'GCContentAdapter',
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
           ...pluginManager.load(GCContentAdapterF),
         }),
     )
