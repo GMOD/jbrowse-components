@@ -287,14 +287,12 @@ const Cytobands = ({
 // SVG component, region separator
 const SVGRegionSeparators = ({
   model,
-  offset,
+  height,
 }: {
-  offset: number
+  height: number
   model: LGV
 }) => {
-  const { dynamicBlocks, tracks, offsetPx, interRegionPaddingWidth } = model
-  const height = totalHeight(tracks)
-
+  const { dynamicBlocks, offsetPx, interRegionPaddingWidth } = model
   return (
     <>
       {dynamicBlocks.contentBlocks.slice(1).map(block => (
@@ -302,7 +300,7 @@ const SVGRegionSeparators = ({
           key={block.key}
           x={block.offsetPx - offsetPx - interRegionPaddingWidth}
           width={interRegionPaddingWidth}
-          y={offset}
+          y={0}
           height={height}
           stroke="none"
           fill="grey"
@@ -348,7 +346,10 @@ function SVGTracks({
             <text fontSize={fontSize} x={Math.max(-model.offsetPx, 0)}>
               {trackName}
             </text>
-            <g transform={`translate(0 ${textHeight})`}>{result}</g>
+            <g transform={`translate(0 ${textHeight})`}>
+              {result}
+              <SVGRegionSeparators model={model} height={display.height} />
+            </g>
           </g>
         )
       })}
@@ -395,9 +396,6 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
           displayResults={displayResults}
           offset={offset}
         />
-        <g transform={`translate(0 ${offset})`}>
-          <SVGRegionSeparators model={model} />
-        </g>
       </g>
     </svg>,
   )
