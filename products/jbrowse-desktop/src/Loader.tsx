@@ -75,11 +75,8 @@ const Loader = observer(() => {
   const handleSetPluginManager = useCallback(
     (pm: PluginManager) => {
       // @ts-ignore
-      pm.rootModel?.setOpenNewSessionCallback(async () => {
-        const path = await ipcRenderer.invoke('promptOpenFile')
-        if (path) {
-          handleSetPluginManager(await loadPluginManager(path))
-        }
+      pm.rootModel?.setOpenNewSessionCallback(async (path: string) => {
+        handleSetPluginManager(await loadPluginManager(path))
       })
 
       // @ts-ignore

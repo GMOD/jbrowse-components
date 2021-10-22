@@ -7,7 +7,6 @@ import {
   SnapshotIn,
   Instance,
 } from 'mobx-state-tree'
-
 import { autorun } from 'mobx'
 
 import assemblyManagerFactory, {
@@ -80,17 +79,21 @@ export default function rootModelFactory(pluginManager: PluginManager) {
     .volatile(() => ({
       error: undefined as unknown,
       textSearchManager: new TextSearchManager(pluginManager),
-      openNewSessionCallback: () => {
+      openNewSessionCallback: async (path: string) => {
         console.error('openNewSessionCallback unimplemented')
       },
     }))
     .actions(self => ({
-      async saveSession(val: unknown) {
+      async saveSession() {
         if (self.sessionPath) {
-          await ipcRenderer.invoke('saveSession', self.sessionPath, val)
+          await ipcRenderer.invoke(
+            'saveSession',
+            self.sessionPath,
+            getSaveSession(self as RootModel),
+          )
         }
       },
-      setOpenNewSessionCallback(cb: () => Promise<void>) {
+      setOpenNewSessionCallback(cb: (arg: string) => Promise<void>) {
         self.openNewSessionCallback = cb
       },
       setSavedSessionNames(sessionNames: string[]) {
@@ -115,7 +118,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       async renameCurrentSession(newName: string) {
         if (self.session) {
           this.setSession({ ...getSnapshot(self.session), name: newName })
-          await this.saveSession(getSaveSession(self as RootModel))
         }
       },
       duplicateCurrentSession() {
@@ -239,7 +241,10 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               icon: OpenIcon,
               onClick: async () => {
                 try {
-                  await self.openNewSessionCallback()
+                  const path = await ipcRenderer.invoke('promptOpenFile')
+                  if (path) {
+                    await self.openNewSessionCallback(path)
+                  }
                 } catch (e) {
                   console.error(e)
                   self.session?.notify(`${e}`, 'error')
@@ -252,7 +257,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               onClick: async () => {
                 if (self.session) {
                   try {
-                    await self.saveSession(getSaveSession(self as RootModel))
+                    await self.saveSession()
                   } catch (e) {
                     console.error(e)
                     self.session?.notify(`${e}`, 'error')
@@ -269,7 +274,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                     'promptSessionSaveAs',
                   )
                   self.setSessionPath(saveAsPath)
-                  await self.saveSession(getSaveSession(self as RootModel))
+                  await self.saveSession()
                 } catch (e) {
                   console.error(e)
                   self.session?.notify(`${e}`, 'error')
@@ -391,17 +396,9 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       },
       async setPluginsUpdated() {
         if (self.session) {
-          await self.saveSession(getSaveSession(self as RootModel))
+          await self.saveSession()
         }
-
-        const url = window.location.href.split('?')[0]
-        if (!self.sessionPath) {
-          self.session?.notify('You must save your session first')
-        } else {
-          window.location.href = `${url}?config=${encodeURIComponent(
-            self.sessionPath,
-          )}`
-        }
+        await self.openNewSessionCallback(self.sessionPath)
       },
       /**
        * Add a top-level menu
@@ -537,7 +534,11 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           autorun(
             async () => {
               if (self.session) {
-                await self.saveSession(getSaveSession(self as RootModel))
+                try {
+                  await self.saveSession()
+                } catch (e) {
+                  console.error(e)
+                }
               }
             },
             { delay: 1000 },
