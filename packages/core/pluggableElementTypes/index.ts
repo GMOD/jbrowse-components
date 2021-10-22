@@ -33,7 +33,7 @@ export type PluggableElementType =
   | ViewType
   | RpcMethodType
   | InternetAccountType
-  | TextSearchAdapter
+  | TextSearchAdapterType
 
 export type PluggableElementMember =
   | keyof AdapterType
@@ -45,4 +45,4 @@ export type PluggableElementMember =
   | keyof ViewType
   | keyof RpcMethodType
   | keyof InternetAccountType
-  | keyof TextSearchAdapter
+  | keyof TextSearchAdapterType
