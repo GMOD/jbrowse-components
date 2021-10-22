@@ -4,7 +4,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { CssBaseline, ThemeProvider, makeStyles } from '@material-ui/core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { StringParam, useQueryParam } from 'use-query-params'
-import { ipcRenderer } from 'electron'
 import { loadPluginManager } from './StartScreen/util'
 
 import JBrowse from './JBrowse'

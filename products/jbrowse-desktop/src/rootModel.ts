@@ -84,13 +84,9 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      async saveSession() {
+      async saveSession(val: unknown) {
         if (self.sessionPath) {
-          await ipcRenderer.invoke(
-            'saveSession',
-            self.sessionPath,
-            getSaveSession(self as RootModel),
-          )
+          await ipcRenderer.invoke('saveSession', self.sessionPath, val)
         }
       },
       setOpenNewSessionCallback(cb: (arg: string) => Promise<void>) {
@@ -257,7 +253,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               onClick: async () => {
                 if (self.session) {
                   try {
-                    await self.saveSession()
+                    await self.saveSession(getSaveSession(self as RootModel))
                   } catch (e) {
                     console.error(e)
                     self.session?.notify(`${e}`, 'error')
@@ -274,7 +270,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                     'promptSessionSaveAs',
                   )
                   self.setSessionPath(saveAsPath)
-                  await self.saveSession()
+                  await self.saveSession(getSaveSession(self as RootModel))
                 } catch (e) {
                   console.error(e)
                   self.session?.notify(`${e}`, 'error')
@@ -396,7 +392,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       },
       async setPluginsUpdated() {
         if (self.session) {
-          await self.saveSession()
+          await self.saveSession(getSaveSession(self as RootModel))
         }
         await self.openNewSessionCallback(self.sessionPath)
       },
@@ -535,7 +531,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             async () => {
               if (self.session) {
                 try {
-                  await self.saveSession()
+                  await self.saveSession(getSaveSession(self as RootModel))
                 } catch (e) {
                   console.error(e)
                 }
