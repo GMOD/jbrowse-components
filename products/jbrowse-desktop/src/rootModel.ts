@@ -391,7 +391,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       },
       async setPluginsUpdated() {
         if (self.session) {
-          await self.saveSession(getSnapshot(self.session))
+          await self.saveSession(getSaveSession(self as RootModel))
         }
 
         const url = window.location.href.split('?')[0]
