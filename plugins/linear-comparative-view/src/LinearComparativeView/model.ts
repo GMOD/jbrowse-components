@@ -10,16 +10,16 @@ import { transaction } from 'mobx'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
-  types,
-  getParent,
-  onAction,
   addDisposer,
-  Instance,
-  resolveIdentifier,
-  getPath,
-  SnapshotIn,
   cast,
+  getParent,
+  getPath,
   getRoot,
+  onAction,
+  resolveIdentifier,
+  types,
+  Instance,
+  SnapshotIn,
 } from 'mobx-state-tree'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
@@ -65,7 +65,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       get refNames() {
-        return (self.views || []).map(v => [
+        return self.views.map(v => [
           ...new Set(v.staticBlocks.map(m => m.refName)),
         ])
       },
@@ -179,9 +179,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       showTrack(trackId: string, initialSnapshot = {}) {
-        const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
-          'track',
-        )
+        const trackConfigSchema =
+          pluginManager.pluggableConfigSchemaType('track')
         const configuration = resolveIdentifier(
           trackConfigSchema,
           getRoot(self),
@@ -203,34 +202,32 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             `could not find a compatible display for view type ${self.type}`,
           )
         }
-        const track = trackType.stateModel.create({
-          ...initialSnapshot,
-          type: configuration.type,
-          configuration,
-          displays: [{ type: displayConf.type, configuration: displayConf }],
-        })
-        self.tracks.push(track)
+        self.tracks.push(
+          trackType.stateModel.create({
+            ...initialSnapshot,
+            type: configuration.type,
+            configuration,
+            displays: [{ type: displayConf.type, configuration: displayConf }],
+          }),
+        )
       },
 
       hideTrack(trackId: string) {
-        const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
-          'track',
-        )
-        const configuration = resolveIdentifier(
+        const trackConfigSchema =
+          pluginManager.pluggableConfigSchemaType('track')
+        const config = resolveIdentifier(
           trackConfigSchema,
           getRoot(self),
           trackId,
         )
         // if we have any tracks with that configuration, turn them off
-        const shownTracks = self.tracks.filter(
-          t => t.configuration === configuration,
-        )
+        const shownTracks = self.tracks.filter(t => t.configuration === config)
         transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
         return shownTracks.length
       },
     }))
     .views(self => ({
-      menuItems(): MenuItem[] {
+      menuItems() {
         const menuItems: MenuItem[] = []
         self.views.forEach((view, idx) => {
           if (view.menuItems?.()) {
@@ -253,4 +250,5 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 export type LinearComparativeViewStateModel = ReturnType<
   typeof stateModelFactory
 >
-export type LinearComparativeViewModel = Instance<LinearComparativeViewStateModel>
+export type LinearComparativeViewModel =
+  Instance<LinearComparativeViewStateModel>

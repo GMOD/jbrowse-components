@@ -1,5 +1,5 @@
 import React from 'react'
-import { render } from '@testing-library/react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import sizeMe from 'react-sizeme'
 import 'requestidlecallback-polyfill'
@@ -34,12 +34,12 @@ describe('<LinearGenomeView />', () => {
     session.addView('LinearGenomeView', { id: 'lgv' })
     const model = session.views[0]
     model.setWidth(800)
-    const { container, findByText } = render(<LinearGenomeView model={model} />)
-    const openButton = await findByText('Open')
-    expect(container.firstChild).toMatchSnapshot()
+    const { findByText } = render(<LinearGenomeView model={model} />)
     expect(model.displayedRegions.length).toEqual(0)
-    openButton.click()
-    expect(model.displayedRegions.length).toEqual(1)
+    fireEvent.click(await findByText('Open'))
+    await waitFor(() => {
+      expect(model.displayedRegions.length).toEqual(1)
+    })
   })
   it('renders one track, one region', async () => {
     const session = createTestSession()

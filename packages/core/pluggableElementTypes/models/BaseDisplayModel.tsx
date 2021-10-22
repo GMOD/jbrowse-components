@@ -14,7 +14,7 @@ export const BaseDisplay = types
   })
   .volatile(() => ({
     rendererTypeName: '',
-    error: undefined as Error | undefined,
+    error: undefined as unknown,
   }))
   .views(self => ({
     get RenderingComponent(): React.FC<{
@@ -107,7 +107,7 @@ export const BaseDisplay = types
     },
   }))
   .actions(self => ({
-    setError(error?: Error) {
+    setError(error?: unknown) {
       self.error = error
     },
     setRpcDriverName(rpcDriverName: string) {

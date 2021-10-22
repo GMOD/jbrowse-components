@@ -45,7 +45,11 @@ export default class TextSearchManager {
         const { AdapterClass } = this.pluginManager.getTextSearchAdapterType(
           adapterConfig.type,
         )
-        const adapter = new AdapterClass(adapterConfig)
+        const adapter = new AdapterClass(
+          adapterConfig,
+          undefined,
+          this.pluginManager,
+        )
         this.adapterCache.set(adapterId, adapter)
         return adapter
       }
@@ -84,7 +88,7 @@ export default class TextSearchManager {
     adapterConfs: AnyConfigurationModel[],
   ) {
     return adapterConfs.filter(conf =>
-      readConfObject(conf, 'assemblies')?.includes(asmName),
+      readConfObject(conf, 'assemblyNames')?.includes(asmName),
     )
   }
 

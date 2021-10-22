@@ -6,7 +6,10 @@ export default ConfigurationSchema(
   {
     hubTxtLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: 'http://mysite.com/path/to/hub.txt' },
+      defaultValue: {
+        uri: 'http://mysite.com/path/to/hub.txt',
+        locationType: 'UriLocation',
+      },
       description: 'location of the hub file (usually called hub.txt)',
     },
     assemblyNames: {

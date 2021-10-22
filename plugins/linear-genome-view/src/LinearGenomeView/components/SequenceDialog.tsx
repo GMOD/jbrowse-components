@@ -101,7 +101,7 @@ function SequenceDialog({
 }) {
   const classes = useStyles()
   const session = getSession(model)
-  const [error, setError] = useState<Error>()
+  const [error, setError] = useState<unknown>()
   const [sequence, setSequence] = useState<string>()
   const loading = Boolean(sequence === undefined)
   const { leftOffset, rightOffset } = model

@@ -6,6 +6,7 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
+import { FileLocation } from '@jbrowse/core/util/types'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
@@ -47,6 +48,13 @@ import {
   PileupGetGlobalValueForTag,
   PileupGetVisibleModifications,
 } from './PileupRPC/rpcMethods'
+import {
+  makeIndex,
+  makeIndexType,
+  AdapterGuesser,
+  getFileName,
+  TrackTypeGuesser,
+} from '@jbrowse/core/util/tracks'
 
 export { MismatchParser }
 export type { LinearPileupDisplayModel }
@@ -94,9 +102,8 @@ export default class AlignmentsPlugin extends Plugin {
       })
     })
     pluginManager.addDisplayType(() => {
-      const configSchema = linearSNPCoverageDisplayConfigSchemaFactory(
-        pluginManager,
-      )
+      const configSchema =
+        linearSNPCoverageDisplayConfigSchemaFactory(pluginManager)
       return new DisplayType({
         name: 'LinearSNPCoverageDisplay',
         configSchema,
@@ -110,9 +117,8 @@ export default class AlignmentsPlugin extends Plugin {
       })
     })
     pluginManager.addDisplayType(() => {
-      const configSchema = linearAligmentsDisplayConfigSchemaFactory(
-        pluginManager,
-      )
+      const configSchema =
+        linearAligmentsDisplayConfigSchemaFactory(pluginManager)
       return new DisplayType({
         name: 'LinearAlignmentsDisplay',
         configSchema,
@@ -144,10 +150,55 @@ export default class AlignmentsPlugin extends Plugin {
           ...pluginManager.load(BamAdapterF),
         }),
     )
+
+    pluginManager.addToExtensionPoint(
+      'Core-guessAdapterForLocation',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.bam$/i
+          const adapterName = 'BamAdapter'
+          const fileName = getFileName(file)
+          const indexName = index && getFileName(index)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
+            return {
+              type: adapterName,
+              bamLocation: file,
+              index: {
+                location: index || makeIndex(file, '.bai'),
+                indexType: makeIndexType(indexName, 'CSI', 'BAI'),
+              },
+            }
+          }
+          return adapterGuesser(file, index, adapterHint)
+        }
+      },
+    )
+    pluginManager.addToExtensionPoint(
+      'Core-guessTrackTypeForLocation',
+      (trackTypeGuesser: TrackTypeGuesser) => {
+        return (adapterName: string) => {
+          if (adapterName === 'BamAdapter') {
+            return 'AlignmentsTrack'
+          }
+          return trackTypeGuesser(adapterName)
+        }
+      },
+    )
+
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
           name: 'SNPCoverageAdapter',
+          adapterMetadata: {
+            category: null,
+            displayName: null,
+            hiddenFromGUI: true,
+            description: null,
+          },
           ...pluginManager.load(SNPCoverageAdapterF),
         }),
     )
@@ -158,10 +209,50 @@ export default class AlignmentsPlugin extends Plugin {
           ...pluginManager.load(CramAdapterF),
         }),
     )
+    pluginManager.addToExtensionPoint(
+      'Core-guessAdapterForLocation',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.cram$/i
+          const adapterName = 'CramAdapter'
+          const fileName = getFileName(file)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
+            return {
+              type: adapterName,
+              cramLocation: file,
+              craiLocation: index || makeIndex(file, '.crai'),
+            }
+          }
+          return adapterGuesser(file, index, adapterHint)
+        }
+      },
+    )
+    pluginManager.addToExtensionPoint(
+      'Core-guessTrackTypeForLocation',
+      (trackTypeGuesser: TrackTypeGuesser) => {
+        return (adapterName: string) => {
+          if (adapterName === 'CramAdapter') {
+            return 'AlignmentsTrack'
+          }
+          return trackTypeGuesser(adapterName)
+        }
+      },
+    )
+
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
           name: 'HtsgetBamAdapter',
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
           ...pluginManager.load(HtsgetBamAdapterF),
         }),
     )

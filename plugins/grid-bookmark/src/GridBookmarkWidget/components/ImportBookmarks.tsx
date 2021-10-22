@@ -45,7 +45,7 @@ function ImportBookmarks({
   const { assemblyNames } = session
   const [dialogOpen, setDialogOpen] = useState(false)
   const [location, setLocation] = useState<FileLocation>()
-  const [error, setError] = useState<Error>()
+  const [error, setError] = useState<unknown>()
   const [selectedAsm, setSelectedAsm] = useState(
     assemblyName || assemblyNames[0],
   )

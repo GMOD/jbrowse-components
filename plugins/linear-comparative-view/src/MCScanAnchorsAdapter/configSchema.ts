@@ -5,7 +5,10 @@ export default ConfigurationSchema(
   {
     mcscanAnchorsLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/mcscan.anchors' },
+      defaultValue: {
+        uri: '/path/to/mcscan.anchors',
+        locationType: 'UriLocation',
+      },
     },
     subadapters: {
       type: 'frozen',

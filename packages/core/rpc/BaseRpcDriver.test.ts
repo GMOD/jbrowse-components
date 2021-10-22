@@ -7,7 +7,7 @@ import { ConfigurationSchema } from '../configuration'
 function timeout(ms: number) {
   return new Promise(resolve => {
     setTimeout(() => {
-      resolve()
+      resolve(true)
     }, ms)
   })
 }
@@ -85,7 +85,7 @@ test('watch worker with long ping, generates timeout', async () => {
     })
     await Promise.race([result, workerWatcher])
   } catch (e) {
-    expect(e.message).toMatch(/timeout/)
+    expect(`${e}`).toMatch(/timeout/)
   }
 })
 
@@ -103,7 +103,7 @@ test('test worker abort', async () => {
     controller.abort()
     await resultP
   } catch (e) {
-    expect(e.message).toMatch(/abort/)
+    expect(`${e}`).toMatch(/abort/)
   }
 })
 
@@ -151,7 +151,7 @@ test('test RPC driver operation timeout and worker replace', async () => {
   try {
     await driver.call(pluginManager, 'sessionId', 'MockRenderTimeout', {}, {})
   } catch (e) {
-    expect(e.message).toMatch(/operation timed out/)
+    expect(`${e}`).toMatch(/operation timed out/)
   }
   await driver.call(pluginManager, 'sessionId', 'MockRenderShort', {}, {})
 })
@@ -177,6 +177,6 @@ test('remote abort', async () => {
     controller.abort()
     await resP
   } catch (e) {
-    expect(e.message).toMatch(/abort/)
+    expect(`${e}`).toMatch(/abort/)
   }
 })

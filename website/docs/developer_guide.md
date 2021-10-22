@@ -88,10 +88,7 @@ tracks, renderers, and so forth.
 
 ## Pluggable elements
 
-Pluggable elements are basic "extension points" that you can customize in
-JBrowse 2 plugins
-
-The pluggable types that we have in JBrowse 2 are
+Pluggable elements are pieces of functionality that plugins can add to JBrowse. Examples of pluggable types include:
 
 - Adapters
 - Track types
@@ -114,7 +111,7 @@ below
 
 Adapters basically are parsers for a given data format. We will review
 what adapters the alignments plugin has (to write your own adapter,
-see [creating adapters](developer_guide#creating-adapters))
+see [creating adapters](#creating-adapters))
 
 Example adapters: the `@jbrowse/plugin-alignments` plugin creates
 multiple adapter types
@@ -153,7 +150,7 @@ Renderers are a new concept in JBrowse 2, and are related to the concept of
 server side rendering (SSR), but can be used not just on the server but also in
 contexts like the web worker (e.g. the webworker can draw the features to an
 OffscreenCanvas). For more info see [creating
-renderers](developer_guide#creating-custom-renderers)
+renderers](#creating-custom-renderers)
 
 Example renderers: the `@jbrowse/plugin-alignments` exports several
 renderer types
@@ -675,11 +672,13 @@ callback for color, it might look like this
   "adapter": {
     "type": "VcfTabixAdapter",
     "vcfGzLocation": {
-      "uri": "volvox.filtered.vcf.gz"
+      "uri": "volvox.filtered.vcf.gz",
+      "locationType": "UriLocation"
     },
     "index": {
       "location": {
-        "uri": "volvox.filtered.vcf.gz.tbi"
+        "uri": "volvox.filtered.vcf.gz.tbi",
+        "locationType": "UriLocation"
       }
     }
   },
@@ -740,7 +739,7 @@ ConfigurationSchema(
   {
     bamLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.bam' },
+      defaultValue: { uri: '/path/to/my.bam', locationType: 'UriLocation' },
     },
     // this is a sub-config schema
     index: ConfigurationSchema('BamIndex', {
@@ -751,7 +750,10 @@ ConfigurationSchema(
       },
       location: {
         type: 'fileLocation',
-        defaultValue: { uri: '/path/to/my.bam.bai' },
+        defaultValue: {
+          uri: '/path/to/my.bam.bai',
+          locationType: 'UriLocation',
+        },
       },
     }),
   },
@@ -919,7 +921,7 @@ like human chromosomes which have, for example, chr1 vs 1.
 
 Returning the refNames used by a given file or resource allows JBrowse to
 automatically smooth these small naming disparities over. See [reference
-renaming](config_guide#configuring-reference-renaming)
+renaming](../config_guide#configuring-reference-renaming)
 
 #### getFeatures
 
@@ -994,7 +996,7 @@ JBrowse 2 plugins can be used to add new pluggable elements (views, tracks,
 adapters, etc), and to modify behavior of the application by adding code
 that watches the application's state. For the full list of what kinds of
 pluggable element types plugins can add, see the [pluggable
-elements](developer_guide#pluggable-elements) page.
+elements](#pluggable-elements) page.
 
 The first thing that we have is a `src/index.js` which exports a default class
 containing the plugin registration code
@@ -1041,6 +1043,7 @@ export const configSchema = ConfigurationSchema(
       description: 'base URL for the UCSC API',
       defaultValue: {
         uri: 'https://cors-anywhere.herokuapp.com/https://api.genome.ucsc.edu/',
+        locationType: 'UriLocation',
       },
     },
     track: {
@@ -1227,13 +1230,8 @@ export const ReactComponent = props => {
 // which draws to a canvas and returns the results in a React component
 export default class ArcRenderer extends ServerSideRendererType {
   async render(renderProps) {
-    const {
-      features,
-      config,
-      regions,
-      bpPerPx,
-      highResolutionScaling,
-    } = renderProps
+    const { features, config, regions, bpPerPx, highResolutionScaling } =
+      renderProps
     const region = regions[0]
     const width = (region.end - region.start) / bpPerPx
     const height = 500

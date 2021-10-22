@@ -9,17 +9,27 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 import { ConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import MyConfigAdapterSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 export default class RefNameAliasAdapter
   extends BaseAdapter
-  implements BaseRefNameAliasAdapter {
+  implements BaseRefNameAliasAdapter
+{
   private location: GenericFilehandle
 
   private promise: Promise<Alias[]>
 
-  constructor(config: ConfigurationModel<typeof MyConfigAdapterSchema>) {
-    super(config)
-    this.location = openLocation(readConfObject(config, 'location'))
+  constructor(
+    config: ConfigurationModel<typeof MyConfigAdapterSchema>,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    super(config, getSubAdapter, pluginManager)
+    this.location = openLocation(
+      readConfObject(config, 'location'),
+      this.pluginManager,
+    )
     this.promise = this.downloadResults()
   }
 

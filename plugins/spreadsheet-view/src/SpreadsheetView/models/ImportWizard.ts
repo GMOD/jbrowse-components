@@ -1,11 +1,12 @@
 import { types, getParent } from 'mobx-state-tree'
 import { openLocation } from '@jbrowse/core/util/io'
 import { getSession } from '@jbrowse/core/util'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 // 30MB
 const IMPORT_SIZE_LIMIT = 30_000_000
 
-export default () => {
+export default (pluginManager: PluginManager) => {
   const fileTypes = ['CSV', 'TSV', 'VCF', 'BED', 'BEDPE', 'STAR-Fusion']
   const fileTypeParsers = {
     CSV: () =>
@@ -40,7 +41,7 @@ export default () => {
       fileTypes,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       fileSource: undefined as any,
-      error: undefined as Error | undefined,
+      error: undefined as unknown,
       loading: false,
     }))
     .views(self => ({
@@ -115,7 +116,7 @@ export default () => {
         self.fileType = typeName
       },
 
-      setError(error: Error) {
+      setError(error: unknown) {
         console.error(error)
         self.loading = false
         self.error = error
@@ -134,47 +135,48 @@ export default () => {
       // fetch and parse the file, make a new Spreadsheet model for it,
       // then set the parent to display it
       async import(assemblyName: string) {
-        try {
-          if (!self.fileSource) {
-            return
-          }
-
-          if (self.loading) {
-            throw new Error('Cannot import, load already in progress')
-          }
-
-          self.selectedAssemblyName = assemblyName
-          self.loading = true
-          const type = self.fileType as keyof typeof fileTypeParsers
-          const typeParser = await fileTypeParsers[type]()
-          if (!typeParser) {
-            throw new Error(`cannot open files of type '${self.fileType}'`)
-          }
-
-          const { unzip } = await import('@gmod/bgzf-filehandle')
-
-          const filehandle = openLocation(self.fileSource)
-          await filehandle
-            .stat()
-            .then(stat => {
-              if (stat.size > IMPORT_SIZE_LIMIT) {
-                throw new Error(
-                  `File is too big. Tabular files are limited to at most ${(
-                    IMPORT_SIZE_LIMIT / 1000
-                  ).toLocaleString()}kb.`,
-                )
-              }
-            })
-            .then(() => filehandle.readFile())
-            .then(buffer => (self.requiresUnzip ? unzip(buffer) : buffer))
-            .then(buffer => typeParser(buffer as Buffer, self))
-            .then(spreadsheet => {
-              this.setLoaded()
-              getParent(self).displaySpreadsheet(spreadsheet)
-            })
-        } catch (error) {
-          this.setError(error)
+        if (!self.fileSource) {
+          return
         }
+
+        if (self.loading) {
+          throw new Error('Cannot import, load already in progress')
+        }
+
+        self.selectedAssemblyName = assemblyName
+        self.loading = true
+        const type = self.fileType as keyof typeof fileTypeParsers
+        const typeParser = await fileTypeParsers[type]()
+        if (!typeParser) {
+          throw new Error(`cannot open files of type '${self.fileType}'`)
+        }
+
+        const { unzip } = await import('@gmod/bgzf-filehandle')
+
+        const filehandle = openLocation(self.fileSource, pluginManager)
+
+        try {
+          await filehandle.stat().then(stat => {
+            if (stat.size > IMPORT_SIZE_LIMIT) {
+              throw new Error(
+                `File is too big. Tabular files are limited to at most ${(
+                  IMPORT_SIZE_LIMIT / 1000
+                ).toLocaleString()}kb.`,
+              )
+            }
+          })
+        } catch (e) {
+          console.warn(e)
+        }
+        await filehandle.readFile()
+        await filehandle
+          .readFile()
+          .then(buffer => (self.requiresUnzip ? unzip(buffer) : buffer))
+          .then(buffer => typeParser(buffer as Buffer, self))
+          .then(spreadsheet => {
+            this.setLoaded()
+            getParent(self).displaySpreadsheet(spreadsheet)
+          })
       },
     }))
 }

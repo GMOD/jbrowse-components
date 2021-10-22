@@ -3,7 +3,10 @@ import { types, getParent, isAlive, cast, Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types/mst'
-import { AbstractDisplayModel } from '@jbrowse/core/util/types'
+import {
+  AbstractDisplayModel,
+  isRetryException,
+} from '@jbrowse/core/util/types'
 import React from 'react'
 
 import {
@@ -36,7 +39,7 @@ const blockState = types
     features: undefined as Map<string, Feature> | undefined,
     layout: undefined as any,
     status: '',
-    error: undefined as Error | undefined,
+    error: undefined as unknown,
     message: undefined as string | undefined,
     maxHeightReached: false,
     ReactComponent: ServerSideRenderedBlockContent,
@@ -128,7 +131,7 @@ const blockState = types
         self.renderProps = renderProps
         renderInProgress = undefined
       },
-      setError(error: Error) {
+      setError(error: Error | unknown) {
         console.error(error)
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
@@ -143,6 +146,9 @@ const blockState = types
         self.error = error
         self.renderProps = undefined
         renderInProgress = undefined
+        if (isRetryException(error as Error)) {
+          this.reload()
+        }
       },
       reload() {
         self.renderInProgress = undefined
@@ -286,16 +292,12 @@ async function renderBlockEffect(
     return undefined
   }
 
-  const {
-    reactElement,
-    features,
-    layout,
-    maxHeightReached,
-  } = await rendererType.renderInClient(rpcManager, {
-    ...renderArgs,
-    ...renderProps,
-    signal,
-  })
+  const { reactElement, features, layout, maxHeightReached } =
+    await rendererType.renderInClient(rpcManager, {
+      ...renderArgs,
+      ...renderProps,
+      signal,
+    })
   return {
     reactElement,
     features,

@@ -1,11 +1,12 @@
 import Alignments from '@jbrowse/plugin-alignments'
+import Authentication from '@jbrowse/plugin-authentication'
 import Bed from '@jbrowse/plugin-bed'
 import BreakpointSplitView from '@jbrowse/plugin-breakpoint-split-view'
 import CircularView from '@jbrowse/plugin-circular-view'
 import Config from '@jbrowse/plugin-config'
 import DataManagement from '@jbrowse/plugin-data-management'
 import DotplotView from '@jbrowse/plugin-dotplot-view'
-import Gff3Tabix from '@jbrowse/plugin-gff3'
+import Gff3 from '@jbrowse/plugin-gff3'
 import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
 import LinearComparativeView from '@jbrowse/plugin-linear-comparative-view'
@@ -20,18 +21,20 @@ import Wiggle from '@jbrowse/plugin-wiggle'
 import SpreadsheetViewPlugin from '@jbrowse/plugin-spreadsheet-view'
 import SvInspectorPlugin from '@jbrowse/plugin-sv-inspector'
 import HicPlugin from '@jbrowse/plugin-hic'
+import TrixPlugin from '@jbrowse/plugin-trix'
 import GridBookmarkPlugin from '@jbrowse/plugin-grid-bookmark'
 
 const corePlugins = [
   SVG,
   LinearGenomeView,
   Alignments,
+  Authentication,
   Bed,
   CircularView,
   Config,
   DataManagement,
   DotplotView,
-  Gff3Tabix,
+  Gff3,
   LegacyJBrowse,
   LinearComparativeView,
   Lollipop,
@@ -45,6 +48,7 @@ const corePlugins = [
   SvInspectorPlugin,
   BreakpointSplitView,
   HicPlugin,
+  TrixPlugin,
   GridBookmarkPlugin,
 ]
 

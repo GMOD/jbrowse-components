@@ -1,4 +1,4 @@
-import { toByteArray, fromByteArray } from 'base64-js'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   getParent,
   isAlive,
@@ -9,7 +9,6 @@ import {
   isStateTreeNode,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
-import { inflate, deflate } from 'pako'
 import fromEntries from 'object.fromentries'
 import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
@@ -44,56 +43,6 @@ export const inDevelopment =
   process.env.NODE_ENV === 'development'
 export const inProduction = !inDevelopment
 
-/**
- * Compress and encode a string as url-safe base64
- * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
- * @param str-  a string to compress and encode
- */
-export function toUrlSafeB64(str: string): string {
-  const bytes = new TextEncoder().encode(str)
-  const deflated = deflate(bytes)
-  const encoded = fromByteArray(deflated)
-  const pos = encoded.indexOf('=')
-  return pos > 0
-    ? encoded.slice(0, pos).replace(/\+/g, '-').replace(/\//g, '_')
-    : encoded.replace(/\+/g, '-').replace(/\//g, '_')
-}
-
-/**
- * Decode and inflate a url-safe base64 to a string
- * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
- * @param b64 - a base64 string to decode and inflate
- */
-export function fromUrlSafeB64(b64: string): string {
-  const originalB64 = b64PadSuffix(b64.replace(/-/g, '+').replace(/_/g, '/'))
-  const bytes = toByteArray(originalB64)
-  const inflated = inflate(bytes)
-  return new TextDecoder().decode(inflated)
-}
-
-/**
- * Pad the end of a base64 string with "=" to make it valid
- * @param b64 - unpadded b64 string
- */
-function b64PadSuffix(b64: string): string {
-  let num = 0
-  const mo = b64.length % 4
-  switch (mo) {
-    case 3:
-      num = 1
-      break
-    case 2:
-      num = 2
-      break
-    case 0:
-      num = 0
-      break
-    default:
-      throw new Error('base64 not a valid length')
-  }
-  return b64 + '='.repeat(num)
-}
-
 export function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value)
 
@@ -110,7 +59,6 @@ export function useDebounce<T>(value: T, delay: number): T {
 }
 
 // https://stackoverflow.com/questions/56283920/how-to-debounce-a-callback-in-functional-component-using-hooks
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useDebouncedCallback<A extends any[]>(
   callback: (...args: A) => void,
   wait = 400,
@@ -231,7 +179,7 @@ export function springAnimate(
 
 /** find the first node in the hierarchy that matches the given 'is' typescript type guard predicate */
 export function findParentThatIs<
-  PREDICATE extends (thing: IAnyStateTreeNode) => boolean
+  PREDICATE extends (thing: IAnyStateTreeNode) => boolean,
 >(
   node: IAnyStateTreeNode,
   predicate: PREDICATE,
@@ -614,12 +562,10 @@ export function iterMap<T, U>(
 
 interface Assembly {
   name: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
 }
 interface Track {
   trackId: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
 }
 interface Config {
@@ -691,11 +637,11 @@ export function makeAbortableReaction<T, U, V>(
   reactionOptions: IReactionOptions,
   startedFunction: (aborter: AbortController) => void,
   successFunction: (arg: V) => void,
-  errorFunction: (err: Error) => void,
+  errorFunction: (err: unknown) => void,
 ) {
   let inProgress: AbortController | undefined
 
-  function handleError(error: Error) {
+  function handleError(error: unknown) {
     if (!isAbortException(error)) {
       if (isAlive(self)) {
         errorFunction(error)
@@ -709,8 +655,8 @@ export function makeAbortableReaction<T, U, V>(
     () => {
       try {
         return dataFunction(self)
-      } catch (error) {
-        handleError(error)
+      } catch (e) {
+        handleError(e)
         return undefined
       }
     },
@@ -737,11 +683,11 @@ export function makeAbortableReaction<T, U, V>(
         if (isAlive(self)) {
           successFunction(result)
         }
-      } catch (error) {
+      } catch (e) {
         if (thisInProgress && !thisInProgress.signal.aborted) {
           thisInProgress.abort()
         }
-        handleError(error)
+        handleError(e)
       }
     },
     reactionOptions,
@@ -788,7 +734,7 @@ export async function renameRegionsIfNeeded<
     adapterConfig: unknown
     sessionId: string
     statusCallback?: Function
-  }
+  },
 >(assemblyManager: AssemblyManager, args: ARGTYPE) {
   const { regions = [], adapterConfig } = args
   if (!args.sessionId) {
@@ -1009,7 +955,6 @@ export const defaultCodonTable = {
  *  take CodonTable above and generate larger codon table that includes
  *  all permutations of upper and lower case nucleotides
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function generateCodonTable(table: any) {
   const tempCodonTable: { [key: string]: string } = {}
   Object.keys(table).forEach(codon => {
@@ -1063,7 +1008,6 @@ export function hashCode(str: string) {
   return hash
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function objectHash(obj: Record<string, any>) {
   return `${hashCode(JSON.stringify(obj))}`
 }

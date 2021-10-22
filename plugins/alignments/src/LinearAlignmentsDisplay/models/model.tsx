@@ -65,8 +65,11 @@ const stateModelFactory = (
           }
         },
 
-        getFeatureByID(id: string) {
-          return self.PileupDisplay.getFeatureByID(id)
+        getFeatureByID(blockKey: string, id: string) {
+          return self.PileupDisplay.getFeatureByID(blockKey, id)
+        },
+        searchFeatureByID(id: string) {
+          return self.PileupDisplay.searchFeatureByID(id)
         },
 
         get features() {

@@ -41,17 +41,32 @@ export const Region = types.compose(
 )
 
 export const LocalPathLocation = types.model('LocalPathLocation', {
-  localPath: types.string, // TODO: refine
+  locationType: types.literal('LocalPathLocation'),
+  localPath: types.string,
 })
 
+// like how blobId is used to get a blob map
 export const BlobLocation = types.model('BlobLocation', {
-  name: types.string, // TODO: refine
+  locationType: types.literal('BlobLocation'),
+  name: types.string,
   blobId: types.string,
 })
 
 export const UriLocationRaw = types.model('UriLocation', {
-  uri: types.string, // TODO: refine
+  locationType: types.literal('UriLocation'),
+  uri: types.string,
   baseUri: types.maybe(types.string),
+
+  internetAccountId: types.maybe(types.string),
+
+  // auths information (such as tokens) needed for using this resource.
+  // if provided, these must be completely sufficient for using it
+  internetAccountPreAuthorization: types.maybe(
+    types.model('InternetAccountPreAuthorization', {
+      internetAccountType: types.string,
+      authInfo: types.frozen(),
+    }),
+  ),
 })
 
 export const UriLocation = types.snapshotProcessor(UriLocationRaw, {
@@ -64,8 +79,32 @@ export const UriLocation = types.snapshotProcessor(UriLocationRaw, {
   },
 })
 
-export const FileLocation = types.union(
-  LocalPathLocation,
-  UriLocation,
-  BlobLocation,
+export const FileLocation = types.snapshotProcessor(
+  types.union(LocalPathLocation, UriLocation, BlobLocation),
+  {
+    // @ts-ignore
+    preProcessor(snapshot) {
+      if (!snapshot) {
+        return undefined
+      }
+
+      // @ts-ignore
+      const { locationType, ...rest } = snapshot
+      if (!locationType) {
+        // @ts-ignore
+        const { uri, localPath, blob } = rest
+        let locationType = ''
+        if (uri) {
+          locationType = 'UriLocation'
+        } else if (localPath) {
+          locationType = 'LocalPathLocation'
+        } else if (blob) {
+          locationType = 'BlobLocation'
+        }
+
+        return { ...rest, locationType }
+      }
+      return snapshot
+    },
+  },
 )

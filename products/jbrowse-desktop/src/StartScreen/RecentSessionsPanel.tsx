@@ -1,7 +1,9 @@
-import React from 'react'
-import fs from 'fs'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
+  Checkbox,
+  CircularProgress,
   FormControl,
+  FormControlLabel,
   Grid,
   IconButton,
   Link,
@@ -9,9 +11,14 @@ import {
   Typography,
   makeStyles,
 } from '@material-ui/core'
-import { DataGrid, GridCellParams } from '@material-ui/data-grid'
-import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab'
+import { DataGrid, GridCellParams } from '@mui/x-data-grid'
+import {
+  ToggleButtonGroup,
+  ToggleButton,
+  ToggleButtonProps,
+} from '@material-ui/lab'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { format } from 'timeago.js'
 import { ipcRenderer } from 'electron'
 
 // icons
@@ -19,9 +26,12 @@ import DeleteIcon from '@material-ui/icons/Delete'
 import EditIcon from '@material-ui/icons/Edit'
 import ViewComfyIcon from '@material-ui/icons/ViewComfy'
 import ListIcon from '@material-ui/icons/List'
+import PlaylistAddIcon from '@material-ui/icons/PlaylistAdd'
 
-// local
-import { useLocalStorage, createPluginManager } from './util'
+// locals
+import RenameSessionDialog from './dialogs/RenameSessionDialog'
+import DeleteSessionDialog from './dialogs/DeleteSessionDialog'
+import { useLocalStorage, loadPluginManager } from './util'
 import SessionCard from './SessionCard'
 
 const useStyles = makeStyles(theme => ({
@@ -35,48 +45,49 @@ const useStyles = makeStyles(theme => ({
   header: {
     margin: theme.spacing(2),
   },
+  toggleButton: {
+    '&.Mui-disabled': {
+      pointerEvents: 'auto',
+    },
+  },
 }))
 
-function RecentSessionsTable({
+interface RecentSessionData {
+  path: string
+  name: string
+  screenshot?: string
+  updated: number
+}
+
+type RecentSessions = RecentSessionData[]
+
+function RecentSessionsList({
   setError,
-  sortedSessions,
-  setSessionToDelete,
+  sessions,
+  setSelectedSessions,
   setSessionToRename,
   setPluginManager,
 }: {
-  setError: (e: Error) => void
-  setSessionToDelete: (e: string) => void
-  setSessionToRename: (e: string) => void
+  setError: (e: unknown) => void
+  setSessionToRename: (arg: RecentSessionData) => void
   setPluginManager: (pm: PluginManager) => void
-  sortedSessions: [string, { stats: fs.Stats }][]
+  setSelectedSessions: (arg: RecentSessionData[]) => void
+  sessions: RecentSessionData[]
 }) {
   const classes = useStyles()
   const columns = [
     {
-      field: 'delete',
-      width: 40,
-      sortable: false,
-      filterable: false,
-      renderCell: (params: GridCellParams) => {
-        const { value } = params
-        return (
-          <IconButton onClick={() => setSessionToDelete(value as string)}>
-            <Tooltip title="Delete session">
-              <DeleteIcon />
-            </Tooltip>
-          </IconButton>
-        )
-      },
-    },
-    {
       field: 'rename',
+      minWidth: 40,
       width: 40,
       sortable: false,
       filterable: false,
+      headerName: ' ',
       renderCell: (params: GridCellParams) => {
-        const { value } = params
         return (
-          <IconButton onClick={() => setSessionToRename(value as string)}>
+          <IconButton
+            onClick={() => setSessionToRename(params.row as RecentSessionData)}
+          >
             <Tooltip title="Rename session">
               <EditIcon />
             </Tooltip>
@@ -95,9 +106,7 @@ function RecentSessionsTable({
             className={classes.pointer}
             onClick={async () => {
               try {
-                const data = await ipcRenderer.invoke('loadSession', value)
-                const pm = await createPluginManager(JSON.parse(data))
-                setPluginManager(pm)
+                setPluginManager(await loadPluginManager(params.row.path))
               } catch (e) {
                 console.error(e)
                 setError(e)
@@ -109,12 +118,34 @@ function RecentSessionsTable({
         )
       },
     },
-
+    {
+      field: 'path',
+      headerName: 'Session path',
+      flex: 0.7,
+      renderCell: (params: GridCellParams) => {
+        const { value } = params
+        return value
+      },
+    },
     {
       field: 'lastModified',
       headerName: 'Last modified',
-      renderCell: ({ value }: GridCellParams) =>
-        !value ? null : `${value.toLocaleString('en-US')}`,
+      renderCell: ({ value }: GridCellParams) => {
+        if (!value) {
+          return null
+        }
+        const lastModified = new Date(value as string)
+        const now = Date.now()
+        const oneDayLength = 24 * 60 * 60 * 1000
+        if (now - lastModified.getTime() < oneDayLength) {
+          return (
+            <Tooltip title={lastModified.toLocaleString('en-US')}>
+              <div>{format(lastModified)}</div>
+            </Tooltip>
+          )
+        }
+        return lastModified.toLocaleString('en-US')
+      },
       width: 150,
     },
   ]
@@ -122,12 +153,20 @@ function RecentSessionsTable({
   return (
     <div style={{ height: 400, width: '100%' }}>
       <DataGrid
-        rows={sortedSessions.map(([sessionName, { stats }]) => ({
-          id: sessionName,
-          name: sessionName,
-          rename: sessionName,
-          delete: sessionName,
-          lastModified: stats?.mtime,
+        checkboxSelection
+        disableSelectionOnClick
+        onSelectionModelChange={args => {
+          setSelectedSessions(
+            sessions.filter(session => args.includes(session.path)),
+          )
+        }}
+        rows={sessions.map(session => ({
+          id: session.path,
+          name: session.name,
+          rename: session.name,
+          delete: session.name,
+          lastModified: session.updated,
+          path: session.path,
         }))}
         rowHeight={25}
         headerHeight={33}
@@ -137,41 +176,39 @@ function RecentSessionsTable({
   )
 }
 
-type Session = [string, { screenshot: string; stats: fs.Stats }]
-
 function RecentSessionsCards({
-  sortedSessions,
+  sessions,
   setError,
-  setSessionToDelete,
+  setSessionsToDelete,
   setSessionToRename,
   setPluginManager,
+  addToQuickstartList,
 }: {
-  setError: (e: Error) => void
-  setSessionToDelete: (e: string) => void
-  setSessionToRename: (e: string) => void
+  setError: (e: unknown) => void
+  setSessionsToDelete: (e: RecentSessionData[]) => void
+  setSessionToRename: (arg: RecentSessionData) => void
   setPluginManager: (pm: PluginManager) => void
-  sortedSessions: Session[]
+  sessions: RecentSessionData[]
+  addToQuickstartList: (arg: RecentSessionData) => void
 }) {
   return (
     <Grid container spacing={4}>
-      {sortedSessions?.map(([name, sessionData]) => (
-        <Grid item key={name}>
+      {sessions?.map(session => (
+        <Grid item key={session.path}>
           <SessionCard
-            sessionName={name}
-            sessionStats={sessionData.stats}
-            sessionScreenshot={sessionData.screenshot}
+            sessionData={session}
             onClick={async () => {
               try {
-                const data = await ipcRenderer.invoke('loadSession', name)
-                const pm = await createPluginManager(JSON.parse(data))
+                const pm = await loadPluginManager(session.path)
                 setPluginManager(pm)
               } catch (e) {
                 console.error(e)
                 setError(e)
               }
             }}
-            onDelete={setSessionToDelete}
+            onDelete={del => setSessionsToDelete([del])}
             onRename={setSessionToRename}
+            onAddToQuickstartList={addToQuickstartList}
           />
         </Grid>
       ))}
@@ -179,57 +216,174 @@ function RecentSessionsCards({
   )
 }
 
+// note: adjust props so disabled button can have a tooltip and not lose styling
+// https://stackoverflow.com/a/63276424
+function ToggleButtonWithTooltip(props: ToggleButtonProps) {
+  const classes = useStyles()
+  const { title = '', children, disabled, onClick, ...other } = props
+  const adjustedButtonProps = {
+    disabled: disabled,
+    component: disabled ? 'div' : undefined,
+    onClick: disabled ? undefined : onClick,
+  }
+  return (
+    <Tooltip title={title}>
+      <ToggleButton
+        {...other}
+        {...adjustedButtonProps}
+        classes={{ root: classes.toggleButton }}
+      >
+        {children}
+      </ToggleButton>
+    </Tooltip>
+  )
+}
+
 export default function RecentSessionPanel({
   setError,
-  sortedSessions,
-  setSessionToRename,
-  setSessionToDelete,
   setPluginManager,
 }: {
-  setError: (e: Error) => void
-  sortedSessions: Session[]
-  setSessionToRename: (e: string) => void
-  setSessionToDelete: (e: string) => void
+  setError: (e: unknown) => void
   setPluginManager: (pm: PluginManager) => void
 }) {
   const classes = useStyles()
-  const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'table')
+  const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
+  const [sessions, setSessions] = useState<RecentSessions>([])
+  const [sessionToRename, setSessionToRename] = useState<RecentSessionData>()
+  const [updateSessionsList, setUpdateSessionsList] = useState(0)
+  const [selectedSessions, setSelectedSessions] = useState<RecentSessions>()
+  const [sessionsToDelete, setSessionsToDelete] = useState<RecentSessions>()
+  const [showAutosaves, setShowAutosaves] = useLocalStorage(
+    'showAutosaves',
+    'false',
+  )
+
+  const sortedSessions = useMemo(
+    () => sessions?.sort((a, b) => b.updated - a.updated),
+    [sessions],
+  )
+
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const sessions = await ipcRenderer.invoke(
+          'listSessions',
+          showAutosaves === 'true',
+        )
+        setSessions(sessions)
+      } catch (e) {
+        console.error(e)
+        setError(e)
+      }
+    })()
+  }, [setError, updateSessionsList, showAutosaves])
+
+  if (!sessions) {
+    return (
+      <CircularProgress
+        style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          marginTop: -25,
+          marginLeft: -25,
+        }}
+        size={50}
+      />
+    )
+  }
+
+  async function addToQuickstartList(arg: RecentSessionData[]) {
+    await Promise.all(
+      arg.map(session =>
+        ipcRenderer.invoke('addToQuickstartList', session.path, session.name),
+      ),
+    )
+  }
+
   return (
     <div>
+      <RenameSessionDialog
+        sessionToRename={sessionToRename}
+        onClose={() => {
+          setSessionToRename(undefined)
+          setUpdateSessionsList(s => s + 1)
+        }}
+      />
+      {sessionsToDelete ? (
+        <DeleteSessionDialog
+          setError={setError}
+          sessionsToDelete={sessionsToDelete}
+          onClose={() => {
+            setSessionsToDelete(undefined)
+            setUpdateSessionsList(s => s + 1)
+          }}
+        />
+      ) : null}
       <FormControl className={classes.formControl}>
         <ToggleButtonGroup
           exclusive
           value={displayMode}
           onChange={(_, newVal) => setDisplayMode(newVal)}
         >
-          <ToggleButton value={'grid'}>
-            <Tooltip title="Grid view">
-              <ViewComfyIcon />
-            </Tooltip>
-          </ToggleButton>
-          <ToggleButton value={'table'}>
-            <Tooltip title="Table view">
-              <ListIcon />
-            </Tooltip>
-          </ToggleButton>
+          <ToggleButtonWithTooltip value="grid" title="Grid view">
+            <ViewComfyIcon />
+          </ToggleButtonWithTooltip>
+          <ToggleButtonWithTooltip value="list" title="List view">
+            <ListIcon />
+          </ToggleButtonWithTooltip>
         </ToggleButtonGroup>
       </FormControl>
+
+      <FormControl className={classes.formControl}>
+        <ToggleButtonGroup>
+          <ToggleButtonWithTooltip
+            value="delete"
+            title="Delete sessions"
+            disabled={!selectedSessions?.length}
+            onClick={() => setSessionsToDelete(selectedSessions)}
+          >
+            <DeleteIcon />
+          </ToggleButtonWithTooltip>
+          <ToggleButtonWithTooltip
+            value="quickstart"
+            title="Add sessions to quickstart list"
+            disabled={!selectedSessions?.length}
+            onClick={() => addToQuickstartList(selectedSessions || [])}
+          >
+            <PlaylistAddIcon />
+          </ToggleButtonWithTooltip>
+        </ToggleButtonGroup>
+      </FormControl>
+
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={showAutosaves === 'true'}
+            onChange={() =>
+              setShowAutosaves(showAutosaves === 'true' ? 'false' : 'true')
+            }
+          />
+        }
+        label="Show autosaves"
+      />
 
       {sortedSessions.length ? (
         displayMode === 'grid' ? (
           <RecentSessionsCards
+            addToQuickstartList={entry => addToQuickstartList([entry])}
             setPluginManager={setPluginManager}
-            sortedSessions={sortedSessions}
+            sessions={sortedSessions}
             setError={setError}
-            setSessionToDelete={setSessionToDelete}
+            setSessionsToDelete={setSessionsToDelete}
             setSessionToRename={setSessionToRename}
           />
         ) : (
-          <RecentSessionsTable
+          <RecentSessionsList
             setPluginManager={setPluginManager}
-            sortedSessions={sortedSessions}
+            sessions={sortedSessions}
             setError={setError}
-            setSessionToDelete={setSessionToDelete}
+            setSelectedSessions={setSelectedSessions}
             setSessionToRename={setSessionToRename}
           />
         )

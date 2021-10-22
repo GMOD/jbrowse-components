@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-trix",
-  "version": "1.0.0",
+  "version": "1.5.0",
   "description": "JBrowse 2 trix text search adapter",
   "keywords": [
     "jbrowse",
@@ -43,8 +43,10 @@
     "prop-types": "^15.0.0",
     "react": ">=16.8.0"
   },
-  "private": true,
   "dependencies": {
-    "@gmod/trix": "^0.2.1"
+    "@gmod/trix": "^1.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

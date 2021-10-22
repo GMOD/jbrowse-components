@@ -1,0 +1,96 @@
+[
+  {
+    "type": "FeatureTrack",
+    "trackId": "repeats_hg38",
+    "name": "Repeats",
+    "assemblyNames": ["hg38"],
+    "category": ["Annotation"],
+    "adapter": {
+      "type": "BigBedAdapter",
+      "bigBedLocation": {
+        "uri": "https://jbrowse.org/genomes/GRCh38/repeats.bb",
+        "locationType": "UriLocation"
+      }
+    }
+  },
+  {
+    "type": "FeatureTrack",
+    "trackId": "ncbi_refseq_109_hg38",
+    "name": "NCBI RefSeq (GFF3Tabix)",
+    "assemblyNames": ["GRCh38"],
+    "category": ["Annotation"],
+    "adapter": {
+      "type": "Gff3TabixAdapter",
+      "gffGzLocation": {
+        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz",
+        "locationType": "UriLocation"
+      },
+      "index": {
+        "location": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.tbi",
+          "locationType": "UriLocation"
+        }
+      }
+    }
+  },
+  {
+    "type": "QuantitativeTrack",
+    "trackId": "hg38.100way.phyloP100way",
+    "name": "hg38.100way.phyloP100way",
+    "category": ["Conservation"],
+    "assemblyNames": ["hg38"],
+    "adapter": {
+      "type": "BigWigAdapter",
+      "bigWigLocation": {
+        "uri": "http://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw",
+        "locationType": "UriLocation"
+      }
+    }
+  },
+  {
+    "type": "FeatureTrack",
+    "trackId": "clinGenGeneDisease",
+    "name": "ClinGen Gene-Disease mapping",
+    "assemblyNames": ["hg38"],
+    "category": ["ClinGen"],
+    "adapter": {
+      "type": "BigBedAdapter",
+      "bigBedLocation": {
+        "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinGen/clinGenGeneDisease.bb",
+        "locationType": "UriLocation"
+      }
+    }
+  },
+  {
+    "type": "AlignmentsTrack",
+    "trackId": "skbr3.ont.sort.mod",
+    "name": "SKBR3 nanopore (CRAM)",
+    "assemblyNames": ["hg38"],
+    "adapter": {
+      "type": "CramAdapter",
+      "cramLocation": {
+        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.mod.cram",
+        "locationType": "UriLocation"
+      },
+      "craiLocation": {
+        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.mod.cram.crai",
+        "locationType": "UriLocation"
+      },
+      "sequenceAdapter": {
+        "type": "BgzipFastaAdapter",
+        "fastaLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+          "locationType": "UriLocation"
+        },
+        "faiLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+          "locationType": "UriLocation"
+        },
+        "gziLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+          "locationType": "UriLocation"
+        }
+      }
+    }
+  }
+]

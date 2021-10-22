@@ -1,5 +1,4 @@
 import { objectHash } from '@jbrowse/core/util'
-import { GenomesFile, HubFile, TrackDbFile } from '@gmod/ucsc-hub'
 import { openLocation } from '@jbrowse/core/util/io'
 import {
   generateUnsupportedTrackConf,
@@ -12,6 +11,7 @@ export { ucscAssemblies }
 export async function fetchHubFile(hubFileLocation) {
   try {
     const hubFileText = await openLocation(hubFileLocation).readFile('utf8')
+    const { HubFile } = await import('@gmod/ucsc-hub')
     return new HubFile(hubFileText)
   } catch (error) {
     throw new Error(`Not a valid hub.txt file, got error: '${error}'`)
@@ -22,14 +22,14 @@ export async function fetchGenomesFile(genomesFileLocation) {
   const genomesFileText = await openLocation(genomesFileLocation).readFile(
     'utf8',
   )
+  const { GenomesFile } = await import('@gmod/ucsc-hub')
   return new GenomesFile(genomesFileText)
 }
 
 export async function fetchTrackDbFile(trackDbFileLocation) {
-  const trackDbFileText = await openLocation(trackDbFileLocation).readFile(
-    'utf8',
-  )
-  return new TrackDbFile(trackDbFileText)
+  const text = await openLocation(trackDbFileLocation).readFile('utf8')
+  const { TrackDbFile } = await import('@gmod/ucsc-hub')
+  return new TrackDbFile(text)
 }
 
 export function generateTracks(
@@ -101,9 +101,13 @@ function makeTrackConfig(
   if (trackDbFileLocation.uri) {
     bigDataLocation = {
       uri: new URL(track.get('bigDataUrl'), trackDbFileLocation.uri).href,
+      locationType: 'UriLocation',
     }
   } else {
-    bigDataLocation = { localPath: track.get('bigDataUrl') }
+    bigDataLocation = {
+      localPath: track.get('bigDataUrl'),
+      locationType: 'LocalPathLocation',
+    }
   }
   let bigDataIndexLocation
 
@@ -114,17 +118,25 @@ function makeTrackConfig(
           ? {
               uri: new URL(track.get('bigDataIndex'), trackDbFileLocation.uri)
                 .href,
+              locationType: 'UriLocation',
             }
           : {
               uri: new URL(
                 `${track.get('bigDataUrl')}.bai`,
                 trackDbFileLocation.uri,
               ).href,
+              locationType: 'UriLocation',
             }
       } else {
         bigDataIndexLocation = track.get('bigDataIndex')
-          ? { localPath: track.get('bigDataIndex') }
-          : { localPath: `${track.get('bigDataUrl')}.bai` }
+          ? {
+              localPath: track.get('bigDataIndex'),
+              locationType: 'LocalPathLocation',
+            }
+          : {
+              localPath: `${track.get('bigDataUrl')}.bai`,
+              locationType: 'LocalPathLocation',
+            }
       }
       return {
         type: 'AlignmentsTrack',
@@ -284,17 +296,25 @@ function makeTrackConfig(
           ? {
               uri: new URL(track.get('bigDataIndex'), trackDbFileLocation.uri)
                 .href,
+              locationType: 'UriLocation',
             }
           : {
               uri: new URL(
                 `${track.get('bigDataUrl')}.crai`,
                 trackDbFileLocation.uri,
               ).href,
+              locationType: 'UriLocation',
             }
       } else {
         bigDataIndexLocation = track.get('bigDataIndex')
-          ? { localPath: track.get('bigDataIndex') }
-          : { localPath: `${track.get('bigDataUrl')}.crai` }
+          ? {
+              localPath: track.get('bigDataIndex'),
+              locationType: 'LocalPathLocation',
+            }
+          : {
+              localPath: `${track.get('bigDataUrl')}.crai`,
+              locationType: 'LocalPathLocation',
+            }
       }
       return {
         type: 'AlignmentsTrack',
@@ -349,17 +369,25 @@ function makeTrackConfig(
           ? {
               uri: new URL(track.get('bigDataIndex'), trackDbFileLocation.uri)
                 .href,
+              locationType: 'UriLocation',
             }
           : {
               uri: new URL(
                 `${track.get('bigDataUrl')}.tbi`,
                 trackDbFileLocation.uri,
               ).href,
+              locationType: 'UriLocation',
             }
       } else {
         bigDataIndexLocation = track.get('bigDataIndex')
-          ? { localPath: track.get('bigDataIndex') }
-          : { localPath: `${track.get('bigDataUrl')}.tbi` }
+          ? {
+              localPath: track.get('bigDataIndex'),
+              locationType: 'LocalPathLocation',
+            }
+          : {
+              localPath: `${track.get('bigDataUrl')}.tbi`,
+              locationType: 'LocalPathLocation',
+            }
       }
       return {
         type: 'VariantTrack',

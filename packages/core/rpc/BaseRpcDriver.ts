@@ -133,19 +133,19 @@ export default abstract class BaseRpcDriver {
     sessionId: string,
   ): THING_TYPE {
     if (Array.isArray(thing)) {
-      return (thing
+      return thing
         .filter(isClonable)
         .map(t =>
           this.filterArgs(t, pluginManager, sessionId),
-        ) as unknown) as THING_TYPE
+        ) as unknown as THING_TYPE
     }
     if (typeof thing === 'object' && thing !== null) {
       // AbortSignals are specially handled
       if (thing instanceof AbortSignal) {
-        return (serializeAbortSignal(
+        return serializeAbortSignal(
           thing,
           this.remoteAbort.bind(this, pluginManager, sessionId),
-        ) as unknown) as THING_TYPE
+        ) as unknown as THING_TYPE
       }
 
       if (isStateTreeNode(thing) && !isAlive(thing)) {
@@ -262,7 +262,7 @@ export default abstract class BaseRpcDriver {
             ),
           )
         } else if (done) {
-          resolve()
+          resolve(true)
         }
       }, this.workerCheckFrequency)
     }).finally(() => {
@@ -272,8 +272,7 @@ export default abstract class BaseRpcDriver {
     // the result is a race between the actual result promise, and the "killed"
     // promise. the killed promise will only actually win if the worker was
     // killed before the call could return
-    const result = await Promise.race([callP, killedP])
-
-    return rpcMethod.deserializeReturn(result, args, this.name)
+    const resultP = Promise.race([callP, killedP])
+    return rpcMethod.deserializeReturn(resultP, args, this.name)
   }
 }

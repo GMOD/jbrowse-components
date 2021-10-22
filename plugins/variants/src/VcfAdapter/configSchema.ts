@@ -5,7 +5,7 @@ export default ConfigurationSchema(
   {
     vcfLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.vcf' },
+      defaultValue: { uri: '/path/to/my.vcf', locationType: 'UriLocation' },
     },
   },
   { explicitlyTyped: true },

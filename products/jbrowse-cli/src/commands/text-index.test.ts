@@ -5,6 +5,7 @@
 import { setup } from '../testUtil'
 import fs from 'fs'
 import path from 'path'
+import { Scope } from 'nock'
 
 const configPath = path.join(
   __dirname,
@@ -14,6 +15,34 @@ const configPath = path.join(
   'data',
   'indexing_config.json',
 )
+
+function mockRemote1(exampleSite: Scope) {
+  return exampleSite
+    .get('/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3')
+    .replyWithFile(
+      200,
+      path.join(
+        __dirname,
+        '..',
+        '..',
+        'test',
+        'data',
+        'au9_scaffold_subset_sync.gff3',
+      ),
+    )
+}
+
+function mockRemote2(exampleSite: Scope) {
+  return exampleSite
+    .get(
+      '/GMOD/jbrowse-components/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz',
+    )
+    .replyWithFile(
+      200,
+      path.join(__dirname, '..', '..', 'test', 'data', 'volvox.sort.gff3.gz'),
+    )
+}
+
 const ixLoc = (loc: string) => path.join(loc, 'trix', 'volvox.ix')
 const ixxLoc = (loc: string) => path.join(loc, 'trix', 'volvox.ixx')
 
@@ -83,6 +112,8 @@ describe('text-index tracks', () => {
 // Remote GZ
 describe('text-index tracks', () => {
   setup
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .nock('https://raw.githubusercontent.com', mockRemote2 as any)
     .do(async ctx => {
       fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
     })
@@ -98,6 +129,8 @@ describe('text-index tracks', () => {
 
 describe('text-index tracks', () => {
   setup
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .nock('https://raw.githubusercontent.com', mockRemote1 as any)
     .do(async ctx => {
       fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
     })
@@ -144,6 +177,10 @@ describe('text-index tracks', () => {
 
 describe('text-index tracks', () => {
   setup
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .nock('https://raw.githubusercontent.com', mockRemote1 as any)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .nock('https://raw.githubusercontent.com', mockRemote2 as any)
     .do(async ctx => {
       fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
     })
@@ -224,6 +261,62 @@ describe('text-index tracks', () => {
     )
 })
 
+describe('text-index with multiple --files', () => {
+  setup
+    .do(async ctx => {
+      await copyDir(
+        path.join(__dirname, '..', '..', '..', '..', 'test_data', 'volvox'),
+        ctx.dir,
+      )
+    })
+    .command([
+      'text-index',
+      '--file',
+      'volvox.sort.gff3.gz',
+      '--file',
+      'volvox.filtered.vcf.gz',
+    ])
+    .it('Indexes with --file', ctx => {
+      const ixdata = fs.readFileSync(
+        path.join(ctx.dir, 'trix', 'aggregate.ix'),
+        'utf8',
+      )
+      const ixxdata = fs.readFileSync(
+        path.join(ctx.dir, 'trix', 'aggregate.ixx'),
+        'utf8',
+      )
+      expect(ixdata.slice(0, 1000)).toMatchSnapshot()
+      expect(ixdata.slice(-1000)).toMatchSnapshot()
+      expect(ixdata.length).toMatchSnapshot()
+      expect(ixxdata).toMatchSnapshot()
+    })
+})
+
+describe('text-index with single --file', () => {
+  setup
+    .do(async ctx => {
+      await copyDir(
+        path.join(__dirname, '..', '..', '..', '..', 'test_data', 'volvox'),
+        ctx.dir,
+      )
+    })
+    .command(['text-index', '--file', 'volvox.sort.gff3.gz'])
+    .it('Indexes with --file', ctx => {
+      const ixdata = fs.readFileSync(
+        path.join(ctx.dir, 'trix', 'volvox.sort.gff3.gz.ix'),
+        'utf8',
+      )
+      const ixxdata = fs.readFileSync(
+        path.join(ctx.dir, 'trix', 'volvox.sort.gff3.gz.ixx'),
+        'utf8',
+      )
+      expect(ixdata.slice(0, 1000)).toMatchSnapshot()
+      expect(ixdata.slice(-1000)).toMatchSnapshot()
+      expect(ixdata.length).toMatchSnapshot()
+      expect(ixxdata).toMatchSnapshot()
+    })
+})
+
 // source https://stackoverflow.com/a/64255382/2129219
 async function copyDir(src: string, dest: string) {
   await fs.promises.mkdir(dest, { recursive: true })
@@ -238,23 +331,24 @@ async function copyDir(src: string, dest: string) {
       : await fs.promises.copyFile(srcPath, destPath)
   }
 }
-function readText(d: string, s: string) {
-  return fs.readFileSync(path.join(d, 'trix', s), 'utf8')
-}
-function readJSON(d: string, s: string) {
-  return JSON.parse(readText(d, s), function (key, value) {
-    if (key === 'dateCreated') {
-      return 'test'
-    } else {
-      return value
-    }
-  })
-}
 
-describe('check that volvox data is properly indexed, re-run text-index on volvox config if fails', () => {
+describe('run with a single assembly similar to embedded config', () => {
   let preVolvoxIx = ''
   let preVolvoxIxx = ''
   let preVolvoxMeta = ''
+
+  function readText(d: string, s: string) {
+    return fs.readFileSync(path.join(d, 'trix', s), 'utf8')
+  }
+  function readJSON(d: string, s: string) {
+    return JSON.parse(readText(d, s), function (key, value) {
+      if (key === 'dateCreated') {
+        return 'test'
+      } else {
+        return value
+      }
+    })
+  }
 
   setup
     .do(async ctx => {
@@ -262,11 +356,74 @@ describe('check that volvox data is properly indexed, re-run text-index on volvo
         path.join(__dirname, '..', '..', '..', '..', 'test_data', 'volvox'),
         ctx.dir,
       )
+
+      const volvoxConfig = JSON.parse(
+        fs.readFileSync(path.join(ctx.dir, 'config.json'), 'utf8'),
+      )
+      const assembly = volvoxConfig.assemblies[0]
+      delete volvoxConfig.assemblies
+      fs.writeFileSync(
+        path.join(ctx.dir, 'config.json'),
+        JSON.stringify({ ...volvoxConfig, assembly }),
+      )
+
       preVolvoxIx = readText(ctx.dir, 'volvox.ix')
       preVolvoxIxx = readText(ctx.dir, 'volvox.ixx')
       preVolvoxMeta = readJSON(ctx.dir, 'volvox_meta.json')
     })
-    .command(['text-index', '--target=config.json', '--force'])
+    .command([
+      'text-index',
+      '--target=config.json',
+      '--force',
+      '--attributes',
+      'Name,ID,Note',
+    ])
+    .it('Indexes single assembly volvox config', ctx => {
+      const postVolvoxIx = readText(ctx.dir, 'volvox.ix')
+      const postVolvoxIxx = readText(ctx.dir, 'volvox.ixx')
+      const postVolvoxMeta = readJSON(ctx.dir, 'volvox_meta.json')
+      expect(postVolvoxIx).toEqual(preVolvoxIx)
+      expect(postVolvoxIxx).toEqual(preVolvoxIxx)
+      expect(postVolvoxMeta).toEqual(preVolvoxMeta)
+    })
+})
+
+describe('run with a volvox config', () => {
+  let preVolvoxIx = ''
+  let preVolvoxIxx = ''
+  let preVolvoxMeta = ''
+
+  function readText(d: string, s: string) {
+    return fs.readFileSync(path.join(d, 'trix', s), 'utf8')
+  }
+  function readJSON(d: string, s: string) {
+    return JSON.parse(readText(d, s), function (key, value) {
+      if (key === 'dateCreated') {
+        return 'test'
+      } else {
+        return value
+      }
+    })
+  }
+
+  setup
+    .do(async ctx => {
+      await copyDir(
+        path.join(__dirname, '..', '..', '..', '..', 'test_data', 'volvox'),
+        ctx.dir,
+      )
+
+      preVolvoxIx = readText(ctx.dir, 'volvox.ix')
+      preVolvoxIxx = readText(ctx.dir, 'volvox.ixx')
+      preVolvoxMeta = readJSON(ctx.dir, 'volvox_meta.json')
+    })
+    .command([
+      'text-index',
+      '--target=config.json',
+      '--force',
+      '--attributes',
+      'Name,ID,Note',
+    ])
     .it('Indexes entire volvox config', ctx => {
       const postVolvoxIx = readText(ctx.dir, 'volvox.ix')
       const postVolvoxIxx = readText(ctx.dir, 'volvox.ixx')

@@ -1,20 +1,27 @@
-import { getSession } from '@jbrowse/core/util'
-import Button from '@material-ui/core/Button'
-import { makeStyles, useTheme } from '@material-ui/core/styles'
-import { alpha } from '@material-ui/core/styles'
-import FormGroup from '@material-ui/core/FormGroup'
-import Typography from '@material-ui/core/Typography'
-import { observer } from 'mobx-react'
 import React from 'react'
+import { observer } from 'mobx-react'
+import { getSession } from '@jbrowse/core/util'
+import {
+  Button,
+  FormGroup,
+  Typography,
+  makeStyles,
+  useTheme,
+  alpha,
+} from '@material-ui/core'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
+// icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
+
+// locals
 import { LinearGenomeViewModel, HEADER_BAR_HEIGHT } from '..'
 import RefNameAutocomplete from './RefNameAutocomplete'
 import OverviewScaleBar from './OverviewScaleBar'
 import ZoomControls from './ZoomControls'
+import { dedupe } from './util'
 
 const WIDGET_HEIGHT = 32
 const SPACING = 7
@@ -107,17 +114,11 @@ const LinearGenomeViewHeader = observer(
     const classes = useStyles()
     const theme = useTheme()
     const session = getSession(model)
-    const { assemblyManager, textSearchManager } = session
-    const {
-      coarseDynamicBlocks: contentBlocks,
-      displayedRegions,
-      rankSearchResults,
-    } = model
-    const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
-    const assembly = assemblyName
-      ? assemblyManager.get(assemblyName)
-      : undefined
-    const regions = assembly?.regions || []
+
+    const { textSearchManager, assemblyManager } = session
+    const { assemblyNames, rankSearchResults } = model
+    const assemblyName = assemblyNames[0]
+    const assembly = assemblyManager.get(assemblyName)
     const searchScope = model.searchScope(assemblyName)
 
     async function fetchResults(queryString: string) {
@@ -132,51 +133,34 @@ const LinearGenomeViewHeader = observer(
         searchScope,
         rankSearchResults,
       )
-      return results?.filter(
-        (elem, index, self) =>
-          index === self.findIndex(t => t.getId() === elem.getId()),
-      )
+      return dedupe(results)
     }
 
-    async function setDisplayedRegion(result: BaseResult) {
-      if (result) {
-        let label = result.getLabel()
-        const newRegion = regions.find(region => label === region.refName)
-        if (newRegion) {
-          model.setDisplayedRegions([newRegion])
-          // we use showAllRegions after setDisplayedRegions to make the entire
-          // region visible, xref #1703
-          model.showAllRegions()
+    async function handleSelectedRegion(option: BaseResult) {
+      let trackId = option.getTrackId()
+      let location = option.getLocation()
+      const label = option.getLabel()
+      try {
+        if (assembly?.refNames?.includes(location)) {
+          model.navToLocString(location)
         } else {
           const results = await fetchResults(label)
           if (results && results.length > 1) {
             model.setSearchResults(results, label.toLowerCase())
-          } else {
-            if (results?.length === 1) {
-              label = results[0].getLocation()
-              const trackId = results[0].getTrackId()
-              try {
-                if (trackId) {
-                  model.showTrack(trackId)
-                }
-              } catch (e) {
-                console.warn(
-                  `'${e}' occurred while attempting to show track: ${trackId}`,
-                )
-              }
-            }
-            try {
-              label !== '' && model.navToLocString(label)
-            } catch (e) {
-              if (`${e}` === `Error: Unknown reference sequence "${label}"`) {
-                model.setSearchResults(results, label.toLowerCase())
-              } else {
-                console.warn(e)
-                session.notify(`${e}`, 'warning')
-              }
-            }
+            return
+          } else if (results?.length === 1) {
+            location = results[0].getLocation()
+            trackId = results[0].getTrackId()
+          }
+
+          model.navToLocString(location, assemblyName)
+          if (trackId) {
+            model.showTrack(trackId)
           }
         }
+      } catch (e) {
+        console.error(e)
+        session.notify(`${e}`, 'warning')
       }
     }
 
@@ -187,9 +171,8 @@ const LinearGenomeViewHeader = observer(
         <FormGroup row className={classes.headerForm}>
           <PanControls model={model} />
           <RefNameAutocomplete
-            onSelect={setDisplayedRegion}
+            onSelect={handleSelectedRegion}
             assemblyName={assemblyName}
-            value={displayedRegions.length > 1 ? '' : refName}
             model={model}
             TextFieldProps={{
               variant: 'outlined',

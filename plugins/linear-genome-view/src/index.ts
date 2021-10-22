@@ -26,6 +26,7 @@ import {
   LinearGenomeViewStateModel,
   stateModelFactory as linearGenomeViewStateModelFactory,
   renderToSvg,
+  RefNameAutocomplete,
 } from './LinearGenomeView'
 
 import {
@@ -121,7 +122,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
 
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
-      pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
+      pluginManager.rootModel.appendToSubMenu(['Add'], {
         label: 'Linear genome view',
         icon: LineStyleIcon,
         onClick: (session: AbstractSessionModel) => {
@@ -140,6 +141,7 @@ export {
   linearBasicDisplayConfigSchemaFactory,
   linearBasicDisplayModelFactory,
   renderToSvg,
+  RefNameAutocomplete,
 }
 
 export type { LinearGenomeViewModel, LinearGenomeViewStateModel, BlockModel }

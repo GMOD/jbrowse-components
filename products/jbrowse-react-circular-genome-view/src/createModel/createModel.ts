@@ -16,9 +16,8 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
   )
   pluginManager.createPluggableElements()
   const Session = createSessionModel(pluginManager)
-  const { assemblyConfigSchemas, dispatcher } = createAssemblyConfigSchemas(
-    pluginManager,
-  )
+  const { assemblyConfigSchemas, dispatcher } =
+    createAssemblyConfigSchemas(pluginManager)
   const assemblyConfigSchemasType = types.union(
     { dispatcher },
     ...assemblyConfigSchemas,
@@ -32,8 +31,10 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
       config: createConfigModel(pluginManager, assemblyConfigSchemasType),
       session: Session,
       assemblyManager: assemblyManagerType,
-      error: types.maybe(types.string),
     })
+    .volatile(() => ({
+      error: undefined as Error | undefined,
+    }))
     .actions(self => ({
       setSession(sessionSnapshot: SnapshotIn<typeof Session>) {
         self.session = cast(sessionSnapshot)
@@ -45,8 +46,8 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
           this.setSession(snapshot)
         }
       },
-      setError(errorMessage: string | Error) {
-        self.error = String(errorMessage)
+      setError(errorMessage: Error | undefined) {
+        self.error = errorMessage
       },
     }))
     .views(self => ({

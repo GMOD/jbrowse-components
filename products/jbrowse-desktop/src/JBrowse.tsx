@@ -22,13 +22,8 @@ const JBrowse = observer(
 const JBrowseNonNullRoot = observer(
   ({ rootModel }: { rootModel: RootModel }) => {
     const [firstLoad, setFirstLoad] = useState(true)
-    const {
-      session,
-      jbrowse,
-      error,
-      isAssemblyEditing,
-      setAssemblyEditing,
-    } = rootModel
+    const { session, jbrowse, error, isAssemblyEditing, setAssemblyEditing } =
+      rootModel
 
     useEffect(() => {
       if (firstLoad && session) {

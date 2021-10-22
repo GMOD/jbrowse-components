@@ -30,18 +30,14 @@ function PileupRendering(props: {
     sortedBy,
     colorBy,
   } = props
-  const {
-    selectedFeatureId,
-    featureIdUnderMouse,
-    contextMenuFeature,
-  } = displayModel
+  const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
+    displayModel
 
   const [region] = regions
   const highlightOverlayCanvas = useRef<HTMLCanvasElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
-  const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(
-    false,
-  )
+  const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
+    useState(false)
   useEffect(() => {
     const canvas = highlightOverlayCanvas.current
     if (!canvas) {
@@ -53,7 +49,7 @@ function PileupRendering(props: {
     }
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     const selectedRect = selectedFeatureId
-      ? displayModel.getFeatureByID?.(selectedFeatureId)
+      ? displayModel.getFeatureByID?.(blockKey, selectedFeatureId)
       : undefined
     if (selectedRect) {
       const [leftBp, topPx, rightBp, bottomPx] = selectedRect
@@ -75,7 +71,7 @@ function PileupRendering(props: {
     }
     const highlightedFeature = featureIdUnderMouse || contextMenuFeature?.id()
     const highlightedRect = highlightedFeature
-      ? displayModel.getFeatureByID?.(highlightedFeature)
+      ? displayModel.getFeatureByID?.(blockKey, highlightedFeature)
       : undefined
     if (highlightedRect) {
       const [leftBp, topPx, rightBp, bottomPx] = highlightedRect
@@ -88,6 +84,7 @@ function PileupRendering(props: {
   }, [
     bpPerPx,
     region,
+    blockKey,
     selectedFeatureId,
     displayModel,
     featureIdUnderMouse,

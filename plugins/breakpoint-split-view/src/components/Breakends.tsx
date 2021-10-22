@@ -4,15 +4,26 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
+import { parseBreakend } from '@gmod/vcf'
+
+// locals
 import { yPos, getPxFromCoordinate, useNextFrame } from '../util'
-import { BreakpointViewModel, Breakend } from '../model'
+import { BreakpointViewModel } from '../model'
 
 const [LEFT] = [0, 1, 2, 3]
 
+interface Breakend {
+  MatePosition: string
+  MateDirection: string
+  Join: string
+}
+
 function findMatchingAlt(feat1: Feature, feat2: Feature) {
   const candidates: Record<string, Breakend> = {}
-  feat1.get('ALT').forEach((alt: Breakend) => {
-    candidates[alt.MatePosition] = alt
+  const alts = feat1.get('ALT') as string[] | undefined
+  alts?.forEach(alt => {
+    const bnd = parseBreakend(alt)
+    candidates[bnd.MatePosition] = bnd
   })
   return candidates[`${feat2.get('refName')}:${feat2.get('start') + 1}`]
 }
@@ -63,8 +74,8 @@ const Breakends = observer(
       >
         {layoutMatches.map(chunk => {
           const ret = []
-          // we follow a path in the list of chunks, not from top to bottom,
-          // just in series following x1,y1 -> x2,y2
+          // we follow a path in the list of chunks, not from top to bottom, just
+          // in series following x1,y1 -> x2,y2
           for (let i = 0; i < chunk.length - 1; i += 1) {
             const { layout: c1, feature: f1, level: level1 } = chunk[i]
             const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]

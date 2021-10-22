@@ -17,6 +17,8 @@ import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import MyConfigSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 interface PafRecord {
   records: NoAssemblyRegion[]
@@ -42,11 +44,15 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: Instance<typeof MyConfigSchema>) {
-    super(config)
+  public constructor(
+    config: Instance<typeof MyConfigSchema>,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    super(config, getSubAdapter, pluginManager)
     const pafLocation = readConfObject(config, 'pafLocation') as FileLocation
     const assemblyNames = readConfObject(config, 'assemblyNames') as string[]
-    this.pafLocation = openLocation(pafLocation)
+    this.pafLocation = openLocation(pafLocation, this.pluginManager)
     this.assemblyNames = assemblyNames
   }
 

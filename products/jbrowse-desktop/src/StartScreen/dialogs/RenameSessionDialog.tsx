@@ -14,32 +14,25 @@ import electron from 'electron'
 const { ipcRenderer } = electron
 
 const RenameSessionDialog = ({
-  sessionNames,
   sessionToRename,
   onClose,
 }: {
-  sessionNames: string[]
-  sessionToRename?: string
+  sessionToRename?: { path: string; name: string }
   onClose: (arg0: boolean) => void
 }) => {
   const [newSessionName, setNewSessionName] = useState('')
-  const [error, setError] = useState<Error>()
+  const [error, setError] = useState<unknown>()
 
   return (
     <Dialog open={!!sessionToRename} onClose={() => onClose(false)}>
-      <DialogTitle id="alert-dialog-title">Rename</DialogTitle>
+      <DialogTitle>Rename session</DialogTitle>
       <DialogContent>
-        <DialogContentText id="alert-dialog-description">
+        <DialogContentText>
           Please enter a new name for the session:
         </DialogContentText>
-        {sessionNames.includes(newSessionName) ? (
-          <DialogContentText color="error">
-            There is already a session named &quot;{newSessionName}&quot;
-          </DialogContentText>
-        ) : null}
         <Input
           autoFocus
-          defaultValue={sessionToRename}
+          defaultValue={sessionToRename?.name}
           onChange={event => setNewSessionName(event.target.value)}
         />
         {error ? (
@@ -55,7 +48,7 @@ const RenameSessionDialog = ({
             try {
               await ipcRenderer.invoke(
                 'renameSession',
-                sessionToRename,
+                sessionToRename?.path,
                 newSessionName,
               )
               onClose(true)
@@ -66,7 +59,6 @@ const RenameSessionDialog = ({
           }}
           color="primary"
           variant="contained"
-          disabled={!newSessionName || sessionNames.includes(newSessionName)}
         >
           OK
         </Button>

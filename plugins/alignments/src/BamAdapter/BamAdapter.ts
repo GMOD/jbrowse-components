@@ -37,9 +37,15 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const chunkSizeLimit = readConfObject(this.config, 'chunkSizeLimit')
       const fetchSizeLimit = readConfObject(this.config, 'fetchSizeLimit')
       const bam = new BamFile({
-        bamFilehandle: openLocation(bamLocation),
-        csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
-        baiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
+        bamFilehandle: openLocation(bamLocation, this.pluginManager),
+        csiFilehandle:
+          indexType === 'CSI'
+            ? openLocation(location, this.pluginManager)
+            : undefined,
+        baiFilehandle:
+          indexType !== 'CSI'
+            ? openLocation(location, this.pluginManager)
+            : undefined,
         chunkSizeLimit,
         fetchSizeLimit,
       })
@@ -128,8 +134,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
     const trimmed: string[] = []
     seqChunks
-      .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
-      .forEach((chunk: Feature) => {
+      .sort((a, b) => a.get('start') - b.get('start'))
+      .forEach(chunk => {
         const chunkStart = chunk.get('start')
         const chunkEnd = chunk.get('end')
         const trimStart = Math.max(start - chunkStart, 0)

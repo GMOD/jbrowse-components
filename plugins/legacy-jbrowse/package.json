@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-legacy-jbrowse",
-  "version": "1.3.3",
+  "version": "1.5.0",
   "description": "JBrowse 2 plugin for connecting to and reading JBrowse 1 data",
   "keywords": [
     "jbrowse",
@@ -36,8 +36,10 @@
   },
   "dependencies": {
     "@gmod/nclist": "^0.1.1",
+    "buffer-crc32": "^0.2.13",
+    "generic-filehandle": "^2.2.0",
     "get-value": "^3.0.1",
-    "set-value": "^3.0.0"
+    "set-value": "^4.0.1"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",

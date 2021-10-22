@@ -6,7 +6,7 @@ import PluginLoader, {
   PluginRecord,
 } from '@jbrowse/core/PluginLoader'
 import { observer } from 'mobx-react'
-import { inDevelopment, fromUrlSafeB64 } from '@jbrowse/core/util'
+import { inDevelopment } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ErrorBoundary } from 'react-error-boundary'
 import {
@@ -34,6 +34,8 @@ import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
 import { makeStyles } from '@material-ui/core'
+
+import { fromUrlSafeB64 } from './util'
 import packagedef from '../package.json'
 import factoryReset from './factoryReset'
 
@@ -153,8 +155,8 @@ const SessionLoader = types
     sessionSnapshot: undefined as any,
     runtimePlugins: [] as PluginRecord[],
     sessionPlugins: [] as PluginRecord[],
-    sessionError: undefined as Error | undefined,
-    configError: undefined as Error | undefined,
+    sessionError: undefined as unknown,
+    configError: undefined as unknown,
     bc1:
       window.BroadcastChannel &&
       new window.BroadcastChannel('jb_request_session'),
@@ -200,10 +202,10 @@ const SessionLoader = types
     setSessionQuery(session?: any) {
       self.sessionQuery = session
     },
-    setConfigError(error: Error) {
+    setConfigError(error: unknown) {
       self.configError = error
     },
-    setSessionError(error: Error) {
+    setSessionError(error: unknown) {
       self.sessionError = error
     },
     setRuntimePlugins(plugins: PluginRecord[]) {
@@ -283,7 +285,10 @@ const SessionLoader = types
     async fetchConfig() {
       const { configPath = 'config.json' } = self
       const config = JSON.parse(
-        (await openLocation({ uri: configPath }).readFile('utf8')) as string,
+        (await openLocation({
+          uri: configPath,
+          locationType: 'UriLocation',
+        }).readFile('utf8')) as string,
       )
       const configUri = new URL(configPath, window.location.href)
       addRelativeUris(config, configUri)
@@ -363,7 +368,7 @@ const SessionLoader = types
         self.password || '',
       )
 
-      const session = JSON.parse(fromUrlSafeB64(decryptedSession))
+      const session = JSON.parse(await fromUrlSafeB64(decryptedSession))
 
       await this.setSessionSnapshot({ ...session, id: shortid() })
     },
@@ -371,7 +376,7 @@ const SessionLoader = types
     async decodeEncodedUrlSession() {
       const session = JSON.parse(
         // @ts-ignore
-        fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
+        await fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
       )
       await this.setSessionSnapshot({ ...session, id: shortid() })
     },
@@ -398,7 +403,7 @@ const SessionLoader = types
           localStorage.setItem(`previousAutosave-${configPath}`, lastAutosave)
         }
       } catch (e) {
-        console.error('failed to create previousAutosave')
+        console.error('failed to create previousAutosave', e)
       }
 
       try {
@@ -487,27 +492,25 @@ const ErrorMessage = ({
   err,
   snapshotError,
 }: {
-  err: Error
+  err: unknown
   snapshotError?: string
 }) => {
   const classes = useStyles()
+  const str = `${err}`
   return (
     <div>
       <NoConfigMessage />
-      {err && err.message === 'HTTP 404 fetching config.json' ? (
+      {str.match(/HTTP 404 fetching config.json/) ? (
         <div className={classes.message} style={{ background: '#9f9' }}>
-          No config detected ({`${err}`})
-          <br />
-          <p>
-            If you want to learn how to complete your setup, visit our{' '}
-            <a href="https://jbrowse.org/jb2/docs/quickstart_web">
-              Quick start guide
-            </a>
-          </p>
+          No config detected. If you want to learn how to complete your setup,
+          visit our{' '}
+          <a href="https://jbrowse.org/jb2/docs/quickstart_web">
+            Quick start guide
+          </a>
         </div>
       ) : (
         <div className={classes.message} style={{ background: '#f88' }}>
-          {`${err}`}
+          {str}
           {snapshotError ? (
             <>
               ... Failed element had snapshot:
@@ -608,7 +611,7 @@ const Renderer = observer(
               // setDefaultSession, even though we know this exists now
               if (rootModel.session) {
                 rootModel.session.notify(
-                  `Error loading session: ${sessionError.message}. If you
+                  `Error loading session: ${sessionError}. If you
                 received this URL from another user, request that they send you
                 a session generated with the "Share" button instead of copying
                 and pasting their URL`,
@@ -620,7 +623,8 @@ const Renderer = observer(
               } catch (err) {
                 console.error(err)
                 rootModel.setDefaultSession()
-                const errorMessage = (err.message || '')
+                const str = `${err}`
+                const errorMessage = str
                   .replace('[mobx-state-tree] ', '')
                   .replace(/\(.+/, '')
                 rootModel.session?.notify(
@@ -665,7 +669,8 @@ const Renderer = observer(
           }
         }
       } catch (e) {
-        const match = e.message.match(
+        const str = `${e}`
+        const match = str.match(
           /.*at path "(.*)" snapshot `(.*)` is not assignable/,
         )
         // best effort to make a better error message than the default
@@ -674,7 +679,7 @@ const Renderer = observer(
           setError(new Error(`Failed to load element at ${match[1]}`))
           setSnapshotError(match[2])
         } else {
-          setError(new Error(e.message.slice(0, 10000)))
+          setError(new Error(str.slice(0, 10000)))
         }
         console.error(e)
       }

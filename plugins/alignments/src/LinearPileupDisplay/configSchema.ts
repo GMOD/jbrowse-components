@@ -4,12 +4,10 @@ import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 function PileupConfigFactory(pluginManager: PluginManager) {
-  const PileupRendererConfigSchema = pluginManager.getRendererType(
-    'PileupRenderer',
-  ).configSchema
-  const SvgFeatureRendererConfigSchema = pluginManager.getRendererType(
-    'SvgFeatureRenderer',
-  ).configSchema
+  const PileupRendererConfigSchema =
+    pluginManager.getRendererType('PileupRenderer').configSchema
+  const SvgFeatureRendererConfigSchema =
+    pluginManager.getRendererType('SvgFeatureRenderer').configSchema
 
   // modify config schema to take in a sub coverage display
   return ConfigurationSchema(

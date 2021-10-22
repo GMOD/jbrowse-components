@@ -11,17 +11,17 @@ import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
-import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
+import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { setup, generateReadBuffer, getPluginManager } from './util'
 import JBrowse from '../JBrowse'
 
 // need to mock out data grid and force all columns to render
 // https://github.com/mui-org/material-ui-x/issues/1151
-jest.mock('@material-ui/data-grid', () => {
-  const { DataGrid } = jest.requireActual('@material-ui/data-grid')
+jest.mock('@mui/x-data-grid', () => {
+  const { DataGrid } = jest.requireActual('@mui/x-data-grid')
   return {
-    ...jest.requireActual('@material-ui/data-grid'),
+    ...jest.requireActual('@mui/x-data-grid'),
     DataGrid: props => {
       return <DataGrid {...props} columnBuffer={6} />
     },
@@ -155,6 +155,8 @@ describe('valid file tests', () => {
     )
     const trackRenderingContainer1 = await findByTestId(
       'trackRenderingContainer-integration_test-volvox_filtered_vcf',
+      {},
+      { timeout: 10000 },
     )
     const dragStartEvent = createEvent.dragStart(dragHandle0)
     // Have to mock 'dataTransfer' because it's not supported in jsdom
@@ -170,7 +172,7 @@ describe('valid file tests', () => {
     await waitFor(() =>
       expect(state.session.views[0].tracks[0].id).toBe(trackId1),
     )
-  })
+  }, 15000)
 
   it('click and zoom in and back out', async () => {
     const pluginManager = getPluginManager()
@@ -238,21 +240,10 @@ describe('valid file tests', () => {
           'volvox2',
         ),
       {
-        timeout: 10000,
+        timeout: 25000,
       },
     )
-    autocomplete.focus()
-    fireEvent.mouseDown(inputBox)
-    fireEvent.change(inputBox, {
-      target: { value: 'seg02' },
-    })
-    // fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
-    // fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
-    fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-    // test search results dialog opening
-    await screen.findByText('Search Results')
-    expect(state.session.views[0].searchResults.length).toBeGreaterThan(0)
-  }, 30000)
+  })
 
   it('opens reference sequence track and expects zoom in message', async () => {
     const pluginManager = getPluginManager()
@@ -268,7 +259,7 @@ describe('valid file tests', () => {
       { timeout: 10000 },
     )
     expect(getAllByText('Zoom in to see sequence')).toBeTruthy()
-  }, 10000)
+  }, 30000)
 
   it('click to display center line with correct value', async () => {
     const pluginManager = getPluginManager()
@@ -366,6 +357,11 @@ describe('valid file tests', () => {
 
     const autocomplete = await findByTestId('autocomplete')
     const inputBox = await findByPlaceholderText('Search for location')
+    await waitFor(() =>
+      expect(state.session.views[0].coarseDynamicBlocks.length).toBeGreaterThan(
+        0,
+      ),
+    )
     fireEvent.mouseDown(inputBox)
     autocomplete.focus()
     fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })

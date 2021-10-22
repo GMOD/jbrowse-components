@@ -6,10 +6,12 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import BreakpointSplitViewComponent from './components/BreakpointSplitView'
 import BreakpointSplitViewModel from './model'
+import { parseBreakend } from '@gmod/vcf'
 
 class BreakpointSplitViewType extends ViewType {
   snapshotFromBreakendFeature(feature: Feature, view: LinearGenomeViewModel) {
-    const breakendSpecification = (feature.get('ALT') || [])[0]
+    const alt = feature.get('ALT')?.[0]
+    const bnd = parseBreakend(alt)
     const startPos = feature.get('start')
     let endPos
     const bpPerPx = 10
@@ -35,29 +37,21 @@ class BreakpointSplitViewType extends ViewType {
     let startMod = 0
     let endMod = 0
 
-    if (breakendSpecification) {
-      // a VCF breakend feature
-      if (breakendSpecification === '<TRA>') {
-        const INFO = feature.get('INFO') || []
-        endPos = INFO.END[0] - 1
-        mateRefName = getCanonicalRefName(INFO.CHR2[0])
-      } else {
-        const matePosition = breakendSpecification.MatePosition.split(':')
-        endPos = parseInt(matePosition[1], 10) - 1
-        mateRefName = getCanonicalRefName(matePosition[0])
-        if (breakendSpecification.Join === 'left') {
-          startMod = -1
-        }
-        if (breakendSpecification.MateDirection === 'left') {
-          endMod = -1
-        }
+    // a VCF breakend feature
+    if (alt === '<TRA>') {
+      const INFO = feature.get('INFO')
+      endPos = INFO.END[0] - 1
+      mateRefName = getCanonicalRefName(INFO.CHR2[0])
+    } else if (bnd) {
+      const matePosition = bnd.MatePosition.split(':')
+      endPos = +matePosition[1] - 1
+      mateRefName = getCanonicalRefName(matePosition[0])
+      if (bnd.Join === 'left') {
+        startMod = -1
       }
-
-      // if (breakendSpecification.Join === 'left') {
-      // marker -1, else 0
-
-      // if (breakendSpecification.MateDirection === 'left') {
-      // marker -1, else 0
+      if (bnd.MateDirection === 'left') {
+        endMod = -1
+      }
     } else if (feature.get('mate')) {
       // a generic 'mate' feature
       const mate = feature.get('mate')

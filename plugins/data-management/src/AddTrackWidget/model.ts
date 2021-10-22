@@ -6,27 +6,16 @@ import {
   guessAdapter,
   guessTrackType,
   UNSUPPORTED,
+  getFileName,
 } from '@jbrowse/core/util/tracks'
 
-function isAbsoluteUrl(url: string) {
+function isAbsoluteUrl(url = '') {
   try {
     new URL(url)
     return true
   } catch (error) {
     return url.startsWith('/')
   }
-}
-
-function getFileName(track: FileLocation) {
-  const uri = 'uri' in track ? track.uri : undefined
-  const localPath = 'localPath' in track ? track.localPath : undefined
-  const blob = 'blobId' in track ? track : undefined
-  return (
-    blob?.name ||
-    uri?.slice(uri.lastIndexOf('/') + 1) ||
-    localPath?.slice(localPath.lastIndexOf('/') + 1) ||
-    ''
-  )
 }
 
 export default function f(pluginManager: PluginManager) {
@@ -79,8 +68,8 @@ export default function f(pluginManager: PluginManager) {
         self.altTrackType = ''
         self.altAssemblyName = ''
         self.adapterHint = ''
-        self.indexTrackData = { uri: '' }
-        self.trackData = { uri: '' }
+        self.indexTrackData = undefined
+        self.trackData = undefined
       },
     }))
     .views(self => ({
@@ -88,7 +77,7 @@ export default function f(pluginManager: PluginManager) {
         const { trackData, indexTrackData, adapterHint } = self
 
         return trackData
-          ? guessAdapter(trackData, indexTrackData, getFileName, adapterHint)
+          ? guessAdapter(trackData, indexTrackData, adapterHint, self)
           : undefined
       },
 
@@ -102,30 +91,32 @@ export default function f(pluginManager: PluginManager) {
       get isFtp() {
         const { trackData: track, indexTrackData: index } = self
         return !!(
-          (index && 'uri' in index && index.uri.startsWith('ftp://')) ||
-          (track && 'uri' in track && track.uri.startsWith('ftp://'))
+          // @ts-ignore
+          (index?.uri?.startsWith('ftp://') || track?.uri?.startsWith('ftp://'))
         )
       },
 
       get isRelativeTrackUrl() {
-        const { trackData } = self
-        return trackData && 'uri' in trackData && !isAbsoluteUrl(trackData.uri)
+        // @ts-ignore
+        const uri = self.trackData?.uri
+        return uri ? !isAbsoluteUrl(uri) : false
       },
       get isRelativeIndexUrl() {
-        const { indexTrackData: index } = self
-        return index && 'uri' in index && !isAbsoluteUrl(index.uri)
+        // @ts-ignore
+        const uri = self.indexTrackData?.uri
+        return uri ? !isAbsoluteUrl(uri) : false
       },
       get isRelativeUrl() {
         return this.isRelativeIndexUrl || this.isRelativeTrackUrl
       },
 
       get trackHttp() {
-        const { trackData: track } = self
-        return track && 'uri' in track && track.uri.startsWith('http://')
+        // @ts-ignore
+        return self.trackData?.uri?.startsWith('http://')
       },
       get indexHttp() {
-        const { indexTrackData: index } = self
-        return index && 'uri' in index && index.uri.startsWith('http://')
+        // @ts-ignore
+        return self.indexTrackData?.uri?.startsWith('http://')
       },
 
       get wrongProtocol() {
@@ -146,7 +137,9 @@ export default function f(pluginManager: PluginManager) {
       get trackType() {
         return (
           self.altTrackType ||
-          (this.trackAdapter ? guessTrackType(this.trackAdapter.type) : '')
+          (this.trackAdapter
+            ? guessTrackType(this.trackAdapter.type, self)
+            : '')
         )
       },
     }))

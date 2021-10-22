@@ -41,15 +41,14 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const [hview, vview] = views
     const db1 = hview.dynamicBlocks.contentBlocks[0].offsetPx
     const db2 = vview.dynamicBlocks.contentBlocks[0].offsetPx
-    ;(hview.features || []).forEach(feature => {
+
+    hview.features?.forEach(feature => {
       let start = feature.get('start')
       let end = feature.get('end')
       const strand = feature.get('strand') || 1
       const refName = feature.get('refName')
       const mate = feature.get('mate')
       const mateRef = mate.refName
-      // const identity = feature.get('numMatches') / feature.get('blockLen')
-      // ctx.fillStyle = `hsl(${identity * 150},50%,50%)`
       const color = readConfObject(config, 'color', { feature })
       ctx.fillStyle = color
       ctx.strokeStyle = color
@@ -133,12 +132,11 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     })
     await Promise.all(
       realizedViews.map(async view => {
-        view.setFeatures(
-          await this.getFeatures({
-            ...renderProps,
-            regions: view.dynamicBlocks.contentBlocks,
-          }),
-        )
+        const feats = await this.getFeatures({
+          ...renderProps,
+          regions: view.dynamicBlocks.contentBlocks,
+        })
+        view.setFeatures(feats)
       }),
     )
     const imageData = await this.makeImageData({

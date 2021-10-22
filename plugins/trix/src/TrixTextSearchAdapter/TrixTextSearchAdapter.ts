@@ -5,19 +5,36 @@ import {
   BaseAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
-import { LocStringResult } from '@jbrowse/core/TextSearch/BaseResults'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+
+function shorten(str: string, term: string, w = 15) {
+  const tidx = str.indexOf(term)
+
+  return str.length < 40
+    ? str
+    : (Math.max(0, tidx - w) > 0 ? '...' : '') +
+        str.slice(Math.max(0, tidx - w), tidx + term.length + w).trim() +
+        (tidx + term.length < str.length ? '...' : '')
+}
 
 export default class TrixTextSearchAdapter
   extends BaseAdapter
-  implements BaseTextSearchAdapter {
+  implements BaseTextSearchAdapter
+{
   indexingAttributes?: string[]
   trixJs: Trix
   tracksNames?: string[]
 
-  constructor(config: AnyConfigurationModel) {
-    super(config)
+  constructor(
+    config: AnyConfigurationModel,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    super(config, getSubAdapter, pluginManager)
     const ixFilePath = readConfObject(config, 'ixFilePath')
     const ixxFilePath = readConfObject(config, 'ixxFilePath')
 
@@ -28,10 +45,8 @@ export default class TrixTextSearchAdapter
       throw new Error('must provide out.ixx')
     }
     this.trixJs = new Trix(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      openLocation(ixxFilePath) as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      openLocation(ixFilePath) as any,
+      openLocation(ixxFilePath),
+      openLocation(ixFilePath),
       200,
     )
   }
@@ -43,34 +58,47 @@ export default class TrixTextSearchAdapter
    */
   async searchIndex(args: BaseArgs) {
     const results = await this.trixJs.search(args.queryString)
-    const formatted = this.formatResults(
-      results.map(
-        data =>
-          JSON.parse(Buffer.from(data, 'base64').toString('utf8')) as string[],
-      ),
-    )
+    const formatted = results.map(entry => {
+      const [term, data] = entry.split(',')
+      const result = JSON.parse(data.replace(/\|/g, ',')) as string[]
+      const [loc, trackId, ...rest] = result.map(record =>
+        decodeURIComponent(record),
+      )
+
+      const labelFieldIdx = rest.findIndex(elt => !!elt)
+      const contextIdx = rest
+        .map(elt => elt.toLowerCase())
+        .findIndex(f => f.indexOf(term.toLowerCase()) !== -1)
+
+      const labelField = rest[labelFieldIdx]
+      const contextField = rest[contextIdx]
+      const context =
+        contextIdx !== -1 && contextIdx !== labelFieldIdx
+          ? shorten(contextField, term)
+          : undefined
+      const label = shorten(labelField, term)
+
+      const displayString =
+        !context || labelField.toLowerCase() === context.toLowerCase()
+          ? label
+          : `${labelField} (${context})`
+
+      return new BaseResult({
+        locString: loc,
+        label: labelField,
+        displayString,
+        matchedObject: result.map(record => decodeURIComponent(record)),
+        trackId,
+      })
+    })
+
     if (args.searchType === 'exact') {
       return formatted.filter(
-        result =>
-          result.getLabel().toLocaleLowerCase() ===
-          args.queryString.toLocaleLowerCase(),
+        res => res.getLabel().toLowerCase() === args.queryString.toLowerCase(),
       )
     }
     return formatted
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  formatResults(results: Array<any>) {
-    return results.map(result => {
-      const [locString, trackId, name, id] = result
-      return new LocStringResult({
-        locString,
-        label: name || id,
-        matchedAttribute: 'name',
-        matchedObject: result,
-        trackId,
-      })
-    })
-  }
   freeResources() {}
 }

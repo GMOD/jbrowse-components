@@ -54,7 +54,7 @@ export function when(
           finished = true
           finishTimeout()
 
-          resolve()
+          resolve(true)
         }
       })
       .catch(err => {

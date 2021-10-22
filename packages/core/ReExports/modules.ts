@@ -13,7 +13,7 @@ import * as MUICore from '@material-ui/core'
 import * as MUIUtils from '@material-ui/core/utils'
 import MUISvgIcon from '@material-ui/core/SvgIcon'
 import * as MUILab from '@material-ui/lab'
-import * as MUIDataGrid from '@material-ui/data-grid'
+import * as MUIDataGrid from '@mui/x-data-grid'
 import MUIBox from '@material-ui/core/Box'
 import MUIButton from '@material-ui/core/Button'
 import MUIButtonGroup from '@material-ui/core/ButtonGroup'
@@ -96,6 +96,7 @@ const libs = {
   '@material-ui/core/utils': MUIUtils,
   // end special case
   '@material-ui/lab': MUILab,
+  '@mui/x-data-grid': MUIDataGrid,
   '@material-ui/data-grid': MUIDataGrid,
 
   // material-ui subcomponents, should get rid of these
@@ -144,10 +145,14 @@ const libs = {
   '@jbrowse/core/pluggableElementTypes/WidgetType': WidgetType,
 
   '@jbrowse/core/pluggableElementTypes/models': pluggableElementTypeModels,
-  '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType': ServerSideRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType': CircularChordRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType': BoxRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType': FeatureRendererType,
+  '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType':
+    ServerSideRendererType,
+  '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType':
+    CircularChordRendererType,
+  '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType':
+    BoxRendererType,
+  '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType':
+    FeatureRendererType,
   '@jbrowse/core/pluggableElementTypes/renderers/RendererType': RendererType,
   '@jbrowse/core/configuration': Configuration,
   '@jbrowse/core/util/types/mst': mstTypes,

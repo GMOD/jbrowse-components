@@ -149,6 +149,8 @@ const AdapterInput = observer(
   },
 )
 
+const blank = { uri: '' } as FileLocation
+
 const AssemblyAddForm = observer(
   ({
     rootModel,
@@ -169,18 +171,17 @@ const AssemblyAddForm = observer(
     const [assemblyName, setAssemblyName] = useState('')
     const [assemblyDisplayName, setAssemblyDisplayName] = useState('')
     const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0])
-    const [fastaLocation, setFastaLocation] = useState({ uri: '' })
-    const [faiLocation, setFaiLocation] = useState({ uri: '' })
-    const [gziLocation, setGziLocation] = useState({ uri: '' })
-    const [twoBitLocation, setTwoBitLocation] = useState({ uri: '' })
-    const [chromSizesLocation, setChromSizesLocation] = useState({ uri: '' })
+    const [fastaLocation, setFastaLocation] = useState(blank)
+    const [faiLocation, setFaiLocation] = useState(blank)
+    const [gziLocation, setGziLocation] = useState(blank)
+    const [twoBitLocation, setTwoBitLocation] = useState(blank)
+    const [chromSizesLocation, setChromSizesLocation] = useState(blank)
 
     function createAssembly() {
       if (assemblyName === '') {
         rootModel.session.notify("Can't create an assembly without a name")
       } else {
         setFormOpen(false)
-        // setIsAssemblyBeingEdited(true)
         let newAssembly
         if (adapterSelection === 'IndexedFastaAdapter') {
           newAssembly = {

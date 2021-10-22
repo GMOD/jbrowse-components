@@ -7,12 +7,15 @@ test('can use a indexed fasta with gzi', async () => {
     configSchema.create({
       fastaLocation: {
         localPath: require.resolve('../../test_data/volvox.fa.gz'),
+        locationType: 'LocalPathLocation',
       },
       faiLocation: {
         localPath: require.resolve('../../test_data/volvox.fa.gz.fai'),
+        locationType: 'LocalPathLocation',
       },
       gziLocation: {
         localPath: require.resolve('../../test_data/volvox.fa.gz.gzi'),
+        locationType: 'LocalPathLocation',
       },
     }),
   )

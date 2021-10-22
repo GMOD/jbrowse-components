@@ -33,7 +33,7 @@ export default function AboutDialog({
 }) {
   const classes = useStyles()
   const [info, setInfo] = useState<FileInfo>()
-  const [error, setError] = useState<Error>()
+  const [error, setError] = useState<unknown>()
   const session = getSession(config)
   const { rpcManager } = session
   const conf = readConfObject(config)
