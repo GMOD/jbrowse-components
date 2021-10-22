@@ -28,6 +28,7 @@ import { isAbortException, checkAbortSignal } from './aborting'
 export * from './types'
 export * from './aborting'
 export * from './when'
+export * from './range'
 
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'

@@ -13,6 +13,7 @@ export default [
   '@material-ui/data-grid',
 
   '@jbrowse/core/Plugin',
+  '@jbrowse/core/pluggableElementTypes',
   '@jbrowse/core/pluggableElementTypes/ViewType',
   '@jbrowse/core/pluggableElementTypes/AdapterType',
   '@jbrowse/core/pluggableElementTypes/DisplayType',
@@ -25,7 +26,6 @@ export default [
   '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType',
   '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType',
   '@jbrowse/core/pluggableElementTypes/renderers/RendererType',
-  '@jbrowse/core/pluggableElementTypes/renderers',
   '@jbrowse/core/configuration',
   '@jbrowse/core/util/types/mst',
   '@jbrowse/core/ui',
@@ -35,7 +35,6 @@ export default [
   '@jbrowse/core/util/Base1DViewModel',
   '@jbrowse/core/util/io',
   '@jbrowse/core/util/mst-reflection',
-  '@jbrowse/core/util/range',
   '@jbrowse/core/util/rxjs',
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail',
 
