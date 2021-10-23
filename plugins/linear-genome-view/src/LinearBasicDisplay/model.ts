@@ -93,6 +93,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
       return {
         renderProps() {
           const config = self.rendererConfig
+          console.log(config)
 
           return {
             ...superRenderProps(),

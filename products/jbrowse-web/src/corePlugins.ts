@@ -26,8 +26,8 @@ import TrixPlugin from '@jbrowse/plugin-trix'
 import GridBookmarkPlugin from '@jbrowse/plugin-grid-bookmark'
 
 const corePlugins = [
-  SVG,
   Canvas,
+  SVG,
   LinearGenomeView,
   Alignments,
   Authentication,
