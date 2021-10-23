@@ -2,7 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 
 export default ConfigurationSchema(
-  'SvgFeatureRenderer',
+  'CanvasFeatureRenderer',
   {
     color1: {
       type: 'color',
@@ -38,7 +38,7 @@ export default ConfigurationSchema(
       type: 'boolean',
       defaultValue: true,
     },
-    labels: ConfigurationSchema('SvgFeatureLabels', {
+    labels: ConfigurationSchema('CanvasFeatureLabels', {
       name: {
         type: 'string',
         description:
@@ -91,7 +91,7 @@ export default ConfigurationSchema(
     },
     maxHeight: {
       type: 'integer',
-      description: 'the maximum height to be used in a svg rendering',
+      description: 'the maximum height to be used in a canvas rendering',
       defaultValue: 600,
     },
     subParts: {

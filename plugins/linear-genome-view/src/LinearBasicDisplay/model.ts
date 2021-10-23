@@ -2,9 +2,13 @@ import { lazy } from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
-import VisibilityIcon from '@material-ui/icons/Visibility'
 import { types, getEnv, Instance } from 'mobx-state-tree'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
+
+// icons
+import VisibilityIcon from '@material-ui/icons/Visibility'
+
+// locals
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
 
 const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
@@ -30,41 +34,41 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
 
       get showLabels() {
         const showLabels = getConf(self, ['renderer', 'showLabels'])
-        return self.trackShowLabels !== undefined
-          ? self.trackShowLabels
-          : showLabels
+        const { trackShowLabels } = self
+        return trackShowLabels !== undefined ? trackShowLabels : showLabels
       },
 
       get showDescriptions() {
         const showDescriptions = getConf(self, ['renderer', 'showLabels'])
-        return self.trackShowDescriptions !== undefined
-          ? self.trackShowDescriptions
+        const { trackShowDescriptions } = self
+        return trackShowDescriptions !== undefined
+          ? trackShowDescriptions
           : showDescriptions
       },
 
       get maxHeight() {
         const maxHeight = getConf(self, ['renderer', 'maxHeight'])
-        return self.trackMaxHeight !== undefined
-          ? self.trackMaxHeight
-          : maxHeight
+        const { trackMaxHeight } = self
+        return trackMaxHeight !== undefined ? trackMaxHeight : maxHeight
       },
 
       get displayMode() {
         const displayMode = getConf(self, ['renderer', 'displayMode'])
-        return self.trackDisplayMode !== undefined
-          ? self.trackDisplayMode
-          : displayMode
+        const { trackDisplayMode } = self
+        return trackDisplayMode !== undefined ? trackDisplayMode : displayMode
       },
+    }))
+    .views(self => ({
       get rendererConfig() {
         const configBlob = getConf(self, ['renderer']) || {}
 
         return self.rendererType.configSchema.create(
           {
             ...configBlob,
-            showLabels: this.showLabels,
-            showDescriptions: this.showDescriptions,
-            displayMode: this.displayMode,
-            maxHeight: this.maxHeight,
+            showLabels: self.showLabels,
+            showDescriptions: self.showDescriptions,
+            displayMode: self.displayMode,
+            maxHeight: self.maxHeight,
           },
           getEnv(self),
         )
@@ -92,12 +96,9 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
       } = self
       return {
         renderProps() {
-          const config = self.rendererConfig
-          console.log(config)
-
           return {
             ...superRenderProps(),
-            config,
+            config: self.rendererConfig,
           }
         },
 
@@ -140,7 +141,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
             {
               label: 'Set max height',
               onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
+                getSession(self).queueDialog(doneCallback => [
                   SetMaxHeightDlg,
                   { model: self, handleClose: doneCallback },
                 ])
