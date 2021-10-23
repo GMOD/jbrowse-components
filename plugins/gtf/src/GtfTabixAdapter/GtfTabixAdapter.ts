@@ -9,24 +9,26 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
+import gtf from '@gmod/gtf'
 import { Observer, Observable } from 'rxjs'
 
 import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import MyConfigSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 type Strand = '+' | '-' | '.' | '?'
 interface FeatureLoc {
   [key: string]: unknown
-  seq_name: string
-  source: string
-  feature: string
-  start: number | null
-  end: number | null
-  score: number | null
+  start: number
+  end: number
   strand: Strand
-  frame: number | null
-  attributes: { [key: string]: string }
+  seq_name: string
+  child_features: FeatureLoc[][]
+  data: unknown
+  derived_features: unknown
+  attributes: { [key: string]: unknown[] }
 }
 
 interface LineFeature {
@@ -37,10 +39,14 @@ interface LineFeature {
 }
 
 export default class extends BaseFeatureDataAdapter {
-  protected gtf: TabixIndexedFile
+  protected gtfFile: TabixIndexedFile
   protected dontRedispatch: string[]
 
-  public constructor(config: Instance<typeof MyConfigSchema>) {
+  public constructor(
+    config: Instance<typeof MyConfigSchema>,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
     super(config)
     const gtfGzLocation = readConfObject(config, 'gtfGzLocation')
     const indexType = readConfObject(config, ['index', 'indexType'])
@@ -49,8 +55,8 @@ export default class extends BaseFeatureDataAdapter {
 
     this.dontRedispatch = dontRedispatch || ['chromosome', 'contig', 'region']
 
-    this.gtf = new TabixIndexedFile({
-      filehandle: openLocation(gtfGzLocation),
+    this.gtfFile = new TabixIndexedFile({
+      filehandle: openLocation(gtfGzLocation, this.pluginManager),
       csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
       tbiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
       chunkCacheSize: 50 * 2 ** 20,
@@ -58,11 +64,11 @@ export default class extends BaseFeatureDataAdapter {
     })
   }
   public async getRefNames(opts: BaseOptions = {}) {
-    return this.gtf.getReferenceSequenceNames(opts)
+    return this.gtfFile.getReferenceSequenceNames(opts)
   }
 
   public async getHeader() {
-    return this.gtf.getHeader()
+    return this.gtfFile.getHeader()
   }
 
   public getFeatures(
@@ -70,7 +76,7 @@ export default class extends BaseFeatureDataAdapter {
     opts: BaseOptions = {},
   ): Observable<Feature> {
     return ObservableCreate<Feature>(async observer => {
-      const metadata = await this.gtf.getMetadata()
+      const metadata = await this.gtfFile.getMetadata()
       this.getFeaturesHelper(query, opts, metadata, observer, true)
     }, opts.signal)
   }
@@ -86,7 +92,7 @@ export default class extends BaseFeatureDataAdapter {
     try {
       const lines: LineFeature[] = []
 
-      await this.gtf.getLines(
+      await this.gtfFile.getLines(
         query.refName,
         query.start,
         query.end,
@@ -97,12 +103,12 @@ export default class extends BaseFeatureDataAdapter {
       if (allowRedispatch && lines.length) {
         let minStart = Infinity
         let maxEnd = -Infinity
-
         lines.forEach(line => {
           const featureType = line.fields[2]
-
+          // only expand redispatch range if feature is not a "dontRedispatch" type
+          // skips large regions like chromosome,region
           if (!this.dontRedispatch.includes(featureType)) {
-            const start = line.start - 1
+            const start = line.start - 1 // gff is 1-based
             if (start < minStart) {
               minStart = start
             }
@@ -112,6 +118,12 @@ export default class extends BaseFeatureDataAdapter {
           }
         })
         if (maxEnd > query.end || minStart < query.start) {
+          // console.log(
+          //   `redispatching ${query.start}-${query.end} => ${minStart}-${maxEnd}`,
+          // )
+          // make a new feature callback to only return top-level features
+          // in the original query range
+
           this.getFeaturesHelper(
             { ...query, start: minStart, end: maxEnd },
             opts,
@@ -124,25 +136,26 @@ export default class extends BaseFeatureDataAdapter {
         }
       }
 
-      lines.forEach((lineRecord: LineFeature) => {
-        if (lineRecord.fields[8] && lineRecord.fields[8] !== '.') {
-          if (!lineRecord.fields[8].includes('_lineHash')) {
-            lineRecord.fields[8] += `;_lineHash ${lineRecord.lineHash}`
+      const gtfLines = lines
+        .map((lineRecord: LineFeature) => {
+          if (lineRecord.fields[8] && lineRecord.fields[8] !== '.') {
+            if (!lineRecord.fields[8].includes('_lineHash')) {
+              lineRecord.fields[8] += ` _lineHash ${lineRecord.lineHash};`
+            }
+          } else {
+            lineRecord.fields[8] = `_lineHash ${lineRecord.lineHash};`
           }
-        } else {
-          lineRecord.fields[8] = `_lineHash ${lineRecord.lineHash}`
-        }
-      })
+          return lineRecord.fields.join('\t')
+        })
+        .join('\n')
 
-      // console.log('lines', lines)
-      // console.log('gtf lines', gtfLines)
-      // console.log('==================')
-      // console.log(typeof gtfLines)
-      // console.log(typeof gtfLines)
-      // const features = this.gtfParseStringSync(gtfLines) as FeatureLoc[][]
-      // this.gtfParseLineFeatures(lines)
-      const features = this.gtfParseStringSync(lines)
-      // TODO: fix bug with features not being parsed correctly
+      const features = gtf.parseStringSync(gtfLines, {
+        parseFeatures: true,
+        parseComments: false,
+        parseDirectives: false,
+        parseSequences: false,
+      }) as FeatureLoc[][]
+
       features.forEach(featureLocs =>
         this.formatFeatures(featureLocs).forEach(f => {
           if (
@@ -163,6 +176,20 @@ export default class extends BaseFeatureDataAdapter {
     }
   }
 
+  private parseLine(
+    columnNumbers: { start: number; end: number },
+    line: string,
+    fileOffset: number,
+  ) {
+    const fields = line.split('\t')
+
+    return {
+      start: +fields[columnNumbers.start - 1],
+      end: +fields[columnNumbers.end - 1],
+      lineHash: fileOffset,
+      fields,
+    }
+  }
   private formatFeatures(featureLocs: FeatureLoc[]) {
     return featureLocs.map(
       featureLoc =>
@@ -177,12 +204,12 @@ export default class extends BaseFeatureDataAdapter {
     const f: Record<string, unknown> = { ...data }
     ;(f.start as number) -= 1 // convert to interbase
     f.strand = { '+': 1, '-': -1, '.': 0, '?': undefined }[data.strand] // convert strand
-    f.phase = !!Number(data.phase) ? Number(data.phase) : null
+    f.frame = !!Number(data.frame) ? Number(data.frame) : null
     f.refName = data.seq_name
     if (data.score === null) {
       delete f.score
     }
-    if (data.phase === null) {
+    if (data.frame === null) {
       delete f.score
     }
     const defaultFields = [
@@ -190,9 +217,9 @@ export default class extends BaseFeatureDataAdapter {
       'end',
       'seq_name',
       'score',
-      'feature',
+      'featureType',
       'source',
-      'phase',
+      'frame',
       'strand',
     ]
     Object.keys(data.attributes).forEach(a => {
@@ -212,6 +239,14 @@ export default class extends BaseFeatureDataAdapter {
     })
     f.refName = f.seq_name
 
+    // the SimpleFeature constructor takes care of recursively inflating subfeatures
+    if (data.child_features && data.child_features.length) {
+      f.subfeatures = data.child_features
+        .map(childLocs => childLocs.map(childLoc => this.featureData(childLoc)))
+        .flat()
+    }
+
+    delete f.child_features
     delete f.data
     delete f.derived_features
     delete f._linehash
@@ -220,101 +255,5 @@ export default class extends BaseFeatureDataAdapter {
     return f
   }
 
-  private parseLine(
-    columnNumbers: { start: number; end: number },
-    line: string,
-    fileOffset: number,
-  ) {
-    const fields = line.split('\t')
-
-    return {
-      start: +fields[columnNumbers.start - 1],
-      end: +fields[columnNumbers.end - 1],
-      lineHash: fileOffset,
-      fields,
-    }
-  }
-
-  private gtfParseStringSync(linesFeatures: LineFeature[]) {
-    return linesFeatures.map(lineFeature => {
-      const { fields } = lineFeature
-      const [
-        seq_name,
-        source,
-        feature,
-        start,
-        end,
-        score,
-        strand,
-        frame,
-        attributes,
-      ] = fields
-      // add line hash to attributes
-
-      const col9Attrs = attributes
-        ? Object.fromEntries(
-            attributes
-              .split(';')
-              .map(f => f.trim())
-              .filter(f => !!f)
-              .map(f => f.split(' '))
-              .map(([key, val]) => {
-                return [
-                  key.trim(),
-                  val.trim().split(',').join(' ').replace(/("|')/g, ''),
-                ]
-              }),
-          )
-        : {}
-      return [
-        {
-          seq_name,
-          source,
-          feature,
-          start: start !== '.' ? +start : null,
-          end: end !== '.' ? +end : null,
-          score: score !== '.' ? +score : null,
-          strand: strand as Strand,
-          frame: frame !== '.' ? +frame : null,
-          attributes: col9Attrs,
-        },
-      ]
-    })
-  }
-  // private gtfParseStringSync(str: string) {
-  //   // TODO: fix bug with features not being parsed correctly
-
-  //   if (!str) {
-  //     return []
-  //   }
-  //   const [
-  //     seq_name,
-  //     source,
-  //     feature,
-  //     start,
-  //     end,
-  //     score,
-  //     strand,
-  //     frame,
-  //     attributes,
-  //   ] = str.split('\t')
-
-  //   // console.log(str.split('\n'))
-  //   const attrs = attributes.split(';').map(attr => attr.split(''))
-  //   // console.log(attrs)
-  //   const items = {
-  //     seq_name: seq_name,
-  //     source: source,
-  //     feature: feature,
-  //     start: start,
-  //     end: end,
-  //     score: score,
-  //     strand: strand,
-  //     frame: frame,
-  //     attributes: attrs,
-  //   }
-
-  //   return items
-  // }
   public freeResources(/* { region } */) {}
 }
