@@ -6,12 +6,8 @@ import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import FeatureGlyph from './FeatureGlyph'
-import SvgOverlay from './SvgOverlay'
+import { OverlayRect } from './SvgOverlay'
 import { chooseGlyphComponent, layOut } from './util'
-
-const renderingStyle = {
-  position: 'relative',
-}
 
 // used to make features have a little padding for their labels
 const nameWidthPadding = 2
@@ -175,17 +171,6 @@ function SvgFeatureRendering(props) {
     config,
     displayModel,
     exportSVG,
-  } = props
-  const [region] = regions || []
-  const width = (region.end - region.start) / bpPerPx
-  const displayMode = readConfObject(config, 'displayMode')
-
-  const ref = useRef()
-  const [mouseIsDown, setMouseIsDown] = useState(false)
-  const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
-    useState(false)
-  const [height, setHeight] = useState(0)
-  const {
     onMouseOut,
     onMouseDown,
     onMouseLeave,
@@ -194,7 +179,22 @@ function SvgFeatureRendering(props) {
     onMouseMove,
     onMouseUp,
     onClick,
+    ...handlers
   } = props
+  const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
+    displayModel
+  const [region] = regions || []
+  const width = (region.end - region.start) / bpPerPx
+  const displayMode = readConfObject(config, 'displayMode')
+  const [highlightRect, setHighlightRect] = useState()
+  const [mouseoverRect, setMouseoverRect] = useState()
+
+  const ref = useRef()
+  const [mouseIsDown, setMouseIsDown] = useState(false)
+  const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
+    useState(false)
+  const [height, setHeight] = useState(0)
+  const mouseoverFeatureId = featureIdUnderMouse || contextMenuFeature?.id()
 
   const mouseDown = useCallback(
     event => {
@@ -272,9 +272,12 @@ function SvgFeatureRendering(props) {
       }
       let offsetX = 0
       let offsetY = 0
-      if (ref.current) {
-        offsetX = ref.current.getBoundingClientRect().left
-        offsetY = ref.current.getBoundingClientRect().top
+
+      const canvas = ref.current
+      if (canvas) {
+        const { left, top } = canvas.getBoundingClientRect()
+        offsetX = left
+        offsetY = top
       }
       offsetX = event.clientX - offsetX
       offsetY = event.clientY - offsetY
@@ -316,9 +319,116 @@ function SvgFeatureRendering(props) {
     [movedDuringLastMouseDown, onClick],
   )
 
+  function onFeatureMouseDown(
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+  ) {
+    const { onFeatureMouseDown: handler } = handlers
+    if (!(handler && mouseoverFeatureId)) {
+      return undefined
+    }
+    return handler(event, mouseoverFeatureId)
+  }
+
+  function onFeatureMouseEnter(
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+  ) {
+    const { onFeatureMouseEnter: handler } = handlers
+    if (!(handler && mouseoverFeatureId)) {
+      return undefined
+    }
+    return handler(event, mouseoverFeatureId)
+  }
+
+  function onFeatureMouseOut(
+    event:
+      | React.MouseEvent<SVGRectElement, MouseEvent>
+      | React.FocusEvent<SVGRectElement>,
+  ) {
+    const { onFeatureMouseOut: handler } = handlers
+    if (!(handler && mouseoverFeatureId)) {
+      return undefined
+    }
+    return handler(event, mouseoverFeatureId)
+  }
+
+  function onFeatureMouseOver(
+    event:
+      | React.MouseEvent<SVGRectElement, MouseEvent>
+      | React.FocusEvent<SVGRectElement>,
+  ) {
+    const { onFeatureMouseOver: handler } = handlers
+    if (!(handler && mouseoverFeatureId)) {
+      return undefined
+    }
+    return handler(event, mouseoverFeatureId)
+  }
+
+  function onFeatureMouseUp(
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+  ) {
+    const { onFeatureMouseUp: handler } = handlers
+    if (!(handler && mouseoverFeatureId)) {
+      return undefined
+    }
+    return handler(event, mouseoverFeatureId)
+  }
+
+  function onFeatureMouseLeave(
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+  ) {
+    const { onFeatureMouseLeave: handler } = handlers
+    if (!(handler && mouseoverFeatureId)) {
+      return undefined
+    }
+    return handler(event, mouseoverFeatureId)
+  }
+
+  function onFeatureMouseMove(
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+  ) {
+    const { onFeatureMouseMove: handler } = handlers
+    if (!(handler && mouseoverFeatureId)) {
+      return undefined
+    }
+    return handler(event, mouseoverFeatureId)
+  }
+
+  function onFeatureClick(event: React.MouseEvent<SVGRectElement, MouseEvent>) {
+    if (movedDuringLastMouseDown) {
+      return undefined
+    }
+    const { onFeatureClick: handler } = handlers
+    if (!(handler && mouseoverFeatureId)) {
+      return undefined
+    }
+    event.stopPropagation()
+    return handler(event, mouseoverFeatureId)
+  }
+
+  function onFeatureContextMenu(
+    event: React.MouseEvent<SVGRectElement, MouseEvent>,
+  ) {
+    const { onFeatureContextMenu: handler } = handlers
+    if (!(handler && mouseoverFeatureId)) {
+      return undefined
+    }
+    return handler(event, mouseoverFeatureId)
+  }
+
   useEffect(() => {
     setHeight(layout.getTotalHeight())
   }, [layout])
+
+  useEffect(() => {
+    setMouseoverRect(
+      displayModel.getFeatureByID?.(blockKey, featureIdUnderMouse),
+    )
+  }, [blockKey, displayModel, featureIdUnderMouse])
+
+  useEffect(() => {
+    setHighlightRect(displayModel.getFeatureByID?.(blockKey, selectedFeatureId))
+  }, [blockKey, displayModel, selectedFeatureId])
+
 
   if (exportSVG) {
     return (
@@ -331,7 +441,7 @@ function SvgFeatureRendering(props) {
     )
   }
   return (
-    <div style={renderingStyle}>
+    <div style={{ position: 'relative' }}>
       <svg
         ref={ref}
         className="SvgFeatureRendering"
@@ -356,7 +466,36 @@ function SvgFeatureRendering(props) {
           region={region}
           movedDuringLastMouseDown={movedDuringLastMouseDown}
         />
-        <SvgOverlay {...props} region={region} />
+        {mouseoverRect ? (
+          <OverlayRect
+            rect={mouseoverRect}
+            region={region}
+            bpPerPx={bpPerPx}
+            fill="#000"
+            fillOpacity="0.2"
+            onMouseDown={onFeatureMouseDown}
+            onMouseEnter={onFeatureMouseEnter}
+            onMouseOut={onFeatureMouseOut}
+            onMouseOver={onFeatureMouseOver}
+            onMouseUp={onFeatureMouseUp}
+            onMouseLeave={onFeatureMouseLeave}
+            onMouseMove={onFeatureMouseMove}
+            onClick={onFeatureClick}
+            onContextMenu={onFeatureContextMenu}
+            onFocus={onFeatureMouseOver}
+            onBlur={onFeatureMouseOut}
+            data-testid={mouseoverFeatureId}
+          />
+        ) : null}
+        {highlightRect ? (
+          <OverlayRect
+            rect={highlightRect}
+            region={region}
+            bpPerPx={bpPerPx}
+            stroke="#00b8ff"
+            fill="none"
+          />
+        ) : null}
       </svg>
     </div>
   )
@@ -379,6 +518,7 @@ SvgFeatureRendering.propTypes = {
     configuration: ReactPropTypes.shape({}),
     getFeatureOverlapping: ReactPropTypes.func,
     selectedFeatureId: ReactPropTypes.string,
+    contextMenuFeature: ReactPropTypes.shape({ id: ReactPropTypes.func }),
     featureIdUnderMouse: ReactPropTypes.string,
   }),
 
