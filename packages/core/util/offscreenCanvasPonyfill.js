@@ -97,11 +97,14 @@ export class PonyfillOffscreenContext {
 
   fillRect(...args) {
     const [x, y, w, h] = args
+
+    // avoid rendering offscreen contents
     if (x > this.width || x + w < 0) {
       return
     }
+
     const nx = Math.max(x, 0)
-    const nw = nx + w > this.width ? this.width - nx : w
+    const nw = w - (nx - x)
     this.commands.push({ type: 'fillRect', args: [nx, y, nw, h] })
   }
 

@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { makeStyles } from '@material-ui/core/styles'
 import {
   Button,
   Dialog,
@@ -11,6 +10,7 @@ import {
   FormControlLabel,
   CircularProgress,
   Typography,
+  makeStyles,
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 import { LinearGenomeViewModel as LGV } from '..'

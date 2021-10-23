@@ -165,7 +165,7 @@
           "type": "LinearBasicDisplay",
           "displayId": "nclist_genes_hg19_linear",
           "renderer": {
-            "type": "SvgFeatureRenderer",
+            "type": "CanvasFeatureRenderer",
             "labels": {
               "description": "jexl:get(feature,'gene_name')"
             }
@@ -275,7 +275,7 @@
             "labels": {
               "name": "jexl:get(feature,'genomicDnaChange')"
             },
-            "type": "SvgFeatureRenderer"
+            "type": "CanvasFeatureRenderer"
           }
         }
       ]
@@ -394,7 +394,7 @@
           "type": "LinearBasicDisplay",
           "displayId": "gencode_nclist_hg38_linear",
           "renderer": {
-            "type": "SvgFeatureRenderer",
+            "type": "CanvasFeatureRenderer",
             "labels": {
               "description": "jexl:get(feature,'gene_name')"
             }
@@ -448,7 +448,7 @@
           "type": "LinearBasicDisplay",
           "displayId": "mane_hg38_linear",
           "renderer": {
-            "type": "SvgFeatureRenderer",
+            "type": "CanvasFeatureRenderer",
             "labels": {
               "description": "jexl:get(feature,'geneName2')"
             }
@@ -2716,7 +2716,7 @@
           "type": "LinearBasicDisplay",
           "displayId": "gencode_nclist_v36_hg37_lift_linear",
           "renderer": {
-            "type": "SvgFeatureRenderer",
+            "type": "CanvasFeatureRenderer",
             "labels": {
               "description": "jexl:get(feature,'gene_name')"
             }
@@ -2749,7 +2749,7 @@
           "type": "LinearBasicDisplay",
           "displayId": "gencode_nclist_v36_hg38_linear",
           "renderer": {
-            "type": "SvgFeatureRenderer",
+            "type": "CanvasFeatureRenderer",
             "labels": {
               "description": "jexl:get(feature,'gene_name')"
             }
@@ -3394,7 +3394,7 @@
           "type": "LinearBasicDisplay",
           "displayId": "testing1",
           "renderer": {
-            "type": "SvgFeatureRenderer",
+            "type": "CanvasFeatureRenderer",
             "labels": {
               "description": "jexl:get(feature,'ucscLabel')"
             }
