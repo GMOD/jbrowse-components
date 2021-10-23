@@ -15,6 +15,7 @@ import {
 import FileSelector from '@jbrowse/core/ui/FileSelector'
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import { FileLocation } from '@jbrowse/core/util/types'
+import { ipcRenderer } from 'electron'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -37,35 +38,6 @@ const useStyles = makeStyles(theme => ({
     overflow: 'auto',
   },
 }))
-
-function AdapterSelector({
-  adapterSelection,
-  setAdapterSelection,
-  adapterTypes,
-}: {
-  adapterSelection: string
-  setAdapterSelection: Function
-  adapterTypes: string[]
-}) {
-  return (
-    <TextField
-      value={adapterSelection}
-      label="Type"
-      select
-      helperText="Type of adapter to use"
-      fullWidth
-      onChange={event => {
-        setAdapterSelection(event.target.value)
-      }}
-    >
-      {adapterTypes.map(str => (
-        <MenuItem key={str} value={str}>
-          {str}
-        </MenuItem>
-      ))}
-    </TextField>
-  )
-}
 
 function AdapterInput({
   adapterSelection,
@@ -92,10 +64,7 @@ function AdapterInput({
   setTwoBitLocation: Function
   setChromSizesLocation: Function
 }) {
-  if (
-    adapterSelection === 'IndexedFastaAdapter' ||
-    adapterSelection === 'BgzipFastaAdapter'
-  ) {
+  if (adapterSelection === 'IndexedFastaAdapter') {
     return (
       <Grid container spacing={2}>
         <Grid item>
@@ -112,15 +81,33 @@ function AdapterInput({
             setLocation={loc => setFaiLocation(loc)}
           />
         </Grid>
-        {adapterSelection === 'BgzipFastaAdapter' ? (
-          <Grid item>
-            <FileSelector
-              name="gziLocation"
-              location={gziLocation}
-              setLocation={loc => setGziLocation(loc)}
-            />
-          </Grid>
-        ) : null}
+      </Grid>
+    )
+  }
+  if (adapterSelection === 'BgzipFastaAdapter') {
+    return (
+      <Grid container spacing={2}>
+        <Grid item>
+          <FileSelector
+            name="fastaLocation"
+            location={fastaLocation}
+            setLocation={loc => setFastaLocation(loc)}
+          />
+        </Grid>
+        <Grid item>
+          <FileSelector
+            name="faiLocation"
+            location={faiLocation}
+            setLocation={loc => setFaiLocation(loc)}
+          />
+        </Grid>
+        <Grid item>
+          <FileSelector
+            name="gziLocation"
+            location={gziLocation}
+            setLocation={loc => setGziLocation(loc)}
+          />
+        </Grid>
       </Grid>
     )
   }
@@ -146,6 +133,20 @@ function AdapterInput({
     )
   }
 
+  if (adapterSelection === 'FastaAdapter') {
+    return (
+      <Grid container spacing={2}>
+        <Grid item>
+          <FileSelector
+            name="fastaLocation"
+            location={fastaLocation}
+            setLocation={loc => setFastaLocation(loc)}
+          />
+        </Grid>
+      </Grid>
+    )
+  }
+
   return null
 }
 
@@ -161,11 +162,13 @@ const OpenSequenceDialog = ({
   const adapterTypes = [
     'IndexedFastaAdapter',
     'BgzipFastaAdapter',
+    'FastaAdapter',
     'TwoBitAdapter',
   ]
   const [error, setError] = useState<unknown>()
   const [assemblyName, setAssemblyName] = useState('')
   const [assemblyDisplayName, setAssemblyDisplayName] = useState('')
+  const [message, setMessage] = useState('')
   const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0])
   const [fastaLocation, setFastaLocation] = useState(blank)
   const [faiLocation, setFaiLocation] = useState(blank)
@@ -173,7 +176,26 @@ const OpenSequenceDialog = ({
   const [twoBitLocation, setTwoBitLocation] = useState(blank)
   const [chromSizesLocation, setChromSizesLocation] = useState(blank)
 
-  function createAssemblyConfig() {
+  async function createAssemblyConfig() {
+    if (adapterSelection === 'FastaAdapter') {
+      setMessage('Creating .fai for file...')
+      const faiLocation = await ipcRenderer.invoke('indexFasta', fastaLocation)
+      setMessage('Finished creating fasta file')
+      setTimeout(() => {
+        setMessage('')
+      }, 1000)
+      return {
+        name: assemblyName,
+        displayName: assemblyDisplayName,
+        sequence: {
+          adapter: {
+            type: 'IndexedFastaAdapter',
+            fastaLocation,
+            faiLocation: { localPath: faiLocation },
+          },
+        },
+      }
+    }
     if (adapterSelection === 'IndexedFastaAdapter') {
       return {
         name: assemblyName,
@@ -224,30 +246,47 @@ const OpenSequenceDialog = ({
             Use this dialog to open a new indexed FASTA file, bgzipped+indexed
             FASTA file, or .2bit file of a genome assembly or other sequence
           </Typography>
+          {message ? <Typography>{message}</Typography> : null}
           <Paper className={classes.paper}>
             <TextField
               id="assembly-name"
               inputProps={{ 'data-testid': 'assembly-name' }}
+              defaultValue=""
               label="Assembly name"
               helperText="The assembly name e.g. hg38"
               variant="outlined"
               value={assemblyName}
               onChange={event => setAssemblyName(event.target.value)}
             />
+
             <TextField
               id="assembly-name"
               inputProps={{ 'data-testid': 'assembly-display-name' }}
               label="Assembly display name"
               helperText='A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
               variant="outlined"
+              defaultValue=""
               value={assemblyDisplayName}
               onChange={event => setAssemblyDisplayName(event.target.value)}
             />
-            <AdapterSelector
-              adapterSelection={adapterSelection}
-              setAdapterSelection={setAdapterSelection}
-              adapterTypes={adapterTypes}
-            />
+
+            <TextField
+              value={adapterSelection}
+              label="Type"
+              select
+              helperText="Type of adapter to use"
+              fullWidth
+              onChange={event => {
+                setAdapterSelection(event.target.value)
+              }}
+            >
+              {adapterTypes.map(str => (
+                <MenuItem key={str} value={str}>
+                  {str}
+                </MenuItem>
+              ))}
+            </TextField>
+
             <div className={classes.paperContent}>
               <AdapterInput
                 adapterSelection={adapterSelection}
@@ -273,7 +312,7 @@ const OpenSequenceDialog = ({
         <Button
           onClick={async () => {
             try {
-              const assemblyConf = createAssemblyConfig()
+              const assemblyConf = await createAssemblyConfig()
 
               await onClose({
                 ...assemblyConf,

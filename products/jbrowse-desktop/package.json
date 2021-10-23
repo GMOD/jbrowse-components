@@ -76,6 +76,7 @@
     "electron-is-dev": "^1.1.0",
     "electron-updater": "^4.3.9",
     "electron-window-state": "^5.0.3",
+    "follow-redirects": "^1.14.1",
     "fontsource-roboto": "3.0.3",
     "json-stable-stringify": "^1.0.1",
     "librpc-web-mod": "^1.1.2",

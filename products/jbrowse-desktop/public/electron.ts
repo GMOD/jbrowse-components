@@ -5,8 +5,10 @@ import fs from 'fs'
 import path from 'path'
 import url from 'url'
 import windowStateKeeper from 'electron-window-state'
-import { autoUpdater } from 'electron-updater'
 import fetch from 'node-fetch'
+import { getFileStream, generateFastaIndex } from './generateFastaIndex'
+
+import { autoUpdater } from 'electron-updater'
 
 const { unlink, readFile, copyFile, readdir, writeFile } = fs.promises
 
@@ -50,6 +52,7 @@ const userData = app.getPath('userData')
 const recentSessionsPath = path.join(userData, 'recent_sessions.json')
 const quickstartDir = path.join(userData, 'quickstart')
 const thumbnailDir = path.join(userData, 'thumbnails')
+const faiDir = path.join(userData, 'fai')
 const autosaveDir = path.join(userData, 'autosaved')
 const jbrowseDocDir = path.join(app.getPath('documents'), 'JBrowse')
 const defaultSavePath = path.join(jbrowseDocDir, 'untitled.jbrowse')
@@ -71,12 +74,20 @@ function getAutosavePath(sessionName: string, ext = 'json') {
   return path.join(autosaveDir, `${encodeURIComponent(sessionName)}.${ext}`)
 }
 
+function getFaiPath(name: string) {
+  return path.join(faiDir, `${encodeURIComponent(name)}.fai`)
+}
+
 if (!fs.existsSync(recentSessionsPath)) {
   fs.writeFileSync(recentSessionsPath, stringify([]), 'utf8')
 }
 
 if (!fs.existsSync(quickstartDir)) {
   fs.mkdirSync(quickstartDir, { recursive: true })
+}
+
+if (!fs.existsSync(faiDir)) {
+  fs.mkdirSync(faiDir, { recursive: true })
 }
 
 if (!fs.existsSync(thumbnailDir)) {
@@ -300,6 +311,18 @@ app.on('activate', () => {
 ipcMain.handle('quit', () => {
   app.quit()
 })
+
+ipcMain.handle(
+  'indexFasta',
+  async (event: unknown, location: { uri: string } | { localPath: string }) => {
+    const filename = 'localPath' in location ? location.localPath : location.uri
+    const faiPath = getFaiPath(path.basename(filename) + Date.now() + '.fai')
+    const stream = await getFileStream(location)
+    const faiData = await generateFastaIndex(stream)
+    await writeFile(faiPath, faiData, 'utf8')
+    return faiPath
+  },
+)
 
 ipcMain.handle(
   'listSessions',
