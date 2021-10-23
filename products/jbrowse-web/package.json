@@ -38,6 +38,7 @@
     "@jbrowse/plugin-spreadsheet-view": "^1.5.0",
     "@jbrowse/plugin-sv-inspector": "^1.5.0",
     "@jbrowse/plugin-svg": "^1.5.0",
+    "@jbrowse/plugin-canvas": "^1.5.0",
     "@jbrowse/plugin-trackhub-registry": "^1.5.0",
     "@jbrowse/plugin-trix": "^1.5.0",
     "@jbrowse/plugin-variants": "^1.5.0",

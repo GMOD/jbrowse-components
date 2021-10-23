@@ -15,6 +15,7 @@ import Menus from '@jbrowse/plugin-menus'
 import RDF from '@jbrowse/plugin-rdf'
 import Sequence from '@jbrowse/plugin-sequence'
 import SVG from '@jbrowse/plugin-svg'
+import Canvas from '@jbrowse/plugin-canvas'
 import TrackHubRegistry from '@jbrowse/plugin-trackhub-registry'
 import Variants from '@jbrowse/plugin-variants'
 import Wiggle from '@jbrowse/plugin-wiggle'
@@ -26,6 +27,7 @@ import GridBookmarkPlugin from '@jbrowse/plugin-grid-bookmark'
 
 const corePlugins = [
   SVG,
+  Canvas,
   LinearGenomeView,
   Alignments,
   Authentication,
