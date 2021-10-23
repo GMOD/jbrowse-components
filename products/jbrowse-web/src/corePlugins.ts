@@ -7,7 +7,7 @@ import Config from '@jbrowse/plugin-config'
 import DataManagement from '@jbrowse/plugin-data-management'
 import DotplotView from '@jbrowse/plugin-dotplot-view'
 import Gff3Tabix from '@jbrowse/plugin-gff3'
-import GtfTabix from '@jbrowse/plugin-gtf'
+import GtfPlugin from '@jbrowse/plugin-gtf'
 import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
 import LinearComparativeView from '@jbrowse/plugin-linear-comparative-view'
@@ -36,7 +36,7 @@ const corePlugins = [
   DataManagement,
   DotplotView,
   Gff3Tabix,
-  GtfTabix,
+  GtfPlugin,
   LegacyJBrowse,
   LinearComparativeView,
   Lollipop,
