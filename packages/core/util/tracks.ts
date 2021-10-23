@@ -163,7 +163,7 @@ export function guessAdapter(
   if (/\.gtf?\.b?gz$/i.test(fileName) || adapterHint === 'GtfTabixAdapter') {
     return {
       type: 'GtfTabixAdapter',
-      gffGzLocation: file,
+      gtfGzLocation: file,
       index: {
         location: index || makeIndex(file, '.tbi'),
         indexType: makeIndexType(indexName, 'CSI', 'TBI'),
@@ -316,6 +316,7 @@ export function guessTrackType(adapterType: string): string {
     VcfTabixAdapter: 'VariantTrack',
     HicAdapter: 'HicTrack',
     PAFAdapter: 'SyntenyTrack',
+    GtfTabixAdapter: 'GtfTabixAdapter',
   }
   return known[adapterType] || 'FeatureTrack'
 }
