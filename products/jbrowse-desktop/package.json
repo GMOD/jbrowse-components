@@ -1,18 +1,22 @@
 {
   "name": "@jbrowse/desktop",
-  "version": "1.1.0",
+  "version": "1.5.0",
   "description": "JBrowse desktop application specialized to inspect structural variants",
   "license": "Apache-2.0",
   "homepage": "./",
   "author": "JBrowse Team",
   "main": "public/electron.js",
   "dir": "src",
+  "repository": "https://github.com/GMOD/jbrowse-components.git",
   "scripts": {
     "start": "concurrently \"yarn serve\" \"wait-on http://localhost:3000 && yarn develop\"",
     "serve": "cross-env BROWSER=none yarn cra-start",
     "develop": "electron .",
     "cra-start": "rescripts start",
     "test": "rescripts test",
+    "electron-ts": "yarn tsc --strict --esModuleInterop --skipLibCheck public/electron.ts",
+    "prebuild": "npm run electron-ts",
+    "predevelop": "npm run electron-ts",
     "build": "rescripts build",
     "build-electron": "yarn build && electron-builder build --windows --mac --linux",
     "build-electron:win": "yarn build && electron-builder build --windows",
@@ -36,60 +40,67 @@
     "build-electron-only-unpacked:linux": "electron-builder build -l --dir"
   },
   "dependencies": {
-    "@jbrowse/core": "^1.1.0",
-    "@jbrowse/plugin-alignments": "^1.1.0",
-    "@jbrowse/plugin-bed": "^1.1.0",
-    "@jbrowse/plugin-breakpoint-split-view": "^1.1.0",
-    "@jbrowse/plugin-circular-view": "^1.1.0",
-    "@jbrowse/plugin-config": "^1.1.0",
-    "@jbrowse/plugin-data-management": "^1.1.0",
-    "@jbrowse/plugin-dotplot-view": "^1.1.0",
-    "@jbrowse/plugin-filtering": "^1.1.0",
-    "@jbrowse/plugin-gff3": "^1.0.4",
-    "@jbrowse/plugin-hic": "^1.1.0",
-    "@jbrowse/plugin-legacy-jbrowse": "^1.0.4",
-    "@jbrowse/plugin-linear-comparative-view": "^1.1.0",
-    "@jbrowse/plugin-linear-genome-view": "^1.1.0",
-    "@jbrowse/plugin-lollipop": "^1.1.0",
-    "@jbrowse/plugin-menus": "^1.1.0",
-    "@jbrowse/plugin-rdf": "^1.0.2",
-    "@jbrowse/plugin-sequence": "^1.1.0",
-    "@jbrowse/plugin-spreadsheet-view": "^1.1.0",
-    "@jbrowse/plugin-sv-inspector": "^1.1.0",
-    "@jbrowse/plugin-svg": "^1.1.0",
-    "@jbrowse/plugin-trackhub-registry": "^1.0.3",
-    "@jbrowse/plugin-variants": "^1.1.0",
-    "@jbrowse/plugin-wiggle": "^1.1.0",
-    "@librpc/web": "rbuels/librpc-web#737bb9706762a52a87169a12c9b59fb241febab0",
-    "@material-ui/core": "^4.9.5",
-    "@material-ui/data-grid": "^4.0.0-alpha.20",
+    "@jbrowse/core": "^1.5.0",
+    "@jbrowse/plugin-alignments": "^1.5.0",
+    "@jbrowse/plugin-authentication": "^1.5.0",
+    "@jbrowse/plugin-bed": "^1.5.0",
+    "@jbrowse/plugin-breakpoint-split-view": "^1.5.0",
+    "@jbrowse/plugin-circular-view": "^1.5.0",
+    "@jbrowse/plugin-config": "^1.5.0",
+    "@jbrowse/plugin-data-management": "^1.5.0",
+    "@jbrowse/plugin-dotplot-view": "^1.5.0",
+    "@jbrowse/plugin-gff3": "^1.5.0",
+    "@jbrowse/plugin-grid-bookmark": "^1.5.0",
+    "@jbrowse/plugin-hic": "^1.5.0",
+    "@jbrowse/plugin-legacy-jbrowse": "^1.5.0",
+    "@jbrowse/plugin-linear-comparative-view": "^1.5.0",
+    "@jbrowse/plugin-linear-genome-view": "^1.5.0",
+    "@jbrowse/plugin-lollipop": "^1.5.0",
+    "@jbrowse/plugin-menus": "^1.5.0",
+    "@jbrowse/plugin-rdf": "^1.5.0",
+    "@jbrowse/plugin-sequence": "^1.5.0",
+    "@jbrowse/plugin-spreadsheet-view": "^1.5.0",
+    "@jbrowse/plugin-sv-inspector": "^1.5.0",
+    "@jbrowse/plugin-svg": "^1.5.0",
+    "@jbrowse/plugin-trackhub-registry": "^1.5.0",
+    "@jbrowse/plugin-trix": "^1.5.0",
+    "@jbrowse/plugin-variants": "^1.5.0",
+    "@jbrowse/plugin-wiggle": "^1.5.0",
+    "@material-ui/core": "^4.12.2",
     "@material-ui/icons": "^4.0.0",
     "@material-ui/lab": "^4.0.0-alpha.45",
+    "@mui/x-data-grid": "^4.0.1",
     "clsx": "^1.0.4",
     "deepmerge": "^4.2.2",
-    "electron-better-ipc-extra": "garrettjstevens/electron-better-ipc-extra#c8648bdea088312107ffc4d176cc5e6ae67a7cfd",
     "electron-debug": "^3.0.1",
     "electron-is-dev": "^1.1.0",
+    "electron-updater": "^4.3.9",
+    "electron-window-state": "^5.0.3",
     "fontsource-roboto": "3.0.3",
     "json-stable-stringify": "^1.0.1",
+    "librpc-web-mod": "^1.1.2",
     "mobx": "^5.10.1",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
-    "mst-middlewares": "^3.10.2",
     "node-fetch": "^2.6.0",
     "prop-types": "^15.7.2",
     "raf": "^3.4.1",
-    "react": "^16.8.0",
-    "react-dom": "^16.8.0",
-    "react-error-boundary": "^1.2.5",
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0",
+    "react-error-boundary": "^3.0.0",
     "react-sizeme": "^2.6.7",
-    "rxjs": "^6.5.2"
+    "rxjs": "^6.5.2",
+    "timeago.js": "^4.0.2",
+    "use-query-params": "1.1.3"
+  },
+  "devDependencies": {
+    "electron": "15.0.0"
   },
   "browserslist": [
     "last 1 chrome version"
   ],
   "build": {
-    "electronVersion": "9.4.0",
+    "electronVersion": "15.0.0",
     "extraMetadata": {
       "main": "build/electron.js"
     },
@@ -97,18 +108,24 @@
     "productName": "JBrowse 2",
     "copyright": "Copyright © 2019",
     "win": {
-      "target": "zip",
-      "artifactName": "jbrowse-desktop-${version}-win.${ext}"
+      "publish": [
+        "github"
+      ],
+      "artifactName": "jbrowse-desktop-v${version}-win.${ext}"
     },
     "linux": {
-      "target": "zip",
-      "artifactName": "jbrowse-desktop-${version}-linux.${ext}",
-      "executableName": "jbrowse-desktop"
+      "publish": [
+        "github"
+      ],
+      "executableName": "jbrowse-desktop",
+      "artifactName": "jbrowse-desktop-v${version}-linux.${ext}"
     },
     "mac": {
+      "publish": [
+        "github"
+      ],
       "category": "public.app-category.utilities",
-      "target": "zip",
-      "artifactName": "jbrowse-desktop-${version}-mac.${ext}"
+      "artifactName": "jbrowse-desktop-v${version}-mac.${ext}"
     },
     "files": [
       "build/**/*",
@@ -116,7 +133,8 @@
     ],
     "directories": {
       "buildResources": "assets/"
-    }
+    },
+    "afterSign": "scripts/notarize.js"
   },
   "private": true
 }

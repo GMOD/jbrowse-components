@@ -14,9 +14,13 @@ export default ({ jbrequire }) => {
     // load all the other data in the row into an `otherData` object
     const otherData = {}
     columns.forEach((column, columnNumber) => {
-      if (columnsAlreadyUsedInLocations.includes(columnNumber)) return
+      if (columnsAlreadyUsedInLocations.includes(columnNumber)) {
+        return
+      }
       let { text } = row.cells[columnNumber]
-      if (column.dataType.type === 'Number') text = parseFloat(text)
+      if (column.dataType.type === 'Number') {
+        text = parseFloat(text)
+      }
       otherData[column.name] = text
     })
 
@@ -111,8 +115,9 @@ export default ({ jbrequire }) => {
     const columnTypes = {}
     columnDisplayOrder.forEach(columnNumber => {
       const columnDefinition = columns[columnNumber]
-      if (!columnTypes[columnDefinition.dataType.type])
+      if (!columnTypes[columnDefinition.dataType.type]) {
         columnTypes[columnDefinition.dataType.type] = []
+      }
       columnTypes[columnDefinition.dataType.type].push(columnNumber)
     })
     const locationColumnNumbers = columnTypes.LocString || []

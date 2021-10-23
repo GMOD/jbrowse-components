@@ -28,12 +28,20 @@ export default function assemblyManagerFactory(
         return self.assemblies.find(assembly => assembly.hasName(assemblyName))
       },
 
+      get assemblyNamesList() {
+        return this.assemblyList.map(asm => asm.name)
+      },
+
       get assemblyList() {
         // name is the explicit identifier and can be accessed without getConf,
         // hence the union with {name:string}
+        const {
+          jbrowse: { assemblies },
+          session: { sessionAssemblies = [] } = {},
+        } = getParent(self)
         return [
-          ...getParent(self).jbrowse.assemblies,
-          ...(getParent(self).session.sessionAssemblies || []),
+          ...assemblies,
+          ...sessionAssemblies,
         ] as (AnyConfigurationModel & { name: string })[]
       },
 
@@ -63,7 +71,14 @@ export default function assemblyManagerFactory(
         }
         const assembly = self.get(assemblyName)
         if (assembly) {
-          await when(() => Boolean(assembly.regions && assembly.refNameAliases))
+          await when(
+            () =>
+              Boolean(assembly.regions && assembly.refNameAliases) ||
+              !!assembly.error,
+          )
+          if (assembly.error) {
+            throw assembly.error
+          }
           return assembly
         }
         return undefined

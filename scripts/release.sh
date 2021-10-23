@@ -20,12 +20,14 @@ NPMUSER=$(npm whoami)
 [[ -n "$NPMUSER" ]] || { echo "No NPM user detected, please run 'npm adduser'" && exit 1; }
 MAINUPDATED=$(git rev-list --left-only --count origin/main...main)
 [[ "$MAINUPDATED" != 0 ]] && { echo "main is not up to date with origin/main. Please fetch and try again" && exit 1; }
+LOCAL_CHANGES=$(git status --short)
+[[ "$LOCAL_CHANGES" != "" ]] && { echo "Please discard or stash changes and try again." && exit 1; }
 
 # make sure packages are all up to date
 yarn
 
 # make sure the tests are passing
-yarn test
+yarn test --runInBand
 
 # Get the version before release from lerna.json
 PREVIOUS_VERSION=$(node --print "const lernaJson = require('./lerna.json'); lernaJson.version")
@@ -38,8 +40,7 @@ BLOGPOST_DRAFT=website/release_announcement_drafts/$RELEASE_TAG.md
 [[ -f $BLOGPOST_DRAFT ]] || { echo "No blogpost draft found at $BLOGPOST_DRAFT, please write one." && exit 1; }
 
 # Updates the "Browse demo instance" link on the homepage
-INSTANCE=https://s3.amazonaws.com/jbrowse.org/code/jb2/$RELEASE_TAG/index.html
-INSTANCE=$INSTANCE node --print "const config = require('./website/docusaurus.config.json'); config.customFields.currentLink = process.env.INSTANCE; JSON.stringify(config,0,2)" >tmp.json
+RELEASE_TAG=$RELEASE_TAG node --print "const config = require('./website/docusaurus.config.json'); config.customFields.currentVersion = process.env.RELEASE_TAG; JSON.stringify(config,0,2)" >tmp.json
 mv tmp.json website/docusaurus.config.json
 
 # Packages that have changed and will have their version bumped
@@ -55,14 +56,15 @@ mv tmp.md CHANGELOG.md
 
 # Blog post text
 NOTES=$(cat "$BLOGPOST_DRAFT")
+DATETIME=$(date +"%Y-%m-%d %H:%M:%S")
 DATE=$(date +"%Y-%m-%d")
 ## Blogpost run after lerna version, to get the accurate tags
 BLOGPOST_FILENAME=website/blog/${DATE}-${RELEASE_TAG}-release.md
-RELEASE_TAG=$RELEASE_TAG DATE=$DATE NOTES=$NOTES CHANGELOG=$CHANGELOG perl -p -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' <scripts/blog_template.txt >"$BLOGPOST_FILENAME"
+RELEASE_TAG=$RELEASE_TAG DATE=$DATETIME NOTES=$NOTES CHANGELOG=$CHANGELOG perl -p -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' <scripts/blog_template.txt >"$BLOGPOST_FILENAME"
 
 yarn format
 git add .
 git commit --message "Prepare for $RELEASE_TAG release"
 
 # Run lerna version first, publish after changelog and blog post have been created
-yarn lerna publish "$SEMVER_LEVEL" --message "[update docs] %s"
+yarn lerna publish --force-publish "*" "$SEMVER_LEVEL" --message "[update docs] %s"

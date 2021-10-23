@@ -9,110 +9,119 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
-
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { readConfObject } from '@jbrowse/core/configuration'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 
-interface HeaderLine {
-  tag: string
-  value: string
-}
 interface Header {
-  idToName?: string[]
-  nameToId?: Record<string, number>
+  idToName: string[]
+  nameToId: Record<string, number>
 }
 
 export default class BamAdapter extends BaseFeatureDataAdapter {
-  // @ts-ignore  -- the configure method assigns this essentially via the constructor
-  protected bam: BamFile
+  private samHeader?: Header
 
-  protected sequenceAdapter?: BaseFeatureDataAdapter
+  private setupP?: Promise<Header>
 
-  private samHeader: Header = {}
-
-  public constructor(
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-  ) {
-    super(config)
-
-    // note that derived classes may not provide a BAM directly
-    // so this is conditional
-    this.configure(config, getSubAdapter)
-  }
+  protected configured?: Promise<{
+    bam: BamFile
+    sequenceAdapter?: BaseFeatureDataAdapter
+  }>
 
   // derived classes may not use the same configuration so a custom
   // configure method allows derived classes to override this behavior
-  protected configure(
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-  ) {
-    const bamLocation = readConfObject(config, 'bamLocation')
-    const location = readConfObject(config, ['index', 'location'])
-    const indexType = readConfObject(config, ['index', 'indexType'])
-    const chunkSizeLimit = readConfObject(config, 'chunkSizeLimit')
-    const fetchSizeLimit = readConfObject(config, 'fetchSizeLimit')
-    this.bam = new BamFile({
-      bamFilehandle: openLocation(bamLocation),
-      csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
-      baiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
-      chunkSizeLimit,
-      fetchSizeLimit,
-    })
+  protected async configure() {
+    if (!this.configured) {
+      const bamLocation = readConfObject(this.config, 'bamLocation')
+      const location = readConfObject(this.config, ['index', 'location'])
+      const indexType = readConfObject(this.config, ['index', 'indexType'])
+      const chunkSizeLimit = readConfObject(this.config, 'chunkSizeLimit')
+      const fetchSizeLimit = readConfObject(this.config, 'fetchSizeLimit')
+      const bam = new BamFile({
+        bamFilehandle: openLocation(bamLocation, this.pluginManager),
+        csiFilehandle:
+          indexType === 'CSI'
+            ? openLocation(location, this.pluginManager)
+            : undefined,
+        baiFilehandle:
+          indexType !== 'CSI'
+            ? openLocation(location, this.pluginManager)
+            : undefined,
+        chunkSizeLimit,
+        fetchSizeLimit,
+      })
 
-    const adapterConfig = readConfObject(config, 'sequenceAdapter')
-    if (adapterConfig && getSubAdapter) {
-      const { dataAdapter } = getSubAdapter(adapterConfig)
-      this.sequenceAdapter = dataAdapter as BaseFeatureDataAdapter
+      const adapterConfig = readConfObject(this.config, 'sequenceAdapter')
+      if (adapterConfig && this.getSubAdapter) {
+        this.configured = this.getSubAdapter(adapterConfig).then(
+          ({ dataAdapter }) => ({
+            bam,
+            sequenceAdapter: dataAdapter as BaseFeatureDataAdapter,
+          }),
+        )
+      } else {
+        this.configured = Promise.resolve({ bam })
+      }
     }
+    return this.configured
   }
 
   async getHeader(opts?: BaseOptions) {
-    return this.bam.getHeaderText(opts)
+    const { bam } = await this.configure()
+    return bam.getHeaderText(opts)
   }
 
   private async setup(opts?: BaseOptions) {
+    // note that derived classes may not provide a BAM directly so this is
+    // conditional
     const { statusCallback = () => {} } = opts || {}
-    if (Object.keys(this.samHeader).length === 0) {
-      statusCallback('Downloading index')
-      const samHeader = await this.bam.getHeader(opts)
+    if (!this.setupP) {
+      this.setupP = this.configure()
+        .then(async ({ bam }) => {
+          statusCallback('Downloading index')
+          const samHeader = await bam.getHeader(opts)
 
-      // use the @SQ lines in the header to figure out the
-      // mapping between ref ref ID numbers and names
-      const idToName: string[] = []
-      const nameToId: Record<string, number> = {}
-      const sqLines = samHeader.filter((l: { tag: string }) => l.tag === 'SQ')
-      sqLines.forEach((sqLine: { data: HeaderLine[] }, refId: number) => {
-        sqLine.data.forEach((item: HeaderLine) => {
-          if (item.tag === 'SN') {
-            // this is the ref name
-            const refName = item.value
-            nameToId[refName] = refId
-            idToName[refId] = refName
-          }
+          // use the @SQ lines in the header to figure out the
+          // mapping between ref ref ID numbers and names
+          const idToName: string[] = []
+          const nameToId: Record<string, number> = {}
+          samHeader
+            .filter(l => l.tag === 'SQ')
+            .forEach((sqLine, refId) => {
+              sqLine.data.forEach(item => {
+                if (item.tag === 'SN') {
+                  // this is the ref name
+                  const refName = item.value
+                  nameToId[refName] = refId
+                  idToName[refId] = refName
+                }
+              })
+            })
+          statusCallback('')
+          this.samHeader = { idToName, nameToId }
+          return this.samHeader
         })
-      })
-      if (idToName.length) {
-        this.samHeader = { idToName, nameToId }
-      }
-      statusCallback('')
+        .catch(e => {
+          this.setupP = undefined
+          throw e
+        })
     }
+    return this.setupP
   }
 
   async getRefNames(opts?: BaseOptions) {
-    await this.setup(opts)
-    if (this.samHeader.idToName) {
-      return this.samHeader.idToName
-    }
-    throw new Error('unable to get refnames')
+    const { idToName } = await this.setup(opts)
+    return idToName
   }
 
   private async seqFetch(refName: string, start: number, end: number) {
-    const refSeqStore = this.sequenceAdapter
-    if (!refSeqStore) return undefined
-    if (!refName) return undefined
+    const { sequenceAdapter } = await this.configure()
+    const refSeqStore = sequenceAdapter
+    if (!refSeqStore) {
+      return undefined
+    }
+    if (!refName) {
+      return undefined
+    }
 
     const features = refSeqStore.getFeatures({
       refName,
@@ -125,8 +134,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
     const trimmed: string[] = []
     seqChunks
-      .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
-      .forEach((chunk: Feature) => {
+      .sort((a, b) => a.get('start') - b.get('start'))
+      .forEach(chunk => {
         const chunkStart = chunk.get('start')
         const chunkEnd = chunk.get('end')
         const trimStart = Math.max(start - chunkStart, 0)
@@ -156,20 +165,16 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     const { refName, start, end, originalRefName } = region
     const { signal, statusCallback = () => {} } = opts || {}
     return ObservableCreate<Feature>(async observer => {
+      const { bam } = await this.configure()
       await this.setup(opts)
       statusCallback('Downloading alignments')
-      const records = await this.bam.getRecordsForRange(
-        refName,
-        start,
-        end,
-        opts,
-      )
+      const records = await bam.getRecordsForRange(refName, start, end, opts)
+
       checkAbortSignal(signal)
 
       for (const record of records) {
         let ref: string | undefined
         if (!record.get('md')) {
-          // eslint-disable-next-line no-await-in-loop
           ref = await this.seqFetch(
             originalRefName || refName,
             record.get('start'),
@@ -187,9 +192,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   // depends on setup being called before the BAM constructor
   refIdToName(refId: number): string | undefined {
-    if (this.samHeader.idToName) {
-      return this.samHeader.idToName[refId]
-    }
-    return undefined
+    return this.samHeader?.idToName[refId]
   }
 }

@@ -1,8 +1,9 @@
 import { getParent, isRoot, IAnyStateTreeNode } from 'mobx-state-tree'
-import objectHash from 'object-hash'
+import { getSession, objectHash } from './index'
+import { PreFileLocation, FileLocation } from './types'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
-import { UriLocation, LocalPathLocation } from './types'
 import { readConfObject } from '../configuration'
+import { getEnv } from 'mobx-state-tree'
 
 /* utility functions for use by track models and so forth */
 
@@ -55,7 +56,7 @@ export function getParentRenderProps(node: IAnyStateTreeNode) {
     currentNode = getParent(currentNode)
   ) {
     if ('renderProps' in currentNode) {
-      return currentNode.renderProps
+      return currentNode.renderProps()
     }
   }
 
@@ -65,171 +66,122 @@ export function getParentRenderProps(node: IAnyStateTreeNode) {
 export const UNKNOWN = 'UNKNOWN'
 export const UNSUPPORTED = 'UNSUPPORTED'
 
-export function guessAdapter(
-  fileName: string,
-  protocol: 'uri' | 'localPath',
-  index?: string,
+let blobMap: { [key: string]: File } = {}
+
+// get a specific blob
+export function getBlob(id: string) {
+  return blobMap[id]
+}
+
+// used to export entire context to webworker
+export function getBlobMap() {
+  return blobMap
+}
+
+// used in new contexts like webworkers
+export function setBlobMap(map: { [key: string]: File }) {
+  blobMap = map
+}
+
+// blob files are stored in a global map
+export function storeBlobLocation(location: PreFileLocation) {
+  if (location && 'blob' in location) {
+    // possibly we should be more clear about when this is not undefined, and
+    // also allow mix of blob and url for index and file
+    // @ts-ignore
+    const blobId = `b${+Date.now()}`
+    blobMap[blobId] = location.blob
+    return { name: location?.blob.name, blobId, locationType: 'BlobLocation' }
+  }
+  return location
+}
+
+/**
+ * creates a new location from the provided location including the appropriate suffix and location type
+ * @param location - the FileLocation
+ * @param suffix - the file suffix (e.g. .bam)
+ * @returns the constructed location object from the provided prameters
+ */
+export function makeIndex(location: FileLocation, suffix: string) {
+  if ('uri' in location) {
+    return { uri: location.uri + suffix, locationType: 'UriLocation' }
+  }
+
+  if ('localPath' in location) {
+    return {
+      localPath: location.localPath + suffix,
+      locationType: 'LocalPathLocation',
+    }
+  }
+
+  return location
+}
+
+/**
+ * constructs a potential index file (with suffix) from the provided file name
+ * @param name - the name of the index file
+ * @param typeA - one option of a potential two file suffix (e.g. CSI, BAI)
+ * @param typeB - the second option of a potential two file suffix (e.g. CSI, BAI)
+ * @returns a likely name of the index file for a given filename
+ */
+export function makeIndexType(
+  name: string | undefined,
+  typeA: string,
+  typeB: string,
 ) {
-  function makeLocation(location: string): UriLocation | LocalPathLocation {
-    if (protocol === 'uri') {
-      return { uri: location }
-    }
-    if (protocol === 'localPath') {
-      return { localPath: location }
-    }
-    throw new Error(`invalid protocol ${protocol}`)
-  }
-  if (/\.bam$/i.test(fileName)) {
-    return {
-      type: 'BamAdapter',
-      bamLocation: makeLocation(fileName),
-      index: {
-        location: makeLocation(index || `${fileName}.bai`),
-        indexType: index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'BAI',
+  return name?.toUpperCase().endsWith(typeA) ? typeA : typeB
+}
+
+export interface AdapterConfig {
+  type: string
+  [key: string]: unknown
+}
+
+export type AdapterGuesser = (
+  file: FileLocation,
+  index?: FileLocation,
+  adapterHint?: string,
+) => AdapterConfig | undefined
+
+export type TrackTypeGuesser = (adapterName: string) => string | undefined
+
+export function getFileName(track: FileLocation) {
+  const uri = 'uri' in track ? track.uri : undefined
+  const localPath = 'localPath' in track ? track.localPath : undefined
+  const blob = 'blobId' in track ? track : undefined
+  return (
+    blob?.name ||
+    uri?.slice(uri.lastIndexOf('/') + 1) ||
+    localPath?.slice(localPath.lastIndexOf('/') + 1) ||
+    ''
+  )
+}
+
+export function guessAdapter(
+  file: FileLocation,
+  index: FileLocation | undefined,
+  adapterHint?: string,
+  model?: IAnyStateTreeNode,
+) {
+  if (model) {
+    // @ts-ignore
+    const session = getSession(model)
+
+    const adapterGuesser = getEnv(session).pluginManager.evaluateExtensionPoint(
+      'Core-guessAdapterForLocation',
+      (
+        _file: FileLocation,
+        _index?: FileLocation,
+        _adapterHint?: string,
+      ): AdapterConfig | undefined => {
+        return undefined
       },
-    }
-  }
+    ) as AdapterGuesser
 
-  if (/\.cram$/i.test(fileName)) {
-    return {
-      type: 'CramAdapter',
-      cramLocation: makeLocation(fileName),
-      craiLocation: makeLocation(`${fileName}.crai`),
-    }
-  }
+    const adapter = adapterGuesser(file, index, adapterHint)
 
-  if (/\.gff3?$/i.test(fileName)) {
-    return {
-      type: 'UNSUPPORTED',
-    }
-  }
-
-  if (/\.gff3?\.b?gz$/i.test(fileName)) {
-    return {
-      type: 'Gff3TabixAdapter',
-      gffGzLocation: makeLocation(fileName),
-      index: {
-        location: makeLocation(index || `${fileName}.tbi`),
-        indexType: index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
-      },
-    }
-  }
-
-  if (/\.gtf?$/i.test(fileName)) {
-    return {
-      type: 'UNSUPPORTED',
-    }
-  }
-
-  if (/\.vcf$/i.test(fileName)) {
-    return {
-      type: 'UNSUPPORTED',
-    }
-  }
-
-  if (/\.vcf\.b?gz$/i.test(fileName)) {
-    return {
-      type: 'VcfTabixAdapter',
-      vcfGzLocation: makeLocation(fileName),
-      index: {
-        location: makeLocation(`${fileName}.tbi`),
-        indexType: index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
-      },
-    }
-  }
-
-  if (/\.vcf\.idx$/i.test(fileName)) {
-    return {
-      type: 'UNSUPPORTED',
-    }
-  }
-
-  if (/\.bed$/i.test(fileName)) {
-    return {
-      type: 'UNSUPPORTED',
-    }
-  }
-
-  if (/\.bed\.b?gz$/i.test(fileName)) {
-    return {
-      type: 'BedTabixAdapter',
-      bedGzLocation: makeLocation(fileName),
-      index: {
-        location: makeLocation(`${fileName}.tbi`),
-        indexType: index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
-      },
-    }
-  }
-
-  if (/\.(bb|bigbed)$/i.test(fileName)) {
-    return {
-      type: 'BigBedAdapter',
-      bigBedLocation: makeLocation(fileName),
-    }
-  }
-
-  if (/\.(bw|bigwig)$/i.test(fileName)) {
-    return {
-      type: 'BigWigAdapter',
-      bigWigLocation: makeLocation(fileName),
-    }
-  }
-
-  if (/\.(fa|fasta|fas|fna|mfa)$/i.test(fileName)) {
-    return {
-      type: 'IndexedFastaAdapter',
-      fastaLocation: makeLocation(fileName),
-      faiLocation: makeLocation(index || `${fileName}.fai`),
-    }
-  }
-
-  if (/\.(fa|fasta|fas|fna|mfa)\.b?gz$/i.test(fileName)) {
-    return {
-      type: 'BgzipFastaAdapter',
-      fastaLocation: makeLocation(fileName),
-      faiLocation: makeLocation(`${fileName}.fai`),
-      gziLocation: makeLocation(`${fileName}.gzi`),
-    }
-  }
-
-  if (/\.2bit$/i.test(fileName)) {
-    return {
-      type: 'TwoBitAdapter',
-      twoBitLocation: makeLocation(fileName),
-    }
-  }
-
-  if (/\.sizes$/i.test(fileName)) {
-    return {
-      type: 'UNSUPPORTED',
-    }
-  }
-
-  if (/\/trackData.jsonz?$/i.test(fileName)) {
-    return {
-      type: 'NCListAdapter',
-      rootUrlTemplate: makeLocation(fileName),
-    }
-  }
-
-  if (/\/sparql$/i.test(fileName)) {
-    return {
-      type: 'SPARQLAdapter',
-      endpoint: fileName,
-    }
-  }
-
-  if (/\.hic/i.test(fileName)) {
-    return {
-      type: 'HicAdapter',
-      hicLocation: makeLocation(fileName),
-    }
-  }
-
-  if (/\.paf/i.test(fileName)) {
-    return {
-      type: 'PAFAdapter',
-      pafLocation: makeLocation(fileName),
+    if (adapter) {
+      return adapter
     }
   }
 
@@ -238,19 +190,30 @@ export function guessAdapter(
   }
 }
 
-export function guessTrackType(adapterType: string): string {
-  const known: { [key: string]: string | undefined } = {
-    BamAdapter: 'AlignmentsTrack',
-    CramAdapter: 'AlignmentsTrack',
-    BgzipFastaAdapter: 'ReferenceSequenceTrack',
-    BigWigAdapter: 'QuantitativeTrack',
-    IndexedFastaAdapter: 'ReferenceSequenceTrack',
-    TwoBitAdapter: 'ReferenceSequenceTrack',
-    VcfTabixAdapter: 'VariantTrack',
-    HicAdapter: 'HicTrack',
-    PAFAdapter: 'SyntenyTrack',
+export function guessTrackType(
+  adapterType: string,
+  model?: IAnyStateTreeNode,
+): string {
+  if (model) {
+    // @ts-ignore
+    const session = getSession(model)
+
+    const trackTypeGuesser = getEnv(
+      session,
+    ).pluginManager.evaluateExtensionPoint(
+      'Core-guessTrackTypeForLocation',
+      (_adapterName: string): AdapterConfig | undefined => {
+        return undefined
+      },
+    ) as TrackTypeGuesser
+
+    const trackType = trackTypeGuesser(adapterType)
+
+    if (trackType) {
+      return trackType
+    }
   }
-  return known[adapterType] || 'FeatureTrack'
+  return 'FeatureTrack'
 }
 
 export function generateUnsupportedTrackConf(

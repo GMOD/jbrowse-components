@@ -1,9 +1,9 @@
+import { lazy } from 'react'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
 import {
   configSchema as alignmentsFeatureDetailConfigSchema,
-  ReactComponent as AlignmentsFeatureDetailReactComponent,
   stateModel as alignmentsFeatureDetailStateModel,
 } from './BreakpointAlignmentsFeatureDetail'
 import BreakpointSplitViewFactory from './BreakpointSplitView'
@@ -22,7 +22,12 @@ export default class BreakpointSplitViewPlugin extends Plugin {
           heading: 'Breakpoint feature details',
           configSchema: alignmentsFeatureDetailConfigSchema,
           stateModel: alignmentsFeatureDetailStateModel,
-          ReactComponent: AlignmentsFeatureDetailReactComponent,
+          ReactComponent: lazy(
+            () =>
+              import(
+                './BreakpointAlignmentsFeatureDetail/BreakpointAlignmentsFeatureDetail'
+              ),
+          ),
         }),
     )
   }

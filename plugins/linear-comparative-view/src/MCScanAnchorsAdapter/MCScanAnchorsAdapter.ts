@@ -1,11 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { Instance } from 'mobx-state-tree'
-import { Region, FileLocation } from '@jbrowse/core/util/types'
+import { Region } from '@jbrowse/core/util/types'
 import { GenericFilehandle } from 'generic-filehandle'
 import { tap } from 'rxjs/operators'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -14,7 +11,7 @@ import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readConfObject } from '@jbrowse/core/configuration'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
-import MyConfigSchema from './configSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 type RowToGeneNames = {
   name1: string
@@ -38,38 +35,50 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
 
   private rowToGeneName: RowToGeneNames = []
 
+  // @ts-ignore
   private subadapters: BaseFeatureDataAdapter[]
 
+  // @ts-ignore
   private assemblyNames: string[]
 
+  // @ts-ignore
   private mcscanAnchorsLocation: GenericFilehandle
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(
-    config: Instance<typeof MyConfigSchema>,
-    getSubAdapter?: getSubAdapterType,
-  ) {
-    super(config)
-    const subadapters = readConfObject(config, 'subadapters')
-    const assemblyNames = readConfObject(config, 'assemblyNames')
+  public async configure() {
+    const getSubAdapter = this.getSubAdapter
+    if (!getSubAdapter) {
+      throw new Error('Need support for getSubAdapter')
+    }
+    const subadapters = readConfObject(
+      this.config,
+      'subadapters',
+    ) as AnyConfigurationModel[]
+    const assemblyNames = readConfObject(this.config, 'assemblyNames')
     this.mcscanAnchorsLocation = openLocation(
-      readConfObject(config, 'mcscanAnchorsLocation') as FileLocation,
+      readConfObject(this.config, 'mcscanAnchorsLocation'),
+      this.pluginManager,
     )
 
-    this.subadapters = subadapters.map((subadapter: any) => {
-      const dataAdapter = getSubAdapter?.(subadapter).dataAdapter
-      if (dataAdapter instanceof BaseFeatureDataAdapter) {
-        return dataAdapter
-      }
-      throw new Error(`invalid subadapter type '${config.subadapter.type}'`)
-    })
+    this.subadapters = await Promise.all(
+      subadapters.map(async subadapter => {
+        const res = await getSubAdapter(subadapter)
+        if (res.dataAdapter instanceof BaseFeatureDataAdapter) {
+          return res.dataAdapter
+        }
+        throw new Error(
+          `invalid subadapter type '${this.config.subadapter.type}'`,
+        )
+      }),
+    )
 
     this.assemblyNames = assemblyNames
   }
 
   async setup() {
     if (!this.initialized) {
+      await this.configure()
       const text = (await this.mcscanAnchorsLocation.readFile('utf8')) as string
       text.split('\n').forEach((line: string, index: number) => {
         if (line.length && line !== '###') {

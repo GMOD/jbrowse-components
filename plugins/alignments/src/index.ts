@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
@@ -5,6 +6,7 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
+import { FileLocation } from '@jbrowse/core/util/types'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
@@ -13,7 +15,6 @@ import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
 import {
   configSchema as alignmentsFeatureDetailConfigSchema,
-  ReactComponent as AlignmentsFeatureDetailReactComponent,
   stateModelFactory as alignmentsFeatureDetailStateModelFactory,
 } from './AlignmentsFeatureDetail'
 import BamAdapterF from './BamAdapter'
@@ -29,6 +30,7 @@ import {
   configSchemaFactory as linearPileupDisplayConfigSchemaFactory,
   modelFactory as linearPileupDisplayModelFactory,
 } from './LinearPileupDisplay'
+import { LinearPileupDisplayModel } from './LinearPileupDisplay/model'
 import {
   configSchemaFactory as linearSNPCoverageDisplayConfigSchemaFactory,
   modelFactory as linearSNPCoverageDisplayModelFactory,
@@ -42,9 +44,20 @@ import SNPCoverageRenderer, {
   configSchema as SNPCoverageRendererConfigSchema,
   ReactComponent as SNPCoverageRendererReactComponent,
 } from './SNPCoverageRenderer'
-import { PileupGetGlobalValueForTag } from './PileupRPC/rpcMethods'
+import {
+  PileupGetGlobalValueForTag,
+  PileupGetVisibleModifications,
+} from './PileupRPC/rpcMethods'
+import {
+  makeIndex,
+  makeIndexType,
+  AdapterGuesser,
+  getFileName,
+  TrackTypeGuesser,
+} from '@jbrowse/core/util/tracks'
 
 export { MismatchParser }
+export type { LinearPileupDisplayModel }
 
 export default class AlignmentsPlugin extends Plugin {
   name = 'AlignmentsPlugin'
@@ -89,9 +102,8 @@ export default class AlignmentsPlugin extends Plugin {
       })
     })
     pluginManager.addDisplayType(() => {
-      const configSchema = linearSNPCoverageDisplayConfigSchemaFactory(
-        pluginManager,
-      )
+      const configSchema =
+        linearSNPCoverageDisplayConfigSchemaFactory(pluginManager)
       return new DisplayType({
         name: 'LinearSNPCoverageDisplay',
         configSchema,
@@ -105,9 +117,8 @@ export default class AlignmentsPlugin extends Plugin {
       })
     })
     pluginManager.addDisplayType(() => {
-      const configSchema = linearAligmentsDisplayConfigSchemaFactory(
-        pluginManager,
-      )
+      const configSchema =
+        linearAligmentsDisplayConfigSchemaFactory(pluginManager)
       return new DisplayType({
         name: 'LinearAlignmentsDisplay',
         configSchema,
@@ -127,7 +138,9 @@ export default class AlignmentsPlugin extends Plugin {
           heading: 'Feature details',
           configSchema: alignmentsFeatureDetailConfigSchema,
           stateModel: alignmentsFeatureDetailStateModelFactory(pluginManager),
-          ReactComponent: AlignmentsFeatureDetailReactComponent,
+          ReactComponent: lazy(
+            () => import('./AlignmentsFeatureDetail/AlignmentsFeatureDetail'),
+          ),
         }),
     )
     pluginManager.addAdapterType(
@@ -137,10 +150,55 @@ export default class AlignmentsPlugin extends Plugin {
           ...pluginManager.load(BamAdapterF),
         }),
     )
+
+    pluginManager.addToExtensionPoint(
+      'Core-guessAdapterForLocation',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.bam$/i
+          const adapterName = 'BamAdapter'
+          const fileName = getFileName(file)
+          const indexName = index && getFileName(index)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
+            return {
+              type: adapterName,
+              bamLocation: file,
+              index: {
+                location: index || makeIndex(file, '.bai'),
+                indexType: makeIndexType(indexName, 'CSI', 'BAI'),
+              },
+            }
+          }
+          return adapterGuesser(file, index, adapterHint)
+        }
+      },
+    )
+    pluginManager.addToExtensionPoint(
+      'Core-guessTrackTypeForLocation',
+      (trackTypeGuesser: TrackTypeGuesser) => {
+        return (adapterName: string) => {
+          if (adapterName === 'BamAdapter') {
+            return 'AlignmentsTrack'
+          }
+          return trackTypeGuesser(adapterName)
+        }
+      },
+    )
+
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
           name: 'SNPCoverageAdapter',
+          adapterMetadata: {
+            category: null,
+            displayName: null,
+            hiddenFromGUI: true,
+            description: null,
+          },
           ...pluginManager.load(SNPCoverageAdapterF),
         }),
     )
@@ -151,16 +209,55 @@ export default class AlignmentsPlugin extends Plugin {
           ...pluginManager.load(CramAdapterF),
         }),
     )
+    pluginManager.addToExtensionPoint(
+      'Core-guessAdapterForLocation',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.cram$/i
+          const adapterName = 'CramAdapter'
+          const fileName = getFileName(file)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
+            return {
+              type: adapterName,
+              cramLocation: file,
+              craiLocation: index || makeIndex(file, '.crai'),
+            }
+          }
+          return adapterGuesser(file, index, adapterHint)
+        }
+      },
+    )
+    pluginManager.addToExtensionPoint(
+      'Core-guessTrackTypeForLocation',
+      (trackTypeGuesser: TrackTypeGuesser) => {
+        return (adapterName: string) => {
+          if (adapterName === 'CramAdapter') {
+            return 'AlignmentsTrack'
+          }
+          return trackTypeGuesser(adapterName)
+        }
+      },
+    )
+
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
           name: 'HtsgetBamAdapter',
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
           ...pluginManager.load(HtsgetBamAdapterF),
         }),
     )
     pluginManager.addRendererType(
       () =>
-        // @ts-ignore error "expected 0 arguments, but got 1"?
         new PileupRenderer({
           name: 'PileupRenderer',
           ReactComponent: PileupRendererReactComponent,
@@ -180,6 +277,9 @@ export default class AlignmentsPlugin extends Plugin {
 
     pluginManager.addRpcMethod(
       () => new PileupGetGlobalValueForTag(pluginManager),
+    )
+    pluginManager.addRpcMethod(
+      () => new PileupGetVisibleModifications(pluginManager),
     )
   }
 }

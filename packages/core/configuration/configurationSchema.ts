@@ -1,12 +1,12 @@
 import {
   types,
   isStateTreeNode,
-  Instance,
-  IAnyType,
   isType,
   isLateType,
+  getSnapshot,
+  Instance,
+  IAnyType,
   SnapshotOut,
-  ModelPropertiesDeclaration,
 } from 'mobx-state-tree'
 
 import { ElementId } from '../util/types/mst'
@@ -39,7 +39,7 @@ export interface ConfigurationSchemaDefinition {
 interface ConfigurationSchemaOptions {
   explicitlyTyped?: boolean
   explicitIdentifier?: string
-  implicitIdentifier?: string
+  implicitIdentifier?: string | boolean
   baseConfiguration?: AnyConfigurationSchemaType
 
   actions?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -82,7 +82,7 @@ function preprocessConfigurationSchemaArguments(
 
 function makeConfigurationSchemaModel<
   DEFINITION extends ConfigurationSchemaDefinition,
-  OPTIONS extends ConfigurationSchemaOptions
+  OPTIONS extends ConfigurationSchemaOptions,
 >(modelName: string, schemaDefinition: DEFINITION, options: OPTIONS) {
   // now assemble the MST model of the configuration schema
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -93,10 +93,11 @@ function makeConfigurationSchemaModel<
     modelDefinition.type = types.optional(types.literal(modelName), modelName)
   }
 
-  if (options.explicitIdentifier && options.implicitIdentifier)
+  if (options.explicitIdentifier && options.implicitIdentifier) {
     throw new Error(
       `Cannot have both explicit and implicit identifiers in ${modelName}`,
     )
+  }
   if (options.explicitIdentifier) {
     if (typeof options.explicitIdentifier === 'string') {
       modelDefinition[options.explicitIdentifier] = types.identifier
@@ -149,7 +150,7 @@ function makeConfigurationSchemaModel<
         )
       } catch (e) {
         throw new Error(
-          `invalid config slot definition for ${modelName}.${slotName}: ${e.message}`,
+          `invalid config slot definition for ${modelName}.${slotName}: ${e}`,
         )
       }
     } else {
@@ -162,10 +163,7 @@ function makeConfigurationSchemaModel<
   let completeModel = types
     .model(`${modelName}ConfigurationSchema`, modelDefinition)
     .actions(self => ({
-      setSubschema(
-        slotName: string,
-        data: ModelPropertiesDeclaration | AnyConfigurationSchemaType,
-      ) {
+      setSubschema(slotName: string, data: unknown) {
         if (!isConfigurationSchemaType(modelDefinition[slotName])) {
           throw new Error(`${slotName} is not a subschema, cannot replace`)
         }
@@ -189,10 +187,27 @@ function makeConfigurationSchemaModel<
   if (options.extend) {
     completeModel = completeModel.extend(options.extend)
   }
+
+  const identifierDefault = identifier ? { [identifier]: 'placeholderId' } : {}
+  const modelDefault = options.explicitlyTyped
+    ? { type: modelName, ...identifierDefault }
+    : identifierDefault
+
+  const defaultSnap = getSnapshot(completeModel.create(modelDefault))
   completeModel = completeModel.postProcessSnapshot(snap => {
     const newSnap: SnapshotOut<typeof completeModel> = {}
+    let matchesDefault = true
     // let keyCount = 0
-    Object.entries(snap).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(snap)) {
+      if (matchesDefault) {
+        if (typeof defaultSnap[key] === 'object' && typeof value === 'object') {
+          if (JSON.stringify(defaultSnap[key]) !== JSON.stringify(value)) {
+            matchesDefault = false
+          }
+        } else if (defaultSnap[key] !== value) {
+          matchesDefault = false
+        }
+      }
       if (
         value !== undefined &&
         volatileConstants[key] === undefined &&
@@ -202,7 +217,10 @@ function makeConfigurationSchemaModel<
         // keyCount += 1
         newSnap[key] = value
       }
-    })
+    }
+    if (matchesDefault) {
+      return {}
+    }
     return newSnap
   })
 
@@ -210,13 +228,7 @@ function makeConfigurationSchemaModel<
     completeModel = completeModel.preProcessSnapshot(options.preProcessSnapshot)
   }
 
-  const identifierDefault = identifier ? { [identifier]: 'placeholderId' } : {}
-  const schemaType = types.optional(
-    completeModel,
-    options.explicitlyTyped
-      ? { type: modelName, ...identifierDefault }
-      : identifierDefault,
-  )
+  const schemaType = types.optional(completeModel, modelDefault)
   return schemaType
 }
 
@@ -225,22 +237,22 @@ export interface AnyConfigurationSchemaType
   isJBrowseConfigurationSchema: boolean
   jbrowseSchemaDefinition: ConfigurationSchemaDefinition
   jbrowseSchemaOptions: ConfigurationSchemaOptions
+  type: string
 }
 
 export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>
 
-export type ConfigurationModel<
-  SCHEMA extends AnyConfigurationSchemaType
-> = Instance<SCHEMA>
+export type ConfigurationModel<SCHEMA extends AnyConfigurationSchemaType> =
+  Instance<SCHEMA>
 
 export function ConfigurationSchema<
   DEFINITION extends ConfigurationSchemaDefinition,
-  OPTIONS extends ConfigurationSchemaOptions
+  OPTIONS extends ConfigurationSchemaOptions,
 >(
   modelName: string,
   inputSchemaDefinition: DEFINITION,
   inputOptions?: OPTIONS,
-): AnyConfigurationSchemaType {
+) {
   const { schemaDefinition, options } = preprocessConfigurationSchemaArguments(
     modelName,
     inputSchemaDefinition,

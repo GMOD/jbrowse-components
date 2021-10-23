@@ -1,14 +1,14 @@
-import jsonStableStringify from 'json-stable-stringify'
 import { SnapshotIn } from 'mobx-state-tree'
 import PluginManager from '../PluginManager'
 import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
 import { AnyDataAdapter } from './BaseAdapter'
 import { Region } from '../util/types'
+import idMaker from '../util/idMaker'
 
 function adapterConfigCacheKey(
   adapterConfig: SnapshotIn<AnyConfigurationSchemaType>,
 ) {
-  return `${jsonStableStringify(adapterConfig)}`
+  return `${idMaker(adapterConfig)}`
 }
 
 interface AdapterCacheEntry {
@@ -27,7 +27,7 @@ let adapterCache: Record<string, AdapterCacheEntry> = {}
  *   used for reference counting
  * @param adapterConfigSnapshot - plain-JS configuration snapshot for the adapter
  */
-export function getAdapter(
+export async function getAdapter(
   pluginManager: PluginManager,
   sessionId: string,
   adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
@@ -36,10 +36,11 @@ export function getAdapter(
   const cacheKey = adapterConfigCacheKey(adapterConfigSnapshot)
   if (!adapterCache[cacheKey]) {
     const adapterType = (adapterConfigSnapshot || {}).type
-    if (!adapterType)
+    if (!adapterType) {
       throw new Error(
         'could not determine adapter type from adapter config snapshot',
       )
+    }
     const dataAdapterType = pluginManager.getAdapterType(adapterType)
     if (!dataAdapterType) {
       throw new Error(`unknown data adapter type ${adapterType}`)
@@ -49,20 +50,24 @@ export function getAdapter(
     // callbacks, etc
     const adapterConfig = dataAdapterType.configSchema.create(
       adapterConfigSnapshot,
+      { pluginManager },
     )
 
-    const getSubAdapter: getSubAdapterType = getAdapter.bind(
-      null,
-      pluginManager,
-      sessionId,
-    )
+    const getSubAdapter = getAdapter.bind(null, pluginManager, sessionId)
+
     // instantiate the adapter itself with its config schema, and a bound
     // func that it can use to get any inner adapters
     // (such as sequence adapters or wrapped subadapters) that it needs
-    const dataAdapter = new dataAdapterType.AdapterClass(
-      adapterConfig,
-      getSubAdapter,
-    )
+    //
+    const { AdapterClass, getAdapterClass } = dataAdapterType
+
+    // @ts-ignore
+    const CLASS = AdapterClass || (await getAdapterClass())
+    if (!CLASS) {
+      throw new Error('Failed to get adapter')
+    }
+
+    const dataAdapter = new CLASS(adapterConfig, getSubAdapter, pluginManager)
 
     // store it in our cache
     adapterCache[cacheKey] = {
@@ -113,8 +118,9 @@ export function freeAdapterResources(specification: Record<string, any>) {
           specification.regions ||
           (specification.region ? [specification.region] : [])
         regions.forEach((region: Region) => {
-          if (region.refName !== undefined)
+          if (region.refName !== undefined) {
             cacheEntry.dataAdapter.freeResources(region)
+          }
         })
       }
     })

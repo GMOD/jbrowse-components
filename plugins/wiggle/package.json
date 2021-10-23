@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-wiggle",
-  "version": "1.1.0",
+  "version": "1.5.0",
   "description": "JBrowse 2 wiggle adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -37,22 +37,24 @@
   "dependencies": {
     "@gmod/bbi": "^1.0.30",
     "@material-ui/icons": "^4.11.2",
+    "@popperjs/core": "^2.9.3",
     "abortable-promise-cache": "^1.1.3",
     "color": "^3.1.1",
     "d3-scale": "^3.2.3",
     "json-stable-stringify": "^1.0.1",
     "react-color": "^2.19.3",
-    "react-d3-axis": "^0.1.2"
+    "react-d3-axis": "^0.1.2",
+    "react-popper": "^2.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",
     "@jbrowse/plugin-linear-genome-view": "^1.0.0",
-    "@material-ui/core": "^4.9.13",
+    "@material-ui/core": "^4.12.2",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",
-    "react": "^16.8.0",
+    "react": ">=16.8.0",
     "rxjs": "^6.0.0"
   },
   "publishConfig": {

@@ -66,7 +66,7 @@ const AutosaveEntry = observer(({ session }) => {
   ) : null
 })
 
-export default observer(({ session }) => {
+const SessionManager = observer(({ session }) => {
   const classes = useStyles()
   const [sessionIndexToDelete, setSessionIndexToDelete] = useState(null)
   const [open, setOpen] = useState(false)
@@ -171,3 +171,5 @@ export default observer(({ session }) => {
     </>
   )
 })
+
+export default SessionManager

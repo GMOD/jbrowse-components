@@ -18,7 +18,6 @@ export interface ReducedLinearGenomeView {
     scrollTop: number
     height: number
     configuration: string
-    layoutFeatures: [string, LayoutRecord][]
     skip: number
   }[]
 }

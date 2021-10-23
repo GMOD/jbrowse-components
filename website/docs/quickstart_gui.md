@@ -4,6 +4,8 @@ title: Config editing quick start — graphical interface
 toplevel: true
 ---
 
+import Figure from './figure'
+
 In order to display your data, JBrowse 2 needs to know about the reference
 genome for your organism of interest and needs to have tracks created that
 reference your data sources. This guide will show you how to set those up using
@@ -12,7 +14,7 @@ the JBrowse 2's graphical configuration editing.
 :::note
 
 You can also do this configuration with JBrowse CLI. See that guide
-[here](quickstart_cli).
+[here](../quickstart_cli).
 
 :::
 
@@ -20,9 +22,9 @@ You can also do this configuration with JBrowse CLI. See that guide
 
 This tutorial requires having the following software installed
 
-- [JBrowse CLI](quickstart_web#install-the-cli-tools)
+- [JBrowse CLI](../quickstart_web#install-the-cli-tools)
 
-- [JBrowse 2 web application](quickstart_web#using-jbrowse-create-to-install-jbrowse)
+- [JBrowse 2 web application](../quickstart_web#using-jbrowse-create-to-install-jbrowse)
 
 ## Starting JBrowse 2 admin server
 
@@ -52,7 +54,7 @@ jbrowse admin-server
 
 This will then generate a link that you can visit in your web browser
 
-![JBrowse CLI admin-server output](./img/admin_server.png)
+<Figure caption="JBrowse CLI admin-server output, which provides a link that can be used. Note: we do not recommend using admin-server in production, and should be used for temporary configuration" src="/img/admin_server.png"/>
 
 :::warning
 
@@ -70,7 +72,7 @@ In order to do this, use the navigation bar to open up the Assembly Manager
 This opens up a table which can be used to create, edit, and delete assemblies
 in your application
 
-![Assembly manager](./img/assembly_manager.png)
+<Figure caption="Screenshot showing the assembly manager, with no assemblies loaded yet" src="/img/assembly_manager.png"/>
 
 Let's add the hg38 human reference genome to our JBrowse 2 application.
 
@@ -83,12 +85,12 @@ form:
 - fasta index: `https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai`
 - gzi: `https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi`
 
-![Assembly manager page for adding an assembly](./img/add_hg38_assembly.png)
+<Figure caption="Assembly manager page for adding a new assembly" src="/img/hg38_assembly_table.png"/>
 
 Click on "Create New Assembly". Great, we've added an assembly!
 We can see that we have successfully added the hg38 assembly.
 
-![Figure showing the assembly manager](./img/hg38_assembly_table.png)
+<Figure caption="The assembly manager dialog box with human assemblies available" src="/img/add_hg38_assembly.png"/>
 
 The assembly can be edited or deleted, but for now we will return to the
 application.
@@ -104,12 +106,12 @@ assembly manager.
 To add a new track or connection, you can use the menu bar in the app to open
 the form for adding a track `File > Open Track`:
 
-![JBrowse 2 file menu with  menu item](./img/add_track_form.png)
+<Figure caption="JBrowse 2 file menu with the 'Add track' form" src="/img/add_track_form.png"/>
 
 Alternatively, you can use the action button (circular "+") inside the track
 selector to access the "Add track" form.
 
-![JBrowse 2 action button](./img/add_track_tracklist.png)
+<Figure caption="The 'Add track' form can be launched from the circular '+' button in the bottom righthand corner" src="/img/add_track_tracklist.png"/>
 
 In the "Add track" form, you can provide a URL to a file to load. Opening files
 from your local machine is not supported currently in the JBrowse 2 web app
@@ -141,7 +143,7 @@ First we will open a Linear Genome View using the navigation bar
 The configuration settings are accessible by clicking on the ellipses by each
 track.
 
-![Figure showing the configuration editor](./img/admin_settings_access.png)
+<Figure caption="The configuration editor, which will persist settings to the config file if editing using the admin-server" src="/img/admin_settings_access.png"/>
 
 Open the configuration editor for the track by clicking on the "Settings" button
 shown above. You can use the configuration editor to live-edit any configurable
@@ -154,7 +156,7 @@ of your JBrowse 2 instance. This is the session that will appear when JBrowse 2
 is first visited. To do so, open the form to set the default session
 (`Admin > Set default session`):
 
-![Figure showing the default session form](./img/default_session_form.png)
+<Figure caption="The 'Set default session' will persist your current session into the config file so any subsequent visitors to the app will see this session" src="/img/default_session_form.png"/>
 
 You can use the form to clear your default session,
 select the currently open session, or any of your previously saved sessions.
@@ -162,9 +164,9 @@ select the currently open session, or any of your previously saved sessions.
 ## Additional resources
 
 There are a number of additional features for configuring JBrowse 2. Make sure
-to refer to the [config guide](config_guide.md) for topics such as
-[adding tracks](config_guide.md#adding-tracks-and-connections) or
-[adding an assembly with the CLI](config_guide.md#adding-an-assembly-with-the-cli)
+to refer to the [config guide](../config_guide) for topics such as
+[adding tracks](../config_guide#adding-tracks-and-connections) or
+[adding an assembly with the CLI](../config_guide#adding-an-assembly-with-the-cli)
 
 ## Conclusion
 

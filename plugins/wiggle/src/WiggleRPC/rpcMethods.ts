@@ -6,14 +6,14 @@ import { Region } from '@jbrowse/core/util/types'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { FeatureStats, blankStats } from '@jbrowse/core/util/stats'
+import { FeatureStats } from '@jbrowse/core/util/stats'
 
 export class WiggleGetGlobalStats extends RpcMethodType {
   name = 'WiggleGetGlobalStats'
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async deserializeArguments(args: any) {
-    const l = await super.deserializeArguments(args)
+  async deserializeArguments(args: any, rpcDriverClassName: string) {
+    const l = await super.deserializeArguments(args, rpcDriverClassName)
     return {
       ...l,
       filters: args.filters
@@ -24,28 +24,35 @@ export class WiggleGetGlobalStats extends RpcMethodType {
     }
   }
 
-  async execute(args: {
-    adapterConfig: {}
-    signal?: RemoteAbortSignal
-    headers?: Record<string, string>
-    sessionId: string
-  }): Promise<FeatureStats> {
-    const deserializedArgs = await this.deserializeArguments(args)
+  async execute(
+    args: {
+      adapterConfig: {}
+      signal?: RemoteAbortSignal
+      headers?: Record<string, string>
+      sessionId: string
+    },
+    rpcDriverClassName: string,
+  ): Promise<FeatureStats> {
+    const deserializedArgs = await this.deserializeArguments(
+      args,
+      rpcDriverClassName,
+    )
     const { adapterConfig, sessionId } = deserializedArgs
-    const { dataAdapter } = getAdapter(
+    const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
     )
-    if (
-      dataAdapter instanceof BaseFeatureDataAdapter &&
+
+    if (dataAdapter instanceof BaseFeatureDataAdapter) {
       // @ts-ignore
-      dataAdapter.constructor.capabilities.includes('hasGlobalStats')
-    ) {
-      // @ts-ignore
-      return dataAdapter.getGlobalStats(deserializedArgs)
+      if (dataAdapter.capabilities.includes('hasGlobalStats')) {
+        // @ts-ignore
+        return dataAdapter.getGlobalStats(deserializedArgs)
+      }
+      throw new Error('Data adapter does not support global stats')
     }
-    return blankStats()
+    throw new Error('Data adapter not found')
   }
 }
 
@@ -53,8 +60,8 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
   name = 'WiggleGetMultiRegionStats'
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async deserializeArguments(args: any) {
-    const l = await super.deserializeArguments(args)
+  async deserializeArguments(args: any, rpcDriverClassName: string) {
+    const l = await super.deserializeArguments(args, rpcDriverClassName)
     return {
       ...l,
       filters: args.filters
@@ -67,27 +74,39 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
 
   async serializeArguments(
     args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },
+    rpcDriverClassName: string,
   ) {
-    const assemblyManager = this.pluginManager.rootModel?.session
-      ?.assemblyManager
+    const assemblyManager =
+      this.pluginManager.rootModel?.session?.assemblyManager
     if (!assemblyManager) {
       return args
     }
 
-    return renameRegionsIfNeeded(assemblyManager, args)
+    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, {
+      ...args,
+      filters: args.filters && args.filters.toJSON().filters,
+    })
+
+    return super.serializeArguments(renamedArgs, rpcDriverClassName)
   }
 
-  async execute(args: {
-    adapterConfig: {}
-    signal?: RemoteAbortSignal
-    sessionId: string
-    headers?: Record<string, string>
-    regions: Region[]
-    bpPerPx: number
-  }) {
-    const deserializedArgs = await this.deserializeArguments(args)
+  async execute(
+    args: {
+      adapterConfig: {}
+      signal?: RemoteAbortSignal
+      sessionId: string
+      headers?: Record<string, string>
+      regions: Region[]
+      bpPerPx: number
+    },
+    rpcDriverClassName: string,
+  ) {
+    const deserializedArgs = await this.deserializeArguments(
+      args,
+      rpcDriverClassName,
+    )
     const { regions, adapterConfig, sessionId } = deserializedArgs
-    const { dataAdapter } = getAdapter(
+    const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
@@ -96,6 +115,6 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
       return dataAdapter.getMultiRegionStats(regions, deserializedArgs)
     }
-    return blankStats()
+    throw new Error('Data adapter not found')
   }
 }

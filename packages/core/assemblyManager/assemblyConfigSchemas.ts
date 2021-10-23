@@ -19,6 +19,12 @@ export default (pluginManager: PluginManager) => {
         description:
           'Define custom colors for each reference sequence. Will cycle through this list if there are not enough colors for every sequence.',
       },
+      displayName: {
+        type: 'string',
+        defaultValue: '',
+        description:
+          'A human readable display name for the assembly e.g. "Homo sapiens (hg38)" while the assembly name may just be "hg38"',
+      },
     },
     { explicitIdentifier: 'name' },
   )
@@ -38,9 +44,13 @@ export default (pluginManager: PluginManager) => {
       | SnapshotIn<typeof BaseAssemblyConfigSchema>
       | SnapshotIn<typeof AssemblyConfigSchema>,
   ) {
-    if (!snapshot) return BaseAssemblyConfigSchema
+    if (!snapshot) {
+      return BaseAssemblyConfigSchema
+    }
     const { refNameAliases } = snapshot
-    if (refNameAliases) return AssemblyConfigSchema
+    if (refNameAliases) {
+      return AssemblyConfigSchema
+    }
     return BaseAssemblyConfigSchema
   }
 

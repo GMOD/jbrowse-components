@@ -5,15 +5,28 @@ import {
   fireEvent,
   render,
   waitFor,
+  screen,
 } from '@testing-library/react'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
-import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
+import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { setup, generateReadBuffer, getPluginManager } from './util'
 import JBrowse from '../JBrowse'
+
+// need to mock out data grid and force all columns to render
+// https://github.com/mui-org/material-ui-x/issues/1151
+jest.mock('@mui/x-data-grid', () => {
+  const { DataGrid } = jest.requireActual('@mui/x-data-grid')
+  return {
+    ...jest.requireActual('@mui/x-data-grid'),
+    DataGrid: props => {
+      return <DataGrid {...props} columnBuffer={6} />
+    },
+  }
+})
 
 setup()
 afterEach(cleanup)
@@ -88,7 +101,11 @@ describe('valid file tests', () => {
     const { findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
-    const rubberBandComponent = await findByTestId('rubberBand_controls')
+    const rubberBandComponent = await findByTestId(
+      'rubberBand_controls',
+      {},
+      { timeout: 10000 },
+    )
 
     expect(state.session.views[0].bpPerPx).toEqual(0.05)
     fireEvent.mouseDown(rubberBandComponent, { clientX: 100, clientY: 0 })
@@ -98,6 +115,29 @@ describe('valid file tests', () => {
     fireEvent.click(getSeqMenuItem)
     expect(state.session.views[0].leftOffset).toBeTruthy()
     expect(state.session.views[0].rightOffset).toBeTruthy()
+  })
+
+  it('click and drag rubberBand, bookmarks region', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    const rubberBandComponent = await findByTestId(
+      'rubberBand_controls',
+      {},
+      { timeout: 10000 },
+    )
+
+    expect(state.session.views[0].bpPerPx).toEqual(0.05)
+    fireEvent.mouseDown(rubberBandComponent, { clientX: 100, clientY: 0 })
+    fireEvent.mouseMove(rubberBandComponent, { clientX: 250, clientY: 0 })
+    fireEvent.mouseUp(rubberBandComponent, { clientX: 250, clientY: 0 })
+    const bookmarkMenuItem = await findByText('Bookmark region')
+    fireEvent.click(bookmarkMenuItem)
+    const { widgets } = state.session
+    const bookmarkWidget = widgets.get('GridBookmark')
+    expect(bookmarkWidget.bookmarkedRegions[0].assemblyName).toEqual('volvox')
   })
 
   it('click and drag to reorder tracks', async () => {
@@ -110,9 +150,13 @@ describe('valid file tests', () => {
     const trackId1 = state.session.views[0].tracks[1].id
     const dragHandle0 = await findByTestId(
       'dragHandle-integration_test-volvox_alignments',
+      {},
+      { timeout: 10000 },
     )
     const trackRenderingContainer1 = await findByTestId(
       'trackRenderingContainer-integration_test-volvox_filtered_vcf',
+      {},
+      { timeout: 10000 },
     )
     const dragStartEvent = createEvent.dragStart(dragHandle0)
     // Have to mock 'dataTransfer' because it's not supported in jsdom
@@ -128,7 +172,7 @@ describe('valid file tests', () => {
     await waitFor(() =>
       expect(state.session.views[0].tracks[0].id).toBe(trackId1),
     )
-  })
+  }, 15000)
 
   it('click and zoom in and back out', async () => {
     const pluginManager = getPluginManager()
@@ -169,6 +213,38 @@ describe('valid file tests', () => {
     expect(state.session.views[0].tracks.length).toBe(1)
   })
 
+  it('test navigation with the search input box', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByText, findByTestId, findByPlaceholderText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    fireEvent.click(await findByText('Help'))
+    // need this to complete before we can try to search
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+
+    const autocomplete = await findByTestId('autocomplete')
+    const inputBox = await findByPlaceholderText('Search for location')
+
+    autocomplete.focus()
+    inputBox.focus()
+    fireEvent.mouseDown(inputBox)
+    fireEvent.change(inputBox, {
+      target: { value: '{volvox2}ctgB:1..200' },
+    })
+    fireEvent.keyDown(inputBox, { key: 'Enter', code: 'Enter' })
+    fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+    await waitFor(
+      () =>
+        expect(state.session.views[0].displayedRegions[0].assemblyName).toEqual(
+          'volvox2',
+        ),
+      {
+        timeout: 25000,
+      },
+    )
+  })
+
   it('opens reference sequence track and expects zoom in message', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
@@ -183,7 +259,7 @@ describe('valid file tests', () => {
       { timeout: 10000 },
     )
     expect(getAllByText('Zoom in to see sequence')).toBeTruthy()
-  }, 10000)
+  }, 30000)
 
   it('click to display center line with correct value', async () => {
     const pluginManager = getPluginManager()
@@ -193,7 +269,11 @@ describe('valid file tests', () => {
     )
 
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
-    await findByTestId('display-volvox_alignments_alignments')
+    await findByTestId(
+      'display-volvox_alignments_alignments',
+      {},
+      { timeout: 10000 },
+    )
 
     // opens the view menu and selects show center line
     const viewMenu = await findByTestId('view_menu_icon')
@@ -206,7 +286,60 @@ describe('valid file tests', () => {
     expect(centerLineInfo.offset).toEqual(120)
   })
 
-  it('test navigation with the search input box', async () => {
+  it('bookmarks current region', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+
+    const viewMenu = await findByTestId('view_menu_icon')
+    fireEvent.click(viewMenu)
+    fireEvent.click(await findByText('Bookmark current region'))
+    const { widgets } = state.session
+    const bookmarkWidget = widgets.get('GridBookmark')
+    expect(bookmarkWidget.bookmarkedRegions[0].start).toEqual(100)
+    expect(bookmarkWidget.bookmarkedRegions[0].end).toEqual(140)
+  })
+
+  it('navigates to bookmarked region from widget', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+
+    const { findByTestId, findByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+
+    // need this to complete before we can try to navigate
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+    await findByTestId(
+      'trackRenderingContainer-integration_test-volvox_alignments',
+      {},
+      { timeout: 10000 },
+    )
+
+    const viewMenu = await findByTestId('view_menu_icon')
+    fireEvent.click(viewMenu)
+    fireEvent.click(await findByText('Open bookmark widget'))
+
+    const { widgets } = state.session
+    const bookmarkWidget = widgets.get('GridBookmark')
+    bookmarkWidget.addBookmark({
+      start: 200,
+      end: 240,
+      refName: 'ctgA',
+      assemblyName: 'volvox',
+    })
+
+    fireEvent.click(await findByText('ctgA:201..240'))
+    const newRegion = state.session.views[0].getSelectedRegions(
+      state.session.views[0].leftOffset,
+      state.session.views[0].rightOffset,
+    )[0]
+    expect(newRegion.key).toEqual('{volvox}ctgA:201..240-0')
+  })
+
+  it('test choose option from dropdown refName autocomplete', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByText, findByTestId, findByPlaceholderText } = render(
@@ -224,28 +357,30 @@ describe('valid file tests', () => {
 
     const autocomplete = await findByTestId('autocomplete')
     const inputBox = await findByPlaceholderText('Search for location')
-
-    autocomplete.focus()
-    fireEvent.change(inputBox, {
-      target: { value: '{volvox2}ctgB:1..200' },
-    })
-
-    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
-    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
-    fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-    // specify different valid assembly when navigating via locstring
     await waitFor(() =>
-      expect(state.session.views[0].displayedRegions[0].assemblyName).toEqual(
-        'volvox2',
+      expect(state.session.views[0].coarseDynamicBlocks.length).toBeGreaterThan(
+        0,
       ),
     )
-    await waitFor(() =>
-      expect(state.session.views[0].displayedRegions[0].refName).toEqual(
-        'ctgB',
-      ),
+    fireEvent.mouseDown(inputBox)
+    autocomplete.focus()
+    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
+    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
+    const option = (await screen.findAllByText('ctgB'))[0]
+    fireEvent.click(option)
+    fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+
+    await waitFor(
+      () =>
+        expect(state.session.views[0].displayedRegions[0].refName).toEqual(
+          'ctgB',
+        ),
+      {
+        timeout: 1000,
+      },
     )
     expect((await findByPlaceholderText('Search for location')).value).toEqual(
       expect.stringContaining('ctgB'),
     )
-  }, 15000)
+  }, 30000)
 })

@@ -10,26 +10,26 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 
 interface HeaderLine {
   tag: string
-  value: string
+  value: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  data: HeaderLine[]
 }
-
 interface Header {
   idToName?: string[]
   nameToId?: Record<string, number>
   readGroups?: number[]
 }
 
-export class CramAdapter extends BaseFeatureDataAdapter {
+export default class CramAdapter extends BaseFeatureDataAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private cram: any
 
-  private sequenceAdapter: BaseFeatureDataAdapter
+  private setupP?: Promise<Header>
+
+  private sequenceAdapter?: BaseFeatureDataAdapter
 
   public samHeader: Header = {}
 
@@ -39,14 +39,9 @@ export class CramAdapter extends BaseFeatureDataAdapter {
   // maps a seqId to original refname, passed specially to render args, to a seqid
   private seqIdToOriginalRefName: string[] = []
 
-  public constructor(
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-  ) {
-    super(config)
-
-    const cramLocation = readConfObject(config, 'cramLocation')
-    const craiLocation = readConfObject(config, 'craiLocation')
+  public async configure() {
+    const cramLocation = readConfObject(this.config, 'cramLocation')
+    const craiLocation = readConfObject(this.config, 'craiLocation')
     if (!cramLocation) {
       throw new Error('missing cramLocation argument')
     }
@@ -54,22 +49,27 @@ export class CramAdapter extends BaseFeatureDataAdapter {
       throw new Error('missing craiLocation argument')
     }
     this.cram = new IndexedCramFile({
-      cramFilehandle: openLocation(cramLocation),
-      index: new CraiIndex({ filehandle: openLocation(craiLocation) }),
+      cramFilehandle: openLocation(cramLocation, this.pluginManager),
+      index: new CraiIndex({
+        filehandle: openLocation(craiLocation, this.pluginManager),
+      }),
       seqFetch: this.seqFetch.bind(this),
       checkSequenceMD5: false,
-      fetchSizeLimit: config.fetchSizeLimit || 600000000,
+      fetchSizeLimit: this.config.fetchSizeLimit || 600000000,
     })
     // instantiate the sequence adapter
-    const sequenceAdapterType = readConfObject(config, [
+    const sequenceAdapterType = readConfObject(this.config, [
       'sequenceAdapter',
       'type',
     ])
 
-    const dataAdapter = getSubAdapter?.(
-      readConfObject(config, 'sequenceAdapter'),
-    ).dataAdapter
-    // TODO: BaseFeatureDataAdapter is different inside of the plugin build, needs to be gotten from pluginManager.lib
+    if (!this.getSubAdapter) {
+      throw new Error('Error getting subadapter')
+    }
+
+    const { dataAdapter } = await this.getSubAdapter(
+      readConfObject(this.config, 'sequenceAdapter'),
+    )
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
       this.sequenceAdapter = dataAdapter
     } else {
@@ -77,9 +77,11 @@ export class CramAdapter extends BaseFeatureDataAdapter {
         `CRAM feature adapters cannot use sequence adapters of type '${sequenceAdapterType}'`,
       )
     }
+    return { sequenceAdapter: this.sequenceAdapter }
   }
 
   async getHeader(opts?: BaseOptions) {
+    await this.configure()
     return this.cram.cram.getHeaderText(opts)
   }
 
@@ -87,10 +89,13 @@ export class CramAdapter extends BaseFeatureDataAdapter {
     start -= 1 // convert from 1-based closed to interbase
 
     const refSeqStore = this.sequenceAdapter
-    if (!refSeqStore) return undefined
+    if (!refSeqStore) {
+      return undefined
+    }
     const refName = this.refIdToOriginalName(seqId) || this.refIdToName(seqId)
-    // console.log(`CRAM seq ID ${seqId} -> ${refName}`)
-    if (!refName) return undefined
+    if (!refName) {
+      return undefined
+    }
 
     const features = refSeqStore.getFeatures(
       {
@@ -132,39 +137,47 @@ export class CramAdapter extends BaseFeatureDataAdapter {
 
   private async setup(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
-    if (Object.keys(this.samHeader).length === 0) {
-      statusCallback('Downloading index')
-      const samHeader = await this.cram.cram.getSamHeader(opts?.signal)
+    if (!this.setupP) {
+      this.setupP = this.configure()
+        .then(async () => {
+          statusCallback('Downloading index')
+          const samHeader: HeaderLine[] = await this.cram.cram.getSamHeader(
+            opts?.signal,
+          )
 
-      // use the @SQ lines in the header to figure out the
-      // mapping between ref ref ID numbers and names
-      const idToName: string[] = []
-      const nameToId: Record<string, number> = {}
-      const sqLines = samHeader.filter((l: { tag: string }) => l.tag === 'SQ')
-      sqLines.forEach((sqLine: { data: HeaderLine[] }, refId: number) => {
-        sqLine.data.forEach((item: HeaderLine) => {
-          if (item.tag === 'SN') {
-            // this is the ref name
-            const refName = item.value
-            nameToId[refName] = refId
-            idToName[refId] = refName
+          // use the @SQ lines in the header to figure out the
+          // mapping between ref ID numbers and names
+          const idToName: string[] = []
+          const nameToId: Record<string, number> = {}
+          samHeader
+            .filter(l => l.tag === 'SQ')
+            .forEach((sqLine, refId) => {
+              sqLine.data.forEach(item => {
+                if (item.tag === 'SN') {
+                  // this is the ref name
+                  const refName = item.value
+                  nameToId[refName] = refId
+                  idToName[refId] = refName
+                }
+              })
+            })
+
+          const readGroups = samHeader
+            .filter(l => l.tag === 'RG')
+            .map(rgLine => rgLine.data.find(item => item.tag === 'ID')?.value)
+
+          if (idToName.length) {
+            this.samHeader = { idToName, nameToId, readGroups }
           }
+          statusCallback('')
+          return this.samHeader
         })
-      })
-
-      const rgLines = samHeader.filter((l: { tag: string }) => l.tag === 'RG')
-      const readGroups = rgLines.map((rgLine: { data: HeaderLine[] }) => {
-        const { value } =
-          rgLine.data.find(item => {
-            return item.tag === 'ID'
-          }) || {}
-        return value
-      })
-      if (idToName.length) {
-        this.samHeader = { idToName, nameToId, readGroups }
-      }
-      statusCallback('')
+        .catch(e => {
+          this.setupP = undefined
+          throw e
+        })
     }
+    return this.setupP
   }
 
   async getRefNames(opts?: BaseOptions) {
@@ -247,8 +260,4 @@ export class CramAdapter extends BaseFeatureDataAdapter {
   cramRecordToFeature(record: any): Feature {
     return new CramSlightlyLazyFeature(record, this)
   }
-}
-
-export default () => {
-  return CramAdapter
 }

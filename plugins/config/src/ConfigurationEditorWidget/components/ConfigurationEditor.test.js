@@ -35,7 +35,7 @@ describe('ConfigurationEditor widget', () => {
         name: 'fileLocationTest',
         description: 'fileLocationTest',
         type: 'fileLocation',
-        defaultValue: { uri: '/path/to/my.file' },
+        defaultValue: { uri: '/path/to/my.file', locationType: 'UriLocation' },
       },
       stringArrayTest: {
         name: 'stringArrayTest',
@@ -86,9 +86,8 @@ describe('ConfigurationEditor widget', () => {
     const pluginManager = new PluginManager([new Alignments(), new SVG()])
     pluginManager.createPluggableElements()
     pluginManager.configure()
-    const PileupDisplaySchema = linearBasicDisplayConfigSchemaFactory(
-      pluginManager,
-    )
+    const PileupDisplaySchema =
+      linearBasicDisplayConfigSchemaFactory(pluginManager)
     const { container } = render(
       <ConfigurationEditor model={{ target: PileupDisplaySchema.create() }} />,
     )

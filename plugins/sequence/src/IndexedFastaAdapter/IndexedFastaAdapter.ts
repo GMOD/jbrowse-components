@@ -2,6 +2,7 @@ import { IndexedFasta } from '@gmod/indexedfasta'
 import {
   BaseFeatureDataAdapter,
   SequenceAdapter,
+  BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { FileLocation, NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -11,6 +12,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import LRU from '@jbrowse/core/util/QuickLRU'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
   protected fasta: typeof IndexedFasta
@@ -19,44 +22,40 @@ export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
     cache: new LRU({ maxSize: 200 }),
     fill: async (
       args: { refName: string; start: number; end: number },
-      // abortSignal?: AbortSignal,
+      signal?: AbortSignal,
     ) => {
       const { refName, start, end } = args
-      return this.fasta.getSequence(refName, start, end)
+      return this.fasta.getSequence(refName, start, end, { ...args, signal })
     },
   })
 
-  public constructor(config: AnyConfigurationModel) {
-    super(config)
+  public constructor(
+    config: AnyConfigurationModel,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    super(config, getSubAdapter, pluginManager)
     const fastaLocation = readConfObject(config, 'fastaLocation')
     const faiLocation = readConfObject(config, 'faiLocation')
-    if (!fastaLocation) {
-      throw new Error('must provide fastaLocation')
-    }
-    if (!faiLocation) {
-      throw new Error('must provide faiLocation')
-    }
     const fastaOpts = {
-      fasta: openLocation(fastaLocation as FileLocation),
-      fai: openLocation(faiLocation as FileLocation),
+      fasta: openLocation(fastaLocation as FileLocation, this.pluginManager),
+      fai: openLocation(faiLocation as FileLocation, this.pluginManager),
     }
 
     this.fasta = new IndexedFasta(fastaOpts)
   }
 
-  public getRefNames() {
-    return this.fasta.getSequenceList()
+  public getRefNames(opts?: BaseOptions) {
+    return this.fasta.getSequenceNames(opts)
   }
 
-  public async getRegions(): Promise<NoAssemblyRegion[]> {
-    const seqSizes = await this.fasta.getSequenceSizes()
-    return Object.keys(seqSizes).map(
-      (refName: string): NoAssemblyRegion => ({
-        refName,
-        start: 0,
-        end: seqSizes[refName],
-      }),
-    )
+  public async getRegions(opts?: BaseOptions) {
+    const seqSizes = await this.fasta.getSequenceSizes(opts)
+    return Object.keys(seqSizes).map(refName => ({
+      refName,
+      start: 0,
+      end: seqSizes[refName],
+    }))
   }
 
   /**
@@ -64,9 +63,10 @@ export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
    * @param param -
    * @returns Observable of Feature objects in the region
    */
-  public getFeatures({ refName, start, end }: NoAssemblyRegion) {
+  public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {
+    const { refName, start, end } = region
     return ObservableCreate<Feature>(async observer => {
-      const size = await this.fasta.getSequenceSize(refName)
+      const size = await this.fasta.getSequenceSize(refName, opts)
       const regionEnd = size !== undefined ? Math.min(size, end) : end
       const chunks = []
       const chunkSize = 128000
@@ -79,7 +79,7 @@ export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
           start: chunkStart,
           end: chunkStart + chunkSize,
         }
-        chunks.push(this.seqCache.get(JSON.stringify(r), r))
+        chunks.push(this.seqCache.get(JSON.stringify(r), r, opts?.signal))
       }
       const seq = (await Promise.all(chunks))
         .join('')

@@ -6,12 +6,14 @@ on:
 name: Upload website
 jobs:
   build:
-    name: upload_web
+    name: build-upload
     runs-on: ubuntu-latest
     if: "contains(github.event.head_commit.message, 'update docs')"
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:

@@ -36,6 +36,24 @@ exports[`<AboutWidget /> renders 1`] = `
   </p>
   <div
     class="makeStyles-pluginList"
-  />
+  >
+    <h6
+      class="MuiTypography-root MuiTypography-h6"
+    >
+      External plugins loaded
+    </h6>
+    <ul>
+      <li>
+        <a
+          class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary"
+          href="http://google.com"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          HelloPlugin 1.0.0
+        </a>
+      </li>
+    </ul>
+  </div>
 </div>
 `;

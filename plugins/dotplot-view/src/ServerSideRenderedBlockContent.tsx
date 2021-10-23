@@ -1,9 +1,8 @@
+import React, { useEffect, useState } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
-import LinearProgress from '@material-ui/core/LinearProgress'
+import { Typography, LinearProgress } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
-import React, { useEffect, useState } from 'react'
-import ServerSideRenderedContent from './ServerSideRenderedContent'
 
 const useStyles = makeStyles({
   loading: {
@@ -44,7 +43,7 @@ function LoadingMessage() {
 
   return shown ? (
     <div data-testid="loading-synteny" className={classes.loading}>
-      Loading &hellip;
+      <Typography>Loading &hellip;</Typography>
       <LinearProgress />
     </div>
   ) : null
@@ -52,7 +51,11 @@ function LoadingMessage() {
 
 function BlockMessage({ messageText }: { messageText: string }) {
   const classes = useStyles()
-  return <div className={classes.blockMessage}>{messageText}</div>
+  return (
+    <div className={classes.blockMessage}>
+      <Typography>{messageText}</Typography>
+    </div>
+  )
 }
 BlockMessage.propTypes = {
   messageText: PropTypes.string.isRequired,
@@ -60,7 +63,11 @@ BlockMessage.propTypes = {
 
 function BlockError({ error }: { error: Error }) {
   const classes = useStyles()
-  return <div className={classes.blockError}>{error.message}</div>
+  return (
+    <div className={classes.blockError}>
+      <Typography>{error.message}</Typography>
+    </div>
+  )
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -74,8 +81,7 @@ const ServerSideRenderedBlockContent = observer(({ model }: { model: any }) => {
   if (!model.filled) {
     return <LoadingMessage />
   }
-
-  return <ServerSideRenderedContent model={model} />
+  return model.reactElement
 })
 
 export default ServerSideRenderedBlockContent

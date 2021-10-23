@@ -1,0 +1,27 @@
+name: Desktop build - Linux
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build Linux desktop app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 14
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install deps (with cache)
+        uses: bahmutov/npm-install@v1
+      - name: Install build deps
+        run: |
+          sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+      - name: Build app
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          yarn build-electron:linux --publish always
+        working-directory: products/jbrowse-desktop

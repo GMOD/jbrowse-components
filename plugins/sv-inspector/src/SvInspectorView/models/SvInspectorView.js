@@ -42,12 +42,10 @@ function defaultOnChordClick(feature, chordTrack, pluginManager) {
   session.addView('BreakpointSplitView', viewSnapshot)
 }
 
-export default pluginManager => {
+const SvInspectorViewF = pluginManager => {
   const { jbrequire } = pluginManager
   const { autorun, reaction } = pluginManager.lib.mobx
-  const { types, getParent, addDisposer, getSnapshot } = pluginManager.lib[
-    'mobx-state-tree'
-  ]
+  const { types, getParent, addDisposer } = pluginManager.lib['mobx-state-tree']
   const { BaseViewModel } = jbrequire(
     '@jbrowse/core/pluggableElementTypes/models',
   )
@@ -117,7 +115,9 @@ export default pluginManager => {
 
       get assemblyName() {
         const { assembly } = self.spreadsheetView
-        if (assembly) return readConfObject(assembly, 'name')
+        if (assembly) {
+          return readConfObject(assembly, 'name')
+        }
         return undefined
       },
 
@@ -144,9 +144,8 @@ export default pluginManager => {
 
       // Promise<string[]> of refnames
       get featuresRefNamesP() {
-        const {
-          AdapterClass: FromConfigAdapter,
-        } = pluginManager.getAdapterType('FromConfigAdapter')
+        const { AdapterClass: FromConfigAdapter } =
+          pluginManager.getAdapterType('FromConfigAdapter')
         const adapter = new FromConfigAdapter(
           self.featuresAdapterConfigSnapshot,
         )
@@ -219,7 +218,7 @@ export default pluginManager => {
         addDisposer(
           self,
           autorun(
-            () => {
+            async () => {
               const {
                 assemblyName,
                 onlyDisplayRelevantRegionsInCircularView,
@@ -229,20 +228,14 @@ export default pluginManager => {
               const { tracks } = circularView
               const session = getSession(self)
               if (assemblyName) {
-                const assembly = session.assemblyManager.get(assemblyName)
+                const assembly = await session.assemblyManager.waitForAssembly(
+                  assemblyName,
+                )
                 if (assembly) {
-                  let { regions: assemblyRegions } = assembly
-                  if (!assemblyRegions) {
-                    assemblyRegions = []
-                  } else {
-                    assemblyRegions = getSnapshot(assemblyRegions)
-                  }
+                  const { getCanonicalRefName, regions: assemblyRegions = [] } =
+                    assembly
                   if (onlyDisplayRelevantRegionsInCircularView) {
                     if (tracks.length === 1) {
-                      const {
-                        getCanonicalRefName,
-                      } = session.assemblyManager.get(assemblyName)
-
                       featuresRefNamesP
                         .then(featureRefNames => {
                           // canonicalize the store's ref names if necessary
@@ -283,7 +276,9 @@ export default pluginManager => {
               assemblyName: self && self.assemblyName,
             }),
             data => {
-              if (!data) return
+              if (!data) {
+                return
+              }
               const { assemblyName, generatedTrackConf } = data
               // hide any visible tracks
               if (self.circularView.tracks.length) {
@@ -345,8 +340,11 @@ export default pluginManager => {
         self.width = newWidth
       },
       setHeight(newHeight) {
-        if (newHeight > minHeight) self.height = newHeight
-        else self.height = minHeight
+        if (newHeight > minHeight) {
+          self.height = newHeight
+        } else {
+          self.height = minHeight
+        }
         return self.height
       },
       resizeHeight(distance) {
@@ -380,3 +378,5 @@ export default pluginManager => {
 
   return { stateModel }
 }
+
+export default SvInspectorViewF

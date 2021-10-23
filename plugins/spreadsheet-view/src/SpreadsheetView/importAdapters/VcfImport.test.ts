@@ -1,5 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
+import { TextDecoder, TextEncoder } from 'web-encoding'
 import { promises as fsPromises } from 'fs'
 import path from 'path'
 import { parseVcfBuffer, splitVcfFileHeaderAndBody } from './VcfImport'

@@ -3,7 +3,6 @@
     "browser": true
   },
   "extends": [
-    "airbnb-typescript",
     "plugin:@typescript-eslint/recommended",
     "plugin:monorepo/recommended",
     "plugin:prettier/recommended",
@@ -20,25 +19,22 @@
   },
   "plugins": ["@typescript-eslint", "eslint-plugin-tsdoc"],
   "rules": {
-    "@typescript-eslint/await-thenable": "off",
     "@typescript-eslint/ban-ts-ignore": "off",
-    "@typescript-eslint/camelcase": "error",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/camelcase": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/explicit-member-accessibility": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-empty-function": "off",
-    "@typescript-eslint/no-misused-promises": "off",
+    "@typescript-eslint/no-unused-vars": ["warn"],
+    "@typescript-eslint/no-unused-expressions": "off",
     "@typescript-eslint/no-use-before-define": "off",
     "@typescript-eslint/no-var-requires": "off",
-    "@typescript-eslint/prefer-regexp-exec": "off",
-    "@typescript-eslint/require-await": "off",
-    "@typescript-eslint/unbound-method": "off",
-    "class-methods-use-this": "off",
-    "global-require": "off",
-    "import/no-cycle": "off",
-    "import/prefer-default-export": "off",
-    "jsx-a11y/mouse-events-have-key-events": "off",
-    "max-classes-per-file": "off",
-    "monorepo/no-internal-import": "off",
+    "@typescript-eslint/no-redeclare": "off",
+
+    "no-use-before-define": "off",
+    "curly": "error",
+    "no-global-assign": "warn",
     "no-console": [
       "warn",
       {
@@ -46,24 +42,19 @@
       }
     ],
     "no-debugger": "warn",
-    "no-param-reassign": "off",
-    "no-plusplus": "off",
-    "no-restricted-syntax": "off",
     "no-undef": "error",
     "no-underscore-dangle": "warn",
-    "no-use-before-define": "off",
-    "prettier/prettier": "off",
+
+    "import/no-extraneous-dependencies": "error",
+    "import/no-anonymous-default-export": "off",
+    "monorepo/no-internal-import": "off",
+
+    "react/no-danger": "warn",
     "react/destructuring-assignment": "error",
-    "react/forbid-prop-types": "off",
-    "react/jsx-filename-extension": "off",
-    "react/jsx-no-bind": "off",
-    "react/jsx-props-no-spreading": "off",
-    "react/no-array-index-key": "off",
     "react/no-unused-prop-types": "error",
     "react/no-unused-state": "error",
     "react/prefer-stateless-function": "error",
     "react/prop-types": "error",
-    "react/require-default-props": "error",
     "spaced-comment": [
       "error",
       "always",
@@ -71,13 +62,6 @@
         "markers": ["/"]
       }
     ]
-  },
-  "settings": {
-    "import/resolver": {
-      "node": {
-        "extensions": [".js", ".jsx", ".ts", ".tsx"]
-      }
-    }
   },
   "overrides": [
     {
@@ -93,7 +77,16 @@
       }
     },
     {
-      "files": ["**/test/**", "**/*.test.[t,j]s", "**/*.test.[t,j]sx"],
+      "files": [
+        "**/test/**",
+        "**/*.test.[t,j]s",
+        "**/*.test.[t,j]sx",
+        "**/rescripts/*",
+        "**/tests/util.js",
+        "**/webpack.config.js",
+        "**/scripts/notarize.js",
+        "**/src/testUtil.ts"
+      ],
       "env": {
         "jest": true
       },

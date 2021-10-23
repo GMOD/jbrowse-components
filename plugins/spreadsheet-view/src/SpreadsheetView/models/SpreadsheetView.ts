@@ -1,9 +1,19 @@
+import {
+  types,
+  getParent,
+  getEnv,
+  cast,
+  SnapshotIn,
+  Instance,
+} from 'mobx-state-tree'
+import { observable } from 'mobx'
+import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { readConfObject } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { MenuItem } from '@jbrowse/core/ui'
-import { SnapshotIn, Instance } from 'mobx-state-tree'
 import { getSession, InstanceOfModelReturnedBy } from '@jbrowse/core/util'
 import DoneIcon from '@material-ui/icons/Done'
+
 import Spreadsheet from './Spreadsheet'
 import ImportWizard from './ImportWizard'
 import FilterControls from './FilterControls'
@@ -35,12 +45,8 @@ const defaultRowMenuItems: MenuItemWithDisabledCallback[] = [
   },
 ]
 
-export default (pluginManager: PluginManager) => {
-  const { lib, load } = pluginManager
-  const { mobx } = lib
-  const { types, getParent, getEnv } = lib['mobx-state-tree']
-  const { BaseViewModel } = lib['@jbrowse/core/pluggableElementTypes/models']
-
+const SpreadsheetViewModelF = (pluginManager: PluginManager) => {
+  const { load } = pluginManager
   const SpreadsheetModel = load(Spreadsheet)
   const ImportWizardModel = load(ImportWizard)
   const FilterControlsModel = load(FilterControls)
@@ -80,7 +86,7 @@ export default (pluginManager: PluginManager) => {
     })
     .volatile(() => ({
       width: 400,
-      rowMenuItems: mobx.observable(defaultRowMenuItems),
+      rowMenuItems: observable(defaultRowMenuItems),
     }))
     .views(self => ({
       get readyToDisplay() {
@@ -94,23 +100,19 @@ export default (pluginManager: PluginManager) => {
       get outputRows() {
         if (self.spreadsheet && self.spreadsheet.rowSet.isLoaded) {
           const selected = self.spreadsheet.rowSet.selectedFilteredRows
-          if (selected.length) return selected
+          if (selected.length) {
+            return selected
+          }
           return self.spreadsheet.rowSet.sortedFilteredRows
         }
         return undefined
       },
 
       get assembly() {
-        if (self.spreadsheet && self.spreadsheet.assemblyName) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const assemblies = getSession(self).assemblies as any[]
-          const assembly = (assemblies || []).find(
-            asm =>
-              readConfObject(asm, 'name') === self.spreadsheet?.assemblyName,
-          )
-          if (assembly) {
-            return assembly
-          }
+        const name = self.spreadsheet?.assemblyName
+        if (name) {
+          const assemblies = getSession(self).assemblies
+          return assemblies?.find(asm => readConfObject(asm, 'name') === name)
         }
         return undefined
       },
@@ -124,8 +126,11 @@ export default (pluginManager: PluginManager) => {
         return self.width
       },
       setHeight(newHeight: number) {
-        if (newHeight > minHeight) self.height = newHeight
-        else self.height = minHeight
+        if (newHeight > minHeight) {
+          self.height = newHeight
+        } else {
+          self.height = minHeight
+        }
         return self.height
       },
       resizeHeight(distance: number) {
@@ -142,8 +147,7 @@ export default (pluginManager: PluginManager) => {
       /** load a new spreadsheet and set our mode to display it */
       displaySpreadsheet(spreadsheet: SnapshotIn<typeof SpreadsheetModel>) {
         self.filterControls.clearAllFilters()
-        // @ts-ignore
-        self.spreadsheet = spreadsheet
+        self.spreadsheet = cast(spreadsheet)
         self.mode = 'display'
       },
 
@@ -152,7 +156,9 @@ export default (pluginManager: PluginManager) => {
       },
 
       setDisplayMode() {
-        if (self.readyToDisplay) self.mode = 'display'
+        if (self.readyToDisplay) {
+          self.mode = 'display'
+        }
       },
 
       closeView() {
@@ -164,3 +170,5 @@ export default (pluginManager: PluginManager) => {
 
   return stateModel
 }
+
+export default SpreadsheetViewModelF

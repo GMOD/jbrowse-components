@@ -16,14 +16,15 @@ class AbortError extends Error {
  * @returns nothing
  */
 export function checkAbortSignal(signal?: AbortSignal): void {
-  if (!signal) return
+  if (!signal) {
+    return
+  }
 
   if (!(signal instanceof AbortSignal)) {
     throw new TypeError('must pass an AbortSignal')
   }
 
   if (signal.aborted) {
-    // eslint-disable-next-line @typescript-eslint/no-throw-literal
     throw makeAbortError()
   }
 }
@@ -55,7 +56,9 @@ export function makeAbortError() {
 }
 
 export function observeAbortSignal(signal?: AbortSignal): Observable<Event> {
-  if (!signal) return Observable.create()
+  if (!signal) {
+    return Observable.create()
+  }
   return fromEvent(signal, 'abort')
 }
 
@@ -63,17 +66,18 @@ export function observeAbortSignal(signal?: AbortSignal): Observable<Event> {
  * check if the given exception was caused by an operation being intentionally aborted
  * @param exception -
  */
-export function isAbortException(exception: Error): boolean {
+export function isAbortException(exception: unknown): boolean {
   return (
+    exception instanceof Error &&
     // DOMException
-    exception.name === 'AbortError' ||
-    // standard-ish non-DOM abort exception
-    (exception as AbortError).code === 'ERR_ABORTED' ||
-    // message contains aborted for bubbling through RPC
-    // things we have seen that we want to catch here
-    // Error: aborted
-    // AbortError: aborted
-    // AbortError: The user aborted a request.
-    !!exception.message.match(/\b(aborted|AbortError)\b/i)
+    (exception.name === 'AbortError' ||
+      // standard-ish non-DOM abort exception
+      (exception as AbortError).code === 'ERR_ABORTED' ||
+      // message contains aborted for bubbling through RPC
+      // things we have seen that we want to catch here
+      // Error: aborted
+      // AbortError: aborted
+      // AbortError: The user aborted a request.
+      !!exception.message.match(/\b(aborted|AbortError)\b/i))
   )
 }

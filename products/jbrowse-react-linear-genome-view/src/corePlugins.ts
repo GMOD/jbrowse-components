@@ -8,8 +8,9 @@ import Sequence from '@jbrowse/plugin-sequence'
 import SVG from '@jbrowse/plugin-svg'
 import Variants from '@jbrowse/plugin-variants'
 import Wiggle from '@jbrowse/plugin-wiggle'
+import Trix from '@jbrowse/plugin-trix'
 
-export default [
+const corePlugins = [
   SVG,
   Alignments,
   BED,
@@ -20,4 +21,7 @@ export default [
   Sequence,
   Variants,
   Wiggle,
+  Trix,
 ]
+
+export default corePlugins

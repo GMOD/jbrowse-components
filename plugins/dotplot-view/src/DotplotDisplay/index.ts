@@ -16,6 +16,7 @@ import {
   getSession,
   makeAbortableReaction,
 } from '@jbrowse/core/util'
+import React from 'react'
 
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { DotplotViewModel } from '../DotplotView/model'
@@ -49,20 +50,23 @@ export function stateModelFactory(configSchema: any) {
           renderInProgress: undefined as AbortController | undefined,
           filled: false,
           data: undefined as any,
-          html: '',
+          reactElement: undefined as React.ReactElement | undefined,
           message: undefined as string | undefined,
           renderingComponent: undefined as any,
-          ReactComponent2: (ServerSideRenderedBlockContent as unknown) as React.FC,
+          ReactComponent2:
+            ServerSideRenderedBlockContent as unknown as React.FC,
         })),
     )
     .views(self => ({
       get rendererTypeName() {
-        return getConf(self, 'renderer').type
+        return getConf(self, ['renderer', 'type'])
       },
-      get renderProps() {
+      renderProps() {
         return {
           ...getParentRenderProps(self),
+          rpcDriverName: self.rpcDriverName,
           displayModel: self,
+          config: self.configuration.renderer,
         }
       },
     }))
@@ -91,7 +95,7 @@ export function stateModelFactory(configSchema: any) {
         setLoading(abortController: AbortController) {
           self.filled = false
           self.message = undefined
-          self.html = ''
+          self.reactElement = undefined
           self.data = undefined
           self.error = undefined
           self.renderingComponent = undefined
@@ -103,7 +107,7 @@ export function stateModelFactory(configSchema: any) {
           }
           self.filled = false
           self.message = messageText
-          self.html = ''
+          self.reactElement = undefined
           self.data = undefined
           self.error = undefined
           self.renderingComponent = undefined
@@ -111,20 +115,22 @@ export function stateModelFactory(configSchema: any) {
         },
         setRendered(args: {
           data: any
-          html: any
+          reactElement: React.ReactElement
           renderingComponent: React.Component
         }) {
-          if (args === undefined) return
-          const { data, html, renderingComponent } = args
+          if (args === undefined) {
+            return
+          }
+          const { data, reactElement, renderingComponent } = args
           self.filled = true
           self.message = undefined
-          self.html = html
+          self.reactElement = reactElement
           self.data = data
           self.error = undefined
           self.renderingComponent = renderingComponent
           renderInProgress = undefined
         },
-        setError(error: Error) {
+        setError(error: unknown) {
           console.error(error)
           if (renderInProgress && !renderInProgress.signal.aborted) {
             renderInProgress.abort()
@@ -132,7 +138,7 @@ export function stateModelFactory(configSchema: any) {
           // the rendering failed for some reason
           self.filled = false
           self.message = undefined
-          self.html = ''
+          self.reactElement = undefined
           self.data = undefined
           self.error = error
           self.renderingComponent = undefined
@@ -144,13 +150,12 @@ export function stateModelFactory(configSchema: any) {
 
 function renderBlockData(self: DotplotDisplayModel) {
   const { rpcManager } = getSession(self)
-  const { renderProps, rendererType } = self
+  const { rendererType } = self
   const { adapterConfig } = self
   const parent = getContainingView(self) as DotplotViewModel
 
-  // Alternative to readConfObject(config) is below
-  // used because renderProps is something under our control.
-  // Compare to serverSideRenderedBlock
+  // Alternative to readConfObject(config) is below used because renderProps is
+  // something under our control.  Compare to serverSideRenderedBlock
   readConfObject(self.configuration)
   getSnapshot(parent)
 
@@ -160,15 +165,13 @@ function renderBlockData(self: DotplotDisplayModel) {
       rendererType,
       rpcManager,
       renderProps: {
-        ...renderProps,
+        ...self.renderProps(),
         view: getSnapshot(parent),
         width: viewWidth,
         height: viewHeight,
         borderSize,
         borderX,
         borderY,
-      },
-      renderArgs: {
         adapterConfig,
         rendererType: rendererType.name,
         sessionId: getRpcSessionId(self),
@@ -186,17 +189,14 @@ async function renderBlockEffect(
     throw new Error('cannot render with no props')
   }
 
-  const { rendererType, rpcManager, renderArgs, renderProps } = props
+  const { rendererType, rpcManager, renderProps } = props
 
-  const { html, ...data } = await (rendererType as any).renderInClient(
+  const { reactElement, ...data } = await rendererType.renderInClient(
     rpcManager,
-    {
-      ...renderArgs,
-      ...renderProps,
-    },
+    renderProps,
   )
 
-  return { html, data, renderingComponent: rendererType.ReactComponent }
+  return { reactElement, data, renderingComponent: rendererType.ReactComponent }
 }
 
 export type DotplotDisplayStateModel = ReturnType<typeof stateModelFactory>

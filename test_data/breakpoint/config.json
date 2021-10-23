@@ -4,12 +4,22 @@
       "name": "hg19",
       "aliases": ["GRCh37"],
       "sequence": {
-        "trackId": "hg19_seq",
         "type": "ReferenceSequenceTrack",
+        "trackId": "Pd8Wh30ei9R",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "../hg19.chrom.sizes"
+            "uri": "../hg19.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "../hg19_aliases_chr.txt",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -24,11 +34,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
+          "uri": "hs37d5.HG002-SequelII-CCS.sv.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
+            "uri": "hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -42,11 +54,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "pacbio_chr3_chr6.vcf.gz"
+          "uri": "pacbio_chr3_chr6.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "pacbio_chr3_chr6.vcf.gz.tbi"
+            "uri": "pacbio_chr3_chr6.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -60,11 +74,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "pacbio_chr3_chr6.bam"
+          "uri": "pacbio_chr3_chr6.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "pacbio_chr3_chr6.bam.bai"
+            "uri": "pacbio_chr3_chr6.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -89,13 +105,13 @@
             "bpPerPx": 10,
             "displayedRegions": [
               {
-                "refName": "3",
+                "refName": "chr3",
                 "start": 0,
                 "end": 186700647,
                 "assemblyName": "hg19"
               },
               {
-                "refName": "3",
+                "refName": "chr3",
                 "start": 186700647,
                 "end": 198022430,
                 "assemblyName": "hg19"
@@ -134,13 +150,13 @@
             "bpPerPx": 10,
             "displayedRegions": [
               {
-                "refName": "6",
+                "refName": "chr6",
                 "start": 0,
                 "end": 56758391,
                 "assemblyName": "hg19"
               },
               {
-                "refName": "6",
+                "refName": "chr6",
                 "start": 56758391,
                 "end": 171115067,
                 "assemblyName": "hg19"
@@ -195,9 +211,10 @@
       "type": "JBrowse1Connection",
       "connectionId": "COSMIC_connection_grch37",
       "name": "COSMIC (GRCh37)",
-      "assemblyName": "hg19",
+      "assemblyNames": ["hg19"],
       "dataDirLocation": {
-        "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch37/v90/cosmic"
+        "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch37/v90/cosmic",
+        "locationType": "UriLocation"
       }
     }
   ]

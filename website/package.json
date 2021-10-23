@@ -1,13 +1,13 @@
 {
   "name": "@jbrowse/website",
-  "version": "0.0.1-beta.17",
   "license": "Apache-2.0",
   "homepage": ".",
   "scripts": {
     "prestart": "npm run make combined.md",
-    "start": "docusaurus start",
-    "prebuild": "npm run make combined.md",
+    "start": "npm run fetchPlugins && docusaurus start",
+    "prebuild": "npm run make combined.md && npm run fetchPlugins",
     "build": "docusaurus build",
+    "fetchPlugins": "rimraf plugins.json && wget https://s3.amazonaws.com/jbrowse.org/plugin-store/plugins.json",
     "swizzle": "docusaurus swizzle",
     "predeploy": "npm run build && npm run make",
     "deploy": "aws s3 sync --delete build s3://jbrowse.org/jb2/ && aws s3 cp docs/jbrowse2.pdf s3://jbrowse.org/jb2/",
@@ -15,12 +15,19 @@
     "make": "make -C docs"
   },
   "dependencies": {
-    "@docusaurus/core": "^2.0.0-alpha.68",
-    "@docusaurus/preset-classic": "^2.0.0-alpha.68",
-    "@material-ui/core": "^4.9.13",
+    "@docusaurus/core": "^2.0.0-beta.7",
+    "@docusaurus/preset-classic": "^2.0.0-beta.7",
+    "@emotion/react": "^11.5.0",
+    "@emotion/styled": "^11.3.0",
+    "@mui/icons-material": "^5.0.4",
+    "@mui/material": "^5.0.4",
+    "@mui/styles": "^5.0.1",
+    "acorn": "^8.1.1",
+    "acorn-jsx": "^5.3.1",
     "clsx": "^1.1.1",
-    "react": "^16.8.4",
-    "react-dom": "^16.8.4"
+    "copy-to-clipboard": "^3.3.1",
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0"
   },
   "browserslist": {
     "production": [

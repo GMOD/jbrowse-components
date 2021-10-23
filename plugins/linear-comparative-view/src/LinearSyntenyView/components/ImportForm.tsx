@@ -2,34 +2,24 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
-import Button from '@material-ui/core/Button'
-import Container from '@material-ui/core/Container'
-import Grid from '@material-ui/core/Grid'
-import MenuItem from '@material-ui/core/MenuItem'
-import TextField from '@material-ui/core/TextField'
+import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
+import {
+  Button,
+  Container,
+  Grid,
+  Paper,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 import { FileLocation } from '@jbrowse/core/util/types'
-import { makeStyles } from '@material-ui/core/styles'
 import { FileSelector } from '@jbrowse/core/ui'
-import { Paper, Typography } from '@material-ui/core'
 import { LinearSyntenyViewModel } from '../model'
-
-// the below importsused for multi-way synteny, not implemented yet
-// import AddIcon from '@material-ui/icons/Add'
-// import IconButton from '@material-ui/core/IconButton'
-//
 
 const useStyles = makeStyles(theme => ({
   importFormContainer: {
     padding: theme.spacing(4),
   },
-  importFormEntry: {
-    minWidth: 180,
-  },
-  errorMessage: {
-    textAlign: 'center',
-    paddingTop: theme.spacing(1),
-    paddingBottom: theme.spacing(1),
-  },
+
   formPaper: {
     maxWidth: 600,
     margin: '0 auto',
@@ -37,63 +27,39 @@ const useStyles = makeStyles(theme => ({
     marginBottom: 10,
   },
 }))
-const FormRow = observer(
-  ({
-    model,
-    selected,
-    onChange,
-    error,
-  }: {
-    model: LinearSyntenyViewModel
-    selected: number
-    onChange: (arg0: number) => void
-    error?: string
-  }) => {
-    const classes = useStyles()
-    const { assemblyNames } = getSession(model) as { assemblyNames: string[] }
-    return (
-      <Grid container item justify="center" spacing={2} alignItems="center">
-        <TextField
-          select
-          variant="outlined"
-          value={assemblyNames[selected] ? selected : ''}
-          onChange={event => {
-            onChange(Number(event.target.value))
-          }}
-          error={Boolean(error)}
-          disabled={Boolean(error)}
-          className={classes.importFormEntry}
-        >
-          {assemblyNames.map((name, idx) => (
-            <MenuItem key={name} value={idx}>
-              {name}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Grid>
-    )
-  },
-)
+
+const ErrorDisplay = observer(({ error }: { error?: Error | string }) => {
+  return (
+    <Typography variant="h6" color="error">
+      {`${error}`}
+    </Typography>
+  )
+})
+
 const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   const classes = useStyles()
-  const [selected, setSelected] = useState([0, 0])
-  const [numRows] = useState(2)
-  const [trackData, setTrackData] = useState<FileLocation>({ uri: '' })
   const session = getSession(model)
-  const { assemblyNames } = session
-  const error = assemblyNames.length ? '' : 'No configured assemblies'
+  const { assemblyNames, assemblyManager } = session
+  const [trackData, setTrackData] = useState<FileLocation>({
+    uri: '',
+    locationType: 'UriLocation',
+  })
+  const [selected, setSelected] = useState([assemblyNames[0], assemblyNames[0]])
+  const [numRows] = useState(2)
+
+  const asmError = selected
+    .map(a => assemblyManager.get(a)?.error)
+    .filter(f => !!f)
+    .join(', ')
+  const err = assemblyNames.length ? asmError : 'No configured assemblies'
 
   async function onOpenClick() {
-    const { assemblyManager } = session
-
     model.setViews(
       // @ts-ignore
       await Promise.all(
         selected
           .map(async selection => {
-            const assembly = await assemblyManager.waitForAssembly(
-              assemblyNames[selection],
-            )
+            const assembly = await assemblyManager.waitForAssembly(selection)
             if (assembly) {
               return {
                 type: 'LinearGenomeView',
@@ -104,7 +70,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
                 displayedRegions: getSnapshot(assembly.regions),
               }
             }
-            return null
+            throw new Error(`Assembly ${selection} failed to load`)
           })
           .filter(f => !!f),
       ),
@@ -112,92 +78,89 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
 
     model.views.forEach(view => view.setWidth(model.width))
 
-    if ('uri' in trackData) {
-      const fileName = trackData.uri
+    const fileName =
+      'uri' in trackData && trackData.uri
         ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
-        : null
+        : 'MyTrack'
 
-      // @ts-ignore
-      const configuration = session.addTrackConf({
-        trackId: `fileName-${Date.now()}`,
-        name: fileName,
-        assemblyNames: selected.map(selection => assemblyNames[selection]),
-        type: 'SyntenyTrack',
-        adapter: {
-          type: 'PAFAdapter',
-          pafLocation: trackData,
-          assemblyNames: selected.map(selection => assemblyNames[selection]),
-        },
-      })
-      model.toggleTrack(configuration.trackId)
-    }
+    // @ts-ignore
+    const configuration = session.addTrackConf({
+      trackId: `${fileName}-${Date.now()}`,
+      name: fileName,
+      assemblyNames: selected,
+      type: 'SyntenyTrack',
+      adapter: {
+        type: 'PAFAdapter',
+        pafLocation: trackData,
+        assemblyNames: selected,
+      },
+    })
+    model.toggleTrack(configuration.trackId)
   }
 
   return (
     <Container className={classes.importFormContainer}>
-      {error ? (
-        <Typography color="error">{error}</Typography>
-      ) : (
-        <>
-          <Paper className={classes.formPaper}>
-            <Grid
-              container
-              item
-              justify="center"
-              spacing={4}
-              alignItems="center"
-            >
-              <Grid item>
-                <p style={{ textAlign: 'center' }}>
-                  Select assemblies for synteny view
-                </p>
-                {[...new Array(numRows)].map((_, index) => (
-                  <FormRow
-                    key={`row_${index}_${selected[index]}`}
-                    error={error}
-                    selected={selected[index]}
-                    onChange={val => {
-                      const copy = selected.slice(0)
-                      copy[index] = val
-                      setSelected(copy)
-                    }}
-                    model={model}
-                  />
-                ))}
-              </Grid>
-            </Grid>
-          </Paper>
-
-          <Paper className={classes.formPaper}>
-            <Grid container justify="center">
-              <p style={{ textAlign: 'center' }}>
-                <b>Optional</b>: Add a PAF{' '}
-                <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
-                  (pairwise mapping format)
-                </a>{' '}
-                file for the linear synteny view. Note that the first assembly
-                should be the left column of the PAF and the second assembly
-                should be the right column
-              </p>
-              <Grid item>
-                <FileSelector
-                  name="URL"
-                  description=""
-                  location={trackData}
-                  setLocation={loc => setTrackData(loc)}
-                />
-              </Grid>
-            </Grid>
-          </Paper>
-          <Grid container justify="center">
-            <Grid item>
-              <Button onClick={onOpenClick} variant="contained" color="primary">
-                Open
-              </Button>
-            </Grid>
+      {err ? <ErrorDisplay error={err} /> : null}
+      <Paper className={classes.formPaper}>
+        <Grid
+          container
+          item
+          justifyContent="center"
+          spacing={4}
+          alignItems="center"
+        >
+          <Grid item>
+            <Typography>Select assemblies for synteny view</Typography>
+            {[...new Array(numRows)].map((_, index) => (
+              <AssemblySelector
+                key={`row_${index}_${selected[index]}`}
+                selected={selected[index]}
+                onChange={val => {
+                  // splice the value into the current array
+                  const copy = selected.slice(0)
+                  copy[index] = val
+                  setSelected(copy)
+                }}
+                session={session}
+              />
+            ))}
           </Grid>
-        </>
-      )}
+        </Grid>
+      </Paper>
+
+      <Paper className={classes.formPaper}>
+        <Grid container justifyContent="center">
+          <Typography style={{ textAlign: 'center' }}>
+            <b>Optional</b>: Add a PAF{' '}
+            <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
+              (pairwise mapping format)
+            </a>{' '}
+            file for the linear synteny view. Note that the first assembly
+            should be the left column of the PAF and the second assembly should
+            be the right column
+          </Typography>
+          <Grid item>
+            <FileSelector
+              name="URL"
+              description=""
+              location={trackData}
+              setLocation={loc => setTrackData(loc)}
+            />
+          </Grid>
+        </Grid>
+      </Paper>
+      <Grid container justifyContent="center">
+        <Grid item>
+          <Button
+            disabled={!!err}
+            onClick={onOpenClick}
+            variant="contained"
+            color="primary"
+          >
+            Open
+          </Button>
+        </Grid>
+      </Grid>
     </Container>
   )
 })

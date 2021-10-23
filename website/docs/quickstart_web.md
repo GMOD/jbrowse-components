@@ -4,6 +4,8 @@ title: JBrowse web quick start
 toplevel: true
 ---
 
+import Figure from './figure'
+
 In this guide, we'll get an instance of JBrowse running on your computer.
 
 ## Pre-requisites
@@ -120,12 +122,12 @@ location specified in the tool's output. It will look something like
 the configuration is not found. That is expected, since we haven't configured
 JBrowse 2 yet. It will look something like this:
 
-![JBrowse 2 screen showing no configuration found](./img/config_not_found.png)
+<Figure caption="JBrowse 2 screen showing no configuration found" src="/img/config_not_found.png"/>
 
 Go ahead an click on the sample config to see a JBrowse 2 running with a demo
 configuration. It should look like this:
 
-![JBrowse 2 with a sample configuration](./img/sample_config.png)
+<Figure caption="JBrowse 2 screen with a sample configuration" src="/img/sample_config.png"/>
 
 Congratulations! You're running JBrowse 2.
 
@@ -133,5 +135,5 @@ Congratulations! You're running JBrowse 2.
 
 Now that JBrowse 2 is set up, you can configure it with your own genomes and
 tracks. There are two ways you can configure JBrowse 2: with the JBrowse CLI
-(guide [here](quickstart_cli)) or with JBrowse 2's built-in graphical
-configuration editing (guide [here](quickstart_gui)).
+(guide [here](../quickstart_cli)) or with JBrowse 2's built-in graphical
+configuration editing (guide [here](../quickstart_gui)).

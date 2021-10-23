@@ -25,7 +25,10 @@ function HubDetails(props) {
     async function getHubTxt() {
       let hubTxt
       try {
-        const hubHandle = openLocation({ uri: hubUrl })
+        const hubHandle = openLocation({
+          uri: hubUrl,
+          locationType: 'UriLocation',
+        })
         hubTxt = await hubHandle.readFile('utf8')
       } catch (error) {
         setErrorMessage(
@@ -52,7 +55,7 @@ function HubDetails(props) {
 
     getHubTxt()
   }, [hubUrl])
-  if (errorMessage)
+  if (errorMessage) {
     return (
       <Card>
         <CardContent>
@@ -60,7 +63,8 @@ function HubDetails(props) {
         </CardContent>
       </Card>
     )
-  if (hubFile)
+  }
+  if (hubFile) {
     return (
       <Card>
         <CardHeader title={shortLabel} />
@@ -90,6 +94,7 @@ function HubDetails(props) {
         </CardActions>
       </Card>
     )
+  }
   return <LinearProgress variant="query" />
 }
 

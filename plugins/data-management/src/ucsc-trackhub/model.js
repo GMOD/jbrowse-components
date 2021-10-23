@@ -2,6 +2,7 @@ import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes/
 import {
   ConfigurationReference,
   readConfObject,
+  getConf,
 } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { types } from 'mobx-state-tree'
@@ -13,7 +14,7 @@ import {
   generateTracks,
 } from './ucscTrackHub'
 
-export default function (pluginManager) {
+export default function UCSCTrackHubConnection(pluginManager) {
   return types.compose(
     'UCSCTrackHubConnection',
     BaseConnectionModelFactory(pluginManager),
@@ -24,69 +25,91 @@ export default function (pluginManager) {
       })
       .actions(self => ({
         connect() {
-          const connectionName = readConfObject(self.configuration, 'name')
-          const hubFileLocation = readConfObject(
-            self.configuration,
-            'hubTxtLocation',
-          )
-          const assemblyName = readConfObject(
-            self.configuration,
-            'assemblyName',
-          )
+          const connectionName = getConf(self, 'name')
+          const hubFileLocation = getConf(self, 'hubTxtLocation')
           const session = getSession(self)
-          const assemblyConf = session.assemblies.find(
-            assembly => readConfObject(assembly, 'name') === assemblyName,
-          )
           fetchHubFile(hubFileLocation)
             .then(hubFile => {
-              let genomesFileLocation
-              if (hubFileLocation.uri)
-                genomesFileLocation = {
-                  uri: new URL(hubFile.get('genomesFile'), hubFileLocation.uri)
-                    .href,
-                }
-              else
-                genomesFileLocation = { localPath: hubFile.get('genomesFile') }
+              const genomesFileLocation = hubFileLocation.uri
+                ? {
+                    uri: new URL(
+                      hubFile.get('genomesFile'),
+                      hubFileLocation.uri,
+                    ).href,
+                    locationType: 'UriLocation',
+                  }
+                : {
+                    localPath: hubFile.get('genomesFile'),
+                    locationType: 'LocalPathLocation',
+                  }
               return Promise.all([
                 hubFile,
                 fetchGenomesFile(genomesFileLocation),
               ])
             })
             .then(([hubFile, genomesFile]) => {
-              if (!genomesFile.has(assemblyName))
-                throw new Error(
-                  `Assembly "${assemblyName}" not in genomes file from connection "${connectionName}"`,
+              const trackDbData = []
+              for (const [genomeName, genome] of genomesFile) {
+                const assemblyNames = getConf(self, 'assemblyNames')
+                if (
+                  assemblyNames.length > 0 &&
+                  !assemblyNames.includes(genomeName)
+                ) {
+                  break
+                }
+                const assemblyConf = session.assemblies.find(
+                  assembly => readConfObject(assembly, 'name') === genomeName,
                 )
-              // const twoBitPath = genomesFile.get(assemblyName).get('twoBitPath')
-              let trackDbFileLocation
-              if (hubFileLocation.uri)
-                trackDbFileLocation = {
-                  uri: new URL(
-                    genomesFile.get(assemblyName).get('trackDb'),
-                    new URL(hubFile.get('genomesFile'), hubFileLocation.uri),
-                  ).href,
+                if (!assemblyConf) {
+                  throw new Error(
+                    `Cannot find assembly for "${genomeName}" from the genomes file for connection "${connectionName}"`,
+                  )
                 }
-              else
-                trackDbFileLocation = {
-                  localPath: genomesFile.get(assemblyName).get('trackDb'),
-                }
-              return Promise.all([
-                trackDbFileLocation,
-                fetchTrackDbFile(trackDbFileLocation),
-              ])
+                const trackDbFileLocation = hubFileLocation.uri
+                  ? {
+                      uri: new URL(
+                        genome.get('trackDb'),
+                        new URL(
+                          hubFile.get('genomesFile'),
+                          hubFileLocation.uri,
+                        ),
+                      ).href,
+                      locationType: 'UriLocation',
+                    }
+                  : {
+                      localPath: genome.get('trackDb'),
+                      locationType: 'LocalPathLocation',
+                    }
+                trackDbData.push(
+                  Promise.all([
+                    trackDbFileLocation,
+                    fetchTrackDbFile(trackDbFileLocation),
+                    genomeName,
+                    assemblyConf,
+                  ]),
+                )
+              }
+              return Promise.all([...trackDbData])
             })
-            .then(([trackDbFileLocation, trackDbFile]) => {
-              const sequenceAdapter = readConfObject(assemblyConf, [
-                'sequence',
-                'adapter',
-              ])
-              const tracks = generateTracks(
-                trackDbFile,
+            .then(trackDbData => {
+              for (const [
                 trackDbFileLocation,
-                assemblyName,
-                sequenceAdapter,
-              )
-              self.setTrackConfs(tracks)
+                trackDbFile,
+                genomeName,
+                assemblyConf,
+              ] of trackDbData) {
+                const sequenceAdapter = readConfObject(assemblyConf, [
+                  'sequence',
+                  'adapter',
+                ])
+                const tracks = generateTracks(
+                  trackDbFile,
+                  trackDbFileLocation,
+                  genomeName,
+                  sequenceAdapter,
+                )
+                self.addTrackConfs(tracks)
+              }
             })
             .catch(error => {
               console.error(error)

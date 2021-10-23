@@ -85,6 +85,8 @@ export default class SimpleFeature implements Feature {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private data: Record<string, any>
 
+  private subfeatures?: SimpleFeature[]
+
   private parentHandle?: Feature
 
   private uniqueId: string
@@ -122,20 +124,22 @@ export default class SimpleFeature implements Feature {
       )
     }
 
-    // inflate any subfeatures that are not already feature objects
-    const { subfeatures } = this.data
-    if (subfeatures) {
-      for (let i = 0; i < subfeatures.length; i += 1) {
-        if (typeof subfeatures[i].get !== 'function') {
-          subfeatures[i].strand = subfeatures[i].strand || this.data.strand
-          subfeatures[i] = new SimpleFeature({
-            id: subfeatures[i].uniqueId || `${id}-${i}`,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            data: subfeatures[i] as Record<string, any>,
-            parent: this,
-          })
-        }
-      }
+    if (this.data.subfeatures) {
+      this.subfeatures = this.data.subfeatures?.map(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (f: any, i: number) =>
+          typeof f.get !== 'function'
+            ? new SimpleFeature({
+                id: f.uniqueId || `${id}-${i}`,
+                data: {
+                  strand: this.data.strand,
+                  ...f,
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                } as Record<string, any>,
+                parent: this,
+              })
+            : f,
+      )
     }
   }
 
@@ -145,7 +149,7 @@ export default class SimpleFeature implements Feature {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public get(name: string): any {
-    return this.data[name]
+    return name === 'subfeatures' ? this.subfeatures : this.data[name]
   }
 
   /**
@@ -187,9 +191,13 @@ export default class SimpleFeature implements Feature {
   public toJSON(): SimpleFeatureSerialized {
     const d = { ...this.data, uniqueId: this.id() } as SimpleFeatureSerialized
     const p = this.parent()
-    if (p) d.parentId = p.id()
+    if (p) {
+      d.parentId = p.id()
+    }
     const c = this.children()
-    if (c) d.subfeatures = c.map(child => child.toJSON())
+    if (c) {
+      d.subfeatures = c.map(child => child.toJSON())
+    }
     return d
   }
 

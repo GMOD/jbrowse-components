@@ -1,13 +1,15 @@
+import React from 'react'
 import { IAnyModelType, IAnyStateTreeNode } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
 import DisplayType from './DisplayType'
 
-type ViewReactComponent = React.ComponentType<{
+type BasicView = React.ComponentType<{
   // TODO: can we use AbstractViewModel here?
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   model: any
   session?: IAnyStateTreeNode
 }>
+type ViewReactComponent = React.LazyExoticComponent<BasicView> | BasicView
 
 export default class ViewType extends PluggableElementBase {
   ReactComponent: ViewReactComponent

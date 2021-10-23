@@ -1,10 +1,10 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { TextDecoder } from 'fastestsmallesttextencoderdecoder'
 import { promises as fsPromises } from 'fs'
 import path from 'path'
 import { parseCsvBuffer } from './ImportUtils'
 
-if (!window.TextDecoder) window.TextDecoder = TextDecoder
+import { TextDecoder } from 'web-encoding'
+window.TextDecoder = TextDecoder
 
 const pluginManager = new PluginManager()
 const SpreadsheetModel = pluginManager.jbrequire(

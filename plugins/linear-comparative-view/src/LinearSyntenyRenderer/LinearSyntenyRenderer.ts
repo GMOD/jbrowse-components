@@ -1,5 +1,6 @@
 import ComparativeServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import React from 'react'
 
 export default class LinearSyntenyRenderer extends ComparativeServerSideRendererType {
   async render(renderProps: {
@@ -34,21 +35,11 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
     }
 
     return {
+      reactElement: React.createElement(this.ReactComponent, {
+        ...renderProps,
+        features,
+      }),
       features: serializedFeatures,
     }
-  }
-
-  // render method called on the worker
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async renderInWorker(args: any) {
-    this.deserializeArgsInWorker(args)
-
-    const results = await this.render(args)
-
-    // serialize the results for passing back to the main thread.
-    // these will be transmitted to the main process, and will come out
-    // as the result of renderRegionWithWorker.
-    this.serializeResultsInWorker(/* results, args */)
-    return results
   }
 }

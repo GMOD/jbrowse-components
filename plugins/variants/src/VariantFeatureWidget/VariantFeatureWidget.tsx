@@ -12,7 +12,7 @@ import {
 import SimpleFeature, {
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
-import { DataGrid } from '@material-ui/data-grid'
+import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import { getEnv } from 'mobx-state-tree'
@@ -21,6 +21,7 @@ import {
   BaseCard,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import BreakendOptionDialog from './BreakendOptionDialog'
+import { parseBreakend } from '@gmod/vcf'
 
 function VariantSamples(props: any) {
   const [filter, setFilter] = useState<any>({})
@@ -58,7 +59,7 @@ function VariantSamples(props: any) {
           ? filters.every(key => {
               const val = row[key]
               const currFilter = filter[key]
-              return currFilter ? val.match(currFilter) : true
+              return currFilter ? val.match(new RegExp(currFilter, 'i')) : true
             })
           : true
       })
@@ -67,7 +68,6 @@ function VariantSamples(props: any) {
   }
   // disableSelectionOnClick helps avoid
   // https://github.com/mui-org/material-ui-x/issues/1197
-  // needs typescript fix to remove ts-ignore
   return (
     <BaseCard {...props} title="Samples">
       {error ? <Typography color="error">{`${error}`}</Typography> : null}
@@ -126,11 +126,12 @@ function BreakendPanel(props: {
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
   const [breakpointDialog, setBreakpointDialog] = useState(false)
-  let viewType: any
+  let viewType
+
   try {
     viewType = pluginManager.getViewType('BreakpointSplitView')
   } catch (e) {
-    // plugin not added
+    // ignore
   }
 
   const simpleFeature = new SimpleFeature(feature)
@@ -138,49 +139,47 @@ function BreakendPanel(props: {
     <BaseCard {...props} title="Breakends">
       <Typography>Link to linear view of breakend endpoints</Typography>
       <ul>
-        {locStrings.map((locString, index) => {
-          return (
-            <li key={`${JSON.stringify(locString)}-${index}`}>
-              <Link
-                href="#"
-                onClick={() => {
-                  const { view } = model
-                  if (view) {
-                    view.navToLocString?.(locString)
-                  } else {
-                    session.notify(
-                      'No view associated with this feature detail panel anymore',
-                      'warning',
-                    )
-                  }
-                }}
-              >
-                {`LGV - ${locString}`}
-              </Link>
-            </li>
-          )
-        })}
+        {locStrings.map(locString => (
+          <li key={`${JSON.stringify(locString)}`}>
+            <Link
+              href="#"
+              onClick={(event: any) => {
+                event.preventDefault()
+                const { view } = model
+                if (view) {
+                  view.navToLocString?.(locString)
+                } else {
+                  session.notify(
+                    'No view associated with this feature detail panel anymore',
+                    'warning',
+                  )
+                }
+              }}
+            >
+              {`LGV - ${locString}`}
+            </Link>
+          </li>
+        ))}
       </ul>
       {viewType ? (
-        <>
+        <div>
           <Typography>
             Launch split views with breakend source and target
           </Typography>
           <ul>
-            {locStrings.map((locString, index) => {
-              return (
-                <li key={`${JSON.stringify(locString)}-${index}`}>
-                  <Link
-                    href="#"
-                    onClick={() => {
-                      setBreakpointDialog(true)
-                    }}
-                  >
-                    {`${feature.refName}:${feature.start} // ${locString} (split view)`}
-                  </Link>
-                </li>
-              )
-            })}
+            {locStrings.map(locString => (
+              <li key={`${JSON.stringify(locString)}`}>
+                <Link
+                  href="#"
+                  onClick={(event: any) => {
+                    event.preventDefault()
+                    setBreakpointDialog(true)
+                  }}
+                >
+                  {`${feature.refName}:${feature.start} // ${locString} (split view)`}
+                </Link>
+              </li>
+            ))}
           </ul>
           {breakpointDialog ? (
             <BreakendOptionDialog
@@ -192,7 +191,7 @@ function BreakendPanel(props: {
               }}
             />
           ) : null}
-        </>
+        </div>
       ) : null}
     </BaseCard>
   )
@@ -200,18 +199,15 @@ function BreakendPanel(props: {
 
 function VariantFeatureDetails(props: any) {
   const { model } = props
-  const feat = JSON.parse(JSON.stringify(model.featureData))
+  const { featureData, descriptions } = model
+  const feat = JSON.parse(JSON.stringify(featureData))
   const { samples, ...rest } = feat
-  const descriptions = {
+  const basicDescriptions = {
     CHROM: 'chromosome: An identifier from the reference genome',
-    POS:
-      'position: The reference position, with the 1st base having position 1',
-    ID:
-      'identifier: Semi-colon separated list of unique identifiers where available',
-    REF:
-      'reference base(s): Each base must be one of A,C,G,T,N (case insensitive).',
-    ALT:
-      ' alternate base(s): Comma-separated list of alternate non-reference alleles',
+    POS: 'position: The reference position, with the 1st base having position 1',
+    ID: 'identifier: Semi-colon separated list of unique identifiers where available',
+    REF: 'reference base(s): Each base must be one of A,C,G,T,N (case insensitive).',
+    ALT: 'alternate base(s): Comma-separated list of alternate non-reference alleles',
     QUAL: 'quality: Phred-scaled quality score for the assertion made in ALT',
     FILTER:
       'filter status: PASS if this position has passed all filters, otherwise a semicolon-separated list of codes for filters that fail',
@@ -219,12 +215,18 @@ function VariantFeatureDetails(props: any) {
 
   return (
     <Paper data-testid="variant-side-drawer">
-      <FeatureDetails feature={rest} descriptions={descriptions} {...props} />
+      <FeatureDetails
+        feature={rest}
+        descriptions={{ ...basicDescriptions, ...descriptions }}
+        {...props}
+      />
       <Divider />
       {feat.type === 'breakend' ? (
         <BreakendPanel
           feature={feat}
-          locStrings={feat.ALT.map((alt: any) => alt.MatePosition)}
+          locStrings={feat.ALT.map(
+            (alt: string) => parseBreakend(alt).MatePosition,
+          )}
           model={model}
         />
       ) : null}

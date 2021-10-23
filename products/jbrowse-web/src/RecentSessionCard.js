@@ -30,7 +30,9 @@ function RecentSessionCard({ sessionName, onClick, onDelete }) {
 
   const handleMenuClose = action => {
     setMenuAnchorEl(null)
-    if (action === 'delete') return onDelete(sessionName)
+    if (action === 'delete') {
+      return onDelete(sessionName)
+    }
     return undefined
   }
 

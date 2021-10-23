@@ -6,9 +6,9 @@ exports[`no features 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="20px"
+    height="120"
     style="display: block;"
-    width="100px"
+    width="100"
   />
 </div>
 `;
@@ -19,9 +19,9 @@ exports[`one feature (compact mode) 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="5px"
+    height="105"
     style="display: block;"
-    width="333.3333333333333px"
+    width="333.3333333333333"
   >
     <g>
       <polyline
@@ -152,9 +152,9 @@ exports[`one feature 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="10px"
+    height="110"
     style="display: block;"
-    width="333.3333333333333px"
+    width="333.3333333333333"
   >
     <g>
       <rect
@@ -176,9 +176,9 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="40px"
+    height="140"
     style="display: block;"
-    width="333.3333333333333px"
+    width="333.3333333333333"
   >
     <g>
       <polyline
@@ -380,18 +380,16 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
         points="7766269.666666667,1.75,7766266.416666667,5,7766269.666666667,8.25"
       />
       <text
-        dominant-baseline="hanging"
         style="font-size: 13px; fill: black; cursor: default;"
         x="7759845"
-        y="12"
+        y="25"
       >
         LACTBL1
       </text>
       <text
-        dominant-baseline="hanging"
         style="font-size: 13px; fill: blue; cursor: default;"
         x="7759845"
-        y="27"
+        y="40"
       >
         lactamase beta like 1
       </text>
@@ -406,9 +404,9 @@ exports[`processed transcript (reducedRepresentation mode) 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="10px"
+    height="110"
     style="display: block;"
-    width="333.3333333333333px"
+    width="333.3333333333333"
   >
     <g>
       <rect
@@ -430,9 +428,9 @@ exports[`processed transcript 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="25px"
+    height="125"
     style="display: block;"
-    width="333.3333333333333px"
+    width="333.3333333333333"
   >
     <g>
       <polyline
@@ -553,10 +551,9 @@ exports[`processed transcript 1`] = `
         y="1.75"
       />
       <text
-        dominant-baseline="hanging"
         style="font-size: 13px; fill: black; cursor: default;"
         x="1991.7"
-        y="12"
+        y="25"
       >
         au9.g1002.t1
       </text>

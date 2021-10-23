@@ -1,6 +1,4 @@
-// eslint-disable-next-line import/no-unresolved
 const AWS = require('aws-sdk')
-// eslint-disable-next-line @typescript-eslint/camelcase
 const url_parser = require('url')
 
 const dynamo = new AWS.DynamoDB.DocumentClient()
@@ -18,8 +16,9 @@ function recordStats(event, context, done) {
   stats.acceptLanguage = headers['Accept-Language'] || null
   stats.acceptCharset = headers['Accept-Charset'] || null
   stats.host = stats.referer ? url_parser.parse(stats.referer).host : null
-  if (stats.host && stats.host.startsWith('www.'))
+  if (stats.host && stats.host.startsWith('www.')) {
     stats.host = stats.host.slice(4)
+  }
   // stats.fullHeaders = event.headers
 
   // construct JSON for the track types
@@ -27,8 +26,7 @@ function recordStats(event, context, done) {
   const trackTypesRe = /^track-types-/
   for (const key in stats) {
     if (trackTypesRe.test(key)) {
-      // eslint-disable-next-line radix
-      trackTypes[key.replace(trackTypesRe, '')] = parseInt(stats[key])
+      trackTypes[key.replace(trackTypesRe, '')] = parseInt(stats[key], 10)
       delete stats[key]
     }
   }
@@ -40,9 +38,9 @@ function recordStats(event, context, done) {
     const sessionTrackTypesRe = /^sessionTrack-types-/
     for (const key in stats) {
       if (sessionTrackTypesRe.test(key)) {
-        // eslint-disable-next-line radix
         sessionTrackTypes[key.replace(sessionTrackTypesRe, '')] = parseInt(
           stats[key],
+          10,
         )
         delete stats[key]
       }
@@ -64,9 +62,7 @@ function recordStats(event, context, done) {
 
 exports.handler = (event, context, callback) => {
   // console.log('Received event:', JSON.stringify(event, null, 2));
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const done = (err, res) =>
+  const done = err =>
     callback(null, {
       statusCode: err ? '400' : '200',
       body: err

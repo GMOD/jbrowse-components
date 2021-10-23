@@ -1,6 +1,6 @@
-/* eslint-disable no-continue */
 import React, { useRef, useMemo, useEffect } from 'react'
 import { observer } from 'mobx-react'
+import { isAlive } from 'mobx-state-tree'
 import SimpleFeature, {
   SimpleFeatureSerialized,
   Feature,
@@ -34,18 +34,25 @@ function layoutMatches(features: Feature[][]) {
         for (const [f1, f2] of generateMatches(features[i], features[j], feat =>
           feat.get('syntenyId'),
         )) {
+          let f1s = f1.get('start')
+          let f1e = f1.get('end')
+          const f2s = f2.get('start')
+          const f2e = f2.get('end')
+          if (f1.get('strand') === -1) {
+            ;[f1e, f1s] = [f1s, f1e]
+          }
           matches.push([
             {
               feature: f1,
               level: i,
               refName: f1.get('refName'),
-              layout: [f1.get('start'), 0, f1.get('end'), 10] as RectTuple,
+              layout: [f1s, 0, f1e, 10] as RectTuple,
             },
             {
               feature: f2,
               level: j,
               refName: f2.get('refName'),
-              layout: [f2.get('start'), 0, f2.get('end'), 10] as RectTuple,
+              layout: [f2s, 0, f2e, 10] as RectTuple,
             },
           ])
         }
@@ -86,14 +93,26 @@ function LinearSyntenyRendering(props: {
       }),
     [features],
   )
-
-  const parentView = getContainingView(displayModel) as LinearSyntenyViewModel
-  const { views } = parentView
   const matches = layoutMatches(deserializedFeatures)
-  const offsets = views.map(view => view.offsetPx)
+  const views = useMemo(() => {
+    try {
+      const parentView =
+        'type' in displayModel
+          ? (getContainingView(displayModel) as LinearSyntenyViewModel)
+          : undefined
+      return parentView?.views
+    } catch (e) {
+      console.warn('parent view gone')
+      return null
+    }
+  }, [displayModel])
 
+  const offsets = views?.map(view => view.offsetPx)
   useEffect(() => {
-    if (!ref.current) {
+    if (!ref.current || !offsets || !views) {
+      return
+    }
+    if (!isAlive(displayModel)) {
       return
     }
     const ctx = ref.current.getContext('2d')
@@ -212,7 +231,16 @@ function LinearSyntenyRendering(props: {
         }
       }
     })
-  })
+  }, [
+    displayModel,
+    highResolutionScaling,
+    trackIds,
+    width,
+    views,
+    offsets,
+    height,
+    matches,
+  ])
 
   return (
     <canvas

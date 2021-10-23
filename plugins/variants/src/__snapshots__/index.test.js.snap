@@ -1,29 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`plugin in a stock JBrowse 1`] = `
-Object {
-  "type": "VcfTabixAdapter",
-}
-`;
+exports[`plugin in a stock JBrowse 1`] = `Object {}`;
 
 exports[`plugin in a stock JBrowse 2`] = `
 Object {
-  "adapter": Object {
-    "type": "VcfTabixAdapter",
-  },
   "displays": Array [
     Object {
       "displayId": "trackId0-ChordVariantDisplay",
-      "renderer": Object {
-        "type": "StructuralVariantChordRenderer",
-      },
       "type": "ChordVariantDisplay",
     },
     Object {
       "displayId": "trackId0-LinearVariantDisplay",
-      "renderer": Object {
-        "type": "StructuralVariantChordRenderer",
-      },
       "type": "LinearVariantDisplay",
     },
   ],

@@ -6,6 +6,7 @@ test('adapter can fetch sequence from volvox.chrom.sizes', async () => {
     configSchema.create({
       chromSizesLocation: {
         localPath: require.resolve('./test_data/volvox.chrom.sizes'),
+        locationType: 'LocalPathLocation',
       },
     }),
   )

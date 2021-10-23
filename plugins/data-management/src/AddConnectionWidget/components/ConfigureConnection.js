@@ -1,25 +1,20 @@
+import React, { Suspense } from 'react'
 import { ConfigurationEditor } from '@jbrowse/plugin-config'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import PropTypes from 'prop-types'
-import React from 'react'
+import { observer } from 'mobx-react'
 
-function ConfigureConnection(props) {
+const ConfigureConnection = observer(props => {
   const { connectionType, model, setModelReady } = props
   const ConfigEditorComponent =
     connectionType.configEditorComponent || ConfigurationEditor
 
   return (
-    <ConfigEditorComponent
-      model={{ target: model }}
-      setModelReady={setModelReady}
-    />
+    <Suspense fallback={<div>Loading...</div>}>
+      <ConfigEditorComponent
+        model={{ target: model }}
+        setModelReady={setModelReady}
+      />
+    </Suspense>
   )
-}
+})
 
-ConfigureConnection.propTypes = {
-  connectionType: PropTypes.shape().isRequired,
-  model: MobxPropTypes.observableObject.isRequired,
-  setModelReady: PropTypes.func.isRequired,
-}
-
-export default observer(ConfigureConnection)
+export default ConfigureConnection

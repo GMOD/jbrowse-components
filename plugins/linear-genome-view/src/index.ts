@@ -1,8 +1,4 @@
-import {
-  configSchema as baseFeatureWidgetConfigSchema,
-  ReactComponent as BaseFeatureWidgetReactComponent,
-  stateModelFactory as baseFeatureWidgetStateModelFactory,
-} from '@jbrowse/core/BaseFeatureWidget'
+import { lazy } from 'react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   createBaseTrackConfig,
@@ -11,7 +7,6 @@ import {
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
@@ -29,8 +24,9 @@ import {
 import {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
-  ReactComponent as LinearGenomeViewReactComponent,
   stateModelFactory as linearGenomeViewStateModelFactory,
+  renderToSvg,
+  RefNameAutocomplete,
 } from './LinearGenomeView'
 import { BigsiQueryRPC } from './BigsiQueryRPC/rpcMethods'
 
@@ -118,17 +114,9 @@ export default class LinearGenomeViewPlugin extends Plugin {
         new ViewType({
           name: 'LinearGenomeView',
           stateModel: linearGenomeViewStateModelFactory(pluginManager),
-          ReactComponent: LinearGenomeViewReactComponent,
-        }),
-    )
-    pluginManager.addWidgetType(
-      () =>
-        new WidgetType({
-          name: 'BaseFeatureWidget',
-          heading: 'Run refined sequence search',
-          configSchema: baseFeatureWidgetConfigSchema,
-          stateModel: baseFeatureWidgetStateModelFactory(pluginManager),
-          ReactComponent: BaseFeatureWidgetReactComponent,
+          ReactComponent: lazy(
+            () => import('./LinearGenomeView/components/LinearGenomeView'),
+          ),
         }),
     )
 
@@ -137,7 +125,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
 
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
-      pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
+      pluginManager.rootModel.appendToSubMenu(['Add'], {
         label: 'Linear genome view',
         icon: LineStyleIcon,
         onClick: (session: AbstractSessionModel) => {
@@ -155,6 +143,8 @@ export {
   linearBareDisplayConfigSchemaFactory,
   linearBasicDisplayConfigSchemaFactory,
   linearBasicDisplayModelFactory,
+  renderToSvg,
+  RefNameAutocomplete,
 }
 
 export type { LinearGenomeViewModel, LinearGenomeViewStateModel, BlockModel }

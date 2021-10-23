@@ -1,0 +1,32 @@
+name: Desktop build - Win
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build Windows desktop app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 14
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install deps (with cache)
+        uses: bahmutov/npm-install@v1
+      - name: Pre-install commands
+        run: |
+          sudo dpkg --add-architecture i386 && sudo apt-get update && sudo apt-get install wine32
+      - name: Install build deps
+        run: |
+          sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+      - name: Build app
+        env:
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          yarn build-electron:win --publish always
+        working-directory: products/jbrowse-desktop

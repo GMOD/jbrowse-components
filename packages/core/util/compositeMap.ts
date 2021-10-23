@@ -9,14 +9,18 @@ export default class CompositeMap<T, U> {
 
   has(id: T) {
     for (const submap of this.submaps.values()) {
-      if (submap.has(id)) return true
+      if (submap.has(id)) {
+        return true
+      }
     }
     return false
   }
 
   get(id: T) {
     for (const submap of this.submaps.values()) {
-      if (submap.has(id)) return submap.get(id)
+      if (submap.has(id)) {
+        return submap.get(id)
+      }
     }
     return undefined
   }

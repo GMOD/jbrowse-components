@@ -1,12 +1,16 @@
 import React, { useState } from 'react'
-import { makeStyles } from '@material-ui/core/styles'
-import Button from '@material-ui/core/Button'
-import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
-import Dialog from '@material-ui/core/Dialog'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import IconButton from '@material-ui/core/IconButton'
+import { observer } from 'mobx-react'
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  TextField,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
+
 import CloseIcon from '@material-ui/icons/Close'
 
 const useStyles = makeStyles(theme => ({
@@ -22,22 +26,17 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-export default function SortByTagDlg(props: {
-  display: { setSortedBy: Function }
+function SortByTagDlg(props: {
+  model: { setSortedBy: Function }
   handleClose: () => void
 }) {
   const classes = useStyles()
-  const { display, handleClose } = props
+  const { model, handleClose } = props
   const [tag, setTag] = useState('')
   const validTag = tag.match(/^[A-Za-z][A-Za-z0-9]$/)
   return (
-    <Dialog
-      open
-      onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-    >
-      <DialogTitle id="alert-dialog-title">
+    <Dialog open onClose={handleClose}>
+      <DialogTitle>
         Sort by tag
         <IconButton
           aria-label="close"
@@ -72,7 +71,7 @@ export default function SortByTagDlg(props: {
             variant="contained"
             color="primary"
             onClick={() => {
-              display.setSortedBy('tag', tag)
+              model.setSortedBy('tag', tag)
               handleClose()
             }}
           >
@@ -83,3 +82,4 @@ export default function SortByTagDlg(props: {
     </Dialog>
   )
 }
+export default observer(SortByTagDlg)

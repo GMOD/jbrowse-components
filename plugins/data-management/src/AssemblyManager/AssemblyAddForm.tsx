@@ -1,37 +1,38 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import TextField from '@material-ui/core/TextField'
 import FileSelector from '@jbrowse/core/ui/FileSelector'
 import { FileLocation } from '@jbrowse/core/util/types'
-import { Grid, MenuItem, Paper } from '@material-ui/core'
-import { makeStyles, createStyles, Theme } from '@material-ui/core/styles'
-import Button from '@material-ui/core/Button'
+import {
+  Button,
+  Grid,
+  MenuItem,
+  Paper,
+  TextField,
+  makeStyles,
+} from '@material-ui/core'
 import AddIcon from '@material-ui/icons/Add'
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      flexGrow: 1,
-      overflow: 'hidden',
-      padding: theme.spacing(0, 3),
-    },
-    paper: {
-      maxWidth: 400,
-      margin: `${theme.spacing(1)}px auto`,
-      padding: theme.spacing(2),
-    },
-    createButton: {
-      marginTop: '1em',
-      justifyContent: 'center',
-    },
-    paperContent: {
-      flex: 'auto',
-      margin: `${theme.spacing(1)}px auto`,
-      padding: theme.spacing(1),
-      overflow: 'auto',
-    },
-  }),
-)
+const useStyles = makeStyles(theme => ({
+  root: {
+    flexGrow: 1,
+    overflow: 'hidden',
+    padding: theme.spacing(0, 3),
+  },
+  paper: {
+    margin: `${theme.spacing(1)}px auto`,
+    padding: theme.spacing(2),
+  },
+  createButton: {
+    marginTop: '1em',
+    justifyContent: 'center',
+  },
+  paperContent: {
+    flex: 'auto',
+    margin: `${theme.spacing(1)}px auto`,
+    padding: theme.spacing(1),
+    overflow: 'auto',
+  },
+}))
 
 const AdapterSelector = observer(
   ({
@@ -41,7 +42,7 @@ const AdapterSelector = observer(
   }: {
     adapterSelection: string
     setAdapterSelection: Function
-    adapterTypes: Array<string>
+    adapterTypes: string[]
   }) => {
     return (
       <TextField
@@ -75,6 +76,8 @@ const AdapterInput = observer(
     setGziLocation,
     twoBitLocation,
     setTwoBitLocation,
+    chromSizesLocation,
+    setChromSizesLocation,
   }: {
     adapterSelection: string
     fastaLocation: FileLocation
@@ -85,6 +88,8 @@ const AdapterInput = observer(
     setGziLocation: Function
     twoBitLocation: FileLocation
     setTwoBitLocation: Function
+    chromSizesLocation: FileLocation
+    setChromSizesLocation: Function
   }) => {
     if (
       adapterSelection === 'IndexedFastaAdapter' ||
@@ -121,17 +126,30 @@ const AdapterInput = observer(
 
     if (adapterSelection === 'TwoBitAdapter') {
       return (
-        <FileSelector
-          name="twoBitLocation"
-          location={twoBitLocation}
-          setLocation={loc => setTwoBitLocation(loc)}
-        />
+        <Grid container spacing={2}>
+          <Grid item>
+            <FileSelector
+              name="twoBitLocation"
+              location={twoBitLocation}
+              setLocation={loc => setTwoBitLocation(loc)}
+            />
+          </Grid>
+          <Grid item>
+            <FileSelector
+              name="chromSizesLocation (optional, can be added to speed up loading 2bit files with many contigs)"
+              location={chromSizesLocation}
+              setLocation={loc => setChromSizesLocation(loc)}
+            />
+          </Grid>
+        </Grid>
       )
     }
 
     return null
   },
 )
+
+const blank = { uri: '' } as FileLocation
 
 const AssemblyAddForm = observer(
   ({
@@ -151,22 +169,24 @@ const AssemblyAddForm = observer(
     ]
 
     const [assemblyName, setAssemblyName] = useState('')
+    const [assemblyDisplayName, setAssemblyDisplayName] = useState('')
     const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0])
-    const [fastaLocation, setFastaLocation] = useState({ uri: '' })
-    const [faiLocation, setFaiLocation] = useState({ uri: '' })
-    const [gziLocation, setGziLocation] = useState({ uri: '' })
-    const [twoBitLocation, setTwoBitLocation] = useState({ uri: '' })
+    const [fastaLocation, setFastaLocation] = useState(blank)
+    const [faiLocation, setFaiLocation] = useState(blank)
+    const [gziLocation, setGziLocation] = useState(blank)
+    const [twoBitLocation, setTwoBitLocation] = useState(blank)
+    const [chromSizesLocation, setChromSizesLocation] = useState(blank)
 
     function createAssembly() {
       if (assemblyName === '') {
         rootModel.session.notify("Can't create an assembly without a name")
       } else {
         setFormOpen(false)
-        // setIsAssemblyBeingEdited(true)
         let newAssembly
         if (adapterSelection === 'IndexedFastaAdapter') {
           newAssembly = {
             name: assemblyName,
+            displayName: assemblyDisplayName,
             sequence: {
               adapter: {
                 type: 'IndexedFastaAdapter',
@@ -178,6 +198,7 @@ const AssemblyAddForm = observer(
         } else if (adapterSelection === 'BgzipFastaAdapter') {
           newAssembly = {
             name: assemblyName,
+            displayName: assemblyDisplayName,
             sequence: {
               adapter: {
                 type: 'BgzipFastaAdapter',
@@ -190,10 +211,12 @@ const AssemblyAddForm = observer(
         } else if (adapterSelection === 'TwoBitAdapter') {
           newAssembly = {
             name: assemblyName,
+            displayName: assemblyDisplayName,
             sequence: {
               adapter: {
                 type: 'TwoBitAdapter',
                 twoBitLocation,
+                chromSizesLocation,
               },
             },
           }
@@ -212,10 +235,20 @@ const AssemblyAddForm = observer(
           <TextField
             id="assembly-name"
             inputProps={{ 'data-testid': 'assembly-name' }}
-            label="Assembly Name"
+            label="Assembly name"
+            helperText="The assembly name e.g. hg38"
             variant="outlined"
             value={assemblyName}
             onChange={event => setAssemblyName(event.target.value)}
+          />
+          <TextField
+            id="assembly-name"
+            inputProps={{ 'data-testid': 'assembly-display-name' }}
+            label="Assembly display name"
+            helperText='A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
+            variant="outlined"
+            value={assemblyDisplayName}
+            onChange={event => setAssemblyDisplayName(event.target.value)}
           />
           <AdapterSelector
             adapterSelection={adapterSelection}
@@ -233,6 +266,8 @@ const AssemblyAddForm = observer(
               setGziLocation={setGziLocation}
               twoBitLocation={twoBitLocation}
               setTwoBitLocation={setTwoBitLocation}
+              chromSizesLocation={chromSizesLocation}
+              setChromSizesLocation={setChromSizesLocation}
             />
           </div>
         </Paper>

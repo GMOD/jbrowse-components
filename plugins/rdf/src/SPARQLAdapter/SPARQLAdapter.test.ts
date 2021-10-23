@@ -13,9 +13,14 @@ import configSchema from './configSchema'
 test('adapter can fetch variants from volvox.vcf.gz', async () => {
   function mockFetch(url: string): Promise<Response> {
     let response = {}
-    if (url.includes('chr1')) response = queryResponse
-    if (url.includes('chr80')) response = emptyQueryResponse
-    else if (url.includes('fakeRefNamesQuery')) response = refNamesResponse
+    if (url.includes('chr1')) {
+      response = queryResponse
+    }
+    if (url.includes('chr80')) {
+      response = emptyQueryResponse
+    } else if (url.includes('fakeRefNamesQuery')) {
+      response = refNamesResponse
+    }
 
     return Promise.resolve(new Response(JSON.stringify(response)))
   }
@@ -25,7 +30,10 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   spy.mockImplementation(mockFetch as any)
   const adapter = new Adapter(
     configSchema.create({
-      endpoint: { uri: 'http://somesite.com/sparql' },
+      endpoint: {
+        uri: 'http://somesite.com/sparql',
+        locationType: 'UriLocation',
+      },
       queryTemplate: 'fakeSPARQLQuery-start{start}-end{end}-{refName}',
       refNamesQueryTemplate: 'fakeRefNamesQuery',
       additionalQueryParams: ['format=json'],

@@ -3,6 +3,13 @@ id: bcc2020_embedding_jbrowse_04_assemblies
 title: About assemblies
 ---
 
+:::danger Out of date
+
+Please see the
+[updated version of this tutorial](./tutorials/embed_linear_genome_view/01_introduction).
+
+:::
+
 ## What is an assembly?
 
 An assembly in JBrowse 2 is a collection of information that describes the
@@ -119,16 +126,16 @@ export default {
     adapter: {
       type: 'BgzipFastaAdapter',
       fastaLocation: {
-        uri:
-          'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz',
+        uri: 'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz',
+        locationType: 'UriLocation',
       },
       faiLocation: {
-        uri:
-          'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.fai',
+        uri: 'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.fai',
+        locationType: 'UriLocation',
       },
       gziLocation: {
-        uri:
-          'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.gzi',
+        uri: 'http://ftp.ensembl.org/pub/release-100/fasta/homo_sapiens/dna_index/Homo_sapiens.GRCh38.dna.toplevel.fa.gz.gzi',
+        locationType: 'UriLocation',
       },
     },
   },
@@ -138,6 +145,7 @@ export default {
       type: 'RefNameAliasAdapter',
       location: {
         uri: 'GRCh38.aliases.txt',
+        locationType: 'UriLocation',
       },
     },
   },

@@ -1,40 +1,37 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import { Region } from '@jbrowse/core/util/types'
 import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
-import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
-import {
-  AdapterClass as BgzipFastaAdapterClass,
-  configSchema as bgzipFastaAdapterConfigSchema,
-} from './BgzipFastaAdapter'
-import {
-  AdapterClass as ChromSizesAdapterClass,
-  configSchema as chromSizesAdapterConfigSchema,
-} from './ChromSizesAdapter'
+import { FileLocation } from '@jbrowse/core/util/types'
+import { makeIndex } from '@jbrowse/core/util/tracks'
+import { configSchema as bgzipFastaAdapterConfigSchema } from './BgzipFastaAdapter'
+import { configSchema as chromSizesAdapterConfigSchema } from './ChromSizesAdapter'
 import {
   configSchema as divSequenceRendererConfigSchema,
   ReactComponent as DivSequenceRendererReactComponent,
 } from './DivSequenceRenderer'
-import {
-  AdapterClass as IndexedFastaAdapterClass,
-  configSchema as indexedFastaAdapterConfigSchema,
-} from './IndexedFastaAdapter'
+import { configSchema as indexedFastaAdapterConfigSchema } from './IndexedFastaAdapter'
 import {
   configSchema as linearReferenceSequenceDisplayConfigSchema,
   modelFactory as linearReferenceSequenceDisplayModelFactory,
 } from './LinearReferenceSequenceDisplay'
-import {
-  AdapterClass as TwoBitAdapterClass,
-  configSchema as twoBitAdapterConfigSchema,
-} from './TwoBitAdapter'
+import { configSchema as twoBitAdapterConfigSchema } from './TwoBitAdapter'
 import GCContentAdapterF from './GCContentAdapter'
 import { createReferenceSeqTrackConfig } from './referenceSeqTrackConfig'
+import {
+  AdapterGuesser,
+  getFileName,
+  TrackTypeGuesser,
+} from '@jbrowse/core/util/tracks'
 
 /* adjust in both directions */
-class DivSequenceRenderer extends ServerSideRendererType {
+class DivSequenceRenderer extends FeatureRendererType {
+  supportsSVG = true
+
   getExpandedRegion(region: Region) {
     return {
       ...region,
@@ -53,8 +50,47 @@ export default class SequencePlugin extends Plugin {
         new AdapterType({
           name: 'TwoBitAdapter',
           configSchema: twoBitAdapterConfigSchema,
-          AdapterClass: TwoBitAdapterClass,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
+          getAdapterClass: () =>
+            import('./TwoBitAdapter/TwoBitAdapter').then(r => r.default),
         }),
+    )
+    pluginManager.addToExtensionPoint(
+      'Core-guessAdapterForLocation',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.2bit$/i
+          const adapterName = 'TwoBitAdapter'
+          const fileName = getFileName(file)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
+            return {
+              type: adapterName,
+              twoBitLocation: file,
+            }
+          }
+          return adapterGuesser(file, index, adapterHint)
+        }
+      },
+    )
+    pluginManager.addToExtensionPoint(
+      'Core-guessTrackTypeForLocation',
+      (trackTypeGuesser: TrackTypeGuesser) => {
+        return (adapterName: string) => {
+          if (adapterName === 'TwoBitAdapter') {
+            return 'ReferenceSequenceTrack'
+          }
+          return trackTypeGuesser(adapterName)
+        }
+      },
     )
 
     pluginManager.addAdapterType(
@@ -62,7 +98,16 @@ export default class SequencePlugin extends Plugin {
         new AdapterType({
           name: 'ChromSizesAdapter',
           configSchema: chromSizesAdapterConfigSchema,
-          AdapterClass: ChromSizesAdapterClass,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
+          getAdapterClass: () =>
+            import('./ChromSizesAdapter/ChromSizesAdapter').then(
+              r => r.default,
+            ),
         }),
     )
 
@@ -71,8 +116,50 @@ export default class SequencePlugin extends Plugin {
         new AdapterType({
           name: 'IndexedFastaAdapter',
           configSchema: indexedFastaAdapterConfigSchema,
-          AdapterClass: IndexedFastaAdapterClass,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
+          getAdapterClass: () =>
+            import('./IndexedFastaAdapter/IndexedFastaAdapter').then(
+              r => r.default,
+            ),
         }),
+    )
+    pluginManager.addToExtensionPoint(
+      'Core-guessAdapterForLocation',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.(fa|fasta|fas|fna|mfa)$/i
+          const adapterName = 'IndexedFastaAdapter'
+          const fileName = getFileName(file)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
+            return {
+              type: adapterName,
+              fastaLocation: file,
+              faiLocation: index || makeIndex(file, '.fai'),
+            }
+          }
+          return adapterGuesser(file, index, adapterHint)
+        }
+      },
+    )
+    pluginManager.addToExtensionPoint(
+      'Core-guessTrackTypeForLocation',
+      (trackTypeGuesser: TrackTypeGuesser) => {
+        return (adapterName: string) => {
+          if (adapterName === 'IndexedFastaAdapter') {
+            return 'ReferenceSequenceTrack'
+          }
+          return trackTypeGuesser(adapterName)
+        }
+      },
     )
 
     pluginManager.addAdapterType(
@@ -80,14 +167,63 @@ export default class SequencePlugin extends Plugin {
         new AdapterType({
           name: 'BgzipFastaAdapter',
           configSchema: bgzipFastaAdapterConfigSchema,
-          AdapterClass: BgzipFastaAdapterClass,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
+          getAdapterClass: () =>
+            import('./BgzipFastaAdapter/BgzipFastaAdapter').then(
+              r => r.default,
+            ),
         }),
+    )
+
+    pluginManager.addToExtensionPoint(
+      'Core-guessAdapterForLocation',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.(fa|fasta|fas|fna|mfa)\.b?gz$/i
+          const adapterName = 'BgzipFastaAdapter'
+          const fileName = getFileName(file)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
+            return {
+              type: adapterName,
+              faiLocation: makeIndex(file, '.fai'),
+              gziLocation: makeIndex(file, '.gzi'),
+            }
+          }
+          return adapterGuesser(file, index, adapterHint)
+        }
+      },
+    )
+    pluginManager.addToExtensionPoint(
+      'Core-guessTrackTypeForLocation',
+      (trackTypeGuesser: TrackTypeGuesser) => {
+        return (adapterName: string) => {
+          if (adapterName === 'BgzipFastaAdapter') {
+            return 'ReferenceSequenceTrack'
+          }
+          return trackTypeGuesser(adapterName)
+        }
+      },
     )
 
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
           name: 'GCContentAdapter',
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
           ...pluginManager.load(GCContentAdapterF),
         }),
     )

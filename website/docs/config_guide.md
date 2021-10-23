@@ -20,6 +20,9 @@ A JBrowse 2 configuration file, a config.json, is structured as follows
     /* array of tracks being loaded, contain reference to which assembl(y/ies)
     they belong to */
   ],
+  "aggregateTextSearchAdapters": [
+    /* optional array of text search adapters */
+  ],
   "defaultSession": {
     /* optional default session */
   }
@@ -50,13 +53,16 @@ Here is a complete config.json file containing only a hg19
         "adapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         },
         "rendering": {
@@ -67,7 +73,8 @@ Here is a complete config.json file containing only a hg19
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -88,7 +95,8 @@ The refNameAliases in the above config provides this functionality
   "adapter": {
     "type": "RefNameAliasAdapter",
     "location": {
-      "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
+      "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt",
+      "locationType": "UriLocation"
     }
   }
 }
@@ -174,13 +182,16 @@ Here is a complete config.json that has the hg19 genome loaded
         "adapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         },
         "rendering": {
@@ -191,7 +202,8 @@ Here is a complete config.json that has the hg19 genome loaded
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -232,13 +244,16 @@ child of the assembly section of the config
   "adapter": {
     "type": "BgzipFastaAdapter",
     "fastaLocation": {
-      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+      "locationType": "UriLocation"
     },
     "faiLocation": {
-      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+      "locationType": "UriLocation"
     },
     "gziLocation": {
-      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+      "locationType": "UriLocation"
     }
   },
   "rendering": {
@@ -267,13 +282,16 @@ These are loaded into a BgzipFastaAdapter as follows
 {
   "type": "BgzipFastaAdapter",
   "fastaLocation": {
-    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+    "locationType": "UriLocation"
   },
   "faiLocation": {
-    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+    "locationType": "UriLocation"
   },
   "gziLocation": {
-    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+    "locationType": "UriLocation"
   }
 }
 ```
@@ -296,10 +314,12 @@ These are loaded into a IndexedFastaAdapter as follows
 {
   "type": "IndexedFastaAdapter",
   "fastaLocation": {
-    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa"
+    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa",
+    "locationType": "UriLocation"
   },
   "faiLocation": {
-    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.fai"
+    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.fai",
+    "locationType": "UriLocation"
   }
 }
 ```
@@ -314,7 +334,8 @@ parsing time.
 {
   "type": "TwoBitAdapter",
   "twoBitLocation": {
-    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.2bit"
+    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.2bit",
+    "locationType": "UriLocation"
   }
 }
 ```
@@ -344,13 +365,16 @@ Example config.json containing a track config
         "adapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -366,7 +390,8 @@ Example config.json containing a track config
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
+          "uri": "https://jbrowse.org/genomes/hg19/repeats.bb",
+          "locationType": "UriLocation"
         }
       }
     }
@@ -386,8 +411,16 @@ Example AlignmentsTrack config
   "type": "AlignmentsTrack",
   "adapter": {
     "type": "BamAdapter",
-    "bamLocation": { "uri": "http://yourhost/file.bam" },
-    "index": { "location": { "uri": "http://yourhost/file.bam.bai" } }
+    "bamLocation": {
+      "uri": "http://yourhost/file.bam",
+      "locationType": "UriLocation"
+    },
+    "index": {
+      "location": {
+        "uri": "http://yourhost/file.bam.bai",
+        "locationType": "UriLocation"
+      }
+    }
   }
 }
 ```
@@ -404,8 +437,16 @@ Example BamAdapter config
 ```json
 {
   "type": "BamAdapter",
-  "bamLocation": { "uri": "http://yourhost/file.bam" },
-  "index": { "location": { "uri": "http://yourhost/file.bam.bai" } }
+  "bamLocation": {
+    "uri": "http://yourhost/file.bam",
+    "locationType": "UriLocation"
+  },
+  "index": {
+    "location": {
+      "uri": "http://yourhost/file.bam.bai",
+      "locationType": "UriLocation"
+    }
+  }
 }
 ```
 
@@ -419,8 +460,14 @@ Example CramAdapter config
 ```json
 {
   "type": "CramAdapter",
-  "cramLocation": { "uri": "http://yourhost/file.cram" },
-  "craiLocation": { "uri": "http://yourhost/file.cram.crai" }
+  "cramLocation": {
+    "uri": "http://yourhost/file.cram",
+    "locationType": "UriLocation"
+  },
+  "craiLocation": {
+    "uri": "http://yourhost/file.cram.crai",
+    "locationType": "UriLocation"
+  }
 }
 ```
 
@@ -437,7 +484,8 @@ Example Hi-C track config
   "adapter": {
     "type": "HicAdapter",
     "hicLocation": {
-      "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
+      "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic",
+      "locationType": "UriLocation"
     }
   }
 }
@@ -451,7 +499,8 @@ We just simply supply a hicLocation currently for the HicAdapter
 {
   "type": "HicAdapter",
   "hicLocation": {
-    "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
+    "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic",
+    "locationType": "UriLocation"
   }
 }
 ```
@@ -479,8 +528,16 @@ Example config
   "assemblyNames": ["hg19"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "vcfGzLocation": { "uri": "http://yourhost/file.vcf.gz" },
-    "index": { "location": { "uri": "http://yourhost/file.vcf.gz.tbi" } }
+    "vcfGzLocation": {
+      "uri": "http://yourhost/file.vcf.gz",
+      "locationType": "UriLocation"
+    },
+    "index": {
+      "location": {
+        "uri": "http://yourhost/file.vcf.gz.tbi",
+        "locationType": "UriLocation"
+      }
+    }
   }
 }
 ```
@@ -497,8 +554,16 @@ Example VcfTabixAdapter adapter config
 ```json
 {
   "type": "VcfTabixAdapter",
-  "vcfGzLocation": { "uri": "http://yourhost/file.vcf.gz" },
-  "index": { "location": { "uri": "http://yourhost/file.vcf.gz.tbi" } }
+  "vcfGzLocation": {
+    "uri": "http://yourhost/file.vcf.gz",
+    "locationType": "UriLocation"
+  },
+  "index": {
+    "location": {
+      "uri": "http://yourhost/file.vcf.gz.tbi",
+      "locationType": "UriLocation"
+    }
+  }
 }
 ```
 
@@ -514,7 +579,10 @@ Example QuantitativeTrack config
   "type": "QuantitativeTrack",
   "adapter": {
     "type": "BigWig",
-    "bigWigLocation": { "uri": "http://yourhost/file.bw" }
+    "bigWigLocation": {
+      "uri": "http://yourhost/file.bw",
+      "locationType": "UriLocation"
+    }
   }
 }
 ```
@@ -568,7 +636,10 @@ Example BigWig adapter config
 ```json
 {
   "type": "BigWig",
-  "bigWigLocation": { "uri": "http://yourhost/file.bw" }
+  "bigWigLocation": {
+    "uri": "http://yourhost/file.bw",
+    "locationType": "UriLocation"
+  }
 }
 ```
 
@@ -585,7 +656,8 @@ Example SyntenyTrack config
   "adapter": {
     "type": "PAFAdapter",
     "pafLocation": {
-      "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.paf"
+      "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.paf",
+      "locationType": "UriLocation"
     },
     "assemblyNames": ["YJM1447", "R64"]
   }
@@ -629,7 +701,8 @@ Example FromConfigAdapter
 
 #### FromConfigSequenceAdapter
 
-Similar behavior to FromConfigAdapter, with a specific emphasis on performance when the features are sequences.
+Similar behavior to FromConfigAdapter, with a specific emphasis on performance
+when the features are sequences.
 
 Example FromConfigSequenceAdapter
 
@@ -655,6 +728,135 @@ Example FromConfigSequenceAdapter
 }
 ```
 
+## Text searching
+
+Text searching is now available on JBrowse 2.
+
+Text searching appears in two forms: per-track indexes and aggregate indexes
+which search across multiple tracks
+
+Aggregate indexes may look like this
+
+```json
+{
+"aggregateTextSearchAdapters": [
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "hg19-index",
+      "ixFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix",
+        "locationType": "UriLocation"
+      },
+      "ixxFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx",
+        "locationType": "UriLocation"
+      },
+      "metaFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json",
+        "locationType": "UriLocation"
+      },
+      "assemblyNames": ["hg19"]
+    }
+}
+```
+
+An example per-track config may look like this
+
+```json
+{
+  "trackId":"yourtrack",
+  "name":"Track name",
+  "adapter":{
+    "type": "Gff3TabixAdapter",
+    "gffGzLocation": { "uri":"yourfile.gff.gz",
+        "locationType": "UriLocation" }
+    "index":{ "location": { "uri":"yourfile.gff.gz.tbi",
+        "locationType": "UriLocation" } }
+  },
+  "textSearching": {
+    "textSearchAdapter": {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "hg19-index",
+      "ixFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix",
+        "locationType": "UriLocation"
+      },
+      "ixxFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx",
+        "locationType": "UriLocation"
+      },
+      "metaFilePath": {
+        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json",
+        "locationType": "UriLocation"
+      },
+      "assemblyNames": ["hg19"]
+    },
+    "indexingAttributes": ["Name","ID"],
+    "indexingFeatureTypesToExclude": ["CDS","exon"]
+  }
+}
+```
+
+Information on generating trix indexes via the cli can be found
+[here](cli.md#jbrowse-text-index)
+
+### TrixTextSearchAdapter config
+
+The trix search index is the current file format for name searching
+
+It is based on the UCSC trix file format described here
+https://genome.ucsc.edu/goldenPath/help/trix.html
+
+To create trix indexes you can use our command line tools. More info found at
+our [jbrowse text-index guide](cli.md#jbrowse-text-index). This tool will
+automatically generate a config like this. The config slots are described below
+for details
+
+```json
+{
+  "textSearchAdapter": {
+    "type": "TrixTextSearchAdapter",
+    "textSearchAdapterId": "gff3tabix_genes-index",
+    "ixFilePath": {
+      "uri": "trix/gff3tabix_genes.ix",
+      "locationType": "UriLocation"
+    },
+    "ixxFilePath": {
+      "uri": "trix/gff3tabix_genes.ixx",
+      "locationType": "UriLocation"
+    },
+    "metaFilePath": {
+      "uri": "trix/gff3tabix_genes_meta.json",
+      "locationType": "UriLocation"
+    }
+  }
+}
+```
+
+- ixFilePath - the location of the trix ix file
+- ixxFilePath - the location of the trix ixx file
+- metaFilePath - the location of the metadata json file for the trix index
+
+### JBrowse1TextSearchAdapter config
+
+This is more uncommon, but allows back compatibility with a jbrowse 1 names
+index created by generate-names.pl
+
+```json
+{
+  "textSearchAdapter": {
+    "type": "JBrowse1TextSearchAdapter",
+    "textSearchAdapterId": "generate-names-index",
+    "namesIndexLocation": {
+      "uri": "/names",
+      "locationType": "UriLocation"
+    }
+  }
+}
+```
+
+- namesIndexLocation - the location of the JBrowse1 names index data directory
+
 ## DotplotView config
 
 The configuration of a view is technically a configuration of the "state of the
@@ -674,7 +876,8 @@ let's look at an example
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "grape.chrom.sizes"
+            "uri": "grape.chrom.sizes",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -687,7 +890,8 @@ let's look at an example
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "peach.chrom.sizes"
+            "uri": "peach.chrom.sizes",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -702,19 +906,22 @@ let's look at an example
       "renderDelay": 100,
       "adapter": {
         "mcscanAnchorsLocation": {
-          "uri": "grape.peach.anchors"
+          "uri": "grape.peach.anchors",
+          "locationType": "UriLocation"
         },
         "subadapters": [
           {
             "type": "NCListAdapter",
             "rootUrlTemplate": {
-              "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+              "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json",
+              "locationType": "UriLocation"
             }
           },
           {
             "type": "NCListAdapter",
             "rootUrlTemplate": {
-              "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+              "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json",
+              "locationType": "UriLocation"
             }
           }
         ],
@@ -732,7 +939,8 @@ let's look at an example
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf",
+          "locationType": "UriLocation"
         },
         "assemblyNames": ["peach", "grape"]
       }
@@ -745,7 +953,8 @@ let's look at an example
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
-          "uri": "peach_grape_small.paf"
+          "uri": "peach_grape_small.paf",
+          "locationType": "UriLocation"
         },
         "assemblyNames": ["peach", "grape"]
       }
@@ -903,7 +1112,8 @@ and adding synteny tracks
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "grape.chrom.sizes"
+            "uri": "grape.chrom.sizes",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -916,7 +1126,8 @@ and adding synteny tracks
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "peach.chrom.sizes"
+            "uri": "peach.chrom.sizes",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -931,19 +1142,22 @@ and adding synteny tracks
       "renderDelay": 100,
       "adapter": {
         "mcscanAnchorsLocation": {
-          "uri": "grape.peach.anchors"
+          "uri": "grape.peach.anchors",
+          "locationType": "UriLocation"
         },
         "subadapters": [
           {
             "type": "NCListAdapter",
             "rootUrlTemplate": {
-              "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+              "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json",
+              "locationType": "UriLocation"
             }
           },
           {
             "type": "NCListAdapter",
             "rootUrlTemplate": {
-              "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+              "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json",
+              "locationType": "UriLocation"
             }
           }
         ],
@@ -962,7 +1176,8 @@ and adding synteny tracks
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+          "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -984,7 +1199,8 @@ and adding synteny tracks
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+          "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json",
+          "locationType": "UriLocation"
         }
       }
     },
@@ -997,7 +1213,8 @@ and adding synteny tracks
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+          "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json",
+          "locationType": "UriLocation"
         }
       },
       "displays": [
@@ -1019,7 +1236,8 @@ and adding synteny tracks
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+          "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json",
+          "locationType": "UriLocation"
         }
       }
     }
@@ -1052,11 +1270,9 @@ This is done via a top-level configuration in the config file. For example:
 JBrowse uses 4 colors that can be changed. For example, this is the default
 theme:
 
-![JBrowse using the default theme](./img/default_theme.png)
-Example of the default theme
+<Figure src="/img/default_theme.png" caption="Example screenshot showing the default theme"/>
 
-![JBrowse using a customized theme](./img/customized_theme.png)
-Example of a customized theme
+<Figure src="/img/default_theme.png" caption="Example screenshot showing the customized theme"/>
 
 The customized theme screenshot uses the below configuration
 
@@ -1088,6 +1304,24 @@ The customized theme screenshot uses the below configuration
     }
   }
 ```
+
+### Logo
+
+It is also possible to supply a custom logo to be displayed in the top right
+corner of the app instead of the JBrowse 2 logo. To do this, store a SVG file
+containing your logo on your server, and specify the path in your configuration:
+
+```json
+{
+  "configuration": {
+    "logoPath": {
+      "uri": "path/to/my/custom-logo.svg"
+    }
+  }
+}
+```
+
+The dimensions of the logo should be `150x48px`.
 
 ### Sizing
 
@@ -1193,6 +1427,8 @@ jexl:abs(-5)
 jexl:ceil(0.5)
 jexl:floor(0.5)
 jexl:round(0.5)
+jexl:parseInt('2')
+jexl:parseFloat('2.054')
 
 ```
 

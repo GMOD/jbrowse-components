@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { test as oclifTest } from '@oclif/test'
 import del from 'del'
 import fs from 'fs'

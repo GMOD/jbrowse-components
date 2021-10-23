@@ -1,199 +1,125 @@
+import React, { useState, useCallback, useEffect } from 'react'
+import { observer } from 'mobx-react'
 import PluginManager from '@jbrowse/core/PluginManager'
-import CircularProgress from '@material-ui/core/CircularProgress'
-import { makeStyles } from '@material-ui/core/styles'
-import React, { useEffect, useState } from 'react'
-import { PluginConstructor } from '@jbrowse/core/Plugin'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { SnapshotIn } from 'mobx-state-tree'
-import PluginLoader from '@jbrowse/core/PluginLoader'
+import { CssBaseline, ThemeProvider, makeStyles } from '@material-ui/core'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { StringParam, useQueryParam } from 'use-query-params'
+import { ipcRenderer } from 'electron'
+import { loadPluginManager } from './StartScreen/util'
 
-import {
-  writeAWSAnalytics,
-  writeGAAnalytics,
-} from '@jbrowse/core/util/analytics'
-import { readConfObject } from '@jbrowse/core/configuration'
-import factoryReset from './factoryReset'
-import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
-import JBrowseRootModelFactory from './rootModel'
-import packagedef from '../package.json'
+import StartScreen from './StartScreen'
 
-const { electron } = window
-
-const useStyles = makeStyles({
-  loadingIndicator: {
-    position: 'fixed',
-    top: '50%',
-    left: '50%',
-    marginTop: -25,
-    marginLeft: -25,
+const useStyles = makeStyles(theme => ({
+  message: {
+    border: '1px solid black',
+    overflow: 'auto',
+    maxHeight: 200,
+    margin: theme.spacing(1),
+    padding: theme.spacing(1),
   },
+
+  errorBox: {
+    background: 'lightgrey',
+    border: '1px solid black',
+    margin: 20,
+  },
+}))
+
+const ErrorMessage = ({
+  error,
+  snapshotError,
+}: {
+  error: unknown
+  snapshotError?: string
+}) => {
+  const classes = useStyles()
+  return (
+    <div className={classes.message} style={{ background: '#f88' }}>
+      {`${error}`}
+      {snapshotError ? (
+        <>
+          ... Failed element had snapshot:
+          <pre className={classes.errorBox}>
+            {JSON.stringify(JSON.parse(snapshotError), null, 2)}
+          </pre>
+        </>
+      ) : null}
+    </div>
+  )
+}
+
+const Loader = observer(() => {
+  const [pluginManager, setPluginManager] = useState<PluginManager>()
+  const [config, setConfig] = useQueryParam('config', StringParam)
+  const [error, setError] = useState<unknown>()
+  const [snapshotError, setSnapshotError] = useState('')
+
+  function handleError(e: unknown) {
+    const str = `${e}`
+    const match = str.match(
+      /.*at path "(.*)" snapshot `(.*)` is not assignable/,
+    )
+
+    // best effort to make a better error message than the default
+    // mobx-state-tree
+    if (match) {
+      setError(new Error(`Failed to load element at ${match[1]}`))
+      setSnapshotError(match[2])
+    } else {
+      setError(new Error(str.slice(0, 10000)))
+    }
+    console.error(e)
+  }
+
+  const handleSetPluginManager = useCallback(
+    (pm: PluginManager) => {
+      // @ts-ignore
+      pm.rootModel?.setOpenNewSessionCallback(async () => {
+        const path = await ipcRenderer.invoke('promptOpenFile')
+        if (path) {
+          handleSetPluginManager(await loadPluginManager(path))
+        }
+      })
+
+      // @ts-ignore
+      setPluginManager(pm)
+      setError(undefined)
+      setSnapshotError('')
+      setConfig('')
+    },
+    [setConfig],
+  )
+
+  useEffect(() => {
+    ;(async () => {
+      if (config) {
+        try {
+          handleSetPluginManager(await loadPluginManager(config))
+        } catch (e) {
+          handleError(e)
+        }
+      }
+    })()
+  }, [config, handleSetPluginManager])
+
+  return (
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <CssBaseline />
+
+      {error ? (
+        <ErrorMessage error={error} snapshotError={snapshotError} />
+      ) : null}
+      {pluginManager?.rootModel?.session ? (
+        <JBrowse pluginManager={pluginManager} />
+      ) : !config || error ? (
+        <StartScreen
+          setError={handleError}
+          setPluginManager={handleSetPluginManager}
+        />
+      ) : null}
+    </ThemeProvider>
+  )
 })
 
-export default function Loader({
-  initialTimestamp,
-}: {
-  initialTimestamp: number
-}) {
-  const [configSnapshot, setConfigSnapshot] = useState<
-    SnapshotIn<AnyConfigurationModel>
-  >()
-  const [plugins, setPlugins] = useState<PluginConstructor[]>()
-  const classes = useStyles()
-  const [error, setError] = useState('')
-  const [snapshotError, setSnapshotError] = useState('')
-  const [pluginManager, setPluginManager] = useState<PluginManager>()
-
-  const ipcRenderer = (electron && electron.ipcRenderer) || {
-    invoke: () => {},
-  }
-
-  useEffect(() => {
-    async function fetchConfig() {
-      try {
-        setConfigSnapshot(
-          Object.assign(await ipcRenderer.invoke('loadConfig'), {
-            configuration: { rpc: { defaultDriver: 'ElectronRpcDriver' } },
-          }),
-        )
-      } catch (e) {
-        // used to launch an error dialog for whatever caused loadConfig to
-        // fail
-        setConfigSnapshot(() => {
-          throw e
-        })
-      }
-    }
-
-    fetchConfig()
-  }, [ipcRenderer])
-
-  useEffect(() => {
-    async function fetchPlugins() {
-      // Load runtime plugins
-      if (configSnapshot) {
-        try {
-          const pluginLoader = new PluginLoader(configSnapshot.plugins)
-          pluginLoader.installGlobalReExports(window)
-          const runtimePlugins = await pluginLoader.load()
-          setPlugins([...corePlugins, ...runtimePlugins])
-        } catch (e) {
-          // used to launch an error dialog for whatever caused plugin loading
-          // to fail
-          setConfigSnapshot(() => {
-            throw e
-          })
-        }
-      }
-    }
-    fetchPlugins()
-  }, [configSnapshot])
-
-  useEffect(() => {
-    if (plugins) {
-      const pm = new PluginManager(plugins.map(P => new P()))
-      pm.createPluggableElements()
-
-      const JBrowseRootModel = JBrowseRootModelFactory(pm)
-      try {
-        if (configSnapshot) {
-          const rootModel = JBrowseRootModel.create(
-            {
-              jbrowse: configSnapshot,
-              assemblyManager: {},
-              version: packagedef.version,
-            },
-            { pluginManager: pm },
-          )
-          // make some things available globally for testing
-          // e.g. window.MODEL.views[0] in devtools
-          // @ts-ignore
-          window.MODEL = rootModel.session
-          // @ts-ignore
-          window.ROOTMODEL = rootModel
-          pm.setRootModel(rootModel)
-
-          pm.configure()
-
-          if (
-            rootModel &&
-            !readConfObject(rootModel.jbrowse.configuration, 'disableAnalytics')
-          ) {
-            writeAWSAnalytics(rootModel, initialTimestamp)
-            writeGAAnalytics(rootModel, initialTimestamp)
-          }
-          setPluginManager(pm)
-        }
-      } catch (e) {
-        console.error(e)
-        const match = e.message.match(
-          /.*at path "(.*)" snapshot `(.*)` is not assignable/,
-        )
-        // best effort to make a better error message than the default
-        // mobx-state-tree
-        if (match) {
-          setError(`Failed to load element at ${match[1]}`)
-          setSnapshotError(match[2])
-        } else {
-          const additionalMsg =
-            e.message.length > 10000 ? '... see console for more' : ''
-          throw new Error(e.message.slice(0, 10000) + additionalMsg)
-        }
-        console.error(e)
-      }
-    }
-  }, [plugins, configSnapshot, initialTimestamp])
-
-  if (!(configSnapshot && plugins && pluginManager) && !error) {
-    return (
-      <CircularProgress
-        disableShrink
-        className={classes.loadingIndicator}
-        size={50}
-      />
-    )
-  }
-
-  const err = error
-
-  if (err) {
-    return (
-      <div>
-        {err ? (
-          <div
-            style={{
-              border: '1px solid black',
-              padding: 2,
-              margin: 2,
-              backgroundColor: '#ff8888',
-            }}
-          >
-            {`${err}`}
-            {snapshotError ? (
-              <>
-                {' '}
-                ... Failed element had snapshot:
-                <pre
-                  style={{
-                    background: 'lightgrey',
-                    border: '1px solid black',
-                    maxHeight: 200,
-                    overflow: 'auto',
-                    margin: 20,
-                  }}
-                >
-                  {JSON.stringify(JSON.parse(snapshotError), null, 2)}
-                </pre>
-              </>
-            ) : null}
-          </div>
-        ) : null}
-        <button type="button" onClick={() => factoryReset()}>
-          Factory reset
-        </button>
-      </div>
-    )
-  }
-
-  return <JBrowse pluginManager={pluginManager} />
-}
+export default Loader

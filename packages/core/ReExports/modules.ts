@@ -13,6 +13,7 @@ import * as MUICore from '@material-ui/core'
 import * as MUIUtils from '@material-ui/core/utils'
 import MUISvgIcon from '@material-ui/core/SvgIcon'
 import * as MUILab from '@material-ui/lab'
+import * as MUIDataGrid from '@mui/x-data-grid'
 import MUIBox from '@material-ui/core/Box'
 import MUIButton from '@material-ui/core/Button'
 import MUIButtonGroup from '@material-ui/core/ButtonGroup'
@@ -59,12 +60,14 @@ import TrackType from '../pluggableElementTypes/TrackType'
 import WidgetType from '../pluggableElementTypes/WidgetType'
 
 import * as pluggableElementTypeModels from '../pluggableElementTypes/models'
-import ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType'
+import * as ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType'
 import CircularChordRendererType from '../pluggableElementTypes/renderers/CircularChordRendererType'
-import BoxRendererType from '../pluggableElementTypes/renderers/BoxRendererType'
+import * as BoxRendererType from '../pluggableElementTypes/renderers/BoxRendererType'
+import * as FeatureRendererType from '../pluggableElementTypes/renderers/FeatureRendererType'
+import * as RendererType from '../pluggableElementTypes/renderers/RendererType'
 
 import * as Configuration from '../configuration'
-import Plugin from '../Plugin'
+import * as Plugin from '../Plugin'
 import * as coreUi from '../ui'
 import * as coreUtil from '../util'
 import * as coreColor from '../util/color'
@@ -92,6 +95,8 @@ const libs = {
   '@material-ui/core/utils': MUIUtils,
   // end special case
   '@material-ui/lab': MUILab,
+  '@mui/x-data-grid': MUIDataGrid,
+  '@material-ui/data-grid': MUIDataGrid,
 
   // material-ui subcomponents, should get rid of these
   '@material-ui/core/colors': MUIColors,
@@ -138,9 +143,15 @@ const libs = {
   '@jbrowse/core/pluggableElementTypes/WidgetType': WidgetType,
 
   '@jbrowse/core/pluggableElementTypes/models': pluggableElementTypeModels,
-  '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType': ServerSideRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType': CircularChordRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType': BoxRendererType,
+  '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType':
+    ServerSideRendererType,
+  '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType':
+    CircularChordRendererType,
+  '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType':
+    BoxRendererType,
+  '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType':
+    FeatureRendererType,
+  '@jbrowse/core/pluggableElementTypes/renderers/RendererType': RendererType,
   '@jbrowse/core/configuration': Configuration,
   '@jbrowse/core/util/types/mst': mstTypes,
   '@jbrowse/core/ui': coreUi,

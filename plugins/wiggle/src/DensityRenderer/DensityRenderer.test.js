@@ -1,4 +1,5 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import DensityRenderer, { configSchema, ReactComponent } from '.'
 
 const pluginManager = {}
@@ -8,24 +9,9 @@ const renderer = new DensityRenderer({
   configSchema,
   pluginManager,
 })
-test('empty', async () => {
-  const result = await renderer.makeImageData({
-    regions: [
-      {
-        end: 100,
-        start: 1,
-        refName: 'ctgA',
-        assemblyName: 'volvox',
-      },
-    ],
-    scaleOpts: {},
-    config: {},
-  })
-  expect(result).toEqual({ width: 0, height: 0 })
-})
 
 test('inverted mode and reversed', async () => {
-  const result = await renderer.makeImageData({
+  const renderProps = {
     features: [
       new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),
       new SimpleFeature({ id: 't2', data: { start: 101, end: 200, score: 2 } }),
@@ -48,9 +34,12 @@ test('inverted mode and reversed', async () => {
     highResolutionScaling: 1,
     config: {},
     height: 100,
-  })
+  }
 
-  expect(result).toMatchSnapshot({
+  const res = await renderToAbstractCanvas(1000, 200, renderProps, ctx =>
+    renderer.draw(ctx, renderProps),
+  )
+  expect(res).toMatchSnapshot({
     imageData: expect.any(Object),
   })
 })

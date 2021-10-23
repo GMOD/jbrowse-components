@@ -1,0 +1,76 @@
+{
+  "14_rep": { "prefix": ["14_ReprPCWk"], "exact": [] },
+  "apple2": {
+    "exact": [
+      ["Apple2", 0, "Apple2", "ctgA", 12999, 17200],
+      ["Apple2", 8, "Apple2", "ctgA", 12999, 17200],
+      ["Apple2", 13, "Apple2", "ctgA", 12999, 17200],
+      ["Apple2", 14, "Apple2", "ctgA", 12999, 17200]
+    ],
+    "prefix": []
+  },
+  "m0": {
+    "exact": [],
+    "prefix": ["m05", "m03", "m08", "m07", "m02", "m06", "m04", "m09", "m01"]
+  },
+  "b": { "prefix": ["b101.2"], "exact": [] },
+  "f01": {
+    "exact": [
+      ["f01", 4, "f01", "ctgA", 44704, 47713],
+      ["f01", 13, "f01", "ctgA", 44704, 47713],
+      ["f01", 14, "f01", "ctgA", 44704, 47713]
+    ],
+    "prefix": []
+  },
+  "rs8133": { "prefix": ["rs8133032"], "exact": [] },
+  "ctgb": {
+    "exact": [["ctgB", 6079, "ctgB", null, 0, 6079, 20000]],
+    "prefix": []
+  },
+  "rs16": { "exact": [], "prefix": ["rs16988404"] },
+  "rs77": { "exact": [], "prefix": ["rs77112488", "rs77319474"] },
+  "rs1788296": { "prefix": ["rs17882967"], "exact": [] },
+  "b101.": { "prefix": ["b101.2"], "exact": [] },
+  "rs1041740": {
+    "prefix": [],
+    "exact": [["rs1041740", 16, "rs1041740", "contigA", 11339, 11340]]
+  },
+  "eden.": { "prefix": ["EDEN.2", "EDEN.1", "EDEN.3"], "exact": [] },
+  "seg0": {
+    "exact": [],
+    "prefix": [
+      "seg04",
+      "seg03",
+      "seg08",
+      "seg06",
+      "seg02",
+      "seg05",
+      "seg01",
+      "seg09",
+      "seg07"
+    ]
+  },
+  "rs2": { "prefix": ["rs2234694", "rs2070424"], "exact": [] },
+  "rs49985": { "prefix": ["rs4998557"], "exact": [] },
+  "rs7606755": { "prefix": ["rs76067554"], "exact": [] },
+  "rs17883296": {
+    "exact": [["rs17883296", 16, "rs17883296", "contigA", 2999, 3000]],
+    "prefix": []
+  },
+  "remark": { "exact": [], "prefix": ["Remark:hga"] },
+  "rs223": { "prefix": ["rs2234694"], "exact": [] },
+  "rs17878855": {
+    "exact": [["rs17878855", 16, "rs17878855", "contigA", 3104, 3105]],
+    "prefix": []
+  },
+  "m11": {
+    "prefix": [],
+    "exact": [
+      ["m11", 6, "m11", "ctgA", 11910, 15561],
+      ["m11", 13, "m11", "ctgA", 11910, 15561],
+      ["m11", 14, "m11", "ctgA", 11910, 15561]
+    ]
+  },
+  "pr": { "prefix": ["Protein:HGA", "Protein:HGB"], "exact": [] },
+  "agt830.": { "exact": [], "prefix": ["agt830.5", "agt830.3"] }
+}

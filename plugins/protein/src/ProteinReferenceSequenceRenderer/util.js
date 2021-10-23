@@ -24,11 +24,15 @@ export function featuresConsensusSequence(region, features) {
   // pad with spaces at the beginning of the string if necessary
   const len = region.end - region.start
   let sequence = ''
-  while (sequence.length < len) sequence += ' '
+  while (sequence.length < len) {
+    sequence += ' '
+  }
 
   for (const f of features) {
     const seq = f.get('residues') || f.get('seq')
-    if (seq) sequence = replaceAt(sequence, f.get('start') - region.start, seq)
+    if (seq) {
+      sequence = replaceAt(sequence, f.get('start') - region.start, seq)
+    }
   }
   return sequence
 }

@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { PropTypes as CommonPropTypes } from '@jbrowse/core/util/types/mst'
-import { bpToPx } from '@jbrowse/core/util'
+import { bpToPx, measureText } from '@jbrowse/core/util'
 import SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
@@ -9,10 +9,17 @@ import FeatureGlyph from './FeatureGlyph'
 import SvgOverlay from './SvgOverlay'
 import { chooseGlyphComponent, layOut } from './util'
 
-const fontWidthScaleFactor = 0.6
 const renderingStyle = {
   position: 'relative',
 }
+
+// used to make features have a little padding for their labels
+const nameWidthPadding = 2
+const textVerticalPadding = 2
+
+// used so that user can click-away-from-feature below the laid out features
+// (issue #1248)
+const svgHeightPadding = 100
 
 function RenderedFeatureGlyph(props) {
   const { feature, bpPerPx, region, config, displayMode, layout } = props
@@ -38,6 +45,7 @@ function RenderedFeatureGlyph(props) {
   let expansion
   if (labelsAllowed) {
     const showLabels = readConfObject(config, 'showLabels')
+    const showDescriptions = readConfObject(config, 'showDescriptions')
     fontHeight = readConfObject(config, ['labels', 'fontSize'], { feature })
     expansion = readConfObject(config, 'maxFeatureGlyphExpansion') || 0
     name = readConfObject(config, ['labels', 'name'], { feature }) || ''
@@ -45,15 +53,15 @@ function RenderedFeatureGlyph(props) {
 
     description =
       readConfObject(config, ['labels', 'description'], { feature }) || ''
-    shouldShowDescription = /\S/.test(description) && showLabels
-    const fontWidth = fontHeight * fontWidthScaleFactor
-    const textVerticalPadding = 2
+    shouldShowDescription =
+      /\S/.test(description) && showLabels && showDescriptions
 
     let nameWidth = 0
     if (shouldShowName) {
-      nameWidth = Math.round(
-        Math.min(String(name).length * fontWidth, rootLayout.width + expansion),
-      )
+      nameWidth =
+        Math.round(
+          Math.min(measureText(name, fontHeight), rootLayout.width + expansion),
+        ) + nameWidthPadding
       rootLayout.addChild(
         'nameLabel',
         0,
@@ -68,12 +76,13 @@ function RenderedFeatureGlyph(props) {
       const aboveLayout = shouldShowName
         ? rootLayout.getSubRecord('nameLabel')
         : featureLayout
-      descriptionWidth = Math.round(
-        Math.min(
-          String(description).length * fontWidth,
-          rootLayout.width + expansion,
-        ),
-      )
+      descriptionWidth =
+        Math.round(
+          Math.min(
+            measureText(description, fontHeight),
+            rootLayout.width + expansion,
+          ),
+        ) + nameWidthPadding
       rootLayout.addChild(
         'descriptionLabel',
         0,
@@ -165,6 +174,7 @@ function SvgFeatureRendering(props) {
     features,
     config,
     displayModel,
+    exportSVG,
   } = props
   const [region] = regions || []
   const width = (region.end - region.start) / bpPerPx
@@ -172,9 +182,8 @@ function SvgFeatureRendering(props) {
 
   const ref = useRef()
   const [mouseIsDown, setMouseIsDown] = useState(false)
-  const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(
-    false,
-  )
+  const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
+    useState(false)
   const [height, setHeight] = useState(0)
   const {
     onMouseOut,
@@ -185,7 +194,6 @@ function SvgFeatureRendering(props) {
     onMouseMove,
     onMouseUp,
     onClick,
-    onContextMenu,
   } = props
 
   const mouseDown = useCallback(
@@ -193,7 +201,9 @@ function SvgFeatureRendering(props) {
       setMouseIsDown(true)
       setMovedDuringLastMouseDown(false)
       const handler = onMouseDown
-      if (!handler) return undefined
+      if (!handler) {
+        return undefined
+      }
       return handler(event)
     },
     [onMouseDown],
@@ -203,7 +213,9 @@ function SvgFeatureRendering(props) {
     event => {
       setMouseIsDown(false)
       const handler = onMouseUp
-      if (!handler) return undefined
+      if (!handler) {
+        return undefined
+      }
       return handler(event)
     },
     [onMouseUp],
@@ -212,7 +224,9 @@ function SvgFeatureRendering(props) {
   const mouseEnter = useCallback(
     event => {
       const handler = onMouseEnter
-      if (!handler) return undefined
+      if (!handler) {
+        return undefined
+      }
       return handler(event)
     },
     [onMouseEnter],
@@ -221,7 +235,9 @@ function SvgFeatureRendering(props) {
   const mouseLeave = useCallback(
     event => {
       const handler = onMouseLeave
-      if (!handler) return undefined
+      if (!handler) {
+        return undefined
+      }
       return handler(event)
     },
     [onMouseLeave],
@@ -230,7 +246,9 @@ function SvgFeatureRendering(props) {
   const mouseOver = useCallback(
     event => {
       const handler = onMouseOver
-      if (!handler) return undefined
+      if (!handler) {
+        return undefined
+      }
       return handler(event)
     },
     [onMouseOver],
@@ -239,7 +257,9 @@ function SvgFeatureRendering(props) {
   const mouseOut = useCallback(
     event => {
       const handler = onMouseOut
-      if (!handler) return undefined
+      if (!handler) {
+        return undefined
+      }
       return handler(event)
     },
     [onMouseOut],
@@ -261,14 +281,11 @@ function SvgFeatureRendering(props) {
       const px = region.reversed ? width - offsetX : offsetX
       const clientBp = region.start + bpPerPx * px
 
-      const feats = displayModel.getFeatureOverlapping(
+      const featureIdCurrentlyUnderMouse = displayModel.getFeatureOverlapping(
         blockKey,
         clientBp,
         offsetY,
       )
-      const featureIdCurrentlyUnderMouse = feats.length
-        ? feats[0].name
-        : undefined
 
       if (onMouseMove) {
         onMouseMove(event, featureIdCurrentlyUnderMouse)
@@ -299,29 +316,27 @@ function SvgFeatureRendering(props) {
     [movedDuringLastMouseDown, onClick],
   )
 
-  const contextMenu = useCallback(
-    event => {
-      if (movedDuringLastMouseDown) {
-        return
-      }
-      if (onContextMenu) {
-        onContextMenu(event)
-      }
-    },
-    [movedDuringLastMouseDown, onContextMenu],
-  )
-
   useEffect(() => {
     setHeight(layout.getTotalHeight())
   }, [layout])
 
+  if (exportSVG) {
+    return (
+      <RenderedFeatures
+        features={features}
+        displayMode={displayMode}
+        {...props}
+        region={region}
+      />
+    )
+  }
   return (
     <div style={renderingStyle}>
       <svg
         ref={ref}
         className="SvgFeatureRendering"
-        width={`${width}px`}
-        height={`${height}px`}
+        width={width}
+        height={height + svgHeightPadding}
         onMouseDown={mouseDown}
         onMouseUp={mouseUp}
         onMouseEnter={mouseEnter}
@@ -332,7 +347,6 @@ function SvgFeatureRendering(props) {
         onFocus={mouseEnter}
         onBlur={mouseLeave}
         onClick={click}
-        onContextMenu={contextMenu}
         style={{ display: 'block' }}
       >
         <RenderedFeatures
@@ -380,10 +394,12 @@ SvgFeatureRendering.propTypes = {
   onFeatureClick: ReactPropTypes.func,
   onFeatureContextMenu: ReactPropTypes.func,
   blockKey: ReactPropTypes.string,
+  exportSVG: ReactPropTypes.shape({}),
 }
 
 SvgFeatureRendering.defaultProps = {
   displayModel: {},
+  exportSVG: undefined,
 
   features: new Map(),
   blockKey: undefined,

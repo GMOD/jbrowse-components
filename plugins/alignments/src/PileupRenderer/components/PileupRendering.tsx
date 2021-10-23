@@ -5,6 +5,9 @@ import { observer } from 'mobx-react'
 import React, { MouseEvent, useRef, useState, useEffect } from 'react'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
+// used so that user can click-away-from-feature below the laid out features
+// (issue #1248)
+const canvasPadding = 100
 function PileupRendering(props: {
   blockKey: string
   displayModel: BaseLinearDisplayModel
@@ -27,33 +30,29 @@ function PileupRendering(props: {
     sortedBy,
     colorBy,
   } = props
-  const {
-    selectedFeatureId,
-    featureIdUnderMouse,
-    contextMenuFeature,
-    blockLayoutFeatures,
-  } = displayModel || {}
+  const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
+    displayModel
+
   const [region] = regions
   const highlightOverlayCanvas = useRef<HTMLCanvasElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
-  const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] = useState(
-    false,
-  )
+  const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
+    useState(false)
   useEffect(() => {
     const canvas = highlightOverlayCanvas.current
-    if (!canvas) return
+    if (!canvas) {
+      return
+    }
     const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    if (!ctx) {
+      return
+    }
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    let rect
-    let blockLayout
-
-    if (
-      selectedFeatureId &&
-      (blockLayout = blockLayoutFeatures.get(blockKey)) &&
-      (rect = blockLayout.get(selectedFeatureId))
-    ) {
-      const [leftBp, topPx, rightBp, bottomPx] = rect
+    const selectedRect = selectedFeatureId
+      ? displayModel.getFeatureByID?.(blockKey, selectedFeatureId)
+      : undefined
+    if (selectedRect) {
+      const [leftBp, topPx, rightBp, bottomPx] = selectedRect
       const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
       const rectTop = Math.round(topPx)
       const rectHeight = Math.round(bottomPx - topPx)
@@ -71,12 +70,11 @@ function PileupRendering(props: {
       ctx.clearRect(leftPx, rectTop, rightPx - leftPx, rectHeight)
     }
     const highlightedFeature = featureIdUnderMouse || contextMenuFeature?.id()
-    if (
-      highlightedFeature &&
-      (blockLayout = blockLayoutFeatures.get(blockKey)) &&
-      (rect = blockLayout.get(highlightedFeature))
-    ) {
-      const [leftBp, topPx, rightBp, bottomPx] = rect
+    const highlightedRect = highlightedFeature
+      ? displayModel.getFeatureByID?.(blockKey, highlightedFeature)
+      : undefined
+    if (highlightedRect) {
+      const [leftBp, topPx, rightBp, bottomPx] = highlightedRect
       const [leftPx, rightPx] = bpSpanPx(leftBp, rightBp, region, bpPerPx)
       const rectTop = Math.round(topPx)
       const rectHeight = Math.round(bottomPx - topPx)
@@ -86,11 +84,11 @@ function PileupRendering(props: {
   }, [
     bpPerPx,
     region,
+    blockKey,
     selectedFeatureId,
+    displayModel,
     featureIdUnderMouse,
     contextMenuFeature,
-    blockKey,
-    blockLayoutFeatures,
   ])
 
   function onMouseDown(event: MouseEvent) {
@@ -147,12 +145,11 @@ function PileupRendering(props: {
     const px = region.reversed ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
 
-    const feats = displayModel.getFeatureOverlapping(
+    const featIdUnderMouse = displayModel.getFeatureOverlapping(
       blockKey,
       clientBp,
       offsetY,
     )
-    const featIdUnderMouse = feats.length ? feats[0].name : undefined
 
     if (onMouseMove) {
       onMouseMove(event, featIdUnderMouse)
@@ -177,11 +174,8 @@ function PileupRendering(props: {
     <div
       className="PileupRendering"
       data-testid={`pileup-${
-        // eslint-disable-next-line no-nested-ternary
-        sortedBy
-          ? sortedBy.type
-          : colorBy
-          ? `${colorBy.type}${colorBy.tag || ''}`
+        sortedBy || colorBy
+          ? `${sortedBy?.type || ''}${colorBy?.type || ''}${colorBy?.tag || ''}`
           : 'normal'
       }`}
       style={{ position: 'relative', width: canvasWidth, height }}
@@ -193,7 +187,7 @@ function PileupRendering(props: {
       <canvas
         data-testid="pileup_overlay_canvas"
         width={canvasWidth}
-        height={height}
+        height={height + canvasPadding}
         style={{ position: 'absolute', left: 0, top: 0 }}
         className="highlightOverlayCanvas"
         ref={highlightOverlayCanvas}

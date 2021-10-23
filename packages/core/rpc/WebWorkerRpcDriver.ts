@@ -1,11 +1,15 @@
-import Rpc from '@librpc/web'
+import Rpc from 'librpc-web-mod'
 import shortid from 'shortid'
-import BaseRpcDriver from './BaseRpcDriver'
+import BaseRpcDriver, { RpcDriverConstructorArgs } from './BaseRpcDriver'
 import { PluginDefinition } from '../PluginLoader'
 
 interface WebpackWorker {
   new (): Worker
   prototype: Worker
+}
+
+interface WebWorkerRpcDriverConstructorArgs extends RpcDriverConstructorArgs {
+  WorkerClass: WebpackWorker
 }
 
 class WebWorkerHandle extends Rpc.Client {
@@ -16,34 +20,42 @@ class WebWorkerHandle extends Rpc.Client {
   async call(
     functionName: string,
     args: Record<string, unknown>,
-    opts: { statusCallback?: (arg0: string) => void },
+    opts: {
+      statusCallback?: (arg0: string) => void
+      rpcDriverClassName: string
+    },
   ) {
+    const { statusCallback, rpcDriverClassName } = opts
     const channel = `message-${shortid.generate()}`
     const listener = (message: string) => {
-      if (opts.statusCallback) {
-        opts.statusCallback(message)
+      if (statusCallback) {
+        statusCallback(message)
       }
     }
-    // @ts-ignore
     this.on(channel, listener)
-    const result = await super.call(functionName, { ...args, channel }, opts)
-    // @ts-ignore
+    const result = await super.call(
+      functionName,
+      { ...args, channel, rpcDriverClassName },
+      opts,
+    )
     this.off(channel, listener)
     return result
   }
 }
 
 export default class WebWorkerRpcDriver extends BaseRpcDriver {
+  name = 'WebWorkerRpcDriver'
+
   WorkerClass: WebpackWorker
 
   workerBootConfiguration: { plugins: PluginDefinition[] }
 
   constructor(
-    { WorkerClass }: { WorkerClass: WebpackWorker },
+    args: WebWorkerRpcDriverConstructorArgs,
     workerBootConfiguration: { plugins: PluginDefinition[] },
   ) {
-    super()
-    this.WorkerClass = WorkerClass
+    super(args)
+    this.WorkerClass = args.WorkerClass
     this.workerBootConfiguration = workerBootConfiguration
   }
 

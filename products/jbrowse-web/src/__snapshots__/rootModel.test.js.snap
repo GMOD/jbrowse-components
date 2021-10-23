@@ -9,8 +9,6 @@ Array [
         "icon": Object {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "displayName": "AddIcon",
-          "muiName": "SvgIcon",
           "type": Object {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
@@ -23,14 +21,116 @@ Array [
         "icon": Object {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "displayName": "AppsIcon",
-          "muiName": "SvgIcon",
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Import session…",
+        "onClick": [Function],
+      },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Export session",
+        "onClick": [Function],
+      },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Open session…",
+        "onClick": [Function],
+      },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Save session",
+        "onClick": [Function],
+      },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Duplicate session",
+        "onClick": [Function],
+      },
+      Object {
+        "type": "divider",
+      },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Open track...",
+        "onClick": [Function],
+      },
+      Object {
+        "icon": [Function],
+        "label": "Open connection...",
+        "onClick": [Function],
+      },
+      Object {
+        "type": "divider",
+      },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
           "type": Object {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
           },
         },
         "label": "Return to splash screen",
+        "onClick": [Function],
+      },
+    ],
+  },
+  Object {
+    "label": "Add",
+    "menuItems": Array [],
+  },
+  Object {
+    "label": "Tools",
+    "menuItems": Array [
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Plugin store",
         "onClick": [Function],
       },
     ],
@@ -47,8 +147,6 @@ Array [
         "icon": Object {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "displayName": "AddIcon",
-          "muiName": "SvgIcon",
           "type": Object {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
@@ -61,14 +159,116 @@ Array [
         "icon": Object {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "displayName": "AppsIcon",
-          "muiName": "SvgIcon",
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Import session…",
+        "onClick": [Function],
+      },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Export session",
+        "onClick": [Function],
+      },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Open session…",
+        "onClick": [Function],
+      },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Save session",
+        "onClick": [Function],
+      },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Duplicate session",
+        "onClick": [Function],
+      },
+      Object {
+        "type": "divider",
+      },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Open track...",
+        "onClick": [Function],
+      },
+      Object {
+        "icon": [Function],
+        "label": "Open connection...",
+        "onClick": [Function],
+      },
+      Object {
+        "type": "divider",
+      },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
           "type": Object {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
           },
         },
         "label": "Return to splash screen",
+        "onClick": [Function],
+      },
+    ],
+  },
+  Object {
+    "label": "Add",
+    "menuItems": Array [],
+  },
+  Object {
+    "label": "Tools",
+    "menuItems": Array [
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Plugin store",
         "onClick": [Function],
       },
     ],
@@ -114,6 +314,7 @@ Object {
   "name": "assembly1",
   "sequence": Object {
     "adapter": Object {
+      "adapterId": "sequenceConfigAdapterId",
       "features": Array [
         Object {
           "end": 10,
@@ -128,9 +329,6 @@ Object {
     "displays": Array [
       Object {
         "displayId": "sequenceConfigId-LinearReferenceSequenceDisplay",
-        "renderer": Object {
-          "type": "DivSequenceRenderer",
-        },
         "type": "LinearReferenceSequenceDisplay",
       },
     ],
@@ -142,15 +340,9 @@ Object {
 
 exports[`Root MST model adds track and connection configs to an assembly 2`] = `
 Object {
-  "adapter": Object {
-    "type": "BamAdapter",
-  },
   "displays": Array [
     Object {
       "displayId": "trackId0-LinearBasicDisplay",
-      "renderer": Object {
-        "type": "SvgFeatureRenderer",
-      },
       "type": "LinearBasicDisplay",
     },
   ],
@@ -162,14 +354,14 @@ Object {
 exports[`Root MST model adds track and connection configs to an assembly 3`] = `
 Object {
   "connectionId": "connectionId0",
+  "dataDirLocation": Object {
+    "internetAccountId": undefined,
+    "internetAccountPreAuthorization": undefined,
+    "locationType": "UriLocation",
+    "uri": "http://mysite.com/jbrowse/data/",
+  },
   "type": "JBrowse1Connection",
 }
 `;
 
-exports[`Root MST model creates with defaults 1`] = `
-Object {
-  "rpc": Object {
-    "defaultDriver": "MainThreadRpcDriver",
-  },
-}
-`;
+exports[`Root MST model creates with defaults 1`] = `Object {}`;

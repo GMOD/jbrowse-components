@@ -1,4 +1,4 @@
-import { toByteArray, fromByteArray } from 'base64-js'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   getParent,
   isAlive,
@@ -9,7 +9,6 @@ import {
   isStateTreeNode,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
-import { inflate, deflate } from 'pako'
 import fromEntries from 'object.fromentries'
 import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
@@ -29,6 +28,9 @@ export * from './types'
 export * from './aborting'
 export * from './when'
 
+export * from './offscreenCanvasPonyfill'
+export * from './offscreenCanvasUtils'
+
 if (!Object.fromEntries) {
   // @ts-ignore
   fromEntries.shim()
@@ -39,56 +41,6 @@ export const inDevelopment =
   process.env &&
   process.env.NODE_ENV === 'development'
 export const inProduction = !inDevelopment
-
-/**
- * Compress and encode a string as url-safe base64
- * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
- * @param str-  a string to compress and encode
- */
-export function toUrlSafeB64(str: string): string {
-  const bytes = new TextEncoder().encode(str)
-  const deflated = deflate(bytes)
-  const encoded = fromByteArray(deflated)
-  const pos = encoded.indexOf('=')
-  return pos > 0
-    ? encoded.slice(0, pos).replace(/\+/g, '-').replace(/\//g, '_')
-    : encoded.replace(/\+/g, '-').replace(/\//g, '_')
-}
-
-/**
- * Decode and inflate a url-safe base64 to a string
- * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
- * @param b64 - a base64 string to decode and inflate
- */
-export function fromUrlSafeB64(b64: string): string {
-  const originalB64 = b64PadSuffix(b64.replace(/-/g, '+').replace(/_/g, '/'))
-  const bytes = toByteArray(originalB64)
-  const inflated = inflate(bytes)
-  return new TextDecoder().decode(inflated)
-}
-
-/**
- * Pad the end of a base64 string with "=" to make it valid
- * @param b64 - unpadded b64 string
- */
-function b64PadSuffix(b64: string): string {
-  let num = 0
-  const mo = b64.length % 4
-  switch (mo) {
-    case 3:
-      num = 1
-      break
-    case 2:
-      num = 2
-      break
-    case 0:
-      num = 0
-      break
-    default:
-      throw new Error('base64 not a valid length')
-  }
-  return b64 + '='.repeat(num)
-}
 
 export function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value)
@@ -106,7 +58,6 @@ export function useDebounce<T>(value: T, delay: number): T {
 }
 
 // https://stackoverflow.com/questions/56283920/how-to-debounce-a-callback-in-functional-component-using-hooks
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useDebouncedCallback<A extends any[]>(
   callback: (...args: A) => void,
   wait = 400,
@@ -147,9 +98,14 @@ export function findParentThat(
 ) {
   let currentNode: IAnyStateTreeNode | undefined = node
   while (currentNode && isAlive(currentNode)) {
-    if (predicate(currentNode)) return currentNode
-    if (hasParent(currentNode)) currentNode = getParent(currentNode)
-    else break
+    if (predicate(currentNode)) {
+      return currentNode
+    }
+    if (hasParent(currentNode)) {
+      currentNode = getParent(currentNode)
+    } else {
+      break
+    }
   }
   throw new Error('no matching node found')
 }
@@ -222,7 +178,7 @@ export function springAnimate(
 
 /** find the first node in the hierarchy that matches the given 'is' typescript type guard predicate */
 export function findParentThatIs<
-  PREDICATE extends (thing: IAnyStateTreeNode) => boolean
+  PREDICATE extends (thing: IAnyStateTreeNode) => boolean,
 >(
   node: IAnyStateTreeNode,
   predicate: PREDICATE,
@@ -346,6 +302,9 @@ export function parseLocStringOneBased(
     throw new Error(`invalid location string: "${locString}"`)
   }
   const [, , assemblyName, location] = assemblyMatch
+  if (!assemblyName && location.startsWith('{}')) {
+    throw new Error(`no assembly name was provided in location "${location}"`)
+  }
   const lastColonIdx = location.lastIndexOf(':')
   if (lastColonIdx === -1) {
     if (isValidRefName(location, assemblyName)) {
@@ -463,21 +422,29 @@ export function compareLocs(locA: ParsedLocString, locB: ParsedLocString) {
     locA.assemblyName || locB.assemblyName
       ? (locA.assemblyName || '').localeCompare(locB.assemblyName || '')
       : 0
-  if (assemblyComp) return assemblyComp
+  if (assemblyComp) {
+    return assemblyComp
+  }
 
   const refComp =
     locA.refName || locB.refName
       ? (locA.refName || '').localeCompare(locB.refName || '')
       : 0
-  if (refComp) return refComp
+  if (refComp) {
+    return refComp
+  }
 
   if (locA.start !== undefined && locB.start !== undefined) {
     const startComp = locA.start - locB.start
-    if (startComp) return startComp
+    if (startComp) {
+      return startComp
+    }
   }
   if (locA.end !== undefined && locB.end !== undefined) {
     const endComp = locA.end - locB.end
-    if (endComp) return endComp
+    if (endComp) {
+      return endComp
+    }
   }
   return 0
 }
@@ -500,8 +467,12 @@ export function compareLocStrings(
  * @param  max -
  */
 export function clamp(num: number, min: number, max: number): number {
-  if (num < min) return min
-  if (num > max) return max
+  if (num < min) {
+    return min
+  }
+  if (num > max) {
+    return max
+  }
   return num
 }
 
@@ -590,12 +561,10 @@ export function iterMap<T, U>(
 
 interface Assembly {
   name: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
 }
 interface Track {
   trackId: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
 }
 interface Config {
@@ -607,8 +576,11 @@ interface Config {
 // similar to electron.js
 export function mergeConfigs(A: Config, B: Config) {
   const merged = merge(A, B)
-  if (B.defaultSession) merged.defaultSession = B.defaultSession
-  else if (A.defaultSession) merged.defaultSession = A.defaultSession
+  if (B.defaultSession) {
+    merged.defaultSession = B.defaultSession
+  } else if (A.defaultSession) {
+    merged.defaultSession = A.defaultSession
+  }
   return merged
 }
 
@@ -664,11 +636,11 @@ export function makeAbortableReaction<T, U, V>(
   reactionOptions: IReactionOptions,
   startedFunction: (aborter: AbortController) => void,
   successFunction: (arg: V) => void,
-  errorFunction: (err: Error) => void,
+  errorFunction: (err: unknown) => void,
 ) {
   let inProgress: AbortController | undefined
 
-  function handleError(error: Error) {
+  function handleError(error: unknown) {
     if (!isAbortException(error)) {
       if (isAlive(self)) {
         errorFunction(error)
@@ -682,8 +654,8 @@ export function makeAbortableReaction<T, U, V>(
     () => {
       try {
         return dataFunction(self)
-      } catch (error) {
-        handleError(error)
+      } catch (e) {
+        handleError(e)
         return undefined
       }
     },
@@ -710,10 +682,11 @@ export function makeAbortableReaction<T, U, V>(
         if (isAlive(self)) {
           successFunction(result)
         }
-      } catch (error) {
-        if (thisInProgress && !thisInProgress.signal.aborted)
+      } catch (e) {
+        if (thisInProgress && !thisInProgress.signal.aborted) {
           thisInProgress.abort()
-        handleError(error)
+        }
+        handleError(e)
       }
     },
     reactionOptions,
@@ -734,6 +707,7 @@ export function renameRegionIfNeeded(
   if (isStateTreeNode(region) && !isAlive(region)) {
     return region
   }
+
   if (region && refNameMap && refNameMap[region.refName]) {
     // clone the region so we don't modify it
     if (isStateTreeNode(region)) {
@@ -759,31 +733,35 @@ export async function renameRegionsIfNeeded<
     adapterConfig: unknown
     sessionId: string
     statusCallback?: Function
-  }
+  },
 >(assemblyManager: AssemblyManager, args: ARGTYPE) {
-  const { assemblyName, regions, adapterConfig } = args
+  const { regions = [], adapterConfig } = args
   if (!args.sessionId) {
     throw new Error('sessionId is required')
   }
-  const newArgs: ARGTYPE = {
+
+  const assemblyNames = regions.map(region => region.assemblyName)
+  const assemblyMaps = Object.fromEntries(
+    await Promise.all(
+      assemblyNames.map(async assemblyName => {
+        return [
+          assemblyName,
+          await assemblyManager.getRefNameMapForAdapter(
+            adapterConfig,
+            assemblyName,
+            args,
+          ),
+        ]
+      }),
+    ),
+  )
+
+  return {
     ...args,
-    regions: [...(args.regions || [])],
+    regions: regions.map(region =>
+      renameRegionIfNeeded(assemblyMaps[region.assemblyName], region),
+    ),
   }
-
-  if (assemblyName) {
-    const refNameMap = await assemblyManager.getRefNameMapForAdapter(
-      adapterConfig,
-      assemblyName,
-      newArgs,
-    )
-
-    if (refNameMap && regions && newArgs.regions) {
-      for (let i = 0; i < regions.length; i += 1) {
-        newArgs.regions[i] = renameRegionIfNeeded(refNameMap, regions[i])
-      }
-    }
-  }
-  return newArgs
 }
 
 export function minmax(a: number, b: number) {
@@ -804,8 +782,13 @@ export function stringify({
   }`
 }
 
-export const isElectron =
-  typeof window !== 'undefined' && Boolean(window.electron)
+// this is recommended in a later comment in https://github.com/electron/electron/issues/2288
+// for detecting electron in a renderer process, which is the one that has node enabled for us
+// const isElectron = process.versions.electron
+// const i2 = process.versions.hasOwnProperty('electron')
+export const isElectron = /electron/i.test(
+  typeof navigator !== 'undefined' ? navigator.userAgent : '',
+)
 
 export function revcom(seqString: string) {
   return complement(seqString).split('').reverse().join('')
@@ -857,24 +840,39 @@ export const complement = (() => {
   }
 })()
 
+export function blobToDataURL(blob: Blob) {
+  const a = new FileReader()
+  return new Promise((resolve, reject) => {
+    a.onload = e => {
+      if (e.target) {
+        resolve(e.target.result)
+      } else {
+        reject(new Error('unknown result reading blob from canvas'))
+      }
+    }
+    a.readAsDataURL(blob)
+  })
+}
+
 // requires immediate execution in jest environment, because (hypothesis) it
 // otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
 // get the contents of the canvas
 export const rIC =
-  // eslint-disable-next-line no-nested-ternary
   typeof jest === 'undefined'
-    ? typeof window !== 'undefined'
-      ? window.requestIdleCallback
+    ? // @ts-ignore
+      typeof window !== 'undefined' && window.requestIdleCallback
+      ? // @ts-ignore
+        window.requestIdleCallback
       : (cb: Function) => setTimeout(() => cb(), 1)
     : (cb: Function) => cb()
 
 // xref https://gist.github.com/tophtucker/62f93a4658387bb61e4510c37e2e97cf
-export function measureText(str: string, fontSize = 10) {
+export function measureText(str: unknown, fontSize = 10) {
   // prettier-ignore
   const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
   const avg = 0.5279276315789471
   return (
-    str
+    String(str)
       .split('')
       .map(c =>
         c.charCodeAt(0) < widths.length ? widths[c.charCodeAt(0)] : avg,
@@ -956,7 +954,6 @@ export const defaultCodonTable = {
  *  take CodonTable above and generate larger codon table that includes
  *  all permutations of upper and lower case nucleotides
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function generateCodonTable(table: any) {
   const tempCodonTable: { [key: string]: string } = {}
   Object.keys(table).forEach(codon => {
@@ -981,4 +978,35 @@ export function generateCodonTable(table: any) {
     }
   })
   return tempCodonTable
+}
+
+// call statusCallback with current status and clear when finished
+export async function updateStatus(
+  statusMsg: string,
+  statusCallback: Function,
+  fn: Function,
+) {
+  statusCallback(statusMsg)
+  const result = await fn()
+  statusCallback('')
+  return result
+}
+
+export function hashCode(str: string) {
+  let hash = 0
+  let i
+  let chr
+  if (str.length === 0) {
+    return hash
+  }
+  for (i = 0; i < str.length; i++) {
+    chr = str.charCodeAt(i)
+    hash = (hash << 5) - hash + chr
+    hash |= 0 // Convert to 32bit integer
+  }
+  return hash
+}
+
+export function objectHash(obj: Record<string, any>) {
+  return `${hashCode(JSON.stringify(obj))}`
 }

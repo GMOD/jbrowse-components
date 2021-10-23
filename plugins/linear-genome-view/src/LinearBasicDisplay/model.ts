@@ -1,12 +1,13 @@
+import { lazy } from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { getContainingTrack } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
 import VisibilityIcon from '@material-ui/icons/Visibility'
-import { types, Instance } from 'mobx-state-tree'
+import { types, getEnv, Instance } from 'mobx-state-tree'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
-import SetMaxHeightDlg from './components/SetMaxHeight'
+
+const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
 
 const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
   types
@@ -16,6 +17,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
       types.model({
         type: types.literal('LinearBasicDisplay'),
         trackShowLabels: types.maybe(types.boolean),
+        trackShowDescriptions: types.maybe(types.boolean),
         trackDisplayMode: types.maybe(types.string),
         trackMaxHeight: types.maybe(types.number),
         configuration: ConfigurationReference(configSchema),
@@ -31,6 +33,13 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
         return self.trackShowLabels !== undefined
           ? self.trackShowLabels
           : showLabels
+      },
+
+      get showDescriptions() {
+        const showDescriptions = getConf(self, ['renderer', 'showLabels'])
+        return self.trackShowDescriptions !== undefined
+          ? self.trackShowDescriptions
+          : showDescriptions
       },
 
       get maxHeight() {
@@ -49,18 +58,25 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
       get rendererConfig() {
         const configBlob = getConf(self, ['renderer']) || {}
 
-        return self.rendererType.configSchema.create({
-          ...configBlob,
-          showLabels: this.showLabels,
-          displayMode: this.displayMode,
-          maxHeight: this.maxHeight,
-        })
+        return self.rendererType.configSchema.create(
+          {
+            ...configBlob,
+            showLabels: this.showLabels,
+            showDescriptions: this.showDescriptions,
+            displayMode: this.displayMode,
+            maxHeight: this.maxHeight,
+          },
+          getEnv(self),
+        )
       },
     }))
 
     .actions(self => ({
       toggleShowLabels() {
         self.trackShowLabels = !self.showLabels
+      },
+      toggleShowDescriptions() {
+        self.trackShowDescriptions = !self.showDescriptions
       },
       setDisplayMode(val: string) {
         self.trackDisplayMode = val
@@ -70,26 +86,23 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
       },
     }))
     .views(self => {
-      const { trackMenuItems } = self
+      const {
+        trackMenuItems: superTrackMenuItems,
+        renderProps: superRenderProps,
+      } = self
       return {
-        get renderProps() {
+        renderProps() {
           const config = self.rendererConfig
 
           return {
-            ...self.composedRenderProps,
-            ...getParentRenderProps(self),
+            ...superRenderProps(),
             config,
           }
         },
-        get trackMenuItems(): MenuItem[] {
-          const displayModes = [
-            'compact',
-            'reducedRepresentation',
-            'normal',
-            'collapse',
-          ]
+
+        trackMenuItems(): MenuItem[] {
           return [
-            ...trackMenuItems,
+            ...superTrackMenuItems(),
             {
               label: 'Show labels',
               icon: VisibilityIcon,
@@ -100,9 +113,23 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
               },
             },
             {
+              label: 'Show descriptions',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: self.showDescriptions,
+              onClick: () => {
+                self.toggleShowDescriptions()
+              },
+            },
+            {
               label: 'Display mode',
               icon: VisibilityIcon,
-              subMenu: displayModes.map(val => ({
+              subMenu: [
+                'compact',
+                'reducedRepresentation',
+                'normal',
+                'collapse',
+              ].map(val => ({
                 label: val,
                 onClick: () => {
                   self.setDisplayMode(val)
@@ -112,10 +139,10 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
             {
               label: 'Set max height',
               onClick: () => {
-                getContainingTrack(self).setDialogComponent(
+                getSession(self).queueDialog((doneCallback: Function) => [
                   SetMaxHeightDlg,
-                  self,
-                )
+                  { model: self, handleClose: doneCallback },
+                ])
               },
             },
           ]

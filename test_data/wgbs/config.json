@@ -1,0 +1,60 @@
+{
+  "assemblies": [
+    {
+      "name": "ref",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "ref-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "ref.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "ref.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "New Session"
+  },
+  "tracks": [
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "bwa-meth.sorted.subselect.downsample",
+      "name": "bwa-meth.sorted.subselect.downsample",
+      "assemblyNames": ["ref"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "bwa-meth.sorted.subselect.downsample.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "bwa-meth.sorted.subselect.downsample.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "ref.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "ref.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ]
+}

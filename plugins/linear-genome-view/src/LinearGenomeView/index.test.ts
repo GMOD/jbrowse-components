@@ -1,6 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import { Region } from '@jbrowse/core/util/types/mst'
 import {
   createBaseTrackConfig,
   createBaseTrackModel,
@@ -13,95 +12,96 @@ import { BaseLinearDisplayComponent } from '..'
 import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBareDisplay'
 import hg38DisplayedRegions from './hg38DisplayedRegions.json'
 
-// a stub linear genome view state model that only accepts base track types.
-// used in unit tests.
-const stubManager = new PluginManager()
-stubManager.addTrackType(() => {
-  const configSchema = ConfigurationSchema(
-    'BasicTrack',
-    {},
-    {
-      baseConfiguration: createBaseTrackConfig(stubManager),
-      explicitIdentifier: 'trackId',
-    },
-  )
-  return new TrackType({
-    name: 'BasicTrack',
-    configSchema,
-    stateModel: createBaseTrackModel(stubManager, 'BasicTrack', configSchema),
+// use initializer function to avoid having console.warn jest.fn in a global
+function initialize() {
+  console.warn = jest.fn()
+  // a stub linear genome view state model that only accepts base track types.
+  // used in unit tests.
+  const stubManager = new PluginManager()
+  stubManager.addTrackType(() => {
+    const configSchema = ConfigurationSchema(
+      'BasicTrack',
+      {},
+      {
+        baseConfiguration: createBaseTrackConfig(stubManager),
+        explicitIdentifier: 'trackId',
+      },
+    )
+    return new TrackType({
+      name: 'BasicTrack',
+      configSchema,
+      stateModel: createBaseTrackModel(stubManager, 'BasicTrack', configSchema),
+    })
   })
-})
-stubManager.addDisplayType(() => {
-  const configSchema = ConfigurationSchema(
-    'LinearBareDisplay',
-    {},
-    { explicitlyTyped: true },
-  )
-  return new DisplayType({
-    name: 'LinearBareDisplay',
-    configSchema,
-    stateModel: LinearBasicDisplayStateModelFactory(configSchema),
-    trackType: 'BasicTrack',
-    viewType: 'LinearGenomeView',
-    ReactComponent: BaseLinearDisplayComponent,
+  stubManager.addDisplayType(() => {
+    const configSchema = ConfigurationSchema(
+      'LinearBareDisplay',
+      {},
+      { explicitlyTyped: true },
+    )
+    return new DisplayType({
+      name: 'LinearBareDisplay',
+      configSchema,
+      stateModel: LinearBasicDisplayStateModelFactory(configSchema),
+      trackType: 'BasicTrack',
+      viewType: 'LinearGenomeView',
+      ReactComponent: BaseLinearDisplayComponent,
+    })
   })
-})
-stubManager.createPluggableElements()
-stubManager.configure()
-const LinearGenomeModel = stateModelFactory(stubManager)
+  stubManager.createPluggableElements()
+  stubManager.configure()
 
-const Assembly = types
-  .model({
-    regions: types.array(Region),
-  })
-  .views(() => ({
-    getCanonicalRefName(refName: string) {
-      if (refName === 'contigA') {
-        return 'ctgA'
-      }
-      return refName
-    },
-  }))
-const Session = types
-  .model({
-    name: 'testSession',
-    rpcManager: 'rpcManagerExists',
-    view: types.maybe(LinearGenomeModel),
-    configuration: types.map(types.string),
-  })
-  .actions(self => ({
-    setView(view: Instance<LinearGenomeViewStateModel>) {
-      self.view = view
-      return view
-    },
-  }))
-  .volatile((/* self */) => ({
-    assemblyManager: new Map([
-      [
-        'volvox',
-        Assembly.create({
-          regions: [
-            {
-              assemblyName: 'volvox',
-              start: 0,
-              end: 50001,
-              refName: 'ctgA',
-              reversed: false,
-            },
-            {
-              assemblyName: 'volvox',
-              start: 0,
-              end: 6079,
-              refName: 'ctgB',
-              reversed: false,
-            },
-          ],
-        }),
+  const Assembly = types
+    .model({})
+    .volatile(() => ({
+      regions: [
+        {
+          assemblyName: 'volvox',
+          start: 0,
+          end: 50001,
+          refName: 'ctgA',
+          reversed: false,
+        },
+        {
+          assemblyName: 'volvox',
+          start: 0,
+          end: 6079,
+          refName: 'ctgB',
+          reversed: false,
+        },
       ],
-    ]),
-  }))
+    }))
+    .views(() => ({
+      getCanonicalRefName(refName: string) {
+        if (refName === 'contigA') {
+          return 'ctgA'
+        }
+        return refName
+      },
+    }))
+  const LinearGenomeModel = stateModelFactory(stubManager)
+  const Session = types
+    .model({
+      name: 'testSession',
+      rpcManager: 'rpcManagerExists',
+      view: types.maybe(LinearGenomeModel),
+      configuration: types.map(types.string),
+    })
+    .actions(self => ({
+      setView(view: Instance<LinearGenomeViewStateModel>) {
+        self.view = view
+        return view
+      },
+    }))
+    .volatile((/* self */) => ({
+      assemblyManager: new Map([['volvox', Assembly.create({})]]),
+    }))
+
+  return { Session, LinearGenomeModel, Assembly }
+}
 
 test('can instantiate a mostly empty model and read a default configuration value', () => {
+  const { Session, LinearGenomeModel } = initialize()
   const model = Session.create({
     configuration: {},
   }).setView(
@@ -116,6 +116,7 @@ test('can instantiate a mostly empty model and read a default configuration valu
 })
 
 test('can instantiate a model that lets you navigate', () => {
+  const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({
     configuration: {},
   })
@@ -162,6 +163,7 @@ test('can instantiate a model that lets you navigate', () => {
 })
 
 test('can instantiate a model that has multiple displayed regions', () => {
+  const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({
     configuration: {},
   })
@@ -188,6 +190,7 @@ test('can instantiate a model that has multiple displayed regions', () => {
 })
 
 test('can instantiate a model that tests navTo/moveTo', async () => {
+  const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({
     configuration: {},
   })
@@ -246,6 +249,7 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
 })
 
 test('can navToMultiple', () => {
+  const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({
     configuration: {},
   })
@@ -316,6 +320,7 @@ test('can navToMultiple', () => {
 })
 
 describe('Zoom to selected displayed regions', () => {
+  const { Session, LinearGenomeModel } = initialize()
   let model: Instance<ReturnType<typeof stateModelFactory>>
   let largestBpPerPx: number
   beforeEach(() => {
@@ -508,6 +513,7 @@ describe('Zoom to selected displayed regions', () => {
 })
 
 test('can instantiate a model that >2 regions', () => {
+  const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({
     configuration: {},
   })
@@ -563,6 +569,7 @@ test('can instantiate a model that >2 regions', () => {
 })
 
 test('can perform bpToPx in a way that makes sense on things that happen outside', () => {
+  const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({
     configuration: {},
   })
@@ -613,7 +620,7 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
   expect(model.hideHeaderOverview).toEqual(true)
   model.toggleHeaderOverview()
   model.setError(Error('pxToBp failed to map to a region'))
-  expect(model.error?.message).toEqual('pxToBp failed to map to a region')
+  expect(`${model.error}`).toEqual('Error: pxToBp failed to map to a region')
 })
 // determined objectively by looking at
 // http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-Se2K5q_Jog&password=qT9on
@@ -621,6 +628,7 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
 // this test is important because interregionpadding blocks outside the current
 // view should not be taken into account
 test('can perform pxToBp on human genome things with ellided blocks (zoomed in)', () => {
+  const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({
     configuration: {},
   })
@@ -645,6 +653,7 @@ test('can perform pxToBp on human genome things with ellided blocks (zoomed in)'
 // this tests some places on hg38 when zoomed to whole genome, so inter-region
 // padding blocks and elided blocks matter
 test('can perform pxToBp on human genome things with ellided blocks (zoomed out)', () => {
+  const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({
     configuration: {},
   })
@@ -678,6 +687,7 @@ test('can perform pxToBp on human genome things with ellided blocks (zoomed out)
 })
 
 test('can showAllRegionsInAssembly', async () => {
+  const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({
     configuration: {},
   })
@@ -698,6 +708,7 @@ test('can showAllRegionsInAssembly', async () => {
 })
 
 describe('Get Sequence for selected displayed regions', () => {
+  const { Session, LinearGenomeModel } = initialize()
   /* the start of all the results should be +1
   the sequence dialog then handles converting from 1-based closed to interbase
   */
@@ -724,8 +735,6 @@ describe('Get Sequence for selected displayed regions', () => {
     model.setDisplayedRegions([
       { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 800 },
     ])
-    expect(model.displayedParentRegions.length).toEqual(1)
-    expect(model.displayedParentRegionsLength).toEqual(50001)
     model.setOffsets(
       {
         refName: 'ctgA',
@@ -921,10 +930,12 @@ describe('Get Sequence for selected displayed regions', () => {
 })
 
 test('navToLocString with human assembly', () => {
+  const { LinearGenomeModel } = initialize()
   const HumanAssembly = types
-    .model({
-      regions: types.array(Region),
-    })
+    .model({})
+    .volatile(() => ({
+      regions: hg38DisplayedRegions,
+    }))
     .views(() => ({
       getCanonicalRefName(refName: string) {
         return refName.replace('chr', '')

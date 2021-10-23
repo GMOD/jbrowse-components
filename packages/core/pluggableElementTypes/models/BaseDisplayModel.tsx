@@ -10,10 +10,11 @@ export const BaseDisplay = types
   .model('BaseDisplay', {
     id: ElementId,
     type: types.string,
+    rpcDriverName: types.maybe(types.string),
   })
   .volatile(() => ({
     rendererTypeName: '',
-    error: undefined as Error | undefined,
+    error: undefined as unknown,
   }))
   .views(self => ({
     get RenderingComponent(): React.FC<{
@@ -53,9 +54,10 @@ export const BaseDisplay = types
      * the react props that are passed to the Renderer when data
      * is rendered in this display
      */
-    get renderProps() {
+    renderProps() {
       return {
         ...getParentRenderProps(self),
+        rpcDriverName: self.rpcDriverName,
         displayModel: self,
       }
     },
@@ -67,12 +69,14 @@ export const BaseDisplay = types
     get rendererType() {
       const { pluginManager } = getEnv(self)
       const RendererType = pluginManager.getRendererType(self.rendererTypeName)
-      if (!RendererType)
+      if (!RendererType) {
         throw new Error(`renderer "${self.rendererTypeName}" not found`)
-      if (!RendererType.ReactComponent)
+      }
+      if (!RendererType.ReactComponent) {
         throw new Error(
           `renderer ${self.rendererTypeName} has no ReactComponent, it may not be completely implemented yet`,
         )
+      }
       return RendererType
     },
 
@@ -84,7 +88,7 @@ export const BaseDisplay = types
       return undefined as undefined | React.FC<any>
     },
 
-    get trackMenuItems(): MenuItem[] {
+    trackMenuItems(): MenuItem[] {
       return []
     },
 
@@ -103,8 +107,11 @@ export const BaseDisplay = types
     },
   }))
   .actions(self => ({
-    setError(error?: Error) {
+    setError(error?: unknown) {
       self.error = error
+    },
+    setRpcDriverName(rpcDriverName: string) {
+      self.rpcDriverName = rpcDriverName
     },
     // base display reload does nothing, see specialized displays for details
     reload() {},

@@ -1,33 +1,19 @@
-import { LocalFile, BlobFile, GenericFilehandle } from 'generic-filehandle'
-import ElectronLocalFile from './ElectronLocalFile'
-import ElectronRemoteFile from './ElectronRemoteFile'
-import { openUrl as rangeFetcherOpenUrl } from './rangeFetcher'
+import { BlobFile, LocalFile, GenericFilehandle } from 'generic-filehandle'
+import { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache'
 import {
   FileLocation,
   LocalPathLocation,
-  UriLocation,
   BlobLocation,
+  isAppRootModel,
+  isUriLocation,
+  AuthNeededError,
 } from '../types'
+import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
+import { getBlob } from '../tracks'
+import PluginManager from '../../PluginManager'
+import isNode from 'detect-node'
 
-declare global {
-  interface Window {
-    electron?: import('electron').AllElectron
-  }
-}
-
-// this is recommended in a later comment in https://github.com/electron/electron/issues/2288
-// for detecting electron in a renderer process, which is the one that has node enabled for us
-// const isElectron = process.versions.electron
-// const i2 = process.versions.hasOwnProperty('electron')
-const isElectron = /electron/i.test(navigator.userAgent)
-
-export const openUrl = (arg: string) => {
-  return isElectron ? new ElectronRemoteFile(arg) : rangeFetcherOpenUrl(arg)
-}
-
-function isUriLocation(location: FileLocation): location is UriLocation {
-  return 'uri' in location
-}
+export { RemoteFileWithRangeCache }
 
 function isLocalPathLocation(
   location: FileLocation,
@@ -36,34 +22,129 @@ function isLocalPathLocation(
 }
 
 function isBlobLocation(location: FileLocation): location is BlobLocation {
-  return 'blob' in location
+  return 'blobId' in location
 }
 
-export function openLocation(location: FileLocation): GenericFilehandle {
+export function openLocation(
+  location: FileLocation,
+  pluginManager?: PluginManager,
+): GenericFilehandle {
+  async function checkAuthNeededFetch(
+    url: RequestInfo,
+    opts?: RequestInit,
+  ): Promise<Response> {
+    const response = await fetch(url, opts)
+    if (response.status === 401) {
+      const authHeaders = response.headers.get('WWW-Authenticate')
+      if (
+        isUriLocation(location) &&
+        authHeaders &&
+        authHeaders.includes('Basic')
+      ) {
+        throw new AuthNeededError(
+          'Accessing HTTPBasic resource without authentication',
+          location,
+        )
+      }
+    }
+    return response
+  }
+
   if (!location) {
     throw new Error('must provide a location to openLocation')
   }
-  if (isElectron) {
-    if (isUriLocation(location)) {
-      return new ElectronRemoteFile(location.uri)
+  if (isLocalPathLocation(location)) {
+    if (!location.localPath) {
+      throw new Error('No local path provided')
     }
-    if (isLocalPathLocation(location)) {
-      return new ElectronLocalFile(location.localPath)
-    }
-  } else {
-    if (isUriLocation(location)) {
-      return openUrl(
-        location.baseUri
-          ? new URL(location.uri, location.baseUri).href
-          : location.uri,
-      )
-    }
-    if (isLocalPathLocation(location)) {
+
+    if (isNode) {
       return new LocalFile(location.localPath)
+    } else {
+      throw new Error("can't use local files in the browser")
     }
   }
   if (isBlobLocation(location)) {
-    return new BlobFile(location.blob)
+    // special case where blob is not directly stored on the model, use a getter
+    const blob = getBlob(location.blobId)
+    if (!blob) {
+      throw new Error(
+        `file ("${location.name}") was opened locally from a previous session. To restore it, go to track settings and reopen the file`,
+      )
+    }
+    return new BlobFile(blob)
+  }
+  if (isUriLocation(location)) {
+    if (!location.uri) {
+      throw new Error('No URI provided')
+    }
+    if (location.internetAccountPreAuthorization) {
+      if (!pluginManager) {
+        throw new Error(
+          'need plugin manager to open locations with an internet account',
+        )
+      }
+      const { rootModel } = pluginManager
+      if (rootModel && !isAppRootModel(rootModel)) {
+        throw new Error('This context does not support internet accounts')
+      }
+      let internetAccount
+      if (rootModel) {
+        internetAccount = rootModel.findAppropriateInternetAccount(location) as
+          | BaseInternetAccountModel
+          | undefined
+      } else {
+        const internetAccountType = pluginManager.getInternetAccountType(
+          location.internetAccountPreAuthorization.internetAccountType,
+        )
+
+        internetAccount = internetAccountType.stateModel.create({
+          type: location.internetAccountPreAuthorization.internetAccountType,
+          configuration:
+            location.internetAccountPreAuthorization.authInfo.configuration,
+        })
+        if (!location.internetAccountPreAuthorization.authInfo.token) {
+          throw new Error(
+            'Failed to obtain token from internet account. Try reloading the page',
+          )
+        }
+      }
+      if (!internetAccount) {
+        throw new Error('Could not find associated internet account')
+      }
+      return internetAccount.openLocation(location)
+    } else if (location.internetAccountId) {
+      if (!pluginManager) {
+        throw new Error(
+          'need plugin manager to open locations with an internet account',
+        )
+      }
+      const { rootModel } = pluginManager
+      if (rootModel && !isAppRootModel(rootModel)) {
+        throw new Error('This context does not support internet accounts')
+      }
+      if (rootModel) {
+        const modifiedLocation = JSON.parse(JSON.stringify(location))
+        const internetAccount = rootModel.findAppropriateInternetAccount(
+          location,
+        ) as BaseInternetAccountModel | undefined
+        if (!internetAccount) {
+          throw new Error('Could not find associated internet account')
+        }
+        internetAccount.getPreAuthorizationInformation(location).then(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (preAuthInfo: any) =>
+            (modifiedLocation.internetAccountPreAuthorization = preAuthInfo),
+        )
+        return internetAccount.openLocation(modifiedLocation)
+      }
+      throw new Error('Could not pre-authorize location')
+    }
+
+    const url = location.baseUri
+      ? new URL(location.uri, location.baseUri).href
+      : location.uri
+    return new RemoteFileWithRangeCache(url, { fetch: checkAuthNeededFetch })
   }
   throw new Error('invalid fileLocation')
 }

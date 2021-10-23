@@ -3,7 +3,6 @@
  * JS/TS files ignored since ESLint provides formatting feedback for those
  */
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 const spawn = require('cross-spawn')
 
 function main() {

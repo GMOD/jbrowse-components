@@ -32,7 +32,7 @@ const fallbackDefaults: { [typeName: string]: any } = {
   number: 1,
   string: '',
   text: '',
-  fileLocation: { uri: '/path/to/resource.txt' },
+  fileLocation: { uri: '/path/to/resource.txt', locationType: 'UriLocation' },
   frozen: {},
 }
 
@@ -93,17 +93,23 @@ const typeModelExtensions: { [typeName: string]: (self: any) => any } = {
       },
       addToKey(key: string, val: string) {
         const ar = self.value.get(key)
-        if (!ar) throw new Error(`${key} not found`)
+        if (!ar) {
+          throw new Error(`${key} not found`)
+        }
         ar.push(val)
       },
       removeAtKeyIndex(key: string, idx: number) {
         const ar = self.value.get(key)
-        if (!ar) throw new Error(`${key} not found`)
+        if (!ar) {
+          throw new Error(`${key} not found`)
+        }
         ar.splice(idx, 1)
       },
       setAtKeyIndex(key: string, idx: number, val: string) {
         const ar = self.value.get(key)
-        if (!ar) throw new Error(`${key} not found`)
+        if (!ar) {
+          throw new Error(`${key} not found`)
+        }
         ar[idx] = val
       },
     },
@@ -163,15 +169,21 @@ export default function ConfigSlot(
     contextVariable = [],
   }: ConfigSlotDefinition,
 ) {
-  if (!type) throw new Error('type name required')
-  if (!model) model = typeModels[type]
+  if (!type) {
+    throw new Error('type name required')
+  }
+  if (!model) {
+    model = typeModels[type]
+  }
   if (!model) {
     throw new Error(
       `no builtin config slot type "${type}", and no 'model' param provided`,
     )
   }
 
-  if (defaultValue === undefined) throw new Error("no 'defaultValue' provided")
+  if (defaultValue === undefined) {
+    throw new Error("no 'defaultValue' provided")
+  }
 
   // if the `type` is something like `color`, then the model name
   // here will be `ColorConfigSlot`
@@ -197,10 +209,13 @@ export default function ConfigSlot(
       get expr() {
         if (self.isCallback) {
           // compile as jexl function
-          return stringToJexlExpression(
-            String(self.value),
-            getEnv(self).pluginManager?.jexl,
-          )
+          const { pluginManager } = getEnv(self)
+          if (!pluginManager && typeof jest === 'undefined') {
+            console.warn(
+              'no pluginManager detected on config env (if you dynamically instantiate a config, for example in renderProps for your display model, check that you add the env argument)',
+            )
+          }
+          return stringToJexlExpression(String(self.value), pluginManager?.jexl)
         }
         return { evalSync: () => self.value }
       },
@@ -209,7 +224,9 @@ export default function ConfigSlot(
       // for embedding in either JSON or a JS function string.
       // many of the data types override this in typeModelExtensions
       get valueJSON(): any[] | Record<string, any> | string | undefined {
-        if (self.isCallback) return undefined
+        if (self.isCallback) {
+          return undefined
+        }
         function json(value: { toJSON: Function } | any) {
           if (value && value.toJSON) {
             return value.toJSON()
@@ -219,28 +236,22 @@ export default function ConfigSlot(
         return json(self.value)
       },
     }))
-    .preProcessSnapshot(
-      val =>
-        typeof val === 'object' && val.name === slotName
-          ? val
-          : {
-              name: slotName,
-              description,
-              type,
-              value: val,
-            },
-      // ({
-      //   name: slotName,
-      //   description,
-      //   type,
-      //   value: val,
-      // }),
+    .preProcessSnapshot(val =>
+      typeof val === 'object' && val.name === slotName
+        ? val
+        : {
+            name: slotName,
+            description,
+            type,
+            value: val,
+          },
     )
     .postProcessSnapshot(snap => {
-      if (typeof snap.value === 'object')
+      if (typeof snap.value === 'object') {
         return JSON.stringify(snap.value) !== JSON.stringify(defaultValue)
           ? snap.value
           : undefined
+      }
       return snap.value !== defaultValue ? snap.value : undefined
     })
     .actions(self => ({
@@ -251,11 +262,15 @@ export default function ConfigSlot(
         self.value = defaultValue
       },
       convertToCallback() {
-        if (self.isCallback) return
+        if (self.isCallback) {
+          return
+        }
         self.value = `jexl:${self.valueJSON || "''"}`
       },
       convertToValue() {
-        if (!self.isCallback) return
+        if (!self.isCallback) {
+          return
+        }
         // try calling it with no arguments
         try {
           const funcResult = self.expr.evalSync()

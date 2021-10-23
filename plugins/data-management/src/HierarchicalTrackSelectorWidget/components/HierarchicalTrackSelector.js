@@ -1,396 +1,578 @@
-import { readConfObject } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
-import Button from '@material-ui/core/Button'
-import Dialog from '@material-ui/core/Dialog'
-import DialogActions from '@material-ui/core/DialogActions'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogContentText from '@material-ui/core/DialogContentText'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import Fab from '@material-ui/core/Fab'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
-import FormGroup from '@material-ui/core/FormGroup'
-import IconButton from '@material-ui/core/IconButton'
-import InputAdornment from '@material-ui/core/InputAdornment'
-import List from '@material-ui/core/List'
-import ListItem from '@material-ui/core/ListItem'
-import Menu from '@material-ui/core/Menu'
-import MenuItem from '@material-ui/core/MenuItem'
-import Paper from '@material-ui/core/Paper'
-import { makeStyles } from '@material-ui/core/styles'
-import Switch from '@material-ui/core/Switch'
-import Tab from '@material-ui/core/Tab'
-import Tabs from '@material-ui/core/Tabs'
-import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
+/* eslint-disable react/prop-types */
+import React, {
+  Suspense,
+  lazy,
+  useCallback,
+  useMemo,
+  useState,
+  useRef,
+  useEffect,
+} from 'react'
+import {
+  Checkbox,
+  Fab,
+  FormControlLabel,
+  IconButton,
+  InputAdornment,
+  Menu,
+  MenuItem,
+  TextField,
+  Tooltip,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
+
+// icons
 import ClearIcon from '@material-ui/icons/Clear'
 import AddIcon from '@material-ui/icons/Add'
-import CloseIcon from '@material-ui/icons/Close'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import React, { useState } from 'react'
-import Contents from './Contents'
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
+import ArrowRightIcon from '@material-ui/icons/ArrowRight'
+import MenuIcon from '@material-ui/icons/Menu'
+import MoreIcon from '@material-ui/icons/MoreHoriz'
+import PowerOutlinedIcon from '@material-ui/icons/PowerOutlined'
+
+// other
+import AutoSizer from 'react-virtualized-auto-sizer'
+import JBrowseMenu from '@jbrowse/core/ui/Menu'
+import { getSession } from '@jbrowse/core/util'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { observer } from 'mobx-react'
+import { VariableSizeTree } from 'react-vtree'
+
+const CloseConnectionDialog = lazy(() => import('./CloseConnectionDialog'))
+const DeleteConnectionDialog = lazy(() => import('./DeleteConnectionDialog'))
+const ManageConnectionsDialog = lazy(() => import('./ManageConnectionsDialog'))
+const ToggleConnectionsDialog = lazy(() => import('./ToggleConnectionsDialog'))
 
 const useStyles = makeStyles(theme => ({
-  root: {
-    textAlign: 'left',
-    padding: theme.spacing(1),
-  },
   searchBox: {
     marginBottom: theme.spacing(2),
   },
+  menuIcon: {
+    marginRight: theme.spacing(1),
+    marginBottom: 0,
+  },
   fab: {
-    float: 'right',
-    position: 'sticky',
-    marginTop: theme.spacing(2),
-    bottom: theme.spacing(2),
-    right: theme.spacing(2),
+    position: 'absolute',
+    bottom: theme.spacing(6),
+    right: theme.spacing(6),
   },
-  connectionsPaper: {
-    padding: theme.spacing(1),
-    marginTop: theme.spacing(1),
+  compactCheckbox: {
+    padding: 0,
   },
-  tabs: {
-    marginBottom: theme.spacing(1),
+
+  checkboxLabel: {
+    marginRight: 0,
+    '&:hover': {
+      backgroundColor: '#eee',
+    },
+  },
+
+  // this accordionBase element's small padding is used to give a margin to
+  // accordionColor it a "margin" because the virtualized elements can't really
+  // use margin in a conventional way (it doesn't affect layout)
+  accordionBase: {
+    display: 'flex',
+  },
+
+  accordionCard: {
+    padding: 3,
+    cursor: 'pointer',
+    display: 'flex',
+  },
+
+  nestingLevelMarker: {
+    position: 'absolute',
+    borderLeft: '1.5px solid #555',
+  },
+  // accordionColor set's display:flex so that the child accordionText use
+  // vertically centered text
+  accordionColor: {
+    background: theme.palette.tertiary?.main,
+    color: theme.palette.tertiary?.contrastText,
+    width: '100%',
+    display: 'flex',
+    paddingLeft: 5,
+  },
+
+  // margin:auto 0 to center text vertically
+  accordionText: {
+    margin: 'auto 0',
   },
 }))
 
-const CloseConnectionDlg = observer(props => {
-  const { open, modalInfo, setModalInfo } = props
-  const { name, dereferenceTypeCount, safelyBreakConnection } = modalInfo || {}
-  return (
-    <Dialog
-      aria-labelledby="connection-modal-title"
-      aria-describedby="connection-modal-description"
-      open={open}
-    >
-      <DialogTitle>Close connection &quot;{name}&quot;</DialogTitle>
-      <DialogContent>
-        <>
-          {dereferenceTypeCount ? (
-            <>
-              <DialogContentText>
-                Closing this connection will close:
-              </DialogContentText>
-              <List>
-                {Object.entries(dereferenceTypeCount).map(([key, value]) => (
-                  <ListItem key={key}>{`${value} ${key}`}</ListItem>
-                ))}
-              </List>
-            </>
-          ) : null}
-          <DialogContentText>
-            Are you sure you want to close this connection?
-          </DialogContentText>
-        </>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            setModalInfo()
-          }}
-          color="primary"
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          onClick={
-            modalInfo
-              ? () => {
-                  if (safelyBreakConnection) safelyBreakConnection()
-                  setModalInfo()
-                }
-              : () => {}
-          }
-          color="primary"
-        >
-          OK
-        </Button>
-      </DialogActions>
-    </Dialog>
-  )
-})
+// An individual node in the track selector. Note: manually sets cursor:
+// pointer improves usability for what can be clicked
+const Node = props => {
+  const { data, isOpen, style, setOpen } = props
+  const {
+    isLeaf,
+    nestingLevel,
+    checked,
+    id,
+    name,
+    onChange,
+    toggleCollapse,
+    conf,
+    onMoreInfo,
+    drawerPosition,
+  } = data
 
-const DeleteConnectionDlg = observer(props => {
-  const { open, modalInfo, session, setModalInfo } = props
-  const { connectionConf, name, dereferenceTypeCount, safelyBreakConnection } =
-    modalInfo || {}
-  return (
-    <Dialog
-      aria-labelledby="connection-modal-title"
-      aria-describedby="connection-modal-description"
-      open={open}
-    >
-      <DialogTitle>Delete connection &quot;{name}&quot;</DialogTitle>
-      <DialogContent>
-        {dereferenceTypeCount ? (
-          <>
-            Closing this connection will close
-            <List>
-              {Object.entries(dereferenceTypeCount).map(([key, value]) => (
-                <ListItem key={key}>{`${value} ${key}`}</ListItem>
-              ))}
-            </List>
-          </>
-        ) : null}
-        <DialogContentText>
-          Are you sure you want to delete this connection?
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            setModalInfo()
-          }}
-          color="primary"
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          onClick={
-            modalInfo
-              ? () => {
-                  if (safelyBreakConnection) safelyBreakConnection()
-                  session.deleteConnection(connectionConf)
-                  setModalInfo()
-                }
-              : () => {}
-          }
-          color="primary"
-        >
-          OK
-        </Button>
-      </DialogActions>
-    </Dialog>
-  )
-})
-
-function HierarchicalTrackSelector({ model }) {
-  const [anchorEl, setAnchorEl] = useState(null)
-  const [assemblyIdx, setAssemblyIdx] = useState(0)
-  const [modalInfo, setModalInfo] = useState()
   const classes = useStyles()
-
-  const session = getSession(model)
-
-  function handleTabChange(event, newIdx) {
-    setAssemblyIdx(newIdx)
-  }
-
-  function handleFabClick(event) {
-    setAnchorEl(event.currentTarget)
-  }
-
-  function handleFabClose() {
-    setAnchorEl(null)
-  }
-
-  function handleInputChange(event) {
-    model.setFilterText(event.target.value)
-  }
-
-  function addConnection() {
-    handleFabClose()
-    const widget = session.addWidget(
-      'AddConnectionWidget',
-      'addConnectionWidget',
-    )
-    session.showWidget(widget)
-  }
-
-  function addTrack() {
-    handleFabClose()
-    const widget = session.addWidget('AddTrackWidget', 'addTrackWidget', {
-      view: model.view.id,
-    })
-    session.showWidget(widget)
-  }
-
-  function filter(trackConfig) {
-    if (!model.filterText) return true
-    const name = readConfObject(trackConfig, 'name')
-    return name.toLowerCase().includes(model.filterText.toLowerCase())
-  }
-
-  function handleConnectionToggle(connectionConf) {
-    const assemblyConnections = session.connectionInstances.get(assemblyName)
-    const existingConnection =
-      assemblyConnections &&
-      !!assemblyConnections.find(
-        connection =>
-          connection.name === readConfObject(connectionConf, 'name'),
-      )
-    if (existingConnection) {
-      breakConnection(connectionConf)
-    } else {
-      session.makeConnection(connectionConf)
-    }
-  }
-
-  function breakConnection(connectionConf, deleting = false) {
-    const name = readConfObject(connectionConf, 'name')
-    const result = session.prepareToBreakConnection(connectionConf)
-    if (result) {
-      const [safelyBreakConnection, dereferenceTypeCount] = result
-      // always popup a warning if deleting or tracks are going to be removed
-      // from view
-      if (Object.keys(dereferenceTypeCount).length > 0 || deleting) {
-        setModalInfo({
-          connectionConf,
-          safelyBreakConnection,
-          dereferenceTypeCount,
-          name,
-          deleting,
-        })
-      } else {
-        safelyBreakConnection()
-      }
-    } else if (deleting) {
-      setModalInfo({ name, deleting, connectionConf })
-    }
-  }
-
-  const { assemblyNames } = model
-  const assemblyName = assemblyNames[assemblyIdx]
-  if (!assemblyName) {
-    return null
-  }
-
-  const filterError =
-    model.trackConfigurations(assemblyName, session.tracks) > 0 &&
-    model.trackConfigurations(assemblyName, session.tracks).filter(filter)
-      .length === 0
+  const width = 10
+  const marginLeft = nestingLevel * width + (isLeaf ? width : 0)
+  const unsupported =
+    name && (name.endsWith('(Unsupported)') || name.endsWith('(Unknown)'))
+  const description = (conf && readConfObject(conf, ['description'])) || ''
 
   return (
-    <div
-      key={model.view.id}
-      className={classes.root}
-      data-testid="hierarchical_track_selector"
-    >
-      {assemblyNames.length > 1 ? (
-        <Tabs
-          className={classes.tabs}
-          value={assemblyIdx}
-          onChange={handleTabChange}
-        >
-          {assemblyNames.map((name, index) => (
-            <Tab key={`${name}-${index}`} label={name} />
-          ))}
-        </Tabs>
-      ) : null}
-      <TextField
-        className={classes.searchBox}
-        label="Filter Tracks"
-        value={model.filterText}
-        error={filterError}
-        helperText={filterError ? 'No matches' : ''}
-        onChange={handleInputChange}
-        fullWidth
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton color="secondary" onClick={model.clearFilterText}>
-                <ClearIcon />
-              </IconButton>
-            </InputAdornment>
-          ),
+    <div style={style} className={!isLeaf ? classes.accordionBase : undefined}>
+      {new Array(nestingLevel).fill(0).map((_, idx) => (
+        <div
+          key={`mark-${idx}`}
+          style={{ left: idx * width + 4, height: style.height }}
+          className={classes.nestingLevelMarker}
+        />
+      ))}
+      <div
+        className={!isLeaf ? classes.accordionCard : undefined}
+        onClick={() => {
+          toggleCollapse(id)
+          setOpen(!isOpen)
         }}
-      />
-      <Contents
-        model={model}
-        filterPredicate={filter}
-        assemblyName={assemblyName}
-        top
-      />
-      <FormGroup>
-        {session.connections
-          .filter(
-            connectionConf =>
-              readConfObject(connectionConf, 'assemblyName') === assemblyName,
-          )
-          .map(connectionConf => {
-            const name = readConfObject(connectionConf, 'name')
-            const id = connectionConf.connectionId
-            return (
-              <FormGroup row key={id}>
+        style={{
+          marginLeft,
+          whiteSpace: 'nowrap',
+          width: '100%',
+        }}
+      >
+        <div className={!isLeaf ? classes.accordionColor : undefined}>
+          {!isLeaf ? (
+            <div className={classes.accordionText}>
+              <Typography>
+                {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
+                {name}
+              </Typography>
+            </div>
+          ) : (
+            <>
+              <Tooltip
+                title={description}
+                placement={drawerPosition === 'left' ? 'right' : 'left'}
+              >
                 <FormControlLabel
+                  className={classes.checkboxLabel}
                   control={
-                    <Switch
-                      checked={
-                        session.connectionInstances.has(assemblyName) &&
-                        !!session.connectionInstances
-                          .get(assemblyName)
-                          .find(connection => connection.name === name)
-                      }
-                      onChange={() => handleConnectionToggle(connectionConf)}
+                    <Checkbox
+                      className={classes.compactCheckbox}
+                      checked={checked}
+                      onChange={() => onChange(id)}
+                      color="primary"
+                      disabled={unsupported}
+                      inputProps={{
+                        'data-testid': `htsTrackEntry-${id}`,
+                      }}
                     />
                   }
                   label={name}
                 />
-                <IconButton
-                  data-testid="delete-connection"
-                  onClick={() => {
-                    breakConnection(connectionConf, true)
-                  }}
-                >
-                  <CloseIcon />
-                </IconButton>
-              </FormGroup>
-            )
-          })}
-      </FormGroup>
-      {session.connectionInstances.has(assemblyName) ? (
-        <>
-          <Typography variant="h5">Connections</Typography>
-          {session.connectionInstances.get(assemblyName).map(connection => (
-            <Paper
-              key={connection.name}
-              className={classes.connectionsPaper}
-              elevation={8}
-            >
-              <Typography variant="h6">{connection.name}</Typography>
-              <Contents
-                model={model}
-                filterPredicate={filter}
-                connection={connection}
-                assemblyName={assemblyName}
-                top
-              />
-            </Paper>
-          ))}
-        </>
-      ) : null}
-
-      <Fab color="secondary" className={classes.fab} onClick={handleFabClick}>
-        <AddIcon />
-      </Fab>
-      <Menu
-        id="simple-menu"
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleFabClose}
-      >
-        <MenuItem onClick={addConnection}>Add connection</MenuItem>
-        <MenuItem onClick={addTrack}>Add track</MenuItem>
-      </Menu>
-      <CloseConnectionDlg
-        modalInfo={modalInfo}
-        setModalInfo={setModalInfo}
-        open={Boolean(modalInfo) && !modalInfo.deleting}
-        session={session}
-      />
-      <DeleteConnectionDlg
-        modalInfo={modalInfo}
-        setModalInfo={setModalInfo}
-        open={Boolean(modalInfo) && modalInfo.deleting}
-        session={session}
-      />
+              </Tooltip>
+              <IconButton
+                onClick={e => onMoreInfo({ target: e.currentTarget, id, conf })}
+                color="secondary"
+                data-testid={`htsTrackEntryMenu-${id}`}
+              >
+                <MoreIcon />
+              </IconButton>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
 
-HierarchicalTrackSelector.propTypes = {
-  model: MobxPropTypes.observableObject.isRequired,
+const getNodeData = (node, nestingLevel, extra) => {
+  const isLeaf = !!node.conf
+  return {
+    data: {
+      defaultHeight: isLeaf ? 22 : 40,
+      isLeaf,
+      isOpenByDefault: true,
+      nestingLevel,
+      ...node,
+      ...extra,
+    },
+    nestingLevel,
+    node,
+  }
 }
 
-export default observer(HierarchicalTrackSelector)
+// this is the main tree component for the hierarchical track selector in note:
+// in jbrowse-web the toolbar is position="sticky" which means the autosizer
+// includes the height of the toolbar, so we subtract the given offsets
+const HierarchicalTree = observer(({ height, tree, model }) => {
+  const { filterText, view } = model
+  const treeRef = useRef(null)
+  const [info, setMoreInfo] = useState()
+  const session = getSession(model)
+  const { drawerPosition } = session
+
+  const extra = useMemo(
+    () => ({
+      onChange: trackId => view.toggleTrack(trackId),
+      toggleCollapse: pathName => model.toggleCategory(pathName),
+      onMoreInfo: setMoreInfo,
+      drawerPosition,
+    }),
+    [view, model, drawerPosition],
+  )
+  const treeWalker = useCallback(
+    function* treeWalker() {
+      for (let i = 0; i < tree.children.length; i++) {
+        yield getNodeData(tree.children[i], 0, extra)
+      }
+
+      while (true) {
+        const parentMeta = yield
+
+        for (let i = 0; i < parentMeta.node.children.length; i++) {
+          const curr = parentMeta.node.children[i]
+          yield getNodeData(curr, parentMeta.nestingLevel + 1, extra)
+        }
+      }
+    },
+    [tree, extra],
+  )
+
+  const conf = info?.conf
+  const menuItems = (conf && session.getTrackActionMenuItems?.(conf)) || []
+
+  useEffect(() => {
+    treeRef.current.recomputeTree({
+      refreshNodes: true,
+      useDefaultHeight: true,
+    })
+  }, [tree, filterText])
+  return (
+    <>
+      <VariableSizeTree ref={treeRef} treeWalker={treeWalker} height={height}>
+        {Node}
+      </VariableSizeTree>
+      <JBrowseMenu
+        anchorEl={info?.target}
+        menuItems={menuItems}
+        onMenuItemClick={(_event, callback) => {
+          callback()
+          setMoreInfo(undefined)
+        }}
+        open={Boolean(info)}
+        onClose={() => setMoreInfo(undefined)}
+      />
+    </>
+  )
+})
+
+// Don't use autosizer in jest and instead hardcode a height, otherwise fails
+// jest tests
+const AutoSizedHierarchicalTree = ({ tree, model, offset }) => {
+  return typeof jest === 'undefined' ? (
+    <AutoSizer disableWidth>
+      {({ height }) => {
+        return (
+          <HierarchicalTree
+            height={height - offset}
+            model={model}
+            tree={tree}
+          />
+        )
+      }}
+    </AutoSizer>
+  ) : (
+    <HierarchicalTree height={9000} model={model} tree={tree} />
+  )
+}
+
+const Wrapper = ({ overrideDimensions, children }) => {
+  return overrideDimensions ? (
+    <div style={{ ...overrideDimensions }}>{children}</div>
+  ) : (
+    <>{children}</>
+  )
+}
+const HierarchicalTrackSelectorContainer = observer(
+  ({ model, toolbarHeight, overrideDimensions }) => {
+    const classes = useStyles()
+    const session = getSession(model)
+    const [anchorEl, setAnchorEl] = useState(null)
+
+    function handleFabClose() {
+      setAnchorEl(null)
+    }
+    return (
+      <Wrapper overrideDimensions={overrideDimensions}>
+        <HierarchicalTrackSelector
+          model={model}
+          toolbarHeight={toolbarHeight}
+          overrideDimensions={overrideDimensions}
+        />
+        <Fab
+          color="secondary"
+          className={classes.fab}
+          onClick={event => {
+            setAnchorEl(event.currentTarget)
+          }}
+        >
+          <AddIcon />
+        </Fab>
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={() => setAnchorEl(null)}
+        >
+          <MenuItem
+            onClick={() => {
+              handleFabClose()
+              const widget = session.addWidget(
+                'AddConnectionWidget',
+                'addConnectionWidget',
+              )
+              session.showWidget(widget)
+            }}
+          >
+            Add connection
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              handleFabClose()
+              const widget = session.addWidget(
+                'AddTrackWidget',
+                'addTrackWidget',
+                {
+                  view: model.view.id,
+                },
+              )
+              session.showWidget(widget)
+            }}
+          >
+            Add track
+          </MenuItem>
+        </Menu>
+      </Wrapper>
+    )
+  },
+)
+
+const HierarchicalTrackSelectorHeader = observer(
+  ({ model, setHeaderHeight, setAssemblyIdx, assemblyIdx }) => {
+    const classes = useStyles()
+    const session = getSession(model)
+    const [connectionAnchorEl, setConnectionAnchorEl] = useState()
+    const [menuAnchorEl, setMenuAnchorEl] = useState()
+    const [modalInfo, setModalInfo] = useState()
+    const [deleteDialogDetails, setDeleteDialogDetails] = useState()
+    const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
+    const [connectionToggleOpen, setConnectionToggleOpen] = useState(false)
+    const { assemblyNames } = model
+    const assemblyName = assemblyNames[assemblyIdx]
+
+    function breakConnection(connectionConf, deletingConnection) {
+      const name = readConfObject(connectionConf, 'name')
+      const result = session.prepareToBreakConnection(connectionConf)
+      if (result) {
+        const [safelyBreakConnection, dereferenceTypeCount] = result
+        if (Object.keys(dereferenceTypeCount).length > 0) {
+          setModalInfo({
+            connectionConf,
+            safelyBreakConnection,
+            dereferenceTypeCount,
+            name,
+          })
+        } else {
+          safelyBreakConnection()
+        }
+      }
+      if (deletingConnection) {
+        setDeleteDialogDetails({ name, connectionConf })
+      }
+    }
+
+    const connectionMenuItems = [
+      {
+        label: 'Turn on/off connections...',
+        onClick: () => setConnectionToggleOpen(true),
+      },
+      {
+        label: 'Delete connections...',
+        onClick: () => setConnectionManagerOpen(true),
+      },
+    ]
+    const assemblyMenuItems =
+      assemblyNames.length > 1
+        ? [
+            {
+              label: 'Select assembly...',
+              subMenu: assemblyNames.map((name, idx) => ({
+                label: name,
+                onClick: () => {
+                  setAssemblyIdx(idx)
+                },
+              })),
+            },
+          ]
+        : []
+
+    const menuItems = [
+      {
+        label: 'Add track...',
+        onClick: () => {
+          session.showWidget(
+            session.addWidget('AddTrackWidget', 'addTrackWidget', {
+              view: model.view.id,
+            }),
+          )
+        },
+      },
+
+      ...assemblyMenuItems,
+    ]
+
+    return (
+      <div
+        ref={ref => setHeaderHeight(ref?.getBoundingClientRect().height || 0)}
+        data-testid="hierarchical_track_selector"
+      >
+        <div style={{ display: 'flex' }}>
+          <IconButton
+            className={classes.menuIcon}
+            onClick={event => {
+              setMenuAnchorEl(event.currentTarget)
+            }}
+          >
+            <MenuIcon />
+          </IconButton>
+          <IconButton
+            className={classes.menuIcon}
+            onClick={event => {
+              setConnectionAnchorEl(event.currentTarget)
+            }}
+          >
+            <PowerOutlinedIcon />
+          </IconButton>
+          <TextField
+            className={classes.searchBox}
+            label="Filter tracks"
+            value={model.filterText}
+            onChange={event => model.setFilterText(event.target.value)}
+            fullWidth
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton color="secondary" onClick={model.clearFilterText}>
+                    <ClearIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </div>
+
+        <JBrowseMenu
+          anchorEl={connectionAnchorEl}
+          open={Boolean(connectionAnchorEl)}
+          onMenuItemClick={(_, callback) => {
+            callback()
+            setConnectionAnchorEl(undefined)
+          }}
+          onClose={() => {
+            setConnectionAnchorEl(undefined)
+          }}
+          menuItems={[
+            {
+              label: 'Add connection',
+              onClick: () => {
+                session.showWidget(
+                  session.addWidget(
+                    'AddConnectionWidget',
+                    'addConnectionWidget',
+                  ),
+                )
+              },
+            },
+            ...connectionMenuItems,
+          ]}
+        />
+
+        <JBrowseMenu
+          anchorEl={menuAnchorEl}
+          open={Boolean(menuAnchorEl)}
+          onMenuItemClick={(_, callback) => {
+            callback()
+            setMenuAnchorEl(undefined)
+          }}
+          onClose={() => {
+            setMenuAnchorEl(undefined)
+          }}
+          menuItems={menuItems}
+        />
+
+        <Suspense fallback={<div />}>
+          {modalInfo ? (
+            <CloseConnectionDialog
+              modalInfo={modalInfo}
+              setModalInfo={setModalInfo}
+              session={session}
+            />
+          ) : deleteDialogDetails ? (
+            <DeleteConnectionDialog
+              handleClose={() => {
+                setDeleteDialogDetails(undefined)
+              }}
+              deleteDialogDetails={deleteDialogDetails}
+              session={session}
+            />
+          ) : null}
+          {connectionManagerOpen ? (
+            <ManageConnectionsDialog
+              handleClose={() => setConnectionManagerOpen(false)}
+              breakConnection={breakConnection}
+              session={session}
+            />
+          ) : null}
+          {connectionToggleOpen ? (
+            <ToggleConnectionsDialog
+              handleClose={() => setConnectionToggleOpen(false)}
+              session={session}
+              breakConnection={breakConnection}
+              assemblyName={assemblyName}
+            />
+          ) : null}
+        </Suspense>
+      </div>
+    )
+  },
+)
+const HierarchicalTrackSelector = observer(({ model, toolbarHeight = 0 }) => {
+  const [assemblyIdx, setAssemblyIdx] = useState(0)
+  const [headerHeight, setHeaderHeight] = useState(0)
+
+  const { assemblyNames } = model
+  const assemblyName = assemblyNames[assemblyIdx]
+  return assemblyName ? (
+    <>
+      <HierarchicalTrackSelectorHeader
+        model={model}
+        setHeaderHeight={setHeaderHeight}
+        setAssemblyIdx={setAssemblyIdx}
+        assemblyIdx={assemblyIdx}
+      />
+      <AutoSizedHierarchicalTree
+        tree={model.hierarchy(assemblyName)}
+        model={model}
+        offset={toolbarHeight + headerHeight}
+      />
+    </>
+  ) : null
+})
+
+export default HierarchicalTrackSelectorContainer

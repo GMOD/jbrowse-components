@@ -6,11 +6,10 @@ import { autorun } from 'mobx'
 import ColumnDataTypes from './ColumnDataTypes'
 import StaticRowSetF from './StaticRowSet'
 import RowF from './Row'
+import { types, getParent } from 'mobx-state-tree'
 
-export default (pluginManager: PluginManager) => {
-  const { lib, load } = pluginManager
-  const { types, getParent } = lib['mobx-state-tree']
-
+const SpreadsheetModelF = (pluginManager: PluginManager) => {
+  const { load } = pluginManager
   const { ColumnTypes, AnyColumnType } = load(ColumnDataTypes)
 
   const StaticRowSetModel = load(StaticRowSetF)
@@ -76,11 +75,7 @@ export default (pluginManager: PluginManager) => {
       get initialized() {
         const session = getSession(self)
         const name = self.assemblyName
-        if (name) {
-          const asm = session.assemblyManager.get(name)
-          return asm && asm.initialized
-        }
-        return true
+        return name ? session.assemblyManager.get(name)?.initialized : false
       },
       get hideRowSelection() {
         // just delegates to parent
@@ -108,7 +103,9 @@ export default (pluginManager: PluginManager) => {
             rowA.cellsWithDerived[columnNumber],
             rowB.cellsWithDerived[columnNumber],
           )
-          if (result) return descending ? -result : result
+          if (result) {
+            return descending ? -result : result
+          }
         }
         return 0
       },
@@ -146,8 +143,10 @@ export default (pluginManager: PluginManager) => {
       setSortColumns(
         newSort: NonNullable<SnapshotIn<typeof self.sortColumns>>,
       ) {
-        // @ts-ignore
-        if (newSort) self.sortColumns = newSort
+        if (newSort) {
+          // @ts-ignore
+          self.sortColumns = newSort
+        }
       },
       setColumnType(columnNumber: number, newTypeName: string) {
         self.columns[columnNumber].dataType = { type: newTypeName }
@@ -159,3 +158,5 @@ export default (pluginManager: PluginManager) => {
 
   return stateModel
 }
+
+export default SpreadsheetModelF

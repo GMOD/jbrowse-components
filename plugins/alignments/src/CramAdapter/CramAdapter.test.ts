@@ -2,15 +2,14 @@ import { toArray } from 'rxjs/operators'
 import { LocalFile } from 'generic-filehandle'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import AdapterF from './CramAdapter'
+import Adapter from './CramAdapter'
 import { SequenceAdapter } from './CramTestAdapters'
 import configSchemaF from './configSchema'
 
 const pluginManager = new PluginManager()
 const configSchema = pluginManager.load(configSchemaF)
-const Adapter = pluginManager.load(AdapterF)
 
-const getVolvoxSequenceSubAdapter: getSubAdapterType = () => {
+const getVolvoxSequenceSubAdapter: getSubAdapterType = async () => {
   return {
     dataAdapter: new SequenceAdapter(
       new LocalFile(require.resolve('../../test_data/volvox.fa')),
@@ -24,12 +23,15 @@ test('adapter can fetch features from volvox-sorted.cram', async () => {
     configSchema.create({
       cramLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.cram'),
+        locationType: 'LocalPathLocation',
       },
       craiLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
+        locationType: 'LocalPathLocation',
       },
     }),
     getVolvoxSequenceSubAdapter,
+    pluginManager,
   )
 
   const features = adapter.getFeatures({
@@ -56,12 +58,15 @@ test('test usage of cramSlightlyLazyFeature toJSON (used in the widget)', async 
     configSchema.create({
       cramLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.cram'),
+        locationType: 'LocalPathLocation',
       },
       craiLocation: {
         localPath: require.resolve('../../test_data/volvox-sorted.cram.crai'),
+        locationType: 'LocalPathLocation',
       },
     }),
     getVolvoxSequenceSubAdapter,
+    pluginManager,
   )
 
   const features = adapter.getFeatures({

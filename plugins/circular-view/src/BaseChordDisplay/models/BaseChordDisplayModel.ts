@@ -16,8 +16,9 @@ import {
 } from '@jbrowse/core/util/tracks'
 import { Region } from '@jbrowse/core/util/types'
 import { getParent, isAlive, types, getEnv } from 'mobx-state-tree'
+import React from 'react'
 import renderReactionFactory from './renderReaction'
-import { CircularViewModel } from '../../CircularView'
+import { CircularViewModel } from '../../CircularView/models/CircularView'
 
 export const BaseChordDisplayModel = types
   .compose(
@@ -33,10 +34,9 @@ export const BaseChordDisplayModel = types
       // NOTE: all this volatile stuff has to be filled in at once
       // so that it stays consistent
       filled: false,
-      html: '',
+      reactElement: undefined as React.ReactElement | undefined,
       data: undefined,
       message: '',
-      error: undefined as Error | undefined,
       renderingComponent: undefined as undefined | AnyReactComponentType,
       refNameMap: undefined as Record<string, string> | undefined,
     }
@@ -54,7 +54,9 @@ export const BaseChordDisplayModel = types
     get blockDefinitions() {
       const origSlices = (getContainingView(self) as CircularViewModel)
         .staticSlices
-      if (!self.refNameMap) return origSlices
+      if (!self.refNameMap) {
+        return origSlices
+      }
 
       const slices = JSON.parse(JSON.stringify(origSlices))
 
@@ -73,10 +75,11 @@ export const BaseChordDisplayModel = types
       return slices
     },
 
-    get renderProps() {
+    renderProps() {
       const view = getContainingView(self) as CircularViewModel
       return {
         ...getParentRenderProps(self),
+        rpcDriverName: self.rpcDriverName,
         displayModel: self,
         bezierRadius: view.radiusPx * self.bezierRadiusRatio,
         radius: view.radiusPx,
@@ -95,12 +98,14 @@ export const BaseChordDisplayModel = types
       const ThisRendererType = pluginManager.getRendererType(
         self.rendererTypeName,
       )
-      if (!ThisRendererType)
+      if (!ThisRendererType) {
         throw new Error(`renderer "${display.rendererTypeName}" not found`)
-      if (!ThisRendererType.ReactComponent)
+      }
+      if (!ThisRendererType.ReactComponent) {
         throw new Error(
           `renderer ${display.rendererTypeName} has no ReactComponent, it may not be completely implemented yet`,
         )
+      }
       return ThisRendererType
     },
 
@@ -113,9 +118,13 @@ export const BaseChordDisplayModel = types
      * is probably a feature
      */
     get selectedFeatureId() {
-      if (!isAlive(self)) return undefined
+      if (!isAlive(self)) {
+        return undefined
+      }
       const session = getSession(self)
-      if (!session) return undefined
+      if (!session) {
+        return undefined
+      }
       const { selection } = session
       // does it quack like a feature?
       if (isFeature(selection)) {
@@ -128,7 +137,7 @@ export const BaseChordDisplayModel = types
     renderStarted() {
       self.filled = false
       self.message = ''
-      self.html = ''
+      self.reactElement = undefined
       self.data = undefined
       self.error = undefined
       self.renderingComponent = undefined
@@ -136,37 +145,37 @@ export const BaseChordDisplayModel = types
     renderSuccess({
       message,
       data,
-      html,
+      reactElement,
       renderingComponent,
     }: {
       message: string
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data: any
-      html: string
+      reactElement: React.ReactElement
       renderingComponent: AnyReactComponentType
     }) {
       if (message) {
         self.filled = false
         self.message = message
-        self.html = ''
+        self.reactElement = undefined
         self.data = undefined
         self.error = undefined
         self.renderingComponent = undefined
       } else {
         self.filled = true
         self.message = ''
-        self.html = html
+        self.reactElement = reactElement
         self.data = data
         self.error = undefined
         self.renderingComponent = renderingComponent
       }
     },
-    renderError(error: Error) {
+    renderError(error: unknown) {
       console.error(error)
       // the rendering failed for some reason
       self.filled = false
       self.message = ''
-      self.html = ''
+      self.reactElement = undefined
       self.data = undefined
       self.error = error
       self.renderingComponent = undefined
@@ -175,16 +184,11 @@ export const BaseChordDisplayModel = types
     setRefNameMap(refNameMap: Record<string, string>) {
       self.refNameMap = refNameMap
     },
-    setError(error: Error) {
-      self.error = error
-    },
   }))
   .actions(self => {
     const { pluginManager } = getEnv(self)
-    const {
-      renderReactionData,
-      renderReactionEffect,
-    } = pluginManager.jbrequire(renderReactionFactory)
+    const { renderReactionData, renderReactionEffect } =
+      pluginManager.jbrequire(renderReactionFactory)
     return {
       afterAttach() {
         makeAbortableReaction(

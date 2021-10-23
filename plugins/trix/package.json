@@ -1,0 +1,52 @@
+{
+  "name": "@jbrowse/plugin-trix",
+  "version": "1.5.0",
+  "description": "JBrowse 2 trix text search adapter",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "plugins/trix"
+  },
+  "author": "JBrowse Team",
+  "distMain": "dist/index.js",
+  "srcMain": "src/index.ts",
+  "main": "src/index.ts",
+  "distModule": "dist/plugin-trix.esm.js",
+  "module": "",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "start": "tsdx watch --verbose --noClean",
+    "build": "tsdx build",
+    "test": "cd ../..; jest plugins/trix",
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build; yarn useDist",
+    "postpack": "yarn useSrc",
+    "useDist": "node ../../scripts/useDist.js",
+    "useSrc": "node ../../scripts/useSrc.js"
+  },
+  "peerDependencies": {
+    "@jbrowse/core": "^1.0.0",
+    "@material-ui/core": "^4.9.13",
+    "mobx": "^5.0.0",
+    "mobx-react": "^6.0.0",
+    "mobx-state-tree": "3.14.1",
+    "prop-types": "^15.0.0",
+    "react": ">=16.8.0"
+  },
+  "dependencies": {
+    "@gmod/trix": "^1.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

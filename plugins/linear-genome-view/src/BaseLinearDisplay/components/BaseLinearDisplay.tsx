@@ -1,13 +1,19 @@
+import React, { useState, useRef, useMemo } from 'react'
+import { Portal, alpha, useTheme, makeStyles } from '@material-ui/core'
 import { getConf } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
-import { useTheme, makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
-import React, { useState, useRef } from 'react'
-import MUITooltip from '@material-ui/core/Tooltip'
+import { usePopper } from 'react-popper'
+
+// locals
 import LinearBlocks from './LinearBlocks'
 import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
 
-const useStyles = makeStyles({
+function round(value: number) {
+  return Math.round(value * 1e5) / 1e5
+}
+
+const useStyles = makeStyles(theme => ({
   display: {
     position: 'relative',
     whiteSpace: 'nowrap',
@@ -15,26 +21,89 @@ const useStyles = makeStyles({
     width: '100%',
     minHeight: '100%',
   },
+
+  // these styles come from
+  // https://github.com/mui-org/material-ui/blob/master/packages/material-ui/src/Tooltip/Tooltip.js
+  tooltip: {
+    pointerEvents: 'none',
+    backgroundColor: alpha(theme.palette.grey[700], 0.9),
+    borderRadius: theme.shape.borderRadius,
+    color: theme.palette.common.white,
+    fontFamily: theme.typography.fontFamily,
+    padding: '4px 8px',
+    fontSize: theme.typography.pxToRem(10),
+    lineHeight: `${round(14 / 10)}em`,
+    maxWidth: 300,
+    wordWrap: 'break-word',
+    fontWeight: theme.typography.fontWeightMedium,
+  },
+}))
+
+const TooltipContents = React.forwardRef<
+  HTMLDivElement,
+  { message: React.ReactNode | string }
+>(({ message }: { message: React.ReactNode | string }, ref) => {
+  return <div ref={ref}>{message}</div>
 })
+
 const Tooltip = observer(
-  (props: { model: BaseLinearDisplayModel; mouseCoord: [number, number] }) => {
-    const { model, mouseCoord } = props
+  ({
+    model,
+    clientMouseCoord,
+  }: {
+    model: BaseLinearDisplayModel
+    clientMouseCoord: Coord
+  }) => {
+    const classes = useStyles()
     const { featureUnderMouse } = model
-    const mouseover = featureUnderMouse
+    const [width, setWidth] = useState(0)
+
+    const [popperElt, setPopperElt] = useState<HTMLDivElement | null>(null)
+
+    // must be memoized a la https://github.com/popperjs/react-popper/issues/391
+    const virtElement = useMemo(
+      () => ({
+        getBoundingClientRect: () => {
+          const x = clientMouseCoord[0] + width / 2 + 20
+          const y = clientMouseCoord[1]
+          return {
+            top: y,
+            left: x,
+            bottom: y,
+            right: x,
+            width: 0,
+            height: 0,
+            x,
+            y,
+            toJSON() {},
+          }
+        },
+      }),
+      [clientMouseCoord, width],
+    )
+    const { styles, attributes } = usePopper(virtElement, popperElt)
+
+    const contents = featureUnderMouse
       ? getConf(model, 'mouseover', { feature: featureUnderMouse })
       : undefined
-    return mouseover ? (
-      <MUITooltip title={mouseover} open placement="right">
+
+    return featureUnderMouse && contents ? (
+      <Portal>
         <div
-          style={{
-            position: 'absolute',
-            left: mouseCoord[0],
-            top: mouseCoord[1],
-          }}
+          ref={setPopperElt}
+          className={classes.tooltip}
+          // zIndex needed to go over widget drawer
+          style={{ ...styles.popper, zIndex: 100000 }}
+          {...attributes.popper}
         >
-          {' '}
+          <TooltipContents
+            ref={(elt: HTMLDivElement) =>
+              setWidth(elt?.getBoundingClientRect().width || 0)
+            }
+            message={contents}
+          />
         </div>
-      </MUITooltip>
+      </Portal>
     ) : null
   },
 )
@@ -44,10 +113,11 @@ const BaseLinearDisplay = observer(
   (props: { model: BaseLinearDisplayModel; children?: React.ReactNode }) => {
     const classes = useStyles()
     const theme = useTheme()
-
-    const [mouseCoord, setMouseCoord] = useState<Coord>([0, 0])
-    const [contextCoord, setContextCoord] = useState<Coord>()
     const ref = useRef<HTMLDivElement>(null)
+    const [clientRect, setClientRect] = useState<ClientRect>()
+    const [offsetMouseCoord, setOffsetMouseCoord] = useState<Coord>([0, 0])
+    const [clientMouseCoord, setClientMouseCoord] = useState<Coord>([0, 0])
+    const [contextCoord, setContextCoord] = useState<Coord>()
     const { model, children } = props
     const {
       TooltipComponent,
@@ -74,7 +144,12 @@ const BaseLinearDisplay = observer(
         onMouseMove={event => {
           if (ref.current) {
             const rect = ref.current.getBoundingClientRect()
-            setMouseCoord([event.clientX - rect.left, event.clientY - rect.top])
+            setOffsetMouseCoord([
+              event.clientX - rect.left,
+              event.clientY - rect.top,
+            ])
+            setClientMouseCoord([event.clientX, event.clientY])
+            setClientRect(rect)
           }
         }}
         role="presentation"
@@ -85,14 +160,18 @@ const BaseLinearDisplay = observer(
           <LinearBlocks {...props} />
         )}
         {children}
+
         <TooltipComponent
           model={model}
           height={height}
-          mouseCoord={mouseCoord}
+          offsetMouseCoord={offsetMouseCoord}
+          clientMouseCoord={clientMouseCoord}
+          clientRect={clientRect}
+          mouseCoord={offsetMouseCoord}
         />
 
         <Menu
-          open={Boolean(contextCoord) && Boolean(contextMenuItems.length)}
+          open={Boolean(contextCoord) && Boolean(contextMenuItems().length)}
           onMenuItemClick={(_, callback) => {
             callback()
             setContextCoord(undefined)
@@ -101,9 +180,11 @@ const BaseLinearDisplay = observer(
             setContextCoord(undefined)
             setContextMenuFeature(undefined)
           }}
-          onExit={() => {
-            setContextCoord(undefined)
-            setContextMenuFeature(undefined)
+          TransitionProps={{
+            onExit: () => {
+              setContextCoord(undefined)
+              setContextMenuFeature(undefined)
+            },
           }}
           anchorReference="anchorPosition"
           anchorPosition={
@@ -112,7 +193,7 @@ const BaseLinearDisplay = observer(
               : undefined
           }
           style={{ zIndex: theme.zIndex.tooltip }}
-          menuItems={contextMenuItems}
+          menuItems={contextMenuItems()}
           data-testid="base_linear_display_context_menu"
         />
       </div>

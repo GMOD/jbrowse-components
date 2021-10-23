@@ -19,6 +19,7 @@ const defaultConfig = {
           type: 'testSeqAdapter',
           twoBitLocation: {
             uri: 'test.2bit',
+            locationType: 'UriLocation',
           },
         },
       },
@@ -39,17 +40,20 @@ const defaultConfig = {
         type: 'BamAdapter',
         bamLocation: {
           uri: 'simple.bam',
+          locationType: 'UriLocation',
         },
         index: {
           indexType: 'BAI',
           location: {
             uri: 'simple.bam.bai',
+            locationType: 'UriLocation',
           },
         },
         sequenceAdapter: {
           type: 'testSeqAdapter',
           twoBitLocation: {
             uri: 'test.2bit',
+            locationType: 'UriLocation',
           },
         },
       },
@@ -181,6 +185,30 @@ describe('set-default-session', () => {
     ])
     .exit(140)
     .it('fails when specifying a track that does not exist')
+  setup
+    .do(async ctx => {
+      await fsPromises.copyFile(
+        testConfig,
+        path.join(ctx.dir, path.basename(testConfig)),
+      )
+
+      await fsPromises.rename(
+        path.join(ctx.dir, path.basename(testConfig)),
+        path.join(ctx.dir, 'config.json'),
+      )
+    })
+    .command(['set-default-session', '--delete'])
+    .it('deletes a default session', async ctx => {
+      const contents = await fsPromises.readFile(
+        path.join(ctx.dir, 'config.json'),
+        { encoding: 'utf8' },
+      )
+      expect(JSON.parse(contents)).toEqual({
+        ...defaultConfig,
+        tracks: [],
+        defaultSession: undefined,
+      })
+    })
   setup
     .do(async ctx => {
       await fsPromises.copyFile(

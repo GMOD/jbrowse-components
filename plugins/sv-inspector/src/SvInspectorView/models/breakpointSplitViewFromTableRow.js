@@ -14,8 +14,12 @@ export default pluginManager => {
     rowNumber,
   ) {
     if (row.extendedData) {
-      if (row.extendedData.vcfFeature) return row.extendedData.vcfFeature
-      if (row.extendedData.feature) return row.extendedData.feature
+      if (row.extendedData.vcfFeature) {
+        return row.extendedData.vcfFeature
+      }
+      if (row.extendedData.feature) {
+        return row.extendedData.feature
+      }
     }
     const adhocFeature = makeAdHocSvFeature(
       spreadsheetView.spreadsheet,
@@ -23,7 +27,9 @@ export default pluginManager => {
       row,
       session.assemblyManager.isValidRefName,
     )
-    if (adhocFeature) return adhocFeature
+    if (adhocFeature) {
+      return adhocFeature
+    }
     return undefined
   }
 

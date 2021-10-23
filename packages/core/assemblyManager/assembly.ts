@@ -1,14 +1,13 @@
 import jsonStableStringify from 'json-stable-stringify'
-import { cast, getParent, IAnyType, types, Instance } from 'mobx-state-tree'
+import { getParent, IAnyType, types, Instance } from 'mobx-state-tree'
 import AbortablePromiseCache from 'abortable-promise-cache'
-import { readConfObject } from '../configuration'
+import { getConf } from '../configuration'
 import {
   BaseRefNameAliasAdapter,
   RegionsAdapter,
 } from '../data_adapters/BaseAdapter'
 import PluginManager from '../PluginManager'
 import { Region } from '../util/types'
-import { Region as MSTRegion } from '../util/types/mst'
 import { makeAbortableReaction, when } from '../util'
 import QuickLRU from '../util/QuickLRU'
 
@@ -121,6 +120,13 @@ interface CacheData {
   sessionId: string
   options: BaseOptions
 }
+
+export interface BasicRegion {
+  start: number
+  end: number
+  refName: string
+  assemblyName: string
+}
 export default function assemblyFactory(
   assemblyConfigType: IAnyType,
   pluginManager: PluginManager,
@@ -145,19 +151,22 @@ export default function assemblyFactory(
   return types
     .model({
       configuration: types.safeReference(assemblyConfigType),
-      regions: types.maybe(types.array(MSTRegion)),
-      refNameAliases: types.maybe(types.map(types.string)),
     })
+    .volatile(() => ({
+      error: undefined as Error | undefined,
+      regions: undefined as BasicRegion[] | undefined,
+      refNameAliases: undefined as { [key: string]: string } | undefined,
+    }))
     .views(self => ({
       get initialized() {
         return Boolean(self.refNameAliases)
       },
       get name(): string {
-        return readConfObject(self.configuration, 'name')
+        return getConf(self, 'name')
       },
 
       get aliases(): string[] {
-        return readConfObject(self.configuration, 'aliases')
+        return getConf(self, 'aliases')
       },
 
       hasName(name: string) {
@@ -171,19 +180,15 @@ export default function assemblyFactory(
         return self.regions && self.regions.map(region => region.refName)
       },
       get allRefNames() {
-        if (!self.refNameAliases) {
-          return undefined
-        }
-        return Array.from(self.refNameAliases.keys())
+        return !self.refNameAliases
+          ? undefined
+          : Object.keys(self.refNameAliases)
       },
       get rpcManager() {
         return getParent(self, 2).rpcManager
       },
       get refNameColors() {
-        const colors = readConfObject(
-          self.configuration,
-          'refNameColors',
-        ) as string[]
+        const colors: string[] = getConf(self, 'refNameColors')
         if (colors.length === 0) {
           return refNameColors
         }
@@ -197,7 +202,7 @@ export default function assemblyFactory(
             'aliases not loaded, we expect them to be loaded before getCanonicalRefName can be called',
           )
         }
-        return self.refNameAliases.get(refName)
+        return self.refNameAliases[refName]
       },
       getRefNameColor(refName: string) {
         const idx = self.refNames?.findIndex(r => r === refName)
@@ -207,10 +212,11 @@ export default function assemblyFactory(
         return self.refNameColors[idx % self.refNameColors.length]
       },
       isValidRefName(refName: string) {
-        if (!self.refNameAliases)
+        if (!self.refNameAliases) {
           throw new Error(
             'isValidRefName cannot be called yet, the assembly has not finished loading',
           )
+        }
         return !!this.getCanonicalRefName(refName)
       },
     }))
@@ -228,14 +234,14 @@ export default function assemblyFactory(
       },
       setError(error: Error) {
         if (!getParent(self, 3).isAssemblyEditing) {
-          getParent(self, 3).setError(error)
+          self.error = error
         }
       },
       setRegions(regions: Region[]) {
-        self.regions = cast(regions)
+        self.regions = regions
       },
       setRefNameAliases(refNameAliases: RefNameAliases) {
-        self.refNameAliases = cast(refNameAliases)
+        self.refNameAliases = refNameAliases
       },
       afterAttach() {
         makeAbortableReaction(
@@ -330,8 +336,15 @@ async function loadAssemblyReaction(
   const dataAdapterType = pluginManager.getAdapterType(
     sequenceAdapterConfig.type,
   )
-  const adapter = new dataAdapterType.AdapterClass(
+  const { AdapterClass, getAdapterClass } = dataAdapterType
+  const CLASS = AdapterClass || (await getAdapterClass?.())
+  if (!CLASS) {
+    throw new Error('Failed to get adapter class')
+  }
+  const adapter = new CLASS(
     sequenceAdapterConfig,
+    undefined,
+    pluginManager,
   ) as RegionsAdapter
   const adapterRegions = (await adapter.getRegions({ signal })) as Region[]
 
@@ -345,7 +358,15 @@ async function loadAssemblyReaction(
     const refAliasAdapterType = pluginManager.getAdapterType(
       refNameAliasesAdapterConfig.type,
     )
-    const refNameAliasAdapter = new refAliasAdapterType.AdapterClass(
+    const {
+      AdapterClass: RefAdapterClass,
+      getAdapterClass: getRefAdapterClass,
+    } = refAliasAdapterType
+    const REFCLASS = RefAdapterClass || (await getRefAdapterClass?.())
+    if (!REFCLASS) {
+      throw new Error('Failed to get REFCLASS')
+    }
+    const refNameAliasAdapter = new REFCLASS(
       refNameAliasesAdapterConfig,
     ) as BaseRefNameAliasAdapter
     const refNameAliasesList = (await refNameAliasAdapter.getRefNameAliases({
@@ -367,7 +388,6 @@ async function loadAssemblyReaction(
   adapterRegionsWithAssembly.forEach(region => {
     refNameAliases[region.refName] = region.refName
   })
-  // eslint-disable-next-line consistent-return
   return { adapterRegionsWithAssembly, refNameAliases }
 }
 export type Assembly = Instance<ReturnType<typeof assemblyFactory>>

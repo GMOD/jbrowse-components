@@ -806,7 +806,7 @@ Object {
             "QUAL": 1196.95,
             "REF": "TAAAAA",
             "aliases": undefined,
-            "description": "deletion TAAAAA -> T,AA,deletion TAAAAA -> TAA",
+            "description": "deletion TAAAAA -> T,TAA",
             "end": 47641564,
             "name": "rs768805063",
             "refName": "2",
@@ -2177,7 +2177,7 @@ Object {
             ],
             "description": "deletion ACTAT -> A",
             "end": 48032878,
-            "name": "rs2234731",
+            "name": "rs2234731,rs767177736",
             "refName": "2",
             "samples": Object {
               "1801160099-N32519_26611_S51_56704": Object {
@@ -6596,7 +6596,7 @@ Object {
             "QUAL": 2783.76,
             "REF": "CTT",
             "aliases": undefined,
-            "description": "deletion CTT -> C,T,deletion CTT -> CT",
+            "description": "deletion CTT -> C,CT",
             "end": 116409677,
             "name": "rs753027677",
             "refName": "7",
@@ -9881,7 +9881,7 @@ Object {
             ],
             "description": "deletion TAA -> T",
             "end": 108098461,
-            "name": "rs2066734",
+            "name": "rs2066734,rs766396464",
             "refName": "11",
             "samples": Object {
               "1801160099-N32519_26611_S51_56704": Object {
@@ -13151,7 +13151,7 @@ Object {
             ],
             "description": "insertion T -> TG",
             "end": 29563085,
-            "name": "rs56874702",
+            "name": "rs56874702,rs72813695",
             "refName": "17",
             "samples": Object {
               "1801160099-N32519_26611_S51_56704": Object {
@@ -13310,7 +13310,7 @@ Object {
             ],
             "description": "insertion T -> TA",
             "end": 29663625,
-            "name": "rs553817239",
+            "name": "rs553817239,rs7406039",
             "refName": "17",
             "samples": Object {
               "1801160099-N32519_26611_S51_56704": Object {

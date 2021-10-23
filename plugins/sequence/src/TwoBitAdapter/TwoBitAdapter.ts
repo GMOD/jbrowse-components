@@ -8,37 +8,79 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TwoBitFile } from '@gmod/twobit'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { Instance } from 'mobx-state-tree'
-
-import configSchema from './configSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 export default class TwoBitAdapter
   extends BaseFeatureDataAdapter
-  implements SequenceAdapter {
+  implements SequenceAdapter
+{
   private twobit: typeof TwoBitFile
 
-  constructor(config: Instance<typeof configSchema>) {
-    super(config)
-    const twoBitOpts = {
-      filehandle: openLocation(readConfObject(config, 'twoBitLocation')),
-    }
+  // the chromSizesData can be used to speed up loading since TwoBit has to do
+  // many range requests at startup to perform the getRegions request
+  protected chromSizesData: Promise<Record<string, number> | undefined>
 
-    this.twobit = new TwoBitFile(twoBitOpts)
+  private async initChromSizes() {
+    const conf = readConfObject(this.config, 'chromSizesLocation')
+    // check against default and empty in case someone makes the field blank in
+    // config editor, may want better way to check "optional config slots" in
+    // future
+    if (conf.uri !== '/path/to/default.chrom.sizes' && conf.uri !== '') {
+      const file = openLocation(conf, this.pluginManager)
+      const data = (await file.readFile('utf8')) as string
+      return Object.fromEntries(
+        data
+          ?.split('\n')
+          .filter(line => !!line.trim())
+          .map(line => {
+            const [name, length] = line.split('\t')
+            return [name, +length]
+          }),
+      )
+    }
+    return undefined
   }
 
-  public getRefNames() {
+  constructor(
+    config: AnyConfigurationModel,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    super(config, getSubAdapter, pluginManager)
+    this.chromSizesData = this.initChromSizes()
+    this.twobit = new TwoBitFile({
+      filehandle: openLocation(
+        readConfObject(config, 'twoBitLocation'),
+        this.pluginManager,
+      ),
+    })
+  }
+
+  public async getRefNames() {
+    const chromSizesData = await this.chromSizesData
+    if (chromSizesData) {
+      return Object.keys(chromSizesData)
+    }
     return this.twobit.getSequenceNames()
   }
 
   public async getRegions(): Promise<NoAssemblyRegion[]> {
-    const refSizes = await this.twobit.getSequenceSizes()
-    return Object.keys(refSizes).map(
-      (refName: string): NoAssemblyRegion => ({
+    const chromSizesData = await this.chromSizesData
+    if (chromSizesData) {
+      return Object.keys(chromSizesData).map(refName => ({
         refName,
         start: 0,
-        end: refSizes[refName],
-      }),
-    )
+        end: chromSizesData[refName],
+      }))
+    }
+    const refSizes = await this.twobit.getSequenceSizes()
+    return Object.keys(refSizes).map(refName => ({
+      refName,
+      start: 0,
+      end: refSizes[refName],
+    }))
   }
 
   /**

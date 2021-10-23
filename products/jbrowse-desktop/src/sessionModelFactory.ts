@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { lazy } from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import {
   readConfObject,
@@ -8,6 +9,7 @@ import {
   Region,
   NotificationLevel,
   TrackViewModel,
+  DialogComponentType,
 } from '@jbrowse/core/util/types'
 import { getContainingView } from '@jbrowse/core/util'
 import { observable } from 'mobx'
@@ -25,10 +27,14 @@ import {
   walk,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
+import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 
 import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
+import InfoIcon from '@material-ui/icons/Info'
+
+const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
@@ -40,7 +46,7 @@ export default function sessionModelFactory(
   assemblyConfigSchemasType = types.frozen(), // if not using sessionAssemblies
 ) {
   const minDrawerWidth = 128
-  return types
+  const sessionModel = types
     .model('JBrowseDesktopSessionModel', {
       name: types.identifier,
       margin: 0,
@@ -57,10 +63,17 @@ export default function sessionModelFactory(
           pluginManager.pluggableMstType('widget', 'stateModel'),
         ),
       ),
-      connectionInstances: types.map(
-        types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
+      connectionInstances: types.array(
+        pluginManager.pluggableMstType('connection', 'stateModel'),
       ),
       sessionAssemblies: types.array(assemblyConfigSchemasType),
+
+      minimized: types.optional(types.boolean, false),
+
+      drawerPosition: types.optional(
+        types.string,
+        localStorage.getItem('drawerPosition') || 'right',
+      ),
     })
     .volatile((/* self */) => ({
       /**
@@ -75,8 +88,23 @@ export default function sessionModelFactory(
        * `{ taskName: "configure", target: thing_being_configured }`
        */
       task: undefined,
+      queueOfDialogs: observable.array([] as [DialogComponentType, any][]),
     }))
     .views(self => ({
+      get DialogComponent() {
+        if (self.queueOfDialogs.length) {
+          const firstInQueue = self.queueOfDialogs[0]
+          return firstInQueue && firstInQueue[0]
+        }
+        return undefined
+      },
+      get DialogProps() {
+        if (self.queueOfDialogs.length) {
+          const firstInQueue = self.queueOfDialogs[0]
+          return firstInQueue && firstInQueue[1]
+        }
+        return undefined
+      },
       get rpcManager() {
         return getParent(self).jbrowse.rpcManager
       },
@@ -91,6 +119,9 @@ export default function sessionModelFactory(
       },
       get tracks() {
         return getParent(self).jbrowse.tracks
+      },
+      get textSearchManager(): TextSearchManager {
+        return getParent(self).textSearchManager
       },
       get connections() {
         return getParent(self).jbrowse.connections
@@ -114,16 +145,21 @@ export default function sessionModelFactory(
       get version() {
         return getParent(self).version
       },
-      get renderProps() {
+      renderProps() {
         return { theme: readConfObject(this.configuration, 'theme') }
       },
       get visibleWidget() {
-        if (isAlive(self))
+        if (isAlive(self)) {
           // returns most recently added item in active widgets
           return Array.from(self.activeWidgets.values())[
             self.activeWidgets.size - 1
           ]
+        }
         return undefined
+      },
+
+      get adminMode() {
+        return true
       },
       /**
        * See if any MST nodes currently have a types.reference to this object.
@@ -149,39 +185,46 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
+      setDrawerPosition(arg: string) {
+        self.drawerPosition = arg
+        localStorage.setItem('drawerPosition', arg)
+      },
+      queueDialog(
+        callback: (doneCallback: Function) => [DialogComponentType, any],
+      ): void {
+        const [component, props] = callback(() => {
+          self.queueOfDialogs.shift()
+        })
+        self.queueOfDialogs.push([component, props])
+      },
       makeConnection(
         configuration: AnyConfigurationModel,
         initialSnapshot = {},
       ) {
         const { type } = configuration
-        if (!type) throw new Error('track configuration has no `type` listed')
+        if (!type) {
+          throw new Error('track configuration has no `type` listed')
+        }
         const name = readConfObject(configuration, 'name')
         const connectionType = pluginManager.getConnectionType(type)
-        if (!connectionType) throw new Error(`unknown connection type ${type}`)
-        const assemblyName = readConfObject(configuration, 'assemblyName')
+        if (!connectionType) {
+          throw new Error(`unknown connection type ${type}`)
+        }
         const connectionData = {
           ...initialSnapshot,
           name,
           type,
           configuration,
         }
-        if (!self.connectionInstances.has(assemblyName))
-          self.connectionInstances.set(assemblyName, [])
-        const assemblyConnections = self.connectionInstances.get(assemblyName)
-        if (!assemblyConnections)
-          throw new Error(`assembly ${assemblyName} not found`)
-        const length = assemblyConnections.push(connectionData)
-        return assemblyConnections[length - 1]
+        const length = self.connectionInstances.push(connectionData)
+        return self.connectionInstances[length - 1]
       },
 
       prepareToBreakConnection(configuration: AnyConfigurationModel) {
         const callbacksToDereferenceTrack: Function[] = []
         const dereferenceTypeCount: Record<string, number> = {}
         const name = readConfObject(configuration, 'name')
-        const assemblyName = readConfObject(configuration, 'assemblyName')
-        const assemblyConnections =
-          self.connectionInstances.get(assemblyName) || []
-        const connection = assemblyConnections.find(c => c.name === name)
+        const connection = self.connectionInstances.find(c => c.name === name)
         if (connection) {
           connection.tracks.forEach((track: any) => {
             const referring = self.getReferring(track)
@@ -203,12 +246,8 @@ export default function sessionModelFactory(
 
       breakConnection(configuration: AnyConfigurationModel) {
         const name = readConfObject(configuration, 'name')
-        const assemblyName = readConfObject(configuration, 'assemblyName')
-        const connectionInstances = self.connectionInstances.get(assemblyName)
-        if (!connectionInstances)
-          throw new Error(`connections for ${assemblyName} not found`)
-        const connection = connectionInstances.find(c => c.name === name)
-        connectionInstances.remove(connection)
+        const connection = self.connectionInstances.find(c => c.name === name)
+        self.connectionInstances.remove(connection)
       },
 
       deleteConnection(configuration: AnyConfigurationModel) {
@@ -216,9 +255,13 @@ export default function sessionModelFactory(
       },
 
       updateDrawerWidth(drawerWidth: number) {
-        if (drawerWidth === self.drawerWidth) return self.drawerWidth
+        if (drawerWidth === self.drawerWidth) {
+          return self.drawerWidth
+        }
         let newDrawerWidth = drawerWidth
-        if (newDrawerWidth < minDrawerWidth) newDrawerWidth = minDrawerWidth
+        if (newDrawerWidth < minDrawerWidth) {
+          newDrawerWidth = minDrawerWidth
+        }
         self.drawerWidth = newDrawerWidth
         return newDrawerWidth
       },
@@ -232,7 +275,9 @@ export default function sessionModelFactory(
 
       addView(typeName: string, initialState = {}) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
-        if (!typeDefinition) throw new Error(`unknown view type ${typeName}`)
+        if (!typeDefinition) {
+          throw new Error(`unknown view type ${typeName}`)
+        }
 
         const length = self.views.push({
           ...initialState,
@@ -296,15 +341,18 @@ export default function sessionModelFactory(
             const type = 'configuration editor widget(s)'
             callbacks.push(() => this.hideWidget(node))
             dereferenced = true
-            if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
+            if (!dereferenceTypeCount[type]) {
+              dereferenceTypeCount[type] = 0
+            }
             dereferenceTypeCount[type] += 1
           }
-          if (!dereferenced)
+          if (!dereferenced) {
             throw new Error(
               `Error when closing this connection, the following node is still referring to a track configuration: ${JSON.stringify(
                 getSnapshot(node),
               )}`,
             )
+          }
         })
       },
 
@@ -365,10 +413,11 @@ export default function sessionModelFactory(
           (s: AnyConfigurationModel) =>
             readConfObject(s, 'name') === assemblyName,
         )
-        if (!assembly)
+        if (!assembly) {
           throw new Error(
             `Could not add view of assembly "${assemblyName}", assembly name not found`,
           )
+        }
         initialState.displayRegionsFromAssemblyName = readConfObject(
           assembly,
           'name',
@@ -393,7 +442,9 @@ export default function sessionModelFactory(
         configuration = { type: typeName },
       ) {
         const typeDefinition = pluginManager.getElementType('widget', typeName)
-        if (!typeDefinition) throw new Error(`unknown widget type ${typeName}`)
+        if (!typeDefinition) {
+          throw new Error(`unknown widget type ${typeName}`)
+        }
         const data = {
           ...initialState,
           id,
@@ -405,13 +456,20 @@ export default function sessionModelFactory(
       },
 
       showWidget(widget: any) {
-        if (self.activeWidgets.has(widget.id))
+        if (self.activeWidgets.has(widget.id)) {
           self.activeWidgets.delete(widget.id)
+        }
         self.activeWidgets.set(widget.id, widget)
       },
 
       hideWidget(widget: any) {
         self.activeWidgets.delete(widget.id)
+      },
+      minimizeWidgetDrawer() {
+        self.minimized = true
+      },
+      showWidgetDrawer() {
+        self.minimized = false
       },
 
       hideAllWidgets() {
@@ -457,7 +515,7 @@ export default function sessionModelFactory(
       },
 
       clearConnections() {
-        self.connectionInstances.clear()
+        self.connectionInstances.length = 0
       },
 
       addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
@@ -516,6 +574,16 @@ export default function sessionModelFactory(
         const session = self
         return [
           {
+            label: 'About track',
+            onClick: () => {
+              session.queueDialog((doneCallback: Function) => [
+                AboutDialog,
+                { config, handleClose: doneCallback },
+              ])
+            },
+            icon: InfoIcon,
+          },
+          {
             label: 'Settings',
             onClick: () => {
               session.editConfiguration(config)
@@ -551,6 +619,23 @@ export default function sessionModelFactory(
         ]
       },
     }))
+
+  return types.snapshotProcessor(sessionModel, {
+    // @ts-ignore
+    preProcessor(snapshot) {
+      if (snapshot) {
+        // @ts-ignore
+        const { connectionInstances, ...rest } = snapshot || {}
+        // connectionInstances schema changed from object to an array, so any
+        // old connectionInstances as object is in snapshot, filter it out
+        // https://github.com/GMOD/jbrowse-components/issues/1903
+        if (!Array.isArray(connectionInstances)) {
+          return rest
+        }
+      }
+      return snapshot
+    },
+  })
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>

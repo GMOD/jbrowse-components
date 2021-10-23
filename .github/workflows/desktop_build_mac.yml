@@ -1,0 +1,31 @@
+name: Desktop build - Mac
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build Mac desktop app
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 14
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install deps (with cache)
+        uses: bahmutov/npm-install@v1
+      - name: Install build deps
+        run: |
+          brew install pkg-config cairo pango libpng jpeg giflib librsvg
+      - name: Build app
+        env:
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          APPLEID: ${{ secrets.APPLEID }}
+          APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          yarn build-electron:mac --publish always
+        working-directory: products/jbrowse-desktop

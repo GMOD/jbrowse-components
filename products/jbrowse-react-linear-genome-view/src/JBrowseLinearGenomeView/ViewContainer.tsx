@@ -1,18 +1,21 @@
-import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import { Menu, Logomark } from '@jbrowse/core/ui'
-import IconButton, {
+import React, { useEffect, useState, Suspense } from 'react'
+import {
+  IconButton,
   IconButtonProps as IconButtonPropsType,
-} from '@material-ui/core/IconButton'
-import Paper from '@material-ui/core/Paper'
-import { makeStyles, useTheme } from '@material-ui/core/styles'
-import { fade } from '@material-ui/core/styles/colorManipulator'
-import { SvgIconProps } from '@material-ui/core/SvgIcon'
-import Typography from '@material-ui/core/Typography'
+  Paper,
+  SvgIconProps,
+  Typography,
+  makeStyles,
+  useTheme,
+} from '@material-ui/core'
+import { alpha } from '@material-ui/core/styles'
 import MenuIcon from '@material-ui/icons/Menu'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
-import React, { useEffect, useState } from 'react'
 import useDimensions from 'react-use-dimensions'
+import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
+import { Menu, Logomark } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 
 const useStyles = makeStyles(theme => ({
   viewContainer: {
@@ -32,7 +35,7 @@ const useStyles = makeStyles(theme => ({
   },
   iconRoot: {
     '&:hover': {
-      backgroundColor: fade(
+      backgroundColor: alpha(
         theme.palette.secondary.contrastText,
         theme.palette.action.hoverOpacity,
       ),
@@ -55,7 +58,7 @@ const ViewMenu = observer(
   }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>()
 
-    if (!model.menuItems?.length) {
+    if (!model.menuItems?.().length) {
       return null
     }
 
@@ -83,64 +86,66 @@ const ViewMenu = observer(
           onClose={() => {
             setAnchorEl(undefined)
           }}
-          menuItems={model.menuItems}
+          menuItems={model.menuItems()}
         />
       </>
     )
   },
 )
 
-function ViewContainer({
-  view,
-  children,
-}: {
-  view: IBaseViewModel
-  children: React.ReactNode
-}) {
-  const classes = useStyles()
-  const theme = useTheme()
-  const [measureRef, { width }] = useDimensions()
+const ViewContainer = observer(
+  ({ view, children }: { view: IBaseViewModel; children: React.ReactNode }) => {
+    const classes = useStyles()
+    const theme = useTheme()
+    const session = getSession(view)
+    const [measureRef, { width }] = useDimensions()
 
-  const padWidth = theme.spacing(1)
+    const padWidth = theme.spacing(1)
 
-  useEffect(() => {
-    if (width) {
-      if (isAlive(view)) {
-        view.setWidth(width - padWidth * 2)
+    useEffect(() => {
+      if (width) {
+        if (isAlive(view)) {
+          view.setWidth(width - padWidth * 2)
+        }
       }
-    }
-  }, [padWidth, view, width])
+    }, [padWidth, view, width])
 
-  return (
-    <Paper
-      elevation={12}
-      ref={measureRef}
-      className={classes.viewContainer}
-      style={{ padding: `0px ${padWidth}px ${padWidth}px` }}
-    >
-      <div style={{ display: 'flex' }}>
-        <ViewMenu
-          model={view}
-          IconButtonProps={{
-            classes: { root: classes.iconRoot },
-            edge: 'start',
-          }}
-          IconProps={{ className: classes.icon }}
-        />
-        <div className={classes.grow} />
-        {view.displayName ? (
-          <Typography variant="body2" className={classes.displayName}>
-            {view.displayName}
-          </Typography>
+    return (
+      <Paper
+        elevation={12}
+        ref={measureRef}
+        className={classes.viewContainer}
+        style={{ padding: `0px ${padWidth}px ${padWidth}px` }}
+      >
+        {session.DialogComponent ? (
+          <Suspense fallback={<div />}>
+            <session.DialogComponent {...session.DialogProps} />
+          </Suspense>
         ) : null}
-        <div className={classes.grow} />
-        <div style={{ width: 20, height: 20 }}>
-          <Logomark variant="white" />
+        <div style={{ display: 'flex' }}>
+          <ViewMenu
+            model={view}
+            IconButtonProps={{
+              classes: { root: classes.iconRoot },
+              edge: 'start',
+            }}
+            IconProps={{ className: classes.icon }}
+          />
+          <div className={classes.grow} />
+          {view.displayName ? (
+            <Typography variant="body2" className={classes.displayName}>
+              {view.displayName}
+            </Typography>
+          ) : null}
+          <div className={classes.grow} />
+          <div style={{ width: 20, height: 20 }}>
+            <Logomark variant="white" />
+          </div>
         </div>
-      </div>
-      <Paper>{children}</Paper>
-    </Paper>
-  )
-}
+        <Paper>{children}</Paper>
+      </Paper>
+    )
+  },
+)
 
-export default observer(ViewContainer)
+export default ViewContainer

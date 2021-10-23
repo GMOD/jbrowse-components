@@ -18,7 +18,9 @@ function ScoreText({
   const scoreString = String(score)
   const fontWidth = (radiusPx * 2) / scoreString.length
   const fontHeight = fontWidth * 1.1
-  if (fontHeight < 12) return null
+  if (fontHeight < 12) {
+    return null
+  }
   return (
     <text
       style={{ fontSize: fontHeight, fill: contrastingTextColor(innerColor) }}
@@ -52,49 +54,65 @@ ScoreText.propTypes = {
 function Lollipop(props) {
   const onFeatureMouseDown = event => {
     const { onFeatureMouseDown: handler, feature } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event, feature.id())
   }
 
   const onFeatureMouseEnter = event => {
     const { onFeatureMouseEnter: handler, feature } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event, feature.id())
   }
 
   const onFeatureMouseOut = event => {
     const { onFeatureMouseOut: handler, feature } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event, feature.id())
   }
 
   const onFeatureMouseOver = event => {
     const { onFeatureMouseOver: handler, feature } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event, feature.id())
   }
 
   const onFeatureMouseUp = event => {
     const { onFeatureMouseUp: handler, feature } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event, feature.id())
   }
 
   const onFeatureMouseLeave = event => {
     const { onFeatureMouseLeave: handler, feature } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event, feature.id())
   }
 
   const onFeatureMouseMove = event => {
     const { onFeatureMouseMove: handler, feature } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event, feature.id())
   }
 
   const onFeatureClick = event => {
     const { onFeatureClick: handler, feature } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     event.stopPropagation()
     return handler(event, feature.id())
   }

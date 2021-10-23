@@ -15,19 +15,9 @@ import { Observer } from 'rxjs'
 import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import MyConfigSchema from './configSchema'
-
-type Strand = '+' | '-' | '.' | '?'
-interface FeatureLoc {
-  [key: string]: unknown
-  start: number
-  end: number
-  strand: Strand
-  seq_id: string
-  child_features: FeatureLoc[][]
-  data: unknown
-  derived_features: unknown
-  attributes: { [key: string]: unknown[] }
-}
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { FeatureLoc } from '../util'
 
 interface LineFeature {
   start: number
@@ -41,8 +31,12 @@ export default class extends BaseFeatureDataAdapter {
 
   protected dontRedispatch: string[]
 
-  public constructor(config: Instance<typeof MyConfigSchema>) {
-    super(config)
+  public constructor(
+    config: Instance<typeof MyConfigSchema>,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    super(config, getSubAdapter, pluginManager)
     const gffGzLocation = readConfObject(config, 'gffGzLocation')
     const indexType = readConfObject(config, ['index', 'indexType'])
     const location = readConfObject(config, ['index', 'location'])
@@ -50,9 +44,15 @@ export default class extends BaseFeatureDataAdapter {
 
     this.dontRedispatch = dontRedispatch || ['chromosome', 'contig', 'region']
     this.gff = new TabixIndexedFile({
-      filehandle: openLocation(gffGzLocation),
-      csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
-      tbiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
+      filehandle: openLocation(gffGzLocation, this.pluginManager),
+      csiFilehandle:
+        indexType === 'CSI'
+          ? openLocation(location, this.pluginManager)
+          : undefined,
+      tbiFilehandle:
+        indexType !== 'CSI'
+          ? openLocation(location, this.pluginManager)
+          : undefined,
       chunkCacheSize: 50 * 2 ** 20,
       renameRefSeqs: (n: string) => n,
     })
@@ -131,8 +131,9 @@ export default class extends BaseFeatureDataAdapter {
       const gff3 = lines
         .map((lineRecord: LineFeature) => {
           if (lineRecord.fields[8] && lineRecord.fields[8] !== '.') {
-            if (!lineRecord.fields[8].includes('_lineHash'))
+            if (!lineRecord.fields[8].includes('_lineHash')) {
               lineRecord.fields[8] += `;_lineHash=${lineRecord.lineHash}`
+            }
           } else {
             lineRecord.fields[8] = `_lineHash=${lineRecord.lineHash}`
           }

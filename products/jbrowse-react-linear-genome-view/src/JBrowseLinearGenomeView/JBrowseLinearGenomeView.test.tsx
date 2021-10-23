@@ -1,9 +1,11 @@
+import React, { Suspense } from 'react'
 import { render } from '@testing-library/react'
-import React from 'react'
 import { createViewState } from '..'
 import JBrowseLinearGenomeView from './JBrowseLinearGenomeView'
 
-window.requestIdleCallback = (cb: (deadline: IdleDeadline) => void) => {
+window.requestIdleCallback = (
+  cb: (deadline: { didTimeout: boolean; timeRemaining: () => number }) => void,
+) => {
   cb({ didTimeout: false, timeRemaining: () => 0 })
   return 0
 }
@@ -24,8 +26,7 @@ const assembly = {
           uniqueId: 'firstId',
           start: 0,
           end: 120,
-          seq:
-            'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagccttggtttagattggtagtagtagcggcgctaatgctacctg',
+          seq: 'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagccttggtttagattggtagtagtagcggcgctaatgctacctg',
         },
       ],
     },
@@ -71,7 +72,9 @@ describe('<JBrowseLinearGenomeView />', () => {
     })
     state.session.view.setWidth(800)
     const { container, findByText } = render(
-      <JBrowseLinearGenomeView viewState={state} />,
+      <Suspense fallback={<div>Loading...</div>}>
+        <JBrowseLinearGenomeView viewState={state} />
+      </Suspense>,
     )
     await findByText(/Reference Sequence/)
     expect(container.firstChild).toMatchSnapshot()

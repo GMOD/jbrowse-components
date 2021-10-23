@@ -1,17 +1,20 @@
-import { SvgIconProps } from '@material-ui/core/SvgIcon'
-import IconButton, {
+import {
+  SvgIconProps,
+  IconButton,
   IconButtonProps as IconButtonPropsType,
-} from '@material-ui/core/IconButton'
-import Paper from '@material-ui/core/Paper'
-import { makeStyles, useTheme } from '@material-ui/core/styles'
-import { fade } from '@material-ui/core/styles/colorManipulator'
-import Tooltip from '@material-ui/core/Tooltip'
+  Paper,
+  makeStyles,
+  useTheme,
+  Tooltip,
+} from '@material-ui/core'
+import CloseIcon from '@material-ui/icons/Close'
+import MenuIcon from '@material-ui/icons/Menu'
+import { alpha } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import React, { useEffect, useRef, useState } from 'react'
 import { ContentRect, withContentRect } from 'react-measure'
-import CloseIcon from '@material-ui/icons/Close'
-import MenuIcon from '@material-ui/icons/Menu'
+
 import { IBaseViewModel } from '../pluggableElementTypes/models'
 import EditableTypography from './EditableTypography'
 import Menu from './Menu'
@@ -30,7 +33,7 @@ const useStyles = makeStyles(theme => ({
   },
   iconRoot: {
     '&:hover': {
-      backgroundColor: fade(
+      backgroundColor: alpha(
         theme.palette.secondary.contrastText,
         theme.palette.action.hoverOpacity,
       ),
@@ -39,21 +42,7 @@ const useStyles = makeStyles(theme => ({
       },
     },
   },
-  listItemIconRoot: {
-    minWidth: 28,
-  },
-  listItemInset: {
-    paddingLeft: 28,
-  },
-  menuItemDense: {
-    paddingLeft: theme.spacing(1),
-    paddingRight: 26,
-    paddingTop: 0,
-    paddingBottom: 0,
-  },
-  secondaryActionRoot: {
-    right: theme.spacing(1),
-  },
+
   input: {
     paddingBottom: 0,
     paddingTop: 2,
@@ -83,12 +72,12 @@ const ViewMenu = observer(
     IconProps: SvgIconProps
   }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>()
+    const { menuItems } = model
 
-    if (!(model.menuItems && model.menuItems.length)) {
-      return null
-    }
+    // <=1.3.3 didn't use a function
+    const items = typeof menuItems === 'function' ? menuItems() : menuItems
 
-    return (
+    return items?.length ? (
       <>
         <IconButton
           {...IconButtonProps}
@@ -112,10 +101,10 @@ const ViewMenu = observer(
           onClose={() => {
             setAnchorEl(undefined)
           }}
-          menuItems={model.menuItems}
+          menuItems={model.menuItems()}
         />
       </>
-    )
+    ) : null
   },
 )
 
@@ -157,8 +146,9 @@ export default withContentRect('bounds')(
       // note that this effect will run only once, because of
       // the empty array second param
       useEffect(() => {
-        if (scrollRef && scrollRef.current && scrollRef.current.scrollIntoView)
+        if (scrollRef?.current?.scrollIntoView) {
           scrollRef.current.scrollIntoView({ block: 'center' })
+        }
       }, [])
 
       return (

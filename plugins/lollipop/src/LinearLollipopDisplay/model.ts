@@ -2,7 +2,6 @@ import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
 } from '@jbrowse/core/configuration/configurationSchema'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types } from 'mobx-state-tree'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 
@@ -17,22 +16,25 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       }),
     )
 
-    .views(self => ({
-      get blockType() {
-        return 'dynamicBlocks'
-      },
-      get renderDelay() {
-        return 500
-      },
-      get renderProps() {
-        return {
-          ...self.composedRenderProps,
-          ...getParentRenderProps(self),
-          config: self.configuration.renderer,
-        }
-      },
-      get rendererTypeName() {
-        return self.configuration.renderer.type
-      },
-    }))
+    .views(self => {
+      const { renderProps: superRenderProps } = self
+      return {
+        get blockType() {
+          return 'dynamicBlocks'
+        },
+        get renderDelay() {
+          return 500
+        },
+        renderProps() {
+          return {
+            ...superRenderProps(),
+            rpcDriverName: self.rpcDriverName,
+            config: self.configuration.renderer,
+          }
+        },
+        get rendererTypeName() {
+          return self.configuration.renderer.type
+        },
+      }
+    })
 }

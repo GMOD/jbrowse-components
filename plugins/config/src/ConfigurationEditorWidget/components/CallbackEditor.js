@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from 'react'
 import { useDebounce } from '@jbrowse/core/util'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import FormControl from '@material-ui/core/FormControl'
@@ -9,16 +10,13 @@ import IconButton from '@material-ui/core/IconButton'
 import HelpIcon from '@material-ui/icons/Help'
 import { getEnv } from 'mobx-state-tree'
 import { observer, PropTypes } from 'mobx-react'
-import React, { useEffect, useState } from 'react'
 import Editor from 'react-simple-code-editor'
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter'
-import javascript from 'react-syntax-highlighter/dist/cjs/languages/hljs/javascript'
-
-SyntaxHighlighter.registerLanguage('javascript', javascript)
 
 // fontSize and fontFamily have to match between Editor and SyntaxHighlighter
 const fontSize = '12px'
-// Optimize by using system default fonts: https://css-tricks.com/snippets/css/font-stacks/
+
+// Optimize by using system default fonts:
+// https://css-tricks.com/snippets/css/font-stacks/
 const fontFamily =
   'Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace'
 
@@ -26,11 +24,6 @@ const useStyles = makeStyles(theme => ({
   callbackEditor: {
     marginTop: '16px',
     borderBottom: `1px solid ${theme.palette.divider}`,
-    fontFamily,
-    fontSize,
-  },
-  syntaxHighlighter: {
-    margin: 0,
     fontFamily,
     fontSize,
   },
@@ -73,19 +66,7 @@ function CallbackEditor({ slot }) {
           onValueChange={newCode => {
             setCode(newCode)
           }}
-          highlight={newCode =>
-            // <SyntaxHighlighter
-            //   language="html"
-            //   style={theme.palette.type === 'dark' ? a11yDark : a11yLight}
-            //   className={classes.syntaxHighlighter}
-            //   // override some inline style stuff that's higher specificity
-            //   // than className
-            //   customStyle={{ background: 'none', padding: 0 }}
-            // >
-            //   {newCode}
-            // </SyntaxHighlighter>
-            newCode
-          }
+          highlight={newCode => newCode}
           padding={10}
           style={{ background: error ? '#fdd' : undefined }}
         />
@@ -108,7 +89,9 @@ function CallbackEditor({ slot }) {
               '_blank',
               'noopener,noreferrer',
             )
-            if (newWindow) newWindow.opener = null
+            if (newWindow) {
+              newWindow.opener = null
+            }
           }}
         >
           <HelpIcon />

@@ -1,5 +1,5 @@
+import { lazy } from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
-import ReactComponent from './components/LinearSyntenyView'
 import modelFactory from './model'
 
 export default (pluginManager: PluginManager) => {
@@ -8,6 +8,6 @@ export default (pluginManager: PluginManager) => {
   return new ViewType({
     name: 'LinearSyntenyView',
     stateModel: jbrequire(modelFactory),
-    ReactComponent,
+    ReactComponent: lazy(() => import('./components/LinearSyntenyView')),
   })
 }

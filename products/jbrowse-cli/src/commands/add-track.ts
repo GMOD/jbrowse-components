@@ -1,4 +1,3 @@
-/* eslint curly:error */
 import { flags } from '@oclif/command'
 import fs from 'fs'
 import path from 'path'
@@ -23,10 +22,12 @@ interface Config {
 
 interface UriLocation {
   uri: string
+  locationType: 'UriLocation'
 }
 
 interface LocalPathLocation {
   localPath: string
+  locationType: 'LocalPathLocation'
 }
 
 export default class AddTrack extends JBrowseCommand {
@@ -293,21 +294,30 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     // copy/symlinks/moves the track into the jbrowse installation directory
-    const filePaths = Object.values(this.guessFileNames(location, index))
+    const filePaths = Object.values(
+      this.guessFileNames(location, index),
+    ).filter(f => !!f) as string[]
+
+    const destinationFn = (dir: string, file: string) =>
+      path.join(dir, subDir, path.basename(file))
 
     switch (load) {
       case 'copy': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) {
-              return undefined
+            const dest = destinationFn(configDirectory, filePath)
+            try {
+              if (force && fs.existsSync(dest)) {
+                await fsPromises.unlink(dest)
+              }
+            } catch (e) {
+              this.error(e instanceof Error ? e : `${e}`)
             }
-            const dataLocation = path.join(
-              configDirectory,
-              subDir,
-              path.basename(filePath),
+            return fsPromises.copyFile(
+              filePath,
+              dest,
+              fs.constants.COPYFILE_EXCL,
             )
-            return fsPromises.copyFile(filePath, dataLocation)
           }),
         )
         break
@@ -315,15 +325,15 @@ export default class AddTrack extends JBrowseCommand {
       case 'symlink': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) {
-              return undefined
+            const dest = destinationFn(configDirectory, filePath)
+            try {
+              if (force && fs.existsSync(dest)) {
+                await fsPromises.unlink(dest)
+              }
+            } catch (e) {
+              this.error(e instanceof Error ? e : `${e}`)
             }
-            const dataLocation = path.join(
-              configDirectory,
-              subDir,
-              path.basename(filePath),
-            )
-            return fsPromises.symlink(filePath, dataLocation)
+            return fsPromises.symlink(filePath, dest)
           }),
         )
         break
@@ -331,15 +341,15 @@ export default class AddTrack extends JBrowseCommand {
       case 'move': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) {
-              return undefined
+            const dest = destinationFn(configDirectory, filePath)
+            try {
+              if (force && fs.existsSync(dest)) {
+                await fsPromises.unlink(dest)
+              }
+            } catch (e) {
+              this.error(e instanceof Error ? e : `${e}`)
             }
-            const dataLocation = path.join(
-              configDirectory,
-              subDir,
-              path.basename(filePath),
-            )
-            return fsPromises.rename(filePath, dataLocation)
+            return fsPromises.rename(filePath, dest)
           }),
         )
         break
@@ -486,10 +496,10 @@ export default class AddTrack extends JBrowseCommand {
   guessAdapter(fileName: string, protocol: string, index?: string) {
     function makeLocation(location: string): UriLocation | LocalPathLocation {
       if (protocol === 'uri') {
-        return { uri: location }
+        return { uri: location, locationType: 'UriLocation' }
       }
       if (protocol === 'localPath') {
-        return { localPath: location }
+        return { localPath: location, locationType: 'LocalPathLocation' }
       }
       throw new Error(`invalid protocol ${protocol}`)
     }
@@ -539,7 +549,8 @@ export default class AddTrack extends JBrowseCommand {
 
     if (/\.vcf$/i.test(fileName)) {
       return {
-        type: 'UNSUPPORTED',
+        type: 'VcfAdapter',
+        vcfLocation: makeLocation(fileName),
       }
     }
 

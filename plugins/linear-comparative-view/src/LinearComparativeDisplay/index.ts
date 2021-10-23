@@ -14,6 +14,7 @@ import {
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import React from 'react'
 import { LinearComparativeViewModel } from '../LinearComparativeView/model'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 
@@ -42,17 +43,18 @@ export function stateModelFactory(configSchema: any) {
       renderInProgress: undefined as AbortController | undefined,
       filled: false,
       data: undefined as any,
-      html: '',
+      reactElement: undefined as React.ReactElement | undefined,
       message: undefined as string | undefined,
       renderingComponent: undefined as any,
-      ReactComponent2: (ServerSideRenderedBlockContent as unknown) as React.FC,
+      ReactComponent2: ServerSideRenderedBlockContent as unknown as React.FC,
     }))
     .views(self => ({
       get rendererTypeName() {
-        return getConf(self, 'renderer').type
+        return getConf(self, ['renderer', 'type'])
       },
-      get renderProps() {
+      renderProps() {
         return {
+          rpcDriverName: self.rpcDriverName,
           displayModel: self,
         }
       },
@@ -80,7 +82,7 @@ export function stateModelFactory(configSchema: any) {
         setLoading(abortController: AbortController) {
           self.filled = false
           self.message = undefined
-          self.html = ''
+          self.reactElement = undefined
           self.data = undefined
           self.error = undefined
           self.renderingComponent = undefined
@@ -92,7 +94,7 @@ export function stateModelFactory(configSchema: any) {
           }
           self.filled = false
           self.message = messageText
-          self.html = ''
+          self.reactElement = undefined
           self.data = undefined
           self.error = undefined
           self.renderingComponent = undefined
@@ -100,19 +102,19 @@ export function stateModelFactory(configSchema: any) {
         },
         setRendered(args: {
           data: any
-          html: any
+          reactElement: React.ReactElement
           renderingComponent: React.Component
         }) {
-          const { data, html, renderingComponent } = args
+          const { data, reactElement, renderingComponent } = args
           self.filled = true
           self.message = undefined
-          self.html = html
+          self.reactElement = reactElement
           self.data = data
           self.error = undefined
           self.renderingComponent = renderingComponent
           renderInProgress = undefined
         },
-        setError(error: Error) {
+        setError(error: unknown) {
           console.error(error)
           if (renderInProgress && !renderInProgress.signal.aborted) {
             renderInProgress.abort()
@@ -120,7 +122,7 @@ export function stateModelFactory(configSchema: any) {
           // the rendering failed for some reason
           self.filled = false
           self.message = undefined
-          self.html = ''
+          self.reactElement = undefined
           self.data = undefined
           self.error = error
           self.renderingComponent = undefined
@@ -133,14 +135,10 @@ function renderBlockData(self: LinearComparativeDisplay) {
   const { rpcManager } = getSession(self) as any
   const display = self
 
-  const {
-    renderProps,
-    rendererType,
-  }: { renderProps: any; rendererType: any } = display
+  const { rendererType }: { rendererType: any } = display
 
-  // Alternative to readConfObject(config) is below
-  // used because renderProps is something under our control.
-  // Compare to serverSideRenderedBlock
+  // Alternative to readConfObject(config) is below used because renderProps is
+  // something under our control.  Compare to serverSideRenderedBlock
   readConfObject(self.configuration)
 
   const { adapterConfig } = self
@@ -152,10 +150,8 @@ function renderBlockData(self: LinearComparativeDisplay) {
     rendererType,
     rpcManager,
     renderProps: {
-      ...renderProps,
+      ...display.renderProps(),
       view: getSnapshot(parent),
-    },
-    renderArgs: {
       adapterConfig,
       rendererType: rendererType.name,
       sessionId,
@@ -169,14 +165,14 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
     throw new Error('cannot render with no props')
   }
 
-  const { rendererType, rpcManager, renderProps, renderArgs } = props
+  const { rendererType, rpcManager, renderProps } = props
 
-  const { html, ...data } = await rendererType.renderInClient(rpcManager, {
-    ...renderArgs,
-    ...renderProps,
-  })
+  const { reactElement, ...data } = await rendererType.renderInClient(
+    rpcManager,
+    renderProps,
+  )
 
-  return { html, data, renderingComponent: rendererType.ReactComponent }
+  return { reactElement, data, renderingComponent: rendererType.ReactComponent }
 }
 
 export type LinearComparativeDisplayModel = ReturnType<typeof stateModelFactory>

@@ -12,13 +12,16 @@
         "adapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/wormbase/c_elegans/fasta/GCF_000002985.6_WBcel235_genomic.fa.gz"
+            "uri": "https://jbrowse.org/genomes/wormbase/c_elegans/fasta/GCF_000002985.6_WBcel235_genomic.fa.gz",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/wormbase/c_elegans/fasta/GCF_000002985.6_WBcel235_genomic.fa.gz.fai"
+            "uri": "https://jbrowse.org/genomes/wormbase/c_elegans/fasta/GCF_000002985.6_WBcel235_genomic.fa.gz.fai",
+            "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/wormbase/c_elegans/fasta/GCF_000002985.6_WBcel235_genomic.fa.gz.gzi"
+            "uri": "https://jbrowse.org/genomes/wormbase/c_elegans/fasta/GCF_000002985.6_WBcel235_genomic.fa.gz.gzi",
+            "locationType": "UriLocation"
           }
         }
       },
@@ -26,7 +29,8 @@
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/wormbase/ce_aliases.txt"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/wormbase/ce_aliases.txt",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -38,9 +42,10 @@
       "type": "JBrowse1Connection",
       "connectionId": "JBrowse1Connection-GCF_000002985.6_WBcel235_genomic-1616618478254",
       "name": "wormbase",
-      "assemblyName": "C. elegans (N2)",
+      "assemblyNames": ["C. elegans (N2)"],
       "dataDirLocation": {
-        "uri": "https://wormbase.org/tools/genome/jbrowse-simple/data/c_elegans_PRJNA13758"
+        "uri": "https://wormbase.org/tools/genome/jbrowse-simple/data/c_elegans_PRJNA13758",
+        "locationType": "UriLocation"
       }
     }
   ]

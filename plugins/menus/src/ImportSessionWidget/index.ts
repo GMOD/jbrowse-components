@@ -8,5 +8,3 @@ export const stateModel = types.model('ImportSessionWidget', {
   id: ElementId,
   type: types.literal('ImportSessionWidget'),
 })
-
-export { default as ReactComponent } from './components/ImportSessionWidget'

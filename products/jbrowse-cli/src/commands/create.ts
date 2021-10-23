@@ -1,4 +1,3 @@
-/* eslint curly:error */
 import { flags } from '@oclif/command'
 import fs from 'fs'
 import fetch from 'node-fetch'
@@ -114,8 +113,8 @@ export default class Create extends JBrowseCommand {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async catch(error: any) {
+  async catch(error: unknown) {
+    // @ts-ignore
     if (error.parse && error.parse.output.flags.listVersions) {
       const versions = (await this.fetchGithubVersions()).map(
         version => version.tag_name,

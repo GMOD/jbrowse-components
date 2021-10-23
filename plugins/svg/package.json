@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-svg",
-  "version": "1.1.0",
+  "version": "1.5.0",
   "description": "JBrowse 2 plugin for svg features",
   "keywords": [
     "jbrowse",
@@ -39,7 +39,7 @@
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",
-    "react": "^16.8.0"
+    "react": ">=16.8.0"
   },
   "publishConfig": {
     "access": "public"

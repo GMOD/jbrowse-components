@@ -4,10 +4,13 @@
   "url": "https://jbrowse.com",
   "baseUrl": "/jb2/",
   "favicon": "img/favicon.ico",
+  "trailingSlash": true,
+  "onBrokenLinks": "ignore",
   "organizationName": "GMOD",
   "projectName": "jbrowse-components",
   "customFields": {
-    "currentLink": "https://s3.amazonaws.com/jbrowse.org/code/jb2/v1.1.0/index.html"
+    "currentVersion": "v1.5.0",
+    "bannerBulletin": "Introducing JBrowse Desktop"
   },
   "themeConfig": {
     "colorMode": {
@@ -29,6 +32,16 @@
         {
           "to": "blog",
           "label": "Blog",
+          "position": "left"
+        },
+        {
+          "to": "download",
+          "label": "Download",
+          "position": "left"
+        },
+        {
+          "to": "plugin_store",
+          "label": "Plugins",
           "position": "left"
         },
         {
@@ -57,9 +70,16 @@
           "position": "right"
         },
         {
-          "href": "https://github.com/GMOD/jbrowse-components",
-          "label": "GitHub",
-          "position": "right"
+          "className": "navbar-social-github",
+          "position": "right",
+          "alt": "Github",
+          "href": "https://github.com/GMOD/jbrowse-components"
+        },
+        {
+          "className": "navbar-social-twitter",
+          "alt": "Twitter",
+          "position": "right",
+          "href": "https://twitter.com/usejbrowse"
         }
       ]
     },

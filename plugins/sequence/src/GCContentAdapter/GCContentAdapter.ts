@@ -1,19 +1,14 @@
 import {
   BaseFeatureDataAdapter,
-  RegionsAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region, NoAssemblyRegion } from '@jbrowse/core/util/types'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { Region } from '@jbrowse/core/util/types'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { toArray } from 'rxjs/operators'
 
-export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
-  private sequenceAdapter: BaseFeatureDataAdapter
-
+export default class extends BaseFeatureDataAdapter {
   private windowSize = 1000
 
   private windowDelta = 1000
@@ -22,36 +17,20 @@ export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
 
   public static capabilities = ['hasLocalStats']
 
-  public constructor(
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-  ) {
-    super(config)
+  public async configure() {
     // instantiate the sequence adapter
-    const sequenceAdapterType = readConfObject(config, [
-      'sequenceAdapter',
-      'type',
-    ])
+    const sequenceAdapter = readConfObject(this.config, 'sequenceAdapter')
 
-    const dataAdapter = getSubAdapter?.(
-      readConfObject(config, 'sequenceAdapter'),
-    ).dataAdapter
-    if (dataAdapter instanceof BaseFeatureDataAdapter) {
-      this.sequenceAdapter = dataAdapter
-    } else {
-      throw new Error(
-        `Feature adapters cannot use sequence adapters of type '${sequenceAdapterType}'`,
-      )
+    const dataAdapter = await this.getSubAdapter?.(sequenceAdapter)
+    if (!dataAdapter) {
+      throw new Error('Error getting subadapter')
     }
+    return dataAdapter.dataAdapter as BaseFeatureDataAdapter
   }
 
-  public getRefNames() {
-    return this.sequenceAdapter.getRefNames()
-  }
-
-  public async getRegions(): Promise<NoAssemblyRegion[]> {
-    // @ts-ignore
-    return this.sequenceAdapter.getRegions()
+  public async getRefNames() {
+    const sequenceAdapter = await this.configure()
+    return sequenceAdapter.getRefNames()
   }
 
   /**
@@ -64,6 +43,7 @@ export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
     this.windowDelta = 1000
     this.gcMode = 'content'
     return ObservableCreate<Feature>(async observer => {
+      const sequenceAdapter = await this.configure()
       const hw = this.windowSize === 1 ? 1 : this.windowSize / 2 // Half the window size
       const f = this.windowSize === 1
 
@@ -76,7 +56,7 @@ export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
         return
       }
 
-      const ret = this.sequenceAdapter.getFeatures(
+      const ret = sequenceAdapter.getFeatures(
         { ...query, start: queryStart, end: queryEnd },
         opts,
       )

@@ -25,4 +25,3 @@ export default function stateModelFactory(pluginManager) {
 }
 
 export { configSchema, stateModelFactory }
-export { default as ReactComponent } from './AlignmentsFeatureDetail'

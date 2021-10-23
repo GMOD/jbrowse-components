@@ -6,7 +6,7 @@ exports[`open up a widget 1`] = `
   data-testid="alignment-side-drawer"
 >
   <div
-    class="MuiPaper-root MuiAccordion-root makeStyles-accordionBorder MuiAccordion-expanded MuiAccordion-rounded MuiPaper-elevation1 MuiPaper-rounded"
+    class="MuiPaper-root MuiAccordion-root MuiAccordion-expanded MuiAccordion-rounded MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
       aria-disabled="false"
@@ -22,7 +22,7 @@ exports[`open up a widget 1`] = `
           class="MuiTypography-root MuiTypography-button"
         >
            
-          match
+          ctgA_3_555_0:0:0_2:0... - match
         </span>
       </div>
       <div
@@ -50,7 +50,7 @@ exports[`open up a widget 1`] = `
       </div>
     </div>
     <div
-      class="MuiCollapse-container MuiCollapse-entered"
+      class="MuiCollapse-root MuiCollapse-entered"
       style="min-height: 0px;"
     >
       <div
@@ -65,9 +65,11 @@ exports[`open up a widget 1`] = `
             <div
               class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
             >
-              <div>
+              <p
+                class="MuiTypography-root MuiTypography-body1"
+              >
                 Core details
-              </div>
+              </p>
               <div
                 class="makeStyles-field"
               >
@@ -135,9 +137,11 @@ exports[`open up a widget 1`] = `
               <hr
                 class="MuiDivider-root"
               />
-              <div>
+              <p
+                class="MuiTypography-root MuiTypography-body1"
+              >
                 Attributes
-              </div>
+              </p>
               <div
                 class="makeStyles-field"
               >
@@ -283,7 +287,7 @@ exports[`open up a widget 1`] = `
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiAccordion-root makeStyles-accordionBorder MuiAccordion-expanded MuiAccordion-rounded MuiPaper-elevation1 MuiPaper-rounded"
+    class="MuiPaper-root MuiAccordion-root MuiAccordion-expanded MuiAccordion-rounded MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
       aria-disabled="false"
@@ -327,7 +331,7 @@ exports[`open up a widget 1`] = `
       </div>
     </div>
     <div
-      class="MuiCollapse-container MuiCollapse-entered"
+      class="MuiCollapse-root MuiCollapse-entered"
       style="min-height: 0px;"
     >
       <div
@@ -343,159 +347,475 @@ exports[`open up a widget 1`] = `
               class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
             >
               <div
-                style="display: flex;"
+                class="MuiFormGroup-root"
               >
-                <div
-                  class="makeStyles-fieldName"
-                >
-                  Flag
-                </div>
-                <div
-                  class="makeStyles-fieldValue"
-                />
-              </div>
-              <div>
-                <input
-                  id="read paired_0"
-                  readonly=""
-                  type="checkbox"
-                />
                 <label
-                  for="read paired_0"
+                  class="MuiFormControlLabel-root"
                 >
-                  read paired
+                  <span
+                    aria-disabled="false"
+                    class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorSecondary makeStyles-compact MuiIconButton-colorSecondary"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <input
+                        class="PrivateSwitchBase-input"
+                        data-indeterminate="false"
+                        name="read paired"
+                        readonly=""
+                        type="checkbox"
+                        value=""
+                      />
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </span>
+                  <span
+                    class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
+                  >
+                    read paired
+                  </span>
                 </label>
-              </div>
-              <div>
-                <input
-                  id="read mapped in proper pair_0"
-                  readonly=""
-                  type="checkbox"
-                />
                 <label
-                  for="read mapped in proper pair_0"
+                  class="MuiFormControlLabel-root"
                 >
-                  read mapped in proper pair
+                  <span
+                    aria-disabled="false"
+                    class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorSecondary makeStyles-compact MuiIconButton-colorSecondary"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <input
+                        class="PrivateSwitchBase-input"
+                        data-indeterminate="false"
+                        name="read mapped in proper pair"
+                        readonly=""
+                        type="checkbox"
+                        value=""
+                      />
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </span>
+                  <span
+                    class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
+                  >
+                    read mapped in proper pair
+                  </span>
                 </label>
-              </div>
-              <div>
-                <input
-                  id="read unmapped_0"
-                  readonly=""
-                  type="checkbox"
-                />
                 <label
-                  for="read unmapped_0"
+                  class="MuiFormControlLabel-root"
                 >
-                  read unmapped
+                  <span
+                    aria-disabled="false"
+                    class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorSecondary makeStyles-compact MuiIconButton-colorSecondary"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <input
+                        class="PrivateSwitchBase-input"
+                        data-indeterminate="false"
+                        name="read unmapped"
+                        readonly=""
+                        type="checkbox"
+                        value=""
+                      />
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </span>
+                  <span
+                    class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
+                  >
+                    read unmapped
+                  </span>
                 </label>
-              </div>
-              <div>
-                <input
-                  id="mate unmapped_0"
-                  readonly=""
-                  type="checkbox"
-                />
                 <label
-                  for="mate unmapped_0"
+                  class="MuiFormControlLabel-root"
                 >
-                  mate unmapped
+                  <span
+                    aria-disabled="false"
+                    class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorSecondary makeStyles-compact MuiIconButton-colorSecondary"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <input
+                        class="PrivateSwitchBase-input"
+                        data-indeterminate="false"
+                        name="mate unmapped"
+                        readonly=""
+                        type="checkbox"
+                        value=""
+                      />
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </span>
+                  <span
+                    class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
+                  >
+                    mate unmapped
+                  </span>
                 </label>
-              </div>
-              <div>
-                <input
-                  id="read reverse strand_0"
-                  readonly=""
-                  type="checkbox"
-                />
                 <label
-                  for="read reverse strand_0"
+                  class="MuiFormControlLabel-root"
                 >
-                  read reverse strand
+                  <span
+                    aria-disabled="false"
+                    class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorSecondary makeStyles-compact MuiIconButton-colorSecondary"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <input
+                        class="PrivateSwitchBase-input"
+                        data-indeterminate="false"
+                        name="read reverse strand"
+                        readonly=""
+                        type="checkbox"
+                        value=""
+                      />
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </span>
+                  <span
+                    class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
+                  >
+                    read reverse strand
+                  </span>
                 </label>
-              </div>
-              <div>
-                <input
-                  id="mate reverse strand_0"
-                  readonly=""
-                  type="checkbox"
-                />
                 <label
-                  for="mate reverse strand_0"
+                  class="MuiFormControlLabel-root"
                 >
-                  mate reverse strand
+                  <span
+                    aria-disabled="false"
+                    class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorSecondary makeStyles-compact MuiIconButton-colorSecondary"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <input
+                        class="PrivateSwitchBase-input"
+                        data-indeterminate="false"
+                        name="mate reverse strand"
+                        readonly=""
+                        type="checkbox"
+                        value=""
+                      />
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </span>
+                  <span
+                    class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
+                  >
+                    mate reverse strand
+                  </span>
                 </label>
-              </div>
-              <div>
-                <input
-                  id="first in pair_0"
-                  readonly=""
-                  type="checkbox"
-                />
                 <label
-                  for="first in pair_0"
+                  class="MuiFormControlLabel-root"
                 >
-                  first in pair
+                  <span
+                    aria-disabled="false"
+                    class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorSecondary makeStyles-compact MuiIconButton-colorSecondary"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <input
+                        class="PrivateSwitchBase-input"
+                        data-indeterminate="false"
+                        name="first in pair"
+                        readonly=""
+                        type="checkbox"
+                        value=""
+                      />
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </span>
+                  <span
+                    class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
+                  >
+                    first in pair
+                  </span>
                 </label>
-              </div>
-              <div>
-                <input
-                  id="second in pair_0"
-                  readonly=""
-                  type="checkbox"
-                />
                 <label
-                  for="second in pair_0"
+                  class="MuiFormControlLabel-root"
                 >
-                  second in pair
+                  <span
+                    aria-disabled="false"
+                    class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorSecondary makeStyles-compact MuiIconButton-colorSecondary"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <input
+                        class="PrivateSwitchBase-input"
+                        data-indeterminate="false"
+                        name="second in pair"
+                        readonly=""
+                        type="checkbox"
+                        value=""
+                      />
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </span>
+                  <span
+                    class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
+                  >
+                    second in pair
+                  </span>
                 </label>
-              </div>
-              <div>
-                <input
-                  id="not primary alignment_0"
-                  readonly=""
-                  type="checkbox"
-                />
                 <label
-                  for="not primary alignment_0"
+                  class="MuiFormControlLabel-root"
                 >
-                  not primary alignment
+                  <span
+                    aria-disabled="false"
+                    class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorSecondary makeStyles-compact MuiIconButton-colorSecondary"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <input
+                        class="PrivateSwitchBase-input"
+                        data-indeterminate="false"
+                        name="not primary alignment"
+                        readonly=""
+                        type="checkbox"
+                        value=""
+                      />
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </span>
+                  <span
+                    class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
+                  >
+                    not primary alignment
+                  </span>
                 </label>
-              </div>
-              <div>
-                <input
-                  id="read fails platform/vendor quality checks_0"
-                  readonly=""
-                  type="checkbox"
-                />
                 <label
-                  for="read fails platform/vendor quality checks_0"
+                  class="MuiFormControlLabel-root"
                 >
-                  read fails platform/vendor quality checks
+                  <span
+                    aria-disabled="false"
+                    class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorSecondary makeStyles-compact MuiIconButton-colorSecondary"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <input
+                        class="PrivateSwitchBase-input"
+                        data-indeterminate="false"
+                        name="read fails platform/vendor quality checks"
+                        readonly=""
+                        type="checkbox"
+                        value=""
+                      />
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </span>
+                  <span
+                    class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
+                  >
+                    read fails platform/vendor quality checks
+                  </span>
                 </label>
-              </div>
-              <div>
-                <input
-                  id="read is PCR or optical duplicate_0"
-                  readonly=""
-                  type="checkbox"
-                />
                 <label
-                  for="read is PCR or optical duplicate_0"
+                  class="MuiFormControlLabel-root"
                 >
-                  read is PCR or optical duplicate
+                  <span
+                    aria-disabled="false"
+                    class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorSecondary makeStyles-compact MuiIconButton-colorSecondary"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <input
+                        class="PrivateSwitchBase-input"
+                        data-indeterminate="false"
+                        name="read is PCR or optical duplicate"
+                        readonly=""
+                        type="checkbox"
+                        value=""
+                      />
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </span>
+                  <span
+                    class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
+                  >
+                    read is PCR or optical duplicate
+                  </span>
                 </label>
-              </div>
-              <div>
-                <input
-                  id="supplementary alignment_0"
-                  readonly=""
-                  type="checkbox"
-                />
                 <label
-                  for="supplementary alignment_0"
+                  class="MuiFormControlLabel-root"
                 >
-                  supplementary alignment
+                  <span
+                    aria-disabled="false"
+                    class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorSecondary makeStyles-compact MuiIconButton-colorSecondary"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <input
+                        class="PrivateSwitchBase-input"
+                        data-indeterminate="false"
+                        name="supplementary alignment"
+                        readonly=""
+                        type="checkbox"
+                        value=""
+                      />
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </span>
+                  <span
+                    class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
+                  >
+                    supplementary alignment
+                  </span>
                 </label>
               </div>
             </div>

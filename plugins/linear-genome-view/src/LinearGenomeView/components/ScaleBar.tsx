@@ -114,7 +114,7 @@ const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
           return (
             <ContentBlockComponent key={`${block.key}-${index}`} block={block}>
               {ticks.map(tick => {
-                if (tick.type === 'labeledMajor') {
+                if (tick.type === 'major') {
                   const x =
                     (block.reversed
                       ? block.end - tick.base

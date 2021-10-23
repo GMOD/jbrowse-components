@@ -1,7 +1,8 @@
+/* eslint-disable react/prop-types */
 import React from 'react'
 import { observer } from 'mobx-react'
 
-export default observer(function ServerSideRenderedContent(props) {
+function ServerSideRenderedContent(props) {
   const { model } = props
   const { data, renderProps, renderingComponent: RenderingComponent } = model
 
@@ -10,4 +11,6 @@ export default observer(function ServerSideRenderedContent(props) {
   ) : (
     <p>Loading</p>
   )
-})
+}
+
+export default observer(ServerSideRenderedContent)

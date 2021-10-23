@@ -1,32 +1,38 @@
+import React, { useEffect, useState } from 'react'
+import { observer } from 'mobx-react'
+import { getPropertyMembers, getEnv } from 'mobx-state-tree'
 import { FileSelector } from '@jbrowse/core/ui'
 import {
   getPropertyType,
   getSubType,
   getUnionSubTypes,
 } from '@jbrowse/core/util/mst-reflection'
-import Card from '@material-ui/core/Card'
-import CardContent from '@material-ui/core/CardContent'
-import CardHeader from '@material-ui/core/CardHeader'
-import Checkbox from '@material-ui/core/Checkbox'
-import FormControl from '@material-ui/core/FormControl'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
-import FormHelperText from '@material-ui/core/FormHelperText'
-import IconButton from '@material-ui/core/IconButton'
-import InputAdornment from '@material-ui/core/InputAdornment'
-import InputLabel from '@material-ui/core/InputLabel'
-import List from '@material-ui/core/List'
-import ListItem from '@material-ui/core/ListItem'
-import MenuItem from '@material-ui/core/MenuItem'
-import Paper from '@material-ui/core/Paper'
-import { makeStyles } from '@material-ui/core/styles'
-import SvgIcon from '@material-ui/core/SvgIcon'
-import TextField from '@material-ui/core/TextField'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  FormHelperText,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  List,
+  ListItem,
+  MenuItem,
+  Paper,
+  SvgIcon,
+  TextField,
+  makeStyles,
+} from '@material-ui/core'
+
+// icons
 import DeleteIcon from '@material-ui/icons/Delete'
 import AddIcon from '@material-ui/icons/Add'
 import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked'
-import { observer } from 'mobx-react'
-import { getPropertyMembers } from 'mobx-state-tree'
-import React, { useEffect, useState } from 'react'
+
+// locals
 import CallbackEditor from './CallbackEditor'
 import ColorEditor from './ColorEditor'
 import JsonEditor from './JsonEditor'
@@ -73,7 +79,7 @@ const StringArrayEditor = observer(({ slot }) => {
               onChange={evt => slot.setAtIndex(idx, evt.target.value)}
               InputProps={{
                 endAdornment: (
-                  <InputAdornment>
+                  <InputAdornment position="end">
                     <IconButton
                       color="secondary"
                       onClick={() => slot.removeAtIndex(idx)}
@@ -93,7 +99,7 @@ const StringArrayEditor = observer(({ slot }) => {
             onChange={event => setValue(event.target.value)}
             InputProps={{
               endAdornment: (
-                <InputAdornment>
+                <InputAdornment position="end">
                   <IconButton
                     onClick={() => {
                       slot.add(value)
@@ -101,6 +107,7 @@ const StringArrayEditor = observer(({ slot }) => {
                     }}
                     disabled={value === ''}
                     color="secondary"
+                    data-testid={`stringArrayAdd-${slot.name}`}
                   >
                     <AddIcon />
                   </IconButton>
@@ -167,7 +174,7 @@ const StringArrayMapEditor = observer(({ slot }) => {
               onChange={event => setValue(event.target.value)}
               InputProps={{
                 endAdornment: (
-                  <InputAdornment>
+                  <InputAdornment position="end">
                     <IconButton
                       disabled={value === ''}
                       onClick={() => {
@@ -227,7 +234,7 @@ const NumberMapEditor = observer(({ slot }) => {
               onChange={event => setValue(event.target.value)}
               InputProps={{
                 endAdornment: (
-                  <InputAdornment>
+                  <InputAdornment position="end">
                     <IconButton
                       disabled={value === ''}
                       onClick={() => {
@@ -330,19 +337,14 @@ const stringEnumEditor = observer(({ slot, slotSchema }) => {
   )
 })
 
-function createSetLocation(slot) {
-  return location => {
-    slot.set({ ...slot.value, ...location })
-  }
-}
-
 const FileSelectorWrapper = observer(({ slot }) => {
   return (
     <FileSelector
       location={slot.value}
-      setLocation={createSetLocation(slot)}
+      setLocation={location => slot.set(location)}
       name={slot.name}
       description={slot.description}
+      rootModel={getEnv(slot).pluginManager?.rootModel}
     />
   )
 })
@@ -392,8 +394,9 @@ const SlotEditor = observer(({ slot, slotSchema }) => {
     console.warn(`no slot editor defined for ${type}, editing as string`)
     ValueComponent = StringEditor
   }
-  if (!(type in valueComponents))
+  if (!(type in valueComponents)) {
     console.warn(`SlotEditor needs to implement ${type}`)
+  }
   return (
     <Paper className={classes.paper}>
       <div className={classes.paperContent}>

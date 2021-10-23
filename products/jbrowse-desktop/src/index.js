@@ -1,35 +1,26 @@
-import { FatalErrorDialog } from '@jbrowse/core/ui'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import ErrorBoundary from 'react-error-boundary'
+import { FatalErrorDialog } from '@jbrowse/core/ui'
+import { ErrorBoundary } from 'react-error-boundary'
+import { QueryParamProvider } from 'use-query-params'
+
 import 'fontsource-roboto'
+
 import factoryReset from './factoryReset'
 import Loader from './Loader'
 
-const { electron } = window
-const { ipcRenderer, remote } = electron
-const { BrowserWindow, getCurrentWindow } = remote
 const initialTimestamp = Date.now()
 
-window.onbeforeunload = () => {
-  const thisWindowId = getCurrentWindow().id
-  BrowserWindow.getAllWindows().forEach(win => {
-    if (win.id !== thisWindowId) win.close()
-  })
+if (window && window.name.startsWith('JBrowseAuthWindow')) {
+  const parent = window.opener
+  if (parent) {
+    parent.postMessage({
+      name: window.name,
+      redirectUri: window.location.href,
+    })
+  }
+  window.close()
 }
-
-ipcRenderer.on('consoleLog', async (event, ...args) => {
-  // eslint-disable-next-line no-console
-  console.log(`windowWorker-${event.senderId}-log`, ...args)
-})
-
-ipcRenderer.on('consoleWarn', async (event, ...args) => {
-  console.warn(`windowWorker-${event.senderId}-warn`, ...args)
-})
-
-ipcRenderer.on('consoleError', async (event, ...args) => {
-  console.error(`windowWorker-${event.senderId}-error`, ...args)
-})
 
 const PlatformSpecificFatalErrorDialog = props => {
   return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
@@ -37,7 +28,9 @@ const PlatformSpecificFatalErrorDialog = props => {
 
 ReactDOM.render(
   <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
-    <Loader initialTimestamp={initialTimestamp} />
+    <QueryParamProvider>
+      <Loader initialTimestamp={initialTimestamp} />
+    </QueryParamProvider>
   </ErrorBoundary>,
   document.getElementById('root'),
 )

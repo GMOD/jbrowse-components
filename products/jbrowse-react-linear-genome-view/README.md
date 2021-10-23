@@ -3,8 +3,8 @@
 > JBrowse 2 linear genome view React component
 
 [JBrowse 2](https://jbrowse.org/jb2/) is a pluggable open-source platform for
-visualizing, integrating, and sharing biological data. This component consists of a single
-JBrowse 2 linear view.
+visualizing, integrating, and sharing biological data. This component consists
+of a single JBrowse 2 linear view.
 
 ## Usage
 
@@ -13,12 +13,8 @@ import React from 'react'
 import 'fontsource-roboto'
 import {
   createViewState,
-  createJBrowseTheme,
   JBrowseLinearGenomeView,
-  ThemeProvider,
 } from '@jbrowse/react-linear-genome-view'
-
-const theme = createJBrowseTheme()
 
 function View() {
   const state = createViewState({
@@ -29,11 +25,7 @@ function View() {
       /* tracks */
     ],
   })
-  return (
-    <ThemeProvider theme={theme}>
-      <JBrowseLinearGenomeView viewState={state} />
-    </ThemeProvider>
-  )
+  return <JBrowseLinearGenomeView viewState={state} />
 }
 ```
 
@@ -50,8 +42,11 @@ $ yarn add @jbrowse/react-linear-genome-view
 Or with [npm](https://npmjs.org/):
 
 ```
-$ npm install @jbrowse/react-linear-genome-view
+$ npm install @jbrowse/react-linear-genome-view --legacy-peer-deps
 ```
+
+The --legacy-peer-deps helps with installing via NPM to avoid warnings about
+the peer dependencies not being met while installing.
 
 ## Documentation
 

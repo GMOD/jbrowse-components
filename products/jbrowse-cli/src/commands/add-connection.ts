@@ -5,7 +5,6 @@ import path from 'path'
 import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
 
-const fsPromises = fs.promises
 interface Connection {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
@@ -31,7 +30,7 @@ export default class AddConnection extends JBrowseCommand {
     '$ jbrowse add-connection http://mysite.com/jbrowse/custom_data_folder/ --type JBrowse1Connection',
     '$ jbrowse add-connection http://mysite.com/path/to/hub.txt --assemblyName hg19',
     '$ jbrowse add-connection http://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection --assemblyName hg19',
-    `$ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config '{"uri":{"url":"https://mysite.com/path/to/custom"}}' --assemblyName hg19`,
+    `$ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config '{"uri":{"url":"https://mysite.com/path/to/custom"}, "locationType": "UriLocation"}' --assemblyName hg19`,
     '$ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json',
   ]
 
@@ -56,7 +55,7 @@ export default class AddConnection extends JBrowseCommand {
     }),
     config: flags.string({
       char: 'c',
-      description: `Any extra config settings to add to connection in JSON object format, such as '{"uri":"url":"https://sample.com"}}'`,
+      description: `Any extra config settings to add to connection in JSON object format, such as '{"uri":"url":"https://sample.com"}, "locationType": "UriLocation"}'`,
     }),
     connectionId: flags.string({
       description: `Id for the connection that must be unique to JBrowse.  Defaults to 'connectionType-assemblyName-currentTime'`,
@@ -91,7 +90,7 @@ export default class AddConnection extends JBrowseCommand {
     const { args: runArgs, flags: runFlags } = this.parse(AddConnection)
 
     const output = runFlags.target || runFlags.out || '.'
-    const isDir = (await fsPromises.lstat(output)).isDirectory()
+    const isDir = fs.lstatSync(output).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
 
     const { connectionUrlOrPath: argsPath } = runArgs as {
@@ -141,11 +140,15 @@ export default class AddConnection extends JBrowseCommand {
     }
     if (connectionId) {
       this.debug(`Connection id is ${connectionId}`)
-    } else connectionId = `${type}-${assemblyName}-${Date.now()}`
+    } else {
+      connectionId = `${type}-${assemblyName}-${Date.now()}`
+    }
 
     if (name) {
       this.debug(`Name is: ${name}`)
-    } else name = connectionId
+    } else {
+      name = connectionId
+    }
 
     let configObj = {}
     if (config) {
@@ -165,11 +168,17 @@ export default class AddConnection extends JBrowseCommand {
 
     switch (type) {
       case 'UCSCTrackHubConnection': {
-        connectionConfig.hubTxtLocation = { uri: url }
+        connectionConfig.hubTxtLocation = {
+          uri: url,
+          locationType: 'UriLocation',
+        }
         break
       }
       case 'JBrowse1Connection': {
-        connectionConfig.dataDirLocation = { uri: url }
+        connectionConfig.dataDirLocation = {
+          uri: url,
+          locationType: 'UriLocation',
+        }
         break
       }
       default: {
@@ -202,7 +211,9 @@ export default class AddConnection extends JBrowseCommand {
           { exit: 150 },
         )
       }
-    } else configContents.connections.push(connectionConfig)
+    } else {
+      configContents.connections.push(connectionConfig)
+    }
 
     this.debug(`Writing configuration to file ${this.target}`)
     await this.writeJsonFile(this.target, configContents)
@@ -227,7 +238,9 @@ export default class AddConnection extends JBrowseCommand {
         if (check) {
           response = await fetch(locationUrl, { method: 'HEAD' })
         }
-        if (!response || response.ok) return locationUrl.href
+        if (!response || response.ok) {
+          return locationUrl.href
+        }
         this.error(`Response returned with code ${response.status}`)
       } catch (error) {
         // ignore
@@ -240,9 +253,15 @@ export default class AddConnection extends JBrowseCommand {
   }
 
   determineConnectionType(url: string, config: string | undefined) {
-    if (path.basename(url) === 'hub.txt') return 'UCSCTrackHubConnection'
-    if (url.includes('jbrowse/data')) return 'JBrowse1Connection'
-    if (config && this.isValidJSON(config)) return 'custom'
+    if (path.basename(url) === 'hub.txt') {
+      return 'UCSCTrackHubConnection'
+    }
+    if (url.includes('jbrowse/data')) {
+      return 'JBrowse1Connection'
+    }
+    if (config && this.isValidJSON(config)) {
+      return 'custom'
+    }
     return this.error(
       `Unable to determine a specific connection from URL given.\nPlease specify a type with --type.\nIf you want a custom type, please provide the config object with --config`,
     )

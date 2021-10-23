@@ -1,35 +1,29 @@
-import React from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   createCanvas,
   createImageBitmap,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { Instance } from 'mobx-state-tree'
-import ComparativeServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+import ComparativeServerSideRendererType, {
+  RenderArgsDeserialized as ComparativeRenderArgsDeserialized,
+} from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { Dotplot1DView } from '../DotplotView/model'
-import MyConfig from './configSchema'
 
 type Dim = Instance<typeof Dotplot1DView>
 
 const { parseCigar } = MismatchParser
 
-export interface DotplotRenderProps {
-  dataAdapter: BaseFeatureDataAdapter
-  signal?: AbortSignal
-  config: Instance<typeof MyConfig>
+export interface RenderArgsDeserialized
+  extends ComparativeRenderArgsDeserialized {
   height: number
   width: number
-  fontSize: number
   highResolutionScaling: number
-  pluginManager: PluginManager
   view: { hview: Dim; vview: Dim }
 }
 
 export default class DotplotRenderer extends ComparativeServerSideRendererType {
-  async makeImageData(props: DotplotRenderProps & { views: Dim[] }) {
+  async makeImageData(props: RenderArgsDeserialized & { views: Dim[] }) {
     const {
       highResolutionScaling: scale = 1,
       width,
@@ -47,17 +41,20 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const [hview, vview] = views
     const db1 = hview.dynamicBlocks.contentBlocks[0].offsetPx
     const db2 = vview.dynamicBlocks.contentBlocks[0].offsetPx
-    ;(hview.features || []).forEach(feature => {
-      const start = feature.get('start')
-      const end = feature.get('end')
+
+    hview.features?.forEach(feature => {
+      let start = feature.get('start')
+      let end = feature.get('end')
+      const strand = feature.get('strand') || 1
       const refName = feature.get('refName')
       const mate = feature.get('mate')
       const mateRef = mate.refName
-      // const identity = feature.get('numMatches') / feature.get('blockLen')
-      // ctx.fillStyle = `hsl(${identity * 150},50%,50%)`
       const color = readConfObject(config, 'color', { feature })
       ctx.fillStyle = color
       ctx.strokeStyle = color
+      if (strand === -1) {
+        ;[end, start] = [start, end]
+      }
       const b10 = hview.bpToPx({ refName, coord: start })
       const b20 = hview.bpToPx({ refName, coord: end })
       const e10 = vview.bpToPx({ refName: mateRef, coord: mate.start })
@@ -94,10 +91,10 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
               const prevY = currY
 
               if (op === 'M' || op === '=' || op === 'X') {
-                currX += val / hview.bpPerPx
+                currX += (val / hview.bpPerPx) * strand
                 currY += val / vview.bpPerPx
               } else if (op === 'D' || op === 'N') {
-                currX += val / hview.bpPerPx
+                currX += (val / hview.bpPerPx) * strand
               } else if (op === 'I') {
                 currY += val / vview.bpPerPx
               }
@@ -121,7 +118,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     return createImageBitmap(canvas)
   }
 
-  async render(renderProps: DotplotRenderProps) {
+  async render(renderProps: RenderArgsDeserialized) {
     const {
       width,
       height,
@@ -135,12 +132,11 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     })
     await Promise.all(
       realizedViews.map(async view => {
-        view.setFeatures(
-          await this.getFeatures({
-            ...renderProps,
-            regions: view.dynamicBlocks.contentBlocks,
-          }),
-        )
+        const feats = await this.getFeatures({
+          ...renderProps,
+          regions: view.dynamicBlocks.contentBlocks,
+        })
+        view.setFeatures(feats)
       }),
     )
     const imageData = await this.makeImageData({
@@ -148,14 +144,15 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       views: realizedViews,
     })
 
-    const element = React.createElement(
-      this.ReactComponent,
-      { ...renderProps, height, width, imageData },
-      null,
-    )
+    const results = await super.render({
+      ...renderProps,
+      height,
+      width,
+      imageData,
+    })
 
     return {
-      element,
+      ...results,
       imageData,
       height,
       width,

@@ -26,14 +26,11 @@ export default function (pluginManager) {
           )
             .then(rawResponse => rawResponse.json())
             .then(trackDb => {
-              const assemblyName = readConfObject(
-                self.configuration,
-                'assemblyName',
-              )
+              // eslint-disable-next-line no-underscore-dangle
+              const assemblyName = trackDb._source.assembly.name
               const session = getSession(self)
-              const assemblyConf = session.assemblies.find(
-                assembly => readConfObject(assembly, 'name') === assemblyName,
-              )
+              const assembly = session.assemblyManager.get(assemblyName)
+              const assemblyConf = assembly.configuration
               const sequenceAdapter = readConfObject(assemblyConf, [
                 'sequence',
                 'adapter',

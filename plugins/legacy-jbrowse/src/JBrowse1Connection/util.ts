@@ -1,6 +1,5 @@
 import getValue from 'get-value'
-import objectHash from 'object-hash'
-import { Track, Source, Config } from './types'
+import { Track, Source } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isTrack(arg: any): arg is Track {
@@ -15,13 +14,9 @@ export function isSource(arg: any): arg is Source {
 /**
  * updates a with values from b, recursively
  */
-export function deepUpdate(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  a: Record<string, any>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  b: Record<string, any>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Record<string, any> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Obj = Record<string, any>
+export function deepUpdate(a: Obj, b: Obj): Obj {
   for (const prop of Object.keys(b)) {
     if (
       prop in a &&
@@ -40,14 +35,6 @@ export function deepUpdate(
 }
 
 /**
- * Does a (deep) crc32 of any object.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function objectFingerprint(obj: Record<string, any>) {
-  return objectHash(obj)
-}
-
-/**
  * replace variables in a template string with values
  * @param template - String with variable names in curly brackets
  * e.g., `http://foo/{bar}?arg={baz.foo}`
@@ -56,24 +43,24 @@ export function objectFingerprint(obj: Record<string, any>) {
  * @returns the template string with variables in fillWith replaced
  * e.g., 'htp://foo/someurl?arg=valueforbaz'
  */
-export function fillTemplate(
-  template: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  fillWith: Record<string, any>,
-): string {
+export function fillTemplate(template: string, fillWith: Obj): string {
   return template.replace(
     /\{([\w\s.]+)\}/g,
     (match, varName: string): string => {
       varName = varName.replace(/\s+/g, '') // remove all whitespace
       const fill = getValue(fillWith, varName)
       if (fill !== undefined) {
-        if (typeof fill === 'function') return fill(varName)
+        if (typeof fill === 'function') {
+          return fill(varName)
+        }
         return fill
       }
       if (fillWith.callback) {
         // @ts-ignore
         const v = fillWith.callback.call(this, varName)
-        if (v !== undefined) return v
+        if (v !== undefined) {
+          return v
+        }
       }
       return match
     },
@@ -147,18 +134,10 @@ export function clone(src: any): any {
  * to the Javascript assignment operator.
  * @returns dest, as modified
  */
-function mixin(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dest: Record<string, any>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  source: Record<string, any>,
-  copyFunc: Function,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Record<string, any> {
+function mixin(dest: Obj, source: Obj, copyFunc: Function): Obj {
   let name
   let s
   const empty = {}
-  // eslint-disable-next-line guard-for-in
   for (name in source) {
     // the (!(name in empty) || empty[name] !== s) condition avoids copying
     // properties in "source" inherited from Object.prototype.	 For example,
@@ -175,41 +154,4 @@ function mixin(
   }
 
   return dest // Object
-}
-
-export function evalHooks(conf: Config): Config {
-  if (conf) {
-    for (const x of Object.keys(conf)) {
-      // @ts-ignore
-      if (typeof conf[x] === 'object')
-        // recur
-        // @ts-ignore
-        conf[x] = evalHooks(conf[x])
-      // @ts-ignore
-      else if (typeof conf[x] === 'string') {
-        // compile
-        // @ts-ignore
-        const spec = conf[x]
-        if (/^\s*function\s*\(/.test(spec)) {
-          // @ts-ignore
-          conf[x] = evalHook(spec)
-        }
-      }
-    }
-  }
-  return conf
-}
-
-function evalHook(...args: string[]): Function {
-  // can't bind arguments because the closure compiler
-  // renames variables, and we need to assign in the eval
-  if (typeof args[0] !== 'string') return args[0]
-  try {
-    // eslint-disable-next-line no-eval
-    eval(`arguments[0]=${args[0]};`)
-  } catch (e) {
-    console.error(`${e} parsing config callback '${args[0]}'`)
-  }
-  // @ts-ignore
-  return args[0]
 }

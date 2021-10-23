@@ -19,9 +19,10 @@ function ProcessedTranscript(props) {
 function makeSubpartsFilter(confKey = 'subParts', config) {
   let filter = readConfObject(config, confKey)
 
-  if (typeof filter == 'string')
+  if (typeof filter == 'string') {
     // convert to array
     filter = filter.split(/\s*,\s*/)
+  }
 
   if (Array.isArray(filter)) {
     const typeNames = filter.map(typeName => typeName.toLowerCase())
@@ -75,8 +76,9 @@ function makeUTRs(parent, subs) {
   }
 
   // bail if we don't have exons and CDS
-  if (!(exons.length && codeStart < Infinity && codeEnd > -Infinity))
+  if (!(exons.length && codeStart < Infinity && codeEnd > -Infinity)) {
     return subparts
+  }
 
   // make sure the exons are sorted by coord
   exons.sort((a, b) => a.get('start') - b.get('start'))
@@ -86,7 +88,7 @@ function makeUTRs(parent, subs) {
   // make the left-hand UTRs
   let start
   let end
-  if (!haveLeftUTR)
+  if (!haveLeftUTR) {
     for (let i = 0; i < exons.length; i++) {
       start = exons[i].get('start')
       if (start >= codeStart) {
@@ -102,9 +104,10 @@ function makeUTRs(parent, subs) {
         }),
       )
     }
+  }
 
   // make the right-hand UTRs
-  if (!haveRightUTR)
+  if (!haveRightUTR) {
     for (let i = exons.length - 1; i >= 0; i--) {
       end = exons[i].get('end')
       if (end <= codeEnd) {
@@ -121,6 +124,7 @@ function makeUTRs(parent, subs) {
         }),
       )
     }
+  }
 
   return subparts
 }

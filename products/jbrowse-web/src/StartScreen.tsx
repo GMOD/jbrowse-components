@@ -1,30 +1,32 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import Button from '@material-ui/core/Button'
-import CircularProgress from '@material-ui/core/CircularProgress'
-import Container from '@material-ui/core/Container'
-import Dialog from '@material-ui/core/Dialog'
-import DialogActions from '@material-ui/core/DialogActions'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogContentText from '@material-ui/core/DialogContentText'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import Grid from '@material-ui/core/Grid'
-import List from '@material-ui/core/List'
+import React, { useEffect, useState } from 'react'
+import {
+  Button,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Grid,
+  IconButton,
+  List,
+  ListItemIcon,
+  ListSubheader,
+  Menu,
+  MenuItem,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 import WarningIcon from '@material-ui/icons/Warning'
 import SettingsIcon from '@material-ui/icons/Settings'
-import IconButton from '@material-ui/core/IconButton'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import ListSubheader from '@material-ui/core/ListSubheader'
-import Menu from '@material-ui/core/Menu'
-import MenuItem from '@material-ui/core/MenuItem'
-import { makeStyles } from '@material-ui/core/styles'
-import Typography from '@material-ui/core/Typography'
-import { PropTypes as MobxPropTypes } from 'mobx-react'
-import React, { useEffect, useState } from 'react'
+
 import { LogoFull, FactoryResetDialog } from '@jbrowse/core/ui'
 import {
-  ProceedEmptySession,
-  AddLinearGenomeViewToSession,
-  AddSVInspectorToSession,
+  NewEmptySession,
+  NewLinearGenomeViewSession,
+  NewSVInspectorSession,
 } from '@jbrowse/core/ui/NewSessionCards'
 import RecentSessionCard from './RecentSessionCard'
 
@@ -45,11 +47,11 @@ const useStyles = makeStyles(theme => ({
 const DeleteSessionDialog = ({
   sessionToDelete,
   onClose,
-  root,
+  rootModel,
 }: {
   sessionToDelete?: string
-  onClose: (arg0: boolean) => void
-  root: any
+  onClose: (_arg0: boolean) => void
+  rootModel: any
 }) => {
   const [deleteSession, setDeleteSession] = useState(false)
   useEffect(() => {
@@ -57,7 +59,7 @@ const DeleteSessionDialog = ({
       try {
         if (deleteSession) {
           setDeleteSession(false)
-          root.removeSavedSession({ name: sessionToDelete })
+          rootModel.removeSavedSession({ name: sessionToDelete })
           onClose(true)
         }
       } catch (e) {
@@ -66,7 +68,7 @@ const DeleteSessionDialog = ({
         })
       }
     })()
-  }, [deleteSession, onClose, root, sessionToDelete])
+  }, [deleteSession, onClose, rootModel, sessionToDelete])
 
   return (
     <Dialog open={!!sessionToDelete} onClose={() => onClose(false)}>
@@ -83,9 +85,7 @@ const DeleteSessionDialog = ({
           Cancel
         </Button>
         <Button
-          onClick={() => {
-            setDeleteSession(true)
-          }}
+          onClick={() => setDeleteSession(true)}
           color="primary"
           variant="contained"
           autoFocus
@@ -98,10 +98,10 @@ const DeleteSessionDialog = ({
 }
 
 export default function StartScreen({
-  root,
+  rootModel,
   onFactoryReset,
 }: {
-  root: any
+  rootModel: any
   onFactoryReset: Function
 }) {
   const classes = useStyles()
@@ -118,7 +118,7 @@ export default function StartScreen({
     ;(async () => {
       try {
         if (sessionToLoad) {
-          root.activateSession(sessionToLoad)
+          rootModel.activateSession(sessionToLoad)
         }
       } catch (e) {
         setSessions(() => {
@@ -126,14 +126,14 @@ export default function StartScreen({
         })
       }
     })()
-  }, [root, sessionToLoad])
+  }, [rootModel, sessionToLoad])
 
   useEffect(() => {
     ;(async () => {
       try {
         if (updateSessionsList) {
           setUpdateSessionsList(false)
-          const savedRootSessions = root.savedSessions.map(
+          const savedRootSessions = rootModel.savedSessions.map(
             (rootSavedSession: any) => {
               return JSON.parse(JSON.stringify(rootSavedSession))?.name
             },
@@ -146,9 +146,9 @@ export default function StartScreen({
         })
       }
     })()
-  }, [root.savedSessions, updateSessionsList])
+  }, [rootModel.savedSessions, updateSessionsList])
 
-  if (!sessions)
+  if (!sessions) {
     return (
       <CircularProgress
         style={{
@@ -161,6 +161,7 @@ export default function StartScreen({
         size={50}
       />
     )
+  }
 
   return (
     <>
@@ -172,7 +173,7 @@ export default function StartScreen({
         }}
       />
       <DeleteSessionDialog
-        root={root}
+        rootModel={rootModel}
         sessionToDelete={sessionToDelete}
         onClose={update => {
           setSessionToDelete(undefined)
@@ -195,14 +196,14 @@ export default function StartScreen({
             Start a new session
           </Typography>
           <Grid container spacing={4}>
-            <Grid item data-testid="emptySession">
-              <ProceedEmptySession root={root} />
+            <Grid item>
+              <NewEmptySession rootModel={rootModel} />
             </Grid>
-            <Grid item data-testid="emptyLGVSession">
-              <AddLinearGenomeViewToSession root={root} />
+            <Grid item>
+              <NewLinearGenomeViewSession rootModel={rootModel} />
             </Grid>
-            <Grid item data-testid="emptySVSession">
-              <AddSVInspectorToSession root={root} />
+            <Grid item>
+              <NewSVInspectorSession rootModel={rootModel} />
             </Grid>
           </Grid>
         </div>
@@ -216,26 +217,19 @@ export default function StartScreen({
               maxHeight: 200,
             }}
           >
-            {sessionNames
-              ? sessionNames.map((sessionName: string) => (
-                  <RecentSessionCard
-                    key={sessionName}
-                    sessionName={sessionName}
-                    onClick={() => {
-                      setSessionToLoad(sessionName)
-                    }}
-                    onDelete={() => {
-                      setSessionToDelete(sessionName)
-                    }}
-                  />
-                ))
-              : null}
+            {sessionNames?.map((sessionName: string) => (
+              <RecentSessionCard
+                key={sessionName}
+                sessionName={sessionName}
+                onClick={() => setSessionToLoad(sessionName)}
+                onDelete={() => setSessionToDelete(sessionName)}
+              />
+            ))}
           </List>
         </div>
       </Container>
 
       <Menu
-        id="simple-menu"
         anchorEl={menuAnchorEl}
         keepMounted
         open={Boolean(menuAnchorEl)}
@@ -258,8 +252,4 @@ export default function StartScreen({
       </Menu>
     </>
   )
-}
-
-StartScreen.propTypes = {
-  root: MobxPropTypes.objectOrObservableObject.isRequired,
 }

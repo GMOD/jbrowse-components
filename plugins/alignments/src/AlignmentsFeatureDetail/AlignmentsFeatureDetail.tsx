@@ -1,14 +1,30 @@
-import { Typography, Link, Paper } from '@material-ui/core'
+import React, { useState } from 'react'
+import {
+  Typography,
+  Link,
+  Paper,
+  Checkbox,
+  FormControlLabel,
+  FormGroup,
+  makeStyles,
+} from '@material-ui/core'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
-import React, { useState } from 'react'
 import copy from 'copy-to-clipboard'
 import {
   FeatureDetails,
   BaseCard,
-  useStyles,
+  SimpleValue,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { parseCigar } from '../BamAdapter/MismatchParser'
+
+const useStyles = makeStyles(() => ({
+  compact: {
+    paddingRight: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
+}))
 
 const omit = ['clipPos', 'flags']
 
@@ -33,21 +49,28 @@ function AlignmentFlags(props: { feature: any }) {
   ]
   return (
     <BaseCard {...props} title="Flags">
-      <div style={{ display: 'flex' }}>
-        <div className={classes.fieldName}>Flag</div>
-        <div className={classes.fieldValue}>{flags}</div>
-      </div>
-      {flagNames.map((name, index) => {
-        // eslint-disable-next-line no-bitwise
-        const val = flags & (1 << index)
-        const key = `${name}_${val}`
-        return (
-          <div key={key}>
-            <input type="checkbox" checked={Boolean(val)} id={key} readOnly />
-            <label htmlFor={key}>{name}</label>
-          </div>
-        )
-      })}
+      <SimpleValue name={'Flag'} value={flags} />
+
+      <FormGroup>
+        {flagNames.map((name, index) => {
+          const val = flags & (1 << index)
+          const key = `${name}_${val}`
+          return (
+            <FormControlLabel
+              key={key}
+              control={
+                <Checkbox
+                  className={classes.compact}
+                  checked={Boolean(val)}
+                  name={name}
+                  readOnly
+                />
+              }
+              label={name}
+            />
+          )
+        })}
+      </FormGroup>
     </BaseCard>
   )
 }
@@ -105,7 +128,9 @@ function SupplementaryAlignments(props: { tag: string; model: any }) {
             const locString = `${saRef}:${Math.max(1, start - extra)}-${
               end + extra
             }`
-            const displayString = `${saRef}:${start}-${end} (${saStrand})`
+            const displayStart = start.toLocaleString('en-US')
+            const displayEnd = end.toLocaleString('en-US')
+            const displayString = `${saRef}:${displayStart}-${displayEnd} (${saStrand})`
             return (
               <li key={`${locString}-${index}`}>
                 <Link

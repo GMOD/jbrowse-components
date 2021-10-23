@@ -4,10 +4,16 @@ import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { ObservableCreate } from '../util/rxjs'
 import { checkAbortSignal, observeAbortSignal } from '../util'
 import { Feature } from '../util/simpleFeature'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
+import {
+  AnyConfigurationModel,
+  ConfigurationSchema,
+} from '../configuration/configurationSchema'
 import { getSubAdapterType } from './dataAdapterCache'
 import { Region, NoAssemblyRegion } from '../util/types'
 import { blankStats, rectifyStats, scoresToStats } from '../util/stats'
+import BaseResult from '../TextSearch/BaseResults'
+import idMaker from '../util/idMaker'
+import PluginManager from '../PluginManager'
 
 export interface BaseOptions {
   signal?: AbortSignal
@@ -18,10 +24,23 @@ export interface BaseOptions {
   [key: string]: unknown
 }
 
-export interface AdapterConstructor {
+export type SearchType = 'full' | 'prefix' | 'exact'
+
+export interface BaseArgs {
+  searchType?: SearchType
+  queryString: string
+  signal?: AbortSignal
+  limit?: number
+  pageNumber?: number
+}
+// see
+// https://www.typescriptlang.org/docs/handbook/2/classes.html#abstract-construct-signatures
+// for why this is the abstract construct signature
+export interface AnyAdapter {
   new (
     config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager | undefined,
   ): AnyDataAdapter
 }
 
@@ -29,39 +48,34 @@ export type AnyDataAdapter =
   | BaseAdapter
   | BaseFeatureDataAdapter
   | BaseRefNameAliasAdapter
+  | BaseTextSearchAdapter
   | RegionsAdapter
   | SequenceAdapter
-
-// generates a short "id fingerprint" from the config passed to the base
-// feature adapter by recursively enumerating props up to an ID of length 100
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function idMaker(args: any, id = '') {
-  const keys = Object.keys(args)
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i]
-    if (id.length > 100) {
-      break
-    }
-    if (typeof args[key] === 'object') {
-      id += idMaker(args[key], id)
-    } else {
-      id += `${key}-${args[key]};`
-    }
-  }
-  return id.slice(0, 100)
-}
 
 export abstract class BaseAdapter {
   public id: string
 
   static capabilities = [] as string[]
 
-  constructor(args: unknown = {}) {
+  config: AnyConfigurationModel
+
+  getSubAdapter?: getSubAdapterType
+
+  pluginManager: PluginManager | undefined
+
+  constructor(
+    config: AnyConfigurationModel = ConfigurationSchema('empty', {}).create(),
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    this.config = config
+    this.getSubAdapter = getSubAdapter
+    this.pluginManager = pluginManager
     // note: we use switch on jest here for more simple feature IDs
     // in test environment
     if (typeof jest === 'undefined') {
-      const data = isStateTreeNode(args) ? getSnapshot(args) : args
-      this.id = idMaker(data)
+      const data = isStateTreeNode(config) ? getSnapshot(config) : config
+      this.id = `${idMaker(data)}`
     } else {
       this.id = 'test'
     }
@@ -87,7 +101,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * the array will be empty
    * @param opts - Feature adapter options
    */
-  public abstract async getRefNames(opts?: BaseOptions): Promise<string[]>
+  public abstract getRefNames(opts?: BaseOptions): Promise<string[]>
   // public abstract async getRefNames(opts?: BaseOptions): Promise<string[]>
   //   await this.setup()
   //   const { refNames } = this.metadata
@@ -205,7 +219,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     return refNames.includes(refName)
   }
 
-  public getRegionStats(region: Region, opts?: BaseOptions) {
+  public async getRegionStats(region: Region, opts?: BaseOptions) {
     const feats = this.getFeatures(region, opts)
     return scoresToStats(region, feats)
   }
@@ -283,4 +297,12 @@ export function isRefNameAliasAdapter(
   thing: object,
 ): thing is BaseRefNameAliasAdapter {
   return 'getRefNameAliases' in thing
+}
+export interface BaseTextSearchAdapter extends BaseAdapter {
+  searchIndex(args: BaseArgs): Promise<BaseResult[]>
+}
+export function isTextSearchAdapter(
+  thing: AnyDataAdapter,
+): thing is BaseTextSearchAdapter {
+  return 'searchIndex' in thing
 }

@@ -7,7 +7,7 @@ export default ({ jbrequire }) => {
   const { rIC } = jbrequire('@jbrowse/core/util')
 
   function RpcRenderedSvgGroup({ model }) {
-    const { data, html, filled, renderProps, renderingComponent } = model
+    const { data, html, filled, renderingComponent } = model
 
     const ssrContainerNode = useRef(null)
 
@@ -19,20 +19,27 @@ export default ({ jbrequire }) => {
             domNode.style.display = 'none'
             unmountComponentAtNode(domNode)
           }
-          domNode.style.display = 'inline'
+
+          // setting outline:none fixes react "focusable" element issue. see
+          // https://github.com/GMOD/jbrowse-components/issues/2160
+          domNode.style.outline = 'none'
           domNode.innerHTML = html
           // use requestIdleCallback to defer main-thread rendering
           // and hydration for when we have some free time. helps
           // keep the framerate up.
           rIC(() => {
-            if (!isAlive(model)) return
+            if (!isAlive(model)) {
+              return
+            }
             const mainThreadRendering = React.createElement(
               renderingComponent,
-              { ...data, ...renderProps },
+              { ...data, ...model.renderProps() },
               null,
             )
             rIC(() => {
-              if (!isAlive(model)) return
+              if (!isAlive(model)) {
+                return
+              }
               hydrate(mainThreadRendering, domNode)
             })
           })

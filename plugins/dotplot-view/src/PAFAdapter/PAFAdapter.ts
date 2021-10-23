@@ -17,6 +17,8 @@ import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import MyConfigSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 interface PafRecord {
   records: NoAssemblyRegion[]
@@ -24,7 +26,7 @@ interface PafRecord {
     blockLen: number
     mappingQual: number
     numMatches: number
-    strand: string
+    strand: number
   }
 }
 
@@ -42,11 +44,15 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  public constructor(config: Instance<typeof MyConfigSchema>) {
-    super(config)
+  public constructor(
+    config: Instance<typeof MyConfigSchema>,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    super(config, getSubAdapter, pluginManager)
     const pafLocation = readConfObject(config, 'pafLocation') as FileLocation
     const assemblyNames = readConfObject(config, 'assemblyNames') as string[]
-    this.pafLocation = openLocation(pafLocation)
+    this.pafLocation = openLocation(pafLocation, this.pluginManager)
     this.assemblyNames = assemblyNames
   }
 
@@ -60,16 +66,12 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       if (line.length) {
         const [
           chr1,
-          // @ts-ignore
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          queryRefSeqLen,
+          ,
           start1,
           end1,
           strand,
           chr2,
-          // @ts-ignore
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          targetRefSeqLen,
+          ,
           start2,
           end2,
           numMatches,
@@ -95,7 +97,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
           extra: {
             numMatches: +numMatches,
             blockLen: +blockLen,
-            strand,
+            strand: strand === '-' ? -1 : 1,
             mappingQual: +mappingQual,
             ...rest,
           },

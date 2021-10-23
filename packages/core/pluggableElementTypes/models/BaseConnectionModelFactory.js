@@ -16,9 +16,13 @@ export default pluginManager => {
         const length = self.tracks.push(trackConf)
         return self.tracks[length - 1]
       },
+      addTrackConfs(trackConfs) {
+        const length = self.tracks.push(...trackConfs)
+        return self.tracks.slice(length - 1 - trackConfs.length, length - 1)
+      },
       setTrackConfs(trackConfs) {
         self.tracks = trackConfs
-        return self.track
+        return self.tracks
       },
       clear() {},
     }))

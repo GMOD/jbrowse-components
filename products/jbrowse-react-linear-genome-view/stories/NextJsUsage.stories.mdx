@@ -50,11 +50,7 @@ Here is an example of how to dynamically load a component using the JB2 componen
 import {
   createViewState,
   createJBrowseTheme,
-  JBrowseLinearGenomeView,
-  ThemeProvider,
 } from '@jbrowse/react-linear-genome-view'
-
-const theme = createJBrowseTheme()
 
 const assembly = {
   // configuration
@@ -75,11 +71,7 @@ function View() {
     location: '10:29,838,737..29,838,819',
     defaultSession,
   })
-  return (
-    <ThemeProvider theme={theme}>
-      <JBrowseLinearGenomeView viewState={state} />
-    </ThemeProvider>
-  )
+  return <JBrowseLinearGenomeView viewState={state} />
 }
 
 export default View

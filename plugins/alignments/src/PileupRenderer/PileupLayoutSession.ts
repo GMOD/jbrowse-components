@@ -1,4 +1,4 @@
-import deepEqual from 'deep-equal'
+import deepEqual from 'fast-deep-equal'
 import { LayoutSession } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'

@@ -1,15 +1,13 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
+import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 function PileupConfigFactory(pluginManager: PluginManager) {
-  const PileupRendererConfigSchema = pluginManager.getRendererType(
-    'PileupRenderer',
-  ).configSchema
-  const SvgFeatureRendererConfigSchema = pluginManager.getRendererType(
-    'SvgFeatureRenderer',
-  ).configSchema
+  const PileupRendererConfigSchema =
+    pluginManager.getRendererType('PileupRenderer').configSchema
+  const SvgFeatureRendererConfigSchema =
+    pluginManager.getRendererType('SvgFeatureRenderer').configSchema
 
   // modify config schema to take in a sub coverage display
   return ConfigurationSchema(
@@ -24,6 +22,7 @@ function PileupConfigFactory(pluginManager: PluginManager) {
         PileupRenderer: PileupRendererConfigSchema,
         SvgFeatureRenderer: SvgFeatureRendererConfigSchema,
       }),
+      renderer: '',
       maxDisplayedBpPerPx: {
         type: 'number',
         description: 'maximum bpPerPx that is displayed in the view',
@@ -43,7 +42,10 @@ function PileupConfigFactory(pluginManager: PluginManager) {
         defaultValue: 'normal',
       },
     },
-    { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },
+    {
+      baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager),
+      explicitlyTyped: true,
+    },
   )
 }
 

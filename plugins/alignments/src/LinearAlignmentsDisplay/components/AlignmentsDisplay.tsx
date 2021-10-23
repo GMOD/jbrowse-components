@@ -1,10 +1,10 @@
+import React from 'react'
 import { observer } from 'mobx-react'
 import { getConf } from '@jbrowse/core/configuration'
-import React from 'react'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { AlignmentsDisplayModel } from '../models/model'
 
-export default observer(({ model }: { model: AlignmentsDisplayModel }) => {
+function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
   const { PileupDisplay, SNPCoverageDisplay, showPileup, showCoverage } = model
   return (
     <div
@@ -45,4 +45,6 @@ export default observer(({ model }: { model: AlignmentsDisplayModel }) => {
       </div>
     </div>
   )
-})
+}
+
+export default observer(AlignmentsDisplay)

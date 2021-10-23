@@ -1,3 +1,4 @@
+import React from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
 import { Feature } from '@jbrowse/core/util/simpleFeature'

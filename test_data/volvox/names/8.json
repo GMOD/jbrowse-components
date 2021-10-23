@@ -1,0 +1,132 @@
+{
+  "rs481742": { "exact": [], "prefix": ["rs4817420"] },
+  "1_": { "prefix": ["1_TssA"], "exact": [] },
+  "rs10432": { "prefix": ["rs10432782"], "exact": [] },
+  "rs499855": { "exact": [], "prefix": ["rs4998557"] },
+  "rs78": { "prefix": ["rs78694163"], "exact": [] },
+  "cds-apple2": {
+    "exact": [
+      ["cds-Apple2", 13, "Apple2", "ctgA", 12999, 17200],
+      ["cds-Apple2", 14, "Apple2", "ctgA", 12999, 17200]
+    ],
+    "prefix": []
+  },
+  "2_tssaflnk": {
+    "prefix": [],
+    "exact": [
+      ["2_TssAFlnk", 1, "2_TssAFlnk", "ctgA", 17880, 17920],
+      ["2_TssAFlnk", 1, "2_TssAFlnk", "ctgA", 18260, 18280],
+      ["2_TssAFlnk", 1, "2_TssAFlnk", "ctgA", 18300, 18320]
+    ]
+  },
+  "1_tssa": {
+    "prefix": [],
+    "exact": [
+      ["1_TssA", 1, "1_TssA", "ctgA", 11960, 12040],
+      ["1_TssA", 1, "1_TssA", "ctgA", 17920, 18000],
+      ["1_TssA", 1, "1_TssA", "ctgA", 18060, 18260],
+      ["1_TssA", 1, "1_TssA", "ctgA", 18280, 18300],
+      ["1_TssA", 1, "1_TssA", "ctgA", 42500, 42540],
+      ["1_TssA", 1, "1_TssA", "ctgA", 45960, 46000]
+    ]
+  },
+  "rs77319474": {
+    "prefix": [],
+    "exact": [["rs77319474", 16, "rs77319474", "contigA", 10216, 10217]]
+  },
+  "rs178844": { "exact": [], "prefix": ["rs17884462"] },
+  "m01": {
+    "prefix": [],
+    "exact": [
+      ["m01", 6, "m01", "ctgA", 48252, 48366],
+      ["m01", 13, "m01", "ctgA", 48252, 48366],
+      ["m01", 14, "m01", "ctgA", 48252, 48366]
+    ]
+  },
+  "seg10": {
+    "prefix": [],
+    "exact": [
+      ["seg10", 10, "seg10", "ctgA", 29770, 29942],
+      ["seg10", 10, "seg10", "ctgA", 30041, 30340],
+      ["seg10", 10, "seg10", "ctgA", 30809, 31307],
+      ["seg10", 10, "seg10", "ctgA", 31760, 31984],
+      ["seg10", 10, "seg10", "ctgA", 32373, 32937],
+      ["seg10", 13, "seg10", "ctgA", 29770, 29942],
+      ["seg10", 13, "seg10", "ctgA", 30041, 30340],
+      ["seg10", 13, "seg10", "ctgA", 30809, 31307],
+      ["seg10", 13, "seg10", "ctgA", 31760, 31984],
+      ["seg10", 13, "seg10", "ctgA", 32373, 32937],
+      ["seg10", 14, "seg10", "ctgA", 29770, 29942],
+      ["seg10", 14, "seg10", "ctgA", 30041, 30340],
+      ["seg10", 14, "seg10", "ctgA", 30809, 31307],
+      ["seg10", 14, "seg10", "ctgA", 31760, 31984],
+      ["seg10", 14, "seg10", "ctgA", 32373, 32937]
+    ]
+  },
+  "rs11730": { "exact": [], "prefix": ["rs117304270"] },
+  "4": { "exact": [], "prefix": ["4_Tx"] },
+  "2_tssaf": { "exact": [], "prefix": ["2_TssAFlnk"] },
+  "m": {
+    "exact": [],
+    "prefix": [
+      "m11",
+      "m05",
+      "m14",
+      "m03",
+      "m08",
+      "m13",
+      "m07",
+      "m12",
+      "m02",
+      "m10",
+      "m06",
+      "m04",
+      "m15",
+      "m09",
+      "m01",
+      "Match1",
+      "Match3",
+      "Match5",
+      "Match2",
+      "Match4",
+      { "hitLimit": 1, "name": "too many matches" }
+    ]
+  },
+  "14": { "exact": [], "prefix": ["14_ReprPCWk"] },
+  "rs77112": { "prefix": ["rs77112488"], "exact": [] },
+  "f11": {
+    "prefix": [],
+    "exact": [
+      ["f11", 4, "f11", "ctgA", 46989, 48410],
+      ["f11", 13, "f11", "ctgA", 46989, 48410],
+      ["f11", 14, "f11", "ctgA", 46989, 48410]
+    ]
+  },
+  "ge": { "exact": [], "prefix": ["Gene:hga", "Gene:hgb"] },
+  "rs76734": { "exact": [], "prefix": ["rs76734991"] },
+  "rs22346": { "exact": [], "prefix": ["rs2234694"] },
+  "2_tssafl": { "prefix": ["2_TssAFlnk"], "exact": [] },
+  "rs4816405": {
+    "prefix": [],
+    "exact": [["rs4816405", 16, "rs4816405", "contigA", 4178, 4179]]
+  },
+  "rs9967": { "exact": [], "prefix": ["rs9967983"] },
+  "2_tssafln": { "exact": [], "prefix": ["2_TssAFlnk"] },
+  "rs17880044": {
+    "exact": [["rs17880044", 16, "rs17880044", "contigA", 11773, 11774]],
+    "prefix": []
+  },
+  "rs1043278": { "prefix": ["rs10432782"], "exact": [] },
+  "rs7869416": { "prefix": ["rs78694163"], "exact": [] },
+  "rs1788079": { "exact": [], "prefix": ["rs17880795"] },
+  "rs17883": {
+    "prefix": [
+      "rs17883296",
+      "rs17883270",
+      "rs17883461",
+      "rs17883998",
+      "rs17883234"
+    ],
+    "exact": []
+  }
+}

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any,react/no-danger */
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
@@ -9,6 +9,7 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import { Region } from '@jbrowse/core/util/types'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { Feature, isFeature } from '@jbrowse/core/util/simpleFeature'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
@@ -16,12 +17,12 @@ import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import { autorun } from 'mobx'
-import { addDisposer, Instance, isAlive, types, getEnv } from 'mobx-state-tree'
-import RBush from 'rbush'
+import { addDisposer, Instance, isAlive, types } from 'mobx-state-tree'
 import React from 'react'
 import { Tooltip } from '../components/BaseLinearDisplay'
-import BlockState from './serverSideRenderedBlock'
-import { LinearGenomeViewModel } from '../../LinearGenomeView'
+import BlockState, { renderBlockData } from './serverSideRenderedBlock'
+
+import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
 
 export interface Layout {
   minX: number
@@ -55,8 +56,20 @@ export const BaseLinearDisplay = types
     message: '',
     featureIdUnderMouse: undefined as undefined | string,
     contextMenuFeature: undefined as undefined | Feature,
-    additionalContextMenuItemCallbacks: [] as Function[],
     scrollTop: 0,
+  }))
+  .views(self => ({
+    get blockType(): 'staticBlocks' | 'dynamicBlocks' {
+      return 'staticBlocks'
+    },
+    get blockDefinitions() {
+      const { blockType } = this
+      const view = getContainingView(self) as LinearGenomeViewModel
+      if (!view.initialized) {
+        throw new Error('view not initialized yet')
+      }
+      return view[blockType]
+    },
   }))
   .views(self => ({
     /**
@@ -64,9 +77,6 @@ export const BaseLinearDisplay = types
      */
     get maxViewBpPerPx() {
       return self.userBpPerPxLimit || getConf(self, 'maxDisplayedBpPerPx')
-    },
-    get blockType(): 'staticBlocks' | 'dynamicBlocks' {
-      return 'staticBlocks'
     },
 
     /**
@@ -78,16 +88,7 @@ export const BaseLinearDisplay = types
     },
 
     get TooltipComponent(): React.FC<any> {
-      return (Tooltip as unknown) as React.FC
-    },
-
-    get blockDefinitions() {
-      const { blockType } = this
-      const view = getContainingView(self) as LinearGenomeViewModel
-      if (!view.initialized) {
-        throw new Error('view not initialized yet')
-      }
-      return view[blockType]
+      return Tooltip as unknown as React.FC
     },
 
     /**
@@ -96,8 +97,7 @@ export const BaseLinearDisplay = types
      */
     get selectedFeatureId() {
       if (isAlive(self)) {
-        const session = getSession(self)
-        const { selection } = session
+        const { selection } = getSession(self)
         // does it quack like a feature?
         if (isFeature(selection)) {
           return selection.id()
@@ -114,8 +114,6 @@ export const BaseLinearDisplay = types
     },
   }))
   .views(self => {
-    let stale = false // used to make rtree refresh, the mobx reactivity fails for some reason
-    let rbush: Record<string, RBush<Layout>> = {}
     return {
       /**
        * a CompositeMap of `featureId -> feature obj` that
@@ -124,10 +122,10 @@ export const BaseLinearDisplay = types
       get features() {
         const featureMaps = []
         for (const block of self.blockState.values()) {
-          if (block.data && block.data.features)
-            featureMaps.push(block.data.features)
+          if (block && block.features) {
+            featureMaps.push(block.features)
+          }
         }
-        stale = true
         return new CompositeMap<string, Feature>(featureMaps)
       },
 
@@ -137,67 +135,24 @@ export const BaseLinearDisplay = types
           : undefined
       },
 
-      /**
-       * returns per-base block layouts as the data structure
-       * `Map<blockKey, Map<featureId, LayoutRecord>>`
-       *
-       * this per-block is needed to avoid cross-contamination of
-       * layouts across blocks especially when building the rtree
-       */
-      get blockLayoutFeatures() {
-        const layoutMaps = new Map<string, Map<string, LayoutRecord>>()
-        for (const block of self.blockState.values()) {
-          if (block.data && block.data.layout && block.data.layout.rectangles) {
-            layoutMaps.set(block.key, block.data.layout.rectangles)
-          }
-        }
-        stale = true
-        return layoutMaps
-      },
-      /**
-       * a CompositeMap of `featureId -> feature obj` that
-       * just looks in all the block data for that feature
-       *
-       * when you are not using the rtree you can use this
-       * method because it still provides a stable reference
-       * of a featureId to a layout record (when using the
-       * rtree, you cross contaminate the coordinates)
-       */
-      get layoutFeatures() {
-        const layoutMaps = []
-        for (const block of self.blockState.values()) {
-          if (block.data && block.data.layout && block.data.layout.rectangles) {
-            layoutMaps.push(block.data.layout.rectangles)
-          }
-        }
-        stale = true // make rtree refresh
-        return new CompositeMap<string, LayoutRecord>(layoutMaps)
+      getFeatureOverlapping(blockKey: string, x: number, y: number) {
+        return self.blockState.get(blockKey)?.layout?.getByCoord(x, y)
       },
 
-      get rtree() {
-        if (stale) {
-          rbush = {} as Record<string, RBush<Layout>>
-          for (const [blockKey, layoutFeatures] of this.blockLayoutFeatures) {
-            rbush[blockKey] = new RBush()
-            const r = rbush[blockKey]
-            for (const [key, layout] of layoutFeatures) {
-              r.insert({
-                minX: layout[0],
-                minY: layout[1],
-                maxX: layout[2],
-                maxY: layout[3],
-                name: key,
-              })
-            }
-          }
-          stale = false
-        }
-        return rbush
+      getFeatureByID(blockKey: string, id: string): LayoutRecord | undefined {
+        return self.blockState.get(blockKey)?.layout?.getByID(id)
       },
-      getFeatureOverlapping(blockKey: string, x: number, y: number) {
-        const rect = { minX: x, minY: y, maxX: x + 1, maxY: y + 1 }
-        const rtree = this.rtree[blockKey]
-        return rtree && rtree.collides(rect) ? rtree.search(rect) : []
+
+      // if block key is not supplied, can look at all blocks
+      searchFeatureByID(id: string): LayoutRecord | undefined {
+        let ret
+        self.blockState.forEach(block => {
+          const val = block?.layout?.getByID(id)
+          if (val) {
+            ret = val
+          }
+        })
+        return ret
       },
     }
   })
@@ -217,7 +172,9 @@ export const BaseLinearDisplay = types
           })
           // delete any blocks we need go delete
           self.blockState.forEach((_, key) => {
-            if (!blocksPresent[key]) this.deleteBlock(key)
+            if (!blocksPresent[key]) {
+              this.deleteBlock(key)
+            }
           })
         }
       })
@@ -225,8 +182,11 @@ export const BaseLinearDisplay = types
       addDisposer(self, blockWatchDisposer)
     },
     setHeight(displayHeight: number) {
-      if (displayHeight > minDisplayHeight) self.height = displayHeight
-      else self.height = minDisplayHeight
+      if (displayHeight > minDisplayHeight) {
+        self.height = displayHeight
+      } else {
+        self.height = minDisplayHeight
+      }
       return self.height
     },
     resizeHeight(distance: number) {
@@ -279,20 +239,21 @@ export const BaseLinearDisplay = types
       self.featureIdUnderMouse = feature
     },
     reload() {
-      const temp = JSON.parse(JSON.stringify(self.blockState))
-      Object.keys(temp).forEach(blockState => {
-        temp[blockState].key += '-reload'
-      })
-      self.blockState = temp
-    },
-    addAdditionalContextMenuItemCallback(callback: Function) {
-      self.additionalContextMenuItemCallbacks.push(callback)
+      ;[...self.blockState.values()].map(val => val.doReload())
     },
     setContextMenuFeature(feature?: Feature) {
       self.contextMenuFeature = feature
     },
   }))
   .views(self => ({
+    regionCannotBeRenderedText(_region: Region) {
+      const view = getContainingView(self) as LinearGenomeViewModel
+      if (view && view.bpPerPx > self.maxViewBpPerPx) {
+        return 'Zoom in to see features'
+      }
+      return ''
+    },
+
     /**
      * @param region -
      * @returns falsy if the region is fine to try rendering. Otherwise,
@@ -300,7 +261,7 @@ export const BaseLinearDisplay = types
      *  string of text describes why it cannot be rendered
      *  react node allows user to force load at current setting
      */
-    regionCannotBeRendered(/* region */) {
+    regionCannotBeRendered(_region: Region) {
       const view = getContainingView(self) as LinearGenomeViewModel
       if (view && view.bpPerPx > self.maxViewBpPerPx) {
         return (
@@ -327,21 +288,12 @@ export const BaseLinearDisplay = types
       return undefined
     },
 
-    get trackMenuItems(): MenuItem[] {
+    trackMenuItems(): MenuItem[] {
       return []
     },
-    // distinct set of display items that are particular to this display type. for
-    // base, there are none
-    //
-    // note: this attribute is helpful when composing together multiple
-    // subdisplays so that you don't repeat the "about this track" from each
-    // child display
-    get composedTrackMenuItems(): MenuItem[] {
-      return []
-    },
-    get contextMenuItems() {
-      const { pluginManager } = getEnv(self)
-      const contextMenuItems = self.contextMenuFeature
+
+    contextMenuItems() {
+      return self.contextMenuFeature
         ? [
             {
               label: 'Open feature details',
@@ -354,16 +306,11 @@ export const BaseLinearDisplay = types
             },
           ]
         : []
-
-      self.additionalContextMenuItemCallbacks.forEach(callback => {
-        const menuItems = callback(self.contextMenuFeature, self, pluginManager)
-        contextMenuItems.push(...menuItems)
-      })
-      return contextMenuItems
     },
-    get composedRenderProps() {
+    renderProps() {
       return {
         ...getParentRenderProps(self),
+        rpcDriverName: self.rpcDriverName,
         displayModel: self,
         onFeatureClick(_: unknown, featureId: string | undefined) {
           const f = featureId || self.featureIdUnderMouse
@@ -402,8 +349,90 @@ export const BaseLinearDisplay = types
         },
       }
     },
-    get renderProps() {
-      return this.composedRenderProps
+  }))
+  .actions(self => ({
+    async renderSvg(opts: ExportSvgOptions & { overrideHeight: number }) {
+      const { height, id } = self
+      const { overrideHeight } = opts
+      const view = getContainingView(self) as LinearGenomeViewModel
+      const {
+        offsetPx: viewOffsetPx,
+        roundedDynamicBlocks: dynamicBlocks,
+        width,
+      } = view
+
+      const renderings = await Promise.all(
+        dynamicBlocks.map(block => {
+          const blockState = BlockState.create({
+            key: block.key,
+            region: block,
+          })
+
+          // regionCannotBeRendered can return jsx so look for plaintext
+          // version, or just get the default if none available
+          const cannotBeRenderedReason =
+            self.regionCannotBeRenderedText(block) ||
+            self.regionCannotBeRendered(block)
+
+          if (cannotBeRenderedReason) {
+            return {
+              reactElement: (
+                <>
+                  <rect x={0} y={0} width={width} height={20} fill="#aaa" />
+                  <text x={0} y={15}>
+                    {cannotBeRenderedReason}
+                  </text>
+                </>
+              ),
+            }
+          }
+
+          const { rpcManager, renderArgs, renderProps, rendererType } =
+            renderBlockData(blockState, self)
+
+          return rendererType.renderInClient(rpcManager, {
+            ...renderArgs,
+            ...renderProps,
+            exportSVG: opts,
+          })
+        }),
+      )
+
+      return (
+        <>
+          {renderings.map((rendering, index) => {
+            const { offsetPx } = dynamicBlocks[index]
+            const offset = offsetPx - viewOffsetPx
+            // stabalize clipid under test for snapshot
+            const clipid = `clip-${
+              typeof jest === 'undefined' ? id : 'jest'
+            }-${index}`
+            return (
+              <React.Fragment key={`frag-${index}`}>
+                <defs>
+                  <clipPath id={clipid}>
+                    <rect
+                      x={0}
+                      y={0}
+                      width={width}
+                      height={overrideHeight || height}
+                    />
+                  </clipPath>
+                </defs>
+                <g transform={`translate(${offset} 0)`}>
+                  <g clipPath={`url(#${clipid})`}>
+                    {React.isValidElement(rendering.reactElement) ? (
+                      rendering.reactElement
+                    ) : (
+                      <g dangerouslySetInnerHTML={{ __html: rendering.html }} />
+                    )}
+                  </g>
+                </g>
+              </React.Fragment>
+            )
+          })}
+        </>
+      )
     },
   }))
   .postProcessSnapshot(self => {

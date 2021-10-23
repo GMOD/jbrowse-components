@@ -18,6 +18,5 @@ export function LinearVariantDisplayConfigFactory(
 export type LinearVariantDisplayConfigModel = ReturnType<
   typeof LinearVariantDisplayConfigFactory
 >
-export type LinearVariantDisplayConfig = Instance<
-  LinearVariantDisplayConfigModel
->
+export type LinearVariantDisplayConfig =
+  Instance<LinearVariantDisplayConfigModel>

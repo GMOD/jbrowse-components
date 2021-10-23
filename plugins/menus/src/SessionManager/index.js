@@ -8,5 +8,3 @@ export const stateModel = types.model('SessionManager', {
   id: ElementId,
   type: types.literal('SessionManager'),
 })
-
-export { default as ReactComponent } from './components/SessionManager'

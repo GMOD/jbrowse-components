@@ -52,7 +52,7 @@ exports[`<AddConnectionWidget /> renders 1`] = `
         icon="1"
       >
         <div
-          class="MuiCollapse-container MuiStepContent-transition MuiCollapse-entered"
+          class="MuiCollapse-root MuiStepContent-transition MuiCollapse-entered"
           style="min-height: 0px;"
         >
           <div
@@ -68,79 +68,31 @@ exports[`<AddConnectionWidget /> renders 1`] = `
                   class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
                 >
                   <label
-                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
-                    data-shrink="false"
-                  >
-                    assemblyName
-                  </label>
-                  <div
-                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
-                  >
-                    <div
-                      aria-haspopup="listbox"
-                      class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
-                      role="button"
-                      tabindex="0"
-                    >
-                      <span>
-                        ​
-                      </span>
-                    </div>
-                    <input
-                      aria-hidden="true"
-                      class="MuiSelect-nativeInput"
-                      data-testid="assemblyNameSelect"
-                      tabindex="-1"
-                      value=""
-                    />
-                    <svg
-                      aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSelect-icon"
-                      focusable="false"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M7 10l5 5 5-5z"
-                      />
-                    </svg>
-                  </div>
-                  <p
-                    class="MuiFormHelperText-root"
-                  >
-                    Assembly to which the track will be added
-                  </p>
-                </div>
-                <div
-                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
-                >
-                  <label
-                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
-                    data-shrink="false"
+                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-filled"
+                    data-shrink="true"
                   >
                     connectionType
                   </label>
                   <div
-                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+                    class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-fullWidth MuiInputBase-formControl"
                   >
                     <div
                       aria-haspopup="listbox"
-                      class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
+                      class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input"
                       role="button"
                       tabindex="0"
                     >
-                      <span>
-                        ​
-                      </span>
+                      UCSC Track Hub
                     </div>
                     <input
                       aria-hidden="true"
                       class="MuiSelect-nativeInput"
                       tabindex="-1"
-                      value=""
+                      value="UCSCTrackHubConnection"
                     />
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSelect-icon"
+                      class="MuiSvgIcon-root MuiSelect-icon MuiSelect-iconOutlined"
                       focusable="false"
                       viewBox="0 0 24 24"
                     >
@@ -148,7 +100,50 @@ exports[`<AddConnectionWidget /> renders 1`] = `
                         d="M7 10l5 5 5-5z"
                       />
                     </svg>
+                    <fieldset
+                      aria-hidden="true"
+                      class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+                    >
+                      <legend
+                        class="PrivateNotchedOutline-legendLabelled PrivateNotchedOutline-legendNotched"
+                      >
+                        <span>
+                          connectionType
+                        </span>
+                      </legend>
+                    </fieldset>
                   </div>
+                  <p
+                    class="MuiFormHelperText-root MuiFormHelperText-contained MuiFormHelperText-filled"
+                  >
+                    A track or assembly hub in the Track Hub format
+                    <a
+                      aria-disabled="false"
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+                      href="//genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html#Intro"
+                      rel="noopener noreferrer"
+                      tabindex="0"
+                      target="_blank"
+                    >
+                      <span
+                        class="MuiIconButton-label"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"
+                          />
+                        </svg>
+                      </span>
+                      <span
+                        class="MuiTouchRipple-root"
+                      />
+                    </a>
+                  </p>
                 </div>
               </form>
               <div
@@ -167,10 +162,9 @@ exports[`<AddConnectionWidget /> renders 1`] = `
                   </span>
                 </button>
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button MuiButton-containedPrimary MuiButton-disabled MuiButtonBase-disabled"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button MuiButton-containedPrimary"
                   data-testid="addConnectionNext"
-                  disabled=""
-                  tabindex="-1"
+                  tabindex="0"
                   type="button"
                 >
                   <span
@@ -178,6 +172,9 @@ exports[`<AddConnectionWidget /> renders 1`] = `
                   >
                     Next
                   </span>
+                  <span
+                    class="MuiTouchRipple-root"
+                  />
                 </button>
               </div>
             </div>

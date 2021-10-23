@@ -1,18 +1,21 @@
 import { checkAbortSignal, renameRegionsIfNeeded } from '@jbrowse/core/util'
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import ComparativeServerSideRendererType, {
-  RenderArgs,
+  RenderArgs as ComparativeRenderArgs,
+  RenderArgsSerialized as ComparativeRenderArgsSerialized,
+  RenderResults,
+  ResultsSerialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 
-interface ComparativeRenderArgs {
-  sessionId: string
+interface RenderArgs extends ComparativeRenderArgs {
   adapterConfig: {}
   rendererType: string
-  renderProps: RenderArgs
-  signal?: RemoteAbortSignal
+}
+
+interface RenderArgsSerialized extends ComparativeRenderArgsSerialized {
+  adapterConfig: {}
+  rendererType: string
 }
 
 /**
@@ -23,40 +26,49 @@ interface ComparativeRenderArgs {
 export default class ComparativeRender extends RpcMethodType {
   name = 'ComparativeRender'
 
-  async serializeArguments(
-    args: ComparativeRenderArgs & { signal?: AbortSignal },
-  ) {
-    const assemblyManager = this.pluginManager.rootModel?.session
-      ?.assemblyManager
-    if (!assemblyManager) {
-      return args
+  async serializeArguments(args: RenderArgs, rpcDriverClassName: string) {
+    const assemblyManager =
+      this.pluginManager.rootModel?.session?.assemblyManager
+    const renamedArgs = assemblyManager
+      ? await renameRegionsIfNeeded(assemblyManager, args)
+      : args
+
+    const superArgs = (await super.serializeArguments(
+      renamedArgs,
+      rpcDriverClassName,
+    )) as RenderArgs
+    if (rpcDriverClassName === 'MainThreadRpcDriver') {
+      return superArgs
     }
 
-    return renameRegionsIfNeeded(assemblyManager, args)
+    const RendererType = this.pluginManager.getRendererType(args.rendererType)
+
+    if (!(RendererType instanceof ComparativeServerSideRendererType)) {
+      throw new Error(
+        'CoreRender requires a renderer that is a subclass of ServerSideRendererType',
+      )
+    }
+
+    return RendererType.serializeArgsInClient(superArgs)
   }
 
-  async execute(args: ComparativeRenderArgs) {
-    const deserializedArgs = await this.deserializeArguments(args)
-    const {
-      sessionId,
-      adapterConfig,
-      rendererType,
-      renderProps,
-      signal,
-    } = deserializedArgs
-    if (!sessionId) throw new Error('must pass a unique session id')
+  async execute(
+    args: RenderArgsSerialized & { signal?: RemoteAbortSignal },
+    rpcDriverClassName: string,
+  ) {
+    let deserializedArgs = args
+    if (rpcDriverClassName !== 'MainThreadRpcDriver') {
+      deserializedArgs = await this.deserializeArguments(
+        args,
+        rpcDriverClassName,
+      )
+    }
+    const { sessionId, rendererType, signal } = deserializedArgs
+    if (!sessionId) {
+      throw new Error('must pass a unique session id')
+    }
 
     checkAbortSignal(signal)
-
-    const { dataAdapter } = getAdapter(
-      this.pluginManager,
-      sessionId,
-      adapterConfig,
-    )
-    if (!(dataAdapter instanceof BaseFeatureDataAdapter))
-      throw new Error(
-        `ComparativeRender cannot handle this type of data adapter ${dataAdapter}`,
-      )
 
     const RendererType = this.pluginManager.getRendererType(rendererType)
 
@@ -69,20 +81,52 @@ export default class ComparativeRender extends RpcMethodType {
       )
     }
 
-    if (!(RendererType instanceof ComparativeServerSideRendererType))
+    if (!(RendererType instanceof ComparativeServerSideRendererType)) {
       throw new Error(
         'CoreRender requires a renderer that is a subclass of ServerSideRendererType',
       )
-
-    const renderArgs = {
-      ...deserializedArgs,
-      ...renderProps,
-      dataAdapter,
     }
-    delete renderArgs.renderProps
 
-    const result = await RendererType.renderInWorker(renderArgs)
+    const result =
+      rpcDriverClassName === 'MainThreadRpcDriver'
+        ? await RendererType.render(deserializedArgs)
+        : await RendererType.renderInWorker(deserializedArgs)
     checkAbortSignal(signal)
     return result
+  }
+
+  async deserializeReturn(
+    serializedReturn: RenderResults | ResultsSerialized,
+    args: RenderArgs,
+    rpcDriverClassName: string,
+  ): Promise<unknown> {
+    const superDeserialized = await super.deserializeReturn(
+      serializedReturn,
+      args,
+      rpcDriverClassName,
+    )
+    if (rpcDriverClassName === 'MainThreadRpcDriver') {
+      return superDeserialized
+    }
+
+    const { rendererType } = args
+    const RendererType = this.pluginManager.getRendererType(rendererType)
+    if (!RendererType) {
+      throw new Error(`renderer "${rendererType}" not found`)
+    }
+    if (!RendererType.ReactComponent) {
+      throw new Error(
+        `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
+      )
+    }
+    if (!(RendererType instanceof ComparativeServerSideRendererType)) {
+      throw new Error(
+        'CoreRender requires a renderer that is a subclass of ServerSideRendererType',
+      )
+    }
+    return RendererType.deserializeResultsInClient(
+      superDeserialized as ResultsSerialized,
+      args,
+    )
   }
 }

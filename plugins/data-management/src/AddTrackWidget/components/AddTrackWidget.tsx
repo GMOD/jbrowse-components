@@ -1,14 +1,19 @@
+import React, { useState } from 'react'
+import {
+  Button,
+  Step,
+  StepContent,
+  StepLabel,
+  Stepper,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 import { getSession } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
-import Button from '@material-ui/core/Button'
-import Step from '@material-ui/core/Step'
-import StepContent from '@material-ui/core/StepContent'
-import StepLabel from '@material-ui/core/StepLabel'
-import Stepper from '@material-ui/core/Stepper'
-import { makeStyles } from '@material-ui/core/styles'
-import Typography from '@material-ui/core/Typography'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import React, { useState } from 'react'
+import { observer } from 'mobx-react'
+import { Alert } from '@material-ui/lab'
+
+// locals
 import ConfirmTrack from './ConfirmTrack'
 import TrackSourceSelect from './TrackSourceSelect'
 import { AddTrackModel } from '../model'
@@ -30,6 +35,9 @@ const useStyles = makeStyles(theme => ({
   stepContent: {
     margin: theme.spacing(1),
   },
+  alertContainer: {
+    padding: `${theme.spacing(2)}px 0px ${theme.spacing(2)}px 0px`,
+  },
 }))
 
 const steps = ['Enter track data', 'Confirm track type']
@@ -39,6 +47,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
   const session = getSession(model)
   const { assembly, trackAdapter, trackData, trackName, trackType } = model
+  const [trackErrorMessage, setTrackErrorMessage] = useState<String>()
 
   function getStepContent(step: number) {
     switch (step) {
@@ -51,7 +60,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
     }
   }
 
-  function handleNext() {
+  async function handleNext() {
     if (activeStep !== steps.length - 1) {
       setActiveStep(activeStep + 1)
       return
@@ -59,45 +68,53 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
 
     const trackId = `${trackName
       .toLowerCase()
-      .replace(/ /g, '_')}-${Date.now()}`
+      .replace(/ /g, '_')}-${Date.now()}${
+      session.adminMode ? '' : '-sessionTrack'
+    }`
 
     const assemblyInstance = session.assemblyManager.get(assembly)
 
-    // @ts-ignore
-    session.addTrackConf({
-      trackId,
-      type: trackType,
-      name: trackName,
-      assemblyNames: [assembly],
-      adapter: {
-        ...trackAdapter,
-        sequenceAdapter: getConf(assemblyInstance, ['sequence', 'adapter']),
-      },
-    })
-    if (model.view) {
-      model.view.showTrack(trackId)
+    if (trackAdapter && trackAdapter.type !== 'UNKNOWN') {
+      // @ts-ignore
+      session.addTrackConf({
+        trackId,
+        type: trackType,
+        name: trackName,
+        assemblyNames: [assembly],
+        adapter: {
+          ...trackAdapter,
+          sequenceAdapter: getConf(assemblyInstance, ['sequence', 'adapter']),
+        },
+      })
+      if (model.view) {
+        model.view.showTrack(trackId)
+      } else {
+        session.notify(
+          'Open a new view, or use the track selector in an existing view, to view this track',
+          'info',
+        )
+      }
+      model.clearData()
+      // @ts-ignore
+      session.hideWidget(model)
     } else {
-      session.notify(
-        'Open a new view, or use the track selector in an existing view, to view this track',
-        'info',
+      setTrackErrorMessage(
+        'Failed to add track.\nThe configuration of this file is not currently supported.',
       )
     }
-    model.clearData()
-    // @ts-ignore
-    session.hideWidget(model)
   }
 
   function handleBack() {
+    setTrackErrorMessage(undefined)
     setActiveStep(activeStep - 1)
   }
 
   function isNextDisabled() {
     switch (activeStep) {
       case 0:
-        // @ts-ignore
-        return !(trackData.uri || trackData.localPath || trackData.blob)
+        return !trackData
       case 1:
-        return !(trackName && trackType && trackAdapter.type && assembly)
+        return !(trackName && trackType && trackAdapter?.type && assembly)
       default:
         return true
     }
@@ -134,16 +151,17 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
                   {activeStep === steps.length - 1 ? 'Add' : 'Next'}
                 </Button>
               </div>
+              {trackErrorMessage ? (
+                <div className={classes.alertContainer}>
+                  <Alert severity="error">{trackErrorMessage}</Alert>
+                </div>
+              ) : null}
             </StepContent>
           </Step>
         ))}
       </Stepper>
     </div>
   )
-}
-
-AddTrackWidget.propTypes = {
-  model: MobxPropTypes.observableObject.isRequired,
 }
 
 export default observer(AddTrackWidget)

@@ -21,7 +21,9 @@ function Sequence({
   y,
 }) {
   let s = sequence.split('')
-  if (region.reversed) s = s.reverse()
+  if (region.reversed) {
+    s = s.reverse()
+  }
   const letterWidth = 1 / bpPerPx / lettersPerBp
   return (
     <g transform={`translate(0 ${y})`}>
@@ -79,7 +81,9 @@ Sequence.defaultProps = {
  */
 function* getFeaturesOfType(type, features) {
   for (const feature of features) {
-    if (feature.get('type') === type) yield feature
+    if (feature.get('type') === type) {
+      yield feature
+    }
   }
 }
 

@@ -1,28 +1,28 @@
+import { types, getParent } from 'mobx-state-tree'
+import { openLocation } from '@jbrowse/core/util/io'
 import { getSession } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { unzip } from '@gmod/bgzf-filehandle'
-import { parseCsvBuffer, parseTsvBuffer } from '../importAdapters/ImportUtils'
-import { parseVcfBuffer } from '../importAdapters/VcfImport'
-import { parseBedBuffer, parseBedPEBuffer } from '../importAdapters/BedImport'
-import { parseSTARFusionBuffer } from '../importAdapters/STARFusionImport'
 
 // 30MB
 const IMPORT_SIZE_LIMIT = 30_000_000
 
 export default (pluginManager: PluginManager) => {
-  const { lib } = pluginManager
-  const { types, getParent, getRoot } = lib['mobx-state-tree']
-  const { openLocation } = lib['@jbrowse/core/util/io']
-  const { readConfObject } = lib['@jbrowse/core/configuration']
-
   const fileTypes = ['CSV', 'TSV', 'VCF', 'BED', 'BEDPE', 'STAR-Fusion']
   const fileTypeParsers = {
-    CSV: parseCsvBuffer,
-    TSV: parseTsvBuffer,
-    VCF: parseVcfBuffer,
-    BED: parseBedBuffer,
-    BEDPE: parseBedPEBuffer,
-    'STAR-Fusion': parseSTARFusionBuffer,
+    CSV: () =>
+      import('../importAdapters/ImportUtils').then(r => r.parseCsvBuffer),
+    TSV: () =>
+      import('../importAdapters/ImportUtils').then(r => r.parseTsvBuffer),
+    VCF: () =>
+      import('../importAdapters/VcfImport').then(r => r.parseVcfBuffer),
+    BED: () =>
+      import('../importAdapters/BedImport').then(r => r.parseBedBuffer),
+    BEDPE: () =>
+      import('../importAdapters/BedImport').then(r => r.parseBedPEBuffer),
+    'STAR-Fusion': () =>
+      import('../importAdapters/STARFusionImport').then(
+        r => r.parseSTARFusionBuffer,
+      ),
   }
   // regexp used to guess the type of a file or URL from its file extension
   const fileTypesRegexp = new RegExp(
@@ -35,13 +35,13 @@ export default (pluginManager: PluginManager) => {
       fileType: types.optional(types.enumeration(fileTypes), 'CSV'),
       hasColumnNameLine: true,
       columnNameLineNumber: 1,
-      selectedAssemblyIdx: 0,
+      selectedAssemblyName: types.maybe(types.string),
     })
     .volatile(() => ({
       fileTypes,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       fileSource: undefined as any,
-      error: undefined as Error | undefined,
+      error: undefined as unknown,
       loading: false,
     }))
     .views(self => ({
@@ -49,7 +49,7 @@ export default (pluginManager: PluginManager) => {
         return (
           !self.error &&
           self.fileSource &&
-          (self.fileSource.blob ||
+          (self.fileSource.blobId ||
             self.fileSource.localPath ||
             self.fileSource.uri)
         )
@@ -57,22 +57,12 @@ export default (pluginManager: PluginManager) => {
       get canCancel() {
         return getParent(self).readyToDisplay
       },
-      get assemblyChoices() {
-        return getRoot(self).jbrowse.assemblies
-      },
-      get selectedAssemblyName() {
-        const asm = getRoot(self).jbrowse.assemblies[self.selectedAssemblyIdx]
-        if (asm) {
-          return readConfObject(asm, 'name')
-        }
-        return undefined
-      },
 
       get fileName() {
         return (
           self.fileSource.uri ||
           self.fileSource.localPath ||
-          (self.fileSource.blob && self.fileSource.blob.name)
+          (self.fileSource.blobId && self.fileSource.name)
         )
       },
 
@@ -88,6 +78,9 @@ export default (pluginManager: PluginManager) => {
       },
     }))
     .actions(self => ({
+      setSelectedAssemblyName(s: string) {
+        self.selectedAssemblyName = s
+      },
       setFileSource(newSource: unknown) {
         self.fileSource = newSource
         self.error = undefined
@@ -109,23 +102,21 @@ export default (pluginManager: PluginManager) => {
         }
       },
 
-      setSelectedAssemblyIdx(idx: number) {
-        self.selectedAssemblyIdx = idx
-      },
-
       toggleHasColumnNameLine() {
         self.hasColumnNameLine = !self.hasColumnNameLine
       },
 
       setColumnNameLineNumber(newnumber: number) {
-        if (newnumber > 0) self.columnNameLineNumber = newnumber
+        if (newnumber > 0) {
+          self.columnNameLineNumber = newnumber
+        }
       },
 
       setFileType(typeName: string) {
         self.fileType = typeName
       },
 
-      setError(error: Error) {
+      setError(error: unknown) {
         console.error(error)
         self.loading = false
         self.error = error
@@ -143,41 +134,49 @@ export default (pluginManager: PluginManager) => {
 
       // fetch and parse the file, make a new Spreadsheet model for it,
       // then set the parent to display it
-      import() {
-        try {
-          if (!self.fileSource) return
-          const typeParser =
-            fileTypeParsers[self.fileType as keyof typeof fileTypeParsers]
-          if (!typeParser)
-            throw new Error(`cannot open files of type '${self.fileType}'`)
-          if (self.loading)
-            throw new Error('cannot import, load already in progress')
-          self.loading = true
-
-          const filehandle = openLocation(self.fileSource)
-          filehandle
-            .stat()
-            .then(stat => {
-              if (stat.size > IMPORT_SIZE_LIMIT)
-                throw new Error(
-                  `File is too big. Tabular files are limited to at most ${(
-                    IMPORT_SIZE_LIMIT / 1000
-                  ).toLocaleString()}kb.`,
-                )
-            })
-            .then(() => filehandle.readFile())
-            .then(buffer => {
-              return self.requiresUnzip ? unzip(buffer) : buffer
-            })
-            .then(buffer => typeParser(buffer as Buffer, self))
-            .then(spreadsheet => {
-              this.setLoaded()
-              getParent(self).displaySpreadsheet(spreadsheet)
-            })
-            .catch(this.setError)
-        } catch (error) {
-          this.setError(error)
+      async import(assemblyName: string) {
+        if (!self.fileSource) {
+          return
         }
+
+        if (self.loading) {
+          throw new Error('Cannot import, load already in progress')
+        }
+
+        self.selectedAssemblyName = assemblyName
+        self.loading = true
+        const type = self.fileType as keyof typeof fileTypeParsers
+        const typeParser = await fileTypeParsers[type]()
+        if (!typeParser) {
+          throw new Error(`cannot open files of type '${self.fileType}'`)
+        }
+
+        const { unzip } = await import('@gmod/bgzf-filehandle')
+
+        const filehandle = openLocation(self.fileSource, pluginManager)
+
+        try {
+          await filehandle.stat().then(stat => {
+            if (stat.size > IMPORT_SIZE_LIMIT) {
+              throw new Error(
+                `File is too big. Tabular files are limited to at most ${(
+                  IMPORT_SIZE_LIMIT / 1000
+                ).toLocaleString()}kb.`,
+              )
+            }
+          })
+        } catch (e) {
+          console.warn(e)
+        }
+        await filehandle.readFile()
+        await filehandle
+          .readFile()
+          .then(buffer => (self.requiresUnzip ? unzip(buffer) : buffer))
+          .then(buffer => typeParser(buffer as Buffer, self))
+          .then(spreadsheet => {
+            this.setLoaded()
+            getParent(self).displaySpreadsheet(spreadsheet)
+          })
       },
     }))
 }

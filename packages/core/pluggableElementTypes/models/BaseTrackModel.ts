@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import InfoIcon from '@material-ui/icons/Info'
 import { transaction } from 'mobx'
 import {
   getRoot,
@@ -39,20 +38,6 @@ export function createBaseTrackModel(
         pluginManager.pluggableMstType('display', 'stateModel'),
       ),
     })
-    .volatile(() => ({
-      showAbout: false,
-      DialogComponent: undefined as React.FC | undefined,
-      DialogDisplay: undefined as any,
-    }))
-    .actions(self => ({
-      setShowAbout(show: boolean) {
-        self.showAbout = show
-      },
-      setDialogComponent(dlg: any, context?: any) {
-        self.DialogComponent = dlg
-        self.DialogDisplay = context
-      },
-    }))
     .views(self => ({
       get rpcSessionId() {
         return self.configuration.trackId
@@ -62,17 +47,23 @@ export function createBaseTrackModel(
         return getConf(self, 'name')
       },
 
+      get textSearchAdapter() {
+        return getConf(self, 'textSearchAdapter')
+      },
+
       /**
        * the PluggableElementType for the currently defined adapter
        */
       get adapterType() {
         const adapterConfig = getConf(self, 'adapter')
         const { pluginManager: pm } = getEnv(self)
-        if (!adapterConfig)
+        if (!adapterConfig) {
           throw new Error(`no adapter configuration provided for ${self.type}`)
+        }
         const adapterType = pm.getAdapterType(adapterConfig.type)
-        if (!adapterType)
+        if (!adapterType) {
           throw new Error(`unknown adapter type ${adapterConfig.type}`)
+        }
         return adapterType
       },
 
@@ -95,15 +86,6 @@ export function createBaseTrackModel(
             }))
         )
       },
-      // distinct set of track items that are particular to this track type. for
-      // base, there are none
-      //
-      // note: this attribute is helpful when composing together multiple
-      // subtracks so that you don't repeat the "about this track" from each
-      // child track
-      get composedTrackMenuItems(): MenuItem[] {
-        return []
-      },
     }))
     .actions(self => ({
       activateConfigurationUI() {
@@ -121,9 +103,8 @@ export function createBaseTrackModel(
         }
       },
       showDisplay(displayId: string, initialSnapshot = {}) {
-        const displayTypeConfigSchema = pluginManager.pluggableConfigSchemaType(
-          'display',
-        )
+        const displayTypeConfigSchema =
+          pluginManager.pluggableConfigSchemaType('display')
         const configuration = resolveIdentifier(
           displayTypeConfigSchema,
           getRoot(self),
@@ -142,9 +123,8 @@ export function createBaseTrackModel(
       },
 
       hideDisplay(displayId: string) {
-        const displayTypeConfigSchema = pluginManager.pluggableConfigSchemaType(
-          'display',
-        )
+        const displayTypeConfigSchema =
+          pluginManager.pluggableConfigSchemaType('display')
         const configuration = resolveIdentifier(
           displayTypeConfigSchema,
           getRoot(self),
@@ -170,9 +150,8 @@ export function createBaseTrackModel(
             `could not find display id ${oldDisplayId} to replace`,
           )
         }
-        const displayTypeConfigSchema = pluginManager.pluggableConfigSchemaType(
-          'display',
-        )
+        const displayTypeConfigSchema =
+          pluginManager.pluggableConfigSchemaType('display')
         const configuration = resolveIdentifier(
           displayTypeConfigSchema,
           getRoot(self),
@@ -190,10 +169,10 @@ export function createBaseTrackModel(
       },
     }))
     .views(self => ({
-      get trackMenuItems(): MenuItem[] {
+      trackMenuItems(): MenuItem[] {
         const menuItems: MenuItem[] = []
         self.displays.forEach(display => {
-          menuItems.push(...display.trackMenuItems)
+          menuItems.push(...display.trackMenuItems())
         })
         const displayChoices: MenuItem[] = []
         const view = getContainingView(self)
@@ -222,18 +201,7 @@ export function createBaseTrackModel(
             })
           })
         }
-        return [
-          {
-            label: 'About this track',
-            icon: InfoIcon,
-            priority: 10,
-            onClick: () => {
-              self.setShowAbout(true)
-            },
-          },
-          ...menuItems,
-          ...displayChoices,
-        ]
+        return [...menuItems, ...displayChoices]
       },
     }))
 }

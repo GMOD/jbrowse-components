@@ -37,7 +37,9 @@ export function getSubType(type) {
  * @returns {Array<IModelType>}
  */
 export function getUnionSubTypes(unionType) {
-  if (!isUnionType(unionType)) throw new TypeError('not an MST union type')
+  if (!isUnionType(unionType)) {
+    throw new TypeError('not an MST union type')
+  }
   const t =
     unionType._types ||
     unionType.types ||

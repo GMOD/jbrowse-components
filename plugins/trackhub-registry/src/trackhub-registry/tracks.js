@@ -1,4 +1,4 @@
-import objectHash from 'object-hash'
+import { objectHash } from '@jbrowse/core/util'
 import { generateUnsupportedTrackConf } from '@jbrowse/core/util/tracks'
 
 export function generateTracks(trackDb, assemblyName, sequenceAdapter) {
@@ -18,7 +18,7 @@ export function generateTracks(trackDb, assemblyName, sequenceAdapter) {
   })
 
   function getSubtracks(track, trackPath = []) {
-    if (track.members)
+    if (track.members) {
       return Object.values(track.members)
         .map(subTrack =>
           getSubtracks(
@@ -27,6 +27,7 @@ export function generateTracks(trackDb, assemblyName, sequenceAdapter) {
           ),
         )
         .flat()
+    }
     track.categories = trackPath
     return [track]
   }
@@ -38,28 +39,36 @@ function makeTrackConfig(track, trackDbUrl, sequenceAdapter) {
   if (
     baseTrackType === 'bam' &&
     track.bigDataUrl.toLowerCase().endsWith('cram')
-  )
+  ) {
     baseTrackType = 'cram'
+  }
   const { bigDataUrl } = track
   const bigDataLocation = {
     uri: new URL(bigDataUrl, trackDbUrl).href,
+    locationType: 'UriLocation',
   }
   const { categories } = track
   let bigDataIndexLocation
   switch (baseTrackType) {
     case 'bam':
-      if (trackDbUrl)
+      if (trackDbUrl) {
         bigDataIndexLocation = track.bigDataIndex
           ? {
               uri: new URL(track.bigDataIndex, trackDbUrl).href,
+              locationType: 'UriLocation',
             }
           : {
               uri: new URL(`${track.bigDataUrl}.bai`, trackDbUrl).href,
+              locationType: 'UriLocation',
             }
-      else
+      } else {
         bigDataIndexLocation = track.bigDataIndex
-          ? { localPath: track.bigDataIndex }
-          : { localPath: `${track.bigDataUrl}.bai` }
+          ? { localPath: track.bigDataIndex, locationType: 'LocalPathLocation' }
+          : {
+              localPath: `${track.bigDataUrl}.bai`,
+              locationType: 'LocalPathLocation',
+            }
+      }
       return {
         type: 'AlignmentsTrack',
         name: track.shortLabel,
@@ -162,18 +171,24 @@ function makeTrackConfig(track, trackDbUrl, sequenceAdapter) {
         categories,
       )
     case 'cram':
-      if (trackDbUrl)
+      if (trackDbUrl) {
         bigDataIndexLocation = track.bigDataIndex
           ? {
               uri: new URL(track.bigDataIndex, trackDbUrl).href,
+              locationType: 'UriLocation',
             }
           : {
               uri: new URL(`${track.bigDataUrl}.bai`, trackDbUrl).href,
+              locationType: 'UriLocation',
             }
-      else
+      } else {
         bigDataIndexLocation = track.bigDataIndex
-          ? { localPath: track.bigDataIndex }
-          : { localPath: `${track.bigDataUrl}.bai` }
+          ? { localPath: track.bigDataIndex, locationType: 'LocalPathLocation' }
+          : {
+              localPath: `${track.bigDataUrl}.bai`,
+              locationType: 'LocalPathLocation',
+            }
+      }
       return {
         type: 'AlignmentsTrack',
         name: track.shortLabel,

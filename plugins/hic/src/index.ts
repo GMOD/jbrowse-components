@@ -9,8 +9,8 @@ import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
+import { FileLocation } from '@jbrowse/core/util/types'
 import Color from 'color'
-import HicAdapterFactory from './HicAdapter'
 import HicRenderer, {
   configSchema as hicRendererConfigSchema,
   ReactComponent as HicRendererReactComponent,
@@ -19,6 +19,12 @@ import {
   configSchemaFactory as linearHicdisplayConfigSchemaFactory,
   modelFactory as linearHicdisplayModelFactory,
 } from './LinearHicDisplay'
+import hicAdapterConfigSchema from './HicAdapter/configSchema'
+import {
+  AdapterGuesser,
+  getFileName,
+  TrackTypeGuesser,
+} from '@jbrowse/core/util/tracks'
 
 export default class HicPlugin extends Plugin {
   name = 'HicPlugin'
@@ -28,8 +34,42 @@ export default class HicPlugin extends Plugin {
       () =>
         new AdapterType({
           name: 'HicAdapter',
-          ...pluginManager.jbrequire(HicAdapterFactory),
+          configSchema: hicAdapterConfigSchema,
+          getAdapterClass: () =>
+            import('./HicAdapter/HicAdapter').then(r => r.default),
         }),
+    )
+    pluginManager.addToExtensionPoint(
+      'Core-guessAdapterForLocation',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.hic/i
+          const adapterName = 'HicAdapter'
+          const fileName = getFileName(file)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
+            return {
+              type: adapterName,
+              hicLocation: file,
+            }
+          }
+          return adapterGuesser(file, index, adapterHint)
+        }
+      },
+    )
+    pluginManager.addToExtensionPoint(
+      'Core-guessTrackTypeForLocation',
+      (trackTypeGuesser: TrackTypeGuesser) => {
+        return (adapterName: string) => {
+          if (adapterName === 'HicAdapter') {
+            return 'HicTrack'
+          }
+          return trackTypeGuesser(adapterName)
+        }
+      },
     )
     pluginManager.addRendererType(
       () =>
@@ -73,11 +113,11 @@ export default class HicPlugin extends Plugin {
   }
 
   configure(pluginManager: PluginManager) {
-    pluginManager.jexl.addTransform('alpha', (color: Color, value: number) =>
+    pluginManager.jexl.addFunction('alpha', (color: Color, value: number) =>
       color.alpha(value),
     )
-    pluginManager.jexl.addTransform('hsl', (color: Color) => color.hsl())
-    pluginManager.jexl.addTransform('colorString', (color: Color) =>
+    pluginManager.jexl.addFunction('hsl', (color: Color) => color.hsl())
+    pluginManager.jexl.addFunction('colorString', (color: Color) =>
       color.string(),
     )
   }

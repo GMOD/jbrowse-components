@@ -30,8 +30,13 @@ export default function (pluginManager) {
             .then(config => {
               const assemblyName = readConfObject(
                 self.configuration,
-                'assemblyName',
-              )
+                'assemblyNames',
+              )[0]
+              if (!assemblyName) {
+                throw new Error(
+                  'assembly name required for JBrowse 1 connection',
+                )
+              }
               const assemblyConf = session.assemblies.find(
                 assembly => readConfObject(assembly, 'name') === assemblyName,
               )
@@ -53,7 +58,7 @@ export default function (pluginManager) {
             .catch(error => {
               console.error(error)
               session.notify(
-                `There was a problem connecting to the JBrowse 1 data directory "${self.name}. Please make sure you have entered a valid location. The error that was thrown is: "${error}"`,
+                `There was a problem connecting to the JBrowse 1 data directory "${self.name}". Please make sure you have entered a valid location. The error that was thrown is: "${error}"`,
                 'error',
               )
               session.breakConnection(self.configuration)

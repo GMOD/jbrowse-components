@@ -1,10 +1,16 @@
 // library
-import { cleanup, fireEvent, render, within } from '@testing-library/react'
+import {
+  cleanup,
+  waitFor,
+  fireEvent,
+  render,
+  within,
+} from '@testing-library/react'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
-import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
+import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { setup, generateReadBuffer, getPluginManager } from './util'
@@ -25,6 +31,8 @@ beforeEach(() => {
   )
 })
 
+const delay = { timeout: 20000 }
+
 describe('alignments track', () => {
   it('opens an alignments track', async () => {
     const pluginManager = getPluginManager()
@@ -39,13 +47,9 @@ describe('alignments track', () => {
     )
 
     const { findAllByTestId: findAllByTestId1 } = within(
-      await findByTestId('Blockset-pileup'),
+      await findByTestId('Blockset-pileup', {}, delay),
     )
-    const pileupCanvas = await findAllByTestId1(
-      'prerendered_canvas',
-      {},
-      { timeout: 10000 },
-    )
+    const pileupCanvas = await findAllByTestId1('prerendered_canvas', {}, delay)
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
@@ -55,37 +59,28 @@ describe('alignments track', () => {
     })
 
     const { findAllByTestId: findAllByTestId2 } = within(
-      await findByTestId('Blockset-snpcoverage'),
+      await findByTestId('Blockset-snpcoverage', {}, delay),
     )
-    const snpCoverageCanvas = await findAllByTestId2(
-      'prerendered_canvas',
-      {},
-      { timeout: 10000 },
-    )
-    const snpCoverageImg = snpCoverageCanvas[0].toDataURL()
-    const snpCoverageData = snpCoverageImg.replace(
-      /^data:image\/\w+;base64,/,
-      '',
-    )
-    const snpCoverageBuf = Buffer.from(snpCoverageData, 'base64')
-    expect(snpCoverageBuf).toMatchImageSnapshot({
+    const snpCovCanvas = await findAllByTestId2('prerendered_canvas', {}, delay)
+    const snpCovImg = snpCovCanvas[0].toDataURL()
+    const snpCovData = snpCovImg.replace(/^data:image\/\w+;base64,/, '')
+    const snpCovBuf = Buffer.from(snpCovData, 'base64')
+    expect(snpCovBuf).toMatchImageSnapshot({
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
 
     const track = await findAllByTestId('pileup_overlay_canvas')
     fireEvent.mouseMove(track[0], { clientX: 200, clientY: 20 })
-
     fireEvent.click(track[0], { clientX: 200, clientY: 40 })
-
     fireEvent.mouseDown(track[0], { clientX: 200, clientY: 20 })
     fireEvent.mouseMove(track[0], { clientX: 300, clientY: 20 })
     fireEvent.mouseUp(track[0], { clientX: 300, clientY: 20 })
     fireEvent.mouseMove(track[0], { clientX: -100, clientY: -100 })
 
     // this is to confirm a alignment detail widget opened
-    await expect(findAllByTestId('alignment-side-drawer')).resolves.toBeTruthy()
-  }, 15000)
+    await findByTestId('alignment-side-drawer')
+  }, 20000)
 
   // Note: tracks with assembly volvox don't have much soft clipping
   it('opens the track menu and enables soft clipping', async () => {
@@ -107,9 +102,7 @@ describe('alignments track', () => {
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu
-    const trackMenu = await findByTestId('track_menu_icon')
-    fireEvent.click(trackMenu)
-
+    fireEvent.click(await findByTestId('track_menu_icon'))
     fireEvent.click(await findByText('Show soft clipping'))
 
     // wait for block to rerender
@@ -119,6 +112,8 @@ describe('alignments track', () => {
 
     const pileupCanvas = await findAllByTestId1(
       'prerendered_canvas_softclipped',
+      {},
+      delay,
     )
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
@@ -127,7 +122,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 12000)
+  }, 30000)
 
   it('selects a sort, updates object and layout', async () => {
     const pluginManager = getPluginManager()
@@ -140,7 +135,11 @@ describe('alignments track', () => {
 
     // load track
     fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
-    await findByTestId('display-volvox-long-reads-cram-LinearAlignmentsDisplay')
+    await findByTestId(
+      'display-volvox-long-reads-cram-LinearAlignmentsDisplay',
+      {},
+      delay,
+    )
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu
@@ -151,7 +150,7 @@ describe('alignments track', () => {
     fireEvent.click(await findByText('Read strand'))
 
     // wait for pileup track to render with sort
-    await findAllByTestId('pileup-Read strand', {}, { timeout: 10000 })
+    await findAllByTestId('pileup-Read strand', {}, delay)
 
     // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
@@ -165,7 +164,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 10000)
+  }, 35000)
 
   it('selects a color, updates object and layout', async () => {
     const pluginManager = getPluginManager()
@@ -178,18 +177,20 @@ describe('alignments track', () => {
 
     // load track
     fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
-    await findByTestId('display-volvox-long-reads-cram-LinearAlignmentsDisplay')
+    await findByTestId(
+      'display-volvox-long-reads-cram-LinearAlignmentsDisplay',
+      {},
+      delay,
+    )
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu and turns on soft clipping
-    const trackMenu = await findByTestId('track_menu_icon')
-
-    fireEvent.click(trackMenu)
+    fireEvent.click(await findByTestId('track_menu_icon'))
     fireEvent.click(await findByText('Color scheme'))
     fireEvent.click(await findByText('Strand'))
 
     // wait for pileup track to render with color
-    await findAllByTestId('pileup-strand', {}, { timeout: 10000 })
+    await findAllByTestId('pileup-strand', {}, delay)
 
     // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
@@ -203,7 +204,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 10000)
+  }, 30000)
 
   it('colors by tag, updates object and layout', async () => {
     const pluginManager = getPluginManager()
@@ -216,7 +217,7 @@ describe('alignments track', () => {
 
     // load track
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram'))
-    await findByTestId('display-volvox_cram-LinearAlignmentsDisplay')
+    await findByTestId('display-volvox_cram-LinearAlignmentsDisplay', {}, delay)
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu
@@ -230,9 +231,8 @@ describe('alignments track', () => {
       target: { value: 'HP' },
     })
     fireEvent.click(await findByText('Submit'))
-
     // wait for pileup track to render with color
-    await findAllByTestId('pileup-tagHP', {}, { timeout: 10000 })
+    await findAllByTestId('pileup-tagHP', {}, delay)
 
     // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
@@ -246,7 +246,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 10000)
+  }, 30000)
 
   it('test that bam with small max height displays message', async () => {
     const pluginManager = getPluginManager()
@@ -257,8 +257,8 @@ describe('alignments track', () => {
       await findByTestId('htsTrackEntry-volvox_bam_small_max_height'),
     )
 
-    await findAllByText('Max height reached', {}, { timeout: 10000 })
-  }, 15000)
+    await findAllByText('Max height reached', {}, delay)
+  }, 30000)
 
   it('test snpcoverage doesnt count snpcoverage', async () => {
     const pluginManager = getPluginManager()
@@ -277,11 +277,12 @@ describe('alignments track', () => {
     const { findAllByTestId } = within(
       await findByTestId('Blockset-snpcoverage'),
     )
-    const snpCoverageCanvas = await findAllByTestId(
-      'prerendered_canvas',
-      {},
-      { timeout: 10000 },
-    )
+
+    await waitFor(async () => {
+      const canvases = await findAllByTestId('prerendered_canvas')
+      expect(canvases.length).toBe(2)
+    }, delay)
+    const snpCoverageCanvas = await findAllByTestId('prerendered_canvas')
 
     // this block tests that softclip avoids decrementing the total block
     // e.g. this line is not called for softclip/hardclip
@@ -304,5 +305,5 @@ describe('alignments track', () => {
         'base64',
       ),
     ).toMatchImageSnapshot()
-  }, 15000)
+  }, 30000)
 })

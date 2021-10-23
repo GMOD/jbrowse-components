@@ -6,7 +6,6 @@ import { getParent } from 'mobx-state-tree'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import Button from '@material-ui/core/Button'
 import RefreshIcon from '@material-ui/icons/Refresh'
-import ServerSideRenderedContent from './ServerSideRenderedContent'
 
 const useStyles = makeStyles(theme => ({
   loading: {
@@ -76,18 +75,32 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
   const [shown, setShown] = useState(false)
   const classes = useStyles()
   useEffect(() => {
-    const timeout = setTimeout(() => setShown(true), 300)
-    return () => clearTimeout(timeout)
+    let killed = false
+    const timeout = setTimeout(() => {
+      if (!killed) {
+        setShown(true)
+      }
+    }, 300)
+    return () => {
+      clearTimeout(timeout)
+      killed = true
+    }
   }, [])
 
   const { status: blockStatus } = model
   const { message: displayStatus } = getParent(model, 2)
   const status = displayStatus || blockStatus
-  return shown ? (
-    <div className={classes.loading}>
-      <div className={classes.dots}>{status ? `${status}` : 'Loading'}</div>
-    </div>
-  ) : null
+  return (
+    <>
+      {shown ? (
+        <div className={classes.loading}>
+          <Typography className={classes.dots} variant="body2">
+            {status ? `${status}` : 'Loading'}
+          </Typography>
+        </div>
+      ) : null}
+    </>
+  )
 })
 
 function BlockMessage({
@@ -97,12 +110,12 @@ function BlockMessage({
 }) {
   const classes = useStyles()
 
-  return typeof messageContent === 'string' ? (
+  return React.isValidElement(messageContent) ? (
+    <div className={classes.blockReactNodeMessage}>{messageContent}</div>
+  ) : (
     <Typography variant="body2" className={classes.blockMessage}>
       {messageContent}
     </Typography>
-  ) : (
-    <div className={classes.blockReactNodeMessage}>{messageContent}</div>
   )
 }
 
@@ -119,21 +132,17 @@ function BlockError({
   return (
     <div className={classes.blockError} style={{ height: displayHeight }}>
       {reload ? (
-        <>
-          <Button
-            data-testid="reload_button"
-            onClick={reload}
-            startIcon={<RefreshIcon />}
-          >
-            Reload
-          </Button>
-          {`${error}`}
-        </>
-      ) : (
-        <Typography color="error" variant="body2">
-          {`${error}`}
-        </Typography>
-      )}
+        <Button
+          data-testid="reload_button"
+          onClick={reload}
+          startIcon={<RefreshIcon />}
+        >
+          Reload
+        </Button>
+      ) : null}
+      <Typography color="error" variant="body2" display="inline">
+        {`${error}`}
+      </Typography>
     </div>
   )
 }
@@ -170,8 +179,7 @@ const ServerSideRenderedBlockContent = observer(
         </Repeater>
       )
     }
-
-    return <ServerSideRenderedContent model={model} />
+    return model.reactElement
   },
 )
 

@@ -1,0 +1,599 @@
+{
+  "vma": { "prefix": ["VMA2"], "exact": [] },
+  "cns": { "exact": [], "prefix": ["CNS1"] },
+  "chk": { "exact": [], "prefix": ["CHK1"] },
+  "yal026": { "prefix": ["YAL026C-A", "YAL026C"], "exact": [] },
+  "ybl036c": {
+    "prefix": [],
+    "exact": [["YBL036C", 0, "YBL036C", "chrII", 150449, 151223]]
+  },
+  "yal039": { "prefix": ["YAL039C"], "exact": [] },
+  "utp20": {
+    "exact": [["UTP20", 0, "YBL004W", "chrII", 227638, 235120]],
+    "prefix": []
+  },
+  "rei1": {
+    "prefix": [],
+    "exact": [["REI1", 0, "YBR267W", "chrII", 739835, 741017]]
+  },
+  "ybr229c": {
+    "prefix": [],
+    "exact": [["YBR229C", 0, "YBR229C", "chrII", 676351, 679216]]
+  },
+  "sup": { "prefix": ["SUP45", "SUP47", "SUP1", "SUP46"], "exact": [] },
+  "ybl060w": {
+    "exact": [["YBL060W", 0, "YBL060W", "chrII", 107933, 109997]],
+    "prefix": []
+  },
+  "sef": { "exact": [], "prefix": ["SEF1"] },
+  "ybr130c": {
+    "prefix": [],
+    "exact": [["YBR130C", 0, "YBR130C", "chrII", 495585, 496863]]
+  },
+  "rn": { "exact": [], "prefix": ["RNS3", "RNA6", "RNS2", "RNA5"] },
+  "ybl047": { "prefix": ["YBL047C"], "exact": [] },
+  "ybr045": { "exact": [], "prefix": ["YBR045C"] },
+  "ybl077w": {
+    "prefix": [],
+    "exact": [["YBL077W", 0, "YBL077W", "chrII", 80894, 81326]]
+  },
+  "raf6": { "prefix": ["RAF60"], "exact": [] },
+  "gg": { "exact": [], "prefix": ["GGS1"] },
+  "spo23": {
+    "exact": [["SPO23", 0, "YBR250W", "chrII", 719027, 720599]],
+    "prefix": []
+  },
+  "tmp3": {
+    "prefix": [],
+    "exact": [["TMP3", 0, "YBR263W", "chrII", 736258, 737731]]
+  },
+  "poa": { "exact": [], "prefix": ["POA1"] },
+  "rer2": {
+    "exact": [["RER2", 0, "YBR002C", "chrII", 241709, 242570]],
+    "prefix": []
+  },
+  "ybr246w": {
+    "exact": [["YBR246W", 0, "YBR246W", "chrII", 711585, 712749]],
+    "prefix": []
+  },
+  "ybl018c": {
+    "prefix": [],
+    "exact": [["YBL018C", 0, "YBL018C", "chrII", 186000, 186477]]
+  },
+  "ybr057c": {
+    "prefix": [],
+    "exact": [["YBR057C", 0, "YBR057C", "chrII", 352190, 353291]]
+  },
+  "pet16": { "exact": [], "prefix": ["PET161"] },
+  "nc": { "exact": [], "prefix": ["NCL1"] },
+  "ybr074w": {
+    "exact": [["YBR074W", 0, "YBR074W", "chrII", 386280, 389211]],
+    "prefix": []
+  },
+  "ybr302c": {
+    "exact": [["YBR302C", 0, "YBR302C", "chrII", 810333, 811473]],
+    "prefix": []
+  },
+  "pop7": {
+    "prefix": [],
+    "exact": [["POP7", 0, "YBR167C", "chrII", 571462, 571885]]
+  },
+  "ybl015w": {
+    "exact": [["YBL015W", 0, "YBL015W", "chrII", 194124, 195705]],
+    "prefix": []
+  },
+  "rps1": { "exact": [], "prefix": ["RPS11B", "RPS102", "RPS101", "RPS13A"] },
+  "oaf": { "exact": [], "prefix": ["OAF1"] },
+  "hpc2": {
+    "prefix": [],
+    "exact": [["HPC2", 0, "YBR215W", "chrII", 653350, 655312]]
+  },
+  "rot2": {
+    "exact": [["ROT2", 0, "YBR229C", "chrII", 676351, 679216]],
+    "prefix": []
+  },
+  "cps15": {
+    "exact": [["CPS15", 0, "YBR258C", "chrII", 729728, 730157]],
+    "prefix": []
+  },
+  "ybr098": { "exact": [], "prefix": ["YBR098W"] },
+  "im": { "prefix": ["IMD1", "IML3"], "exact": [] },
+  "sup47": {
+    "prefix": [],
+    "exact": [["SUP47", 0, "YBR143C", "chrII", 530862, 532176]]
+  },
+  "hir": { "prefix": ["HIR1"], "exact": [] },
+  "ybr181c": {
+    "prefix": [],
+    "exact": [["YBR181C", 0, "YBR181C", "chrII", 591706, 592769]]
+  },
+  "ybr072": { "prefix": ["YBR072W", "YBR072C-A"], "exact": [] },
+  "ybl021c": {
+    "exact": [["YBL021C", 0, "YBL021C", "chrII", 181662, 182097]],
+    "prefix": []
+  },
+  "fun4": {
+    "prefix": ["FUN48", "FUN44"],
+    "exact": [["FUN4", 0, "YAR008W", "chrI", 158966, 159794]]
+  },
+  "ybl100": { "prefix": ["YBL100W-C", "YBL100C"], "exact": [] },
+  "yal063c": {
+    "exact": [["YAL063C", 0, "YAL063C", "chrI", 24000, 27969]],
+    "prefix": ["YAL063C-A"]
+  },
+  "it": { "exact": [], "prefix": ["ITN1"] },
+  "ypc1": {
+    "exact": [["YPC1", 0, "YBR183W", "chrII", 596109, 597060]],
+    "prefix": []
+  },
+  "iml": { "exact": [], "prefix": ["IML3"] },
+  "ybr162w-a": {
+    "exact": [["YBR162W-A", 0, "YBR162W-A", "chrII", 565225, 565423]],
+    "prefix": []
+  },
+  "gat": { "prefix": ["GAT2"], "exact": [] },
+  "ssh": { "prefix": ["SSH1"], "exact": [] },
+  "ybl087c": {
+    "prefix": [],
+    "exact": [["YBL087C", 0, "YBL087C", "chrII", 59817, 60735]]
+  },
+  "fun32": {
+    "prefix": [],
+    "exact": [["FUN32", 0, "YAL016W", "chrI", 124879, 126787]]
+  },
+  "ybr231": { "exact": [], "prefix": ["YBR231C"] },
+  "v": {
+    "prefix": [
+      "VPS8",
+      "VPT8",
+      "VPT1",
+      "VPS10",
+      "VAP1",
+      "VPS15",
+      "VPL19",
+      "VAC4",
+      "VID24",
+      "VMA2",
+      "VAT2",
+      "VBA2"
+    ],
+    "exact": []
+  },
+  "ybr127c": {
+    "exact": [["YBR127C", 0, "YBR127C", "chrII", 491262, 492816]],
+    "prefix": []
+  },
+  "ybr221w-a": {
+    "exact": [["YBR221W-A", 0, "YBR221W-A", "chrII", 666532, 666637]],
+    "prefix": []
+  },
+  "alg1": {
+    "exact": [["ALG1", 0, "YBR110W", "chrII", 458865, 460215]],
+    "prefix": ["ALG14"]
+  },
+  "cui": { "exact": [], "prefix": ["CUI3"] },
+  "wh": { "exact": [], "prefix": ["WHI1"] },
+  "eth1": {
+    "prefix": [],
+    "exact": [["ETH1", 0, "YBL019W", "chrII", 184355, 185918]]
+  },
+  "rna5": {
+    "exact": [["RNA5", 0, "YBR237W", "chrII", 691963, 694513]],
+    "prefix": []
+  },
+  "ybl008w-": { "prefix": ["YBL008W-A"], "exact": [] },
+  "lsm2": {
+    "prefix": [],
+    "exact": [["LSM2", 0, "YBL026W", "chrII", 170625, 171041]]
+  },
+  "cyc8": {
+    "exact": [["CYC8", 0, "YBR112C", "chrII", 462863, 465764]],
+    "prefix": []
+  },
+  "fes": { "exact": [], "prefix": ["FES1"] },
+  "ba": { "exact": [], "prefix": ["BAP2"] },
+  "ybr013": { "exact": [], "prefix": ["YBR013C"] },
+  "sul1": {
+    "exact": [["SUL1", 0, "YBR294W", "chrII", 789229, 791809]],
+    "prefix": []
+  },
+  "swa": { "prefix": ["SWA3"], "exact": [] },
+  "sec71": {
+    "exact": [["SEC71", 0, "YBR171W", "chrII", 578358, 578979]],
+    "prefix": []
+  },
+  "ybr15": {
+    "exact": [],
+    "prefix": [
+      "YBR150C",
+      "YBR151W",
+      "YBR152W",
+      "YBR153W",
+      "YBR154C",
+      "YBR155W",
+      "YBR156C",
+      "YBR157C",
+      "YBR158W",
+      "YBR159W"
+    ]
+  },
+  "ybr084c": { "exact": [], "prefix": ["YBR084C-A"] },
+  "pdx3": {
+    "prefix": [],
+    "exact": [["PDX3", 0, "YBR035C", "chrII", 306268, 306955]]
+  },
+  "ybr189": { "exact": [], "prefix": ["YBR189W"] },
+  "ecm1": {
+    "exact": [["ECM1", 0, "YAL059W", "chrI", 36509, 37148]],
+    "prefix": ["ECM13", "ECM15"]
+  },
+  "vpt1": {
+    "exact": [["VPT1", 0, "YBL017C", "chrII", 186846, 191586]],
+    "prefix": []
+  },
+  "ybp": { "exact": [], "prefix": ["YBP1"] },
+  "yar060c": {
+    "exact": [["YAR060C", 0, "YAR060C", "chrI", 217147, 217483]],
+    "prefix": []
+  },
+  "ybr148w": {
+    "exact": [["YBR148W", 0, "YBR148W", "chrII", 537869, 539699]],
+    "prefix": []
+  },
+  "ybr268w": {
+    "prefix": [],
+    "exact": [["YBR268W", 0, "YBR268W", "chrII", 741293, 741611]]
+  },
+  "ybl039": {
+    "prefix": ["YBL039W-B", "YBL039W-A", "YBL039C", "YBL039C-A"],
+    "exact": []
+  },
+  "ybr109c": {
+    "prefix": [],
+    "exact": [["YBR109C", 0, "YBR109C", "chrII", 457912, 458356]]
+  },
+  "ybl026": { "exact": [], "prefix": ["YBL026W"] },
+  "ybr171w": {
+    "exact": [["YBR171W", 0, "YBR171W", "chrII", 578358, 578979]],
+    "prefix": []
+  },
+  "ybr196c-b": {
+    "prefix": [],
+    "exact": [["YBR196C-B", 0, "YBR196C-B", "chrII", 614520, 614625]]
+  },
+  "whi": { "prefix": ["WHI1"], "exact": [] },
+  "nle": { "prefix": ["NLE3"], "exact": [] },
+  "yal047": { "prefix": ["YAL047W-A", "YAL047C"], "exact": [] },
+  "ybr298c": {
+    "exact": [["YBR298C", 0, "YBR298C", "chrII", 802624, 804469]],
+    "prefix": ["YBR298C-A"]
+  },
+  "ybr016w": {
+    "prefix": [],
+    "exact": [["YBR016W", 0, "YBR016W", "chrII", 270246, 270633]]
+  },
+  "cns1": {
+    "prefix": [],
+    "exact": [["CNS1", 0, "YBR155W", "chrII", 549764, 550922]]
+  },
+  "spo": { "exact": [], "prefix": ["SPO7", "SPOT8", "SPO23"] },
+  "md": { "prefix": ["MDM10", "MDT1"], "exact": [] },
+  "yal064c-": { "exact": [], "prefix": ["YAL064C-A"] },
+  "ybl059w": {
+    "exact": [["YBL059W", 0, "YBL059W", "chrII", 110595, 111246]],
+    "prefix": []
+  },
+  "yg106": {
+    "exact": [["YG106", 0, "YBL075C", "chrII", 84496, 86446]],
+    "prefix": []
+  },
+  "vac": { "prefix": ["VAC4"], "exact": [] },
+  "ybr224w": {
+    "prefix": [],
+    "exact": [["YBR224W", 0, "YBR224W", "chrII", 670119, 670635]]
+  },
+  "ybr292": { "prefix": ["YBR292C"], "exact": [] },
+  "yb": {
+    "exact": [],
+    "prefix": [
+      "YBL113C",
+      "YBL113W-A",
+      "YBL112C",
+      "YBL111C",
+      "YBL109W",
+      "YBL108C-A",
+      "YBL108W",
+      "YBL107W-A",
+      "YBL107C",
+      "YBL106C",
+      "YBL105C",
+      "YBL104C",
+      "YBL103C-A",
+      "YBL103C",
+      "YBL102W",
+      "YBL101C",
+      "YBL100W-C",
+      "YBL101W-C",
+      "YBL100C",
+      "YBL099W",
+      { "hitLimit": 1, "name": "too many matches" }
+    ]
+  },
+  "tip1": {
+    "exact": [["TIP1", 0, "YBR067C", "chrII", 372099, 372732]],
+    "prefix": []
+  },
+  "ybr196": { "prefix": ["YBR196C", "YBR196C-A", "YBR196C-B"], "exact": [] },
+  "ybr278": { "exact": [], "prefix": ["YBR278W"] },
+  "cos11": { "prefix": ["COS111"], "exact": [] },
+  "yal065c-a": {
+    "exact": [["YAL065C-A", 0, "YAL064C-A", "chrI", 13363, 13744]],
+    "prefix": []
+  },
+  "ybr272c": {
+    "exact": [["YBR272C", 0, "YBR272C", "chrII", 746355, 747798]],
+    "prefix": []
+  },
+  "ybr154": { "prefix": ["YBR154C"], "exact": [] },
+  "rpa": { "prefix": ["RPA1"], "exact": [] },
+  "ybr038w": {
+    "exact": [["YBR038W", 0, "YBR038W", "chrII", 311896, 314788]],
+    "prefix": []
+  },
+  "ybl002w": {
+    "prefix": [],
+    "exact": [["YBL002W", 0, "YBL002W", "chrII", 236494, 236890]]
+  },
+  "sa": {
+    "prefix": ["SAW1", "SAF49", "SAS3", "SAD3", "SAL4", "SAF35", "SAF1"],
+    "exact": []
+  },
+  "ybl058": { "exact": [], "prefix": ["YBL058W"] },
+  "yal011": { "prefix": ["YAL011W"], "exact": [] },
+  "ybr079c": {
+    "prefix": [],
+    "exact": [["YBR079C", 0, "YBR079C", "chrII", 395376, 398271]]
+  },
+  "zta1": {
+    "prefix": [],
+    "exact": [["ZTA1", 0, "YBR046C", "chrII", 330504, 331509]]
+  },
+  "yal03": {
+    "prefix": [
+      "YAL039C",
+      "YAL038W",
+      "YAL037C-B",
+      "YAL037C-A",
+      "YAL037W",
+      "YAL036C",
+      "YAL035W",
+      "YAL034C-B",
+      "YAL035C-A",
+      "YAL034W-A",
+      "YAL034C",
+      "YAL033W",
+      "YAL032C",
+      "YAL031W-A",
+      "YAL031C",
+      "YAL030W"
+    ],
+    "exact": []
+  },
+  "yal056c-": { "exact": [], "prefix": ["YAL056C-A"] },
+  "o": {
+    "exact": [],
+    "prefix": ["OAF1", "OSH1", "OP1", "OLA1", "ODP1", "ORC2", "OPY1", "OM14"]
+  },
+  "ybr093c": {
+    "prefix": [],
+    "exact": [["YBR093C", 0, "YBR093C", "chrII", 429541, 430945]]
+  },
+  "ybr035c": {
+    "prefix": [],
+    "exact": [["YBR035C", 0, "YBR035C", "chrII", 306268, 306955]]
+  },
+  "cn": { "prefix": ["CNE1", "CNS1"], "exact": [] },
+  "ybr233w": {
+    "prefix": ["YBR233W-A"],
+    "exact": [["YBR233W", 0, "YBR233W", "chrII", 683422, 684664]]
+  },
+  "ybr295w": {
+    "exact": [["YBR295W", 0, "YBR295W", "chrII", 792842, 796493]],
+    "prefix": []
+  },
+  "ncl1": {
+    "exact": [["NCL1", 0, "YBL024W", "chrII", 172536, 174591]],
+    "prefix": []
+  },
+  "fun53": {
+    "exact": [["FUN53", 0, "YAL033W", "chrI", 82706, 83228]],
+    "prefix": []
+  },
+  "ecm31": {
+    "exact": [["ECM31", 0, "YBR176W", "chrII", 583714, 584653]],
+    "prefix": []
+  },
+  "ybr251w": {
+    "prefix": [],
+    "exact": [["YBR251W", 0, "YBR251W", "chrII", 721384, 722308]]
+  },
+  "ybl091c-": { "exact": [], "prefix": ["YBL091C-A"] },
+  "yal035c-a": {
+    "exact": [["YAL035C-A", 0, "YAL034C-B", "chrI", 79489, 79843]],
+    "prefix": []
+  },
+  "daf1": {
+    "prefix": [],
+    "exact": [["DAF1", 0, "YAL040C", "chrI", 65778, 67521]]
+  },
+  "apg8": {
+    "exact": [["APG8", 0, "YBL078C", "chrII", 80374, 80728]],
+    "prefix": []
+  },
+  "huf": { "exact": [], "prefix": ["HUF2"] },
+  "ol": { "prefix": ["OLA1"], "exact": [] },
+  "sgn": { "exact": [], "prefix": ["SGN2"] },
+  "ybr22": {
+    "exact": [],
+    "prefix": [
+      "YBR220C",
+      "YBR221C",
+      "YBR221W-A",
+      "YBR222C",
+      "YBR223C",
+      "YBR223W-A",
+      "YBR224W",
+      "YBR225W",
+      "YBR226C",
+      "YBR227C",
+      "YBR228W",
+      "YBR229C"
+    ]
+  },
+  "vba2": {
+    "prefix": [],
+    "exact": [["VBA2", 0, "YBR293W", "chrII", 787000, 788425]]
+  },
+  "yal001c": {
+    "prefix": [],
+    "exact": [["YAL001C", 0, "YAL001C", "chrI", 147595, 151168]]
+  },
+  "yar002c": { "prefix": ["YAR002C-A"], "exact": [] },
+  "tsv1": { "exact": [], "prefix": ["TSV115"] },
+  "slx2": {
+    "exact": [["SLX2", 0, "YBR098W", "chrII", 441508, 443584]],
+    "prefix": []
+  },
+  "yal035w": {
+    "prefix": [],
+    "exact": [["YAL035W", 0, "YAL035W", "chrI", 76427, 79436]]
+  },
+  "chr": { "prefix": ["chrI", "chrII"], "exact": [] },
+  "ybl059c-": { "prefix": ["YBL059C-A"], "exact": [] },
+  "csh": { "prefix": ["CSH1"], "exact": [] },
+  "anc2": {
+    "prefix": [],
+    "exact": [["ANC2", 0, "YBL030C", "chrII", 163043, 164000]]
+  },
+  "ape": { "exact": [], "prefix": ["APE3"] },
+  "ybl011": { "exact": [], "prefix": ["YBL011W"] },
+  "yal058": { "exact": [], "prefix": ["YAL058W", "YAL058C-A"] },
+  "mal": {
+    "exact": [],
+    "prefix": [
+      "MAL33",
+      "MALR",
+      "MAL3R",
+      "MAL31",
+      "MALT",
+      "MAL3T",
+      "MAL32",
+      "MALS",
+      "MAL3S"
+    ]
+  },
+  "med8": {
+    "exact": [["MED8", 0, "YBR193C", "chrII", 609076, 609748]],
+    "prefix": []
+  },
+  "erv15": {
+    "prefix": [],
+    "exact": [["ERV15", 0, "YBR210W", "chrII", 645544, 645973]]
+  },
+  "rns2": {
+    "prefix": [],
+    "exact": [["RNS2", 0, "YBR173C", "chrII", 581720, 582167]]
+  },
+  "ybr163": { "exact": [], "prefix": ["YBR163W"] },
+  "ybl107w": { "prefix": ["YBL107W-A"], "exact": [] },
+  "ntc2": { "prefix": ["NTC20"], "exact": [] },
+  "ybr113w": {
+    "exact": [["YBR113W", 0, "YBR113W", "chrII", 465559, 466042]],
+    "prefix": []
+  },
+  "ybl09": {
+    "prefix": [
+      "YBL099W",
+      "YBL098W",
+      "YBL097W",
+      "YBL096C",
+      "YBL095W",
+      "YBL094C",
+      "YBL093C",
+      "YBL092W",
+      "YBL091C-A",
+      "YBL091C",
+      "YBL090W"
+    ],
+    "exact": []
+  },
+  "ybr250": { "exact": [], "prefix": ["YBR250W"] },
+  "rpl19b": {
+    "prefix": [],
+    "exact": [["RPL19B", 0, "YBL027W", "chrII", 168425, 169379]]
+  },
+  "cac3": {
+    "prefix": [],
+    "exact": [["CAC3", 0, "YBR195C", "chrII", 610608, 611877]]
+  },
+  "ybr282w": {
+    "exact": [["YBR282W", 0, "YBR282W", "chrII", 768235, 768676]],
+    "prefix": []
+  },
+  "dsn": { "prefix": ["DSN3"], "exact": [] },
+  "ybr102": { "exact": [], "prefix": ["YBR102C"] },
+  "lpg18": {
+    "exact": [["LPG18", 0, "YBR181C", "chrII", 591706, 592769]],
+    "prefix": []
+  },
+  "ybr267": { "exact": [], "prefix": ["YBR267W"] },
+  "ybr089w": {
+    "exact": [["YBR089W", 0, "YBR089W", "chrII", 425176, 425776]],
+    "prefix": []
+  },
+  "yal016c": { "prefix": ["YAL016C-B", "YAL016C-A"], "exact": [] },
+  "ybl085": { "exact": [], "prefix": ["YBL085W"] },
+  "to": { "exact": [], "prefix": ["TOS1"] },
+  "yif2": {
+    "prefix": [],
+    "exact": [["yIF2", 0, "YAL035W", "chrI", 76427, 79436]]
+  },
+  "ybl070": { "exact": [], "prefix": ["YBL070C"] },
+  "ybr087": { "prefix": ["YBR087W"], "exact": [] },
+  "ybr219": { "prefix": ["YBR219C"], "exact": [] },
+  "snp3": {
+    "exact": [["SNP3", 0, "YBL026W", "chrII", 170625, 171041]],
+    "prefix": []
+  },
+  "ybr024": { "prefix": ["YBR024W"], "exact": [] },
+  "ybr104w": {
+    "prefix": [],
+    "exact": [["YBR104W", 0, "YBR104W", "chrII", 449660, 450650]]
+  },
+  "erv": { "exact": [], "prefix": ["ERV46", "ERV15"] },
+  "ybr196c": {
+    "exact": [["YBR196C", 0, "YBR196C", "chrII", 612230, 613895]],
+    "prefix": ["YBR196C-A", "YBR196C-B"]
+  },
+  "pho": {
+    "prefix": [
+      "PHO11",
+      "PHO3",
+      "phoC",
+      "PHO5",
+      "phoE",
+      "PHO88",
+      "phoF",
+      "PHO6",
+      "PHO89"
+    ],
+    "exact": []
+  },
+  "yar00": {
+    "prefix": ["YAR002W", "YAR002C-A", "YAR003W", "YAR007C", "YAR008W"],
+    "exact": []
+  },
+  "ybr206": { "exact": [], "prefix": ["YBR206W"] },
+  "tap": { "prefix": ["TAP1"], "exact": [] },
+  "ybr135": { "prefix": ["YBR135W"], "exact": [] }
+}

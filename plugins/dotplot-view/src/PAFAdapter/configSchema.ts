@@ -9,7 +9,7 @@ export default ConfigurationSchema(
     },
     pafLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/file.paf' },
+      defaultValue: { uri: '/path/to/file.paf', locationType: 'UriLocation' },
     },
   },
   { explicitlyTyped: true },

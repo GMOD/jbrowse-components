@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import { IAnyStateTreeNode, getEnv } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles, Typography, Link } from '@material-ui/core'
-import { PluginMetaData } from '@jbrowse/core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -19,46 +19,28 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-interface BasePlugin {
-  version?: string
-  name: string
-  url?: string
-}
-
 function About({ model }: { model: IAnyStateTreeNode }) {
   const classes = useStyles()
-  const slotDefinition = {
-    version: '',
-    pluginManager: {
-      plugins: [],
-      pluginMetaData: {} as Record<string, PluginMetaData>,
-    },
-  }
-  const { pluginManager } = model ? getEnv(model) : slotDefinition
-  const { plugins } = pluginManager
+  const { version } = getSession(model)
+  const { pluginManager } = getEnv(model)
+  const { plugins } = pluginManager as PluginManager
   const corePlugins = plugins
-    .filter((p: BasePlugin) =>
-      Boolean(pluginManager.pluginMetaData[p.name]?.isCore),
-    )
-    .map((p: BasePlugin) => p.name)
+    .filter(p => pluginManager.pluginMetadata[p.name]?.isCore)
+    .map(p => p.name)
 
   const corePluginsRender = plugins
-    .filter((plugin: BasePlugin) => {
+    .filter(plugin => {
       return corePlugins.includes(plugin.name)
     })
-    .map((plugin: BasePlugin) => {
-      return (
-        <li key={plugin.name}>
-          {plugin.name} {plugin.version || ''}
-        </li>
-      )
-    })
+    .map(plugin => (
+      <li key={plugin.name}>
+        {plugin.name} {plugin.version || ''}
+      </li>
+    ))
 
   const externalPluginsRender = plugins
-    .filter((plugin: BasePlugin) => {
-      return !corePlugins.includes(plugin.name)
-    })
-    .map((plugin: BasePlugin) => {
+    .filter(plugin => !corePlugins.includes(plugin.name))
+    .map(plugin => {
       const text = `${plugin.name} ${plugin.version || ''}`
       return (
         <li key={plugin.name}>
@@ -79,7 +61,7 @@ function About({ model }: { model: IAnyStateTreeNode }) {
         JBrowse 2
       </Typography>
       <Typography variant="h6" align="center" className={classes.subtitle}>
-        {model ? getSession(model).version : slotDefinition.version}
+        {version}
       </Typography>
       <Typography align="center" variant="body2">
         JBrowse is a{' '}

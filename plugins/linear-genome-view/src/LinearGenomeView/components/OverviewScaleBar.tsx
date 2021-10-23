@@ -1,14 +1,12 @@
-// import { Region } from '@jbrowse/core/util/types'
-// import { Region as MSTRegion } from '@jbrowse/core/util/types/mst'
+import React from 'react'
 import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
-import { fade } from '@material-ui/core/styles/colorManipulator'
+import { alpha } from '@material-ui/core/styles'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
-import React from 'react'
 import clsx from 'clsx'
 import { Typography } from '@material-ui/core'
 import {
@@ -83,7 +81,7 @@ const useStyles = makeStyles(theme => {
       pointerEvents: 'none',
     },
     scaleBarVisibleRegion: {
-      background: fade(scaleBarColor, 0.3),
+      background: alpha(scaleBarColor, 0.3),
       position: 'absolute',
       height: HEADER_OVERVIEW_HEIGHT,
       pointerEvents: 'none',
@@ -91,7 +89,7 @@ const useStyles = makeStyles(theme => {
       zIndex: 100,
       borderWidth: 1,
       borderStyle: 'solid',
-      borderColor: fade(scaleBarColor, 0.8),
+      borderColor: alpha(scaleBarColor, 0.8),
       boxSizing: 'content-box',
     },
     overview: {
@@ -160,8 +158,8 @@ const Polygon = observer(
         {points && (
           <polygon
             points={points.toString()}
-            fill={fade(polygonColor, 0.3)}
-            stroke={fade(polygonColor, 0.8)}
+            fill={alpha(polygonColor, 0.3)}
+            stroke={alpha(polygonColor, 0.8)}
           />
         )}
       </svg>
@@ -265,7 +263,10 @@ const ScaleBar = observer(
             >
               {/* name of sequence */}
               <Typography
-                style={{ color: refNameColor }}
+                style={{
+                  color: refNameColor,
+                  zIndex: 100,
+                }}
                 className={classes.scaleBarRefName}
               >
                 {seq.refName}
@@ -273,9 +274,10 @@ const ScaleBar = observer(
 
               {/* the number labels drawn in overview scale bar*/}
               {tickLabels.map((tickLabel, labelIdx) => (
-                <div
+                <Typography
                   key={`${JSON.stringify(seq)}-${tickLabel}-${labelIdx}`}
                   className={classes.scaleBarLabel}
+                  variant="body2"
                   style={{
                     left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
                     pointerEvents: 'none',
@@ -283,7 +285,7 @@ const ScaleBar = observer(
                   }}
                 >
                   {tickLabel.toLocaleString('en-US')}
-                </div>
+                </Typography>
               ))}
             </div>
           )
@@ -314,21 +316,17 @@ function OverviewScaleBar({
   const scale =
     model.totalBp / (width - (displayedRegions.length - 1) * wholeSeqSpacer)
 
-  if (!displayedRegions.length) {
-    return (
-      <>
-        <div className={classes.scaleBar}>
-          <LinearProgress
-            variant="indeterminate"
-            style={{ marginTop: 4, width: '100%' }}
-          />
-        </div>
-        <div>{children}</div>
-      </>
-    )
-  }
-
-  return (
+  return !displayedRegions.length ? (
+    <>
+      <div className={classes.scaleBar}>
+        <LinearProgress
+          variant="indeterminate"
+          style={{ marginTop: 4, width: '100%' }}
+        />
+      </div>
+      <div>{children}</div>
+    </>
+  ) : (
     <div>
       <OverviewRubberBand
         model={model}

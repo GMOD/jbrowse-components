@@ -10,6 +10,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import type { GenericFilehandle } from 'generic-filehandle'
 import HicStraw from 'hic-straw'
 import MyConfigSchema from './configSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 interface ContactRecord {
   bin1: number
@@ -31,6 +33,11 @@ interface Ref {
   end: number
 }
 
+interface HicOptions extends BaseOptions {
+  resolution?: number
+  bpPerPx?: number
+}
+
 // wraps generic-filehandle so the read function only takes a position and length
 // in some ways, generic-filehandle wishes it was just this but it has
 // to adapt to the node.js fs promises API
@@ -42,13 +49,14 @@ class GenericFilehandleWrapper {
   }
 
   async read(position: number, length: number) {
-    const { buffer, bytesRead } = await this.filehandle.read(
+    const { buffer: b, bytesRead } = await this.filehandle.read(
       Buffer.allocUnsafe(length),
       0,
       length,
       position,
     )
-    return buffer.buffer.slice(0, bytesRead)
+    // xref https://stackoverflow.com/a/31394257/2129219
+    return b.buffer.slice(b.byteOffset, b.byteOffset + bytesRead)
   }
 }
 export function openFilehandleWrapper(location: FileLocation) {
@@ -67,21 +75,39 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     getMetaData: () => Promise<HicMetadata>
   }
 
-  public constructor(config: Instance<typeof MyConfigSchema>) {
-    super(config)
+  public constructor(
+    config: Instance<typeof MyConfigSchema>,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    super(config, getSubAdapter, pluginManager)
     const hicLocation = readConfObject(config, 'hicLocation')
     this.hic = new HicStraw({
       file: openFilehandleWrapper(hicLocation),
     })
   }
 
-  async getRefNames() {
-    const metadata = await this.hic.getMetaData()
+  private async setup(opts?: BaseOptions) {
+    const { statusCallback = () => {} } = opts || {}
+    statusCallback('Downloading .hic header')
+    const result = await this.hic.getMetaData()
+    statusCallback('')
+    return result
+  }
+
+  public async getHeader(opts?: BaseOptions) {
+    const ret = await this.setup(opts)
+    const { chromosomes, ...rest } = ret
+    return rest
+  }
+
+  async getRefNames(opts?: BaseOptions) {
+    const metadata = await this.setup(opts)
     return metadata.chromosomes.map(chr => chr.name)
   }
 
-  async getResolution(bpPerPx: number) {
-    const metadata = await this.hic.getMetaData()
+  async getResolution(bpPerPx: number, opts?: BaseOptions) {
+    const metadata = await this.setup(opts)
     const { resolutions } = metadata
     let chosenResolution = resolutions[resolutions.length - 1]
 
@@ -94,11 +120,12 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     return chosenResolution
   }
 
-  getFeatures(region: Region, opts: BaseOptions = {}) {
+  getFeatures(region: Region, opts: HicOptions = {}) {
     return ObservableCreate<ContactRecord>(async observer => {
       const { refName: chr, start, end } = region
-      const { bpPerPx } = opts
-      const res = await this.getResolution(bpPerPx || 1000)
+      const { resolution, bpPerPx = 1, statusCallback = () => {} } = opts
+      const res = await this.getResolution(bpPerPx / (resolution || 1000), opts)
+      statusCallback('Downloading .hic data')
 
       const records = await this.hic.getContactRecords(
         'KR',
@@ -110,6 +137,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       records.forEach(record => {
         observer.next(record)
       })
+      statusCallback('')
       observer.complete()
     }, opts.signal) as any // eslint-disable-line @typescript-eslint/no-explicit-any
   }

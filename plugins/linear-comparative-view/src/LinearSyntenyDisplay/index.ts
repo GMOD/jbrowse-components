@@ -50,9 +50,10 @@ export function stateModelFactory(
       get highResolutionScaling() {
         return 1
       },
-      get renderProps() {
+      renderProps() {
         const parentView = getContainingView(self) as LinearSyntenyViewModel
         return {
+          rpcDriverName: self.rpcDriverName,
           displayModel: self,
           config: getConf(self, 'renderer'),
           width: parentView.width,

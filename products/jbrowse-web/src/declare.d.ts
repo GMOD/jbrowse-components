@@ -1,2 +1,1 @@
-declare module '@librpc/web'
-declare module 'fastestsmallesttextencoderdecoder'
+declare module 'librpc-web-mod'

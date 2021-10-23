@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
@@ -5,7 +6,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import {
   configSchema as ConfigurationEditorConfigSchema,
   HeadingComponent as ConfigurationEditorHeadingComponent,
-  ReactComponent as ConfigurationEditorReactComponent,
   stateModelFactory as ConfigurationEditorStateModelFactory,
 } from './ConfigurationEditorWidget'
 import {
@@ -21,6 +21,10 @@ import {
   configSchema as refNameAliasAdapterConfigSchema,
 } from './RefNameAliasAdapter'
 
+const ConfigurationEditorComponent = lazy(
+  () => import('./ConfigurationEditorWidget/components/ConfigurationEditor'),
+)
+
 export default class extends Plugin {
   name = 'ConfigurationPlugin'
 
@@ -31,6 +35,12 @@ export default class extends Plugin {
           name: 'FromConfigAdapter',
           configSchema: fromConfigAdapterConfigSchema,
           AdapterClass: FromConfigAdapterClass,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
         }),
     )
     pluginManager.addAdapterType(
@@ -39,6 +49,12 @@ export default class extends Plugin {
           name: 'FromConfigRegionsAdapter',
           configSchema: fromConfigRegionsAdapterConfigSchema,
           AdapterClass: FromConfigRegionsAdapterClass,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
         }),
     )
     pluginManager.addAdapterType(
@@ -47,6 +63,12 @@ export default class extends Plugin {
           name: 'FromConfigSequenceAdapter',
           configSchema: fromConfigSequenceAdapterConfigSchema,
           AdapterClass: FromConfigSequenceAdapterClass,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
         }),
     )
     pluginManager.addAdapterType(
@@ -55,6 +77,12 @@ export default class extends Plugin {
           name: 'RefNameAliasAdapter',
           configSchema: refNameAliasAdapterConfigSchema,
           AdapterClass: RefNameAliasAdapterClass,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
         }),
     )
 
@@ -64,11 +92,12 @@ export default class extends Plugin {
         HeadingComponent: ConfigurationEditorHeadingComponent,
         configSchema: ConfigurationEditorConfigSchema,
         stateModel: ConfigurationEditorStateModelFactory(pluginManager),
-        ReactComponent: ConfigurationEditorReactComponent,
+        ReactComponent: ConfigurationEditorComponent,
       })
     })
   }
 }
 
-export { default as ConfigurationEditor } from './ConfigurationEditorWidget/components/ConfigurationEditor'
 export { default as JsonEditor } from './ConfigurationEditorWidget/components/JsonEditor'
+
+export { ConfigurationEditorComponent as ConfigurationEditor }

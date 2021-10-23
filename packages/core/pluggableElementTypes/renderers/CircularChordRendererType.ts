@@ -1,3 +1,3 @@
-import ServerSideRenderer from './ServerSideRendererType'
+import FeatureRenderer from './FeatureRendererType'
 
-export default class CircularChordRendererType extends ServerSideRenderer {}
+export default class CircularChordRendererType extends FeatureRenderer {}

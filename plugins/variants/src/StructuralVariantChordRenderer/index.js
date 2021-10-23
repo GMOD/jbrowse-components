@@ -1,13 +1,8 @@
-import ReactComponentFactory from './ReactComponent'
+import ChordRendererType from '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import ReactComponent from './ReactComponent'
 
-export default pluginManager => {
-  const { jbrequire } = pluginManager
-  const ChordRendererType = jbrequire(
-    '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType',
-  )
-  const { ConfigurationSchema } = jbrequire('@jbrowse/core/configuration')
-
-  const ReactComponent = jbrequire(ReactComponentFactory)
+const ChordRendererConfigF = pluginManager => {
   const configSchema = ConfigurationSchema(
     'StructuralVariantChordRenderer',
     {
@@ -40,3 +35,5 @@ export default pluginManager => {
     pluginManager,
   })
 }
+
+export default ChordRendererConfigF

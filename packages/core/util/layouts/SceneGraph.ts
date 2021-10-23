@@ -77,9 +77,11 @@ export default class SceneGraph {
     data?: Record<string, any>,
   ): SceneGraph {
     let child: SceneGraph
-    if (nameOrSceneGraph instanceof SceneGraph) child = nameOrSceneGraph
-    else
+    if (nameOrSceneGraph instanceof SceneGraph) {
+      child = nameOrSceneGraph
+    } else {
       child = new SceneGraph(nameOrSceneGraph, left, top, width, height, data)
+    }
 
     if (!(child instanceof SceneGraph)) {
       throw new TypeError(
@@ -87,8 +89,9 @@ export default class SceneGraph {
       )
     }
 
-    if (this.children.has(child.name))
+    if (this.children.has(child.name)) {
       throw new Error(`child named "${child.name}" already exists`)
+    }
 
     // update the bounds to match the child
     child.parent = this
@@ -146,7 +149,9 @@ export default class SceneGraph {
     if (bottom !== undefined && newBottom > bottom) {
       this.height += newBottom - bottom
     }
-    if (this.parent) this.parent.expand(newLeft, newRight, newTop, newBottom)
+    if (this.parent) {
+      this.parent.expand(newLeft, newRight, newTop, newBottom)
+    }
     this.absoluteCache.dirty = true
   }
 

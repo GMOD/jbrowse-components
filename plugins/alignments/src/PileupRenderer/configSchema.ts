@@ -55,6 +55,17 @@ export default ConfigurationSchema(
       description: 'remove spacing between features',
       defaultValue: false,
     },
+    largeInsertionIndicatorScale: {
+      type: 'number',
+      description:
+        'scale at which to draw the large insertion indicators (bp/pixel)',
+      defaultValue: 10,
+    },
+    mismatchAlpha: {
+      type: 'boolean',
+      defaultValue: false,
+      description: 'Fade low quality mismatches',
+    },
   },
   { explicitlyTyped: true },
 )

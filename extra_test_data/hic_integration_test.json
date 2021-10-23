@@ -1,0 +1,64 @@
+{
+  "assemblies": [
+    {
+      "name": "hg19",
+      "aliases": ["GRCh37"],
+      "sequence": {
+        "trackId": "hg19_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "hg19.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "HicTrack",
+      "trackId": "hic_test",
+      "name": "Hi-C test file",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "HicAdapter",
+        "hicLocation": {
+          "uri": "test.hic",
+          "locationType": "UriLocation"
+        }
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "Integration test example",
+    "views": [
+      {
+        "id": "integration_test",
+        "type": "LinearGenomeView",
+        "offsetPx": 2000,
+        "bpPerPx": 0.05,
+        "displayedRegions": [
+          {
+            "refName": "1",
+            "start": 0,
+            "end": 10000000,
+            "assemblyName": "hg19"
+          }
+        ]
+      }
+    ],
+    "widgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorWidget",
+        "filterText": "",
+        "view": "integration_test"
+      }
+    },
+    "activeWidgets": {
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+    }
+  }
+}

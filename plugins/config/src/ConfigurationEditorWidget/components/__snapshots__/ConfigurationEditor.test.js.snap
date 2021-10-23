@@ -47,24 +47,44 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
     <div
       class="makeStyles-paperContent"
     >
-      <label
-        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiInputLabel-shrink"
-        data-shrink="true"
-        for="callback-editor"
-      >
-        fileLocationTest
-      </label>
       <div
-        class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center"
+        class="MuiBox-root MuiBox-root"
+      >
+        <label
+          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiInputLabel-shrink"
+          data-shrink="true"
+        >
+          fileLocationTest
+        </label>
+      </div>
+      <div
+        class="MuiBox-root MuiBox-root"
       >
         <div
-          class="MuiGrid-root MuiGrid-item"
+          class="MuiBox-root MuiBox-root"
         >
           <div
-            aria-label="file or url picker"
+            aria-label="file, url, or account picker"
             class="MuiToggleButtonGroup-root"
             role="group"
           >
+            <button
+              aria-label="local file"
+              aria-pressed="false"
+              class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal"
+              tabindex="0"
+              type="button"
+              value="file"
+            >
+              <span
+                class="MuiToggleButton-label"
+              >
+                File
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
             <button
               aria-label="url"
               aria-pressed="true"
@@ -76,7 +96,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
               <span
                 class="MuiToggleButton-label"
               >
-                Url
+                URL
               </span>
               <span
                 class="MuiTouchRipple-root"
@@ -84,24 +104,38 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
             </button>
           </div>
         </div>
-        <div
-          class="MuiGrid-root MuiGrid-item"
+      </div>
+      <div
+        class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+      >
+        <label
+          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-filled"
+          data-shrink="true"
         >
-          <div
-            class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+          Enter URL
+        </label>
+        <div
+          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-fullWidth MuiInputBase-formControl"
+        >
+          <input
+            aria-invalid="false"
+            class="MuiInputBase-input MuiOutlinedInput-input"
+            data-testid="urlInput"
+            type="text"
+            value="/path/to/my.file"
+          />
+          <fieldset
+            aria-hidden="true"
+            class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
           >
-            <div
-              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+            <legend
+              class="PrivateNotchedOutline-legendLabelled PrivateNotchedOutline-legendNotched"
             >
-              <input
-                aria-invalid="false"
-                class="MuiInputBase-input MuiInput-input"
-                data-testid="urlInput"
-                type="text"
-                value="/path/to/my.file"
-              />
-            </div>
-          </div>
+              <span>
+                Enter URL
+              </span>
+            </legend>
+          </fieldset>
         </div>
       </div>
       <p
@@ -144,7 +178,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 value="string1"
               />
               <div
-                class="MuiInputAdornment-root"
+                class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
               >
                 <button
                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
@@ -189,7 +223,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 value="string2"
               />
               <div
-                class="MuiInputAdornment-root"
+                class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
               >
                 <button
                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
@@ -235,10 +269,11 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 value=""
               />
               <div
-                class="MuiInputAdornment-root"
+                class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
               >
                 <button
                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
+                  data-testid="stringArrayAdd-stringArrayTest"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -349,7 +384,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                     value="string1"
                   />
                   <div
-                    class="MuiInputAdornment-root"
+                    class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
                   >
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
@@ -394,7 +429,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                     value="string2"
                   />
                   <div
-                    class="MuiInputAdornment-root"
+                    class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
                   >
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
@@ -440,10 +475,11 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                     value=""
                   />
                   <div
-                    class="MuiInputAdornment-root"
+                    class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
                   >
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
+                      data-testid="stringArrayAdd-undefined"
                       disabled=""
                       tabindex="-1"
                       type="button"
@@ -498,7 +534,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                   value=""
                 />
                 <div
-                  class="MuiInputAdornment-root"
+                  class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
                 >
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
@@ -775,13 +811,13 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             class="npm__react-simple-code-editor__textarea"
             data-gramm="false"
             spellcheck="false"
-            style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: absolute; top: 0px; left: 0px; height: 100%; width: 100%; resize: none; overflow: hidden; padding: 10px 10px 10px 10px;"
+            style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: absolute; top: 0px; left: 0px; height: 100%; width: 100%; resize: none; overflow: hidden; padding: 10px 10px 10px 10px;"
           >
             get(feature,'name')
           </textarea>
           <pre
             aria-hidden="true"
-            style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: relative; pointer-events: none; padding: 10px 10px 10px 10px;"
+            style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: relative; pointer-events: none; padding: 10px 10px 10px 10px;"
           >
             get(feature,'name')
             <br />
@@ -1328,6 +1364,99 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
               class="MuiFormHelperText-root"
             >
               remove spacing between features
+            </p>
+          </div>
+        </div>
+        <div
+          class="makeStyles-slotModeSwitch"
+        />
+      </div>
+      <div
+        class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
+      >
+        <div
+          class="makeStyles-paperContent"
+        >
+          <div
+            class="MuiFormControl-root MuiTextField-root"
+          >
+            <label
+              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
+              data-shrink="true"
+            >
+              largeInsertionIndicatorScale
+            </label>
+            <div
+              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+            >
+              <input
+                aria-invalid="false"
+                class="MuiInputBase-input MuiInput-input"
+                type="number"
+                value="10"
+              />
+            </div>
+            <p
+              class="MuiFormHelperText-root MuiFormHelperText-filled"
+            >
+              scale at which to draw the large insertion indicators (bp/pixel)
+            </p>
+          </div>
+        </div>
+        <div
+          class="makeStyles-slotModeSwitch"
+        />
+      </div>
+      <div
+        class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
+      >
+        <div
+          class="makeStyles-paperContent"
+        >
+          <div
+            class="MuiFormControl-root"
+          >
+            <label
+              class="MuiFormControlLabel-root"
+            >
+              <span
+                aria-disabled="false"
+                class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorSecondary MuiIconButton-colorSecondary"
+              >
+                <span
+                  class="MuiIconButton-label"
+                >
+                  <input
+                    class="PrivateSwitchBase-input"
+                    data-indeterminate="false"
+                    type="checkbox"
+                    value=""
+                  />
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                    />
+                  </svg>
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </span>
+              <span
+                class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
+              >
+                mismatchAlpha
+              </span>
+            </label>
+            <p
+              class="MuiFormHelperText-root"
+            >
+              Fade low quality mismatches
             </p>
           </div>
         </div>

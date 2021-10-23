@@ -8,7 +8,32 @@
         "adapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "hg19",
+      "aliases": ["GRCh37"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Pd8Wh30ei9R",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "../hg19.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "../hg19_aliases.txt",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -48,12 +73,30 @@
   "connections": [
     {
       "type": "JBrowse1Connection",
-      "connectionId": "COSMIC_connection_grch37",
-      "name": "COSMIC (GRCh37)",
-      "assemblyName": "volvox",
+      "connectionId": "JB1_connection_volvox",
+      "name": "JB1 (volvox)",
+      "assemblyNames": ["volvox"],
       "dataDirLocation": {
-        "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch37/v90/cosmic"
+        "uri": "http://jbrowse.org.s3.amazonaws.com/code/JBrowse-1.16.10/sample_data/json/volvox/",
+        "locationType": "UriLocation"
       }
+    },
+    {
+      "type": "UCSCTrackHubConnection",
+      "connectionId": "UCSC_connection_volvox",
+      "name": "UCSC (volvox and hg19)",
+      "assemblyNames": [],
+      "hubTxtLocation": {
+        "uri": "http://jbrowse.org.s3.amazonaws.com/testing/test_hub/hub.txt",
+        "locationType": "UriLocation"
+      }
+    },
+    {
+      "type": "TheTrackHubRegistryConnection",
+      "connectionId": "trackhub_registry_connection_GRCh37_dbvar",
+      "name": "dbVar Hub (GRCh37)",
+      "assemblyNames": ["GRCh37"],
+      "trackDbId": "Pi-vVnIBMbWBjSAQfVVA"
     }
   ]
 }

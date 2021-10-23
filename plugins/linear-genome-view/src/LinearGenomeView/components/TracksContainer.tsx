@@ -95,7 +95,6 @@ function TracksContainer({
 
     // otherwise do click and drag scroll
     if (event.button === 0) {
-      event.preventDefault()
       prevX.current = event.clientX
       setMouseDragging(true)
     }

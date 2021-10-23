@@ -1,0 +1,81 @@
+agt221.3 ["ctgA%3A7500..8000"|"gff3tabix_genes"|"agt221.3"|"Match4"],1
+agt221.5 ["ctgA%3A1050..1500"|"gff3tabix_genes"|"agt221.5"|""],1 ["ctgA%3A1050..7300"|"gff3tabix_genes"|"agt221.5"|"Match3"],2 ["ctgA%3A5000..5500"|"gff3tabix_genes"|"agt221.5"|""],3 ["ctgA%3A7000..7300"|"gff3tabix_genes"|"agt221.5"|""],4
+agt767.3 ["ctgA%3A8000..9000"|"gff3tabix_genes"|"agt767.3"|"Match6"],1
+agt767.5 ["ctgA%3A1150..1500"|"gff3tabix_genes"|"agt767.5"|""],1 ["ctgA%3A1150..7200"|"gff3tabix_genes"|"agt767.5"|"Match5"],2 ["ctgA%3A5000..5500"|"gff3tabix_genes"|"agt767.5"|""],3 ["ctgA%3A7000..7200"|"gff3tabix_genes"|"agt767.5"|""],4
+agt830.3 ["ctgA%3A5410..5500"|"gff3tabix_genes"|"agt830.3"|""],1 ["ctgA%3A5410..7503"|"gff3tabix_genes"|"agt830.3"|"Match2"],2 ["ctgA%3A7000..7503"|"gff3tabix_genes"|"agt830.3"|""],3
+agt830.5 ["ctgA%3A1050..1500"|"gff3tabix_genes"|"agt830.5"|""],1 ["ctgA%3A1050..3202"|"gff3tabix_genes"|"agt830.5"|"Match1"],2 ["ctgA%3A3000..3202"|"gff3tabix_genes"|"agt830.5"|""],3
+apple2 ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"],1
+apple3 ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"],1
+b101.2 ["ctgA%3A1000..20000"|"gff3tabix_genes"|"b101.2"|"b101.2"],1
+cds-apple2 ["ctgA%3A13000..17200"|"gff3tabix_genes"|"Apple2"|"cds-Apple2"],1
+ctga ["ctgA%3A1..50001"|"gff3tabix_genes"|"ctgA"|""],1
+ctgb ["ctgB%3A1..6079"|"gff3tabix_genes"|"ctgB"|""],1
+eden ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN"|"EDEN"],1
+eden.1 ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN.1"|"EDEN.1"],1
+eden.2 ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN.2"|"EDEN.2"],1
+eden.3 ["ctgA%3A1300..9000"|"gff3tabix_genes"|"EDEN.3"|"EDEN.3"],1
+f01 ["ctgA%3A44705..47713"|"gff3tabix_genes"|"f01"|""],1
+f02 ["ctgA%3A24562..28338"|"gff3tabix_genes"|"f02"|""],1
+f03 ["ctgA%3A36649..40440"|"gff3tabix_genes"|"f03"|""],1
+f04 ["ctgA%3A37242..38653"|"gff3tabix_genes"|"f04"|""],1
+f05 ["ctgA%3A4715..5968"|"gff3tabix_genes"|"f05"|""],1 ["ctgB%3A4715..5968"|"gff3tabix_genes"|"f05"|""],2
+f06 ["ctgA%3A3014..6130"|"gff3tabix_genes"|"f06"|""],1 ["ctgB%3A3014..6130"|"gff3tabix_genes"|"f06"|""],2
+f07 ["ctgA%3A1659..1984"|"gff3tabix_genes"|"f07"|""],1 ["ctgB%3A1659..1984"|"gff3tabix_genes"|"f07"|""],2
+f08 ["ctgA%3A13280..16394"|"gff3tabix_genes"|"f08"|""],1
+f09 ["ctgA%3A36034..38167"|"gff3tabix_genes"|"f09"|""],1
+f10 ["ctgA%3A15329..15533"|"gff3tabix_genes"|"f10"|""],1
+f11 ["ctgA%3A46990..48410"|"gff3tabix_genes"|"f11"|""],1
+f12 ["ctgA%3A49758..50000"|"gff3tabix_genes"|"f12"|""],1
+f13 ["ctgA%3A19157..22915"|"gff3tabix_genes"|"f13"|""],1
+f14 ["ctgA%3A23072..23185"|"gff3tabix_genes"|"f14"|""],1
+f15 ["ctgA%3A22132..24633"|"gff3tabix_genes"|"f15"|""],1
+fakesnp ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"],1
+fakesnp1 ["ctgA%3A1000..1000"|"gff3tabix_genes"|"FakeSNP"|"FakeSNP1"],1
+gene1 ["ctgA%3A1201..1500"|"single_exon_gene"|""|"gene1"],1
+gene2 ["ctgA%3A1201..3902"|"single_exon_gene"|""|"gene2"],1
+gene:hga ["ctgA%3A1100..2000"|"gff3tabix_genes"|"Gene%3Ahga"|""],1
+gene:hgb ["ctgA%3A1600..3000"|"gff3tabix_genes"|"Gene%3Ahgb"|""],1
+inv134 ["ctgA%3A2700..10000"|"volvox.inv.vcf"|""|"inv134"],1
+inv135 ["ctgA%3A6000..9000"|"volvox.inv.vcf"|""|"inv135"],1 ["ctgA%3A6000..9000"|"volvox.inv.vcf"|""|"inv135"],2
+m01 ["ctgA%3A48253..48366"|"gff3tabix_genes"|"m01"|""],1
+m02 ["ctgA%3A28332..30033"|"gff3tabix_genes"|"m02"|""],1
+m03 ["ctgA%3A15396..16159"|"gff3tabix_genes"|"m03"|""],1
+m04 ["ctgA%3A33325..35791"|"gff3tabix_genes"|"m04"|""],1
+m05 ["ctgA%3A13801..14007"|"gff3tabix_genes"|"m05"|""],1
+m06 ["ctgA%3A30578..31748"|"gff3tabix_genes"|"m06"|""],1
+m07 ["ctgA%3A18048..18552"|"gff3tabix_genes"|"m07"|""],1
+m08 ["ctgA%3A17023..17675"|"gff3tabix_genes"|"m08"|""],1
+m09 ["ctgA%3A46012..48851"|"gff3tabix_genes"|"m09"|""],1
+m10 ["ctgA%3A28342..28447"|"gff3tabix_genes"|"m10"|""],1
+m11 ["ctgA%3A11911..15561"|"gff3tabix_genes"|"m11"|""],1
+m12 ["ctgA%3A21748..25612"|"gff3tabix_genes"|"m12"|""],1
+m13 ["ctgA%3A17667..17690"|"gff3tabix_genes"|"m13"|""],1
+m14 ["ctgA%3A14731..17239"|"gff3tabix_genes"|"m14"|""],1
+m15 ["ctgA%3A37497..40559"|"gff3tabix_genes"|"m15"|""],1
+match1 ["ctgA%3A1050..3202"|"gff3tabix_genes"|"agt830.5"|"Match1"],1
+match2 ["ctgA%3A5410..7503"|"gff3tabix_genes"|"agt830.3"|"Match2"],1
+match3 ["ctgA%3A1050..7300"|"gff3tabix_genes"|"agt221.5"|"Match3"],1
+match4 ["ctgA%3A7500..8000"|"gff3tabix_genes"|"agt221.3"|"Match4"],1
+match5 ["ctgA%3A1150..7200"|"gff3tabix_genes"|"agt767.5"|"Match5"],1
+match6 ["ctgA%3A8000..9000"|"gff3tabix_genes"|"agt767.3"|"Match6"],1
+mrna1 ["ctgA%3A1201..1500"|"single_exon_gene"|""|"mRNA1"],1
+mrna2 ["ctgA%3A1201..3902"|"single_exon_gene"|""|"mRNA2"],1
+protein:hga ["ctgA%3A1200..1900"|"gff3tabix_genes"|"Protein%3AHGA"|""],1
+protein:hgb ["ctgA%3A1800..2900"|"gff3tabix_genes"|"Protein%3AHGB"|""],1
+remark:hga ["ctgA%3A1000..2000"|"gff3tabix_genes"|"Remark%3Ahga"|""],1
+rna-apple3 ["ctgA%3A17400..23000"|"gff3tabix_genes"|"Apple3"|"rna-Apple3"],1
+seg01 ["ctgA%3A32329..32359"|"gff3tabix_genes"|"seg01"|""],1
+seg02 ["ctgA%3A26122..26126"|"gff3tabix_genes"|"seg02"|""],1 ["ctgA%3A26497..26869"|"gff3tabix_genes"|"seg02"|""],2 ["ctgA%3A27201..27325"|"gff3tabix_genes"|"seg02"|""],3 ["ctgA%3A27372..27433"|"gff3tabix_genes"|"seg02"|""],4 ["ctgA%3A27565..27565"|"gff3tabix_genes"|"seg02"|""],5 ["ctgA%3A27813..28091"|"gff3tabix_genes"|"seg02"|""],6 ["ctgA%3A28093..28201"|"gff3tabix_genes"|"seg02"|""],7 ["ctgA%3A28329..28377"|"gff3tabix_genes"|"seg02"|""],8 ["ctgA%3A28829..29194"|"gff3tabix_genes"|"seg02"|""],9 ["ctgA%3A29517..29702"|"gff3tabix_genes"|"seg02"|""],10 ["ctgA%3A29713..30061"|"gff3tabix_genes"|"seg02"|""],11 ["ctgA%3A30329..30774"|"gff3tabix_genes"|"seg02"|""],12 ["ctgA%3A30808..31306"|"gff3tabix_genes"|"seg02"|""],13 ["ctgA%3A31516..31729"|"gff3tabix_genes"|"seg02"|""],14 ["ctgA%3A31753..32154"|"gff3tabix_genes"|"seg02"|""],15 ["ctgA%3A32595..32696"|"gff3tabix_genes"|"seg02"|""],16 ["ctgA%3A32892..32901"|"gff3tabix_genes"|"seg02"|""],17 ["ctgA%3A33127..33388"|"gff3tabix_genes"|"seg02"|""],18 ["ctgA%3A33439..33443"|"gff3tabix_genes"|"seg02"|""],19 ["ctgA%3A33759..34209"|"gff3tabix_genes"|"seg02"|""],20 ["ctgA%3A34401..34466"|"gff3tabix_genes"|"seg02"|""],21
+seg03 ["ctgA%3A6885..7241"|"gff3tabix_genes"|"seg03"|""],1 ["ctgA%3A7410..7737"|"gff3tabix_genes"|"seg03"|""],2 ["ctgA%3A8055..8080"|"gff3tabix_genes"|"seg03"|""],3 ["ctgA%3A8306..8999"|"gff3tabix_genes"|"seg03"|""],4
+seg04 ["ctgA%3A5233..5302"|"gff3tabix_genes"|"seg04"|""],1 ["ctgA%3A5800..6101"|"gff3tabix_genes"|"seg04"|""],2 ["ctgA%3A6442..6854"|"gff3tabix_genes"|"seg04"|""],3 ["ctgA%3A7106..7211"|"gff3tabix_genes"|"seg04"|""],4 ["ctgA%3A7695..8177"|"gff3tabix_genes"|"seg04"|""],5 ["ctgA%3A8545..8783"|"gff3tabix_genes"|"seg04"|""],6 ["ctgA%3A8869..8935"|"gff3tabix_genes"|"seg04"|""],7 ["ctgA%3A9404..9825"|"gff3tabix_genes"|"seg04"|""],8
+seg05 ["ctgA%3A26503..26799"|"gff3tabix_genes"|"seg05"|""],1 ["ctgA%3A27172..27185"|"gff3tabix_genes"|"seg05"|""],2 ["ctgA%3A27448..27860"|"gff3tabix_genes"|"seg05"|""],3 ["ctgA%3A27887..28076"|"gff3tabix_genes"|"seg05"|""],4 ["ctgA%3A28225..28316"|"gff3tabix_genes"|"seg05"|""],5 ["ctgA%3A28777..29058"|"gff3tabix_genes"|"seg05"|""],6 ["ctgA%3A29513..29647"|"gff3tabix_genes"|"seg05"|""],7 ["ctgA%3A30108..30216"|"gff3tabix_genes"|"seg05"|""],8 ["ctgA%3A30465..30798"|"gff3tabix_genes"|"seg05"|""],9 ["ctgA%3A31232..31236"|"gff3tabix_genes"|"seg05"|""],10 ["ctgA%3A31421..31817"|"gff3tabix_genes"|"seg05"|""],11 ["ctgA%3A32010..32057"|"gff3tabix_genes"|"seg05"|""],12 ["ctgA%3A32208..32680"|"gff3tabix_genes"|"seg05"|""],13 ["ctgA%3A33053..33325"|"gff3tabix_genes"|"seg05"|""],14 ["ctgA%3A33438..33868"|"gff3tabix_genes"|"seg05"|""],15 ["ctgA%3A34244..34313"|"gff3tabix_genes"|"seg05"|""],16 ["ctgA%3A34605..34983"|"gff3tabix_genes"|"seg05"|""],17 ["ctgA%3A35333..35507"|"gff3tabix_genes"|"seg05"|""],18 ["ctgA%3A35642..35904"|"gff3tabix_genes"|"seg05"|""],19
+seg06 ["ctgA%3A19249..19559"|"gff3tabix_genes"|"seg06"|""],1 ["ctgA%3A19975..20260"|"gff3tabix_genes"|"seg06"|""],2 ["ctgA%3A20379..20491"|"gff3tabix_genes"|"seg06"|""],3 ["ctgA%3A20533..21005"|"gff3tabix_genes"|"seg06"|""],4 ["ctgA%3A21122..21331"|"gff3tabix_genes"|"seg06"|""],5 ["ctgA%3A21682..22176"|"gff3tabix_genes"|"seg06"|""],6 ["ctgA%3A22374..22570"|"gff3tabix_genes"|"seg06"|""],7 ["ctgA%3A23025..23427"|"gff3tabix_genes"|"seg06"|""],8
+seg07 ["ctgA%3A44191..44514"|"gff3tabix_genes"|"seg07"|""],1 ["ctgA%3A44552..45043"|"gff3tabix_genes"|"seg07"|""],2 ["ctgA%3A45373..45600"|"gff3tabix_genes"|"seg07"|""],3 ["ctgA%3A45897..46315"|"gff3tabix_genes"|"seg07"|""],4 ["ctgA%3A46491..46890"|"gff3tabix_genes"|"seg07"|""],5 ["ctgA%3A47126..47297"|"gff3tabix_genes"|"seg07"|""],6 ["ctgA%3A47735..47983"|"gff3tabix_genes"|"seg07"|""],7 ["ctgA%3A48447..48709"|"gff3tabix_genes"|"seg07"|""],8 ["ctgA%3A48931..49186"|"gff3tabix_genes"|"seg07"|""],9 ["ctgA%3A49472..49699"|"gff3tabix_genes"|"seg07"|""],10 ["ctgA%3A49957..50000"|"gff3tabix_genes"|"seg07"|""],11 ["ctgA%3A49957..50000"|"gff3tabix_genes"|"seg07"|""],12
+seg08 ["ctgA%3A18509..18985"|"gff3tabix_genes"|"seg08"|""],1 ["ctgA%3A18989..19388"|"gff3tabix_genes"|"seg08"|""],2 ["ctgA%3A19496..19962"|"gff3tabix_genes"|"seg08"|""],3 ["ctgA%3A20093..20580"|"gff3tabix_genes"|"seg08"|""],4 ["ctgA%3A20970..21052"|"gff3tabix_genes"|"seg08"|""],5 ["ctgA%3A21270..21277"|"gff3tabix_genes"|"seg08"|""],6 ["ctgA%3A21685..22168"|"gff3tabix_genes"|"seg08"|""],7 ["ctgA%3A22564..22869"|"gff3tabix_genes"|"seg08"|""],8 ["ctgA%3A22958..23298"|"gff3tabix_genes"|"seg08"|""],9 ["ctgA%3A23412..23469"|"gff3tabix_genes"|"seg08"|""],10 ["ctgA%3A23932..23932"|"gff3tabix_genes"|"seg08"|""],11 ["ctgA%3A24328..24787"|"gff3tabix_genes"|"seg08"|""],12 ["ctgA%3A25228..25367"|"gff3tabix_genes"|"seg08"|""],13
+seg09 ["ctgA%3A36616..37057"|"gff3tabix_genes"|"seg09"|""],1 ["ctgA%3A37208..37227"|"gff3tabix_genes"|"seg09"|""],2
+seg10 ["ctgA%3A29771..29942"|"gff3tabix_genes"|"seg10"|""],1 ["ctgA%3A30042..30340"|"gff3tabix_genes"|"seg10"|""],2 ["ctgA%3A30810..31307"|"gff3tabix_genes"|"seg10"|""],3 ["ctgA%3A31761..31984"|"gff3tabix_genes"|"seg10"|""],4 ["ctgA%3A32374..32937"|"gff3tabix_genes"|"seg10"|""],5
+seg11 ["ctgA%3A24228..24510"|"gff3tabix_genes"|"seg11"|""],1 ["ctgA%3A24868..25012"|"gff3tabix_genes"|"seg11"|""],2 ["ctgA%3A25212..25426"|"gff3tabix_genes"|"seg11"|""],3 ["ctgA%3A25794..25874"|"gff3tabix_genes"|"seg11"|""],4 ["ctgA%3A26075..26519"|"gff3tabix_genes"|"seg11"|""],5 ["ctgA%3A26930..26940"|"gff3tabix_genes"|"seg11"|""],6 ["ctgA%3A26975..27063"|"gff3tabix_genes"|"seg11"|""],7 ["ctgA%3A27415..27799"|"gff3tabix_genes"|"seg11"|""],8 ["ctgA%3A27880..27943"|"gff3tabix_genes"|"seg11"|""],9 ["ctgA%3A28225..28346"|"gff3tabix_genes"|"seg11"|""],10 ["ctgA%3A28375..28570"|"gff3tabix_genes"|"seg11"|""],11 ["ctgA%3A28758..29041"|"gff3tabix_genes"|"seg11"|""],12 ["ctgA%3A29101..29302"|"gff3tabix_genes"|"seg11"|""],13 ["ctgA%3A29604..29702"|"gff3tabix_genes"|"seg11"|""],14 ["ctgA%3A29867..29885"|"gff3tabix_genes"|"seg11"|""],15 ["ctgA%3A30241..30246"|"gff3tabix_genes"|"seg11"|""],16 ["ctgA%3A30575..30738"|"gff3tabix_genes"|"seg11"|""],17
+seg12 ["ctgA%3A12531..12895"|"gff3tabix_genes"|"seg12"|""],1 ["ctgA%3A13122..13449"|"gff3tabix_genes"|"seg12"|""],2 ["ctgA%3A13452..13745"|"gff3tabix_genes"|"seg12"|""],3 ["ctgA%3A13908..13965"|"gff3tabix_genes"|"seg12"|""],4 ["ctgA%3A13998..14488"|"gff3tabix_genes"|"seg12"|""],5 ["ctgA%3A14564..14899"|"gff3tabix_genes"|"seg12"|""],6 ["ctgA%3A15185..15276"|"gff3tabix_genes"|"seg12"|""],7 ["ctgA%3A15639..15736"|"gff3tabix_genes"|"seg12"|""],8 ["ctgA%3A15745..15870"|"gff3tabix_genes"|"seg12"|""],9
+seg13 ["ctgA%3A49406..49476"|"gff3tabix_genes"|"seg13"|""],1 ["ctgA%3A49762..50000"|"gff3tabix_genes"|"seg13"|""],2
+seg14 ["ctgA%3A41137..41318"|"gff3tabix_genes"|"seg14"|""],1 ["ctgA%3A41754..41948"|"gff3tabix_genes"|"seg14"|""],2 ["ctgA%3A42057..42474"|"gff3tabix_genes"|"seg14"|""],3 ["ctgA%3A42890..43270"|"gff3tabix_genes"|"seg14"|""],4 ["ctgA%3A43395..43811"|"gff3tabix_genes"|"seg14"|""],5 ["ctgA%3A44065..44556"|"gff3tabix_genes"|"seg14"|""],6 ["ctgA%3A44763..45030"|"gff3tabix_genes"|"seg14"|""],7 ["ctgA%3A45231..45488"|"gff3tabix_genes"|"seg14"|""],8 ["ctgA%3A45790..46022"|"gff3tabix_genes"|"seg14"|""],9 ["ctgA%3A46092..46318"|"gff3tabix_genes"|"seg14"|""],10 ["ctgA%3A46816..46992"|"gff3tabix_genes"|"seg14"|""],11 ["ctgA%3A47449..47829"|"gff3tabix_genes"|"seg14"|""],12
+seg15 ["ctgA%3A39265..39361"|"gff3tabix_genes"|"seg15"|""],1 ["ctgA%3A39753..40034"|"gff3tabix_genes"|"seg15"|""],2 ["ctgA%3A40515..40954"|"gff3tabix_genes"|"seg15"|""],3 ["ctgA%3A41252..41365"|"gff3tabix_genes"|"seg15"|""],4 ["ctgA%3A41492..41504"|"gff3tabix_genes"|"seg15"|""],5 ["ctgA%3A41941..42377"|"gff3tabix_genes"|"seg15"|""],6 ["ctgA%3A42748..42954"|"gff3tabix_genes"|"seg15"|""],7 ["ctgA%3A43401..43897"|"gff3tabix_genes"|"seg15"|""],8 ["ctgA%3A44043..44113"|"gff3tabix_genes"|"seg15"|""],9 ["ctgA%3A44399..44888"|"gff3tabix_genes"|"seg15"|""],10 ["ctgA%3A45281..45375"|"gff3tabix_genes"|"seg15"|""],11 ["ctgA%3A45711..46041"|"gff3tabix_genes"|"seg15"|""],12 ["ctgA%3A46425..46564"|"gff3tabix_genes"|"seg15"|""],13 ["ctgA%3A46738..47087"|"gff3tabix_genes"|"seg15"|""],14 ["ctgA%3A47329..47595"|"gff3tabix_genes"|"seg15"|""],15 ["ctgA%3A47858..47979"|"gff3tabix_genes"|"seg15"|""],16 ["ctgA%3A48169..48453"|"gff3tabix_genes"|"seg15"|""],17

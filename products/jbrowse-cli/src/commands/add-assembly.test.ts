@@ -26,6 +26,15 @@ const baseSequence = {
   adapter: {},
 }
 
+const twobitPath = path.join(
+  __dirname,
+  '..',
+  '..',
+  'test',
+  'data',
+  'simple.2bit',
+)
+
 describe('add-assembly', () => {
   setup
     .command(['add-assembly', '{}'])
@@ -148,8 +157,14 @@ describe('add-assembly', () => {
               ...baseSequence,
               adapter: {
                 type: 'IndexedFastaAdapter',
-                fastaLocation: { uri: 'simple.fasta' },
-                faiLocation: { uri: 'simple.fasta.fai' },
+                fastaLocation: {
+                  uri: 'simple.fasta',
+                  locationType: 'UriLocation',
+                },
+                faiLocation: {
+                  uri: 'simple.fasta.fai',
+                  locationType: 'UriLocation',
+                },
               },
             },
           },
@@ -196,8 +211,14 @@ describe('add-assembly', () => {
               ...baseSequence,
               adapter: {
                 type: 'IndexedFastaAdapter',
-                fastaLocation: { uri: 'simple.fa' },
-                faiLocation: { uri: 'simple.fa.fai' },
+                fastaLocation: {
+                  uri: 'simple.fa',
+                  locationType: 'UriLocation',
+                },
+                faiLocation: {
+                  uri: 'simple.fa.fai',
+                  locationType: 'UriLocation',
+                },
               },
             },
           },
@@ -244,9 +265,18 @@ describe('add-assembly', () => {
               ...baseSequence,
               adapter: {
                 type: 'BgzipFastaAdapter',
-                fastaLocation: { uri: 'simple.fasta.gz' },
-                faiLocation: { uri: 'simple.fasta.gz.fai' },
-                gziLocation: { uri: 'simple.fasta.gz.gzi' },
+                fastaLocation: {
+                  uri: 'simple.fasta.gz',
+                  locationType: 'UriLocation',
+                },
+                faiLocation: {
+                  uri: 'simple.fasta.gz.fai',
+                  locationType: 'UriLocation',
+                },
+                gziLocation: {
+                  uri: 'simple.fasta.gz.gzi',
+                  locationType: 'UriLocation',
+                },
               },
             },
           },
@@ -285,7 +315,10 @@ describe('add-assembly', () => {
               ...baseSequence,
               adapter: {
                 type: 'TwoBitAdapter',
-                twoBitLocation: { uri: 'simple.2bit' },
+                twoBitLocation: {
+                  uri: 'simple.2bit',
+                  locationType: 'UriLocation',
+                },
               },
             },
           },
@@ -324,7 +357,10 @@ describe('add-assembly', () => {
               ...baseSequence,
               adapter: {
                 type: 'ChromSizesAdapter',
-                chromSizesLocation: { uri: 'simple.chrom.sizes' },
+                chromSizesLocation: {
+                  uri: 'simple.chrom.sizes',
+                  locationType: 'UriLocation',
+                },
               },
             },
           },
@@ -369,16 +405,14 @@ describe('add-assembly', () => {
                     uniqueId: 'firstId',
                     start: 0,
                     end: 233,
-                    seq:
-                      'CCAAGATCTAAGATGTCAACACCTATCTGCTCAAGGTGGTTTTTATAAGGAGTCGCATCGAGGTAAGACATTTTAGAAGTATTTCTCAAGCGTGGGGCAGTTCGCCAAGTTACATCGCTCAGCCCAGGTTCCCTGATTCGAGAACATATCGGTGCTGGGTATTTGTTGGGTTGGTTGATTTGCACCGTAGTTTACACCTTACGACACTACCTATCCAAACAATTGTGTGATAG',
+                    seq: 'CCAAGATCTAAGATGTCAACACCTATCTGCTCAAGGTGGTTTTTATAAGGAGTCGCATCGAGGTAAGACATTTTAGAAGTATTTCTCAAGCGTGGGGCAGTTCGCCAAGTTACATCGCTCAGCCCAGGTTCCCTGATTCGAGAACATATCGGTGCTGGGTATTTGTTGGGTTGGTTGATTTGCACCGTAGTTTACACCTTACGACACTACCTATCCAAACAATTGTGTGATAG',
                   },
                   {
                     refName: 'SEQUENCE_2',
                     uniqueId: 'secondId',
                     start: 0,
                     end: 120,
-                    seq:
-                      'CCGAACCACAGGCCTATGTTACCATTGGAAAGCTCACCTTCCCGAAGGATTGGGACTCCACTAGTCGAAGCCTCAATTCGCCGCGATTAGATAGGGGGCAAGTGGAGATTGATGTTTGGT',
+                    seq: 'CCGAACCACAGGCCTATGTTACCATTGGAAAGCTCACCTTCCCGAAGGATTGGGACTCCACTAGTCGAAGCCTCAATTCGCCGCGATTAGATAGGGGGCAAGTGGAGATTGATGTTTGGT',
                   },
                 ],
               },
@@ -475,7 +509,10 @@ describe('add-assembly', () => {
                 trackId: 'simple.2bit.xyz-ReferenceSequenceTrack',
                 adapter: {
                   type: 'TwoBitAdapter',
-                  twoBitLocation: { uri: 'simple.2bit.xyz' },
+                  twoBitLocation: {
+                    uri: 'simple.2bit.xyz',
+                    locationType: 'UriLocation',
+                  },
                 },
               },
             },
@@ -532,9 +569,18 @@ describe('add-assembly', () => {
               ...baseSequence,
               adapter: {
                 type: 'BgzipFastaAdapter',
-                fastaLocation: { uri: 'simple.fasta.gz' },
-                faiLocation: { uri: 'simple.fasta.gz.fai.abc' },
-                gziLocation: { uri: 'simple.fasta.gz.gzi.def' },
+                fastaLocation: {
+                  uri: 'simple.fasta.gz',
+                  locationType: 'UriLocation',
+                },
+                faiLocation: {
+                  uri: 'simple.fasta.gz.fai.abc',
+                  locationType: 'UriLocation',
+                },
+                gziLocation: {
+                  uri: 'simple.fasta.gz.gzi.def',
+                  locationType: 'UriLocation',
+                },
               },
             },
           },
@@ -651,7 +697,10 @@ describe('add-assembly', () => {
             ...baseAssembly,
             refNameAliases: {
               adapter: {
-                location: { uri: 'simple.aliases' },
+                location: {
+                  uri: 'simple.aliases',
+                  locationType: 'UriLocation',
+                },
                 type: 'RefNameAliasAdapter',
               },
             },
@@ -861,11 +910,37 @@ describe('add-assembly', () => {
               ...baseSequence,
               adapter: {
                 type: 'TwoBitAdapter',
-                twoBitLocation: { uri: 'https://mysite.com/data/simple.2bit' },
+                twoBitLocation: {
+                  uri: 'https://mysite.com/data/simple.2bit',
+                  locationType: 'UriLocation',
+                },
               },
             },
           },
         ],
       })
+    })
+
+  setup
+    .do(ctx =>
+      fs.copyFileSync(
+        twobitPath,
+        path.join(ctx.dir, path.basename(twobitPath)),
+      ),
+    )
+    .command([
+      'add-assembly',
+      'simple.2bit',
+      '--load',
+      'copy',
+      '--out',
+      'testing',
+    ])
+    .it('can use --out to make a new directory', async ctx => {
+      const contents = await fsPromises.readFile(
+        path.join(ctx.dir, 'testing', 'config.json'),
+        { encoding: 'utf8' },
+      )
+      expect(JSON.parse(contents).assemblies.length).toBe(1)
     })
 })

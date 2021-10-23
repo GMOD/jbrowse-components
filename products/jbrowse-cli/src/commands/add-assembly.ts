@@ -23,7 +23,7 @@ export default class AddAssembly extends JBrowseCommand {
   static examples = [
     '$ jbrowse add-assembly GRCh38.fa --load copy',
     '$ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta --load move',
-    '$ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38 --load inPlace',
+    '$ jbrowse add-assembly myFile.fa.gz --name hg38 --alias GRCh38 --displayName "Homo sapiens (hg38)" --load inPlace',
     '$ jbrowse add-assembly GRCh38.chrom.sizes --load inPlace',
     '$ jbrowse add-assembly GRCh38.config.json --load copy',
     '$ jbrowse add-assembly https://example.com/data/sample.2bit',
@@ -73,6 +73,10 @@ custom         Either a JSON file location or inline JSON that defines a custom
       description:
         'An alias for the assembly name (e.g. "hg38" if the name of the assembly is "GRCh38");\ncan be specified multiple times',
       multiple: true,
+    }),
+    displayName: flags.string({
+      description:
+        'The display name to specify for the assembly, e.g. "Homo sapiens (hg38)" while the name can be a shorter identifier like "hg38"',
     }),
     faiLocation: flags.string({
       description: '[default: <fastaLocation>.fai] FASTA index file or URL',
@@ -196,8 +200,11 @@ custom         Either a JSON file location or inline JSON that defines a custom
           trackId: `${name}-ReferenceSequenceTrack`,
           adapter: {
             type: 'IndexedFastaAdapter',
-            fastaLocation: { uri: sequenceLocation },
-            faiLocation: { uri: indexLocation },
+            fastaLocation: {
+              uri: sequenceLocation,
+              locationType: 'UriLocation',
+            },
+            faiLocation: { uri: indexLocation, locationType: 'UriLocation' },
           },
         }
         break
@@ -248,9 +255,15 @@ custom         Either a JSON file location or inline JSON that defines a custom
           trackId: `${name}-ReferenceSequenceTrack`,
           adapter: {
             type: 'BgzipFastaAdapter',
-            fastaLocation: { uri: sequenceLocation },
-            faiLocation: { uri: indexLocation },
-            gziLocation: { uri: bgzipIndexLocation },
+            fastaLocation: {
+              uri: sequenceLocation,
+              locationType: 'UriLocation',
+            },
+            faiLocation: { uri: indexLocation, locationType: 'UriLocation' },
+            gziLocation: {
+              uri: bgzipIndexLocation,
+              locationType: 'UriLocation',
+            },
           },
         }
         break
@@ -277,7 +290,10 @@ custom         Either a JSON file location or inline JSON that defines a custom
           trackId: `${name}-ReferenceSequenceTrack`,
           adapter: {
             type: 'TwoBitAdapter',
-            twoBitLocation: { uri: sequenceLocation },
+            twoBitLocation: {
+              uri: sequenceLocation,
+              locationType: 'UriLocation',
+            },
           },
         }
         break
@@ -304,7 +320,10 @@ custom         Either a JSON file location or inline JSON that defines a custom
           trackId: `${name}-ReferenceSequenceTrack`,
           adapter: {
             type: 'ChromSizesAdapter',
-            chromSizesLocation: { uri: sequenceLocation },
+            chromSizesLocation: {
+              uri: sequenceLocation,
+              locationType: 'UriLocation',
+            },
           },
         }
         break
@@ -344,10 +363,19 @@ custom         Either a JSON file location or inline JSON that defines a custom
   }
 
   async run() {
+    // https://stackoverflow.com/a/35008327/2129219
+    const exists = (s: string) =>
+      new Promise(r => fs.access(s, fs.constants.F_OK, e => r(!e)))
+
     const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
 
     const output = runFlags.target || runFlags.out || '.'
-    const isDir = (await fsPromises.lstat(output)).isDirectory()
+
+    if (!(await exists(output))) {
+      await fsPromises.mkdir(output, { recursive: true })
+    }
+
+    const isDir = fs.statSync(output).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
 
     const { sequence: argsSequence } = runArgs as { sequence: string }
@@ -404,10 +432,17 @@ custom         Either a JSON file location or inline JSON that defines a custom
         assembly.refNameAliases = {
           adapter: {
             type: 'RefNameAliasAdapter',
-            location: { uri: refNameAliasesLocation },
+            location: {
+              uri: refNameAliasesLocation,
+              locationType: 'UriLocation',
+            },
           },
         }
       }
+    }
+
+    if (runFlags.displayName) {
+      assembly.displayName = runFlags.displayName
     }
 
     const defaultConfig: Config = {
@@ -497,7 +532,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
     } catch (error) {
       // ignore
     }
-    if (locationUrl) return false
+    if (locationUrl) {
+      return false
+    }
     return true
   }
 
@@ -510,12 +547,16 @@ custom         Either a JSON file location or inline JSON that defines a custom
       // ignore
     }
 
-    if (locationUrl) return false
+    if (locationUrl) {
+      return false
+    }
     switch (load) {
       case 'copy': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) return undefined
+            if (!filePath) {
+              return undefined
+            }
             return fsPromises.copyFile(
               filePath,
               path.join(path.dirname(destination), path.basename(filePath)),
@@ -527,7 +568,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
       case 'symlink': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) return undefined
+            if (!filePath) {
+              return undefined
+            }
             return fsPromises.symlink(
               filePath,
               path.join(path.dirname(destination), path.basename(filePath)),
@@ -539,7 +582,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
       case 'move': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) return undefined
+            if (!filePath) {
+              return undefined
+            }
             return fsPromises.rename(
               filePath,
               path.join(path.dirname(destination), path.basename(filePath)),

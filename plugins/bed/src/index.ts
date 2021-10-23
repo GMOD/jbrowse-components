@@ -1,14 +1,15 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { configSchema as bigBedAdapterConfigSchema } from './BigBedAdapter'
+import { configSchema as bedTabixAdapterConfigSchema } from './BedTabixAdapter'
+import { FileLocation } from '@jbrowse/core/util/types'
 import {
-  AdapterClass as BigBedAdapterClass,
-  configSchema as bigBedAdapterConfigSchema,
-} from './BigBedAdapter'
-import {
-  AdapterClass as BedTabixAdapterClass,
-  configSchema as bedTabixAdapterConfigSchema,
-} from './BedTabixAdapter'
+  makeIndex,
+  makeIndexType,
+  AdapterGuesser,
+  getFileName,
+} from '@jbrowse/core/util/tracks'
 
 export default class BedPlugin extends Plugin {
   name = 'BedPlugin'
@@ -19,16 +20,66 @@ export default class BedPlugin extends Plugin {
         new AdapterType({
           name: 'BigBedAdapter',
           configSchema: bigBedAdapterConfigSchema,
-          AdapterClass: BigBedAdapterClass,
+          getAdapterClass: () =>
+            import('./BigBedAdapter/BigBedAdapter').then(r => r.default),
         }),
     )
+    pluginManager.addToExtensionPoint(
+      'Core-guessAdapterForLocation',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.(bb|bigbed)$/i
+          const adapterName = 'BigBedAdapter'
+          const fileName = getFileName(file)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
+            return {
+              type: adapterName,
+              bigBedLocation: file,
+            }
+          }
+          return adapterGuesser(file, index, adapterHint)
+        }
+      },
+    )
+
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
           name: 'BedTabixAdapter',
           configSchema: bedTabixAdapterConfigSchema,
-          AdapterClass: BedTabixAdapterClass,
+          getAdapterClass: () =>
+            import('./BedTabixAdapter/BedTabixAdapter').then(r => r.default),
         }),
+    )
+    pluginManager.addToExtensionPoint(
+      'Core-guessAdapterForLocation',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.bed\.b?gz$/i
+          const adapterName = 'BedTabixAdapter'
+          const fileName = getFileName(file)
+          const indexName = index && getFileName(index)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
+            return {
+              type: adapterName,
+              bedGzLocation: file,
+              index: {
+                location: index || makeIndex(file, '.tbi'),
+                indexType: makeIndexType(indexName, 'CSI', 'TBI'),
+              },
+            }
+          }
+          return adapterGuesser(file, index, adapterHint)
+        }
+      },
     )
   }
 }

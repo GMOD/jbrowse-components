@@ -1,130 +1,206 @@
 import React from 'react'
-// eslint-disable-next-line import/no-unresolved
 import Layout from '@theme/Layout'
 
-// eslint-disable-next-line import/no-unresolved
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
-import { makeStyles } from '@material-ui/core/styles'
-import Link from '@material-ui/core/Link'
-import Typography from '@material-ui/core/Typography'
-
-const useStyles = makeStyles(theme => ({
-  button: {
-    textTransform: 'none',
-  },
-  section: {
-    marginTop: '24px',
-    marginBottom: '32px',
-  },
-
-  container: {
-    display: 'flex',
-    [theme.breakpoints.down('md')]: {
-      flexDirection: 'column',
-    },
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  body: {
-    [theme.breakpoints.down('md')]: {
-      margin: '0.5em',
-    },
-    margin: '5em',
-  },
-}))
+import {
+  Link,
+  ThemeProvider,
+  Typography,
+  Button,
+  Box,
+  createTheme,
+} from '@mui/material'
+import GetAppIcon from '@mui/icons-material/GetApp'
+import OpenInBrowserIcon from '@mui/icons-material/OpenInBrowser'
 
 function Home() {
   const context = useDocusaurusContext()
   const { siteConfig = {} } = context
-  const { currentLink } = siteConfig.customFields
-  const pathArray = currentLink.split('/')
-  const currentVersion = pathArray[pathArray.length - 2]
-  const storybookLink = `https://jbrowse.org/storybook/lgv/${currentVersion}/`
-  const classes = useStyles()
+  const { currentVersion, bannerBulletin } = siteConfig.customFields
 
   return (
     <Layout title={`${siteConfig.title}`}>
-      <div className={classes.body}>
-        <div className={classes.container}>
-          <div style={{ flexBasis: '50%' }}>
-            <h1>JBrowse 2</h1>
-            <p>
-              A pluggable open-source platform for visualizing and integrating
-              biological data.
-            </p>
-            <p>
-              Includes a full-featured web application, embeddable components
-              for developers, and soon a desktop application.
-            </p>
-            <h3>Web</h3>
-            <ul>
-              <li>
-                {' '}
-                <Link href="/jb2/blog">Download latest web release</Link>
-              </li>
-              <li>
-                <Link href={currentLink}>Browse web demo instance</Link>
-              </li>
-            </ul>
-            <h3>Embedded</h3>
-            <ul>
-              <li>
-                <Link href="https://www.npmjs.com/package/@jbrowse/react-linear-genome-view">
-                  Linear genome view React component on <tt>npm</tt>
-                </Link>{' '}
-                <Link href={storybookLink}>(docs)</Link>
-              </li>
-              <li>
-                <Link href="https://gmod.github.io/JBrowseR/">
-                  JBrowseR R package on <tt>CRAN</tt>
+      <Box sx={{ margin: { xs: '0.5em', sm: '0.5em', md: '3em' } }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'column', md: 'row' },
+            alignItems: 'center',
+            marginBottom: 6,
+          }}
+        >
+          <Box sx={{ flex: '50%' }}>
+            <Box sx={{ marginLeft: { xs: 0, sm: 0, md: 4 }, margin: 2 }}>
+              <Typography variant="h5">
+                JBrowse: The next generation genome browser
+              </Typography>
+              <Typography variant="body1">
+                The mission of the JBrowse Consortium is to develop a
+                comprehensive, pluggable, open-source computational platform for
+                visualizing and integrating biological data.
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-evenly',
+                gap: 1,
+                margin: { xs: 0, sm: 0, md: 2 },
+              }}
+            >
+              <Button
+                variant="contained"
+                startIcon={<GetAppIcon />}
+                href="/jb2/download/#jbrowse-2-desktop"
+                sx={{
+                  fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' },
+                }}
+                style={{ color: 'white' }}
+              >
+                Download JBrowse Desktop
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                startIcon={<OpenInBrowserIcon />}
+                href={`https://jbrowse.org/code/jb2/${currentVersion}/`}
+                sx={{
+                  fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' },
+                }}
+                style={{ color: 'black' }}
+              >
+                Browse web demo instance
+              </Button>
+            </Box>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="caption">
+                Also check out our&nbsp;
+                <Link href="/jb2/blog">latest release blogpost</Link>, our&nbsp;
+                <Link href="/jb2/download/#jbrowse-2-embedded-components">
+                  embedded components
                 </Link>
-              </li>
-              <li>More embeddable products coming soon</li>
-            </ul>
-            <h3>Desktop</h3>
-            <ul>
-              <li>Coming soon</li>
-            </ul>
-          </div>
-          <div style={{ flexBasis: '50%', padding: 20 }}>
-            <img alt="screenshot of jbrowse 2" src="img/screenshot.png" />
-          </div>
-        </div>
-        <div className={classes.section}>
+                , and our&nbsp;
+                <Link href="/jb2/download/#jbrowse-2-web">
+                  command line tools
+                </Link>
+                .
+              </Typography>
+            </Box>
+          </Box>
+          <Box sx={{ flex: '50%' }}>
+            <img
+              style={{
+                borderRadius: '8px',
+                border: '4px solid #e0e0e0',
+
+                // see https://web.dev/optimize-cls/#modern-best-practice
+                // the width/height attributes are set on the image and sized using css here
+                height: 'auto',
+                width: '100%',
+              }}
+              width={1362}
+              height={731}
+              alt="screenshot of jbrowse 2"
+              src="img/screenshot.png"
+            />
+          </Box>
+        </Box>
+      </Box>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-around',
+          backgroundColor: '#F0F0F0',
+          padding: '25px',
+          alignItems: 'center',
+          marginBottom: 6,
+        }}
+      >
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: 'bold',
+            fontSize: { xs: 'medium', sm: 'medium', md: 'x-large' },
+          }}
+        >
+          {bannerBulletin}
+        </Typography>
+        <Button
+          variant="contained"
+          href={`https://github.com/GMOD/jbrowse-components/releases/tag/${currentVersion}/`}
+          sx={{
+            fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' },
+            maxWidth: { xs: 'min-content', sm: 'min-content', md: 'inherit' },
+          }}
+          style={{ color: 'white' }}
+        >
+          Learn more
+        </Button>
+      </Box>
+      <Box sx={{ margin: { xs: '0.5em', sm: '0.5em', md: '3em' } }}>
+        <Box sx={{ marginBottom: 6 }}>
           <Typography variant="h4">Features</Typography>
           <hr />
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'column', md: 'row' },
+              alignItems: 'flex-start',
+            }}
+          >
+            <Box sx={{ flex: '50%' }}>
+              <ul>
+                <li>
+                  Improved <b>structural variant</b> and{' '}
+                  <b>compariative genomics visualization</b> with linear,
+                  circular, dotplot, and synteny views
+                </li>
+                <li>
+                  <b>Support for many common data types</b> including BAM, CRAM,
+                  tabix indexed VCF, GFF, BED, BigBed, BigWig, and several
+                  specialized formats
+                </li>
+                <li>
+                  <b>Endless extensibility</b> with a plugin ecosytem which can
+                  add additional view types, track types, data adapters, and
+                  more!
+                </li>
+                <li>
+                  <Link href="features">
+                    See a summary of new features and a comparison to JBrowse 1
+                  </Link>
+                </li>
+              </ul>
+            </Box>
+            <Box sx={{ flex: '50%', paddingLeft: '20px' }}>
+              <img
+                style={{
+                  border: '4px solid #e0e0e0',
+                  borderRadius: '8px',
+                  // see https://web.dev/optimize-cls/#modern-best-practice
+                  // the width/height attributes are set on the image and sized using css here
+                  height: 'auto',
+                  width: '100%',
+                }}
+                width={1377}
+                height={614}
+                alt="screenshot of jbrowse 2"
+                src="img/sv_inspector_importform_loaded.png"
+              />
+            </Box>
+          </Box>
+        </Box>
 
-          <ul>
-            <li>
-              Linear, circular, dotplot, and synteny views for improved
-              structural variant and comparative genomics visualization
-            </li>
-            <li>
-              Support for many common data types including BAM, CRAM, tabix
-              indexed VCF, GFF, BED, BigBed, BigWig, and several specialized
-              formats
-            </li>
-            <li>
-              Plugin ecosystem which can add additional view types, track types,
-              data adapters, and more, for nearly endless extensibility
-            </li>
-
-            <li>And more!</li>
-          </ul>
-          <Link href="features">
-            See a summary of features and comparison to JBrowse 1 here
-          </Link>
-        </div>
-
-        <div className={classes.section}>
+        <Box sx={{ marginBottom: 6 }}>
           <Typography variant="h4">Citation</Typography>
           <hr />
           <Typography variant="body1">
             Research citations are one of the main metrics the JBrowse project
             uses to demonstrate our relevance and utility when applying for
             funding to continue our work. If you use JBrowse in research that
-            you publish, please cite the most recent JBrowse paper
+            you publish, please cite the most recent JBrowse paper:
           </Typography>
           <br />
           <Typography variant="body1">
@@ -132,29 +208,41 @@ function Home() {
             genome visualization and analysis.&quot; Genome Biology 17.1 (2016):
             66.
           </Typography>
-        </div>
-        <div className={classes.section}>
+        </Box>
+        <Box sx={{ marginBottom: 6 }}>
           <Typography variant="h4">License</Typography>
           <hr />
           <Typography>
             JBrowse is released under the{' '}
-            <a href="https://www.apache.org/licenses/LICENSE-2.0">
+            <Link href="https://www.apache.org/licenses/LICENSE-2.0">
               Apache License, Version 2.0
-            </a>
+            </Link>
+            .
           </Typography>
-        </div>
-        <div className={classes.section}>
+        </Box>
+        <Box sx={{ marginBottom: 6 }}>
           <Typography variant="h4">Funding and Collaboration</Typography>
           <hr />
-          <Typography>
+          <Typography variant="body1">
             JBrowse development is supported by the US National Institutes of
-            Health, The Chan Zuckerberg Initiative, The Ontario Institute for
-            Cancer Research, and University of California, Berkeley.
+            Health (U41 HG003751), The Chan Zuckerberg Initiative, The Ontario
+            Institute for Cancer Research, and the University of California,
+            Berkeley.
           </Typography>
-        </div>
-      </div>
+        </Box>
+      </Box>
     </Layout>
   )
 }
 
-export default Home
+const theme = createTheme({
+  palette: { secondary: { main: '#ccc' }, primary: { main: '#3f51b5' } },
+})
+
+export default () => {
+  return (
+    <ThemeProvider theme={theme}>
+      <Home />
+    </ThemeProvider>
+  )
+}

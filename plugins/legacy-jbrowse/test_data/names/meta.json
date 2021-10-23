@@ -1,0 +1,14 @@
+{
+  "compress": 0,
+  "track_names": [
+    "volvox-sorted-vcf",
+    "volvox_gff3_tabix",
+    "volvox_gff3_tabix_html",
+    "volvox_gvcf_test",
+    "volvox_vcf_test",
+    "volvoxbed12"
+  ],
+  "lowercase_keys": 1,
+  "hash_bits": "4",
+  "format": "json"
+}

@@ -1,33 +1,44 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { renderToString } from 'react-dom/server'
 import { filter, toArray } from 'rxjs/operators'
 import { Feature } from '../../util/simpleFeature'
-import { checkAbortSignal } from '../../util'
 import { Region } from '../../util/types'
-import RendererType from './RendererType'
-import {
-  RenderArgs as BaseRenderArgs,
-  RenderArgsSerialized as BaseRenderArgSerialized,
-  RenderArgsDeserialized as BaseRenderArgsDeserialized,
-  ResultsSerialized,
+import ServerSideRenderer, {
+  RenderArgs as ServerSideRenderArgs,
+  RenderArgsSerialized as ServerSideRenderArgsSerialized,
+  RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
+  RenderResults,
+  ResultsSerialized as ServerSideResultsSerialized,
+  ResultsDeserialized as ServerSideResultsDeserialized,
 } from './ServerSideRendererType'
 import RpcManager from '../../rpc/RpcManager'
+import { getAdapter } from '../../data_adapters/dataAdapterCache'
+import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 
-export interface RenderArgs extends Omit<BaseRenderArgs, 'displayModel'> {
+export interface RenderArgs extends ServerSideRenderArgs {
   displayModel: {}
+  blockKey: string
 }
 
-interface RenderArgsSerialized
-  extends Omit<BaseRenderArgSerialized, 'displayModel'> {
+export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
   displayModel: {}
+  blockKey: string
 }
 
-interface RenderArgsDeserialized
-  extends Omit<BaseRenderArgsDeserialized, 'displayModel'> {
+export interface RenderArgsDeserialized
+  extends ServerSideRenderArgsDeserialized {
   displayModel: {}
+  blockKey: string
 }
 
-export default class ComparativeServerSideRenderer extends RendererType {
+export type { RenderResults }
+
+export type ResultsSerialized = ServerSideResultsSerialized
+
+export interface ResultsDeserialized extends ServerSideResultsDeserialized {
+  blockKey: string
+}
+
+export default class ComparativeServerSideRenderer extends ServerSideRenderer {
   /**
    * directly modifies the render arguments to prepare
    * them to be serialized and sent to the worker.
@@ -42,42 +53,21 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * @returns the same object
    */
   serializeArgsInClient(args: RenderArgs) {
-    args = {
+    const deserializedArgs = {
       ...args,
       displayModel: {},
     }
 
-    return args
+    return super.serializeArgsInClient(deserializedArgs)
   }
 
   // deserialize some of the results that came back from the worker
-  deserializeResultsInClient(result: ResultsSerialized, args: RenderArgs) {
-    // @ts-ignore
-    result.blockKey = args.blockKey
-    return result
-  }
-
-  /**
-   * directly modifies the passed arguments object to
-   * inflate arguments as necessary. called in the worker process.
-   * @param args - the converted arguments to modify
-   */
-  deserializeArgsInWorker(args: RenderArgsSerialized) {
-    if (this.configSchema) {
-      const config = this.configSchema.create(args.config || {}, {
-        pluginManager: this.pluginManager,
-      })
-      args.config = config
-    }
-  }
-
-  /**
-   *
-   * @param result - object containing the results of calling the `render` method
-   * @param features - Map of `feature.id() -> feature`
-   */
-  serializeResultsInWorker(/* result: Record<string, any>, args: RenderArgs */) {
-    // does nothing currently
+  deserializeResultsInClient(
+    result: ResultsSerialized,
+    args: RenderArgs,
+  ): ResultsDeserialized {
+    const deserialized = super.deserializeResultsInClient(result, args)
+    return { ...deserialized, blockKey: args.blockKey }
   }
 
   /**
@@ -85,17 +75,11 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * calls `render` with the RPC manager.
    */
   async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
-    const serializedArgs = this.serializeArgsInClient(args)
-
-    const result = await rpcManager.call(
+    return rpcManager.call(
       args.sessionId,
       'ComparativeRender',
-      serializedArgs,
-    )
-
-    // @ts-ignore
-    const deserialized = this.deserializeResultsInClient(result, args)
-    return deserialized
+      args,
+    ) as Promise<ResultsSerialized>
   }
 
   /**
@@ -104,30 +88,19 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * @returns true if this feature passes all configured filters
    */
   featurePassesFilters(renderArgs: RenderArgsDeserialized, feature: Feature) {
-    if (!renderArgs.filters) return true
+    if (!renderArgs.filters) {
+      return true
+    }
     return renderArgs.filters.passes(feature, renderArgs)
   }
 
-  // render method called on the worker
-  async renderInWorker(args: RenderArgsSerialized) {
-    checkAbortSignal(args.signal)
-    this.deserializeArgsInWorker(args)
-    checkAbortSignal(args.signal)
-
-    const results = await this.render(args)
-    checkAbortSignal(args.signal)
-    results.html = renderToString(results.element)
-    delete results.element
-
-    // serialize the results for passing back to the main thread.
-    // these will be transmitted to the main process, and will come out
-    // as the result of renderRegionWithWorker.
-    this.serializeResultsInWorker(/* results, args */)
-    return results
-  }
-
   async getFeatures(renderArgs: any) {
-    const { dataAdapter, signal } = renderArgs
+    const { signal, sessionId, adapterConfig } = renderArgs
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
 
     let regions = [] as Region[]
 
@@ -153,12 +126,11 @@ export default class ComparativeServerSideRenderer extends RendererType {
     })
 
     // note that getFeaturesInMultipleRegions does not do glyph expansion
-    const featureObservable = dataAdapter.getFeaturesInMultipleRegions(
-      requestRegions,
-      {
-        signal,
-      },
-    )
+    const featureObservable = (
+      dataAdapter as BaseFeatureDataAdapter
+    ).getFeaturesInMultipleRegions(requestRegions, {
+      signal,
+    })
 
     return featureObservable
       .pipe(
@@ -167,15 +139,5 @@ export default class ComparativeServerSideRenderer extends RendererType {
         toArray(),
       )
       .toPromise()
-  }
-
-  freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
-    const serializedArgs = this.serializeArgsInClient(args)
-
-    return rpcManager.call(args.sessionId, 'freeResources', serializedArgs)
-  }
-
-  freeResourcesInWorker(/* args: RenderArgs */) {
-    /* stub method */
   }
 }

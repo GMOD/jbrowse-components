@@ -1,11 +1,6 @@
-import {
-  types,
-  IAnyType,
-  IAnyModelType,
-  isModelType,
-  isType,
-} from 'mobx-state-tree'
+import { types, IAnyType, isModelType, isType } from 'mobx-state-tree'
 
+// Pluggable elements
 import PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
 import RendererType from './pluggableElementTypes/renderers/RendererType'
 import AdapterType from './pluggableElementTypes/AdapterType'
@@ -15,6 +10,8 @@ import ViewType from './pluggableElementTypes/ViewType'
 import WidgetType from './pluggableElementTypes/WidgetType'
 import ConnectionType from './pluggableElementTypes/ConnectionType'
 import RpcMethodType from './pluggableElementTypes/RpcMethodType'
+import InternetAccountType from './pluggableElementTypes/InternetAccountType'
+import TextSearchAdapterType from './pluggableElementTypes/TextSearchAdapterType'
 
 import {
   ConfigurationSchema,
@@ -28,10 +25,10 @@ import {
   PluggableElementType,
   PluggableElementMember,
 } from './pluggableElementTypes'
-import { AnyConfigurationSchemaType } from './configuration/configurationSchema'
 import { AbstractRootModel } from './util'
 import CorePlugin from './CorePlugin'
 import createJexlInstance from './util/jexl'
+import { PluginDefinition } from './PluginLoader'
 
 /** little helper class that keeps groups of callbacks that are
 then run in a specified order by group */
@@ -75,20 +72,30 @@ type PluggableElementTypeGroup =
   | 'view'
   | 'widget'
   | 'rpc method'
+  | 'internet account'
+  | 'text search adapter'
 
 /** internal class that holds the info for a certain element type */
 class TypeRecord<ElementClass extends PluggableElementBase> {
   registeredTypes: { [name: string]: ElementClass } = {}
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  baseClass: { new (...args: any[]): ElementClass }
+  baseClass: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | { new (...args: any[]): ElementClass }
+    // covers abstract class case
+    | (Function & {
+        prototype: ElementClass
+      })
 
   typeName: string
 
   constructor(
     typeName: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    elementType: { new (...args: any[]): ElementClass },
+    elementType: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    | { new (...args: any[]): ElementClass }
+      // covers abstract class case
+      | (Function & {
+          prototype: ElementClass
+        }),
   ) {
     this.typeName = typeName
     this.baseClass = elementType
@@ -103,10 +110,11 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
   }
 
   get(name: string) {
-    if (!this.has(name))
+    if (!this.has(name)) {
       throw new Error(
         `${this.typeName} '${name}' not found, perhaps its plugin is not loaded or its plugin has not added it.`,
       )
+    }
     return this.registeredTypes[name]
   }
 
@@ -125,11 +133,14 @@ type AnyFunction = (...args: any) => any
  * Can also use this metadata to stash other things about why the plugin is
  * loaded, such as where it came from, what plugin depends on it, etc.
  */
-export type PluginMetaData = Record<string, unknown>
+export type PluginMetadata = Record<string, unknown>
 
-export type PluginLoadRecord = {
-  metadata: PluginMetaData
+export interface PluginLoadRecord {
+  metadata?: PluginMetadata
   plugin: Plugin
+}
+export interface RuntimePluginLoadRecord extends PluginLoadRecord {
+  definition: PluginDefinition
 }
 
 export default class PluginManager {
@@ -138,22 +149,31 @@ export default class PluginManager {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   jexl: any = createJexlInstance()
 
-  pluginMetaData: Record<string, PluginMetaData> = {}
+  pluginMetadata: Record<string, PluginMetadata> = {}
+
+  runtimePluginDefinitions: PluginDefinition[] = []
 
   elementCreationSchedule = new PhasedScheduler<PluggableElementTypeGroup>(
     'renderer',
     'adapter',
+    'text search adapter',
     'display',
     'track',
     'connection',
     'view',
     'widget',
     'rpc method',
-  )
+    'internet account',
+  ) as PhasedScheduler<PluggableElementTypeGroup> | undefined
 
   rendererTypes = new TypeRecord('RendererType', RendererType)
 
   adapterTypes = new TypeRecord('AdapterType', AdapterType)
+
+  textSearchAdapterTypes = new TypeRecord(
+    'TextSearchAdapterType',
+    TextSearchAdapterType,
+  )
 
   trackTypes = new TypeRecord('TrackType', TrackType)
 
@@ -166,6 +186,11 @@ export default class PluginManager {
   widgetTypes = new TypeRecord('WidgetType', WidgetType)
 
   rpcMethods = new TypeRecord('RpcMethodType', RpcMethodType)
+
+  internetAccountTypes = new TypeRecord(
+    'InternetAccountType',
+    InternetAccountType,
+  )
 
   configured = false
 
@@ -193,17 +218,21 @@ export default class PluginManager {
     return configurationSchemas
   }
 
-  addPlugin(load: Plugin | PluginLoadRecord) {
+  addPlugin(load: Plugin | PluginLoadRecord | RuntimePluginLoadRecord) {
     if (this.configured) {
       throw new Error('JBrowse already configured, cannot add plugins')
     }
-    const [plugin, metadata] =
+    const [plugin, metadata = {}] =
       load instanceof Plugin ? [load, {}] : [load.plugin, load.metadata]
 
     if (this.plugins.includes(plugin)) {
       throw new Error('plugin already installed')
     }
-    this.pluginMetaData[plugin.name] = metadata
+
+    this.pluginMetadata[plugin.name] = metadata
+    if ('definition' in load) {
+      this.runtimePluginDefinitions.push(load.definition)
+    }
     plugin.install(this)
     this.plugins.push(plugin)
     return this
@@ -220,8 +249,10 @@ export default class PluginManager {
   createPluggableElements() {
     // run the creation callbacks for each element type in order.
     // see elementCreationSchedule above for the creation order
-    this.elementCreationSchedule.run()
-    delete this.elementCreationSchedule
+    if (this.elementCreationSchedule) {
+      this.elementCreationSchedule.run()
+      delete this.elementCreationSchedule
+    }
     return this
   }
 
@@ -230,7 +261,9 @@ export default class PluginManager {
   }
 
   configure() {
-    if (this.configured) throw new Error('already configured')
+    if (this.configured) {
+      throw new Error('already configured')
+    }
 
     this.plugins.forEach(plugin => plugin.configure(this))
 
@@ -247,6 +280,8 @@ export default class PluginManager {
     switch (groupName) {
       case 'adapter':
         return this.adapterTypes
+      case 'text search adapter':
+        return this.textSearchAdapterTypes
       case 'connection':
         return this.connectionTypes
       case 'widget':
@@ -261,6 +296,8 @@ export default class PluginManager {
         return this.viewTypes
       case 'rpc method':
         return this.rpcMethods
+      case 'internet account':
+        return this.internetAccountTypes
       default:
         throw new Error(`invalid element type '${groupName}'`)
     }
@@ -277,19 +314,27 @@ export default class PluginManager {
     }
     const typeRecord = this.getElementTypeRecord(groupName)
 
-    this.elementCreationSchedule.add(groupName, () => {
-      const newElement = creationCallback(this)
-      if (!newElement.name)
-        throw new Error(`cannot add a ${groupName} with no name`)
+    if (this.elementCreationSchedule) {
+      this.elementCreationSchedule.add(groupName, () => {
+        let newElement = creationCallback(this)
+        if (!newElement.name) {
+          throw new Error(`cannot add a ${groupName} with no name`)
+        }
 
-      if (typeRecord.has(newElement.name)) {
-        throw new Error(
-          `${groupName} ${newElement.name} already registered, cannot register it again`,
-        )
-      }
+        if (typeRecord.has(newElement.name)) {
+          throw new Error(
+            `${groupName} ${newElement.name} already registered, cannot register it again`,
+          )
+        }
 
-      typeRecord.add(newElement.name, newElement)
-    })
+        newElement = this.evaluateExtensionPoint(
+          'Core-extendPluggableElement',
+          newElement,
+        ) as PluggableElementType
+
+        typeRecord.add(newElement.name, newElement)
+      })
+    }
 
     return this
   }
@@ -310,16 +355,14 @@ export default class PluginManager {
     fieldName: PluggableElementMember,
     fallback: IAnyType = types.maybe(types.null),
   ) {
-    const pluggableTypes: IAnyModelType[] = []
-    this.getElementTypeRecord(typeGroup)
+    const pluggableTypes = this.getElementTypeRecord(typeGroup)
       .all()
-      .forEach(t => {
-        const thing = t[fieldName]
-        if (isType(thing) && isModelType(thing)) {
-          pluggableTypes.push(thing)
-        }
-      })
-    // try to smooth over the case when no types are registered, mostly encountered in tests
+      // @ts-ignore
+      .map(t => t[fieldName])
+      .filter(t => isType(t) && isModelType(t)) as IAnyType[]
+
+    // try to smooth over the case when no types are registered, mostly
+    // encountered in tests
     if (pluggableTypes.length === 0) {
       console.warn(
         `No JBrowse pluggable types found matching ('${typeGroup}','${fieldName}')`,
@@ -334,17 +377,15 @@ export default class PluginManager {
     typeGroup: PluggableElementTypeGroup,
     fieldName: PluggableElementMember = 'configSchema',
   ) {
-    const pluggableTypes: AnyConfigurationSchemaType[] = []
-    this.getElementTypeRecord(typeGroup)
+    const pluggableTypes = this.getElementTypeRecord(typeGroup)
       .all()
-      .forEach(t => {
-        const thing = t[fieldName]
-        if (isBareConfigurationSchemaType(thing)) {
-          pluggableTypes.push(thing)
-        }
-      })
-    if (pluggableTypes.length === 0)
+      // @ts-ignore
+      .map(t => t[fieldName])
+      .filter(t => isBareConfigurationSchemaType(t)) as IAnyType[]
+
+    if (pluggableTypes.length === 0) {
       pluggableTypes.push(ConfigurationSchema('Null', {}))
+    }
     return types.union(...pluggableTypes)
   }
 
@@ -353,7 +394,9 @@ export default class PluginManager {
   lib = ReExports
 
   load = <FTYPE extends AnyFunction>(lib: FTYPE): ReturnType<FTYPE> => {
-    if (!this.jbrequireCache.has(lib)) this.jbrequireCache.set(lib, lib(this))
+    if (!this.jbrequireCache.has(lib)) {
+      this.jbrequireCache.set(lib, lib(this))
+    }
     return this.jbrequireCache.get(lib)
   }
 
@@ -381,7 +424,9 @@ export default class PluginManager {
       return this.load(lib)
     }
 
-    if (lib.default) return this.jbrequire(lib.default)
+    if (lib.default) {
+      return this.jbrequire(lib.default)
+    }
 
     throw new TypeError(
       'lib passed to jbrequire must be either a string or a function',
@@ -398,6 +443,10 @@ export default class PluginManager {
 
   getAdapterType(typeName: string): AdapterType {
     return this.adapterTypes.get(typeName)
+  }
+
+  getTextSearchAdapterType(typeName: string): TextSearchAdapterType {
+    return this.textSearchAdapterTypes.get(typeName)
   }
 
   getTrackType(typeName: string): TrackType {
@@ -424,6 +473,10 @@ export default class PluginManager {
     return this.rpcMethods.get(methodName)
   }
 
+  getInternetAccountType(internetAccountName: string): InternetAccountType {
+    return this.internetAccountTypes.get(internetAccountName)
+  }
+
   addRendererType(
     creationCallback: (pluginManager: PluginManager) => RendererType,
   ): this {
@@ -434,6 +487,12 @@ export default class PluginManager {
     creationCallback: (pluginManager: PluginManager) => AdapterType,
   ): this {
     return this.addElementType('adapter', creationCallback)
+  }
+
+  addTextSearchAdapterType(
+    creationCallback: (pluginManager: PluginManager) => TextSearchAdapterType,
+  ): this {
+    return this.addElementType('text search adapter', creationCallback)
   }
 
   addTrackType(
@@ -504,6 +563,12 @@ export default class PluginManager {
     return this.addElementType('rpc method', creationCallback)
   }
 
+  addInternetAccountType(
+    creationCallback: (pluginManager: PluginManager) => InternetAccountType,
+  ): this {
+    return this.addElementType('internet account', creationCallback)
+  }
+
   addToExtensionPoint<T>(
     extensionPointName: string,
     callback: (extendee: T) => T,
@@ -514,5 +579,20 @@ export default class PluginManager {
       this.extensionPoints.set(extensionPointName, callbacks)
     }
     callbacks.push(callback)
+  }
+
+  evaluateExtensionPoint(extensionPointName: string, extendee: unknown) {
+    const callbacks = this.extensionPoints.get(extensionPointName)
+    let accumulator = extendee
+    if (callbacks) {
+      for (const callback of callbacks) {
+        try {
+          accumulator = callback(accumulator)
+        } catch (error) {
+          console.error(error)
+        }
+      }
+    }
+    return accumulator
   }
 }

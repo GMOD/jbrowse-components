@@ -1,0 +1,8 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`initialized correctly 1`] = `
+Object {
+  "internetAccountId": "HTTPBasicTest",
+  "type": "HTTPBasicInternetAccount",
+}
+`;

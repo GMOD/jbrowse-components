@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,react/prop-types */
-import React from 'react'
-import ErrorBoundary from 'react-error-boundary'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 import {
   Accordion,
   AccordionDetails,
@@ -11,7 +11,7 @@ import {
 } from '@material-ui/core'
 import ExpandMore from '@material-ui/icons/ExpandMore'
 import { makeStyles } from '@material-ui/core/styles'
-import { DataGrid } from '@material-ui/data-grid'
+import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 import clsx from 'clsx'
 import isObject from 'is-object'
@@ -22,14 +22,10 @@ import SanitizedHTML from '../ui/SanitizedHTML'
 import SequenceFeatureDetails from './SequenceFeatureDetails'
 import { BaseCardProps, BaseProps } from './types'
 import { SimpleFeatureSerialized } from '../util/simpleFeature'
+import { ellipses } from './util'
 
+// these are always omitted as too detailed
 const globalOmit = [
-  'name',
-  'start',
-  'end',
-  'strand',
-  'refName',
-  'type',
   'length',
   'position',
   'subfeatures',
@@ -40,6 +36,17 @@ const globalOmit = [
   'thickEnd',
 ]
 
+// coreDetails are omitted in some circumstances
+const coreDetails = [
+  'name',
+  'start',
+  'end',
+  'strand',
+  'refName',
+  'description',
+  'type',
+]
+
 export const useStyles = makeStyles(theme => ({
   expansionPanelDetails: {
     display: 'block',
@@ -47,9 +54,6 @@ export const useStyles = makeStyles(theme => ({
   },
   expandIcon: {
     color: '#FFFFFF',
-  },
-  paperRoot: {
-    background: theme.palette.grey[100],
   },
   field: {
     display: 'flex',
@@ -84,11 +88,6 @@ export const useStyles = makeStyles(theme => ({
     boxSizing: 'border-box',
     overflow: 'auto',
   },
-
-  accordionBorder: {
-    marginTop: '4px',
-    border: '1px solid #444',
-  },
 }))
 
 export function BaseCard({
@@ -97,10 +96,11 @@ export function BaseCard({
   defaultExpanded = true,
 }: BaseCardProps) {
   const classes = useStyles()
+  const [expanded, setExpanded] = useState(defaultExpanded)
   return (
     <Accordion
-      className={classes.accordionBorder}
-      defaultExpanded={defaultExpanded}
+      expanded={expanded}
+      onChange={() => setExpanded(s => !s)}
       TransitionProps={{ unmountOnExit: true }}
     >
       <AccordionSummary
@@ -115,17 +115,17 @@ export function BaseCard({
   )
 }
 
-const FieldName = ({
+export const FieldName = ({
   description,
   name,
-  prefix,
+  prefix = [],
 }: {
   description?: React.ReactNode
   name: string
-  prefix?: string
+  prefix?: string[]
 }) => {
   const classes = useStyles()
-  const val = (prefix ? `${prefix}.` : '') + name
+  const val = [...prefix, name].join('.')
   return description ? (
     <Tooltip title={description} placement="left">
       <div className={clsx(classes.fieldDescription, classes.fieldName)}>
@@ -137,7 +137,7 @@ const FieldName = ({
   )
 }
 
-const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
+export const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
   const classes = useStyles()
   return (
     <div className={classes.fieldValue}>
@@ -151,9 +151,9 @@ const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
     </div>
   )
 }
-const SimpleValue = ({
-  name,
 
+export const SimpleValue = ({
+  name,
   value,
   description,
   prefix,
@@ -161,10 +161,10 @@ const SimpleValue = ({
   description?: React.ReactNode
   name: string
   value: any
-  prefix?: string
+  prefix?: string[]
 }) => {
   const classes = useStyles()
-  return value ? (
+  return value !== null && value !== undefined ? (
     <div className={classes.field}>
       <FieldName prefix={prefix} description={description} name={name} />
       <BasicValue value={value} />
@@ -176,27 +176,47 @@ const ArrayValue = ({
   name,
   value,
   description,
-  prefix,
+  prefix = [],
 }: {
   description?: React.ReactNode
   name: string
   value: any[]
-  prefix?: string
+  prefix?: string[]
 }) => {
   const classes = useStyles()
   return (
-    <div className={classes.field}>
-      <FieldName prefix={prefix} description={description} name={name} />
+    <>
       {value.length === 1 ? (
-        <BasicValue value={value[0]} />
-      ) : (
-        value.map((val, i) => (
-          <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
-            <BasicValue value={val} />
+        isObject(value[0]) ? (
+          <Attributes attributes={value[0]} prefix={[...prefix, name]} />
+        ) : (
+          <div className={classes.field}>
+            <FieldName prefix={prefix} description={description} name={name} />
+            <BasicValue value={value[0]} />
           </div>
+        )
+      ) : value.every(val => isObject(val)) ? (
+        value.map((val, i) => (
+          <Attributes
+            key={JSON.stringify(val) + '-' + i}
+            attributes={val}
+            prefix={[...prefix, name + '-' + i]}
+          />
         ))
+      ) : (
+        <div className={classes.field}>
+          <FieldName prefix={prefix} description={description} name={name} />
+          {value.map((val, i) => (
+            <div
+              key={JSON.stringify(val) + '-' + i}
+              className={classes.fieldSubvalue}
+            >
+              <BasicValue value={val} />
+            </div>
+          ))}
+        </div>
       )}
-    </div>
+    </>
   )
 }
 
@@ -232,12 +252,12 @@ function CoreDetails(props: BaseProps) {
   ]
   return (
     <>
-      {coreRenderedDetails.map(key => {
-        const value = displayedDetails[key.toLowerCase()]
-        return value !== null && value !== undefined ? (
+      {coreRenderedDetails
+        .map(key => [key, displayedDetails[key.toLowerCase()]])
+        .filter(([, value]) => value !== null && value !== undefined)
+        .map(([key, value]) => (
           <SimpleValue key={key} name={key} value={value} />
-        ) : null
-      })}
+        ))}
     </>
   )
 }
@@ -253,9 +273,98 @@ export const BaseCoreDetails = (props: BaseProps) => {
 interface AttributeProps {
   attributes: Record<string, any>
   omit?: string[]
-  formatter?: (val: unknown, key: string) => JSX.Element
+  formatter?: (val: unknown, key: string) => React.ReactElement
   descriptions?: Record<string, React.ReactNode>
-  prefix?: string
+  prefix?: string[]
+}
+
+const DataGridDetails = ({
+  value,
+  prefix,
+  name,
+}: {
+  name: string
+  prefix?: string[]
+  value: Record<string, any>
+}) => {
+  const keys = Object.keys(value[0]).sort()
+  const unionKeys = new Set(keys)
+  value.forEach((val: any) => Object.keys(val).forEach(k => unionKeys.add(k)))
+  if (unionKeys.size < keys.length + 5) {
+    // avoids key 'id' from being used in row data
+    const rows = Object.entries(value).map(([k, val]) => {
+      const { id, ...rest } = val
+      return {
+        id: k, // used by material UI
+        identifier: id, // renamed from id to identifier
+        ...rest,
+      }
+    })
+
+    // avoids key 'id' from being used in column names, and tries
+    // to make it at the start of the colNames array
+    let colNames
+    if (unionKeys.has('id')) {
+      unionKeys.delete('id')
+      colNames = ['identifier', ...unionKeys]
+    } else {
+      colNames = [...unionKeys]
+    }
+
+    const columns = colNames.map(val => ({
+      field: val,
+      width: Math.max(
+        ...rows.map(row => {
+          const result = String(row[val])
+          return Math.min(Math.max(measureText(result, 14) + 50, 80), 1000)
+        }),
+      ),
+    }))
+
+    // disableSelection on click helps avoid
+    // https://github.com/mui-org/material-ui-x/issues/1197
+    return (
+      <>
+        <FieldName prefix={prefix} name={name} />
+        <div
+          style={{
+            height:
+              Math.min(rows.length, 100) * 20 +
+              50 +
+              (rows.length < 100 ? 0 : 50),
+            width: '100%',
+          }}
+        >
+          <DataGrid
+            disableSelectionOnClick
+            rowHeight={20}
+            headerHeight={25}
+            rows={rows}
+            rowsPerPageOptions={[]}
+            hideFooterRowCount
+            hideFooterSelectedRowCount
+            columns={columns}
+            hideFooter={rows.length < 100}
+          />
+        </div>
+      </>
+    )
+  }
+  return null
+}
+
+// arr = ['a','b'], obj = {a:{b:'hello}}, returns hello (with special addition to grab description also)
+function accessNested(arr: string[], obj: Record<string, any> = {}) {
+  arr.forEach(elt => {
+    if (obj) {
+      obj = obj[elt]
+    }
+  })
+  return typeof obj === 'string'
+    ? obj
+    : typeof obj?.Description === 'string'
+    ? obj.Description
+    : undefined
 }
 
 export const Attributes: React.FunctionComponent<AttributeProps> = props => {
@@ -264,99 +373,33 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
     omit = [],
     descriptions,
     formatter = val => val,
-    prefix = '',
+    prefix = [],
   } = props
   const omits = [...omit, ...globalOmit]
 
-  // disableClickEventBubbling helps avoid
-  // https://github.com/mui-org/material-ui-x/issues/1197
-  // needs typescript fix to remove ts-ignore
   return (
     <>
       {Object.entries(attributes)
         .filter(([k, v]) => v !== undefined && !omits.includes(k))
         .map(([key, value]) => {
-          if (Array.isArray(value) && value.length) {
-            if (value.length > 2 && value.every(val => isObject(val))) {
-              const keys = Object.keys(value[0]).sort()
-              const unionKeys = new Set(keys)
-              value.forEach(val =>
-                Object.keys(val).forEach(k => unionKeys.add(k)),
-              )
-              if (unionKeys.size < keys.length + 5) {
-                // avoids key 'id' from being used in row data
-                const rows = Object.entries(value).map(([k, val]) => {
-                  const { id, ...rest } = val
-                  return {
-                    id: k, // used by material UI
-                    identifier: id, // renamed from id to identifier
-                    ...rest,
-                  }
-                })
-
-                // avoids key 'id' from being used in column names, and tries
-                // to make it at the start of the colNames array
-                let colNames
-                if (unionKeys.has('id')) {
-                  unionKeys.delete('id')
-                  colNames = ['identifier', ...unionKeys]
-                } else {
-                  colNames = [...unionKeys]
-                }
-
-                const columns = colNames.map(val => ({
-                  field: val,
-                  width: Math.max(
-                    ...rows.map(row => {
-                      const result = String(row[val])
-                      return Math.min(
-                        Math.max(measureText(result, 14) + 50, 80),
-                        1000,
-                      )
-                    }),
-                  ),
-                }))
-
-                return (
-                  <React.Fragment key={key}>
-                    <FieldName prefix={prefix} name={key} />
-                    <div
-                      key={key}
-                      style={{
-                        height:
-                          Math.min(rows.length, 100) * 20 +
-                          50 +
-                          (rows.length < 100 ? 0 : 50),
-                        width: '100%',
-                      }}
-                    >
-                      <DataGrid
-                        disableSelectionOnClick
-                        rowHeight={20}
-                        headerHeight={25}
-                        rows={rows}
-                        rowsPerPageOptions={[]}
-                        hideFooterRowCount
-                        hideFooterSelectedRowCount
-                        columns={columns}
-                        hideFooter={rows.length < 100}
-                      />
-                    </div>
-                  </React.Fragment>
-                )
-              }
-            }
-          }
-          const description = descriptions && descriptions[key]
-          if (Array.isArray(value)) {
-            return value.length === 1 ? (
-              <SimpleValue
+          if (
+            Array.isArray(value) &&
+            value.length > 2 &&
+            value.every(val => isObject(val))
+          ) {
+            return (
+              <DataGridDetails
                 key={key}
+                prefix={prefix}
                 name={key}
-                value={value[0]}
-                description={description}
+                value={value}
               />
-            ) : (
+            )
+          }
+
+          const description = accessNested([...prefix, key], descriptions)
+          if (Array.isArray(value)) {
+            return (
               <ArrayValue
                 key={key}
                 name={key}
@@ -366,13 +409,15 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
               />
             )
           }
+
           if (isObject(value)) {
             return (
               <Attributes
+                omit={omits}
                 key={key}
                 attributes={value}
                 descriptions={descriptions}
-                prefix={key}
+                prefix={[...prefix, key]}
               />
             )
           }
@@ -404,58 +449,39 @@ export interface BaseInputProps extends BaseCardProps {
   omit?: string[]
   model: any
   descriptions?: Record<string, React.ReactNode>
-  formatter?: (val: unknown, key: string) => JSX.Element
+  formatter?: (val: unknown, key: string) => React.ReactElement
 }
 
 function isEmpty(obj: Record<string, unknown>) {
   return Object.keys(obj).length === 0
 }
 
-export const BaseFeatureDetails = observer((props: BaseInputProps) => {
-  const { model } = props
-  const { featureData } = model
-
-  if (!featureData) {
-    return null
-  }
-  const feature = JSON.parse(JSON.stringify(featureData))
-
-  if (isEmpty(feature)) {
-    return null
-  }
-  return <FeatureDetails model={model} feature={feature} />
-})
-
 export const FeatureDetails = (props: {
   model: IAnyStateTreeNode
   feature: SimpleFeatureSerialized & { name?: string; id?: string }
   depth?: number
   omit?: string[]
-  formatter?: (val: unknown, key: string) => JSX.Element
+  formatter?: (val: unknown, key: string) => React.ReactElement
 }) => {
-  const { model, feature, depth = 0 } = props
-  const { name, id, type, subfeatures } = feature
-  const displayName = (name || id) as string | undefined
-  const ellipsedDisplayName =
-    displayName && displayName.length > 20 ? '' : displayName
+  const { omit = [], model, feature, depth = 0 } = props
+  const { name = '', id = '', type = '', subfeatures } = feature
   const session = getSession(model)
-  const defSeqTypes = ['mRNA', 'transcript']
+  const defaultSeqTypes = ['mRNA', 'transcript']
   const sequenceTypes =
-    getConf(session, ['featureDetails', 'sequenceTypes']) || defSeqTypes
+    getConf(session, ['featureDetails', 'sequenceTypes']) || defaultSeqTypes
 
   return (
-    <BaseCard
-      title={
-        ellipsedDisplayName
-          ? `${ellipsedDisplayName} - ${type}`
-          : `${type || ''}`
-      }
-    >
-      <div>Core details</div>
+    <BaseCard title={[ellipses(name || id), type].filter(f => !!f).join(' - ')}>
+      <Typography>Core details</Typography>
       <CoreDetails {...props} />
       <Divider />
-      <div>Attributes</div>
-      <Attributes attributes={feature} {...props} />
+      <Typography>Attributes</Typography>
+      <Attributes
+        attributes={feature}
+        {...props}
+        omit={[...omit, ...coreDetails]}
+      />
+
       {sequenceTypes.includes(feature.type) ? (
         <ErrorBoundary
           FallbackComponent={({ error }) => (
@@ -467,7 +493,8 @@ export const FeatureDetails = (props: {
           <SequenceFeatureDetails {...props} />
         </ErrorBoundary>
       ) : null}
-      {subfeatures && subfeatures.length ? (
+
+      {subfeatures?.length ? (
         <BaseCard
           title="Subfeatures"
           defaultExpanded={!sequenceTypes.includes(feature.type)}
@@ -485,3 +512,20 @@ export const FeatureDetails = (props: {
     </BaseCard>
   )
 }
+
+const BaseFeatureDetails = observer((props: BaseInputProps) => {
+  const { model } = props
+  const { featureData } = model
+
+  if (!featureData) {
+    return null
+  }
+  const feature = JSON.parse(JSON.stringify(featureData))
+
+  if (isEmpty(feature)) {
+    return null
+  }
+  return <FeatureDetails model={model} feature={feature} />
+})
+
+export default BaseFeatureDetails

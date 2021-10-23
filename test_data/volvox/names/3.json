@@ -1,0 +1,119 @@
+{
+  "14_re": { "prefix": ["14_ReprPCWk"], "exact": [] },
+  "rs1181329": { "prefix": ["rs118132937"], "exact": [] },
+  "agt767.": { "prefix": ["agt767.5", "agt767.3"], "exact": [] },
+  "a": {
+    "prefix": [
+      "Apple1",
+      "Apple2",
+      "Apple3",
+      "agt221.5",
+      "agt830.5",
+      "agt767.5",
+      "agt830.3",
+      "agt221.3",
+      "agt767.3"
+    ],
+    "exact": []
+  },
+  "rs1788327": { "prefix": ["rs17883270"], "exact": [] },
+  "rs178860": { "exact": [], "prefix": ["rs17886025"] },
+  "14_repr": { "exact": [], "prefix": ["14_ReprPCWk"] },
+  "apple1": {
+    "prefix": [],
+    "exact": [
+      ["Apple1", 0, "Apple1", "ctgA", 9999, 11500],
+      ["Apple1", 13, "Apple1", "ctgA", 9999, 11500],
+      ["Apple1", 14, "Apple1", "ctgA", 9999, 11500]
+    ]
+  },
+  "rs7711": { "prefix": ["rs77112488"], "exact": [] },
+  "10_ts": { "exact": [], "prefix": ["10_TssBiv"] },
+  "f02": {
+    "prefix": [],
+    "exact": [
+      ["f02", 4, "f02", "ctgA", 24561, 28338],
+      ["f02", 13, "f02", "ctgA", 24561, 28338],
+      ["f02", 14, "f02", "ctgA", 24561, 28338]
+    ]
+  },
+  "rs481640": { "exact": [], "prefix": ["rs4816405", "rs4816407"] },
+  "gene": { "exact": [], "prefix": ["Gene:hga", "Gene:hgb"] },
+  "rs116260263": {
+    "prefix": [],
+    "exact": [["rs116260263", 16, "rs116260263", "contigA", 6833, 6834]]
+  },
+  "rs1787": { "exact": [], "prefix": ["rs17878855", "rs17878802"] },
+  "rs4816": { "exact": [], "prefix": ["rs4816405", "rs4816407"] },
+  "rs81": { "exact": [], "prefix": ["rs8133032"] },
+  "fakes": { "exact": [], "prefix": ["FakeSNP", "FakeSNP1"] },
+  "rs1": {
+    "prefix": [
+      "rs17883296",
+      "rs17878855",
+      "rs17881581",
+      "rs17881180",
+      "rs114905802",
+      "rs17884260",
+      "rs17884040",
+      "rs17880795",
+      "rs17885219",
+      "rs17882967",
+      "rs17883270",
+      "rs17878802",
+      "rs17881807",
+      "rs116260263",
+      "rs17884233",
+      "rs16988404",
+      "rs10432782",
+      "rs17880490",
+      "rs17886025",
+      "rs17883461",
+      { "hitLimit": 1, "name": "too many matches" }
+    ],
+    "exact": []
+  },
+  "rs1788530": { "prefix": ["rs17885303"], "exact": [] },
+  "ctga": {
+    "exact": [["ctgA", 50001, "ctgA", null, 0, 50001, 20000]],
+    "prefix": []
+  },
+  "rs6650": { "prefix": ["rs6650814"], "exact": [] },
+  "m12": {
+    "exact": [
+      ["m12", 6, "m12", "ctgA", 21747, 25612],
+      ["m12", 13, "m12", "ctgA", 21747, 25612],
+      ["m12", 14, "m12", "ctgA", 21747, 25612]
+    ],
+    "prefix": []
+  },
+  "rs1788346": { "exact": [], "prefix": ["rs17883461"] },
+  "10_": { "exact": [], "prefix": ["10_TssBiv"] },
+  "prot": { "prefix": ["Protein:HGA", "Protein:HGB"], "exact": [] },
+  "rs178829": { "prefix": ["rs17882967"], "exact": [] },
+  "agt8": { "prefix": ["agt830.5", "agt830.3"], "exact": [] },
+  "rs22": { "exact": [], "prefix": ["rs2234694"] },
+  "rs112989936": {
+    "exact": [["rs112989936", 16, "rs112989936", "contigA", 10683, 10684]],
+    "prefix": []
+  },
+  "seg03": {
+    "exact": [
+      ["seg03", 10, "seg03", "ctgA", 6884, 7241],
+      ["seg03", 10, "seg03", "ctgA", 7409, 7737],
+      ["seg03", 10, "seg03", "ctgA", 8054, 8080],
+      ["seg03", 10, "seg03", "ctgA", 8305, 8999],
+      ["seg03", 13, "seg03", "ctgA", 6884, 7241],
+      ["seg03", 13, "seg03", "ctgA", 7409, 7737],
+      ["seg03", 13, "seg03", "ctgA", 8054, 8080],
+      ["seg03", 13, "seg03", "ctgA", 8305, 8999],
+      ["seg03", 14, "seg03", "ctgA", 6884, 7241],
+      ["seg03", 14, "seg03", "ctgA", 7409, 7737],
+      ["seg03", 14, "seg03", "ctgA", 8054, 8080],
+      ["seg03", 14, "seg03", "ctgA", 8305, 8999]
+    ],
+    "prefix": []
+  },
+  "gene:hg": { "prefix": ["Gene:hga", "Gene:hgb"], "exact": [] },
+  "rs1043": { "prefix": ["rs10432782"], "exact": [] }
+}

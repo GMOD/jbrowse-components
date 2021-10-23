@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-data-management",
-  "version": "1.1.0",
+  "version": "1.5.0",
   "description": "JBrowse 2 linear genome view",
   "keywords": [
     "jbrowse",
@@ -37,18 +37,20 @@
   "dependencies": {
     "@gmod/ucsc-hub": "^0.1.3",
     "@material-ui/icons": "^4.9.1",
-    "array-intersection": "^0.1.2",
-    "object-hash": "^1.3.1",
-    "pluralize": "^8.0.0"
+    "pluralize": "^8.0.0",
+    "react-virtualized-auto-sizer": "^1.0.2",
+    "react-vtree": "^3.0.0-beta.1",
+    "react-window": "^1.8.6"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",
     "@jbrowse/plugin-config": "^1.0.0",
-    "@material-ui/core": "^4.9.13",
+    "@material-ui/core": "^4.12.2",
+    "@material-ui/lab": "^4.0.0-alpha.45",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",
-    "react": "^16.8.0"
+    "react": ">=16.8.0"
   },
   "publishConfig": {
     "access": "public"

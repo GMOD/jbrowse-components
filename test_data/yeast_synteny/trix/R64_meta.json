@@ -1,0 +1,23 @@
+{
+  "dateCreated": "2021-09-08T14:14:37.342Z",
+  "tracks": [
+    {
+      "trackId": "r64.sorted.gff",
+      "attributesIndexed": ["Name", "ID"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.sorted.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.sorted.gff.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      }
+    }
+  ],
+  "assemblyNames": ["R64"]
+}

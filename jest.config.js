@@ -32,7 +32,6 @@ module.exports = {
     '<rootDir>/config/jest/console.js',
     'jest-localstorage-mock',
   ],
-  testEnvironment: 'jest-environment-jsdom-fourteen',
   testURL: 'http://localhost',
   moduleNameMapper: {
     '^react-native$': 'react-native-web',

@@ -1,7 +1,7 @@
 import IconButton from '@material-ui/core/IconButton'
 import MenuItem from '@material-ui/core/MenuItem'
 import TextField from '@material-ui/core/TextField'
-import React from 'react'
+import React, { useEffect } from 'react'
 import OpenInNewIcon from '@material-ui/icons/OpenInNew'
 
 import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
@@ -10,18 +10,14 @@ function ConnectionTypeSelect(props: {
   connectionTypeChoices: ConnectionType[]
   connectionType: ConnectionType
   setConnectionType: Function
-  assemblyNameChoices: string[]
-  assemblyName: string
-  setAssemblyName: Function
-}): JSX.Element {
-  const {
-    connectionTypeChoices,
-    connectionType,
-    setConnectionType,
-    assemblyNameChoices,
-    assemblyName,
-    setAssemblyName,
-  } = props
+}) {
+  const { connectionTypeChoices, connectionType, setConnectionType } = props
+
+  useEffect(() => {
+    if (!connectionType.name) {
+      setConnectionType(connectionTypeChoices[0])
+    }
+  })
 
   function handleChange(
     event: React.ChangeEvent<{ name?: string; value: unknown }>,
@@ -33,26 +29,13 @@ function ConnectionTypeSelect(props: {
       ),
     )
   }
-
+  if (!connectionType.name) {
+    return null
+  }
   return (
     <form autoComplete="off">
       <TextField
-        value={assemblyName}
-        label="assemblyName"
-        helperText="Assembly to which the track will be added"
-        select
-        fullWidth
-        onChange={(event): void => setAssemblyName(event.target.value)}
-        inputProps={{ 'data-testid': 'assemblyNameSelect' }}
-      >
-        {assemblyNameChoices.map(assemblyNameChoice => (
-          <MenuItem key={assemblyNameChoice} value={assemblyNameChoice}>
-            {assemblyNameChoice}
-          </MenuItem>
-        ))}
-      </TextField>
-      <TextField
-        value={connectionType.name || ''}
+        value={connectionType.name}
         label="connectionType"
         helperText={
           connectionType.description ? (
@@ -74,6 +57,7 @@ function ConnectionTypeSelect(props: {
         select
         fullWidth
         onChange={handleChange}
+        variant="outlined"
       >
         {connectionTypeChoices.map((connectionTypeChoice: ConnectionType) => (
           <MenuItem

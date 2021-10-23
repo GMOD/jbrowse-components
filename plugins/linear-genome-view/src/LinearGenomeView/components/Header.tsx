@@ -1,23 +1,30 @@
-import { Region } from '@jbrowse/core/util/types'
-import { getSession } from '@jbrowse/core/util'
-import Button from '@material-ui/core/Button'
-import { makeStyles, useTheme } from '@material-ui/core/styles'
-import { fade } from '@material-ui/core/styles/colorManipulator'
-import FormGroup from '@material-ui/core/FormGroup'
-import Typography from '@material-ui/core/Typography'
+import React from 'react'
 import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
-import React, { useCallback } from 'react'
+import { getSession } from '@jbrowse/core/util'
+import {
+  Button,
+  FormGroup,
+  Typography,
+  makeStyles,
+  useTheme,
+  alpha,
+} from '@material-ui/core'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+
+// icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
-import { LinearGenomeViewStateModel, HEADER_BAR_HEIGHT } from '..'
+
+// locals
+import { LinearGenomeViewModel, HEADER_BAR_HEIGHT } from '..'
 import RefNameAutocomplete from './RefNameAutocomplete'
 import OverviewScaleBar from './OverviewScaleBar'
 import ZoomControls from './ZoomControls'
 import SequenceSearchButton from './SequenceSearchButton'
 
 type LGV = Instance<LinearGenomeViewStateModel>
+import { dedupe } from './util'
 
 const WIDGET_HEIGHT = 32
 const SPACING = 7
@@ -39,7 +46,7 @@ const useStyles = makeStyles(theme => ({
     minWidth: 100,
   },
   panButton: {
-    background: fade(theme.palette.background.paper, 0.8),
+    background: alpha(theme.palette.background.paper, 0.8),
     height: WIDGET_HEIGHT,
     margin: SPACING,
   },
@@ -58,7 +65,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const Controls = observer(({ model }: { model: LGV }) => {
+const Controls = observer(({ model }: { model: LinearGenomeViewModel }) => {
   const classes = useStyles()
   return (
     <Button
@@ -73,7 +80,7 @@ const Controls = observer(({ model }: { model: LGV }) => {
   )
 })
 
-function PanControls({ model }: { model: LGV }) {
+function PanControls({ model }: { model: LinearGenomeViewModel }) {
   const classes = useStyles()
   return (
     <>
@@ -95,79 +102,7 @@ function PanControls({ model }: { model: LGV }) {
   )
 }
 
-export default observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
-  const theme = useTheme()
-  const session = getSession(model)
-  const { coarseDynamicBlocks: contentBlocks, displayedRegions } = model
-
-  const setDisplayedRegion = useCallback(
-    (newRegionValue: string | undefined) => {
-      try {
-        if (newRegionValue) {
-          const newRegion: Region | undefined = model.displayedRegions.find(
-            region => newRegionValue === region.refName,
-          )
-          // navigate to region or if region not found try navigating to locstring
-          if (newRegion) {
-            model.setDisplayedRegions([newRegion])
-            // we use showAllRegions after setDisplayedRegions to make the entire
-            // region visible, xref #1703
-            model.showAllRegions()
-          } else {
-            newRegionValue && model.navToLocString(newRegionValue)
-          }
-        }
-      } catch (e) {
-        console.warn(e)
-        session.notify(`${e}`, 'warning')
-      }
-    },
-    [model, session],
-  )
-
-  const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
-
-  const controls = (
-    <div className={classes.headerBar}>
-      <Controls model={model} />
-      <div className={classes.spacer} />
-      <FormGroup row className={classes.headerForm}>
-        <SequenceSearchButton model={model} />
-        <PanControls model={model} />
-        <RefNameAutocomplete
-          onSelect={setDisplayedRegion}
-          assemblyName={assemblyName}
-          value={displayedRegions.length > 1 ? '' : refName}
-          model={model}
-          TextFieldProps={{
-            variant: 'outlined',
-            className: classes.headerRefName,
-            style: { margin: SPACING, minWidth: '175px' },
-            InputProps: {
-              style: {
-                padding: 0,
-                height: WIDGET_HEIGHT,
-                background: fade(theme.palette.background.paper, 0.8),
-              },
-            },
-          }}
-        />
-      </FormGroup>
-      <RegionWidth model={model} />
-      <ZoomControls model={model} />
-      <div className={classes.spacer} />
-    </div>
-  )
-
-  if (model.hideHeaderOverview) {
-    return controls
-  }
-
-  return <OverviewScaleBar model={model}>{controls}</OverviewScaleBar>
-})
-
-const RegionWidth = observer(({ model }: { model: LGV }) => {
+const RegionWidth = observer(({ model }: { model: LinearGenomeViewModel }) => {
   const classes = useStyles()
   const { coarseTotalBp } = model
   return (
@@ -176,3 +111,98 @@ const RegionWidth = observer(({ model }: { model: LGV }) => {
     </Typography>
   )
 })
+
+const LinearGenomeViewHeader = observer(
+  ({ model }: { model: LinearGenomeViewModel }) => {
+    const classes = useStyles()
+    const theme = useTheme()
+    const session = getSession(model)
+
+    const { textSearchManager, assemblyManager } = session
+    const { assemblyNames, rankSearchResults } = model
+    const assemblyName = assemblyNames[0]
+    const assembly = assemblyManager.get(assemblyName)
+    const searchScope = model.searchScope(assemblyName)
+
+    async function fetchResults(queryString: string) {
+      if (!textSearchManager) {
+        console.warn('No text search manager')
+      }
+      const results = await textSearchManager?.search(
+        {
+          queryString: queryString.toLowerCase(),
+          searchType: 'exact',
+        },
+        searchScope,
+        rankSearchResults,
+      )
+      return dedupe(results)
+    }
+
+    async function handleSelectedRegion(option: BaseResult) {
+      let trackId = option.getTrackId()
+      let location = option.getLocation()
+      const label = option.getLabel()
+      try {
+        if (assembly?.refNames?.includes(location)) {
+          model.navToLocString(location)
+        } else {
+          const results = await fetchResults(label)
+          if (results && results.length > 1) {
+            model.setSearchResults(results, label.toLowerCase())
+            return
+          } else if (results?.length === 1) {
+            location = results[0].getLocation()
+            trackId = results[0].getTrackId()
+          }
+
+          model.navToLocString(location, assemblyName)
+          if (trackId) {
+            model.showTrack(trackId)
+          }
+        }
+      } catch (e) {
+        console.error(e)
+        session.notify(`${e}`, 'warning')
+      }
+    }
+
+    const controls = (
+      <div className={classes.headerBar}>
+        <Controls model={model} />
+        <div className={classes.spacer} />
+        <FormGroup row className={classes.headerForm}>
+          <PanControls model={model} />
+          <RefNameAutocomplete
+            onSelect={handleSelectedRegion}
+            assemblyName={assemblyName}
+            model={model}
+            TextFieldProps={{
+              variant: 'outlined',
+              className: classes.headerRefName,
+              style: { margin: SPACING, minWidth: '175px' },
+              InputProps: {
+                style: {
+                  padding: 0,
+                  height: WIDGET_HEIGHT,
+                  background: alpha(theme.palette.background.paper, 0.8),
+                },
+              },
+            }}
+          />
+        </FormGroup>
+        <RegionWidth model={model} />
+        <ZoomControls model={model} />
+        <div className={classes.spacer} />
+      </div>
+    )
+
+    if (model.hideHeaderOverview) {
+      return controls
+    }
+
+    return <OverviewScaleBar model={model}>{controls}</OverviewScaleBar>
+  },
+)
+
+export default LinearGenomeViewHeader

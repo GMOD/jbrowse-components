@@ -9,41 +9,25 @@ import { setup } from '../testUtil'
 
 const fsPromises = fs.promises
 
-const simpleBam = path.join(__dirname, '..', '..', 'test', 'data', 'simple.bam')
-const simpleBai = path.join(__dirname, '..', '..', 'test', 'data', 'simple.bai')
-const testConfig = path.join(
-  __dirname,
-  '..',
-  '..',
-  'test',
-  'data',
-  'test_config.json',
-)
+const baseDir = path.join(__dirname, '..', '..', 'test', 'data')
+const simpleBam = path.join(baseDir, 'simple.bam')
+const simpleBai = path.join(baseDir, 'simple.bai')
+const testConfig = path.join(baseDir, 'test_config.json')
 
 async function initctx(ctx: { dir: string }) {
-  await fsPromises.copyFile(
-    testConfig,
-    path.join(ctx.dir, path.basename(testConfig)),
-  )
-
-  await fsPromises.rename(
-    path.join(ctx.dir, path.basename(testConfig)),
-    path.join(ctx.dir, 'config.json'),
-  )
+  await fsPromises.copyFile(testConfig, path.join(ctx.dir, 'config.json'))
 }
 async function init2bit(ctx: { dir: string }) {
-  const simple2bit = path.join(
-    __dirname,
-    '..',
-    '..',
-    'test',
-    'data',
-    'simple.2bit',
-  )
   await fsPromises.copyFile(
-    simple2bit,
-    path.join(ctx.dir, path.basename(simple2bit)),
+    path.join(baseDir, 'simple.2bit'),
+    path.join(ctx.dir, 'simple.2bit'),
   )
+}
+
+async function readConf(ctx: { dir: string }) {
+  return fsPromises.readFile(path.join(ctx.dir, 'config.json'), {
+    encoding: 'utf8',
+  })
 }
 
 describe('add-track', () => {
@@ -67,11 +51,36 @@ describe('add-track', () => {
     .command(['add-track', simpleBam, '--load', 'copy'])
     .command(['add-track', simpleBam, '--load', 'copy'])
     .exit(160)
-    .it('Cannot add a track with the same track id')
+    .it('cannot add a track with the same track id')
+
+  setup
+    .do(initctx)
+    .command(['add-track', simpleBam, '--load', 'symlink'])
+    .command(['add-track', simpleBam, '--load', 'symlink', '--force'])
+    .it('use force to overwrite a symlink')
+
+  setup
+    .do(initctx)
+    .command(['add-track', simpleBam, '--load', 'copy'])
+    .command(['add-track', simpleBam, '--load', 'copy', '--force'])
+    .it('use force to overwrite a copied file')
+
+  // setting up a test for move difficult currently, because it would literally
+  // move the file in our test data...
+  // setup
+  //   .do(initctx)
+  //   .do(async ctx => {
+  //     await fsPromises.copyFile(simpleBam, path.join(ctx.dir, 'new.bam'))
+  //     await fsPromises.copyFile(simpleBai, path.join(ctx.dir, 'new.bam.bai'))
+  //   })
+  //   .command(['add-track', 'new.bam', '--load', 'move'])
+  //   .command(['add-track', 'new.bam', '--load', 'move', '--force'])
+  //   .it('use force to overwrite a moved file')
+
   setup
     .command(['add-track', simpleBam, '--load', 'copy'])
     .catch(/no such file or directory/)
-    .it('Cannot add a track if there is no config file')
+    .it('cannot add a track if there is no config file')
   setup
     .do(initctx)
     .do(ctx => {
@@ -88,11 +97,7 @@ describe('add-track', () => {
     .do(initctx)
     .command(['add-track', simpleBam, '--load', 'copy'])
     .it('adds a track', async ctx => {
-      const contents = await fsPromises.readFile(
-        path.join(ctx.dir, 'config.json'),
-        { encoding: 'utf8' },
-      )
-
+      const contents = await readConf(ctx)
       expect(fs.existsSync(path.join(ctx.dir, 'simple.bam'))).toBeTruthy()
       expect(fs.existsSync(path.join(ctx.dir, 'simple.bam.bai'))).toBeTruthy()
 
@@ -106,17 +111,20 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: 'simple.bam',
+              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: 'simple.bam.bai',
+                locationType: 'UriLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
+                locationType: 'UriLocation',
               },
             },
           },
@@ -128,10 +136,7 @@ describe('add-track', () => {
     .do(initctx)
     .command(['add-track', '/testing/in/place.bam', '--load', 'inPlace'])
     .it('adds a track with load inPlace', async ctx => {
-      const contents = await fsPromises.readFile(
-        path.join(ctx.dir, 'config.json'),
-        { encoding: 'utf8' },
-      )
+      const contents = await readConf(ctx)
 
       expect(JSON.parse(contents).tracks).toEqual([
         {
@@ -143,17 +148,20 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: '/testing/in/place.bam',
+              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: '/testing/in/place.bam.bai',
+                locationType: 'UriLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
+                locationType: 'UriLocation',
               },
             },
           },
@@ -171,10 +179,7 @@ describe('add-track', () => {
       '/something/else/random.bai',
     ])
     .it('adds a track with load inPlace', async ctx => {
-      const contents = await fsPromises.readFile(
-        path.join(ctx.dir, 'config.json'),
-        { encoding: 'utf8' },
-      )
+      const contents = await readConf(ctx)
 
       expect(JSON.parse(contents).tracks).toEqual([
         {
@@ -186,17 +191,20 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: '/testing/in/place.bam',
+              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: '/something/else/random.bai',
+                locationType: 'UriLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
+                locationType: 'UriLocation',
               },
             },
           },
@@ -215,11 +223,7 @@ describe('add-track', () => {
       simpleBai,
     ])
     .it('adds a track', async ctx => {
-      const contents = await fsPromises.readFile(
-        path.join(ctx.dir, 'config.json'),
-        { encoding: 'utf8' },
-      )
-
+      const contents = await readConf(ctx)
       expect(fs.existsSync(path.join(ctx.dir, 'simple.bam'))).toBeTruthy()
       expect(fs.existsSync(path.join(ctx.dir, 'simple.bai'))).toBeTruthy()
 
@@ -233,17 +237,20 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: 'simple.bam',
+              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: 'simple.bai',
+                locationType: 'UriLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
+                locationType: 'UriLocation',
               },
             },
           },
@@ -255,10 +262,7 @@ describe('add-track', () => {
     .do(initctx)
     .command(['add-track', simpleBam, '--load', 'copy', '--subDir', 'bam'])
     .it('adds a track with subDir', async ctx => {
-      const contents = await fsPromises.readFile(
-        path.join(ctx.dir, 'config.json'),
-        { encoding: 'utf8' },
-      )
+      const contents = await readConf(ctx)
       expect(JSON.parse(contents).tracks).toEqual([
         {
           type: 'AlignmentsTrack',
@@ -269,17 +273,20 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: 'bam/simple.bam',
+              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: 'bam/simple.bam.bai',
+                locationType: 'UriLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
+                locationType: 'UriLocation',
               },
             },
           },
@@ -300,10 +307,7 @@ describe('add-track', () => {
       'bam',
     ])
     .it('adds a track with subDir', async ctx => {
-      const contents = await fsPromises.readFile(
-        path.join(ctx.dir, 'config.json'),
-        { encoding: 'utf8' },
-      )
+      const contents = await readConf(ctx)
       expect(JSON.parse(contents).tracks).toEqual([
         {
           type: 'AlignmentsTrack',
@@ -314,17 +318,20 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               localPath: 'bam/simple.bam',
+              locationType: 'LocalPathLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 localPath: 'bam/simple.bam.bai',
+                locationType: 'LocalPathLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
+                locationType: 'UriLocation',
               },
             },
           },
@@ -355,10 +362,7 @@ describe('add-track', () => {
       '{"defaultRendering": "test"}',
     ])
     .it('adds a track with all the custom fields', async ctx => {
-      const contents = await fsPromises.readFile(
-        path.join(ctx.dir, 'config.json'),
-        { encoding: 'utf8' },
-      )
+      const contents = await readConf(ctx)
       expect(JSON.parse(contents).tracks).toEqual([
         {
           type: 'CustomTrackType',
@@ -371,11 +375,13 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: 'simple.bam',
+              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: 'simple.bam.bai',
+                locationType: 'UriLocation',
               },
             },
           },
@@ -388,10 +394,7 @@ describe('add-track', () => {
     .do(initctx)
     .command(['add-track', 'https://mysite.com/data/simple.bam'])
     .it('adds a track from a url', async ctx => {
-      const contents = await fsPromises.readFile(
-        path.join(ctx.dir, 'config.json'),
-        { encoding: 'utf8' },
-      )
+      const contents = await readConf(ctx)
       expect(JSON.parse(contents).tracks).toEqual([
         {
           type: 'AlignmentsTrack',
@@ -402,17 +405,20 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: 'https://mysite.com/data/simple.bam',
+              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: 'https://mysite.com/data/simple.bam.bai',
+                locationType: 'UriLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
+                locationType: 'UriLocation',
               },
             },
           },
@@ -445,10 +451,7 @@ describe('add-track', () => {
       'testAssembly',
     ])
     .it('adds a track to a config with multiple assemblies', async ctx => {
-      const contents = await fsPromises.readFile(
-        path.join(ctx.dir, 'config.json'),
-        { encoding: 'utf8' },
-      )
+      const contents = await readConf(ctx)
       expect(JSON.parse(contents).tracks).toEqual([
         {
           type: 'AlignmentsTrack',
@@ -459,17 +462,20 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: 'simple.bam',
+              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: 'simple.bam.bai',
+                locationType: 'UriLocation',
               },
             },
 
             sequenceAdapter: {
               twoBitLocation: {
                 uri: 'test.2bit',
+                locationType: 'UriLocation',
               },
               type: 'testSeqAdapter',
             },

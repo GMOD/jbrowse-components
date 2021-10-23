@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
 const AWS = require('aws-sdk')
 
 const { AWS_REGION: region, sessionTable } = process.env

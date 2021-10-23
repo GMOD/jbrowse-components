@@ -9,10 +9,11 @@ export function stateModelFactory(pluginManager) {
     .model('VariantFeatureWidget', {
       id: ElementId,
       type: types.literal('VariantFeatureWidget'),
-      featureData: types.frozen(),
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
+      featureData: types.frozen(),
+      descriptions: types.frozen(),
     })
     .actions(self => ({
       setFeatureData(data) {
@@ -23,5 +24,3 @@ export function stateModelFactory(pluginManager) {
       },
     }))
 }
-
-export { default as ReactComponent } from './VariantFeatureWidget'

@@ -3,7 +3,7 @@ import {
   BaseChordDisplayModel,
 } from '@jbrowse/plugin-circular-view'
 
-export default pluginManager => {
+const ChordVariantDisplayF = pluginManager => {
   const { jbrequire } = pluginManager
 
   const { types } = jbrequire('mobx-state-tree')
@@ -36,10 +36,12 @@ export default pluginManager => {
       get rendererTypeName() {
         return self.configuration.renderer.type
       },
-      get renderProps() {
+
+      renderProps() {
         const view = getContainingView(self)
         return {
           ...getParentRenderProps(self),
+          rpcDriverName: self.rpcDriverName,
           displayModel: self,
           bezierRadius: view.radiusPx * self.bezierRadiusRatio,
           radius: view.radiusPx,
@@ -58,3 +60,5 @@ export default pluginManager => {
 // render request is for 1.5x the current viewing window
 
 // tracks all have a height
+//
+export default ChordVariantDisplayF
