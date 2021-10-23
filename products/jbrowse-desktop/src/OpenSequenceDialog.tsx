@@ -229,7 +229,6 @@ const OpenSequenceDialog = ({
             <TextField
               id="assembly-name"
               inputProps={{ 'data-testid': 'assembly-name' }}
-              defaultValue=""
               label="Assembly name"
               helperText="The assembly name e.g. hg38"
               variant="outlined"
@@ -242,7 +241,6 @@ const OpenSequenceDialog = ({
               label="Assembly display name"
               helperText='A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
               variant="outlined"
-              defaultValue=""
               value={assemblyDisplayName}
               onChange={event => setAssemblyDisplayName(event.target.value)}
             />
