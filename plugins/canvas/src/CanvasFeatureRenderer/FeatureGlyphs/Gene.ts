@@ -28,7 +28,6 @@ export default class Gene extends BoxGlyph {
     }
 
     // get the rects for the children
-    let padding = 1
     const fRect = {
       l: 0,
       h: 0,
@@ -49,7 +48,7 @@ export default class Gene extends BoxGlyph {
       const glyph = this.getSubGlyph(sub)
       const subRect = glyph.getFeatureRectangle(subArgs, sub)
 
-      padding = i === subfeatures.length - 1 ? 0 : 1
+      const padding = 1
       const newTop = fRect.h ? fRect.h + padding : 0
       subRect.t = newTop
       subRect.rect.t = newTop

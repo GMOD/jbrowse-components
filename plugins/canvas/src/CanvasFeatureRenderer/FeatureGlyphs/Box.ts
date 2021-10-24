@@ -156,7 +156,7 @@ export default class Box extends FeatureGlyph {
 
     const height = this.getFeatureHeight(viewInfo, feature)
     if (height !== overallHeight) {
-      top += Math.round((overallHeight - height) / 2)
+      top += (overallHeight - height) / 2
     }
 
     context.fillStyle = readConfObject(config, 'color1', { feature })

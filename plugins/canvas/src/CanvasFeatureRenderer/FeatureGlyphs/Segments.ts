@@ -36,7 +36,7 @@ export default class Segments extends BoxGlyph {
     )
     context.fillRect(
       leftPx,
-      Math.round(t + (h - thickness) / 2),
+      t + (h - thickness) / 2,
       rightPx - leftPx,
       thickness,
     )
