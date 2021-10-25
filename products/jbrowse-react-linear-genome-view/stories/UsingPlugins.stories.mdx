@@ -6,7 +6,9 @@ import { Meta, Story, Canvas } from '@storybook/addon-docs/blocks'
 
 You can use extra load a plugin at runtime for the embedded component.
 
-This example loads a plugin that is defined in your own source code
+This example loads a plugin that is defined in your own source code. The plugin
+adds an extra action from clicking and dragging a region with the mouse that
+console.log's the region that was selected
 
 <Canvas withSource="open">
   <Story id="linear-view--with-inline-plugins" />

@@ -392,7 +392,7 @@ export const VisibleRegionsExample = () => {
   )
 }
 
-export const WithInlinePlugin = () => {
+export const WithInlinePlugins = () => {
   // you don't have to necessarily define this inside your react component, it
   // just helps so that you can see the source code in the storybook to have it
   // here
