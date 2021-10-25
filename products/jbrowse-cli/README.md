@@ -131,13 +131,30 @@ OPTIONS
       Creates ./config.json if nonexistent
 
 EXAMPLES
+  # add assembly to installation in current directory. assumes .fai file also exists, and copies GRCh38.fa and
+  GRCh38.fa.fai to current directory
   $ jbrowse add-assembly GRCh38.fa --load copy
-  $ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta --load move
-  $ jbrowse add-assembly myFile.fa.gz --name hg38 --alias GRCh38 --displayName "Homo sapiens (hg38)" --load inPlace
+
+  # add assembly to a specific jb2 installation path using --out, and copies the .fa and .fa.fai file to /path/to/jb2
+  $ jbrowse add-assembly GRCh38.fa --out /path/to/jb2/ --load copy
+
+  # force indexedFasta for add-assembly without relying on file extension
+  $ jbrowse add-assembly GRCh38.xyz --type indexedFasta --load copy
+
+  # add displayName for an assembly
+  $ jbrowse add-assembly myFile.fa.gz --name hg38 --displayName "Homo sapiens (hg38)"
+
+  # use chrom.sizes file for assembly instead of a fasta file
   $ jbrowse add-assembly GRCh38.chrom.sizes --load inPlace
+
+  # add assembly from preconfigured json file, expert option
   $ jbrowse add-assembly GRCh38.config.json --load copy
+
+  # add assembly from a 2bit file, also note pointing direct to a URL so no --load flag needed
   $ jbrowse add-assembly https://example.com/data/sample.2bit
-  $ jbrowse add-assembly GRCh38.fa --target /path/to/jb2/installation/customconfig.json --load copy
+
+  # add a bgzip indexed fasta inferred by fa.gz extension. assumes .fa.gz.gzi and .fa.gz.fai files also exists
+  $ jbrowse add-assembly myfile.fa.gz --load copy
 ```
 
 _See code: [src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.0/products/jbrowse-cli/src/commands/add-assembly.ts)_
@@ -249,23 +266,23 @@ OPTIONS
                                         throughout config
 
 EXAMPLES
-  # --load copy copies my.bam and my.bam.bai to current directory and adds track to config.json
+  # copy /path/to/my.bam and /path/to/my.bam.bai to current directory and adds track to config.json
   $ jbrowse add-track /path/to/my.bam --load copy
 
-  # same as above, but specify path to bai file
-  $ jbrowse add-track /path/to/my.bam --indexFile /path/to/my.bai --load copy
+  # copy my.bam and my.bam.bai to /path/to/jb2/bam and adds track entry to /path/to/jb2/bam/config.json
+  $ jbrowse add-track my.bam --load copy --out /path/to/jb2 --subDir bam
 
-  # --load symlink creates symlink in /path/to/jb2/ directory for this file, and adds track to config.json
-  $ jbrowse add-track /path/to/my.bam --target /path/to/jb2/config.json --load symlink
+  # same as above, but specify path to bai file. needed for if the bai file does not have the extension .bam.bai
+  $ jbrowse add-track my.bam --indexFile my.bai --load copy
 
-  # no --load flag to add literal URL for this track to config.json
+  # creates symlink for /path/to/my.bam and adds track to config.json
+  $ jbrowse add-track /path/to/my.bam --load symlink
+
+  # add track from URL to config.json, no --load flag needed
   $ jbrowse add-track https://mywebsite.com/my.bam
 
-  # --load move to move the file
-  $ jbrowse add-track /path/to/my.bam --name 'New Track' --load move
-
-  # --load inPlace puts /url/relative/path.bam in the config without performing any file operations
-  $ jbrowse add-track /url/relative/path.bam --trackId AlignmentsTrack1 --load url --overwrite
+  # --load inPlace adds a track without doing file operations
+  $ jbrowse add-track /url/relative/path.bam --load inPlace
 ```
 
 _See code: [src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.0/products/jbrowse-cli/src/commands/add-track.ts)_
@@ -347,11 +364,20 @@ OPTIONS
   --nightly           Download the latest development build from the main branch
 
 EXAMPLES
+  # Download latest release from github, and put in specific path
   $ jbrowse create /path/to/new/installation
+
+  # Download latest release from github and force overwrite existing contents at path
   $ jbrowse create /path/to/new/installation --force
+
+  # Download latest release from a specific URL
   $ jbrowse create /path/to/new/installation --url url.com/directjbrowselink.zip
+
+  # Download a specific tag from github
   $ jbrowse create /path/to/new/installation --tag v1.0.0
-  $ jbrowse create --listVersions # Lists out all available versions of JBrowse 2
+
+  # List available versions
+  $ jbrowse create --listVersions
 ```
 
 _See code: [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.0/products/jbrowse-cli/src/commands/create.ts)_
@@ -491,11 +517,23 @@ OPTIONS
   --nightly           Download the latest development build from the main branch
 
 EXAMPLES
-  $ jbrowse upgrade # Upgrades current directory to latest jbrowse release
+  # Upgrades current directory to latest jbrowse release
+  $ jbrowse upgrade
+
+  # Upgrade jbrowse instance at a specific filesystem path
   $ jbrowse upgrade /path/to/jbrowse2/installation
+
+  # Upgrade to a specific tag
   $ jbrowse upgrade /path/to/jbrowse2/installation --tag v1.0.0
-  $ jbrowse upgrade --listVersions # Lists out all available versions of JBrowse 2
+
+  # List versions available on github
+  $ jbrowse upgrade --listVersions
+
+  # Upgrade from a specific URL
   $ jbrowse upgrade --url https://sample.com/jbrowse2.zip
+
+  # Get nightly release from main branch
+  $ jbrowse upgrade --nightly
 ```
 
 _See code: [src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.0/products/jbrowse-cli/src/commands/upgrade.ts)_
