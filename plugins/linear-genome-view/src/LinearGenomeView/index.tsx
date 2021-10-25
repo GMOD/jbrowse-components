@@ -1425,18 +1425,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
               self.setSequenceDialogOpen(true)
             },
           },
-          {
-            label: 'Sequence Search',
-            disabled:
-                currentX !== undefined &&
-                startX !== undefined &&
-                Math.abs(currentX - startX) * model.bpPerPx > 500_000_000,
-            icon: MenuOpenIcon,
-            onClick: () => {
-                getBigsiQuerySequence()
-                handleClose()
-            },
-          }
         ]
       },
     }))

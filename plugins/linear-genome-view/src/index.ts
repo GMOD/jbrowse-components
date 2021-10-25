@@ -28,7 +28,6 @@ import {
   renderToSvg,
   RefNameAutocomplete,
 } from './LinearGenomeView'
-import { BigsiQueryRPC } from './BigsiQueryRPC/rpcMethods'
 
 import {
   configSchema as linearBasicDisplayConfigSchemaFactory,
@@ -120,7 +119,6 @@ export default class LinearGenomeViewPlugin extends Plugin {
         }),
     )
 
-    pluginManager.addRpcMethod(() => new BigsiQueryRPC(pluginManager))
   }
 
   configure(pluginManager: PluginManager) {
