@@ -4,32 +4,51 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import stateModelFactory from './model'
+import Alignments from '@jbrowse/plugin-alignments'
+import SVG from '@jbrowse/plugin-svg'
+import Variants from '@jbrowse/plugin-variants'
+import Hic from '@jbrowse/plugin-hic'
 
 function standardInitializer() {
-  const pluginManager = new PluginManager([new FakeViewPlugin()])
+  const pluginManager = new PluginManager([
+    new FakeViewPlugin(),
+    new Alignments(),
+    new SVG(),
+    new Variants(),
+    new Hic(),
+  ])
   pluginManager.createPluggableElements()
   pluginManager.configure()
 
-  const SessionModel = types.model({
-    view: FakeViewModel,
-    widget: stateModelFactory(pluginManager),
-  })
+  const SessionModel = types
+    .model({
+      view: FakeViewModel,
+      widget: stateModelFactory(pluginManager),
+    })
+    .volatile(() => ({
+      rpcManager: {},
+      configuration: {},
+    }))
 
   // assemblyNames is defined on the view, which is done in LGV for example
   // this is really just used for convenience to automatically fill in the
   // assembly field in the form
-  return SessionModel.create({
-    view: {
-      id: 'testing',
-      type: 'FakeView',
-      assemblyNames: ['volvox'],
+  return SessionModel.create(
+    {
+      view: {
+        id: 'testing',
+        type: 'FakeView',
+        assemblyNames: ['volvox'],
+      },
+      widget: {
+        type: 'AddTrackWidget',
+        view: 'testing',
+      },
     },
-    widget: {
-      type: 'AddTrackWidget',
-      view: 'testing',
-    },
-  })
+    { pluginManager },
+  )
 }
+
 const realLocation = window.location
 
 // https://stackoverflow.com/a/60110508/2129219

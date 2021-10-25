@@ -16,13 +16,30 @@ import SearchResultsDialog from './SearchResultsDialog'
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles(theme => ({
-  errorMessage: {
+  note: {
     textAlign: 'center',
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
   },
-  spacer: {
-    marginRight: theme.spacing(2),
+  dots: {
+    '&::after': {
+      display: 'inline-block',
+      animation: '$ellipsis 1.5s infinite',
+      content: '"."',
+      width: '1em',
+      textAlign: 'left',
+    },
+  },
+  '@keyframes ellipsis': {
+    '0%': {
+      content: '"."',
+    },
+    '33%': {
+      content: '".."',
+    },
+    '66%': {
+      content: '"..."',
+    },
   },
 }))
 
@@ -31,11 +48,16 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
 
   if (!initialized && !error) {
-    return null
+    return (
+      <Typography className={classes.dots} variant="h5">
+        Loading
+      </Typography>
+    )
   }
   if (!hasDisplayedRegions || error) {
     return <ImportForm model={model} />
   }
+
   return (
     <div style={{ position: 'relative' }}>
       {model.seqDialogDisplayed ? (
@@ -69,15 +91,15 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
       )}
       <TracksContainer model={model}>
         {!tracks.length ? (
-          <Paper variant="outlined" className={classes.errorMessage}>
+          <Paper variant="outlined" className={classes.note}>
             <Typography>No tracks active.</Typography>
             <Button
               variant="contained"
               color="primary"
               onClick={model.activateTrackSelector}
               style={{ zIndex: 1000 }}
+              startIcon={<TrackSelectorIcon />}
             >
-              <TrackSelectorIcon className={classes.spacer} />
               Open track selector
             </Button>
           </Paper>

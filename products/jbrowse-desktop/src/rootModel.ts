@@ -7,7 +7,6 @@ import {
   SnapshotIn,
   Instance,
 } from 'mobx-state-tree'
-
 import { autorun } from 'mobx'
 
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
@@ -68,7 +67,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
     .volatile(() => ({
       error: undefined as unknown,
       textSearchManager: new TextSearchManager(pluginManager),
-      openNewSessionCallback: () => {
+      openNewSessionCallback: async (path: string) => {
         console.error('openNewSessionCallback unimplemented')
       },
     }))
@@ -78,7 +77,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           await ipcRenderer.invoke('saveSession', self.sessionPath, val)
         }
       },
-      setOpenNewSessionCallback(cb: () => Promise<void>) {
+      setOpenNewSessionCallback(cb: (arg: string) => Promise<void>) {
         self.openNewSessionCallback = cb
       },
       setSavedSessionNames(sessionNames: string[]) {
@@ -103,7 +102,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       async renameCurrentSession(newName: string) {
         if (self.session) {
           this.setSession({ ...getSnapshot(self.session), name: newName })
-          await this.saveSession(getSaveSession(self as RootModel))
         }
       },
       duplicateCurrentSession() {
@@ -227,7 +225,10 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               icon: OpenIcon,
               onClick: async () => {
                 try {
-                  await self.openNewSessionCallback()
+                  const path = await ipcRenderer.invoke('promptOpenFile')
+                  if (path) {
+                    await self.openNewSessionCallback(path)
+                  }
                 } catch (e) {
                   console.error(e)
                   self.session?.notify(`${e}`, 'error')
@@ -379,17 +380,9 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       },
       async setPluginsUpdated() {
         if (self.session) {
-          await self.saveSession(getSnapshot(self.session))
+          await self.saveSession(getSaveSession(self as RootModel))
         }
-
-        const url = window.location.href.split('?')[0]
-        if (!self.sessionPath) {
-          self.session?.notify('You must save your session first')
-        } else {
-          window.location.href = `${url}?config=${encodeURIComponent(
-            self.sessionPath,
-          )}`
-        }
+        await self.openNewSessionCallback(self.sessionPath)
       },
       /**
        * Add a top-level menu
@@ -525,7 +518,11 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           autorun(
             async () => {
               if (self.session) {
-                await self.saveSession(getSaveSession(self as RootModel))
+                try {
+                  await self.saveSession(getSaveSession(self as RootModel))
+                } catch (e) {
+                  console.error(e)
+                }
               }
             },
             { delay: 1000 },

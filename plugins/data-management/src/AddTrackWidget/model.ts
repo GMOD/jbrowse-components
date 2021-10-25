@@ -6,6 +6,7 @@ import {
   guessAdapter,
   guessTrackType,
   UNSUPPORTED,
+  getFileName,
 } from '@jbrowse/core/util/tracks'
 
 function isAbsoluteUrl(url = '') {
@@ -15,18 +16,6 @@ function isAbsoluteUrl(url = '') {
   } catch (error) {
     return url.startsWith('/')
   }
-}
-
-function getFileName(track: FileLocation) {
-  const uri = 'uri' in track ? track.uri : undefined
-  const localPath = 'localPath' in track ? track.localPath : undefined
-  const blob = 'blobId' in track ? track : undefined
-  return (
-    blob?.name ||
-    uri?.slice(uri.lastIndexOf('/') + 1) ||
-    localPath?.slice(localPath.lastIndexOf('/') + 1) ||
-    ''
-  )
 }
 
 export default function f(pluginManager: PluginManager) {
@@ -88,7 +77,7 @@ export default function f(pluginManager: PluginManager) {
         const { trackData, indexTrackData, adapterHint } = self
 
         return trackData
-          ? guessAdapter(trackData, indexTrackData, getFileName, adapterHint)
+          ? guessAdapter(trackData, indexTrackData, adapterHint, self)
           : undefined
       },
 
@@ -148,7 +137,9 @@ export default function f(pluginManager: PluginManager) {
       get trackType() {
         return (
           self.altTrackType ||
-          (this.trackAdapter ? guessTrackType(this.trackAdapter.type) : '')
+          (this.trackAdapter
+            ? guessTrackType(this.trackAdapter.type, self)
+            : '')
         )
       },
     }))

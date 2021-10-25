@@ -17,6 +17,8 @@ import {
   DialogTitle,
   DialogContent,
   IconButton,
+  ThemeProvider,
+  createTheme,
 } from '@mui/material'
 
 import {
@@ -243,19 +245,21 @@ function PluginStore() {
   const { siteConfig = {} } = context
 
   return (
-    <Layout title={`${siteConfig.title}`}>
-      <div className={pluginStyles.body}>
-        <div style={{ flexBasis: '50%' }}>
-          <h1 style={{ textAlign: 'center' }}>JBrowse 2 Plugin Store</h1>
+    <ThemeProvider theme={theme}>
+      <Layout title={`${siteConfig.title}`}>
+        <div className={pluginStyles.body}>
+          <div style={{ flexBasis: '50%' }}>
+            <h1 style={{ textAlign: 'center' }}>JBrowse 2 Plugin Store</h1>
+          </div>
+          <TopDocumentation />
+          <div style={{ flexBasis: '50%' }}>
+            {plugins.map(plugin => (
+              <PluginCard plugin={plugin} key={plugin.name} />
+            ))}
+          </div>
         </div>
-        <TopDocumentation />
-        <div style={{ flexBasis: '50%' }}>
-          {plugins.map(plugin => (
-            <PluginCard plugin={plugin} key={plugin.name} />
-          ))}
-        </div>
-      </div>
-    </Layout>
+      </Layout>
+    </ThemeProvider>
   )
 }
 
@@ -281,3 +285,7 @@ const configExample = `{
 }`
 
 export default PluginStore
+
+const theme = createTheme({
+  palette: { secondary: { main: '#ccc' }, primary: { main: '#3f51b5' } },
+})

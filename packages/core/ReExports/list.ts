@@ -13,6 +13,7 @@ export default [
   '@mui/x-data-grid',
 
   '@jbrowse/core/Plugin',
+  '@jbrowse/core/pluggableElementTypes',
   '@jbrowse/core/pluggableElementTypes/ViewType',
   '@jbrowse/core/pluggableElementTypes/AdapterType',
   '@jbrowse/core/pluggableElementTypes/DisplayType',
