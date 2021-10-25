@@ -162,4 +162,28 @@ export default class Box extends FeatureGlyph {
     context.fillStyle = readConfObject(config, 'color1', { feature })
     context.fillRect(left, top, Math.max(1, width), height)
   }
+
+  postDraw(
+    ctx: CanvasRenderingContext2D,
+    props: {
+      record: LaidOutFeatureRect
+      regionStart: number
+      offsetPx: number
+    },
+  ) {
+    const { regionStart, record, offsetPx } = props
+    const {
+      start,
+      end,
+      l,
+      t,
+      label: { text, yOffset },
+    } = record
+
+    if (start < regionStart && regionStart < end) {
+      ctx.fillText(text, offsetPx, t + yOffset)
+    } else {
+      ctx.fillText(text, l, t + yOffset)
+    }
+  }
 }

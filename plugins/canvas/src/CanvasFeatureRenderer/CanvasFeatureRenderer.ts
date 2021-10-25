@@ -8,11 +8,17 @@ import BoxRendererType, {
 } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
-import { iterMap, bpSpanPx } from '@jbrowse/core/util'
+import { iterMap } from '@jbrowse/core/util'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
+
+// locals
 import BoxGlyph from './FeatureGlyphs/Box'
 import GeneGlyph from './FeatureGlyphs/Gene'
 import { LaidOutFeatureRect } from './FeatureGlyph'
+
+export interface LaidOutFeatureRectWithGlyph extends LaidOutFeatureRect {
+  glyph: BoxGlyph
+}
 
 export type {
   RenderArgs,
@@ -42,55 +48,38 @@ export default class CanvasRenderer extends BoxRendererType {
     feature: Feature,
     layout: BaseLayout<Feature>,
     props: RenderArgsDeserialized,
-  ): LaidOutFeatureRect | null {
-    const glyph = new BoxGlyph()
-    const geneglyph = new GeneGlyph()
+  ): LaidOutFeatureRectWithGlyph | null {
     const [region] = props.regions
+    let glyph
     if (feature.get('type') === 'gene') {
-      return geneglyph.layoutFeature({ region, ...props }, layout, feature)
+      glyph = new GeneGlyph()
     } else {
-      return glyph.layoutFeature({ region, ...props }, layout, feature)
+      glyph = new BoxGlyph()
     }
+    const fRect = glyph.layoutFeature({ region, ...props }, layout, feature)
+    return fRect ? { ...fRect, glyph } : null
   }
 
   drawRect(
     ctx: CanvasRenderingContext2D,
-    fRect: LaidOutFeatureRect,
+    fRect: LaidOutFeatureRectWithGlyph,
     props: RenderArgsDeserialized,
   ) {
     const { regions } = props
     const [region] = regions
-
-    const glyph = new BoxGlyph()
-    const geneglyph = new GeneGlyph()
-
-    if (fRect.f.get('type') === 'gene') {
-      geneglyph.renderFeature(ctx, { ...props, region }, fRect)
-    } else {
-      glyph.renderFeature(ctx, { ...props, region }, fRect)
-    }
+    fRect.glyph.renderFeature(ctx, { ...props, region }, fRect)
   }
 
   async makeImageData(
     ctx: CanvasRenderingContext2D,
-    layoutRecords: LaidOutFeatureRect[],
+    layoutRecords: LaidOutFeatureRectWithGlyph[],
     props: RenderArgsDeserializedWithFeaturesAndLayout,
   ) {
-    layoutRecords
-      .filter(f => !!f)
-      .forEach(fRect => {
-        this.drawRect(ctx, fRect, props)
-      })
+    layoutRecords.forEach(fRect => {
+      this.drawRect(ctx, fRect, props)
+    })
 
     if (props.exportSVG) {
-      // console.log(
-      //   bpSpanPx(
-      //     props.regions[0].start,
-      //     props.regions[0].start + 1,
-      //     props.regions[0],
-      //     props.bpPerPx,
-      //   )[0],
-      // )
       postDraw({
         ctx,
         layoutRecords: layoutRecords.map(f => ({
@@ -113,11 +102,13 @@ export default class CanvasRenderer extends BoxRendererType {
     const layout = this.createLayoutInWorker(renderProps)
     const [region] = regions
     const featureMap = features
+
     const layoutRecords = iterMap(
       featureMap.values(),
       feature => this.layoutFeature(feature, layout, renderProps),
       featureMap.size,
-    ).filter((f): f is LaidOutFeatureRect => !!f)
+    ).filter((f): f is LaidOutFeatureRectWithGlyph => !!f)
+
     const width = (region.end - region.start) / bpPerPx
     const height = Math.max(layout.getTotalHeight(), 1)
 
@@ -144,13 +135,14 @@ export default class CanvasRenderer extends BoxRendererType {
     return {
       ...results,
       ...res,
-      layoutRecords: layoutRecords.map(f => ({
-        label: f.label,
-        description: f.description,
-        l: f.l,
-        t: f.t,
-        start: f.f.get('start'),
-        end: f.f.get('end'),
+      layoutRecords: layoutRecords.map(({ f, l, t, label, description }) => ({
+        label,
+        description,
+        l,
+        t,
+        type: f.get('type'),
+        start: f.get('start'),
+        end: f.get('end'),
       })),
       features,
       layout,
@@ -170,45 +162,19 @@ export function postDraw({
   ctx: CanvasRenderingContext2D
   regions: { start: number }[]
   offsetPx: number
-  layoutRecords: any
+  layoutRecords: LaidOutFeatureRectWithGlyph[]
 }) {
   const [region] = regions
 
   ctx.fillStyle = 'black'
-  ctx.font = '9px sans-serif'
+  ctx.font = '10px sans-serif'
   layoutRecords
     .filter(f => !!f)
     .forEach(record => {
-      const {
-        start,
-        end,
-        l,
-        t,
-        label: { text, yOffset },
-      } = record
-
-      if (start < region.start && region.start < end) {
-        ctx.fillText(text, offsetPx, t + yOffset)
-      } else {
-        ctx.fillText(text, l, t + yOffset)
-      }
-    })
-
-  ctx.fillStyle = 'blue'
-  layoutRecords
-    .filter(f => !!f)
-    .forEach(record => {
-      const {
-        start,
-        end,
-        l,
-        t,
-        description: { text, yOffset },
-      } = record
-      if (start < region.start && region.start < end) {
-        ctx.fillText(text, offsetPx, t + yOffset)
-      } else {
-        ctx.fillText(text, l, t + yOffset)
-      }
+      record.glyph.postDraw(ctx, {
+        record,
+        regionStart: region.start,
+        offsetPx,
+      })
     })
 }

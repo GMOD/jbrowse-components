@@ -8,6 +8,10 @@ import { isStateTreeNode } from 'mobx-state-tree'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 import { postDraw } from '../CanvasFeatureRenderer'
 
+// locals
+import BoxGlyph from '../FeatureGlyphs/Box'
+import GeneGlyph from '../FeatureGlyphs/Gene'
+
 // used so that user can click-away-from-feature below the laid out features
 // (issue #1248)
 const canvasPadding = 100
@@ -71,7 +75,15 @@ function CanvasRendering(props: {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     postDraw({
       ctx,
-      layoutRecords,
+      layoutRecords: layoutRecords.map(f => {
+        let glyph
+        if (f.type === 'gene') {
+          glyph = new GeneGlyph()
+        } else {
+          glyph = new BoxGlyph()
+        }
+        return { ...f, glyph }
+      }),
       offsetPx,
       regions: [{ start: viewStart }],
     })
