@@ -4,7 +4,7 @@ import PluginLoader, {
   PluginDefinition,
   PluginRecord,
 } from '@jbrowse/core/PluginLoader'
-import { fromUrlSafeB64 } from '@jbrowse/core/util'
+import { fromUrlSafeB64 } from './util'
 import { readSessionFromDynamo } from './sessionSharing'
 import { openLocation } from '@jbrowse/core/util/io'
 import { when } from '@jbrowse/core/util'
@@ -65,8 +65,8 @@ const SessionLoader = types
     sessionSpec: undefined as any,
     runtimePlugins: [] as PluginRecord[],
     sessionPlugins: [] as PluginRecord[],
-    sessionError: undefined as Error | undefined,
-    configError: undefined as Error | undefined,
+    sessionError: undefined as unknown,
+    configError: undefined as unknown,
     bc1:
       window.BroadcastChannel &&
       new window.BroadcastChannel('jb_request_session'),
@@ -76,11 +76,11 @@ const SessionLoader = types
   }))
   .views(self => ({
     get isSharedSession() {
-      return self.sessionQuery?.startsWith('share-')
+      return !!self.sessionQuery?.startsWith('share-')
     },
 
     get isSpecSession() {
-      return self.sessionQuery?.startsWith('spec-')
+      return !!self.sessionQuery?.startsWith('spec-')
     },
 
     get isJb1StyleSession() {
@@ -88,35 +88,35 @@ const SessionLoader = types
     },
 
     get isEncodedSession() {
-      return self.sessionQuery?.startsWith('encoded-')
+      return !!self.sessionQuery?.startsWith('encoded-')
     },
 
     get isJsonSession() {
-      return self.sessionQuery?.startsWith('json-')
+      return !!self.sessionQuery?.startsWith('json-')
     },
 
     get isLocalSession() {
-      return self.sessionQuery?.startsWith('local-')
+      return !!self.sessionQuery?.startsWith('local-')
     },
 
     get ready() {
-      return this.sessionLoaded && !self.configError
+      return Boolean(this.isSessionLoaded && !self.configError)
     },
 
     get error() {
       return self.configError || self.sessionError
     },
 
-    get sessionLoaded() {
-      return (
-        !!self.sessionError ||
-        !!self.sessionSnapshot ||
-        !!self.blankSession ||
-        !!self.sessionSpec
+    get isSessionLoaded() {
+      return Boolean(
+        self.sessionError ||
+          self.sessionSnapshot ||
+          self.blankSession ||
+          self.sessionSpec,
       )
     },
-    get configLoaded() {
-      return !!self.configError || !!self.configSnapshot
+    get isConfigLoaded() {
+      return Boolean(self.configError || self.configSnapshot)
     },
   }))
   .actions(self => ({
@@ -124,10 +124,10 @@ const SessionLoader = types
     setSessionQuery(session?: any) {
       self.sessionQuery = session
     },
-    setConfigError(error: Error) {
+    setConfigError(error: unknown) {
       self.configError = error
     },
-    setSessionError(error: Error) {
+    setSessionError(error: unknown) {
       self.sessionError = error
     },
     setRuntimePlugins(plugins: PluginRecord[]) {
@@ -206,9 +206,12 @@ const SessionLoader = types
 
     async fetchConfig() {
       const { configPath = 'config.json' } = self
-      const config = JSON.parse(
-        (await openLocation({ uri: configPath }).readFile('utf8')) as string,
-      )
+
+      const data = (await openLocation({
+        uri: configPath,
+        locationType: 'UriLocation',
+      }).readFile('utf8')) as string
+      const config = JSON.parse(data)
       const configUri = new URL(configPath, window.location.href)
       addRelativeUris(config, configUri)
 
@@ -287,7 +290,7 @@ const SessionLoader = types
         self.password || '',
       )
 
-      const session = JSON.parse(fromUrlSafeB64(decryptedSession))
+      const session = JSON.parse(await fromUrlSafeB64(decryptedSession))
 
       await this.setSessionSnapshot({ ...session, id: shortid() })
     },
@@ -295,7 +298,7 @@ const SessionLoader = types
     async decodeEncodedUrlSession() {
       const session = JSON.parse(
         // @ts-ignore
-        fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
+        await fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
       )
       await this.setSessionSnapshot({ ...session, id: shortid() })
     },
@@ -339,7 +342,7 @@ const SessionLoader = types
           )
         }
       } catch (e) {
-        console.error('failed to create previousAutosave')
+        console.error('failed to create previousAutosave', e)
       }
 
       try {
@@ -350,50 +353,52 @@ const SessionLoader = types
         self.setConfigError(e)
         return
       }
-      const {
-        isLocalSession,
-        isEncodedSession,
-        isSpecSession,
-        isSharedSession,
-        isJsonSession,
-        isJb1StyleSession,
-        sessionQuery,
-        configSnapshot,
-      } = self
 
       addDisposer(
         self,
         autorun(async () => {
           try {
-            if (configSnapshot) {
-              if (isSharedSession) {
-                await this.fetchSharedSession()
-              } else if (isSpecSession) {
-                this.decodeSessionSpec()
-              } else if (isJb1StyleSession) {
-                this.decodeJb1StyleSession()
-              } else if (isEncodedSession) {
-                await this.decodeEncodedUrlSession()
-              } else if (isJsonSession) {
-                await this.decodeJsonUrlSession()
-              } else if (isLocalSession) {
-                await this.fetchSessionStorageSession()
-              } else if (sessionQuery) {
-                // if there was a sessionQuery and we don't recognize it
-                throw new Error('unrecognized session format')
-              } else {
-                // placeholder for session loaded, but none found
-                self.setBlankSession(true)
-              }
-              if (self.bc1) {
-                self.bc1.onmessage = msg => {
-                  const ret =
-                    JSON.parse(sessionStorage.getItem('current') || '{}')
-                      .session || {}
-                  if (ret.id === msg.data) {
-                    if (self.bc2) {
-                      self.bc2.postMessage(ret)
-                    }
+            const {
+              isLocalSession,
+              isEncodedSession,
+              isSpecSession,
+              isSharedSession,
+              isJsonSession,
+              isJb1StyleSession,
+              sessionQuery,
+              configSnapshot,
+            } = self
+            if (!configSnapshot) {
+              return
+            }
+
+            if (isSharedSession) {
+              await this.fetchSharedSession()
+            } else if (isSpecSession) {
+              this.decodeSessionSpec()
+            } else if (isJb1StyleSession) {
+              this.decodeJb1StyleSession()
+            } else if (isEncodedSession) {
+              await this.decodeEncodedUrlSession()
+            } else if (isJsonSession) {
+              await this.decodeJsonUrlSession()
+            } else if (isLocalSession) {
+              await this.fetchSessionStorageSession()
+            } else if (sessionQuery) {
+              // if there was a sessionQuery and we don't recognize it
+              throw new Error('unrecognized session format')
+            } else {
+              // placeholder for session loaded, but none found
+              self.setBlankSession(true)
+            }
+            if (self.bc1) {
+              self.bc1.onmessage = msg => {
+                const ret =
+                  JSON.parse(sessionStorage.getItem('current') || '{}')
+                    .session || {}
+                if (ret.id === msg.data) {
+                  if (self.bc2) {
+                    self.bc2.postMessage(ret)
                   }
                 }
               }
