@@ -18,6 +18,8 @@ export interface FeatureRect {
 }
 
 export interface LaidOutFeatureRect extends FeatureRect {
+  label?: { text: string; offsetY: number }
+  description?: { text: string; offsetY: number }
   t: number
   h: number
 }

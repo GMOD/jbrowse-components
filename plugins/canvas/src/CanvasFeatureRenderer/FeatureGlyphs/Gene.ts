@@ -65,8 +65,8 @@ export default class Gene extends BoxGlyph {
       //   if (transcriptLabel.h > subRect.h) {
       //     subRect.h = transcriptLabel.h
       //   }
-      //   transcriptLabel.yOffset = Math.floor(subRect.h / 2)
-      //   transcriptLabel.xOffset = 0
+      //   transcriptLabel.offsetY = Math.floor(subRect.h / 2)
+      //   transcriptLabel.offsetX = 0
       // }
 
       fRect.subRects.push(subRect) // { ...subRect, label: transcriptLabel })
@@ -110,6 +110,7 @@ export default class Gene extends BoxGlyph {
       ? new NoncodingGlyph()
       : new BoxGlyph()
   }
+
   renderFeature(
     context: CanvasRenderingContext2D,
     viewInfo: ViewInfo,

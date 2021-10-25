@@ -43,8 +43,8 @@ export default class Box extends FeatureGlyph {
       baseline: 'middle',
       w: measureText(text),
       h: 10, // FIXME
-      xOffset: 0,
-      yOffset: 0,
+      offsetX: 0,
+      offsetY: 0,
     }
   }
 
@@ -56,7 +56,7 @@ export default class Box extends FeatureGlyph {
       text: text,
       w: measureText(text),
       h: 10, // FIXME
-      yOffset: 0,
+      offsetY: 0,
     }
   }
 
@@ -98,7 +98,7 @@ export default class Box extends FeatureGlyph {
     if (label) {
       fRect.h += label.h
       fRect.w = Math.max(label.w, fRect.w)
-      label.yOffset = fRect.h
+      label.offsetY = fRect.h
     }
     // maybe get the feature's description if available, and
     // update the layout box accordingly
@@ -109,7 +109,7 @@ export default class Box extends FeatureGlyph {
     if (description) {
       fRect.h += description.h
       fRect.w = Math.max(description.w, fRect.w)
-      description.yOffset = fRect.h // -marginBottom removed in jb2
+      description.offsetY = fRect.h // -marginBottom removed in jb2
     }
     return { ...fRect, description, label }
   }
@@ -172,18 +172,23 @@ export default class Box extends FeatureGlyph {
     },
   ) {
     const { regionStart, record, offsetPx } = props
-    const {
-      start,
-      end,
-      l,
-      t,
-      label: { text, yOffset },
-    } = record
+    const { start, end, l, t, label, description } = record
 
-    if (start < regionStart && regionStart < end) {
-      ctx.fillText(text, offsetPx, t + yOffset)
-    } else {
-      ctx.fillText(text, l, t + yOffset)
+    function renderText({ text, offsetY }: { text: string; offsetY: number }) {
+      if (start < regionStart && regionStart < end) {
+        ctx.fillText(text, offsetPx, t + offsetY)
+      } else {
+        ctx.fillText(text, l, t + offsetY)
+      }
+    }
+    if (label) {
+      ctx.fillStyle = 'black'
+      renderText(label)
+    }
+
+    if (description) {
+      ctx.fillStyle = 'blue'
+      renderText(description)
     }
   }
 }
