@@ -37,23 +37,28 @@ export default class AddTrack extends JBrowseCommand {
   static description = 'Add a track to a JBrowse 2 configuration'
 
   static examples = [
-    `# --load copy copies my.bam and my.bam.bai to current directory and adds track to config.json`,
-    '$ jbrowse add-track /path/to/my.bam --load copy\n',
+    '# copy /path/to/my.bam and /path/to/my.bam.bai to current directory and adds track to config.json',
+    '$ jbrowse add-track /path/to/my.bam --load copy',
+    '',
+
+    '# copy /path/to/my.bam and /path/to/my.bam.bai to myDir and adds track to config.json',
+    '$ jbrowse add-track /path/to/my.bam --load copy --out myDir',
+    '',
 
     `# same as above, but specify path to bai file`,
-    '$ jbrowse add-track /path/to/my.bam --indexFile /path/to/my.bai --load copy\n',
+    '$ jbrowse add-track /path/to/my.bam --indexFile /path/to/my.bai --load copy',
+    '',
 
-    `# --load symlink creates symlink in /path/to/jb2/ directory for this file, and adds track to config.json`,
-    '$ jbrowse add-track /path/to/my.bam --target /path/to/jb2/config.json --load symlink\n',
+    '# creates symlink for /path/to/my.bam and adds track to config.json',
+    '$ jbrowse add-track /path/to/my.bam --load symlink',
+    '',
 
-    `# no --load flag to add literal URL for this track to config.json`,
-    '$ jbrowse add-track https://mywebsite.com/my.bam\n',
+    '# add track from URL to config.json, no --load flag needed',
+    '$ jbrowse add-track https://mywebsite.com/my.bam',
+    '',
 
-    `# --load move to move the file `,
-    `$ jbrowse add-track /path/to/my.bam --name 'New Track' --load move\n`,
-
-    `# --load inPlace puts /url/relative/path.bam in the config without performing any file operations`,
-    `$ jbrowse add-track /url/relative/path.bam --trackId AlignmentsTrack1 --load url --overwrite`,
+    '# --load inPlace adds a track without doing file operations',
+    '$ jbrowse add-track /url/relative/path.bam --load inPlace',
   ]
 
   static args = [
