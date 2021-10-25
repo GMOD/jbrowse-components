@@ -9,23 +9,11 @@ export default class Upgrade extends JBrowseCommand {
   static description = 'Upgrades JBrowse 2 to latest version'
 
   static examples = [
-    '# Upgrades current directory to latest jbrowse release',
-    '$ jbrowse upgrade',
-    '',
-    '# Upgrade jbrowse instance at a specific filesystem path',
+    '$ jbrowse upgrade # Upgrades current directory to latest jbrowse release',
     '$ jbrowse upgrade /path/to/jbrowse2/installation',
-    '',
-    '# Upgrade to a specific tag',
     '$ jbrowse upgrade /path/to/jbrowse2/installation --tag v1.0.0',
-    '',
-    '# List versions available on github',
-    '$ jbrowse upgrade --listVersions',
-    '',
-    '# Upgrade from a specific URL',
+    '$ jbrowse upgrade --listVersions # Lists out all available versions of JBrowse 2',
     '$ jbrowse upgrade --url https://sample.com/jbrowse2.zip',
-    '',
-    '# Get nightly release from main branch',
-    '$ jbrowse upgrade --nightly',
   ]
 
   static args = [
@@ -34,6 +22,12 @@ export default class Upgrade extends JBrowseCommand {
       required: false,
       description: `Location where JBrowse 2 is installed`,
       default: '.',
+    },
+    {
+      name: 'placeholder',
+      required: false,
+      description: `Placeholder for config file migration scripts`,
+      hidden: true,
     },
   ]
 

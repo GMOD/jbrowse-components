@@ -5,7 +5,6 @@ import { CssBaseline, ThemeProvider } from '@material-ui/core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import { StringParam, useQueryParam } from 'use-query-params'
-import { ipcRenderer } from 'electron'
 
 // locals
 import { loadPluginManager } from './StartScreen/util'
