@@ -4,7 +4,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { CssBaseline, ThemeProvider, makeStyles } from '@material-ui/core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { StringParam, useQueryParam } from 'use-query-params'
-import { ipcRenderer } from 'electron'
 import { loadPluginManager } from './StartScreen/util'
 
 import JBrowse from './JBrowse'
@@ -75,11 +74,8 @@ const Loader = observer(() => {
   const handleSetPluginManager = useCallback(
     (pm: PluginManager) => {
       // @ts-ignore
-      pm.rootModel?.setOpenNewSessionCallback(async () => {
-        const path = await ipcRenderer.invoke('promptOpenFile')
-        if (path) {
-          handleSetPluginManager(await loadPluginManager(path))
-        }
+      pm.rootModel?.setOpenNewSessionCallback(async (path: string) => {
+        handleSetPluginManager(await loadPluginManager(path))
       })
 
       // @ts-ignore
