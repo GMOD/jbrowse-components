@@ -3,6 +3,7 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { bpSpanPx } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
+import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 
 export interface ViewInfo {
   bpPerPx: number
@@ -22,7 +23,11 @@ export interface LaidOutFeatureRect extends FeatureRect {
 }
 
 export default class FeatureGlyph {
-  layoutFeature(viewArgs: ViewInfo, layout: any, feature: Feature) {
+  layoutFeature(
+    viewArgs: ViewInfo,
+    layout: BaseLayout<Feature>,
+    feature: Feature,
+  ) {
     const fRect = this.getFeatureRectangle(viewArgs, feature)
 
     const { region, bpPerPx } = viewArgs
@@ -30,7 +35,7 @@ export default class FeatureGlyph {
     const leftBase = region.start
     const startbp = fRect.l / scale + leftBase
     const endbp = (fRect.l + fRect.w) / scale + leftBase
-    const top = layout.addRect(feature.id(), startbp, endbp, fRect.h, feature)
+    const top = layout.addRect(feature.id(), startbp, endbp, fRect.h)
     if (top === null) {
       return null
     }

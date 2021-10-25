@@ -1,4 +1,5 @@
 import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 
 // locals
 import BoxGlyph from './Box'
@@ -44,7 +45,7 @@ export default class Gene extends BoxGlyph {
     fRect.l = Infinity
     fRect.r = -Infinity
 
-    subfeatures.forEach((sub, i) => {
+    subfeatures.forEach(sub => {
       const glyph = this.getSubGlyph(sub)
       const subRect = glyph.getFeatureRectangle(subArgs, sub)
 
@@ -81,7 +82,11 @@ export default class Gene extends BoxGlyph {
     return this.expandRectangleWithLabels(viewArgs, feature, fRect)
   }
 
-  layoutFeature(viewInfo: ViewInfo, layout: any, feature: Feature) {
+  layoutFeature(
+    viewInfo: ViewInfo,
+    layout: BaseLayout<Feature>,
+    feature: Feature,
+  ) {
     const fRect = super.layoutFeature(
       viewInfo,
       layout,
