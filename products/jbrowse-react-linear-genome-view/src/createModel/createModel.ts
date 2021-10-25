@@ -6,6 +6,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { cast, getSnapshot, types, Instance, SnapshotIn } from 'mobx-state-tree'
+
+// locals
 import corePlugins from '../corePlugins'
 import createConfigModel from './createConfigModel'
 import createSessionModel from './createSessionModel'

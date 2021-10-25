@@ -28,6 +28,7 @@ interface ViewStateOptions {
   location?: string | Location
   defaultSession?: SessionSnapshot
   defaultTracks?: string[]
+  forceTracks?: string[]
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
 }
 
@@ -39,6 +40,7 @@ export default function createViewState({
   location,
   onChange,
   defaultTracks,
+  forceTracks,
   plugins = [],
   defaultSession = {
     name: 'this session',
@@ -67,19 +69,14 @@ export default function createViewState({
   pluginManager.configure()
   if (location) {
     autorun(reaction => {
-      if (
-        stateTree.assemblyManager.allPossibleRefNames &&
-        stateTree.assemblyManager.allPossibleRefNames.length
-      ) {
-        if (stateTree.session.view.initialized) {
-          if (typeof location === 'string') {
-            const assemblyName = stateTree.assemblyManager.assemblies[0].name
-            stateTree.session.view.navToLocString(location, assemblyName)
-          } else {
-            stateTree.session.view.navTo(location)
-          }
-          reaction.dispose()
+      if (stateTree.session.view.initialized) {
+        if (typeof location === 'string') {
+          const assemblyName = stateTree.assemblyManager.assemblies[0].name
+          stateTree.session.view.navToLocString(location, assemblyName)
+        } else {
+          stateTree.session.view.navTo(location)
         }
+        reaction.dispose()
       }
     })
   }
@@ -87,8 +84,14 @@ export default function createViewState({
     onPatch(stateTree, onChange)
   }
 
-  defaultTracks?.forEach(track => {
+  forceTracks?.forEach(track => {
     stateTree.session.view.showTrack(track)
   })
+
+  if (!defaultSession.view?.tracks?.length) {
+    defaultTracks?.forEach(track => {
+      stateTree.session.view.showTrack(track)
+    })
+  }
   return stateTree
 }

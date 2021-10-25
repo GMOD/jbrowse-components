@@ -74,10 +74,7 @@ export const UsingDefaultTracks = () => {
     defaultTracks: ['wiggle_track_fractional_posneg'],
 
     // use 1-based coordinates for locstring
-    location: 'ctgA:1105..1221',
-    onChange: patch => {
-      console.log('patch', patch)
-    },
+    location: 'ctgA:10000-40000',
   })
   return <JBrowseLinearGenomeView viewState={state} />
 }
@@ -98,6 +95,7 @@ export const WithLongReads = () => {
     assembly,
     tracks,
     defaultSession: longReadsSession,
+    forceTracks: ['wiggle_track_fractional_posneg'],
     location: 'ctgA:1105..1221',
   })
 
