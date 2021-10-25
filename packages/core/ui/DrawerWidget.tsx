@@ -7,6 +7,7 @@ import {
   MenuItem,
   Select,
   Toolbar,
+  Tooltip,
   Typography,
   makeStyles,
   alpha,
@@ -15,10 +16,13 @@ import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { SessionWithDrawerWidgets } from '@jbrowse/core/util/types'
 
+// icons
 import DeleteIcon from '@material-ui/icons/Delete'
 import CloseIcon from '@material-ui/icons/Close'
 import MinimizeIcon from '@material-ui/icons/Minimize'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
+
+// locals
 import Drawer from './Drawer'
 
 const useStyles = makeStyles(theme => ({
@@ -150,24 +154,28 @@ const DrawerHeader = observer(
             >
               <MoreVertIcon />
             </IconButton>
-            <IconButton
-              data-testid="drawer-minimize"
-              color="inherit"
-              onClick={() => {
-                session.minimizeWidgetDrawer()
-              }}
-            >
-              <MinimizeIcon />
-            </IconButton>
-            <IconButton
-              data-testid="drawer-close"
-              color="inherit"
-              onClick={() => {
-                session.hideWidget(visibleWidget)
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
+            <Tooltip title="Minimize drawer">
+              <IconButton
+                data-testid="drawer-minimize"
+                color="inherit"
+                onClick={() => {
+                  session.minimizeWidgetDrawer()
+                }}
+              >
+                <MinimizeIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Close drawer">
+              <IconButton
+                data-testid="drawer-close"
+                color="inherit"
+                onClick={() => {
+                  session.hideWidget(visibleWidget)
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </Tooltip>
           </div>
         </Toolbar>
         <Menu
