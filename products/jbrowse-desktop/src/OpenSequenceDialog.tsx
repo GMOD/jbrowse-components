@@ -13,6 +13,7 @@ import {
   makeStyles,
 } from '@material-ui/core'
 import FileSelector from '@jbrowse/core/ui/FileSelector'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import { FileLocation } from '@jbrowse/core/util/types'
 
 const useStyles = makeStyles(theme => ({
@@ -217,9 +218,7 @@ const OpenSequenceDialog = ({
     <Dialog open onClose={() => onClose()}>
       <DialogTitle>Open sequence</DialogTitle>
       <DialogContent>
-        {error ? (
-          <Typography variant="h6" color="error">{`${error}`}</Typography>
-        ) : null}
+        {error ? <ErrorMessage error={error} /> : null}
         <div className={classes.root}>
           <Typography>
             Use this dialog to open a new indexed FASTA file, bgzipped+indexed
