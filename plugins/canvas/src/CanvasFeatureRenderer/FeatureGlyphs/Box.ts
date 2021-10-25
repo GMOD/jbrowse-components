@@ -167,15 +167,16 @@ export default class Box extends FeatureGlyph {
     ctx: CanvasRenderingContext2D,
     props: {
       record: LaidOutFeatureRect
-      regionStart: number
+      regions: { start: number; end: number; reversed: boolean }[]
       offsetPx: number
     },
   ) {
-    const { regionStart, record, offsetPx } = props
+    const { regions, record, offsetPx } = props
     const { start, end, l, t, label, description } = record
+    const [region] = regions
 
     function renderText({ text, offsetY }: { text: string; offsetY: number }) {
-      if (start < regionStart && regionStart < end) {
+      if (start < region.start && region.start < end) {
         ctx.fillText(text, offsetPx, t + offsetY)
       } else {
         ctx.fillText(text, l, t + offsetY)

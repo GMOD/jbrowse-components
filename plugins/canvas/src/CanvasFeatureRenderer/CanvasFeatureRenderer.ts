@@ -82,14 +82,17 @@ export default class CanvasRenderer extends BoxRendererType {
     if (props.exportSVG) {
       postDraw({
         ctx,
-        layoutRecords: layoutRecords.map(f => ({
-          label: f.label,
-          description: f.description,
-          l: f.l,
-          t: f.t,
-          start: f.f.get('start'),
-          end: f.f.get('end'),
-        })),
+        layoutRecords: layoutRecords.map(
+          ({ glyph, label, description, l, f, t }) => ({
+            label,
+            description,
+            l,
+            t,
+            glyph,
+            start: f.get('start'),
+            end: f.get('end'),
+          }),
+        ),
         offsetPx: 0,
         ...props,
       })
@@ -160,12 +163,10 @@ export function postDraw({
   regions,
 }: {
   ctx: CanvasRenderingContext2D
-  regions: { start: number }[]
+  regions: { start: number; end: number; reversed: boolean }[]
   offsetPx: number
   layoutRecords: LaidOutFeatureRectWithGlyph[]
 }) {
-  const [region] = regions
-
   ctx.fillStyle = 'black'
   ctx.font = '10px sans-serif'
   layoutRecords
@@ -173,7 +174,7 @@ export function postDraw({
     .forEach(record => {
       record.glyph.postDraw(ctx, {
         record,
-        regionStart: region.start,
+        regions,
         offsetPx,
       })
     })

@@ -82,6 +82,7 @@ function CanvasRendering(props: {
       regions: [{ start: viewStart }],
     })
   }, [layoutRecords, viewStart, offsetPx])
+
   useEffect(() => {
     const canvas = highlightOverlayCanvas.current
     if (!canvas) {
