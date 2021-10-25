@@ -8,10 +8,12 @@
         "adapter": {
           "type": "IndexedFastaAdapter",
           "fastaLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.fa"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.fa",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.fa.fai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.fa.fai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -24,10 +26,12 @@
         "adapter": {
           "type": "IndexedFastaAdapter",
           "fastaLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.fa"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.fa",
+            "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.fa.fai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.fa.fai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -44,7 +48,8 @@
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64_vs_yjm1447.paf"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64_vs_yjm1447.paf",
+          "locationType": "UriLocation"
         },
         "assemblyNames": ["YJM1447", "R64"]
       }
@@ -57,11 +62,13 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.sorted.gff.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.sorted.gff.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.sorted.gff.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.sorted.gff.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }
@@ -75,11 +82,13 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.sorted.gff.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.sorted.gff.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.sorted.gff.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.sorted.gff.gz.tbi",
+            "locationType": "UriLocation"
           },
           "indexType": "TBI"
         }
@@ -696,13 +705,16 @@
       "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "R64-index",
       "ixFilePath": {
-        "uri": "trix/R64.ix"
+        "uri": "trix/R64.ix",
+        "locationType": "UriLocation"
       },
       "ixxFilePath": {
-        "uri": "trix/R64.ixx"
+        "uri": "trix/R64.ixx",
+        "locationType": "UriLocation"
       },
       "metaFilePath": {
-        "uri": "trix/R64_meta.json"
+        "uri": "trix/R64_meta.json",
+        "locationType": "UriLocation"
       },
       "assemblyNames": ["R64"]
     },
@@ -710,13 +722,16 @@
       "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "YJM1447-index",
       "ixFilePath": {
-        "uri": "trix/YJM1447.ix"
+        "uri": "trix/YJM1447.ix",
+        "locationType": "UriLocation"
       },
       "ixxFilePath": {
-        "uri": "trix/YJM1447.ixx"
+        "uri": "trix/YJM1447.ixx",
+        "locationType": "UriLocation"
       },
       "metaFilePath": {
-        "uri": "trix/YJM1447_meta.json"
+        "uri": "trix/YJM1447_meta.json",
+        "locationType": "UriLocation"
       },
       "assemblyNames": ["YJM1447"]
     }

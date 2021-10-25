@@ -21,11 +21,11 @@ function isLocalPathLocation(
 }
 
 export async function fetchJb1(
-  dataRoot: JBLocation = { uri: '' },
+  dataRoot: JBLocation = { uri: '', locationType: 'UriLocation' },
   baseConfig: Config = {
     include: ['{dataRoot}/trackList.json', '{dataRoot}/tracks.conf'],
   },
-  baseConfigRoot: JBLocation = { uri: '' },
+  baseConfigRoot: JBLocation = { uri: '', locationType: 'UriLocation' },
 ): Promise<Config> {
   const protocol = 'uri' in dataRoot ? 'uri' : 'localPath'
   const dataRootReg = JSON.parse(JSON.stringify(dataRoot))
@@ -224,15 +224,14 @@ async function loadIncludes(inputConfig: Config): Promise<Config> {
     )
     delete config.include
 
-    const loads = includes.map(
-      async (include): Promise<Config> => {
-        include.cacheBuster = inputConfig.cacheBuster
-        const includedData = await fetchConfigFile({
-          uri: new URL(include.url, sourceUrl).href,
-        })
-        return loadRecur(includedData, newUpstreamConf)
-      },
-    )
+    const loads = includes.map(async (include): Promise<Config> => {
+      include.cacheBuster = inputConfig.cacheBuster
+      const includedData = await fetchConfigFile({
+        uri: new URL(include.url, sourceUrl).href,
+        locationType: 'UriLocation',
+      })
+      return loadRecur(includedData, newUpstreamConf)
+    })
     const includedDataObjects = await Promise.all(loads)
     includedDataObjects.forEach((includedData): void => {
       config = mergeConfigs(config, includedData) || config
@@ -255,23 +254,21 @@ function regularizeIncludes(
     includes = [includes]
   }
 
-  return includes.map(
-    (include): Include => {
-      // coerce bare strings in the includes to URLs
-      if (typeof include === 'string') {
-        include = { url: include }
-      }
+  return includes.map((include): Include => {
+    // coerce bare strings in the includes to URLs
+    if (typeof include === 'string') {
+      include = { url: include }
+    }
 
-      // set defaults for format and version
-      if (!('format' in include)) {
-        include.format = include.url.endsWith('.conf') ? 'conf' : 'JB_json'
-      }
-      if (include.format === 'JB_json' && !('version' in include)) {
-        include.version = 1
-      }
-      return include
-    },
-  )
+    // set defaults for format and version
+    if (!('format' in include)) {
+      include.format = include.url.endsWith('.conf') ? 'conf' : 'JB_json'
+    }
+    if (include.format === 'JB_json' && !('version' in include)) {
+      include.version = 1
+    }
+    return include
+  })
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

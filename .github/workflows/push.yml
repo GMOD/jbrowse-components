@@ -4,32 +4,32 @@ on: push
 
 jobs:
   test:
-    name: Test and typecheck on node 12.x and ubuntu-latest
+    name: Test and typecheck on node 14.x and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
+      - name: Use Node.js 14.x
         uses: actions/setup-node@v2
         with:
-          node-version: '12'
+          node-version: '14'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Test codebase
         run: yarn test-ci
       - name: Upload coverage
-        run: bash <(curl -s https://codecov.io/bash)
+        uses: codecov/codecov-action@v2
       - name: Typecheck codebase
         run: yarn typecheck
 
   buildwebsite:
-    name: Build website on node 12 and ubuntu-latest
+    name: Build website on node 14 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 12
+      - name: Use Node.js 14
         uses: actions/setup-node@v2
         with:
-          node-version: '12'
+          node-version: '14'
       - name: Install website deps (with cache)
         uses: bahmutov/npm-install@v1
         with:

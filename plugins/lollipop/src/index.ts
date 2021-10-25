@@ -26,9 +26,8 @@ export default class extends Plugin {
     )
 
     pluginManager.addDisplayType(() => {
-      const configSchema = linearLollipopDisplayConfigSchemaFactory(
-        pluginManager,
-      )
+      const configSchema =
+        linearLollipopDisplayConfigSchemaFactory(pluginManager)
       return new DisplayType({
         name: 'LinearLollipopDisplay',
         configSchema,

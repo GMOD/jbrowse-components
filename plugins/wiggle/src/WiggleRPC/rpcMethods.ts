@@ -74,17 +74,20 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
 
   async serializeArguments(
     args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },
+    rpcDriverClassName: string,
   ) {
-    const assemblyManager = this.pluginManager.rootModel?.session
-      ?.assemblyManager
+    const assemblyManager =
+      this.pluginManager.rootModel?.session?.assemblyManager
     if (!assemblyManager) {
       return args
     }
 
-    return renameRegionsIfNeeded(assemblyManager, {
+    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, {
       ...args,
       filters: args.filters && args.filters.toJSON().filters,
     })
+
+    return super.serializeArguments(renamedArgs, rpcDriverClassName)
   }
 
   async execute(

@@ -13,6 +13,8 @@ import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { toArray } from 'rxjs/operators'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 interface HicFeature {
   bin1: number
@@ -35,6 +37,7 @@ export interface RenderArgsDeserialized
   bpPerPx: number
   highResolutionScaling: number
   resolution: number
+  adapterConfig: AnyConfigurationModel
 }
 
 export interface RenderArgsDeserializedWithFeatures
@@ -55,8 +58,23 @@ export default class HicRenderer extends ServerSideRendererType {
     ctx: CanvasRenderingContext2D,
     props: RenderArgsDeserializedWithFeatures,
   ) {
-    const { features, config, bpPerPx, signal, dataAdapter, resolution } = props
-    const res = await dataAdapter.getResolution(bpPerPx / resolution)
+    const {
+      features,
+      config,
+      bpPerPx,
+      signal,
+      resolution,
+      sessionId,
+      adapterConfig,
+    } = props
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
+    const res = await (dataAdapter as HicDataAdapter).getResolution(
+      bpPerPx / resolution,
+    )
     const w = res / (bpPerPx * Math.sqrt(2))
     const baseColor = Color(readConfObject(config, 'baseColor'))
     if (features.length) {
@@ -126,8 +144,13 @@ export default class HicRenderer extends ServerSideRendererType {
   }
 
   async getFeatures(args: RenderArgsDeserialized) {
-    const { dataAdapter, regions } = args
-    const features = await dataAdapter
+    const { regions, sessionId, adapterConfig } = args
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
+    const features = await (dataAdapter as BaseFeatureDataAdapter)
       .getFeatures(regions[0], args)
       .pipe(toArray())
       .toPromise()

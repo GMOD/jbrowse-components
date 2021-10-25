@@ -37,7 +37,7 @@ const Chord = observer(function Chord({
   let endPosition
   let endBlock
   const alt = feature.get('ALT')?.[0]
-  const bnd = parseBreakend(alt)
+  const bnd = alt && parseBreakend(alt)
   if (bnd) {
     // VCF BND
     const matePosition = bnd.MatePosition.split(':')
@@ -92,6 +92,7 @@ const Chord = observer(function Chord({
         onMouseOut={evt => {
           if (!selected) {
             evt.target.style.stroke = strokeColor
+            evt.target.style.strokeWidth = 1
           }
         }}
       />

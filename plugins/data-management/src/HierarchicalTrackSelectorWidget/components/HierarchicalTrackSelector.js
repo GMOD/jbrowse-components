@@ -17,6 +17,7 @@ import {
   Menu,
   MenuItem,
   TextField,
+  Tooltip,
   Typography,
   makeStyles,
 } from '@material-ui/core'
@@ -114,6 +115,7 @@ const Node = props => {
     toggleCollapse,
     conf,
     onMoreInfo,
+    drawerPosition,
   } = data
 
   const classes = useStyles()
@@ -121,6 +123,7 @@ const Node = props => {
   const marginLeft = nestingLevel * width + (isLeaf ? width : 0)
   const unsupported =
     name && (name.endsWith('(Unsupported)') || name.endsWith('(Unknown)'))
+  const description = (conf && readConfObject(conf, ['description'])) || ''
 
   return (
     <div style={style} className={!isLeaf ? classes.accordionBase : undefined}>
@@ -153,22 +156,27 @@ const Node = props => {
             </div>
           ) : (
             <>
-              <FormControlLabel
-                className={classes.checkboxLabel}
-                control={
-                  <Checkbox
-                    className={classes.compactCheckbox}
-                    checked={checked}
-                    onChange={() => onChange(id)}
-                    color="primary"
-                    disabled={unsupported}
-                    inputProps={{
-                      'data-testid': `htsTrackEntry-${id}`,
-                    }}
-                  />
-                }
-                label={name}
-              />
+              <Tooltip
+                title={description}
+                placement={drawerPosition === 'left' ? 'right' : 'left'}
+              >
+                <FormControlLabel
+                  className={classes.checkboxLabel}
+                  control={
+                    <Checkbox
+                      className={classes.compactCheckbox}
+                      checked={checked}
+                      onChange={() => onChange(id)}
+                      color="primary"
+                      disabled={unsupported}
+                      inputProps={{
+                        'data-testid': `htsTrackEntry-${id}`,
+                      }}
+                    />
+                  }
+                  label={name}
+                />
+              </Tooltip>
               <IconButton
                 onClick={e => onMoreInfo({ target: e.currentTarget, id, conf })}
                 color="secondary"
@@ -208,14 +216,16 @@ const HierarchicalTree = observer(({ height, tree, model }) => {
   const treeRef = useRef(null)
   const [info, setMoreInfo] = useState()
   const session = getSession(model)
+  const { drawerPosition } = session
 
   const extra = useMemo(
     () => ({
       onChange: trackId => view.toggleTrack(trackId),
       toggleCollapse: pathName => model.toggleCategory(pathName),
       onMoreInfo: setMoreInfo,
+      drawerPosition,
     }),
-    [view, model],
+    [view, model, drawerPosition],
   )
   const treeWalker = useCallback(
     function* treeWalker() {

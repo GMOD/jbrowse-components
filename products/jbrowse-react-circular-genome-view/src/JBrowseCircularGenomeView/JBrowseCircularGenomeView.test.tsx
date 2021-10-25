@@ -26,16 +26,14 @@ const assembly = {
           uniqueId: 'firstId',
           start: 0,
           end: 120,
-          seq:
-            'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagccttggtttagattggtagtagtagcggcgctaatgctacctg',
+          seq: 'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagccttggtttagattggtagtagtagcggcgctaatgctacctg',
         },
         {
           refName: 'ctgB',
           uniqueId: 'secondId',
           start: 0,
           end: 65,
-          seq:
-            'ACATGCTAGCTACGTGCATGCTCGACATGCATCATCAGCCTGATGCTGATACATGCTAGCTACGT',
+          seq: 'ACATGCTAGCTACGTGCATGCTCGACATGCATCATCAGCCTGATGCTGATACATGCTAGCTACGT',
         },
       ],
     },

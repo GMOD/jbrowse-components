@@ -17,14 +17,18 @@ import {
 import { observer } from 'mobx-react'
 import { saveAs } from 'file-saver'
 import { Region } from '@jbrowse/core/util/types'
-import { readConfObject } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import copy from 'copy-to-clipboard'
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import CloseIcon from '@material-ui/icons/Close'
-import GetAppIcon from '@material-ui/icons/GetApp'
 import { getSession } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
+
+// icons
+import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
+import CloseIcon from '@material-ui/icons/Close'
+import GetAppIcon from '@material-ui/icons/GetApp'
+
+// locals
 import { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles(theme => ({
@@ -71,10 +75,7 @@ async function fetchSequence(
   if (!assembly) {
     throw new Error(`assembly ${assemblyName} not found`)
   }
-  const adapterConfig = readConfObject(assembly.configuration, [
-    'sequence',
-    'adapter',
-  ])
+  const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
 
   const sessionId = 'getSequence'
   const chunks = (await Promise.all(
@@ -101,7 +102,7 @@ function SequenceDialog({
 }) {
   const classes = useStyles()
   const session = getSession(model)
-  const [error, setError] = useState<Error>()
+  const [error, setError] = useState<unknown>()
   const [sequence, setSequence] = useState<string>()
   const loading = Boolean(sequence === undefined)
   const { leftOffset, rightOffset } = model

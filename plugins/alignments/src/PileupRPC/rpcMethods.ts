@@ -14,6 +14,7 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
 
   async serializeArguments(
     args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },
+    rpcDriverClassName: string,
   ) {
     const { rootModel } = this.pluginManager
     const assemblyManager = rootModel?.session?.assemblyManager
@@ -21,7 +22,9 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
       throw new Error('no assembly manager available')
     }
 
-    return renameRegionsIfNeeded(assemblyManager, args)
+    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, args)
+
+    return super.serializeArguments(renamedArgs, rpcDriverClassName)
   }
 
   async execute(
@@ -63,6 +66,7 @@ export class PileupGetVisibleModifications extends RpcMethodType {
 
   async serializeArguments(
     args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },
+    rpcDriverClassName: string,
   ) {
     const { rootModel } = this.pluginManager
     const assemblyManager = rootModel?.session?.assemblyManager
@@ -70,7 +74,9 @@ export class PileupGetVisibleModifications extends RpcMethodType {
       throw new Error('no assembly manager available')
     }
 
-    return renameRegionsIfNeeded(assemblyManager, args)
+    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, args)
+
+    return super.serializeArguments(renamedArgs, rpcDriverClassName)
   }
 
   async execute(

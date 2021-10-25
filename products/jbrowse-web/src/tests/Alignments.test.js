@@ -10,7 +10,7 @@ import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
-import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
+import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { setup, generateReadBuffer, getPluginManager } from './util'
@@ -122,7 +122,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 30000)
 
   it('selects a sort, updates object and layout', async () => {
     const pluginManager = getPluginManager()
@@ -164,7 +164,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 35000)
 
   it('selects a color, updates object and layout', async () => {
     const pluginManager = getPluginManager()
@@ -204,7 +204,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 30000)
 
   it('colors by tag, updates object and layout', async () => {
     const pluginManager = getPluginManager()
@@ -231,7 +231,6 @@ describe('alignments track', () => {
       target: { value: 'HP' },
     })
     fireEvent.click(await findByText('Submit'))
-
     // wait for pileup track to render with color
     await findAllByTestId('pileup-tagHP', {}, delay)
 
@@ -247,7 +246,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 30000)
 
   it('test that bam with small max height displays message', async () => {
     const pluginManager = getPluginManager()
@@ -259,7 +258,7 @@ describe('alignments track', () => {
     )
 
     await findAllByText('Max height reached', {}, delay)
-  }, 20000)
+  }, 30000)
 
   it('test snpcoverage doesnt count snpcoverage', async () => {
     const pluginManager = getPluginManager()
@@ -306,5 +305,5 @@ describe('alignments track', () => {
         'base64',
       ),
     ).toMatchImageSnapshot()
-  }, 15000)
+  }, 30000)
 })

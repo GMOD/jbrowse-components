@@ -1,4 +1,4 @@
-import BaseResult, { LocStringResult, RefSequenceResult } from './BaseResults'
+import BaseResult, { RefSequenceResult } from './BaseResults'
 
 test('create BaseResult', () => {
   const baseResult = new BaseResult({
@@ -10,7 +10,7 @@ test('create BaseResult', () => {
 })
 
 test('create LocationResult', () => {
-  const locationResult = new LocStringResult({
+  const locationResult = new BaseResult({
     label: 'location result',
     locString: 'chr1:1-900',
   })
@@ -37,14 +37,4 @@ test('can update score of result and throw appropriate errors', () => {
   expect(refSeqResult.getScore()).toBe(1)
   refSeqResult.updateScore(1000)
   expect(refSeqResult.getScore()).toBe(1000)
-  expect(() => {
-    new RefSequenceResult({
-      label: 'chromosome 1',
-    })
-  }).toThrow('must provide refName')
-  expect(() => {
-    new LocStringResult({
-      label: 'chromosome 1',
-    })
-  }).toThrow('must provide locString')
 })

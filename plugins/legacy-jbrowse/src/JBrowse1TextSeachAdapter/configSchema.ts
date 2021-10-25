@@ -6,7 +6,7 @@ export default ConfigurationSchema(
     // metadata about tracks and assemblies covered by text search adapter
     namesIndexLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/volvox/names' },
+      defaultValue: { uri: '/volvox/names', locationType: 'UriLocation' },
       description: 'the location of the JBrowse1 names index data directory',
     },
     tracks: {
@@ -14,7 +14,7 @@ export default ConfigurationSchema(
       defaultValue: [],
       description: 'List of tracks covered by text search adapter',
     },
-    assemblies: {
+    assemblyNames: {
       type: 'stringArray',
       defaultValue: [],
       description: 'List of assemblies covered by text search adapter',

@@ -15,6 +15,8 @@ export interface RenderResults {
 export default class RendererType extends PluggableElementBase {
   ReactComponent: AnyReactComponentType
 
+  supportsSVG = false
+
   configSchema: AnyConfigurationSchemaType
 
   pluginManager: PluginManager

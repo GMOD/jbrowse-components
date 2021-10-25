@@ -62,6 +62,7 @@ export async function* indexVcf(
       continue
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [ref, pos, id, _ref, _alt, _qual, _filter, info] = line.split('\t')
 
     // turns gff3 attrs into a map, and converts the arrays into space
@@ -72,7 +73,10 @@ export async function* indexVcf(
         .map(f => f.trim())
         .filter(f => !!f)
         .map(f => f.split('='))
-        .map(([key, val]) => [key.trim(), val?.trim().split(',').join(' ')]),
+        .map(([key, val]) => [
+          key.trim(),
+          val ? decodeURIComponent(val).trim().split(',').join(' ') : undefined,
+        ]),
     )
 
     const end = fields.END

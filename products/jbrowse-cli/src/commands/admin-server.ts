@@ -1,4 +1,5 @@
 import { flags } from '@oclif/command'
+import path from 'path'
 import fs from 'fs'
 import crypto from 'crypto'
 import boxen from 'boxen'
@@ -6,9 +7,7 @@ import chalk from 'chalk'
 import os from 'os'
 import express from 'express'
 import cors from 'cors'
-import JBrowseCommand, { Config } from '../base'
-
-const fsPromises = fs.promises
+import JBrowseCommand from '../base'
 
 function isValidPort(port: number) {
   return port > 0 && port < 65535
@@ -20,9 +19,6 @@ function generateKey() {
 }
 
 export default class AdminServer extends JBrowseCommand {
-  // @ts-ignore
-  private target: string
-
   static description = 'Start up a small admin server for JBrowse configuration'
 
   static examples = ['$ jbrowse admin-server', '$ jbrowse admin-server -p 8888']
@@ -39,35 +35,32 @@ export default class AdminServer extends JBrowseCommand {
     out: flags.string({
       description: 'synonym for target',
     }),
-    skipCheck: flags.boolean({
-      description: "Don't check whether or not you are in a JBrowse directory",
-    }),
+
     help: flags.help({ char: 'h' }),
   }
 
   async run() {
     const { flags: runFlags } = this.parse(AdminServer)
+    const { target, out } = runFlags
 
-    const output = runFlags.target || runFlags.out || '.'
-    const isDir = (await fsPromises.lstat(output)).isDirectory()
-    this.target = isDir ? `${output}/config.json` : output
+    const output = target || out || '.'
+    const isDir = fs.lstatSync(output).isDirectory()
+    const outFile = isDir ? `${output}/config.json` : output
+    const baseDir = path.dirname(outFile)
 
-    // check if the config file exists, if none exists write default
-    const defaultConfig: Config = {
-      assemblies: [],
-      configuration: {},
-      connections: [],
-      defaultSession: {
-        name: 'New Session',
-      },
-      tracks: [],
-    }
-
-    if (fs.existsSync(this.target)) {
-      this.debug(`Found existing config file ${this.target}`)
+    if (fs.existsSync(outFile)) {
+      this.debug(`Found existing config file ${outFile}`)
     } else {
-      this.debug(`Creating config file ${this.target}`)
-      await this.writeJsonFile('./config.json', defaultConfig)
+      this.debug(`Creating config file ${outFile}`)
+      await this.writeJsonFile('./config.json', {
+        assemblies: [],
+        configuration: {},
+        connections: [],
+        defaultSession: {
+          name: 'New Session',
+        },
+        tracks: [],
+      })
     }
 
     // start server with admin key in URL query string
@@ -85,24 +78,29 @@ export default class AdminServer extends JBrowseCommand {
 
     // POST route to save config
     app.use(express.json())
-    app.post(
-      '/updateConfig',
-      async (req: express.Request, res: express.Response) => {
-        this.debug('Req body: ', req.body)
-
-        if (req.body.adminKey === adminKey) {
-          this.debug('Admin key matches')
-          try {
-            await this.writeJsonFile(this.target, req.body.config)
-            res.send('Config written to disk')
-          } catch {
-            res.status(500).send('Could not write config file')
+    app.post('/updateConfig', async (req, res) => {
+      if (adminKey === req.body.adminKey) {
+        this.debug('Admin key matches')
+        try {
+          // use directory traversal prevention
+          // https://nodejs.org/en/knowledge/file-system/security/introduction/#preventing-directory-traversal
+          const filename = req.body.configPath
+            ? path.join(baseDir, req.body.configPath)
+            : outFile
+          if (filename.indexOf(baseDir) !== 0) {
+            throw new Error(
+              `Cannot perform directory traversal outside of ${baseDir}`,
+            )
           }
-        } else {
-          res.status(403).send('Admin key does not match')
+          await this.writeJsonFile(filename, req.body.config)
+          res.send('Config written to disk')
+        } catch (e) {
+          res.status(500).send(`Could not write config file ${e}`)
         }
-      },
-    )
+      } else {
+        res.status(403).send('Admin key does not match')
+      }
+    })
 
     app.post(
       '/shutdown',

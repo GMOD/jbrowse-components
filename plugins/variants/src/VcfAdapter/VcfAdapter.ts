@@ -8,9 +8,12 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import IntervalTree from '@flatten-js/interval-tree'
 import VcfFeature from '../VcfTabixAdapter/VcfFeature'
 import VCF from '@gmod/vcf'
 import { unzip } from '@gmod/bgzf-filehandle'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 const readVcf = (f: string) => {
   const lines = f.split('\n')
@@ -32,10 +35,14 @@ const readVcf = (f: string) => {
 export default class VcfAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  private setupP?: Promise<Feature[]>
+  protected vcfFeatures?: Promise<Record<string, IntervalTree>>
 
-  public constructor(config: AnyConfigurationModel) {
-    super(config)
+  public constructor(
+    config: AnyConfigurationModel,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    super(config, getSubAdapter, pluginManager)
   }
 
   private async decodeFileContents() {
@@ -44,7 +51,10 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       'vcfLocation',
     ) as FileLocation
 
-    let fileContents = await openLocation(vcfLocation).readFile()
+    let fileContents = await openLocation(
+      vcfLocation,
+      this.pluginManager,
+    ).readFile()
 
     if (
       typeof fileContents[0] === 'number' &&
@@ -88,30 +98,73 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
   }
 
   public async setup() {
-    if (!this.setupP) {
-      this.setupP = this.getLines()
+    if (!this.vcfFeatures) {
+      this.vcfFeatures = this.getLines().then(feats => {
+        return feats.reduce(
+          (acc: Record<string, IntervalTree>, obj: VcfFeature) => {
+            const key = obj.get('refName')
+            if (!acc[key]) {
+              acc[key] = new IntervalTree()
+            }
+            acc[key].insert([obj.get('start'), obj.get('end')], obj)
+            return acc
+          },
+          {},
+        )
+      })
     }
-    return this.setupP
+    return this.vcfFeatures
   }
 
   public async getRefNames(_: BaseOptions = {}) {
     const { refNames } = await this.decodeFileContents()
+    if (refNames.length === 0) {
+      return [
+        'chr1',
+        'chr2',
+        'chr3',
+        'chr4',
+        'chr5',
+        'chr6',
+        'chr7',
+        'chr8',
+        'chr9',
+        'chr10',
+        'chr11',
+        'chr12',
+        'chr13',
+        'chr14',
+        'chr15',
+        'chr16',
+        'chr17',
+        'chr18',
+        'chr19',
+        'chr20',
+        'chr21',
+        'chr22',
+        'chr23',
+        'chrX',
+        'chrY',
+        'chrMT',
+      ]
+    }
     return refNames
   }
 
   public getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const feats = await this.setup()
-      feats.forEach(f => {
-        if (
-          f.get('refName') === region.refName &&
-          f.get('end') > region.start &&
-          f.get('start') < region.end
-        ) {
+      try {
+        const { start, end, refName } = region
+        const vcfFeatures = await this.setup()
+        const tree = vcfFeatures[refName]
+        const feats = tree.search([start, end]) //  expected array ['val1']
+        feats.forEach(f => {
           observer.next(f)
-        }
-      })
-      observer.complete()
+        })
+        observer.complete()
+      } catch (e) {
+        observer.error(e)
+      }
     }, opts.signal)
   }
 

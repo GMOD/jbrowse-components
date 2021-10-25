@@ -10,17 +10,17 @@ import {
 import { ipcRenderer } from 'electron'
 
 const DeleteSessionDialog = ({
-  sessionToDelete,
+  sessionsToDelete,
   onClose,
   setError,
 }: {
-  sessionToDelete?: string
+  sessionsToDelete: { path: string }[]
   onClose: (arg0: boolean) => void
-  setError: (e: Error) => void
+  setError: (e: unknown) => void
 }) => {
   return (
-    <Dialog open={!!sessionToDelete} onClose={() => onClose(false)}>
-      <DialogTitle>{`Delete session "${sessionToDelete}"?`}</DialogTitle>
+    <Dialog open onClose={() => onClose(false)}>
+      <DialogTitle>{`Delete ${sessionsToDelete.length} sessions?`}</DialogTitle>
       <DialogContent>
         <DialogContentText>This action cannot be undone</DialogContentText>
       </DialogContent>
@@ -31,7 +31,10 @@ const DeleteSessionDialog = ({
         <Button
           onClick={async () => {
             try {
-              await ipcRenderer.invoke('deleteSession', sessionToDelete)
+              ipcRenderer.invoke(
+                'deleteSessions',
+                sessionsToDelete.map(session => session.path),
+              )
               onClose(true)
             } catch (e) {
               console.error(e)

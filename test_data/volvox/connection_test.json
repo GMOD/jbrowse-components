@@ -8,7 +8,8 @@
         "adapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit"
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -22,7 +23,8 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "../hg19.chrom.sizes"
+            "uri": "../hg19.chrom.sizes",
+            "locationType": "UriLocation"
           }
         }
       },
@@ -30,7 +32,8 @@
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "../hg19_aliases.txt"
+            "uri": "../hg19_aliases.txt",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -74,7 +77,8 @@
       "name": "JB1 (volvox)",
       "assemblyNames": ["volvox"],
       "dataDirLocation": {
-        "uri": "http://jbrowse.org.s3.amazonaws.com/code/JBrowse-1.16.10/sample_data/json/volvox/"
+        "uri": "http://jbrowse.org.s3.amazonaws.com/code/JBrowse-1.16.10/sample_data/json/volvox/",
+        "locationType": "UriLocation"
       }
     },
     {
@@ -83,7 +87,8 @@
       "name": "UCSC (volvox and hg19)",
       "assemblyNames": [],
       "hubTxtLocation": {
-        "uri": "http://jbrowse.org.s3.amazonaws.com/testing/test_hub/hub.txt"
+        "uri": "http://jbrowse.org.s3.amazonaws.com/testing/test_hub/hub.txt",
+        "locationType": "UriLocation"
       }
     },
     {

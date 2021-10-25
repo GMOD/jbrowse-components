@@ -13,9 +13,7 @@ import {
   DialogTitle,
   IconButton,
 } from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
-import AddIcon from '@material-ui/icons/Add'
-import CalendarIcon from '@material-ui/icons/CalendarViewDay'
+
 import { ConfigurationSchema, getConf } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
@@ -34,12 +32,20 @@ import {
   getContainingTrack,
   isAbstractMenuManager,
 } from '@jbrowse/core/util'
-
 import {
   MismatchParser,
   LinearPileupDisplayModel,
 } from '@jbrowse/plugin-alignments'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
+import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+
+// icons
+import CloseIcon from '@material-ui/icons/Close'
+import AddIcon from '@material-ui/icons/Add'
+import CalendarIcon from '@material-ui/icons/CalendarViewDay'
+// locals
+//
 import {
   configSchemaFactory as linearComparativeDisplayConfigSchemaFactory,
   ReactComponent as LinearComparativeDisplayReactComponent,
@@ -59,28 +65,8 @@ import {
   AdapterClass as MCScanAnchorsAdapter,
   configSchema as MCScanAnchorsConfigSchema,
 } from './MCScanAnchorsAdapter'
-import { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
-import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-
 const { parseCigar } = MismatchParser
 
-interface Track {
-  id: string
-  type: string
-  displays: {
-    id: string
-    type: string
-    PileupDisplay: any
-  }[]
-}
-interface View {
-  tracks: Track[]
-  views?: View[]
-  type: string
-}
-interface Session {
-  views: View[]
-}
 function getLengthOnRef(cigar: string) {
   const cigarOps = parseCigar(cigar)
   let lengthOnRef = 0
@@ -206,6 +192,9 @@ interface BasicFeature {
   refName: string
 }
 
+// hashmap of refName->array of features
+type FeaturesPerRef = { [key: string]: BasicFeature[] }
+
 function gatherOverlaps(regions: BasicFeature[]) {
   const groups = regions.reduce((memo, x) => {
     if (!memo[x.refName]) {
@@ -213,7 +202,7 @@ function gatherOverlaps(regions: BasicFeature[]) {
     }
     memo[x.refName].push(x)
     return memo
-  }, {} as { [key: string]: BasicFeature[] })
+  }, {} as FeaturesPerRef)
 
   return Object.values(groups)
     .map(group => mergeIntervals(group.sort((a, b) => a.start - b.start)))
@@ -230,11 +219,11 @@ function WindowSizeDlg(props: {
 
   // window size stored as string, because it corresponds to a textfield which
   // is parsed as number on submit
-  const [window, setWindowSize] = useState('0')
-  const [error, setError] = useState<Error>()
-  const windowSize = +window
+  const [windowSizeText, setWindowSize] = useState('0')
+  const [error, setError] = useState<unknown>()
   const [primaryFeature, setPrimaryFeature] = useState<Feature>()
   const [qualTrack, setQualTrack] = useState(false)
+  const windowSize = +windowSizeText
 
   // we need to fetch the primary alignment if the selected feature is 2048.
   // this should be the first in the list of the SA tag
@@ -632,9 +621,8 @@ export default class extends Plugin {
       })
     })
     pluginManager.addDisplayType(() => {
-      const configSchema = linearComparativeDisplayConfigSchemaFactory(
-        pluginManager,
-      )
+      const configSchema =
+        linearComparativeDisplayConfigSchemaFactory(pluginManager)
       return new DisplayType({
         name: 'LinearComparativeDisplay',
         configSchema,
@@ -645,9 +633,8 @@ export default class extends Plugin {
       })
     })
     pluginManager.addDisplayType(() => {
-      const configSchema = linearSyntenyDisplayConfigSchemaFactory(
-        pluginManager,
-      )
+      const configSchema =
+        linearSyntenyDisplayConfigSchemaFactory(pluginManager)
       return new DisplayType({
         name: 'LinearSyntenyDisplay',
         configSchema,
@@ -662,6 +649,12 @@ export default class extends Plugin {
         new AdapterType({
           name: 'MCScanAnchorsAdapter',
           configSchema: MCScanAnchorsConfigSchema,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
           AdapterClass: MCScanAnchorsAdapter,
         }),
     )
@@ -696,10 +689,16 @@ export default class extends Plugin {
                         label: 'Linear read vs ref',
                         icon: AddIcon,
                         onClick: () => {
-                          getSession(self).setDialogComponent(WindowSizeDlg, {
-                            track: getContainingTrack(self),
-                            feature,
-                          })
+                          getSession(self).queueDialog(
+                            (doneCallback: Function) => [
+                              WindowSizeDlg,
+                              {
+                                track: getContainingTrack(self),
+                                feature,
+                                handleClose: doneCallback,
+                              },
+                            ],
+                          )
                         },
                       },
                     ]
@@ -720,7 +719,7 @@ export default class extends Plugin {
 
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
-      pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
+      pluginManager.rootModel.appendToSubMenu(['Add'], {
         label: 'Linear synteny view',
         icon: CalendarIcon,
         onClick: (session: AbstractSessionModel) => {

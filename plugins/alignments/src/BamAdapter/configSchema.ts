@@ -7,7 +7,7 @@ export default types.late(() =>
     {
       bamLocation: {
         type: 'fileLocation',
-        defaultValue: { uri: '/path/to/my.bam' },
+        defaultValue: { uri: '/path/to/my.bam', locationType: 'UriLocation' },
       },
       index: ConfigurationSchema('BamIndex', {
         indexType: {
@@ -17,7 +17,10 @@ export default types.late(() =>
         },
         location: {
           type: 'fileLocation',
-          defaultValue: { uri: '/path/to/my.bam.bai' },
+          defaultValue: {
+            uri: '/path/to/my.bam.bai',
+            locationType: 'UriLocation',
+          },
         },
       }),
       chunkSizeLimit: {

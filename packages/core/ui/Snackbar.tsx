@@ -1,10 +1,9 @@
-import IconButton from '@material-ui/core/IconButton'
-import Snackbar from '@material-ui/core/Snackbar'
+import React, { useEffect, useState } from 'react'
+import { IconButton, Snackbar } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 import Alert from '@material-ui/lab/Alert'
 import { observer } from 'mobx-react'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
-import React, { useEffect, useState } from 'react'
 import { AbstractSessionModel, NotificationLevel } from '../util'
 
 type SnackbarMessage = [string, NotificationLevel]
@@ -20,9 +19,7 @@ function MessageSnackbar({
   session: SnackbarSession & IAnyStateTreeNode
 }) {
   const [open, setOpen] = useState(false)
-  const [snackbarMessage, setSnackbarMessage] = useState<
-    SnackbarMessage | undefined
-  >()
+  const [snackbarMessage, setSnackbarMessage] = useState<SnackbarMessage>()
 
   const { popSnackbarMessage, snackbarMessages } = session
 
@@ -31,7 +28,7 @@ function MessageSnackbar({
     : null
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timer
+    let timeoutId: ReturnType<typeof setTimeout>
 
     if (snackbarMessage) {
       if (!latestMessage) {

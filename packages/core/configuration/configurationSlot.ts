@@ -32,7 +32,7 @@ const fallbackDefaults: { [typeName: string]: any } = {
   number: 1,
   string: '',
   text: '',
-  fileLocation: { uri: '/path/to/resource.txt' },
+  fileLocation: { uri: '/path/to/resource.txt', locationType: 'UriLocation' },
   frozen: {},
 }
 

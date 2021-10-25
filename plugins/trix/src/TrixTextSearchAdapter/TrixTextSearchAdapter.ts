@@ -5,19 +5,36 @@ import {
   BaseAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
-import { LocStringResult } from '@jbrowse/core/TextSearch/BaseResults'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+
+function shorten(str: string, term: string, w = 15) {
+  const tidx = str.indexOf(term)
+
+  return str.length < 40
+    ? str
+    : (Math.max(0, tidx - w) > 0 ? '...' : '') +
+        str.slice(Math.max(0, tidx - w), tidx + term.length + w).trim() +
+        (tidx + term.length < str.length ? '...' : '')
+}
 
 export default class TrixTextSearchAdapter
   extends BaseAdapter
-  implements BaseTextSearchAdapter {
+  implements BaseTextSearchAdapter
+{
   indexingAttributes?: string[]
   trixJs: Trix
   tracksNames?: string[]
 
-  constructor(config: AnyConfigurationModel) {
-    super(config)
+  constructor(
+    config: AnyConfigurationModel,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    super(config, getSubAdapter, pluginManager)
     const ixFilePath = readConfObject(config, 'ixFilePath')
     const ixxFilePath = readConfObject(config, 'ixxFilePath')
 
@@ -48,52 +65,25 @@ export default class TrixTextSearchAdapter
         decodeURIComponent(record),
       )
 
-      // gff3 fields are uri encoded so double decode
-      const allAttributes = rest.map(elt => decodeURIComponent(elt))
-      const labelFieldIdx = allAttributes.findIndex(elt => !!elt)
-      const contextIdx = allAttributes.findIndex(
-        elt => elt.toLowerCase().indexOf(term.toLowerCase()) !== -1,
-      )
+      const labelFieldIdx = rest.findIndex(elt => !!elt)
+      const contextIdx = rest
+        .map(elt => elt.toLowerCase())
+        .findIndex(f => f.indexOf(term.toLowerCase()) !== -1)
 
-      const labelField = allAttributes[labelFieldIdx]
-      let context
-      if (contextIdx !== labelFieldIdx) {
-        const w = 15
-        const contextField = allAttributes[contextIdx]
-        context = contextField
-        if (contextField) {
-          if (contextField.length > 40) {
-            const tidx = contextField.indexOf(term)
-            context =
-              '...' +
-              contextField
-                .slice(Math.max(0, tidx - w), tidx + term.length + w)
-                .trim() +
-              '...'
-          }
-        }
-      }
-      let shortenedLabelField = ''
-      if (labelField.length > 40) {
-        const w = 16
-        const tidx = labelField
-          .toLocaleLowerCase()
-          .indexOf(term.toLocaleLowerCase())
-        shortenedLabelField =
-          '...' +
-          labelField
-            .slice(Math.max(0, tidx - w), tidx + term.length + w)
-            .trim() +
-          '...'
-      }
+      const labelField = rest[labelFieldIdx]
+      const contextField = rest[contextIdx]
+      const context =
+        contextIdx !== -1 && contextIdx !== labelFieldIdx
+          ? shorten(contextField, term)
+          : undefined
+      const label = shorten(labelField, term)
+
       const displayString =
         !context || labelField.toLowerCase() === context.toLowerCase()
-          ? labelField.length > 40
-            ? shortenedLabelField
-            : labelField
+          ? label
           : `${labelField} (${context})`
 
-      return new LocStringResult({
+      return new BaseResult({
         locString: loc,
         label: labelField,
         displayString,

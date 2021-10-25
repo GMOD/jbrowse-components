@@ -17,6 +17,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
       types.model({
         type: types.literal('LinearBasicDisplay'),
         trackShowLabels: types.maybe(types.boolean),
+        trackShowDescriptions: types.maybe(types.boolean),
         trackDisplayMode: types.maybe(types.string),
         trackMaxHeight: types.maybe(types.number),
         configuration: ConfigurationReference(configSchema),
@@ -32,6 +33,13 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
         return self.trackShowLabels !== undefined
           ? self.trackShowLabels
           : showLabels
+      },
+
+      get showDescriptions() {
+        const showDescriptions = getConf(self, ['renderer', 'showLabels'])
+        return self.trackShowDescriptions !== undefined
+          ? self.trackShowDescriptions
+          : showDescriptions
       },
 
       get maxHeight() {
@@ -54,6 +62,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
           {
             ...configBlob,
             showLabels: this.showLabels,
+            showDescriptions: this.showDescriptions,
             displayMode: this.displayMode,
             maxHeight: this.maxHeight,
           },
@@ -65,6 +74,9 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
     .actions(self => ({
       toggleShowLabels() {
         self.trackShowLabels = !self.showLabels
+      },
+      toggleShowDescriptions() {
+        self.trackShowDescriptions = !self.showDescriptions
       },
       setDisplayMode(val: string) {
         self.trackDisplayMode = val
@@ -101,6 +113,15 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
               },
             },
             {
+              label: 'Show descriptions',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: self.showDescriptions,
+              onClick: () => {
+                self.toggleShowDescriptions()
+              },
+            },
+            {
               label: 'Display mode',
               icon: VisibilityIcon,
               subMenu: [
@@ -118,9 +139,10 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
             {
               label: 'Set max height',
               onClick: () => {
-                getSession(self).setDialogComponent(SetMaxHeightDlg, {
-                  model: self,
-                })
+                getSession(self).queueDialog((doneCallback: Function) => [
+                  SetMaxHeightDlg,
+                  { model: self, handleClose: doneCallback },
+                ])
               },
             },
           ]

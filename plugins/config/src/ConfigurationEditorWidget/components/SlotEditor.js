@@ -1,3 +1,6 @@
+import React, { useEffect, useState } from 'react'
+import { observer } from 'mobx-react'
+import { getPropertyMembers, getEnv } from 'mobx-state-tree'
 import { FileSelector } from '@jbrowse/core/ui'
 import {
   getPropertyType,
@@ -24,12 +27,12 @@ import {
   makeStyles,
 } from '@material-ui/core'
 
+// icons
 import DeleteIcon from '@material-ui/icons/Delete'
 import AddIcon from '@material-ui/icons/Add'
 import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked'
-import { observer } from 'mobx-react'
-import { getPropertyMembers } from 'mobx-state-tree'
-import React, { useEffect, useState } from 'react'
+
+// locals
 import CallbackEditor from './CallbackEditor'
 import ColorEditor from './ColorEditor'
 import JsonEditor from './JsonEditor'
@@ -341,6 +344,7 @@ const FileSelectorWrapper = observer(({ slot }) => {
       setLocation={location => slot.set(location)}
       name={slot.name}
       description={slot.description}
+      rootModel={getEnv(slot).pluginManager?.rootModel}
     />
   )
 })

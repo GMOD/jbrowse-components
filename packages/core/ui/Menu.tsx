@@ -216,7 +216,7 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
 
   useEffect(() => {
     const shouldSubMenuBeOpen = open && Boolean(subMenuAnchorEl)
-    let timer: NodeJS.Timeout
+    let timer: ReturnType<typeof setTimeout>
     if (shouldSubMenuBeOpen && !isSubMenuOpen) {
       timer = setTimeout(() => {
         setIsSubMenuOpen(true)

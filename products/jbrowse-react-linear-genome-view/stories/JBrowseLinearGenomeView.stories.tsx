@@ -1,6 +1,16 @@
-import { PluginRecord } from '@jbrowse/core/PluginLoader'
+/* eslint-disable no-console */
 import React, { useEffect, useState } from 'react'
-import { createViewState, JBrowseLinearGenomeView, loadPlugins } from '../src'
+import { observer } from 'mobx-react'
+import { PluginRecord } from '@jbrowse/core/PluginLoader'
+import { Region } from '@jbrowse/core/util/types'
+import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+import PluginManager from '@jbrowse/core/PluginManager'
+import Plugin from '@jbrowse/core/Plugin'
+
+// locals
+import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '../src'
+
+// configs
 import volvoxConfig from '../public/test_data/volvox/config.json'
 import volvoxSession from '../public/volvox-session.json'
 import nextstrainConfig from '../public/nextstrain_covid.json'
@@ -50,7 +60,6 @@ export const OneLinearGenomeView = () => {
     // use 1-based coordinates for locstring
     location: 'ctgA:1105..1221',
     onChange: patch => {
-      // eslint-disable-next-line no-console
       console.log('patch', patch)
     },
   })
@@ -122,120 +131,6 @@ export const TwoLinearGenomeViews = () => {
   )
 }
 
-export const WithPlugins = () => {
-  // usage with buildtime plugins
-  // this plugins array is then passed to the createViewState constructor
-  // import UCSCPlugin from 'jbrowse-plugin-ucsc'
-  // const plugins = [UCSCPlugin]
-
-  // usage with runtime plugins
-  // this plugins array is then passed to the createViewState constructor
-  const [plugins, setPlugins] = useState<PluginRecord[]>()
-  useEffect(() => {
-    async function getPlugins() {
-      const loadedPlugins = await loadPlugins([
-        {
-          name: 'UCSC',
-          url:
-            'https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js',
-        },
-      ])
-      setPlugins(loadedPlugins)
-    }
-    getPlugins()
-  }, [setPlugins])
-
-  if (!plugins) {
-    return null
-  }
-
-  const state = createViewState({
-    assembly: {
-      name: 'hg19',
-      aliases: ['GRCh37'],
-      sequence: {
-        type: 'ReferenceSequenceTrack',
-        trackId: 'Pd8Wh30ei9R',
-        adapter: {
-          type: 'BgzipFastaAdapter',
-          fastaLocation: {
-            uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
-          },
-          faiLocation: {
-            uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai',
-          },
-          gziLocation: {
-            uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi',
-          },
-        },
-      },
-      refNameAliases: {
-        adapter: {
-          type: 'RefNameAliasAdapter',
-          location: {
-            uri:
-              'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
-          },
-        },
-      },
-    },
-    plugins: plugins.map(p => p.plugin),
-    tracks: [
-      {
-        type: 'FeatureTrack',
-        trackId: 'segdups_ucsc_hg19',
-        name: 'UCSC SegDups',
-        category: ['Annotation'],
-        assemblyNames: ['hg19'],
-        adapter: {
-          type: 'UCSCAdapter',
-          track: 'genomicSuperDups',
-        },
-      },
-    ],
-    location: '1:2,467,681..2,667,681',
-    defaultSession: {
-      name: 'Runtime plugins',
-      view: {
-        id: 'aU9Nqje1U',
-        type: 'LinearGenomeView',
-        offsetPx: 22654,
-        bpPerPx: 108.93300653594771,
-        displayedRegions: [
-          {
-            refName: '1',
-            start: 0,
-            end: 249250621,
-            reversed: false,
-            assemblyName: 'hg19',
-          },
-        ],
-        tracks: [
-          {
-            id: 'MbiRphmDa',
-            type: 'FeatureTrack',
-            configuration: 'segdups_ucsc_hg19',
-            displays: [
-              {
-                id: '8ovhuA5cFM',
-                type: 'LinearBasicDisplay',
-                height: 100,
-                configuration: 'segdups_ucsc_hg19-LinearBasicDisplay',
-              },
-            ],
-          },
-        ],
-        hideHeader: false,
-        hideHeaderOverview: false,
-        trackSelectorType: 'hierarchical',
-        trackLabels: 'overlapping',
-        showCenterLine: false,
-      },
-    },
-  })
-  return <JBrowseLinearGenomeView viewState={state} />
-}
-
 export const WithTextSearching = () => {
   const textSearchConfig = {
     assembly,
@@ -245,12 +140,15 @@ export const WithTextSearching = () => {
         textSearchAdapterId: 'volvox-index',
         ixFilePath: {
           uri: 'storybook_data/volvox.ix',
+          locationType: 'UriLocation',
         },
         ixxFilePath: {
           uri: 'storybook_data/volvox.ixx',
+          locationType: 'UriLocation',
         },
         metaFilePath: {
           uri: 'storybook_data/volvox_meta.json',
+          locationType: 'UriLocation',
         },
         assemblyNames: ['volvox'],
       },
@@ -266,10 +164,12 @@ export const WithTextSearching = () => {
           type: 'Gff3TabixAdapter',
           gffGzLocation: {
             uri: 'volvox.sort.gff3.gz',
+            locationType: 'UriLocation',
           },
           index: {
             location: {
               uri: 'volvox.sort.gff3.gz.tbi',
+              locationType: 'UriLocation',
             },
           },
         },
@@ -284,10 +184,12 @@ export const WithTextSearching = () => {
           type: 'Gff3TabixAdapter',
           gffGzLocation: {
             uri: 'single_exon_gene.sorted.gff.gz',
+            locationType: 'UriLocation',
           },
           index: {
             location: {
               uri: 'single_exon_gene.sorted.gff.gz.tbi',
+              locationType: 'UriLocation',
             },
           },
         },
@@ -302,10 +204,12 @@ export const WithTextSearching = () => {
           type: 'VcfTabixAdapter',
           vcfGzLocation: {
             uri: 'volvox.inv.vcf.gz',
+            locationType: 'UriLocation',
           },
           index: {
             location: {
               uri: 'volvox.inv.vcf.gz.tbi',
+              locationType: 'UriLocation',
             },
             indexType: 'TBI',
           },
@@ -338,10 +242,12 @@ export const WithPerTrackTextSearching = () => {
           type: 'Gff3TabixAdapter',
           gffGzLocation: {
             uri: 'volvox.sort.gff3.gz',
+            locationType: 'UriLocation',
           },
           index: {
             location: {
               uri: 'volvox.sort.gff3.gz.tbi',
+              locationType: 'UriLocation',
             },
           },
         },
@@ -351,12 +257,15 @@ export const WithPerTrackTextSearching = () => {
             textSearchAdapterId: 'gff3tabix_genes-index',
             ixFilePath: {
               uri: 'storybook_data/gff3tabix_genes.ix',
+              locationType: 'UriLocation',
             },
             ixxFilePath: {
               uri: 'storybook_data/gff3tabix_genes.ixx',
+              locationType: 'UriLocation',
             },
             metaFilePath: {
               uri: 'storybook_data/gff3tabix_genes_meta.json',
+              locationType: 'UriLocation',
             },
             assemblyNames: ['volvox'],
           },
@@ -436,7 +345,6 @@ export const NextstrainExample = () => {
     defaultSession,
     location: 'SARS-CoV-2:1..29,903',
     onChange: patch => {
-      // eslint-disable-next-line no-console
       console.log('patch', patch)
     },
     configuration: {
@@ -449,6 +357,212 @@ export const NextstrainExample = () => {
             main: '#333',
           },
         },
+      },
+    },
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+const VisibleRegions = observer(
+  ({ state }: { state: ReturnType<typeof createViewState> }) => {
+    const locstrings = state.session.views[0].coarseDynamicBlocks
+      .map(
+        (region: Region) =>
+          `${region.refName}:${Math.floor(region.start)}-${Math.floor(
+            region.end,
+          )}`,
+      )
+      .join(',')
+    return <p>Visible region: {locstrings}</p>
+  },
+)
+
+export const VisibleRegionsExample = () => {
+  const state = createViewState({
+    assembly,
+    tracks,
+    defaultSession,
+    location: 'ctgA:1105..1221',
+  })
+  return (
+    <div>
+      <JBrowseLinearGenomeView viewState={state} />
+      <VisibleRegions state={state} />
+    </div>
+  )
+}
+
+export const WithInlinePlugins = () => {
+  // you don't have to necessarily define this inside your react component, it
+  // just helps so that you can see the source code in the storybook to have it
+  // here
+  class HighlightRegionPlugin extends Plugin {
+    name = 'HighlightRegionPlugin'
+
+    install(pluginManager: PluginManager) {
+      pluginManager.addToExtensionPoint(
+        'Core-extendPluggableElement',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (pluggableElement: any) => {
+          if (pluggableElement.name === 'LinearGenomeView') {
+            const { stateModel } = pluggableElement as ViewType
+            const newStateModel = stateModel.extend(self => {
+              const superRubberBandMenuItems = self.rubberBandMenuItems
+              return {
+                views: {
+                  rubberBandMenuItems() {
+                    return [
+                      ...superRubberBandMenuItems(),
+                      {
+                        label: 'Console log selected region',
+                        onClick: () => {
+                          const { leftOffset, rightOffset } = self
+                          const selectedRegions = self.getSelectedRegions(
+                            leftOffset,
+                            rightOffset,
+                          )
+                          // console log the list of potentially multiple
+                          // regions that were selected
+                          console.log(selectedRegions)
+                        },
+                      },
+                    ]
+                  },
+                },
+              }
+            })
+
+            pluggableElement.stateModel = newStateModel
+          }
+          return pluggableElement
+        },
+      )
+    }
+
+    configure() {}
+  }
+
+  const state = createViewState({
+    assembly,
+    plugins: [HighlightRegionPlugin],
+    tracks,
+    defaultSession,
+    location: 'ctgA:1105..1221',
+  })
+
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const WithExternalPlugins = () => {
+  // usage with buildtime plugins
+  // this plugins array is then passed to the createViewState constructor
+  // import UCSCPlugin from 'jbrowse-plugin-ucsc'
+  // const plugins = [UCSCPlugin]
+
+  // usage with runtime plugins
+  // this plugins array is then passed to the createViewState constructor
+  const [plugins, setPlugins] = useState<PluginRecord[]>()
+  useEffect(() => {
+    async function getPlugins() {
+      const loadedPlugins = await loadPlugins([
+        {
+          name: 'UCSC',
+          url: 'https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js',
+        },
+      ])
+      setPlugins(loadedPlugins)
+    }
+    getPlugins()
+  }, [setPlugins])
+
+  if (!plugins) {
+    return null
+  }
+
+  const state = createViewState({
+    assembly: {
+      name: 'hg19',
+      aliases: ['GRCh37'],
+      sequence: {
+        type: 'ReferenceSequenceTrack',
+        trackId: 'Pd8Wh30ei9R',
+        adapter: {
+          type: 'BgzipFastaAdapter',
+          fastaLocation: {
+            uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
+            locationType: 'UriLocation',
+          },
+          faiLocation: {
+            uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai',
+            locationType: 'UriLocation',
+          },
+          gziLocation: {
+            uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi',
+            locationType: 'UriLocation',
+          },
+        },
+      },
+      refNameAliases: {
+        adapter: {
+          type: 'RefNameAliasAdapter',
+          location: {
+            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
+            locationType: 'UriLocation',
+          },
+        },
+      },
+    },
+    plugins: plugins.map(p => p.plugin),
+    tracks: [
+      {
+        type: 'FeatureTrack',
+        trackId: 'segdups_ucsc_hg19',
+        name: 'UCSC SegDups',
+        category: ['Annotation'],
+        assemblyNames: ['hg19'],
+        adapter: {
+          type: 'UCSCAdapter',
+          track: 'genomicSuperDups',
+        },
+      },
+    ],
+    location: '1:2,467,681..2,667,681',
+    defaultSession: {
+      name: 'Runtime plugins',
+      view: {
+        id: 'aU9Nqje1U',
+        type: 'LinearGenomeView',
+        offsetPx: 22654,
+        bpPerPx: 108.93300653594771,
+        displayedRegions: [
+          {
+            refName: '1',
+            start: 0,
+            end: 249250621,
+            reversed: false,
+            assemblyName: 'hg19',
+          },
+        ],
+        tracks: [
+          {
+            id: 'MbiRphmDa',
+            type: 'FeatureTrack',
+            configuration: 'segdups_ucsc_hg19',
+            displays: [
+              {
+                id: '8ovhuA5cFM',
+                type: 'LinearBasicDisplay',
+                height: 100,
+                configuration: 'segdups_ucsc_hg19-LinearBasicDisplay',
+              },
+            ],
+          },
+        ],
+        hideHeader: false,
+        hideHeaderOverview: false,
+        trackSelectorType: 'hierarchical',
+        trackLabels: 'overlapping',
+        showCenterLine: false,
       },
     },
   })

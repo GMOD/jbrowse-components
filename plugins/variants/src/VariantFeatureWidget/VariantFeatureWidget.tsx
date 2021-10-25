@@ -12,7 +12,7 @@ import {
 import SimpleFeature, {
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
-import { DataGrid } from '@material-ui/data-grid'
+import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import { getEnv } from 'mobx-state-tree'
@@ -143,7 +143,8 @@ function BreakendPanel(props: {
           <li key={`${JSON.stringify(locString)}`}>
             <Link
               href="#"
-              onClick={() => {
+              onClick={(event: any) => {
+                event.preventDefault()
                 const { view } = model
                 if (view) {
                   view.navToLocString?.(locString)
@@ -168,7 +169,13 @@ function BreakendPanel(props: {
           <ul>
             {locStrings.map(locString => (
               <li key={`${JSON.stringify(locString)}`}>
-                <Link href="#" onClick={() => setBreakpointDialog(true)}>
+                <Link
+                  href="#"
+                  onClick={(event: any) => {
+                    event.preventDefault()
+                    setBreakpointDialog(true)
+                  }}
+                >
                   {`${feature.refName}:${feature.start} // ${locString} (split view)`}
                 </Link>
               </li>
@@ -197,14 +204,10 @@ function VariantFeatureDetails(props: any) {
   const { samples, ...rest } = feat
   const basicDescriptions = {
     CHROM: 'chromosome: An identifier from the reference genome',
-    POS:
-      'position: The reference position, with the 1st base having position 1',
-    ID:
-      'identifier: Semi-colon separated list of unique identifiers where available',
-    REF:
-      'reference base(s): Each base must be one of A,C,G,T,N (case insensitive).',
-    ALT:
-      'alternate base(s): Comma-separated list of alternate non-reference alleles',
+    POS: 'position: The reference position, with the 1st base having position 1',
+    ID: 'identifier: Semi-colon separated list of unique identifiers where available',
+    REF: 'reference base(s): Each base must be one of A,C,G,T,N (case insensitive).',
+    ALT: 'alternate base(s): Comma-separated list of alternate non-reference alleles',
     QUAL: 'quality: Phred-scaled quality score for the assertion made in ALT',
     FILTER:
       'filter status: PASS if this position has passed all filters, otherwise a semicolon-separated list of codes for filters that fail',

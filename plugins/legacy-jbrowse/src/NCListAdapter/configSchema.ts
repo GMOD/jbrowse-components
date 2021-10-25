@@ -5,7 +5,10 @@ export default ConfigurationSchema(
   {
     rootUrlTemplate: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my/{refseq}/trackData.json' },
+      defaultValue: {
+        uri: '/path/to/my/{refseq}/trackData.json',
+        locationType: 'UriLocation',
+      },
     },
     refNames: {
       type: 'stringArray',

@@ -9,12 +9,10 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import { FileLocation } from '@jbrowse/core/util/types'
 import WiggleBaseRenderer from './WiggleBaseRenderer'
 import WiggleRendering from './WiggleRendering'
-import {
-  configSchema as bigWigAdapterConfigSchema,
-  adapterCapabilities,
-} from './BigWigAdapter'
+import { configSchema as bigWigAdapterConfigSchema } from './BigWigAdapter'
 import DensityRenderer, {
   configSchema as densityRendererConfigSchema,
   ReactComponent as DensityRendererReactComponent,
@@ -38,6 +36,11 @@ import {
   WiggleGetGlobalStats,
   WiggleGetMultiRegionStats,
 } from './WiggleRPC/rpcMethods'
+import {
+  AdapterGuesser,
+  getFileName,
+  TrackTypeGuesser,
+} from '@jbrowse/core/util/tracks'
 
 export default class WigglePlugin extends Plugin {
   name = 'WigglePlugin'
@@ -80,10 +83,46 @@ export default class WigglePlugin extends Plugin {
         new AdapterType({
           name: 'BigWigAdapter',
           configSchema: bigWigAdapterConfigSchema,
-          adapterCapabilities,
+          adapterCapabilities: [
+            'hasResolution',
+            'hasLocalStats',
+            'hasGlobalStats',
+          ],
           getAdapterClass: () =>
             import('./BigWigAdapter/BigWigAdapter').then(r => r.default),
         }),
+    )
+    pluginManager.addToExtensionPoint(
+      'Core-guessAdapterForLocation',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.(bw|bigwig)$/i
+          const adapterName = 'BigWigAdapter'
+          const fileName = getFileName(file)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
+            return {
+              type: adapterName,
+              bigWigLocation: file,
+            }
+          }
+          return adapterGuesser(file, index, adapterHint)
+        }
+      },
+    )
+    pluginManager.addToExtensionPoint(
+      'Core-guessTrackTypeForLocation',
+      (trackTypeGuesser: TrackTypeGuesser) => {
+        return (adapterName: string) => {
+          if (adapterName === 'BigWigAdapter') {
+            return 'QuantitativeTrack'
+          }
+          return trackTypeGuesser(adapterName)
+        }
+      },
     )
 
     pluginManager.addRendererType(

@@ -2,6 +2,7 @@ import { GenericFilehandle } from 'generic-filehandle'
 import { Observable } from 'rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { ConfigurationSchema } from '@jbrowse/core/configuration/configurationSchema'
 
 // setup for Cram Adapter Testing
 export function parseSmallFasta(text: string) {
@@ -51,7 +52,7 @@ export class SequenceAdapter extends BaseFeatureDataAdapter {
   refNames: string[] = []
 
   constructor(filehandle: FileHandle) {
-    super()
+    super(ConfigurationSchema('empty', {}).create())
     this.fasta = new FetchableSmallFasta(filehandle)
   }
 

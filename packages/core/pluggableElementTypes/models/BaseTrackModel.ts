@@ -103,9 +103,8 @@ export function createBaseTrackModel(
         }
       },
       showDisplay(displayId: string, initialSnapshot = {}) {
-        const displayTypeConfigSchema = pluginManager.pluggableConfigSchemaType(
-          'display',
-        )
+        const displayTypeConfigSchema =
+          pluginManager.pluggableConfigSchemaType('display')
         const configuration = resolveIdentifier(
           displayTypeConfigSchema,
           getRoot(self),
@@ -124,9 +123,8 @@ export function createBaseTrackModel(
       },
 
       hideDisplay(displayId: string) {
-        const displayTypeConfigSchema = pluginManager.pluggableConfigSchemaType(
-          'display',
-        )
+        const displayTypeConfigSchema =
+          pluginManager.pluggableConfigSchemaType('display')
         const configuration = resolveIdentifier(
           displayTypeConfigSchema,
           getRoot(self),
@@ -152,9 +150,8 @@ export function createBaseTrackModel(
             `could not find display id ${oldDisplayId} to replace`,
           )
         }
-        const displayTypeConfigSchema = pluginManager.pluggableConfigSchemaType(
-          'display',
-        )
+        const displayTypeConfigSchema =
+          pluginManager.pluggableConfigSchemaType('display')
         const configuration = resolveIdentifier(
           displayTypeConfigSchema,
           getRoot(self),

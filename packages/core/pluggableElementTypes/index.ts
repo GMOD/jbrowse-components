@@ -6,7 +6,22 @@ import TrackType from './TrackType'
 import DisplayType from './DisplayType'
 import ViewType from './ViewType'
 import RpcMethodType from './RpcMethodType'
-import TextSearchAdapter from './TextSearchAdapterType'
+import InternetAccountType from './InternetAccountType'
+import TextSearchAdapterType from './TextSearchAdapterType'
+
+export * from './renderers'
+
+export {
+  AdapterType,
+  ConnectionType,
+  RendererType,
+  WidgetType,
+  TrackType,
+  DisplayType,
+  ViewType,
+  RpcMethodType,
+  TextSearchAdapterType,
+}
 
 export type PluggableElementType =
   | AdapterType
@@ -17,7 +32,8 @@ export type PluggableElementType =
   | DisplayType
   | ViewType
   | RpcMethodType
-  | TextSearchAdapter
+  | InternetAccountType
+  | TextSearchAdapterType
 
 export type PluggableElementMember =
   | keyof AdapterType
@@ -28,4 +44,5 @@ export type PluggableElementMember =
   | keyof DisplayType
   | keyof ViewType
   | keyof RpcMethodType
-  | keyof TextSearchAdapter
+  | keyof InternetAccountType
+  | keyof TextSearchAdapterType

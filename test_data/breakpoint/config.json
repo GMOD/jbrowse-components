@@ -9,7 +9,8 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "../hg19.chrom.sizes"
+            "uri": "../hg19.chrom.sizes",
+            "locationType": "UriLocation"
           }
         }
       },
@@ -17,7 +18,8 @@
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "../hg19_aliases_chr.txt"
+            "uri": "../hg19_aliases_chr.txt",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -32,11 +34,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
+          "uri": "hs37d5.HG002-SequelII-CCS.sv.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
+            "uri": "hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -50,11 +54,13 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "pacbio_chr3_chr6.vcf.gz"
+          "uri": "pacbio_chr3_chr6.vcf.gz",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "pacbio_chr3_chr6.vcf.gz.tbi"
+            "uri": "pacbio_chr3_chr6.vcf.gz.tbi",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -68,11 +74,13 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "pacbio_chr3_chr6.bam"
+          "uri": "pacbio_chr3_chr6.bam",
+          "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "pacbio_chr3_chr6.bam.bai"
+            "uri": "pacbio_chr3_chr6.bam.bai",
+            "locationType": "UriLocation"
           }
         }
       }
@@ -205,7 +213,8 @@
       "name": "COSMIC (GRCh37)",
       "assemblyNames": ["hg19"],
       "dataDirLocation": {
-        "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch37/v90/cosmic"
+        "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch37/v90/cosmic",
+        "locationType": "UriLocation"
       }
     }
   ]

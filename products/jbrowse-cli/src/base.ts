@@ -10,6 +10,7 @@ import fetch from 'node-fetch'
 
 export interface UriLocation {
   uri: string
+  locationType: 'UriLocation'
 }
 
 export interface Gff3TabixAdapter {
@@ -86,7 +87,7 @@ export interface Assembly {
 }
 
 export interface TrixTextSearchAdapter {
-  type: 'TrixTextSearchAdapter'
+  type: string
   textSearchAdapterId: string
   ixFilePath: UriLocation
   ixxFilePath: UriLocation
@@ -94,8 +95,8 @@ export interface TrixTextSearchAdapter {
   assemblyNames: string[]
 }
 export interface TextSearching {
-  indexingFeatureTypesToExclude: string[]
-  indexingAttributes: string[]
+  indexingFeatureTypesToExclude?: string[]
+  indexingAttributes?: string[]
   textSearchAdapter: TrixTextSearchAdapter
 }
 export interface Track {
@@ -122,6 +123,7 @@ interface GithubRelease {
   assets?: [
     {
       browser_download_url: string
+      name: string
     },
   ]
 }
@@ -138,7 +140,7 @@ export default abstract class JBrowseCommand extends Command {
     try {
       contents = await fsPromises.readFile(location, { encoding: 'utf8' })
     } catch (error) {
-      this.error(error instanceof Error ? error : error.message, {
+      this.error(error instanceof Error ? error : `${error}`, {
         suggestions: [
           `Make sure the file "${location}" exists or use --out to point to a directory with a config.json`,
           'Run `jbrowse add-assembly` to create a config file',
@@ -150,7 +152,7 @@ export default abstract class JBrowseCommand extends Command {
     try {
       result = parseJSON(contents)
     } catch (error) {
-      this.error(error instanceof Error ? error : error.message, {
+      this.error(error instanceof Error ? error : `${error}`, {
         suggestions: [`Make sure "${location}" is a valid JSON file`],
         exit: 50,
       })
@@ -238,7 +240,14 @@ export default abstract class JBrowseCommand extends Command {
 
       if (nonprereleases.length !== 0) {
         // @ts-ignore
-        return nonprereleases[0].assets[0].browser_download_url
+        const file = nonprereleases[0].assets.find(f =>
+          f.name.includes('jbrowse-web'),
+        )?.browser_download_url
+
+        if (!file) {
+          throw new Error('no jbrowse-web download found')
+        }
+        return file
       }
     }
 
@@ -269,13 +278,18 @@ export default abstract class JBrowseCommand extends Command {
       `https://api.github.com/repos/GMOD/jbrowse-components/releases/tags/${tag}`,
     )
     if (response.ok) {
-      const result = await response.json()
-      return result && result.assets
-        ? result.assets[0].browser_download_url
-        : this.error(
-            'Could not find version specified. Use --listVersions to see all available versions',
-            { exit: 90 },
-          )
+      const result = (await response.json()) as GithubRelease
+      const file = result?.assets?.find(f =>
+        f.name.includes('jbrowse-web'),
+      )?.browser_download_url
+
+      if (!file) {
+        this.error(
+          'Could not find version specified. Use --listVersions to see all available versions',
+          { exit: 90 },
+        )
+      }
+      return file
     }
     return this.error(`Error: Could not find version: ${response.statusText}`, {
       exit: 90,

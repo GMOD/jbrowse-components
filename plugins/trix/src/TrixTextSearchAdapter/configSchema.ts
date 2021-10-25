@@ -5,17 +5,17 @@ export default ConfigurationSchema(
   {
     ixFilePath: {
       type: 'fileLocation',
-      defaultValue: { uri: 'out.ix' },
+      defaultValue: { uri: 'out.ix', locationType: 'UriLocation' },
       description: 'the location of the trix ix file',
     },
     ixxFilePath: {
       type: 'fileLocation',
-      defaultValue: { uri: 'out.ixx' },
+      defaultValue: { uri: 'out.ixx', locationType: 'UriLocation' },
       description: 'the location of the trix ixx file',
     },
     metaFilePath: {
       type: 'fileLocation',
-      defaultValue: { uri: 'meta.json' },
+      defaultValue: { uri: 'meta.json', locationType: 'UriLocation' },
       description: 'the location of the metadata json file for the trix index',
     },
     tracks: {

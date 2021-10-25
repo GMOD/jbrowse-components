@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,react/prop-types */
-import React from 'react'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import {
   Accordion,
@@ -11,7 +11,7 @@ import {
 } from '@material-ui/core'
 import ExpandMore from '@material-ui/icons/ExpandMore'
 import { makeStyles } from '@material-ui/core/styles'
-import { DataGrid } from '@material-ui/data-grid'
+import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 import clsx from 'clsx'
 import isObject from 'is-object'
@@ -96,9 +96,11 @@ export function BaseCard({
   defaultExpanded = true,
 }: BaseCardProps) {
   const classes = useStyles()
+  const [expanded, setExpanded] = useState(defaultExpanded)
   return (
     <Accordion
-      defaultExpanded={defaultExpanded}
+      expanded={expanded}
+      onChange={() => setExpanded(s => !s)}
       TransitionProps={{ unmountOnExit: true }}
     >
       <AccordionSummary
@@ -174,7 +176,7 @@ const ArrayValue = ({
   name,
   value,
   description,
-  prefix,
+  prefix = [],
 }: {
   description?: React.ReactNode
   name: string
@@ -271,7 +273,7 @@ export const BaseCoreDetails = (props: BaseProps) => {
 interface AttributeProps {
   attributes: Record<string, any>
   omit?: string[]
-  formatter?: (val: unknown, key: string) => JSX.Element
+  formatter?: (val: unknown, key: string) => React.ReactElement
   descriptions?: Record<string, React.ReactNode>
   prefix?: string[]
 }
@@ -447,7 +449,7 @@ export interface BaseInputProps extends BaseCardProps {
   omit?: string[]
   model: any
   descriptions?: Record<string, React.ReactNode>
-  formatter?: (val: unknown, key: string) => JSX.Element
+  formatter?: (val: unknown, key: string) => React.ReactElement
 }
 
 function isEmpty(obj: Record<string, unknown>) {
@@ -459,7 +461,7 @@ export const FeatureDetails = (props: {
   feature: SimpleFeatureSerialized & { name?: string; id?: string }
   depth?: number
   omit?: string[]
-  formatter?: (val: unknown, key: string) => JSX.Element
+  formatter?: (val: unknown, key: string) => React.ReactElement
 }) => {
   const { omit = [], model, feature, depth = 0 } = props
   const { name = '', id = '', type = '', subfeatures } = feature

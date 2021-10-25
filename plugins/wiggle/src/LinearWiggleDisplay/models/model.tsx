@@ -162,7 +162,7 @@ const stateModelFactory = (
     }))
     .views(self => ({
       get TooltipComponent(): React.FC {
-        return (Tooltip as unknown) as React.FC
+        return Tooltip as unknown as React.FC
       },
 
       get adapterTypeName() {
@@ -438,17 +438,19 @@ const stateModelFactory = (
             {
               label: 'Set min/max score',
               onClick: () => {
-                getSession(self).setDialogComponent(SetMinMaxDlg, {
-                  model: self,
-                })
+                getSession(self).queueDialog((doneCallback: Function) => [
+                  SetMinMaxDlg,
+                  { model: self, handleClose: doneCallback },
+                ])
               },
             },
             {
               label: 'Set color',
               onClick: () => {
-                getSession(self).setDialogComponent(SetColorDlg, {
-                  model: self,
-                })
+                getSession(self).queueDialog((doneCallback: Function) => [
+                  SetColorDlg,
+                  { model: self, handleClose: doneCallback },
+                ])
               },
             },
           ]
@@ -507,7 +509,7 @@ const stateModelFactory = (
               regions: dynamicBlocks.contentBlocks.map(region => {
                 const { start, end } = region
                 return {
-                  ...region,
+                  ...JSON.parse(JSON.stringify(region)),
                   start: Math.floor(start),
                   end: Math.ceil(end),
                 }
@@ -542,13 +544,18 @@ const stateModelFactory = (
         async reload() {
           self.setError()
           const aborter = new AbortController()
-          const stats = await getStats({
-            signal: aborter.signal,
-            filters: self.filters,
-          })
-          if (isAlive(self)) {
-            self.updateStats(stats)
-            superReload()
+          let stats
+          try {
+            stats = await getStats({
+              signal: aborter.signal,
+              filters: self.filters,
+            })
+            if (isAlive(self)) {
+              self.updateStats(stats)
+              superReload()
+            }
+          } catch (e) {
+            self.setError(e)
           }
         },
         afterAttach() {
@@ -579,6 +586,7 @@ const stateModelFactory = (
                   }
                 } catch (e) {
                   if (!isAbortException(e) && isAlive(self)) {
+                    console.error(e)
                     self.setError(e)
                   }
                 }

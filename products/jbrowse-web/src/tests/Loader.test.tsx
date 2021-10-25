@@ -29,8 +29,7 @@ const readBuffer = async (url: string, args: RequestInit) => {
         return {
           plugins: [
             {
-              url:
-                'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js',
+              url: 'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js',
             },
           ],
         }
@@ -95,7 +94,7 @@ const readBuffer = async (url: string, args: RequestInit) => {
 }
 
 // @ts-ignore
-jest.spyOn(global as Global, 'fetch').mockImplementation(readBuffer)
+jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
 
 function FallbackComponent({ error }: FallbackProps) {
   return <div>there was an error: {String(error)}</div>
