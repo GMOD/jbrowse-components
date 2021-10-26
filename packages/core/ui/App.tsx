@@ -54,7 +54,12 @@ const useStyles = makeStyles(theme => ({
     height: '100vh',
     width: '100%',
   },
-  fab: {
+  fabLeft: {
+    position: 'fixed',
+    bottom: theme.spacing(2),
+    left: theme.spacing(2),
+  },
+  fabRight: {
     position: 'fixed',
     bottom: theme.spacing(2),
     right: theme.spacing(2),
@@ -272,7 +277,9 @@ const App = observer(
         {activeWidgets.size > 0 && minimized ? (
           <Tooltip title="Open drawer widget">
             <Fab
-              className={classes.fab}
+              className={
+                drawerPosition === 'right' ? classes.fabRight : classes.fabLeft
+              }
               color="primary"
               data-testid="drawer-maximize"
               onClick={() => session.showWidgetDrawer()}
