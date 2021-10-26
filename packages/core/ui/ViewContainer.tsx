@@ -131,17 +131,9 @@ export default withSize()(
       const theme = useTheme()
       const padWidth = theme.spacing(1)
 
-      if (!width && typeof jest !== 'undefined') {
-        // this is only used in jest because can't mock react-measure easily
-        // the added padWidth*2 is added to just be subtracted by the setWidth call below
-        width = 800 + padWidth * 2
-      }
-
       useEffect(() => {
-        if (width) {
-          if (isAlive(view)) {
-            view.setWidth(width - padWidth * 2)
-          }
+        if (width && isAlive(view)) {
+          view.setWidth(width - padWidth * 2)
         }
       }, [padWidth, view, width])
 
@@ -150,9 +142,7 @@ export default withSize()(
       // note that this effect will run only once, because of
       // the empty array second param
       useEffect(() => {
-        if (scrollRef?.current?.scrollIntoView) {
-          scrollRef.current.scrollIntoView({ block: 'center' })
-        }
+        scrollRef.current?.scrollIntoView?.({ block: 'center' })
       }, [])
 
       return (
