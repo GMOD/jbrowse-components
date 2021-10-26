@@ -4,14 +4,14 @@ on: push
 
 jobs:
   test:
-    name: Test and typecheck on node 15.x and ubuntu-latest
+    name: Test and typecheck on node 14.x and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 15.x
+      - name: Use Node.js 14.x
         uses: actions/setup-node@v2
         with:
-          node-version: '15'
+          node-version: '14'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Test codebase
@@ -22,14 +22,14 @@ jobs:
         run: yarn typecheck
 
   buildwebsite:
-    name: Build website on node 15 and ubuntu-latest
+    name: Build website on node 14 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 15
+      - name: Use Node.js 14
         uses: actions/setup-node@v2
         with:
-          node-version: '15'
+          node-version: '14'
       - name: Install website deps (with cache)
         uses: bahmutov/npm-install@v1
         with:
@@ -39,14 +39,14 @@ jobs:
           cd website/
           yarn build
   buildwholerepo:
-    name: Build whole repo on node 15 and ubuntu-latest
+    name: Build whole repo on node 14 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 15
+      - name: Use Node.js 14
         uses: actions/setup-node@v2
         with:
-          node-version: '15'
+          node-version: '14'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Build codebase
@@ -55,14 +55,14 @@ jobs:
         run: BUILT_TESTS=1 yarn built-test-ci
 
   buildjbrowseweb:
-    name: Build only jbrowse-web and upload to s3 on node 15 and ubuntu-latest
+    name: Build only jbrowse-web and upload to s3 on node 14 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 15
+      - name: Use Node.js 14
         uses: actions/setup-node@v1
         with:
-          node-version: '15'
+          node-version: '14'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Build project
@@ -87,10 +87,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 15
+      - name: Use Node.js 14
         uses: actions/setup-node@v2
         with:
-          node-version: '15'
+          node-version: '14'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Build Storybook static site
