@@ -1,3 +1,4 @@
+import React from 'react'
 import Plugin from '@jbrowse/core/Plugin'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -9,10 +10,16 @@ import {
   MashmapOutputAdapterClass,
   MashmapOutputSchema,
 } from './FlashmapAdapter'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { getSession } from '@jbrowse/core/util'
+import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+import { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
+import ZoomInIcon from '@material-ui/icons/ZoomIn'
 
+import BigsiDialog from './components/BigsiDialog'
 import { BigsiQueryRPC } from './BigsiRPC/rpcMethods'
 
-export default class FlashmapPlugin extends Plugin {
+export default class extends Plugin {
   name = 'FlashmapPlugin'
 
   install(pluginManager: PluginManager) {
@@ -45,40 +52,50 @@ export default class FlashmapPlugin extends Plugin {
 
     pluginManager.addToExtensionPoint(
       'Core-extendPluggableElement',
-      pluggableElement => {
-        if (pluggableElement.name === 'LinearPileupDisplay') {
-          const { stateModel } = pluggableElement
-          const newStateModel = stateModel.extend(self => {
-            const superContextMenuItems = self.contextMenuItems
-            return {
-              views: {
-                contextMenuItems() {
-                  const feature = self.contextMenuFeature
-                  if (!feature) {
-                    // we're not adding any menu items since the click was not
-                    // on a feature
-                    return superContextMenuItems()
-                  }
-                  return [
-                    ...superContextMenuItems(),
-                    {
-                      label: 'Sequence search against bucket',
-                      onClick: () => {
-                        console.log('Dummy mashmap results')
-                      },
-                    },
-                  ]
+      (pluggableElement: PluggableElementType) => {
+        if (pluggableElement.name === 'LinearGenomeView') {
+          const { stateModel } = pluggableElement as ViewType
+          const newStateModel = stateModel.extend(
+            (self: LinearGenomeViewModel) => {
+              const superRubberBandMenuItems = self.rubberBandMenuItems
+              return {
+                actions: {
+                  activateSequenceSearchDialog() {
+                    const session = getSession(self)
+                    console.log(session)
+                  },
                 },
-              },
-            }
-          })
+                views: {
+                  rubberBandMenuItems() {
+                    const newRubberBandMenuItems = [
+                      ...superRubberBandMenuItems(),
+                      {
+                        label: 'Sequence Search',
+                        icon: ZoomInIcon,
+                        onClick: () => {
+                          const { leftOffset, rightOffset } = self
+                          const selectedRegions = self.getSelectedRegions(
+                            leftOffset,
+                            rightOffset,
+                          )
+                          console.log(selectedRegions)
+                        },
+                      },
+                    ]
 
-          pluggableElement.stateModel = newStateModel
+                    return newRubberBandMenuItems
+                  },
+                },
+              }
+            },
+          )
+
+          ;(pluggableElement as ViewType).stateModel = newStateModel
         }
         return pluggableElement
       },
     )
 
-    // pluginManager.addRpcMethod(() => new BigsiQueryRPC(pluginManager))
+    pluginManager.addRpcMethod(() => new BigsiQueryRPC(pluginManager))
   }
 }
