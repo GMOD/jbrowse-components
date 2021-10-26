@@ -240,7 +240,7 @@ const Renderer = observer(
               } else if (sessionSnapshot && !shareWarningOpen) {
                 rootModel.setSession(sessionSnapshot)
               } else if (sessionSpec) {
-                afterInitializedCb = loadSessionSpec(sessionSpec, rootModel)
+                afterInitializedCb = loadSessionSpec(sessionSpec, pluginManager)
               } else if (rootModel.jbrowse.defaultSession?.views?.length) {
                 rootModel.setDefaultSession()
               }

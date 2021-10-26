@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+import { when } from 'mobx'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   createBaseTrackConfig,
@@ -117,6 +118,38 @@ export default class LinearGenomeViewPlugin extends Plugin {
             () => import('./LinearGenomeView/components/LinearGenomeView'),
           ),
         }),
+    )
+
+    pluginManager.addToExtensionPoint(
+      'LaunchView-LinearGenomeView',
+      // @ts-ignore
+      async ({
+        session,
+        assembly,
+        loc,
+        tracks,
+      }: {
+        session: AbstractSessionModel
+        assembly: string
+        loc: string
+        tracks?: string[]
+      }) => {
+        const { assemblyManager } = session
+        const view = session?.addView('LinearGenomeView', {})
+
+        // @ts-ignore
+        await when(() => view.volatileWidth)
+
+        await assemblyManager.waitForAssembly(assembly)
+
+        // @ts-ignore
+        view.navToLocString(loc, assembly)
+
+        tracks?.forEach(track => {
+          // @ts-ignore
+          view.showTrack(track)
+        })
+      },
     )
   }
 

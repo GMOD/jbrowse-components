@@ -1,5 +1,6 @@
 import { types, addDisposer, Instance, SnapshotOut } from 'mobx-state-tree'
 import { autorun } from 'mobx'
+import PluginManager from '@jbrowse/core/PluginManager'
 import PluginLoader, {
   PluginDefinition,
   PluginRecord,
@@ -7,9 +8,7 @@ import PluginLoader, {
 import { fromUrlSafeB64 } from './util'
 import { readSessionFromDynamo } from './sessionSharing'
 import { openLocation } from '@jbrowse/core/util/io'
-import { when } from '@jbrowse/core/util'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import JBrowseRootModelFactory from './rootModel'
 import shortid from 'shortid'
 
 type Config = SnapshotOut<AnyConfigurationModel>
@@ -25,11 +24,15 @@ function addRelativeUris(config: Config, configUri: URL) {
     }
   }
 }
+
+interface PluginDef {
+  url: string
+}
 interface PluginsJSON {
-  plugins: { url: string }[]
+  plugins: PluginDef[]
 }
 
-async function checkPlugins(pluginsToCheck: { url: string }[]) {
+async function checkPlugins(pluginsToCheck: PluginDef[]) {
   const res = await fetch('https://jbrowse.org/plugin-store/plugins.json')
   if (!res.ok) {
     const status = await res.text()
@@ -315,7 +318,7 @@ const SessionLoader = types
         self.sessionSpec = {
           views: [
             {
-              type: 'LGV',
+              type: 'LinearGenomeView',
               loc: self.loc,
               tracks: self.tracks?.split(','),
               assembly: self.assembly,
@@ -416,30 +419,44 @@ export type SessionLoaderModel = Instance<typeof SessionLoader>
 
 export default SessionLoader
 
+interface ViewSpec {
+  type: string
+  tracks?: string[]
+  assembly: string
+  loc: string
+}
+
+// use extension point named e.g. LaunchView-LinearGenomeView to initialize an
+// LGV session
 export function loadSessionSpec(
   sessionSpec: {
-    views: { type: string; tracks?: string[]; assembly: string; loc: string }[]
+    views: ViewSpec[]
   },
-  rootModel: Instance<ReturnType<typeof JBrowseRootModelFactory>>,
+  pluginManager: PluginManager,
 ) {
   const { views } = sessionSpec
-  rootModel.setSession({
-    name: `New session ${new Date().toLocaleString()}`,
-  })
-  const { session } = rootModel
-  return () =>
+
+  return () => {
+    const { rootModel } = pluginManager
+
+    if (!rootModel) {
+      throw new Error('rootModel not initialized')
+    }
+
+    // @ts-ignore
+    rootModel.setSession({
+      name: `New session ${new Date().toLocaleString()}`,
+    })
     Promise.all(
       views.map(async view => {
-        const { tracks, type, assembly, loc } = view
-        if (type === 'LGV' || type === 'LinearGenomeView') {
-          const materialView = session?.addView('LinearGenomeView', {})
-          await when(() => materialView.volatileWidth !== undefined)
-          await rootModel.assemblyManager.waitForAssembly(assembly)
-          materialView.navToLocString(loc, assembly)
-          tracks?.forEach(track => {
-            materialView.showTrack(track)
-          })
-        }
+        const { type } = view
+        const { session } = rootModel
+
+        return pluginManager.evaluateExtensionPoint('LaunchView-' + type, {
+          ...view,
+          session,
+        })
       }),
     )
+  }
 }
