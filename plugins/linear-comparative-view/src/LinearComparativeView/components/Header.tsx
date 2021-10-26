@@ -1,14 +1,16 @@
 import React from 'react'
+import { IconButton, makeStyles } from '@material-ui/core'
+import { withSize } from 'react-sizeme'
+import { observer } from 'mobx-react'
+
+// icons
 import LeakAddIcon from '@material-ui/icons/LeakAdd'
 import LeakRemoveIcon from '@material-ui/icons/LeakRemove'
 import LinkIcon from '@material-ui/icons/Link'
 import LinkOffIcon from '@material-ui/icons/LinkOff'
 import LocationSearchingIcon from '@material-ui/icons/LocationSearching'
 import LocationDisabledIcon from '@material-ui/icons/LocationDisabled'
-import IconButton from '@material-ui/core/IconButton'
-import { withSize } from 'react-sizeme'
-import { makeStyles } from '@material-ui/core/styles'
-import { observer } from 'mobx-react'
+
 import { LinearComparativeViewModel } from '../model'
 
 const useStyles = makeStyles(theme => ({

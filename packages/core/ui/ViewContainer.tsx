@@ -1,20 +1,24 @@
+import React, { useEffect, useRef, useState } from 'react'
 import {
   SvgIconProps,
   IconButton,
   IconButtonProps as IconButtonPropsType,
   Paper,
+  Tooltip,
   makeStyles,
   useTheme,
-  Tooltip,
+  alpha,
 } from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
-import MenuIcon from '@material-ui/icons/Menu'
-import { alpha } from '@material-ui/core/styles'
+
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
-import React, { useEffect, useRef, useState } from 'react'
-import { ContentRect, withContentRect } from 'react-measure'
+import { withSize } from 'react-sizeme'
 
+// icons
+import CloseIcon from '@material-ui/icons/Close'
+import MenuIcon from '@material-ui/icons/Menu'
+
+// locals
 import { IBaseViewModel } from '../pluggableElementTypes/models'
 import EditableTypography from './EditableTypography'
 import Menu from './Menu'
@@ -108,31 +112,25 @@ const ViewMenu = observer(
   },
 )
 
-export default withContentRect('bounds')(
+export default withSize()(
   observer(
     ({
       view,
       onClose,
       style,
       children,
-      contentRect,
-      measureRef,
+      size: { width },
     }: {
       view: IBaseViewModel
       onClose: () => void
       style: React.CSSProperties
       children: React.ReactNode
-      contentRect: ContentRect
-      measureRef: React.RefObject<HTMLDivElement>
+      size: { width: number }
     }) => {
       const classes = useStyles()
       const theme = useTheme()
       const padWidth = theme.spacing(1)
 
-      let width = 0
-      if (contentRect.bounds) {
-        ;({ width } = contentRect.bounds)
-      }
       if (!width && typeof jest !== 'undefined') {
         // this is only used in jest because can't mock react-measure easily
         // the added padWidth*2 is added to just be subtracted by the setWidth call below
@@ -160,7 +158,6 @@ export default withContentRect('bounds')(
       return (
         <Paper
           elevation={12}
-          ref={measureRef}
           className={classes.viewContainer}
           style={{ ...style, padding: `0px ${padWidth}px ${padWidth}px` }}
         >
