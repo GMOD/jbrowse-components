@@ -235,10 +235,7 @@ describe('text-index with multiple --files', () => {
 describe('text-index with single --file', () => {
   setup
     .do(async ctx => {
-      await copyDir(
-        path.join(__dirname, '..', '..', '..', '..', 'test_data', 'volvox'),
-        ctx.dir,
-      )
+      await copyDir(volvoxDir, ctx.dir)
     })
     .command(['text-index', '--file', 'volvox.sort.gff3.gz'])
     .it('Indexes with --file', ctx => {
