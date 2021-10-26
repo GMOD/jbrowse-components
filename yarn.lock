@@ -13376,12 +13376,14 @@ iterate-value@^1.0.2:
     es-get-iterator "^1.0.2"
     iterate-iterator "^1.0.1"
 
-ixixx@^1.0.15:
-  version "1.0.15"
-  resolved "https://registry.yarnpkg.com/ixixx/-/ixixx-1.0.15.tgz#e52cd9d18705a5cf8ae5c373b38750f73539e726"
-  integrity sha512-gA2pQjK5PINkAuTapymNp8fy7BsVHYZi+gjlgh0PricM2KH35T9Xq7xKKIXFoJC8my3e7jeLVPZEF9HFHo5g6w==
+ixixx@^1.0.16:
+  version "1.0.16"
+  resolved "https://registry.yarnpkg.com/ixixx/-/ixixx-1.0.16.tgz#00e4cd6f13fbfdc971e0850c41c38bc8acbce963"
+  integrity sha512-GNNDbpaLJekL/zJf9UtuDfcbLXZAHmMacDDjjenLWDSTf1zWKVA5yqB/K9FBSQIjvhR95CG7ydjhNTh4JF403Q==
   dependencies:
     external-sorting "^1.2.0"
+    pump "^3.0.0"
+    split2 "^4.1.0"
     tmp "^0.2.1"
 
 jake@^10.6.1:
@@ -20325,6 +20327,11 @@ split2@^3.0.0:
   integrity sha512-9NThjpgZnifTkJpzTZ7Eue85S49QwpNhZTq6GRJwObb6jnLFNGB7Qm73V5HewTROPyxD0C29xqmaI68bQtV+hg==
   dependencies:
     readable-stream "^3.0.0"
+
+split2@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/split2/-/split2-4.1.0.tgz#101907a24370f85bb782f08adaabe4e281ecf809"
+  integrity sha512-VBiJxFkxiXRlUIeyMQi8s4hgvKCSjtknJv/LVYbrgALPwf5zSKmEwV9Lst25AkvMDnvxODugjdl6KZgwKM1WYQ==
 
 split@^1.0.0:
   version "1.0.1"
