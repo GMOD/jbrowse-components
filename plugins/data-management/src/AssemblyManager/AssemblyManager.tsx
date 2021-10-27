@@ -29,9 +29,6 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: theme.palette.primary.main,
     textAlign: 'center',
   },
-  dialogContent: {
-    width: '100%',
-  },
   backButton: {
     color: '#fff',
     position: 'absolute',
@@ -99,32 +96,27 @@ const AssemblyManager = observer(
         </DialogTitle>
 
         <DialogContent>
-          <div className={classes.dialogContent}>
-            {isSessionWithAssemblyManagement(session) ? (
-              <>
-                {showAssemblyTable && session ? (
-                  <AssemblyTable
-                    session={session}
-                    setIsAssemblyBeingEdited={setIsAssemblyBeingEdited}
-                    setAssemblyBeingEdited={setAssemblyBeingEdited}
-                  />
-                ) : null}
-                {isAssemblyBeingEdited ? (
-                  <AssemblyEditor assembly={assemblyBeingEdited} />
-                ) : null}
-                {isFormOpen ? (
-                  <AssemblyAddForm
-                    session={session}
-                    setFormOpen={setFormOpen}
-                  />
-                ) : (
-                  <Typography>
-                    Session is not enabled for assembly management
-                  </Typography>
-                )}
-              </>
-            ) : null}
-          </div>
+          {isSessionWithAssemblyManagement(session) ? (
+            <>
+              {showAssemblyTable && session ? (
+                <AssemblyTable
+                  session={session}
+                  setIsAssemblyBeingEdited={setIsAssemblyBeingEdited}
+                  setAssemblyBeingEdited={setAssemblyBeingEdited}
+                />
+              ) : null}
+              {isAssemblyBeingEdited ? (
+                <AssemblyEditor assembly={assemblyBeingEdited} />
+              ) : null}
+              {isFormOpen ? (
+                <AssemblyAddForm session={session} setFormOpen={setFormOpen} />
+              ) : null}
+            </>
+          ) : (
+            <Typography>
+              Session is not enabled for assembly management
+            </Typography>
+          )}
         </DialogContent>
         <DialogActions>
           {showAssemblyTable ? (

@@ -43,7 +43,7 @@ const AssemblyTable = observer(
   }: {
     session: {
       assemblies: AnyConfigurationModel[]
-      removeAssembly?: (arg: string) => void
+      removeAssembly: (arg: string) => void
     }
     setIsAssemblyBeingEdited(arg: boolean): void
     setAssemblyBeingEdited(arg: AnyConfigurationModel): void
@@ -72,7 +72,7 @@ const AssemblyTable = observer(
             <IconButton
               data-testid={`${name}-delete`}
               className={classes.button}
-              onClick={() => session.removeAssembly?.(name)}
+              onClick={() => session.removeAssembly(name)}
             >
               <DeleteIcon color="error" />
             </IconButton>

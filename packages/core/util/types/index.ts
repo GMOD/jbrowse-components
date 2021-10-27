@@ -136,6 +136,21 @@ export function isSessionWithAddTracks(
 ): thing is SessionWithConfigEditing {
   return isSessionModel(thing) && 'addTrackConf' in thing
 }
+
+/** abstract interface for a session with session assemblies */
+export interface SessionWithSessionAssemblies extends AbstractSessionModel {
+  addAssembly: (
+    arg: AnyConfigurationModel | SnapshotOut<AnyConfigurationModel>,
+  ) => void
+  removeAssembly: (arg: string) => void
+}
+export function isSessionWithSessionAssemblies(
+  thing: unknown,
+): thing is SessionWithSessionAssemblies {
+  return isSessionModel(thing) && 'addAssembly' in thing
+}
+
+/** abstract interface for a session with editable configuration assemblies */
 export interface SessionWithAssemblyManagement extends AbstractSessionModel {
   addAssembly: (
     arg: AnyConfigurationModel | SnapshotOut<AnyConfigurationModel>,
@@ -145,7 +160,7 @@ export interface SessionWithAssemblyManagement extends AbstractSessionModel {
 export function isSessionWithAssemblyManagement(
   thing: unknown,
 ): thing is SessionWithAssemblyManagement {
-  return isSessionModel(thing) && 'addAssembly' in thing
+  return isSessionModel(thing) && 'removeAssembly' in thing
 }
 
 export interface Widget {

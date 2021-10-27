@@ -257,12 +257,12 @@ export default function sessionModelFactory(
         const rootModel = getRoot(self)
         rootModel.setPluginsUpdated(true)
       },
-      removeAssembly(assemblyName: string) {
-        const index = self.sessionAssemblies.findIndex(
-          asm => asm.name === assemblyName,
-        )
+      removeAssembly(name: string) {
+        const index = self.sessionAssemblies.findIndex(asm => asm.name === name)
         if (index !== -1) {
           self.sessionAssemblies.splice(index, 1)
+        } else {
+          getParent(self).jbrowse.removeAssembly(name)
         }
       },
       removeSessionPlugin(pluginUrl: string) {
