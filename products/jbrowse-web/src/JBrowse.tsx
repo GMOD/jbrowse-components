@@ -38,7 +38,10 @@ const JBrowse = observer(
         return
       }
       onSnapshot(jbrowse, async snapshot => {
-        if (adminKey) {
+        try {
+          if (!adminKey) {
+            return
+          }
           const response = await fetch(adminServer || `/updateConfig`, {
             method: 'POST',
             headers: {
@@ -52,14 +55,13 @@ const JBrowse = observer(
           })
           if (!response.ok) {
             const message = await response.text()
-            if (session) {
-              session.notify(
-                `Admin server error: ${response.status} (${
-                  response.statusText
-                }) ${message || ''}`,
-              )
-            }
+            const { status, statusText } = response
+            throw new Error(
+              `Admin server error: HTTP ${status} ${statusText} ${message}`,
+            )
           }
+        } catch (e) {
+          session.notify(`Admin server failed ${e}`)
         }
       })
     }, [jbrowse, session, adminKey, adminServer, configPath])
