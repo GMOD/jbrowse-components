@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { MenuItem } from '@jbrowse/core/ui'
-import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import {
+  getSession,
+  isSessionModelWithWidgets,
+  isSessionWithAssemblyManagement,
+} from '@jbrowse/core/util'
 import {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
@@ -102,8 +106,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       beforeDestroy() {
         const session = getSession(self)
         self.assemblyNames.forEach(name => {
-          if (name.endsWith('-temp')) {
-            session.removeAssembly?.(name)
+          if (
+            name.endsWith('-temp') &&
+            isSessionWithAssemblyManagement(session)
+          ) {
+            session.removeAssembly(name)
           }
         })
       },

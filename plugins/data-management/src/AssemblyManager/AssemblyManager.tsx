@@ -7,10 +7,11 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  Typography,
   makeStyles,
 } from '@material-ui/core'
-import { AbstractSessionModel } from '@jbrowse/core/util/types'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { isSessionWithAssemblyManagement } from '@jbrowse/core/util'
 
 // icons
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos'
@@ -50,7 +51,7 @@ const AssemblyManager = observer(
     session,
     onClose,
   }: {
-    session: { removeAssembly?: (arg: string) => void }
+    session: unknown
     onClose: (arg: boolean) => void
   }) => {
     const classes = useStyles()
@@ -96,20 +97,32 @@ const AssemblyManager = observer(
             <CloseIcon />
           </IconButton>
         </DialogTitle>
+
         <DialogContent>
           <div className={classes.dialogContent}>
-            {showAssemblyTable && session ? (
-              <AssemblyTable
-                session={session}
-                setIsAssemblyBeingEdited={setIsAssemblyBeingEdited}
-                setAssemblyBeingEdited={setAssemblyBeingEdited}
-              />
-            ) : null}
-            {isAssemblyBeingEdited ? (
-              <AssemblyEditor assembly={assemblyBeingEdited} />
-            ) : null}
-            {isFormOpen ? (
-              <AssemblyAddForm session={session} setFormOpen={setFormOpen} />
+            {isSessionWithAssemblyManagement(session) ? (
+              <>
+                {showAssemblyTable && session ? (
+                  <AssemblyTable
+                    session={session}
+                    setIsAssemblyBeingEdited={setIsAssemblyBeingEdited}
+                    setAssemblyBeingEdited={setAssemblyBeingEdited}
+                  />
+                ) : null}
+                {isAssemblyBeingEdited ? (
+                  <AssemblyEditor assembly={assemblyBeingEdited} />
+                ) : null}
+                {isFormOpen ? (
+                  <AssemblyAddForm
+                    session={session}
+                    setFormOpen={setFormOpen}
+                  />
+                ) : (
+                  <Typography>
+                    Session is not enabled for assembly management
+                  </Typography>
+                )}
+              </>
             ) : null}
           </div>
         </DialogContent>

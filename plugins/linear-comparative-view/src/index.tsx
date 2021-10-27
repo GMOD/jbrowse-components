@@ -31,6 +31,7 @@ import {
   getContainingView,
   getContainingTrack,
   isAbstractMenuManager,
+  isSessionWithAssemblyManagement,
 } from '@jbrowse/core/util'
 import {
   MismatchParser,
@@ -276,6 +277,13 @@ function WindowSizeDlg(props: {
       }
       const feature = primaryFeature
       const session = getSession(track)
+
+      if (!isSessionWithAssemblyManagement(session)) {
+        throw new Error(
+          'This feature requires sessions to support assembly adding/removing',
+        )
+      }
+
       const view = getContainingView(track)
       const cigar = feature.get('CIGAR')
       const clipPos = getClip(cigar, 1)
@@ -379,7 +387,7 @@ function WindowSizeDlg(props: {
         })),
       )
 
-      session.addAssembly?.({
+      session.addAssembly({
         name: `${readAssembly}`,
         sequence: {
           type: 'ReferenceSequenceTrack',

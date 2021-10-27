@@ -2,8 +2,9 @@ import React from 'react'
 import {
   isStateTreeNode,
   Instance,
-  SnapshotIn,
   IAnyStateTreeNode,
+  SnapshotIn,
+  SnapshotOut,
 } from 'mobx-state-tree'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
@@ -83,10 +84,6 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   assemblyManager: AssemblyManager
   version: string
   getTrackActionMenuItems?: Function
-
-  addAssembly?: (arg: AnyConfigurationModel) => void
-  removeAssembly?: (arg: string) => void
-
   textSearchManager?: TextSearchManager
   internetAccounts?: BaseInternetAccountModel[]
   connections: AnyConfigurationModel[]
@@ -108,6 +105,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   name: string
   id?: string
 }
+
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
     typeof thing === 'object' &&
@@ -137,6 +135,17 @@ export function isSessionWithAddTracks(
   thing: unknown,
 ): thing is SessionWithConfigEditing {
   return isSessionModel(thing) && 'addTrackConf' in thing
+}
+export interface SessionWithAssemblyManagement extends AbstractSessionModel {
+  addAssembly: (
+    arg: AnyConfigurationModel | SnapshotOut<AnyConfigurationModel>,
+  ) => void
+  removeAssembly: (arg: string) => void
+}
+export function isSessionWithAssemblyManagement(
+  thing: unknown,
+): thing is SessionWithAssemblyManagement {
+  return isSessionModel(thing) && 'addAssembly' in thing
 }
 
 export interface Widget {

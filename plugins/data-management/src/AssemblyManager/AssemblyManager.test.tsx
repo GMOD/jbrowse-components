@@ -24,7 +24,7 @@ const mockRootModel = {
   session: {
     notify: jest.fn(),
     addAssemblyConf: jest.fn(),
-    removeAssemblyConf: jest.fn(),
+    removeAssembly: jest.fn(),
   },
 }
 
@@ -60,7 +60,7 @@ describe('AssemblyManager GUI', () => {
     })
     fireEvent.click(getByText('Create new assembly'))
 
-    expect(mockRootModel.session.addAssemblyConf).toHaveBeenCalledTimes(1)
+    expect(session.addAssemblyConf).toHaveBeenCalledTimes(1)
   })
 
   it("prompts the user for a name when adding assembly if they don't", () => {
@@ -69,25 +69,23 @@ describe('AssemblyManager GUI', () => {
     )
     fireEvent.click(getByText('Add new assembly'))
     fireEvent.click(getByText('Create new assembly'))
-    expect(mockRootModel.session.notify).toHaveBeenCalledWith(
+    expect(session.notify).toHaveBeenCalledWith(
       "Can't create an assembly without a name",
     )
   })
 
   it('deletes an assembly when delete button clicked', () => {
     const { getByTestId } = render(
-      <AssemblyManager rootModel={mockRootModel} onClose={() => {}} />,
+      <AssemblyManager session={session} onClose={() => {}} />,
     )
     fireEvent.click(getByTestId('testAssembly-delete'))
-    expect(mockRootModel.jbrowse.removeAssemblyConf).toHaveBeenCalledWith(
-      'testAssembly',
-    )
+    expect(session.removeAssembly).toHaveBeenCalledWith('testAssembly')
   })
 
   it('closes when the Close button is clicked', () => {
     const onClose = jest.fn()
     const { getByText } = render(
-      <AssemblyManager rootModel={mockRootModel} onClose={onClose} />,
+      <AssemblyManager session={session} onClose={onClose} />,
     )
     fireEvent.click(getByText('Close'))
     expect(onClose).toHaveBeenCalled()

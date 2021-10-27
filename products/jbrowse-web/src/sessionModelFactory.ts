@@ -31,6 +31,7 @@ import {
   IAnyStateTreeNode,
   Instance,
   SnapshotIn,
+  SnapshotOut,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
@@ -234,7 +235,11 @@ export default function sessionModelFactory(
         self.name = str
       },
 
-      addAssembly(assemblyConfig: AnyConfigurationModel) {
+      addAssembly(
+        assemblyConfig:
+          | AnyConfigurationModel
+          | SnapshotOut<AnyConfigurationModel>,
+      ) {
         const asm = self.sessionAssemblies.find(
           f => f.name === assemblyConfig.name,
         )
