@@ -5,10 +5,6 @@ import {
   InputLabel,
   MenuItem,
   Tooltip,
-  Paper,
-  Popper,
-  Grow,
-  ClickAwayListener,
   Menu,
 } from '@material-ui/core'
 
@@ -37,6 +33,13 @@ function ToggleButtonWithTooltip(props: ToggleButtonProps) {
   )
 }
 
+function shortenIfNeeded(str: React.ReactNode | string, maxLength: number) {
+  if (typeof str === 'string' && str.length > maxLength) {
+    str = `${str.substring(0, maxLength)}…`
+  }
+  return str
+}
+
 const FileSelector = observer(
   (props: {
     location?: FileLocation
@@ -53,18 +56,14 @@ const FileSelector = observer(
         ? location.internetAccountId
         : fileOrUrl,
     )
-    const { internetAccounts = [] } = session || {}
-    const numAccountsShown = 2
-    const [shownInternetAccounts, setShownInternetAccounts] = useState(
-      internetAccounts.slice(0, numAccountsShown),
-    )
-    const [hiddenInternetAccounts, setHiddenInternetAccounts] = useState(
-      internetAccounts.slice(numAccountsShown),
-    )
+    const { internetAccounts: accounts = [] } = session || {}
+    const shown = 2
+    const [shownAccounts, setShownAccounts] = useState(accounts.slice(0, shown))
+    const [hiddenAccounts, setHiddenAccounts] = useState(accounts.slice(shown))
     const [moreMenuOpen, setMoreMenuOpen] = useState(false)
     const moreMenuRef = useRef(null)
 
-    const selectedInternetAccount = internetAccounts.find(
+    const selectedInternetAccount = accounts.find(
       ia => ia.internetAccountId === toggleButtonValue,
     )
 
@@ -121,7 +120,7 @@ const FileSelector = observer(
         <Box display="flex">
           <InputLabel shrink>{name}</InputLabel>
         </Box>
-        <Box display="flex" flexDirection="row">
+        <Box display="flex">
           <Box>
             <ToggleButtonGroup
               value={toggleButtonValue}
@@ -139,112 +138,71 @@ const FileSelector = observer(
               <ToggleButton value="url" aria-label="url">
                 URL
               </ToggleButton>
-              {shownInternetAccounts?.map(internetAccount => {
-                const { toggleContents: customToggleContents, name } =
-                  internetAccount
-                let toggleContents = customToggleContents || name
-                const maxLength = 5
-                if (
-                  typeof toggleContents === 'string' &&
-                  toggleContents.length > maxLength
-                ) {
-                  toggleContents = `${toggleContents.substring(0, maxLength)}…`
-                }
+              {shownAccounts?.map(acct => {
+                const { name, internetAccountId, toggleContents = name } = acct
                 return (
                   <ToggleButtonWithTooltip
-                    key={internetAccount.internetAccountId}
-                    value={internetAccount.internetAccountId}
-                    aria-label={internetAccount.name}
+                    key={internetAccountId}
+                    value={internetAccountId}
+                    aria-label={name}
                     title={name}
                   >
-                    {toggleContents}
+                    {shortenIfNeeded(toggleContents, 5)}
                   </ToggleButtonWithTooltip>
                 )
               })}
-              {hiddenInternetAccounts.length ? (
+              {hiddenAccounts.length ? (
                 <ToggleButton
-                  value="moreMenu"
-                  onClick={() => {
-                    setMoreMenuOpen((prevOpen: boolean) => !prevOpen)
-                  }}
+                  onClick={() => setMoreMenuOpen(prevOpen => !prevOpen)}
                   selected={false}
                   ref={moreMenuRef}
                 >
-                  More
                   <ArrowDropDownIcon />
                 </ToggleButton>
               ) : null}
             </ToggleButtonGroup>
-            <Popper
+            <Menu
               open={moreMenuOpen}
               anchorEl={moreMenuRef.current}
-              role={undefined}
-              transition
-              disablePortal
+              id="split-button-menu"
+              onClose={() => setMoreMenuOpen(false)}
+              getContentAnchorEl={null}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'center',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'center',
+              }}
             >
-              {({ TransitionProps, placement }) => (
-                <Grow
-                  {...TransitionProps}
-                  style={{
-                    transformOrigin:
-                      placement === 'bottom' ? 'center top' : 'center bottom',
-                  }}
-                >
-                  <Paper>
-                    <ClickAwayListener
-                      onClickAway={() => setMoreMenuOpen(false)}
-                    >
-                      <Menu
-                        open={moreMenuOpen}
-                        anchorEl={moreMenuRef.current}
-                        id="split-button-menu"
-                        onClose={() => setMoreMenuOpen(false)}
-                        getContentAnchorEl={null}
-                        anchorOrigin={{
-                          vertical: 'bottom',
-                          horizontal: 'center',
-                        }}
-                        transformOrigin={{
-                          vertical: 'top',
-                          horizontal: 'center',
-                        }}
-                      >
-                        {hiddenInternetAccounts?.map((account, idx) => (
-                          <MenuItem
-                            key={account.internetAccountId}
-                            value={account.internetAccountId}
-                            onClick={() => {
-                              const newlySelectedInternetAccount =
-                                hiddenInternetAccounts[idx]
-                              const lastShownInternetAccount =
-                                shownInternetAccounts[
-                                  shownInternetAccounts.length - 1
-                                ]
-                              setShownInternetAccounts([
-                                ...shownInternetAccounts.slice(
-                                  0,
-                                  shownInternetAccounts.length - 1,
-                                ),
-                                newlySelectedInternetAccount,
-                              ])
-                              setHiddenInternetAccounts([
-                                lastShownInternetAccount,
-                                ...hiddenInternetAccounts.slice(0, idx),
-                                ...hiddenInternetAccounts.slice(idx + 1),
-                              ])
-                              setToggleButtonValue(account.internetAccountId)
-                              setMoreMenuOpen(false)
-                            }}
-                          >
-                            {account.name}
-                          </MenuItem>
-                        ))}
-                      </Menu>
-                    </ClickAwayListener>
-                  </Paper>
-                </Grow>
-              )}
-            </Popper>
+              {hiddenAccounts.map((acct, idx) => {
+                const { internetAccountId, name } = acct
+                return (
+                  <MenuItem
+                    key={internetAccountId}
+                    value={internetAccountId}
+                    onClick={() => {
+                      const selection = hiddenAccounts[idx]
+                      const previous = shownAccounts[shownAccounts.length - 1]
+                      setShownAccounts([
+                        ...shownAccounts.slice(0, shownAccounts.length - 1),
+                        selection,
+                      ])
+                      setHiddenAccounts([
+                        previous,
+                        ...hiddenAccounts.slice(0, idx),
+                        ...hiddenAccounts.slice(idx + 1),
+                      ])
+                      setToggleButtonValue(internetAccountId)
+                      setMoreMenuOpen(false)
+                    }}
+                  >
+                    {name}
+                  </MenuItem>
+                )
+              })}
+            </Menu>
           </Box>
         </Box>
         {locationInput}

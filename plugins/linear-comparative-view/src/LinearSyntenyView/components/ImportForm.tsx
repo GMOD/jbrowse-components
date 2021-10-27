@@ -141,7 +141,6 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
           </Typography>
           <Grid item>
             <FileSelector
-              name="URL"
               description=""
               location={trackData}
               setLocation={loc => setTrackData(loc)}

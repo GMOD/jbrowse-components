@@ -110,7 +110,6 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
             <Grid container justifyContent="center">
               <Grid item>
                 <FileSelector
-                  name="URL"
                   description=""
                   location={trackData}
                   setLocation={loc => setTrackData(loc)}
