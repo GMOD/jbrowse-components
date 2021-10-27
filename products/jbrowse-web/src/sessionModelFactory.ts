@@ -618,8 +618,8 @@ export default function sessionModelFactory(
       activateSession(sessionName: any) {
         return getParent(self).activateSession(sessionName)
       },
-      setDefaultSession() {
-        return getParent(self).setDefaultSession()
+      setDefaultSession(conf: any) {
+        return getParent(self).jbrowse.setDefaultSessionConf(conf)
       },
       saveSessionToLocalStorage() {
         return getParent(self).saveSessionToLocalStorage()

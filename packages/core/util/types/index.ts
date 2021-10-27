@@ -137,6 +137,24 @@ export function isSessionWithAddTracks(
   return isSessionModel(thing) && 'addTrackConf' in thing
 }
 
+/** abstract interface for a session allows adding tracks */
+export interface SessionWithSetDefaultSession extends AbstractSessionModel {
+  savedSessions: {
+    name: string
+    views: {
+      tracks: AnyConfigurationModel[]
+    }[]
+  }[]
+  setDefaultSession(
+    configuration: AnyConfigurationModel | SnapshotIn<AnyConfigurationModel>,
+  ): void
+}
+export function isSessionWithSetDefaultSession(
+  thing: unknown,
+): thing is SessionWithSetDefaultSession {
+  return isSessionModel(thing) && 'setDefaultSession' in thing
+}
+
 /** abstract interface for a session with session assemblies */
 export interface SessionWithSessionAssemblies extends AbstractSessionModel {
   addAssembly: (

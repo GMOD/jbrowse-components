@@ -27,15 +27,12 @@ const mockRootModel = {
   },
 }
 
+const session = mockRootModel.session
+
 describe('SetDefaultSession GUI', () => {
   it('renders succesfully', () => {
     const { getByText } = render(
-      <SetDefaultSession
-        rootModel={mockRootModel}
-        open
-        onClose={() => {}}
-        currentDefault="New session"
-      />,
+      <SetDefaultSession session={session} open onClose={() => {}} />,
     )
     expect(getByText('Set Default Session')).toBeTruthy()
   })
@@ -43,12 +40,7 @@ describe('SetDefaultSession GUI', () => {
   it('closes when the return button is clicked', () => {
     const onClose = jest.fn()
     const { getByText } = render(
-      <SetDefaultSession
-        rootModel={mockRootModel}
-        open
-        onClose={onClose}
-        currentDefault="New session"
-      />,
+      <SetDefaultSession session={session} open onClose={onClose} />,
     )
     fireEvent.click(getByText('Return'))
     expect(onClose).toHaveBeenCalled()
@@ -56,12 +48,7 @@ describe('SetDefaultSession GUI', () => {
 
   it('shows no sessions if none are saved', () => {
     const { getByText } = render(
-      <SetDefaultSession
-        rootModel={mockRootModel}
-        open
-        onClose={() => {}}
-        currentDefault="New session"
-      />,
+      <SetDefaultSession session={session} open onClose={() => {}} />,
     )
     expect(getByText('No saved sessions found')).toBeTruthy()
   })
@@ -79,10 +66,9 @@ describe('SetDefaultSession GUI', () => {
     }
     const { getByText } = render(
       <SetDefaultSession
-        rootModel={MockSavedSessions}
+        session={MockSavedSessions.session}
         open
         onClose={() => {}}
-        currentDefault="New session"
       />,
     )
     expect(getByText('New session')).toBeTruthy()
@@ -99,10 +85,9 @@ describe('SetDefaultSession GUI', () => {
     }
     const { getByRole } = render(
       <SetDefaultSession
-        rootModel={MockSession}
+        session={MockSession.session}
         open
         onClose={() => {}}
-        currentDefault="New session"
       />,
     )
     fireEvent.click(getByRole('radio'))
@@ -120,10 +105,9 @@ describe('SetDefaultSession GUI', () => {
     }
     const { getByText } = render(
       <SetDefaultSession
-        rootModel={MockSession}
+        session={MockSession.session}
         open
         onClose={() => {}}
-        currentDefault="New session"
       />,
     )
     fireEvent.click(getByText('Clear default session'))
