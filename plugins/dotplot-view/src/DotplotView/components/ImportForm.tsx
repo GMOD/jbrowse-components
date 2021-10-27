@@ -1,17 +1,11 @@
 import React, { useState } from 'react'
+import { Button, Paper, Container, Grid, makeStyles } from '@material-ui/core'
 import { FileSelector } from '@jbrowse/core/ui'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
-import {
-  Button,
-  Paper,
-  Container,
-  Grid,
-  Typography,
-  makeStyles,
-} from '@material-ui/core'
 import { DotplotViewModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
@@ -21,14 +15,6 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const ErrorDisplay = observer(({ error }: { error?: Error | string }) => {
-  return (
-    <Typography variant="h6" color="error">
-      {`${error}`}
-    </Typography>
-  )
-})
-
 const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   const classes = useStyles()
   const session = getSession(model)
@@ -37,43 +23,56 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   const [selected1, setSelected1] = useState(assemblyNames[0])
   const [selected2, setSelected2] = useState(assemblyNames[0])
   const selected = [selected1, selected2]
+  const [error, setError] = useState<unknown>()
 
-  const asmError = selected
-    .map(a => assemblyManager.get(a)?.error)
-    .filter(f => !!f)
-    .join(', ')
-  const err = assemblyNames.length ? asmError : 'No configured assemblies'
+  const assemblyError = assemblyNames.length
+    ? selected
+        .map(a => assemblyManager.get(a)?.error)
+        .filter(f => !!f)
+        .join(', ')
+    : 'No configured assemblies'
 
   function onOpenClick() {
-    model.setViews([
-      { bpPerPx: 0.1, offsetPx: 0 },
-      { bpPerPx: 0.1, offsetPx: 0 },
-    ])
-    model.setAssemblyNames([selected1, selected2])
+    try {
+      if (!isSessionWithAddTracks(session)) {
+        return
+      }
+      model.setViews([
+        { bpPerPx: 0.1, offsetPx: 0 },
+        { bpPerPx: 0.1, offsetPx: 0 },
+      ])
+      model.setAssemblyNames([selected1, selected2])
 
-    const fileName =
-      trackData && 'uri' in trackData && trackData.uri
-        ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
-        : 'MyTrack'
+      const fileName =
+        trackData && 'uri' in trackData && trackData.uri
+          ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
+          : 'MyTrack'
 
-    // @ts-ignore
-    const configuration = session.addTrackConf({
-      trackId: `${fileName}-${Date.now()}`,
-      name: fileName,
-      assemblyNames: selected,
-      type: 'SyntenyTrack',
-      adapter: {
-        type: 'PAFAdapter',
-        pafLocation: trackData,
+      const trackId = `${fileName}-${Date.now()}`
+
+      session.addTrackConf({
+        trackId: `${fileName}-${Date.now()}`,
+        name: fileName,
         assemblyNames: selected,
-      },
-    })
-    model.toggleTrack(configuration.trackId)
+        type: 'SyntenyTrack',
+        adapter: {
+          type: 'PAFAdapter',
+          pafLocation: trackData,
+          assemblyNames: selected,
+        },
+      })
+      model.toggleTrack(trackId)
+    } catch (e) {
+      console.error(e)
+      setError(e)
+    }
   }
 
+  // this is a combination of any displayed error message we have
+  const displayError = error || assemblyError
   return (
     <Container className={classes.importFormContainer}>
-      {err ? <ErrorDisplay error={err} /> : null}
+      {displayError ? <ErrorMessage error={displayError} /> : null}
       <Grid
         container
         spacing={1}
@@ -124,7 +123,9 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
           <Button
             data-testid="submitDotplot"
             onClick={onOpenClick}
-            disabled={!!err}
+            // only disable button on assemblyError. for other types of errors
+            // in the useState can retry
+            disabled={!!assemblyError}
             variant="contained"
             color="primary"
           >
