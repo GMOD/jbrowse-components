@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import {
   Button,
@@ -49,38 +49,38 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
 
   async function onOpenClick() {
     try {
+      if (!isSessionWithAddTracks(session)) {
+        return
+      }
       model.setViews(
-        // @ts-ignore
         await Promise.all(
-          selected
-            .map(async selection => {
-              const assembly = await assemblyManager.waitForAssembly(selection)
-              if (assembly) {
-                return {
-                  type: 'LinearGenomeView',
-                  bpPerPx: 1,
-                  offsetPx: 0,
-                  hideHeader: true,
-                  displayedRegions: assembly.regions,
-                }
-              }
+          selected.map(async selection => {
+            const assembly = await assemblyManager.waitForAssembly(selection)
+            if (!assembly) {
               throw new Error(`Assembly ${selection} failed to load`)
-            })
-            .filter(f => !!f),
+            }
+            return {
+              type: 'LinearGenomeView' as 'LinearGenomeView',
+              bpPerPx: 1,
+              offsetPx: 0,
+              hideHeader: true,
+              displayedRegions: assembly.regions,
+            }
+          }),
         ),
       )
 
       model.views.forEach(view => view.setWidth(model.width))
 
-      const fileName =
+      const name =
         'uri' in trackData && trackData.uri
           ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
           : 'MyTrack'
 
-      // @ts-ignore
-      const configuration = session.addTrackConf({
-        trackId: `${fileName}-${Date.now()}`,
-        name: fileName,
+      const trackId = `${name}-${Date.now()}`
+      session.addTrackConf({
+        trackId,
+        name,
         assemblyNames: selected,
         type: 'SyntenyTrack',
         adapter: {
@@ -89,7 +89,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
           assemblyNames: selected,
         },
       })
-      model.toggleTrack(configuration.trackId)
+      model.toggleTrack(trackId)
     } catch (e) {
       console.error(e)
       setError(e)

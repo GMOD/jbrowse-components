@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
+import { Button, Paper, Container, Grid, makeStyles } from '@material-ui/core'
 import { FileSelector } from '@jbrowse/core/ui'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
-import { Button, Paper, Container, Grid, makeStyles } from '@material-ui/core'
 import { DotplotViewModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
@@ -34,6 +34,9 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
 
   function onOpenClick() {
     try {
+      if (!isSessionWithAddTracks(session)) {
+        return
+      }
       model.setViews([
         { bpPerPx: 0.1, offsetPx: 0 },
         { bpPerPx: 0.1, offsetPx: 0 },
@@ -45,8 +48,9 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
           ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
           : 'MyTrack'
 
-      // @ts-ignore
-      const configuration = session.addTrackConf({
+      const trackId = `${fileName}-${Date.now()}`
+
+      session.addTrackConf({
         trackId: `${fileName}-${Date.now()}`,
         name: fileName,
         assemblyNames: selected,
@@ -57,7 +61,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
           assemblyNames: selected,
         },
       })
-      model.toggleTrack(configuration.trackId)
+      model.toggleTrack(trackId)
     } catch (e) {
       console.error(e)
       setError(e)
