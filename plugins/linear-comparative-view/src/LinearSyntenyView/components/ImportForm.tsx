@@ -66,8 +66,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
                 bpPerPx: 1,
                 offsetPx: 0,
                 hideHeader: true,
-                // @ts-ignore
-                displayedRegions: getSnapshot(assembly.regions),
+                displayedRegions: assembly.regions,
               }
             }
             throw new Error(`Assembly ${selection} failed to load`)
