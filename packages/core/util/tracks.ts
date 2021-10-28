@@ -3,7 +3,6 @@ import { getSession, objectHash } from './index'
 import { PreFileLocation, FileLocation, getPluginManager } from './types'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { readConfObject } from '../configuration'
-import type PluginManager from '../PluginManager'
 
 /* utility functions for use by track models and so forth */
 
