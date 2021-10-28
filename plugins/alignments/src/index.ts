@@ -54,6 +54,8 @@ import {
   AdapterGuesser,
   getFileName,
   TrackTypeGuesser,
+  CoreGuessAdapterForLocation,
+  CoreGuessTrackTypeForLocation,
 } from '@jbrowse/core/util/tracks'
 
 export { MismatchParser }
@@ -151,7 +153,7 @@ export default class AlignmentsPlugin extends Plugin {
         }),
     )
 
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessAdapterForLocation>(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (
@@ -177,7 +179,7 @@ export default class AlignmentsPlugin extends Plugin {
         }
       },
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessTrackTypeForLocation>(
       'Core-guessTrackTypeForLocation',
       (trackTypeGuesser: TrackTypeGuesser) => {
         return (adapterName: string) => {
@@ -209,7 +211,7 @@ export default class AlignmentsPlugin extends Plugin {
           ...pluginManager.load(CramAdapterF),
         }),
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessAdapterForLocation>(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (
@@ -231,7 +233,7 @@ export default class AlignmentsPlugin extends Plugin {
         }
       },
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessTrackTypeForLocation>(
       'Core-guessTrackTypeForLocation',
       (trackTypeGuesser: TrackTypeGuesser) => {
         return (adapterName: string) => {

@@ -3,6 +3,7 @@ import {
   isStateTreeNode,
   Instance,
   SnapshotIn,
+  getEnv,
   IAnyStateTreeNode,
 } from 'mobx-state-tree'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
@@ -20,6 +21,7 @@ import {
 import RpcManager from '../../rpc/RpcManager'
 import { Feature } from '../simpleFeature'
 import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
+import type PluginManager from '../../PluginManager'
 
 export * from './util'
 
@@ -114,6 +116,14 @@ export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   )
 }
 
+export function getPluginManager(model: IAnyStateTreeNode) {
+  const pm = getEnv(model).pluginManager as PluginManager | undefined
+  if (!pm) {
+    throw new Error('pluginManager not found in mobx-state-tree environment')
+  }
+  return pm
+}
+
 /** abstract interface for a session allows editing configurations */
 export interface SessionWithConfigEditing extends AbstractSessionModel {
   editConfiguration(configuration: AnyConfigurationModel): void
@@ -136,7 +146,7 @@ export function isSessionWithAddTracks(
   return isSessionModel(thing) && 'addTrackConf' in thing
 }
 
-export interface Widget {
+export interface Widget extends IAnyStateTreeNode {
   type: string
   id: string
 }

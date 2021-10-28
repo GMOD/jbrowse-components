@@ -1,6 +1,6 @@
 import React from 'react'
 import { getEnv, resolveIdentifier, getRoot } from 'mobx-state-tree'
-import { getSession } from '@jbrowse/core/util'
+import { getPluginManager, getSession } from '@jbrowse/core/util'
 import {
   Button,
   Dialog,
@@ -47,7 +47,7 @@ export default function SearchResultsDialog({
 }) {
   const classes = useStyles()
   const session = getSession(model)
-  const { pluginManager } = getEnv(session)
+  const pluginManager = getPluginManager(session)
   const { assemblyManager } = session
   let assemblyName = optAssemblyName
   if (model.displayedRegions.length > 0) {

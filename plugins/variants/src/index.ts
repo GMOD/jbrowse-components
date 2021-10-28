@@ -30,6 +30,8 @@ import {
   AdapterGuesser,
   getFileName,
   TrackTypeGuesser,
+  CoreGuessAdapterForLocation,
+  CoreGuessTrackTypeForLocation,
 } from '@jbrowse/core/util/tracks'
 
 export default class VariantsPlugin extends Plugin {
@@ -45,7 +47,7 @@ export default class VariantsPlugin extends Plugin {
             import('./VcfTabixAdapter/VcfTabixAdapter').then(r => r.default),
         }),
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessAdapterForLocation>(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (
@@ -71,7 +73,7 @@ export default class VariantsPlugin extends Plugin {
         }
       },
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessTrackTypeForLocation>(
       'Core-guessTrackTypeForLocation',
       (trackTypeGuesser: TrackTypeGuesser) => {
         return (adapterName: string) => {
@@ -92,8 +94,7 @@ export default class VariantsPlugin extends Plugin {
             import('./VcfAdapter/VcfAdapter').then(r => r.default),
         }),
     )
-
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessAdapterForLocation>(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (

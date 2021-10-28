@@ -4,7 +4,9 @@ import { observer } from 'mobx-react'
 import { PluginRecord } from '@jbrowse/core/PluginLoader'
 import { Region } from '@jbrowse/core/util/types'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import PluginManager from '@jbrowse/core/PluginManager'
+import PluginManager, {
+  CoreExtendPluggableElement,
+} from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
 
 // locals
@@ -400,7 +402,7 @@ export const WithInlinePlugins = () => {
     name = 'HighlightRegionPlugin'
 
     install(pluginManager: PluginManager) {
-      pluginManager.addToExtensionPoint(
+      pluginManager.addToExtensionPoint<CoreExtendPluggableElement>(
         'Core-extendPluggableElement',
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (pluggableElement: any) => {

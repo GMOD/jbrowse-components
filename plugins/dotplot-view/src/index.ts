@@ -5,7 +5,9 @@ import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import AddIcon from '@material-ui/icons/Add'
-import PluginManager from '@jbrowse/core/PluginManager'
+import PluginManager, {
+  CoreExtendPluggableElement,
+} from '@jbrowse/core/PluginManager'
 import {
   AbstractSessionModel,
   isAbstractMenuManager,
@@ -37,6 +39,8 @@ import { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
 import { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
 import {
   AdapterGuesser,
+  CoreGuessAdapterForLocation,
+  CoreGuessTrackTypeForLocation,
   getFileName,
   TrackTypeGuesser,
 } from '@jbrowse/core/util/tracks'
@@ -354,7 +358,7 @@ export default class DotplotPlugin extends Plugin {
           AdapterClass: PAFAdapter,
         }),
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessAdapterForLocation>(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (
@@ -375,7 +379,7 @@ export default class DotplotPlugin extends Plugin {
         }
       },
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessTrackTypeForLocation>(
       'Core-guessTrackTypeForLocation',
       (trackTypeGuesser: TrackTypeGuesser) => {
         return (adapterName: string) => {
@@ -390,7 +394,7 @@ export default class DotplotPlugin extends Plugin {
     // install our comparative rendering rpc callback
     pluginManager.addRpcMethod(() => new ComparativeRender(pluginManager))
 
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreExtendPluggableElement>(
       'Core-extendPluggableElement',
       (pluggableElement: PluggableElementType) => {
         if (pluggableElement.name === 'LinearPileupDisplay') {

@@ -22,6 +22,8 @@ import {
 import hicAdapterConfigSchema from './HicAdapter/configSchema'
 import {
   AdapterGuesser,
+  CoreGuessAdapterForLocation,
+  CoreGuessTrackTypeForLocation,
   getFileName,
   TrackTypeGuesser,
 } from '@jbrowse/core/util/tracks'
@@ -39,7 +41,7 @@ export default class HicPlugin extends Plugin {
             import('./HicAdapter/HicAdapter').then(r => r.default),
         }),
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessAdapterForLocation>(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (
@@ -60,7 +62,7 @@ export default class HicPlugin extends Plugin {
         }
       },
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessTrackTypeForLocation>(
       'Core-guessTrackTypeForLocation',
       (trackTypeGuesser: TrackTypeGuesser) => {
         return (adapterName: string) => {

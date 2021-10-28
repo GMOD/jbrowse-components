@@ -1,4 +1,4 @@
-import { getSession } from '@jbrowse/core/util'
+import { getPluginManager, getSession } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
 import Step from '@material-ui/core/Step'
 import StepContent from '@material-ui/core/StepContent'
@@ -39,7 +39,7 @@ function AddConnectionWidget({ model }) {
 
   const session = getSession(model)
 
-  const { pluginManager } = getEnv(session)
+  const pluginManager = getPluginManager(session)
 
   function handleSetConnectionType(newConnectionType) {
     setConnectionType(newConnectionType)

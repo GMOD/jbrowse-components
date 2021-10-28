@@ -9,6 +9,7 @@ import ScopedCssBaseline from '@material-ui/core/ScopedCssBaseline'
 import ModalWidget from './ModalWidget'
 import ViewContainer from './ViewContainer'
 import { ViewModel } from '../createModel/createModel'
+import { getPluginManager } from '@jbrowse/core/util'
 
 const useStyles = makeStyles(() => ({
   // avoid parent styles getting into this div
@@ -23,7 +24,7 @@ const JBrowseCircularGenomeView = observer(
     const classes = useStyles()
     const { session } = viewState
     const { view } = session
-    const { pluginManager } = getEnv(session)
+    const pluginManager = getPluginManager(session)
     const viewType = pluginManager.getViewType(view.type)
     if (!viewType) {
       throw new Error(`unknown view type ${view.type}`)

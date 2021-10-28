@@ -7,7 +7,11 @@ import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { FileLocation } from '@jbrowse/core/util/types'
-import { makeIndex } from '@jbrowse/core/util/tracks'
+import {
+  CoreGuessAdapterForLocation,
+  CoreGuessTrackTypeForLocation,
+  makeIndex,
+} from '@jbrowse/core/util/tracks'
 import { configSchema as bgzipFastaAdapterConfigSchema } from './BgzipFastaAdapter'
 import { configSchema as chromSizesAdapterConfigSchema } from './ChromSizesAdapter'
 import {
@@ -60,7 +64,7 @@ export default class SequencePlugin extends Plugin {
             import('./TwoBitAdapter/TwoBitAdapter').then(r => r.default),
         }),
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessAdapterForLocation>(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (
@@ -81,7 +85,7 @@ export default class SequencePlugin extends Plugin {
         }
       },
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessTrackTypeForLocation>(
       'Core-guessTrackTypeForLocation',
       (trackTypeGuesser: TrackTypeGuesser) => {
         return (adapterName: string) => {
@@ -128,7 +132,7 @@ export default class SequencePlugin extends Plugin {
             ),
         }),
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessAdapterForLocation>(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (
@@ -150,7 +154,7 @@ export default class SequencePlugin extends Plugin {
         }
       },
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessTrackTypeForLocation>(
       'Core-guessTrackTypeForLocation',
       (trackTypeGuesser: TrackTypeGuesser) => {
         return (adapterName: string) => {
@@ -180,7 +184,7 @@ export default class SequencePlugin extends Plugin {
         }),
     )
 
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessAdapterForLocation>(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (
@@ -202,7 +206,7 @@ export default class SequencePlugin extends Plugin {
         }
       },
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessTrackTypeForLocation>(
       'Core-guessTrackTypeForLocation',
       (trackTypeGuesser: TrackTypeGuesser) => {
         return (adapterName: string) => {

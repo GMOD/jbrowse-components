@@ -6,7 +6,11 @@ import {
   AdapterClass as SPARQLAdapterClass,
   configSchema as sparqlAdapterConfigSchema,
 } from './SPARQLAdapter'
-import { AdapterGuesser, getFileName } from '@jbrowse/core/util/tracks'
+import {
+  AdapterGuesser,
+  CoreGuessAdapterForLocation,
+  getFileName,
+} from '@jbrowse/core/util/tracks'
 
 export default class RdfPlugin extends Plugin {
   name = 'RdfPlugin'
@@ -20,7 +24,7 @@ export default class RdfPlugin extends Plugin {
           AdapterClass: SPARQLAdapterClass,
         }),
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessAdapterForLocation>(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (

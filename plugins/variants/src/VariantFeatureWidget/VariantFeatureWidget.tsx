@@ -14,7 +14,7 @@ import SimpleFeature, {
 } from '@jbrowse/core/util/simpleFeature'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
-import { getSession } from '@jbrowse/core/util'
+import { getPluginManager, getSession } from '@jbrowse/core/util'
 import { getEnv } from 'mobx-state-tree'
 import {
   FeatureDetails,
@@ -124,7 +124,7 @@ function BreakendPanel(props: {
 }) {
   const { model, locStrings, feature } = props
   const session = getSession(model)
-  const { pluginManager } = getEnv(session)
+  const pluginManager = getPluginManager(session)
   const [breakpointDialog, setBreakpointDialog] = useState(false)
   let viewType
 

@@ -24,7 +24,9 @@ import {
 } from '@jbrowse/core/pluggableElementTypes/models'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
+import PluginManager, {
+  CoreExtendPluggableElement,
+} from '@jbrowse/core/PluginManager'
 import {
   AbstractSessionModel,
   getSession,
@@ -668,7 +670,7 @@ export default class extends Plugin {
         }),
     )
 
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreExtendPluggableElement>(
       'Core-extendPluggableElement',
       (pluggableElement: PluggableElementType) => {
         if (pluggableElement.name === 'LinearPileupDisplay') {

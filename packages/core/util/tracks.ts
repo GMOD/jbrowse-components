@@ -1,9 +1,9 @@
 import { getParent, isRoot, IAnyStateTreeNode } from 'mobx-state-tree'
 import { getSession, objectHash } from './index'
-import { PreFileLocation, FileLocation } from './types'
+import { PreFileLocation, FileLocation, getPluginManager } from './types'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { readConfObject } from '../configuration'
-import { getEnv } from 'mobx-state-tree'
+import type PluginManager from '../PluginManager'
 
 /* utility functions for use by track models and so forth */
 
@@ -157,6 +157,10 @@ export function getFileName(track: FileLocation) {
   )
 }
 
+export type CoreGuessAdapterForLocation = {
+  name: 'Core-guessAdapterForLocation'
+  dataType: AdapterGuesser
+}
 export function guessAdapter(
   file: FileLocation,
   index: FileLocation | undefined,
@@ -164,10 +168,10 @@ export function guessAdapter(
   model?: IAnyStateTreeNode,
 ) {
   if (model) {
-    // @ts-ignore
     const session = getSession(model)
-
-    const adapterGuesser = getEnv(session).pluginManager.evaluateExtensionPoint(
+    const adapterGuesser = getPluginManager(
+      session,
+    ).evaluateExtensionPoint<CoreGuessAdapterForLocation>(
       'Core-guessAdapterForLocation',
       (
         _file: FileLocation,
@@ -176,7 +180,7 @@ export function guessAdapter(
       ): AdapterConfig | undefined => {
         return undefined
       },
-    ) as AdapterGuesser
+    )
 
     const adapter = adapterGuesser(file, index, adapterHint)
 
@@ -190,6 +194,14 @@ export function guessAdapter(
   }
 }
 
+/**
+ * extension point for guessing the track type to use for a given location
+ */
+export type CoreGuessTrackTypeForLocation = {
+  name: 'Core-guessTrackTypeForLocation'
+  dataType: TrackTypeGuesser
+}
+
 export function guessTrackType(
   adapterType: string,
   model?: IAnyStateTreeNode,
@@ -198,14 +210,12 @@ export function guessTrackType(
     // @ts-ignore
     const session = getSession(model)
 
-    const trackTypeGuesser = getEnv(
+    const trackTypeGuesser = getPluginManager(
       session,
-    ).pluginManager.evaluateExtensionPoint(
+    ).evaluateExtensionPoint<CoreGuessTrackTypeForLocation>(
       'Core-guessTrackTypeForLocation',
-      (_adapterName: string): AdapterConfig | undefined => {
-        return undefined
-      },
-    ) as TrackTypeGuesser
+      () => undefined,
+    )
 
     const trackType = trackTypeGuesser(adapterType)
 

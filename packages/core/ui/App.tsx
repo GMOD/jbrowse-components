@@ -13,7 +13,6 @@ import {
 } from '@material-ui/core'
 import LaunchIcon from '@material-ui/icons/Launch'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
 
 // locals
 import { readConfObject } from '../configuration'
@@ -24,7 +23,11 @@ import EditableTypography from './EditableTypography'
 import { LogoFull } from './Logo'
 import Snackbar from './Snackbar'
 import ViewContainer from './ViewContainer'
-import { NotificationLevel, SessionWithDrawerWidgets } from '../util'
+import {
+  getPluginManager,
+  NotificationLevel,
+  SessionWithDrawerWidgets,
+} from '../util'
 import { MenuItem as JBMenuItem } from './index'
 
 const useStyles = makeStyles(theme => ({
@@ -130,7 +133,7 @@ const App = observer(
     }
   }) => {
     const classes = useStyles()
-    const { pluginManager } = getEnv(session)
+    const pluginManager = getPluginManager(session)
     const viewTypes = pluginManager.getElementTypeRecord('view').all()
     const [value, setValue] = useState(viewTypes[0]?.name)
     const {

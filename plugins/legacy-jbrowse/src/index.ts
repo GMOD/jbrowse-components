@@ -9,7 +9,11 @@ import {
   AdapterClass as JBrowse1TextSearchAdapterClass,
   configSchema as jbrowse1AdapterConfigSchema,
 } from './JBrowse1TextSeachAdapter'
-import { AdapterGuesser, getFileName } from '@jbrowse/core/util/tracks'
+import {
+  AdapterGuesser,
+  CoreGuessAdapterForLocation,
+  getFileName,
+} from '@jbrowse/core/util/tracks'
 
 import {
   configSchema as jbrowse1ConfigSchema,
@@ -29,7 +33,7 @@ export default class LegacyJBrowsePlugin extends Plugin {
             import('./NCListAdapter/NCListAdapter').then(r => r.default),
         }),
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessAdapterForLocation>(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (

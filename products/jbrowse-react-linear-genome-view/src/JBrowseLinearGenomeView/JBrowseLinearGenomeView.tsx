@@ -1,6 +1,5 @@
 import React, { Suspense } from 'react'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { makeStyles, ThemeProvider } from '@material-ui/core'
@@ -9,6 +8,7 @@ import ScopedCssBaseline from '@material-ui/core/ScopedCssBaseline'
 import ModalWidget from './ModalWidget'
 import ViewContainer from './ViewContainer'
 import { ViewModel } from '../createModel/createModel'
+import { getPluginManager } from '@jbrowse/core/util'
 
 const useStyles = makeStyles(() => ({
   // avoid parent styles getting into this div
@@ -23,7 +23,7 @@ const JBrowseLinearGenomeView = observer(
     const classes = useStyles()
     const { session } = viewState
     const { view } = session
-    const { pluginManager } = getEnv(session)
+    const pluginManager = getPluginManager(session)
     const viewType = pluginManager.getViewType(view.type)
     if (!viewType) {
       throw new Error(`unknown view type ${view.type}`)

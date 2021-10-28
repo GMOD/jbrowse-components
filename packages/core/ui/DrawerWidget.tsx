@@ -14,7 +14,10 @@ import {
 } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import { SessionWithDrawerWidgets } from '@jbrowse/core/util/types'
+import {
+  getPluginManager,
+  SessionWithDrawerWidgets,
+} from '@jbrowse/core/util/types'
 
 // icons
 import DeleteIcon from '@material-ui/icons/Delete'
@@ -66,7 +69,7 @@ const DrawerHeader = observer(
     session: SessionWithDrawerWidgets
     setToolbarHeight: (arg: number) => void
   }) => {
-    const { pluginManager } = getEnv(session)
+    const pluginManager = getPluginManager(session)
     const { visibleWidget, activeWidgets, drawerPosition } = session
     const classes = useStyles()
 
@@ -87,18 +90,18 @@ const DrawerHeader = observer(
             className={classes.drawerSelect}
             classes={{ icon: classes.dropDownIcon }}
             renderValue={widgetId => {
-              const widget = session.activeWidgets.get(widgetId as string)
-              if (!widget) {
+              const widgetState = session.activeWidgets.get(widgetId as string)
+              if (!widgetState) {
                 return (
                   <Typography variant="h6" color="inherit">
                     Unknown widget
                   </Typography>
                 )
               }
-              const widgetType = pluginManager.getWidgetType(widget.type)
+              const widgetType = pluginManager.getWidgetType(widgetState.type)
               const { HeadingComponent, heading } = widgetType
               return HeadingComponent ? (
-                <HeadingComponent model={widget} />
+                <HeadingComponent model={widgetState} />
               ) : (
                 <Typography variant="h6" color="inherit">
                   {heading}
@@ -204,7 +207,7 @@ const DrawerHeader = observer(
 const DrawerWidget = observer(
   ({ session }: { session: SessionWithDrawerWidgets }) => {
     const { visibleWidget } = session
-    const { pluginManager } = getEnv(session)
+    const pluginManager = getPluginManager(session)
     const DrawerComponent = visibleWidget
       ? pluginManager.getWidgetType(visibleWidget.type).ReactComponent
       : null
@@ -218,11 +221,13 @@ const DrawerWidget = observer(
       <Drawer session={session}>
         <DrawerHeader session={session} setToolbarHeight={setToolbarHeight} />
         <Suspense fallback={<div>Loading...</div>}>
-          <DrawerComponent
-            model={visibleWidget}
-            session={session}
-            toolbarHeight={toolbarHeight}
-          />
+          {DrawerComponent ? (
+            <DrawerComponent
+              model={visibleWidget}
+              session={session}
+              toolbarHeight={toolbarHeight}
+            />
+          ) : null}
         </Suspense>
       </Drawer>
     )

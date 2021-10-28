@@ -9,6 +9,7 @@ import {
   makeIndexType,
   AdapterGuesser,
   getFileName,
+  CoreGuessAdapterForLocation,
 } from '@jbrowse/core/util/tracks'
 
 export default class BedPlugin extends Plugin {
@@ -24,7 +25,7 @@ export default class BedPlugin extends Plugin {
             import('./BigBedAdapter/BigBedAdapter').then(r => r.default),
         }),
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessAdapterForLocation>(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (
@@ -55,7 +56,7 @@ export default class BedPlugin extends Plugin {
             import('./BedTabixAdapter/BedTabixAdapter').then(r => r.default),
         }),
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessAdapterForLocation>(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (

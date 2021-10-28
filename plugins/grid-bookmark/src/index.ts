@@ -5,7 +5,9 @@ import BookmarksIcon from '@material-ui/icons/Bookmarks'
 
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
-import PluginManager from '@jbrowse/core/PluginManager'
+import PluginManager, {
+  CoreExtendPluggableElement,
+} from '@jbrowse/core/PluginManager'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { getSession } from '@jbrowse/core/util'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
@@ -33,7 +35,7 @@ export default class extends Plugin {
       })
     })
 
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreExtendPluggableElement>(
       'Core-extendPluggableElement',
       (pluggableElement: PluggableElementType) => {
         if (pluggableElement.name === 'LinearGenomeView') {

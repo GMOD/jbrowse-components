@@ -1,6 +1,6 @@
 import React from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+import { getPluginManager, getSession } from '@jbrowse/core/util'
 import {
   Link,
   MenuItem,
@@ -102,8 +102,7 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
   const classes = useStyles()
   const session = getSession(model)
   const { trackAdapter } = model
-  // prettier-ignore
-  const adapters = getAdapterTypes(getEnv(session).pluginManager)
+  const adapters = getAdapterTypes(getPluginManager(session))
   return (
     <TextField
       className={classes.spacing}
@@ -173,7 +172,7 @@ const TrackTypeSelector = observer(({ model }: { model: AddTrackModel }) => {
   const classes = useStyles()
   const session = getSession(model)
   const { trackType } = model
-  const trackTypes = getTrackTypes(getEnv(session).pluginManager)
+  const trackTypes = getTrackTypes(getPluginManager(session))
 
   return (
     <TextField

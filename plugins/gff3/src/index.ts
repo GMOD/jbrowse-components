@@ -8,6 +8,7 @@ import {
   makeIndexType,
   AdapterGuesser,
   getFileName,
+  CoreGuessAdapterForLocation,
 } from '@jbrowse/core/util/tracks'
 import { configSchema as gff3AdapterConfigSchema } from './Gff3Adapter'
 
@@ -24,7 +25,7 @@ export default class extends Plugin {
             import('./Gff3TabixAdapter/Gff3TabixAdapter').then(r => r.default),
         }),
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessAdapterForLocation>(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (
@@ -60,7 +61,7 @@ export default class extends Plugin {
             import('./Gff3Adapter/Gff3Adapter').then(r => r.default),
         }),
     )
-    pluginManager.addToExtensionPoint(
+    pluginManager.addToExtensionPoint<CoreGuessAdapterForLocation>(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (

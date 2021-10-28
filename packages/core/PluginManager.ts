@@ -35,6 +35,11 @@ type UNKNOWN_EXTENSION_POINT = {
   dataType: unknown
 }
 
+export type CoreExtendPluggableElement = {
+  name: 'Core-extendPluggableElement'
+  dataType: PluggableElementType
+}
+
 /** little helper class that keeps groups of callbacks that are
 then run in a specified order by group */
 class PhasedScheduler<PhaseName extends string> {
@@ -332,10 +337,10 @@ export default class PluginManager {
           )
         }
 
-        newElement = this.evaluateExtensionPoint(
+        newElement = this.evaluateExtensionPoint<CoreExtendPluggableElement>(
           'Core-extendPluggableElement',
           newElement,
-        ) as PluggableElementType
+        )
 
         typeRecord.add(newElement.name, newElement)
       })
@@ -574,9 +579,13 @@ export default class PluginManager {
     return this.addElementType('internet account', creationCallback)
   }
 
-  addToExtensionPoint<T>(
-    extensionPointName: string,
-    callback: (extendee: T) => T,
+  /**
+   * Add the given callback to the given extension point name. If using TS, the
+   * type of the extension point is a required generic argument.
+   */
+  addToExtensionPoint<EP_TYPE extends UNKNOWN_EXTENSION_POINT = never>(
+    extensionPointName: EP_TYPE['name'],
+    callback: (extendee: EP_TYPE['dataType']) => EP_TYPE['dataType'],
   ) {
     let callbacks = this.extensionPoints.get(extensionPointName)
     if (!callbacks) {
@@ -600,7 +609,7 @@ export default class PluginManager {
    * return a
    * ```
    */
-  evaluateExtensionPoint<EP_TYPE extends UNKNOWN_EXTENSION_POINT>(
+  evaluateExtensionPoint<EP_TYPE extends UNKNOWN_EXTENSION_POINT = never>(
     extensionPointName: EP_TYPE['name'],
     initialValue: EP_TYPE['dataType'],
   ) {
