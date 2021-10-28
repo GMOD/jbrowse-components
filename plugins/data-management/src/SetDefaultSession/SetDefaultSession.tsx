@@ -1,6 +1,5 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
 import {
   Dialog,
   DialogTitle,
@@ -31,12 +30,12 @@ const SetDefaultSession = observer(
     onClose,
   }: {
     rootModel: {
-      jbrowse: { setDefaultSession: Function }
-      session: {
+      jbrowse: { setDefaultSessionConf: Function }
+      session?: {
         notify: Function
         savedSessions: {
           name: string
-          views: {
+          views?: {
             tracks: unknown[]
           }[]
         }[]
@@ -47,6 +46,9 @@ const SetDefaultSession = observer(
   }) => {
     const classes = useStyles()
     const { session } = rootModel
+    if (!session) {
+      return null
+    }
 
     return (
       <Dialog open={open}>
@@ -72,7 +74,9 @@ const SetDefaultSession = observer(
                 return (
                   <div key={JSON.stringify(snap)}>
                     <Button
-                      onClick={() => rootModel.jbrowse.setDefaultSession(snap)}
+                      onClick={() =>
+                        rootModel.jbrowse.setDefaultSessionConf(snap)
+                      }
                     >
                       {name}
                     </Button>
@@ -95,7 +99,7 @@ const SetDefaultSession = observer(
           <Button
             variant="contained"
             onClick={() => {
-              rootModel.jbrowse.setDefaultSession({
+              rootModel.jbrowse.setDefaultSessionConf({
                 name: `New session`,
               })
               session.notify('Reset default session', 'success')
@@ -115,7 +119,7 @@ const SetDefaultSession = observer(
             color="primary"
             variant="contained"
             onClick={() => {
-              rootModel.jbrowse.setDefaultSession(session)
+              rootModel.jbrowse.setDefaultSessionConf(session)
               session.notify('Reset default session', 'success')
               onClose()
             }}
