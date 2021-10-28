@@ -58,13 +58,13 @@ const SetDefaultSession = observer(
           >
             {savedSessions.length ? (
               savedSessions.map(snap => {
-                const { name, views } = snap
+                const { name, views = [] } = snap
                 const totalTracks = views
                   .map(view => view.tracks.length)
                   .reduce((a, b) => a + b, 0)
 
                 return (
-                  <div>
+                  <div key={JSON.stringify(snap)}>
                     <Button onClick={() => session.setDefaultSession(snap)}>
                       {name}
                     </Button>
