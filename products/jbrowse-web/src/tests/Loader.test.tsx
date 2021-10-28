@@ -178,9 +178,12 @@ describe('<Loader />', () => {
         <Loader />
       </QueryParamProvider>,
     )
-    await waitFor(() => {
-      expect(sessionStorage.length).toBeGreaterThan(0)
-    })
+    await waitFor(
+      () => {
+        expect(sessionStorage.length).toBeGreaterThan(0)
+      },
+      { timeout: 10000 },
+    )
   }, 10000)
 
   // minimal session,
