@@ -32,7 +32,7 @@ describe('SetDefaultSession GUI', () => {
   it('closes when the return button is clicked', () => {
     const onClose = jest.fn()
     const { getByText } = render(
-      <SetDefaultSession rootModel={mockRootModel} open onClose={onClose} />,
+      <SetDefaultSession rootModel={mockRootModel} onClose={onClose} />,
     )
     fireEvent.click(getByText('Cancel'))
     expect(onClose).toHaveBeenCalled()
@@ -40,7 +40,7 @@ describe('SetDefaultSession GUI', () => {
 
   it('shows no sessions if none are saved', () => {
     const { getByText } = render(
-      <SetDefaultSession rootModel={mockRootModel} open onClose={() => {}} />,
+      <SetDefaultSession rootModel={mockRootModel} onClose={() => {}} />,
     )
     expect(getByText('No saved sessions found')).toBeTruthy()
   })
@@ -58,11 +58,7 @@ describe('SetDefaultSession GUI', () => {
       },
     }
     const { getByText } = render(
-      <SetDefaultSession
-        rootModel={MockSavedSessions}
-        open
-        onClose={() => {}}
-      />,
+      <SetDefaultSession rootModel={MockSavedSessions} onClose={() => {}} />,
     )
     expect(getByText('New session')).toBeTruthy()
   })
@@ -78,7 +74,7 @@ describe('SetDefaultSession GUI', () => {
       },
     }
     const { getByText } = render(
-      <SetDefaultSession rootModel={MockSession} open onClose={() => {}} />,
+      <SetDefaultSession rootModel={MockSession} onClose={() => {}} />,
     )
     fireEvent.click(getByText('Clear default session'))
     expect(MockSession.jbrowse.setDefaultSessionConf).toHaveBeenCalledWith({

@@ -23,41 +23,40 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+function canSetDefaultSession(obj: unknown): obj is {
+  jbrowse: { setDefaultSessionConf: Function }
+  session: {
+    notify: Function
+    savedSessions: {
+      name: string
+      views?: {
+        tracks: unknown[]
+      }[]
+    }[]
+  }
+} {
+  return (
+    typeof obj === 'object' &&
+    !!obj &&
+    'setDefaultSessionConf' in obj &&
+    'savedSessions' in obj
+  )
+}
+
 const SetDefaultSession = observer(
-  ({
-    rootModel,
-    open,
-    onClose,
-  }: {
-    rootModel?: {
-      jbrowse: { setDefaultSessionConf?: Function }
-      session?: {
-        notify: Function
-        savedSessions: {
-          name: string
-          views?: {
-            tracks: unknown[]
-          }[]
-        }[]
-      }
-    }
-    open: boolean
-    onClose: Function
-  }) => {
+  ({ rootModel, onClose }: { rootModel?: unknown; onClose: () => void }) => {
     const classes = useStyles()
     if (!rootModel) {
       return null
     }
+    if (!canSetDefaultSession(rootModel)) {
+      console.error('Incorrect rootmodel')
+      return null
+    }
     const { jbrowse, session } = rootModel
-    if (!session) {
-      return null
-    }
-    if (!('setDefaultSessionConf' in jbrowse)) {
-      return null
-    }
 
     return (
-      <Dialog open={open}>
+      <Dialog open onClose={onClose}>
         <DialogTitle>Set default session</DialogTitle>
         <DialogContent>
           <Typography>
@@ -79,11 +78,7 @@ const SetDefaultSession = observer(
 
                 return (
                   <div key={JSON.stringify(snap)}>
-                    <Button
-                      onClick={() =>
-                        rootModel.jbrowse.setDefaultSessionConf(snap)
-                      }
-                    >
+                    <Button onClick={() => jbrowse.setDefaultSessionConf(snap)}>
                       {name}
                     </Button>
                     {`${views.length} ${pluralize(
@@ -105,7 +100,7 @@ const SetDefaultSession = observer(
           <Button
             variant="contained"
             onClick={() => {
-              rootModel.jbrowse.setDefaultSessionConf({
+              jbrowse.setDefaultSessionConf({
                 name: `New session`,
               })
               session.notify('Reset default session', 'success')
@@ -117,7 +112,7 @@ const SetDefaultSession = observer(
           <Button
             color="secondary"
             variant="contained"
-            onClick={() => onClose(false)}
+            onClick={() => onClose()}
           >
             Cancel
           </Button>
@@ -125,7 +120,7 @@ const SetDefaultSession = observer(
             color="primary"
             variant="contained"
             onClick={() => {
-              rootModel.jbrowse.setDefaultSessionConf(session)
+              jbrowse.setDefaultSessionConf(session)
               session.notify('Reset default session', 'success')
               onClose()
             }}
