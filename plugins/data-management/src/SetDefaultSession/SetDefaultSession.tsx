@@ -29,8 +29,8 @@ const SetDefaultSession = observer(
     open,
     onClose,
   }: {
-    rootModel: {
-      jbrowse: { setDefaultSessionConf: Function }
+    rootModel?: {
+      jbrowse: { setDefaultSessionConf?: Function }
       session?: {
         notify: Function
         savedSessions: {
@@ -45,8 +45,14 @@ const SetDefaultSession = observer(
     onClose: Function
   }) => {
     const classes = useStyles()
-    const { session } = rootModel
+    if (!rootModel) {
+      return null
+    }
+    const { jbrowse, session } = rootModel
     if (!session) {
+      return null
+    }
+    if (!('setDefaultSessionConf' in jbrowse)) {
       return null
     }
 
@@ -64,8 +70,8 @@ const SetDefaultSession = observer(
           <List
             subheader={<ListSubheader>Previously saved sessions</ListSubheader>}
           >
-            {session?.savedSessions.length ? (
-              session?.savedSessions.map(snap => {
+            {session.savedSessions.length ? (
+              session.savedSessions.map(snap => {
                 const { name, views = [] } = snap
                 const totalTracks = views
                   .map(view => view.tracks.length)
