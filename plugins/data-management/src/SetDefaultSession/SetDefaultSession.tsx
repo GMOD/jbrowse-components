@@ -6,46 +6,18 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  List,
-  ListSubheader,
   Typography,
-  makeStyles,
 } from '@material-ui/core'
-
-import pluralize from 'pluralize'
-
-const useStyles = makeStyles(theme => ({
-  root: {
-    margin: theme.spacing(1),
-  },
-  message: {
-    padding: theme.spacing(3),
-  },
-}))
 
 function canSetDefaultSession(obj: unknown): obj is {
   jbrowse: { setDefaultSessionConf: Function }
-  session: {
-    notify: Function
-    savedSessions: {
-      name: string
-      views?: {
-        tracks: unknown[]
-      }[]
-    }[]
-  }
+  session: unknown
 } {
-  return (
-    typeof obj === 'object' &&
-    !!obj &&
-    'setDefaultSessionConf' in obj &&
-    'savedSessions' in obj
-  )
+  return typeof obj === 'object' && !!obj && 'jbrowse' in obj
 }
 
 const SetDefaultSession = observer(
   ({ rootModel, onClose }: { rootModel?: unknown; onClose: () => void }) => {
-    const classes = useStyles()
     if (!rootModel) {
       return null
     }
@@ -60,41 +32,10 @@ const SetDefaultSession = observer(
         <DialogTitle>Set default session</DialogTitle>
         <DialogContent>
           <Typography>
-            Choose a previously saved session (if any exist) or select "Set
-            current session as default" to make your current session saved to
-            the config file. You can also clear the defaultSession, which would
-            just take the user to the start screen instead of any preconfigured
-            default session.
+            Select "Set current session as default" to make your current session
+            saved to the config file. You can also hit "Clear default session",
+            which would remove the default session from the config.
           </Typography>
-          <List
-            subheader={<ListSubheader>Previously saved sessions</ListSubheader>}
-          >
-            {session.savedSessions.length ? (
-              session.savedSessions.map(snap => {
-                const { name, views = [] } = snap
-                const totalTracks = views
-                  .map(view => view.tracks.length)
-                  .reduce((a, b) => a + b, 0)
-
-                return (
-                  <div key={JSON.stringify(snap)}>
-                    <Button onClick={() => jbrowse.setDefaultSessionConf(snap)}>
-                      {name}
-                    </Button>
-                    {`${views.length} ${pluralize(
-                      'view',
-                      views.length,
-                    )}; ${totalTracks}
-                             open ${pluralize('track', totalTracks)}`}
-                  </div>
-                )
-              })
-            ) : (
-              <Typography className={classes.message}>
-                No saved sessions found
-              </Typography>
-            )}
-          </List>
         </DialogContent>
         <DialogActions>
           <Button
@@ -103,7 +44,6 @@ const SetDefaultSession = observer(
               jbrowse.setDefaultSessionConf({
                 name: `New session`,
               })
-              session.notify('Reset default session', 'success')
               onClose()
             }}
           >
@@ -121,7 +61,6 @@ const SetDefaultSession = observer(
             variant="contained"
             onClick={() => {
               jbrowse.setDefaultSessionConf(session)
-              session.notify('Reset default session', 'success')
               onClose()
             }}
           >

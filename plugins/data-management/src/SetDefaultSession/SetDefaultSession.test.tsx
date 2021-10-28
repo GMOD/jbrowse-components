@@ -38,31 +38,6 @@ describe('SetDefaultSession GUI', () => {
     expect(onClose).toHaveBeenCalled()
   })
 
-  it('shows no sessions if none are saved', () => {
-    const { getByText } = render(
-      <SetDefaultSession rootModel={mockRootModel} onClose={() => {}} />,
-    )
-    expect(getByText('No saved sessions found')).toBeTruthy()
-  })
-
-  it('lists the saved sessions', () => {
-    const MockSavedSessions = {
-      ...mockRootModel,
-      session: {
-        ...mockRootModel.session,
-        savedSessions: [
-          {
-            name: `New session`,
-          },
-        ],
-      },
-    }
-    const { getByText } = render(
-      <SetDefaultSession rootModel={MockSavedSessions} onClose={() => {}} />,
-    )
-    expect(getByText('New session')).toBeTruthy()
-  })
-
   it('unsets to the default session with reset button', () => {
     const MockSession = {
       ...mockRootModel,
