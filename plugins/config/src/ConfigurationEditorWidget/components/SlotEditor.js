@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
-import { getPropertyMembers, getEnv } from 'mobx-state-tree'
+import { getEnv, getPropertyMembers } from 'mobx-state-tree'
 import { FileSelector } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import {
   getPropertyType,
   getSubType,
@@ -344,6 +345,7 @@ const FileSelectorWrapper = observer(({ slot }) => {
       setLocation={location => slot.set(location)}
       name={slot.name}
       description={slot.description}
+      session={getSession(slot)}
       rootModel={getEnv(slot).pluginManager?.rootModel}
     />
   )

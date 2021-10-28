@@ -18,13 +18,8 @@ import {
   ToggleButtonProps,
 } from '@material-ui/lab'
 import { observer } from 'mobx-react'
-import {
-  FileLocation,
-  UriLocation,
-  isUriLocation,
-  AbstractRootModel,
-  isAppRootModel,
-} from '../../util/types'
+import { getParent } from 'mobx-state-tree'
+import { FileLocation, UriLocation, isUriLocation } from '../../util/types'
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
 import LocalFileChooser from './LocalFileChooser'
 import UrlChooser from './UrlChooser'
@@ -45,18 +40,22 @@ const FileSelector = observer(
     setName?: (str: string) => void
     name?: string
     description?: string
-    rootModel?: AbstractRootModel
+    session: any
+    rootModel: any
   }) => {
-    const { location, name, description, rootModel, setLocation } = props
+    const { location, name, description, rootModel, session, setLocation } =
+      props
     const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'
     const [toggleButtonValue, setToggleButtonValue] = useState(
       location && 'internetAccountId' in location && location.internetAccountId
         ? location.internetAccountId
         : fileOrUrl,
     )
-    const internetAccounts = isAppRootModel(rootModel)
-      ? rootModel.internetAccounts.slice()
-      : []
+
+    console.log('from rootmodel', rootModel.internetAccounts[0].name)
+    console.log('from session', session.internetAccounts[0].name)
+    console.log('manual', getParent(session).internetAccounts[0].name)
+    const internetAccounts = rootModel.internetAccounts.slice()
     const numAccountsShown = 2
     const [shownInternetAccounts, setShownInternetAccounts] = useState(
       internetAccounts.slice(0, numAccountsShown),
