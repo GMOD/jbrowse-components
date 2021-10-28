@@ -13,7 +13,6 @@ import {
   alpha,
 } from '@material-ui/core'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
 import {
   getPluginManager,
   SessionWithDrawerWidgets,

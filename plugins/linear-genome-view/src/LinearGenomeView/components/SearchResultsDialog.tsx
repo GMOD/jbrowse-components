@@ -1,5 +1,5 @@
 import React from 'react'
-import { getEnv, resolveIdentifier, getRoot } from 'mobx-state-tree'
+import { resolveIdentifier, getRoot } from 'mobx-state-tree'
 import { getPluginManager, getSession } from '@jbrowse/core/util'
 import {
   Button,

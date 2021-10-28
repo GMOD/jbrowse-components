@@ -15,7 +15,6 @@ import SimpleFeature, {
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 import { getPluginManager, getSession } from '@jbrowse/core/util'
-import { getEnv } from 'mobx-state-tree'
 import {
   FeatureDetails,
   BaseCard,

@@ -11,7 +11,6 @@ import {
 } from '@material-ui/core'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
 import { UNKNOWN } from '@jbrowse/core/util/tracks'
 
 // locals

@@ -1,6 +1,5 @@
 import React, { Suspense } from 'react'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { makeStyles, ThemeProvider } from '@material-ui/core'
