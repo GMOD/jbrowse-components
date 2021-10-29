@@ -481,6 +481,7 @@ const stateModelFactory = (
           },
           ...opts,
         }
+
         if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
           const results: FeatureStats = (await rpcManager.call(
             sessionId,

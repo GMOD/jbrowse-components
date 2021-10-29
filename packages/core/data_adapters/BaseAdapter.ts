@@ -3,7 +3,6 @@ import { filter, takeUntil, toArray } from 'rxjs/operators'
 import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { ObservableCreate } from '../util/rxjs'
 import { checkAbortSignal, observeAbortSignal } from '../util'
-import { getConf } from '../configuration'
 import { Feature } from '../util/simpleFeature'
 import {
   AnyConfigurationModel,
@@ -11,10 +10,16 @@ import {
 } from '../configuration/configurationSchema'
 import { getSubAdapterType } from './dataAdapterCache'
 import { Region, NoAssemblyRegion } from '../util/types'
-import { blankStats, rectifyStats, scoresToStats } from '../util/stats'
+import {
+  blankStats,
+  rectifyStats,
+  scoresToStats,
+  BaseFeatureStats,
+} from '../util/stats'
 import BaseResult from '../TextSearch/BaseResults'
 import idMaker from '../util/idMaker'
 import PluginManager from '../PluginManager'
+import { Assembly } from '../assemblyManager/assembly'
 
 export interface BaseOptions {
   signal?: AbortSignal
@@ -260,27 +265,35 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     })
   }
 
-  public async estimateGlobalStats(region: Region, opts?: BaseOptions) {
-    // look at jb1 code
-    // _estimateGlobalStats: function( refseq ) {
-    //   var deferred = new Deferred();
-    //   refseq = refseq || this.refSeq;
-    //   var timeout = this.storeTimeout || 3000; // put in config
-    //   if (this.storeTimeout == 0) {
-    //       deferred.resolve( { featureDensity: 0, error: 'global stats estimation timed out' } )
-    //       return
-    //   }
+  // have a function called getStats that calls estimateGlobalStats
+  public async getGlobalStats(
+    assembly: any | undefined,
+    regionToStart?: Region,
+    opts?: BaseOptions,
+  ): Promise<BaseFeatureStats> {
+    console.log(regionToStart)
+    // this would call estimateGlobalStats, others can override with own implementation
+    return this.estimateGlobalStats(
+      // @ts-ignore
+      regionToStart
+        ? regionToStart
+        : (
+            assembly?.regions as Region[]
+          )[0] /* look at assembly and get biggest region */,
+    )
+  }
 
+  public async estimateGlobalStats(
+    region: Region,
+    opts?: BaseOptions,
+  ): Promise<BaseFeatureStats> {
+    // avoid chunkSizeLimit error
+    // remove the promise eventually
     return new Promise((resolve, reject) => {
-      const timeout = 3000 // or get from config
-      const startTime = Date.now()
-
-      // @ts-ignore remove this ignore when adding timeout to config
-      if (timeout === 0) {
-        reject('Error: global stats estimation timed out')
-      }
-
-      const statsFromInterval = async (length: number) => {
+      const statsFromInterval = async (
+        length: number,
+        expansionTime: number,
+      ) => {
         const sampleCenter = region.start * 0.75 + region.end * 0.25
         const start = Math.max(0, Math.round(sampleCenter - length / 2))
         const end = Math.min(Math.round(sampleCenter + length / 2), region.end)
@@ -295,79 +308,41 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
           )
           .toPromise()
 
-        const correctionFactor =
-          (getConf('topLevelFeaturesPercent') || 100) / 100
-        const featureDensity = (features.length / length) * correctionFactor
-        return maybeRecordStats(length, {
-          featureDensity: featureDensity,
-          correctionFactor: correctionFactor,
-          statsSamplefeatures: features.length,
-          statsSampleInternval: region,
-        })
+        console.log('features', features)
+        const featureDensity = features.length / length
+        return maybeRecordStats(
+          length,
+          {
+            featureDensity: featureDensity,
+            statsSampleFeatures: features.length,
+            statsSampleInternval: region,
+          },
+          expansionTime,
+        )
       }
-      //   var startTime = new Date();
-      //   var statsFromInterval = function( length, callback ) {
-      //       var thisB = this;
-      //       var sampleCenter = refseq.start*0.75 + refseq.end*0.25;
-      //       var start = Math.max( 0, Math.round( sampleCenter - length/2 ) );
-      //       var end = Math.min( Math.round( sampleCenter + length/2 ), refseq.end );
-      //       var features = [];
-      //       //console.log(`${this.source} stats fetching ${refseq.name}:${start}..${end}`)
-      //       this._getFeatures({ ref: refseq.name, start: start, end: end},
-      //                         function( f ) { features.push(f); },
-      //                         function( error ) {
-      //                             features = array.filter( features, function(f) { return f.get('start') >= start && f.get('end') <= end; } );
-      //                             const correctionFactor = (thisB.getConf('topLevelFeaturesPercent') || 100) / 100
-      //                             callback.call( thisB, length,
-      //                                            {
-      //                                                featureDensity: features.length / length * correctionFactor,
-      //                                                _correctionFactor: correctionFactor,
-      //                                                _statsSampleFeatures: features.length,
-      //                                                _statsSampleInterval: { ref: refseq.name, start: start, end: end, length: length }
-      //                                            });
-      //                         },
-      //                         function( error ) {
-      //                                 callback.call( thisB, length,  null, error );
-      //                         });
-      //   };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const maybeRecordStats = (interval: number, stats: any) => {
+      const maybeRecordStats = (
+        interval: number,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        stats: any,
+        expansionTime: number,
+      ) => {
         const refLen = region.end - region.start
         if (stats.statsSampleFeatures >= 300 || interval * 2 > refLen) {
           resolve(stats)
-        } else if (Date.now() - startTime < timeout) {
-          statsFromInterval(interval * 2)
+          return
+        } else if (expansionTime <= 4) {
+          expansionTime++
+          statsFromInterval(interval * 2, expansionTime)
         } else {
           console.error('Stats estimation reached timeout')
           resolve({ featureDensity: 0 })
+          return
         }
       }
+
+      statsFromInterval(100, 0)
     })
-    //   var maybeRecordStats = function( interval, stats, error ) {
-    //       if( error ) {
-    //           if( error.isInstanceOf && error.isInstanceOf(Errors.DataOverflow) ) {
-    //                console.log( 'Store statistics found chunkSizeLimit error, using empty: '+(this.source||this.name) );
-    //                deferred.resolve( { featureDensity: 0, error: 'global stats estimation found chunkSizeError' } );
-    //           }
-    //           else {
-    //               deferred.reject( error );
-    //           }
-    //       } else {
-    //            var refLen = refseq.end - refseq.start;
-    //            if( stats._statsSampleFeatures >= 300 || interval * 2 > refLen || error ) {
-    //                console.log( 'Store statistics: '+(this.source||this.name), stats );
-    //                deferred.resolve( stats );
-    //            } else if( ((new Date()) - startTime) < timeout ) {
-    //                statsFromInterval.call( this, interval * 2, maybeRecordStats );
-    //            } else {
-    //                console.log( 'Store statistics timed out: '+(this.source||this.name) );
-    //                deferred.resolve( { featureDensity: 0, error: 'global stats estimation timed out' } );
-    //            }
-    //       }
-    //   };
-    //   statsFromInterval.call( this, 100, maybeRecordStats ); // inside the promise
-    //   return deferred; // outside the promise,
   }
 }
 

@@ -3,16 +3,21 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
 import {
+  isAbortException,
   getContainingView,
   getSession,
   isSelectionContainer,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import { Region } from '@jbrowse/core/util/types'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { Feature, isFeature } from '@jbrowse/core/util/simpleFeature'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import {
+  getParentRenderProps,
+  getRpcSessionId,
+} from '@jbrowse/core/util/tracks'
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
@@ -23,6 +28,8 @@ import { Tooltip } from '../components/BaseLinearDisplay'
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
 
 import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
+
+type LGV = LinearGenomeViewModel
 
 export interface Layout {
   minX: number
@@ -180,6 +187,83 @@ export const BaseLinearDisplay = types
       })
 
       addDisposer(self, blockWatchDisposer)
+
+      addDisposer(
+        self,
+        autorun(async () => {
+          try {
+            const aborter = new AbortController()
+            const view = getContainingView(self) as LGV
+
+            if (!view.displayedRegions) {
+              throw new Error('no displayed regions')
+            }
+
+            const biggestDisplayedRegion = view.displayedRegions.reduce(
+              (acc, curr) =>
+                acc.end - acc.start + 1 > curr.end - curr.start + 1
+                  ? acc
+                  : curr,
+            )
+
+            // from the view, either grab a hint of what region to use
+            // and pass it to getGlobalStats so it can be put in the params
+            // using the LGV, needs context on what assembly and region we are in
+            // for thsi file, get biggest visible region, else don't estimate global stat
+
+            // not all backends will need to do this
+            const stats = await this.getGlobalStats(
+              getSession(self).assemblies[0],
+              biggestDisplayedRegion,
+              {
+                signal: aborter.signal,
+              },
+            )
+            // get stats, call stats action that calls rpc whcih does stats estimation
+            // returns an object that has feature density as part of it
+
+            // if feature density is within limits, set ready to true
+            // catch set error
+          } catch (e) {
+            if (!isAbortException(e) && isAlive(self)) {
+              console.error(e)
+              self.setError(e)
+            }
+          }
+        }),
+      )
+    },
+    async getGlobalStats(
+      assembly: any,
+      region: Region,
+      opts: {
+        headers?: Record<string, string>
+        signal?: AbortSignal
+        filters?: string[]
+      },
+    ) {
+      const { rpcManager } = getSession(self)
+      const { adapterConfig } = self
+      const sessionId = getRpcSessionId(self)
+
+      const params = {
+        sessionId,
+        assembly,
+        region,
+        adapterConfig,
+        statusCallback: {},
+        ...opts,
+      }
+
+      console.log(sessionId, params)
+      // need to pass a region here
+      const results = await rpcManager.call(
+        sessionId,
+        'CoreGetGlobalStats',
+        params,
+      )
+
+      return results
     },
     setHeight(displayHeight: number) {
       if (displayHeight > minDisplayHeight) {

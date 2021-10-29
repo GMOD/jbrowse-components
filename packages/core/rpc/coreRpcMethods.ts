@@ -18,6 +18,9 @@ import {
 import { Region } from '../util/types'
 import { checkAbortSignal, renameRegionsIfNeeded } from '../util'
 import SimpleFeature, { SimpleFeatureSerialized } from '../util/simpleFeature'
+import SerializableFilterChain from '../pluggableElementTypes/renderers/util/serializableFilterChain'
+import { BaseFeatureStats } from '../util/stats'
+import { Assembly } from '../assemblyManager/assembly'
 
 export class CoreGetRefNames extends RpcMethodType {
   name = 'CoreGetRefNames'
@@ -40,6 +43,7 @@ export class CoreGetRefNames extends RpcMethodType {
       sessionId,
       adapterConfig,
     )
+
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
       return dataAdapter.getRefNames(deserializedArgs)
     }
@@ -186,6 +190,53 @@ export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
   regions: Region[]
   adapterConfig: {}
   rendererType: string
+}
+
+export class CoreGetGlobalStats extends RpcMethodType {
+  name = 'CoreGetGlobalStats'
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async deserializeArguments(args: any, rpcDriverClassName: string) {
+    const l = await super.deserializeArguments(args, rpcDriverClassName)
+    return {
+      ...l,
+      filters: args.filters
+        ? new SerializableFilterChain({
+            filters: args.filters,
+          })
+        : undefined,
+    }
+  }
+
+  async execute(
+    args: {
+      adapterConfig: {}
+      // assembly: Assembly
+      // region: Region
+      signal?: RemoteAbortSignal
+      headers?: Record<string, string>
+      sessionId: string
+    },
+    rpcDriverClassName: string,
+  ): Promise<BaseFeatureStats> {
+    const deserializedArgs = await this.deserializeArguments(
+      args,
+      rpcDriverClassName,
+    )
+
+    const { adapterConfig, sessionId, assembly, region } = deserializedArgs
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
+
+    console.log(deserializedArgs)
+    if (dataAdapter instanceof BaseFeatureDataAdapter) {
+      return dataAdapter.getGlobalStats(assembly, region, deserializedArgs)
+    }
+    throw new Error('Data adapter not found')
+  }
 }
 
 /**
