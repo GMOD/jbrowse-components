@@ -30,13 +30,14 @@ const useStyles = makeStyles(theme => {
       height: HEADER_OVERVIEW_HEIGHT,
       overflow: 'hidden',
     },
+    scaleBarBorder: {
+      border: '1px solid',
+    },
     scaleBarContig: {
       backgroundColor: theme.palette.background.default,
       position: 'absolute',
       top: 0,
       height: HEADER_OVERVIEW_HEIGHT,
-      border: '1px solid',
-      borderBottomColor: 'black',
     },
     scaleBarContigForward: {
       backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M-.1 0L6 4.5L-.1 9' fill='none' stroke='%23ddd'/%3E%3C/svg%3E")`,
@@ -246,7 +247,7 @@ const Cytobands = observer(
                   0,
                   Math.abs(end - start),
                   HEADER_OVERVIEW_HEIGHT - 2,
-                  5,
+                  8,
                 )}
                 fill={colorMap[type]}
               />
@@ -257,9 +258,9 @@ const Cytobands = observer(
                 d={rightRoundedRect(
                   Math.min(start, end),
                   0,
-                  Math.abs(end - start),
+                  Math.abs(end - start) - 2,
                   HEADER_OVERVIEW_HEIGHT - 2,
-                  5,
+                  8,
                 )}
                 fill={colorMap[type]}
               />
@@ -319,6 +320,7 @@ const OverviewBox = observer(
             : reversed
             ? classes.scaleBarContigReverse
             : classes.scaleBarContigForward,
+          !shouldShowCytobands ? classes.scaleBarBorder : undefined,
         )}
         style={{
           left: block.offsetPx,
