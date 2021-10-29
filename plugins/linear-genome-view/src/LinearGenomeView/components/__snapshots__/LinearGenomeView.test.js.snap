@@ -17,14 +17,14 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         >
           <div
             class="makeStyles-scaleBarVisibleRegion"
-            style="width: 800px; left: 0px;"
+            style="width: 800px; left: 0px; background: rgba(121, 134, 203, 0.3);"
           />
           <div
             class="makeStyles-scaleBarContig"
             style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
           />
           <div
-            class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward"
+            class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward makeStyles-scaleBarBorder"
             style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
           >
             <p
@@ -63,13 +63,6 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             >
               100
             </p>
-            <svg
-              style="width: 100%;"
-            >
-              <g
-                transform="translate(-0)"
-              />
-            </svg>
           </div>
           <div
             class="makeStyles-scaleBarContig"
@@ -86,11 +79,17 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         height="48"
         width="100%"
       >
-        <polygon
-          fill="rgba(121, 134, 203, 0.3)"
-          points="0,48,101,48,800,0,0,0"
-          stroke="rgba(121, 134, 203, 0.8)"
-        />
+        <svg
+          class="makeStyles-overviewSvg"
+          height="48"
+          width="100%"
+        >
+          <polygon
+            fill="rgba(121, 134, 203, 0.3)"
+            points="0,48,101,48,800,0,0,0"
+            stroke="rgba(121, 134, 203, 0.8)"
+          />
+        </svg>
       </svg>
       <div
         class="makeStyles-headerBar"
@@ -587,14 +586,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         >
           <div
             class="makeStyles-scaleBarVisibleRegion"
-            style="width: 580px; left: 0px;"
+            style="width: 580px; left: 0px; background: rgba(121, 134, 203, 0.3);"
           />
           <div
             class="makeStyles-scaleBarContig"
             style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
           />
           <div
-            class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward"
+            class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward makeStyles-scaleBarBorder"
             style="left: 0px; width: 72.72727272727273px; border-color: rgb(153, 102, 0);"
           >
             <p
@@ -609,7 +608,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="width: 0px; left: 72.72727272727273px; background-color: rgb(153, 153, 153);"
           />
           <div
-            class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward"
+            class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward makeStyles-scaleBarBorder"
             style="left: 72.72727272727273px; width: 727.2727272727273px;"
           >
             <p
@@ -663,11 +662,17 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         height="48"
         width="100%"
       >
-        <polygon
-          fill="rgba(121, 134, 203, 0.3)"
-          points="0,48,802,48,580,0,0,0"
-          stroke="rgba(121, 134, 203, 0.8)"
-        />
+        <svg
+          class="makeStyles-overviewSvg"
+          height="48"
+          width="100%"
+        >
+          <polygon
+            fill="rgba(121, 134, 203, 0.3)"
+            points="0,48,802,48,580,0,0,0"
+            stroke="rgba(121, 134, 203, 0.8)"
+          />
+        </svg>
       </svg>
       <div
         class="makeStyles-headerBar"
