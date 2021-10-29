@@ -46,19 +46,12 @@
           }
         }
       },
-      "refNameAliases": {
-        "adapter": {
-          "type": "RefNameAliasAdapter",
-          "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
-          }
-        }
-      },
+
       "cytobands": {
         "adapter": {
           "type": "CytobandAdapter",
           "cytobandLocation": {
-            "uri": "cytoBand.txt"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/cytoBand.txt"
           }
         }
       }
@@ -91,6 +84,14 @@
           "location": {
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt",
             "locationType": "UriLocation"
+          }
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "cytobandLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt"
           }
         }
       }
