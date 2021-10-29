@@ -123,7 +123,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ),
         trackLabels: 'overlapping' as 'overlapping' | 'hidden' | 'offset',
         showCenterLine: false,
-        showIdeogramSetting: true,
+        showCytobandsSetting: true,
       }),
     )
     .volatile(() => ({
@@ -471,8 +471,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      setShowIdeogram(flag: boolean) {
-        self.showIdeogramSetting = flag
+      setShowCytobands(flag: boolean) {
+        self.showCytobandsSetting = flag
       },
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
@@ -1221,11 +1221,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
       return { zoom }
     })
     .views(self => ({
-      get canShowIdeograms() {
-        return self.displayedRegions.length === 1
+      get canShowCytobands() {
+        return self.displayedRegions.length === 1 && this.anyCytobandsExist
       },
-      get showIdeogram() {
-        return this.canShowIdeograms && self.showIdeogramSetting
+      get showCytobands() {
+        return this.canShowCytobands && self.showCytobandsSetting
+      },
+      get anyCytobandsExist() {
+        const { assemblyManager } = getSession(self)
+        const { assemblyNames } = self
+        return assemblyNames.some(
+          asm => assemblyManager.get(asm)?.cytobands?.length,
+        )
       },
     }))
     .views(self => {
@@ -1233,11 +1240,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
         menuItems(): MenuItem[] {
-          const { assemblyManager } = getSession(self)
-          const { assemblyNames, showIdeogram } = self
-          const anyIdeograms = assemblyNames.some(
-            asm => assemblyManager.get(asm)?.cytobands?.length,
-          )
+          const { canShowCytobands, showCytobands } = self
+
           const menuItems: MenuItem[] = [
             {
               label: 'Return to import form',
@@ -1324,12 +1328,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 },
               ],
             },
-            ...(anyIdeograms && self.canShowIdeograms
+            ...(canShowCytobands
               ? [
                   {
-                    label: showIdeogram ? 'Hide ideogram' : 'Show ideograms',
+                    label: showCytobands ? 'Hide ideogram' : 'Show ideograms',
                     onClick: () => {
-                      self.setShowIdeogram(!showIdeogram)
+                      self.setShowCytobands(!showCytobands)
                     },
                   },
                 ]

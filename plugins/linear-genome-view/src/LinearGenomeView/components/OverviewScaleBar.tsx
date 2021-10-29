@@ -21,9 +21,6 @@ import OverviewRubberBand from './OverviewRubberBand'
 const wholeSeqSpacer = 2
 
 const useStyles = makeStyles(theme => {
-  const scaleBarColor = theme.palette.tertiary
-    ? theme.palette.tertiary.light
-    : theme.palette.primary.light
   return {
     scaleBar: {
       width: '100%',
@@ -65,7 +62,6 @@ const useStyles = makeStyles(theme => {
       pointerEvents: 'none',
     },
     scaleBarVisibleRegion: {
-      background: alpha(scaleBarColor, 0.1),
       position: 'absolute',
       height: HEADER_OVERVIEW_HEIGHT,
       pointerEvents: 'none',
@@ -187,6 +183,7 @@ const Cytobands = observer(
     assembly?: Assembly
     block: ContentBlock
   }) => {
+    const { offsetPx } = block
     const cytobands = assembly?.cytobands
       ?.map(f => ({
         refName: assembly.getCanonicalRefName(f.get('refName')),
@@ -195,31 +192,35 @@ const Cytobands = observer(
         type: f.get('type'),
       }))
       .filter(f => f.refName === block.refName)
-      .map(f => [
-        overview.bpToPx({
-          refName: f.refName,
-          coord: f.start,
-        }),
-        overview.bpToPx({
-          refName: f.refName,
-          coord: f.end,
-        }),
-        f.type,
-      ])
+      .map(f => {
+        const { refName, start, end, type } = f
+        return [
+          overview.bpToPx({
+            refName,
+            coord: start,
+          }),
+          overview.bpToPx({
+            refName,
+            coord: end,
+          }),
+          type,
+        ]
+      })
 
     let firstCent = true
     return cytobands ? (
-      <g transform={`translate(-${block.offsetPx})`}>
+      <g transform={`translate(-${offsetPx})`}>
         {cytobands.map(([start, end, type], index) => {
+          const key = `${start}-${end}-${type}`
           if (type === 'acen' && firstCent) {
             firstCent = false
             return (
               <polygon
-                key={`${start}-${end}-${type}`}
+                key={key}
                 points={[
                   [start, 0],
-                  [end, (HEADER_OVERVIEW_HEIGHT - 2) / 2],
-                  [start, HEADER_OVERVIEW_HEIGHT - 2],
+                  [end, HEADER_OVERVIEW_HEIGHT / 2],
+                  [start, HEADER_OVERVIEW_HEIGHT],
                 ].toString()}
                 fill={colorMap[type]}
               />
@@ -228,11 +229,11 @@ const Cytobands = observer(
           if (type === 'acen' && !firstCent) {
             return (
               <polygon
-                key={`${start}-${end}-${type}`}
+                key={key}
                 points={[
-                  [start, (HEADER_OVERVIEW_HEIGHT - 2) / 2],
+                  [start, HEADER_OVERVIEW_HEIGHT / 2],
                   [end, 0],
-                  [end, HEADER_OVERVIEW_HEIGHT - 2],
+                  [end, HEADER_OVERVIEW_HEIGHT],
                 ].toString()}
                 fill={colorMap[type]}
               />
@@ -242,11 +243,12 @@ const Cytobands = observer(
           if (index === 0) {
             return (
               <path
+                key={key}
                 d={leftRoundedRect(
                   Math.min(start, end),
                   0,
                   Math.abs(end - start),
-                  HEADER_OVERVIEW_HEIGHT - 2,
+                  HEADER_OVERVIEW_HEIGHT,
                   8,
                 )}
                 fill={colorMap[type]}
@@ -255,11 +257,12 @@ const Cytobands = observer(
           } else if (index === cytobands.length - 1) {
             return (
               <path
+                key={key}
                 d={rightRoundedRect(
                   Math.min(start, end),
                   0,
                   Math.abs(end - start) - 2,
-                  HEADER_OVERVIEW_HEIGHT - 2,
+                  HEADER_OVERVIEW_HEIGHT,
                   8,
                 )}
                 fill={colorMap[type]}
@@ -268,11 +271,11 @@ const Cytobands = observer(
           } else {
             return (
               <rect
-                key={`${start}-${end}-${type}`}
+                key={key}
                 x={Math.min(start, end)}
                 y={0}
                 width={Math.abs(end - start)}
-                height={HEADER_OVERVIEW_HEIGHT - 2}
+                height={HEADER_OVERVIEW_HEIGHT}
                 fill={colorMap[type]}
               />
             )
@@ -296,7 +299,7 @@ const OverviewBox = observer(
     overview: Base1DViewModel
   }) => {
     const classes = useStyles()
-    const { showIdeogram } = model
+    const { showCytobands } = model
     const { start, end, reversed, refName, assemblyName } = block
     const { majorPitch } = chooseGridPitch(scale, 120, 15)
     const { assemblyManager } = getSession(model)
@@ -309,7 +312,7 @@ const OverviewBox = observer(
       tickLabels.push(reversed ? end - offsetLabel : start + offsetLabel)
     }
 
-    const shouldShowCytobands = assembly?.cytobands?.length && showIdeogram
+    const shouldShowCytobands = assembly?.cytobands?.length && showCytobands
 
     return (
       <div
@@ -374,8 +377,12 @@ const ScaleBar = observer(
     scale: number
   }) => {
     const classes = useStyles()
-    const visibleRegions = model.dynamicBlocks.contentBlocks
+    const theme = useTheme()
+    const { dynamicBlocks, showCytobands } = model
+    const visibleRegions = dynamicBlocks.contentBlocks
     const overviewVisibleRegions = overview.dynamicBlocks
+    const { tertiary, primary } = theme.palette
+    const scaleBarColor = tertiary ? tertiary.light : primary.light
 
     if (!visibleRegions.length) {
       return null
@@ -401,6 +408,7 @@ const ScaleBar = observer(
           style={{
             width: lastOverviewPx - firstOverviewPx,
             left: firstOverviewPx,
+            background: showCytobands ? undefined : alpha(scaleBarColor, 0.3),
           }}
         />
         {/* this is the entire scale bar */}
