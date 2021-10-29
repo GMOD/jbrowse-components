@@ -471,7 +471,13 @@ function OverviewScaleBar({
         }
       />
       <div className={classes.overview}>
-        <Polygon model={model} overview={overview} />
+        <svg
+          height={HEADER_BAR_HEIGHT}
+          width="100%"
+          className={classes.overviewSvg}
+        >
+          <Polygon model={model} overview={overview} />
+        </svg>
         {children}
       </div>
     </div>
@@ -480,4 +486,4 @@ function OverviewScaleBar({
 
 export default observer(OverviewScaleBar)
 
-export { Cytobands }
+export { Cytobands, Polygon }

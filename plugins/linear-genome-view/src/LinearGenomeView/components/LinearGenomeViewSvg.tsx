@@ -14,7 +14,7 @@ import {
   ExportSvgOptions,
   HEADER_OVERVIEW_HEIGHT,
 } from '..'
-import { Cytobands } from './OverviewScaleBar'
+import { Polygon, Cytobands } from './OverviewScaleBar'
 
 type LGV = LinearGenomeViewModel
 
@@ -134,7 +134,7 @@ const totalHeight = (tracks: Track[]) => {
 
 // SVG component, ruler and assembly name
 const SVGHeader = ({ model }: { model: LGV }) => {
-  const { width, assemblyNames, showIdeogram, displayedRegions } = model
+  const { width, assemblyNames, showCytobands, displayedRegions } = model
   const { assemblyManager } = getSession(model)
   const assemblyName = assemblyNames.length > 1 ? '' : assemblyNames[0]
   const assembly = assemblyManager.get(assemblyName)
@@ -164,7 +164,7 @@ const SVGHeader = ({ model }: { model: LGV }) => {
       coord: last.reversed ? last.start : last.end,
     }) || 0
 
-  const cytobandHeight = showIdeogram ? cytobandHeightIfExists : 0
+  const cytobandHeight = showCytobands ? cytobandHeightIfExists : 0
 
   return (
     <g id="header">
@@ -172,7 +172,7 @@ const SVGHeader = ({ model }: { model: LGV }) => {
         {assemblyName}
       </text>
 
-      {showIdeogram ? (
+      {showCytobands ? (
         <g transform={`translate(0 ${rulerHeight})`}>
           <Cytobands overview={overview} assembly={assembly} block={block} />
           <rect
@@ -181,8 +181,11 @@ const SVGHeader = ({ model }: { model: LGV }) => {
             width={lastOverviewPx - firstOverviewPx}
             height={HEADER_OVERVIEW_HEIGHT - 2}
             x={firstOverviewPx}
-            y={0}
+            y={1}
           />
+          <g transform={`translate(0,${HEADER_OVERVIEW_HEIGHT})`}>
+            <Polygon overview={overview} model={model} />
+          </g>
         </g>
       ) : null}
 
@@ -272,12 +275,12 @@ function SVGTracks({
 // render LGV to SVG
 export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   await when(() => model.initialized)
-  const { width, tracks, showIdeogram } = model
+  const { width, tracks, showCytobands } = model
   const shift = 50
   const offset =
     headerHeight +
     rulerHeight +
-    (showIdeogram ? cytobandHeightIfExists : 0) +
+    (showCytobands ? cytobandHeightIfExists : 0) +
     20
   const height = totalHeight(tracks) + offset
   const displayResults = await Promise.all(
