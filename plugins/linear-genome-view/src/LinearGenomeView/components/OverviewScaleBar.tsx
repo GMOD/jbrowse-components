@@ -11,7 +11,7 @@ import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 // locals
 import {
-  LinearGenomeViewStateModel,
+  LinearGenomeViewModel,
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
 } from '..'
@@ -139,7 +139,31 @@ const Polygon = observer(
   },
 )
 
-type LGV = Instance<LinearGenomeViewStateModel>
+type LGV = LinearGenomeViewModel
+
+// rounded rect from https://stackoverflow.com/a/45889603/2129219
+// prettier-ignore
+function rightRoundedRect(x:number, y:number, width:number, height:number, radius:number) {
+  return "M" + x + "," + y
+       + "h" + (width - radius)
+       + "a" + radius + "," + radius + " 0 0 1 " + radius + "," + radius
+       + "v" + (height - 2 * radius)
+       + "a" + radius + "," + radius + " 0 0 1 " + -radius + "," + radius
+       + "h" + (radius - width)
+       + "z";
+}
+
+// prettier-ignore
+function leftRoundedRect(x:number, y:number, width:number, height:number, radius:number ) {
+  return "M" + (x + radius) + "," + y
+       + "h" + (width - radius)
+       + "v" + height
+       + "h" + (radius - width)
+       + "a" + radius + "," + radius + " 0 0 1 " + (-radius) + "," + (-radius)
+       + "v" + (2 * radius - height)
+       + "a" + radius + "," + radius + " 0 0 1 " + radius + "," + (-radius)
+       + "z";
+}
 
 const colorMap: { [key: string]: string | undefined } = {
   gneg: '#ccc',
@@ -184,36 +208,63 @@ const Cytobands = observer(
 
     let firstCent = true
     return cytobands ? (
-      <svg style={{ width: '100%' }}>
-        <g transform={`translate(-${block.offsetPx})`}>
-          {cytobands.map(([start, end, type]) => {
-            if (type === 'acen' && firstCent) {
-              firstCent = false
-              return (
-                <polygon
-                  key={`${start}-${end}-${type}`}
-                  points={[
-                    [start, 0],
-                    [end, (HEADER_OVERVIEW_HEIGHT - 2) / 2],
-                    [start, HEADER_OVERVIEW_HEIGHT - 2],
-                  ].toString()}
-                  fill={colorMap[type]}
-                />
-              )
-            }
-            if (type === 'acen' && !firstCent) {
-              return (
-                <polygon
-                  key={`${start}-${end}-${type}`}
-                  points={[
-                    [start, (HEADER_OVERVIEW_HEIGHT - 2) / 2],
-                    [end, 0],
-                    [end, HEADER_OVERVIEW_HEIGHT - 2],
-                  ].toString()}
-                  fill={colorMap[type]}
-                />
-              )
-            }
+      <g transform={`translate(-${block.offsetPx})`}>
+        {cytobands.map(([start, end, type], index) => {
+          if (type === 'acen' && firstCent) {
+            firstCent = false
+            return (
+              <polygon
+                key={`${start}-${end}-${type}`}
+                points={[
+                  [start, 0],
+                  [end, (HEADER_OVERVIEW_HEIGHT - 2) / 2],
+                  [start, HEADER_OVERVIEW_HEIGHT - 2],
+                ].toString()}
+                fill={colorMap[type]}
+              />
+            )
+          }
+          if (type === 'acen' && !firstCent) {
+            return (
+              <polygon
+                key={`${start}-${end}-${type}`}
+                points={[
+                  [start, (HEADER_OVERVIEW_HEIGHT - 2) / 2],
+                  [end, 0],
+                  [end, HEADER_OVERVIEW_HEIGHT - 2],
+                ].toString()}
+                fill={colorMap[type]}
+              />
+            )
+          }
+
+          if (index === 0) {
+            return (
+              <path
+                d={leftRoundedRect(
+                  Math.min(start, end),
+                  0,
+                  Math.abs(end - start),
+                  HEADER_OVERVIEW_HEIGHT - 2,
+                  5,
+                )}
+                fill={colorMap[type]}
+              />
+            )
+          } else if (index === cytobands.length - 1) {
+            return (
+              <path
+                d={rightRoundedRect(
+                  Math.min(start, end),
+                  0,
+                  Math.abs(end - start),
+                  HEADER_OVERVIEW_HEIGHT - 2,
+                  5,
+                )}
+                fill={colorMap[type]}
+              />
+            )
+          } else {
             return (
               <rect
                 key={`${start}-${end}-${type}`}
@@ -224,9 +275,9 @@ const Cytobands = observer(
                 fill={colorMap[type]}
               />
             )
-          })}
-        </g>
-      </svg>
+          }
+        })}
+      </g>
     ) : null
   },
 )
@@ -257,11 +308,15 @@ const OverviewBox = observer(
       tickLabels.push(reversed ? end - offsetLabel : start + offsetLabel)
     }
 
+    const shouldShowCytobands = assembly?.cytobands?.length && showIdeogram
+
     return (
       <div
         className={clsx(
           classes.scaleBarContig,
-          reversed
+          shouldShowCytobands
+            ? undefined
+            : reversed
             ? classes.scaleBarContigReverse
             : classes.scaleBarContigForward,
         )}
@@ -279,7 +334,7 @@ const OverviewBox = observer(
           {refName}
         </Typography>
 
-        {!assembly?.cytobands?.length || !showIdeogram
+        {!shouldShowCytobands
           ? tickLabels.map((tickLabel, labelIdx) => (
               <Typography
                 key={`${JSON.stringify(block)}-${tickLabel}-${labelIdx}`}
@@ -296,8 +351,10 @@ const OverviewBox = observer(
             ))
           : null}
 
-        {assembly?.cytobands && showIdeogram ? (
-          <Cytobands overview={overview} assembly={assembly} block={block} />
+        {shouldShowCytobands ? (
+          <svg style={{ width: '100%' }}>
+            <Cytobands overview={overview} assembly={assembly} block={block} />
+          </svg>
         ) : null}
       </div>
     )

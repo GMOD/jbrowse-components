@@ -5,8 +5,7 @@ import { getParent } from 'mobx-state-tree'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 
 // locals
 import Ruler from './Ruler'
@@ -15,7 +14,7 @@ import {
   ExportSvgOptions,
   HEADER_OVERVIEW_HEIGHT,
 } from '..'
-import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import { Cytobands } from './OverviewScaleBar'
 
 type LGV = LinearGenomeViewModel
 
@@ -29,17 +28,6 @@ function getBpDisplayStr(totalBp: number) {
     displayBp = `${Math.floor(totalBp)}bp`
   }
   return displayBp
-}
-
-const colorMap: { [key: string]: string | undefined } = {
-  gneg: '#ccc',
-  gpos25: '#aaa',
-  gpos50: '#888',
-  gpos100: '#333',
-  gpos75: '#666',
-  gvar: 'black',
-  stalk: 'brown',
-  acen: '#800',
 }
 
 function ScaleBar({ model, fontSize }: { model: LGV; fontSize: number }) {
@@ -90,27 +78,28 @@ function SVGRuler({
         </clipPath>
       </defs>
       {contentBlocks.map(block => {
-        const offsetLeft = block.offsetPx - viewOffsetPx
+        const { key, start, end, reversed, offsetPx, refName } = block
+        const offsetLeft = offsetPx - viewOffsetPx
         return (
-          <g key={`${block.key}`} transform={`translate(${offsetLeft} 0)`}>
+          <g key={`${key}`} transform={`translate(${offsetLeft} 0)`}>
             <text x={offsetLeft / bpPerPx} y={fontSize} fontSize={fontSize}>
-              {block.refName}
+              {refName}
             </text>
             {renderRuler ? (
               <g transform="translate(0 20)" clipPath="url(#clip-ruler)">
                 <Ruler
-                  start={block.start}
-                  end={block.end}
+                  start={start}
+                  end={end}
                   bpPerPx={bpPerPx}
-                  reversed={block.reversed}
+                  reversed={reversed}
                 />
               </g>
             ) : (
               <line
                 strokeWidth={1}
                 stroke="black"
-                x1={block.start / bpPerPx}
-                x2={block.end / bpPerPx}
+                x1={start / bpPerPx}
+                x2={end / bpPerPx}
                 y1={20}
                 y2={20}
               />
@@ -205,83 +194,6 @@ const SVGHeader = ({ model }: { model: LGV }) => {
       </g>
     </g>
   )
-}
-
-const Cytobands = ({
-  overview,
-  block,
-  assembly,
-}: {
-  overview: Base1DViewModel
-  assembly?: Assembly
-  block: ContentBlock
-}) => {
-  const cytobands = assembly?.cytobands
-    ?.map(f => ({
-      refName: assembly.getCanonicalRefName(f.get('refName')),
-      start: f.get('start'),
-      end: f.get('end'),
-      type: f.get('type'),
-    }))
-    .filter(f => f.refName === block.refName)
-    .map(f => [
-      overview.bpToPx({
-        refName: f.refName,
-        coord: f.start,
-      }),
-      overview.bpToPx({
-        refName: f.refName,
-        coord: f.end,
-      }),
-      f.type,
-    ])
-
-  let firstCent = true
-  return cytobands ? (
-    <svg style={{ width: '100%' }}>
-      <g transform={`translate(-${block.offsetPx})`}>
-        {cytobands.map(([start, end, type]) => {
-          if (type === 'acen' && firstCent) {
-            firstCent = false
-            return (
-              <polygon
-                key={start + '-' + end + '-' + type}
-                points={[
-                  [start, 0],
-                  [end, (HEADER_OVERVIEW_HEIGHT - 2) / 2],
-                  [start, HEADER_OVERVIEW_HEIGHT - 2],
-                ].toString()}
-                fill={colorMap[type]}
-              />
-            )
-          }
-          if (type === 'acen' && !firstCent) {
-            return (
-              <polygon
-                key={start + '-' + end + '-' + type}
-                points={[
-                  [start, (HEADER_OVERVIEW_HEIGHT - 2) / 2],
-                  [end, 0],
-                  [end, HEADER_OVERVIEW_HEIGHT - 2],
-                ].toString()}
-                fill={colorMap[type]}
-              />
-            )
-          }
-          return (
-            <rect
-              key={start + '-' + end + '-' + type}
-              x={Math.min(start, end)}
-              y={0}
-              width={Math.abs(end - start)}
-              height={HEADER_OVERVIEW_HEIGHT - 2}
-              fill={colorMap[type]}
-            />
-          )
-        })}
-      </g>
-    </svg>
-  ) : null
 }
 
 // SVG component, region separator
