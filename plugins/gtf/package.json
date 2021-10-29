@@ -35,6 +35,7 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
+    "@gmod/gtf": "^0.0.3",
     "@gmod/tabix": "^1.5.0",
     "generic-filehandle": "^2.0.0"
   },
