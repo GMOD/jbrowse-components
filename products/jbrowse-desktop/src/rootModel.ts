@@ -23,6 +23,7 @@ import OpenIcon from '@material-ui/icons/FolderOpen'
 import ExtensionIcon from '@material-ui/icons/Extension'
 import AppsIcon from '@material-ui/icons/Apps'
 import StorageIcon from '@material-ui/icons/Storage'
+import SettingsIcon from '@material-ui/icons/Settings'
 import MeetingRoomIcon from '@material-ui/icons/MeetingRoom'
 import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 
@@ -352,6 +353,13 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                   )
                   self.session.showWidget(widget)
                 }
+              },
+            },
+            {
+              label: 'Open assembly manager',
+              icon: SettingsIcon,
+              onClick: () => {
+                self.setAssemblyEditing(true)
               },
             },
           ],

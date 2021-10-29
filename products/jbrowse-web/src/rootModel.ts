@@ -2,7 +2,6 @@ import {
   addDisposer,
   cast,
   getSnapshot,
-  getParent,
   getType,
   getPropertyMembers,
   getChildType,
@@ -544,19 +543,15 @@ export default function RootModel(
                   {
                     label: 'Open assembly manager',
                     icon: SettingsIcon,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    onClick: (session: any) => {
-                      const rootModel = getParent(session)
-                      rootModel.setAssemblyEditing(true)
+                    onClick: () => {
+                      self.setAssemblyEditing(true)
                     },
                   },
                   {
                     label: 'Set default session',
                     icon: SettingsIcon,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    onClick: (session: any) => {
-                      const rootModel = getParent(session)
-                      rootModel.setDefaultSessionEditing(true)
+                    onClick: () => {
+                      self.setDefaultSessionEditing(true)
                     },
                   },
                 ],

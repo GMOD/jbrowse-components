@@ -10,11 +10,20 @@ export default class Create extends JBrowseCommand {
   static description = 'Downloads and installs the latest JBrowse 2 release'
 
   static examples = [
+    '# Download latest release from github, and put in specific path',
     '$ jbrowse create /path/to/new/installation',
+    '',
+    '# Download latest release from github and force overwrite existing contents at path',
     '$ jbrowse create /path/to/new/installation --force',
+    '',
+    '# Download latest release from a specific URL',
     '$ jbrowse create /path/to/new/installation --url url.com/directjbrowselink.zip',
+    '',
+    '# Download a specific tag from github',
     '$ jbrowse create /path/to/new/installation --tag v1.0.0',
-    '$ jbrowse create --listVersions # Lists out all available versions of JBrowse 2',
+    '',
+    '# List available versions',
+    '$ jbrowse create --listVersions',
   ]
 
   static args = [
