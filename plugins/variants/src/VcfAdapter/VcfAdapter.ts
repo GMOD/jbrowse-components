@@ -29,19 +29,16 @@ const readVcf = (f: string) => {
   return { header: header.join('\n'), lines: rest }
 }
 
+function isGzip(buf: Buffer) {
+  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
+}
+
 export default class VcfAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   protected vcfFeatures?: Promise<Record<string, IntervalTree>>
-  protected unzipped?: Promise<{ header: string; lines: string[] }>
 
-  public constructor(
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-    pluginManager?: PluginManager,
-  ) {
-    super(config, getSubAdapter, pluginManager)
-  }
+  protected unzipped?: Promise<{ header: string; lines: string[] }>
 
   private async decodeFileContents() {
     if (!this.unzipped) {
@@ -50,14 +47,11 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
         this.pluginManager,
       )
         .readFile()
-        .then(async fileContents => {
-          // detect gzip
-          return fileContents[0] === 31 &&
-            fileContents[1] === 139 &&
-            fileContents[2] === 8
-            ? new TextDecoder().decode(await unzip(fileContents))
-            : fileContents.toString()
-        })
+        .then(async buffer =>
+          isGzip(buffer as Buffer)
+            ? new TextDecoder().decode(await unzip(buffer))
+            : buffer.toString(),
+        )
         .then(str => readVcf(str))
     }
     return this.unzipped
@@ -77,25 +71,18 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
   public async getLines() {
     const { lines } = await this.decodeFileContents()
 
-    return lines.map((l, id) => {
-      const [refName, s, _id, ref, _alt, _qual, _filt, info] = l.split('\t')
+    return lines.map((line, id) => {
+      const [refName, s, _id, ref, _alt, _qual, _filt, info] = line.split('\t')
       const start = +s - 1
       const end = +(info.match(/END=(\d+)/)?.[1].trim() || start + ref.length)
-
-      return {
-        line,
-        refName,
-        start,
-        end,
-        id,
-      }
+      return { line, refName, start, end, id }
     })
   }
 
   public async setup() {
     if (!this.vcfFeatures) {
-      this.vcfFeatures = this.getLines().then(feats => {
-        return feats.reduce(
+      this.vcfFeatures = this.getLines().then(feats =>
+        feats.reduce(
           (
             acc: Record<string, IntervalTree>,
             obj: { refName: string; start: number; end: number; line: string },
@@ -108,8 +95,8 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
             return acc
           },
           {},
-        )
-      })
+        ),
+      )
     }
     return this.vcfFeatures
   }
