@@ -7,11 +7,8 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import IntervalTree from '@flatten-js/interval-tree'
 import { unzip } from '@gmod/bgzf-filehandle'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import VCF from '@gmod/vcf'
 import VcfFeature from '../VcfTabixAdapter/VcfFeature'
 
@@ -53,6 +50,10 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
             : buffer.toString(),
         )
         .then(str => readVcf(str))
+        .catch(e => {
+          this.unzipped = undefined
+          throw e
+        })
     }
     return this.unzipped
   }
@@ -81,22 +82,32 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
   public async setup() {
     if (!this.vcfFeatures) {
-      this.vcfFeatures = this.getLines().then(feats =>
-        feats.reduce(
-          (
-            acc: Record<string, IntervalTree>,
-            obj: { refName: string; start: number; end: number; line: string },
-          ) => {
-            const key = obj.refName
-            if (!acc[key]) {
-              acc[key] = new IntervalTree()
-            }
-            acc[key].insert([obj.start, obj.end], obj)
-            return acc
-          },
-          {},
-        ),
-      )
+      this.vcfFeatures = this.getLines()
+        .then(feats =>
+          feats.reduce(
+            (
+              acc: Record<string, IntervalTree>,
+              obj: {
+                refName: string
+                start: number
+                end: number
+                line: string
+              },
+            ) => {
+              const key = obj.refName
+              if (!acc[key]) {
+                acc[key] = new IntervalTree()
+              }
+              acc[key].insert([obj.start, obj.end], obj)
+              return acc
+            },
+            {},
+          ),
+        )
+        .catch(e => {
+          this.vcfFeatures = undefined
+          throw e
+        })
     }
     return this.vcfFeatures
   }
