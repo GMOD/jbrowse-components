@@ -84,16 +84,17 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
   }
 
   public async getLines() {
-    const { header, lines } = await this.decodeFileContents()
+    const { lines } = await this.decodeFileContents()
 
-    const parser = new VCF({ header: header })
-
-    return lines.map((line, index) => {
-      return new VcfFeature({
-        variant: parser.parseLine(line),
-        parser,
-        id: `${this.id}-vcf-${index}`,
-      })
+    return lines.map(line => {
+      const [refName, start, _id, ref, _alt, _qual, _filter, info] =
+        line.split('\t')
+      const end = info
+        .split(';')
+        .filter(elt => elt.startsWith('END='))?.[0]
+        .split('=')[1]
+        .trim()
+      return { line, refName, start, end: end ? end : start + ref.length }
     })
   }
 
@@ -101,17 +102,23 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
     if (!this.vcfFeatures) {
       this.vcfFeatures = this.getLines().then(feats => {
         return feats.reduce(
-          (acc: Record<string, IntervalTree>, obj: VcfFeature) => {
-            const key = obj.get('refName')
+          (
+            acc: Record<string, IntervalTree>,
+            obj: { refName: string; start: number; end: number; line: string },
+          ) => {
+            const key = obj.refName
             if (!acc[key]) {
               acc[key] = new IntervalTree()
             }
-            acc[key].insert([obj.get('start'), obj.get('end')], obj)
+            acc[key].insert([obj.start, obj.end], obj)
             return acc
           },
           {},
         )
       })
+    }
+    if (!this.vcfFeatures) {
+      throw new Error('unknown')
     }
     return this.vcfFeatures
   }
@@ -154,12 +161,14 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
   public getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       try {
+        const { header } = await this.decodeFileContents()
+        const parser = new VCF({ header: header })
         const { start, end, refName } = region
         const vcfFeatures = await this.setup()
         const tree = vcfFeatures[refName]
         const feats = tree.search([start, end]) //  expected array ['val1']
         feats.forEach(f => {
-          observer.next(f)
+          observer.next(parser.parseLine(f.line))
         })
         observer.complete()
       } catch (e) {
