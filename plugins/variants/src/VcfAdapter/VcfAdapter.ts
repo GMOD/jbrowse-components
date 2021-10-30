@@ -77,22 +77,16 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
   public async getLines() {
     const { lines } = await this.decodeFileContents()
 
-    return lines.map((line, id) => {
-      const [refName, startOneBased, _id, ref, _alt, _qual, _filter, info] =
-        line.split('\t')
-      const start = +startOneBased - 1
-      const end =
-        info
-          .split(';')
-          .filter(elt => elt.startsWith('END='))?.[0]
-          ?.split('=')[1]
-          .trim() || start + ref.length
+    return lines.map((l, id) => {
+      const [refName, s, _id, ref, _alt, _qual, _filt, info] = l.split('\t')
+      const start = +s - 1
+      const end = +(info.match(/END=(\d+)/)?.[1].trim() || start + ref.length)
 
       return {
         line,
         refName,
         start,
-        end: +end,
+        end,
         id,
       }
     })
