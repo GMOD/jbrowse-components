@@ -45,22 +45,20 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
   private async decodeFileContents() {
     if (!this.unzipped) {
-      const loc = readConfObject(this.config, 'vcfLocation')
-      this.unzipped = openLocation(loc, this.pluginManager)
+      this.unzipped = openLocation(
+        readConfObject(this.config, 'vcfLocation'),
+        this.pluginManager,
+      )
         .readFile()
         .then(async fileContents => {
-          if (
-            fileContents[0] === 31 &&
+          // detect gzip
+          return fileContents[0] === 31 &&
             fileContents[1] === 139 &&
             fileContents[2] === 8
-          ) {
-            fileContents = new TextDecoder().decode(await unzip(fileContents))
-          } else {
-            fileContents = fileContents.toString()
-          }
-
-          return readVcf(fileContents)
+            ? new TextDecoder().decode(await unzip(fileContents))
+            : fileContents.toString()
         })
+        .then(str => readVcf(str))
     }
     return this.unzipped
   }
@@ -117,9 +115,6 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
           {},
         )
       })
-    }
-    if (!this.vcfFeatures) {
-      throw new Error('unknown')
     }
     return this.vcfFeatures
   }
