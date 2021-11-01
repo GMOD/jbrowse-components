@@ -1,13 +1,127 @@
 import config from '../../docusaurus.config.json'
+import { Button, Card, CardContent, Typography, Link, Box } from '@mui/material'
+import { Apple, DesktopWindows, ArrowDownward } from '@mui/icons-material'
 
-export const Link = () => {
+export const GithubLink = () => {
   const curr = `https://github.com/GMOD/jbrowse-components/releases/tag/${config.customFields.currentVersion}`
   return (
-    <div style={{ margin: 50 }}>
-      <a href={curr}>{curr}</a>
+    <div>
+      <ul>
+        <li>
+          <a href={curr}>{curr}</a>
+        </li>
+      </ul>
     </div>
   )
 }
+
+export const DownloadCard = ({ os, icon, link }) => {
+  const downloadLink = `https://github.com/GMOD/jbrowse-components/releases/download/${config.customFields.currentVersion}/jbrowse-desktop-${config.customFields.currentVersion}-${link}`
+  return (
+    <Card style={{ background: '#F0F0F0' }}>
+      <CardContent
+        style={{
+          display: 'flex',
+          flexFlow: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <h3>{os}</h3>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={icon}
+          href={downloadLink}
+          style={{
+            backgroundColor: '#3f51b5',
+          }}
+        >
+          download
+        </Button>
+      </CardContent>
+    </Card>
+  )
+}
+
+export const DownloadCardContainer = () => {
+  const downloadLink = `https://github.com/GMOD/jbrowse-components/releases/tag/${config.customFields.currentVersion}`
+  return (
+    <div>
+      <Box sx={{ display: { xs: 'flex', sm: 'flex', md: 'none' } }}>
+        <Typography variant="body1">
+          Checkout our downloads available for MacOS, Windows, and Linux{' '}
+          <Link href={downloadLink}>here</Link>.
+        </Typography>
+      </Box>
+      <Box
+        sx={{ display: { xs: 'none', sm: 'none', md: 'flex' } }}
+        style={{ flexDirection: 'column', gap: '15px' }}
+      >
+        <Typography variant="body1">
+          Download JBrowse 2 desktop on the platform of your choice:
+        </Typography>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'space-evenly',
+            }}
+          >
+            <DownloadCard os="MacOS" icon={<Apple />} link="mac.dmg" />
+            <DownloadCard
+              os="Windows"
+              icon={<DesktopWindows />}
+              link="win.exe"
+            />
+            <DownloadCard
+              os="Linux"
+              icon={<ArrowDownward />}
+              link="linux.AppImage"
+            />
+          </div>
+          <Typography
+            variant="caption"
+            style={{
+              alignSelf: 'center',
+            }}
+          >
+            Check out our quick start guide{' '}
+            <Link href="/jb2/docs/quickstart_desktop/">
+              instructions after downloading
+            </Link>
+            . Can't find what you're looking for? Checkout <Link
+              href={downloadLink}
+            >
+              other platforms
+            </Link>.
+          </Typography>
+        </div>
+      </Box>
+    </div>
+  )
+}
+
+## JBrowse 2 desktop
+
+<DownloadCardContainer />
+
+<br />
+
+<p align="center">
+  <img
+    width="100%"
+    alt="JBrowse desktop session"
+    src={`${config.baseUrl}img/desktop-session.png`}
+  />
+</p>
+<br />
 
 ## JBrowse 2 web
 
@@ -23,17 +137,18 @@ jbrowse create jbrowse_folder
 
 Alternatively, manually download this release as a zip file from GitHub here:
 
-<Link />
+<GithubLink />
 
 To get it set up, check out our [super-quick start
 guide](/docs/superquickstart_web) or slightly-longer [quick-start
 guide](/docs/quickstart_web) for setting up JBrowse Web.
 
+### Other CLI tools
+
+- [@jbrowse/img](https://github.com/GMOD/jb2export/) image exporter
+
 ## JBrowse 2 embedded components
 
-We also have our embedded components, such as
-@jbrowse/react-linear-genome-view, which is the React component for the linear
-genome browser view (no circular, dotplot, etc).
-
-See https://www.npmjs.com/package/@jbrowse/react-linear-genome-view for
-instructions on downloading this with npm or yarn.
+- [@jbrowse/react-linear-genome-view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view) linear genome browser view React component on <tt>NPM</tt>
+  - also see [storybook docs](https://jbrowse.org/storybook/lgv/v1.4.4/?path=/story/getting-started--page)
+- [JBrowseR](https://gmod.github.io/JBrowseR/) R package on <tt>CRAN</tt>

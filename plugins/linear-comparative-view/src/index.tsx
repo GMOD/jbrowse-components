@@ -13,9 +13,7 @@ import {
   DialogTitle,
   IconButton,
 } from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
-import AddIcon from '@material-ui/icons/Add'
-import CalendarIcon from '@material-ui/icons/CalendarViewDay'
+
 import { ConfigurationSchema, getConf } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
@@ -34,12 +32,20 @@ import {
   getContainingTrack,
   isAbstractMenuManager,
 } from '@jbrowse/core/util'
-
 import {
   MismatchParser,
   LinearPileupDisplayModel,
 } from '@jbrowse/plugin-alignments'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
+import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+
+// icons
+import CloseIcon from '@material-ui/icons/Close'
+import AddIcon from '@material-ui/icons/Add'
+import CalendarIcon from '@material-ui/icons/CalendarViewDay'
+// locals
+//
 import {
   configSchemaFactory as linearComparativeDisplayConfigSchemaFactory,
   ReactComponent as LinearComparativeDisplayReactComponent,
@@ -59,9 +65,6 @@ import {
   AdapterClass as MCScanAnchorsAdapter,
   configSchema as MCScanAnchorsConfigSchema,
 } from './MCScanAnchorsAdapter'
-import { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
-import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-
 const { parseCigar } = MismatchParser
 
 function getLengthOnRef(cigar: string) {
@@ -189,6 +192,9 @@ interface BasicFeature {
   refName: string
 }
 
+// hashmap of refName->array of features
+type FeaturesPerRef = { [key: string]: BasicFeature[] }
+
 function gatherOverlaps(regions: BasicFeature[]) {
   const groups = regions.reduce((memo, x) => {
     if (!memo[x.refName]) {
@@ -196,7 +202,7 @@ function gatherOverlaps(regions: BasicFeature[]) {
     }
     memo[x.refName].push(x)
     return memo
-  }, {} as { [key: string]: BasicFeature[] })
+  }, {} as FeaturesPerRef)
 
   return Object.values(groups)
     .map(group => mergeIntervals(group.sort((a, b) => a.start - b.start)))
@@ -643,6 +649,12 @@ export default class extends Plugin {
         new AdapterType({
           name: 'MCScanAnchorsAdapter',
           configSchema: MCScanAnchorsConfigSchema,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
           AdapterClass: MCScanAnchorsAdapter,
         }),
     )
@@ -707,7 +719,7 @@ export default class extends Plugin {
 
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
-      pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
+      pluginManager.rootModel.appendToSubMenu(['Add'], {
         label: 'Linear synteny view',
         icon: CalendarIcon,
         onClick: (session: AbstractSessionModel) => {

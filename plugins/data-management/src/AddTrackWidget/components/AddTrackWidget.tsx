@@ -11,10 +11,12 @@ import {
 import { getSession } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
+import { Alert } from '@material-ui/lab'
+
+// locals
 import ConfirmTrack from './ConfirmTrack'
 import TrackSourceSelect from './TrackSourceSelect'
 import { AddTrackModel } from '../model'
-import { Alert } from '@material-ui/lab'
 
 const useStyles = makeStyles(theme => ({
   root: {

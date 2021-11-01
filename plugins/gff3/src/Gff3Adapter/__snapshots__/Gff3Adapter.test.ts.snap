@@ -1,0 +1,53 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`adapter can fetch features from volvox.gff3 test getfeatures on gff plain text adapter 1`] = `
+Array [
+  Object {
+    "end": 6079,
+    "name": "ctgB",
+    "phase": 0,
+    "refName": "ctgB",
+    "source": "example",
+    "start": 0,
+    "strand": undefined,
+    "type": "contig",
+    "uniqueId": "test-offset-187",
+  },
+  Object {
+    "end": 1984,
+    "name": "f07",
+    "note": "This is an example",
+    "phase": 0,
+    "refName": "ctgB",
+    "source": "example",
+    "start": 1658,
+    "strand": 1,
+    "type": "remark",
+    "uniqueId": "test-offset-188",
+  },
+  Object {
+    "end": 6130,
+    "name": "f06",
+    "note": "This is another example",
+    "phase": 0,
+    "refName": "ctgB",
+    "source": "example",
+    "start": 3013,
+    "strand": 1,
+    "type": "remark",
+    "uniqueId": "test-offset-189",
+  },
+  Object {
+    "end": 5968,
+    "name": "f05",
+    "note": "ああ、この機能は、世界中を旅しています！",
+    "phase": 0,
+    "refName": "ctgB",
+    "source": "example",
+    "start": 4714,
+    "strand": -1,
+    "type": "remark",
+    "uniqueId": "test-offset-190",
+  },
+]
+`;

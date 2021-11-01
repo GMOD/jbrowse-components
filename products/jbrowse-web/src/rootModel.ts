@@ -2,7 +2,6 @@ import {
   addDisposer,
   cast,
   getSnapshot,
-  getParent,
   getType,
   getPropertyMembers,
   getChildType,
@@ -21,16 +20,14 @@ import {
 
 import { saveAs } from 'file-saver'
 import { observable, autorun } from 'mobx'
-import assemblyManagerFactory, {
-  assemblyConfigSchemas as AssemblyConfigSchemasFactory,
-} from '@jbrowse/core/assemblyManager'
+import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
+import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
-import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 
 // icons
 import AddIcon from '@material-ui/icons/Add'
@@ -40,7 +37,10 @@ import FileCopyIcon from '@material-ui/icons/FileCopy'
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 import GetAppIcon from '@material-ui/icons/GetApp'
 import PublishIcon from '@material-ui/icons/Publish'
+import ExtensionIcon from '@material-ui/icons/Extension'
+import StorageIcon from '@material-ui/icons/Storage'
 import SaveIcon from '@material-ui/icons/Save'
+import { Cable } from '@jbrowse/core/ui/Icons'
 
 // other
 import corePlugins from './corePlugins'
@@ -110,24 +110,15 @@ export default function RootModel(
   pluginManager: PluginManager,
   adminMode = false,
 ) {
-  const { assemblyConfigSchemas, dispatcher } =
-    AssemblyConfigSchemasFactory(pluginManager)
-  const assemblyConfigSchemasType = types.union(
-    { dispatcher },
-    ...assemblyConfigSchemas,
-  )
-  const Session = sessionModelFactory(pluginManager, assemblyConfigSchemasType)
+  const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
+  const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
   const assemblyManagerType = assemblyManagerFactory(
-    assemblyConfigSchemasType,
+    assemblyConfigSchema,
     pluginManager,
   )
   return types
     .model('Root', {
-      jbrowse: jbrowseWebFactory(
-        pluginManager,
-        Session,
-        assemblyConfigSchemasType as AnyConfigurationSchemaType,
-      ),
+      jbrowse: jbrowseWebFactory(pluginManager, Session, assemblyConfigSchema),
       configPath: types.maybe(types.string),
       session: types.maybe(Session),
       assemblyManager: assemblyManagerType,
@@ -498,6 +489,43 @@ export default function RootModel(
                 }
               },
             },
+            { type: 'divider' },
+            {
+              label: 'Open track...',
+              icon: StorageIcon,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onClick: (session: any) => {
+                if (session.views.length === 0) {
+                  session.notify('Please open a view to add a track first')
+                } else if (session.views.length >= 1) {
+                  const widget = session.addWidget(
+                    'AddTrackWidget',
+                    'addTrackWidget',
+                    { view: session.views[0].id },
+                  )
+                  session.showWidget(widget)
+                  if (session.views.length > 1) {
+                    session.notify(
+                      `This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right`,
+                    )
+                  }
+                }
+              },
+            },
+            {
+              label: 'Open connection...',
+              icon: Cable,
+              onClick: () => {
+                if (self.session) {
+                  const widget = self.session.addWidget(
+                    'AddConnectionWidget',
+                    'addConnectionWidget',
+                  )
+                  self.session.showWidget(widget)
+                }
+              },
+            },
+            { type: 'divider' },
             {
               label: 'Return to splash screen',
               icon: AppsIcon,
@@ -515,25 +543,43 @@ export default function RootModel(
                   {
                     label: 'Open assembly manager',
                     icon: SettingsIcon,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    onClick: (session: any) => {
-                      const rootModel = getParent(session)
-                      rootModel.setAssemblyEditing(true)
+                    onClick: () => {
+                      self.setAssemblyEditing(true)
                     },
                   },
                   {
                     label: 'Set default session',
                     icon: SettingsIcon,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    onClick: (session: any) => {
-                      const rootModel = getParent(session)
-                      rootModel.setDefaultSessionEditing(true)
+                    onClick: () => {
+                      self.setDefaultSessionEditing(true)
                     },
                   },
                 ],
               },
             ]
           : []),
+        {
+          label: 'Add',
+          menuItems: [],
+        },
+        {
+          label: 'Tools',
+          menuItems: [
+            {
+              label: 'Plugin store',
+              icon: ExtensionIcon,
+              onClick: () => {
+                if (self.session) {
+                  const widget = self.session.addWidget(
+                    'PluginStoreWidget',
+                    'pluginStoreWidget',
+                  )
+                  self.session.showWidget(widget)
+                }
+              },
+            },
+          ],
+        },
       ] as Menu[],
       adminMode,
     }))

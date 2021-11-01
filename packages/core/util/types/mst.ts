@@ -84,17 +84,21 @@ export const FileLocation = types.snapshotProcessor(
   {
     // @ts-ignore
     preProcessor(snapshot) {
+      if (!snapshot) {
+        return undefined
+      }
+
       // @ts-ignore
       const { locationType, ...rest } = snapshot
       if (!locationType) {
         // @ts-ignore
         const { uri, localPath, blob } = rest
         let locationType = ''
-        if (uri) {
+        if (uri !== undefined) {
           locationType = 'UriLocation'
-        } else if (localPath) {
+        } else if (localPath !== undefined) {
           locationType = 'LocalPathLocation'
-        } else if (blob) {
+        } else if (blob !== undefined) {
           locationType = 'BlobLocation'
         }
 

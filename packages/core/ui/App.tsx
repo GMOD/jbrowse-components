@@ -54,10 +54,13 @@ const useStyles = makeStyles(theme => ({
     height: '100vh',
     width: '100%',
   },
-  fab: {
-    float: 'right',
-    position: 'sticky',
-    marginTop: theme.spacing(2),
+  fabLeft: {
+    position: 'fixed',
+    bottom: theme.spacing(2),
+    left: theme.spacing(2),
+  },
+  fabRight: {
+    position: 'fixed',
     bottom: theme.spacing(2),
     right: theme.spacing(2),
   },
@@ -139,6 +142,7 @@ const App = observer(
       name,
       menus,
       views,
+      drawerPosition,
     } = session
 
     function handleNameChange(newName: string) {
@@ -153,18 +157,30 @@ const App = observer(
     }
 
     const drawerVisible = visibleWidget && !minimized
+
+    let grid
+    if (drawerPosition === 'right') {
+      grid = [
+        `[main] 1fr`,
+        drawerVisible ? `[drawer] ${drawerWidth}px` : undefined,
+      ]
+    } else if (drawerPosition === 'left') {
+      grid = [
+        drawerVisible ? `[drawer] ${drawerWidth}px` : undefined,
+        `[main] 1fr`,
+      ]
+    }
     return (
       <div
         className={classes.root}
         style={{
-          gridTemplateColumns: [
-            `[main] 1fr`,
-            drawerVisible ? `[drawer] ${drawerWidth}px` : undefined,
-          ]
-            .filter(f => !!f)
-            .join(' '),
+          gridTemplateColumns: grid?.filter(f => !!f).join(' '),
         }}
       >
+        {drawerVisible && drawerPosition === 'left' ? (
+          <DrawerWidget session={session} />
+        ) : null}
+
         {session.DialogComponent ? (
           <Suspense fallback={<div />}>
             <session.DialogComponent {...session.DialogProps} />
@@ -259,23 +275,21 @@ const App = observer(
         </div>
 
         {activeWidgets.size > 0 && minimized ? (
-          <div className={classes.fab}>
+          <Tooltip title="Open drawer widget">
             <Fab
+              className={
+                drawerPosition === 'right' ? classes.fabRight : classes.fabLeft
+              }
               color="primary"
-              size="small"
-              aria-label="show"
               data-testid="drawer-maximize"
-              style={{ float: 'right' }}
-              onClick={() => {
-                session.showWidgetDrawer()
-              }}
+              onClick={() => session.showWidgetDrawer()}
             >
               <LaunchIcon />
             </Fab>
-          </div>
+          </Tooltip>
         ) : null}
 
-        {visibleWidget && !minimized ? (
+        {drawerVisible && drawerPosition === 'right' ? (
           <DrawerWidget session={session} />
         ) : null}
 

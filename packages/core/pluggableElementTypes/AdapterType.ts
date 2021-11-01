@@ -3,20 +3,30 @@ import PluggableElementBase from './PluggableElementBase'
 import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
 import { AnyAdapter } from '../data_adapters/BaseAdapter'
 
+export type AdapterMetadata = {
+  category: string | null
+  hiddenFromGUI: boolean | null
+  displayName: string | null
+  description: string | null
+}
+
 export default class AdapterType extends PluggableElementBase {
   AdapterClass?: AnyAdapter
 
-  getAdapterClass?: () => Promise<AnyAdapter>
+  getAdapterClass: () => Promise<AnyAdapter>
 
   configSchema: AnyConfigurationSchemaType
 
   adapterCapabilities: string[]
+
+  adapterMetadata?: AdapterMetadata
 
   constructor(
     stuff: {
       name: string
       configSchema: AnyConfigurationSchemaType
       adapterCapabilities?: string[]
+      adapterMetadata?: AdapterMetadata
     } & (
       | { AdapterClass: AnyAdapter }
       | { getAdapterClass: () => Promise<AnyAdapter> }
@@ -25,6 +35,7 @@ export default class AdapterType extends PluggableElementBase {
     super(stuff)
     if ('AdapterClass' in stuff) {
       this.AdapterClass = stuff.AdapterClass
+      this.getAdapterClass = async () => stuff.AdapterClass
     } else if ('getAdapterClass' in stuff) {
       this.getAdapterClass = stuff.getAdapterClass
     } else {
@@ -34,5 +45,7 @@ export default class AdapterType extends PluggableElementBase {
     }
     this.configSchema = stuff.configSchema
     this.adapterCapabilities = stuff.adapterCapabilities || []
+
+    this.adapterMetadata = stuff.adapterMetadata
   }
 }

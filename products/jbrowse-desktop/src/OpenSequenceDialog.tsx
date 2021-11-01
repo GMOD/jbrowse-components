@@ -13,9 +13,8 @@ import {
   makeStyles,
 } from '@material-ui/core'
 import FileSelector from '@jbrowse/core/ui/FileSelector'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import { FileLocation } from '@jbrowse/core/util/types'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { createPluginManager } from '../util'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -150,12 +149,12 @@ function AdapterInput({
   return null
 }
 
+const blank = { uri: '' } as FileLocation
+
 const OpenSequenceDialog = ({
   onClose,
-  setPluginManager,
 }: {
-  setPluginManager: (pm: PluginManager) => void
-  onClose: () => void
+  onClose: (conf?: unknown) => Promise<void>
 }) => {
   const classes = useStyles()
 
@@ -168,26 +167,11 @@ const OpenSequenceDialog = ({
   const [assemblyName, setAssemblyName] = useState('')
   const [assemblyDisplayName, setAssemblyDisplayName] = useState('')
   const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0])
-  const [fastaLocation, setFastaLocation] = useState<FileLocation>({
-    uri: '',
-    locationType: 'UriLocation',
-  })
-  const [faiLocation, setFaiLocation] = useState<FileLocation>({
-    uri: '',
-    locationType: 'UriLocation',
-  })
-  const [gziLocation, setGziLocation] = useState<FileLocation>({
-    uri: '',
-    locationType: 'UriLocation',
-  })
-  const [twoBitLocation, setTwoBitLocation] = useState<FileLocation>({
-    uri: '',
-    locationType: 'UriLocation',
-  })
-  const [chromSizesLocation, setChromSizesLocation] = useState<FileLocation>({
-    uri: '',
-    locationType: 'UriLocation',
-  })
+  const [fastaLocation, setFastaLocation] = useState(blank)
+  const [faiLocation, setFaiLocation] = useState(blank)
+  const [gziLocation, setGziLocation] = useState(blank)
+  const [twoBitLocation, setTwoBitLocation] = useState(blank)
+  const [chromSizesLocation, setChromSizesLocation] = useState(blank)
 
   function createAssemblyConfig() {
     if (adapterSelection === 'IndexedFastaAdapter') {
@@ -234,9 +218,7 @@ const OpenSequenceDialog = ({
     <Dialog open onClose={() => onClose()}>
       <DialogTitle>Open sequence</DialogTitle>
       <DialogContent>
-        {error ? (
-          <Typography variant="h6" color="error">{`${error}`}</Typography>
-        ) : null}
+        {error ? <ErrorMessage error={error} /> : null}
         <div className={classes.root}>
           <Typography>
             Use this dialog to open a new indexed FASTA file, bgzipped+indexed
@@ -246,7 +228,6 @@ const OpenSequenceDialog = ({
             <TextField
               id="assembly-name"
               inputProps={{ 'data-testid': 'assembly-name' }}
-              defaultValue=""
               label="Assembly name"
               helperText="The assembly name e.g. hg38"
               variant="outlined"
@@ -259,7 +240,6 @@ const OpenSequenceDialog = ({
               label="Assembly display name"
               helperText='A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
               variant="outlined"
-              defaultValue=""
               value={assemblyDisplayName}
               onChange={event => setAssemblyDisplayName(event.target.value)}
             />
@@ -294,23 +274,15 @@ const OpenSequenceDialog = ({
           onClick={async () => {
             try {
               const assemblyConf = createAssemblyConfig()
-              const pm = await createPluginManager({
-                assemblies: [
-                  {
-                    ...assemblyConf,
-                    sequence: {
-                      type: 'ReferenceSequenceTrack',
-                      trackId: `${assemblyName}-${Date.now()}`,
-                      ...(assemblyConf.sequence || {}),
-                    },
-                  },
-                ],
-                defaultSession: {
-                  name: 'New Session ' + new Date().toLocaleString('en-US'),
+
+              await onClose({
+                ...assemblyConf,
+                sequence: {
+                  type: 'ReferenceSequenceTrack',
+                  trackId: `${assemblyName}-${Date.now()}`,
+                  ...(assemblyConf.sequence || {}),
                 },
               })
-              setPluginManager(pm)
-              onClose()
             } catch (e) {
               setError(e)
               console.error(e)

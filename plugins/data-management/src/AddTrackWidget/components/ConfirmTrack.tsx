@@ -1,15 +1,22 @@
+import React from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
-import Link from '@material-ui/core/Link'
-import MenuItem from '@material-ui/core/MenuItem'
-import { makeStyles } from '@material-ui/core/styles'
-import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
+import {
+  Link,
+  MenuItem,
+  TextField,
+  ListSubheader,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import React from 'react'
 import { UNKNOWN } from '@jbrowse/core/util/tracks'
+
+// locals
 import { AddTrackModel } from '../model'
+import { AdapterMetadata } from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
 const useStyles = makeStyles(theme => ({
   spacing: {
@@ -41,52 +48,105 @@ function StatusMessage({
   )
 }
 
-function TrackAdapterSelector({
-  adapterHint,
-  model,
-}: {
-  adapterHint: string
-  model: AddTrackModel
-}) {
+/**
+ * categorizeAdapters takes a list of adapters and sorts their menu item elements under an appropriate ListSubheader
+ *  element. In this way, adapters that are from external plugins can have headers that differentiate them from the
+ *  out-of-the-box plugins.
+ * @param adaptersList - a list of adapters found in the PluginManager
+ * @returns a series of JSX elements that are ListSubheaders followed by the adapters
+ *   found under that subheader
+ */
+function categorizeAdapters(
+  adaptersList: { name: string; adapterMetadata: AdapterMetadata }[],
+) {
+  let currentCategory = ''
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const items: any = []
+  adaptersList.forEach(adapter => {
+    if (adapter.adapterMetadata?.category) {
+      if (currentCategory !== adapter.adapterMetadata?.category) {
+        currentCategory = adapter.adapterMetadata?.category
+        items.push(
+          <ListSubheader
+            key={adapter.adapterMetadata?.category}
+            value={adapter.adapterMetadata?.category}
+          >
+            {adapter.adapterMetadata?.category}
+          </ListSubheader>,
+        )
+      }
+      items.push(
+        <MenuItem key={adapter.name} value={adapter.name}>
+          {adapter.adapterMetadata?.displayName
+            ? adapter.adapterMetadata?.displayName
+            : adapter.name}
+        </MenuItem>,
+      )
+    }
+  })
+  return items
+}
+
+function getAdapterTypes(pluginManager: PluginManager) {
+  return pluginManager.getElementTypesInGroup('adapter') as {
+    name: string
+    adapterMetadata: AdapterMetadata
+  }[]
+}
+
+function getTrackTypes(pluginManager: PluginManager) {
+  return pluginManager.getElementTypesInGroup('track') as { name: string }[]
+}
+
+const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
   const classes = useStyles()
   const session = getSession(model)
+  const { trackAdapter } = model
+  // prettier-ignore
+  const adapters = getAdapterTypes(getEnv(session).pluginManager)
   return (
     <TextField
       className={classes.spacing}
-      value={adapterHint}
+      value={trackAdapter?.type !== 'UNKNOWN' ? trackAdapter?.type : ''}
       label="adapterType"
-      helperText="An adapter type"
+      helperText="Select an adapter type"
       select
       fullWidth
-      onChange={event => {
-        model.setAdapterHint(event.target.value)
-      }}
+      onChange={event => model.setAdapterHint(event.target.value)}
       SelectProps={{
         // @ts-ignore
         SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
       }}
     >
-      {getEnv(session)
-        .pluginManager.getElementTypesInGroup('adapter')
-        // Exclude SNPCoverageAdapter from primary adapter user selection
-        .filter((elt: { name: string }) => elt.name !== 'SNPCoverageAdapter')
-        .map((elt: { name: string }) => (
+      {adapters
+        // Excludes any adapter with the 'adapterMetadata.hiddenFromGUI' property, and anything with the 'adapterMetadata.category' property
+        .filter(
+          elt =>
+            !elt.adapterMetadata?.hiddenFromGUI &&
+            !elt.adapterMetadata?.category,
+        )
+        .map(elt => (
           <MenuItem key={elt.name} value={elt.name}>
-            {elt.name}
+            {elt.adapterMetadata?.displayName
+              ? elt.adapterMetadata?.displayName
+              : elt.name}
           </MenuItem>
         ))}
+      {/* adapters with the 'adapterMetadata.category' property are categorized by the value of the property here */}
+      {categorizeAdapters(
+        adapters.filter(elt => !elt.adapterMetadata?.hiddenFromGUI),
+      )}
     </TextField>
   )
-}
+})
 
 function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
-  const { adapterHint } = model
   return (
     <>
       <Typography className={classes.spacing}>
-        Was not able to guess the adapter type for this data, but it may be in
-        the list below. If not, you can{' '}
+        JBrowse was not able to guess the adapter type for this data, but it may
+        be in the list below. If not, you can{' '}
         <Link
           href="https://github.com/GMOD/jbrowse-components/releases"
           target="_blank"
@@ -104,22 +164,75 @@ function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
         </Link>{' '}
         and add a feature request for this data type.
       </Typography>
-      <TrackAdapterSelector adapterHint={adapterHint} model={model} />
+      <TrackAdapterSelector model={model} />
     </>
   )
 }
 
-function ConfirmTrack({ model }: { model: AddTrackModel }) {
+const TrackTypeSelector = observer(({ model }: { model: AddTrackModel }) => {
   const classes = useStyles()
   const session = getSession(model)
-  const {
-    trackName,
-    trackAdapter,
-    trackType,
-    assembly,
-    warningMessage,
-    adapterHint,
-  } = model
+  const { trackType } = model
+  const trackTypes = getTrackTypes(getEnv(session).pluginManager)
+
+  return (
+    <TextField
+      className={classes.spacing}
+      value={trackType}
+      label="trackType"
+      helperText="Select a track type"
+      select
+      fullWidth
+      onChange={event => {
+        model.setTrackType(event.target.value)
+      }}
+      SelectProps={{
+        // @ts-ignore
+        SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
+      }}
+    >
+      {trackTypes.map(({ name }) => (
+        <MenuItem key={name} value={name}>
+          {name}
+        </MenuItem>
+      ))}
+    </TextField>
+  )
+})
+
+const TrackAssemblySelector = observer(
+  ({ model }: { model: AddTrackModel }) => {
+    const session = getSession(model)
+    const { assembly } = model
+    return (
+      <TextField
+        value={assembly}
+        label="assemblyName"
+        helperText="Assembly to which the track will be added"
+        select
+        fullWidth
+        onChange={event => model.setAssembly(event.target.value)}
+        SelectProps={{
+          // @ts-ignore
+          SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
+        }}
+      >
+        {session.assemblies
+          .map(conf => readConfObject(conf, 'name'))
+          .map(name => (
+            <MenuItem key={name} value={name}>
+              {name}
+            </MenuItem>
+          ))}
+      </TextField>
+    )
+  },
+)
+
+function ConfirmTrack({ model }: { model: AddTrackModel }) {
+  const classes = useStyles()
+  const { trackName, trackAdapter, trackType, warningMessage, adapterHint } =
+    model
 
   if (model.unsupported) {
     return (
@@ -150,19 +263,22 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
     return <UnknownAdapterPrompt model={model} />
   }
 
+  if (adapterHint === '' && trackAdapter) {
+    model.setAdapterHint(trackAdapter.type)
+  }
+
   if (!trackAdapter?.type) {
     return <Typography>Could not recognize this data type.</Typography>
   }
 
   return (
-    <>
+    <div>
       {trackAdapter ? (
         <StatusMessage trackAdapter={trackAdapter} trackType={trackType} />
       ) : null}
       {warningMessage ? (
         <Typography style={{ color: 'orange' }}>{warningMessage}</Typography>
       ) : null}
-      <TrackAdapterSelector adapterHint={adapterHint} model={model} />
       <TextField
         className={classes.spacing}
         label="trackName"
@@ -172,54 +288,10 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
         onChange={event => model.setTrackName(event.target.value)}
         inputProps={{ 'data-testid': 'trackNameInput' }}
       />
-      <TextField
-        className={classes.spacing}
-        value={trackType}
-        label="trackType"
-        helperText="A track type"
-        select
-        fullWidth
-        onChange={event => {
-          model.setTrackType(event.target.value)
-        }}
-        SelectProps={{
-          // @ts-ignore
-          SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
-        }}
-      >
-        {getEnv(session)
-          .pluginManager.getElementTypesInGroup('track')
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .map(({ name }: any) => (
-            <MenuItem key={name} value={name}>
-              {name}
-            </MenuItem>
-          ))}
-      </TextField>
-      <TextField
-        value={assembly}
-        label="assemblyName"
-        helperText="Assembly to which the track will be added"
-        select
-        fullWidth
-        onChange={event => {
-          model.setAssembly(event.target.value)
-        }}
-        SelectProps={{
-          // @ts-ignore
-          SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
-        }}
-      >
-        {session.assemblies.map(assemblyConf => {
-          const assemblyName = readConfObject(assemblyConf, 'name')
-          return (
-            <MenuItem key={assemblyName} value={assemblyName}>
-              {assemblyName}
-            </MenuItem>
-          )
-        })}
-      </TextField>
-    </>
+      <TrackAdapterSelector model={model} />
+      <TrackTypeSelector model={model} />
+      <TrackAssemblySelector model={model} />
+    </div>
   )
 }
 

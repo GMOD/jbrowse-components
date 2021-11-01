@@ -3,19 +3,26 @@ import {
   AppBar,
   IconButton,
   ListItemSecondaryAction,
+  Menu,
   MenuItem,
   Select,
   Toolbar,
+  Tooltip,
   Typography,
   makeStyles,
   alpha,
 } from '@material-ui/core'
-import DeleteIcon from '@material-ui/icons/Delete'
-import CloseIcon from '@material-ui/icons/Close'
-import MinimizeIcon from '@material-ui/icons/Minimize'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { SessionWithDrawerWidgets } from '@jbrowse/core/util/types'
+
+// icons
+import DeleteIcon from '@material-ui/icons/Delete'
+import CloseIcon from '@material-ui/icons/Close'
+import MinimizeIcon from '@material-ui/icons/Minimize'
+import MoreVertIcon from '@material-ui/icons/MoreVert'
+
+// locals
 import Drawer from './Drawer'
 
 const useStyles = makeStyles(theme => ({
@@ -60,8 +67,10 @@ const DrawerHeader = observer(
     setToolbarHeight: (arg: number) => void
   }) => {
     const { pluginManager } = getEnv(session)
-    const { visibleWidget, activeWidgets } = session
+    const { visibleWidget, activeWidgets, drawerPosition } = session
     const classes = useStyles()
+
+    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
 
     return (
       <AppBar
@@ -139,25 +148,54 @@ const DrawerHeader = observer(
           <div className={classes.spacer} />
           <div>
             <IconButton
-              data-testid="drawer-minimize"
-              color="inherit"
-              onClick={() => {
-                session.minimizeWidgetDrawer()
-              }}
-            >
-              <MinimizeIcon />
-            </IconButton>
-            <IconButton
               data-testid="drawer-close"
               color="inherit"
-              onClick={() => {
-                session.hideWidget(visibleWidget)
-              }}
+              onClick={event => setAnchorEl(event.currentTarget)}
             >
-              <CloseIcon />
+              <MoreVertIcon />
             </IconButton>
+            <Tooltip title="Minimize drawer">
+              <IconButton
+                data-testid="drawer-minimize"
+                color="inherit"
+                onClick={() => {
+                  session.minimizeWidgetDrawer()
+                }}
+              >
+                <MinimizeIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Close drawer">
+              <IconButton
+                data-testid="drawer-close"
+                color="inherit"
+                onClick={() => {
+                  session.hideWidget(visibleWidget)
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </Tooltip>
           </div>
         </Toolbar>
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={() => setAnchorEl(null)}
+        >
+          {['left', 'right'].map(option => (
+            <MenuItem
+              key={option}
+              selected={drawerPosition === 'option'}
+              onClick={() => {
+                session.setDrawerPosition(option)
+                setAnchorEl(null)
+              }}
+            >
+              {option}
+            </MenuItem>
+          ))}
+        </Menu>
       </AppBar>
     )
   },

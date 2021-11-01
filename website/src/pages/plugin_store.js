@@ -5,27 +5,32 @@ import copy from 'copy-to-clipboard'
 import Layout from '@theme/Layout'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 
-import Link from '@material-ui/core/Link'
-import Typography from '@material-ui/core/Typography'
-import Card from '@material-ui/core/Card'
-import CardActions from '@material-ui/core/CardActions'
-import CardContent from '@material-ui/core/CardContent'
-import CardMedia from '@material-ui/core/CardMedia'
-import Button from '@material-ui/core/Button'
-import Dialog from '@material-ui/core/Dialog'
-import DialogTitle from '@material-ui/core/DialogTitle'
+import {
+  Link,
+  Typography,
+  Card,
+  CardActions,
+  CardContent,
+  CardMedia,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  IconButton,
+  ThemeProvider,
+  createTheme,
+} from '@mui/material'
 
-import PersonIcon from '@material-ui/icons/Person'
-import AccountBalanceIcon from '@material-ui/icons/AccountBalance'
-import GitHubIcon from '@material-ui/icons/GitHub'
-import AssignmentIcon from '@material-ui/icons/Assignment'
-import AssignmentTurnedInIcon from '@material-ui/icons/AssignmentTurnedIn'
-import HelpIcon from '@material-ui/icons/Help'
-import CodeIcon from '@material-ui/icons/Code'
-import IconButton from '@material-ui/core/IconButton'
-import CloseIcon from '@material-ui/icons/Close'
-
-import { DialogContent } from '@material-ui/core'
+import {
+  Person,
+  AccountBalance,
+  GitHub,
+  Assignment,
+  AssignmentTurnedIn,
+  Help,
+  Code,
+  Close,
+} from '@mui/icons-material'
 
 import pluginJSON from '../../plugins.json'
 
@@ -48,7 +53,7 @@ function TopDocumentation() {
             onClick={() => setAboutSectionOpen(true)}
             disableRipple
           >
-            <HelpIcon style={{ marginRight: '0.5em' }} /> About the plugin store
+            <Help style={{ marginRight: '0.5em' }} /> About the plugin store
           </Button>
         </div>
         <div className={pluginStyles.topButton}>
@@ -59,7 +64,7 @@ function TopDocumentation() {
             onClick={() => setDeveloperSectionOpen(true)}
             disableRipple
           >
-            <CodeIcon style={{ marginRight: '0.5em' }} /> Developer information
+            <Code style={{ marginRight: '0.5em' }} /> Developer information
           </Button>
         </div>
       </div>
@@ -74,7 +79,7 @@ function TopDocumentation() {
               aria-label="close"
               onClick={() => setAboutSectionOpen(false)}
             >
-              <CloseIcon style={{ color: '#fff' }} />
+              <Close style={{ color: '#fff' }} />
             </IconButton>
           </div>
         </DialogTitle>
@@ -114,7 +119,7 @@ function TopDocumentation() {
               aria-label="close"
               onClick={() => setDeveloperSectionOpen(false)}
             >
-              <CloseIcon style={{ color: '#fff' }} />
+              <Close style={{ color: '#fff' }} />
             </IconButton>
           </div>
         </DialogTitle>
@@ -168,13 +173,13 @@ function PluginCard(props) {
           <Typography variant="h4">{plugin.name}</Typography>
         </div>
         <div className={pluginStyles.dataField}>
-          <PersonIcon style={{ marginRight: '0.5em' }} />
+          <Person style={{ marginRight: '0.5em' }} />
           <Typography>{plugin.authors.join(', ')}</Typography>
-          <AccountBalanceIcon className={pluginStyles.icon} />
+          <AccountBalance className={pluginStyles.icon} />
           <Typography>
             {plugin.license === 'NONE' ? 'No license' : plugin.license}
           </Typography>
-          <GitHubIcon className={pluginStyles.icon} />
+          <GitHub className={pluginStyles.icon} />
           <Link href={plugin.location} target="_blank" rel="noopener">
             <Typography>{plugin.location}</Typography>
           </Link>
@@ -222,9 +227,7 @@ function ConfigBlock(props) {
         variant="contained"
         disableRipple
         size="small"
-        startIcon={
-          clickedCopy ? <AssignmentTurnedInIcon /> : <AssignmentIcon />
-        }
+        startIcon={clickedCopy ? <AssignmentTurnedIn /> : <Assignment />}
         onClick={() => {
           copy(configString)
           setClickedCopy(true)
@@ -242,19 +245,21 @@ function PluginStore() {
   const { siteConfig = {} } = context
 
   return (
-    <Layout title={`${siteConfig.title}`}>
-      <div className={pluginStyles.body}>
-        <div style={{ flexBasis: '50%' }}>
-          <h1 style={{ textAlign: 'center' }}>JBrowse 2 Plugin Store</h1>
+    <ThemeProvider theme={theme}>
+      <Layout title={`${siteConfig.title}`}>
+        <div className={pluginStyles.body}>
+          <div style={{ flexBasis: '50%' }}>
+            <h1 style={{ textAlign: 'center' }}>JBrowse 2 Plugin Store</h1>
+          </div>
+          <TopDocumentation />
+          <div style={{ flexBasis: '50%' }}>
+            {plugins.map(plugin => (
+              <PluginCard plugin={plugin} key={plugin.name} />
+            ))}
+          </div>
         </div>
-        <TopDocumentation />
-        <div style={{ flexBasis: '50%' }}>
-          {plugins.map(plugin => (
-            <PluginCard plugin={plugin} key={plugin.name} />
-          ))}
-        </div>
-      </div>
-    </Layout>
+      </Layout>
+    </ThemeProvider>
   )
 }
 
@@ -280,3 +285,7 @@ const configExample = `{
 }`
 
 export default PluginStore
+
+const theme = createTheme({
+  palette: { secondary: { main: '#ccc' }, primary: { main: '#3f51b5' } },
+})

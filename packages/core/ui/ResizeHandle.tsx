@@ -1,6 +1,6 @@
+import React, { useEffect, useState, useRef } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import clsx from 'clsx'
-import React, { useEffect, useState, useRef } from 'react'
 
 const useStyles = makeStyles({
   horizontalHandle: {
@@ -21,21 +21,19 @@ const useStyles = makeStyles({
   },
 })
 
-interface ResizeHandleProps {
-  onDrag: (arg: number) => number
-  vertical?: boolean
-  flexbox?: boolean
-  className?: string
-  [props: string]: unknown
-}
-
 function ResizeHandle({
   onDrag,
   vertical = false,
   flexbox = false,
   className: originalClassName,
   ...props
-}: ResizeHandleProps) {
+}: {
+  onDrag: (arg: number) => number
+  vertical?: boolean
+  flexbox?: boolean
+  className?: string
+  [props: string]: unknown
+}) {
   const [mouseDragging, setMouseDragging] = useState(false)
   const prevPos = useRef(0)
   const classes = useStyles()
@@ -43,11 +41,11 @@ function ResizeHandle({
   useEffect(() => {
     function mouseMove(event: MouseEvent) {
       event.preventDefault()
-      const pos = event[vertical ? 'clientX' : 'clientY']
+      const pos = vertical ? event.clientX : event.clientY
       const distance = pos - prevPos.current
       if (distance) {
-        const actualDistance = onDrag(distance)
-        prevPos.current += actualDistance
+        onDrag(distance)
+        prevPos.current = pos
       }
     }
 
@@ -83,8 +81,7 @@ function ResizeHandle({
       data-resizer="true"
       onMouseDown={event => {
         event.preventDefault()
-        const pos = event[vertical ? 'clientX' : 'clientY']
-        prevPos.current = pos
+        prevPos.current = vertical ? event.clientX : event.clientY
         setMouseDragging(true)
       }}
       role="presentation"

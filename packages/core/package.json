@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/core",
-  "version": "1.4.4",
+  "version": "1.5.0",
   "description": "JBrowse 2 core libraries used by plugins",
   "keywords": [
     "jbrowse",
@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.15.3",
-    "@material-ui/icons": "^4.0.0",
+    "@material-ui/icons": "^4.0.1",
     "abortable-promise-cache": "^1.1.3",
     "base64-js": "^1.3.0",
     "canvas": "^2.8.0",
@@ -52,7 +52,6 @@
     "librpc-web-mod": "^1.1.2",
     "load-script2": "^2.0.5",
     "object.fromentries": "^2.0.0",
-    "pako": "^1.0.10",
     "rbush": "^3.0.1",
     "react-error-boundary": "^3.0.0",
     "react-intersection-observer": "^8.31.0",
@@ -64,8 +63,8 @@
   },
   "peerDependencies": {
     "@material-ui/core": "^4.12.2",
-    "@material-ui/data-grid": "^4.0.0-alpha.37",
     "@material-ui/lab": "^4.0.0-alpha.45",
+    "@mui/x-data-grid": "^4.0.0",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "^3.14.1",

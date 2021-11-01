@@ -2,10 +2,16 @@ import { lazy } from 'react'
 import { configSchema, stateModelFactory } from './BaseFeatureWidget'
 import Plugin from './Plugin'
 import PluginManager from './PluginManager'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import * as coreRpcMethods from './rpc/coreRpcMethods'
 import WidgetType from './pluggableElementTypes/WidgetType'
+import {
+  configSchema as cytobandConfigSchema,
+  DataAdapter,
+} from './data_adapters/CytobandAdapter'
 
-/** the core plugin, which registers types that ALL JBrowse applications are expected to need. */
+// the core plugin, which registers types that ALL JBrowse applications are
+// expected to need.
 export default class CorePlugin extends Plugin {
   name = 'CorePlugin'
 
@@ -14,6 +20,15 @@ export default class CorePlugin extends Plugin {
     Object.values(coreRpcMethods).forEach(RpcMethod => {
       pluginManager.addRpcMethod(() => new RpcMethod(pluginManager))
     })
+
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'CytobandAdapter',
+          configSchema: cytobandConfigSchema,
+          AdapterClass: DataAdapter,
+        }),
+    )
 
     pluginManager.addWidgetType(() => {
       return new WidgetType({

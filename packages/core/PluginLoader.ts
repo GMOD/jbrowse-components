@@ -1,5 +1,4 @@
 /* eslint-disable no-restricted-globals */
-import url from 'url'
 import domLoadScript from 'load-script2'
 
 import { PluginConstructor } from './Plugin'
@@ -63,7 +62,7 @@ export default class PluginLoader {
   }
 
   async loadPlugin(definition: PluginDefinition) {
-    const parsedUrl = url.parse(definition.url)
+    const parsedUrl = new URL(definition.url)
     if (
       !parsedUrl.protocol ||
       parsedUrl.protocol === 'http:' ||

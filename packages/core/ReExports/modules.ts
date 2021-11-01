@@ -13,7 +13,7 @@ import * as MUICore from '@material-ui/core'
 import * as MUIUtils from '@material-ui/core/utils'
 import MUISvgIcon from '@material-ui/core/SvgIcon'
 import * as MUILab from '@material-ui/lab'
-import * as MUIDataGrid from '@material-ui/data-grid'
+import * as MUIDataGrid from '@mui/x-data-grid'
 import MUIBox from '@material-ui/core/Box'
 import MUIButton from '@material-ui/core/Button'
 import MUIButtonGroup from '@material-ui/core/ButtonGroup'
@@ -53,6 +53,7 @@ import * as BaseAdapterExports from '../data_adapters/BaseAdapter'
 import * as BaseFeatureDetail from '../BaseFeatureWidget/BaseFeatureDetail'
 
 import Base1DView from '../util/Base1DViewModel'
+import * as pluggableElementTypes from '../pluggableElementTypes'
 import ViewType from '../pluggableElementTypes/ViewType'
 import AdapterType from '../pluggableElementTypes/AdapterType'
 import DisplayType from '../pluggableElementTypes/DisplayType'
@@ -67,7 +68,7 @@ import * as FeatureRendererType from '../pluggableElementTypes/renderers/Feature
 import * as RendererType from '../pluggableElementTypes/renderers/RendererType'
 
 import * as Configuration from '../configuration'
-import * as Plugin from '../Plugin'
+import Plugin from '../Plugin'
 import * as coreUi from '../ui'
 import * as coreUtil from '../util'
 import * as coreColor from '../util/color'
@@ -95,6 +96,7 @@ const libs = {
   '@material-ui/core/utils': MUIUtils,
   // end special case
   '@material-ui/lab': MUILab,
+  '@mui/x-data-grid': MUIDataGrid,
   '@material-ui/data-grid': MUIDataGrid,
 
   // material-ui subcomponents, should get rid of these
@@ -135,6 +137,7 @@ const libs = {
   '@material-ui/lab/ToggleButtonGroup': ToggleButtonGroup,
 
   '@jbrowse/core/Plugin': Plugin,
+  '@jbrowse/core/pluggableElementTypes': pluggableElementTypes,
   '@jbrowse/core/pluggableElementTypes/ViewType': ViewType,
   '@jbrowse/core/pluggableElementTypes/AdapterType': AdapterType,
   '@jbrowse/core/pluggableElementTypes/DisplayType': DisplayType,

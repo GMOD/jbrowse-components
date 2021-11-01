@@ -6,10 +6,15 @@ import path from 'path'
 import url from 'url'
 import windowStateKeeper from 'electron-window-state'
 import { autoUpdater } from 'electron-updater'
+import fetch from 'node-fetch'
 
-const { unlink, rename, readdir, readFile, writeFile } = fs.promises
+const { unlink, readFile, copyFile, readdir, writeFile } = fs.promises
 
 const { app, ipcMain, shell, BrowserWindow, Menu } = electron
+
+function stringify(obj: unknown) {
+  return JSON.stringify(obj, null, 2)
+}
 
 // manual auto-updates https://github.com/electron-userland/electron-builder/blob/docs/encapsulated%20manual%20update%20via%20menu.js
 autoUpdater.autoDownload = false
@@ -21,20 +26,18 @@ autoUpdater.on('error', error => {
   )
 })
 
-autoUpdater.on('update-available', () => {
-  dialog
-    .showMessageBox({
-      type: 'info',
-      title: 'Found updates',
-      message:
-        'Found updates, do you want update now? No status will appear while the update downloads, but a dialog will appear once complete',
-      buttons: ['Yes', 'No'],
-    })
-    .then(buttonIndex => {
-      if (buttonIndex.response === 0) {
-        autoUpdater.downloadUpdate()
-      }
-    })
+autoUpdater.on('update-available', async () => {
+  const result = await dialog.showMessageBox({
+    type: 'info',
+    title: 'Found updates',
+    message:
+      'Found updates, do you want update now? Note: the update will download in the background, and a dialog will appear once complete',
+    buttons: ['Yes', 'No'],
+  })
+
+  if (result.response === 0) {
+    autoUpdater.downloadUpdate()
+  }
 })
 
 debug({ showDevTools: false })
@@ -43,14 +46,49 @@ const devServerUrl = url.parse(
   process.env.DEV_SERVER_URL || 'http://localhost:3000',
 )
 
-const sessionDir = path.join(app.getPath('userData'), 'sessions')
+const userData = app.getPath('userData')
+const recentSessionsPath = path.join(userData, 'recent_sessions.json')
+const quickstartDir = path.join(userData, 'quickstart')
+const thumbnailDir = path.join(userData, 'thumbnails')
+const autosaveDir = path.join(userData, 'autosaved')
+const jbrowseDocDir = path.join(app.getPath('documents'), 'JBrowse')
+const defaultSavePath = path.join(jbrowseDocDir, 'untitled.jbrowse')
 
-function getPath(sessionName: string, ext = 'json') {
-  return path.join(sessionDir, `${encodeURIComponent(sessionName)}.${ext}`)
+const fileFilters = [
+  { name: 'JBrowse Session', extensions: ['jbrowse'] },
+  { name: 'All Files', extensions: ['*'] },
+]
+
+function getQuickstartPath(sessionName: string, ext = 'json') {
+  return path.join(quickstartDir, `${encodeURIComponent(sessionName)}.${ext}`)
 }
 
-if (!fs.lstatSync(sessionDir).isDirectory()) {
-  fs.mkdirSync(sessionDir, { recursive: true })
+function getThumbnailPath(sessionPath: string) {
+  return path.join(thumbnailDir, `${encodeURIComponent(sessionPath)}.data`)
+}
+
+function getAutosavePath(sessionName: string, ext = 'json') {
+  return path.join(autosaveDir, `${encodeURIComponent(sessionName)}.${ext}`)
+}
+
+if (!fs.existsSync(recentSessionsPath)) {
+  fs.writeFileSync(recentSessionsPath, stringify([]), 'utf8')
+}
+
+if (!fs.existsSync(quickstartDir)) {
+  fs.mkdirSync(quickstartDir, { recursive: true })
+}
+
+if (!fs.existsSync(thumbnailDir)) {
+  fs.mkdirSync(thumbnailDir, { recursive: true })
+}
+
+if (!fs.existsSync(autosaveDir)) {
+  fs.mkdirSync(autosaveDir, { recursive: true })
+}
+
+if (!fs.existsSync(jbrowseDocDir)) {
+  fs.mkdirSync(jbrowseDocDir, { recursive: true })
 }
 
 interface SessionSnap {
@@ -64,6 +102,23 @@ interface SessionSnap {
 let mainWindow: electron.BrowserWindow | null
 
 async function createWindow() {
+  const response = await fetch('https://jbrowse.org/genomes/sessions.json')
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status} ${response.statusText}`)
+  }
+  const data = await response.json()
+  Object.entries(data).forEach(([key, value]) => {
+    // if there is not a 'gravestone' (.deleted file), then repopulate it on
+    // startup, this allows the user to delete even defaults if they want to
+    if (!fs.existsSync(getQuickstartPath(key) + '.deleted')) {
+      fs.writeFileSync(
+        getQuickstartPath(key),
+        JSON.stringify(value, null, 2),
+        'utf8',
+      )
+    }
+  })
+
   const mainWindowState = windowStateKeeper({
     defaultWidth: 1400,
     defaultHeight: 800,
@@ -236,35 +291,70 @@ app.on('activate', () => {
   }
 })
 
-ipcMain.handle('listSessions', async () => {
-  return new Map(
-    (await readdir(sessionDir))
-      .filter(f => path.extname(f) === '.json')
-      .map(f => {
-        const base = path.basename(f, '.json')
-        const json = path.join(sessionDir, base + '.json')
-        const thumb = path.join(sessionDir, base + '.thumbnail')
-
-        return [
-          decodeURIComponent(base),
-          {
-            stats: fs.existsSync(json) ? fs.statSync(json) : undefined,
-            screenshot: fs.existsSync(thumb)
-              ? fs.readFileSync(thumb, 'utf8')
-              : undefined,
-          },
-        ]
-      }),
-  )
+ipcMain.handle('quit', () => {
+  app.quit()
 })
+
+ipcMain.handle(
+  'listSessions',
+  async (_event: unknown, showAutosaves: boolean) => {
+    const sessions = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as {
+      path: string
+    }[]
+
+    if (!showAutosaves) {
+      return sessions.filter(f => !f.path.startsWith(autosaveDir))
+    } else {
+      return sessions
+    }
+  },
+)
 
 ipcMain.handle('loadExternalConfig', (_event: unknown, sessionPath) => {
   return readFile(sessionPath, 'utf8')
 })
 
-ipcMain.handle('loadSession', async (_event: unknown, sessionName: string) => {
-  const data = await readFile(getPath(sessionName), 'utf8')
-  return JSON.parse(data)
+ipcMain.handle('loadSession', async (_event: unknown, sessionPath: string) => {
+  const sessionSnapshot = JSON.parse(await readFile(sessionPath, 'utf8'))
+  if (!sessionSnapshot.assemblies) {
+    throw new Error(
+      `File at ${sessionPath} does not appear to be a JBrowse session. It does not contain any assemblies.`,
+    )
+  }
+  return sessionSnapshot
+})
+
+ipcMain.handle(
+  'addToQuickstartList',
+  async (_event: unknown, sessionPath: string, sessionName: string) => {
+    await copyFile(sessionPath, getQuickstartPath(sessionName))
+  },
+)
+
+ipcMain.handle('listQuickstarts', async (_event: unknown) => {
+  return (await readdir(quickstartDir))
+    .filter(f => path.extname(f) === '.json')
+    .map(f => decodeURIComponent(path.basename(f, '.json')))
+})
+
+ipcMain.handle('deleteQuickstart', async (_event: unknown, name: string) => {
+  fs.unlinkSync(getQuickstartPath(name))
+
+  // add a gravestone '.deleted' file when we delete a session, so that if it
+  // comes from the https://jbrowse.org/genomes/sessions.json, we don't
+  // recreate it
+  fs.writeFileSync(getQuickstartPath(name) + '.deleted', '', 'utf8')
+})
+
+ipcMain.handle(
+  'renameQuickstart',
+  async (_event: unknown, oldName: string, newName: string) => {
+    return fs.renameSync(getQuickstartPath(oldName), getQuickstartPath(newName))
+  },
+)
+
+ipcMain.handle('getQuickstart', async (_event: unknown, name: string) => {
+  return JSON.parse(await readFile(getQuickstartPath(name), 'utf8'))
 })
 
 ipcMain.handle(
@@ -295,53 +385,169 @@ ipcMain.handle(
     })
   },
 )
-ipcMain.handle('saveSession', async (_event: unknown, snap: SessionSnap) => {
-  const page = await mainWindow?.capturePage()
-  const name = snap.defaultSession.name
-  if (page) {
-    const resizedPage = page.resize({ width: 250 })
-    await writeFile(getPath(name, 'thumbnail'), resizedPage.toDataURL())
-  }
-  await writeFile(getPath(name), JSON.stringify(snap, null, 2))
-})
 
+// creates an initial entry in autosave folder
 ipcMain.handle(
-  'renameSession',
-  async (_event: unknown, oldName: string, newName: string) => {
-    try {
-      await rename(getPath(oldName, 'thumbnail'), getPath(newName, 'thumbnail'))
-    } catch (e) {
-      console.error('rename thumbnail failed', e)
+  'createInitialAutosaveFile',
+  async (_event: unknown, snap: SessionSnap) => {
+    const rows = JSON.parse(fs.readFileSync(recentSessionsPath, 'utf8')) as [
+      { path: string; updated: number },
+    ]
+    const idx = rows.findIndex(r => r.path === path)
+    const path = getAutosavePath(`${+Date.now()}`)
+    const entry = {
+      path,
+      updated: +Date.now(),
+      name: snap.defaultSession?.name,
     }
+    if (idx === -1) {
+      rows.unshift(entry)
+    } else {
+      rows[idx] = entry
+    }
+    await Promise.all([
+      writeFile(recentSessionsPath, stringify(rows)),
+      writeFile(path, stringify(snap)),
+    ])
 
-    const snap = JSON.parse(await readFile(getPath(oldName), 'utf8'))
-
-    snap.defaultSession.name = newName
-    await unlink(getPath(oldName))
-    await writeFile(getPath(newName), JSON.stringify(snap, null, 2))
+    return path
   },
 )
 
-ipcMain.handle('reset', async () => {
-  await Promise.all(
-    (await readdir(sessionDir)).map(f => unlink(path.join(sessionDir, f))),
-  )
+// snapshots page and saves to path
+ipcMain.handle(
+  'saveSession',
+  async (_event: unknown, path: string, snap: SessionSnap) => {
+    const page = await mainWindow?.capturePage()
+    const rows = JSON.parse(fs.readFileSync(recentSessionsPath, 'utf8')) as [
+      { path: string; updated: number },
+    ]
+    const idx = rows.findIndex(r => r.path === path)
+    const png = page?.resize({ width: 500 }).toDataURL()
+    const entry = {
+      path,
+      updated: +Date.now(),
+      name: snap.defaultSession?.name,
+    }
+    if (idx === -1) {
+      rows.unshift(entry)
+    } else {
+      rows[idx] = entry
+    }
+    await Promise.all([
+      ...(png ? [writeFile(getThumbnailPath(path), png)] : []),
+      writeFile(recentSessionsPath, stringify(rows)),
+      writeFile(path, stringify(snap)),
+    ])
+  },
+)
+
+ipcMain.handle('loadThumbnail', (_event: unknown, name: string) => {
+  const path = getThumbnailPath(name)
+  if (fs.existsSync(path)) {
+    return readFile(path, 'utf8')
+  }
+  return undefined
+})
+
+ipcMain.handle('promptOpenFile', async (_event: unknown) => {
+  const choice = await dialog.showOpenDialog({
+    defaultPath: jbrowseDocDir,
+    filters: fileFilters,
+  })
+
+  return choice.filePaths[0]
+})
+
+ipcMain.handle('promptSessionSaveAs', async (_event: unknown) => {
+  const choice = await dialog.showSaveDialog({
+    defaultPath: path.join(defaultSavePath),
+    filters: fileFilters,
+  })
+
+  if (choice.filePath && !choice.filePath.endsWith('.jbrowse')) {
+    choice.filePath = `${choice.filePath}.jbrowse`
+  }
+  return choice.filePath
 })
 
 ipcMain.handle(
-  'deleteSession',
-  async (_event: unknown, sessionName: string) => {
-    try {
-      await unlink(getPath(sessionName, 'thumbnail'))
-    } catch (e) {
-      console.error('delete thumbnail failed', e)
+  'deleteSessions',
+  async (_event: unknown, sessionPaths: string[]) => {
+    const sessions = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as {
+      path: string
+      name: string
+    }[]
+
+    const indexes: number[] = []
+    sessions.forEach((row, idx) => {
+      if (sessionPaths.includes(row.path)) {
+        indexes.push(idx)
+      }
+    })
+    for (let i = indexes.length - 1; i >= 0; i--) {
+      sessions.splice(indexes[i], 1)
     }
-    return unlink(getPath(sessionName))
+
+    await Promise.all([
+      writeFile(recentSessionsPath, stringify(sessions)),
+      ...sessionPaths.map(sessionPath =>
+        unlink(getThumbnailPath(sessionPath)).catch(e => console.error(e)),
+      ),
+      ...sessionPaths.map(sessionPath =>
+        unlink(sessionPath).catch(e => console.error(e)),
+      ),
+    ])
+  },
+)
+
+ipcMain.handle(
+  'deleteSession',
+  async (_event: unknown, sessionPath: string) => {
+    const sessions = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as {
+      path: string
+      name: string
+    }[]
+
+    const idx = sessions.findIndex(row => row.path === sessionPath)
+    if (idx !== -1) {
+      sessions.splice(idx, 1)
+    } else {
+      throw new Error(`Session at ${path} not found`)
+    }
+
+    await Promise.all([
+      writeFile(recentSessionsPath, stringify(sessions)),
+      unlink(getThumbnailPath(sessionPath)).catch(e => console.error(e)),
+      unlink(sessionPath).catch(e => console.error(e)),
+    ])
+  },
+)
+
+ipcMain.handle(
+  'renameSession',
+  async (_event: unknown, path: string, newName: string) => {
+    const sessions = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as {
+      path: string
+      name: string
+    }[]
+    const session = JSON.parse(await readFile(path, 'utf8'))
+    const idx = sessions.findIndex(row => row.path === path)
+    if (idx !== -1) {
+      sessions[idx].name = newName
+      session.defaultSession.name = newName
+    } else {
+      throw new Error(`Session at ${path} not found`)
+    }
+
+    await Promise.all([
+      writeFile(recentSessionsPath, stringify(sessions)),
+      writeFile(path, stringify(session)),
+    ])
   },
 )
 
 /// from https://github.com/iffy/electron-updater-example/blob/master/main.js
-//
 autoUpdater.on('checking-for-update', () => {
   sendStatusToWindow('Checking for update...')
 })

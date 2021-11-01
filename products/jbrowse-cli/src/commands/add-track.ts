@@ -37,23 +37,28 @@ export default class AddTrack extends JBrowseCommand {
   static description = 'Add a track to a JBrowse 2 configuration'
 
   static examples = [
-    `# --load copy copies my.bam and my.bam.bai to current directory and adds track to config.json`,
-    '$ jbrowse add-track /path/to/my.bam --load copy\n',
+    '# copy /path/to/my.bam and /path/to/my.bam.bai to current directory and adds track to config.json',
+    '$ jbrowse add-track /path/to/my.bam --load copy',
+    '',
 
-    `# same as above, but specify path to bai file`,
-    '$ jbrowse add-track /path/to/my.bam --indexFile /path/to/my.bai --load copy\n',
+    '# copy my.bam and my.bam.bai to /path/to/jb2/bam and adds track entry to /path/to/jb2/bam/config.json',
+    '$ jbrowse add-track my.bam --load copy --out /path/to/jb2 --subDir bam',
+    '',
 
-    `# --load symlink creates symlink in /path/to/jb2/ directory for this file, and adds track to config.json`,
-    '$ jbrowse add-track /path/to/my.bam --target /path/to/jb2/config.json --load symlink\n',
+    `# same as above, but specify path to bai file. needed for if the bai file does not have the extension .bam.bai`,
+    '$ jbrowse add-track my.bam --indexFile my.bai --load copy',
+    '',
 
-    `# no --load flag to add literal URL for this track to config.json`,
-    '$ jbrowse add-track https://mywebsite.com/my.bam\n',
+    '# creates symlink for /path/to/my.bam and adds track to config.json',
+    '$ jbrowse add-track /path/to/my.bam --load symlink',
+    '',
 
-    `# --load move to move the file `,
-    `$ jbrowse add-track /path/to/my.bam --name 'New Track' --load move\n`,
+    '# add track from URL to config.json, no --load flag needed',
+    '$ jbrowse add-track https://mywebsite.com/my.bam',
+    '',
 
-    `# --load inPlace puts /url/relative/path.bam in the config without performing any file operations`,
-    `$ jbrowse add-track /url/relative/path.bam --trackId AlignmentsTrack1 --load url --overwrite`,
+    '# --load inPlace adds a track without doing file operations',
+    '$ jbrowse add-track /url/relative/path.bam --load inPlace',
   ]
 
   static args = [

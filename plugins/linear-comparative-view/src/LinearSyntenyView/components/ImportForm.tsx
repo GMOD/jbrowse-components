@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import {
   Button,
@@ -14,6 +13,7 @@ import {
 import { FileLocation } from '@jbrowse/core/util/types'
 import { FileSelector } from '@jbrowse/core/ui'
 import { LinearSyntenyViewModel } from '../model'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 
 const useStyles = makeStyles(theme => ({
   importFormContainer: {
@@ -28,79 +28,79 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const ErrorDisplay = observer(({ error }: { error?: Error | string }) => {
-  return (
-    <Typography variant="h6" color="error">
-      {`${error}`}
-    </Typography>
-  )
-})
-
 const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   const classes = useStyles()
   const session = getSession(model)
+
   const { assemblyNames, assemblyManager } = session
+  const [selected, setSelected] = useState([assemblyNames[0], assemblyNames[0]])
   const [trackData, setTrackData] = useState<FileLocation>({
     uri: '',
     locationType: 'UriLocation',
   })
-  const [selected, setSelected] = useState([assemblyNames[0], assemblyNames[0]])
   const [numRows] = useState(2)
-
-  const asmError = selected
-    .map(a => assemblyManager.get(a)?.error)
-    .filter(f => !!f)
-    .join(', ')
-  const err = assemblyNames.length ? asmError : 'No configured assemblies'
+  const [error, setError] = useState<unknown>()
+  const assemblyError = assemblyNames.length
+    ? selected
+        .map(a => assemblyManager.get(a)?.error)
+        .filter(f => !!f)
+        .join(', ')
+    : 'No configured assemblies'
 
   async function onOpenClick() {
-    model.setViews(
-      // @ts-ignore
-      await Promise.all(
-        selected
-          .map(async selection => {
+    try {
+      if (!isSessionWithAddTracks(session)) {
+        return
+      }
+      model.setViews(
+        await Promise.all(
+          selected.map(async selection => {
             const assembly = await assemblyManager.waitForAssembly(selection)
-            if (assembly) {
-              return {
-                type: 'LinearGenomeView',
-                bpPerPx: 1,
-                offsetPx: 0,
-                hideHeader: true,
-                // @ts-ignore
-                displayedRegions: getSnapshot(assembly.regions),
-              }
+            if (!assembly) {
+              throw new Error(`Assembly ${selection} failed to load`)
             }
-            throw new Error(`Assembly ${selection} failed to load`)
-          })
-          .filter(f => !!f),
-      ),
-    )
+            return {
+              type: 'LinearGenomeView' as 'LinearGenomeView',
+              bpPerPx: 1,
+              offsetPx: 0,
+              hideHeader: true,
+              displayedRegions: assembly.regions,
+            }
+          }),
+        ),
+      )
 
-    model.views.forEach(view => view.setWidth(model.width))
+      model.views.forEach(view => view.setWidth(model.width))
 
-    const fileName =
-      'uri' in trackData && trackData.uri
-        ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
-        : 'MyTrack'
+      const name =
+        'uri' in trackData && trackData.uri
+          ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
+          : 'MyTrack'
 
-    // @ts-ignore
-    const configuration = session.addTrackConf({
-      trackId: `${fileName}-${Date.now()}`,
-      name: fileName,
-      assemblyNames: selected,
-      type: 'SyntenyTrack',
-      adapter: {
-        type: 'PAFAdapter',
-        pafLocation: trackData,
+      const trackId = `${name}-${Date.now()}`
+      session.addTrackConf({
+        trackId,
+        name,
         assemblyNames: selected,
-      },
-    })
-    model.toggleTrack(configuration.trackId)
+        type: 'SyntenyTrack',
+        adapter: {
+          type: 'PAFAdapter',
+          pafLocation: trackData,
+          assemblyNames: selected,
+        },
+      })
+      model.toggleTrack(trackId)
+    } catch (e) {
+      console.error(e)
+      setError(e)
+    }
   }
 
+  // this is a combination of any displayed error message we have
+  const displayError = error || assemblyError
   return (
     <Container className={classes.importFormContainer}>
-      {err ? <ErrorDisplay error={err} /> : null}
+      {displayError ? <ErrorMessage error={displayError} /> : null}
       <Paper className={classes.formPaper}>
         <Grid
           container
@@ -152,7 +152,9 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
       <Grid container justifyContent="center">
         <Grid item>
           <Button
-            disabled={!!err}
+            // only disable button on assemblyError. for other types of errors
+            // in the useState can retry
+            disabled={!!assemblyError}
             onClick={onOpenClick}
             variant="contained"
             color="primary"

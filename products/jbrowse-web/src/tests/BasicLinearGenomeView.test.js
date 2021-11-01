@@ -18,10 +18,10 @@ import JBrowse from '../JBrowse'
 
 // need to mock out data grid and force all columns to render
 // https://github.com/mui-org/material-ui-x/issues/1151
-jest.mock('@material-ui/data-grid', () => {
-  const { DataGrid } = jest.requireActual('@material-ui/data-grid')
+jest.mock('@mui/x-data-grid', () => {
+  const { DataGrid } = jest.requireActual('@mui/x-data-grid')
   return {
-    ...jest.requireActual('@material-ui/data-grid'),
+    ...jest.requireActual('@mui/x-data-grid'),
     DataGrid: props => {
       return <DataGrid {...props} columnBuffer={6} />
     },
@@ -155,6 +155,8 @@ describe('valid file tests', () => {
     )
     const trackRenderingContainer1 = await findByTestId(
       'trackRenderingContainer-integration_test-volvox_filtered_vcf',
+      {},
+      { timeout: 10000 },
     )
     const dragStartEvent = createEvent.dragStart(dragHandle0)
     // Have to mock 'dataTransfer' because it's not supported in jsdom
@@ -170,7 +172,7 @@ describe('valid file tests', () => {
     await waitFor(() =>
       expect(state.session.views[0].tracks[0].id).toBe(trackId1),
     )
-  })
+  }, 15000)
 
   it('click and zoom in and back out', async () => {
     const pluginManager = getPluginManager()

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import Button from '@material-ui/core/Button'
-import ShareIcon from '@material-ui/icons/Share'
+import { getSnapshot } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@material-ui/core/styles'
+import copy from 'copy-to-clipboard'
 import {
+  Button,
   Dialog,
   DialogActions,
   DialogContent,
@@ -17,16 +17,20 @@ import {
   RadioGroup,
   TextField,
   Typography,
+  alpha,
+  makeStyles,
 } from '@material-ui/core'
+import { AbstractSessionModel } from '@jbrowse/core/util'
 
+// icons
+import ShareIcon from '@material-ui/icons/Share'
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline'
 import SettingsIcon from '@material-ui/icons/Settings'
 import CloseIcon from '@material-ui/icons/Close'
-import copy from 'copy-to-clipboard'
-import { alpha } from '@material-ui/core/styles'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import { getSnapshot } from 'mobx-state-tree'
-import { toUrlSafeB64, AbstractSessionModel } from '@jbrowse/core/util'
+
+// locals
+import { toUrlSafeB64 } from './util'
 import { shareSessionToDynamo } from './sessionSharing'
 
 const useStyles = makeStyles(theme => ({
@@ -176,6 +180,7 @@ const ShareDialog = observer(
   }) => {
     const classes = useStyles()
     const [shortUrl, setShortUrl] = useState('')
+    const [longUrl, setLongUrl] = useState('')
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<unknown>()
     const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
@@ -217,12 +222,28 @@ const ShareDialog = observer(
       }
     }, [currentSetting, url, snap])
 
-    // generate long URL
-    const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`
-    const longUrl = new URL(window.location.href)
-    const longParams = new URLSearchParams(longUrl.search)
-    longParams.set('session', `encoded-${sess}`)
-    longUrl.search = longParams.toString()
+    useEffect(() => {
+      let cancelled = false
+      ;(async () => {
+        try {
+          // generate long URL
+          const sess = await toUrlSafeB64(JSON.stringify(getSnapshot(session)))
+          const longUrl = new URL(window.location.href)
+          const longParams = new URLSearchParams(longUrl.search)
+          longParams.set('session', `encoded-${sess}`)
+          longUrl.search = longParams.toString()
+          if (!cancelled) {
+            setLongUrl(longUrl.toString())
+          }
+        } catch (e) {
+          setError(e)
+        }
+      })()
+      return () => {
+        cancelled = true
+      }
+    }, [session])
+
     return (
       <>
         <Dialog
@@ -274,7 +295,7 @@ const ShareDialog = observer(
             ) : (
               <TextField
                 label="URL"
-                value={longUrl.toString()}
+                value={longUrl}
                 InputProps={{
                   readOnly: true,
                 }}

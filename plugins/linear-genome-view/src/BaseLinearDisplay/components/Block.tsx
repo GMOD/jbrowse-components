@@ -1,7 +1,7 @@
+import React from 'react'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
-import React from 'react'
 
 const useStyles = makeStyles(theme => ({
   contentBlock: {
@@ -28,51 +28,38 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-interface ContentBlockProps {
-  block: BaseBlock
-  children: React.ReactNode
-}
+const ContentBlock = observer(
+  ({ block, children }: { block: BaseBlock; children: React.ReactNode }) => {
+    const classes = useStyles()
+    const { widthPx } = block
+    return (
+      <div style={{ width: widthPx }} className={classes.contentBlock}>
+        {children}
+      </div>
+    )
+  },
+)
 
-interface ElidedBlockProps {
-  width: number
-}
-
-interface InterRegionPaddingBlockProps {
-  boundary: boolean
-  width: number
-  style?: React.CSSProperties
-}
-
-const ContentBlock = observer(({ block, children }: ContentBlockProps) => {
+function ElidedBlock({ width }: { width: number }) {
   const classes = useStyles()
-  return (
-    <div
-      style={{
-        width: `${block.widthPx}px`,
-      }}
-      className={classes.contentBlock}
-    >
-      {children}
-    </div>
-  )
-})
-
-function ElidedBlock({ width }: ElidedBlockProps) {
-  const classes = useStyles()
-  return <div className={classes.elidedBlock} style={{ width: `${width}px` }} />
+  return <div className={classes.elidedBlock} style={{ width }} />
 }
 
 function InterRegionPaddingBlock({
   boundary,
   width,
   style = {},
-}: InterRegionPaddingBlockProps) {
+}: {
+  boundary: boolean
+  width: number
+  style?: React.CSSProperties
+}) {
   const classes = useStyles()
   return (
     <div
       style={{
         ...style,
-        width: `${width}px`,
+        width,
       }}
       className={
         boundary

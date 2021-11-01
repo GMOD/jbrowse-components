@@ -1,4 +1,4 @@
-import { toUrlSafeB64 } from '@jbrowse/core/util'
+import { toUrlSafeB64 } from './util'
 
 import AES from 'crypto-js/aes'
 import Utf8 from 'crypto-js/enc-utf8'
@@ -24,22 +24,6 @@ const decrypt = (text: string, password: string) => {
   return bytes.toString(Utf8)
 }
 
-// recusively checks config for callbacks and removes them
-// was used to parse and delete, commented out for later if needed
-// const deleteCallbacks = (key: any) => {
-//   if (Array.isArray(key)) {
-//     key.forEach(a => {
-//       deleteCallbacks(a)
-//     })
-//   } else if (key && typeof key === 'object') {
-//     Object.entries(key).forEach(([innerKey, value]) => {
-//       if (typeof value === 'string' && value.startsWith('function')) {
-//         delete key[innerKey] // removing sets it to the default callback
-//       } else deleteCallbacks(key[innerKey])
-//     })
-//   }
-// }
-
 function getErrorMsg(err: string) {
   try {
     const obj = JSON.parse(err)
@@ -54,7 +38,7 @@ export async function shareSessionToDynamo(
   url: string,
   referer: string,
 ) {
-  const sess = `${toUrlSafeB64(JSON.stringify(session))}`
+  const sess = await toUrlSafeB64(JSON.stringify(session))
   const password = generateUID(5)
   const encryptedSession = encrypt(sess, password)
 
@@ -89,7 +73,6 @@ export async function readSessionFromDynamo(
 ) {
   const sessionId = sessionQueryParam.split('share-')[1]
   const url = `${baseUrl}?sessionId=${sessionId}`
-
   const response = await fetch(url, {
     signal,
   })

@@ -1707,6 +1707,32 @@ Object {
     },
     Object {
       "adapter": Object {
+        "gffLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox.sort.gff3",
+        },
+        "type": "Gff3Adapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Miscellaneous",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "gff3_genes-LinearBasicDisplay",
+          "type": "LinearBasicDisplay",
+        },
+      ],
+      "name": "GFF3 genes",
+      "trackId": "gff3_genes",
+      "type": "FeatureTrack",
+    },
+    Object {
+      "adapter": Object {
         "gffGzLocation": Object {
           "internetAccountId": undefined,
           "internetAccountPreAuthorization": undefined,

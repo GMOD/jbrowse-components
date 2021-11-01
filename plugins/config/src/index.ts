@@ -35,6 +35,12 @@ export default class extends Plugin {
           name: 'FromConfigAdapter',
           configSchema: fromConfigAdapterConfigSchema,
           AdapterClass: FromConfigAdapterClass,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
         }),
     )
     pluginManager.addAdapterType(
@@ -43,6 +49,12 @@ export default class extends Plugin {
           name: 'FromConfigRegionsAdapter',
           configSchema: fromConfigRegionsAdapterConfigSchema,
           AdapterClass: FromConfigRegionsAdapterClass,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
         }),
     )
     pluginManager.addAdapterType(
@@ -51,6 +63,12 @@ export default class extends Plugin {
           name: 'FromConfigSequenceAdapter',
           configSchema: fromConfigSequenceAdapterConfigSchema,
           AdapterClass: FromConfigSequenceAdapterClass,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
         }),
     )
     pluginManager.addAdapterType(
@@ -59,6 +77,12 @@ export default class extends Plugin {
           name: 'RefNameAliasAdapter',
           configSchema: refNameAliasAdapterConfigSchema,
           AdapterClass: RefNameAliasAdapterClass,
+          adapterMetadata: {
+            category: null,
+            hiddenFromGUI: true,
+            displayName: null,
+            description: null,
+          },
         }),
     )
 
