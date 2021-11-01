@@ -204,7 +204,6 @@ export default class extends BaseFeatureDataAdapter {
     const f: Record<string, unknown> = { ...data }
     ;(f.start as number) -= 1 // convert to interbase
     f.strand = { '+': 1, '-': -1, '.': 0, '?': undefined }[data.strand] // convert strand
-    console.log(Number(data.frame))
     f.phase = Number(data.frame)
     f.refName = data.seq_name
     if (data.score === null) {
@@ -233,7 +232,9 @@ export default class extends BaseFeatureDataAdapter {
       if (data.attributes[a] !== null) {
         let attr = data.attributes[a]
         if (Array.isArray(attr) && attr.length === 1) {
-          ;[attr] = attr
+          // gtf uses double quotes for text values in the attributes column, remove them
+          const formattedAttr = attr[0].replace(/^"|"$/g, '')
+          attr = formattedAttr
         }
         f[b] = attr
       }
@@ -254,8 +255,8 @@ export default class extends BaseFeatureDataAdapter {
     delete f._linehash
     delete f.attributes
     delete f.seq_name
-    console.log('feature', data)
-    console.log('f', f)
+    delete f.featureType
+    delete f.frame
     return f
   }
 
