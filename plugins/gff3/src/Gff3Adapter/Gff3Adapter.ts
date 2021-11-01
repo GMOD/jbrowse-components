@@ -1,60 +1,53 @@
-import { Instance } from 'mobx-state-tree'
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { NoAssemblyRegion } from '@jbrowse/core/util/types'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import IntervalTree from '@flatten-js/interval-tree'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
+import { unzip } from '@gmod/bgzf-filehandle'
 
 import gff from '@gmod/gff'
-import { GenericFilehandle } from 'generic-filehandle'
 
-import MyConfigSchema from './configSchema'
 import { FeatureLoc } from '../util'
+
+function isGzip(buf: Buffer) {
+  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
+}
 
 export default class extends BaseFeatureDataAdapter {
   protected gffFeatures?: Promise<Record<string, IntervalTree>>
 
-  protected uri: string
-
-  protected filehandle: GenericFilehandle
-
-  public constructor(
-    config: Instance<typeof MyConfigSchema>,
-    getSubAdapter?: getSubAdapterType,
-    pluginManager?: PluginManager,
-  ) {
-    super(config, getSubAdapter, pluginManager)
-    const gffLocation = readConfObject(config, 'gffLocation')
-    const { uri } = gffLocation
-    this.uri = uri
-    this.filehandle = openLocation(gffLocation, this.pluginManager)
-  }
-
   private async loadData() {
-    const { size } = await this.filehandle.stat()
-    // Add a warning to avoid crashing the browser, recommend indexing
-    if (size > 500_000_000) {
-      throw new Error('This file is too large. Consider using Gff3TabixAdapter')
-    }
     if (!this.gffFeatures) {
-      this.gffFeatures = this.filehandle
-        .readFile('utf8')
-        .then(data => {
-          const gffFeatures = gff.parseStringSync(data, {
-            parseFeatures: true,
-            parseComments: false,
-            parseDirectives: false,
-            parseSequences: false,
-          }) as FeatureLoc[][]
+      this.gffFeatures = openLocation(
+        readConfObject(this.config, 'gffLocation'),
+        this.pluginManager,
+      )
+        .readFile()
+        .then(async buffer => {
+          const buf = isGzip(buffer as Buffer) ? await unzip(buffer) : buffer
+          // 512MB  max chrome string length is 512MB
+          if (buf.length > 536_870_888) {
+            throw new Error('Data exceeds maximum string length (512MB)')
+          }
+          return new TextDecoder('utf8', { fatal: true }).decode(buf)
+        })
+        .then(
+          data =>
+            gff.parseStringSync(data, {
+              parseFeatures: true,
+              parseComments: false,
+              parseDirectives: false,
+              parseSequences: false,
+            }) as FeatureLoc[][],
+        )
 
-          return gffFeatures
+        .then(feats =>
+          feats
             .flat()
             .map(
               (f, i) =>
@@ -63,15 +56,15 @@ export default class extends BaseFeatureDataAdapter {
                   id: `${this.id}-offset-${i}`,
                 }),
             )
-            .reduce((acc: Record<string, IntervalTree>, obj: SimpleFeature) => {
+            .reduce((acc, obj) => {
               const key = obj.get('refName')
               if (!acc[key]) {
                 acc[key] = new IntervalTree()
               }
               acc[key].insert([obj.get('start'), obj.get('end')], obj)
               return acc
-            }, {})
-        })
+            }, {} as Record<string, IntervalTree>),
+        )
         .catch(e => {
           this.gffFeatures = undefined
           throw e
@@ -85,16 +78,15 @@ export default class extends BaseFeatureDataAdapter {
     const gffFeatures = await this.loadData()
     return Object.keys(gffFeatures)
   }
+
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       try {
         const { start, end, refName } = query
         const gffFeatures = await this.loadData()
-        const tree = gffFeatures[refName]
-        const feats = tree.search([start, end])
-        feats.forEach(f => {
-          observer.next(f)
-        })
+        gffFeatures[refName]
+          ?.search([start, end])
+          .forEach(f => observer.next(f))
         observer.complete()
       } catch (e) {
         observer.error(e)
