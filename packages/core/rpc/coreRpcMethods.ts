@@ -18,9 +18,9 @@ import {
 import { Region } from '../util/types'
 import { checkAbortSignal, renameRegionsIfNeeded } from '../util'
 import SimpleFeature, { SimpleFeatureSerialized } from '../util/simpleFeature'
-import SerializableFilterChain from '../pluggableElementTypes/renderers/util/serializableFilterChain'
 import { BaseFeatureStats } from '../util/stats'
 import { Assembly } from '../assemblyManager/assembly'
+import SerializableFilterChain from '../pluggableElementTypes/renderers/util/serializableFilterChain'
 
 export class CoreGetRefNames extends RpcMethodType {
   name = 'CoreGetRefNames'
@@ -195,8 +195,28 @@ export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
 export class CoreGetGlobalStats extends RpcMethodType {
   name = 'CoreGetGlobalStats'
 
+  async serializeArguments(
+    args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },
+    rpcDriverClassName: string,
+  ) {
+    const assemblyManager =
+      this.pluginManager.rootModel?.session?.assemblyManager
+    if (!assemblyManager) {
+      return args
+    }
+
+    console.log('am', assemblyManager)
+
+    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, {
+      ...args,
+      filters: args.filters && args.filters.toJSON().filters,
+    })
+
+    return super.serializeArguments(renamedArgs, rpcDriverClassName)
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async deserializeArguments(args: any, rpcDriverClassName: string) {
+  async deserializeGlobalArguments(args: any, rpcDriverClassName: string) {
     const l = await super.deserializeArguments(args, rpcDriverClassName)
     return {
       ...l,
@@ -211,15 +231,15 @@ export class CoreGetGlobalStats extends RpcMethodType {
   async execute(
     args: {
       adapterConfig: {}
-      // assembly: Assembly
-      // region: Region
+      assembly: Assembly
+      region: Region
       signal?: RemoteAbortSignal
       headers?: Record<string, string>
       sessionId: string
     },
     rpcDriverClassName: string,
   ): Promise<BaseFeatureStats> {
-    const deserializedArgs = await this.deserializeArguments(
+    const deserializedArgs = await this.deserializeGlobalArguments(
       args,
       rpcDriverClassName,
     )
@@ -231,7 +251,7 @@ export class CoreGetGlobalStats extends RpcMethodType {
       adapterConfig,
     )
 
-    console.log(deserializedArgs)
+    console.log(region)
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
       return dataAdapter.getGlobalStats(assembly, region, deserializedArgs)
     }

@@ -245,17 +245,23 @@ export const BaseLinearDisplay = types
       const { rpcManager } = getSession(self)
       const { adapterConfig } = self
       const sessionId = getRpcSessionId(self)
+      const view = getContainingView(self) as LGV
 
+      console.log(view)
+      // @ts-ignore
+      const { start, end, refName } = region.value
+
+      console.log('assembly', assembly.regions)
+      // passing assembly and region crashes the rpc
       const params = {
         sessionId,
-        assembly,
-        region,
+        // assembly: assembly.regions,
+        region: { start, end, refName },
         adapterConfig,
         statusCallback: {},
         ...opts,
       }
 
-      console.log(sessionId, params)
       // need to pass a region here
       const results = await rpcManager.call(
         sessionId,
