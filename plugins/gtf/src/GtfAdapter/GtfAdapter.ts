@@ -74,8 +74,8 @@ export default class extends BaseFeatureDataAdapter {
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
-    const gffFeatures = await this.loadData()
-    return Object.keys(gffFeatures)
+    const gtfFeatures = await this.loadData()
+    return Object.keys(gtfFeatures)
   }
 
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
