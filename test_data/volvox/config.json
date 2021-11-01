@@ -1505,7 +1505,7 @@
       "type": "FeatureTrack",
       "trackId": "gtf_test",
       "category": ["Miscellaneous"],
-      "name": "the gtf test",
+      "name": "GTF-volvox.gtf",
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "GtfTabixAdapter",

@@ -257,6 +257,10 @@ export default class extends BaseFeatureDataAdapter {
     delete f.seq_name
     delete f.featureType
     delete f.frame
+
+    if (f.transcript_id) {
+      f.name = f.transcript_id
+    }
     return f
   }
 
