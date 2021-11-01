@@ -1,12 +1,12 @@
-import readline from 'readline'
 import fs from 'fs'
-import { Readable } from 'stream'
+import split2 from 'split2'
+import { promisify } from 'util'
+import { finished, Readable, Transform } from 'stream'
 import { IncomingMessage } from 'http'
 import { http, https, FollowResponse } from 'follow-redirects'
 
-// Method for handing off the parsing of a gff3 file URL.
-// Calls the proper parser depending on if it is gzipped or not.
-// Returns a @gmod/gff stream.
+const streamFinished = promisify(finished)
+
 export async function createRemoteStream(urlIn: string) {
   const newUrl = new URL(urlIn)
   const fetcher = newUrl.protocol === 'https:' ? https : http
@@ -46,66 +46,79 @@ export async function getFileStream(
   return fileDataStream
 }
 
-export async function generateFastaIndex(fileDataStream: Readable) {
-  const rl = readline.createInterface({
-    input: fileDataStream,
-  })
+class FastaIndexTransform extends Transform {
+  foundAny = false
+  possibleBadLine = undefined as [number, string] | undefined
+  refName: string | undefined
+  currOffset = 0
+  refSeqLen = 0
+  lineBytes = 0
+  lineBases = 0
+  refOffset = 0
+  lineNum = 0
 
-  let refName: string | undefined
-  let currOffset = 0
-  let refSeqLen = 0
-  let lineBytes = 0
-  let lineBases = 0
-  let refOffset = currOffset
-  const entries = []
-  let possibleBadLine = undefined as [number, string] | undefined
-  let i = 0
-  let foundAny = false
-
-  for await (const line of rl) {
-    // assumes unix formatted files with only one '\n' newline
-    const currentLineBytes = line.length + 1
+  _transform(chunk: Buffer, encoding: any, done: () => void) {
+    const line = chunk.toString()
+    const currentLineBytes =
+      line.indexOf('\r') !== -1 ? line.length + 2 : line.length + 1
     const currentLineBases = line.length
     if (line[0] === '>') {
-      foundAny = true
-      if (possibleBadLine && possibleBadLine[0] !== i - 1) {
-        throw new Error(possibleBadLine[1])
+      this.foundAny = true
+      if (
+        this.possibleBadLine &&
+        this.possibleBadLine[0] !== this.lineNum - 1
+      ) {
+        throw new Error(this.possibleBadLine[1])
       }
-      if (i > 0) {
-        entries.push(
-          `${refName}\t${refSeqLen}\t${refOffset}\t${lineBases}\t${lineBytes}\n`,
+      if (this.lineNum > 0) {
+        this.push(
+          `${this.refName}\t${this.refSeqLen}\t${this.refOffset}\t${this.lineBases}\t${this.lineBytes}\n`,
         )
       }
       // reset
-      lineBytes = 0
-      refSeqLen = 0
-      lineBases = 0
-      refName = line.trim().slice(1).split(/\s+/)[0]
-      currOffset += currentLineBytes
-      refOffset = currOffset
+      this.lineBytes = 0
+      this.refSeqLen = 0
+      this.lineBases = 0
+      this.refName = line.trim().slice(1).split(/\s+/)[0]
+      this.currOffset += currentLineBytes
+      this.refOffset = this.currOffset
     } else {
-      if (lineBases && currentLineBases !== lineBases) {
-        possibleBadLine = [
-          i,
-          `Not all lines in file have same width, please check your FASTA file line ${i}: ${lineBases} ${currentLineBases}`,
+      if (this.lineBases && currentLineBases !== this.lineBases) {
+        this.possibleBadLine = [
+          this.lineNum,
+          `Not all lines in file have same width, please check your FASTA file line ${this.lineNum}: ${this.lineBases} ${currentLineBases}`,
         ]
       }
-      lineBytes = currentLineBytes
-      lineBases = currentLineBases
-      currOffset += currentLineBytes
-      refSeqLen += currentLineBases
+      this.lineBytes = currentLineBytes
+      this.lineBases = currentLineBases
+      this.currOffset += currentLineBytes
+      this.refSeqLen += currentLineBases
     }
 
-    i++
+    this.lineNum++
+    done()
   }
 
-  if (i > 0) {
-    entries.push(
-      `${refName}\t${refSeqLen}\t${refOffset}\t${lineBases}\t${lineBytes}`,
-    )
+  _flush(done: () => void) {
+    if (!this.foundAny) {
+      throw new Error('No entries found')
+    }
+    if (this.lineNum > 0) {
+      this.push(
+        `${this.refName}\t${this.refSeqLen}\t${this.refOffset}\t${this.lineBases}\t${this.lineBytes}\n`,
+      )
+    }
+    done()
   }
-  if (!foundAny) {
-    throw new Error('No sequences found in file, ensure this is a FASTA file')
-  }
-  return entries.join('\n')
+}
+
+export async function generateFastaIndex(
+  faiPath: string,
+  fileDataStream: Readable,
+) {
+  const out = fs.createWriteStream(faiPath)
+
+  fileDataStream.pipe(split2(/\n/)).pipe(new FastaIndexTransform()).pipe(out)
+
+  await new Promise(resolve => out.on('close', resolve))
 }

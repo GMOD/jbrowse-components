@@ -318,8 +318,7 @@ ipcMain.handle(
     const filename = 'localPath' in location ? location.localPath : location.uri
     const faiPath = getFaiPath(path.basename(filename) + Date.now() + '.fai')
     const stream = await getFileStream(location)
-    const faiData = await generateFastaIndex(stream)
-    await writeFile(faiPath, faiData, 'utf8')
+    await generateFastaIndex(faiPath, stream)
     return faiPath
   },
 )

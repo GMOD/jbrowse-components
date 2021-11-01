@@ -84,6 +84,7 @@
     "@types/react-virtualized-auto-sizer": "^1.0.0",
     "@types/set-value": "^2.0.0",
     "@types/shortid": "^0.0.29",
+    "@types/split2": "^3.2.1",
     "@types/string-template": "^1.0.2",
     "@types/tmp": "^0.2.1",
     "@types/unzipper": "^0.10.3",
