@@ -1,11 +1,8 @@
 import fs from 'fs'
 import split2 from 'split2'
-import { promisify } from 'util'
-import { finished, Readable, Transform } from 'stream'
+import { Readable, Transform } from 'stream'
 import { IncomingMessage } from 'http'
 import { http, https, FollowResponse } from 'follow-redirects'
-
-const streamFinished = promisify(finished)
 
 export async function createRemoteStream(urlIn: string) {
   const newUrl = new URL(urlIn)
@@ -57,7 +54,7 @@ class FastaIndexTransform extends Transform {
   refOffset = 0
   lineNum = 0
 
-  _transform(chunk: Buffer, encoding: any, done: () => void) {
+  _transform(chunk: Buffer, encoding: unknown, done: () => void) {
     const line = chunk.toString()
     // line length in bytes including the \n that we split on
     const currentLineBytes = chunk.length + 1
