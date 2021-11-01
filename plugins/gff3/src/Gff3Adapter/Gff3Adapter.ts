@@ -28,20 +28,26 @@ export default class extends BaseFeatureDataAdapter {
         this.pluginManager,
       )
         .readFile()
-        .then(async buffer =>
-          isGzip(buffer as Buffer)
-            ? new TextDecoder().decode(await unzip(buffer))
-            : buffer.toString(),
+        .then(async buffer => {
+          const buf = isGzip(buffer as Buffer) ? await unzip(buffer) : buffer
+          // 512MB  max chrome string length is 512MB
+          if (buf.length > 536_870_888) {
+            throw new Error('Data exceeds maximum string length (512MB)')
+          }
+          return new TextDecoder('utf8', { fatal: true }).decode(buf)
+        })
+        .then(
+          data =>
+            gff.parseStringSync(data, {
+              parseFeatures: true,
+              parseComments: false,
+              parseDirectives: false,
+              parseSequences: false,
+            }) as FeatureLoc[][],
         )
-        .then(data => {
-          const gffFeatures = gff.parseStringSync(data, {
-            parseFeatures: true,
-            parseComments: false,
-            parseDirectives: false,
-            parseSequences: false,
-          }) as FeatureLoc[][]
 
-          return gffFeatures
+        .then(feats =>
+          feats
             .flat()
             .map(
               (f, i) =>
@@ -50,15 +56,15 @@ export default class extends BaseFeatureDataAdapter {
                   id: `${this.id}-offset-${i}`,
                 }),
             )
-            .reduce((acc: Record<string, IntervalTree>, obj: SimpleFeature) => {
+            .reduce((acc, obj) => {
               const key = obj.get('refName')
               if (!acc[key]) {
                 acc[key] = new IntervalTree()
               }
               acc[key].insert([obj.get('start'), obj.get('end')], obj)
               return acc
-            }, {})
-        })
+            }, {} as Record<string, IntervalTree>),
+        )
         .catch(e => {
           this.gffFeatures = undefined
           throw e
@@ -72,16 +78,15 @@ export default class extends BaseFeatureDataAdapter {
     const gffFeatures = await this.loadData()
     return Object.keys(gffFeatures)
   }
+
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       try {
         const { start, end, refName } = query
         const gffFeatures = await this.loadData()
-        const tree = gffFeatures[refName]
-        const feats = tree.search([start, end])
-        feats.forEach(f => {
-          observer.next(f)
-        })
+        gffFeatures[refName]
+          ?.search([start, end])
+          .forEach(f => observer.next(f))
         observer.complete()
       } catch (e) {
         observer.error(e)

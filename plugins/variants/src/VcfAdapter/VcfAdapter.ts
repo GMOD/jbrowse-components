@@ -44,11 +44,14 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
         this.pluginManager,
       )
         .readFile()
-        .then(async buffer =>
-          isGzip(buffer as Buffer)
-            ? new TextDecoder().decode(await unzip(buffer))
-            : buffer.toString(),
-        )
+        .then(async buffer => {
+          const buf = isGzip(buffer as Buffer) ? await unzip(buffer) : buffer
+          // 512MB  max chrome string length is 512MB
+          if (buf.length > 536_870_888) {
+            throw new Error('Data exceeds maximum string length (512MB)')
+          }
+          return new TextDecoder().decode(buf)
+        })
         .then(str => readVcf(str))
         .catch(e => {
           this.unzipped = undefined
@@ -73,8 +76,8 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
     const { lines } = await this.decodeFileContents()
 
     return lines.map((line, id) => {
-      const [refName, s, _id, ref, _alt, _qual, _filt, info] = line.split('\t')
-      const start = +s - 1
+      const [refName, startP, , ref, , , , info] = line.split('\t')
+      const start = +startP - 1
       const end = +(info.match(/END=(\d+)/)?.[1].trim() || start + ref.length)
       return { line, refName, start, end, id }
     })
