@@ -60,12 +60,14 @@ export async function generateFastaIndex(fileDataStream: Readable) {
   const entries = []
   let possibleBadLine = undefined as [number, string] | undefined
   let i = 0
+  let foundAny = false
 
   for await (const line of rl) {
     // assumes unix formatted files with only one '\n' newline
     const currentLineBytes = line.length + 1
     const currentLineBases = line.length
     if (line[0] === '>') {
+      foundAny = true
       if (possibleBadLine && possibleBadLine[0] !== i - 1) {
         throw new Error(possibleBadLine[1])
       }
@@ -78,7 +80,7 @@ export async function generateFastaIndex(fileDataStream: Readable) {
       lineBytes = 0
       refSeqLen = 0
       lineBases = 0
-      refName = line.trim().slice(1)
+      refName = line.trim().slice(1).split(/\s+/)[0]
       currOffset += currentLineBytes
       refOffset = currOffset
     } else {
@@ -86,7 +88,7 @@ export async function generateFastaIndex(fileDataStream: Readable) {
         possibleBadLine = [
           i,
           `Not all lines in file have same width, please check your FASTA file line ${i}: ${lineBases} ${currentLineBases}`,
-        ] as [number, string]
+        ]
       }
       lineBytes = currentLineBytes
       lineBases = currentLineBases
@@ -101,6 +103,9 @@ export async function generateFastaIndex(fileDataStream: Readable) {
     entries.push(
       `${refName}\t${refSeqLen}\t${refOffset}\t${lineBases}\t${lineBytes}`,
     )
+  }
+  if (!foundAny) {
+    throw new Error('No sequences found in file, ensure this is a FASTA file')
   }
   return entries.join('\n')
 }
