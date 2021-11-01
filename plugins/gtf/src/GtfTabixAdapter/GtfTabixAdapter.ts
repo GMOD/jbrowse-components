@@ -204,7 +204,8 @@ export default class extends BaseFeatureDataAdapter {
     const f: Record<string, unknown> = { ...data }
     ;(f.start as number) -= 1 // convert to interbase
     f.strand = { '+': 1, '-': -1, '.': 0, '?': undefined }[data.strand] // convert strand
-    f.frame = !!Number(data.frame) ? Number(data.frame) : null
+    console.log(Number(data.frame))
+    f.phase = Number(data.frame)
     f.refName = data.seq_name
     if (data.score === null) {
       delete f.score
@@ -238,6 +239,7 @@ export default class extends BaseFeatureDataAdapter {
       }
     })
     f.refName = f.seq_name
+    f.type = f.featureType
 
     // the SimpleFeature constructor takes care of recursively inflating subfeatures
     if (data.child_features && data.child_features.length) {
@@ -252,6 +254,8 @@ export default class extends BaseFeatureDataAdapter {
     delete f._linehash
     delete f.attributes
     delete f.seq_name
+    console.log('feature', data)
+    console.log('f', f)
     return f
   }
 
