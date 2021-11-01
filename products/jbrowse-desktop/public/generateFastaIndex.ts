@@ -59,9 +59,10 @@ class FastaIndexTransform extends Transform {
 
   _transform(chunk: Buffer, encoding: any, done: () => void) {
     const line = chunk.toString()
-    const currentLineBytes =
-      line.indexOf('\r') !== -1 ? line.length + 2 : line.length + 1
-    const currentLineBases = line.length
+    // line length in bytes including the \n that we split on
+    const currentLineBytes = chunk.length + 1
+    // chop off \r if exists
+    const currentLineBases = line.trim().length
     if (line[0] === '>') {
       this.foundAny = true
       if (
