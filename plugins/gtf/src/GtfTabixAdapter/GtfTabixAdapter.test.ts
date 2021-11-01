@@ -8,11 +8,11 @@ describe('adapter can fetch features from volvox.sorted.gtf', () => {
     adapter = new GtfTabixAdapter(
       configSchema.create({
         gtfGzLocation: {
-          localPath: require.resolve('./test_data/volvox.sorted.gtf.gz'),
+          localPath: require.resolve('../test_data/volvox.sorted.gtf.gz'),
         },
         index: {
           location: {
-            localPath: require.resolve('./test_data/volvox.sorted.gtf.gz.tbi'),
+            localPath: require.resolve('../test_data/volvox.sorted.gtf.gz.tbi'),
           },
         },
       }),
@@ -38,25 +38,15 @@ test('can instantiate new GtfTabixAdapter and check for demo data', async () => 
   const adapter = new GtfTabixAdapter(
     configSchema.create({
       gtfGzLocation: {
-        localPath: require.resolve('./test_data/demo.sorted.gtf.gz'),
+        localPath: require.resolve('../test_data/demo.sorted.gtf.gz'),
       },
       index: {
         location: {
-          localPath: require.resolve('./test_data/demo.sorted.gtf.gz.tbi'),
+          localPath: require.resolve('../test_data/demo.sorted.gtf.gz.tbi'),
         },
       },
     }),
   )
   expect(await adapter.hasDataForRefName('GeneScaffold_10')).toBe(true)
   expect(await adapter.hasDataForRefName('GeneScaffold_11')).toBe(false)
-  const features = adapter.getFeatures({
-    refName: 'GeneScaffold_10',
-    start: 0,
-    end: 110000,
-  })
-  const featuresArray = await features.pipe(toArray()).toPromise()
-  const featuresJsonArray = featuresArray.map(f => f.toJSON())
-  // ENSVPAT00000000407 and ENSVPAT00000009977
-  expect(featuresArray.length).toEqual(2)
-  expect(featuresJsonArray).toMatchSnapshot()
 })
