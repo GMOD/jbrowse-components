@@ -1521,6 +1521,9 @@
       "category": ["Miscellaneous"],
       "name": "GTF - volvox.sorted.gtf",
       "assemblyNames": ["volvox"],
+      "textSearching": {
+        "indexingAttributes": ["gene_id"]
+      },
       "adapter": {
         "type": "GtfAdapter",
         "gtfLocation": {
