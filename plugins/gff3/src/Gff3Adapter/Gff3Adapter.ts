@@ -19,56 +19,63 @@ function isGzip(buf: Buffer) {
 }
 
 export default class extends BaseFeatureDataAdapter {
-  protected gffFeatures?: Promise<Record<string, IntervalTree>>
+  protected gffFeatures?: Promise<{
+    header: string
+    intervalTree: Record<string, IntervalTree>
+  }>
+
+  private async loadDataP() {
+    const buffer = await openLocation(
+      readConfObject(this.config, 'gffLocation'),
+      this.pluginManager,
+    ).readFile()
+    const buf = isGzip(buffer as Buffer) ? await unzip(buffer) : buffer
+    // 512MB  max chrome string length is 512MB
+    if (buf.length > 536_870_888) {
+      throw new Error('Data exceeds maximum string length (512MB)')
+    }
+    const data = new TextDecoder('utf8', { fatal: true }).decode(buf)
+    const lines = data.split('\n')
+    const headerLines = []
+    for (let i = 0; i < lines.length && lines[i].startsWith('#'); i++) {
+      headerLines.push(lines[i])
+    }
+    const header = headerLines.join('\n')
+
+    const feats = gff.parseStringSync(data, {
+      parseFeatures: true,
+      parseComments: false,
+      parseDirectives: false,
+      parseSequences: false,
+    }) as FeatureLoc[][]
+
+    const intervalTree = feats
+      .flat()
+      .map(
+        (f, i) =>
+          new SimpleFeature({
+            data: this.featureData(f),
+            id: `${this.id}-offset-${i}`,
+          }),
+      )
+      .reduce((acc, obj) => {
+        const key = obj.get('refName')
+        if (!acc[key]) {
+          acc[key] = new IntervalTree()
+        }
+        acc[key].insert([obj.get('start'), obj.get('end')], obj)
+        return acc
+      }, {} as Record<string, IntervalTree>)
+
+    return { header, intervalTree }
+  }
 
   private async loadData() {
     if (!this.gffFeatures) {
-      this.gffFeatures = openLocation(
-        readConfObject(this.config, 'gffLocation'),
-        this.pluginManager,
-      )
-        .readFile()
-        .then(async buffer => {
-          const buf = isGzip(buffer as Buffer) ? await unzip(buffer) : buffer
-          // 512MB  max chrome string length is 512MB
-          if (buf.length > 536_870_888) {
-            throw new Error('Data exceeds maximum string length (512MB)')
-          }
-          return new TextDecoder('utf8', { fatal: true }).decode(buf)
-        })
-        .then(
-          data =>
-            gff.parseStringSync(data, {
-              parseFeatures: true,
-              parseComments: false,
-              parseDirectives: false,
-              parseSequences: false,
-            }) as FeatureLoc[][],
-        )
-
-        .then(feats =>
-          feats
-            .flat()
-            .map(
-              (f, i) =>
-                new SimpleFeature({
-                  data: this.featureData(f),
-                  id: `${this.id}-offset-${i}`,
-                }),
-            )
-            .reduce((acc, obj) => {
-              const key = obj.get('refName')
-              if (!acc[key]) {
-                acc[key] = new IntervalTree()
-              }
-              acc[key].insert([obj.get('start'), obj.get('end')], obj)
-              return acc
-            }, {} as Record<string, IntervalTree>),
-        )
-        .catch(e => {
-          this.gffFeatures = undefined
-          throw e
-        })
+      this.gffFeatures = this.loadDataP().catch(e => {
+        this.gffFeatures = undefined
+        throw e
+      })
     }
 
     return this.gffFeatures
@@ -79,12 +86,17 @@ export default class extends BaseFeatureDataAdapter {
     return Object.keys(gffFeatures)
   }
 
+  public async getHeader() {
+    const { header } = await this.loadData()
+    return header
+  }
+
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       try {
         const { start, end, refName } = query
-        const gffFeatures = await this.loadData()
-        gffFeatures[refName]
+        const { intervalTree } = await this.loadData()
+        intervalTree[refName]
           ?.search([start, end])
           .forEach(f => observer.next(f))
         observer.complete()

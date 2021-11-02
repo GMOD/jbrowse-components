@@ -37,26 +37,29 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
   protected unzipped?: Promise<{ header: string; lines: string[] }>
 
+  private async decodeFileContentsP() {
+    const buffer = await openLocation(
+      readConfObject(this.config, 'vcfLocation'),
+      this.pluginManager,
+    ).readFile()
+
+    const buf = isGzip(buffer as Buffer) ? await unzip(buffer) : buffer
+
+    // 512MB  max chrome string length is 512MB
+    if (buf.length > 536_870_888) {
+      throw new Error('Data exceeds maximum string length (512MB)')
+    }
+
+    const str = new TextDecoder().decode(buf)
+    return readVcf(str)
+  }
+
   private async decodeFileContents() {
     if (!this.unzipped) {
-      this.unzipped = openLocation(
-        readConfObject(this.config, 'vcfLocation'),
-        this.pluginManager,
-      )
-        .readFile()
-        .then(async buffer => {
-          const buf = isGzip(buffer as Buffer) ? await unzip(buffer) : buffer
-          // 512MB  max chrome string length is 512MB
-          if (buf.length > 536_870_888) {
-            throw new Error('Data exceeds maximum string length (512MB)')
-          }
-          return new TextDecoder().decode(buf)
-        })
-        .then(str => readVcf(str))
-        .catch(e => {
-          this.unzipped = undefined
-          throw e
-        })
+      this.unzipped = this.decodeFileContentsP().catch(e => {
+        this.unzipped = undefined
+        throw e
+      })
     }
     return this.unzipped
   }
