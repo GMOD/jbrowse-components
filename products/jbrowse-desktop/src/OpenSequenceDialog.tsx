@@ -18,29 +18,14 @@ import { FileLocation } from '@jbrowse/core/util/types'
 import { ipcRenderer } from 'electron'
 
 const useStyles = makeStyles(theme => ({
-  root: {
-    flexGrow: 1,
-    overflow: 'hidden',
-    padding: theme.spacing(0, 3),
-  },
-  paper: {
-    margin: `${theme.spacing(1)}px auto`,
-    padding: theme.spacing(2),
-  },
-  createButton: {
-    marginTop: '1em',
-    justifyContent: 'center',
-  },
-  paperContent: {
-    flex: 'auto',
-    margin: `${theme.spacing(1)}px auto`,
-    padding: theme.spacing(1),
-    overflow: 'auto',
-  },
   message: {
     background: '#ddd',
     margin: theme.spacing(2),
     padding: theme.spacing(2),
+  },
+  paper: {
+    padding: theme.spacing(2),
+    margin: theme.spacing(2),
   },
 }))
 
@@ -241,74 +226,70 @@ const OpenSequenceDialog = ({
     <Dialog open onClose={() => onClose()}>
       <DialogTitle>Open sequence</DialogTitle>
       <DialogContent>
-        <div className={classes.root}>
-          <Typography>
-            Use this dialog to open a new indexed FASTA file, bgzipped+indexed
-            FASTA file, or .2bit file of a genome assembly or other sequence
-          </Typography>
-          {loading ? (
-            <Typography className={classes.message}>{loading}</Typography>
-          ) : null}
+        <Typography>
+          Use this dialog to open a new indexed FASTA file, bgzipped+indexed
+          FASTA file, or .2bit file of a genome assembly or other sequence
+        </Typography>
+        {loading ? (
+          <Typography className={classes.message}>{loading}</Typography>
+        ) : null}
 
-          {error ? <ErrorMessage error={error} /> : null}
+        {error ? <ErrorMessage error={error} /> : null}
 
-          <Paper className={classes.paper}>
-            <TextField
-              id="assembly-name"
-              inputProps={{ 'data-testid': 'assembly-name' }}
-              defaultValue=""
-              label="Assembly name"
-              helperText="The assembly name e.g. hg38"
-              variant="outlined"
-              value={assemblyName}
-              onChange={event => setAssemblyName(event.target.value)}
-            />
+        <Paper className={classes.paper}>
+          <TextField
+            id="assembly-name"
+            inputProps={{ 'data-testid': 'assembly-name' }}
+            defaultValue=""
+            label="Assembly name"
+            helperText="The assembly name e.g. hg38"
+            variant="outlined"
+            value={assemblyName}
+            onChange={event => setAssemblyName(event.target.value)}
+          />
 
-            <TextField
-              id="assembly-name"
-              inputProps={{ 'data-testid': 'assembly-display-name' }}
-              label="Assembly display name"
-              helperText='(optional) A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
-              variant="outlined"
-              defaultValue=""
-              value={assemblyDisplayName}
-              onChange={event => setAssemblyDisplayName(event.target.value)}
-            />
+          <TextField
+            id="assembly-name"
+            inputProps={{ 'data-testid': 'assembly-display-name' }}
+            label="Assembly display name"
+            helperText='(optional) A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
+            variant="outlined"
+            defaultValue=""
+            value={assemblyDisplayName}
+            onChange={event => setAssemblyDisplayName(event.target.value)}
+          />
 
-            <TextField
-              value={adapterSelection}
-              label="Type"
-              select
-              helperText="Type of adapter to use"
-              fullWidth
-              onChange={event => {
-                setAdapterSelection(event.target.value)
-              }}
-            >
-              {adapterTypes.map(str => (
-                <MenuItem key={str} value={str}>
-                  {str}
-                </MenuItem>
-              ))}
-            </TextField>
+          <TextField
+            value={adapterSelection}
+            label="Type"
+            select
+            helperText="Type of adapter to use"
+            fullWidth
+            onChange={event => {
+              setAdapterSelection(event.target.value)
+            }}
+          >
+            {adapterTypes.map(str => (
+              <MenuItem key={str} value={str}>
+                {str}
+              </MenuItem>
+            ))}
+          </TextField>
 
-            <div className={classes.paperContent}>
-              <AdapterInput
-                adapterSelection={adapterSelection}
-                fastaLocation={fastaLocation}
-                chromSizesLocation={chromSizesLocation}
-                setFastaLocation={setFastaLocation}
-                faiLocation={faiLocation}
-                setFaiLocation={setFaiLocation}
-                gziLocation={gziLocation}
-                setGziLocation={setGziLocation}
-                twoBitLocation={twoBitLocation}
-                setTwoBitLocation={setTwoBitLocation}
-                setChromSizesLocation={setChromSizesLocation}
-              />
-            </div>
-          </Paper>
-        </div>
+          <AdapterInput
+            adapterSelection={adapterSelection}
+            fastaLocation={fastaLocation}
+            chromSizesLocation={chromSizesLocation}
+            setFastaLocation={setFastaLocation}
+            faiLocation={faiLocation}
+            setFaiLocation={setFaiLocation}
+            gziLocation={gziLocation}
+            setGziLocation={setGziLocation}
+            twoBitLocation={twoBitLocation}
+            setTwoBitLocation={setTwoBitLocation}
+            setChromSizesLocation={setChromSizesLocation}
+          />
+        </Paper>
       </DialogContent>
       <DialogActions>
         <Button onClick={() => onClose()} color="secondary" variant="contained">
