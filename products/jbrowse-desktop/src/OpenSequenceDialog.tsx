@@ -142,6 +142,10 @@ function AdapterInput({
 
 const blank = { uri: '' } as FileLocation
 
+function isBlank(location: FileLocation) {
+  return 'uri' in location && location.uri === ''
+}
+
 const OpenSequenceDialog = ({
   onClose,
 }: {
@@ -183,6 +187,9 @@ const OpenSequenceDialog = ({
       }
     }
     if (adapterSelection === 'IndexedFastaAdapter') {
+      if (isBlank(fastaLocation) || isBlank(faiLocation)) {
+        throw new Error('Need both fastaLocation and faiLocation')
+      }
       return {
         name: assemblyName,
         displayName: assemblyDisplayName,
@@ -195,6 +202,15 @@ const OpenSequenceDialog = ({
         },
       }
     } else if (adapterSelection === 'BgzipFastaAdapter') {
+      if (
+        isBlank(fastaLocation) ||
+        isBlank(faiLocation) ||
+        isBlank(gziLocation)
+      ) {
+        throw new Error(
+          'Need both fastaLocation and faiLocation and gziLocation',
+        )
+      }
       return {
         name: assemblyName,
         displayName: assemblyDisplayName,
@@ -208,6 +224,9 @@ const OpenSequenceDialog = ({
         },
       }
     } else if (adapterSelection === 'TwoBitAdapter') {
+      if (isBlank(twoBitLocation)) {
+        throw new Error('Need twoBitLocation')
+      }
       return {
         name: assemblyName,
         displayName: assemblyDisplayName,
