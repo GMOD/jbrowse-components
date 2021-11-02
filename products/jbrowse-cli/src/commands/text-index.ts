@@ -377,7 +377,7 @@ export default class TextIndex extends JBrowseCommand {
 
       if (type === 'Gff3TabixAdapter') {
         yield* indexGff3(config, attrs, outLocation, types, quiet)
-      } else if (type === 'GtfTabixAdapter') {
+      } else if (type === 'GtfAdapter') {
         yield* indexGtf(config, attrs, outLocation, types, quiet)
       } else if (type === 'VcfTabixAdapter') {
         yield* indexVcf(config, attrs, outLocation, types, quiet)

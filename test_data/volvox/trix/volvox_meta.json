@@ -128,24 +128,6 @@
       }
     },
     {
-      "trackId": "gtf_tabix_test",
-      "attributesIndexed": ["gene_id"],
-      "excludedTypes": ["CDS", "exon"],
-      "adapterConf": {
-        "type": "GtfTabixAdapter",
-        "gtfGzLocation": {
-          "uri": "volvox.sorted.gtf.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "volvox.sorted.gtf.gz.tbi",
-            "locationType": "UriLocation"
-          }
-        }
-      }
-    },
-    {
       "trackId": "volvox.inv.vcf",
       "attributesIndexed": ["Name", "ID", "Note"],
       "excludedTypes": ["CDS", "exon"],

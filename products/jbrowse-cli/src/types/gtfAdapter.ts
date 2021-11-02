@@ -1,4 +1,4 @@
-import { Track, GtfTabixAdapter } from '../base'
+import { Track, GtfAdapter } from '../base'
 import { isURL, createRemoteStream } from '../types/common'
 import { SingleBar, Presets } from 'cli-progress'
 import { createGunzip } from 'zlib'
@@ -15,8 +15,8 @@ export async function* indexGtf(
 ) {
   const { adapter, trackId } = config
   const {
-    gtfGzLocation: { uri },
-  } = adapter as GtfTabixAdapter
+    gtfLocation: { uri },
+  } = adapter as GtfAdapter
 
   // progress bar code was aided by blog post at
   // https://webomnizz.com/download-a-file-with-progressbar-using-node-js/

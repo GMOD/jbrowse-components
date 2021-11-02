@@ -18,9 +18,9 @@ export interface Gff3TabixAdapter {
   gffGzLocation: UriLocation
 }
 
-export interface GtfTabixAdapter {
-  type: 'GtfTabixAdapter'
-  gtfGzLocation: UriLocation
+export interface GtfAdapter {
+  type: 'GtfAdapter'
+  gtfLocation: UriLocation
 }
 
 export interface VcfTabixAdapter {
@@ -103,7 +103,7 @@ export interface Track {
   trackId: string
   name: string
   assemblyNames: string[]
-  adapter: Gff3TabixAdapter | GtfTabixAdapter | VcfTabixAdapter
+  adapter: Gff3TabixAdapter | GtfAdapter | VcfTabixAdapter
   textSearching?: TextSearching
 }
 
