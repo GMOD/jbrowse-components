@@ -43,8 +43,8 @@ function CustomPluginForm({
   model: PluginStoreModel
 }) {
   const classes = useStyles()
-  const [formName, setFormName] = useState<string>()
-  const [formUrl, setFormUrl] = useState<string>()
+  const [formName, setFormName] = useState('')
+  const [formUrl, setFormUrl] = useState('')
   const rootModel = getRoot(model)
   const { jbrowse } = rootModel
 
@@ -63,18 +63,20 @@ function CustomPluginForm({
             Specify the name and URL path of your plugin source
           </Typography>
           <TextField
+            id="name-input"
+            name="name"
             label="Plugin name"
             variant="outlined"
             value={formName}
             onChange={event => setFormName(event.target.value)}
-            multiline
           />
           <TextField
+            id="url-input"
+            name="url"
             label="Plugin URL"
             variant="outlined"
             value={formUrl}
             onChange={event => setFormUrl(event.target.value)}
-            multiline
           />
         </div>
       </DialogContent>
