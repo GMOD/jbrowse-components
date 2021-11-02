@@ -81,23 +81,15 @@ export async function* indexGtf(
             ]
           }),
       )
-      const name = col9Attrs['gene_name'] || ''
-      const id = col9Attrs['gene_id'] || ''
       const attrs = attributes
         .map(attr => col9Attrs[attr])
         .filter((f): f is string => !!f)
 
-      const restAttrs = attributes
-        .filter(attr => attr !== 'gene_name' && attr !== 'gene_id')
-        .map(attr => col9Attrs[attr])
-        .filter((f): f is string => !!f)
-      if (name || id) {
+      if (attrs.length) {
         const record = JSON.stringify([
           encodeURIComponent(locStr),
           encodeURIComponent(trackId),
-          encodeURIComponent(name),
-          encodeURIComponent(id),
-          ...restAttrs.map(a => encodeURIComponent(a || '')),
+          ...attrs.map(a => encodeURIComponent(a || '')),
         ]).replace(/,/g, '|')
         yield `${record} ${[...new Set(attrs)].join(' ')}\n`
       }

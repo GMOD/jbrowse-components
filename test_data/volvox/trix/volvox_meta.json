@@ -1,5 +1,5 @@
 {
-  "dateCreated": "2021-09-10T23:33:32.208Z",
+  "dateCreated": "2021-11-02T03:09:57.485Z",
   "tracks": [
     {
       "trackId": "volvox_sv_test",
@@ -122,6 +122,24 @@
         "index": {
           "location": {
             "uri": "single_exon_gene.sorted.gff.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "trackId": "gtf_tabix_test",
+      "attributesIndexed": ["gene_id"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "GtfTabixAdapter",
+        "gtfGzLocation": {
+          "uri": "volvox.sorted.gtf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sorted.gtf.gz.tbi",
             "locationType": "UriLocation"
           }
         }

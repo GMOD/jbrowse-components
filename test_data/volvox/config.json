@@ -916,7 +916,6 @@
         }
       }
     },
-
     {
       "type": "FeatureTrack",
       "trackId": "gff3tabix_genes",
@@ -1534,6 +1533,9 @@
             "locationType": "UriLocation"
           }
         }
+      },
+      "textSearching": {
+        "indexingAttributes": ["gene_id"]
       }
     },
     {
