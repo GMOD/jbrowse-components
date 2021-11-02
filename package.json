@@ -75,6 +75,7 @@
     "@types/object.fromentries": "^2.0.0",
     "@types/pako": "^1.0.1",
     "@types/pluralize": "^0.0.29",
+    "@types/pump": "^1.1.1",
     "@types/range-parser": "^1.2.3",
     "@types/rbush": "^3.0.0",
     "@types/react": "^17.0.0",

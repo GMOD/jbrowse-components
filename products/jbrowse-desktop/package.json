@@ -85,6 +85,7 @@
     "mobx-state-tree": "3.14.1",
     "node-fetch": "^2.6.0",
     "prop-types": "^15.7.2",
+    "pump": "^3.0.0",
     "raf": "^3.4.1",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",

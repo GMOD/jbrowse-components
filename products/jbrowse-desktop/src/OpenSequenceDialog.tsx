@@ -37,6 +37,11 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(1),
     overflow: 'auto',
   },
+  message: {
+    background: '#ddd',
+    margin: theme.spacing(2),
+    padding: theme.spacing(2),
+  },
 }))
 
 function AdapterInput({
@@ -168,7 +173,7 @@ const OpenSequenceDialog = ({
   const [error, setError] = useState<unknown>()
   const [assemblyName, setAssemblyName] = useState('')
   const [assemblyDisplayName, setAssemblyDisplayName] = useState('')
-  const [message, setMessage] = useState('')
+  const [loading, setLoading] = useState<string>()
   const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0])
   const [fastaLocation, setFastaLocation] = useState(blank)
   const [faiLocation, setFaiLocation] = useState(blank)
@@ -178,12 +183,8 @@ const OpenSequenceDialog = ({
 
   async function createAssemblyConfig() {
     if (adapterSelection === 'FastaAdapter') {
-      setMessage('Creating .fai for file...')
+      setLoading('Creating .fai file for FASTA')
       const faiLocation = await ipcRenderer.invoke('indexFasta', fastaLocation)
-      setMessage('Finished creating fasta file')
-      setTimeout(() => {
-        setMessage('')
-      }, 1000)
       return {
         name: assemblyName,
         displayName: assemblyDisplayName,
@@ -240,13 +241,17 @@ const OpenSequenceDialog = ({
     <Dialog open onClose={() => onClose()}>
       <DialogTitle>Open sequence</DialogTitle>
       <DialogContent>
-        {error ? <ErrorMessage error={error} /> : null}
         <div className={classes.root}>
           <Typography>
             Use this dialog to open a new indexed FASTA file, bgzipped+indexed
             FASTA file, or .2bit file of a genome assembly or other sequence
           </Typography>
-          {message ? <Typography>{message}</Typography> : null}
+          {loading ? (
+            <Typography className={classes.message}>{loading}</Typography>
+          ) : null}
+
+          {error ? <ErrorMessage error={error} /> : null}
+
           <Paper className={classes.paper}>
             <TextField
               id="assembly-name"
@@ -312,6 +317,7 @@ const OpenSequenceDialog = ({
         <Button
           onClick={async () => {
             try {
+              setError(undefined)
               const assemblyConf = await createAssemblyConfig()
 
               await onClose({
@@ -325,9 +331,12 @@ const OpenSequenceDialog = ({
             } catch (e) {
               setError(e)
               console.error(e)
+            } finally {
+              setLoading(undefined)
             }
           }}
           color="primary"
+          disabled={!!loading}
           variant="contained"
           autoFocus
         >

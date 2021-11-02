@@ -1,5 +1,6 @@
 import fs from 'fs'
 import split2 from 'split2'
+import pump from 'pump'
 import { Readable, Transform } from 'stream'
 import { IncomingMessage } from 'http'
 import { http, https, FollowResponse } from 'follow-redirects'
@@ -43,6 +44,7 @@ export async function getFileStream(
   return fileDataStream
 }
 
+// creates an FAI file from a FASTA file streaming in
 class FastaIndexTransform extends Transform {
   foundAny = false
   possibleBadLine = undefined as [number, string] | undefined
@@ -54,7 +56,7 @@ class FastaIndexTransform extends Transform {
   refOffset = 0
   lineNum = 0
 
-  _transform(chunk: Buffer, encoding: unknown, done: () => void) {
+  _transform(chunk: Buffer, encoding: unknown, done: (error?: Error) => void) {
     const line = chunk.toString()
     // line length in bytes including the \n that we split on
     const currentLineBytes = chunk.length + 1
@@ -66,7 +68,8 @@ class FastaIndexTransform extends Transform {
         this.possibleBadLine &&
         this.possibleBadLine[0] !== this.lineNum - 1
       ) {
-        throw new Error(this.possibleBadLine[1])
+        done(new Error(this.possibleBadLine[1]))
+        return
       }
       if (this.lineNum > 0) {
         this.push(
@@ -80,11 +83,12 @@ class FastaIndexTransform extends Transform {
       this.refName = line.trim().slice(1).split(/\s+/)[0]
       this.currOffset += currentLineBytes
       this.refOffset = this.currOffset
+      this.possibleBadLine = undefined
     } else {
       if (this.lineBases && currentLineBases !== this.lineBases) {
         this.possibleBadLine = [
           this.lineNum,
-          `Not all lines in file have same width, please check your FASTA file line ${this.lineNum}: ${this.lineBases} ${currentLineBases}`,
+          `Not all lines in file have same width, please check your FASTA file line ${this.lineNum}`,
         ]
       }
       this.lineBytes = currentLineBytes
@@ -97,16 +101,21 @@ class FastaIndexTransform extends Transform {
     done()
   }
 
-  _flush(done: () => void) {
+  _flush(done: (error?: Error) => void) {
     if (!this.foundAny) {
-      throw new Error('No entries found')
-    }
-    if (this.lineNum > 0) {
-      this.push(
-        `${this.refName}\t${this.refSeqLen}\t${this.refOffset}\t${this.lineBases}\t${this.lineBytes}\n`,
+      done(
+        new Error(
+          'No sequences found in file. Ensure that this is a valid FASTA file',
+        ),
       )
+    } else {
+      if (this.lineNum > 0) {
+        this.push(
+          `${this.refName}\t${this.refSeqLen}\t${this.refOffset}\t${this.lineBases}\t${this.lineBytes}\n`,
+        )
+      }
+      done()
     }
-    done()
   }
 }
 
@@ -114,9 +123,19 @@ export async function generateFastaIndex(
   faiPath: string,
   fileDataStream: Readable,
 ) {
-  const out = fs.createWriteStream(faiPath)
-
-  fileDataStream.pipe(split2(/\n/)).pipe(new FastaIndexTransform()).pipe(out)
-
-  await new Promise(resolve => out.on('close', resolve))
+  return new Promise((resolve, reject) => {
+    pump(
+      fileDataStream,
+      split2(/\n/),
+      new FastaIndexTransform(),
+      fs.createWriteStream(faiPath),
+      function (err) {
+        if (err) {
+          reject(err)
+        } else {
+          resolve('success')
+        }
+      },
+    )
+  })
 }
