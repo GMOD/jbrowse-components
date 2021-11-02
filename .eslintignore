@@ -11,3 +11,4 @@ products/jbrowse-web/scripts/**
 /config/
 /products/jbrowse-web/config/
 products/jbrowse-desktop/public/electron.js
+products/jbrowse-desktop/public/generateFastaIndex.js
