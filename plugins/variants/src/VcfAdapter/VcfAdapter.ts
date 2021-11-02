@@ -33,11 +33,24 @@ function isGzip(buf: Buffer) {
 export default class VcfAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  protected vcfFeatures?: Promise<Record<string, IntervalTree>>
+  protected vcfFeatures?: Promise<{
+    header: string
+    intervalTree: Record<string, IntervalTree>
+  }>
 
-  protected unzipped?: Promise<{ header: string; lines: string[] }>
+  public async getHeader() {
+    const { header } = await this.setup()
+    return header
+  }
 
-  private async decodeFileContentsP() {
+  async getMetadata() {
+    const { header } = await this.setup()
+    const parser = new VCF({ header: header })
+    return parser.getMetadata()
+  }
+
+  // converts lines into an interval tree
+  public async setupP() {
     const buffer = await openLocation(
       readConfObject(this.config, 'vcfLocation'),
       this.pluginManager,
@@ -51,86 +64,49 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
     }
 
     const str = new TextDecoder().decode(buf)
-    return readVcf(str)
-  }
+    const { header, lines } = readVcf(str)
 
-  private async decodeFileContents() {
-    if (!this.unzipped) {
-      this.unzipped = this.decodeFileContentsP().catch(e => {
-        this.unzipped = undefined
-        throw e
+    const intervalTree = lines
+      .map((line, id) => {
+        const [refName, startP, , ref, , , , info] = line.split('\t')
+        const start = +startP - 1
+        const end = +(info.match(/END=(\d+)/)?.[1].trim() || start + ref.length)
+        return { line, refName, start, end, id }
       })
-    }
-    return this.unzipped
-  }
+      .reduce((acc, obj) => {
+        const key = obj.refName
+        if (!acc[key]) {
+          acc[key] = new IntervalTree()
+        }
+        acc[key].insert([obj.start, obj.end], obj)
+        return acc
+      }, {} as Record<string, IntervalTree>)
 
-  public async getHeader() {
-    const { header } = await this.decodeFileContents()
-    return header
-  }
-
-  async getMetadata() {
-    const { header } = await this.decodeFileContents()
-    const parser = new VCF({ header: header })
-    return parser.getMetadata()
-  }
-
-  public async getLines() {
-    const { lines } = await this.decodeFileContents()
-
-    return lines.map((line, id) => {
-      const [refName, startP, , ref, , , , info] = line.split('\t')
-      const start = +startP - 1
-      const end = +(info.match(/END=(\d+)/)?.[1].trim() || start + ref.length)
-      return { line, refName, start, end, id }
-    })
+    return { header, intervalTree }
   }
 
   public async setup() {
     if (!this.vcfFeatures) {
-      this.vcfFeatures = this.getLines()
-        .then(feats =>
-          feats.reduce(
-            (
-              acc: Record<string, IntervalTree>,
-              obj: {
-                refName: string
-                start: number
-                end: number
-                line: string
-              },
-            ) => {
-              const key = obj.refName
-              if (!acc[key]) {
-                acc[key] = new IntervalTree()
-              }
-              acc[key].insert([obj.start, obj.end], obj)
-              return acc
-            },
-            {},
-          ),
-        )
-        .catch(e => {
-          this.vcfFeatures = undefined
-          throw e
-        })
+      this.vcfFeatures = this.setupP().catch(e => {
+        this.vcfFeatures = undefined
+        throw e
+      })
     }
     return this.vcfFeatures
   }
 
   public async getRefNames(_: BaseOptions = {}) {
-    const lines = await this.getLines()
-    return [...new Set(lines.map(line => line.refName))]
+    const { intervalTree } = await this.setup()
+    return Object.keys(intervalTree)
   }
 
   public getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       try {
-        const { header } = await this.decodeFileContents()
         const { start, end, refName } = region
+        const { header, intervalTree } = await this.setup()
         const parser = new VCF({ header: header })
-        const vcfFeatures = await this.setup()
-        vcfFeatures[refName]?.search([start, end]).forEach(f =>
+        intervalTree[refName]?.search([start, end]).forEach(f =>
           observer.next(
             new VcfFeature({
               variant: parser.parseLine(f.line),
