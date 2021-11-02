@@ -1,5 +1,5 @@
 {
-  "dateCreated": "2021-11-02T04:03:49.768Z",
+  "dateCreated": "2021-11-02T04:22:27.458Z",
   "tracks": [
     {
       "trackId": "volvox_sv_test",
@@ -92,18 +92,6 @@
       }
     },
     {
-      "trackId": "volvox_filtered_vcf_plaintext",
-      "attributesIndexed": ["Name", "ID", "Note"],
-      "excludedTypes": ["CDS", "exon"],
-      "adapterConf": {
-        "type": "VcfAdapter",
-        "vcfLocation": {
-          "uri": "volvox.filtered.vcf",
-          "locationType": "UriLocation"
-        }
-      }
-    },
-    {
       "trackId": "variant_colors",
       "attributesIndexed": ["Name", "ID", "Note"],
       "excludedTypes": ["CDS", "exon"],
@@ -136,18 +124,6 @@
             "uri": "single_exon_gene.sorted.gff.gz.tbi",
             "locationType": "UriLocation"
           }
-        }
-      }
-    },
-    {
-      "trackId": "gtf_plain_text_test",
-      "attributesIndexed": ["gene_id"],
-      "excludedTypes": ["CDS", "exon"],
-      "adapterConf": {
-        "type": "GtfAdapter",
-        "gtfLocation": {
-          "uri": "volvox.sorted.gtf",
-          "locationType": "UriLocation"
         }
       }
     },

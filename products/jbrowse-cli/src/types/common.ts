@@ -69,13 +69,7 @@ export function guessAdapterFromFileName(filePath: string): Track {
 }
 
 export function supported(type: string) {
-  return [
-    'Gff3TabixAdapter',
-    'GffAdapter',
-    'GtfAdapter',
-    'VcfAdapter',
-    'VcfTabixAdapter',
-  ].includes(type)
+  return ['Gff3TabixAdapter', 'VcfTabixAdapter'].includes(type)
 }
 /**
  * Generates metadata of index given a filename (trackId or assembly)
