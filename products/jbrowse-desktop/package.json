@@ -50,6 +50,7 @@
     "@jbrowse/plugin-data-management": "^1.5.0",
     "@jbrowse/plugin-dotplot-view": "^1.5.0",
     "@jbrowse/plugin-gff3": "^1.5.0",
+    "@jbrowse/plugin-gtf": "^1.5.0",
     "@jbrowse/plugin-grid-bookmark": "^1.5.0",
     "@jbrowse/plugin-hic": "^1.5.0",
     "@jbrowse/plugin-legacy-jbrowse": "^1.5.0",

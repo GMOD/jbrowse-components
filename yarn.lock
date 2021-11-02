@@ -1724,6 +1724,16 @@
     tmp-promise "^1.0.4"
     typical "^2.6.1"
 
+"@gmod/gtf@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@gmod/gtf/-/gtf-0.0.3.tgz#f3fad8edbb6b56b6a6bc8961e00a49e260952245"
+  integrity sha512-/ocG6upcRmHaQHpyy4xA5BhCsjjv45SF7xxio1udGqGnPy8UgyBLK+E48yVXE3x2e/Qb0VZwO97LlpXlqlzWlQ==
+  dependencies:
+    babel-runtime "^6.26.0"
+    es6-promisify "^6.0.0"
+    tmp-promise "^1.0.4"
+    typical "^3.0.0"
+
 "@gmod/indexedfasta@^2.0.1":
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@gmod/indexedfasta/-/indexedfasta-2.0.1.tgz#dd64e5246028c9eea109205eb7184d51d601ac31"
@@ -21336,6 +21346,11 @@ typical@^2.6.1:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/typical/-/typical-2.6.1.tgz#5c080e5d661cbbe38259d2e70a3c7253e873881d"
   integrity sha1-XAgOXWYcu+OCWdLnCjxyU+hziB0=
+
+typical@^3.0.0:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/typical/-/typical-3.0.2.tgz#1891683995b7916822c7ab0ccc238fc462f66e71"
+  integrity sha512-uvJvOMwAheCYrxDUsqkMPpYk7t1/R+4VQnBZ3wzkaA6QRQzXxG6+/yA6VGDtK+bgzCxh6Vk5arJ7TG0Gf8GN1w==
 
 uglify-js@^3.1.4:
   version "3.14.2"
