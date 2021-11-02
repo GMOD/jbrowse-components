@@ -82,8 +82,8 @@ export default class extends BaseFeatureDataAdapter {
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
-    const gffFeatures = await this.loadData()
-    return Object.keys(gffFeatures)
+    const { intervalTree } = await this.loadData()
+    return Object.keys(intervalTree)
   }
 
   public async getHeader() {
