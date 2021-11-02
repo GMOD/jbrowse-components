@@ -9,8 +9,8 @@ import {
   isSelectionContainer,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import { BaseFeatureStats } from '@jbrowse/core/util/stats'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import { Region } from '@jbrowse/core/util/types'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { Feature, isFeature } from '@jbrowse/core/util/simpleFeature'
@@ -195,30 +195,34 @@ export const BaseLinearDisplay = types
             const aborter = new AbortController()
             const view = getContainingView(self) as LGV
 
-            if (!view.displayedRegions) {
-              throw new Error('no displayed regions')
+            if (!view.initialized) {
+              return
             }
 
-            const biggestDisplayedRegion = view.displayedRegions.reduce(
-              (acc, curr) =>
-                acc.end - acc.start + 1 > curr.end - curr.start + 1
-                  ? acc
-                  : curr,
-            )
+            if (view.bpPerPx > self.maxViewBpPerPx) {
+              return
+            }
 
             // from the view, either grab a hint of what region to use
             // and pass it to getGlobalStats so it can be put in the params
             // using the LGV, needs context on what assembly and region we are in
             // for thsi file, get biggest visible region, else don't estimate global stat
 
-            // not all backends will need to do this
-            const stats = await this.getGlobalStats(
-              getSession(self).assemblies[0],
-              biggestDisplayedRegion,
-              {
-                signal: aborter.signal,
-              },
-            )
+            if (view.staticBlocks.contentBlocks[0]) {
+              // not all backends will need to do this
+              const stats = await this.getGlobalStats(
+                view.staticBlocks.contentBlocks[0],
+                {
+                  signal: aborter.signal,
+                },
+              )
+
+              if (stats && stats.featureDensity > 0) {
+                // do something
+              } else {
+                throw new Error('Feature density not within limits')
+              }
+            }
             // get stats, call stats action that calls rpc whcih does stats estimation
             // returns an object that has feature density as part of it
 
@@ -234,40 +238,29 @@ export const BaseLinearDisplay = types
       )
     },
     async getGlobalStats(
-      assembly: any,
       region: Region,
       opts: {
         headers?: Record<string, string>
         signal?: AbortSignal
         filters?: string[]
       },
-    ) {
+    ): Promise<BaseFeatureStats> {
       const { rpcManager } = getSession(self)
       const { adapterConfig } = self
       const sessionId = getRpcSessionId(self)
-      const view = getContainingView(self) as LGV
 
-      console.log(view)
-      // @ts-ignore
-      const { start, end, refName } = region.value
-
-      console.log('assembly', assembly.regions)
-      // passing assembly and region crashes the rpc
       const params = {
         sessionId,
-        // assembly: assembly.regions,
-        region: { start, end, refName },
+        regions: [region],
         adapterConfig,
-        statusCallback: {},
         ...opts,
       }
 
-      // need to pass a region here
-      const results = await rpcManager.call(
+      const results: BaseFeatureStats = (await rpcManager.call(
         sessionId,
         'CoreGetGlobalStats',
         params,
-      )
+      )) as BaseFeatureStats
 
       return results
     },

@@ -19,7 +19,6 @@ import {
 import BaseResult from '../TextSearch/BaseResults'
 import idMaker from '../util/idMaker'
 import PluginManager from '../PluginManager'
-import { Assembly } from '../assemblyManager/assembly'
 
 export interface BaseOptions {
   signal?: AbortSignal
@@ -267,20 +266,11 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
 
   // have a function called getStats that calls estimateGlobalStats
   public async getGlobalStats(
-    assembly: any | undefined,
-    regionToStart?: Region,
+    regionToStart: Region,
     opts?: BaseOptions,
   ): Promise<BaseFeatureStats> {
-    console.log(regionToStart)
     // this would call estimateGlobalStats, others can override with own implementation
-    return this.estimateGlobalStats(
-      // @ts-ignore
-      regionToStart
-        ? regionToStart
-        : (
-            assembly?.regions as Region[]
-          )[0] /* look at assembly and get biggest region */,
-    )
+    return this.estimateGlobalStats(regionToStart, opts)
   }
 
   public async estimateGlobalStats(
@@ -308,15 +298,13 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
           )
           .toPromise()
 
-        console.log('features', features)
         const featureDensity = features.length / length
         return maybeRecordStats(
           length,
           {
             featureDensity: featureDensity,
-            statsSampleFeatures: features.length,
-            statsSampleInternval: region,
           },
+          features.length,
           expansionTime,
         )
       }
@@ -324,11 +312,12 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       const maybeRecordStats = (
         interval: number,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        stats: any,
+        stats: BaseFeatureStats,
+        statsSampleFeatures: number,
         expansionTime: number,
       ) => {
         const refLen = region.end - region.start
-        if (stats.statsSampleFeatures >= 300 || interval * 2 > refLen) {
+        if (statsSampleFeatures >= 300 || interval * 2 > refLen) {
           resolve(stats)
           return
         } else if (expansionTime <= 4) {

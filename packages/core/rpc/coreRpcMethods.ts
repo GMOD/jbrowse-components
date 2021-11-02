@@ -19,8 +19,6 @@ import { Region } from '../util/types'
 import { checkAbortSignal, renameRegionsIfNeeded } from '../util'
 import SimpleFeature, { SimpleFeatureSerialized } from '../util/simpleFeature'
 import { BaseFeatureStats } from '../util/stats'
-import { Assembly } from '../assemblyManager/assembly'
-import SerializableFilterChain from '../pluggableElementTypes/renderers/util/serializableFilterChain'
 
 export class CoreGetRefNames extends RpcMethodType {
   name = 'CoreGetRefNames'
@@ -204,9 +202,6 @@ export class CoreGetGlobalStats extends RpcMethodType {
     if (!assemblyManager) {
       return args
     }
-
-    console.log('am', assemblyManager)
-
     const renamedArgs = await renameRegionsIfNeeded(assemblyManager, {
       ...args,
       filters: args.filters && args.filters.toJSON().filters,
@@ -215,45 +210,30 @@ export class CoreGetGlobalStats extends RpcMethodType {
     return super.serializeArguments(renamedArgs, rpcDriverClassName)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async deserializeGlobalArguments(args: any, rpcDriverClassName: string) {
-    const l = await super.deserializeArguments(args, rpcDriverClassName)
-    return {
-      ...l,
-      filters: args.filters
-        ? new SerializableFilterChain({
-            filters: args.filters,
-          })
-        : undefined,
-    }
-  }
-
   async execute(
     args: {
       adapterConfig: {}
-      assembly: Assembly
-      region: Region
+      regions: Region[]
       signal?: RemoteAbortSignal
       headers?: Record<string, string>
       sessionId: string
     },
     rpcDriverClassName: string,
   ): Promise<BaseFeatureStats> {
-    const deserializedArgs = await this.deserializeGlobalArguments(
+    const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,
     )
 
-    const { adapterConfig, sessionId, assembly, region } = deserializedArgs
+    const { adapterConfig, sessionId, regions } = deserializedArgs
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
     )
 
-    console.log(region)
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
-      return dataAdapter.getGlobalStats(assembly, region, deserializedArgs)
+      return dataAdapter.getGlobalStats(regions[0], deserializedArgs)
     }
     throw new Error('Data adapter not found')
   }
