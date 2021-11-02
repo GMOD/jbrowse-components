@@ -95,19 +95,19 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 >
                   <div
                     class="makeStyles-scaleBarVisibleRegion"
-                    style="width: 267px; left: 0px;"
+                    style="width: 267px; left: 0px; background: rgba(66, 119, 127, 0.3);"
                   />
                   <div
                     class="makeStyles-scaleBarContig"
                     style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
                   />
                   <div
-                    class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward"
+                    class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward makeStyles-scaleBarBorder"
                     style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
                   >
                     <p
                       class="MuiTypography-root makeStyles-scaleBarRefName MuiTypography-body1"
-                      style="color: rgb(153, 102, 0); z-index: 100;"
+                      style="color: rgb(153, 102, 0);"
                     >
                       ctgA
                     </p>
@@ -163,11 +163,17 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 height="48"
                 width="100%"
               >
-                <polygon
-                  fill="rgba(66, 119, 127, 0.3)"
-                  points="0,48,801,48,267,0,0,0"
-                  stroke="rgba(66, 119, 127, 0.8)"
-                />
+                <svg
+                  class="makeStyles-overviewSvg"
+                  height="48"
+                  width="100%"
+                >
+                  <polygon
+                    fill="rgba(66, 119, 127, 0.3)"
+                    points="0,48,801,48,267,0,0,0"
+                    stroke="rgba(66, 119, 127, 0.8)"
+                  />
+                </svg>
               </svg>
               <div
                 class="makeStyles-headerBar"

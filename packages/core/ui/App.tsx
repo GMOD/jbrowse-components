@@ -54,10 +54,13 @@ const useStyles = makeStyles(theme => ({
     height: '100vh',
     width: '100%',
   },
-  fab: {
-    float: 'right',
-    position: 'sticky',
-    marginTop: theme.spacing(2),
+  fabLeft: {
+    position: 'fixed',
+    bottom: theme.spacing(2),
+    left: theme.spacing(2),
+  },
+  fabRight: {
+    position: 'fixed',
     bottom: theme.spacing(2),
     right: theme.spacing(2),
   },
@@ -272,20 +275,18 @@ const App = observer(
         </div>
 
         {activeWidgets.size > 0 && minimized ? (
-          <div className={classes.fab}>
+          <Tooltip title="Open drawer widget">
             <Fab
+              className={
+                drawerPosition === 'right' ? classes.fabRight : classes.fabLeft
+              }
               color="primary"
-              size="small"
-              aria-label="show"
               data-testid="drawer-maximize"
-              style={{ float: 'right' }}
-              onClick={() => {
-                session.showWidgetDrawer()
-              }}
+              onClick={() => session.showWidgetDrawer()}
             >
               <LaunchIcon />
             </Fab>
-          </div>
+          </Tooltip>
         ) : null}
 
         {drawerVisible && drawerPosition === 'right' ? (

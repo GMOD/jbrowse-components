@@ -7,12 +7,6 @@ import {
   SetDefaultSession,
 } from '@jbrowse/plugin-data-management'
 
-interface JBrowse {
-  defaultSession: {
-    name: string
-  }
-}
-
 function AdminComponent({ pluginManager }: { pluginManager: PluginManager }) {
   const { rootModel } = pluginManager
 
@@ -21,7 +15,6 @@ function AdminComponent({ pluginManager }: { pluginManager: PluginManager }) {
     isDefaultSessionEditing,
     setDefaultSessionEditing,
     setAssemblyEditing,
-    jbrowse,
   } = rootModel as AppRootModel
 
   return (
@@ -29,19 +22,15 @@ function AdminComponent({ pluginManager }: { pluginManager: PluginManager }) {
       {isAssemblyEditing ? (
         <AssemblyManager
           rootModel={rootModel}
-          onClose={() => {
-            setAssemblyEditing(false)
-          }}
+          onClose={() => setAssemblyEditing(false)}
         />
       ) : null}
-      <SetDefaultSession
-        rootModel={rootModel}
-        open={isDefaultSessionEditing}
-        onClose={() => {
-          setDefaultSessionEditing(false)
-        }}
-        currentDefault={(jbrowse as JBrowse).defaultSession.name}
-      />
+      {isDefaultSessionEditing ? (
+        <SetDefaultSession
+          rootModel={rootModel}
+          onClose={() => setDefaultSessionEditing(false)}
+        />
+      ) : null}
     </>
   )
 }

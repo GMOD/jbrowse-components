@@ -2,7 +2,6 @@ import {
   addDisposer,
   cast,
   getSnapshot,
-  getParent,
   getType,
   getPropertyMembers,
   getChildType,
@@ -21,16 +20,14 @@ import {
 
 import { saveAs } from 'file-saver'
 import { observable, autorun } from 'mobx'
-import assemblyManagerFactory, {
-  assemblyConfigSchemas as AssemblyConfigSchemasFactory,
-} from '@jbrowse/core/assemblyManager'
+import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
+import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
-import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 
 // icons
 import AddIcon from '@material-ui/icons/Add'
@@ -113,24 +110,15 @@ export default function RootModel(
   pluginManager: PluginManager,
   adminMode = false,
 ) {
-  const { assemblyConfigSchemas, dispatcher } =
-    AssemblyConfigSchemasFactory(pluginManager)
-  const assemblyConfigSchemasType = types.union(
-    { dispatcher },
-    ...assemblyConfigSchemas,
-  )
-  const Session = sessionModelFactory(pluginManager, assemblyConfigSchemasType)
+  const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
+  const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
   const assemblyManagerType = assemblyManagerFactory(
-    assemblyConfigSchemasType,
+    assemblyConfigSchema,
     pluginManager,
   )
   return types
     .model('Root', {
-      jbrowse: jbrowseWebFactory(
-        pluginManager,
-        Session,
-        assemblyConfigSchemasType as AnyConfigurationSchemaType,
-      ),
+      jbrowse: jbrowseWebFactory(pluginManager, Session, assemblyConfigSchema),
       configPath: types.maybe(types.string),
       session: types.maybe(Session),
       assemblyManager: assemblyManagerType,
@@ -555,19 +543,15 @@ export default function RootModel(
                   {
                     label: 'Open assembly manager',
                     icon: SettingsIcon,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    onClick: (session: any) => {
-                      const rootModel = getParent(session)
-                      rootModel.setAssemblyEditing(true)
+                    onClick: () => {
+                      self.setAssemblyEditing(true)
                     },
                   },
                   {
                     label: 'Set default session',
                     icon: SettingsIcon,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    onClick: (session: any) => {
-                      const rootModel = getParent(session)
-                      rootModel.setDefaultSessionEditing(true)
+                    onClick: () => {
+                      self.setDefaultSessionEditing(true)
                     },
                   },
                 ],

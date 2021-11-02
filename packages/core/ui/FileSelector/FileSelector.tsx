@@ -1,14 +1,10 @@
-import React, { useState, useRef } from 'react'
+import React, { useState } from 'react'
 import {
   Box,
   FormHelperText,
   InputLabel,
   MenuItem,
   Tooltip,
-  Paper,
-  Popper,
-  Grow,
-  ClickAwayListener,
   Menu,
 } from '@material-ui/core'
 
@@ -38,6 +34,13 @@ function ToggleButtonWithTooltip(props: ToggleButtonProps) {
   )
 }
 
+function shorten(str: string, len: number) {
+  if (typeof str === 'string' && str.length > len) {
+    return `${str.substring(0, len)}…`
+  }
+  return str
+}
+
 const FileSelector = observer(
   (props: {
     location?: FileLocation
@@ -54,28 +57,23 @@ const FileSelector = observer(
         ? location.internetAccountId
         : fileOrUrl,
     )
-    const internetAccounts = isAppRootModel(rootModel)
+    const accts = isAppRootModel(rootModel)
       ? rootModel.internetAccounts.slice()
       : []
-    const numAccountsShown = 2
-    const [shownInternetAccounts, setShownInternetAccounts] = useState(
-      internetAccounts.slice(0, numAccountsShown),
-    )
-    const [hiddenInternetAccounts, setHiddenInternetAccounts] = useState(
-      internetAccounts.slice(numAccountsShown),
-    )
-    const [moreMenuOpen, setMoreMenuOpen] = useState(false)
-    const moreMenuRef = useRef(null)
+    const numShown = 2
+    const [shownAccts, setShownAccts] = useState(accts.slice(0, numShown))
+    const [hiddenAccts, setHiddenAccts] = useState(accts.slice(numShown))
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
 
-    const selectedInternetAccount = internetAccounts.find(
+    const selectedAcct = accts.find(
       ia => ia.internetAccountId === toggleButtonValue,
     )
 
     const setLocationWithAccount = (location: UriLocation) => {
       setLocation({
         ...location,
-        internetAccountId: selectedInternetAccount
-          ? selectedInternetAccount.internetAccountId
+        internetAccountId: selectedAcct
+          ? selectedAcct.internetAccountId
           : undefined,
       })
     }
@@ -83,9 +81,9 @@ const FileSelector = observer(
     // if you swap account selection after inputting url
     if (
       location &&
-      selectedInternetAccount &&
+      selectedAcct &&
       isUriLocation(location) &&
-      location.internetAccountId !== selectedInternetAccount.internetAccountId
+      location.internetAccountId !== selectedAcct.internetAccountId
     ) {
       setLocationWithAccount(location)
     }
@@ -94,29 +92,17 @@ const FileSelector = observer(
       <UrlChooser
         {...props}
         setLocation={setLocationWithAccount}
-        label={selectedInternetAccount?.selectorLabel}
+        label={selectedAcct?.selectorLabel}
       />
     )
     if (toggleButtonValue === 'file') {
       locationInput = <LocalFileChooser {...props} />
     }
-    if (selectedInternetAccount?.SelectorComponent) {
-      const { SelectorComponent } = selectedInternetAccount
+    if (selectedAcct?.SelectorComponent) {
+      const { SelectorComponent } = selectedAcct
       locationInput = (
         <SelectorComponent {...props} setLocation={setLocationWithAccount} />
       )
-    }
-
-    const handleChange = (
-      _event: React.MouseEvent<HTMLElement>,
-      newState: string,
-    ) => {
-      if (newState) {
-        setToggleButtonValue(newState)
-      }
-      if (isUriLocation(location)) {
-        setLocationWithAccount(location)
-      }
     }
 
     return (
@@ -129,7 +115,14 @@ const FileSelector = observer(
             <ToggleButtonGroup
               value={toggleButtonValue}
               exclusive
-              onChange={handleChange}
+              onChange={(_event, newState) => {
+                if (newState) {
+                  setToggleButtonValue(newState)
+                }
+                if (isUriLocation(location)) {
+                  setLocationWithAccount(location)
+                }
+              }}
               aria-label="file, url, or account picker"
             >
               {new URLSearchParams(window.location.search).get(
@@ -142,112 +135,64 @@ const FileSelector = observer(
               <ToggleButton value="url" aria-label="url">
                 URL
               </ToggleButton>
-              {shownInternetAccounts?.map(internetAccount => {
-                const { toggleContents: customToggleContents, name } =
-                  internetAccount
-                let toggleContents = customToggleContents || name
-                const maxLength = 5
-                if (
-                  typeof toggleContents === 'string' &&
-                  toggleContents.length > maxLength
-                ) {
-                  toggleContents = `${toggleContents.substring(0, maxLength)}…`
-                }
-                return (
-                  <ToggleButtonWithTooltip
-                    key={internetAccount.internetAccountId}
-                    value={internetAccount.internetAccountId}
-                    aria-label={internetAccount.name}
-                    title={name}
-                  >
-                    {toggleContents}
-                  </ToggleButtonWithTooltip>
-                )
-              })}
-              {hiddenInternetAccounts.length ? (
+              {shownAccts.map(({ internetAccountId, toggleContents, name }) => (
+                <ToggleButtonWithTooltip
+                  key={internetAccountId}
+                  value={internetAccountId}
+                  aria-label={name}
+                  title={name}
+                >
+                  {shorten(toggleContents || name, 5)}
+                </ToggleButtonWithTooltip>
+              ))}
+              {hiddenAccts.length ? (
                 <ToggleButton
-                  value="moreMenu"
-                  onClick={() => {
-                    setMoreMenuOpen((prevOpen: boolean) => !prevOpen)
-                  }}
+                  onClick={event => setAnchorEl(event.target as HTMLElement)}
                   selected={false}
-                  ref={moreMenuRef}
                 >
                   More
                   <ArrowDropDownIcon />
                 </ToggleButton>
               ) : null}
             </ToggleButtonGroup>
-            <Popper
-              open={moreMenuOpen}
-              anchorEl={moreMenuRef.current}
-              role={undefined}
-              transition
-              disablePortal
+
+            <Menu
+              open={Boolean(anchorEl)}
+              anchorEl={anchorEl}
+              onClose={() => setAnchorEl(null)}
+              getContentAnchorEl={null}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'center',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'center',
+              }}
             >
-              {({ TransitionProps, placement }) => (
-                <Grow
-                  {...TransitionProps}
-                  style={{
-                    transformOrigin:
-                      placement === 'bottom' ? 'center top' : 'center bottom',
+              {hiddenAccts?.map((acct, idx) => (
+                <MenuItem
+                  key={acct.internetAccountId}
+                  value={acct.internetAccountId}
+                  onClick={() => {
+                    const prev = shownAccts[shownAccts.length - 1]
+                    setShownAccts([
+                      ...shownAccts.slice(0, shownAccts.length - 1),
+                      acct,
+                    ])
+                    setHiddenAccts([
+                      prev,
+                      ...hiddenAccts.slice(0, idx),
+                      ...hiddenAccts.slice(idx + 1),
+                    ])
+                    setToggleButtonValue(acct.internetAccountId)
+                    setAnchorEl(null)
                   }}
                 >
-                  <Paper>
-                    <ClickAwayListener
-                      onClickAway={() => setMoreMenuOpen(false)}
-                    >
-                      <Menu
-                        open={moreMenuOpen}
-                        anchorEl={moreMenuRef.current}
-                        id="split-button-menu"
-                        onClose={() => setMoreMenuOpen(false)}
-                        getContentAnchorEl={null}
-                        anchorOrigin={{
-                          vertical: 'bottom',
-                          horizontal: 'center',
-                        }}
-                        transformOrigin={{
-                          vertical: 'top',
-                          horizontal: 'center',
-                        }}
-                      >
-                        {hiddenInternetAccounts?.map((account, idx) => (
-                          <MenuItem
-                            key={account.internetAccountId}
-                            value={account.internetAccountId}
-                            onClick={() => {
-                              const newlySelectedInternetAccount =
-                                hiddenInternetAccounts[idx]
-                              const lastShownInternetAccount =
-                                shownInternetAccounts[
-                                  shownInternetAccounts.length - 1
-                                ]
-                              setShownInternetAccounts([
-                                ...shownInternetAccounts.slice(
-                                  0,
-                                  shownInternetAccounts.length - 1,
-                                ),
-                                newlySelectedInternetAccount,
-                              ])
-                              setHiddenInternetAccounts([
-                                lastShownInternetAccount,
-                                ...hiddenInternetAccounts.slice(0, idx),
-                                ...hiddenInternetAccounts.slice(idx + 1),
-                              ])
-                              setToggleButtonValue(account.internetAccountId)
-                              setMoreMenuOpen(false)
-                            }}
-                          >
-                            {account.name}
-                          </MenuItem>
-                        ))}
-                      </Menu>
-                    </ClickAwayListener>
-                  </Paper>
-                </Grow>
-              )}
-            </Popper>
+                  {acct.name}
+                </MenuItem>
+              ))}
+            </Menu>
           </Box>
         </Box>
         {locationInput}

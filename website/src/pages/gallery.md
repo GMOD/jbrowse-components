@@ -1,6 +1,6 @@
 # JBrowse 2 visualizations gallery
 
-Below are some examples of the visualizations JBrowse 2 has to offer. For live demos, have a look at the [demos page](demos).
+Below are some examples of the visualizations JBrowse 2 has to offer. For live demos, have a look at the [demos page](../demos).
 
 ---
 
