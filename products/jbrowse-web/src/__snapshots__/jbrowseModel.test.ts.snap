@@ -2769,6 +2769,37 @@ Object {
     },
     Object {
       "adapter": Object {
+        "gtfLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox.sorted.gtf",
+        },
+        "type": "GtfAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Miscellaneous",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "gtf_plain_text_test-LinearBasicDisplay",
+          "type": "LinearBasicDisplay",
+        },
+      ],
+      "name": "GTF - volvox.sorted.gtf",
+      "textSearching": Object {
+        "indexingAttributes": Array [
+          "gene_id",
+        ],
+      },
+      "trackId": "gtf_plain_text_test",
+      "type": "FeatureTrack",
+    },
+    Object {
+      "adapter": Object {
         "index": Object {
           "location": Object {
             "internetAccountId": undefined,
