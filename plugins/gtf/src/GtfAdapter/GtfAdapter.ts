@@ -17,72 +17,71 @@ function isGzip(buf: Buffer) {
 }
 
 export default class extends BaseFeatureDataAdapter {
-  protected gtfFeatures?: Promise<Record<string, IntervalTree>>
+  protected gtfFeatures?: Promise<{
+    intervalTree: Record<string, IntervalTree>
+  }>
+
+  private async loadDataP() {
+    const buffer = await openLocation(
+      readConfObject(this.config, 'gtfLocation'),
+      this.pluginManager,
+    ).readFile()
+
+    const buf = isGzip(buffer as Buffer) ? await unzip(buffer) : buffer
+    // 512MB  max chrome string length is 512MB
+    if (buf.length > 536_870_888) {
+      throw new Error('Data exceeds maximum string length (512MB)')
+    }
+    const data = new TextDecoder('utf8', { fatal: true }).decode(buf)
+    const feats = gtf.parseStringSync(data, {
+      parseFeatures: true,
+      parseComments: false,
+      parseDirectives: false,
+      parseSequences: false,
+    }) as FeatureLoc[][]
+
+    const intervalTree = feats
+      .flat()
+      .map(
+        (f, i) =>
+          new SimpleFeature({
+            data: featureData(f),
+            id: `${this.id}-offset-${i}`,
+          }),
+      )
+      .reduce((acc, obj) => {
+        const key = obj.get('refName')
+        if (!acc[key]) {
+          acc[key] = new IntervalTree()
+        }
+        acc[key].insert([obj.get('start'), obj.get('end')], obj)
+        return acc
+      }, {} as Record<string, IntervalTree>)
+    return { intervalTree }
+  }
 
   private async loadData() {
     if (!this.gtfFeatures) {
-      this.gtfFeatures = openLocation(
-        readConfObject(this.config, 'gtfLocation'),
-        this.pluginManager,
-      )
-        .readFile()
-        .then(async buffer => {
-          const buf = isGzip(buffer as Buffer) ? await unzip(buffer) : buffer
-          // 512MB  max chrome string length is 512MB
-          if (buf.length > 536_870_888) {
-            throw new Error('Data exceeds maximum string length (512MB)')
-          }
-          return new TextDecoder('utf8', { fatal: true }).decode(buf)
-        })
-        .then(
-          data =>
-            gtf.parseStringSync(data, {
-              parseFeatures: true,
-              parseComments: false,
-              parseDirectives: false,
-              parseSequences: false,
-            }) as FeatureLoc[][],
-        )
-
-        .then(feats =>
-          feats
-            .flat()
-            .map(
-              (f, i) =>
-                new SimpleFeature({
-                  data: featureData(f),
-                  id: `${this.id}-offset-${i}`,
-                }),
-            )
-            .reduce((acc, obj) => {
-              const key = obj.get('refName')
-              if (!acc[key]) {
-                acc[key] = new IntervalTree()
-              }
-              acc[key].insert([obj.get('start'), obj.get('end')], obj)
-              return acc
-            }, {} as Record<string, IntervalTree>),
-        )
-        .catch(e => {
-          this.gtfFeatures = undefined
-          throw e
-        })
+      this.gtfFeatures = this.loadDataP().catch(e => {
+        this.gtfFeatures = undefined
+        throw e
+      })
     }
 
     return this.gtfFeatures
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
-    const gtfFeatures = await this.loadData()
-    return Object.keys(gtfFeatures)
+    const { intervalTree } = await this.loadData()
+    return Object.keys(intervalTree)
   }
 
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       try {
         const { start, end, refName } = query
-        const gtfFeatures = await this.loadData()
-        gtfFeatures[refName]
+        const { intervalTree } = await this.loadData()
+        intervalTree[refName]
           ?.search([start, end])
           .forEach(f => observer.next(f))
         observer.complete()
