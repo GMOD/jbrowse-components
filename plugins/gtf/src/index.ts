@@ -26,7 +26,7 @@ export default class GtfPlugin extends Plugin {
           index?: FileLocation,
           adapterHint?: string,
         ) => {
-          const regexGuess = /\.gtf?$/i
+          const regexGuess = /\.gtf(\.gz)?$/i
           const adapterName = 'GtfAdapter'
           const fileName = getFileName(file)
           if (regexGuess.test(fileName) || adapterHint === adapterName) {
