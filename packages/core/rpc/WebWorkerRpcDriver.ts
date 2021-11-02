@@ -48,11 +48,11 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
 
   WorkerClass: WebpackWorker
 
-  workerBootConfiguration: { plugins: PluginDefinition[] }
+  workerBootConfiguration: { plugins: PluginDefinition[]; userData?: string }
 
   constructor(
     args: WebWorkerRpcDriverConstructorArgs,
-    workerBootConfiguration: { plugins: PluginDefinition[] },
+    workerBootConfiguration: { plugins: PluginDefinition[]; userData?: string },
   ) {
     super(args)
     this.WorkerClass = args.WorkerClass

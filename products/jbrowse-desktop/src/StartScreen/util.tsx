@@ -75,7 +75,12 @@ export async function createPluginManager(
     ...runtimePlugins.map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
-      metadata: { url: definition.url },
+      metadata: {
+        url: definition.url,
+        esmUrl: definition.esmUrl,
+        umdUrl: definition.umdUrl,
+        cjsUrl: definition.cjsUrl,
+      },
     })),
   ])
   pm.createPluggableElements()
