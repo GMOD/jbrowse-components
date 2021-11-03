@@ -139,6 +139,7 @@ const LinearGenomeViewHeader = observer(
       const refNameResults = assembly?.refNames
         ?.filter(refName => refName.includes(query))
         .map(r => new BaseResult({ label: r }))
+        .slice(0, 10)
 
       return dedupe(
         [...(refNameResults || []), ...(textSearchResults || [])],

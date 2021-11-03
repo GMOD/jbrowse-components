@@ -86,6 +86,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     const refNameResults = assembly?.refNames
       ?.filter(refName => refName.includes(query))
       .map(r => new BaseResult({ label: r }))
+      .slice(0, 10)
 
     return [...(refNameResults || []), ...(textSearchResults || [])]
   }
