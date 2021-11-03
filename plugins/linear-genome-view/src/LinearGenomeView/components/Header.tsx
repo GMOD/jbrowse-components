@@ -10,6 +10,7 @@ import {
   alpha,
 } from '@material-ui/core'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 // icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -21,6 +22,7 @@ import { LinearGenomeViewModel, HEADER_BAR_HEIGHT } from '..'
 import RefNameAutocomplete from './RefNameAutocomplete'
 import OverviewScaleBar from './OverviewScaleBar'
 import ZoomControls from './ZoomControls'
+import { dedupe } from './util'
 
 const WIDGET_HEIGHT = 32
 const SPACING = 7
@@ -120,7 +122,7 @@ const LinearGenomeViewHeader = observer(
     const assembly = assemblyManager.get(assemblyName)
     const searchScope = model.searchScope(assemblyName)
 
-    async function fetchResults(query: string) {
+    async function fetchResults(query: string, searchType?: SearchType) {
       if (!textSearchManager) {
         console.warn('No text search manager')
       }
@@ -128,6 +130,7 @@ const LinearGenomeViewHeader = observer(
       const textSearchResults = await textSearchManager?.search(
         {
           queryString: query,
+          searchType,
         },
         searchScope,
         rankSearchResults,
@@ -137,7 +140,10 @@ const LinearGenomeViewHeader = observer(
         ?.filter(refName => refName.includes(query))
         .map(r => new BaseResult({ label: r }))
 
-      return [...(refNameResults || []), ...(textSearchResults || [])]
+      return dedupe(
+        [...(refNameResults || []), ...(textSearchResults || [])],
+        elt => elt.getId(),
+      )
     }
 
     async function handleSelectedRegion(option: BaseResult) {
@@ -148,7 +154,7 @@ const LinearGenomeViewHeader = observer(
         if (assembly?.refNames?.includes(location)) {
           model.navToLocString(location)
         } else {
-          const results = await fetchResults(label)
+          const results = await fetchResults(label, 'exact')
           if (results && results.length > 1) {
             model.setSearchResults(results, label.toLowerCase())
             return

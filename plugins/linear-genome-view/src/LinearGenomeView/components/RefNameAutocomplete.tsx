@@ -17,6 +17,8 @@ import {
   PopperProps,
   Typography,
 } from '@material-ui/core'
+
+// icons
 import SearchIcon from '@material-ui/icons/Search'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 
@@ -116,7 +118,11 @@ function RefNameAutocomplete({
         setLoaded(false)
         const results = await fetchResults(debouncedSearch)
         if (active) {
-          setSearchOptions(dedupe(results).map(result => ({ result })))
+          setSearchOptions(
+            dedupe(results, r => r.getDisplayString()).map(result => ({
+              result,
+            })),
+          )
           setLoaded(true)
         }
       } catch (e) {
