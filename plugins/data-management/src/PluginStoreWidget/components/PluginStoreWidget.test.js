@@ -85,7 +85,8 @@ describe('<PluginStoreWidget />', () => {
     expect(getSnapshot(getParent(session)).jbrowse.plugins).toEqual([
       {
         name: 'MsaView',
-        umdUrl: 'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.esm.js',
+        umdUrl:
+          'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.esm.js',
       },
     ])
   })
