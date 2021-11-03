@@ -88,12 +88,8 @@ const Polygon = observer(
     const theme = useTheme()
     const classes = useStyles()
     const multiplier = Number(useOffset)
-    const {
-      interRegionPaddingWidth,
-      offsetPx,
-      dynamicBlocks,
-      cytobandOffset,
-    } = model
+    const { interRegionPaddingWidth, offsetPx, dynamicBlocks, cytobandOffset } =
+      model
     const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
     const { tertiary, primary } = theme.palette
     const polygonColor = tertiary ? tertiary.light : primary.light
@@ -215,8 +211,6 @@ const Cytobands = observer(
           type,
         ]
       })
-
-    console.log({ cytobands })
 
     let firstCent = true
     return cytobands ? (

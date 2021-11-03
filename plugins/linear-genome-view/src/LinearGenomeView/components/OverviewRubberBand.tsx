@@ -176,7 +176,7 @@ function OverviewRubberBand({
       }
     }
     return () => {}
-  }, [mouseDragging, currentX, startX, model, overview])
+  }, [mouseDragging, currentX, startX, model, overview, cytobandOffset])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
