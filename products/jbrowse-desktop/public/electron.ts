@@ -5,8 +5,11 @@ import fs from 'fs'
 import path from 'path'
 import url from 'url'
 import windowStateKeeper from 'electron-window-state'
-import { autoUpdater } from 'electron-updater'
 import fetch from 'node-fetch'
+import { getFileStream } from './generateFastaIndex'
+import { generateFastaIndex } from '@gmod/faidx'
+
+import { autoUpdater } from 'electron-updater'
 
 const { unlink, readFile, copyFile, readdir, writeFile } = fs.promises
 
@@ -50,6 +53,7 @@ const userData = app.getPath('userData')
 const recentSessionsPath = path.join(userData, 'recent_sessions.json')
 const quickstartDir = path.join(userData, 'quickstart')
 const thumbnailDir = path.join(userData, 'thumbnails')
+const faiDir = path.join(userData, 'fai')
 const autosaveDir = path.join(userData, 'autosaved')
 const jbrowseDocDir = path.join(app.getPath('documents'), 'JBrowse')
 const defaultSavePath = path.join(jbrowseDocDir, 'untitled.jbrowse')
@@ -71,12 +75,20 @@ function getAutosavePath(sessionName: string, ext = 'json') {
   return path.join(autosaveDir, `${encodeURIComponent(sessionName)}.${ext}`)
 }
 
+function getFaiPath(name: string) {
+  return path.join(faiDir, `${encodeURIComponent(name)}.fai`)
+}
+
 if (!fs.existsSync(recentSessionsPath)) {
   fs.writeFileSync(recentSessionsPath, stringify([]), 'utf8')
 }
 
 if (!fs.existsSync(quickstartDir)) {
   fs.mkdirSync(quickstartDir, { recursive: true })
+}
+
+if (!fs.existsSync(faiDir)) {
+  fs.mkdirSync(faiDir, { recursive: true })
 }
 
 if (!fs.existsSync(thumbnailDir)) {
@@ -101,23 +113,29 @@ interface SessionSnap {
 
 let mainWindow: electron.BrowserWindow | null
 
-async function createWindow() {
-  const response = await fetch('https://jbrowse.org/genomes/sessions.json')
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status} ${response.statusText}`)
-  }
-  const data = await response.json()
-  Object.entries(data).forEach(([key, value]) => {
-    // if there is not a 'gravestone' (.deleted file), then repopulate it on
-    // startup, this allows the user to delete even defaults if they want to
-    if (!fs.existsSync(getQuickstartPath(key) + '.deleted')) {
-      fs.writeFileSync(
-        getQuickstartPath(key),
-        JSON.stringify(value, null, 2),
-        'utf8',
-      )
+async function updatePreconfiguredSessions() {
+  try {
+    const response = await fetch('https://jbrowse.org/genomes/sessions.json')
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} ${response.statusText}`)
     }
-  })
+    const data = await response.json()
+    Object.entries(data).forEach(([key, value]) => {
+      // if there is not a 'gravestone' (.deleted file), then repopulate it on
+      // startup, this allows the user to delete even defaults if they want to
+      if (!fs.existsSync(getQuickstartPath(key) + '.deleted')) {
+        fs.writeFileSync(getQuickstartPath(key), JSON.stringify(value, null, 2))
+      }
+    })
+  } catch (e) {
+    // just console.error
+    console.error('Failed to fetch sessions.json', e)
+  }
+}
+
+async function createWindow() {
+  // no need to await, just update in background
+  updatePreconfiguredSessions()
 
   const mainWindowState = windowStateKeeper({
     defaultWidth: 1400,
@@ -294,6 +312,18 @@ app.on('activate', () => {
 ipcMain.handle('quit', () => {
   app.quit()
 })
+
+ipcMain.handle(
+  'indexFasta',
+  async (event: unknown, location: { uri: string } | { localPath: string }) => {
+    const filename = 'localPath' in location ? location.localPath : location.uri
+    const faiPath = getFaiPath(path.basename(filename) + Date.now() + '.fai')
+    const stream = await getFileStream(location)
+    const write = fs.createWriteStream(faiPath)
+    await generateFastaIndex(write, stream)
+    return faiPath
+  },
+)
 
 ipcMain.handle(
   'listSessions',

@@ -18,9 +18,9 @@
     "check-format": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "pretest-ci": "cd products/jbrowse-react-linear-genome-view;yarn build;cd ../../",
-    "test-ci": "jest --ci --coverage && jest --testMatch '**/*testmod.js'",
+    "test-ci": "cross-env NODE_OPTIONS='--max-old-space-size=7000' jest --ci --coverage && jest --testMatch '**/*testmod.js'",
     "built-test-ci": "jest --ci integration.test.js",
-    "test": "DEBUG_PRINT_LIMIT=0 jest"
+    "test": "jest"
   },
   "husky": {
     "hooks": {
@@ -75,6 +75,7 @@
     "@types/object.fromentries": "^2.0.0",
     "@types/pako": "^1.0.1",
     "@types/pluralize": "^0.0.29",
+    "@types/pump": "^1.1.1",
     "@types/range-parser": "^1.2.3",
     "@types/rbush": "^3.0.0",
     "@types/react": "^17.0.0",
@@ -84,6 +85,7 @@
     "@types/react-virtualized-auto-sizer": "^1.0.0",
     "@types/set-value": "^2.0.0",
     "@types/shortid": "^0.0.29",
+    "@types/split2": "^3.2.1",
     "@types/string-template": "^1.0.2",
     "@types/tmp": "^0.2.1",
     "@types/unzipper": "^0.10.3",

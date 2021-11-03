@@ -9,14 +9,12 @@ import {
 } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 
-import assemblyManagerFactory, {
-  assemblyConfigSchemas as AssemblyConfigSchemasFactory,
-} from '@jbrowse/core/assemblyManager'
+import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
+import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { ipcRenderer } from 'electron'
 
@@ -49,26 +47,16 @@ interface Menu {
 }
 
 export default function rootModelFactory(pluginManager: PluginManager) {
-  const { assemblyConfigSchemas, dispatcher } =
-    AssemblyConfigSchemasFactory(pluginManager)
-  const assemblyConfigSchemasType = types.union(
-    { dispatcher },
-    ...assemblyConfigSchemas,
-  )
-  const Session = sessionModelFactory(pluginManager, assemblyConfigSchemasType)
-  const assemblyManagerType = assemblyManagerFactory(
-    assemblyConfigSchemasType,
-    pluginManager,
-  )
+  const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
+  const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
   return types
     .model('Root', {
-      jbrowse: JBrowseDesktop(
-        pluginManager,
-        Session,
-        assemblyConfigSchemasType as AnyConfigurationSchemaType,
-      ),
+      jbrowse: JBrowseDesktop(pluginManager, Session, assemblyConfigSchema),
       session: types.maybe(Session),
-      assemblyManager: assemblyManagerType,
+      assemblyManager: assemblyManagerFactory(
+        assemblyConfigSchema,
+        pluginManager,
+      ),
       savedSessionNames: types.maybe(types.array(types.string)),
       version: types.maybe(types.string),
       internetAccounts: types.array(

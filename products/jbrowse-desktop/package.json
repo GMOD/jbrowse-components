@@ -40,6 +40,7 @@
     "build-electron-only-unpacked:linux": "electron-builder build -l --dir"
   },
   "dependencies": {
+    "@gmod/faidx": "^1.0.1",
     "@jbrowse/core": "^1.5.0",
     "@jbrowse/plugin-alignments": "^1.5.0",
     "@jbrowse/plugin-authentication": "^1.5.0",
@@ -51,6 +52,7 @@
     "@jbrowse/plugin-dotplot-view": "^1.5.0",
     "@jbrowse/plugin-gff3": "^1.5.0",
     "@jbrowse/plugin-grid-bookmark": "^1.5.0",
+    "@jbrowse/plugin-gtf": "^1.5.0",
     "@jbrowse/plugin-hic": "^1.5.0",
     "@jbrowse/plugin-legacy-jbrowse": "^1.5.0",
     "@jbrowse/plugin-linear-comparative-view": "^1.5.0",
@@ -76,6 +78,7 @@
     "electron-is-dev": "^1.1.0",
     "electron-updater": "^4.3.9",
     "electron-window-state": "^5.0.3",
+    "follow-redirects": "^1.14.1",
     "fontsource-roboto": "3.0.3",
     "json-stable-stringify": "^1.0.1",
     "librpc-web-mod": "^1.1.2",
@@ -84,12 +87,14 @@
     "mobx-state-tree": "3.14.1",
     "node-fetch": "^2.6.0",
     "prop-types": "^15.7.2",
+    "pump": "^3.0.0",
     "raf": "^3.4.1",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
     "react-error-boundary": "^3.0.0",
     "react-sizeme": "^2.6.7",
     "rxjs": "^6.5.2",
+    "split2": "^4.1.0",
     "timeago.js": "^4.0.2",
     "use-query-params": "1.1.3"
   },

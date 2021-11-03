@@ -4,7 +4,6 @@ import { Readable } from 'stream'
 import { ixIxxStream } from 'ixixx'
 import { flags } from '@oclif/command'
 import { indexGff3 } from '../types/gff3Adapter'
-import { indexGtf } from '../types/gtfAdapter'
 import { indexVcf } from '../types/vcfAdapter'
 import JBrowseCommand, { Track, Config, TrixTextSearchAdapter } from '../base'
 import {
@@ -377,11 +376,11 @@ export default class TextIndex extends JBrowseCommand {
 
       if (type === 'Gff3TabixAdapter') {
         yield* indexGff3(config, attrs, outLocation, types, quiet)
-      } else if (type === 'GtfTabixAdapter') {
-        yield* indexGtf(config, attrs, outLocation, types, quiet)
       } else if (type === 'VcfTabixAdapter') {
         yield* indexVcf(config, attrs, outLocation, types, quiet)
       }
+
+      // gtf unused currently
     }
   }
 

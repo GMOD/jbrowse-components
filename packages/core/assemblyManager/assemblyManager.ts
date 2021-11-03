@@ -3,9 +3,9 @@ import {
   addDisposer,
   cast,
   getParent,
-  IAnyType,
-  Instance,
   types,
+  Instance,
+  IAnyType,
 } from 'mobx-state-tree'
 import { when } from '../util'
 import { readConfObject } from '../configuration'

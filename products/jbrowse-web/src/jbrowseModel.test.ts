@@ -1,11 +1,10 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { getSnapshot, types } from 'mobx-state-tree'
-import AssemblyConfigSchemasFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchemas'
+import { getSnapshot } from 'mobx-state-tree'
+import assemblyConfigSchemasFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import configSnapshot from '../test_data/volvox/config.json'
 import corePlugins from './corePlugins'
 import jbrowseModelFactory from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
-import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 
 type JBrowseModelType = ReturnType<typeof jbrowseModelFactory>
 
@@ -16,20 +15,12 @@ describe('JBrowse model', () => {
       .createPluggableElements()
       .configure()
 
-    const { assemblyConfigSchemas, dispatcher } =
-      AssemblyConfigSchemasFactory(pluginManager)
-    const assemblyConfigSchemasType = types.union(
-      { dispatcher },
-      ...assemblyConfigSchemas,
-    )
-    const Session = sessionModelFactory(
-      pluginManager,
-      assemblyConfigSchemasType,
-    )
+    const assemblyConfigSchema = assemblyConfigSchemasFactory(pluginManager)
+    const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
     JBrowseModel = jbrowseModelFactory(
       pluginManager,
       Session,
-      assemblyConfigSchemasType as AnyConfigurationSchemaType,
+      assemblyConfigSchema,
     )
   })
 
