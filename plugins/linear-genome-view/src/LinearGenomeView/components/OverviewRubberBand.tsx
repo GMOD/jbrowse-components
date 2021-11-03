@@ -67,11 +67,10 @@ const HoverTooltip = observer(
     overview: Base1DViewModel
   }) => {
     const classes = useStyles()
-    const { showCytobands } = model
+    const { cytobandOffset } = model
     const { assemblyManager } = getSession(model)
 
-    const offset = showCytobands ? 30 : 0
-    const px = overview.pxToBp(guideX - offset)
+    const px = overview.pxToBp(guideX - cytobandOffset)
     const assembly = assemblyManager.get(px.assemblyName)
     const cytoband = assembly?.cytobands?.find(
       f =>
@@ -107,7 +106,7 @@ function OverviewRubberBand({
   overview: Base1DViewModel
   ControlComponent?: React.ReactElement
 }) {
-  const { showCytobands } = model
+  const { cytobandOffset } = model
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
   const [guideX, setGuideX] = useState<number>()
@@ -115,7 +114,6 @@ function OverviewRubberBand({
   const rubberBandRef = useRef(null)
   const classes = useStyles()
   const mouseDragging = startX !== undefined
-  const offset = showCytobands ? 30 : 0
 
   useEffect(() => {
     function globalMouseMove(event: MouseEvent) {
@@ -134,8 +132,8 @@ function OverviewRubberBand({
       ) {
         if (Math.abs(currentX - startX) > 3) {
           model.zoomToDisplayedRegions(
-            overview.pxToBp(startX - offset),
-            overview.pxToBp(currentX - offset),
+            overview.pxToBp(startX - cytobandOffset),
+            overview.pxToBp(currentX - cytobandOffset),
           )
         }
       }
@@ -237,8 +235,8 @@ function OverviewRubberBand({
   let leftBpOffset
   let rightBpOffset
   if (startX) {
-    leftBpOffset = overview.pxToBp(startX - offset)
-    rightBpOffset = overview.pxToBp(startX + width - offset)
+    leftBpOffset = overview.pxToBp(startX - cytobandOffset)
+    rightBpOffset = overview.pxToBp(startX + width - cytobandOffset)
     if (currentX && currentX < startX) {
       ;[leftBpOffset, rightBpOffset] = [rightBpOffset, leftBpOffset]
     }

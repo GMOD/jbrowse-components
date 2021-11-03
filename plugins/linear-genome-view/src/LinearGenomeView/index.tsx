@@ -557,8 +557,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         initialSnapshot = {},
         displayInitialSnapshot = {},
       ) {
-        const trackConfigSchema =
-          pluginManager.pluggableConfigSchemaType('track')
+        const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
+          'track',
+        )
         const configuration = resolveIdentifier(
           trackConfigSchema,
           getRoot(self),
@@ -607,8 +608,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       hideTrack(trackId: string) {
-        const trackConfigSchema =
-          pluginManager.pluggableConfigSchemaType('track')
+        const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
+          'track',
+        )
         const configuration = resolveIdentifier(
           trackConfigSchema,
           getRoot(self),
@@ -1233,6 +1235,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return assemblyNames.some(
           asm => assemblyManager.get(asm)?.cytobands?.length,
         )
+      },
+
+      get cytobandOffset() {
+        return this.showCytobands
+          ? self.displayedRegions[0].refName.length * 15 + 15
+          : 0
       },
     }))
     .views(self => {

@@ -19,7 +19,6 @@ import { chooseGridPitch } from '../util'
 import OverviewRubberBand from './OverviewRubberBand'
 
 const wholeSeqSpacer = 2
-const offset = 30
 
 const useStyles = makeStyles(theme => {
   return {
@@ -88,10 +87,10 @@ const Polygon = observer(
     const theme = useTheme()
     const classes = useStyles()
     const {
-      showCytobands,
       interRegionPaddingWidth,
       offsetPx,
       dynamicBlocks,
+      cytobandOffset,
     } = model
     const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
     const { tertiary, primary } = theme.palette
@@ -106,12 +105,12 @@ const Polygon = observer(
       (overview.bpToPx({
         ...first,
         coord: first.reversed ? first.end : first.start,
-      }) || 0) + (showCytobands ? offset : 0)
+      }) || 0) + cytobandOffset
     const topRight =
       (overview.bpToPx({
         ...last,
         coord: last.reversed ? last.start : last.end,
-      }) || 0) + (showCytobands ? offset : 0)
+      }) || 0) + cytobandOffset
 
     const startPx = Math.max(0, -offsetPx)
     const endPx =
@@ -305,7 +304,7 @@ const OverviewBox = observer(
     overview: Base1DViewModel
   }) => {
     const classes = useStyles()
-    const { showCytobands } = model
+    const { cytobandOffset, showCytobands } = model
     const { start, end, reversed, refName, assemblyName } = block
     const { majorPitch } = chooseGridPitch(scale, 120, 15)
     const { assemblyManager } = getSession(model)
@@ -338,7 +337,7 @@ const OverviewBox = observer(
             !showCytobands ? classes.scaleBarBorder : undefined,
           )}
           style={{
-            left: block.offsetPx + (showCytobands ? offset : 0),
+            left: block.offsetPx + cytobandOffset,
             width: block.widthPx,
             borderColor: refNameColor,
           }}
@@ -387,7 +386,7 @@ const ScaleBar = observer(
   }) => {
     const classes = useStyles()
     const theme = useTheme()
-    const { dynamicBlocks, showCytobands } = model
+    const { dynamicBlocks, showCytobands, cytobandOffset } = model
     const visibleRegions = dynamicBlocks.contentBlocks
     const overviewVisibleRegions = overview.dynamicBlocks
     const { tertiary, primary } = theme.palette
@@ -416,7 +415,7 @@ const ScaleBar = observer(
           className={classes.scaleBarVisibleRegion}
           style={{
             width: lastOverviewPx - firstOverviewPx,
-            left: firstOverviewPx + (showCytobands ? offset : 0),
+            left: firstOverviewPx + cytobandOffset,
             background: showCytobands ? undefined : alpha(scaleBarColor, 0.3),
           }}
         />
@@ -457,7 +456,7 @@ function OverviewScaleBar({
   children: React.ReactNode
 }) {
   const classes = useStyles()
-  const { totalBp, width, showCytobands, displayedRegions } = model
+  const { totalBp, width, cytobandOffset, displayedRegions } = model
 
   const overview = Base1DView.create({
     displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
@@ -465,7 +464,7 @@ function OverviewScaleBar({
     minimumBlockWidth: model.minimumBlockWidth,
   })
 
-  let modWidth = width - (showCytobands ? offset : 0)
+  const modWidth = width - cytobandOffset
   overview.setVolatileWidth(modWidth)
   overview.showAllRegions()
 
