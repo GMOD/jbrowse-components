@@ -23,9 +23,7 @@ const wholeSeqSpacer = 2
 const useStyles = makeStyles(theme => {
   return {
     scaleBar: {
-      width: '100%',
       height: HEADER_OVERVIEW_HEIGHT,
-      overflow: 'hidden',
     },
     scaleBarBorder: {
       border: '1px solid',
@@ -48,9 +46,7 @@ const useStyles = makeStyles(theme => {
     scaleBarRefName: {
       position: 'absolute',
       fontWeight: 'bold',
-      lineHeight: 'normal',
       pointerEvents: 'none',
-      left: 5,
       zIndex: 100,
     },
     scaleBarLabel: {
@@ -73,6 +69,7 @@ const useStyles = makeStyles(theme => {
       position: 'relative',
     },
     overviewSvg: {
+      width: '100%',
       position: 'absolute',
     },
   }
@@ -82,13 +79,17 @@ const Polygon = observer(
   ({
     model,
     overview,
+    useOffset = true,
   }: {
     model: LGV
     overview: Instance<Base1DViewModel>
+    useOffset?: boolean
   }) => {
     const theme = useTheme()
     const classes = useStyles()
-    const { interRegionPaddingWidth, offsetPx, dynamicBlocks } = model
+    const multiplier = Number(useOffset)
+    const { interRegionPaddingWidth, offsetPx, dynamicBlocks, cytobandOffset } =
+      model
     const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
     const { tertiary, primary } = theme.palette
     const polygonColor = tertiary ? tertiary.light : primary.light
@@ -98,14 +99,18 @@ const Polygon = observer(
     }
     const first = contentBlocks[0]
     const last = contentBlocks[contentBlocks.length - 1]
-    const topLeft = overview.bpToPx({
-      ...first,
-      coord: first.reversed ? first.end : first.start,
-    })
-    const topRight = overview.bpToPx({
-      ...last,
-      coord: last.reversed ? last.start : last.end,
-    })
+    const topLeft =
+      (overview.bpToPx({
+        ...first,
+        coord: first.reversed ? first.end : first.start,
+      }) || 0) +
+      cytobandOffset * multiplier
+    const topRight =
+      (overview.bpToPx({
+        ...last,
+        coord: last.reversed ? last.start : last.end,
+      }) || 0) +
+      cytobandOffset * multiplier
 
     const startPx = Math.max(0, -offsetPx)
     const endPx =
@@ -163,13 +168,13 @@ function leftRoundedRect(x:number, y:number, width:number, height:number, radius
 }
 
 const colorMap: { [key: string]: string | undefined } = {
-  gneg: '#ccc',
-  gpos25: '#aaa',
-  gpos50: '#888',
-  gpos100: '#333',
-  gpos75: '#666',
-  gvar: 'black',
-  stalk: 'brown',
+  gneg: 'rgb(227,227,227)',
+  gpos25: 'rgb(142,142,142)',
+  gpos50: 'rgb(85,85,85)',
+  gpos100: 'rgb(0,0,0)',
+  gpos75: 'rgb(57,57,57)',
+  gvar: 'rgb(0,0,0)',
+  stalk: 'rgb(127,127,127)',
   acen: '#800',
 }
 
@@ -299,7 +304,7 @@ const OverviewBox = observer(
     overview: Base1DViewModel
   }) => {
     const classes = useStyles()
-    const { showCytobands } = model
+    const { cytobandOffset, showCytobands } = model
     const { start, end, reversed, refName, assemblyName } = block
     const { majorPitch } = chooseGridPitch(scale, 120, 15)
     const { assemblyManager } = getSession(model)
@@ -312,55 +317,61 @@ const OverviewBox = observer(
       tickLabels.push(reversed ? end - offsetLabel : start + offsetLabel)
     }
 
-    const shouldShowCytobands = assembly?.cytobands?.length && showCytobands
-
     return (
-      <div
-        className={clsx(
-          classes.scaleBarContig,
-          shouldShowCytobands
-            ? undefined
-            : reversed
-            ? classes.scaleBarContigReverse
-            : classes.scaleBarContigForward,
-          !shouldShowCytobands ? classes.scaleBarBorder : undefined,
-        )}
-        style={{
-          left: block.offsetPx,
-          width: block.widthPx,
-          borderColor: refNameColor,
-        }}
-      >
+      <div>
         {/* name of sequence */}
         <Typography
-          style={{ color: refNameColor }}
+          style={{
+            left: block.offsetPx + 3,
+            color: showCytobands ? 'black' : refNameColor,
+          }}
           className={classes.scaleBarRefName}
         >
           {refName}
         </Typography>
+        <div
+          className={clsx(
+            classes.scaleBarContig,
+            showCytobands
+              ? undefined
+              : reversed
+              ? classes.scaleBarContigReverse
+              : classes.scaleBarContigForward,
+            !showCytobands ? classes.scaleBarBorder : undefined,
+          )}
+          style={{
+            left: block.offsetPx + cytobandOffset,
+            width: block.widthPx,
+            borderColor: refNameColor,
+          }}
+        >
+          {!showCytobands
+            ? tickLabels.map((tickLabel, labelIdx) => (
+                <Typography
+                  key={`${JSON.stringify(block)}-${tickLabel}-${labelIdx}`}
+                  className={classes.scaleBarLabel}
+                  variant="body2"
+                  style={{
+                    left: ((labelIdx + 1) * majorPitch) / scale,
+                    pointerEvents: 'none',
+                    color: refNameColor,
+                  }}
+                >
+                  {tickLabel.toLocaleString('en-US')}
+                </Typography>
+              ))
+            : null}
 
-        {!shouldShowCytobands
-          ? tickLabels.map((tickLabel, labelIdx) => (
-              <Typography
-                key={`${JSON.stringify(block)}-${tickLabel}-${labelIdx}`}
-                className={classes.scaleBarLabel}
-                variant="body2"
-                style={{
-                  left: ((labelIdx + 1) * majorPitch) / scale,
-                  pointerEvents: 'none',
-                  color: refNameColor,
-                }}
-              >
-                {tickLabel.toLocaleString('en-US')}
-              </Typography>
-            ))
-          : null}
-
-        {shouldShowCytobands ? (
-          <svg style={{ width: '100%' }}>
-            <Cytobands overview={overview} assembly={assembly} block={block} />
-          </svg>
-        ) : null}
+          {showCytobands ? (
+            <svg style={{ width: '100%' }}>
+              <Cytobands
+                overview={overview}
+                assembly={assembly}
+                block={block}
+              />
+            </svg>
+          ) : null}
+        </div>
       </div>
     )
   },
@@ -378,7 +389,7 @@ const ScaleBar = observer(
   }) => {
     const classes = useStyles()
     const theme = useTheme()
-    const { dynamicBlocks, showCytobands } = model
+    const { dynamicBlocks, showCytobands, cytobandOffset } = model
     const visibleRegions = dynamicBlocks.contentBlocks
     const overviewVisibleRegions = overview.dynamicBlocks
     const { tertiary, primary } = theme.palette
@@ -407,7 +418,7 @@ const ScaleBar = observer(
           className={classes.scaleBarVisibleRegion}
           style={{
             width: lastOverviewPx - firstOverviewPx,
-            left: firstOverviewPx,
+            left: firstOverviewPx + cytobandOffset,
             background: showCytobands ? undefined : alpha(scaleBarColor, 0.3),
           }}
         />
@@ -448,18 +459,20 @@ function OverviewScaleBar({
   children: React.ReactNode
 }) {
   const classes = useStyles()
-  const { totalBp, width, displayedRegions } = model
+  const { totalBp, width, cytobandOffset, displayedRegions } = model
 
   const overview = Base1DView.create({
     displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
     interRegionPaddingWidth: 0,
     minimumBlockWidth: model.minimumBlockWidth,
   })
-  overview.setVolatileWidth(width)
+
+  const modWidth = width - cytobandOffset
+  overview.setVolatileWidth(modWidth)
   overview.showAllRegions()
 
   const scale =
-    totalBp / (width - (displayedRegions.length - 1) * wholeSeqSpacer)
+    totalBp / (modWidth - (displayedRegions.length - 1) * wholeSeqSpacer)
 
   return (
     <div>
@@ -471,11 +484,7 @@ function OverviewScaleBar({
         }
       />
       <div className={classes.overview}>
-        <svg
-          height={HEADER_BAR_HEIGHT}
-          width="100%"
-          className={classes.overviewSvg}
-        >
+        <svg height={HEADER_BAR_HEIGHT} className={classes.overviewSvg}>
           <Polygon model={model} overview={overview} />
         </svg>
         {children}

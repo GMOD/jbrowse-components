@@ -101,52 +101,54 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     class="makeStyles-scaleBarContig"
                     style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
                   />
-                  <div
-                    class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward makeStyles-scaleBarBorder"
-                    style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
-                  >
+                  <div>
                     <p
                       class="MuiTypography-root makeStyles-scaleBarRefName MuiTypography-body1"
-                      style="color: rgb(153, 102, 0);"
+                      style="left: 3px; color: rgb(153, 102, 0);"
                     >
                       ctgA
                     </p>
-                    <p
-                      class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
-                      style="left: 133.33333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
+                    <div
+                      class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward makeStyles-scaleBarBorder"
+                      style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
                     >
-                      20
-                    </p>
-                    <p
-                      class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
-                      style="left: 266.6666666666667px; pointer-events: none; color: rgb(153, 102, 0);"
-                    >
-                      40
-                    </p>
-                    <p
-                      class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
-                      style="left: 400px; pointer-events: none; color: rgb(153, 102, 0);"
-                    >
-                      60
-                    </p>
-                    <p
-                      class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
-                      style="left: 533.3333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
-                    >
-                      80
-                    </p>
-                    <p
-                      class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
-                      style="left: 666.6666666666667px; pointer-events: none; color: rgb(153, 102, 0);"
-                    >
-                      100
-                    </p>
-                    <p
-                      class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
-                      style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
-                    >
-                      120
-                    </p>
+                      <p
+                        class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
+                        style="left: 133.33333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
+                      >
+                        20
+                      </p>
+                      <p
+                        class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
+                        style="left: 266.6666666666667px; pointer-events: none; color: rgb(153, 102, 0);"
+                      >
+                        40
+                      </p>
+                      <p
+                        class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
+                        style="left: 400px; pointer-events: none; color: rgb(153, 102, 0);"
+                      >
+                        60
+                      </p>
+                      <p
+                        class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
+                        style="left: 533.3333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
+                      >
+                        80
+                      </p>
+                      <p
+                        class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
+                        style="left: 666.6666666666667px; pointer-events: none; color: rgb(153, 102, 0);"
+                      >
+                        100
+                      </p>
+                      <p
+                        class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
+                        style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
+                      >
+                        120
+                      </p>
+                    </div>
                   </div>
                   <div
                     class="makeStyles-scaleBarContig"
@@ -161,7 +163,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
               <svg
                 class="makeStyles-overviewSvg"
                 height="48"
-                width="100%"
               >
                 <svg
                   class="makeStyles-overviewSvg"

@@ -1234,6 +1234,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
           asm => assemblyManager.get(asm)?.cytobands?.length,
         )
       },
+
+      get cytobandOffset() {
+        return this.showCytobands
+          ? self.displayedRegions[0].refName.length * 15 + 15
+          : 0
+      },
     }))
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
