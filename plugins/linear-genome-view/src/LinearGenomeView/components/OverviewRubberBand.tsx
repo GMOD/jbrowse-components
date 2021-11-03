@@ -67,8 +67,11 @@ const HoverTooltip = observer(
     overview: Base1DViewModel
   }) => {
     const classes = useStyles()
+    const { showCytobands } = model
     const { assemblyManager } = getSession(model)
-    const px = overview.pxToBp(guideX)
+
+    const offset = showCytobands ? 30 : 0
+    const px = overview.pxToBp(guideX - offset)
     const assembly = assemblyManager.get(px.assemblyName)
     const cytoband = assembly?.cytobands?.find(
       f =>
@@ -104,6 +107,7 @@ function OverviewRubberBand({
   overview: Base1DViewModel
   ControlComponent?: React.ReactElement
 }) {
+  const { showCytobands } = model
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
   const [guideX, setGuideX] = useState<number>()
@@ -111,12 +115,13 @@ function OverviewRubberBand({
   const rubberBandRef = useRef(null)
   const classes = useStyles()
   const mouseDragging = startX !== undefined
+  const offset = showCytobands ? 30 : 0
 
   useEffect(() => {
     function globalMouseMove(event: MouseEvent) {
-      if (controlsRef.current && mouseDragging) {
-        const relativeX =
-          event.clientX - controlsRef.current.getBoundingClientRect().left
+      const ref = controlsRef.current
+      if (ref && mouseDragging) {
+        const relativeX = event.clientX - ref.getBoundingClientRect().left
         setCurrentX(relativeX)
       }
     }
@@ -129,8 +134,8 @@ function OverviewRubberBand({
       ) {
         if (Math.abs(currentX - startX) > 3) {
           model.zoomToDisplayedRegions(
-            overview.pxToBp(startX),
-            overview.pxToBp(currentX),
+            overview.pxToBp(startX - offset),
+            overview.pxToBp(currentX - offset),
           )
         }
       }
@@ -232,8 +237,8 @@ function OverviewRubberBand({
   let leftBpOffset
   let rightBpOffset
   if (startX) {
-    leftBpOffset = overview.pxToBp(startX)
-    rightBpOffset = overview.pxToBp(startX + width)
+    leftBpOffset = overview.pxToBp(startX - offset)
+    rightBpOffset = overview.pxToBp(startX + width - offset)
     if (currentX && currentX < startX) {
       ;[leftBpOffset, rightBpOffset] = [rightBpOffset, leftBpOffset]
     }
