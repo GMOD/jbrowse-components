@@ -80,12 +80,15 @@ const Polygon = observer(
   ({
     model,
     overview,
+    useOffset = true,
   }: {
     model: LGV
     overview: Instance<Base1DViewModel>
+    useOffset?: boolean
   }) => {
     const theme = useTheme()
     const classes = useStyles()
+    const multiplier = Number(useOffset)
     const {
       interRegionPaddingWidth,
       offsetPx,
@@ -105,12 +108,14 @@ const Polygon = observer(
       (overview.bpToPx({
         ...first,
         coord: first.reversed ? first.end : first.start,
-      }) || 0) + cytobandOffset
+      }) || 0) +
+      cytobandOffset * multiplier
     const topRight =
       (overview.bpToPx({
         ...last,
         coord: last.reversed ? last.start : last.end,
-      }) || 0) + cytobandOffset
+      }) || 0) +
+      cytobandOffset * multiplier
 
     const startPx = Math.max(0, -offsetPx)
     const endPx =

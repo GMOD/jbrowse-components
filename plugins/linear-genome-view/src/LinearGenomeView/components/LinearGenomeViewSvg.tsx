@@ -184,7 +184,7 @@ const SVGHeader = ({ model }: { model: LGV }) => {
             y={1}
           />
           <g transform={`translate(0,${HEADER_OVERVIEW_HEIGHT})`}>
-            <Polygon overview={overview} model={model} />
+            <Polygon overview={overview} model={model} useOffset={false} />
           </g>
         </g>
       ) : null}
