@@ -1714,6 +1714,18 @@
     md5 "^2.2.1"
     quick-lru "^2.0.0"
 
+"@gmod/faidx@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@gmod/faidx/-/faidx-1.0.1.tgz#49b776a9b56cdc494ad4a7f7350fc34bd934af2e"
+  integrity sha512-KbvGCiOry5ZyuOQcwDGRBPbc5h1PgBvjfEjOdT7dEFcYzkpsgvb4sm0gxQYZBUOHTjbQSvD+S2V0zTMhPXuYWg==
+  dependencies:
+    "@babel/runtime" "^7.12.5"
+    "@gmod/bgzf-filehandle" "^1.2.4"
+    es6-promisify "^6.0.1"
+    object.fromentries "^2.0.4"
+    pump "^3.0.0"
+    split2 "^4.1.0"
+
 "@gmod/gff@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@gmod/gff/-/gff-1.1.2.tgz#b436b8e322bb1364384db46e7d26ea2efbece7db"
