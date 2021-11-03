@@ -21,7 +21,6 @@ import { LinearGenomeViewModel, HEADER_BAR_HEIGHT } from '..'
 import RefNameAutocomplete from './RefNameAutocomplete'
 import OverviewScaleBar from './OverviewScaleBar'
 import ZoomControls from './ZoomControls'
-import { dedupe } from './util'
 
 const WIDGET_HEIGHT = 32
 const SPACING = 7
@@ -129,7 +128,6 @@ const LinearGenomeViewHeader = observer(
       const textSearchResults = await textSearchManager?.search(
         {
           queryString: query,
-          searchType: 'exact',
         },
         searchScope,
         rankSearchResults,
