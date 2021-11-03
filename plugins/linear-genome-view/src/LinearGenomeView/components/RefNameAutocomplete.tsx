@@ -22,6 +22,7 @@ import Autocomplete from '@material-ui/lab/Autocomplete'
 
 // locals
 import { LinearGenomeViewModel } from '..'
+import { dedupe } from './util'
 
 export interface Option {
   group?: string
@@ -33,24 +34,28 @@ async function fetchResults(
   query: string,
   assemblyName: string,
 ) {
-  const { textSearchManager } = getSession(self)
+  const { assemblyManager, textSearchManager } = getSession(self)
   const { rankSearchResults } = self
+  const assembly = assemblyManager.get(assemblyName)
   const searchScope = self.searchScope(assemblyName)
-  return textSearchManager
-    ?.search(
+
+  const refNameResults =
+    assembly?.refNames
+      ?.filter(refName => refName.includes(query))
+      .map(label => new BaseResult({ label })) || []
+
+  const results = dedupe(
+    await textSearchManager?.search(
       {
         queryString: query,
         searchType: 'prefix',
       },
       searchScope,
       rankSearchResults,
-    )
-    .then(results =>
-      results.filter(
-        (elem, index, self) =>
-          index === self.findIndex(t => t.label === elem.label),
-      ),
-    )
+    ),
+  )
+
+  return [...refNameResults, ...results]
 }
 
 // the logic of this method is to only apply a filter to RefSequenceResults

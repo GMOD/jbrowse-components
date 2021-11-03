@@ -121,19 +121,27 @@ const LinearGenomeViewHeader = observer(
     const assembly = assemblyManager.get(assemblyName)
     const searchScope = model.searchScope(assemblyName)
 
-    async function fetchResults(queryString: string) {
+    async function fetchResults(query: string) {
       if (!textSearchManager) {
         console.warn('No text search manager')
       }
-      const results = await textSearchManager?.search(
-        {
-          queryString: queryString.toLowerCase(),
-          searchType: 'exact',
-        },
-        searchScope,
-        rankSearchResults,
-      )
-      return dedupe(results)
+
+      console.log('t1', assembly?.refNames)
+      return [
+        ...(
+          assembly?.refNames?.filter(refName => refName.includes(query)) || []
+        ).map(r => new BaseResult({ label: r })),
+        ...dedupe(
+          await textSearchManager?.search(
+            {
+              queryString: query,
+              searchType: 'exact',
+            },
+            searchScope,
+            rankSearchResults,
+          ),
+        ),
+      ]
     }
 
     async function handleSelectedRegion(option: BaseResult) {
