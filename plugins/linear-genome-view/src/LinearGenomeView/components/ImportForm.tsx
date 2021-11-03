@@ -49,7 +49,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   } = model
   const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
   const [error, setError] = useState<typeof modelError | undefined>(modelError)
-  const message = !assemblyNames.length ? 'No configured assemblies' : ''
   const searchScope = model.searchScope(selectedAsm)
 
   const assembly = assemblyManager.get(selectedAsm)
@@ -59,7 +58,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const regions = assembly?.regions || []
   const err = assemblyError || error
 
-  const [myOption, setOption] = useState<BaseResult | undefined>()
+  const [myOption, setOption] = useState<BaseResult>()
 
   // use this instead of useState initializer because the useState initializer
   // won't update in response to an observable
@@ -80,7 +79,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     const textSearchResults = await textSearchManager?.search(
       {
         queryString: query,
-        searchType: 'exact',
       },
       searchScope,
       rankSearchResults,
@@ -163,12 +161,11 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                   <Typography color="error">X</Typography>
                 ) : selectedRegion && model.volatileWidth ? (
                   <RefNameAutocomplete
+                    fetchResults={fetchResults}
                     model={model}
-                    assemblyName={message ? undefined : selectedAsm}
+                    assemblyName={assemblyError ? undefined : selectedAsm}
                     value={selectedRegion}
-                    onSelect={option => {
-                      setOption(option)
-                    }}
+                    onSelect={option => setOption(option)}
                     TextFieldProps={{
                       margin: 'normal',
                       variant: 'outlined',
@@ -220,9 +217,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
         <SearchResultsDialog
           model={model}
           optAssemblyName={selectedAsm}
-          handleClose={() => {
-            model.setSearchResults(undefined, undefined)
-          }}
+          handleClose={() => model.setSearchResults(undefined, undefined)}
         />
       ) : null}
     </div>
