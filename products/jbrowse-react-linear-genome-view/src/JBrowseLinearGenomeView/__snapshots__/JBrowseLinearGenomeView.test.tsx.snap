@@ -164,17 +164,11 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 class="makeStyles-overviewSvg"
                 height="48"
               >
-                <svg
-                  class="makeStyles-overviewSvg"
-                  height="48"
-                  width="100%"
-                >
-                  <polygon
-                    fill="rgba(66, 119, 127, 0.3)"
-                    points="0,48,801,48,267,0,0,0"
-                    stroke="rgba(66, 119, 127, 0.8)"
-                  />
-                </svg>
+                <polygon
+                  fill="rgba(66, 119, 127, 0.3)"
+                  points="0,48,801,48,267,0,0,0"
+                  stroke="rgba(66, 119, 127, 0.8)"
+                />
               </svg>
               <div
                 class="makeStyles-headerBar"
