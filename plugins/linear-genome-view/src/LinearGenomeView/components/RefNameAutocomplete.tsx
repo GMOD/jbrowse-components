@@ -29,35 +29,6 @@ export interface Option {
   result: BaseResult
 }
 
-async function fetchResults(
-  self: LinearGenomeViewModel,
-  query: string,
-  assemblyName: string,
-) {
-  const { assemblyManager, textSearchManager } = getSession(self)
-  const { rankSearchResults } = self
-  const assembly = assemblyManager.get(assemblyName)
-  const searchScope = self.searchScope(assemblyName)
-
-  const refNameResults =
-    assembly?.refNames
-      ?.filter(refName => refName.includes(query))
-      .map(label => new BaseResult({ label })) || []
-
-  const results = dedupe(
-    await textSearchManager?.search(
-      {
-        queryString: query,
-        searchType: 'prefix',
-      },
-      searchScope,
-      rankSearchResults,
-    ),
-  )
-
-  return [...refNameResults, ...results]
-}
-
 // the logic of this method is to only apply a filter to RefSequenceResults
 // because they do not have a matchedObject. the trix search results already
 // filter so don't need re-filtering
@@ -95,6 +66,7 @@ function RefNameAutocomplete({
   onSelect,
   assemblyName,
   style,
+  fetchResults,
   value,
   TextFieldProps = {},
 }: {
@@ -102,6 +74,7 @@ function RefNameAutocomplete({
   onSelect: (region: BaseResult) => void
   assemblyName?: string
   value?: string
+  fetchResults: (query: string) => Promise<BaseResult[]>
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
@@ -111,7 +84,7 @@ function RefNameAutocomplete({
   const [loaded, setLoaded] = useState(true)
   const [currentSearch, setCurrentSearch] = useState('')
   const [inputValue, setInputValue] = useState('')
-  const [searchOptions, setSearchOptions] = useState([] as Option[])
+  const [searchOptions, setSearchOptions] = useState<Option[]>()
   const debouncedSearch = useDebounce(currentSearch, 300)
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
@@ -141,11 +114,9 @@ function RefNameAutocomplete({
         }
 
         setLoaded(false)
-        const results = await fetchResults(model, debouncedSearch, assemblyName)
+        const results = await fetchResults(debouncedSearch)
         if (active) {
-          if (results && results.length >= 0) {
-            setSearchOptions(results.map(result => ({ result })))
-          }
+          setSearchOptions(dedupe(results).map(result => ({ result })))
           setLoaded(true)
         }
       } catch (e) {
@@ -159,7 +130,7 @@ function RefNameAutocomplete({
     return () => {
       active = false
     }
-  }, [assemblyName, debouncedSearch, session, model])
+  }, [assemblyName, fetchResults, debouncedSearch, session, model])
 
   const inputBoxVal = coarseVisibleLocStrings || value || ''
 
@@ -192,7 +163,7 @@ function RefNameAutocomplete({
         setLoaded(true)
         if (hasDisplayedRegions) {
           setCurrentSearch('')
-          setSearchOptions([])
+          setSearchOptions(undefined)
         }
       }}
       onChange={(_event, selectedOption) => {
@@ -208,7 +179,7 @@ function RefNameAutocomplete({
         }
         setInputValue(inputBoxVal)
       }}
-      options={searchOptions.length === 0 ? options : searchOptions}
+      options={!searchOptions?.length ? options : searchOptions}
       getOptionDisabled={option => option?.group === 'limitOption'}
       filterOptions={(options, params) => {
         const filtered = filterOptions(

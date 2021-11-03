@@ -72,20 +72,25 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
 
   const selectedRegion = option?.getLocation()
 
-  async function fetchResults(queryString: string) {
+  async function fetchResults(query: string) {
     if (!textSearchManager) {
       console.warn('No text search manager')
     }
-    const results = await textSearchManager?.search(
+
+    const textSearchResults = await textSearchManager?.search(
       {
-        queryString: queryString.toLowerCase(),
+        queryString: query,
         searchType: 'exact',
       },
       searchScope,
       rankSearchResults,
     )
 
-    return dedupe(results)
+    const refNameResults = assembly?.refNames
+      ?.filter(refName => refName.includes(query))
+      .map(r => new BaseResult({ label: r }))
+
+    return [...(refNameResults || []), ...(textSearchResults || [])]
   }
 
   /**

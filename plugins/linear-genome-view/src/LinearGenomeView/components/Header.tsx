@@ -126,22 +126,20 @@ const LinearGenomeViewHeader = observer(
         console.warn('No text search manager')
       }
 
-      console.log('t1', assembly?.refNames)
-      return [
-        ...(
-          assembly?.refNames?.filter(refName => refName.includes(query)) || []
-        ).map(r => new BaseResult({ label: r })),
-        ...dedupe(
-          await textSearchManager?.search(
-            {
-              queryString: query,
-              searchType: 'exact',
-            },
-            searchScope,
-            rankSearchResults,
-          ),
-        ),
-      ]
+      const textSearchResults = await textSearchManager?.search(
+        {
+          queryString: query,
+          searchType: 'exact',
+        },
+        searchScope,
+        rankSearchResults,
+      )
+
+      const refNameResults = assembly?.refNames
+        ?.filter(refName => refName.includes(query))
+        .map(r => new BaseResult({ label: r }))
+
+      return [...(refNameResults || []), ...(textSearchResults || [])]
     }
 
     async function handleSelectedRegion(option: BaseResult) {
@@ -181,6 +179,7 @@ const LinearGenomeViewHeader = observer(
           <RefNameAutocomplete
             onSelect={handleSelectedRegion}
             assemblyName={assemblyName}
+            fetchResults={fetchResults}
             model={model}
             TextFieldProps={{
               variant: 'outlined',
