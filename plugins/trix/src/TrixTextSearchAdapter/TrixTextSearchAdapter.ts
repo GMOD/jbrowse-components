@@ -57,7 +57,7 @@ export default class TrixTextSearchAdapter
    * limit of results to return, searchType...prefix | full | exact", etc.
    */
   async searchIndex(args: BaseArgs) {
-    const results = await this.trixJs.search(args.queryString)
+    const results = await this.trixJs.search(args.queryString.toLowerCase())
     const formatted = results.map(entry => {
       const [term, data] = entry.split(',')
       const result = JSON.parse(data.replace(/\|/g, ',')) as string[]
