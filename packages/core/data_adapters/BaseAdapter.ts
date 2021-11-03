@@ -264,12 +264,10 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     })
   }
 
-  // have a function called getStats that calls estimateGlobalStats
   public async getGlobalStats(
     regionToStart: Region,
     opts?: BaseOptions,
   ): Promise<BaseFeatureStats> {
-    // this would call estimateGlobalStats, others can override with own implementation
     return this.estimateGlobalStats(regionToStart, opts)
   }
 
@@ -278,60 +276,51 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     opts?: BaseOptions,
   ): Promise<BaseFeatureStats> {
     // avoid chunkSizeLimit error
-    // remove the promise eventually
-    return new Promise((resolve, reject) => {
-      const statsFromInterval = async (
-        length: number,
-        expansionTime: number,
-      ) => {
-        const sampleCenter = region.start * 0.75 + region.end * 0.25
-        const start = Math.max(0, Math.round(sampleCenter - length / 2))
-        const end = Math.min(Math.round(sampleCenter + length / 2), region.end)
+    const statsFromInterval = async (length: number, expansionTime: number) => {
+      const sampleCenter = region.start * 0.75 + region.end * 0.25
+      const start = Math.max(0, Math.round(sampleCenter - length / 2))
+      const end = Math.min(Math.round(sampleCenter + length / 2), region.end)
 
-        const feats = this.getFeatures(region, opts)
-        const features = await feats
-          .pipe(
-            filter(
-              (f: Feature) => f.get('start') >= start && f.get('end') <= end,
-            ),
-            toArray(),
-          )
-          .toPromise()
-
-        const featureDensity = features.length / length
-        return maybeRecordStats(
-          length,
-          {
-            featureDensity: featureDensity,
-          },
-          features.length,
-          expansionTime,
+      const feats = this.getFeatures(region, opts)
+      const features = await feats
+        .pipe(
+          filter(
+            (f: Feature) => f.get('start') >= start && f.get('end') <= end,
+          ),
+          toArray(),
         )
-      }
+        .toPromise()
 
-      const maybeRecordStats = (
-        interval: number,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        stats: BaseFeatureStats,
-        statsSampleFeatures: number,
-        expansionTime: number,
-      ) => {
-        const refLen = region.end - region.start
-        if (statsSampleFeatures >= 300 || interval * 2 > refLen) {
-          resolve(stats)
-          return
-        } else if (expansionTime <= 4) {
-          expansionTime++
-          statsFromInterval(interval * 2, expansionTime)
-        } else {
-          console.error('Stats estimation reached timeout')
-          resolve({ featureDensity: 0 })
-          return
-        }
-      }
+      const featureDensity = features.length / length
+      return maybeRecordStats(
+        length,
+        {
+          featureDensity: featureDensity,
+        },
+        features.length,
+        expansionTime,
+      )
+    }
 
-      statsFromInterval(100, 0)
-    })
+    const maybeRecordStats = async (
+      interval: number,
+      stats: BaseFeatureStats,
+      statsSampleFeatures: number,
+      expansionTime: number,
+    ): Promise<BaseFeatureStats> => {
+      const refLen = region.end - region.start
+      if (statsSampleFeatures >= 300 || interval * 2 > refLen) {
+        return stats
+      } else if (expansionTime <= 4) {
+        expansionTime++
+        return statsFromInterval(interval * 2, expansionTime)
+      } else {
+        console.error('Stats estimation reached timeout')
+        return { featureDensity: 0 }
+      }
+    }
+
+    return statsFromInterval(100, 0)
   }
 }
 

@@ -21,7 +21,7 @@ import {
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
-import { autorun } from 'mobx'
+import { autorun, observable } from 'mobx'
 import { addDisposer, Instance, isAlive, types } from 'mobx-state-tree'
 import React from 'react'
 import { Tooltip } from '../components/BaseLinearDisplay'
@@ -64,6 +64,7 @@ export const BaseLinearDisplay = types
     featureIdUnderMouse: undefined as undefined | string,
     contextMenuFeature: undefined as undefined | Feature,
     scrollTop: 0,
+    globalStats: observable({ featureDensity: 0 } as BaseFeatureStats),
   }))
   .views(self => ({
     get blockType(): 'staticBlocks' | 'dynamicBlocks' {
@@ -203,11 +204,6 @@ export const BaseLinearDisplay = types
               return
             }
 
-            // from the view, either grab a hint of what region to use
-            // and pass it to getGlobalStats so it can be put in the params
-            // using the LGV, needs context on what assembly and region we are in
-            // for thsi file, get biggest visible region, else don't estimate global stat
-
             if (view.staticBlocks.contentBlocks[0]) {
               // not all backends will need to do this
               const stats = await this.getGlobalStats(
@@ -216,8 +212,10 @@ export const BaseLinearDisplay = types
                   signal: aborter.signal,
                 },
               )
+              console.log(stats)
 
-              if (stats && stats.featureDensity > 0) {
+              if (isAlive(self) && stats.featureDensity > 0) {
+                this.updateGlobalStats(stats)
                 // do something
               } else {
                 throw new Error('Feature density not within limits')
@@ -263,6 +261,9 @@ export const BaseLinearDisplay = types
       )) as BaseFeatureStats
 
       return results
+    },
+    updateGlobalStats(stats: BaseFeatureStats) {
+      self.globalStats.featureDensity = stats.featureDensity
     },
     setHeight(displayHeight: number) {
       if (displayHeight > minDisplayHeight) {
@@ -328,6 +329,41 @@ export const BaseLinearDisplay = types
       self.contextMenuFeature = feature
     },
   }))
+  .actions(self => {
+    const { reload: superReload } = self
+
+    return {
+      async reload() {
+        self.setError()
+        const aborter = new AbortController()
+        const view = getContainingView(self) as LGV
+        if (!view.initialized) {
+          return
+        }
+
+        if (view.bpPerPx > self.maxViewBpPerPx) {
+          return
+        }
+        let stats
+        if (view.staticBlocks.contentBlocks[0]) {
+          try {
+            stats = await self.getGlobalStats(
+              view.staticBlocks.contentBlocks[0],
+              { signal: aborter.signal },
+            )
+            if (isAlive(self) && stats.featureDensity > 0) {
+              self.updateGlobalStats(stats)
+              superReload()
+            } else {
+              throw new Error('Feature Density too low')
+            }
+          } catch (e) {
+            self.setError(e)
+          }
+        }
+      },
+    }
+  })
   .views(self => ({
     regionCannotBeRenderedText(_region: Region) {
       const view = getContainingView(self) as LinearGenomeViewModel
