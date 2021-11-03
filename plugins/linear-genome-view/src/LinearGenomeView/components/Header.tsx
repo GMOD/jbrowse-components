@@ -136,8 +136,8 @@ const LinearGenomeViewHeader = observer(
         rankSearchResults,
       )
 
-      const refNameResults = assembly?.refNames
-        ?.filter(refName => refName.includes(query))
+      const refNameResults = assembly?.allRefNames
+        ?.filter(refName => refName.startsWith(query))
         .map(r => new BaseResult({ label: r }))
         .slice(0, 10)
 
@@ -152,7 +152,7 @@ const LinearGenomeViewHeader = observer(
       let location = option.getLocation()
       const label = option.getLabel()
       try {
-        if (assembly?.refNames?.includes(location)) {
+        if (assembly?.allRefNames?.includes(location)) {
           model.navToLocString(location)
         } else {
           const results = await fetchResults(label, 'exact')

@@ -83,8 +83,8 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       rankSearchResults,
     )
 
-    const refNameResults = assembly?.refNames
-      ?.filter(refName => refName.includes(query))
+    const refNameResults = assembly?.allRefNames
+      ?.filter(refName => refName.startsWith(query))
       .map(r => new BaseResult({ label: r }))
       .slice(0, 10)
 
@@ -105,7 +105,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     let trackId = option.getTrackId()
     let location = input || option.getLocation() || ''
     try {
-      if (assembly?.refNames?.includes(location)) {
+      if (assembly?.allRefNames?.includes(location)) {
         model.navToLocString(location, selectedAsm)
       } else {
         const results = await fetchResults(input, 'exact')
