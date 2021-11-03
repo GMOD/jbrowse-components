@@ -86,7 +86,6 @@ const Polygon = observer(
     useOffset?: boolean
   }) => {
     const theme = useTheme()
-    const classes = useStyles()
     const multiplier = Number(useOffset)
     const { interRegionPaddingWidth, offsetPx, dynamicBlocks, cytobandOffset } =
       model
@@ -126,17 +125,11 @@ const Polygon = observer(
     ]
 
     return (
-      <svg
-        height={HEADER_BAR_HEIGHT}
-        width="100%"
-        className={classes.overviewSvg}
-      >
-        <polygon
-          points={points.toString()}
-          fill={alpha(polygonColor, 0.3)}
-          stroke={alpha(polygonColor, 0.8)}
-        />
-      </svg>
+      <polygon
+        points={points.toString()}
+        fill={alpha(polygonColor, 0.3)}
+        stroke={alpha(polygonColor, 0.8)}
+      />
     )
   },
 )
