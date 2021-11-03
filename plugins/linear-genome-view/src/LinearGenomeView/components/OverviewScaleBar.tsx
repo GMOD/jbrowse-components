@@ -45,7 +45,6 @@ const useStyles = makeStyles(theme => {
 
     scaleBarRefName: {
       position: 'absolute',
-      left: 5,
       fontWeight: 'bold',
       pointerEvents: 'none',
       zIndex: 100,
@@ -326,7 +325,10 @@ const OverviewBox = observer(
       <div>
         {/* name of sequence */}
         <Typography
-          style={{ color: showCytobands ? 'black' : refNameColor }}
+          style={{
+            left: block.offsetPx + 3,
+            color: showCytobands ? 'black' : refNameColor,
+          }}
           className={classes.scaleBarRefName}
         >
           {refName}
