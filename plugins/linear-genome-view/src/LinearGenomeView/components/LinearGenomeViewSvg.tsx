@@ -178,7 +178,7 @@ const SVGHeader = ({ model }: { model: LGV }) => {
           <rect
             stroke="red"
             fill="none"
-            width={lastOverviewPx - firstOverviewPx}
+            width={Math.max(lastOverviewPx - firstOverviewPx, 0.5)}
             height={HEADER_OVERVIEW_HEIGHT - 1}
             x={firstOverviewPx}
             y={0.5}
