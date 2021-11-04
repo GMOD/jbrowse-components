@@ -107,11 +107,6 @@ something like `website/blog/${DATE}-${RELEASE_TAG}-release.md`), removing the
 "Downloads" section. Finally, once you have confirmed that the build artifacts
 from all four workflows have been added to the release, click "Publish release."
 
-Also, it is important as a final manual step for the release process to try to
-install and use @jbrowse/react-linear-genome-view after release because we need
-to ensure that the package does not have any unsatified imports, which can only
-be revealed currently by installing it manually.
-
 ## Monorepo code organization
 
 JBrowse 2 code is organized as a monorepo using [lerna](https://lerna.js.org/)
