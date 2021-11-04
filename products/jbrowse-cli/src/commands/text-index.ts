@@ -11,6 +11,12 @@ import {
   supported,
   guessAdapterFromFileName,
 } from '../types/common'
+import fromEntries from 'object.fromentries'
+
+if (!Object.fromEntries) {
+  // @ts-ignore
+  fromEntries.shim()
+}
 
 function readConf(confFilePath: string) {
   return JSON.parse(fs.readFileSync(confFilePath, 'utf8')) as Config
