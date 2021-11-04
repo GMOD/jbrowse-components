@@ -10,9 +10,10 @@ import {
   getContainingView,
   getSession,
   isViewContainer,
+  isSessionModelWithWidgets,
+  measureText,
   parseLocString,
   springAnimate,
-  isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -1237,7 +1238,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       get cytobandOffset() {
         return this.showCytobands
-          ? self.displayedRegions[0].refName.length * 15 + 15
+          ? measureText(self.displayedRegions[0].refName, 12) + 15
           : 0
       },
     }))
