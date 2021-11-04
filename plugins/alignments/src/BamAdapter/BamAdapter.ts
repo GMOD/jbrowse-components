@@ -8,6 +8,7 @@ import { checkAbortSignal } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { BaseFeatureStats } from '@jbrowse/core/util/stats'
 import { toArray } from 'rxjs/operators'
 import { readConfObject } from '@jbrowse/core/configuration'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
@@ -186,6 +187,37 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       statusCallback('')
       observer.complete()
     }, signal)
+  }
+
+  async estimateGlobalStats(
+    region: Region,
+    opts?: BaseOptions,
+  ): Promise<BaseFeatureStats> {
+    // refseq = refseq || this.refSeq
+    // let featCount
+    // if (this.indexedData) {
+    //     featCount = await this.indexedData.lineCount(this.browser.regularizeReferenceName(refseq.name))
+    // } else if (this.bam) {
+    //     const chr = this.browser.regularizeReferenceName(refseq.name)
+    //     const chrId = this.bam.chrToIndex && this.bam.chrToIndex[chr]
+    //     featCount = await this.bam.index.lineCount(chrId, true)
+    // }
+    // if (featCount == -1) {
+    //     return this.inherited('_estimateGlobalStats', arguments)
+    // }
+    // const correctionFactor = (this.getConf('topLevelFeaturesPercent') || 100) / 100
+    // const featureDensity = featCount / (refseq.end - refseq.start) * correctionFactor
+    // return { featureDensity }
+
+    const { bam } = await this.configure()
+    const featCount = await bam.lineCount(region.refName)
+    if (featCount === -1) {
+      return super.estimateGlobalStats(region, opts)
+    }
+
+    const featureDensity = featCount / (region.end - region.start)
+    console.log(featCount, featureDensity)
+    return { featureDensity }
   }
 
   freeResources(/* { region } */): void {}

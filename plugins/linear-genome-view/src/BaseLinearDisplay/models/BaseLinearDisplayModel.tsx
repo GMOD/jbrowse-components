@@ -21,7 +21,7 @@ import {
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
-import { autorun, observable } from 'mobx'
+import { autorun, observable, when } from 'mobx'
 import { addDisposer, Instance, isAlive, types } from 'mobx-state-tree'
 import React from 'react'
 import { Tooltip } from '../components/BaseLinearDisplay'
@@ -57,6 +57,7 @@ export const BaseLinearDisplay = types
       ),
       blockState: types.map(BlockState),
       userBpPerPxLimit: types.maybe(types.number),
+      userFeatureScreenDensity: types.maybe(types.number),
     }),
   )
   .volatile(() => ({
@@ -64,7 +65,10 @@ export const BaseLinearDisplay = types
     featureIdUnderMouse: undefined as undefined | string,
     contextMenuFeature: undefined as undefined | Feature,
     scrollTop: 0,
-    globalStats: observable({ featureDensity: 0 } as BaseFeatureStats),
+    globalStats: observable({
+      featureDensity: 0,
+    } as BaseFeatureStats),
+    statsReady: false,
   }))
   .views(self => ({
     get blockType(): 'staticBlocks' | 'dynamicBlocks' {
@@ -83,8 +87,12 @@ export const BaseLinearDisplay = types
     /**
      * set limit to config amount, or user amount if they force load,
      */
-    get maxViewBpPerPx() {
-      return self.userBpPerPxLimit || getConf(self, 'maxDisplayedBpPerPx')
+
+    get maxFeatureScreenDensity() {
+      return (
+        self.userFeatureScreenDensity ||
+        getConf(self, 'maxFeatureScreenDensity')
+      )
     },
 
     /**
@@ -165,6 +173,10 @@ export const BaseLinearDisplay = types
     }
   })
   .actions(self => ({
+    // base display reload does nothing, see specialized displays for details
+    setMessage(message: string) {
+      self.message = message
+    },
     afterAttach() {
       // watch the parent's blocks to update our block state when they change
       const blockWatchDisposer = autorun(() => {
@@ -193,6 +205,7 @@ export const BaseLinearDisplay = types
         self,
         autorun(async () => {
           try {
+            this.setStatsReady(false)
             const aborter = new AbortController()
             const view = getContainingView(self) as LGV
 
@@ -200,32 +213,28 @@ export const BaseLinearDisplay = types
               return
             }
 
-            if (view.bpPerPx > self.maxViewBpPerPx) {
+            if (
+              view &&
+              self.globalStats &&
+              self.globalStats.featureDensity > self.maxFeatureScreenDensity
+            ) {
               return
             }
 
             if (view.staticBlocks.contentBlocks[0]) {
-              // not all backends will need to do this
               const stats = await this.getGlobalStats(
                 view.staticBlocks.contentBlocks[0],
                 {
                   signal: aborter.signal,
                 },
               )
-              console.log(stats)
 
-              if (isAlive(self) && stats.featureDensity > 0) {
+              if (isAlive(self)) {
                 this.updateGlobalStats(stats)
-                // do something
               } else {
-                throw new Error('Feature density not within limits')
+                return
               }
             }
-            // get stats, call stats action that calls rpc whcih does stats estimation
-            // returns an object that has feature density as part of it
-
-            // if feature density is within limits, set ready to true
-            // catch set error
           } catch (e) {
             if (!isAbortException(e) && isAlive(self)) {
               console.error(e)
@@ -251,6 +260,11 @@ export const BaseLinearDisplay = types
         sessionId,
         regions: [region],
         adapterConfig,
+        statusCallback: (message: string) => {
+          if (isAlive(self)) {
+            this.setMessage(message)
+          }
+        },
         ...opts,
       }
 
@@ -264,6 +278,10 @@ export const BaseLinearDisplay = types
     },
     updateGlobalStats(stats: BaseFeatureStats) {
       self.globalStats.featureDensity = stats.featureDensity
+      self.statsReady = true
+    },
+    setStatsReady(flag: boolean) {
+      self.statsReady = flag
     },
     setHeight(displayHeight: number) {
       if (displayHeight > minDisplayHeight) {
@@ -281,13 +299,8 @@ export const BaseLinearDisplay = types
     setScrollTop(scrollTop: number) {
       self.scrollTop = scrollTop
     },
-    // sets the new bpPerPxLimit if user chooses to force load
-    setUserBpPerPxLimit(limit: number) {
-      self.userBpPerPxLimit = limit
-    },
-    // base display reload does nothing, see specialized displays for details
-    setMessage(message: string) {
-      self.message = message
+    setUserFeatureScreenDensity(limit: number) {
+      self.userFeatureScreenDensity = limit
     },
     addBlock(key: string, block: BaseBlock) {
       self.blockState.set(
@@ -335,15 +348,13 @@ export const BaseLinearDisplay = types
     return {
       async reload() {
         self.setError()
+        self.setStatsReady(false)
         const aborter = new AbortController()
         const view = getContainingView(self) as LGV
         if (!view.initialized) {
           return
         }
 
-        if (view.bpPerPx > self.maxViewBpPerPx) {
-          return
-        }
         let stats
         if (view.staticBlocks.contentBlocks[0]) {
           try {
@@ -351,11 +362,11 @@ export const BaseLinearDisplay = types
               view.staticBlocks.contentBlocks[0],
               { signal: aborter.signal },
             )
-            if (isAlive(self) && stats.featureDensity > 0) {
+            if (isAlive(self)) {
               self.updateGlobalStats(stats)
               superReload()
             } else {
-              throw new Error('Feature Density too low')
+              return
             }
           } catch (e) {
             self.setError(e)
@@ -367,8 +378,15 @@ export const BaseLinearDisplay = types
   .views(self => ({
     regionCannotBeRenderedText(_region: Region) {
       const view = getContainingView(self) as LinearGenomeViewModel
-      if (view && view.bpPerPx > self.maxViewBpPerPx) {
-        return 'Zoom in to see features'
+      if (!self.statsReady) {
+        return 'Calculating stats'
+      }
+      if (
+        view &&
+        self.globalStats &&
+        self.globalStats.featureDensity > self.maxFeatureScreenDensity
+      ) {
+        return 'Force load to see features'
       }
       return ''
     },
@@ -382,16 +400,22 @@ export const BaseLinearDisplay = types
      */
     regionCannotBeRendered(_region: Region) {
       const view = getContainingView(self) as LinearGenomeViewModel
-      if (view && view.bpPerPx > self.maxViewBpPerPx) {
+      if (
+        view &&
+        self.globalStats.featureDensity &&
+        self.globalStats.featureDensity > self.maxFeatureScreenDensity
+      ) {
         return (
           <>
             <Typography component="span" variant="body2">
-              Zoom in to see features or{' '}
+              Increase max feature screen density or{' '}
             </Typography>
             <Button
               data-testid="reload_button"
               onClick={() => {
-                self.setUserBpPerPxLimit(view.bpPerPx)
+                self.setUserFeatureScreenDensity(
+                  self.globalStats.featureDensity,
+                )
                 self.reload()
               }}
               variant="outlined"
@@ -431,6 +455,7 @@ export const BaseLinearDisplay = types
         ...getParentRenderProps(self),
         rpcDriverName: self.rpcDriverName,
         displayModel: self,
+        statsNotReady: !self.statsReady,
         onFeatureClick(_: unknown, featureId: string | undefined) {
           const f = featureId || self.featureIdUnderMouse
           if (!f) {
@@ -471,6 +496,7 @@ export const BaseLinearDisplay = types
   }))
   .actions(self => ({
     async renderSvg(opts: ExportSvgOptions & { overrideHeight: number }) {
+      await when(() => self.statsReady)
       const { height, id } = self
       const { overrideHeight } = opts
       const view = getContainingView(self) as LinearGenomeViewModel

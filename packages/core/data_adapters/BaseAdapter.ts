@@ -76,6 +76,7 @@ export abstract class BaseAdapter {
     this.config = config
     this.getSubAdapter = getSubAdapter
     this.pluginManager = pluginManager
+
     // note: we use switch on jest here for more simple feature IDs
     // in test environment
     if (typeof jest === 'undefined') {
@@ -99,6 +100,7 @@ export abstract class BaseAdapter {
  * subclasses must implement.
  */
 export abstract class BaseFeatureDataAdapter extends BaseAdapter {
+  private estimateStatsCache: BaseFeatureStats | undefined
   /**
    * Get all reference sequence names used in the data source
    *
@@ -268,14 +270,17 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     regionToStart: Region,
     opts?: BaseOptions,
   ): Promise<BaseFeatureStats> {
-    return this.estimateGlobalStats(regionToStart, opts)
+    // only estimate once, then cache stats for future calls
+    return this.estimateStatsCache
+      ? this.estimateStatsCache
+      : this.estimateGlobalStats(regionToStart, opts)
   }
 
   public async estimateGlobalStats(
     region: Region,
     opts?: BaseOptions,
   ): Promise<BaseFeatureStats> {
-    // avoid chunkSizeLimit error
+    const { statusCallback = () => {} } = opts || {}
     const statsFromInterval = async (length: number, expansionTime: number) => {
       const sampleCenter = region.start * 0.75 + region.end * 0.25
       const start = Math.max(0, Math.round(sampleCenter - length / 2))
@@ -310,16 +315,20 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     ): Promise<BaseFeatureStats> => {
       const refLen = region.end - region.start
       if (statsSampleFeatures >= 300 || interval * 2 > refLen) {
-        return stats
+        statusCallback('')
+        this.estimateStatsCache = stats
       } else if (expansionTime <= 4) {
         expansionTime++
         return statsFromInterval(interval * 2, expansionTime)
       } else {
+        statusCallback('')
         console.error('Stats estimation reached timeout')
-        return { featureDensity: 0 }
+        this.estimateStatsCache = { featureDensity: Infinity }
       }
+      return this.estimateStatsCache as BaseFeatureStats
     }
 
+    statusCallback('Calculating stats')
     return statsFromInterval(100, 0)
   }
 }

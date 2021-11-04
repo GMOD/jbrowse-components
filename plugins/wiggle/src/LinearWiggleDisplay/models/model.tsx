@@ -573,10 +573,6 @@ const stateModelFactory = (
                     return
                   }
 
-                  if (view.bpPerPx > self.maxViewBpPerPx) {
-                    return
-                  }
-
                   const stats = await getStats({
                     signal: aborter.signal,
                     filters: self.filters,
