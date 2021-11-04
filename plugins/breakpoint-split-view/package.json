@@ -35,7 +35,7 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@gmod/vcf": "^5.0.0",
+    "@gmod/vcf": "^5.0.1",
     "@material-ui/icons": "^4.9.1",
     "clsx": "^1.0.4",
     "is-object": "^1.0.1",
