@@ -15,6 +15,16 @@ export const GithubLink = () => {
   )
 }
 
+export const StorybookLink = () => {
+  return (
+    <a
+      href={`https://jbrowse.org/storybook/lgv/${config.customFields.currentVersion}/?path=/story/getting-started--page`}
+    >
+      storybook docs
+    </a>
+  )
+}
+
 export const DownloadCard = ({ os, icon, link }) => {
   const downloadLink = `https://github.com/GMOD/jbrowse-components/releases/download/${config.customFields.currentVersion}/jbrowse-desktop-${config.customFields.currentVersion}-${link}`
   return (
@@ -34,6 +44,7 @@ export const DownloadCard = ({ os, icon, link }) => {
           href={downloadLink}
           style={{
             backgroundColor: '#3f51b5',
+            color: 'white',
           }}
         >
           download
@@ -139,16 +150,18 @@ Alternatively, manually download this release as a zip file from GitHub here:
 
 <GithubLink />
 
-To get it set up, check out our [super-quick start
+To get started, check out our [super-quick start
 guide](/docs/superquickstart_web) or slightly-longer [quick-start
-guide](/docs/quickstart_web) for setting up JBrowse Web.
+guide](/docs/quickstart_web).
 
-### Other CLI tools
+## Static image generator
 
-- [@jbrowse/img](https://github.com/GMOD/jb2export/) image exporter
+- [@jbrowse/img](https://www.npmjs.com/package/@jbrowse/img) - Generate images of JBrowse 2 statically on the command line
 
-## JBrowse 2 embedded components
+## Embedded components
 
-- [@jbrowse/react-linear-genome-view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view) linear genome browser view React component on <tt>NPM</tt>
-  - also see [storybook docs](https://jbrowse.org/storybook/lgv/v1.4.4/?path=/story/getting-started--page)
+- [@jbrowse/react-linear-genome-view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view) linear genome browser view React component on <tt>NPM</tt>. Also see our <StorybookLink/>
+
+## R/Shiny widget
+
 - [JBrowseR](https://gmod.github.io/JBrowseR/) R package on <tt>CRAN</tt>

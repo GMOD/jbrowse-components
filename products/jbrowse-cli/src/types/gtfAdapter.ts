@@ -1,4 +1,4 @@
-import { Track, GtfTabixAdapter } from '../base'
+import { Track, GtfAdapter } from '../base'
 import { isURL, createRemoteStream } from '../types/common'
 import { SingleBar, Presets } from 'cli-progress'
 import { createGunzip } from 'zlib'
@@ -15,8 +15,8 @@ export async function* indexGtf(
 ) {
   const { adapter, trackId } = config
   const {
-    gtfGzLocation: { uri },
-  } = adapter as GtfTabixAdapter
+    gtfLocation: { uri },
+  } = adapter as GtfAdapter
 
   // progress bar code was aided by blog post at
   // https://webomnizz.com/download-a-file-with-progressbar-using-node-js/
@@ -81,23 +81,15 @@ export async function* indexGtf(
             ]
           }),
       )
-      const name = col9Attrs['gene_name'] || ''
-      const id = col9Attrs['gene_id'] || ''
       const attrs = attributes
         .map(attr => col9Attrs[attr])
         .filter((f): f is string => !!f)
 
-      const restAttrs = attributes
-        .filter(attr => attr !== 'gene_name' && attr !== 'gene_id')
-        .map(attr => col9Attrs[attr])
-        .filter((f): f is string => !!f)
-      if (name || id) {
+      if (attrs.length) {
         const record = JSON.stringify([
           encodeURIComponent(locStr),
           encodeURIComponent(trackId),
-          encodeURIComponent(name),
-          encodeURIComponent(id),
-          ...restAttrs.map(a => encodeURIComponent(a || '')),
+          ...attrs.map(a => encodeURIComponent(a || '')),
         ]).replace(/,/g, '|')
         yield `${record} ${[...new Set(attrs)].join(' ')}\n`
       }

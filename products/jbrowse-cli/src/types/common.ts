@@ -59,8 +59,8 @@ export function guessAdapterFromFileName(filePath: string): Track {
       name,
       assemblyNames: [],
       adapter: {
-        type: 'GtfTabixAdapter',
-        gtfGzLocation: { uri, locationType: 'UriLocation' },
+        type: 'GtfAdapter',
+        gtfLocation: { uri, locationType: 'UriLocation' },
       },
     }
   } else {
@@ -69,9 +69,7 @@ export function guessAdapterFromFileName(filePath: string): Track {
 }
 
 export function supported(type: string) {
-  return ['Gff3TabixAdapter', 'GtfTabixAdapter', 'VcfTabixAdapter'].includes(
-    type,
-  )
+  return ['Gff3TabixAdapter', 'VcfTabixAdapter'].includes(type)
 }
 /**
  * Generates metadata of index given a filename (trackId or assembly)

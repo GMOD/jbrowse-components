@@ -2,6 +2,9 @@ import { toArray } from 'rxjs/operators'
 import configSchema from './configSchema'
 import Gff3Adapter from './Gff3Adapter'
 
+import { TextDecoder } from 'web-encoding'
+window.TextDecoder = TextDecoder
+
 describe('adapter can fetch features from volvox.gff3', () => {
   let adapter: Gff3Adapter
   beforeEach(() => {

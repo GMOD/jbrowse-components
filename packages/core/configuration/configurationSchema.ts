@@ -228,8 +228,7 @@ function makeConfigurationSchemaModel<
     completeModel = completeModel.preProcessSnapshot(options.preProcessSnapshot)
   }
 
-  const schemaType = types.optional(completeModel, modelDefault)
-  return schemaType
+  return types.optional(completeModel, modelDefault)
 }
 
 export interface AnyConfigurationSchemaType

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-sv-inspector",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "JBrowse 2 SV inspector view",
   "keywords": [
     "jbrowse",
@@ -41,6 +41,7 @@
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",
     "@material-ui/core": "^4.12.2",
+    "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",

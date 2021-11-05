@@ -1,19 +1,24 @@
 import React, { useRef, useEffect, useState } from 'react'
-import { makeStyles, alpha } from '@material-ui/core/styles'
-import { Popover, Tooltip, Typography } from '@material-ui/core'
-import { stringify } from '@jbrowse/core/util'
+import {
+  Popover,
+  Tooltip,
+  Typography,
+  makeStyles,
+  alpha,
+} from '@material-ui/core'
+import { getSession, stringify } from '@jbrowse/core/util'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
-import { LinearGenomeViewStateModel, HEADER_OVERVIEW_HEIGHT } from '..'
+import { LinearGenomeViewModel, HEADER_OVERVIEW_HEIGHT } from '..'
 
-type LGV = Instance<LinearGenomeViewStateModel>
+type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles(theme => {
-  const background = theme.palette.tertiary
-    ? alpha(theme.palette.tertiary.main, 0.7)
-    : alpha(theme.palette.primary.main, 0.7)
+  const { tertiary, primary } = theme.palette
+  const background = tertiary
+    ? alpha(tertiary.main, 0.7)
+    : alpha(primary.main, 0.7)
   return {
     rubberBand: {
       height: '100%',
@@ -29,9 +34,7 @@ const useStyles = makeStyles(theme => {
       minHeight: 8,
     },
     rubberBandText: {
-      color: theme.palette.tertiary
-        ? theme.palette.tertiary.contrastText
-        : theme.palette.primary.contrastText,
+      color: tertiary ? tertiary.contrastText : primary.contrastText,
     },
     popover: {
       mouseEvents: 'none',
@@ -51,6 +54,49 @@ const useStyles = makeStyles(theme => {
   }
 })
 
+const HoverTooltip = observer(
+  ({
+    model,
+    open,
+    guideX,
+    overview,
+  }: {
+    model: LGV
+    open: boolean
+    guideX: number
+    overview: Base1DViewModel
+  }) => {
+    const classes = useStyles()
+    const { cytobandOffset } = model
+    const { assemblyManager } = getSession(model)
+
+    const px = overview.pxToBp(guideX - cytobandOffset)
+    const assembly = assemblyManager.get(px.assemblyName)
+    const cytoband = assembly?.cytobands?.find(
+      f =>
+        px.coord > f.get('start') &&
+        px.coord < f.get('end') &&
+        px.refName === assembly.getCanonicalRefName(f.get('refName')),
+    )
+
+    return (
+      <Tooltip
+        open={open}
+        placement="top"
+        title={[stringify(px), cytoband?.get('name')].join(' ')}
+        arrow
+      >
+        <div
+          className={classes.guide}
+          style={{
+            left: guideX,
+          }}
+        />
+      </Tooltip>
+    )
+  },
+)
+
 function OverviewRubberBand({
   model,
   overview,
@@ -60,9 +106,10 @@ function OverviewRubberBand({
   overview: Base1DViewModel
   ControlComponent?: React.ReactElement
 }) {
+  const { cytobandOffset } = model
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
-  const [guideX, setGuideX] = useState<number | undefined>()
+  const [guideX, setGuideX] = useState<number>()
   const controlsRef = useRef<HTMLDivElement>(null)
   const rubberBandRef = useRef(null)
   const classes = useStyles()
@@ -70,9 +117,9 @@ function OverviewRubberBand({
 
   useEffect(() => {
     function globalMouseMove(event: MouseEvent) {
-      if (controlsRef.current && mouseDragging) {
-        const relativeX =
-          event.clientX - controlsRef.current.getBoundingClientRect().left
+      const ref = controlsRef.current
+      if (ref && mouseDragging) {
+        const relativeX = event.clientX - ref.getBoundingClientRect().left
         setCurrentX(relativeX)
       }
     }
@@ -85,8 +132,8 @@ function OverviewRubberBand({
       ) {
         if (Math.abs(currentX - startX) > 3) {
           model.zoomToDisplayedRegions(
-            overview.pxToBp(startX),
-            overview.pxToBp(currentX),
+            overview.pxToBp(startX - cytobandOffset),
+            overview.pxToBp(currentX - cytobandOffset),
           )
         }
       }
@@ -96,7 +143,7 @@ function OverviewRubberBand({
         startX !== undefined &&
         currentX === undefined
       ) {
-        const clickedAt = overview.pxToBp(startX)
+        const clickedAt = overview.pxToBp(startX - cytobandOffset)
         model.centerAt(
           Math.round(clickedAt.coord),
           clickedAt.refName,
@@ -129,7 +176,7 @@ function OverviewRubberBand({
       }
     }
     return () => {}
-  }, [mouseDragging, currentX, startX, model, overview])
+  }, [mouseDragging, currentX, startX, model, overview, cytobandOffset])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
@@ -157,19 +204,12 @@ function OverviewRubberBand({
     return (
       <div style={{ position: 'relative' }}>
         {guideX !== undefined ? (
-          <Tooltip
+          <HoverTooltip
+            model={model}
             open={!mouseDragging}
-            placement="top"
-            title={stringify(overview.pxToBp(guideX))}
-            arrow
-          >
-            <div
-              className={classes.guide}
-              style={{
-                left: guideX,
-              }}
-            />
-          </Tooltip>
+            overview={overview}
+            guideX={guideX}
+          />
         ) : null}
         <div
           className={classes.rubberBandControl}
@@ -195,8 +235,8 @@ function OverviewRubberBand({
   let leftBpOffset
   let rightBpOffset
   if (startX) {
-    leftBpOffset = overview.pxToBp(startX)
-    rightBpOffset = overview.pxToBp(startX + width)
+    leftBpOffset = overview.pxToBp(startX - cytobandOffset)
+    rightBpOffset = overview.pxToBp(startX + width - cytobandOffset)
     if (currentX && currentX < startX) {
       ;[leftBpOffset, rightBpOffset] = [rightBpOffset, leftBpOffset]
     }

@@ -76,7 +76,7 @@ describe('<PluginStoreWidget />', () => {
           'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js',
       },
     })
-    fireEvent.click(getByText('Add plugin'))
+    fireEvent.click(getByText('Submit'))
 
     await waitFor(() => {
       expect(window.location.reload).toHaveBeenCalled()

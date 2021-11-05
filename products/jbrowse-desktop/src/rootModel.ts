@@ -7,17 +7,14 @@ import {
   SnapshotIn,
   Instance,
 } from 'mobx-state-tree'
-
 import { autorun } from 'mobx'
 
-import assemblyManagerFactory, {
-  assemblyConfigSchemas as AssemblyConfigSchemasFactory,
-} from '@jbrowse/core/assemblyManager'
+import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
+import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { ipcRenderer } from 'electron'
 
@@ -26,6 +23,7 @@ import OpenIcon from '@material-ui/icons/FolderOpen'
 import ExtensionIcon from '@material-ui/icons/Extension'
 import AppsIcon from '@material-ui/icons/Apps'
 import StorageIcon from '@material-ui/icons/Storage'
+import SettingsIcon from '@material-ui/icons/Settings'
 import MeetingRoomIcon from '@material-ui/icons/MeetingRoom'
 import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 
@@ -49,26 +47,16 @@ interface Menu {
 }
 
 export default function rootModelFactory(pluginManager: PluginManager) {
-  const { assemblyConfigSchemas, dispatcher } =
-    AssemblyConfigSchemasFactory(pluginManager)
-  const assemblyConfigSchemasType = types.union(
-    { dispatcher },
-    ...assemblyConfigSchemas,
-  )
-  const Session = sessionModelFactory(pluginManager, assemblyConfigSchemasType)
-  const assemblyManagerType = assemblyManagerFactory(
-    assemblyConfigSchemasType,
-    pluginManager,
-  )
+  const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
+  const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
   return types
     .model('Root', {
-      jbrowse: JBrowseDesktop(
-        pluginManager,
-        Session,
-        assemblyConfigSchemasType as AnyConfigurationSchemaType,
-      ),
+      jbrowse: JBrowseDesktop(pluginManager, Session, assemblyConfigSchema),
       session: types.maybe(Session),
-      assemblyManager: assemblyManagerType,
+      assemblyManager: assemblyManagerFactory(
+        assemblyConfigSchema,
+        pluginManager,
+      ),
       savedSessionNames: types.maybe(types.array(types.string)),
       version: types.maybe(types.string),
       internetAccounts: types.array(
@@ -80,7 +68,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
     .volatile(() => ({
       error: undefined as unknown,
       textSearchManager: new TextSearchManager(pluginManager),
-      openNewSessionCallback: () => {
+      openNewSessionCallback: async (path: string) => {
         console.error('openNewSessionCallback unimplemented')
       },
     }))
@@ -90,7 +78,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           await ipcRenderer.invoke('saveSession', self.sessionPath, val)
         }
       },
-      setOpenNewSessionCallback(cb: () => Promise<void>) {
+      setOpenNewSessionCallback(cb: (arg: string) => Promise<void>) {
         self.openNewSessionCallback = cb
       },
       setSavedSessionNames(sessionNames: string[]) {
@@ -115,7 +103,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       async renameCurrentSession(newName: string) {
         if (self.session) {
           this.setSession({ ...getSnapshot(self.session), name: newName })
-          await this.saveSession(getSaveSession(self as RootModel))
         }
       },
       duplicateCurrentSession() {
@@ -239,7 +226,10 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               icon: OpenIcon,
               onClick: async () => {
                 try {
-                  await self.openNewSessionCallback()
+                  const path = await ipcRenderer.invoke('promptOpenFile')
+                  if (path) {
+                    await self.openNewSessionCallback(path)
+                  }
                 } catch (e) {
                   console.error(e)
                   self.session?.notify(`${e}`, 'error')
@@ -365,6 +355,13 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                 }
               },
             },
+            {
+              label: 'Open assembly manager',
+              icon: SettingsIcon,
+              onClick: () => {
+                self.setAssemblyEditing(true)
+              },
+            },
           ],
         },
       ] as Menu[],
@@ -391,17 +388,9 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       },
       async setPluginsUpdated() {
         if (self.session) {
-          await self.saveSession(getSnapshot(self.session))
+          await self.saveSession(getSaveSession(self as RootModel))
         }
-
-        const url = window.location.href.split('?')[0]
-        if (!self.sessionPath) {
-          self.session?.notify('You must save your session first')
-        } else {
-          window.location.href = `${url}?config=${encodeURIComponent(
-            self.sessionPath,
-          )}`
-        }
+        await self.openNewSessionCallback(self.sessionPath)
       },
       /**
        * Add a top-level menu
@@ -537,7 +526,11 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           autorun(
             async () => {
               if (self.session) {
-                await self.saveSession(getSaveSession(self as RootModel))
+                try {
+                  await self.saveSession(getSaveSession(self as RootModel))
+                } catch (e) {
+                  console.error(e)
+                }
               }
             },
             { delay: 1000 },
