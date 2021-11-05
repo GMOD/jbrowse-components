@@ -1,15 +1,9 @@
+// Based on https://github.com/jaredpalmer/tsdx/blob/8b91c747c2235ed4fbf853a39fb6800cbf70b2b3/src/babelPluginTsdx.ts
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createConfigItem } from '@babel/core'
 import { createBabelInputPluginFactory } from '@rollup/plugin-babel'
 import merge from 'lodash.merge'
-
-function isTruthy(obj?: any) {
-  if (!obj) {
-    return false
-  }
-
-  return obj.constructor !== Object || Object.keys(obj).length > 0
-}
 
 // replace lodash with lodash-es, but not lodash/fp
 const replacements = [{ original: 'lodash(?!/fp)', replacement: 'lodash-es' }]
@@ -85,9 +79,6 @@ export const babelPluginJBrowse = createBabelInputPluginFactory(() => ({
           name: '@babel/plugin-proposal-class-properties',
           loose: true,
         },
-        isTruthy(customOptions.extractErrors) && {
-          name: './errors/transformErrorMessages',
-        },
       ].filter(Boolean),
     )
 
@@ -106,7 +97,7 @@ export const babelPluginJBrowse = createBabelInputPluginFactory(() => ({
           presetEnv.file.resolved,
           merge(
             {
-              loose: true,
+              loose: false,
               targets: customOptions.targets,
             },
             presetEnv.options,
