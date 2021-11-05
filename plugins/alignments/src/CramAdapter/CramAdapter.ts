@@ -254,21 +254,6 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       observer.complete()
     }, signal)
   }
-  // async estimateGlobalStats(
-  //   region: Region,
-  //   opts?: BaseOptions,
-  // ): Promise<BaseFeatureStats> {
-  //   await this.setup(opts)
-  //   console.log(this.cram, this.cram.cram)
-  //   // const featCount = await this.cram.lineCount(region.refName)
-  //   // if (featCount === -1) {
-  //   //   return super.estimateGlobalStats(region, opts)
-  //   // }
-
-  //   // const featureDensity = featCount / (region.end - region.start)
-  //   // console.log('cram', featCount, featureDensity)
-  //   return { featureDensity: 0 }
-  // }
 
   freeResources(/* { region } */): void {}
 

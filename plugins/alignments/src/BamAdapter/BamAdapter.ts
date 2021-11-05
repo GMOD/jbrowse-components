@@ -216,7 +216,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     }
 
     const featureDensity = featCount / (region.end - region.start)
-    console.log(featCount, featureDensity)
     return { featureDensity }
   }
 
