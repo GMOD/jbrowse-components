@@ -1,14 +1,14 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { Menu, MenuItem } from '@jbrowse/core/ui'
-import { InstanceOfModelReturnedBy } from '@jbrowse/core/util'
+import { Instance } from 'mobx-state-tree'
 
-import SpreadsheetModelF from '../models/Spreadsheet'
-import ViewModelF from '../models/SpreadsheetView'
+import SpreadsheetModel from '../models/Spreadsheet'
+import ViewModel from '../models/SpreadsheetView'
 
 export interface Props {
-  viewModel: InstanceOfModelReturnedBy<typeof ViewModelF>
-  spreadsheetModel: InstanceOfModelReturnedBy<typeof SpreadsheetModelF>
+  viewModel: Instance<typeof ViewModel>
+  spreadsheetModel: Instance<typeof SpreadsheetModel>
 }
 
 const RowMenu = observer(({ viewModel, spreadsheetModel }: Props) => {
