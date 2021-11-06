@@ -1,25 +1,27 @@
-import Button from '@material-ui/core/Button'
-import Dialog from '@material-ui/core/Dialog'
-import DialogActions from '@material-ui/core/DialogActions'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogContentText from '@material-ui/core/DialogContentText'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import IconButton from '@material-ui/core/IconButton'
-import List from '@material-ui/core/List'
-import ListItem from '@material-ui/core/ListItem'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
-import ListItemText from '@material-ui/core/ListItemText'
-import ListSubheader from '@material-ui/core/ListSubheader'
-import Paper from '@material-ui/core/Paper'
-import Typography from '@material-ui/core/Typography'
+import React, { useState } from 'react'
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  IconButton,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemSecondaryAction,
+  ListItemText,
+  ListSubheader,
+  Paper,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 import DeleteIcon from '@material-ui/icons/Delete'
 import ViewListIcon from '@material-ui/icons/ViewList'
-import { makeStyles } from '@material-ui/core/styles'
+
 import { observer } from 'mobx-react'
 import pluralize from 'pluralize'
-
-import React, { useState } from 'react'
 
 const useStyles = makeStyles(theme => ({
   root: {
