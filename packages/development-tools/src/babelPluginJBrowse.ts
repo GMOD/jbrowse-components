@@ -27,9 +27,7 @@ function mergeConfigItems(type: any, ...configItemsToMerge: any[]) {
           mergedItems[itemToMergeWithIndex].file.resolved,
           merge(mergedItems[itemToMergeWithIndex].options, item.options),
         ],
-        {
-          type,
-        },
+        { type },
       )
     })
   })
@@ -75,10 +73,7 @@ export const babelPluginJBrowse = createBabelInputPluginFactory(() => ({
           // don't pollute global env as this is being used in a library
           method: 'usage-pure',
         },
-        {
-          name: '@babel/plugin-proposal-class-properties',
-          loose: true,
-        },
+        { name: '@babel/plugin-proposal-class-properties' },
       ].filter(Boolean),
     )
 
@@ -95,20 +90,11 @@ export const babelPluginJBrowse = createBabelInputPluginFactory(() => ({
       babelOptions.presets[presetEnvIdx] = createConfigItem(
         [
           presetEnv.file.resolved,
-          merge(
-            {
-              loose: false,
-              targets: customOptions.targets,
-            },
-            presetEnv.options,
-            {
-              modules: false,
-            },
-          ),
+          merge({ targets: customOptions.targets }, presetEnv.options, {
+            modules: false,
+          }),
         ],
-        {
-          type: `preset`,
-        },
+        { type: `preset` },
       )
     } else {
       // if no preset-env, add it & merge with their presets
@@ -117,7 +103,6 @@ export const babelPluginJBrowse = createBabelInputPluginFactory(() => ({
           name: '@babel/preset-env',
           targets: customOptions.targets,
           modules: false,
-          loose: true,
         },
       ])
 
