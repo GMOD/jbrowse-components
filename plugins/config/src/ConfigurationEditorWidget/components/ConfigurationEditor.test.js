@@ -86,8 +86,9 @@ describe('ConfigurationEditor widget', () => {
     const pluginManager = new PluginManager([new Alignments(), new SVG()])
     pluginManager.createPluggableElements()
     pluginManager.configure()
-    const PileupDisplaySchema =
-      linearBasicDisplayConfigSchemaFactory(pluginManager)
+    const PileupDisplaySchema = linearBasicDisplayConfigSchemaFactory(
+      pluginManager,
+    )
     const { container } = render(
       <ConfigurationEditor model={{ target: PileupDisplaySchema.create() }} />,
     )

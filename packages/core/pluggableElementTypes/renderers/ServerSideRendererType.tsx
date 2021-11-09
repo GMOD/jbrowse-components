@@ -116,7 +116,7 @@ export default class ServerSideRenderer extends RendererType {
    * @param args - the converted arguments to modify
    */
   deserializeArgsInWorker(args: RenderArgsSerialized): RenderArgsDeserialized {
-    const deserialized = { ...args } as unknown as RenderArgsDeserialized
+    const deserialized = ({ ...args } as unknown) as RenderArgsDeserialized
     const config = this.configSchema.create(args.config || {}, {
       pluginManager: this.pluginManager,
     })

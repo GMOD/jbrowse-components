@@ -14,8 +14,7 @@ import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 export default class TwoBitAdapter
   extends BaseFeatureDataAdapter
-  implements SequenceAdapter
-{
+  implements SequenceAdapter {
   private twobit: typeof TwoBitFile
 
   // the chromSizesData can be used to speed up loading since TwoBit has to do

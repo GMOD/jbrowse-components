@@ -1,4 +1,3 @@
-import PluginManager from '@jbrowse/core/PluginManager'
 import SpreadsheetView from './SpreadsheetView'
 
 describe('Spreadsheet View mst model', () => {

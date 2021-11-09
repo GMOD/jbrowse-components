@@ -37,8 +37,8 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   }
 
   async serializeNewAuthArguments(location: UriLocation) {
-    const rootModel: AbstractRootModel | undefined =
-      this.pluginManager.rootModel
+    const rootModel: AbstractRootModel | undefined = this.pluginManager
+      .rootModel
 
     // args dont need auth or already have auth
     if (
@@ -64,7 +64,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     SERIALIZED extends {
       signal?: RemoteAbortSignal
       blobMap?: Record<string, File>
-    },
+    }
   >(serializedArgs: SERIALIZED, _rpcDriverClassName: string) {
     if (serializedArgs.blobMap) {
       setBlobMap(serializedArgs.blobMap)

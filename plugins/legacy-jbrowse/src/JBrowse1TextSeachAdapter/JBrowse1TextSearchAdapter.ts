@@ -27,8 +27,7 @@ export type NamesIndexRecord = string | Array<string | number>
 // Uses index built by generate-names.pl
 export default class JBrowse1TextSearchAdapter
   extends BaseAdapter
-  implements BaseTextSearchAdapter
-{
+  implements BaseTextSearchAdapter {
   httpMap: HttpMap
 
   tracksNames?: string[]
