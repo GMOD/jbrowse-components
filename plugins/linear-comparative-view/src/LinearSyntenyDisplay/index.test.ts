@@ -21,14 +21,16 @@ test('create config', () => {
           {
             type: 'NCListAdapter',
             rootUrlTemplate: {
-              uri: 'https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json',
+              uri:
+                'https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json',
               locationType: 'UriLocation',
             },
           },
           {
             type: 'NCListAdapter',
             rootUrlTemplate: {
-              uri: 'https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json',
+              uri:
+                'https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json',
               locationType: 'UriLocation',
             },
           },

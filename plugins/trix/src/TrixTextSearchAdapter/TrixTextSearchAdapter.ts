@@ -23,8 +23,7 @@ function shorten(str: string, term: string, w = 15) {
 
 export default class TrixTextSearchAdapter
   extends BaseAdapter
-  implements BaseTextSearchAdapter
-{
+  implements BaseTextSearchAdapter {
   indexingAttributes?: string[]
   trixJs: Trix
   tracksNames?: string[]

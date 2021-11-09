@@ -88,7 +88,7 @@ export const BaseLinearDisplay = types
     },
 
     get TooltipComponent(): React.FC<any> {
-      return Tooltip as unknown as React.FC
+      return (Tooltip as unknown) as React.FC
     },
 
     /**
@@ -387,8 +387,12 @@ export const BaseLinearDisplay = types
             }
           }
 
-          const { rpcManager, renderArgs, renderProps, rendererType } =
-            renderBlockData(blockState, self)
+          const {
+            rpcManager,
+            renderArgs,
+            renderProps,
+            rendererType,
+          } = renderBlockData(blockState, self)
 
           return rendererType.renderInClient(rpcManager, {
             ...renderArgs,

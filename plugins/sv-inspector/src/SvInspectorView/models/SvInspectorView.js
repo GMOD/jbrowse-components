@@ -114,8 +114,9 @@ const SvInspectorViewF = pluginManager => {
 
       // Promise<string[]> of refnames
       get featuresRefNamesP() {
-        const { AdapterClass: FromConfigAdapter } =
-          pluginManager.getAdapterType('FromConfigAdapter')
+        const {
+          AdapterClass: FromConfigAdapter,
+        } = pluginManager.getAdapterType('FromConfigAdapter')
         const adapter = new FromConfigAdapter(
           self.featuresAdapterConfigSnapshot,
         )
@@ -202,8 +203,10 @@ const SvInspectorViewF = pluginManager => {
                   assemblyName,
                 )
                 if (assembly) {
-                  const { getCanonicalRefName, regions: assemblyRegions = [] } =
-                    assembly
+                  const {
+                    getCanonicalRefName,
+                    regions: assemblyRegions = [],
+                  } = assembly
                   if (onlyDisplayRelevantRegionsInCircularView) {
                     if (tracks.length === 1) {
                       featuresRefNamesP

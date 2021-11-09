@@ -87,8 +87,10 @@ a status of 200 for "react-linear-genome-view.umd.development.js,"
 Now we need to actually create the view. The code to do so looks like this:
 
 ```javascript
-const { createViewState, JBrowseLinearGenomeView } =
-  JBrowseReactLinearGenomeView
+const {
+  createViewState,
+  JBrowseLinearGenomeView,
+} = JBrowseReactLinearGenomeView
 const { createElement } = React
 const { render } = ReactDOM
 

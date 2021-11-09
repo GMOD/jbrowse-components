@@ -28,9 +28,7 @@ const ExternalTokenConfigSchema = ConfigurationSchema(
   },
 )
 
-export type ExternalTokenInternetAccountConfigModel =
-  typeof ExternalTokenConfigSchema
+export type ExternalTokenInternetAccountConfigModel = typeof ExternalTokenConfigSchema
 
-export type ExternalTokenInternetAccountConfig =
-  Instance<ExternalTokenInternetAccountConfigModel>
+export type ExternalTokenInternetAccountConfig = Instance<ExternalTokenInternetAccountConfigModel>
 export default ExternalTokenConfigSchema

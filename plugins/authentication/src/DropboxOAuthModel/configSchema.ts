@@ -58,9 +58,7 @@ const DropboxOAuthConfigSchema = ConfigurationSchema(
   },
 )
 
-export type DropboxOAuthInternetAccountConfigModel =
-  typeof DropboxOAuthConfigSchema
+export type DropboxOAuthInternetAccountConfigModel = typeof DropboxOAuthConfigSchema
 
-export type DropboxOAuthInternetAccountConfig =
-  Instance<DropboxOAuthInternetAccountConfigModel>
+export type DropboxOAuthInternetAccountConfig = Instance<DropboxOAuthInternetAccountConfigModel>
 export default DropboxOAuthConfigSchema

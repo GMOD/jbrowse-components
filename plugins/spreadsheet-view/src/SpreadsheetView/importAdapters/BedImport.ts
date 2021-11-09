@@ -133,8 +133,9 @@ export async function parseBedPEBuffer(buffer: Buffer, options: ParseOptions) {
           if (!featureData[bedColumn.featureField[0]]) {
             featureData[bedColumn.featureField[0]] = {}
           }
-          featureData[bedColumn.featureField[0]][bedColumn.featureField[1]] =
-            val
+          featureData[bedColumn.featureField[0]][
+            bedColumn.featureField[1]
+          ] = val
         } else {
           featureData[bedColumn.featureField[0]] = val
         }

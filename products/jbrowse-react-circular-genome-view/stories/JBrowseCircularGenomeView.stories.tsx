@@ -102,7 +102,8 @@ const hg19Assembly = {
     adapter: {
       type: 'RefNameAliasAdapter',
       location: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
+        uri:
+          'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
         locationType: 'UriLocation',
       },
     },
@@ -119,12 +120,14 @@ const hg19Tracks = [
     adapter: {
       type: 'VcfTabixAdapter',
       vcfGzLocation: {
-        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.bnd-only.sv.vcf.gz',
+        uri:
+          'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.bnd-only.sv.vcf.gz',
         locationType: 'UriLocation',
       },
       index: {
         location: {
-          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.bnd-only.sv.vcf.gz.tbi',
+          uri:
+            'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/pacbio/hs37d5.HG002-SequelII-CCS.bnd-only.sv.vcf.gz.tbi',
           locationType: 'UriLocation',
         },
       },

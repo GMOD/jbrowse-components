@@ -9,12 +9,18 @@ import BamAdapterF from '../BamAdapter'
 import { SequenceAdapter } from '../CramAdapter/CramTestAdapters'
 
 const pluginManager = new PluginManager()
-const { getAdapterClass: getSNPCoverageAdapter, configSchema } =
-  pluginManager.load(AdapterF)
-const { getAdapterClass: getCramAdapter, configSchema: CramConfigSchema } =
-  pluginManager.load(CramAdapterF)
-const { getAdapterClass: getBamAdapter, configSchema: BamConfigSchema } =
-  pluginManager.load(BamAdapterF)
+const {
+  getAdapterClass: getSNPCoverageAdapter,
+  configSchema,
+} = pluginManager.load(AdapterF)
+const {
+  getAdapterClass: getCramAdapter,
+  configSchema: CramConfigSchema,
+} = pluginManager.load(CramAdapterF)
+const {
+  getAdapterClass: getBamAdapter,
+  configSchema: BamConfigSchema,
+} = pluginManager.load(BamAdapterF)
 
 pluginManager.configure()
 

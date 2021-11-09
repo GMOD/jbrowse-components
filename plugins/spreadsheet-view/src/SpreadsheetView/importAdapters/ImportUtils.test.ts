@@ -1,15 +1,10 @@
-import PluginManager from '@jbrowse/core/PluginManager'
 import { promises as fsPromises } from 'fs'
 import path from 'path'
 import { parseCsvBuffer } from './ImportUtils'
 
 import { TextDecoder } from 'web-encoding'
+import SpreadsheetModel from '../models/Spreadsheet'
 window.TextDecoder = TextDecoder
-
-const pluginManager = new PluginManager()
-const SpreadsheetModel = pluginManager.jbrequire(
-  require('../models/Spreadsheet'),
-)
 
 test('csv to spreadsheet snapshot', async () => {
   const filepath = path.join(
@@ -25,6 +20,7 @@ test('csv to spreadsheet snapshot', async () => {
     isValidRefName: () => true,
   })
   expect(spreadsheetSnap).toMatchSnapshot()
+  // @ts-ignore
   const spreadsheet = SpreadsheetModel.create(spreadsheetSnap)
   expect(spreadsheet.rowSet.rows.length).toBe(49)
 })

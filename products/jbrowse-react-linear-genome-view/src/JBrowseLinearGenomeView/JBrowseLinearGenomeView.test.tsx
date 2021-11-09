@@ -26,7 +26,8 @@ const assembly = {
           uniqueId: 'firstId',
           start: 0,
           end: 120,
-          seq: 'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagccttggtttagattggtagtagtagcggcgctaatgctacctg',
+          seq:
+            'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagccttggtttagattggtagtagtagcggcgctaatgctacctg',
         },
       ],
     },

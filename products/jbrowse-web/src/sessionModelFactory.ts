@@ -367,8 +367,9 @@ export default function sessionModelFactory(
       deleteConnection(configuration: AnyConfigurationModel) {
         let deletedConn
         if (self.adminMode) {
-          deletedConn =
-            getParent(self).jbrowse.deleteConnectionConf(configuration)
+          deletedConn = getParent(self).jbrowse.deleteConnectionConf(
+            configuration,
+          )
         }
         if (!deletedConn) {
           const { connectionId } = configuration

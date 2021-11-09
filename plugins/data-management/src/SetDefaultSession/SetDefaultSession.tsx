@@ -9,7 +9,9 @@ import {
   Typography,
 } from '@material-ui/core'
 
-function canSetDefaultSession(obj: unknown): obj is {
+function canSetDefaultSession(
+  obj: unknown,
+): obj is {
   jbrowse: { setDefaultSessionConf: Function }
   session: unknown
 } {

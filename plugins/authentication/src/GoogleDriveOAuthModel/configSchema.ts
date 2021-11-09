@@ -58,9 +58,7 @@ const GoogleDriveOAuthConfigSchema = ConfigurationSchema(
   },
 )
 
-export type GoogleDriveOAuthInternetAccountConfigModel =
-  typeof GoogleDriveOAuthConfigSchema
+export type GoogleDriveOAuthInternetAccountConfigModel = typeof GoogleDriveOAuthConfigSchema
 
-export type GoogleDriveOAuthInternetAccountConfig =
-  Instance<GoogleDriveOAuthInternetAccountConfigModel>
+export type GoogleDriveOAuthInternetAccountConfig = Instance<GoogleDriveOAuthInternetAccountConfigModel>
 export default GoogleDriveOAuthConfigSchema

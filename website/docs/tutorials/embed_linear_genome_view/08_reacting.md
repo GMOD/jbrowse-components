@@ -49,8 +49,10 @@ following changes to "index.html":
     <script type="module">
       import assembly from './assembly.js'
       import tracks from './tracks.js'
-      const { createViewState, JBrowseLinearGenomeView } =
-        JBrowseReactLinearGenomeView
+      const {
+        createViewState,
+        JBrowseLinearGenomeView,
+      } = JBrowseReactLinearGenomeView
       const { createElement } = React
       const { render } = ReactDOM
       const updates = document.getElementById('update')

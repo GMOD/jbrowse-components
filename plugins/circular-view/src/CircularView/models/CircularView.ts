@@ -326,8 +326,9 @@ export default function CircularView(pluginManager: PluginManager) {
         },
 
         showTrack(trackId: string, initialSnapshot = {}) {
-          const trackConfigSchema =
-            pluginManager.pluggableConfigSchemaType('track')
+          const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
+            'track',
+          )
           const configuration = resolveIdentifier(
             trackConfigSchema,
             getRoot(self),
@@ -381,8 +382,9 @@ export default function CircularView(pluginManager: PluginManager) {
         },
 
         hideTrack(trackId: string) {
-          const trackConfigSchema =
-            pluginManager.pluggableConfigSchemaType('track')
+          const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
+            'track',
+          )
           const configuration = resolveIdentifier(
             trackConfigSchema,
             getRoot(self),

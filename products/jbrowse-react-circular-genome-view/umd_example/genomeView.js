@@ -2,8 +2,10 @@
 import assembly from './assembly.js'
 import tracks from './tracks.js'
 
-const { createViewState, JBrowseCircularGenomeView } =
-  JBrowseReactCircularGenomeView
+const {
+  createViewState,
+  JBrowseCircularGenomeView,
+} = JBrowseReactCircularGenomeView
 const { createElement } = React
 const { render } = ReactDOM
 

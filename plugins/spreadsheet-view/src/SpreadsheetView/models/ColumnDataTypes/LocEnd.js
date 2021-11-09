@@ -1,27 +1,21 @@
-import MakeSpreadsheetColumnTypeFactory from './MakeSpreadsheetColumnType'
-import NumberFactory from './Number'
+import MakeSpreadsheetColumnType from './MakeSpreadsheetColumnType'
+import { FilterModelType as NumberFilterModel } from './Number'
+import { types } from 'mobx-state-tree'
 
-export default ({ jbrequire }) => {
-  const { types } = jbrequire('mobx-state-tree')
-  const MakeSpreadsheetColumnType = jbrequire(MakeSpreadsheetColumnTypeFactory)
+const FilterModelType = types.compose(
+  NumberFilterModel,
+  types.model({
+    type: types.literal('LocEnd'),
+  }),
+)
 
-  const { FilterModelType: NumberFilterModel } = jbrequire(NumberFactory)
+const LocEnd = MakeSpreadsheetColumnType('LocEnd', {
+  categoryName: 'Location',
+  displayName: 'End',
+  compare(cellA, cellB) {
+    return parseFloat(cellA.text) - parseFloat(cellB.text)
+  },
+  FilterModelType,
+})
 
-  const FilterModelType = types.compose(
-    NumberFilterModel,
-    types.model({
-      type: types.literal('LocEnd'),
-    }),
-  )
-
-  const LocEnd = MakeSpreadsheetColumnType('LocEnd', {
-    categoryName: 'Location',
-    displayName: 'End',
-    compare(cellA, cellB) {
-      return parseFloat(cellA.text) - parseFloat(cellB.text)
-    },
-    FilterModelType,
-  })
-
-  return LocEnd
-}
+export default LocEnd

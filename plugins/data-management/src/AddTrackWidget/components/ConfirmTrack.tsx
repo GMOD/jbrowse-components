@@ -231,8 +231,13 @@ const TrackAssemblySelector = observer(
 
 function ConfirmTrack({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
-  const { trackName, trackAdapter, trackType, warningMessage, adapterHint } =
-    model
+  const {
+    trackName,
+    trackAdapter,
+    trackType,
+    warningMessage,
+    adapterHint,
+  } = model
 
   if (model.unsupported) {
     return (
