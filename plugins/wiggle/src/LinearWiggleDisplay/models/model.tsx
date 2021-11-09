@@ -309,11 +309,12 @@ const stateModelFactory = (
     }))
     .views(self => {
       const { renderProps: superRenderProps } = self
+      const superProps = superRenderProps()
       return {
         renderProps() {
           return {
-            ...superRenderProps(),
-            notReady: !self.ready,
+            ...superProps,
+            notReady: superProps.notReady && !self.ready,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,

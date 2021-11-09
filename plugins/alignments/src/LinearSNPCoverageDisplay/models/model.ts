@@ -121,9 +121,11 @@ const stateModelFactory = (
         },
 
         renderProps() {
+          const superProps = superRenderProps()
           return {
-            ...superRenderProps(),
-            notReady: !self.ready || !this.modificationsReady,
+            ...superProps,
+            notReady:
+              superProps.notReady && (!self.ready || !this.modificationsReady),
             filters: self.filters,
             modificationTagMap: JSON.parse(
               JSON.stringify(self.modificationTagMap),

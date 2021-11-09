@@ -416,9 +416,13 @@ const stateModelFactory = (
             colorBy,
             rpcDriverName,
           } = self
+
+          const superProps = superRenderProps()
           return {
-            ...superRenderProps(),
-            notReady: !ready || (sortedBy && self.currBpPerPx !== view.bpPerPx),
+            ...superProps,
+            notReady:
+              superProps.notReady &&
+              (!ready || (sortedBy && self.currBpPerPx !== view.bpPerPx)),
             rpcDriverName,
             displayModel: self,
             sortedBy,

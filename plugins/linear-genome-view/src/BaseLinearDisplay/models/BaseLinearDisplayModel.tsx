@@ -68,6 +68,7 @@ export const BaseLinearDisplay = types
     globalStats: observable({
       featureDensity: 0,
     } as BaseFeatureStats),
+    statsStatus: 'none' as 'none' | 'loading' | 'loaded' | 'error',
     statsReady: false,
     loadingStats: false,
   }))
@@ -178,8 +179,8 @@ export const BaseLinearDisplay = types
     setMessage(message: string) {
       self.message = message
     },
-    setLoadingStats(flag: boolean) {
-      self.loadingStats = flag
+    setStatsStatus(state: 'none' | 'loading' | 'loaded' | 'error') {
+      self.statsStatus = state
     },
     afterAttach() {
       // watch the parent's blocks to update our block state when they change
@@ -229,7 +230,7 @@ export const BaseLinearDisplay = types
         ...opts,
       }
 
-      this.setLoadingStats(true)
+      this.setStatsStatus('loading')
       return rpcManager.call(
         sessionId,
         'CoreGetGlobalStats',
@@ -238,7 +239,7 @@ export const BaseLinearDisplay = types
     },
     updateGlobalStats(stats: BaseFeatureStats) {
       self.globalStats.featureDensity = stats.featureDensity
-      self.statsReady = true
+      this.setStatsStatus('loaded')
     },
     setStatsReady(flag: boolean) {
       self.statsReady = flag
@@ -305,6 +306,7 @@ export const BaseLinearDisplay = types
   .actions(self => {
     const { reload: superReload } = self
 
+    // check reload above to see which reload it actually is
     return {
       async reload() {
         self.setError()
@@ -325,13 +327,13 @@ export const BaseLinearDisplay = types
             if (isAlive(self)) {
               self.updateGlobalStats(stats)
               superReload()
+              // ;[...self.blockState.values()].map(val => val.doReload())
             } else {
               return
             }
           } catch (e) {
             self.setError(e)
-          } finally {
-            self.setLoadingStats(false)
+            self.setStatsStatus('error')
           }
         }
       },
@@ -344,6 +346,7 @@ export const BaseLinearDisplay = types
                 const aborter = new AbortController()
                 const view = getContainingView(self) as LGV
 
+                // whereever it's skipping stats, need to set status back to none
                 if (!view.initialized) {
                   return
                 }
@@ -374,9 +377,8 @@ export const BaseLinearDisplay = types
                 if (!isAbortException(e) && isAlive(self)) {
                   console.error(e)
                   self.setError(e)
+                  self.setStatsStatus('error')
                 }
-              } finally {
-                self.setLoadingStats(false)
               }
             },
             { delay: 1000 },
@@ -412,7 +414,7 @@ export const BaseLinearDisplay = types
       const view = getContainingView(self) as LinearGenomeViewModel
       if (
         view &&
-        self.globalStats.featureDensity &&
+        self.globalStats.featureDensity !== undefined &&
         self.globalStats.featureDensity > self.maxFeatureScreenDensity
       ) {
         return (
@@ -465,6 +467,8 @@ export const BaseLinearDisplay = types
         ...getParentRenderProps(self),
         rpcDriverName: self.rpcDriverName,
         displayModel: self,
+        notReady:
+          self.statsStatus === 'loading' || self.statsStatus === 'error',
         statsNotReady: self.loadingStats && !self.statsReady,
         onFeatureClick(_: unknown, featureId: string | undefined) {
           const f = featureId || self.featureIdUnderMouse

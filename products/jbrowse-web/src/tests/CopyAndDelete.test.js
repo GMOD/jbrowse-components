@@ -48,11 +48,11 @@ test('copy and delete track in admin mode', async () => {
   fireEvent.click(await findByText('volvox filtered vcf (copy)'))
   expect(queryByText(/Session tracks/)).toBeNull()
   await waitFor(() => expect(state.session.views[0].tracks.length).toBe(1))
-  await findAllByTestId('box-test-vcf-604452', {}, { timeout: 10000 })
+  await findAllByTestId('box-test-vcf-604452', {}, { timeout: 40000 })
   fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Delete track'))
   await waitFor(() => expect(state.session.views[0].tracks.length).toBe(0))
-}, 20000)
+}, 50000)
 
 test('copy and delete reference sequence track disabled', async () => {
   const pluginManager = getPluginManager(undefined, true)
