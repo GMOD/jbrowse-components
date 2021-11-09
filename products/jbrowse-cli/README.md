@@ -4,7 +4,7 @@ id: cli
 toplevel: true
 ---
 
-This document covers the CLI tools.
+This document covers the CLI tools. Note: for @jbrowse/img static export tool, see https://www.npmjs.com/package/@jbrowse/img
 
 ## Installation
 
