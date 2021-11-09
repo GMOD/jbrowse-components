@@ -416,7 +416,9 @@ const ScaleBar = observer(
           style={{
             width: lastOverviewPx - firstOverviewPx,
             left: firstOverviewPx + cytobandOffset,
-            background: showCytobands ? undefined : alpha(scaleBarColor, 0.3),
+            background: showCytobands
+              ? alpha('#f00', 0.3)
+              : alpha(scaleBarColor, 0.3),
           }}
         />
         {/* this is the entire scale bar */}
