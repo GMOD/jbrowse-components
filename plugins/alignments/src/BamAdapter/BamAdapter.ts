@@ -193,25 +193,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     region: Region,
     opts?: BaseOptions,
   ): Promise<BaseFeatureStats> {
-    // refseq = refseq || this.refSeq
-    // let featCount
-    // if (this.indexedData) {
-    //     featCount = await this.indexedData.lineCount(this.browser.regularizeReferenceName(refseq.name))
-    // } else if (this.bam) {
-    //     const chr = this.browser.regularizeReferenceName(refseq.name)
-    //     const chrId = this.bam.chrToIndex && this.bam.chrToIndex[chr]
-    //     featCount = await this.bam.index.lineCount(chrId, true)
-    // }
-    // if (featCount == -1) {
-    //     return this.inherited('_estimateGlobalStats', arguments)
-    // }
-    // const correctionFactor = (this.getConf('topLevelFeaturesPercent') || 100) / 100
-    // const featureDensity = featCount / (refseq.end - refseq.start) * correctionFactor
-    // return { featureDensity }
-
     const { bam } = await this.configure()
     const featCount = await bam.lineCount(region.refName)
-    if (featCount === -1) {
+    if (featCount < 0) {
       return super.estimateGlobalStats(region, opts)
     }
 

@@ -69,6 +69,7 @@ export const BaseLinearDisplay = types
       featureDensity: 0,
     } as BaseFeatureStats),
     statsReady: false,
+    loadingStats: false,
   }))
   .views(self => ({
     get blockType(): 'staticBlocks' | 'dynamicBlocks' {
@@ -177,6 +178,9 @@ export const BaseLinearDisplay = types
     setMessage(message: string) {
       self.message = message
     },
+    setLoadingStats(flag: boolean) {
+      self.loadingStats = flag
+    },
     afterAttach() {
       // watch the parent's blocks to update our block state when they change
       const blockWatchDisposer = autorun(() => {
@@ -200,49 +204,6 @@ export const BaseLinearDisplay = types
       })
 
       addDisposer(self, blockWatchDisposer)
-
-      addDisposer(
-        self,
-        autorun(async () => {
-          try {
-            this.setStatsReady(false)
-            const aborter = new AbortController()
-            const view = getContainingView(self) as LGV
-
-            if (!view.initialized) {
-              return
-            }
-
-            if (
-              view &&
-              self.globalStats &&
-              self.globalStats.featureDensity > self.maxFeatureScreenDensity
-            ) {
-              return
-            }
-
-            if (view.staticBlocks.contentBlocks[0]) {
-              const stats = await this.getGlobalStats(
-                view.staticBlocks.contentBlocks[0],
-                {
-                  signal: aborter.signal,
-                },
-              )
-
-              if (isAlive(self)) {
-                this.updateGlobalStats(stats)
-              } else {
-                return
-              }
-            }
-          } catch (e) {
-            if (!isAbortException(e) && isAlive(self)) {
-              console.error(e)
-              self.setError(e)
-            }
-          }
-        }),
-      )
     },
     async getGlobalStats(
       region: Region,
@@ -268,13 +229,12 @@ export const BaseLinearDisplay = types
         ...opts,
       }
 
-      const results: BaseFeatureStats = (await rpcManager.call(
+      this.setLoadingStats(true)
+      return rpcManager.call(
         sessionId,
         'CoreGetGlobalStats',
         params,
-      )) as BaseFeatureStats
-
-      return results
+      ) as Promise<BaseFeatureStats>
     },
     updateGlobalStats(stats: BaseFeatureStats) {
       self.globalStats.featureDensity = stats.featureDensity
@@ -348,7 +308,6 @@ export const BaseLinearDisplay = types
     return {
       async reload() {
         self.setError()
-        self.setStatsReady(false)
         const aborter = new AbortController()
         const view = getContainingView(self) as LGV
         if (!view.initialized) {
@@ -362,6 +321,7 @@ export const BaseLinearDisplay = types
               view.staticBlocks.contentBlocks[0],
               { signal: aborter.signal },
             )
+
             if (isAlive(self)) {
               self.updateGlobalStats(stats)
               superReload()
@@ -370,15 +330,65 @@ export const BaseLinearDisplay = types
             }
           } catch (e) {
             self.setError(e)
+          } finally {
+            self.setLoadingStats(false)
           }
         }
+      },
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(
+            async () => {
+              try {
+                const aborter = new AbortController()
+                const view = getContainingView(self) as LGV
+
+                if (!view.initialized) {
+                  return
+                }
+
+                if (
+                  view &&
+                  self.globalStats &&
+                  self.globalStats.featureDensity > self.maxFeatureScreenDensity
+                ) {
+                  return
+                }
+
+                if (view.staticBlocks.contentBlocks[0]) {
+                  const stats = await self.getGlobalStats(
+                    view.staticBlocks.contentBlocks[0],
+                    {
+                      signal: aborter.signal,
+                    },
+                  )
+
+                  if (isAlive(self)) {
+                    self.updateGlobalStats(stats)
+                  } else {
+                    return
+                  }
+                }
+              } catch (e) {
+                if (!isAbortException(e) && isAlive(self)) {
+                  console.error(e)
+                  self.setError(e)
+                }
+              } finally {
+                self.setLoadingStats(false)
+              }
+            },
+            { delay: 1000 },
+          ),
+        )
       },
     }
   })
   .views(self => ({
     regionCannotBeRenderedText(_region: Region) {
       const view = getContainingView(self) as LinearGenomeViewModel
-      if (!self.statsReady) {
+      if (self.loadingStats && !self.statsReady) {
         return 'Calculating stats'
       }
       if (
@@ -455,7 +465,7 @@ export const BaseLinearDisplay = types
         ...getParentRenderProps(self),
         rpcDriverName: self.rpcDriverName,
         displayModel: self,
-        statsNotReady: !self.statsReady,
+        statsNotReady: self.loadingStats && !self.statsReady,
         onFeatureClick(_: unknown, featureId: string | undefined) {
           const f = featureId || self.featureIdUnderMouse
           if (!f) {
@@ -496,7 +506,7 @@ export const BaseLinearDisplay = types
   }))
   .actions(self => ({
     async renderSvg(opts: ExportSvgOptions & { overrideHeight: number }) {
-      await when(() => self.statsReady)
+      await when(() => self.statsReady && !!self.regionCannotBeRenderedText)
       const { height, id } = self
       const { overrideHeight } = opts
       const view = getContainingView(self) as LinearGenomeViewModel

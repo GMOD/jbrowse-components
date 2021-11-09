@@ -288,11 +288,11 @@ async function renderBlockEffect(
     return undefined
   }
 
-  if (renderProps.statsNotReady) {
+  if (renderProps.notReady) {
     return undefined
   }
 
-  if (renderProps.notReady) {
+  if (renderProps.statsNotReady) {
     return undefined
   }
 

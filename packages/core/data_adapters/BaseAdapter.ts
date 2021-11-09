@@ -270,7 +270,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     regionToStart: Region,
     opts?: BaseOptions,
   ): Promise<BaseFeatureStats> {
-    // only estimate once, then cache stats for future calls
+    // Estimates once, then cache stats for future calls
     return this.estimateStatsCache
       ? this.estimateStatsCache
       : this.estimateGlobalStats(regionToStart, opts)
@@ -290,12 +290,19 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       const features = await feats
         .pipe(
           filter(
-            (f: Feature) => f.get('start') >= start && f.get('end') <= end,
+            (f: Feature) =>
+              typeof f.get === 'function' &&
+              f.get('start') >= start &&
+              f.get('end') <= end,
           ),
           toArray(),
         )
         .toPromise()
 
+      // if no features in range or adapter has no f.get, cancel feature density calculation
+      if (features.length === 0) {
+        return { featureDensity: 0 }
+      }
       const featureDensity = features.length / length
       return maybeRecordStats(
         length,

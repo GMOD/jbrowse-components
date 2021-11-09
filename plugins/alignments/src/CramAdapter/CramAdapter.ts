@@ -9,7 +9,6 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { BaseFeatureStats } from '@jbrowse/core/util/stats'
 import { toArray } from 'rxjs/operators'
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 
