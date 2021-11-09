@@ -10,6 +10,7 @@ import {
   makeStyles,
 } from '@material-ui/core'
 import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 
@@ -28,14 +29,6 @@ const useStyles = makeStyles(theme => ({
 }))
 
 type LGV = LinearGenomeViewModel
-
-const ErrorDisplay = observer(({ error }: { error?: Error | string }) => {
-  return (
-    <Typography variant="h6" color="error">
-      {`${error}`}
-    </Typography>
-  )
-})
 
 const ImportForm = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
@@ -132,7 +125,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   // having this wrapped in a form allows intuitive use of enter key to submit
   return (
     <div>
-      {err ? <ErrorDisplay error={err} /> : null}
+      {err ? <ErrorMessage error={err} /> : null}
       <Container className={classes.importFormContainer}>
         <form
           onSubmit={event => {

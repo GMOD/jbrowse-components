@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+import { when } from 'mobx'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
@@ -19,6 +20,38 @@ export default class CircularViewPlugin extends Plugin {
           stateModel: stateModelFactory(pluginManager),
           name: 'CircularView',
         }),
+    )
+
+    pluginManager.addToExtensionPoint(
+      'LaunchView-CircularView',
+      // @ts-ignore
+      async ({
+        session,
+        assembly,
+        loc,
+        tracks,
+      }: {
+        session: AbstractSessionModel
+        assembly: string
+        loc: string
+        tracks?: string[]
+      }) => {
+        const { assemblyManager } = session
+        const view = session?.addView('CircularView', {})
+
+        // @ts-ignore
+        await when(() => view.initialized)
+
+        const asm = await assemblyManager.waitForAssembly(assembly)
+
+        // @ts-ignore
+        view.setDisplayedRegions(asm.regions)
+
+        tracks?.forEach(track => {
+          // @ts-ignore
+          view.showTrack(track)
+        })
+      },
     )
   }
 

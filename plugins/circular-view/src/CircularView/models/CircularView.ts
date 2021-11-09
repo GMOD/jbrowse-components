@@ -58,7 +58,7 @@ export default function CircularView(pluginManager: PluginManager) {
         trackSelectorType: 'hierarchical',
       })
       .volatile(() => ({
-        width: 800,
+        width: 0,
       }))
       .views(self => ({
         get staticSlices() {
@@ -203,20 +203,16 @@ export default function CircularView(pluginManager: PluginManager) {
           // it to be loaded. this is done by looking in the assemblyManager's
           // assembly list, and then waiting on it's initialized state which is
           // updated later
-          const assembliesInitialized = this.assemblyNames.every(
-            assemblyName => {
-              if (
-                assemblyManager.assemblyList
-                  ?.map(asm => asm.name)
-                  .includes(assemblyName)
-              ) {
-                return (assemblyManager.get(assemblyName) || {}).initialized
-              }
-              return true
-            },
-          )
-
-          return assembliesInitialized
+          return this.assemblyNames.every(assemblyName => {
+            if (
+              assemblyManager.assemblyList
+                ?.map(asm => asm.name)
+                .includes(assemblyName)
+            ) {
+              return assemblyManager.get(assemblyName)?.initialized
+            }
+            return true
+          })
         },
       }))
       .volatile(() => ({
