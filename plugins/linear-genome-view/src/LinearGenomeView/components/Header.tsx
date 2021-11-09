@@ -10,6 +10,7 @@ import {
   alpha,
 } from '@material-ui/core'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 // icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -121,19 +122,29 @@ const LinearGenomeViewHeader = observer(
     const assembly = assemblyManager.get(assemblyName)
     const searchScope = model.searchScope(assemblyName)
 
-    async function fetchResults(queryString: string) {
+    async function fetchResults(query: string, searchType?: SearchType) {
       if (!textSearchManager) {
         console.warn('No text search manager')
       }
-      const results = await textSearchManager?.search(
+
+      const textSearchResults = await textSearchManager?.search(
         {
-          queryString: queryString.toLowerCase(),
-          searchType: 'exact',
+          queryString: query,
+          searchType,
         },
         searchScope,
         rankSearchResults,
       )
-      return dedupe(results)
+
+      const refNameResults = assembly?.allRefNames
+        ?.filter(refName => refName.startsWith(query))
+        .map(r => new BaseResult({ label: r }))
+        .slice(0, 10)
+
+      return dedupe(
+        [...(refNameResults || []), ...(textSearchResults || [])],
+        elt => elt.getId(),
+      )
     }
 
     async function handleSelectedRegion(option: BaseResult) {
@@ -141,10 +152,10 @@ const LinearGenomeViewHeader = observer(
       let location = option.getLocation()
       const label = option.getLabel()
       try {
-        if (assembly?.refNames?.includes(location)) {
+        if (assembly?.allRefNames?.includes(location)) {
           model.navToLocString(location)
         } else {
-          const results = await fetchResults(label)
+          const results = await fetchResults(label, 'exact')
           if (results && results.length > 1) {
             model.setSearchResults(results, label.toLowerCase())
             return
@@ -173,6 +184,7 @@ const LinearGenomeViewHeader = observer(
           <RefNameAutocomplete
             onSelect={handleSelectedRegion}
             assemblyName={assemblyName}
+            fetchResults={fetchResults}
             model={model}
             TextFieldProps={{
               variant: 'outlined',

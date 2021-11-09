@@ -1,38 +1,24 @@
 import OpenInNewIcon from '@material-ui/icons/OpenInNew'
-import breakpointSplitViewFromTableRowFactory from './breakpointSplitViewFromTableRow'
+import { getContainingView, getSession } from '@jbrowse/core/util'
+
+import { autorun, reaction } from 'mobx'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { types, getParent, addDisposer } from 'mobx-state-tree'
+import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+
+// locals
+import {
+  canOpenBreakpointSplitViewFromTableRow,
+  openBreakpointSplitViewFromTableRow,
+  getSerializedFeatureForRow,
+} from './breakpointSplitViewFromTableRow'
 
 function defaultOnChordClick(feature, chordTrack, pluginManager) {
-  const { jbrequire } = pluginManager
-  // const { getConf } = jbrequire('@jbrowse/core/configuration')
-  const { getContainingView, getSession } = jbrequire('@jbrowse/core/util')
-  // const { resolveIdentifier } = jbrequire('mobx-state-tree')
-
   const session = getSession(chordTrack)
   session.setSelection(feature)
   const view = getContainingView(chordTrack)
   const viewType = pluginManager.getViewType('BreakpointSplitView')
   const viewSnapshot = viewType.snapshotFromBreakendFeature(feature, view)
-
-  // disabling this for now since there isn't a way to set configRelationships
-  // on the generated chord display from the SV inspector
-
-  // // open any evidence tracks defined in configRelationships for this track
-  // const tracks = getConf(chordTrack, 'configRelationships')
-  //   .map(entry => {
-  //     const type = pluginManager.pluggableConfigSchemaType('track')
-  //     const trackConfig = resolveIdentifier(type, session, entry.target)
-  //     return trackConfig
-  //       ? {
-  //           type: trackConfig.type,
-  //           height: 100,
-  //           configuration: trackConfig.trackId,
-  //           selectedRendering: '',
-  //         }
-  //       : null
-  //   })
-  //   .filter(f => !!f)
-  // viewSnapshot.views[0].tracks = tracks
-  // viewSnapshot.views[1].tracks = tracks
 
   // try to center the offsetPx
   viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
@@ -43,15 +29,6 @@ function defaultOnChordClick(feature, chordTrack, pluginManager) {
 }
 
 const SvInspectorViewF = pluginManager => {
-  const { jbrequire } = pluginManager
-  const { autorun, reaction } = pluginManager.lib.mobx
-  const { types, getParent, addDisposer } = pluginManager.lib['mobx-state-tree']
-  const { BaseViewModel } = jbrequire(
-    '@jbrowse/core/pluggableElementTypes/models',
-  )
-  const { getSession } = jbrequire('@jbrowse/core/util')
-  const { readConfObject } = jbrequire('@jbrowse/core/configuration')
-
   const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')
   const CircularViewType = pluginManager.getViewType('CircularView')
 
@@ -59,13 +36,6 @@ const SvInspectorViewF = pluginManager => {
   const defaultHeight = 500
   const headerHeight = 52
   const circularViewOptionsBarHeight = 52
-
-  const {
-    canOpenBreakpointSplitViewFromTableRow,
-    openBreakpointSplitViewFromTableRow,
-    getSerializedFeatureForRow,
-  } = jbrequire(breakpointSplitViewFromTableRowFactory)
-
   const model = types
     .model('SvInspectorView', {
       type: types.literal('SvInspectorView'),

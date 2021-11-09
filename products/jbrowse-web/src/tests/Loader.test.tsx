@@ -160,9 +160,9 @@ describe('<Loader />', () => {
       () => {
         expect(sessionStorage.length).toBeGreaterThan(0)
       },
-      { timeout: 10000 },
+      { timeout: 20000 },
     )
-  }, 10000)
+  }, 20000)
 
   // minimal session with plugin in our plugins.json
   // {"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
@@ -182,9 +182,9 @@ describe('<Loader />', () => {
       () => {
         expect(sessionStorage.length).toBeGreaterThan(0)
       },
-      { timeout: 10000 },
+      { timeout: 20000 },
     )
-  }, 10000)
+  }, 20000)
 
   // minimal session,
   // {"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}

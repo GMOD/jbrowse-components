@@ -17,40 +17,18 @@ import {
   PopperProps,
   Typography,
 } from '@material-ui/core'
+
+// icons
 import SearchIcon from '@material-ui/icons/Search'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 
 // locals
 import { LinearGenomeViewModel } from '..'
+import { dedupe } from './util'
 
 export interface Option {
   group?: string
   result: BaseResult
-}
-
-async function fetchResults(
-  self: LinearGenomeViewModel,
-  query: string,
-  assemblyName: string,
-) {
-  const { textSearchManager } = getSession(self)
-  const { rankSearchResults } = self
-  const searchScope = self.searchScope(assemblyName)
-  return textSearchManager
-    ?.search(
-      {
-        queryString: query,
-        searchType: 'prefix',
-      },
-      searchScope,
-      rankSearchResults,
-    )
-    .then(results =>
-      results.filter(
-        (elem, index, self) =>
-          index === self.findIndex(t => t.label === elem.label),
-      ),
-    )
 }
 
 // the logic of this method is to only apply a filter to RefSequenceResults
@@ -90,6 +68,7 @@ function RefNameAutocomplete({
   onSelect,
   assemblyName,
   style,
+  fetchResults,
   value,
   TextFieldProps = {},
 }: {
@@ -97,6 +76,7 @@ function RefNameAutocomplete({
   onSelect: (region: BaseResult) => void
   assemblyName?: string
   value?: string
+  fetchResults: (query: string) => Promise<BaseResult[]>
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
@@ -106,7 +86,7 @@ function RefNameAutocomplete({
   const [loaded, setLoaded] = useState(true)
   const [currentSearch, setCurrentSearch] = useState('')
   const [inputValue, setInputValue] = useState('')
-  const [searchOptions, setSearchOptions] = useState([] as Option[])
+  const [searchOptions, setSearchOptions] = useState<Option[]>()
   const debouncedSearch = useDebounce(currentSearch, 300)
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
@@ -136,11 +116,13 @@ function RefNameAutocomplete({
         }
 
         setLoaded(false)
-        const results = await fetchResults(model, debouncedSearch, assemblyName)
+        const results = await fetchResults(debouncedSearch)
         if (active) {
-          if (results && results.length >= 0) {
-            setSearchOptions(results.map(result => ({ result })))
-          }
+          setSearchOptions(
+            dedupe(results, r => r.getDisplayString()).map(result => ({
+              result,
+            })),
+          )
           setLoaded(true)
         }
       } catch (e) {
@@ -154,7 +136,7 @@ function RefNameAutocomplete({
     return () => {
       active = false
     }
-  }, [assemblyName, debouncedSearch, session, model])
+  }, [assemblyName, fetchResults, debouncedSearch, session, model])
 
   const inputBoxVal = coarseVisibleLocStrings || value || ''
 
@@ -187,7 +169,7 @@ function RefNameAutocomplete({
         setLoaded(true)
         if (hasDisplayedRegions) {
           setCurrentSearch('')
-          setSearchOptions([])
+          setSearchOptions(undefined)
         }
       }}
       onChange={(_event, selectedOption) => {
@@ -203,7 +185,7 @@ function RefNameAutocomplete({
         }
         setInputValue(inputBoxVal)
       }}
-      options={searchOptions.length === 0 ? options : searchOptions}
+      options={!searchOptions?.length ? options : searchOptions}
       getOptionDisabled={option => option?.group === 'limitOption'}
       filterOptions={(options, params) => {
         const filtered = filterOptions(

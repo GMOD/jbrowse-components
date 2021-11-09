@@ -67,8 +67,10 @@ const HoverTooltip = observer(
     overview: Base1DViewModel
   }) => {
     const classes = useStyles()
+    const { cytobandOffset } = model
     const { assemblyManager } = getSession(model)
-    const px = overview.pxToBp(guideX)
+
+    const px = overview.pxToBp(guideX - cytobandOffset)
     const assembly = assemblyManager.get(px.assemblyName)
     const cytoband = assembly?.cytobands?.find(
       f =>
@@ -104,6 +106,7 @@ function OverviewRubberBand({
   overview: Base1DViewModel
   ControlComponent?: React.ReactElement
 }) {
+  const { cytobandOffset } = model
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
   const [guideX, setGuideX] = useState<number>()
@@ -114,9 +117,9 @@ function OverviewRubberBand({
 
   useEffect(() => {
     function globalMouseMove(event: MouseEvent) {
-      if (controlsRef.current && mouseDragging) {
-        const relativeX =
-          event.clientX - controlsRef.current.getBoundingClientRect().left
+      const ref = controlsRef.current
+      if (ref && mouseDragging) {
+        const relativeX = event.clientX - ref.getBoundingClientRect().left
         setCurrentX(relativeX)
       }
     }
@@ -129,8 +132,8 @@ function OverviewRubberBand({
       ) {
         if (Math.abs(currentX - startX) > 3) {
           model.zoomToDisplayedRegions(
-            overview.pxToBp(startX),
-            overview.pxToBp(currentX),
+            overview.pxToBp(startX - cytobandOffset),
+            overview.pxToBp(currentX - cytobandOffset),
           )
         }
       }
@@ -140,7 +143,7 @@ function OverviewRubberBand({
         startX !== undefined &&
         currentX === undefined
       ) {
-        const clickedAt = overview.pxToBp(startX)
+        const clickedAt = overview.pxToBp(startX - cytobandOffset)
         model.centerAt(
           Math.round(clickedAt.coord),
           clickedAt.refName,
@@ -173,7 +176,7 @@ function OverviewRubberBand({
       }
     }
     return () => {}
-  }, [mouseDragging, currentX, startX, model, overview])
+  }, [mouseDragging, currentX, startX, model, overview, cytobandOffset])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
@@ -232,8 +235,8 @@ function OverviewRubberBand({
   let leftBpOffset
   let rightBpOffset
   if (startX) {
-    leftBpOffset = overview.pxToBp(startX)
-    rightBpOffset = overview.pxToBp(startX + width)
+    leftBpOffset = overview.pxToBp(startX - cytobandOffset)
+    rightBpOffset = overview.pxToBp(startX + width - cytobandOffset)
     if (currentX && currentX < startX) {
       ;[leftBpOffset, rightBpOffset] = [rightBpOffset, leftBpOffset]
     }

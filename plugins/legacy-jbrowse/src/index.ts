@@ -37,7 +37,7 @@ export default class LegacyJBrowsePlugin extends Plugin {
           index?: FileLocation,
           adapterHint?: string,
         ) => {
-          const regexGuess = /\/trackData.jsonz?$/i
+          const regexGuess = /trackData.jsonz?$/i
           const adapterName = 'NCListAdapter'
           const fileName = getFileName(file)
           if (regexGuess.test(fileName) || adapterHint === adapterName) {
