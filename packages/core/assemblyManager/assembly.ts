@@ -64,6 +64,7 @@ async function loadRefNameMap(
     {
       adapterConfig: adapterConf,
       signal,
+      assemblyName: assembly.name,
       ...options,
     },
     { timeout: 1000000 },

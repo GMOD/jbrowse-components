@@ -25,7 +25,10 @@ export default (pluginManager: PluginManager) => {
             locationType: 'UriLocation',
           },
         },
-        sequenceAdapter: pluginManager.pluggableConfigSchemaType('adapter'),
+        sequenceAdapter: {
+          type: 'frozen',
+          defaultValue: null,
+        },
       },
       { explicitlyTyped: true },
     ),

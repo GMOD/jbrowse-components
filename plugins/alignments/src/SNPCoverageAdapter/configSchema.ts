@@ -8,6 +8,10 @@ export default (pluginManager: PluginManager) =>
       'SNPCoverageAdapter',
       {
         subadapter: pluginManager.pluggableConfigSchemaType('adapter'),
+        sequenceAdapter: {
+          type: 'frozen',
+          defaultValue: null,
+        },
       },
       { explicitlyTyped: true },
     ),

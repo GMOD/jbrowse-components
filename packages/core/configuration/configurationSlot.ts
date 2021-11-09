@@ -237,7 +237,7 @@ export default function ConfigSlot(
       },
     }))
     .preProcessSnapshot(val =>
-      typeof val === 'object' && val.name === slotName
+      typeof val === 'object' && val && val.name === slotName
         ? val
         : {
             name: slotName,
