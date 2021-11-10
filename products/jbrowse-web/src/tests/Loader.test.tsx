@@ -29,8 +29,7 @@ const readBuffer = async (url: string, args: RequestInit) => {
         return {
           plugins: [
             {
-              url:
-                'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js',
+              url: 'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js',
             },
           ],
         }

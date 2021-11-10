@@ -25,5 +25,6 @@ const HTTPBasicConfigSchema = ConfigurationSchema(
 
 export type HTTPBasicInternetAccountConfigModel = typeof HTTPBasicConfigSchema
 
-export type HTTPBasicInternetAccountConfig = Instance<HTTPBasicInternetAccountConfigModel>
+export type HTTPBasicInternetAccountConfig =
+  Instance<HTTPBasicInternetAccountConfigModel>
 export default HTTPBasicConfigSchema

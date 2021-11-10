@@ -20,7 +20,8 @@ import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
  */
 export default class FromConfigRegionsAdapter
   extends BaseAdapter
-  implements RegionsAdapter {
+  implements RegionsAdapter
+{
   private features: Map<string, Feature[]>
 
   constructor(

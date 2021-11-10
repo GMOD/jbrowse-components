@@ -182,12 +182,13 @@ const stateModelFactory = (
                 }
 
                 if (colorBy?.type === 'modifications') {
-                  const uniqueModificationsSet = await getUniqueModificationValues(
-                    self,
-                    getConf(self.parentTrack, ['adapter']),
-                    colorBy,
-                    view.staticBlocks,
-                  )
+                  const uniqueModificationsSet =
+                    await getUniqueModificationValues(
+                      self,
+                      getConf(self.parentTrack, ['adapter']),
+                      colorBy,
+                      view.staticBlocks,
+                    )
                   self.updateModificationColorMap(uniqueModificationsSet)
                 }
 

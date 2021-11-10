@@ -82,7 +82,7 @@ function preprocessConfigurationSchemaArguments(
 
 function makeConfigurationSchemaModel<
   DEFINITION extends ConfigurationSchemaDefinition,
-  OPTIONS extends ConfigurationSchemaOptions
+  OPTIONS extends ConfigurationSchemaOptions,
 >(modelName: string, schemaDefinition: DEFINITION, options: OPTIONS) {
   // now assemble the MST model of the configuration schema
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -241,13 +241,12 @@ export interface AnyConfigurationSchemaType
 
 export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>
 
-export type ConfigurationModel<
-  SCHEMA extends AnyConfigurationSchemaType
-> = Instance<SCHEMA>
+export type ConfigurationModel<SCHEMA extends AnyConfigurationSchemaType> =
+  Instance<SCHEMA>
 
 export function ConfigurationSchema<
   DEFINITION extends ConfigurationSchemaDefinition,
-  OPTIONS extends ConfigurationSchemaOptions
+  OPTIONS extends ConfigurationSchemaOptions,
 >(
   modelName: string,
   inputSchemaDefinition: DEFINITION,

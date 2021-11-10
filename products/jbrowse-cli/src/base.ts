@@ -279,8 +279,9 @@ export default abstract class JBrowseCommand extends Command {
     )
     if (response.ok) {
       const result = (await response.json()) as GithubRelease
-      const file = result?.assets?.find(f => f.name.includes('jbrowse-web'))
-        ?.browser_download_url
+      const file = result?.assets?.find(f =>
+        f.name.includes('jbrowse-web'),
+      )?.browser_download_url
 
       if (!file) {
         this.error(

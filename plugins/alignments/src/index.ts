@@ -102,9 +102,8 @@ export default class AlignmentsPlugin extends Plugin {
       })
     })
     pluginManager.addDisplayType(() => {
-      const configSchema = linearSNPCoverageDisplayConfigSchemaFactory(
-        pluginManager,
-      )
+      const configSchema =
+        linearSNPCoverageDisplayConfigSchemaFactory(pluginManager)
       return new DisplayType({
         name: 'LinearSNPCoverageDisplay',
         configSchema,
@@ -118,9 +117,8 @@ export default class AlignmentsPlugin extends Plugin {
       })
     })
     pluginManager.addDisplayType(() => {
-      const configSchema = linearAligmentsDisplayConfigSchemaFactory(
-        pluginManager,
-      )
+      const configSchema =
+        linearAligmentsDisplayConfigSchemaFactory(pluginManager)
       return new DisplayType({
         name: 'LinearAlignmentsDisplay',
         configSchema,

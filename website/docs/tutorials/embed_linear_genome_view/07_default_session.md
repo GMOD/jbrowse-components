@@ -67,10 +67,8 @@ session when clicked. Update "index.html" like this:
     <script type="module">
       import assembly from './assembly.js'
       import tracks from './tracks.js'
-      const {
-        createViewState,
-        JBrowseLinearGenomeView,
-      } = JBrowseReactLinearGenomeView
+      const { createViewState, JBrowseLinearGenomeView } =
+        JBrowseReactLinearGenomeView
       const { createElement } = React
       const { render } = ReactDOM
       const state = new createViewState({
@@ -151,10 +149,8 @@ by default:
     <script type="module">
       import assembly from './assembly.js'
       import tracks from './tracks.js'
-      const {
-        createViewState,
-        JBrowseLinearGenomeView,
-      } = JBrowseReactLinearGenomeView
+      const { createViewState, JBrowseLinearGenomeView } =
+        JBrowseReactLinearGenomeView
       const { createElement } = React
       const { render } = ReactDOM
       const state = new createViewState({

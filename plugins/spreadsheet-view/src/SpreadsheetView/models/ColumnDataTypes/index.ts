@@ -25,7 +25,7 @@ const AnyFilterModelType = types.union(
         // @ts-ignore
         type: columnType.properties.type.value,
       })
-      return (FilterModelType as unknown) as IAnyModelType
+      return FilterModelType as unknown as IAnyModelType
     })
     // some column types might not have filter machinery, filter those out
     .filter(t => !!t),

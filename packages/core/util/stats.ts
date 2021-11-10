@@ -115,50 +115,45 @@ export async function scoresToStats(
 ): Promise<FeatureStats> {
   const { start, end } = region
 
-  const {
-    scoreMin,
-    scoreMax,
-    scoreSum,
-    scoreSumSquares,
-    featureCount,
-  } = await features
-    .pipe(
-      reduce(
-        (
-          seed: {
-            scoreMin: number
-            scoreMax: number
-            scoreSum: number
-            scoreSumSquares: number
-            featureCount: number
-          },
-          f: Feature,
-        ) => {
-          const score = f.get('score')
-          seed.scoreMax = Math.max(
-            seed.scoreMax,
-            f.get('summary') ? f.get('maxScore') : score,
-          )
-          seed.scoreMin = Math.min(
-            seed.scoreMin,
-            f.get('summary') ? f.get('minScore') : score,
-          )
-          seed.scoreSum += score
-          seed.scoreSumSquares += score * score
-          seed.featureCount += 1
+  const { scoreMin, scoreMax, scoreSum, scoreSumSquares, featureCount } =
+    await features
+      .pipe(
+        reduce(
+          (
+            seed: {
+              scoreMin: number
+              scoreMax: number
+              scoreSum: number
+              scoreSumSquares: number
+              featureCount: number
+            },
+            f: Feature,
+          ) => {
+            const score = f.get('score')
+            seed.scoreMax = Math.max(
+              seed.scoreMax,
+              f.get('summary') ? f.get('maxScore') : score,
+            )
+            seed.scoreMin = Math.min(
+              seed.scoreMin,
+              f.get('summary') ? f.get('minScore') : score,
+            )
+            seed.scoreSum += score
+            seed.scoreSumSquares += score * score
+            seed.featureCount += 1
 
-          return seed
-        },
-        {
-          scoreMin: Number.MAX_VALUE,
-          scoreMax: Number.MIN_VALUE,
-          scoreSum: 0,
-          scoreSumSquares: 0,
-          featureCount: 0,
-        },
-      ),
-    )
-    .toPromise()
+            return seed
+          },
+          {
+            scoreMin: Number.MAX_VALUE,
+            scoreMax: Number.MIN_VALUE,
+            scoreSum: 0,
+            scoreSumSquares: 0,
+            featureCount: 0,
+          },
+        ),
+      )
+      .toPromise()
 
   return rectifyStats({
     scoreMax,

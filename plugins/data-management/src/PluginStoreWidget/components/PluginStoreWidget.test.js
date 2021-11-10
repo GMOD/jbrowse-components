@@ -12,8 +12,7 @@ const plugins = {
       authors: ['Colin Diesh'],
       description: 'multiple sequence alignment browser plugin for JBrowse 2',
       location: 'https://github.com/GMOD/jbrowse-plugin-msaview',
-      url:
-        'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js',
+      url: 'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js',
       license: 'Apache License 2.0',
       image:
         'https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/msaview-screenshot-fs8.png',
@@ -86,8 +85,7 @@ describe('<PluginStoreWidget />', () => {
     expect(getSnapshot(getParent(session)).jbrowse.plugins).toEqual([
       {
         name: 'MsaView',
-        url:
-          'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js',
+        url: 'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js',
       },
     ])
   })

@@ -46,7 +46,7 @@ export function stateModelFactory(configSchema: any) {
       reactElement: undefined as React.ReactElement | undefined,
       message: undefined as string | undefined,
       renderingComponent: undefined as any,
-      ReactComponent2: (ServerSideRenderedBlockContent as unknown) as React.FC,
+      ReactComponent2: ServerSideRenderedBlockContent as unknown as React.FC,
     }))
     .views(self => ({
       get rendererTypeName() {

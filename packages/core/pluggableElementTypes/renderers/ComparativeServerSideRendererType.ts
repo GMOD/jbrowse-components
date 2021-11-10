@@ -126,12 +126,11 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
     })
 
     // note that getFeaturesInMultipleRegions does not do glyph expansion
-    const featureObservable = (dataAdapter as BaseFeatureDataAdapter).getFeaturesInMultipleRegions(
-      requestRegions,
-      {
-        signal,
-      },
-    )
+    const featureObservable = (
+      dataAdapter as BaseFeatureDataAdapter
+    ).getFeaturesInMultipleRegions(requestRegions, {
+      signal,
+    })
 
     return featureObservable
       .pipe(

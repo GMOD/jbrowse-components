@@ -8,14 +8,12 @@ export default [
     adapter: {
       type: 'VcfTabixAdapter',
       vcfGzLocation: {
-        uri:
-          'https://s3.amazonaws.com/jbrowse.org/genomes/volvox/volvox.dup.vcf.gz',
+        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/volvox/volvox.dup.vcf.gz',
         locationType: 'UriLocation',
       },
       index: {
         location: {
-          uri:
-            'https://s3.amazonaws.com/jbrowse.org/genomes/volvox/volvox.dup.vcf.gz.tbi',
+          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/volvox/volvox.dup.vcf.gz.tbi',
           locationType: 'UriLocation',
         },
       },

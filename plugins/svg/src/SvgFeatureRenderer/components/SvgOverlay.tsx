@@ -107,11 +107,8 @@ function SvgOverlay({
   movedDuringLastMouseDown,
   ...handlers
 }: SvgOverlayProps) {
-  const {
-    selectedFeatureId,
-    featureIdUnderMouse,
-    contextMenuFeature,
-  } = displayModel
+  const { selectedFeatureId, featureIdUnderMouse, contextMenuFeature } =
+    displayModel
 
   const mouseoverFeatureId = featureIdUnderMouse || contextMenuFeature?.id()
 

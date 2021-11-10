@@ -7,7 +7,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 export default class RefNameAliasAdapter
   extends BaseAdapter
-  implements BaseRefNameAliasAdapter {
+  implements BaseRefNameAliasAdapter
+{
   async getRefNameAliases() {
     const loc = readConfObject(this.config, 'location')
     if (loc.uri === '' || loc.uri === '/path/to/my/aliases.txt') {

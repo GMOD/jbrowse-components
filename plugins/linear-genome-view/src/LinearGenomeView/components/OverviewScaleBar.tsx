@@ -87,12 +87,8 @@ const Polygon = observer(
   }) => {
     const theme = useTheme()
     const multiplier = Number(useOffset)
-    const {
-      interRegionPaddingWidth,
-      offsetPx,
-      dynamicBlocks,
-      cytobandOffset,
-    } = model
+    const { interRegionPaddingWidth, offsetPx, dynamicBlocks, cytobandOffset } =
+      model
     const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
     const { tertiary, primary } = theme.palette
     const polygonColor = tertiary ? tertiary.light : primary.light
