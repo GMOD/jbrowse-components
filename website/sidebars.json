@@ -3,10 +3,6 @@
     "introduction",
     "combined",
     "combined_pdf",
-    "cli",
-    "config_guide",
-    "developer_guide",
-    "user_guide",
     {
       "type": "category",
       "label": "Quickstart guides",
@@ -18,6 +14,10 @@
         "quickstart_desktop"
       ]
     },
+    "cli",
+    "config_guide",
+    "developer_guide",
+    "user_guide",
     {
       "type": "category",
       "label": "Developer tutorials",
