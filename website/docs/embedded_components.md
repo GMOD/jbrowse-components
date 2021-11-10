@@ -8,7 +8,7 @@ JBrowse 2 is a pluggable open-source platform for visualizing, integrating, and 
 
 ## JBrowse2 React Linear Genome View
 
-Resources for the reusable linear genome view React component
+This component consists of a single JBrowse 2 linear view.
 
-- [@jbrowse/linear-genome-view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view) - linear genome browser view React component on NPM
+- [@jbrowse/linear-genome-view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view) - linear genome view React component on NPM
 - [Storybook](https://jbrowse.org/storybook/lgv/main/) - docs for the reusable linear genome view React component
