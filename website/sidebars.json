@@ -3,6 +3,10 @@
     "introduction",
     "combined",
     "combined_pdf",
+    "cli",
+    "config_guide",
+    "developer_guide",
+    "user_guide",
     {
       "type": "category",
       "label": "Quickstart guides",
@@ -14,10 +18,6 @@
         "quickstart_desktop"
       ]
     },
-    "user_guide",
-    "config_guide",
-    "cli",
-    "developer_guide",
     {
       "type": "category",
       "label": "Developer tutorials",
@@ -39,7 +39,6 @@
         }
       ]
     },
-    "faq",
     {
       "type": "category",
       "label": "JBrowse educational courses",
@@ -68,6 +67,7 @@
           ]
         }
       ]
-    }
+    },
+    "faq"
   ]
 }
