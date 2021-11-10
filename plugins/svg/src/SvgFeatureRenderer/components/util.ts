@@ -38,9 +38,11 @@ export function chooseGlyphComponent(feature: Feature, extraGlyphs?: ExtraGlyphV
       return ProcessedTranscript
     }
 
-    for (const extraGlyph of extraGlyphs) {
-      if(extraGlyph.validator(feature) === true) {
-        return extraGlyph.glyph
+    if(typeof(extraGlyphs) != "undefined") {
+      for (const extraGlyph of extraGlyphs) {
+        if(extraGlyph.validator(feature) === true) {
+          return extraGlyph.glyph
+        }
       }
     }
 
