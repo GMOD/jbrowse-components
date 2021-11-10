@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { useDebounce } from '@jbrowse/core/util'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
-import FormControl from '@material-ui/core/FormControl'
-import FormHelperText from '@material-ui/core/FormHelperText'
-import InputLabel from '@material-ui/core/InputLabel'
-import { makeStyles } from '@material-ui/core/styles'
-import Tooltip from '@material-ui/core/Tooltip'
-import IconButton from '@material-ui/core/IconButton'
+import {
+  FormControl,
+  FormHelperText,
+  InputLabel,
+  Tooltip,
+  IconButton,
+  makeStyles,
+} from '@material-ui/core'
 import HelpIcon from '@material-ui/icons/Help'
 import { getEnv } from 'mobx-state-tree'
 import { observer, PropTypes } from 'mobx-react'

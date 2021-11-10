@@ -138,7 +138,7 @@ test('opens a dialog with multiple results with jb1 text search adapter results'
   fireEvent.mouseDown(input)
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
-  await screen.findByText('Search Results')
+  await screen.findByText('Search Results', {}, { timeout: 10000 })
   // @ts-ignore
   expect(state.session.views[0].searchResults.length).toBeGreaterThan(0)
 }, 30000)

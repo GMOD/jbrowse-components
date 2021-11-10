@@ -11,7 +11,7 @@ import { parseBreakend } from '@gmod/vcf'
 class BreakpointSplitViewType extends ViewType {
   snapshotFromBreakendFeature(feature: Feature, view: LinearGenomeViewModel) {
     const alt = feature.get('ALT')?.[0]
-    const bnd = parseBreakend(alt)
+    const bnd = alt ? parseBreakend(alt) : undefined
     const startPos = feature.get('start')
     let endPos
     const bpPerPx = 10

@@ -177,14 +177,14 @@ const SVGHeader = ({ model }: { model: LGV }) => {
           <Cytobands overview={overview} assembly={assembly} block={block} />
           <rect
             stroke="red"
-            fill="none"
-            width={lastOverviewPx - firstOverviewPx}
-            height={HEADER_OVERVIEW_HEIGHT - 2}
+            fill="rgb(255,0,0,0.3)"
+            width={Math.max(lastOverviewPx - firstOverviewPx, 0.5)}
+            height={HEADER_OVERVIEW_HEIGHT - 1}
             x={firstOverviewPx}
-            y={1}
+            y={0.5}
           />
           <g transform={`translate(0,${HEADER_OVERVIEW_HEIGHT})`}>
-            <Polygon overview={overview} model={model} />
+            <Polygon overview={overview} model={model} useOffset={false} />
           </g>
         </g>
       ) : null}
