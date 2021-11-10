@@ -18,7 +18,7 @@ Resources for both desktop/web users
 
 Resources for users of the embedded components
 
-- [@jbrowse/linear-genome-view](https://jbrowse.org/storybook/lgv/main/) -
+- [Embedded Components](embedded_components) -
   Docs for the reusable linear genome view React component
 
 Resources for web developers and admins
