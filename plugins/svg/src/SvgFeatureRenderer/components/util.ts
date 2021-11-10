@@ -18,7 +18,10 @@ interface ExtraGlyphValidator {
   validator: (feature: Feature) => boolean
 }
 
-export function chooseGlyphComponent(feature: Feature, extraGlyphs?: ExtraGlyphValidator[]): Glyph {
+export function chooseGlyphComponent(
+  feature: Feature,
+  extraGlyphs?: ExtraGlyphValidator[],
+): Glyph {
   const type = feature.get('type')
   const strand = feature.get('strand')
   const subfeatures: Feature[] = feature.get('subfeatures')
@@ -38,9 +41,9 @@ export function chooseGlyphComponent(feature: Feature, extraGlyphs?: ExtraGlyphV
       return ProcessedTranscript
     }
 
-    if(typeof(extraGlyphs) != "undefined") {
+    if (typeof extraGlyphs != 'undefined') {
       for (const extraGlyph of extraGlyphs) {
-        if(extraGlyph.validator(feature) === true) {
+        if (extraGlyph.validator(feature) === true) {
           return extraGlyph.glyph
         }
       }
