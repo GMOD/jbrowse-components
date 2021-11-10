@@ -16,6 +16,11 @@ Resources for both desktop/web users
 
 - [User guide](user_guide) - screenshots of the app and general usage
 
+Resources for users of the embedded components
+
+- [@jbrowse/linear-genome-view](https://jbrowse.org/storybook/lgv/main/) -
+  Docs for the reusable linear genome view React component
+
 Resources for web developers and admins
 
 - [Quick-start for JBrowse web](quickstart_web) - a quick-start guide to
@@ -30,8 +35,6 @@ Other resources
 - [FAQ](faq) - Some Q&A for troubleshooting or other topics
 - [@jbrowse/cli](cli) - docs for our CLI tools for loading tracks,
   assemblies, text indexing, and more
-- [@jbrowse/linear-genome-view](https://jbrowse.org/storybook/lgv/main/) -
-  Docs for the reusable linear genome view React component
 - [@jbrowse/img](https://www.npmjs.com/package/@jbrowse/img) - Docs for our
   static image export tool
 
