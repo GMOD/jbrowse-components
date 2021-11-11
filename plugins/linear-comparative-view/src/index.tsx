@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react'
-import { makeStyles } from '@material-ui/core/styles'
 import {
   Button,
   CircularProgress,
@@ -9,9 +8,11 @@ import {
   TextField,
   Typography,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
+  makeStyles,
 } from '@material-ui/core'
 
 import { ConfigurationSchema, getConf } from '@jbrowse/core/configuration'
@@ -563,10 +564,8 @@ function WindowSizeDlg(props: {
             {error ? <Typography color="error">{`${error}`}</Typography> : null}
 
             <TextField
-              value={window}
-              onChange={event => {
-                setWindowSize(event.target.value)
-              }}
+              value={windowSize}
+              onChange={event => setWindowSize(event.target.value)}
               label="Set window size"
             />
             <FormControlLabel
@@ -578,17 +577,17 @@ function WindowSizeDlg(props: {
               }
               label="Show qual track"
             />
-            <Button
-              variant="contained"
-              color="primary"
-              style={{ marginLeft: 20 }}
-              onClick={onSubmit}
-            >
-              Submit
-            </Button>
           </div>
         )}
       </DialogContent>
+      <DialogActions>
+        <Button variant="contained" color="secondary" onClick={handleClose}>
+          Cancel
+        </Button>
+        <Button variant="contained" color="primary" onClick={onSubmit}>
+          Submit
+        </Button>
+      </DialogActions>
     </Dialog>
   )
 }
