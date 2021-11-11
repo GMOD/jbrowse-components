@@ -29,7 +29,7 @@ beforeEach(() => {
   fetch.mockResponse(readBuffer)
 })
 
-const wait = [{}, { timeout: 10000 }]
+const wait = [{}, { timeout: 80000 }]
 
 // this tests reloading after an initial track error
 // it performs a full image snapshot test to ensure that the features are rendered and not
@@ -65,7 +65,7 @@ describe('reload tests', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 100000)
 
   it('reloads alignments track (CRAM 404)', async () => {
     console.error = jest.fn()
@@ -215,7 +215,7 @@ describe('reload tests', () => {
     fireEvent.click(buttons[0])
 
     await findAllByTestId('box-test-vcf-604452', ...wait)
-  }, 20000)
+  }, 100000)
 
   it('reloads vcf (VCF.GZ.TBI 404)', async () => {
     console.error = jest.fn()
@@ -240,5 +240,5 @@ describe('reload tests', () => {
     fireEvent.click(buttons[0])
 
     await findAllByTestId('box-test-vcf-604452', ...wait)
-  }, 20000)
+  }, 100000)
 })

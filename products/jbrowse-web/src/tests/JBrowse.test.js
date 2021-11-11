@@ -43,7 +43,7 @@ setup()
 
 afterEach(cleanup)
 
-const waitForOptions = { timeout: 10000 }
+const waitForOptions = { timeout: 80000 }
 
 beforeEach(() => {
   clearCache()
@@ -127,7 +127,7 @@ test('variant track test - opens feature detail view', async () => {
   fireEvent.contextMenu(feats2[0])
   fireEvent.click(await findByText('Open feature details'))
   expect(await findByTestId('variant-side-drawer')).toBeInTheDocument()
-}, 10000)
+}, 100000)
 
 test('widget drawer navigation', async () => {
   const pluginManager = getPluginManager(undefined, true)
@@ -185,7 +185,7 @@ describe('assembly aliases', () => {
       await findByTestId('htsTrackEntry-volvox_filtered_vcf_assembly_alias'),
     )
     await findByTestId('box-test-vcf-604452', {}, waitForOptions)
-  }, 10000)
+  }, 100000)
 })
 
 describe('nclist track test with long name', () => {
@@ -204,7 +204,7 @@ describe('nclist track test with long name', () => {
       {},
       waitForOptions,
     )
-  }, 10000)
+  }, 100000)
 })
 
 describe('test configuration editor', () => {
@@ -230,7 +230,7 @@ describe('test configuration editor', () => {
         ),
       waitForOptions,
     )
-  }, 10000)
+  }, 100000)
 })
 
 // eslint-disable-next-line react/prop-types
@@ -286,7 +286,7 @@ test('wrong assembly', async () => {
     {},
     waitForOptions,
   )
-}, 15000)
+}, 150000)
 
 test('looks at about this track dialog', async () => {
   const pluginManager = getPluginManager()
@@ -300,7 +300,7 @@ test('looks at about this track dialog', async () => {
   fireEvent.click(await findByTestId('track_menu_icon', {}, waitForOptions))
   fireEvent.click(await findByText('About track'))
   await findAllByText(/SQ/, {}, waitForOptions)
-}, 15000)
+}, 150000)
 
 test('export svg', async () => {
   const pluginManager = getPluginManager()
