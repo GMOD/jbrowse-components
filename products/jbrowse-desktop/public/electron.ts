@@ -6,7 +6,8 @@ import path from 'path'
 import url from 'url'
 import windowStateKeeper from 'electron-window-state'
 import fetch from 'node-fetch'
-import { getFileStream, generateFastaIndex } from './generateFastaIndex'
+import { getFileStream } from './generateFastaIndex'
+import { generateFastaIndex } from '@gmod/faidx'
 
 import { autoUpdater } from 'electron-updater'
 
@@ -322,7 +323,8 @@ ipcMain.handle(
     const filename = 'localPath' in location ? location.localPath : location.uri
     const faiPath = getFaiPath(path.basename(filename) + Date.now() + '.fai')
     const stream = await getFileStream(location)
-    await generateFastaIndex(faiPath, stream)
+    const write = fs.createWriteStream(faiPath)
+    await generateFastaIndex(write, stream)
     return faiPath
   },
 )

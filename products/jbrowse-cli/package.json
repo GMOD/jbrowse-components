@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/cli",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "A command line tool for working with JBrowse 2",
   "keywords": [
     "jbrowse",
@@ -46,6 +46,7 @@
   "dependencies": {
     "@gmod/gff": "^1.1.2",
     "@oclif/command": "^1",
+    "@oclif/errors": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^3",
     "boxen": "^4.2.0",
@@ -57,6 +58,7 @@
     "ixixx": "^1.0.17",
     "json-parse-better-errors": "^1.0.2",
     "node-fetch": "^2.6.0",
+    "object.fromentries": "^2.0.5",
     "tslib": "^1",
     "unzipper": "^0.10.11"
   },

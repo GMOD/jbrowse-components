@@ -1,10 +1,6 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
-import BaseResult, {
-  RefSequenceResult,
-} from '@jbrowse/core/TextSearch/BaseResults'
-import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import {
   Button,
   CircularProgress,
@@ -13,11 +9,14 @@ import {
   Typography,
   makeStyles,
 } from '@material-ui/core'
-// other
+import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
+
+// locals
 import RefNameAutocomplete from './RefNameAutocomplete'
 import SearchResultsDialog from './SearchResultsDialog'
 import { LinearGenomeViewModel } from '..'
-import { dedupe } from './util'
 
 const useStyles = makeStyles(theme => ({
   importFormContainer: {
@@ -49,7 +48,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   } = model
   const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
   const [error, setError] = useState<typeof modelError | undefined>(modelError)
-  const message = !assemblyNames.length ? 'No configured assemblies' : ''
   const searchScope = model.searchScope(selectedAsm)
 
   const assembly = assemblyManager.get(selectedAsm)
@@ -59,33 +57,38 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const regions = assembly?.regions || []
   const err = assemblyError || error
 
-  const [myOption, setOption] = useState<BaseResult | undefined>()
+  const [myOption, setOption] = useState<BaseResult>()
 
   // use this instead of useState initializer because the useState initializer
   // won't update in response to an observable
   const option =
     myOption ||
-    new RefSequenceResult({
-      refName: regions[0]?.refName,
+    new BaseResult({
       label: regions[0]?.refName,
     })
 
   const selectedRegion = option?.getLocation()
 
-  async function fetchResults(queryString: string) {
+  async function fetchResults(query: string, searchType?: SearchType) {
     if (!textSearchManager) {
       console.warn('No text search manager')
     }
-    const results = await textSearchManager?.search(
+
+    const textSearchResults = await textSearchManager?.search(
       {
-        queryString: queryString.toLowerCase(),
-        searchType: 'exact',
+        queryString: query,
+        searchType,
       },
       searchScope,
       rankSearchResults,
     )
 
-    return dedupe(results)
+    const refNameResults = assembly?.allRefNames
+      ?.filter(refName => refName.startsWith(query))
+      .map(r => new BaseResult({ label: r }))
+      .slice(0, 10)
+
+    return [...(refNameResults || []), ...(textSearchResults || [])]
   }
 
   /**
@@ -102,10 +105,10 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     let trackId = option.getTrackId()
     let location = input || option.getLocation() || ''
     try {
-      if (assembly?.refNames?.includes(location)) {
+      if (assembly?.allRefNames?.includes(location)) {
         model.navToLocString(location, selectedAsm)
       } else {
-        const results = await fetchResults(input)
+        const results = await fetchResults(input, 'exact')
         if (results && results.length > 1) {
           model.setSearchResults(results, input.toLowerCase())
           return
@@ -158,12 +161,11 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                   <Typography color="error">X</Typography>
                 ) : selectedRegion && model.volatileWidth ? (
                   <RefNameAutocomplete
+                    fetchResults={fetchResults}
                     model={model}
-                    assemblyName={message ? undefined : selectedAsm}
+                    assemblyName={assemblyError ? undefined : selectedAsm}
                     value={selectedRegion}
-                    onSelect={option => {
-                      setOption(option)
-                    }}
+                    onSelect={option => setOption(option)}
                     TextFieldProps={{
                       margin: 'normal',
                       variant: 'outlined',
@@ -215,9 +217,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
         <SearchResultsDialog
           model={model}
           optAssemblyName={selectedAsm}
-          handleClose={() => {
-            model.setSearchResults(undefined, undefined)
-          }}
+          handleClose={() => model.setSearchResults(undefined, undefined)}
         />
       ) : null}
     </div>

@@ -4,7 +4,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
 import ViewComfyIcon from '@material-ui/icons/ViewComfy'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import stateModelFactory from './SpreadsheetView/models/SpreadsheetView'
+import SpreadsheetViewModel from './SpreadsheetView/models/SpreadsheetView'
 
 export default class SpreadsheetViewPlugin extends Plugin {
   name = 'SpreadsheetViewPlugin'
@@ -13,7 +13,7 @@ export default class SpreadsheetViewPlugin extends Plugin {
     pluginManager.addViewType(() => {
       return new ViewType({
         name: 'SpreadsheetView',
-        stateModel: stateModelFactory(pluginManager),
+        stateModel: SpreadsheetViewModel,
         ReactComponent: lazy(
           () => import('./SpreadsheetView/components/SpreadsheetView'),
         ),

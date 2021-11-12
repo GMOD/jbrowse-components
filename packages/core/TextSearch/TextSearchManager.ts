@@ -8,8 +8,8 @@ import { SearchType, BaseTextSearchAdapter } from '../data_adapters/BaseAdapter'
 import { readConfObject } from '../configuration'
 
 export interface BaseArgs {
-  searchType: SearchType
   queryString: string
+  searchType?: SearchType
   signal?: AbortSignal
   limit?: number
   pageNumber?: number
