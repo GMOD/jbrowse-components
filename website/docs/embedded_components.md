@@ -6,7 +6,7 @@ toplevel: true
 
 JBrowse 2 is a pluggable open-source platform for visualizing, integrating, and sharing biological data.
 
-## JBrowse2 React Linear Genome View
+## JBrowse React Linear Genome View
 
 This component consists of a single JBrowse 2 linear view.
 
