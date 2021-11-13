@@ -421,8 +421,9 @@ const stateModelFactory = (
           return {
             ...superProps,
             notReady:
-              superProps.notReady &&
-              (!ready || (sortedBy && self.currBpPerPx !== view.bpPerPx)),
+              superProps.notReady ||
+              !ready ||
+              (sortedBy && self.currBpPerPx !== view.bpPerPx),
             rpcDriverName,
             displayModel: self,
             sortedBy,

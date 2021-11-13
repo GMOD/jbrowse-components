@@ -69,8 +69,6 @@ export const BaseLinearDisplay = types
       featureDensity: 0,
     } as BaseFeatureStats),
     statsStatus: 'none' as 'none' | 'loading' | 'loaded' | 'error',
-    statsReady: false,
-    loadingStats: false,
   }))
   .views(self => ({
     get blockType(): 'staticBlocks' | 'dynamicBlocks' {
@@ -241,9 +239,6 @@ export const BaseLinearDisplay = types
       self.globalStats.featureDensity = stats.featureDensity
       this.setStatsStatus('loaded')
     },
-    setStatsReady(flag: boolean) {
-      self.statsReady = flag
-    },
     setHeight(displayHeight: number) {
       if (displayHeight > minDisplayHeight) {
         self.height = displayHeight
@@ -390,8 +385,8 @@ export const BaseLinearDisplay = types
   .views(self => ({
     regionCannotBeRenderedText(_region: Region) {
       const view = getContainingView(self) as LinearGenomeViewModel
-      if (self.loadingStats && !self.statsReady) {
-        return 'Calculating stats'
+      if (self.statsStatus === 'error') {
+        return 'Force load to see features'
       }
       if (
         view &&
@@ -469,7 +464,6 @@ export const BaseLinearDisplay = types
         displayModel: self,
         notReady:
           self.statsStatus === 'loading' || self.statsStatus === 'error',
-        statsNotReady: self.loadingStats && !self.statsReady,
         onFeatureClick(_: unknown, featureId: string | undefined) {
           const f = featureId || self.featureIdUnderMouse
           if (!f) {
@@ -510,7 +504,10 @@ export const BaseLinearDisplay = types
   }))
   .actions(self => ({
     async renderSvg(opts: ExportSvgOptions & { overrideHeight: number }) {
-      await when(() => self.statsReady && !!self.regionCannotBeRenderedText)
+      await when(
+        () =>
+          self.statsStatus === 'loaded' && !!self.regionCannotBeRenderedText,
+      )
       const { height, id } = self
       const { overrideHeight } = opts
       const view = getContainingView(self) as LinearGenomeViewModel

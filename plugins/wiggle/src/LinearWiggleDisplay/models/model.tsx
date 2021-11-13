@@ -314,7 +314,7 @@ const stateModelFactory = (
         renderProps() {
           return {
             ...superProps,
-            notReady: superProps.notReady && !self.ready,
+            notReady: superProps.notReady || !self.ready,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,
