@@ -9,9 +9,9 @@ const hasAnyOverlap = (a1 = [], a2 = []) =>
 function passesFilter(filter, config) {
   const name = getTrackName(config)
   const categories = readConfObject(config, 'category') || []
-  const regexp = new RegExp(filter, 'i')
   return (
-    !!name.match(regexp) || categories.filter(cat => !!cat.match(regexp)).length
+    !!name.includes(filter) ||
+    categories.filter(cat => !!cat.includes(filter)).length
   )
 }
 
