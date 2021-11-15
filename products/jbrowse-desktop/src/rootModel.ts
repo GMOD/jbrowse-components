@@ -53,10 +53,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
     .model('Root', {
       jbrowse: JBrowseDesktop(pluginManager, Session, assemblyConfigSchema),
       session: types.maybe(Session),
-      assemblyManager: assemblyManagerFactory(
-        assemblyConfigSchema,
-        pluginManager,
-      ),
+      assemblyManager: assemblyManagerFactory(assemblyConfigSchema),
       savedSessionNames: types.maybe(types.array(types.string)),
       version: types.maybe(types.string),
       internetAccounts: types.array(

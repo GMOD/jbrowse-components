@@ -112,16 +112,12 @@ export default function RootModel(
 ) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
-  const assemblyManagerType = assemblyManagerFactory(
-    assemblyConfigSchema,
-    pluginManager,
-  )
   return types
     .model('Root', {
       jbrowse: jbrowseWebFactory(pluginManager, Session, assemblyConfigSchema),
       configPath: types.maybe(types.string),
       session: types.maybe(Session),
-      assemblyManager: assemblyManagerType,
+      assemblyManager: assemblyManagerFactory(assemblyConfigSchema),
       version: types.maybe(types.string),
       internetAccounts: types.array(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
