@@ -48,6 +48,12 @@ test('copy and delete track in admin mode', async () => {
   fireEvent.click(await findByText('volvox filtered vcf (copy)'))
   expect(queryByText(/Session tracks/)).toBeNull()
   await waitFor(() => expect(state.session.views[0].tracks.length).toBe(1))
+  const reloadButton = await findAllByTestId(
+    'reload_button',
+    {},
+    { timeout: 60000 },
+  )
+  fireEvent.click(reloadButton[0])
   await findAllByTestId('box-test-vcf-604452', {}, { timeout: 60000 })
   fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Delete track'))
@@ -89,6 +95,12 @@ test('copy and delete track to session tracks', async () => {
   fireEvent.click(await findByText('volvox filtered vcf (copy)'))
   await findByText(/Session tracks/)
   await waitFor(() => expect(state.session.views[0].tracks.length).toBe(1))
+  const reloadButton = await findAllByTestId(
+    'reload_button',
+    {},
+    { timeout: 60000 },
+  )
+  fireEvent.click(reloadButton[0])
   await findAllByTestId('box-test-vcf-604452', {}, { timeout: 60000 })
   fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Delete track'))
