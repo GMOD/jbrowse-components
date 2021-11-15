@@ -125,7 +125,7 @@ export default class extends BaseFeatureDataAdapter {
       }
 
       const gff3 = lines
-        .map((lineRecord: LineFeature) => {
+        .map(lineRecord => {
           if (lineRecord.fields[8] && lineRecord.fields[8] !== '.') {
             if (!lineRecord.fields[8].includes('_lineHash')) {
               lineRecord.fields[8] += `;_lineHash=${lineRecord.lineHash}`
