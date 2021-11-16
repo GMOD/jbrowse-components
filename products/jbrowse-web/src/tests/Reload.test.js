@@ -29,7 +29,7 @@ beforeEach(() => {
   fetch.mockResponse(readBuffer)
 })
 
-const wait = [{}, { timeout: 80000 }]
+const wait = [{}, { timeout: 100000 }]
 
 // this tests reloading after an initial track error
 // it performs a full image snapshot test to ensure that the features are rendered and not
@@ -147,8 +147,10 @@ describe('reload tests', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_bam_pileup'))
     await findAllByText(/HTTP 404/, ...wait)
     fetch.mockResponse(readBuffer)
-    const buttons = await findAllByTestId('reload_button')
+    const buttons = await findAllByTestId('reload_button', ...wait)
     fireEvent.click(buttons[0])
+    const forceLoad = await findAllByTestId('force_reload_button', ...wait)
+    fireEvent.click(forceLoad[0])
     const canvas = await findAllByTestId('prerendered_canvas', ...wait)
 
     const pileupImg = canvas[0].toDataURL()
@@ -158,7 +160,7 @@ describe('reload tests', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 140000)
 
   it('reloads bigwig (BW 404)', async () => {
     console.error = jest.fn()
@@ -180,8 +182,8 @@ describe('reload tests', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray'))
     await findAllByText(/HTTP 404/, ...wait)
     fetch.mockResponse(readBuffer)
-    const buttons = await findAllByTestId('reload_button')
-    fireEvent.click(buttons[0])
+    const forceLoad = await findAllByTestId('force_reload_button', ...wait)
+    fireEvent.click(forceLoad[0])
     const canvas = await findAllByTestId('prerendered_canvas', ...wait)
     const bigwigImg = canvas[0].toDataURL()
     const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
@@ -211,11 +213,13 @@ describe('reload tests', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
     await findAllByText(/HTTP 404/, ...wait)
     fetch.mockResponse(readBuffer)
-    const buttons = await findAllByTestId('reload_button')
+    const buttons = await findAllByTestId('reload_button', ...wait)
     fireEvent.click(buttons[0])
+    const forceLoad = await findAllByTestId('force_reload_button', ...wait)
+    fireEvent.click(forceLoad[0])
 
     await findAllByTestId('box-test-vcf-604452', ...wait)
-  }, 100000)
+  }, 120000)
 
   it('reloads vcf (VCF.GZ.TBI 404)', async () => {
     console.error = jest.fn()
@@ -236,9 +240,9 @@ describe('reload tests', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
     await findAllByText(/HTTP 404/, ...wait)
     fetch.mockResponse(readBuffer)
-    const buttons = await findAllByTestId('reload_button')
-    fireEvent.click(buttons[0])
+    const forceLoad = await findAllByTestId('force_reload_button', ...wait)
+    fireEvent.click(forceLoad[0])
 
     await findAllByTestId('box-test-vcf-604452', ...wait)
-  }, 100000)
+  }, 120000)
 })

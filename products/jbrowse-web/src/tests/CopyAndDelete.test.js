@@ -49,7 +49,7 @@ test('copy and delete track in admin mode', async () => {
   expect(queryByText(/Session tracks/)).toBeNull()
   await waitFor(() => expect(state.session.views[0].tracks.length).toBe(1))
   const reloadButton = await findAllByTestId(
-    'reload_button',
+    'force_reload_button',
     {},
     { timeout: 60000 },
   )
@@ -96,7 +96,7 @@ test('copy and delete track to session tracks', async () => {
   await findByText(/Session tracks/)
   await waitFor(() => expect(state.session.views[0].tracks.length).toBe(1))
   const reloadButton = await findAllByTestId(
-    'reload_button',
+    'force_reload_button',
     {},
     { timeout: 60000 },
   )

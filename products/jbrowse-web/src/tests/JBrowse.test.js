@@ -116,7 +116,7 @@ test('variant track test - opens feature detail view', async () => {
   state.session.views[0].setNewView(0.05, 5000)
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
   const reloadButton = await findAllByTestId(
-    'reload_button',
+    'force_reload_button',
     {},
     waitForOptions,
   )
@@ -147,7 +147,7 @@ test('widget drawer navigation', async () => {
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
   fireEvent.click(await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf'))
   const reloadButton = await findAllByTestId(
-    'reload_button',
+    'force_reload_button',
     {},
     waitForOptions,
   )
@@ -197,7 +197,7 @@ describe('assembly aliases', () => {
       await findByTestId('htsTrackEntry-volvox_filtered_vcf_assembly_alias'),
     )
     const reloadButton = await findAllByTestId(
-      'reload_button',
+      'force_reload_button',
       {},
       waitForOptions,
     )
@@ -242,7 +242,7 @@ describe('test configuration editor', () => {
     fireEvent.click(await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf'))
 
     const reloadButton = await findAllByTestId(
-      'reload_button',
+      'force_reload_button',
       {},
       waitForOptions,
     )
@@ -345,7 +345,7 @@ test('export svg', async () => {
   )
 
   const reloadButton = await findAllByTestId(
-    'reload_button',
+    'force_reload_button',
     {},
     waitForOptions,
   )

@@ -301,7 +301,6 @@ export const BaseLinearDisplay = types
   .actions(self => {
     const { reload: superReload } = self
 
-    // check reload above to see which reload it actually is
     return {
       async reload() {
         self.setError()
@@ -322,7 +321,6 @@ export const BaseLinearDisplay = types
             if (isAlive(self)) {
               self.updateGlobalStats(stats)
               superReload()
-              // ;[...self.blockState.values()].map(val => val.doReload())
             } else {
               return
             }
@@ -418,8 +416,9 @@ export const BaseLinearDisplay = types
               Increase max feature screen density or{' '}
             </Typography>
             <Button
-              data-testid="reload_button"
+              data-testid="force_reload_button"
               onClick={() => {
+                console.log('clicked')
                 self.setUserFeatureScreenDensity(
                   self.globalStats.featureDensity,
                 )
