@@ -257,7 +257,7 @@ describe('alignments track', () => {
       await findByTestId('htsTrackEntry-volvox_bam_small_max_height'),
     )
 
-    const reloadButton = await findAllByTestId('reload_button', {}, delay)
+    const reloadButton = await findAllByTestId('force_reload_button', {}, delay)
     fireEvent.click(reloadButton[0])
 
     await findAllByText('Max height reached', {}, delay)
