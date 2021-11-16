@@ -29,7 +29,7 @@ beforeEach(() => {
   fetch.mockResponse(readBuffer)
 })
 
-const wait = [{}, { timeout: 100000 }]
+const wait = [{}, { timeout: 10000 }]
 
 // this tests reloading after an initial track error
 // it performs a full image snapshot test to ensure that the features are rendered and not
@@ -65,7 +65,7 @@ describe('reload tests', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 100000)
+  }, 20000)
 
   it('reloads alignments track (CRAM 404)', async () => {
     console.error = jest.fn()
@@ -160,7 +160,7 @@ describe('reload tests', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 140000)
+  }, 20000)
 
   it('reloads bigwig (BW 404)', async () => {
     console.error = jest.fn()
@@ -182,7 +182,7 @@ describe('reload tests', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray'))
     await findAllByText(/HTTP 404/, ...wait)
     fetch.mockResponse(readBuffer)
-    const forceLoad = await findAllByTestId('force_reload_button', ...wait)
+    const forceLoad = await findAllByTestId('reload_button', ...wait)
     fireEvent.click(forceLoad[0])
     const canvas = await findAllByTestId('prerendered_canvas', ...wait)
     const bigwigImg = canvas[0].toDataURL()
@@ -219,7 +219,7 @@ describe('reload tests', () => {
     fireEvent.click(forceLoad[0])
 
     await findAllByTestId('box-test-vcf-604452', ...wait)
-  }, 120000)
+  }, 20000)
 
   it('reloads vcf (VCF.GZ.TBI 404)', async () => {
     console.error = jest.fn()
@@ -244,5 +244,5 @@ describe('reload tests', () => {
     fireEvent.click(forceLoad[0])
 
     await findAllByTestId('box-test-vcf-604452', ...wait)
-  }, 120000)
+  }, 20000)
 })

@@ -31,7 +31,7 @@ beforeEach(() => {
   )
 })
 
-const delay = { timeout: 100000 }
+const delay = { timeout: 10000 }
 
 describe('alignments track', () => {
   it('opens an alignments track', async () => {
@@ -80,7 +80,7 @@ describe('alignments track', () => {
 
     // this is to confirm a alignment detail widget opened
     await findByTestId('alignment-side-drawer')
-  }, 110000)
+  }, 20000)
 
   // Note: tracks with assembly volvox don't have much soft clipping
   it('opens the track menu and enables soft clipping', async () => {
@@ -122,7 +122,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 110000)
+  }, 30000)
 
   it('selects a sort, updates object and layout', async () => {
     const pluginManager = getPluginManager()
@@ -164,7 +164,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 110000)
+  }, 35000)
 
   it('selects a color, updates object and layout', async () => {
     const pluginManager = getPluginManager()
@@ -204,7 +204,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 110000)
+  }, 30000)
 
   it('colors by tag, updates object and layout', async () => {
     const pluginManager = getPluginManager()
@@ -246,7 +246,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 110000)
+  }, 30000)
 
   it('test that bam with small max height displays message', async () => {
     const pluginManager = getPluginManager()
@@ -261,7 +261,7 @@ describe('alignments track', () => {
     fireEvent.click(reloadButton[0])
 
     await findAllByText('Max height reached', {}, delay)
-  }, 120000)
+  }, 30000)
 
   it('test snpcoverage doesnt count snpcoverage', async () => {
     const pluginManager = getPluginManager()
@@ -308,5 +308,5 @@ describe('alignments track', () => {
         'base64',
       ),
     ).toMatchImageSnapshot()
-  }, 110000)
+  }, 30000)
 })
