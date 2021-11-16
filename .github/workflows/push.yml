@@ -83,7 +83,7 @@ jobs:
           cd products/jbrowse-web/build && zip -r "jbrowse-web-$(echo ${{github.ref}} | cut -d '/' -f3-).zip" . && cd -
           aws s3 sync --delete products/jbrowse-web/build s3://jbrowse.org/code/jb2/$(echo ${{github.ref}} | cut -d "/" -f3-)
   storybook_lgv:
-    name: Build and deploy static Storybook site to AWS S3
+    name: Build and deploy static linear genome view Storybook site to AWS S3
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -109,7 +109,7 @@ jobs:
           aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/$(echo ${{github.ref}} | cut -d "/" -f3-)
         working-directory: products/jbrowse-react-linear-genome-view
   storybook_cgv:
-    name: Build and deploy static Storybook site to AWS S3
+    name: Build and deploy static circular genome view Storybook site to AWS S3
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
