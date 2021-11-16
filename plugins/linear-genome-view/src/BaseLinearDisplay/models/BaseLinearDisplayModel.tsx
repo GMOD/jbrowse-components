@@ -418,7 +418,6 @@ export const BaseLinearDisplay = types
             <Button
               data-testid="force_reload_button"
               onClick={() => {
-                console.log('clicked')
                 self.setUserFeatureScreenDensity(
                   self.globalStats.featureDensity,
                 )
