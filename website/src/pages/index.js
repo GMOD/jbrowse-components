@@ -81,7 +81,7 @@ function Home() {
                   embedded components
                 </Link>
                 , and our{' '}
-                <Link href="/jb2/download/#jbrowse2-cli-tools">
+                <Link href="/jb2/download/#jbrowse-cli-tools">
                   command line tools
                 </Link>
                 .

@@ -18,8 +18,8 @@ Resources for both desktop/web users
 
 Resources for users of the embedded components
 
-- [Embedded Components](embedded_components) -
-  Docs for the reusable linear genome view React component
+- [Embedded components](embedded_components) - Docs for our reusable React
+  components
 
 Resources for web developers and admins
 
