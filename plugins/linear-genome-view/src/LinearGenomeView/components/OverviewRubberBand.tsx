@@ -143,7 +143,7 @@ function OverviewRubberBand({
         startX !== undefined &&
         currentX === undefined
       ) {
-        const clickedAt = overview.pxToBp(startX)
+        const clickedAt = overview.pxToBp(startX - cytobandOffset)
         model.centerAt(
           Math.round(clickedAt.coord),
           clickedAt.refName,

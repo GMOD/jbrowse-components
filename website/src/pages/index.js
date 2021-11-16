@@ -64,7 +64,7 @@ function Home() {
                 variant="contained"
                 color="secondary"
                 startIcon={<OpenInBrowserIcon />}
-                href={`https://jbrowse.org/code/jb2/${currentVersion}/`}
+                href={`https://jbrowse.org/code/jb2/${currentVersion}/?session=share-HShsEcnq3i&password=nYzTU`}
                 sx={{
                   fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' },
                 }}
@@ -75,13 +75,13 @@ function Home() {
             </Box>
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="caption">
-                Also check out our&nbsp;
-                <Link href="/jb2/blog">latest release blogpost</Link>, our&nbsp;
-                <Link href="/jb2/download/#jbrowse-2-embedded-components">
+                Also check out our{' '}
+                <Link href="/jb2/blog">latest release blogpost</Link>, our{' '}
+                <Link href="/jb2/download/#embedded-components">
                   embedded components
                 </Link>
-                , and our&nbsp;
-                <Link href="/jb2/download/#jbrowse-2-web">
+                , and our{' '}
+                <Link href="/jb2/download/#jbrowse-cli-tools">
                   command line tools
                 </Link>
                 .

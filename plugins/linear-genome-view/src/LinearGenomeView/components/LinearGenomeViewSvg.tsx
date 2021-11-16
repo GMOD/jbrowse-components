@@ -177,8 +177,8 @@ const SVGHeader = ({ model }: { model: LGV }) => {
           <Cytobands overview={overview} assembly={assembly} block={block} />
           <rect
             stroke="red"
-            fill="none"
-            width={lastOverviewPx - firstOverviewPx}
+            fill="rgb(255,0,0,0.3)"
+            width={Math.max(lastOverviewPx - firstOverviewPx, 0.5)}
             height={HEADER_OVERVIEW_HEIGHT - 1}
             x={firstOverviewPx}
             y={0.5}

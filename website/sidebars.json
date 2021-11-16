@@ -2,7 +2,6 @@
   "sidebar": [
     "introduction",
     "combined",
-    "combined_pdf",
     {
       "type": "category",
       "label": "Quickstart guides",
@@ -14,10 +13,11 @@
         "quickstart_desktop"
       ]
     },
-    "user_guide",
-    "config_guide",
     "cli",
+    "embedded_components",
+    "config_guide",
     "developer_guide",
+    "user_guide",
     {
       "type": "category",
       "label": "Developer tutorials",
@@ -39,7 +39,6 @@
         }
       ]
     },
-    "faq",
     {
       "type": "category",
       "label": "JBrowse educational courses",
@@ -68,6 +67,7 @@
           ]
         }
       ]
-    }
+    },
+    "faq"
   ]
 }
