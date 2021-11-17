@@ -338,7 +338,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     pitchX = 10,
     pitchY = 10,
     maxHeight = 10000,
-    hardRowLimit = 3000,
+    hardRowLimit = 10000,
     displayMode = 'normal',
   }: {
     pitchX?: number
@@ -428,9 +428,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   collides(rect: Rectangle<T>, top: number): boolean {
     const { bitmap } = this
-    // var mY = top + rect.h/2; // Y midpoint: ( top+height  + top ) / 2
 
-    // test exhaustively
     const maxY = top + rect.h
     for (let y = top; y < maxY; y += 1) {
       const row = bitmap[y]
@@ -470,12 +468,11 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     const { bitmap } = this
     const yEnd = rect.top + rect.h
     if (rect.r - rect.l > maxFeaturePitchWidth) {
-      // the rect is very big in relation to the view size, just
-      // pretend, for the purposes of layout, that it extends
-      // infinitely.  this will cause weird layout if a user
-      // scrolls manually for a very, very long time along the
-      // genome at the same zoom level.  but most users will not
-      // do that.  hopefully.
+      // the rect is very big in relation to the view size, just pretend, for
+      // the purposes of layout, that it extends infinitely.  this will cause
+      // weird layout if a user scrolls manually for a very, very long time
+      // along the genome at the same zoom level.  but most users will not do
+      // that.  hopefully.
       for (let y = rect.top; y < yEnd; y += 1) {
         this.autovivifyRow(bitmap, y).setAllFilled(data)
       }
