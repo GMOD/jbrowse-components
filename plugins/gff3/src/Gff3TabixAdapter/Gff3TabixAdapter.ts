@@ -112,12 +112,8 @@ export default class extends BaseFeatureDataAdapter {
           }
         })
         if (maxEnd > query.end || minStart < query.start) {
-          // console.log(
-          //   `redispatching ${query.start}-${query.end} => ${minStart}-${maxEnd}`,
-          // )
           // make a new feature callback to only return top-level features
           // in the original query range
-
           this.getFeaturesHelper(
             { ...query, start: minStart, end: maxEnd },
             opts,

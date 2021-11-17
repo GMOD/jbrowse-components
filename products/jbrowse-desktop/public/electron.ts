@@ -313,6 +313,10 @@ ipcMain.handle('quit', () => {
   app.quit()
 })
 
+ipcMain.handle('userData', () => {
+  return userData
+})
+
 ipcMain.handle(
   'indexFasta',
   async (event: unknown, location: { uri: string } | { localPath: string }) => {

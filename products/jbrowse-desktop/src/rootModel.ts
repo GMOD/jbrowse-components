@@ -71,6 +71,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       openNewSessionCallback: async (path: string) => {
         console.error('openNewSessionCallback unimplemented')
       },
+      pluginManager,
     }))
     .actions(self => ({
       async saveSession(val: unknown) {

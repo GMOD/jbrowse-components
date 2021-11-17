@@ -4,6 +4,9 @@ import PluginManager, { PluginLoadRecord } from '@jbrowse/core/PluginManager'
 import PluginLoader, {
   PluginDefinition,
   PluginRecord,
+  isUMDPluginDefinition,
+  isESMPluginDefinition,
+  isCJSPluginDefinition,
 } from '@jbrowse/core/PluginLoader'
 import { observer } from 'mobx-react'
 import { inDevelopment } from '@jbrowse/core/util'
@@ -110,18 +113,51 @@ function NoConfigMessage() {
   )
 }
 
-async function checkPlugins(pluginsToCheck: { url: string }[]) {
+async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
   const response = await fetch('https://jbrowse.org/plugin-store/plugins.json')
   if (!response.ok) {
     throw new Error(
       `HTTP ${response.status} ${response.statusText} fetching plugins`,
     )
   }
-  const array = (await response.json()) as {
-    plugins: { url: string }[]
+  const storePlugins = (await response.json()) as {
+    plugins: PluginDefinition[]
   }
-  const allowedPluginUrls = array.plugins.map(p => p.url)
-  return pluginsToCheck.every(p => allowedPluginUrls.includes(p.url))
+  return pluginsToCheck.every(p => {
+    if (isUMDPluginDefinition(p)) {
+      return Boolean(
+        storePlugins.plugins.find(
+          storePlugin =>
+            isUMDPluginDefinition(storePlugin) &&
+            (('url' in storePlugin &&
+              'url' in p &&
+              storePlugin.url === p.url) ||
+              ('umdUrl' in storePlugin &&
+                'umdUrl' in p &&
+                storePlugin.umdUrl === p.umdUrl)),
+        ),
+      )
+    }
+    if (isESMPluginDefinition(p)) {
+      return Boolean(
+        storePlugins.plugins.find(
+          storePlugin =>
+            isESMPluginDefinition(storePlugin) &&
+            storePlugin.esmUrl === p.esmUrl,
+        ),
+      )
+    }
+    if (isCJSPluginDefinition(p)) {
+      return Boolean(
+        storePlugins.plugins.find(
+          storePlugin =>
+            isCJSPluginDefinition(storePlugin) &&
+            storePlugin.cjsUrl === p.cjsUrl,
+        ),
+      )
+    }
+    return false
+  })
 }
 
 type Config = SnapshotOut<AnyConfigurationModel>
@@ -210,7 +246,7 @@ const SessionLoader = types
     setSessionTriaged(args?: {
       snap: unknown
       origin: string
-      reason: { url: string }[]
+      reason: PluginDefinition[]
     }) {
       self.sessionTriaged = args
     },

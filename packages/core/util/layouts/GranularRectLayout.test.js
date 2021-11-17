@@ -2,7 +2,7 @@ import Layout from './GranularRectLayout'
 
 describe('GranularRectLayout', () => {
   it('lays out non-overlapping features end to end', () => {
-    const l = new Layout()
+    const l = new Layout({ pitchX: 10, pitchY: 4 })
     const testRects = [
       ['1,0', 4133, 5923, 16],
       ['1,1', 11299, 12389, 16],
@@ -46,7 +46,7 @@ describe('GranularRectLayout', () => {
   })
 
   it('stacks up overlapping features', () => {
-    const l = new Layout()
+    const l = new Layout({ pitchX: 10, pitchY: 4 })
 
     const testRects = []
     for (let i = 1; i <= 20; i += 1) {
@@ -55,12 +55,12 @@ describe('GranularRectLayout', () => {
 
     for (let i = 0; i < testRects.length; i += 1) {
       const top = l.addRect(...testRects[i])
-      expect(top).toEqual((i % 2) * 3)
+      expect(top).toEqual((i % 2) * 4)
     }
   })
 
   it('discards regions', () => {
-    const l = new Layout()
+    const l = new Layout({ pitchX: 10, pitchY: 4 })
     for (let i = 0; i < 20; i += 1) {
       const top = l.addRect(
         `feature-${i}`,
@@ -68,13 +68,24 @@ describe('GranularRectLayout', () => {
         10000 * i + 16000,
         1,
       )
-      expect(top).toEqual((i % 2) * 3)
+      expect(top).toEqual((i % 2) * 4)
     }
+
+    expect(l.bitmap[0].rowState.bits.length).toBe(34812)
+    expect(l.bitmap[1].rowState.bits.length).toBe(34812)
+    l.discardRange(190000, 220000)
+    expect(l.bitmap[0].rowState.bits.length).toBe(24802)
+    expect(l.bitmap[1].rowState.bits.length).toBe(23802)
+    l.discardRange(0, 100000)
+    expect(l.bitmap[0].rowState.bits.length).toBe(19001)
+    expect(l.bitmap[1].rowState.bits.length).toBe(23802)
+    l.discardRange(0, 220000)
+    expect(l.bitmap[0].rowState).toBeUndefined()
   })
 
   // see issue #486
   it('tests that adding +/- pitchX fixes resolution causing errors', () => {
-    const l = new Layout()
+    const l = new Layout({ pitchX: 91.21851599727707, pitchY: 3 })
 
     l.addRect('test', 2581541, 2581542, 1)
 
@@ -83,16 +94,34 @@ describe('GranularRectLayout', () => {
     ).toBeTruthy()
   })
 
+  it('tests reinitializing layout due to throwing away old one', () => {
+    const spy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const l = new Layout({
+      pitchX: 1,
+      pitchY: 1,
+      maxHeight: 600,
+    })
+
+    l.addRect('test1', 0, 10000, 1)
+    l.addRect('test2', 1000000, 1000100, 1)
+    l.addRect('test3', 0, 10000, 1)
+    expect(l.rectangles.size).toBe(3)
+    expect(spy).toHaveBeenCalled()
+    spy.mockRestore()
+  })
+
   it('tests adding a gigantic feature that fills entire row with another smaller added on top', () => {
     const l = new Layout({
+      pitchX: 100,
+      pitchY: 1,
       maxHeight: 600,
     })
 
     expect(l.getByCoord(50000, 0)).toEqual(undefined)
-    l.addRect('test1', 0, 10000000, 1)
-    expect(l.getByCoord(50000, 0)).toEqual('test1')
-    l.addRect('test2', 0, 1000, 1)
-    expect(l.getByCoord(500, 2)).toEqual('test2')
+    l.addRect('test1', 0, 100000000, 1, { id: 'feat1' })
+    expect(l.getByCoord(50000, 0)).toEqual({ id: 'feat1' })
+    l.addRect('test2', 0, 1000, 1, { id: 'feat2' })
+    expect(l.getByCoord(500, 1)).toEqual({ id: 'feat2' })
     expect(l.rectangles.size).toBe(2)
   })
 })

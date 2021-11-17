@@ -6,7 +6,7 @@ import {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration/configurationSchema'
-import Plugin from '@jbrowse/core/Plugin'
+import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import {
@@ -64,7 +64,7 @@ export default function JBrowseDesktop(
         },
         ...pluginManager.pluginConfigurationSchemas(),
       }),
-      plugins: types.array(types.frozen()),
+      plugins: types.array(types.frozen<PluginDefinition>()),
       assemblies: types.array(assemblyConfigSchemasType),
       // track configuration is an array of track config schemas. multiple
       // instances of a track can exist that use the same configuration
@@ -169,14 +169,20 @@ export default function JBrowseDesktop(
 
         return self.tracks.splice(idx, 1)
       },
-      addPlugin(plugin: Plugin) {
-        self.plugins = cast([...self.plugins, plugin])
+      addPlugin(pluginDefinition: PluginDefinition) {
+        self.plugins.push(pluginDefinition)
         const rootModel = getParent(self)
         rootModel.setPluginsUpdated(true)
       },
-      removePlugin(pluginUrl: string) {
+      removePlugin(pluginDefinition: PluginDefinition) {
         self.plugins = cast(
-          self.plugins.filter(plugin => plugin.url !== pluginUrl),
+          self.plugins.filter(
+            plugin =>
+              plugin.url === pluginDefinition.url ||
+              plugin.umdUrl === pluginDefinition.umdUrl ||
+              plugin.cjsUrl === pluginDefinition.cjsUrl ||
+              plugin.esmUrl === pluginDefinition.esmUrl,
+          ),
         )
         const rootModel = getParent(self)
         rootModel.setPluginsUpdated(true)

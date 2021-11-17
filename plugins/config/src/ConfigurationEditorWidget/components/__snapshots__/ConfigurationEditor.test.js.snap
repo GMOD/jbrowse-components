@@ -992,13 +992,13 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             </label>
             <div
               class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
-              style="color: rgb(200, 200, 200); border-right-width: 25px; border-right-style: solid; border-right-color: #c8c8c8;"
+              style="color: rgb(255, 0, 255); border-right-width: 25px; border-right-style: solid; border-right-color: #f0f;"
             >
               <input
                 aria-invalid="false"
                 class="MuiInputBase-input MuiInput-input"
                 type="text"
-                value="#c8c8c8"
+                value="#f0f"
               />
             </div>
             <p
