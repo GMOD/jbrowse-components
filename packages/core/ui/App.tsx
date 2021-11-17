@@ -55,11 +55,13 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
   },
   fabLeft: {
+    zIndex: 10000,
     position: 'fixed',
     bottom: theme.spacing(2),
     left: theme.spacing(2),
   },
   fabRight: {
+    zIndex: 10000,
     position: 'fixed',
     bottom: theme.spacing(2),
     right: theme.spacing(2),
