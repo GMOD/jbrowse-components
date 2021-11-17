@@ -133,15 +133,19 @@ export default class PileupRenderer extends BoxRendererType {
   }): LayoutRecord | null {
     let expansionBefore = 0
     let expansionAfter = 0
-    const seq: string = feature.get('seq')
 
     // Expand the start and end of feature when softclipping enabled
-    if (showSoftClip && seq) {
-      const mismatches: Mismatch[] = feature.get('mismatches')
-      for (let i = 0; i < mismatches.length; i += 1) {
-        const { type, start, cliplen = 0 } = mismatches[i]
-        if (type === 'softclip') {
-          start === 0 ? (expansionBefore = cliplen) : (expansionAfter = cliplen)
+    if (showSoftClip) {
+      const mismatches = feature.get('mismatches') as Mismatch[]
+      const seq = feature.get('seq') as string
+      if (seq) {
+        for (let i = 0; i < mismatches.length; i += 1) {
+          const { type, start, cliplen = 0 } = mismatches[i]
+          if (type === 'softclip') {
+            start === 0
+              ? (expansionBefore = cliplen)
+              : (expansionAfter = cliplen)
+          }
         }
       }
     }
