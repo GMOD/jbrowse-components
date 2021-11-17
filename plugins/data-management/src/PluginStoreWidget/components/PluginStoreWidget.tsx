@@ -59,12 +59,14 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
   const { pluginManager } = getEnv(model)
 
   useEffect(() => {
-    let killed = false
+    const controller = new AbortController()
+    const { signal } = controller
 
     ;(async () => {
       try {
         const response = await fetch(
           'https://jbrowse.org/plugin-store/plugins.json',
+          { signal },
         )
         if (!response.ok) {
           const err = await response.text()
@@ -73,7 +75,7 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
           )
         }
         const array = await response.json()
-        if (!killed) {
+        if (!signal.aborted) {
           setPluginArray(array.plugins)
         }
       } catch (e) {
@@ -83,7 +85,7 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
     })()
 
     return () => {
-      killed = true
+      controller.abort()
     }
   }, [])
 
@@ -155,11 +157,18 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
           <Typography color="error">{`${error}`}</Typography>
         ) : pluginArray ? (
           pluginArray
-            .filter(plugin =>
-              plugin.name
+            .filter(plugin => {
+              // If pugin only has cjsUrl, don't display outside desktop
+              if (
+                !isElectron &&
+                !(plugin.esmUrl || plugin.url || plugin.umdUrl)
+              ) {
+                return false
+              }
+              return plugin.name
                 .toLowerCase()
-                .includes(model.filterText.toLowerCase()),
-            )
+                .includes(model.filterText.toLowerCase())
+            })
             .map(plugin => (
               <PluginCard
                 key={(plugin as JBrowsePlugin).name}

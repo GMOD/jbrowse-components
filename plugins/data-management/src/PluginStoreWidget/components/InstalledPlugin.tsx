@@ -131,7 +131,11 @@ function InstalledPlugin({
           onClose={name => {
             if (name) {
               const pluginMetadata = pluginManager.pluginMetadata[plugin.name]
-              const pluginUrl = pluginMetadata.url
+              const pluginUrl =
+                pluginMetadata.url ||
+                pluginMetadata.esmUrl ||
+                pluginMetadata.umdUrl ||
+                pluginMetadata.cjsUrl
               if (adminMode) {
                 jbrowse.removePlugin(pluginUrl)
               } else if (isSessionWithSessionPlugins(session)) {
