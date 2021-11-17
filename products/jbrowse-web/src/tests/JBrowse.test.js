@@ -115,12 +115,6 @@ test('variant track test - opens feature detail view', async () => {
   await findByText('Help')
   state.session.views[0].setNewView(0.05, 5000)
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
-  const reloadButton = await findAllByTestId(
-    'force_reload_button',
-    {},
-    waitForOptions,
-  )
-  fireEvent.click(reloadButton[0])
   state.session.views[0].tracks[0].displays[0].setFeatureIdUnderMouse(
     'test-vcf-604452',
   )
@@ -138,7 +132,7 @@ test('variant track test - opens feature detail view', async () => {
 test('widget drawer navigation', async () => {
   const pluginManager = getPluginManager(undefined, true)
   const state = pluginManager.rootModel
-  const { findByTestId, findAllByTestId, findByText } = render(
+  const { findByTestId, findByText } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
@@ -146,12 +140,6 @@ test('widget drawer navigation', async () => {
   // opens a config editor widget
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
   fireEvent.click(await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf'))
-  const reloadButton = await findAllByTestId(
-    'force_reload_button',
-    {},
-    waitForOptions,
-  )
-  fireEvent.click(reloadButton[0])
   fireEvent.click(await findByText('Settings'))
   await findByTestId('configEditor')
   // shows up when there  active widgets
@@ -188,7 +176,7 @@ describe('assembly aliases', () => {
   it('allow a track with an alias assemblyName to display', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, findAllByTestId, findByText } = render(
+    const { findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
@@ -196,12 +184,6 @@ describe('assembly aliases', () => {
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_filtered_vcf_assembly_alias'),
     )
-    const reloadButton = await findAllByTestId(
-      'force_reload_button',
-      {},
-      waitForOptions,
-    )
-    fireEvent.click(reloadButton[0])
     await findByTestId('box-test-vcf-604452', {}, waitForOptions)
   }, 10000)
 })
@@ -229,24 +211,12 @@ describe('test configuration editor', () => {
   it('change color on track', async () => {
     const pluginManager = getPluginManager(undefined, true)
     const state = pluginManager.rootModel
-    const {
-      getByTestId,
-      findByTestId,
-      findAllByTestId,
-      findByText,
-      findByDisplayValue,
-    } = render(<JBrowse pluginManager={pluginManager} />)
+    const { getByTestId, findByTestId, findByText, findByDisplayValue } =
+      render(<JBrowse pluginManager={pluginManager} />)
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
     fireEvent.click(await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf'))
-
-    const reloadButton = await findAllByTestId(
-      'force_reload_button',
-      {},
-      waitForOptions,
-    )
-    fireEvent.click(reloadButton[0])
     fireEvent.click(await findByText('Settings'))
     await findByTestId('configEditor')
     fireEvent.change(await findByDisplayValue('goldenrod'), {
@@ -335,7 +305,7 @@ test('looks at about this track dialog', async () => {
 test('export svg', async () => {
   const pluginManager = getPluginManager()
   const state = pluginManager.rootModel
-  const { findByTestId, findAllByTestId, findByText } = render(
+  const { findByTestId, findByText } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
@@ -343,13 +313,6 @@ test('export svg', async () => {
   fireEvent.click(
     await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
   )
-
-  const reloadButton = await findAllByTestId(
-    'force_reload_button',
-    {},
-    waitForOptions,
-  )
-  fireEvent.click(reloadButton[0])
 
   state.session.views[0].exportSvg()
 

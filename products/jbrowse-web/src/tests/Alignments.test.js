@@ -250,15 +250,12 @@ describe('alignments track', () => {
 
   it('test that bam with small max height displays message', async () => {
     const pluginManager = getPluginManager()
-    const { findByTestId, findAllByTestId, findAllByText } = render(
+    const { findByTestId, findAllByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_bam_small_max_height'),
     )
-
-    const reloadButton = await findAllByTestId('force_reload_button', {}, delay)
-    fireEvent.click(reloadButton[0])
 
     await findAllByText('Max height reached', {}, delay)
   }, 30000)

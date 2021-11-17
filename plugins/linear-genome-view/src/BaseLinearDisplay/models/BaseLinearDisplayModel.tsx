@@ -339,7 +339,6 @@ export const BaseLinearDisplay = types
                 const aborter = new AbortController()
                 const view = getContainingView(self) as LGV
 
-                // whereever it's skipping stats, need to set status back to none
                 if (!view.initialized) {
                   return
                 }
@@ -347,7 +346,9 @@ export const BaseLinearDisplay = types
                 if (
                   view &&
                   self.globalStats &&
-                  self.globalStats.featureDensity > self.maxFeatureScreenDensity
+                  self.globalStats.featureDensity /
+                    self.maxFeatureScreenDensity >
+                    1 / view.bpPerPx
                 ) {
                   return
                 }
@@ -389,7 +390,8 @@ export const BaseLinearDisplay = types
       if (
         view &&
         self.globalStats &&
-        self.globalStats.featureDensity > self.maxFeatureScreenDensity
+        self.globalStats.featureDensity / self.maxFeatureScreenDensity >
+          1 / view.bpPerPx
       ) {
         return 'Force load to see features'
       }
@@ -405,15 +407,17 @@ export const BaseLinearDisplay = types
      */
     regionCannotBeRendered(_region: Region) {
       const view = getContainingView(self) as LinearGenomeViewModel
+
       if (
         view &&
         self.globalStats.featureDensity !== undefined &&
-        self.globalStats.featureDensity > self.maxFeatureScreenDensity
+        self.globalStats.featureDensity / self.maxFeatureScreenDensity >
+          1 / view.bpPerPx
       ) {
         return (
           <>
             <Typography component="span" variant="body2">
-              Increase max feature screen density or{' '}
+              Zoom in to see features or{' '}
             </Typography>
             <Button
               data-testid="force_reload_button"
