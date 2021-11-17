@@ -19,7 +19,13 @@ const useStyles = makeStyles(() => ({
 }))
 
 const JBrowseLinearGenomeView = observer(
-  ({ viewState }: { viewState: ViewModel }) => {
+  ({
+    viewState,
+    HeaderComponent,
+  }: {
+    viewState: ViewModel
+    HeaderComponent?: React.ReactNode
+  }) => {
     const classes = useStyles()
     const { session } = viewState
     const { view } = session
@@ -37,7 +43,11 @@ const JBrowseLinearGenomeView = observer(
       <ThemeProvider theme={theme}>
         <div className={classes.avoidParentStyle}>
           <ScopedCssBaseline>
-            <ViewContainer key={`view-${view.id}`} view={view}>
+            <ViewContainer
+              key={`view-${view.id}`}
+              view={view}
+              HeaderComponent={HeaderComponent}
+            >
               <Suspense fallback={<div>Loading...</div>}>
                 <ReactComponent model={view} session={session} />
               </Suspense>

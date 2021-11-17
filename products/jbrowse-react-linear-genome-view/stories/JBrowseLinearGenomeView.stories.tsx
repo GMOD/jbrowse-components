@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
+import { Button } from '@material-ui/core'
 import { PluginRecord } from '@jbrowse/core/PluginLoader'
 import { Region } from '@jbrowse/core/util/types'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
@@ -52,6 +53,7 @@ const longReadsSession = {
   ...defaultSession,
   view: volvoxSession.session.views[0],
 }
+
 export const OneLinearGenomeView = () => {
   const state = createViewState({
     assembly,
@@ -567,6 +569,33 @@ export const WithExternalPlugins = () => {
     },
   })
   return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const WithExtraHeaderComponent = () => {
+  const state = createViewState({
+    assembly,
+    tracks,
+    defaultSession,
+    // use 1-based coordinates for locstring
+    location: 'ctgA:1105..1221',
+    onChange: patch => {
+      console.log('patch', patch)
+    },
+  })
+  return (
+    <JBrowseLinearGenomeView
+      viewState={state}
+      HeaderComponent={
+        <Button
+          color="secondary"
+          variant="contained"
+          onClick={() => alert('Hello world')}
+        >
+          Click me
+        </Button>
+      }
+    />
+  )
 }
 
 const JBrowseLinearGenomeViewStories = {

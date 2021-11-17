@@ -9,13 +9,15 @@ import {
   useTheme,
   alpha,
 } from '@material-ui/core'
-import MenuIcon from '@material-ui/icons/Menu'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import useMeasure from 'react-use-measure'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { Menu, Logomark } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+
+// icons
+import MenuIcon from '@material-ui/icons/Menu'
 
 const useStyles = makeStyles(theme => ({
   viewContainer: {
@@ -51,10 +53,12 @@ const ViewMenu = observer(
     model,
     IconButtonProps,
     IconProps,
+    HeaderComponent,
   }: {
     model: IBaseViewModel
     IconButtonProps: IconButtonPropsType
     IconProps: SvgIconProps
+    HeaderComponent?: React.ReactNode
   }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>()
 
@@ -88,13 +92,22 @@ const ViewMenu = observer(
           }}
           menuItems={model.menuItems()}
         />
+        {HeaderComponent}
       </>
     )
   },
 )
 
 const ViewContainer = observer(
-  ({ view, children }: { view: IBaseViewModel; children: React.ReactNode }) => {
+  ({
+    view,
+    children,
+    HeaderComponent,
+  }: {
+    view: IBaseViewModel
+    children: React.ReactNode
+    HeaderComponent?: React.ReactNode
+  }) => {
     const [ref, { width }] = useMeasure()
     const classes = useStyles()
     const theme = useTheme()
@@ -129,6 +142,7 @@ const ViewContainer = observer(
               edge: 'start',
             }}
             IconProps={{ className: classes.icon }}
+            HeaderComponent={HeaderComponent}
           />
           <div className={classes.grow} />
           {view.displayName ? (
