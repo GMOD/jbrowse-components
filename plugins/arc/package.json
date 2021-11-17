@@ -1,0 +1,72 @@
+{
+  "version": "0.0.1",
+  "name": "jbrowse-plugin-arc-renderer",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "main": "dist/index.js",
+  "module": "dist/jbrowse-plugin-arc-renderer.esm.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "setup": "node scripts/setup.js && npm run browse-install",
+    "clean": "rimraf dist",
+    "start": "tsdx watch --verbose --noClean --format umd --name JBrowsePluginArcRenderer --onFirstSuccess \"serve --cors --listen 9090 .\"",
+    "prebuild": "npm run clean",
+    "build": "tsdx build --format cjs,esm,umd --name JBrowsePluginArcRenderer && cp distconfig.json dist/config.json",
+    "browse-install": "cd .jbrowse && rm -rf * && jbrowse create .",
+    "browse": "cd .jbrowse && cp ../jbrowse_config.json . && mv jbrowse_config.json config.json && npx serve .",
+    "test": "tsdx test",
+    "test:cy": "cypress run --headless --browser chrome",
+    "e2e": "start-test start 9000 browse 5000 test:cy",
+    "cypress": "cypress open",
+    "lint": "tsdx lint",
+    "prepublishOnly": "npm test",
+    "prepare": "npm run build",
+    "postinstall": "jbrowse-plugin-postinstall",
+    "postversion": "git push --follow-tags"
+  },
+  "jbrowse-plugin": {
+    "name": "ArcRenderer"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "all"
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "<rootDir>/cypress/"
+    ]
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "@jbrowse/core": "^1.3.4"
+  },
+  "devDependencies": {
+    "@babel/preset-react": "^7.10.4",
+    "@jbrowse/core": "^1.4.4",
+    "@jbrowse/development-tools": "^1.3.0",
+    "@jbrowse/plugin-linear-genome-view": "^1.5.1",
+    "@material-ui/core": "^4.12.3",
+    "@material-ui/lab": "^4.0.0-alpha.45",
+    "@types/react": "^17.0.0",
+    "cypress": "^6.2.1",
+    "mobx": "^5.0.0",
+    "mobx-react": "^6.0.0",
+    "mobx-state-tree": "3.14.1",
+    "react": "^16.8.0",
+    "react-svg-tooltip": "^0.0.11",
+    "rimraf": "^3.0.2",
+    "rxjs": "^6.0.0",
+    "serve": "^11.3.2",
+    "start-server-and-test": "^1.11.7",
+    "tslib": "^2.0.3",
+    "typescript": "^4.1.3"
+  },
+  "private": true
+}
