@@ -22,14 +22,15 @@ const textVerticalPadding = 2
 const svgHeightPadding = 100
 
 function RenderedFeatureGlyph(props) {
-  const { feature, bpPerPx, region, config, displayMode, layout } = props
+  const { feature, bpPerPx, region, config, displayMode, layout, extraGlyphs } =
+    props
   const { reversed } = region
   const start = feature.get(reversed ? 'end' : 'start')
   const startPx = bpToPx(start, region, bpPerPx)
   const labelsAllowed = displayMode !== 'compact' && displayMode !== 'collapsed'
 
   const rootLayout = new SceneGraph('root', 0, 0, 0, 0)
-  const GlyphComponent = chooseGlyphComponent(feature)
+  const GlyphComponent = chooseGlyphComponent(feature, extraGlyphs)
   const featureLayout = (GlyphComponent.layOut || layOut)({
     layout: rootLayout,
     feature,
@@ -138,15 +139,27 @@ RenderedFeatureGlyph.propTypes = {
     get: ReactPropTypes.func.isRequired,
   }).isRequired,
   config: CommonPropTypes.ConfigSchema.isRequired,
+  extraGlyphs: ReactPropTypes.arrayOf(
+    ReactPropTypes.shape({
+      glyph: ReactPropTypes.elementType.isRequired,
+      validator: ReactPropTypes.func.isRequired,
+    }),
+  ),
 }
 
 const RenderedFeatures = observer(props => {
-  const { features } = props
+  const { features, isFeatureDisplayed } = props
   const featuresRendered = []
   for (const feature of features.values()) {
-    featuresRendered.push(
-      <RenderedFeatureGlyph key={feature.id()} feature={feature} {...props} />,
-    )
+    if (isFeatureDisplayed(feature)) {
+      featuresRendered.push(
+        <RenderedFeatureGlyph
+          key={feature.id()}
+          feature={feature}
+          {...props}
+        />,
+      )
+    }
   }
   return <>{featuresRendered}</>
 })
@@ -159,10 +172,19 @@ RenderedFeatures.propTypes = {
     addRect: ReactPropTypes.func.isRequired,
     getTotalHeight: ReactPropTypes.func.isRequired,
   }).isRequired,
+  extraGlyphs: ReactPropTypes.arrayOf(
+    ReactPropTypes.shape({
+      glyph: ReactPropTypes.elementType.isRequired,
+      validator: ReactPropTypes.func.isRequired,
+    }),
+  ),
+  isFeatureDisplayed: ReactPropTypes.func,
 }
 
 RenderedFeatures.defaultProps = {
   features: [],
+  extraGlyphs: [],
+  isFeatureDisplayed: () => true,
 }
 
 function SvgFeatureRendering(props) {
@@ -175,6 +197,7 @@ function SvgFeatureRendering(props) {
     config,
     displayModel,
     exportSVG,
+    featureDisplayHandler,
   } = props
   const [region] = regions || []
   const width = (region.end - region.start) / bpPerPx
@@ -325,6 +348,7 @@ function SvgFeatureRendering(props) {
       <RenderedFeatures
         features={features}
         displayMode={displayMode}
+        isFeatureDisplayed={featureDisplayHandler}
         {...props}
         region={region}
       />
@@ -355,6 +379,7 @@ function SvgFeatureRendering(props) {
           {...props}
           region={region}
           movedDuringLastMouseDown={movedDuringLastMouseDown}
+          isFeatureDisplayed={featureDisplayHandler}
         />
         <SvgOverlay {...props} region={region} />
       </svg>
@@ -395,6 +420,13 @@ SvgFeatureRendering.propTypes = {
   onFeatureContextMenu: ReactPropTypes.func,
   blockKey: ReactPropTypes.string,
   exportSVG: ReactPropTypes.shape({}),
+  extraGlyphs: ReactPropTypes.arrayOf(
+    ReactPropTypes.shape({
+      glyph: ReactPropTypes.elementType.isRequired,
+      validator: ReactPropTypes.func.isRequired,
+    }),
+  ),
+  featureDisplayHandler: ReactPropTypes.func,
 }
 
 SvgFeatureRendering.defaultProps = {
@@ -415,6 +447,8 @@ SvgFeatureRendering.defaultProps = {
   onContextMenu: undefined,
   onFeatureClick: undefined,
   onFeatureContextMenu: undefined,
+  extraGlyphs: [],
+  featureDisplayHandler: () => true,
 }
 
 export default observer(SvgFeatureRendering)
