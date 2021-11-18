@@ -56,7 +56,6 @@ export const BaseLinearDisplay = types
         defaultDisplayHeight,
       ),
       blockState: types.map(BlockState),
-      userBpPerPxLimit: types.maybe(types.number),
       userFeatureScreenDensity: types.maybe(types.number),
     }),
   )
@@ -338,6 +337,8 @@ export const BaseLinearDisplay = types
               try {
                 const aborter = new AbortController()
                 const view = getContainingView(self) as LGV
+                const currentFeatureScreenDensity =
+                  self.globalStats?.featureDensity * view?.bpPerPx
 
                 if (!view.initialized) {
                   return
@@ -346,9 +347,7 @@ export const BaseLinearDisplay = types
                 if (
                   view &&
                   self.globalStats &&
-                  self.globalStats.featureDensity /
-                    self.maxFeatureScreenDensity >
-                    1 / view.bpPerPx
+                  currentFeatureScreenDensity > self.maxFeatureScreenDensity
                 ) {
                   return
                 }
@@ -384,15 +383,12 @@ export const BaseLinearDisplay = types
   .views(self => ({
     regionCannotBeRenderedText(_region: Region) {
       const view = getContainingView(self) as LinearGenomeViewModel
+      const currentFeatureScreenDensity =
+        self.globalStats?.featureDensity * view?.bpPerPx
       if (self.statsStatus === 'error') {
         return 'Force load to see features'
       }
-      if (
-        view &&
-        self.globalStats &&
-        self.globalStats.featureDensity / self.maxFeatureScreenDensity >
-          1 / view.bpPerPx
-      ) {
+      if (view && currentFeatureScreenDensity > self.maxFeatureScreenDensity) {
         return 'Force load to see features'
       }
       return ''
@@ -408,11 +404,12 @@ export const BaseLinearDisplay = types
     regionCannotBeRendered(_region: Region) {
       const view = getContainingView(self) as LinearGenomeViewModel
 
+      const currentFeatureScreenDensity =
+        self.globalStats?.featureDensity * view?.bpPerPx
       if (
         view &&
         self.globalStats.featureDensity !== undefined &&
-        self.globalStats.featureDensity / self.maxFeatureScreenDensity >
-          1 / view.bpPerPx
+        currentFeatureScreenDensity > self.maxFeatureScreenDensity
       ) {
         return (
           <>
@@ -423,9 +420,8 @@ export const BaseLinearDisplay = types
               data-testid="force_reload_button"
               onClick={() => {
                 self.setUserFeatureScreenDensity(
-                  self.globalStats.featureDensity,
+                  currentFeatureScreenDensity * 1.05,
                 )
-                self.reload()
               }}
               variant="outlined"
             >
@@ -506,10 +502,7 @@ export const BaseLinearDisplay = types
   }))
   .actions(self => ({
     async renderSvg(opts: ExportSvgOptions & { overrideHeight: number }) {
-      await when(
-        () =>
-          self.statsStatus === 'loaded' && !!self.regionCannotBeRenderedText,
-      )
+      await when(() => !!self.regionCannotBeRenderedText)
       const { height, id } = self
       const { overrideHeight } = opts
       const view = getContainingView(self) as LinearGenomeViewModel
