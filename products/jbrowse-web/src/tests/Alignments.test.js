@@ -31,7 +31,7 @@ beforeEach(() => {
   )
 })
 
-const delay = { timeout: 10000 }
+const delay = { timeout: 20000 }
 
 describe('alignments track', () => {
   it('opens an alignments track', async () => {
@@ -305,5 +305,5 @@ describe('alignments track', () => {
         'base64',
       ),
     ).toMatchImageSnapshot()
-  }, 30000)
+  }, 35000)
 })

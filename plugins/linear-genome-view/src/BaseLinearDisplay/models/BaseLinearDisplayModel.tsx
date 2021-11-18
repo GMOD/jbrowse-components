@@ -21,7 +21,7 @@ import {
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
-import { autorun, observable, when } from 'mobx'
+import { autorun, observable } from 'mobx'
 import { addDisposer, Instance, isAlive, types } from 'mobx-state-tree'
 import React from 'react'
 import { Tooltip } from '../components/BaseLinearDisplay'
@@ -460,7 +460,7 @@ export const BaseLinearDisplay = types
         ...getParentRenderProps(self),
         rpcDriverName: self.rpcDriverName,
         displayModel: self,
-        notReady:
+        statsNotReady:
           self.statsStatus === 'loading' || self.statsStatus === 'error',
         onFeatureClick(_: unknown, featureId: string | undefined) {
           const f = featureId || self.featureIdUnderMouse
@@ -502,7 +502,6 @@ export const BaseLinearDisplay = types
   }))
   .actions(self => ({
     async renderSvg(opts: ExportSvgOptions & { overrideHeight: number }) {
-      await when(() => !!self.regionCannotBeRenderedText)
       const { height, id } = self
       const { overrideHeight } = opts
       const view = getContainingView(self) as LinearGenomeViewModel

@@ -417,13 +417,9 @@ const stateModelFactory = (
             rpcDriverName,
           } = self
 
-          const superProps = superRenderProps()
           return {
-            ...superProps,
-            notReady:
-              superProps.notReady ||
-              !ready ||
-              (sortedBy && self.currBpPerPx !== view.bpPerPx),
+            ...superRenderProps(),
+            notReady: !ready || (sortedBy && self.currBpPerPx !== view.bpPerPx),
             rpcDriverName,
             displayModel: self,
             sortedBy,

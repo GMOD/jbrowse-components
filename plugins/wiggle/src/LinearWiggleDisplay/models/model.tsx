@@ -309,12 +309,11 @@ const stateModelFactory = (
     }))
     .views(self => {
       const { renderProps: superRenderProps } = self
-      const superProps = superRenderProps()
       return {
         renderProps() {
           return {
-            ...superProps,
-            notReady: superProps.notReady || !self.ready,
+            ...superRenderProps(),
+            notReady: !self.ready,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,
@@ -459,7 +458,11 @@ const stateModelFactory = (
       }
     })
     .actions(self => {
-      const { reload: superReload, renderSvg: superRenderSvg } = self
+      const {
+        reload: superReload,
+        renderSvg: superRenderSvg,
+        renderProps: superRenderProps,
+      } = self
 
       type ExportSvgOpts = Parameters<typeof superRenderSvg>[0]
 
@@ -568,9 +571,14 @@ const stateModelFactory = (
                 try {
                   const aborter = new AbortController()
                   const view = getContainingView(self) as LGV
+                  const renderProps = superRenderProps()
                   self.setLoading(aborter)
 
                   if (!view.initialized) {
+                    return
+                  }
+
+                  if (renderProps.statsNotReady) {
                     return
                   }
 
