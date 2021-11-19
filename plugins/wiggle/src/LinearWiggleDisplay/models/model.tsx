@@ -103,12 +103,8 @@ const stateModelFactory = (
         self.color = color
       },
 
-      setLoading(aborter: AbortController) {
-        // const { statsFetchInProgress: statsFetch } = self
-        // if (statsFetch !== undefined && !statsFetch.signal.aborted) {
-        //   statsFetch.abort()
-        // }
-        // self.statsFetchInProgress = aborter
+      setLoading(_aborter: AbortController) {
+        // do nothing currently
       },
 
       // this overrides the BaseLinearDisplayModel to avoid popping up a

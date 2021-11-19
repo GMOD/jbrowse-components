@@ -684,7 +684,11 @@ export function makeAbortableReaction<T, U, V>(
           successFunction(result)
         }
       } catch (e) {
-        if (thisInProgress && !thisInProgress.signal.aborted) {
+        if (
+          isAbortException(e) &&
+          thisInProgress &&
+          !thisInProgress.signal.aborted
+        ) {
           console.error(e)
           errorFunction(new Error('Received an unexpected abort exception'))
         }
