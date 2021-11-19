@@ -4,19 +4,26 @@ import {
   getConf,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import {
-  isAbortException,
   getSession,
   getContainingView,
   isSelectionContainer,
+  makeAbortableReaction,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   BaseLinearDisplay,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import { autorun, observable, when } from 'mobx'
-import { addDisposer, isAlive, types, getEnv, Instance } from 'mobx-state-tree'
+import { observable, when } from 'mobx'
+import {
+  isAlive,
+  types,
+  getEnv,
+  isStateTreeNode,
+  Instance,
+} from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
@@ -83,24 +90,25 @@ const stateModelFactory = (
       ready: false,
       message: undefined as undefined | string,
       stats: observable({ scoreMin: 0, scoreMax: 50 }),
-      statsFetchInProgress: undefined as undefined | AbortController,
     }))
     .actions(self => ({
-      updateStats(stats: { scoreMin: number; scoreMax: number }) {
-        self.stats.scoreMin = stats.scoreMin
-        self.stats.scoreMax = stats.scoreMax
-        self.ready = true
+      updateStats(stats?: { scoreMin: number; scoreMax: number }) {
+        if (stats) {
+          self.stats.scoreMin = stats.scoreMin
+          self.stats.scoreMax = stats.scoreMax
+          self.ready = true
+        }
       },
       setColor(color: string) {
         self.color = color
       },
 
       setLoading(aborter: AbortController) {
-        const { statsFetchInProgress: statsFetch } = self
-        if (statsFetch !== undefined && !statsFetch.signal.aborted) {
-          statsFetch.abort()
-        }
-        self.statsFetchInProgress = aborter
+        // const { statsFetchInProgress: statsFetch } = self
+        // if (statsFetch !== undefined && !statsFetch.signal.aborted) {
+        //   statsFetch.abort()
+        // }
+        // self.statsFetchInProgress = aborter
       },
 
       // this overrides the BaseLinearDisplayModel to avoid popping up a
@@ -462,13 +470,16 @@ const stateModelFactory = (
 
       type ExportSvgOpts = Parameters<typeof superRenderSvg>[0]
 
-      async function getStats(opts: {
-        headers?: Record<string, string>
-        signal?: AbortSignal
-        filters?: string[]
-      }): Promise<FeatureStats> {
+      async function getStats(
+        opts: {
+          headers?: Record<string, string>
+          filters?: string[]
+          numStdDevs: number
+        },
+        signal: AbortSignal,
+      ): Promise<FeatureStats> {
+        const { numStdDevs } = opts
         const { rpcManager } = getSession(self)
-        const nd = getConf(self, 'numStdDev') || 3
         const { adapterConfig, autoscaleType } = self
         const sessionId = getRpcSessionId(self)
         const params = {
@@ -485,7 +496,7 @@ const stateModelFactory = (
           const results: FeatureStats = (await rpcManager.call(
             sessionId,
             'WiggleGetGlobalStats',
-            params,
+            { ...params, signal },
           )) as FeatureStats
           const { scoreMin, scoreMean, scoreStdDev } = results
           // globalsd uses heuristic to avoid unnecessary scoreMin<0
@@ -494,8 +505,9 @@ const stateModelFactory = (
           return autoscaleType === 'globalsd'
             ? {
                 ...results,
-                scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
-                scoreMax: scoreMean + nd * scoreStdDev,
+                scoreMin:
+                  scoreMin >= 0 ? 0 : scoreMean - numStdDevs * scoreStdDev,
+                scoreMax: scoreMean + numStdDevs * scoreStdDev,
               }
             : results
         }
@@ -515,6 +527,7 @@ const stateModelFactory = (
                 }
               }),
               bpPerPx,
+              signal,
             },
           )) as FeatureStats
           const { scoreMin, scoreMean, scoreStdDev } = results
@@ -525,74 +538,80 @@ const stateModelFactory = (
           return autoscaleType === 'localsd'
             ? {
                 ...results,
-                scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
-                scoreMax: scoreMean + nd * scoreStdDev,
+                scoreMin:
+                  scoreMin >= 0 ? 0 : scoreMean - numStdDevs * scoreStdDev,
+                scoreMax: scoreMean + numStdDevs * scoreStdDev,
               }
             : results
         }
         if (autoscaleType === 'zscale') {
-          return rpcManager.call(
-            sessionId,
-            'WiggleGetGlobalStats',
-            params,
-          ) as Promise<FeatureStats>
+          return rpcManager.call(sessionId, 'WiggleGetGlobalStats', {
+            ...params,
+            signal,
+          }) as Promise<FeatureStats>
         }
         throw new Error(`invalid autoscaleType '${autoscaleType}'`)
       }
       return {
         // re-runs stats and refresh whole display on reload
         async reload() {
-          self.setError()
-          const aborter = new AbortController()
-          let stats
-          try {
-            stats = await getStats({
-              signal: aborter.signal,
-              filters: self.filters,
-            })
-            if (isAlive(self)) {
-              self.updateStats(stats)
-              superReload()
-            }
-          } catch (e) {
-            self.setError(e)
-          }
+          // self.setError()
+          // let stats
+          // try {
+          //   stats = await getStats({
+          //     signal: aborter.signal,
+          //     filters: self.filters,
+          //   })
+          //   if (isAlive(self)) {
+          //     self.updateStats(stats)
+          //     superReload()
+          //   }
+          // } catch (e) {
+          //   self.setError(e)
+          // }
         },
         afterAttach() {
-          addDisposer(
+          makeAbortableReaction(
             self,
-            autorun(
-              async () => {
-                try {
-                  const aborter = new AbortController()
-                  const view = getContainingView(self) as LGV
-                  self.setLoading(aborter)
+            () => {
+              const view = getContainingView(self) as LGV
 
-                  if (!view.initialized) {
-                    return
-                  }
+              if (!view.initialized) {
+                return
+              }
 
-                  if (view.bpPerPx > self.maxViewBpPerPx) {
-                    return
-                  }
+              if (view.bpPerPx > self.maxViewBpPerPx) {
+                return
+              }
+              const { filters, adapterConfig, autoscaleType } = self
+              const { dynamicBlocks } = view
 
-                  const stats = await getStats({
-                    signal: aborter.signal,
-                    filters: self.filters,
-                  })
+              // This line is to trigger the mobx reaction when the config
+              // changes It won't trigger the reaction if it doesn't think
+              // we're accessing it, similar to serverSideRenderedBlock
+              if (isStateTreeNode(adapterConfig)) {
+                readConfObject(adapterConfig as AnyConfigurationModel)
+              }
 
-                  if (isAlive(self)) {
-                    self.updateStats(stats)
-                  }
-                } catch (e) {
-                  if (!isAbortException(e) && isAlive(self)) {
-                    console.error(e)
-                    self.setError(e)
-                  }
-                }
-              },
-              { delay: 1000 },
-            ),
+              return {
+                numStdDevs: getConf(self, 'numStdDev') || 3,
+                filters,
+                dynamicBlocks,
+                adapterConfig,
+                autoscaleType,
+              }
+            },
+            async (args, signal) => {
+              if (!args) {
+                return undefined
+              }
+              const stats = await getStats(args, signal)
+              return stats
+            },
+            { delay: 1000 },
+            self.setLoading,
+            self.updateStats,
+            self.setError,
           )
         },
         async renderSvg(opts: ExportSvgOpts) {
