@@ -90,7 +90,6 @@ const stateModelFactory = (
       ready: false,
       message: undefined as undefined | string,
       stats: observable({ scoreMin: 0, scoreMax: 50 }),
-      wiggleReloadCounter: 0,
     }))
     .actions(self => ({
       updateStats(stats?: { scoreMin: number; scoreMax: number }) {
@@ -471,6 +470,27 @@ const stateModelFactory = (
 
       type ExportSvgOpts = Parameters<typeof superRenderSvg>[0]
 
+      function getStatsData() {
+        const view = getContainingView(self) as LGV
+        const { filters, adapterConfig, autoscaleType } = self
+        const { dynamicBlocks } = view
+
+        // This line is to trigger the mobx reaction when the config
+        // changes. It won't trigger the reaction if it doesn't think
+        // we're accessing it, similar to serverSideRenderedBlock
+        if (isStateTreeNode(adapterConfig)) {
+          readConfObject(adapterConfig as AnyConfigurationModel)
+        }
+
+        return {
+          numStdDevs: getConf(self, 'numStdDev') || 3,
+          filters,
+          dynamicBlocks,
+          adapterConfig,
+          autoscaleType,
+        }
+      }
+
       async function getStats(
         opts: {
           headers?: Record<string, string>
@@ -557,9 +577,15 @@ const stateModelFactory = (
         // re-runs stats and refresh whole display on reload
         async reload() {
           self.setError()
-          self.wiggleReloadCounter++
-
-          superReload()
+          try {
+            const stats = await getStats(getStatsData())
+            if (isAlive(self)) {
+              self.updateStats(stats)
+              superReload()
+            }
+          } catch (e) {
+            self.setError(e)
+          }
         },
         afterAttach() {
           makeAbortableReaction(
@@ -574,29 +600,8 @@ const stateModelFactory = (
               if (view.bpPerPx > self.maxViewBpPerPx) {
                 return
               }
-              const {
-                filters,
-                wiggleReloadCounter,
-                adapterConfig,
-                autoscaleType,
-              } = self
-              const { dynamicBlocks } = view
 
-              // This line is to trigger the mobx reaction when the config
-              // changes. It won't trigger the reaction if it doesn't think
-              // we're accessing it, similar to serverSideRenderedBlock
-              if (isStateTreeNode(adapterConfig)) {
-                readConfObject(adapterConfig as AnyConfigurationModel)
-              }
-
-              return {
-                numStdDevs: getConf(self, 'numStdDev') || 3,
-                filters,
-                dynamicBlocks,
-                adapterConfig,
-                autoscaleType,
-                wiggleReloadCounter,
-              }
+              return getStatsData()
             },
             async (args, signal) => {
               if (!args) {
