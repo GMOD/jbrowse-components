@@ -689,6 +689,9 @@ export function makeAbortableReaction<T, U, V>(
           thisInProgress &&
           !thisInProgress.signal.aborted
         ) {
+          // the stance of this is that aborts from other places in the code
+          // should not land here, and they should catch their own abort
+          // exceptions. otherwise, can cause errors such as #2540
           console.error(e)
           errorFunction(new Error('Received an unexpected abort exception'))
         }

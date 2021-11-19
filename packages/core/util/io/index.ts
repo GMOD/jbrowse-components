@@ -36,11 +36,7 @@ export function openLocation(
     const response = await fetch(url, opts)
     if (response.status === 401) {
       const authHeaders = response.headers.get('WWW-Authenticate')
-      if (
-        isUriLocation(location) &&
-        authHeaders &&
-        authHeaders.includes('Basic')
-      ) {
+      if (isUriLocation(location)) {
         throw new AuthNeededError(
           'Accessing HTTPBasic resource without authentication',
           location,
