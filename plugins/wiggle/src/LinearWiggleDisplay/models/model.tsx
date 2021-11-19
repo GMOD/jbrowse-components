@@ -90,6 +90,7 @@ const stateModelFactory = (
       ready: false,
       message: undefined as undefined | string,
       stats: observable({ scoreMin: 0, scoreMax: 50 }),
+      wiggleReloadCounter: 0,
     }))
     .actions(self => ({
       updateStats(stats?: { scoreMin: number; scoreMax: number }) {
@@ -476,7 +477,7 @@ const stateModelFactory = (
           filters?: string[]
           numStdDevs: number
         },
-        signal: AbortSignal,
+        signal?: AbortSignal,
       ): Promise<FeatureStats> {
         const { numStdDevs } = opts
         const { rpcManager } = getSession(self)
@@ -555,20 +556,10 @@ const stateModelFactory = (
       return {
         // re-runs stats and refresh whole display on reload
         async reload() {
-          // self.setError()
-          // let stats
-          // try {
-          //   stats = await getStats({
-          //     signal: aborter.signal,
-          //     filters: self.filters,
-          //   })
-          //   if (isAlive(self)) {
-          //     self.updateStats(stats)
-          //     superReload()
-          //   }
-          // } catch (e) {
-          //   self.setError(e)
-          // }
+          self.setError()
+          self.wiggleReloadCounter++
+
+          superReload()
         },
         afterAttach() {
           makeAbortableReaction(
@@ -583,11 +574,16 @@ const stateModelFactory = (
               if (view.bpPerPx > self.maxViewBpPerPx) {
                 return
               }
-              const { filters, adapterConfig, autoscaleType } = self
+              const {
+                filters,
+                wiggleReloadCounter,
+                adapterConfig,
+                autoscaleType,
+              } = self
               const { dynamicBlocks } = view
 
               // This line is to trigger the mobx reaction when the config
-              // changes It won't trigger the reaction if it doesn't think
+              // changes. It won't trigger the reaction if it doesn't think
               // we're accessing it, similar to serverSideRenderedBlock
               if (isStateTreeNode(adapterConfig)) {
                 readConfObject(adapterConfig as AnyConfigurationModel)
@@ -599,14 +595,14 @@ const stateModelFactory = (
                 dynamicBlocks,
                 adapterConfig,
                 autoscaleType,
+                wiggleReloadCounter,
               }
             },
             async (args, signal) => {
               if (!args) {
                 return undefined
               }
-              const stats = await getStats(args, signal)
-              return stats
+              return getStats(args, signal)
             },
             { delay: 1000 },
             self.setLoading,
