@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
+  addDisposer,
   getParent,
-  isAlive,
-  IAnyStateTreeNode,
   getSnapshot,
   hasParent,
-  addDisposer,
+  isAlive,
   isStateTreeNode,
+  IAnyStateTreeNode,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import fromEntries from 'object.fromentries'
@@ -14,13 +14,13 @@ import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
 import { Feature } from './simpleFeature'
 import {
-  TypeTestedByPredicate,
   isSessionModel,
   isDisplayModel,
   isViewModel,
   isTrackModel,
   Region,
   AssemblyManager,
+  TypeTestedByPredicate,
 } from './types'
 import { isAbortException, checkAbortSignal } from './aborting'
 
@@ -685,7 +685,8 @@ export function makeAbortableReaction<T, U, V>(
         }
       } catch (e) {
         if (thisInProgress && !thisInProgress.signal.aborted) {
-          thisInProgress.abort()
+          console.error(e)
+          errorFunction(new Error('Received an unexpected abort exception'))
         }
         handleError(e)
       }
