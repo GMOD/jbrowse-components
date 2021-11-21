@@ -17,6 +17,7 @@
   "author": "JBrowse Team",
   "main": "dist/index.js",
   "files": [
+    "dist/",
     "patches/",
     "postinstall.js"
   ],
@@ -57,7 +58,8 @@
     "typescript": "^4.0.0"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.3"
+    "@jbrowse/core": "^1.0.3",
+    "tslib": "^2.3.1"
   },
   "publishConfig": {
     "access": "public"
