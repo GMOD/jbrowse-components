@@ -410,7 +410,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <p
                     class="MuiTypography-root MuiTypography-body1"
                   >
-                    ArcPlugin
+                    ArcRenderer
                   </p>
                 </li>
                 <li
