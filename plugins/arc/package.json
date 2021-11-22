@@ -13,22 +13,14 @@
     "src"
   ],
   "scripts": {
-    "setup": "node scripts/setup.js && npm run browse-install",
-    "clean": "rimraf dist",
-    "start": "tsdx watch --verbose --noClean --format umd --name JBrowsePluginArcRenderer --onFirstSuccess \"serve --cors --listen 9090 .\"",
-    "prebuild": "npm run clean",
-    "build": "tsdx build --format cjs,esm,umd --name JBrowsePluginArcRenderer && cp distconfig.json dist/config.json",
-    "browse-install": "cd .jbrowse && rm -rf * && jbrowse create .",
-    "browse": "cd .jbrowse && cp ../jbrowse_config.json . && mv jbrowse_config.json config.json && npx serve .",
-    "test": "tsdx test",
-    "test:cy": "cypress run --headless --browser chrome",
-    "e2e": "start-test start 9000 browse 5000 test:cy",
-    "cypress": "cypress open",
-    "lint": "tsdx lint",
-    "prepublishOnly": "npm test",
-    "prepare": "npm run build",
-    "postinstall": "jbrowse-plugin-postinstall",
-    "postversion": "git push --follow-tags"
+    "start": "tsdx watch --verbose --noClean",
+    "build": "tsdx build",
+    "test": "cd ../..; jest plugins/lollipop",
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build; yarn useDist",
+    "postpack": "yarn useSrc",
+    "useDist": "node ../../scripts/useDist.js",
+    "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {},
   "peerDependencies": {
