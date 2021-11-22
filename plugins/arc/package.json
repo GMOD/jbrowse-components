@@ -1,7 +1,7 @@
 {
   "name": "@jbrowse/plugin-arc",
   "version": "1.5.1",
-  "description": "JBrowse 2 plugin for arcs",
+  "description": "JBrowse 2 arc adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
     "jbrowse2"
@@ -24,7 +24,6 @@
     "dist",
     "src"
   ],
-  "typings": "dist/index.d.ts",
   "scripts": {
     "start": "tsdx watch --verbose --noClean",
     "build": "tsdx build",
@@ -39,25 +38,16 @@
     "react-svg-tooltip": "^0.0.11"
   },
   "peerDependencies": {
-    "@babel/preset-react": "^7.10.4",
-    "@jbrowse/core": "^1.4.4",
-    "@jbrowse/development-tools": "^1.3.0",
-    "@jbrowse/plugin-linear-genome-view": "^1.5.1",
-    "@material-ui/core": "^4.12.3",
-    "@material-ui/lab": "^4.0.0-alpha.45",
-    "@types/react": "^17.0.0",
-    "cypress": "^6.2.1",
-    "mobx": "^5.0.0",
+    "@jbrowse/core": "^1.0.0",
+    "@jbrowse/plugin-linear-genome-view": "^1.0.0",
+    "@jbrowse/plugin-wiggle": "^1.0.0",
+    "@material-ui/core": "^4.12.2",
+    "mobx": "^5.10.1",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
-    "react": "^16.8.0",
-    "react-svg-tooltip": "^0.0.11",
-    "rimraf": "^3.0.2",
-    "rxjs": "^6.0.0",
-    "serve": "^11.3.2",
-    "start-server-and-test": "^1.11.7",
-    "tslib": "^2.0.3",
-    "typescript": "^4.1.3"
+    "prop-types": "^15.0.0",
+    "react": ">=16.8.0",
+    "rxjs": "^6.0.0"
   },
   "private": true
 }
