@@ -1,17 +1,30 @@
 {
-  "version": "0.0.1",
   "name": "@jbrowse/plugin-arc",
+  "version": "1.5.1",
+  "description": "JBrowse 2 plugin for arcs",
   "keywords": [
     "jbrowse",
     "jbrowse2"
   ],
-  "main": "src/index.js",
-  "module": "dist/plugin-arc.esm.js",
-  "typings": "dist/index.d.ts",
+  "license": "Apache-2.0",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "plugins/lollipop"
+  },
+  "author": "JBrowse Team",
+  "distMain": "dist/index.js",
+  "srcMain": "src/index.ts",
+  "main": "src/index.ts",
+  "distModule": "dist/plugin-lollipop.esm.js",
+  "module": "",
   "files": [
     "dist",
     "src"
   ],
+  "typings": "dist/index.d.ts",
   "scripts": {
     "start": "tsdx watch --verbose --noClean",
     "build": "tsdx build",
