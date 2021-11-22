@@ -43,6 +43,7 @@
     "@gmod/faidx": "^1.0.1",
     "@jbrowse/core": "^1.5.1",
     "@jbrowse/plugin-alignments": "^1.5.1",
+    "@jbrowse/plugin-arc": "^1.5.1",
     "@jbrowse/plugin-authentication": "^1.5.1",
     "@jbrowse/plugin-bed": "^1.5.1",
     "@jbrowse/plugin-breakpoint-split-view": "^1.5.1",

@@ -12,13 +12,13 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/GMOD/jbrowse-components.git",
-    "directory": "plugins/lollipop"
+    "directory": "plugins/arc"
   },
   "author": "JBrowse Team",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/plugin-lollipop.esm.js",
+  "distModule": "dist/plugin-arc.esm.js",
   "module": "",
   "files": [
     "dist",
@@ -28,7 +28,7 @@
   "scripts": {
     "start": "tsdx watch --verbose --noClean",
     "build": "tsdx build",
-    "test": "cd ../..; jest plugins/lollipop",
+    "test": "cd ../..; jest plugins/arc",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",
