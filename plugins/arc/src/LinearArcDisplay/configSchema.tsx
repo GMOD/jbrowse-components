@@ -6,7 +6,7 @@ export function configSchemaFactory(pluginManager: PluginManager) {
   const LGVPlugin = pluginManager.getPlugin(
     'LinearGenomeViewPlugin',
   ) as import('@jbrowse/plugin-linear-genome-view').default
-  //@ts-ignore
+  // @ts-ignore
   const { baseLinearDisplayConfigSchema } = LGVPlugin.exports
   return ConfigurationSchema(
     'LinearArcDisplay',

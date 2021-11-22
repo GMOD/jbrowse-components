@@ -1,6 +1,5 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { version } from '../package.json'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import {
   configSchemaFactory as linearArcDisplayConfigSchemaFactory,
@@ -12,13 +11,12 @@ import ArcRenderer, {
 } from './ArcRenderer'
 
 export default class MyProjectPlugin extends Plugin {
-  version = version
   name = 'ArcRenderer'
   install(pluginManager: PluginManager) {
     const LGVPlugin = pluginManager.getPlugin(
       'LinearGenomeViewPlugin',
     ) as import('@jbrowse/plugin-linear-genome-view').default
-    //@ts-ignore
+    // @ts-ignore
     const { BaseLinearDisplayComponent } = LGVPlugin.exports
 
     pluginManager.addRendererType(
@@ -48,6 +46,7 @@ export default class MyProjectPlugin extends Plugin {
 
     pluginManager.jexl.addFunction(
       'logThickness',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (feature: any, attributeName: string) => {
         return Math.log(feature.get(attributeName) + 1)
       },

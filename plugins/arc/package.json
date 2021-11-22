@@ -22,7 +22,9 @@
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js"
   },
-  "dependencies": {},
+  "dependencies": {
+    "react-svg-tooltip": "^0.0.11"
+  },
   "peerDependencies": {
     "@babel/preset-react": "^7.10.4",
     "@jbrowse/core": "^1.4.4",
