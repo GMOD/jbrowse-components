@@ -17,6 +17,7 @@
   "author": "JBrowse Team",
   "main": "dist/index.js",
   "files": [
+    "dist/",
     "patches/",
     "postinstall.js"
   ],
@@ -37,6 +38,7 @@
     "@rollup/plugin-commonjs": "^19.0.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.0.0",
+    "@rollup/plugin-typescript": "^8.3.0",
     "babel-plugin-annotate-pure-calls": "^0.4.0",
     "babel-plugin-dev-expression": "^0.2.3",
     "babel-plugin-macros": "^3.1.0",
@@ -52,12 +54,13 @@
     "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-sourcemaps": "^0.6.3",
     "rollup-plugin-terser": "^7.0.2",
-    "rollup-plugin-typescript2": "^0.30.0",
     "tsdx": "0.14.1",
     "typescript": "^4.0.0"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.3"
+    "@jbrowse/core": "^1.0.3",
+    "regenerator-runtime": "^0.13.7",
+    "tslib": "^2.3.1"
   },
   "publishConfig": {
     "access": "public"
