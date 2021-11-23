@@ -282,6 +282,11 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   ): Promise<BaseFeatureStats> {
     const { statusCallback = () => {} } = opts || {}
     const statsFromInterval = async (length: number, expansionTime: number) => {
+      // sample hard-coded limit based of 0.6 GB fetch size limit
+      if (region.end - region.start > 77000000) {
+        return { featureDensity: Infinity }
+      }
+
       const sampleCenter = region.start * 0.75 + region.end * 0.25
       const start = Math.max(0, Math.round(sampleCenter - length / 2))
       const end = Math.min(Math.round(sampleCenter + length / 2), region.end)
