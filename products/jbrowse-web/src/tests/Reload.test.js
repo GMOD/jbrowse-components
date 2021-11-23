@@ -158,7 +158,7 @@ describe('reload tests', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 30000)
 
   it('reloads bigwig (BW 404)', async () => {
     console.error = jest.fn()
