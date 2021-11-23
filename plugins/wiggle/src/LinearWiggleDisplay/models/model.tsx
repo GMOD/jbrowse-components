@@ -582,6 +582,13 @@ const stateModelFactory = (
                     return
                   }
 
+                  if (
+                    self.globalStats?.featureDensity * view.bpPerPx >
+                    self.maxFeatureScreenDensity
+                  ) {
+                    return
+                  }
+
                   const stats = await getStats({
                     signal: aborter.signal,
                     filters: self.filters,
