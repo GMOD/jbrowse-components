@@ -3781,6 +3781,29 @@
           "indexType": "TBI"
         }
       }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dbsuper",
+      "name": "dbSUPER adipose enhancers",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/dbSUPER/adipose_interactions.sorted.bed.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/dbSUPER/adipose_interactions.sorted.bed.gz.tbi"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearArcDisplay",
+          "displayId": "LinearBasicDisplay"
+        }
+      ]
     }
   ],
   "connections": [],

@@ -5,6 +5,10 @@ import {
   configSchemaFactory as linearArcDisplayConfigSchemaFactory,
   stateModelFactory as LinearArcDisplayStateModelFactory,
 } from './LinearArcDisplay'
+import {
+  configSchemaFactory as linearArcVariantDisplayConfigSchemaFactory,
+  stateModelFactory as LinearArcVariantDisplayStateModelFactory,
+} from './LinearArcVariantDisplay'
 import ArcRenderer, {
   configSchema as ArcRendererConfigSchema,
   ReactComponent as ArcRendererReactComponent,
@@ -38,7 +42,23 @@ export default class MyProjectPlugin extends Plugin {
           configSchema,
           pluginManager,
         ),
-        trackType: 'ArcTrack',
+        trackType: 'FeatureTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: BaseLinearDisplayComponent,
+      })
+    })
+
+    pluginManager.addDisplayType(() => {
+      const configSchema =
+        linearArcVariantDisplayConfigSchemaFactory(pluginManager)
+      return new DisplayType({
+        name: 'LinearArcVariantDisplay',
+        configSchema,
+        stateModel: LinearArcVariantDisplayStateModelFactory(
+          configSchema,
+          pluginManager,
+        ),
+        trackType: 'VariantTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: BaseLinearDisplayComponent,
       })
