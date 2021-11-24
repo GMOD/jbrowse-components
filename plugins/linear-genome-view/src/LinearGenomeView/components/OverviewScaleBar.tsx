@@ -62,7 +62,7 @@ const useStyles = makeStyles(theme => {
       height: HEADER_OVERVIEW_HEIGHT,
       pointerEvents: 'none',
       zIndex: 100,
-      border: '1px solid red',
+      border: '1px solid',
     },
     overview: {
       height: HEADER_BAR_HEIGHT,
@@ -405,6 +405,9 @@ const ScaleBar = observer(
         coord: last.reversed ? last.start : last.end,
       }) || 0
 
+    const color = showCytobands ? '#f00' : scaleBarColor
+    const transparency = showCytobands ? 0.1 : 0.3
+
     return (
       <div className={classes.scaleBar}>
         <div
@@ -412,9 +415,8 @@ const ScaleBar = observer(
           style={{
             width: lastOverviewPx - firstOverviewPx,
             left: firstOverviewPx + cytobandOffset,
-            background: showCytobands
-              ? alpha('#f00', 0.3)
-              : alpha(scaleBarColor, 0.3),
+            background: alpha(color, transparency),
+            borderColor: color,
           }}
         />
         {/* this is the entire scale bar */}
