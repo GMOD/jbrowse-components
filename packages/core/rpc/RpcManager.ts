@@ -5,7 +5,6 @@ import rpcConfigSchema from './configSchema'
 import WebWorkerRpcDriver from './WebWorkerRpcDriver'
 import MainThreadRpcDriver from './MainThreadRpcDriver'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
-import { isElectron } from '../util'
 
 type DriverClass = WebWorkerRpcDriver | MainThreadRpcDriver
 type BackendConfigurations = {
@@ -48,9 +47,7 @@ export default class RpcManager {
     this.driverObjects = new Map()
   }
 
-  async getDriver(
-    backendName: keyof typeof DriverClasses,
-  ): Promise<DriverClass> {
+  getDriver(backendName: keyof typeof DriverClasses) {
     const driver = this.driverObjects.get(backendName)
     if (driver) {
       return driver
@@ -61,19 +58,15 @@ export default class RpcManager {
 
     if (!DriverClassImpl) {
       throw new Error(`requested RPC driver "${backendName}" is not installed`)
-    } else if (!backendConfiguration) {
+    }
+
+    if (!backendConfiguration) {
       throw new Error(`requested RPC driver "${backendName}" is missing config`)
     }
-    let userDataDirectory: string | undefined = undefined
-    if (isElectron) {
-      // eslint-disable-next-line import/no-extraneous-dependencies
-      const { ipcRenderer }: typeof import('electron') = require('electron')
-      userDataDirectory = await ipcRenderer.invoke('userData')
-    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const newDriver = new DriverClassImpl(backendConfiguration as any, {
       plugins: this.pluginManager.runtimePluginDefinitions,
-      userData: userDataDirectory,
     })
     this.driverObjects.set(backendName, newDriver)
     return newDriver
