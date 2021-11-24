@@ -5,6 +5,7 @@ import json from '@rollup/plugin-json'
 import resolve, {
   DEFAULTS as RESOLVE_DEFAULTS,
 } from '@rollup/plugin-node-resolve'
+import typescript from '@rollup/plugin-typescript'
 import path from 'path'
 import { defineConfig, Plugin } from 'rollup'
 import externalGlobals from 'rollup-plugin-external-globals'
@@ -12,8 +13,6 @@ import builtins from 'rollup-plugin-node-builtins'
 import globals from 'rollup-plugin-node-globals'
 import sourceMaps from 'rollup-plugin-sourcemaps'
 import { terser } from 'rollup-plugin-terser'
-import typescript from 'rollup-plugin-typescript2'
-import ts from 'typescript'
 import { babelPluginJBrowse } from './babelPluginJBrowse'
 import { safePackageName, external } from './util'
 import { RollupOptions } from 'rollup'
@@ -35,14 +34,6 @@ const umdName = `JBrowsePlugin${packageJson.config?.jbrowse?.plugin?.name}`
 
 const distPath = path.join(appPath, 'dist')
 const srcPath = path.join(appPath, 'src')
-
-const tsconfigPath = 'tsconfig.json'
-const tsconfigJSON = ts.readConfigFile(tsconfigPath, ts.sys.readFile).config
-const tsCompilerOptions = ts.parseJsonConfigFileContent(
-  tsconfigJSON,
-  ts.sys,
-  './',
-).options
 
 function createGlobalMap(jbrowseGlobals: string[], dotSyntax = false) {
   const globalMap: Record<string, string> = {}
@@ -76,38 +67,25 @@ function getPlugins(
     }),
     json(),
     typescript({
-      typescript: ts,
-      tsconfig: tsconfigPath,
-      tsconfigDefaults: {
-        exclude: [
-          // all TS test files, regardless whether co-located or in test/ etc
-          '**/*.spec.ts',
-          '**/*.test.ts',
-          '**/*.spec.tsx',
-          '**/*.test.tsx',
-          // TS defaults below
-          'node_modules',
-          'bower_components',
-          'jspm_packages',
-          distPath,
-        ],
-        compilerOptions: {
-          sourceMap: true,
-          declaration: true,
-          jsx: 'react',
-        },
-      },
-      tsconfigOverride: {
-        compilerOptions: {
-          // TS -> esnext, then leave the rest to babel-preset-env
-          target: 'esnext',
-          ...(mode === 'esmBundle' || mode === 'umd'
-            ? { declaration: false, declarationMap: false }
-            : {}),
-        },
-      },
-      check: true,
-      useTsconfigDeclarationDir: Boolean(tsCompilerOptions?.declarationDir),
+      exclude: [
+        // all TS test files, regardless whether co-located or in test/ etc
+        '**/*.spec.ts',
+        '**/*.test.ts',
+        '**/*.spec.tsx',
+        '**/*.test.tsx',
+        // TS defaults below
+        'node_modules',
+        'bower_components',
+        'jspm_packages',
+        distPath,
+      ],
+      moduleResolution: 'node',
+      tsconfig: './tsconfig.json',
+      outDir: distPath,
+      target: 'esnext',
+      ...(mode === 'esmBundle' || mode === 'umd'
+        ? { declaration: false, declarationMap: false }
+        : { declarationDir: './' }),
     }),
     (mode === 'cjs' || mode === 'esmBundle') &&
       externalGlobals(createGlobalMap(jbrowseGlobals)),

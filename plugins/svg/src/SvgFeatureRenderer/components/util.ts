@@ -13,7 +13,15 @@ interface Glyph extends React.FunctionComponent {
   layOut?: Function
 }
 
-export function chooseGlyphComponent(feature: Feature): Glyph {
+interface ExtraGlyphValidator {
+  glyph: Glyph
+  validator: (feature: Feature) => boolean
+}
+
+export function chooseGlyphComponent(
+  feature: Feature,
+  extraGlyphs?: ExtraGlyphValidator[],
+): Glyph {
   const type = feature.get('type')
   const strand = feature.get('strand')
   const subfeatures: Feature[] = feature.get('subfeatures')
@@ -32,6 +40,15 @@ export function chooseGlyphComponent(feature: Feature): Glyph {
     ) {
       return ProcessedTranscript
     }
+
+    if (typeof extraGlyphs != 'undefined') {
+      for (const extraGlyph of extraGlyphs) {
+        if (extraGlyph.validator(feature) === true) {
+          return extraGlyph.glyph
+        }
+      }
+    }
+
     return Segments
   }
   return [1, -1].includes(strand) ? Chevron : Box
