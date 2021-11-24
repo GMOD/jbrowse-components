@@ -301,6 +301,9 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
           )
           .toPromise()
       } catch (e) {
+        if (`${e}`.match(/HTTP 404/)) {
+          throw new Error(`${e}`)
+        }
         console.warn('Skipping feature density calculation: ', e)
         return { featureDensity: Infinity }
       }
