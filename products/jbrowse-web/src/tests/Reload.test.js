@@ -65,7 +65,7 @@ describe('reload tests', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 30000)
 
   it('reloads alignments track (CRAM 404)', async () => {
     console.error = jest.fn()
@@ -99,7 +99,7 @@ describe('reload tests', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 30000)
   it('reloads alignments track (BAI 404)', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
@@ -128,7 +128,7 @@ describe('reload tests', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 30000)
   it('reloads alignments track (BAM 404)', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
@@ -190,7 +190,7 @@ describe('reload tests', () => {
       failureThreshold: 0.01,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 30000)
 
   it('reloads vcf (VCF.GZ 404)', async () => {
     console.error = jest.fn()
@@ -215,7 +215,7 @@ describe('reload tests', () => {
     fireEvent.click(buttons[0])
 
     await findAllByTestId('box-test-vcf-604452', ...wait)
-  }, 20000)
+  }, 30000)
 
   it('reloads vcf (VCF.GZ.TBI 404)', async () => {
     console.error = jest.fn()
@@ -238,5 +238,5 @@ describe('reload tests', () => {
     fetch.mockResponse(readBuffer)
 
     await findAllByTestId('box-test-vcf-604452', ...wait)
-  }, 20000)
+  }, 30000)
 })
