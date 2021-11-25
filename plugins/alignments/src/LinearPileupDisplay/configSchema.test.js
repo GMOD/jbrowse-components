@@ -5,10 +5,7 @@ import {
   svgFeatureRendererConfigSchema,
   SvgFeatureRendererReactComponent,
 } from '@jbrowse/plugin-svg'
-import PileupRenderer, {
-  configSchema as pileupRendererConfigSchema,
-  ReactComponent as PileupRendererReactComponent,
-} from '../PileupRenderer'
+import PileupRenderer from '../PileupRenderer'
 import configSchemaFactory from './configSchema'
 
 // mock warnings to avoid unnecessary outputs
