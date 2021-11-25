@@ -7,7 +7,7 @@ export default ConfigurationSchema(
     color: {
       type: 'color',
       description: 'the color of each feature in a pileup alignment',
-      defaultValue: `#c8c8c8`,
+      defaultValue: `#f0f`,
       contextVariable: ['feature'],
     },
 

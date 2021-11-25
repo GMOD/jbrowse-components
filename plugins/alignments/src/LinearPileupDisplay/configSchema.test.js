@@ -22,15 +22,7 @@ afterEach(() => {
 
 class PileupRendererPlugin extends Plugin {
   install(pluginManager) {
-    pluginManager.addRendererType(
-      () =>
-        new PileupRenderer({
-          name: 'PileupRenderer',
-          ReactComponent: PileupRendererReactComponent,
-          configSchema: pileupRendererConfigSchema,
-          pluginManager,
-        }),
-    )
+    PileupRenderer(pluginManager)
   }
 }
 

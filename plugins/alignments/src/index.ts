@@ -42,9 +42,9 @@ export default class AlignmentsPlugin extends Plugin {
       LinearSNPCoverageDisplayF,
       AlignmentsTrackF,
       SNPCoverageAdapterF,
-      SNPCoverageRendererF,
       HtsgetBamAdapterF,
       PileupRendererF,
+      SNPCoverageRendererF,
       LinearAlignmentsDisplayF,
       AlignmentsFeatureWidgetF,
     ].map(f => f(pluginManager))
