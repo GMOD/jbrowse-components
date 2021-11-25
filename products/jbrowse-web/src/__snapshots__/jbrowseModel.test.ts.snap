@@ -257,10 +257,6 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "volvox_sv_test-LinearArcVariantDisplay",
-          "type": "LinearArcVariantDisplay",
-        },
-        Object {
           "displayId": "volvox_sv_test-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
         },
@@ -298,10 +294,6 @@ Object {
         "VCF",
       ],
       "displays": Array [
-        Object {
-          "displayId": "volvox_sv_test_renamed-LinearArcVariantDisplay",
-          "type": "LinearArcVariantDisplay",
-        },
         Object {
           "displayId": "volvox_sv_test_renamed-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
@@ -947,10 +939,6 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "volvox_test_vcf-LinearArcVariantDisplay",
-          "type": "LinearArcVariantDisplay",
-        },
-        Object {
           "displayId": "volvox_test_vcf-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
         },
@@ -1339,7 +1327,7 @@ Object {
     },
     Object {
       "adapter": Object {
-        "adapterId": "EVOQXJSOZ9",
+        "adapterId": "Y4yJ6gAC2E",
         "features": Array [
           Object {
             "end": 200,
@@ -1979,10 +1967,6 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "volvox_filtered_vcf-LinearArcVariantDisplay",
-          "type": "LinearArcVariantDisplay",
-        },
-        Object {
           "displayId": "volvox_filtered_vcf-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
         },
@@ -2012,10 +1996,6 @@ Object {
         "VCF",
       ],
       "displays": Array [
-        Object {
-          "displayId": "volvox_filtered_vcf_plaintext-LinearArcVariantDisplay",
-          "type": "LinearArcVariantDisplay",
-        },
         Object {
           "displayId": "volvox_filtered_vcf_plaintext-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
@@ -2054,10 +2034,6 @@ Object {
         "VCF",
       ],
       "displays": Array [
-        Object {
-          "displayId": "volvox_filtered_vcf_assembly_alias-LinearArcVariantDisplay",
-          "type": "LinearArcVariantDisplay",
-        },
         Object {
           "displayId": "volvox_filtered_vcf_assembly_alias-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
@@ -2647,10 +2623,6 @@ Object {
           },
           "type": "LinearVariantDisplay",
         },
-        Object {
-          "displayId": "variant_colors-LinearArcVariantDisplay",
-          "type": "LinearArcVariantDisplay",
-        },
       ],
       "name": "volvox filtered vcf (green snp, purple indel)",
       "trackId": "variant_colors",
@@ -2950,10 +2922,6 @@ Object {
         "VCF",
       ],
       "displays": Array [
-        Object {
-          "displayId": "volvox.inv.vcf-LinearArcVariantDisplay",
-          "type": "LinearArcVariantDisplay",
-        },
         Object {
           "displayId": "volvox.inv.vcf-ChordVariantDisplay",
           "type": "ChordVariantDisplay",

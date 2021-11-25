@@ -48,21 +48,21 @@ export default class MyProjectPlugin extends Plugin {
       })
     })
 
-    pluginManager.addDisplayType(() => {
-      const configSchema =
-        linearArcVariantDisplayConfigSchemaFactory(pluginManager)
-      return new DisplayType({
-        name: 'LinearArcVariantDisplay',
-        configSchema,
-        stateModel: LinearArcVariantDisplayStateModelFactory(
-          configSchema,
-          pluginManager,
-        ),
-        trackType: 'VariantTrack',
-        viewType: 'LinearGenomeView',
-        ReactComponent: BaseLinearDisplayComponent,
-      })
-    })
+    // pluginManager.addDisplayType(() => {
+    //   const configSchema =
+    //     linearArcVariantDisplayConfigSchemaFactory(pluginManager)
+    //   return new DisplayType({
+    //     name: 'LinearArcVariantDisplay',
+    //     configSchema,
+    //     stateModel: LinearArcVariantDisplayStateModelFactory(
+    //       configSchema,
+    //       pluginManager,
+    //     ),
+    //     trackType: 'VariantTrack',
+    //     viewType: 'LinearGenomeView',
+    //     ReactComponent: BaseLinearDisplayComponent,
+    //   })
+    // })
 
     pluginManager.jexl.addFunction(
       'logThickness',

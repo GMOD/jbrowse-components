@@ -730,6 +730,7 @@
       "category": ["Miscellaneous"],
       "adapter": {
         "type": "FromConfigAdapter",
+        "adapterId": "Y4yJ6gAC2E",
         "features": [
           {
             "uniqueId": "arc-one",
