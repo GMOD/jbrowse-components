@@ -56,6 +56,7 @@
     "react-error-boundary": "^3.0.0",
     "react-intersection-observer": "^8.31.0",
     "react-measure": "^2.3.0",
+    "sanitize-filename": "^1.6.3",
     "shortid": "^2.2.13",
     "svg-path-generator": "^1.1.0",
     "tenacious-fetch": "^2.1.0",

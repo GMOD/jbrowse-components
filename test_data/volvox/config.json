@@ -1609,6 +1609,47 @@
           "indexType": "TBI"
         }
       }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "Deep sequencing",
+      "name": "deep_sequencing",
+      "category": ["Alignments"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "deep_sequencing.cram",
+          "locationType": "UriLocation"
+        },
+        "craiLocation": {
+          "uri": "deep_sequencing.cram.crai",
+          "locationType": "UriLocation"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearAlignmentsDisplay",
+          "displayId": "deep_seq_alignments",
+          "pileupDisplay": {
+            "type": "LinearPileupDisplay",
+            "displayId": "deep_seq_pileup",
+            "renderers": {
+              "PileupRenderer": {
+                "type": "PileupRenderer",
+                "maxHeight": 10000
+              }
+            }
+          }
+        }
+      ]
     }
   ],
   "defaultSession": {
