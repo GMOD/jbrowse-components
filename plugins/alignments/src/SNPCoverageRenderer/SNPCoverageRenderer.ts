@@ -2,6 +2,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { featureSpanPx } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { bpSpanPx } from '@jbrowse/core/util'
 import { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import {
   getOrigin,
@@ -26,6 +27,16 @@ export interface RenderArgsDeserializedWithFeatures
   modificationTagMap: Record<string, string>
 }
 
+type Counts = {
+  [key: string]: { total: number; strands: { [key: string]: number } }
+}
+
+interface SNPInfo {
+  cov: Counts
+  noncov: Counts
+  total: number
+}
+
 export default class SNPCoverageRenderer extends WiggleBaseRenderer {
   // note: the snps are drawn on linear scale even if the data is drawn in log
   // scape hence the two different scales being used
@@ -37,13 +48,13 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       features,
       regions,
       bpPerPx,
+      displayCrossHatches,
+      modificationTagMap,
       scaleOpts,
       height: unadjustedHeight,
       theme: configTheme,
       config: cfg,
-      displayCrossHatches,
       ticks: { values },
-      modificationTagMap,
     } = props
     const theme = createJBrowseTheme(configTheme)
     const [region] = regions
@@ -87,15 +98,19 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       ref: 'lightgrey',
     }
 
+    const feats = [...features.values()]
+    const coverage = feats.filter(f => f.get('type') !== 'skip')
+    const skips = feats.filter(f => f.get('type') === 'skip')
+
     // Use two pass rendering, which helps in visualizing the SNPs at higher
     // bpPerPx First pass: draw the gray background
     ctx.fillStyle = colorForBase.total
-    for (const feature of features.values()) {
+    coverage.forEach(feature => {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const w = rightPx - leftPx + 0.3
       const score = feature.get('score') as number
       ctx.fillRect(leftPx, toY(score), w, toHeight(score))
-    }
+    })
     ctx.fillStyle = 'grey'
     ctx.beginPath()
     ctx.lineTo(0, 0)
@@ -105,16 +120,10 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     // Second pass: draw the SNP data, and add a minimum feature width of 1px
     // which can be wider than the actual bpPerPx This reduces overdrawing of
     // the grey background over the SNPs
-    for (const feature of features.values()) {
+    coverage.forEach(feature => {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-      type Counts = {
-        [key: string]: { total: number; strands: { [key: string]: number } }
-      }
-      const snpinfo = feature.get('snpinfo') as {
-        cov: Counts
-        noncov: Counts
-        total: number
-      }
+
+      const snpinfo = feature.get('snpinfo') as SNPInfo
       const w = Math.max(rightPx - leftPx + 0.3, 1)
       const totalScore = snpinfo.total
 
@@ -175,7 +184,25 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           ctx.fill()
         }
       }
-    }
+    })
+
+    ctx.globalAlpha = 0.7
+    skips.forEach(f => {
+      const [left, right] = bpSpanPx(
+        f.get('start'),
+        f.get('end'),
+        region,
+        bpPerPx,
+      )
+
+      ctx.beginPath()
+      ctx.strokeStyle =
+        f.get('strand') === 1 ? 'rgba(255,200,200)' : 'rgba(200,200,255)'
+      ctx.lineWidth = Math.log(f.get('score') + 1)
+      ctx.moveTo(left, height - offset * 2)
+      ctx.bezierCurveTo(left, 0, right, 0, right, height - offset * 2)
+      ctx.stroke()
+    })
 
     if (displayCrossHatches) {
       ctx.lineWidth = 1

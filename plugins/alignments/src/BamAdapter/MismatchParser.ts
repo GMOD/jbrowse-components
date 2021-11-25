@@ -153,16 +153,15 @@ export function mdToMismatches(
   const md = mdstring.match(/(\d+|\^[a-z]+|[a-z])/gi) || []
   for (let i = 0; i < md.length; i++) {
     const token = md[i]
-    const num = +token
-    if (!Number.isNaN(num)) {
-      curr.start += num
-    } else if (token.startsWith('^')) {
+    if (token.match(/^\d/)) {
+      curr.start += parseInt(token, 10)
+    } else if (token.match(/^\^/)) {
       curr.length = token.length - 1
       curr.base = '*'
       curr.type = 'deletion'
       curr.seq = token.substring(1)
       nextRecord()
-    } else {
+    } else if (token.match(/^[a-z]/i)) {
       // mismatch
       for (let j = 0; j < token.length; j += 1) {
         curr.length = 1

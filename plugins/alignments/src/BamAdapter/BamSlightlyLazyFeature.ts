@@ -153,12 +153,16 @@ export default class BamSlightlyLazyFeature implements Feature {
   }
 
   toJSON(): SimpleFeatureSerialized {
+    const tags = Object.fromEntries(
+      this.tags()
+        .map(t => {
+          return [t, this.get(t)]
+        })
+        .filter(elt => elt[1] !== undefined),
+    )
+
     return {
-      ...Object.fromEntries(
-        this.tags()
-          .map(t => [t, this.get(t)])
-          .filter(elt => elt[1] !== undefined),
-      ),
+      ...tags,
       uniqueId: this.id(),
     }
   }
@@ -197,18 +201,24 @@ export default class BamSlightlyLazyFeature implements Feature {
 
     // parse the CIGAR tag if it has one
     const cigarString = this.get(cigarAttributeName)
-    const seq = this.get('seq')
-    const qual = this.qualRaw()
     if (cigarString) {
       cigarOps = parseCigar(cigarString)
-      mismatches = mismatches.concat(cigarToMismatches(cigarOps, seq, qual))
+      mismatches = mismatches.concat(
+        cigarToMismatches(cigarOps, this.get('seq'), this.qualRaw()),
+      )
     }
 
     // now let's look for CRAM or MD mismatches
     const mdString = this.get(mdAttributeName)
     if (mdString) {
       mismatches = mismatches.concat(
-        mdToMismatches(mdString, cigarOps, mismatches, seq, qual),
+        mdToMismatches(
+          mdString,
+          cigarOps,
+          mismatches,
+          this.get('seq'),
+          this.qualRaw(),
+        ),
       )
     }
 

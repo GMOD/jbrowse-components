@@ -1,4 +1,4 @@
-import { BigWig, Feature as BBIFeature } from '@gmod/bbi'
+import { BigWig } from '@gmod/bbi'
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
@@ -82,7 +82,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
       })
       ob.pipe(
         mergeAll(),
-        map((record: BBIFeature) => {
+        map(record => {
           return new SimpleFeature({
             id: `${refName}:${record.start}-${record.end}`,
             data: { ...record, refName },

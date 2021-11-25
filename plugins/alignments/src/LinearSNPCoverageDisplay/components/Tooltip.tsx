@@ -11,6 +11,15 @@ type Count = {
   }
 }
 
+type SNPInfo = {
+  ref: Count
+  cov: Count
+  lowqual: Count
+  noncov: Count
+  delskips: Count
+  total: number
+}
+
 const en = (n: number) => n.toLocaleString('en-US')
 
 const TooltipContents = React.forwardRef(
@@ -22,16 +31,8 @@ const TooltipContents = React.forwardRef(
       .filter(f => !!f)
       .join(':')
 
-    const info = feature.get('snpinfo') as {
-      ref: Count
-      cov: Count
-      lowqual: Count
-      noncov: Count
-      delskips: Count
-      total: number
-    }
-
-    const total = info.total
+    const info = feature.get('snpinfo') as SNPInfo
+    const total = info?.total
 
     return (
       <div ref={ref}>
@@ -91,7 +92,11 @@ const SNPCoverageTooltip = observer(
     clientMouseCoord: Coord
     clientRect?: ClientRect
   }) => {
-    return <Tooltip TooltipContents={TooltipContents} {...props} />
+    const { model } = props
+    const { featureUnderMouse: feat } = model
+    return feat && feat.get('type') === 'skip' ? null : (
+      <Tooltip TooltipContents={TooltipContents} {...props} />
+    )
   },
 )
 
