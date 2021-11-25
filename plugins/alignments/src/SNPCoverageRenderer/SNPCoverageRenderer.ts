@@ -196,8 +196,17 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       )
 
       ctx.beginPath()
-      ctx.strokeStyle =
-        f.get('strand') === 1 ? 'rgba(255,200,200)' : 'rgba(200,200,255)'
+      const str = f.get('strand') as number
+      const xs = f.get('xs') as string
+      const pos = 'rgb(255,200,200)'
+      const neg = 'rgb(200,200,255)'
+      const neutral = 'rgb(200,200,200)'
+      if (xs === '+' || xs === '-') {
+        ctx.strokeStyle = { '+': pos, '-': neg }[xs] || neutral
+      } else {
+        ctx.strokeStyle = { '1': pos, '-1': neg }[str] || neutral
+      }
+
       ctx.lineWidth = Math.log(f.get('score') + 1)
       ctx.moveTo(left, height - offset * 2)
       ctx.bezierCurveTo(left, 0, right, 0, right, height - offset * 2)

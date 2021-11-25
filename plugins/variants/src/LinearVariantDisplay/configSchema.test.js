@@ -1,10 +1,7 @@
 import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import PileupRenderer, {
-  configSchema as pileupRendererConfigSchema,
-  ReactComponent as PileupRendererReactComponent,
-} from '@jbrowse/plugin-alignments/src/PileupRenderer'
+import PileupRenderer from '@jbrowse/plugin-alignments/src/PileupRenderer'
 import {
   configSchema as svgFeatureRendererConfigSchema,
   ReactComponent as SvgFeatureRendererReactComponent,
@@ -22,15 +19,7 @@ afterEach(() => {
 
 class PileupRendererPlugin extends Plugin {
   install(pluginManager) {
-    pluginManager.addRendererType(
-      () =>
-        new PileupRenderer({
-          name: 'PileupRenderer',
-          ReactComponent: PileupRendererReactComponent,
-          configSchema: pileupRendererConfigSchema,
-          pluginManager,
-        }),
-    )
+    PileupRenderer(pluginManager)
   }
 }
 

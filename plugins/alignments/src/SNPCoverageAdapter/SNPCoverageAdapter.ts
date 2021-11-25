@@ -113,8 +113,9 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
               type: 'skip',
               start: skip.start,
               end: skip.end,
-              score: skip.count,
               strand: skip.strand,
+              score: skip.score,
+              xs: skip.xs,
             },
           }),
         )
@@ -151,7 +152,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
     const skipmap = {} as {
       [key: string]: {
-        count: number
+        score: number
         feature: unknown
         start: number
         end: number
@@ -186,7 +187,6 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     }
 
     const bins = await features
-
       .pipe(
         reduce((bins, feature) => {
           const cigar = feature.get('CIGAR')
@@ -333,12 +333,16 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
                     feature: feature,
                     start,
                     end,
-                    xs: feature.get('xs') || feature.get('ts'),
                     strand,
-                    count: 1,
+                    xs:
+                      feature.get('xs') ||
+                      feature.get('ts') ||
+                      feature.get('tags').XS ||
+                      feature.get('tags').TS,
+                    score: 1,
                   }
                 } else {
-                  skipmap[hash].count++
+                  skipmap[hash].score++
                 }
               })
           }
