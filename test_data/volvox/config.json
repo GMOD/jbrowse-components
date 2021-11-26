@@ -1593,6 +1593,34 @@
           }
         }
       ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "spliced",
+      "name": "volvox-rnaseq demo",
+      "category": ["Alignments"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "spliced.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "spliced.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      }
     }
   ],
   "defaultSession": {
