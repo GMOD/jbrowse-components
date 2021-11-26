@@ -15,7 +15,14 @@ function ArcRendering(props: any) {
     return handler(event, id)
   }
 
-  const { features, config, regions, blockKey, bpPerPx } = props
+  const {
+    features,
+    config,
+    regions,
+    blockKey,
+    bpPerPx,
+    displayModel: { selectedFeatureId },
+  } = props
   const [region] = regions
   const arcsRendered = []
 
@@ -29,7 +36,11 @@ function ArcRendering(props: any) {
 
     const featureId = feature.id()
     const id = blockKey + '-' + featureId
-    const stroke = readConfObject(config, 'color', { feature })
+    let stroke = readConfObject(config, 'color', { feature })
+    let textStroke = 'black'
+    if (String(selectedFeatureId) === String(feature.id())) {
+      stroke = textStroke = 'red'
+    }
     const label = readConfObject(config, 'label', { feature })
     const caption = readConfObject(config, 'caption', { feature })
     const strokeWidth = readConfObject(config, 'thickness', { feature })
@@ -78,7 +89,7 @@ function ArcRendering(props: any) {
         <text
           x={left + (right - left) / 2}
           y="78px"
-          style={{ stroke: 'black' }}
+          style={{ stroke: textStroke }}
         >
           {label}
         </text>
