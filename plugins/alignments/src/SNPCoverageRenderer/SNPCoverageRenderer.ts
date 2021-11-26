@@ -201,9 +201,10 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       const pos = 'rgb(255,200,200)'
       const neg = 'rgb(200,200,255)'
       const neutral = 'rgb(200,200,200)'
+
       if (xs === '+') {
         ctx.strokeStyle = pos
-      } else if (xs === '0') {
+      } else if (xs === '-') {
         ctx.strokeStyle = neg
       } else if (str === 1) {
         ctx.strokeStyle = pos
