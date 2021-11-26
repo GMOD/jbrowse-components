@@ -201,10 +201,16 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       const pos = 'rgb(255,200,200)'
       const neg = 'rgb(200,200,255)'
       const neutral = 'rgb(200,200,200)'
-      if (xs === '+' || xs === '-') {
-        ctx.strokeStyle = { '+': pos, '-': neg }[xs] || neutral
+      if (xs === '+') {
+        ctx.strokeStyle = pos
+      } else if (xs === '0') {
+        ctx.strokeStyle = neg
+      } else if (str === 1) {
+        ctx.strokeStyle = pos
+      } else if (str === -1) {
+        ctx.strokeStyle = neg
       } else {
-        ctx.strokeStyle = { '1': pos, '-1': neg }[str] || neutral
+        ctx.strokeStyle = neutral
       }
 
       ctx.lineWidth = Math.log(f.get('score') + 1)
