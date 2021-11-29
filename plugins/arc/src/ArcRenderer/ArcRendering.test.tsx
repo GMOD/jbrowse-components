@@ -13,6 +13,8 @@ test('no features', () => {
       blockKey={1}
       config={{}}
       bpPerPx={3}
+      displayModel={{}}
+      features={new Map()}
     />,
   )
 
@@ -34,8 +36,9 @@ test('one feature', () => {
           ],
         ])
       }
-      config={ConfigSchema.create({})}
+      config={{ type: 'DummyRenderer' }}
       bpPerPx={3}
+      displayModel={{}}
     />,
   )
 

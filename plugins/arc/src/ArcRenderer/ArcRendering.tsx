@@ -38,14 +38,17 @@ function ArcRendering(props: any) {
     const id = blockKey + '-' + featureId
     let stroke = readConfObject(config, 'color', { feature })
     let textStroke = 'black'
-    if (String(selectedFeatureId) === String(feature.id())) {
+    if (
+      selectedFeatureId &&
+      String(selectedFeatureId) === String(feature.id())
+    ) {
       stroke = textStroke = 'red'
     }
     const label = readConfObject(config, 'label', { feature })
     const caption = readConfObject(config, 'caption', { feature })
     const strokeWidth = readConfObject(config, 'thickness', { feature })
     const ref = React.createRef<SVGPathElement>()
-    const tooltipWidth = 20 + measureText(caption.toString())
+    const tooltipWidth = 20 + measureText(caption?.toString())
 
     arcsRendered.push(
       <g key={id} onClick={e => onClick(e, featureId)}>
