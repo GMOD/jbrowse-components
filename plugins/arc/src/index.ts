@@ -5,10 +5,10 @@ import {
   configSchemaFactory as linearArcDisplayConfigSchemaFactory,
   stateModelFactory as LinearArcDisplayStateModelFactory,
 } from './LinearArcDisplay'
-import {
-  configSchemaFactory as linearArcVariantDisplayConfigSchemaFactory,
-  stateModelFactory as LinearArcVariantDisplayStateModelFactory,
-} from './LinearArcVariantDisplay'
+// import {
+//   configSchemaFactory as linearArcVariantDisplayConfigSchemaFactory,
+//   stateModelFactory as LinearArcVariantDisplayStateModelFactory,
+// } from './LinearArcVariantDisplay'
 import ArcRenderer, {
   configSchema as ArcRendererConfigSchema,
   ReactComponent as ArcRendererReactComponent,

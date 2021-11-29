@@ -1,7 +1,6 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import React from 'react'
 import { render } from '@testing-library/react'
-import ConfigSchema from './configSchema'
 import Rendering from './ArcRendering'
 
 test('no features', () => {
