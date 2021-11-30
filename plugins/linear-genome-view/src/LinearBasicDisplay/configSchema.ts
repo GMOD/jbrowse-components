@@ -14,11 +14,10 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         contextVariable: ['feature'],
       },
       renderer: pluginManager.pluggableConfigSchemaType('renderer'),
-      // overrides base
-      maxDisplayedBpPerPx: {
+      maxFeatureScreenDensity: {
         type: 'number',
-        description: 'maximum bpPerPx that is displayed in the view',
-        defaultValue: 1000,
+        description: 'maximum features per pixel that is displayed in the view',
+        defaultValue: 0.5,
       },
     },
     { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },

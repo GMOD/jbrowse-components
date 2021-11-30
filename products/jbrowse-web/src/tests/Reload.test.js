@@ -65,7 +65,7 @@ describe('reload tests', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 30000)
 
   it('reloads alignments track (CRAM 404)', async () => {
     console.error = jest.fn()
@@ -99,7 +99,7 @@ describe('reload tests', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 30000)
   it('reloads alignments track (BAI 404)', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
@@ -128,7 +128,7 @@ describe('reload tests', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 30000)
   it('reloads alignments track (BAM 404)', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
@@ -147,7 +147,7 @@ describe('reload tests', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_bam_pileup'))
     await findAllByText(/HTTP 404/, ...wait)
     fetch.mockResponse(readBuffer)
-    const buttons = await findAllByTestId('reload_button')
+    const buttons = await findAllByTestId('reload_button', ...wait)
     fireEvent.click(buttons[0])
     const canvas = await findAllByTestId('prerendered_canvas', ...wait)
 
@@ -158,7 +158,7 @@ describe('reload tests', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 30000)
 
   it('reloads bigwig (BW 404)', async () => {
     console.error = jest.fn()
@@ -180,8 +180,8 @@ describe('reload tests', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray'))
     await findAllByText(/HTTP 404/, ...wait)
     fetch.mockResponse(readBuffer)
-    const buttons = await findAllByTestId('reload_button')
-    fireEvent.click(buttons[0])
+    const forceLoad = await findAllByTestId('reload_button', ...wait)
+    fireEvent.click(forceLoad[0])
     const canvas = await findAllByTestId('prerendered_canvas', ...wait)
     const bigwigImg = canvas[0].toDataURL()
     const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
@@ -190,7 +190,7 @@ describe('reload tests', () => {
       failureThreshold: 0.01,
       failureThresholdType: 'percent',
     })
-  }, 20000)
+  }, 30000)
 
   it('reloads vcf (VCF.GZ 404)', async () => {
     console.error = jest.fn()
@@ -211,11 +211,11 @@ describe('reload tests', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
     await findAllByText(/HTTP 404/, ...wait)
     fetch.mockResponse(readBuffer)
-    const buttons = await findAllByTestId('reload_button')
+    const buttons = await findAllByTestId('reload_button', ...wait)
     fireEvent.click(buttons[0])
 
     await findAllByTestId('box-test-vcf-604452', ...wait)
-  }, 20000)
+  }, 30000)
 
   it('reloads vcf (VCF.GZ.TBI 404)', async () => {
     console.error = jest.fn()
@@ -236,9 +236,7 @@ describe('reload tests', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
     await findAllByText(/HTTP 404/, ...wait)
     fetch.mockResponse(readBuffer)
-    const buttons = await findAllByTestId('reload_button')
-    fireEvent.click(buttons[0])
 
     await findAllByTestId('box-test-vcf-604452', ...wait)
-  }, 20000)
+  }, 30000)
 })

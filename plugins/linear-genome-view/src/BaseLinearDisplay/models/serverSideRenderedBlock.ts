@@ -292,6 +292,10 @@ async function renderBlockEffect(
     return undefined
   }
 
+  if (renderProps.statsNotReady) {
+    return undefined
+  }
+
   const { reactElement, features, layout, maxHeightReached } =
     await rendererType.renderInClient(rpcManager, {
       ...renderArgs,
