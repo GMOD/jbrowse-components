@@ -95,7 +95,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 >
                   <div
                     class="makeStyles-scaleBarVisibleRegion"
-                    style="width: 267px; left: 0px; background: rgba(66, 119, 127, 0.3);"
+                    style="width: 267px; left: 0px; background: rgba(66, 119, 127, 0.3); border-color: rgb(66, 119, 127);"
                   />
                   <div
                     class="makeStyles-scaleBarContig"

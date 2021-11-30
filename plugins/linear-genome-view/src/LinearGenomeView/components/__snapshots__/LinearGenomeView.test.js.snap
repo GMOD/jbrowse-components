@@ -17,7 +17,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         >
           <div
             class="makeStyles-scaleBarVisibleRegion"
-            style="width: 800px; left: 0px; background: rgba(121, 134, 203, 0.3);"
+            style="width: 800px; left: 0px; background: rgba(121, 134, 203, 0.3); border-color: #7986cb;"
           />
           <div
             class="makeStyles-scaleBarContig"
@@ -581,7 +581,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         >
           <div
             class="makeStyles-scaleBarVisibleRegion"
-            style="width: 580px; left: 0px; background: rgba(121, 134, 203, 0.3);"
+            style="width: 580px; left: 0px; background: rgba(121, 134, 203, 0.3); border-color: #7986cb;"
           />
           <div
             class="makeStyles-scaleBarContig"
