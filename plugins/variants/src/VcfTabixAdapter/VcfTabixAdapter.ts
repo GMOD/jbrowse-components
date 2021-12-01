@@ -7,13 +7,14 @@ import {
   NoAssemblyRegion,
   Region,
 } from '@jbrowse/core/util/types'
+import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
 import { GenericFilehandle } from 'generic-filehandle'
 import VcfParser from '@gmod/vcf'
-import { Observer } from 'rxjs'
+import { Observer, from } from 'rxjs'
 import { readConfObject } from '@jbrowse/core/configuration'
 import VcfFeature from './VcfFeature'
 import { BaseFeatureStats } from '@jbrowse/core/util/stats'
@@ -24,6 +25,8 @@ export default class extends BaseFeatureDataAdapter {
     parser: typeof VcfParser
     filehandle: GenericFilehandle
   }>
+
+  protected featureCache = new QuickLRU({ maxSize: 20 })
 
   protected async configure() {
     if (!this.configured) {
@@ -78,13 +81,13 @@ export default class extends BaseFeatureDataAdapter {
     return parser.getMetadata()
   }
 
-  public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
-    return ObservableCreate<Feature>(async observer => {
+  private async getFeaturesAsArray(query: NoAssemblyRegion, opts: BaseOptions = {}) {
       const { refName, start, end } = query
       const { vcf, parser } = await this.configure()
+      const features : VcfFeature[] = []
       await vcf.getLines(refName, start, end, {
         lineCallback: (line: string, fileOffset: number) => {
-          observer.next(
+          features.push(
             new VcfFeature({
               variant: parser.parseLine(line),
               parser,
@@ -94,6 +97,22 @@ export default class extends BaseFeatureDataAdapter {
         },
         ...opts,
       })
+      return features
+  }
+
+  public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
+    return ObservableCreate<Feature>(async observer => {
+      const { refName, start, end } = query
+      // NOTE: this is a very simple caching scheme that depends on the fact
+      // that the fetched ranges tend to be repeated
+      const cacheKey = `${refName}:${start}-${end}`
+      let f = this.featureCache.get(cacheKey) as VcfFeature[] | undefined
+      if (!f) {
+        f = await this.getFeaturesAsArray(query, opts)
+        this.featureCache.set(cacheKey, f)
+      }
+
+      f.forEach(observer.next)
       observer.complete()
     }, opts.signal)
   }
