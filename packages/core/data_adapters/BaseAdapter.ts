@@ -100,7 +100,7 @@ export abstract class BaseAdapter {
  * subclasses must implement.
  */
 export abstract class BaseFeatureDataAdapter extends BaseAdapter {
-  protected estimateStatsCache: BaseFeatureStats | undefined
+  protected estimatedStats?: Promise<BaseFeatureStats>
   /**
    * Get all reference sequence names used in the data source
    *
@@ -271,9 +271,10 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     opts?: BaseOptions,
   ): Promise<BaseFeatureStats> {
     // Estimates once, then cache stats for future calls
-    return this.estimateStatsCache
-      ? this.estimateStatsCache
-      : this.estimateGlobalStats(regionToStart, opts)
+    if (!this.estimatedStats) {
+      this.estimatedStats = this.estimateGlobalStats(regionToStart, opts)
+    }
+    return this.estimatedStats
   }
 
   public async estimateGlobalStats(
@@ -331,20 +332,16 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     ): Promise<BaseFeatureStats> => {
       const refLen = region.end - region.start
       if (statsSampleFeatures >= 300 || interval * 2 > refLen) {
-        statusCallback('')
-        this.estimateStatsCache = stats
+        return stats
       } else if (expansionTime <= 4) {
         expansionTime++
         return statsFromInterval(interval * 2, expansionTime)
       } else {
-        statusCallback('')
         console.error('Stats estimation reached timeout')
-        this.estimateStatsCache = { featureDensity: Infinity }
+        return { featureDensity: Infinity }
       }
-      return this.estimateStatsCache as BaseFeatureStats
     }
 
-    statusCallback('Calculating stats')
     return statsFromInterval(100, 0)
   }
 }

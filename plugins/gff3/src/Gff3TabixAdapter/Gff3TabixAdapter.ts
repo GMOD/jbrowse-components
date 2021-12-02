@@ -256,7 +256,6 @@ export default class extends BaseFeatureDataAdapter {
       return super.estimateGlobalStats(region, opts)
     }
     const featureDensity = featCount / (region.end - region.start)
-    this.estimateStatsCache = { featureDensity }
     return { featureDensity }
   }
 
