@@ -215,6 +215,10 @@ export const BaseLinearDisplay = types
       const { adapterConfig } = self
       const sessionId = getRpcSessionId(self)
 
+      if (self.statsStatus === 'loaded') {
+        return self.globalStats
+      }
+
       const params = {
         sessionId,
         regions: [region],
