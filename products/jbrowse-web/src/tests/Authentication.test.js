@@ -120,7 +120,7 @@ describe('authentication', () => {
       await findByTestId('htsTrackEntry-volvox_microarray_externaltoken'),
     )
     const { findByText: findByTextWithin } = within(
-      await findByTestId('externalToken-form'),
+      await findByTestId('externalToken-form', {}, { timeout: 10000 }),
     )
     fireEvent.change(await findByTestId('entry-externalToken'), {
       target: { value: 'testentry' },
