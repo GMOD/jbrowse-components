@@ -51,7 +51,7 @@ describe('valid file tests', () => {
 
     const dlg = await findByText(/The Evolutionary Software Foundation/)
     expect(dlg).toBeTruthy()
-  })
+  }, 10000)
 
   it('click and drag to move sideways', async () => {
     const pluginManager = getPluginManager()
