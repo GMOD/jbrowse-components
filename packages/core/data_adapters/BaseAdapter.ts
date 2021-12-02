@@ -272,7 +272,12 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   ): Promise<BaseFeatureStats> {
     // Estimates once, then cache stats for future calls
     if (!this.estimatedStats) {
-      this.estimatedStats = this.estimateGlobalStats(regionToStart, opts)
+      this.estimatedStats = this.estimateGlobalStats(regionToStart, opts).catch(
+        e => {
+          this.estimatedStats = undefined
+          throw e
+        },
+      )
     }
     return this.estimatedStats
   }
@@ -281,7 +286,6 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     region: Region,
     opts?: BaseOptions,
   ): Promise<BaseFeatureStats> {
-    const { statusCallback = () => {} } = opts || {}
     const statsFromInterval = async (length: number, expansionTime: number) => {
       const sampleCenter = region.start * 0.75 + region.end * 0.25
       const start = Math.max(0, Math.round(sampleCenter - length / 2))
@@ -293,7 +297,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
         features = await feats
           .pipe(
             filter(
-              (f: Feature) =>
+              f =>
                 typeof f.get === 'function' &&
                 f.get('start') >= start &&
                 f.get('end') <= end,
@@ -313,12 +317,9 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       if (features.length === 0) {
         return { featureDensity: 0 }
       }
-      const featureDensity = features.length / length
       return maybeRecordStats(
         length,
-        {
-          featureDensity: featureDensity,
-        },
+        { featureDensity: features.length / length },
         features.length,
         expansionTime,
       )
