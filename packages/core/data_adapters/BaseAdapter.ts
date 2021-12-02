@@ -100,7 +100,7 @@ export abstract class BaseAdapter {
  * subclasses must implement.
  */
 export abstract class BaseFeatureDataAdapter extends BaseAdapter {
-  private estimateStatsCache: BaseFeatureStats | undefined
+  protected estimateStatsCache: BaseFeatureStats | undefined
   /**
    * Get all reference sequence names used in the data source
    *
