@@ -171,14 +171,11 @@ describe('authentication', () => {
     const { findByTestId, findAllByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
-    // state.internetAccounts[1].fetchFile = jest
-    //   .fn()
-    //   .mockReturnValue('volvox_microarray_dropbox.bw')
     state.session.views[0].setNewView(5, 0)
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_microarray_httpbasic'),
     )
-    await findByTestId('login-httpbasic')
+    await findByTestId('login-httpbasic', {}, { timeout: 10000 })
     fireEvent.change(await findByTestId('login-httpbasic-username'), {
       target: { value: 'username' },
     })
@@ -208,5 +205,5 @@ describe('authentication', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  })
-}, 25000)
+  }, 25000)
+})
