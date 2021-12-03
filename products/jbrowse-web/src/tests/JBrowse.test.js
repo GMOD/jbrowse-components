@@ -170,7 +170,7 @@ test('widget drawer navigation', async () => {
   )
   fireEvent.click(await findByTestId('ConfigurationEditorWidget-drawer-delete'))
   expect(state.session.activeWidgets.size).toEqual(1)
-}, 10000)
+}, 20000)
 
 describe('assembly aliases', () => {
   it('allow a track with an alias assemblyName to display', async () => {
@@ -185,7 +185,7 @@ describe('assembly aliases', () => {
       await findByTestId('htsTrackEntry-volvox_filtered_vcf_assembly_alias'),
     )
     await findByTestId('box-test-vcf-604452', {}, waitForOptions)
-  }, 10000)
+  }, 20000)
 })
 
 describe('nclist track test with long name', () => {
@@ -204,7 +204,7 @@ describe('nclist track test with long name', () => {
       {},
       waitForOptions,
     )
-  }, 10000)
+  }, 20000)
 })
 
 describe('test configuration editor', () => {
@@ -230,7 +230,7 @@ describe('test configuration editor', () => {
         ),
       waitForOptions,
     )
-  }, 10000)
+  }, 20000)
 })
 
 // eslint-disable-next-line react/prop-types

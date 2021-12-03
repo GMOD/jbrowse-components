@@ -1,5 +1,5 @@
 import { Observable, merge } from 'rxjs'
-import { takeUntil } from 'rxjs/operators'
+import { filter, takeUntil, toArray } from 'rxjs/operators'
 import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { ObservableCreate } from '../util/rxjs'
 import { checkAbortSignal, observeAbortSignal } from '../util'
@@ -10,7 +10,12 @@ import {
 } from '../configuration/configurationSchema'
 import { getSubAdapterType } from './dataAdapterCache'
 import { Region, NoAssemblyRegion } from '../util/types'
-import { blankStats, rectifyStats, scoresToStats } from '../util/stats'
+import {
+  blankStats,
+  rectifyStats,
+  scoresToStats,
+  BaseFeatureStats,
+} from '../util/stats'
 import BaseResult from '../TextSearch/BaseResults'
 import idMaker from '../util/idMaker'
 import PluginManager from '../PluginManager'
@@ -71,6 +76,7 @@ export abstract class BaseAdapter {
     this.config = config
     this.getSubAdapter = getSubAdapter
     this.pluginManager = pluginManager
+
     // note: we use switch on jest here for more simple feature IDs
     // in test environment
     if (typeof jest === 'undefined') {
@@ -94,6 +100,7 @@ export abstract class BaseAdapter {
  * subclasses must implement.
  */
 export abstract class BaseFeatureDataAdapter extends BaseAdapter {
+  private estimateStatsCache: BaseFeatureStats | undefined
   /**
    * Get all reference sequence names used in the data source
    *
@@ -257,6 +264,88 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       scoreSumSquares,
       scoreSum,
     })
+  }
+
+  public async getGlobalStats(
+    regionToStart: Region,
+    opts?: BaseOptions,
+  ): Promise<BaseFeatureStats> {
+    // Estimates once, then cache stats for future calls
+    return this.estimateStatsCache
+      ? this.estimateStatsCache
+      : this.estimateGlobalStats(regionToStart, opts)
+  }
+
+  public async estimateGlobalStats(
+    region: Region,
+    opts?: BaseOptions,
+  ): Promise<BaseFeatureStats> {
+    const { statusCallback = () => {} } = opts || {}
+    const statsFromInterval = async (length: number, expansionTime: number) => {
+      const sampleCenter = region.start * 0.75 + region.end * 0.25
+      const start = Math.max(0, Math.round(sampleCenter - length / 2))
+      const end = Math.min(Math.round(sampleCenter + length / 2), region.end)
+
+      const feats = this.getFeatures(region, opts)
+      let features
+      try {
+        features = await feats
+          .pipe(
+            filter(
+              (f: Feature) =>
+                typeof f.get === 'function' &&
+                f.get('start') >= start &&
+                f.get('end') <= end,
+            ),
+            toArray(),
+          )
+          .toPromise()
+      } catch (e) {
+        if (`${e}`.match(/HTTP 404/)) {
+          throw new Error(`${e}`)
+        }
+        console.warn('Skipping feature density calculation: ', e)
+        return { featureDensity: Infinity }
+      }
+
+      // if no features in range or adapter has no f.get, cancel feature density calculation
+      if (features.length === 0) {
+        return { featureDensity: 0 }
+      }
+      const featureDensity = features.length / length
+      return maybeRecordStats(
+        length,
+        {
+          featureDensity: featureDensity,
+        },
+        features.length,
+        expansionTime,
+      )
+    }
+
+    const maybeRecordStats = async (
+      interval: number,
+      stats: BaseFeatureStats,
+      statsSampleFeatures: number,
+      expansionTime: number,
+    ): Promise<BaseFeatureStats> => {
+      const refLen = region.end - region.start
+      if (statsSampleFeatures >= 300 || interval * 2 > refLen) {
+        statusCallback('')
+        this.estimateStatsCache = stats
+      } else if (expansionTime <= 4) {
+        expansionTime++
+        return statsFromInterval(interval * 2, expansionTime)
+      } else {
+        statusCallback('')
+        console.error('Stats estimation reached timeout')
+        this.estimateStatsCache = { featureDensity: Infinity }
+      }
+      return this.estimateStatsCache as BaseFeatureStats
+    }
+
+    statusCallback('Calculating stats')
+    return statsFromInterval(100, 0)
   }
 }
 
