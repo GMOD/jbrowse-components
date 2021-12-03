@@ -125,49 +125,52 @@ export const BaseLinearDisplay = types
       return undefined as undefined | React.FC<any>
     },
   }))
-  .views(self => {
-    return {
-      /**
-       * a CompositeMap of `featureId -> feature obj` that
-       * just looks in all the block data for that feature
-       */
-      get features() {
-        const featureMaps = []
-        for (const block of self.blockState.values()) {
-          if (block && block.features) {
-            featureMaps.push(block.features)
-          }
+  .views(self => ({
+    /**
+     * a CompositeMap of `featureId -> feature obj` that
+     * just looks in all the block data for that feature
+     */
+    get features() {
+      const featureMaps = []
+      for (const block of self.blockState.values()) {
+        if (block && block.features) {
+          featureMaps.push(block.features)
         }
-        return new CompositeMap<string, Feature>(featureMaps)
-      },
+      }
+      return new CompositeMap<string, Feature>(featureMaps)
+    },
 
-      get featureUnderMouse() {
-        return self.featureIdUnderMouse
-          ? this.features.get(self.featureIdUnderMouse)
-          : undefined
-      },
+    get featureUnderMouse() {
+      return self.featureIdUnderMouse
+        ? this.features.get(self.featureIdUnderMouse)
+        : undefined
+    },
 
-      getFeatureOverlapping(blockKey: string, x: number, y: number) {
-        return self.blockState.get(blockKey)?.layout?.getByCoord(x, y)
-      },
+    getFeatureOverlapping(blockKey: string, x: number, y: number) {
+      return self.blockState.get(blockKey)?.layout?.getByCoord(x, y)
+    },
 
-      getFeatureByID(blockKey: string, id: string): LayoutRecord | undefined {
-        return self.blockState.get(blockKey)?.layout?.getByID(id)
-      },
+    getFeatureByID(blockKey: string, id: string): LayoutRecord | undefined {
+      return self.blockState.get(blockKey)?.layout?.getByID(id)
+    },
 
-      // if block key is not supplied, can look at all blocks
-      searchFeatureByID(id: string): LayoutRecord | undefined {
-        let ret
-        self.blockState.forEach(block => {
-          const val = block?.layout?.getByID(id)
-          if (val) {
-            ret = val
-          }
-        })
-        return ret
-      },
-    }
-  })
+    // if block key is not supplied, can look at all blocks
+    searchFeatureByID(id: string): LayoutRecord | undefined {
+      let ret
+      self.blockState.forEach(block => {
+        const val = block?.layout?.getByID(id)
+        if (val) {
+          ret = val
+        }
+      })
+      return ret
+    },
+
+    get currentFeatureScreenDensity() {
+      const view = getContainingView(self) as LGV
+      return (self.globalStats?.featureDensity || 0) * view.bpPerPx
+    },
+  }))
   .actions(self => ({
     // base display reload does nothing, see specialized displays for details
     setMessage(message: string) {
@@ -332,29 +335,23 @@ export const BaseLinearDisplay = types
             async () => {
               try {
                 const aborter = new AbortController()
-                const view = getContainingView(self) as LGV
-                const currentFeatureScreenDensity =
-                  (self.globalStats?.featureDensity || 0) * view?.bpPerPx
+                const view = getContainingView(self) as LinearGenomeViewModel
 
                 if (!view.initialized) {
                   return
                 }
 
                 if (
-                  view &&
-                  self.globalStats &&
-                  currentFeatureScreenDensity > self.maxFeatureScreenDensity
+                  self.currentFeatureScreenDensity >
+                  self.maxFeatureScreenDensity
                 ) {
                   return
                 }
-
-                if (view.staticBlocks.contentBlocks[0]) {
-                  const stats = await self.getGlobalStats(
-                    view.staticBlocks.contentBlocks[0],
-                    {
-                      signal: aborter.signal,
-                    },
-                  )
+                const block = view.staticBlocks.contentBlocks[0]
+                if (block) {
+                  const stats = await self.getGlobalStats(block, {
+                    signal: aborter.signal,
+                  })
 
                   if (isAlive(self)) {
                     self.updateGlobalStats(stats)
@@ -377,13 +374,8 @@ export const BaseLinearDisplay = types
   })
   .views(self => ({
     regionCannotBeRenderedText(_region: Region) {
-      const view = getContainingView(self) as LinearGenomeViewModel
-      const currentFeatureScreenDensity =
-        (self.globalStats?.featureDensity || 0) * view?.bpPerPx
-      if (self.statsStatus === 'error') {
-        return 'Force load to see features'
-      }
-      if (view && currentFeatureScreenDensity > self.maxFeatureScreenDensity) {
+      const { currentFeatureScreenDensity, maxFeatureScreenDensity } = self
+      if (currentFeatureScreenDensity > maxFeatureScreenDensity) {
         return 'Force load to see features'
       }
       return ''
@@ -397,15 +389,9 @@ export const BaseLinearDisplay = types
      *  react node allows user to force load at current setting
      */
     regionCannotBeRendered(_region: Region) {
-      const view = getContainingView(self) as LinearGenomeViewModel
+      const { currentFeatureScreenDensity, maxFeatureScreenDensity } = self
 
-      const currentFeatureScreenDensity =
-        (self.globalStats?.featureDensity || 0) * view?.bpPerPx
-      if (
-        view &&
-        self.globalStats?.featureDensity !== undefined &&
-        currentFeatureScreenDensity > self.maxFeatureScreenDensity
-      ) {
+      if (currentFeatureScreenDensity > maxFeatureScreenDensity) {
         return (
           <>
             <Typography component="span" variant="body2">
