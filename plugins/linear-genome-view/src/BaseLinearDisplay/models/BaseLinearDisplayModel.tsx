@@ -64,10 +64,7 @@ export const BaseLinearDisplay = types
     featureIdUnderMouse: undefined as undefined | string,
     contextMenuFeature: undefined as undefined | Feature,
     scrollTop: 0,
-    globalStats: observable({
-      featureDensity: 0,
-    } as BaseFeatureStats),
-    statsStatus: 'none' as 'none' | 'loading' | 'loaded' | 'error',
+    globalStats: undefined as undefined | BaseFeatureStats,
   }))
   .views(self => ({
     get blockType(): 'staticBlocks' | 'dynamicBlocks' {
@@ -176,9 +173,7 @@ export const BaseLinearDisplay = types
     setMessage(message: string) {
       self.message = message
     },
-    setStatsStatus(state: 'none' | 'loading' | 'loaded' | 'error') {
-      self.statsStatus = state
-    },
+
     afterAttach() {
       // watch the parent's blocks to update our block state when they change
       const blockWatchDisposer = autorun(() => {
@@ -215,7 +210,7 @@ export const BaseLinearDisplay = types
       const { adapterConfig } = self
       const sessionId = getRpcSessionId(self)
 
-      if (self.statsStatus === 'loaded') {
+      if (self.globalStats) {
         return self.globalStats
       }
 
@@ -231,7 +226,6 @@ export const BaseLinearDisplay = types
         ...opts,
       }
 
-      this.setStatsStatus('loading')
       return rpcManager.call(
         sessionId,
         'CoreGetGlobalStats',
@@ -239,8 +233,7 @@ export const BaseLinearDisplay = types
       ) as Promise<BaseFeatureStats>
     },
     updateGlobalStats(stats: BaseFeatureStats) {
-      self.globalStats.featureDensity = stats.featureDensity
-      this.setStatsStatus('loaded')
+      self.globalStats = stats
     },
     setHeight(displayHeight: number) {
       if (displayHeight > minDisplayHeight) {
@@ -329,7 +322,6 @@ export const BaseLinearDisplay = types
             }
           } catch (e) {
             self.setError(e)
-            self.setStatsStatus('error')
           }
         }
       },
@@ -342,7 +334,7 @@ export const BaseLinearDisplay = types
                 const aborter = new AbortController()
                 const view = getContainingView(self) as LGV
                 const currentFeatureScreenDensity =
-                  self.globalStats?.featureDensity * view?.bpPerPx
+                  (self.globalStats?.featureDensity || 0) * view?.bpPerPx
 
                 if (!view.initialized) {
                   return
@@ -374,7 +366,6 @@ export const BaseLinearDisplay = types
                 if (!isAbortException(e) && isAlive(self)) {
                   console.error(e)
                   self.setError(e)
-                  self.setStatsStatus('error')
                 }
               }
             },
@@ -388,7 +379,7 @@ export const BaseLinearDisplay = types
     regionCannotBeRenderedText(_region: Region) {
       const view = getContainingView(self) as LinearGenomeViewModel
       const currentFeatureScreenDensity =
-        self.globalStats?.featureDensity * view?.bpPerPx
+        (self.globalStats?.featureDensity || 0) * view?.bpPerPx
       if (self.statsStatus === 'error') {
         return 'Force load to see features'
       }
@@ -409,10 +400,10 @@ export const BaseLinearDisplay = types
       const view = getContainingView(self) as LinearGenomeViewModel
 
       const currentFeatureScreenDensity =
-        self.globalStats?.featureDensity * view?.bpPerPx
+        (self.globalStats?.featureDensity || 0) * view?.bpPerPx
       if (
         view &&
-        self.globalStats.featureDensity !== undefined &&
+        self.globalStats?.featureDensity !== undefined &&
         currentFeatureScreenDensity > self.maxFeatureScreenDensity
       ) {
         return (
@@ -464,8 +455,7 @@ export const BaseLinearDisplay = types
         ...getParentRenderProps(self),
         rpcDriverName: self.rpcDriverName,
         displayModel: self,
-        statsNotReady:
-          self.statsStatus === 'loading' || self.statsStatus === 'error',
+        statsNotReady: !self.globalStats,
         onFeatureClick(_: unknown, featureId: string | undefined) {
           const f = featureId || self.featureIdUnderMouse
           if (!f) {
