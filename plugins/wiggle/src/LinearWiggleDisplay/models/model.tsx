@@ -583,8 +583,9 @@ const stateModelFactory = (
                   }
 
                   if (
-                    self.globalStats?.featureDensity * view.bpPerPx >
-                    self.maxFeatureScreenDensity
+                    self.globalStats?.featureDensity &&
+                    self.globalStats.featureDensity * view.bpPerPx >
+                      self.maxFeatureScreenDensity
                   ) {
                     return
                   }

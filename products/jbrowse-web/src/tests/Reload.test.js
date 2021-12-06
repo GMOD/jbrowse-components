@@ -236,6 +236,8 @@ describe('reload tests', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
     await findAllByText(/HTTP 404/, ...wait)
     fetch.mockResponse(readBuffer)
+    const buttons = await findAllByTestId('reload_button', ...wait)
+    fireEvent.click(buttons[0])
 
     await findAllByTestId('box-test-vcf-604452', ...wait)
   }, 30000)
