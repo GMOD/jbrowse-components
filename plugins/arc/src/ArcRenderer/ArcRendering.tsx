@@ -60,6 +60,7 @@ function ArcRendering(props: any) {
           fill="transparent"
           onClick={e => onClick(e, featureId)}
           ref={ref}
+          pointer-events="stroke"
         />
         <Tooltip triggerRef={ref}>
           <rect

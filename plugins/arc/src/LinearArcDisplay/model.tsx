@@ -28,7 +28,7 @@ export function stateModelFactory(
       const { renderProps: superRenderProps } = self
       return {
         get blockType() {
-          return 'dynamicBlocks'
+          return 'staticBlocks'
         },
         get renderDelay() {
           return 500
