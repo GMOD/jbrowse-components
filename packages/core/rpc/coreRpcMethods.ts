@@ -12,6 +12,7 @@ import ServerSideRendererType, {
 } from '../pluggableElementTypes/renderers/ServerSideRendererType'
 import { RemoteAbortSignal } from './remoteAbortSignals'
 import {
+  AnyDataAdapter,
   BaseFeatureDataAdapter,
   isFeatureAdapter,
 } from '../data_adapters/BaseAdapter'
@@ -36,11 +37,16 @@ export class CoreGetRefNames extends RpcMethodType {
       rpcDriverClassName,
     )
     const { sessionId, adapterConfig } = deserializedArgs
-    const { dataAdapter } = await getAdapter(
-      this.pluginManager,
-      sessionId,
-      adapterConfig,
-    )
+    let dataAdapter: AnyDataAdapter
+    try {
+      ;({ dataAdapter } = await getAdapter(
+        this.pluginManager,
+        sessionId,
+        adapterConfig,
+      ))
+    } catch (error) {
+      return []
+    }
 
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
       return dataAdapter.getRefNames(deserializedArgs)
@@ -226,11 +232,16 @@ export class CoreGetGlobalStats extends RpcMethodType {
     )
 
     const { adapterConfig, sessionId, regions } = deserializedArgs
-    const { dataAdapter } = await getAdapter(
-      this.pluginManager,
-      sessionId,
-      adapterConfig,
-    )
+    let dataAdapter: AnyDataAdapter
+    try {
+      ;({ dataAdapter } = await getAdapter(
+        this.pluginManager,
+        sessionId,
+        adapterConfig,
+      ))
+    } catch (error) {
+      return { featureDensity: 0 }
+    }
 
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
       return dataAdapter.getGlobalStats(regions[0], deserializedArgs)
