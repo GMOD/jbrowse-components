@@ -23,10 +23,10 @@ function PileupConfigFactory(pluginManager: PluginManager) {
         SvgFeatureRenderer: SvgFeatureRendererConfigSchema,
       }),
       renderer: '',
-      maxFeatureScreenDensity: {
+      maxDisplayedBpPerPx: {
         type: 'number',
-        description: 'maximum features per pixel that is displayed in the view',
-        defaultValue: 15,
+        description: 'maximum bpPerPx that is displayed in the view',
+        defaultValue: 100,
       },
       colorScheme: {
         type: 'stringEnum',

@@ -3,33 +3,26 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
 import {
-  isAbortException,
   getContainingView,
   getSession,
   isSelectionContainer,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { BaseFeatureStats } from '@jbrowse/core/util/stats'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import { Region } from '@jbrowse/core/util/types'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { Feature, isFeature } from '@jbrowse/core/util/simpleFeature'
-import {
-  getParentRenderProps,
-  getRpcSessionId,
-} from '@jbrowse/core/util/tracks'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
-import { autorun, observable } from 'mobx'
+import { autorun } from 'mobx'
 import { addDisposer, Instance, isAlive, types } from 'mobx-state-tree'
 import React from 'react'
 import { Tooltip } from '../components/BaseLinearDisplay'
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
 
 import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
-
-type LGV = LinearGenomeViewModel
 
 export interface Layout {
   minX: number
@@ -56,7 +49,7 @@ export const BaseLinearDisplay = types
         defaultDisplayHeight,
       ),
       blockState: types.map(BlockState),
-      userFeatureScreenDensity: types.maybe(types.number),
+      userBpPerPxLimit: types.maybe(types.number),
     }),
   )
   .volatile(() => ({
@@ -64,10 +57,6 @@ export const BaseLinearDisplay = types
     featureIdUnderMouse: undefined as undefined | string,
     contextMenuFeature: undefined as undefined | Feature,
     scrollTop: 0,
-    globalStats: observable({
-      featureDensity: 0,
-    } as BaseFeatureStats),
-    statsStatus: 'none' as 'none' | 'loading' | 'loaded' | 'error',
   }))
   .views(self => ({
     get blockType(): 'staticBlocks' | 'dynamicBlocks' {
@@ -86,12 +75,8 @@ export const BaseLinearDisplay = types
     /**
      * set limit to config amount, or user amount if they force load,
      */
-
-    get maxFeatureScreenDensity() {
-      return (
-        self.userFeatureScreenDensity ||
-        getConf(self, 'maxFeatureScreenDensity')
-      )
+    get maxViewBpPerPx() {
+      return self.userBpPerPxLimit || getConf(self, 'maxDisplayedBpPerPx')
     },
 
     /**
@@ -172,13 +157,6 @@ export const BaseLinearDisplay = types
     }
   })
   .actions(self => ({
-    // base display reload does nothing, see specialized displays for details
-    setMessage(message: string) {
-      self.message = message
-    },
-    setStatsStatus(state: 'none' | 'loading' | 'loaded' | 'error') {
-      self.statsStatus = state
-    },
     afterAttach() {
       // watch the parent's blocks to update our block state when they change
       const blockWatchDisposer = autorun(() => {
@@ -203,41 +181,6 @@ export const BaseLinearDisplay = types
 
       addDisposer(self, blockWatchDisposer)
     },
-    async getGlobalStats(
-      region: Region,
-      opts: {
-        headers?: Record<string, string>
-        signal?: AbortSignal
-        filters?: string[]
-      },
-    ): Promise<BaseFeatureStats> {
-      const { rpcManager } = getSession(self)
-      const { adapterConfig } = self
-      const sessionId = getRpcSessionId(self)
-
-      const params = {
-        sessionId,
-        regions: [region],
-        adapterConfig,
-        statusCallback: (message: string) => {
-          if (isAlive(self)) {
-            this.setMessage(message)
-          }
-        },
-        ...opts,
-      }
-
-      this.setStatsStatus('loading')
-      return rpcManager.call(
-        sessionId,
-        'CoreGetGlobalStats',
-        params,
-      ) as Promise<BaseFeatureStats>
-    },
-    updateGlobalStats(stats: BaseFeatureStats) {
-      self.globalStats.featureDensity = stats.featureDensity
-      this.setStatsStatus('loaded')
-    },
     setHeight(displayHeight: number) {
       if (displayHeight > minDisplayHeight) {
         self.height = displayHeight
@@ -254,8 +197,13 @@ export const BaseLinearDisplay = types
     setScrollTop(scrollTop: number) {
       self.scrollTop = scrollTop
     },
-    setUserFeatureScreenDensity(limit: number) {
-      self.userFeatureScreenDensity = limit
+    // sets the new bpPerPxLimit if user chooses to force load
+    setUserBpPerPxLimit(limit: number) {
+      self.userBpPerPxLimit = limit
+    },
+    // base display reload does nothing, see specialized displays for details
+    setMessage(message: string) {
+      self.message = message
     },
     addBlock(key: string, block: BaseBlock) {
       self.blockState.set(
@@ -297,99 +245,11 @@ export const BaseLinearDisplay = types
       self.contextMenuFeature = feature
     },
   }))
-  .actions(self => {
-    const { reload: superReload } = self
-
-    return {
-      async reload() {
-        self.setError()
-        const aborter = new AbortController()
-        const view = getContainingView(self) as LGV
-        if (!view.initialized) {
-          return
-        }
-
-        let stats
-        if (view.staticBlocks.contentBlocks[0]) {
-          try {
-            stats = await self.getGlobalStats(
-              view.staticBlocks.contentBlocks[0],
-              { signal: aborter.signal },
-            )
-
-            if (isAlive(self)) {
-              self.updateGlobalStats(stats)
-              superReload()
-            } else {
-              return
-            }
-          } catch (e) {
-            self.setError(e)
-            self.setStatsStatus('error')
-          }
-        }
-      },
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            async () => {
-              try {
-                const aborter = new AbortController()
-                const view = getContainingView(self) as LGV
-                const currentFeatureScreenDensity =
-                  self.globalStats?.featureDensity * view?.bpPerPx
-
-                if (!view.initialized) {
-                  return
-                }
-
-                if (
-                  view &&
-                  self.globalStats &&
-                  currentFeatureScreenDensity > self.maxFeatureScreenDensity
-                ) {
-                  return
-                }
-
-                if (view.staticBlocks.contentBlocks[0]) {
-                  const stats = await self.getGlobalStats(
-                    view.staticBlocks.contentBlocks[0],
-                    {
-                      signal: aborter.signal,
-                    },
-                  )
-
-                  if (isAlive(self)) {
-                    self.updateGlobalStats(stats)
-                  } else {
-                    return
-                  }
-                }
-              } catch (e) {
-                if (!isAbortException(e) && isAlive(self)) {
-                  console.error(e)
-                  self.setError(e)
-                  self.setStatsStatus('error')
-                }
-              }
-            },
-            { delay: 1000 },
-          ),
-        )
-      },
-    }
-  })
   .views(self => ({
     regionCannotBeRenderedText(_region: Region) {
       const view = getContainingView(self) as LinearGenomeViewModel
-      const currentFeatureScreenDensity =
-        self.globalStats?.featureDensity * view?.bpPerPx
-      if (self.statsStatus === 'error') {
-        return 'Force load to see features'
-      }
-      if (view && currentFeatureScreenDensity > self.maxFeatureScreenDensity) {
-        return 'Force load to see features'
+      if (view && view.bpPerPx > self.maxViewBpPerPx) {
+        return 'Zoom in to see features'
       }
       return ''
     },
@@ -403,25 +263,17 @@ export const BaseLinearDisplay = types
      */
     regionCannotBeRendered(_region: Region) {
       const view = getContainingView(self) as LinearGenomeViewModel
-
-      const currentFeatureScreenDensity =
-        self.globalStats?.featureDensity * view?.bpPerPx
-      if (
-        view &&
-        self.globalStats.featureDensity !== undefined &&
-        currentFeatureScreenDensity > self.maxFeatureScreenDensity
-      ) {
+      if (view && view.bpPerPx > self.maxViewBpPerPx) {
         return (
           <>
             <Typography component="span" variant="body2">
               Zoom in to see features or{' '}
             </Typography>
             <Button
-              data-testid="force_reload_button"
+              data-testid="reload_button"
               onClick={() => {
-                self.setUserFeatureScreenDensity(
-                  currentFeatureScreenDensity * 1.05,
-                )
+                self.setUserBpPerPxLimit(view.bpPerPx)
+                self.reload()
               }}
               variant="outlined"
             >
@@ -460,8 +312,6 @@ export const BaseLinearDisplay = types
         ...getParentRenderProps(self),
         rpcDriverName: self.rpcDriverName,
         displayModel: self,
-        statsNotReady:
-          self.statsStatus === 'loading' || self.statsStatus === 'error',
         onFeatureClick(_: unknown, featureId: string | undefined) {
           const f = featureId || self.featureIdUnderMouse
           if (!f) {

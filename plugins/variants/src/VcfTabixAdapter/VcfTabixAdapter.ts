@@ -16,7 +16,6 @@ import VcfParser from '@gmod/vcf'
 import { Observer } from 'rxjs'
 import { readConfObject } from '@jbrowse/core/configuration'
 import VcfFeature from './VcfFeature'
-import { BaseFeatureStats } from '@jbrowse/core/util/stats'
 
 export default class extends BaseFeatureDataAdapter {
   protected configured?: Promise<{
@@ -185,19 +184,6 @@ export default class extends BaseFeatureDataAdapter {
     })
 
     return byteRanges.reduce((a, b) => a + b.end - b.start + 1, 0)
-  }
-
-  async estimateGlobalStats(
-    region: Region,
-    opts?: BaseOptions,
-  ): Promise<BaseFeatureStats> {
-    const { vcf } = await this.configure()
-    const featCount = await vcf.lineCount(region.refName)
-    if (featCount === -1) {
-      return super.estimateGlobalStats(region, opts)
-    }
-    const featureDensity = featCount / (region.end - region.start)
-    return { featureDensity }
   }
 
   public freeResources(/* { region } */): void {}

@@ -337,7 +337,7 @@ export async function renderRegion(opts = {}) {
       else if (opt.startsWith('force:')) {
         const [, force] = opt.split(':')
         if (Boolean(force)) {
-          display.setUserFeatureScreenDensity(Number.MAX_VALUE)
+          display.setUserBpPerPxLimit(Number.MAX_VALUE)
         }
       }
 

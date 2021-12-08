@@ -8,7 +8,6 @@ import { checkAbortSignal } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { BaseFeatureStats } from '@jbrowse/core/util/stats'
 import { toArray } from 'rxjs/operators'
 import { readConfObject } from '@jbrowse/core/configuration'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
@@ -187,20 +186,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       statusCallback('')
       observer.complete()
     }, signal)
-  }
-
-  async estimateGlobalStats(
-    region: Region,
-    opts?: BaseOptions,
-  ): Promise<BaseFeatureStats> {
-    const { bam } = await this.configure()
-    const featCount = await bam.lineCount(region.refName)
-    if (featCount < 0) {
-      return super.estimateGlobalStats(region, opts)
-    }
-
-    const featureDensity = featCount / (region.end - region.start)
-    return { featureDensity }
   }
 
   freeResources(/* { region } */): void {}

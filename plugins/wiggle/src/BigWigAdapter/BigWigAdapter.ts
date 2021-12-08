@@ -3,7 +3,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region, NoAssemblyRegion } from '@jbrowse/core/util/types'
+import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -61,7 +61,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     return (h.refsByNumber[refId] || { name: undefined }).name
   }
 
-  public async getGlobalStats(region?: Region, opts?: BaseOptions) {
+  public async getGlobalStats(opts?: BaseOptions) {
     const header = await this.setup(opts)
     return rectifyStats(header.totalSummary as UnrectifiedFeatureStats)
   }

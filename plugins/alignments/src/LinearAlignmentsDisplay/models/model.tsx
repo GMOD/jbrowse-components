@@ -32,7 +32,6 @@ const stateModelFactory = (
         height: 250,
         showCoverage: true,
         showPileup: true,
-        userFeatureScreenDensity: types.maybe(types.number),
       }),
     )
     .volatile(() => ({
@@ -127,9 +126,9 @@ const stateModelFactory = (
           height: self.snpCovHeight,
         }
       },
-      setUserFeatureScreenDensity(limit: number) {
-        self.PileupDisplay.setUserFeatureScreenDensity(limit)
-        self.SNPCoverageDisplay.setUserFeatureScreenDensity(limit)
+      setUserBpPerPxLimit(limit: number) {
+        self.PileupDisplay.setUserBpPerPxLimit(limit)
+        self.SNPCoverageDisplay.setUserBpPerPxLimit(limit)
       },
       setPileupDisplay(displayConfig: AnyConfigurationModel) {
         self.PileupDisplay = {

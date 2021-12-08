@@ -458,11 +458,7 @@ const stateModelFactory = (
       }
     })
     .actions(self => {
-      const {
-        reload: superReload,
-        renderSvg: superRenderSvg,
-        renderProps: superRenderProps,
-      } = self
+      const { reload: superReload, renderSvg: superRenderSvg } = self
 
       type ExportSvgOpts = Parameters<typeof superRenderSvg>[0]
 
@@ -485,7 +481,6 @@ const stateModelFactory = (
           },
           ...opts,
         }
-
         if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
           const results: FeatureStats = (await rpcManager.call(
             sessionId,
@@ -571,21 +566,13 @@ const stateModelFactory = (
                 try {
                   const aborter = new AbortController()
                   const view = getContainingView(self) as LGV
-                  const renderProps = superRenderProps()
                   self.setLoading(aborter)
 
                   if (!view.initialized) {
                     return
                   }
 
-                  if (renderProps.statsNotReady) {
-                    return
-                  }
-
-                  if (
-                    self.globalStats?.featureDensity * view.bpPerPx >
-                    self.maxFeatureScreenDensity
-                  ) {
+                  if (view.bpPerPx > self.maxViewBpPerPx) {
                     return
                   }
 

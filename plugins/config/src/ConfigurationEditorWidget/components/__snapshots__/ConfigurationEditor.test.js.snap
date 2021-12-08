@@ -761,7 +761,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
           class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
           data-shrink="true"
         >
-          maxFeatureScreenDensity
+          maxDisplayedBpPerPx
         </label>
         <div
           class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
@@ -770,13 +770,13 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             aria-invalid="false"
             class="MuiInputBase-input MuiInput-input"
             type="number"
-            value="0.5"
+            value="1000"
           />
         </div>
         <p
           class="MuiFormHelperText-root MuiFormHelperText-filled"
         >
-          maximum features per pixel that is displayed in the view
+          maximum bpPerPx that is displayed in the view
         </p>
       </div>
     </div>

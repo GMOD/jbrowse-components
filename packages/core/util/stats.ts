@@ -11,14 +11,10 @@ export interface UnrectifiedFeatureStats {
   featureCount: number
   basesCovered: number
 }
-export interface BaseFeatureStats {
-  featureDensity: number
-}
-export interface FeatureStats
-  extends UnrectifiedFeatureStats,
-    BaseFeatureStats {
+export interface FeatureStats extends UnrectifiedFeatureStats {
   scoreMean: number
   scoreStdDev: number
+  featureDensity: number
 }
 
 /*
