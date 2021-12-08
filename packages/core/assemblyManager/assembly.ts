@@ -1,4 +1,6 @@
-import { getEnv, getParent, types, Instance, IAnyType } from 'mobx-state-tree'
+import jsonStableStringify from 'json-stable-stringify'
+import { getParent, types, Instance, IAnyType } from 'mobx-state-tree'
+import AbortablePromiseCache from 'abortable-promise-cache'
 import { Feature } from '../util/simpleFeature'
 import { getConf } from '../configuration'
 import {
@@ -8,6 +10,7 @@ import {
 import PluginManager from '../PluginManager'
 import { Region } from '../util/types'
 import { makeAbortableReaction, when } from '../util'
+import QuickLRU from '../util/QuickLRU'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 // Based on the UCSC Genome Browser chromosome color palette:
@@ -103,12 +106,22 @@ function checkRefName(refName: string) {
   }
 }
 
+function getAdapterId(adapterConf: unknown) {
+  return jsonStableStringify(adapterConf)
+}
+
 type RefNameAliases = Record<string, string>
 
 export interface BaseOptions {
   signal?: AbortSignal
   sessionId: string
   statusCallback?: Function
+}
+interface CacheData {
+  adapterConf: unknown
+  self: Assembly
+  sessionId: string
+  options: BaseOptions
 }
 
 export interface BasicRegion {
@@ -117,7 +130,27 @@ export interface BasicRegion {
   refName: string
   assemblyName: string
 }
-export default function assemblyFactory(assemblyConfigType: IAnyType) {
+export default function assemblyFactory(
+  assemblyConfigType: IAnyType,
+  pluginManager: PluginManager,
+) {
+  const adapterLoads = new AbortablePromiseCache({
+    cache: new QuickLRU({ maxSize: 1000 }),
+    async fill(
+      args: CacheData,
+      abortSignal?: AbortSignal,
+      statusCallback?: Function,
+    ) {
+      const { adapterConf, self, options } = args
+      return loadRefNameMap(
+        self,
+        adapterConf,
+        { ...options, statusCallback },
+        abortSignal,
+      )
+    },
+  })
+
   return types
     .model({
       configuration: types.safeReference(assemblyConfigType),
@@ -221,9 +254,10 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
       },
       afterAttach() {
         makeAbortableReaction(
-          self as Assembly,
-          loadAssemblyData,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          self as any,
           // @ts-ignore
+          makeLoadAssemblyData(pluginManager),
           loadAssemblyReaction,
           { name: `${self.name} assembly loading`, fireImmediately: true },
           this.setLoading,
@@ -238,10 +272,17 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         if (!options.sessionId) {
           throw new Error('sessionId is required')
         }
-        return loadRefNameMap(self as Assembly, adapterConf, {
-          ...rest,
+        const adapterId = getAdapterId(adapterConf)
+        return adapterLoads.get(
+          adapterId,
+          {
+            adapterConf,
+            self: self as Assembly,
+            options: rest,
+          } as CacheData,
+          signal,
           statusCallback,
-        })
+        )
       },
 
       /**
@@ -268,27 +309,29 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
     }))
 }
 
-function loadAssemblyData(self: Assembly) {
-  // use full configuration instead of snapshot of the config, the
-  // rpcManager normally receives a snapshot but we bypass rpcManager here
-  // to avoid spinning up a webworker
-  const { sequence, refNameAliases, cytobands } = self.configuration
-  const { pluginManager } = getEnv(self)
-  const sequenceAdapterConfig = sequence.adapter
-  const refNameAliasesAdapterConfig = refNameAliases?.adapter
-  const cytobandAdapterConfig = cytobands?.adapter
-
-  return {
-    sequenceAdapterConfig,
-    assemblyName: self.name,
-    refNameAliasesAdapterConfig,
-    cytobandAdapterConfig,
-    pluginManager,
+function makeLoadAssemblyData(pluginManager: PluginManager) {
+  return (self: Assembly) => {
+    if (self.configuration) {
+      // use full configuration instead of snapshot of the config, the
+      // rpcManager normally receives a snapshot but we bypass rpcManager here
+      // to avoid spinning up a webworker
+      const { sequence, refNameAliases, cytobands } = self.configuration
+      const sequenceAdapterConfig = sequence.adapter
+      const refNameAliasesAdapterConfig = refNameAliases?.adapter
+      const cytobandAdapterConfig = cytobands?.adapter
+      return {
+        sequenceAdapterConfig,
+        assemblyName: self.name,
+        refNameAliasesAdapterConfig,
+        cytobandAdapterConfig,
+        pluginManager,
+      }
+    }
+    return undefined
   }
 }
-
 async function loadAssemblyReaction(
-  props: ReturnType<typeof loadAssemblyData> | undefined,
+  props: ReturnType<ReturnType<typeof makeLoadAssemblyData>> | undefined,
   signal: AbortSignal,
 ) {
   if (!props) {
@@ -340,7 +383,7 @@ async function getRefNameAliases(
   signal?: AbortSignal,
 ) {
   const type = pluginManager.getAdapterType(config.type)
-  const CLASS = await type.getAdapterClass()
+  const CLASS = await type.getAdapterClass?.()
   const adapter = new CLASS(
     config,
     undefined,

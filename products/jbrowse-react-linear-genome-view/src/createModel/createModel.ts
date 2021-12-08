@@ -17,7 +17,10 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
   pluginManager.createPluggableElements()
   const Session = createSessionModel(pluginManager)
   const assemblyConfig = assemblyConfigSchemaFactory(pluginManager)
-  const assemblyManagerType = assemblyManagerFactory(assemblyConfig)
+  const assemblyManagerType = assemblyManagerFactory(
+    assemblyConfig,
+    pluginManager,
+  )
   const rootModel = types
     .model('ReactLinearGenomeView', {
       config: createConfigModel(pluginManager, assemblyConfig),

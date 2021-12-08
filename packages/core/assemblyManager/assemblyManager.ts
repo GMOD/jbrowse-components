@@ -12,9 +12,13 @@ import { readConfObject } from '../configuration'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 import assemblyFactory from './assembly'
+import PluginManager from '../PluginManager'
 
-export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
-  const Assembly = assemblyFactory(assemblyConfigType)
+export default function assemblyManagerFactory(
+  assemblyConfigType: IAnyType,
+  pluginManager: PluginManager,
+) {
+  const Assembly = assemblyFactory(assemblyConfigType, pluginManager)
   return types
     .model({
       assemblies: types.array(Assembly),

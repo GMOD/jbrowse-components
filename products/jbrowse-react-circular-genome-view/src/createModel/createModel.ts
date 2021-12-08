@@ -17,7 +17,10 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
   pluginManager.createPluggableElements()
   const Session = createSessionModel(pluginManager)
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
-  const assemblyManagerType = assemblyManagerFactory(assemblyConfigSchema)
+  const assemblyManagerType = assemblyManagerFactory(
+    assemblyConfigSchema,
+    pluginManager,
+  )
   const rootModel = types
     .model('ReactCircularGenomeView', {
       config: createConfigModel(pluginManager, assemblyConfigSchema),
