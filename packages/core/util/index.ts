@@ -97,7 +97,7 @@ export function findParentThat(
   node: IAnyStateTreeNode,
   predicate: (thing: IAnyStateTreeNode) => boolean,
 ) {
-  if (!hasParent) {
+  if (!hasParent(node)) {
     throw new Error('node does not have parent')
   }
   let currentNode: IAnyStateTreeNode | undefined = getParent(node)
