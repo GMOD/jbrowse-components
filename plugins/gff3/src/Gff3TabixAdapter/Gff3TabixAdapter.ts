@@ -17,7 +17,9 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import MyConfigSchema from './configSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { Region } from '@jbrowse/core/util/types'
 import { FeatureLoc } from '../util'
+import { BaseFeatureStats } from '@jbrowse/core/util/stats'
 
 interface LineFeature {
   start: number
@@ -243,6 +245,18 @@ export default class extends BaseFeatureDataAdapter {
     delete f.attributes
     delete f.seq_id
     return f
+  }
+
+  async estimateGlobalStats(
+    region: Region,
+    opts?: BaseOptions,
+  ): Promise<BaseFeatureStats> {
+    const featCount = await this.gff.lineCount(region.refName)
+    if (featCount === -1) {
+      return super.estimateGlobalStats(region, opts)
+    }
+    const featureDensity = featCount / (region.end - region.start)
+    return { featureDensity }
   }
 
   public freeResources(/* { region } */) {}

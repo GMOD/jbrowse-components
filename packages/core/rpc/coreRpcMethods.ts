@@ -18,6 +18,7 @@ import {
 import { Region } from '../util/types'
 import { checkAbortSignal, renameRegionsIfNeeded } from '../util'
 import SimpleFeature, { SimpleFeatureSerialized } from '../util/simpleFeature'
+import { BaseFeatureStats } from '../util/stats'
 
 export class CoreGetRefNames extends RpcMethodType {
   name = 'CoreGetRefNames'
@@ -40,6 +41,7 @@ export class CoreGetRefNames extends RpcMethodType {
       sessionId,
       adapterConfig,
     )
+
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
       return dataAdapter.getRefNames(deserializedArgs)
     }
@@ -186,6 +188,55 @@ export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
   regions: Region[]
   adapterConfig: {}
   rendererType: string
+}
+
+export class CoreGetGlobalStats extends RpcMethodType {
+  name = 'CoreGetGlobalStats'
+
+  async serializeArguments(
+    args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },
+    rpcDriverClassName: string,
+  ) {
+    const assemblyManager =
+      this.pluginManager.rootModel?.session?.assemblyManager
+    if (!assemblyManager) {
+      return args
+    }
+    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, {
+      ...args,
+      filters: args.filters && args.filters.toJSON().filters,
+    })
+
+    return super.serializeArguments(renamedArgs, rpcDriverClassName)
+  }
+
+  async execute(
+    args: {
+      adapterConfig: {}
+      regions: Region[]
+      signal?: RemoteAbortSignal
+      headers?: Record<string, string>
+      sessionId: string
+    },
+    rpcDriverClassName: string,
+  ): Promise<BaseFeatureStats> {
+    const deserializedArgs = await this.deserializeArguments(
+      args,
+      rpcDriverClassName,
+    )
+
+    const { adapterConfig, sessionId, regions } = deserializedArgs
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
+
+    if (dataAdapter instanceof BaseFeatureDataAdapter) {
+      return dataAdapter.getGlobalStats(regions[0], deserializedArgs)
+    }
+    throw new Error('Data adapter not found')
+  }
 }
 
 /**

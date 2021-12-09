@@ -15,6 +15,7 @@ import { ucscProcessedTranscript } from '../util'
 import MyConfigSchema from './configSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { BaseFeatureStats } from '@jbrowse/core/util/stats'
 
 export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   private parser: any
@@ -152,6 +153,18 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
       })
       observer.complete()
     }, opts.signal)
+  }
+
+  async estimateGlobalStats(
+    region: Region,
+    opts?: BaseOptions,
+  ): Promise<BaseFeatureStats> {
+    const featCount = await this.bed.lineCount(region.refName)
+    if (featCount === -1) {
+      return super.estimateGlobalStats(region, opts)
+    }
+    const featureDensity = featCount / (region.end - region.start)
+    return { featureDensity }
   }
 
   public freeResources(): void {}
