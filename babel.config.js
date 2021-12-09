@@ -5,7 +5,6 @@ module.exports = api => {
     comments: true,
     presets: [
       '@babel/preset-typescript',
-      'react-app',
       [
         '@babel/preset-env',
         {
@@ -15,6 +14,7 @@ module.exports = api => {
           },
         },
       ],
+      'react-app',
     ],
     ignore: [
       './node_modules',
