@@ -10,9 +10,10 @@ describe('<AboutWidget />', () => {
       .model({
         configuration: ConfigurationSchema('Null', {}),
         rpcManager: types.frozen({}),
+        widgetModel: types.model({ type: types.literal('AboutWidget') }),
       })
       .create(
-        {},
+        { widgetModel: { type: 'AboutWidget' } },
         {
           pluginManager: {
             pluginMetadata: {},
@@ -26,7 +27,7 @@ describe('<AboutWidget />', () => {
           },
         },
       )
-    const { container } = render(<AboutWidget model={session} />)
+    const { container } = render(<AboutWidget model={session.widgetModel} />)
     expect(container.firstChild).toMatchSnapshot()
   })
 })
