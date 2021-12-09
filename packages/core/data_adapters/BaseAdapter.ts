@@ -100,7 +100,7 @@ export abstract class BaseAdapter {
  * subclasses must implement.
  */
 export abstract class BaseFeatureDataAdapter extends BaseAdapter {
-  private estimateStatsCache: BaseFeatureStats | undefined
+  protected estimatedStats?: Promise<BaseFeatureStats>
   /**
    * Get all reference sequence names used in the data source
    *
@@ -271,16 +271,21 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     opts?: BaseOptions,
   ): Promise<BaseFeatureStats> {
     // Estimates once, then cache stats for future calls
-    return this.estimateStatsCache
-      ? this.estimateStatsCache
-      : this.estimateGlobalStats(regionToStart, opts)
+    if (!this.estimatedStats) {
+      this.estimatedStats = this.estimateGlobalStats(regionToStart, opts).catch(
+        e => {
+          this.estimatedStats = undefined
+          throw e
+        },
+      )
+    }
+    return this.estimatedStats
   }
 
   public async estimateGlobalStats(
     region: Region,
     opts?: BaseOptions,
   ): Promise<BaseFeatureStats> {
-    const { statusCallback = () => {} } = opts || {}
     const statsFromInterval = async (length: number, expansionTime: number) => {
       const sampleCenter = region.start * 0.75 + region.end * 0.25
       const start = Math.max(0, Math.round(sampleCenter - length / 2))
@@ -292,7 +297,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
         features = await feats
           .pipe(
             filter(
-              (f: Feature) =>
+              f =>
                 typeof f.get === 'function' &&
                 f.get('start') >= start &&
                 f.get('end') <= end,
@@ -312,12 +317,9 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       if (features.length === 0) {
         return { featureDensity: 0 }
       }
-      const featureDensity = features.length / length
       return maybeRecordStats(
         length,
-        {
-          featureDensity: featureDensity,
-        },
+        { featureDensity: features.length / length },
         features.length,
         expansionTime,
       )
@@ -331,20 +333,16 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     ): Promise<BaseFeatureStats> => {
       const refLen = region.end - region.start
       if (statsSampleFeatures >= 300 || interval * 2 > refLen) {
-        statusCallback('')
-        this.estimateStatsCache = stats
+        return stats
       } else if (expansionTime <= 4) {
         expansionTime++
         return statsFromInterval(interval * 2, expansionTime)
       } else {
-        statusCallback('')
         console.error('Stats estimation reached timeout')
-        this.estimateStatsCache = { featureDensity: Infinity }
+        return { featureDensity: Infinity }
       }
-      return this.estimateStatsCache as BaseFeatureStats
     }
 
-    statusCallback('Calculating stats')
     return statsFromInterval(100, 0)
   }
 }

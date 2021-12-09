@@ -199,8 +199,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       return super.estimateGlobalStats(region, opts)
     }
 
-    const featureDensity = featCount / (region.end - region.start)
-    return { featureDensity }
+    return { featureDensity: featCount / (region.end - region.start) }
   }
 
   freeResources(/* { region } */): void {}

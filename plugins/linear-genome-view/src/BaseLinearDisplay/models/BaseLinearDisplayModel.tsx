@@ -21,7 +21,7 @@ import {
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
-import { autorun, observable } from 'mobx'
+import { autorun } from 'mobx'
 import { addDisposer, Instance, isAlive, types } from 'mobx-state-tree'
 import React from 'react'
 import { Tooltip } from '../components/BaseLinearDisplay'
@@ -64,10 +64,7 @@ export const BaseLinearDisplay = types
     featureIdUnderMouse: undefined as undefined | string,
     contextMenuFeature: undefined as undefined | Feature,
     scrollTop: 0,
-    globalStats: observable({
-      featureDensity: 0,
-    } as BaseFeatureStats),
-    statsStatus: 'none' as 'none' | 'loading' | 'loaded' | 'error',
+    globalStats: undefined as undefined | BaseFeatureStats,
   }))
   .views(self => ({
     get blockType(): 'staticBlocks' | 'dynamicBlocks' {
@@ -128,57 +125,58 @@ export const BaseLinearDisplay = types
       return undefined as undefined | React.FC<any>
     },
   }))
-  .views(self => {
-    return {
-      /**
-       * a CompositeMap of `featureId -> feature obj` that
-       * just looks in all the block data for that feature
-       */
-      get features() {
-        const featureMaps = []
-        for (const block of self.blockState.values()) {
-          if (block && block.features) {
-            featureMaps.push(block.features)
-          }
+  .views(self => ({
+    /**
+     * a CompositeMap of `featureId -> feature obj` that
+     * just looks in all the block data for that feature
+     */
+    get features() {
+      const featureMaps = []
+      for (const block of self.blockState.values()) {
+        if (block && block.features) {
+          featureMaps.push(block.features)
         }
-        return new CompositeMap<string, Feature>(featureMaps)
-      },
+      }
+      return new CompositeMap<string, Feature>(featureMaps)
+    },
 
-      get featureUnderMouse() {
-        return self.featureIdUnderMouse
-          ? this.features.get(self.featureIdUnderMouse)
-          : undefined
-      },
+    get featureUnderMouse() {
+      return self.featureIdUnderMouse
+        ? this.features.get(self.featureIdUnderMouse)
+        : undefined
+    },
 
-      getFeatureOverlapping(blockKey: string, x: number, y: number) {
-        return self.blockState.get(blockKey)?.layout?.getByCoord(x, y)
-      },
+    getFeatureOverlapping(blockKey: string, x: number, y: number) {
+      return self.blockState.get(blockKey)?.layout?.getByCoord(x, y)
+    },
 
-      getFeatureByID(blockKey: string, id: string): LayoutRecord | undefined {
-        return self.blockState.get(blockKey)?.layout?.getByID(id)
-      },
+    getFeatureByID(blockKey: string, id: string): LayoutRecord | undefined {
+      return self.blockState.get(blockKey)?.layout?.getByID(id)
+    },
 
-      // if block key is not supplied, can look at all blocks
-      searchFeatureByID(id: string): LayoutRecord | undefined {
-        let ret
-        self.blockState.forEach(block => {
-          const val = block?.layout?.getByID(id)
-          if (val) {
-            ret = val
-          }
-        })
-        return ret
-      },
-    }
-  })
+    // if block key is not supplied, can look at all blocks
+    searchFeatureByID(id: string): LayoutRecord | undefined {
+      let ret
+      self.blockState.forEach(block => {
+        const val = block?.layout?.getByID(id)
+        if (val) {
+          ret = val
+        }
+      })
+      return ret
+    },
+
+    get currentFeatureScreenDensity() {
+      const view = getContainingView(self) as LGV
+      return (self.globalStats?.featureDensity || 0) * view.bpPerPx
+    },
+  }))
   .actions(self => ({
     // base display reload does nothing, see specialized displays for details
     setMessage(message: string) {
       self.message = message
     },
-    setStatsStatus(state: 'none' | 'loading' | 'loaded' | 'error') {
-      self.statsStatus = state
-    },
+
     afterAttach() {
       // watch the parent's blocks to update our block state when they change
       const blockWatchDisposer = autorun(() => {
@@ -215,6 +213,10 @@ export const BaseLinearDisplay = types
       const { adapterConfig } = self
       const sessionId = getRpcSessionId(self)
 
+      if (self.globalStats) {
+        return self.globalStats
+      }
+
       const params = {
         sessionId,
         regions: [region],
@@ -227,7 +229,6 @@ export const BaseLinearDisplay = types
         ...opts,
       }
 
-      this.setStatsStatus('loading')
       return rpcManager.call(
         sessionId,
         'CoreGetGlobalStats',
@@ -235,8 +236,7 @@ export const BaseLinearDisplay = types
       ) as Promise<BaseFeatureStats>
     },
     updateGlobalStats(stats: BaseFeatureStats) {
-      self.globalStats.featureDensity = stats.featureDensity
-      this.setStatsStatus('loaded')
+      self.globalStats = stats
     },
     setHeight(displayHeight: number) {
       if (displayHeight > minDisplayHeight) {
@@ -325,7 +325,6 @@ export const BaseLinearDisplay = types
             }
           } catch (e) {
             self.setError(e)
-            self.setStatsStatus('error')
           }
         }
       },
@@ -336,29 +335,23 @@ export const BaseLinearDisplay = types
             async () => {
               try {
                 const aborter = new AbortController()
-                const view = getContainingView(self) as LGV
-                const currentFeatureScreenDensity =
-                  self.globalStats?.featureDensity * view?.bpPerPx
+                const view = getContainingView(self) as LinearGenomeViewModel
 
                 if (!view.initialized) {
                   return
                 }
 
                 if (
-                  view &&
-                  self.globalStats &&
-                  currentFeatureScreenDensity > self.maxFeatureScreenDensity
+                  self.currentFeatureScreenDensity >
+                  self.maxFeatureScreenDensity
                 ) {
                   return
                 }
-
-                if (view.staticBlocks.contentBlocks[0]) {
-                  const stats = await self.getGlobalStats(
-                    view.staticBlocks.contentBlocks[0],
-                    {
-                      signal: aborter.signal,
-                    },
-                  )
+                const block = view.staticBlocks.contentBlocks[0]
+                if (block) {
+                  const stats = await self.getGlobalStats(block, {
+                    signal: aborter.signal,
+                  })
 
                   if (isAlive(self)) {
                     self.updateGlobalStats(stats)
@@ -370,7 +363,6 @@ export const BaseLinearDisplay = types
                 if (!isAbortException(e) && isAlive(self)) {
                   console.error(e)
                   self.setError(e)
-                  self.setStatsStatus('error')
                 }
               }
             },
@@ -382,13 +374,8 @@ export const BaseLinearDisplay = types
   })
   .views(self => ({
     regionCannotBeRenderedText(_region: Region) {
-      const view = getContainingView(self) as LinearGenomeViewModel
-      const currentFeatureScreenDensity =
-        self.globalStats?.featureDensity * view?.bpPerPx
-      if (self.statsStatus === 'error') {
-        return 'Force load to see features'
-      }
-      if (view && currentFeatureScreenDensity > self.maxFeatureScreenDensity) {
+      const { currentFeatureScreenDensity, maxFeatureScreenDensity } = self
+      if (currentFeatureScreenDensity > maxFeatureScreenDensity) {
         return 'Force load to see features'
       }
       return ''
@@ -402,15 +389,9 @@ export const BaseLinearDisplay = types
      *  react node allows user to force load at current setting
      */
     regionCannotBeRendered(_region: Region) {
-      const view = getContainingView(self) as LinearGenomeViewModel
+      const { currentFeatureScreenDensity, maxFeatureScreenDensity } = self
 
-      const currentFeatureScreenDensity =
-        self.globalStats?.featureDensity * view?.bpPerPx
-      if (
-        view &&
-        self.globalStats.featureDensity !== undefined &&
-        currentFeatureScreenDensity > self.maxFeatureScreenDensity
-      ) {
+      if (currentFeatureScreenDensity > maxFeatureScreenDensity) {
         return (
           <>
             <Typography component="span" variant="body2">
@@ -460,8 +441,7 @@ export const BaseLinearDisplay = types
         ...getParentRenderProps(self),
         rpcDriverName: self.rpcDriverName,
         displayModel: self,
-        statsNotReady:
-          self.statsStatus === 'loading' || self.statsStatus === 'error',
+        statsNotReady: !self.globalStats,
         onFeatureClick(_: unknown, featureId: string | undefined) {
           const f = featureId || self.featureIdUnderMouse
           if (!f) {
