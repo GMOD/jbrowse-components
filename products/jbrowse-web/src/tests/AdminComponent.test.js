@@ -1,7 +1,6 @@
 import React from 'react'
 import { render, cleanup } from '@testing-library/react'
-import { getPluginManager } from './util'
-import JBrowse from '../JBrowse'
+import { JBrowse, getPluginManager } from './util'
 
 describe('<AdminComponent />', () => {
   afterEach(cleanup)

@@ -35,7 +35,7 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@flatten-js/interval-tree": "^1.0.14",
+    "@flatten-js/interval-tree": "^1.0.15",
     "@gmod/bgzf-filehandle": "^1.4.1",
     "@gmod/gtf": "^0.0.6"
   },

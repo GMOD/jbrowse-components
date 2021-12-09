@@ -1,17 +1,13 @@
-// library
+import React from 'react'
 import '@testing-library/jest-dom/extend-expect'
-
 import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
-import React from 'react'
 import { LocalFile } from 'generic-filehandle'
-
-// locals
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { TextEncoder, TextDecoder } from 'web-encoding'
-import JBrowse from '../JBrowse'
-import { setup, getPluginManager, generateReadBuffer } from './util'
+
+import { JBrowse, setup, getPluginManager, generateReadBuffer } from './util'
 
 window.TextEncoder = TextEncoder
 window.TextDecoder = TextDecoder

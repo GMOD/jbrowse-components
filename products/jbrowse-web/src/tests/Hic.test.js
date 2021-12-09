@@ -1,13 +1,9 @@
-// library
-import { cleanup, fireEvent, render } from '@testing-library/react'
 import React from 'react'
+import { cleanup, fireEvent, render } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
-
-// locals
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
-import { setup, generateReadBuffer, getPluginManager } from './util'
-import JBrowse from '../JBrowse'
+import { JBrowse, setup, generateReadBuffer, getPluginManager } from './util'
 import hicConfig from '../../../../extra_test_data/hic_integration_test.json'
 
 expect.extend({ toMatchImageSnapshot })

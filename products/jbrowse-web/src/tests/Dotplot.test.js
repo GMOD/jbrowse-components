@@ -10,8 +10,7 @@ import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import dotplotConfig from '../../test_data/config_dotplot.json'
 
-import { setup, generateReadBuffer, getPluginManager } from './util'
-import JBrowse from '../JBrowse'
+import { JBrowse, setup, generateReadBuffer, getPluginManager } from './util'
 
 dotplotConfig.configuration = {
   rpc: {

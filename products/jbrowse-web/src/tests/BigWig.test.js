@@ -1,15 +1,11 @@
-// library
-import { cleanup, fireEvent, render } from '@testing-library/react'
 import React from 'react'
+import { cleanup, fireEvent, render } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
-
-// locals
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
-import { setup, generateReadBuffer, getPluginManager } from './util'
-import JBrowse from '../JBrowse'
+import { JBrowse, setup, generateReadBuffer, getPluginManager } from './util'
 
 expect.extend({ toMatchImageSnapshot })
 setup()
