@@ -135,8 +135,8 @@ export default class PluginLoader {
         getGlobalObject().location.href,
       )
     } catch (error) {
-      console.error(`Error parsing URL: ${pluginDefinition.cjsUrl}`)
-      throw error
+      console.error(error)
+      throw new Error(`Error parsing URL: ${pluginDefinition.cjsUrl}`)
     }
     if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
       throw new Error(
@@ -195,8 +195,8 @@ export default class PluginLoader {
         getGlobalObject().location.href,
       )
     } catch (error) {
-      console.error(`Error parsing URL: ${pluginDefinition.esmUrl}`)
-      throw error
+      console.error(error)
+      throw new Error(`Error parsing URL: ${pluginDefinition.esmUrl}`)
     }
     if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
       throw new Error(
@@ -221,8 +221,8 @@ export default class PluginLoader {
     try {
       parsedUrl = new URL(umdUrl, getGlobalObject().location.href)
     } catch (error) {
-      console.error(`Error parsing URL: ${umdUrl}`)
-      throw error
+      console.error(error)
+      throw new Error(`Error parsing URL: ${umdUrl}`)
     }
     if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
       throw new Error(
