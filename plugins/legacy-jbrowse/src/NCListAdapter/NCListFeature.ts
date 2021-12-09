@@ -11,16 +11,12 @@ const jb1ToJb2 = { seq_id: 'refName' }
  * wrapper to adapt nclist features to act like jbrowse 2 features
  */
 export default class NCListFeature implements Feature {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private ncFeature: any
-
   private parentHandle?: Feature
 
   private uniqueId: string
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(ncFeature: any, parent?: Feature, id?: string) {
-    this.ncFeature = ncFeature
+  constructor(private ncFeature: any, parent?: Feature, id?: string) {
     this.uniqueId = id || ncFeature.id()
     this.parentHandle = parent
   }

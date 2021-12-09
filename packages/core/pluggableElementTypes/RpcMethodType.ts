@@ -21,13 +21,10 @@ import {
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 
 export default abstract class RpcMethodType extends PluggableElementBase {
-  pluginManager: PluginManager
-
   name = 'UNKNOWN'
 
-  constructor(pluginManager: PluginManager) {
+  constructor(public pluginManager: PluginManager) {
     super({ name: '' })
-    this.pluginManager = pluginManager
   }
 
   async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {

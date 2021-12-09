@@ -1,11 +1,7 @@
 type Func<T> = (value: BaseBlock, index: number, array: BaseBlock[]) => T
 
 export class BlockSet {
-  blocks: BaseBlock[] = []
-
-  constructor(blocks: BaseBlock[] = []) {
-    this.blocks = blocks
-  }
+  constructor(public blocks: BaseBlock[] = []) {}
 
   push(block: BaseBlock) {
     if (block instanceof ElidedBlock) {
