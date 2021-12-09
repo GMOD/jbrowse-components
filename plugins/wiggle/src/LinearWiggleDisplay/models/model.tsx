@@ -16,7 +16,7 @@ import {
   BaseLinearDisplay,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import { observable, when } from 'mobx'
+import { observable } from 'mobx'
 import {
   isAlive,
   types,
@@ -612,8 +612,12 @@ const stateModelFactory = (
           )
         },
         async renderSvg(opts: ExportSvgOpts) {
-          await when(() => self.ready && !!self.regionCannotBeRenderedText)
-          const { needsScalebar, stats } = self
+          // instead of waiting on model.ready, we manually estimate stats here
+          // because the makeAbortableReaction doesn't work under @jbrowse/cli,
+          // see #2540
+          const stats = await getStats(getStatsData())
+          self.updateStats(stats)
+          const { needsScalebar } = self
           const { offsetPx } = getContainingView(self) as LGV
           return (
             <>
