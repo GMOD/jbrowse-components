@@ -15,10 +15,20 @@ export const GithubLink = () => {
   )
 }
 
-export const StorybookLink = () => {
+export const StorybookLGVLink = () => {
   return (
     <a
       href={`https://jbrowse.org/storybook/lgv/${config.customFields.currentVersion}/?path=/story/getting-started--page`}
+    >
+      storybook docs
+    </a>
+  )
+}
+
+export const StorybookCGVLink = () => {
+  return (
+    <a
+      href={`https://jbrowse.org/storybook/cgv/${config.customFields.currentVersion}/?path=/story/getting-started--page`}
     >
       storybook docs
     </a>
@@ -139,6 +149,8 @@ export const DownloadCardContainer = () => {
 To get started with JBrowse Web, we recommend using the jbrowse CLI tools.
 You can also use the jbrowse CLI for things like adding tracks too.
 
+### JBrowse CLI tools
+
 ```
 npm install -g @jbrowse/cli
 
@@ -160,7 +172,8 @@ guide](/docs/quickstart_web).
 
 ## Embedded components
 
-- [@jbrowse/react-linear-genome-view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view) linear genome browser view React component on <tt>NPM</tt>. Also see our <StorybookLink/>
+- [@jbrowse/react-linear-genome-view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view) linear genome browser view React component on <tt>NPM</tt>. Also see our <StorybookLGVLink/>
+- [@jbrowse/react-circular-genome-view](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view) circular genome browser view React component on <tt>NPM</tt>.Also see our <StorybookCGVLink/>
 
 ## R/Shiny widget
 

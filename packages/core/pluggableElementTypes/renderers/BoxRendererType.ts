@@ -57,7 +57,7 @@ export class LayoutSession implements LayoutSessionProps {
       maxHeight: readConfObject(this.config, 'maxHeight'),
       displayMode: readConfObject(this.config, 'displayMode'),
       pitchX: this.bpPerPx,
-      spacing: readConfObject(this.config, 'noSpacing') ? 0 : 2,
+      pitchY: readConfObject(this.config, 'noSpacing') ? 1 : 3,
     })
   }
 

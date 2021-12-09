@@ -10,6 +10,7 @@ export interface Rectangle<T> {
   r: number
   top: number | null
   h: number
+  originalHeight: number
   data?: Record<string, T>
 }
 
@@ -22,6 +23,8 @@ export interface BaseLayout<T> {
     data?: Record<string, T>,
   ): number | null
   collides(rect: Rectangle<T>, top: number): boolean
+  addRectToBitmap(rect: Rectangle<T>, data: Record<string, T>): void
+  getRectangles(): Map<string, RectTuple>
   discardRange(left: number, right: number): void
   serializeRegion(region: { start: number; end: number }): SerializedLayout
   getTotalHeight(): number

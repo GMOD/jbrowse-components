@@ -4,6 +4,9 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import PluginLoader, {
   PluginDefinition,
   PluginRecord,
+  isUMDPluginDefinition,
+  isCJSPluginDefinition,
+  isESMPluginDefinition,
 } from '@jbrowse/core/PluginLoader'
 import { fromUrlSafeB64 } from './util'
 import { readSessionFromDynamo } from './sessionSharing'
@@ -25,22 +28,51 @@ function addRelativeUris(config: Config, configUri: URL) {
   }
 }
 
-interface PluginDef {
-  url: string
-}
-interface PluginsJSON {
-  plugins: PluginDef[]
-}
-
-async function checkPlugins(pluginsToCheck: PluginDef[]) {
-  const res = await fetch('https://jbrowse.org/plugin-store/plugins.json')
-  if (!res.ok) {
-    const status = await res.text()
-    throw new Error(`Failed to fetch plugin data ${status}`)
+async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
+  const response = await fetch('https://jbrowse.org/plugin-store/plugins.json')
+  if (!response.ok) {
+    throw new Error(
+      `HTTP ${response.status} ${response.statusText} fetching plugins`,
+    )
   }
-  const array = (await res.json()) as PluginsJSON
-  const allowedPluginUrls = array.plugins.map(p => p.url)
-  return pluginsToCheck.every(p => allowedPluginUrls.includes(p.url))
+  const storePlugins = (await response.json()) as {
+    plugins: PluginDefinition[]
+  }
+  return pluginsToCheck.every(p => {
+    if (isUMDPluginDefinition(p)) {
+      return Boolean(
+        storePlugins.plugins.find(
+          storePlugin =>
+            isUMDPluginDefinition(storePlugin) &&
+            (('url' in storePlugin &&
+              'url' in p &&
+              storePlugin.url === p.url) ||
+              ('umdUrl' in storePlugin &&
+                'umdUrl' in p &&
+                storePlugin.umdUrl === p.umdUrl)),
+        ),
+      )
+    }
+    if (isESMPluginDefinition(p)) {
+      return Boolean(
+        storePlugins.plugins.find(
+          storePlugin =>
+            isESMPluginDefinition(storePlugin) &&
+            storePlugin.esmUrl === p.esmUrl,
+        ),
+      )
+    }
+    if (isCJSPluginDefinition(p)) {
+      return Boolean(
+        storePlugins.plugins.find(
+          storePlugin =>
+            isCJSPluginDefinition(storePlugin) &&
+            storePlugin.cjsUrl === p.cjsUrl,
+        ),
+      )
+    }
+    return false
+  })
 }
 
 const SessionLoader = types
@@ -149,7 +181,7 @@ const SessionLoader = types
     setSessionTriaged(args?: {
       snap: unknown
       origin: string
-      reason: { url: string }[]
+      reason: { url?: string }[]
     }) {
       self.sessionTriaged = args
     },

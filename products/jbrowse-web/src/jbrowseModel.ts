@@ -4,7 +4,7 @@ import {
 } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import PluginManager from '@jbrowse/core/PluginManager'
-import Plugin from '@jbrowse/core/Plugin'
+import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import {
   getParent,
   getRoot,
@@ -62,7 +62,7 @@ export default function JBrowseWeb(
         },
         ...pluginManager.pluginConfigurationSchemas(),
       }),
-      plugins: types.array(types.frozen<Plugin>()),
+      plugins: types.array(types.frozen<PluginDefinition>()),
       assemblies: types.array(assemblyConfigSchemasType),
       // track configuration is an array of track config schemas. multiple
       // instances of a track can exist that use the same configuration
@@ -198,14 +198,20 @@ export default function JBrowseWeb(
         // @ts-ignore complains about name missing, but above line checks this
         self.defaultSession = cast(newDefault)
       },
-      addPlugin(plugin: Plugin) {
-        self.plugins = cast([...self.plugins, plugin])
+      addPlugin(pluginDefinition: PluginDefinition) {
+        self.plugins.push(pluginDefinition)
         const rootModel = getRoot(self)
         rootModel.setPluginsUpdated(true)
       },
-      removePlugin(pluginUrl: string) {
+      removePlugin(pluginDefinition: PluginDefinition) {
         self.plugins = cast(
-          self.plugins.filter(plugin => plugin.url !== pluginUrl),
+          self.plugins.filter(
+            plugin =>
+              plugin.url === pluginDefinition.url ||
+              plugin.umdUrl === pluginDefinition.umdUrl ||
+              plugin.cjsUrl === pluginDefinition.cjsUrl ||
+              plugin.esmUrl === pluginDefinition.esmUrl,
+          ),
         )
         const rootModel = getRoot(self)
         rootModel.setPluginsUpdated(true)

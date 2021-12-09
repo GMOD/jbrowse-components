@@ -4,13 +4,13 @@ import { types } from 'mobx-state-tree'
 export default ConfigurationSchema(
   'PileupRenderer',
   {
+    // default magenta here is used to detect the user has not customized this
     color: {
       type: 'color',
       description: 'the color of each feature in a pileup alignment',
-      defaultValue: `#c8c8c8`,
+      defaultValue: '#f0f',
       contextVariable: ['feature'],
     },
-
     orientationType: {
       type: 'stringEnum',
       model: types.enumeration('orientationType', ['fr', 'rf', 'ff']),

@@ -280,7 +280,10 @@ export default function assemblyFactory(
             self: self as Assembly,
             options: rest,
           } as CacheData,
-          signal,
+
+          // signal intentionally not passed here, fixes issues like #2221.
+          // alternative fix #2540 was proposed but non-working currently
+          undefined,
           statusCallback,
         )
       },

@@ -2836,6 +2836,71 @@ Object {
       "trackId": "volvox.inv.vcf",
       "type": "VariantTrack",
     },
+    Object {
+      "adapter": Object {
+        "craiLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "deep_sequencing.cram.crai",
+        },
+        "cramLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "deep_sequencing.cram",
+        },
+        "sequenceAdapter": Object {
+          "chromSizesLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "/path/to/default.chrom.sizes",
+          },
+          "twoBitLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Alignments",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "deep_seq_alignments",
+          "pileupDisplay": Object {
+            "displayId": "deep_seq_pileup",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "maxHeight": 10000,
+                "type": "PileupRenderer",
+              },
+            },
+            "type": "LinearPileupDisplay",
+          },
+          "type": "LinearAlignmentsDisplay",
+        },
+        Object {
+          "displayId": "Deep sequencing-LinearPileupDisplay",
+          "type": "LinearPileupDisplay",
+        },
+        Object {
+          "displayId": "Deep sequencing-LinearSNPCoverageDisplay",
+          "type": "LinearSNPCoverageDisplay",
+        },
+      ],
+      "name": "deep_sequencing",
+      "trackId": "Deep sequencing",
+      "type": "AlignmentsTrack",
+    },
   ],
 }
 `;

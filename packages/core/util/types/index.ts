@@ -58,7 +58,10 @@ export interface JBrowsePlugin {
   authors: string[]
   description: string
   location: string
-  url: string
+  url?: string
+  umdUrl?: string
+  esmUrl?: string
+  cjsUrl?: string
   license: string
   image?: string
 }
