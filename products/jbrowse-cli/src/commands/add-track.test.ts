@@ -7,25 +7,29 @@ import * as path from 'path'
 
 import { setup } from '../testUtil'
 
-const fsPromises = fs.promises
+const { writeFile, readFile, copyFile } = fs.promises
 
 const baseDir = path.join(__dirname, '..', '..', 'test', 'data')
 const simpleBam = path.join(baseDir, 'simple.bam')
 const simpleBai = path.join(baseDir, 'simple.bai')
+const simpleGff = path.join(baseDir, 'volvox.sort.gff3')
+const simpleVcf = path.join(baseDir, 'volvox.filtered.vcf')
+const simpleGtf = path.join(baseDir, 'volvox.sorted.gtf')
+const simpleGffGz = path.join(baseDir, 'volvox.sort.gff3.gz')
 const testConfig = path.join(baseDir, 'test_config.json')
 
-async function initctx(ctx: { dir: string }) {
-  await fsPromises.copyFile(testConfig, path.join(ctx.dir, 'config.json'))
+function initctx(ctx: { dir: string }) {
+  return copyFile(testConfig, path.join(ctx.dir, 'config.json'))
 }
-async function init2bit(ctx: { dir: string }) {
-  await fsPromises.copyFile(
+function init2bit(ctx: { dir: string }) {
+  return copyFile(
     path.join(baseDir, 'simple.2bit'),
     path.join(ctx.dir, 'simple.2bit'),
   )
 }
 
 async function readConf(ctx: { dir: string }) {
-  return fsPromises.readFile(path.join(ctx.dir, 'config.json'), {
+  return readFile(path.join(ctx.dir, 'config.json'), {
     encoding: 'utf8',
   })
 }
@@ -83,12 +87,9 @@ describe('add-track', () => {
     .it('cannot add a track if there is no config file')
   setup
     .do(initctx)
-    .do(ctx => {
-      return fsPromises.writeFile(
-        path.join(ctx.dir, 'config.json'),
-        '{"assemblies":[]}',
-      )
-    })
+    .do(ctx =>
+      writeFile(path.join(ctx.dir, 'config.json'), '{"assemblies":[]}'),
+    )
     .command(['add-track', simpleBam, '--load', 'copy'])
     .exit(150)
     .it('fails if it cannot assume the assemblyname')
@@ -96,11 +97,10 @@ describe('add-track', () => {
   setup
     .do(initctx)
     .command(['add-track', simpleBam, '--load', 'copy'])
-    .it('adds a track', async ctx => {
+    .it('adds a bam track with bai', async ctx => {
       const contents = await readConf(ctx)
       expect(fs.existsSync(path.join(ctx.dir, 'simple.bam'))).toBeTruthy()
       expect(fs.existsSync(path.join(ctx.dir, 'simple.bam.bai'))).toBeTruthy()
-
       expect(JSON.parse(contents).tracks).toEqual([
         {
           type: 'AlignmentsTrack',
@@ -134,8 +134,52 @@ describe('add-track', () => {
 
   setup
     .do(initctx)
+    .command([
+      'add-track',
+      simpleBam,
+      '--load',
+      'copy',
+      '--indexFile',
+      simpleBam + '.csi',
+    ])
+    .it('adds a bam track with csi', async ctx => {
+      const contents = await readConf(ctx)
+      expect(fs.existsSync(path.join(ctx.dir, 'simple.bam'))).toBeTruthy()
+      expect(fs.existsSync(path.join(ctx.dir, 'simple.bam.csi'))).toBeTruthy()
+      expect(JSON.parse(contents).tracks).toEqual([
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'simple',
+          name: 'simple',
+          assemblyNames: ['testAssembly'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              uri: 'simple.bam',
+              locationType: 'UriLocation',
+            },
+            index: {
+              indexType: 'CSI',
+              location: {
+                uri: 'simple.bam.csi',
+                locationType: 'UriLocation',
+              },
+            },
+            sequenceAdapter: {
+              type: 'testSeqAdapter',
+              twoBitLocation: {
+                uri: 'test.2bit',
+                locationType: 'UriLocation',
+              },
+            },
+          },
+        },
+      ])
+    })
+  setup
+    .do(initctx)
     .command(['add-track', '/testing/in/place.bam', '--load', 'inPlace'])
-    .it('adds a track with load inPlace', async ctx => {
+    .it('adds a bam track with load inPlace', async ctx => {
       const contents = await readConf(ctx)
 
       expect(JSON.parse(contents).tracks).toEqual([
@@ -178,7 +222,7 @@ describe('add-track', () => {
       '--indexFile',
       '/something/else/random.bai',
     ])
-    .it('adds a track with load inPlace', async ctx => {
+    .it('adds a bam track with load inPlace', async ctx => {
       const contents = await readConf(ctx)
 
       expect(JSON.parse(contents).tracks).toEqual([
@@ -222,7 +266,7 @@ describe('add-track', () => {
       '--indexFile',
       simpleBai,
     ])
-    .it('adds a track', async ctx => {
+    .it('adds a bam track with indexFile for bai', async ctx => {
       const contents = await readConf(ctx)
       expect(fs.existsSync(path.join(ctx.dir, 'simple.bam'))).toBeTruthy()
       expect(fs.existsSync(path.join(ctx.dir, 'simple.bai'))).toBeTruthy()
@@ -261,7 +305,7 @@ describe('add-track', () => {
   setup
     .do(initctx)
     .command(['add-track', simpleBam, '--load', 'copy', '--subDir', 'bam'])
-    .it('adds a track with subDir', async ctx => {
+    .it('adds a bam track with subDir', async ctx => {
       const contents = await readConf(ctx)
       expect(JSON.parse(contents).tracks).toEqual([
         {
@@ -306,7 +350,7 @@ describe('add-track', () => {
       '--subDir',
       'bam',
     ])
-    .it('adds a track with subDir', async ctx => {
+    .it('adds a bam track with subDir and localPath protocol', async ctx => {
       const contents = await readConf(ctx)
       expect(JSON.parse(contents).tracks).toEqual([
         {
@@ -361,7 +405,7 @@ describe('add-track', () => {
       '--config',
       '{"defaultRendering": "test"}',
     ])
-    .it('adds a track with all the custom fields', async ctx => {
+    .it('adds a bam track with all the custom fields', async ctx => {
       const contents = await readConf(ctx)
       expect(JSON.parse(contents).tracks).toEqual([
         {
@@ -393,7 +437,7 @@ describe('add-track', () => {
   setup
     .do(initctx)
     .command(['add-track', 'https://mysite.com/data/simple.bam'])
-    .it('adds a track from a url', async ctx => {
+    .it('adds a bam track from a url', async ctx => {
       const contents = await readConf(ctx)
       expect(JSON.parse(contents).tracks).toEqual([
         {
@@ -478,6 +522,156 @@ describe('add-track', () => {
                 locationType: 'UriLocation',
               },
               type: 'testSeqAdapter',
+            },
+          },
+        },
+      ])
+    })
+
+  setup
+    .do(initctx)
+    .command(['add-track', simpleGff, '--load', 'copy'])
+    .it('adds a plaintext gff', async ctx => {
+      const contents = await readConf(ctx)
+      expect(fs.existsSync(path.join(ctx.dir, 'volvox.sort.gff3'))).toBeTruthy()
+      expect(JSON.parse(contents).tracks).toEqual([
+        {
+          type: 'FeatureTrack',
+          trackId: 'volvox.sort',
+          name: 'volvox.sort',
+          assemblyNames: ['testAssembly'],
+          adapter: {
+            type: 'Gff3Adapter',
+            gffLocation: {
+              uri: 'volvox.sort.gff3',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+      ])
+    })
+
+  setup
+    .do(initctx)
+    .command(['add-track', simpleVcf, '--load', 'copy'])
+    .it('adds a plaintext vcf', async ctx => {
+      const contents = await readConf(ctx)
+      expect(
+        fs.existsSync(path.join(ctx.dir, 'volvox.filtered.vcf')),
+      ).toBeTruthy()
+      expect(JSON.parse(contents).tracks).toEqual([
+        {
+          type: 'FeatureTrack',
+          trackId: 'volvox.filtered',
+          name: 'volvox.filtered',
+          assemblyNames: ['testAssembly'],
+          adapter: {
+            type: 'VcfAdapter',
+            vcfLocation: {
+              uri: 'volvox.filtered.vcf',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+      ])
+    })
+
+  setup
+    .do(initctx)
+    .command(['add-track', simpleGtf, '--load', 'copy'])
+    .it('adds a plaintext gtf', async ctx => {
+      const contents = await readConf(ctx)
+      expect(
+        fs.existsSync(path.join(ctx.dir, 'volvox.sorted.gtf')),
+      ).toBeTruthy()
+      expect(JSON.parse(contents).tracks).toEqual([
+        {
+          type: 'FeatureTrack',
+          trackId: 'volvox.sorted',
+          name: 'volvox.sorted',
+          assemblyNames: ['testAssembly'],
+          adapter: {
+            type: 'GtfAdapter',
+            gtfLocation: {
+              uri: 'volvox.sorted.gtf',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+      ])
+    })
+
+  setup
+    .do(initctx)
+    .command([
+      'add-track',
+      simpleGffGz,
+      '--load',
+      'copy',
+      '--indexFile',
+      simpleGffGz + '.csi',
+    ])
+    .it('adds a tabix gff with csi', async ctx => {
+      const contents = await readConf(ctx)
+      expect(
+        fs.existsSync(path.join(ctx.dir, 'volvox.sort.gff3.gz')),
+      ).toBeTruthy()
+      expect(
+        fs.existsSync(path.join(ctx.dir, 'volvox.sort.gff3.gz.csi')),
+      ).toBeTruthy()
+      expect(JSON.parse(contents).tracks).toEqual([
+        {
+          type: 'FeatureTrack',
+          trackId: 'volvox.sort.gff3',
+          name: 'volvox.sort.gff3',
+          assemblyNames: ['testAssembly'],
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            gffGzLocation: {
+              uri: 'volvox.sort.gff3.gz',
+              locationType: 'UriLocation',
+            },
+            index: {
+              location: {
+                uri: 'volvox.sort.gff3.gz.csi',
+                locationType: 'UriLocation',
+              },
+              indexType: 'CSI',
+            },
+          },
+        },
+      ])
+    })
+
+  setup
+    .do(initctx)
+    .command(['add-track', simpleGffGz, '--load', 'copy'])
+    .it('adds a tabix gff', async ctx => {
+      const contents = await readConf(ctx)
+      expect(
+        fs.existsSync(path.join(ctx.dir, 'volvox.sort.gff3.gz')),
+      ).toBeTruthy()
+      expect(
+        fs.existsSync(path.join(ctx.dir, 'volvox.sort.gff3.gz.tbi')),
+      ).toBeTruthy()
+      expect(JSON.parse(contents).tracks).toEqual([
+        {
+          type: 'FeatureTrack',
+          trackId: 'volvox.sort.gff3',
+          name: 'volvox.sort.gff3',
+          assemblyNames: ['testAssembly'],
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            gffGzLocation: {
+              uri: 'volvox.sort.gff3.gz',
+              locationType: 'UriLocation',
+            },
+            index: {
+              location: {
+                uri: 'volvox.sort.gff3.gz.tbi',
+                locationType: 'UriLocation',
+              },
+              indexType: 'TBI',
             },
           },
         },
