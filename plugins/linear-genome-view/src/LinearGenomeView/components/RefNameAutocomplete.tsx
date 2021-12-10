@@ -141,7 +141,7 @@ function RefNameAutocomplete({
   const inputBoxVal = coarseVisibleLocStrings || value || ''
 
   // heuristic, text width + icon width, minimum 200
-  const width = Math.min(Math.max(measureText(inputBoxVal, 16) + 25, 200), 550)
+  const width = Math.min(Math.max(measureText(inputBoxVal, 16) + 25, 270), 550)
 
   // notes on implementation:
   // The selectOnFocus setting helps highlight the field when clicked

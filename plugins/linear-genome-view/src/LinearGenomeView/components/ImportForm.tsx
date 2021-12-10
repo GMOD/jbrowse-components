@@ -169,7 +169,8 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                     TextFieldProps={{
                       margin: 'normal',
                       variant: 'outlined',
-                      helperText: 'Enter a sequence or location',
+                      helperText:
+                        'Enter sequence name, feature name, or location',
                     }}
                   />
                 ) : (
