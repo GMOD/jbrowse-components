@@ -72,6 +72,7 @@ import Plugin from '../Plugin'
 import * as coreUi from '../ui'
 import * as coreUtil from '../util'
 import * as coreColor from '../util/color'
+import * as coreLayouts from '../util/layouts'
 import * as trackUtils from '../util/tracks'
 import * as coreIo from '../util/io'
 import * as coreMstReflection from '../util/mst-reflection'
@@ -159,6 +160,7 @@ const libs = {
   '@jbrowse/core/ui': coreUi,
   '@jbrowse/core/util': coreUtil,
   '@jbrowse/core/util/color': coreColor,
+  '@jbrowse/core/util/layouts': coreLayouts,
   '@jbrowse/core/util/tracks': trackUtils,
   '@jbrowse/core/util/Base1DViewModel': Base1DView,
   '@jbrowse/core/util/io': coreIo,
