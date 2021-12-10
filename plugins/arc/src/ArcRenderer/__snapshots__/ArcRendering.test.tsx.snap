@@ -22,6 +22,7 @@ exports[`one feature 1`] = `
       fill="transparent"
       id="1-one"
       pointer-events="stroke"
+      stroke-width="1"
     />
     <g />
     <text

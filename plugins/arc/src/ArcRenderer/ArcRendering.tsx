@@ -46,7 +46,7 @@ function ArcRendering(props: any) {
     }
     const label = readConfObject(config, 'label', { feature })
     const caption = readConfObject(config, 'caption', { feature })
-    const strokeWidth = readConfObject(config, 'thickness', { feature })
+    const strokeWidth = readConfObject(config, 'thickness', { feature }) || 1
     const ref = React.createRef<SVGPathElement>()
     const tooltipWidth = 20 + measureText(caption?.toString())
 
@@ -60,7 +60,7 @@ function ArcRendering(props: any) {
           fill="transparent"
           onClick={e => onClick(e, featureId)}
           ref={ref}
-          pointer-events="stroke"
+          pointerEvents="stroke"
         />
         <Tooltip triggerRef={ref}>
           <rect
