@@ -93,7 +93,7 @@
     "@types/string-template": "^1.0.2",
     "@types/tmp": "^0.2.1",
     "@types/unzipper": "^0.10.3",
-    "@typescript-eslint/parser": "^4.33.0",
+    "@typescript-eslint/parser": "^5.6.0",
     "babel-loader": "8.1.0",
     "babel-plugin-inline-import-data-uri": "^1.0.1",
     "chai": "^4.3.4",
