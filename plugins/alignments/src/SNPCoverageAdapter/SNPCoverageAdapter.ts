@@ -2,7 +2,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region } from '@jbrowse/core/util/types'
+import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
@@ -126,7 +126,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   ) {
     const { colorBy } = opts
     const { sequenceAdapter } = await this.configure()
-    const { refName, start, end } = region
+    const { originalRefName, refName, start, end } = region
     const binMax = Math.ceil(region.end - region.start)
 
     // bins contain cov feature if they contribute to coverage, or noncov which
@@ -148,7 +148,12 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
     if (sequenceAdapter) {
       const [feat] = await sequenceAdapter
-        .getFeatures({ refName, start, end: end + 1, assemblyName: 'na' })
+        .getFeatures({
+          refName: originalRefName || refName,
+          start,
+          end: end + 1,
+          assemblyName: 'na',
+        })
         .pipe(toArray())
         .toPromise()
       regionSeq = feat?.get('seq')

@@ -937,6 +937,7 @@ export default class PileupRenderer extends BoxRendererType {
     const layoutRecords = this.layoutFeats({ ...renderProps, features, layout })
     const [region] = regions
     let regionSequence: string | undefined
+    const { end, start, originalRefName, refName } = region
 
     if (sequenceAdapter) {
       const { dataAdapter } = await getAdapter(
@@ -946,13 +947,17 @@ export default class PileupRenderer extends BoxRendererType {
       )
 
       const feats = await (dataAdapter as BaseFeatureDataAdapter)
-        .getFeatures({ ...region, end: region.end + 1 })
+        .getFeatures({
+          ...region,
+          refName: originalRefName || refName,
+          end: region.end + 1,
+        })
         .pipe(toArray())
         .toPromise()
       regionSequence = feats[0]?.get('seq')
     }
 
-    const width = (region.end - region.start) / bpPerPx
+    const width = (end - start) / bpPerPx
     const height = Math.max(layout.getTotalHeight(), 1)
 
     const res = await renderToAbstractCanvas(
