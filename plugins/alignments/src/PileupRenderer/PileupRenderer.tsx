@@ -587,8 +587,6 @@ export default class PileupRenderer extends BoxRendererType {
 
     this.drawRect(ctx, feat, props)
 
-    console.log({ props })
-
     // second pass for color types that render per-base things that go over the
     // existing drawing
     switch (colorType) {
