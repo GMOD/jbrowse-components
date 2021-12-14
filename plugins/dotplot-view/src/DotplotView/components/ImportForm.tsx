@@ -51,7 +51,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
       const trackId = `${fileName}-${Date.now()}`
 
       session.addTrackConf({
-        trackId: `${fileName}-${Date.now()}`,
+        trackId: trackId,
         name: fileName,
         assemblyNames: selected,
         type: 'SyntenyTrack',
