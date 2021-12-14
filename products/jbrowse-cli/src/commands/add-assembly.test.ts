@@ -7,7 +7,7 @@ import * as path from 'path'
 
 import { setup } from '../testUtil'
 
-const { copyFile, readdir, readFile, writeFile, mkdir } = fs.promises
+const { rename, copyFile, readdir, readFile, writeFile, mkdir } = fs.promises
 
 const defaultConfig = {
   assemblies: [],
