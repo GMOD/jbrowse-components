@@ -7,7 +7,7 @@ import path from 'path'
 import { Scope } from 'nock'
 import { setup } from '../testUtil'
 
-const fsPromises = fs.promises
+const { mkdir, stat, readdir } = fs.promises
 
 const releaseArray = [
   {
@@ -78,7 +78,7 @@ function mockV2Zip(exampleSite: Scope) {
 describe('upgrade', () => {
   setup
     .do(() => {
-      fsPromises.mkdir('jbrowse')
+      mkdir('jbrowse')
     })
     .command(['upgrade', 'jbrowse'])
     .exit(10)
@@ -94,14 +94,12 @@ describe('upgrade', () => {
     .nock('https://api.github.com', mockReleases as any)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .nock('https://example.com', mockV2Zip as any)
-    .add('prevStat', ctx =>
-      fsPromises.stat(path.join(ctx.dir, 'manifest.json')),
-    )
+    .add('prevStat', ctx => stat(path.join(ctx.dir, 'manifest.json')))
     .command(['upgrade'])
     .it('upgrades a directory', async ctx => {
-      expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
+      expect(await readdir(ctx.dir)).toContain('manifest.json')
       // upgrade successful if it updates stats of manifest json
-      expect(await fsPromises.stat('manifest.json')).not.toEqual(ctx.prevStat)
+      expect(await stat('manifest.json')).not.toEqual(ctx.prevStat)
     })
   setup
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -110,14 +108,14 @@ describe('upgrade', () => {
     .nock('https://example.com', mockV1Zip as any)
     .command(['upgrade', '--tag', 'v0.0.1'])
     .it('upgrades a directory with a specific version', async ctx => {
-      expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
+      expect(await readdir(ctx.dir)).toContain('manifest.json')
     })
   setup
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .nock('https://example.com', mockV1Zip as any)
     .command(['upgrade', '--url', 'https://example.com/JBrowse2-0.0.1.zip'])
     .it('upgrades a directory from a url', async ctx => {
-      expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
+      expect(await readdir(ctx.dir)).toContain('manifest.json')
     })
   setup
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

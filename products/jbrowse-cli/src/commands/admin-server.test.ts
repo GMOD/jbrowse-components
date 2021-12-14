@@ -7,7 +7,7 @@ import * as path from 'path'
 import fetch from 'node-fetch'
 import { setup } from '../testUtil'
 
-const fsPromises = fs.promises
+const { copyFile, rename, chmod, readFile } = fs.promises
 
 const defaultConfig = {
   assemblies: [],
@@ -63,10 +63,7 @@ const testIndex = path.join(
   'simpleIndex.html',
 )
 const setupWithCreate = setup.do(async ctx => {
-  await fsPromises.copyFile(
-    testIndex,
-    path.join(ctx.dir, path.basename(testIndex)),
-  )
+  await copyFile(testIndex, path.join(ctx.dir, path.basename(testIndex)))
 })
 
 async function killExpress(ctx: { stdoutWrite: jest.Mock }, port: number) {
@@ -90,20 +87,16 @@ describe('admin-server', () => {
       await killExpress(ctx, 9091)
     })
     .it('creates a default config', async ctx => {
-      const contents = await fsPromises.readFile(
-        path.join(ctx.dir, 'config.json'),
-        { encoding: 'utf8' },
-      )
+      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
+        encoding: 'utf8',
+      })
       expect(JSON.parse(contents)).toEqual(defaultConfig)
     })
   setupWithCreate
     .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
+      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
 
-      await fsPromises.rename(
+      await rename(
         path.join(ctx.dir, path.basename(testConfig)),
         path.join(ctx.dir, 'config.json'),
       )
@@ -113,10 +106,9 @@ describe('admin-server', () => {
       await killExpress(ctx, 9092)
     })
     .it('does not overwrite an existing config', async ctx => {
-      const contents = await fsPromises.readFile(
-        path.join(ctx.dir, 'config.json'),
-        { encoding: 'utf8' },
-      )
+      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
+        encoding: 'utf8',
+      })
       expect(JSON.parse(contents)).toEqual(testConfigContents)
     })
   setupWithCreate
@@ -173,17 +165,16 @@ describe('admin-server', () => {
         },
         body: JSON.stringify(payload),
       })
-      const contents = await fsPromises.readFile(
-        path.join(ctx.dir, 'config.json'),
-        { encoding: 'utf8' },
-      )
+      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
+        encoding: 'utf8',
+      })
       expect(await response.text()).toBe('Config written to disk')
       expect(JSON.parse(contents)).toEqual(config)
     })
   setupWithCreate
     .command(['admin-server', '--port', '9095'])
     .do(async () => {
-      await fsPromises.chmod('config.json', '444')
+      await chmod('config.json', '444')
     })
     .finally(async ctx => {
       await killExpress(ctx, 9095)

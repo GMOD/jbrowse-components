@@ -257,7 +257,7 @@ seg080000020289
 "
 `;
 
-exports[`text-index with multiple --files Indexes with --file 1`] = `
+exports[`text-index with multiple per-files Indexes with multiple per-file args 1`] = `
 "agt221.3 [\\"ctgA%3A7500..8000\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.3\\"|\\"Match4\\"],1
 agt221.5 [\\"ctgA%3A1050..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"],1 [\\"ctgA%3A1050..7300\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"],3 [\\"ctgA%3A7000..7300\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"],4
 agt767.3 [\\"ctgA%3A8000..9000\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.3\\"|\\"Match6\\"],1
@@ -266,20 +266,20 @@ agt830.3 [\\"ctgA%3A5410..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"],1 [\
 agt830.5 [\\"ctgA%3A1050..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.5\\"],1 [\\"ctgA%3A1050..3202\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3000..3202\\"|\\"volvox.sort.gff"
 `;
 
-exports[`text-index with multiple --files Indexes with --file 2`] = `
+exports[`text-index with multiple per-files Indexes with multiple per-file args 2`] = `
 "\\"volvox.sort.gff3.gz\\"|\\"seg14\\"],12
 seg15 [\\"ctgA%3A39265..39361\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],1 [\\"ctgA%3A39753..40034\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],2 [\\"ctgA%3A40515..40954\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],3 [\\"ctgA%3A41252..41365\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],4 [\\"ctgA%3A41492..41504\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],5 [\\"ctgA%3A41941..42377\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],6 [\\"ctgA%3A42748..42954\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],7 [\\"ctgA%3A43401..43897\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],8 [\\"ctgA%3A44043..44113\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],9 [\\"ctgA%3A44399..44888\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],10 [\\"ctgA%3A45281..45375\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],11 [\\"ctgA%3A45711..46041\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],12 [\\"ctgA%3A46425..46564\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],13 [\\"ctgA%3A46738..47087\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],14 [\\"ctgA%3A47329..47595\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],15 [\\"ctgA%3A47858..47979\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],16 [\\"ctgA%3A48169..48453\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],17
 "
 `;
 
-exports[`text-index with multiple --files Indexes with --file 3`] = `13146`;
+exports[`text-index with multiple per-files Indexes with multiple per-file args 3`] = `13146`;
 
-exports[`text-index with multiple --files Indexes with --file 4`] = `
+exports[`text-index with multiple per-files Indexes with multiple per-file args 4`] = `
 "agt220000000000
 "
 `;
 
-exports[`text-index with single --file Indexes with --file 1`] = `
+exports[`text-index with single per-file Indexes with  single per-file arg 1`] = `
 "agt221.3 [\\"ctgA%3A7500..8000\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.3\\"|\\"Match4\\"],1
 agt221.5 [\\"ctgA%3A1050..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"],1 [\\"ctgA%3A1050..7300\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"|\\"Match3\\"],2 [\\"ctgA%3A5000..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"],3 [\\"ctgA%3A7000..7300\\"|\\"volvox.sort.gff3.gz\\"|\\"agt221.5\\"],4
 agt767.3 [\\"ctgA%3A8000..9000\\"|\\"volvox.sort.gff3.gz\\"|\\"agt767.3\\"|\\"Match6\\"],1
@@ -288,15 +288,15 @@ agt830.3 [\\"ctgA%3A5410..5500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.3\\"],1 [\
 agt830.5 [\\"ctgA%3A1050..1500\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.5\\"],1 [\\"ctgA%3A1050..3202\\"|\\"volvox.sort.gff3.gz\\"|\\"agt830.5\\"|\\"Match1\\"],2 [\\"ctgA%3A3000..3202\\"|\\"volvox.sort.gff"
 `;
 
-exports[`text-index with single --file Indexes with --file 2`] = `
+exports[`text-index with single per-file Indexes with  single per-file arg 2`] = `
 "\\"volvox.sort.gff3.gz\\"|\\"seg14\\"],12
 seg15 [\\"ctgA%3A39265..39361\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],1 [\\"ctgA%3A39753..40034\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],2 [\\"ctgA%3A40515..40954\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],3 [\\"ctgA%3A41252..41365\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],4 [\\"ctgA%3A41492..41504\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],5 [\\"ctgA%3A41941..42377\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],6 [\\"ctgA%3A42748..42954\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],7 [\\"ctgA%3A43401..43897\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],8 [\\"ctgA%3A44043..44113\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],9 [\\"ctgA%3A44399..44888\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],10 [\\"ctgA%3A45281..45375\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],11 [\\"ctgA%3A45711..46041\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],12 [\\"ctgA%3A46425..46564\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],13 [\\"ctgA%3A46738..47087\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],14 [\\"ctgA%3A47329..47595\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],15 [\\"ctgA%3A47858..47979\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],16 [\\"ctgA%3A48169..48453\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],17
 "
 `;
 
-exports[`text-index with single --file Indexes with --file 3`] = `13146`;
+exports[`text-index with single per-file Indexes with  single per-file arg 3`] = `13146`;
 
-exports[`text-index with single --file Indexes with --file 4`] = `
+exports[`text-index with single per-file Indexes with  single per-file arg 4`] = `
 "agt220000000000
 "
 `;

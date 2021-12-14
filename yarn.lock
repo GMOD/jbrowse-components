@@ -10643,10 +10643,10 @@ external-editor@^3.0.0, external-editor@^3.0.3:
     iconv-lite "^0.4.24"
     tmp "^0.0.33"
 
-external-sorting@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/external-sorting/-/external-sorting-1.2.0.tgz#e2f492be8caf171c0f5fcd5831b565bcd2117a46"
-  integrity sha512-VJ61/dKifQd2wmEPi3SeMnYTjCbeysPcAxfGpQzIbC2mEdgaNBhCWw+lM4Km8sEzYkOToxLT7XV80hdM1UykoQ==
+external-sorting@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/external-sorting/-/external-sorting-1.2.1.tgz#ec4f6b66b24e1ffa6562b854c795cba6c3707a2e"
+  integrity sha512-W9BTnAiXJ623dGacKLXPcCA962QK6mckm/wdA4Dks2lT7dbehWnveCY5SXQnRGyoND7k5ool5htljgrY4xMgJg==
   dependencies:
     fast-sort "^2.0.1"
 
@@ -13410,13 +13410,12 @@ iterate-value@^1.0.2:
     es-get-iterator "^1.0.2"
     iterate-iterator "^1.0.1"
 
-ixixx@^1.0.17:
-  version "1.0.18"
-  resolved "https://registry.yarnpkg.com/ixixx/-/ixixx-1.0.18.tgz#a662d194b07698705f0d087571979c689f4cb5ad"
-  integrity sha512-xFZwsB8Y3hyGTqNLJdjTQJCWM9BFsL5p0LLJ90Y1u9zfwilf9HD5sZpez38rF639JthqAyIZ3CQqdyMBRPrGNA==
+ixixx@^1.0.19:
+  version "1.0.19"
+  resolved "https://registry.yarnpkg.com/ixixx/-/ixixx-1.0.19.tgz#e565697d37cf6fa531773cea3b01d33f99acc41b"
+  integrity sha512-LnynQ3/vQbOymNk1LLiwzbKMClIdbqy6/KzfICbyeoKOC51SVxVSrrBZFPCCOnED7V2NXKgDI5W1pSpgQG0wBg==
   dependencies:
-    external-sorting "^1.2.0"
-    pump "^3.0.0"
+    external-sorting "^1.2.1"
     split2 "^4.1.0"
     tmp "^0.2.1"
 
