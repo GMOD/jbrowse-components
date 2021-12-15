@@ -12,7 +12,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 function shorten(str: string, term: string, w = 15) {
-  const tidx = str.indexOf(term)
+  const tidx = str.toLowerCase().indexOf(term)
 
   return str.length < 40
     ? str
@@ -79,15 +79,13 @@ export default class TrixTextSearchAdapter
         const labelField = rest[labelFieldIdx]
         const contextField = rest[contextIdx]
         const context =
-          contextIdx !== -1 && contextIdx !== labelFieldIdx
-            ? shorten(contextField, term)
-            : undefined
+          contextIdx !== -1 ? shorten(contextField, term) : undefined
         const label = shorten(labelField, term)
 
         const displayString =
-          !context || labelField.toLowerCase() === context.toLowerCase()
+          !context || label.toLowerCase() === context.toLowerCase()
             ? label
-            : `${labelField} (${context})`
+            : `${label} (${context})`
 
         return new BaseResult({
           locString: loc,
