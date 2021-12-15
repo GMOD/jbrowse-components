@@ -1422,18 +1422,21 @@ jexl:trimStart('  kitty ') // kitty, starting whitespace trimmed
 jexl:trimEnd('  kitty ') // kitty, ending whitespace trimmed
 jexl:toUpperCase('kitty') // KITTY
 jexl:toLowerCase('KITTY') // kitty
+jexl:split('KITTY KITTY', ' ') // ['KITTY', 'KITTY']
 ```
 
 Math functions
 
 ```
 
-jexl:min(0,2)
 jexl:max(0,2)
-jexl:abs(-5)
+jexl:min(0,2)
+jexl:sqrt(4)
 jexl:ceil(0.5)
 jexl:floor(0.5)
 jexl:round(0.5)
+jexl:abs(-0.5)
+jexl:log10(50000)
 jexl:parseInt('2')
 jexl:parseFloat('2.054')
 
