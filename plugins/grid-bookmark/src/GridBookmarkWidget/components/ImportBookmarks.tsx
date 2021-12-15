@@ -110,9 +110,7 @@ function ImportBookmarks({
                 if (!location) {
                   return
                 }
-                const data = (await openLocation(location).readFile(
-                  'utf8',
-                )) as string
+                const data = await openLocation(location).readFile('utf8')
                 const regions = data
                   .split('\n')
                   .filter(f => !!f.trim())

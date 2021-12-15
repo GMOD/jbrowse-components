@@ -14,7 +14,7 @@ export default class RefNameAliasAdapter
     if (loc.uri === '' || loc.uri === '/path/to/my/aliases.txt') {
       return []
     }
-    const results = (await openLocation(loc).readFile('utf8')) as string
+    const results = await openLocation(loc).readFile('utf8')
     return results
       .trim()
       .split('\n')

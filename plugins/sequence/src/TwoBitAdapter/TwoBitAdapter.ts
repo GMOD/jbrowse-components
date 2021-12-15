@@ -29,7 +29,7 @@ export default class TwoBitAdapter
     // future
     if (conf.uri !== '/path/to/default.chrom.sizes' && conf.uri !== '') {
       const file = openLocation(conf, this.pluginManager)
-      const data = (await file.readFile('utf8')) as string
+      const data = await file.readFile('utf8')
       return Object.fromEntries(
         data
           ?.split('\n')
