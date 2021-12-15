@@ -62,7 +62,9 @@ export default class TrixTextSearchAdapter
     const results = await this.trixJs.search(query)
     const formatted = results
       // if multi-word search try to filter out relevant items
-      .filter(([, data]) => strs.every(r => data.toLowerCase().includes(r)))
+      .filter(([, data]) =>
+        strs.every(r => decodeURIComponent(data).toLowerCase().includes(r)),
+      )
       .map(([term, data]) => {
         const result = JSON.parse(data.replace(/\|/g, ',')) as string[]
         const [loc, trackId, ...rest] = result.map(record =>
