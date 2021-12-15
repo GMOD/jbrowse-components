@@ -9,7 +9,7 @@ import {
   ConfigurationSchema,
 } from '../configuration/configurationSchema'
 import { getSubAdapterType } from './dataAdapterCache'
-import { Region, NoAssemblyRegion } from '../util/types'
+import { AugmentedRegion as Region, NoAssemblyRegion } from '../util/types'
 import { blankStats, rectifyStats, scoresToStats } from '../util/stats'
 import BaseResult from '../TextSearch/BaseResults'
 import idMaker from '../util/idMaker'

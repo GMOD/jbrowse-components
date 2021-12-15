@@ -326,6 +326,10 @@ export interface NoAssemblyRegion
 
 export interface Region extends SnapshotIn<typeof MUIRegion> {}
 
+export interface AugmentedRegion extends Region {
+  originalRefName?: string
+}
+
 export interface LocalPathLocation
   extends SnapshotIn<typeof MULocalPathLocation> {}
 

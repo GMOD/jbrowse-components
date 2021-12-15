@@ -12,7 +12,7 @@ import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import fromEntries from 'object.fromentries'
 import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
-import { Feature } from './simpleFeature'
+import SimpleFeature, { Feature, isFeature } from './simpleFeature'
 import {
   TypeTestedByPredicate,
   isSessionModel,
@@ -28,6 +28,7 @@ export * from './types'
 export * from './aborting'
 export * from './when'
 export * from './range'
+export { SimpleFeature, isFeature }
 
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
+import { RemoteFile } from 'generic-filehandle'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
-import { RemoteFileWithRangeCache } from '@jbrowse/core/util/io'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { getParent } from 'mobx-state-tree'
 import { HTTPBasicInternetAccountConfigModel } from './configSchema'
@@ -154,7 +154,7 @@ const stateModelFactory = (
         openLocation(location: UriLocation) {
           preAuthInfo =
             location.internetAccountPreAuthorization || self.generateAuthInfo()
-          return new RemoteFileWithRangeCache(String(location.uri), {
+          return new RemoteFile(String(location.uri), {
             fetch: this.getFetcher,
           })
         },

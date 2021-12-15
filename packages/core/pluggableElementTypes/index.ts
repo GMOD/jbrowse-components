@@ -10,6 +10,7 @@ import InternetAccountType from './InternetAccountType'
 import TextSearchAdapterType from './TextSearchAdapterType'
 
 export * from './renderers'
+export * from './models'
 
 export {
   AdapterType,
@@ -20,6 +21,7 @@ export {
   DisplayType,
   ViewType,
   RpcMethodType,
+  InternetAccountType,
   TextSearchAdapterType,
 }
 
