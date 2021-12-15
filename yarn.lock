@@ -1310,7 +1310,7 @@
     pirates "^4.0.0"
     source-map-support "^0.5.16"
 
-"@babel/runtime-corejs2@^7.3.1", "@babel/runtime-corejs2@^7.4.3":
+"@babel/runtime-corejs2@^7.4.3":
   version "7.15.4"
   resolved "https://registry.yarnpkg.com/@babel/runtime-corejs2/-/runtime-corejs2-7.15.4.tgz#dda5554d18e2ebd4e374e73708590e72e1e674f7"
   integrity sha512-TmuTI+n5HsMesW6Ah2WjvBwix9fBMXwbMxQV3c0ETLAzlmwN4OeRVbYMYwp9P4LEOlAxwGKdd9e8pMiLMAg/Mg==
@@ -1750,18 +1750,17 @@
     abortable-promise-cache "^1.0.1"
     quick-lru "^4.0.0"
 
-"@gmod/tabix@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-1.5.0.tgz#69fb4084eecdf7eb35f24e6b64bd4979d98f1162"
-  integrity sha512-wbiYj+3a3xtL9W5hIAaZ4pDIca2isFVHbA5jIecFAFaui2qOkgWbiRctToZWDHSPLrpVuzf2A0TYjx4nswk9ag==
+"@gmod/tabix@^1.5.2":
+  version "1.5.2"
+  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-1.5.2.tgz#dfef5ea0c223acd320c6484138aca8a09c87548f"
+  integrity sha512-OH1+k1zjtWbemXbOuMHVVqzgpViohrr0RfzHx+GSiQxk0bogWmJIoizkCYg5fQYPWy6CGj89kPw7thzwOyBmyw==
   dependencies:
-    "@babel/runtime-corejs2" "^7.3.1"
     "@gmod/bgzf-filehandle" "^1.3.3"
-    abortable-promise-cache "^1.0.1"
+    abortable-promise-cache "^1.4.1"
     es6-promisify "^6.0.1"
     generic-filehandle "^2.0.1"
     long "^4.0.0"
-    quick-lru "^2.0.0"
+    quick-lru "^4.0.0"
 
 "@gmod/trix@^1.0.0":
   version "1.0.0"
