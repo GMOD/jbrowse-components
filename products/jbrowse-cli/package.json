@@ -35,7 +35,7 @@
     "build:typescript": "tsc --build",
     "postpack": "rimraf oclif.manifest.json",
     "clean": "rimraf lib",
-    "prepack": "npm run clean  && npm run build:typescript && npm run manifest && npm run docs",
+    "prepack": "npm shrinkwrap && npm run clean  && npm run build:typescript && npm run manifest && npm run docs",
     "manifest": "oclif-dev manifest",
     "version": "npm run docs && npm run docs:version:add",
     "docs": "npm run docs:create && npm run docs:format",
