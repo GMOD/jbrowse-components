@@ -83,17 +83,17 @@ OPTIONS
       type of sequence, by default inferred from sequence file
 
       indexedFasta   An index FASTA (e.g. .fa or .fasta) file;
-                      can optionally specify --faiLocation
+      can optionally specify --faiLocation
 
       bgzipFasta     A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file;
-                      can optionally specify --faiLocation and/or --gziLocation
+      can optionally specify --faiLocation and/or --gziLocation
 
       twoBit         A twoBit (e.g. .2bit) file
 
       chromSizes     A chromosome sizes (e.g. .chrom.sizes) file
 
       custom         Either a JSON file location or inline JSON that defines a custom
-                      sequence adapter; must provide --name if using inline JSON
+      sequence adapter; must provide --name if using inline JSON
 
   --displayName=displayName
       The display name to specify for the assembly, e.g. "Homo sapiens (hg38)" while the name can be a shorter identifier
@@ -397,7 +397,7 @@ OPTIONS
   --all  see all commands in CLI
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.3/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.14/src/commands/help.ts)_
 
 ## `jbrowse set-default-session`
 
@@ -483,7 +483,7 @@ EXAMPLES
   $ jbrowse text-index --out /path/to/jb2/
 
   # indexes only a specific assembly, and overwrite what was previously there using force (which is needed if a previous
-  index already existed)
+   index already existed)
   $ jbrowse text-index -a hg19 --force
 
   # create index for some files for use in @jbrowse/react-linear-genome-view or similar
