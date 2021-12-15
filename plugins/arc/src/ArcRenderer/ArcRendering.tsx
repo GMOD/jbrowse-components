@@ -52,6 +52,7 @@ function ArcRendering(props: any) {
     const tooltipWidth = 20 + measureText(caption?.toString())
 
     const t = 0.5
+    // formula: https://en.wikipedia.org/wiki/B%C3%A9zier_curve#Cubic_B%C3%A9zier_curves
     const textYCoord =
       (1 - t) * (1 - t) * (1 - t) * 0 +
       3 * ((1 - t) * (1 - t)) * (t * height) +
