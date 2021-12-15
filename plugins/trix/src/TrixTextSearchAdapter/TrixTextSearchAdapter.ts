@@ -58,8 +58,7 @@ export default class TrixTextSearchAdapter
    */
   async searchIndex(args: BaseArgs) {
     const results = await this.trixJs.search(args.queryString.toLowerCase())
-    const formatted = results.map(entry => {
-      const [term, data] = entry.split(',')
+    const formatted = results.map(([term, data]) => {
       const result = JSON.parse(data.replace(/\|/g, ',')) as string[]
       const [loc, trackId, ...rest] = result.map(record =>
         decodeURIComponent(record),
