@@ -47,14 +47,22 @@ function ArcRendering(props: any) {
     const label = readConfObject(config, 'label', { feature })
     const caption = readConfObject(config, 'caption', { feature })
     const strokeWidth = readConfObject(config, 'thickness', { feature }) || 1
+    const height = readConfObject(config, 'height', { feature }) || 100
     const ref = React.createRef<SVGPathElement>()
     const tooltipWidth = 20 + measureText(caption?.toString())
+
+    const t = 0.5
+    const textYCoord =
+      (1 - t) * (1 - t) * (1 - t) * 0 +
+      3 * ((1 - t) * (1 - t)) * (t * height) +
+      3 * (1 - t) * (t * t) * height +
+      t * t * t * 0
 
     arcsRendered.push(
       <g key={id} onClick={e => onClick(e, featureId)}>
         <path
           id={id}
-          d={`M ${left} 0 C ${left} 100, ${right} 100, ${right} 0`}
+          d={`M ${left} 0 C ${left} ${height}, ${right} ${height}, ${right} 0`}
           stroke={stroke}
           strokeWidth={strokeWidth}
           fill="transparent"
@@ -85,14 +93,14 @@ function ArcRendering(props: any) {
         </Tooltip>
         <text
           x={left + (right - left) / 2}
-          y="78px"
+          y={textYCoord + 3}
           style={{ stroke: 'white', strokeWidth: '0.6em' }}
         >
           {label}
         </text>
         <text
           x={left + (right - left) / 2}
-          y="78px"
+          y={textYCoord + 3}
           style={{ stroke: textStroke }}
         >
           {label}

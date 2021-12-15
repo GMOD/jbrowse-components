@@ -42,6 +42,7 @@ export default function (/* config?: any*/): JexlNonBuildable {
   j.addFunction('floor', Math.floor)
   j.addFunction('round', Math.round)
   j.addFunction('abs', Math.abs)
+  j.addFunction('log10', Math.log10)
   j.addFunction('parseInt', Number.parseInt)
   j.addFunction('parseFloat', Number.parseFloat)
 

@@ -19,6 +19,11 @@ export default ConfigurationSchema(
       defaultValue: `jexl:get(feature,'score')`,
       contextVariable: ['feature'],
     },
+    height: {
+      type: 'number',
+      description: 'the height of the arcs',
+      defaultValue: `jexl:log10(get(feature,'end')-get(feature,'start'))*50`,
+    },
     caption: {
       type: 'string',
       description:
