@@ -13,18 +13,6 @@ import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 import { JBrowse, setup, generateReadBuffer, getPluginManager } from './util'
 
-// need to mock out data grid and force all columns to render
-// https://github.com/mui-org/material-ui-x/issues/1151
-jest.mock('@mui/x-data-grid', () => {
-  const { DataGrid } = jest.requireActual('@mui/x-data-grid')
-  return {
-    ...jest.requireActual('@mui/x-data-grid'),
-    DataGrid: props => {
-      return <DataGrid {...props} columnBuffer={6} />
-    },
-  }
-})
-
 setup()
 afterEach(cleanup)
 
