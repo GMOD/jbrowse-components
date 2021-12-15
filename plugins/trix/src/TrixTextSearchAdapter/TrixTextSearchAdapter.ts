@@ -11,6 +11,15 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
+function decodeURIComponentNoThrow(uri: string) {
+  try {
+    return decodeURIComponent(uri)
+  } catch (e) {
+    // avoid throwing exception on a failure to decode URI component
+    return uri
+  }
+}
+
 function shorten(str: string, term: string, w = 15) {
   const tidx = str.toLowerCase().indexOf(term)
 
@@ -63,12 +72,14 @@ export default class TrixTextSearchAdapter
     const formatted = results
       // if multi-word search try to filter out relevant items
       .filter(([, data]) =>
-        strs.every(r => decodeURIComponent(data).toLowerCase().includes(r)),
+        strs.every(r =>
+          decodeURIComponentNoThrow(data).toLowerCase().includes(r),
+        ),
       )
       .map(([term, data]) => {
         const result = JSON.parse(data.replace(/\|/g, ',')) as string[]
         const [loc, trackId, ...rest] = result.map(record =>
-          decodeURIComponent(record),
+          decodeURIComponentNoThrow(record),
         )
 
         const labelFieldIdx = rest.findIndex(elt => !!elt)
