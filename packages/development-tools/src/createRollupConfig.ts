@@ -238,7 +238,7 @@ export function createRollupConfig(
         }
         return isExternal
       },
-      treeshake: { propertyReadSideEffects: false },
+      treeshake: { propertyReadSideEffects: false, moduleSideEffects: false },
       plugins: getPlugins('esmBundle', jbrowseGlobals),
       output: [
         {
@@ -267,7 +267,7 @@ export function createRollupConfig(
         }
         return isExternal
       },
-      treeshake: { propertyReadSideEffects: false },
+      treeshake: { propertyReadSideEffects: false, moduleSideEffects: false },
       plugins: getPlugins('cjs', jbrowseGlobals),
       output: [
         {
