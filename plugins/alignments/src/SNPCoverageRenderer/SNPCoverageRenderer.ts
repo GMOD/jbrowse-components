@@ -74,6 +74,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
 
     const indicatorThreshold = readConfObject(cfg, 'indicatorThreshold')
     const drawInterbaseCounts = readConfObject(cfg, 'drawInterbaseCounts')
+    const drawArcs = readConfObject(cfg, 'drawArcs')
     const drawIndicators = readConfObject(cfg, 'drawIndicators')
 
     // get the y coordinate that we are plotting at, this can be log scale
@@ -187,38 +188,41 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     })
 
     ctx.globalAlpha = 0.7
-    skips.forEach(f => {
-      const [left, right] = bpSpanPx(
-        f.get('start'),
-        f.get('end'),
-        region,
-        bpPerPx,
-      )
 
-      ctx.beginPath()
-      const str = f.get('strand') as number
-      const xs = f.get('xs') as string
-      const pos = 'rgb(255,200,200)'
-      const neg = 'rgb(200,200,255)'
-      const neutral = 'rgb(200,200,200)'
+    if (drawArcs) {
+      skips.forEach(f => {
+        const [left, right] = bpSpanPx(
+          f.get('start'),
+          f.get('end'),
+          region,
+          bpPerPx,
+        )
 
-      if (xs === '+') {
-        ctx.strokeStyle = pos
-      } else if (xs === '-') {
-        ctx.strokeStyle = neg
-      } else if (str === 1) {
-        ctx.strokeStyle = pos
-      } else if (str === -1) {
-        ctx.strokeStyle = neg
-      } else {
-        ctx.strokeStyle = neutral
-      }
+        ctx.beginPath()
+        const str = f.get('strand') as number
+        const xs = f.get('xs') as string
+        const pos = 'rgb(255,200,200)'
+        const neg = 'rgb(200,200,255)'
+        const neutral = 'rgb(200,200,200)'
 
-      ctx.lineWidth = Math.log(f.get('score') + 1)
-      ctx.moveTo(left, height - offset * 2)
-      ctx.bezierCurveTo(left, 0, right, 0, right, height - offset * 2)
-      ctx.stroke()
-    })
+        if (xs === '+') {
+          ctx.strokeStyle = pos
+        } else if (xs === '-') {
+          ctx.strokeStyle = neg
+        } else if (str === 1) {
+          ctx.strokeStyle = pos
+        } else if (str === -1) {
+          ctx.strokeStyle = neg
+        } else {
+          ctx.strokeStyle = neutral
+        }
+
+        ctx.lineWidth = Math.log(f.get('score') + 1)
+        ctx.moveTo(left, height - offset * 2)
+        ctx.bezierCurveTo(left, 0, right, 0, right, height - offset * 2)
+        ctx.stroke()
+      })
+    }
 
     if (displayCrossHatches) {
       ctx.lineWidth = 1
