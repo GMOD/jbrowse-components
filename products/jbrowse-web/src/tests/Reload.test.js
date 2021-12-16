@@ -18,6 +18,13 @@ setup()
 
 afterEach(cleanup)
 
+function canvasToBuffer(canvas) {
+  return Buffer.from(
+    canvas.toDataURL().replace(/^data:image\/\w+;base64,/, ''),
+    'base64',
+  )
+}
+
 const readBuffer = generateReadBuffer(url => {
   return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
 })
@@ -57,11 +64,11 @@ describe('reload tests', () => {
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findAllByTestId('prerendered_canvas', ...wait)
-    const pileupImg = canvas[0].toDataURL()
-    const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
-    const pileupBuf = Buffer.from(pileupData, 'base64')
-    expect(pileupBuf).toMatchImageSnapshot({
+    const canvas = await findByTestId(
+      'prerendered_canvas_{volvox}ctgA:1..400-0',
+      ...wait,
+    )
+    expect(canvasToBuffer(canvas)).toMatchImageSnapshot({
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
@@ -91,11 +98,11 @@ describe('reload tests', () => {
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findAllByTestId('prerendered_canvas', ...wait)
-    const pileupImg = canvas[0].toDataURL()
-    const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
-    const pileupBuf = Buffer.from(pileupData, 'base64')
-    expect(pileupBuf).toMatchImageSnapshot({
+    const canvas = await findByTestId(
+      'prerendered_canvas_{volvox}ctgA:1..400-0',
+      ...wait,
+    )
+    expect(canvasToBuffer(canvas)).toMatchImageSnapshot({
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
@@ -120,11 +127,11 @@ describe('reload tests', () => {
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findAllByTestId('prerendered_canvas', ...wait)
-    const pileupImg = canvas[0].toDataURL()
-    const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
-    const pileupBuf = Buffer.from(pileupData, 'base64')
-    expect(pileupBuf).toMatchImageSnapshot({
+    const canvas = await findByTestId(
+      'prerendered_canvas_{volvox}ctgA:1..400-0',
+      ...wait,
+    )
+    expect(canvasToBuffer(canvas)).toMatchImageSnapshot({
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
@@ -149,12 +156,11 @@ describe('reload tests', () => {
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findAllByTestId('prerendered_canvas', ...wait)
-
-    const pileupImg = canvas[0].toDataURL()
-    const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
-    const pileupBuf = Buffer.from(pileupData, 'base64')
-    expect(pileupBuf).toMatchImageSnapshot({
+    const canvas = await findByTestId(
+      'prerendered_canvas_{volvox}ctgA:1..400-0',
+      ...wait,
+    )
+    expect(canvasToBuffer(canvas)).toMatchImageSnapshot({
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
@@ -182,12 +188,12 @@ describe('reload tests', () => {
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findAllByTestId('prerendered_canvas', ...wait)
-    const bigwigImg = canvas[0].toDataURL()
-    const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
-    const bigwigBuf = Buffer.from(bigwigData, 'base64')
-    expect(bigwigBuf).toMatchImageSnapshot({
-      failureThreshold: 0.01,
+    const canvas = await findByTestId(
+      'prerendered_canvas_{volvox}ctgA:1..8,000-0',
+      ...wait,
+    )
+    expect(canvasToBuffer(canvas)).toMatchImageSnapshot({
+      failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
   }, 20000)
