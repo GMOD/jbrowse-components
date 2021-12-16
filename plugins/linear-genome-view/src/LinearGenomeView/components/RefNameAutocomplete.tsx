@@ -1,30 +1,31 @@
-import React, { useMemo, useEffect, useState } from 'react'
+import React, { lazy, useMemo, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
-
-// jbrowse core
 import { getSession, useDebounce, measureText } from '@jbrowse/core/util'
 import BaseResult, {
   RefSequenceResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
-
-// material ui
 import {
   CircularProgress,
+  IconButton,
   InputAdornment,
   Popper,
+  PopperProps,
   TextField,
   TextFieldProps as TFP,
-  PopperProps,
   Typography,
 } from '@material-ui/core'
 
 // icons
 import SearchIcon from '@material-ui/icons/Search'
 import Autocomplete from '@material-ui/lab/Autocomplete'
+import HelpIcon from '@material-ui/icons/Help'
 
 // locals
 import { LinearGenomeViewModel } from '..'
 import { dedupe } from './util'
+
+// lazy
+const HelpDialog = lazy(() => import('./HelpDialog'))
 
 export interface Option {
   group?: string
@@ -84,6 +85,7 @@ function RefNameAutocomplete({
   const { assemblyManager } = session
   const [open, setOpen] = useState(false)
   const [loaded, setLoaded] = useState(true)
+  const [isHelpDialogDisplayed, setHelpDialogDisplayed] = useState(false)
   const [currentSearch, setCurrentSearch] = useState('')
   const [inputValue, setInputValue] = useState('')
   const [searchOptions, setSearchOptions] = useState<Option[]>()
@@ -141,120 +143,130 @@ function RefNameAutocomplete({
   const inputBoxVal = coarseVisibleLocStrings || value || ''
 
   // heuristic, text width + icon width, minimum 200
-  const width = Math.min(Math.max(measureText(inputBoxVal, 16) + 25, 200), 550)
+  const width = Math.min(Math.max(measureText(inputBoxVal, 16) + 25, 270), 550)
 
   // notes on implementation:
   // The selectOnFocus setting helps highlight the field when clicked
   return (
-    <Autocomplete
-      id={`refNameAutocomplete-${model.id}`}
-      data-testid="autocomplete"
-      disableListWrap
-      disableClearable
-      PopperComponent={MyPopper}
-      disabled={!assemblyName}
-      freeSolo
-      includeInputInList
-      selectOnFocus
-      style={{ ...style, width }}
-      value={inputBoxVal}
-      loading={!loaded}
-      inputValue={inputValue}
-      onInputChange={(event, newInputValue) => setInputValue(newInputValue)}
-      loadingText="loading results"
-      open={open}
-      onOpen={() => setOpen(true)}
-      onClose={() => {
-        setOpen(false)
-        setLoaded(true)
-        if (hasDisplayedRegions) {
-          setCurrentSearch('')
-          setSearchOptions(undefined)
-        }
-      }}
-      onChange={(_event, selectedOption) => {
-        if (!selectedOption || !assemblyName) {
-          return
-        }
+    <>
+      <Autocomplete
+        id={`refNameAutocomplete-${model.id}`}
+        data-testid="autocomplete"
+        disableListWrap
+        disableClearable
+        PopperComponent={MyPopper}
+        disabled={!assemblyName}
+        freeSolo
+        includeInputInList
+        selectOnFocus
+        style={{ ...style, width }}
+        value={inputBoxVal}
+        loading={!loaded}
+        inputValue={inputValue}
+        onInputChange={(event, newInputValue) => setInputValue(newInputValue)}
+        loadingText="loading results"
+        open={open}
+        onOpen={() => setOpen(true)}
+        onClose={() => {
+          setOpen(false)
+          setLoaded(true)
+          if (hasDisplayedRegions) {
+            setCurrentSearch('')
+            setSearchOptions(undefined)
+          }
+        }}
+        onChange={(_event, selectedOption) => {
+          if (!selectedOption || !assemblyName) {
+            return
+          }
 
-        if (typeof selectedOption === 'string') {
-          // handles string inputs on keyPress enter
-          onSelect(new BaseResult({ label: selectedOption }))
-        } else {
-          onSelect(selectedOption.result)
-        }
-        setInputValue(inputBoxVal)
-      }}
-      options={!searchOptions?.length ? options : searchOptions}
-      getOptionDisabled={option => option?.group === 'limitOption'}
-      filterOptions={(options, params) => {
-        const filtered = filterOptions(
-          options,
-          params.inputValue.toLocaleLowerCase(),
-        )
-        return [
-          ...filtered.slice(0, 100),
-          ...(filtered.length > 100
-            ? [
-                {
-                  group: 'limitOption',
-                  result: new BaseResult({
-                    label: 'keep typing for more results',
-                  }),
-                },
-              ]
-            : []),
-        ]
-      }}
-      renderInput={params => {
-        const { helperText, InputProps = {} } = TextFieldProps
-        return (
-          <TextField
-            onBlur={() => {
-              // this is used to restore a refName or the non-user-typed input
-              // to the box on blurring
-              setInputValue(inputBoxVal)
-            }}
-            {...params}
-            {...TextFieldProps}
-            helperText={helperText}
-            InputProps={{
-              ...params.InputProps,
-              ...InputProps,
+          if (typeof selectedOption === 'string') {
+            // handles string inputs on keyPress enter
+            onSelect(new BaseResult({ label: selectedOption }))
+          } else {
+            onSelect(selectedOption.result)
+          }
+          setInputValue(inputBoxVal)
+        }}
+        options={!searchOptions?.length ? options : searchOptions}
+        getOptionDisabled={option => option?.group === 'limitOption'}
+        filterOptions={(options, params) => {
+          const filtered = filterOptions(
+            options,
+            params.inputValue.toLocaleLowerCase(),
+          )
+          return [
+            ...filtered.slice(0, 100),
+            ...(filtered.length > 100
+              ? [
+                  {
+                    group: 'limitOption',
+                    result: new BaseResult({
+                      label: 'keep typing for more results',
+                    }),
+                  },
+                ]
+              : []),
+          ]
+        }}
+        renderInput={params => {
+          const { helperText, InputProps = {} } = TextFieldProps
+          return (
+            <TextField
+              onBlur={() => {
+                // this is used to restore a refName or the non-user-typed input
+                // to the box on blurring
+                setInputValue(inputBoxVal)
+              }}
+              {...params}
+              {...TextFieldProps}
+              helperText={helperText}
+              InputProps={{
+                ...params.InputProps,
+                ...InputProps,
 
-              endAdornment: (
-                <>
-                  {regions.length === 0 ? (
-                    <CircularProgress color="inherit" size={20} />
-                  ) : (
-                    <InputAdornment position="end" style={{ marginRight: 7 }}>
-                      <SearchIcon />
-                    </InputAdornment>
-                  )}
-                  {params.InputProps.endAdornment}
-                </>
-              ),
-            }}
-            placeholder="Search for location"
-            onChange={e => {
-              setCurrentSearch(e.target.value)
-            }}
-          />
-        )
-      }}
-      renderOption={option => {
-        const { result } = option
-        const component = result.getRenderingComponent()
-        if (component && React.isValidElement(component)) {
-          return component
-        }
+                endAdornment: (
+                  <>
+                    {regions.length === 0 ? (
+                      <CircularProgress color="inherit" size={20} />
+                    ) : (
+                      <InputAdornment position="end" style={{ marginRight: 7 }}>
+                        <SearchIcon />
+                        <IconButton
+                          onClick={() => setHelpDialogDisplayed(true)}
+                        >
+                          <HelpIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    )}
+                    {params.InputProps.endAdornment}
+                  </>
+                ),
+              }}
+              placeholder="Search for location"
+              onChange={e => {
+                setCurrentSearch(e.target.value)
+              }}
+            />
+          )
+        }}
+        renderOption={option => {
+          const { result } = option
+          const component = result.getRenderingComponent()
+          if (component && React.isValidElement(component)) {
+            return component
+          }
 
-        return <Typography noWrap>{result.getDisplayString()}</Typography>
-      }}
-      getOptionLabel={option =>
-        (typeof option === 'string' ? option : option.result.getLabel()) || ''
-      }
-    />
+          return <Typography noWrap>{result.getDisplayString()}</Typography>
+        }}
+        getOptionLabel={option =>
+          (typeof option === 'string' ? option : option.result.getLabel()) || ''
+        }
+      />
+      {isHelpDialogDisplayed ? (
+        <HelpDialog handleClose={() => setHelpDialogDisplayed(false)} />
+      ) : null}
+    </>
   )
 }
 
