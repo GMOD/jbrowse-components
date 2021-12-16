@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, lazy } from 'react'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import {
@@ -6,18 +6,19 @@ import {
   CircularProgress,
   Container,
   Grid,
-  Typography,
   makeStyles,
 } from '@material-ui/core'
 import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+import CloseIcon from '@material-ui/icons/Close'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
-import SearchResultsDialog from './SearchResultsDialog'
 import { LinearGenomeViewModel } from '..'
+const SearchResultsDialog = lazy(() => import('./SearchResultsDialog'))
 
 const useStyles = makeStyles(theme => ({
   importFormContainer: {
@@ -84,13 +85,11 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     return [...(refNameResults || []), ...(textSearchResults || [])]
   }
 
-  /**
-   * gets a string as input, or use stored option results from previous query,
-   * then re-query and
-   * 1) if it has multiple results: pop a dialog
-   * 2) if it's a single result navigate to it
-   * 3) else assume it's a locstring and navigate to it
-   */
+  // gets a string as input, or use stored option results from previous query,
+  // then re-query and
+  // 1) if it has multiple results: pop a dialog
+  // 2) if it's a single result navigate to it
+  // 3) else assume it's a locstring and navigate to it
   async function handleSelectedRegion(input: string) {
     if (!option) {
       return
@@ -127,11 +126,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     <div>
       {err ? <ErrorMessage error={err} /> : null}
       <Container className={classes.importFormContainer}>
-        <form
-          onSubmit={event => {
-            event.preventDefault()
-          }}
-        >
+        <form onSubmit={event => event.preventDefault()}>
           <Grid
             container
             spacing={1}
@@ -151,8 +146,8 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             <Grid item>
               {selectedAsm ? (
                 err ? (
-                  <Typography color="error">X</Typography>
-                ) : selectedRegion && model.volatileWidth ? (
+                  <CloseIcon style={{ color: 'red' }} />
+                ) : selectedRegion ? (
                   <RefNameAutocomplete
                     fetchResults={fetchResults}
                     model={model}
@@ -162,7 +157,8 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                     TextFieldProps={{
                       margin: 'normal',
                       variant: 'outlined',
-                      helperText: 'Enter a sequence or location',
+                      helperText:
+                        'Enter sequence name, feature name, or location',
                     }}
                   />
                 ) : (
@@ -174,6 +170,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                 )
               ) : null}
             </Grid>
+            <Grid item></Grid>
             <Grid item>
               <Button
                 type="submit"

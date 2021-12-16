@@ -8,12 +8,13 @@ import {
 } from '@jbrowse/core/configuration'
 import {
   Region,
-  NotificationLevel,
   AbstractSessionModel,
   TrackViewModel,
   JBrowsePlugin,
   DialogComponentType,
 } from '@jbrowse/core/util/types'
+
+import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { getContainingView } from '@jbrowse/core/util'
 import { observable } from 'mobx'
 import {
@@ -622,30 +623,7 @@ export default function sessionModelFactory(
         return getParent(self).setSession(sessionSnapshot)
       },
     }))
-    .extend(() => {
-      const snackbarMessages = observable.array()
 
-      return {
-        views: {
-          get snackbarMessages() {
-            return snackbarMessages
-          },
-        },
-        actions: {
-          notify(message: string, level?: NotificationLevel) {
-            return this.pushSnackbarMessage(message, level)
-          },
-
-          pushSnackbarMessage(message: string, level?: NotificationLevel) {
-            return snackbarMessages.push([message, level])
-          },
-
-          popSnackbarMessage() {
-            return snackbarMessages.pop()
-          },
-        },
-      }
-    })
     .actions(self => ({
       /**
        * opens a configuration editor to configure the given thing,
@@ -745,7 +723,7 @@ export default function sessionModelFactory(
       },
     }))
 
-  return types.snapshotProcessor(sessionModel, {
+  return types.snapshotProcessor(addSnackbarToModel(sessionModel), {
     // @ts-ignore
     preProcessor(snapshot) {
       if (snapshot) {

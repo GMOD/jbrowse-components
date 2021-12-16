@@ -1,10 +1,13 @@
+import { lazy } from 'react'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { types } from 'mobx-state-tree'
+import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 
 const configSchema = ConfigurationSchema('AlignmentsFeatureWidget', {})
 
-export default function stateModelFactory(pluginManager) {
+export function stateModelFactory(pluginManager: PluginManager) {
   return types
     .model('AlignmentsFeatureWidget', {
       id: ElementId,
@@ -15,7 +18,7 @@ export default function stateModelFactory(pluginManager) {
       ),
     })
     .actions(self => ({
-      setFeatureData(data) {
+      setFeatureData(data: unknown) {
         self.featureData = data
       },
       clearFeatureData() {
@@ -24,4 +27,17 @@ export default function stateModelFactory(pluginManager) {
     }))
 }
 
-export { configSchema, stateModelFactory }
+export default function register(pluginManager: PluginManager) {
+  pluginManager.addWidgetType(
+    () =>
+      new WidgetType({
+        name: 'AlignmentsFeatureWidget',
+        heading: 'Feature details',
+        configSchema,
+        stateModel: stateModelFactory(pluginManager),
+        ReactComponent: lazy(() => import('./AlignmentsFeatureDetail')),
+      }),
+  )
+}
+
+export { configSchema }
