@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { RemoteFile } from 'generic-filehandle'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
-import { UriLocation } from '@jbrowse/core/util/types'
+import { UriLocation, AbstractSessionModel } from '@jbrowse/core/util/types'
 import { getParent } from 'mobx-state-tree'
 import { HTTPBasicInternetAccountConfigModel } from './configSchema'
 import { Instance, types } from 'mobx-state-tree'
@@ -90,9 +90,10 @@ const stateModelFactory = (
           if (!token) {
             if (!openLocationPromise) {
               openLocationPromise = new Promise(async (r, x) => {
-                const { session } = getParent(self, 2)
-
-                session.queueDialog((doneCallback: Function) => [
+                const { session } = getParent(self, 2) as {
+                  session: AbstractSessionModel
+                }
+                session.queueDialog(doneCallback => [
                   HTTPBasicLoginForm,
                   {
                     internetAccountId: self.internetAccountId,
@@ -120,36 +121,27 @@ const stateModelFactory = (
           url: RequestInfo,
           opts?: RequestInit,
         ): Promise<Response> {
-          if (!preAuthInfo || !preAuthInfo.authInfo) {
-            throw new Error('Auth Information Missing')
+          if (!preAuthInfo?.authInfo) {
+            throw new Error('Auth information missing')
           }
-          let foundToken
-          try {
-            foundToken = await this.checkToken()
-          } catch (e) {
-            this.handleError()
-          }
+          const foundToken = await this.checkToken()
 
           let newOpts = opts
           if (foundToken) {
-            const tokenInfoString = self.tokenType
-              ? `${self.tokenType} ${preAuthInfo.authInfo.token}`
-              : `${preAuthInfo.authInfo.token}`
-            const newHeaders = {
-              ...opts?.headers,
-              [self.authHeader]: `${tokenInfoString}`,
-            }
             newOpts = {
               ...opts,
-              headers: newHeaders,
+              headers: {
+                ...opts?.headers,
+                [self.authHeader]: `${
+                  self.tokenType
+                    ? `${self.tokenType} ${preAuthInfo.authInfo.token}`
+                    : `${preAuthInfo.authInfo.token}`
+                }`,
+              },
             }
           }
 
-          return fetch(url, {
-            method: 'GET',
-            credentials: 'same-origin',
-            ...newOpts,
-          })
+          return fetch(url, newOpts)
         },
         openLocation(location: UriLocation) {
           preAuthInfo =
@@ -168,12 +160,8 @@ const stateModelFactory = (
               'Failed to obtain authorization information needed to fetch',
             )
           }
-          let accessToken
-          try {
-            accessToken = await this.checkToken()
-          } catch (error) {
-            this.handleError()
-          }
+
+          const accessToken = await this.checkToken()
 
           // test
           if (accessToken) {
@@ -185,9 +173,11 @@ const stateModelFactory = (
             })
 
             if (!response.ok) {
-              try {
-                this.handleError()
-              } catch (e) {}
+              throw new Error(
+                `HTTP error ${response.status} ${
+                  response.statusText
+                } ${await response.text()}`,
+              )
             }
 
             return preAuthInfo
@@ -214,30 +204,28 @@ const HTTPBasicLoginForm = ({
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
-  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-    if (username && password) {
-      handleClose(btoa(`${username}:${password}`))
-    } else {
-      handleClose()
-    }
-    event.preventDefault()
-  }
-
   return (
     <>
       <Dialog open maxWidth="xl" data-testid="login-httpbasic">
-        <DialogTitle>Log In for {internetAccountId}</DialogTitle>
-        <form onSubmit={onSubmit}>
+        <DialogTitle>Log in for {internetAccountId}</DialogTitle>
+        <form
+          onSubmit={event => {
+            if (username && password) {
+              handleClose(btoa(`${username}:${password}`))
+            } else {
+              handleClose()
+            }
+            event.preventDefault()
+          }}
+        >
           <DialogContent style={{ display: 'flex', flexDirection: 'column' }}>
             <TextField
               required
               label="Username"
               variant="outlined"
+              autoComplete="username"
               inputProps={{ 'data-testid': 'login-httpbasic-username' }}
-              onChange={event => {
-                setUsername(event.target.value)
-              }}
-              margin="dense"
+              onChange={event => setUsername(event.target.value)}
             />
             <TextField
               required
@@ -246,10 +234,7 @@ const HTTPBasicLoginForm = ({
               autoComplete="current-password"
               variant="outlined"
               inputProps={{ 'data-testid': 'login-httpbasic-password' }}
-              onChange={event => {
-                setPassword(event.target.value)
-              }}
-              margin="dense"
+              onChange={event => setPassword(event.target.value)}
             />
           </DialogContent>
           <DialogActions>
@@ -260,9 +245,7 @@ const HTTPBasicLoginForm = ({
               variant="contained"
               color="default"
               type="submit"
-              onClick={() => {
-                handleClose()
-              }}
+              onClick={() => handleClose()}
             >
               Cancel
             </Button>
