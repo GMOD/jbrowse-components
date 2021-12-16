@@ -62,7 +62,7 @@ const TooltipContents = React.forwardRef(
                     <td>{base.toUpperCase()}</td>
                     <td>{score.total}</td>
                     <td>
-                      {base === 'total'
+                      {base === 'total' || base === 'skip'
                         ? '---'
                         : `${Math.floor((score.total / total) * 100)}%`}
                     </td>
