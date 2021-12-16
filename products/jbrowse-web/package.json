@@ -18,6 +18,7 @@
   "dependencies": {
     "@jbrowse/core": "^1.5.1",
     "@jbrowse/plugin-alignments": "^1.5.1",
+    "@jbrowse/plugin-arc": "^1.5.1",
     "@jbrowse/plugin-authentication": "^1.5.1",
     "@jbrowse/plugin-bed": "^1.5.1",
     "@jbrowse/plugin-breakpoint-split-view": "^1.5.1",
@@ -56,7 +57,7 @@
     "file-saver": "^2.0.0",
     "fontsource-roboto": "3.0.3",
     "json-stable-stringify": "^1.0.1",
-    "librpc-web-mod": "^1.1.2",
+    "librpc-web-mod": "^1.1.4",
     "merge-deep": "^3.0.2",
     "mobx": "^5.10.1",
     "mobx-react": "^6.0.0",

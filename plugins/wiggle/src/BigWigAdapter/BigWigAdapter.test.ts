@@ -19,6 +19,7 @@ describe('adapter can fetch features from volvox.bw', () => {
       refName: 'ctgA',
       start: 0,
       end: 20000,
+      assemblyName: 'volvox',
     })
     expect(await adapter.refIdToName(0)).toBe('ctgA')
     expect(await adapter.refIdToName(1)).toBe(undefined)

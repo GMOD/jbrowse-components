@@ -31,6 +31,7 @@ export default [
   '@jbrowse/core/ui',
   '@jbrowse/core/util',
   '@jbrowse/core/util/color',
+  '@jbrowse/core/util/layouts',
   '@jbrowse/core/util/tracks',
   '@jbrowse/core/util/Base1DViewModel',
   '@jbrowse/core/util/io',

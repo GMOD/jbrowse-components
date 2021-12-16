@@ -3,7 +3,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { NoAssemblyRegion } from '@jbrowse/core/util/types'
+import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -66,7 +66,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     return rectifyStats(header.totalSummary as UnrectifiedFeatureStats)
   }
 
-  public getFeatures(region: NoAssemblyRegion, opts: WiggleOptions = {}) {
+  public getFeatures(region: Region, opts: WiggleOptions = {}) {
     const { refName, start, end } = region
     const {
       bpPerPx = 0,

@@ -44,7 +44,7 @@
     "react": ">=16.8.0"
   },
   "dependencies": {
-    "@gmod/trix": "^1.0.0"
+    "@gmod/trix": "^2.0.1"
   },
   "publishConfig": {
     "access": "public"

@@ -4,7 +4,7 @@ import SimpleFeature, {
   Feature,
   SimpleFeatureSerialized,
 } from '../../util/simpleFeature'
-import { Region } from '../../util/types'
+import { AugmentedRegion as Region } from '../../util/types'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import ServerSideRendererType, {
   RenderArgs as ServerSideRenderArgs,

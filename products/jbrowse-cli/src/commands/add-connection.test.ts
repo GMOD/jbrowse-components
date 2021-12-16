@@ -7,7 +7,7 @@ import * as path from 'path'
 
 import { setup } from '../testUtil'
 
-const fsPromises = fs.promises
+const { copyFile, readFile, rename } = fs.promises
 
 const defaultConfig = {
   assemblies: [
@@ -71,12 +71,9 @@ describe('add-connection', () => {
   setup
     .nock('https://example.com', site => site.head('/hub.txt').reply(200))
     .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
+      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
 
-      await fsPromises.rename(
+      await rename(
         path.join(ctx.dir, path.basename(testConfig)),
         path.join(ctx.dir, 'config.json'),
       )
@@ -93,22 +90,18 @@ describe('add-connection', () => {
   setupWithDateMock
     .nock('https://mysite.com', site => site.head('/data/hub.txt').reply(200))
     .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
+      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
 
-      await fsPromises.rename(
+      await rename(
         path.join(ctx.dir, path.basename(testConfig)),
         path.join(ctx.dir, 'config.json'),
       )
     })
     .command(['add-connection', 'https://mysite.com/data/hub.txt'])
     .it('adds an UCSCTrackHubConnection connection from a url', async ctx => {
-      const contents = await fsPromises.readFile(
-        path.join(ctx.dir, 'config.json'),
-        { encoding: 'utf8' },
-      )
+      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
+        encoding: 'utf8',
+      })
       expect(JSON.parse(contents)).toEqual({
         ...defaultConfig,
         connections: [
@@ -128,22 +121,18 @@ describe('add-connection', () => {
   setupWithDateMock
     .nock('https://mysite.com', site => site.head('/jbrowse/data').reply(200))
     .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
+      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
 
-      await fsPromises.rename(
+      await rename(
         path.join(ctx.dir, path.basename(testConfig)),
         path.join(ctx.dir, 'config.json'),
       )
     })
     .command(['add-connection', 'https://mysite.com/jbrowse/data'])
     .it('adds an JBrowse1 connection from a url', async ctx => {
-      const contents = await fsPromises.readFile(
-        path.join(ctx.dir, 'config.json'),
-        { encoding: 'utf8' },
-      )
+      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
+        encoding: 'utf8',
+      })
       expect(JSON.parse(contents)).toEqual({
         ...defaultConfig,
         connections: [
@@ -163,12 +152,9 @@ describe('add-connection', () => {
   setup
     .nock('https://mysite.com', site => site.head('/custom').reply(200))
     .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
+      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
 
-      await fsPromises.rename(
+      await rename(
         path.join(ctx.dir, path.basename(testConfig)),
         path.join(ctx.dir, 'config.json'),
       )
@@ -188,12 +174,9 @@ describe('add-connection', () => {
   setup
     .nock('https://mysite.com', site => site.head('/custom').reply(200))
     .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
+      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
 
-      await fsPromises.rename(
+      await rename(
         path.join(ctx.dir, path.basename(testConfig)),
         path.join(ctx.dir, 'config.json'),
       )
@@ -213,10 +196,9 @@ describe('add-connection', () => {
       '{"url":{"uri":"https://mysite.com/custom"}, "locationType": "UriLocation"}',
     ])
     .it('adds a custom connection with user set fields', async ctx => {
-      const contents = await fsPromises.readFile(
-        path.join(ctx.dir, 'config.json'),
-        { encoding: 'utf8' },
-      )
+      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
+        encoding: 'utf8',
+      })
       expect(JSON.parse(contents)).toEqual({
         ...defaultConfig,
         connections: [
@@ -236,12 +218,9 @@ describe('add-connection', () => {
   setup
     .nock('https://mysite.com', site => site.head('/custom').reply(200))
     .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
+      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
 
-      await fsPromises.rename(
+      await rename(
         path.join(ctx.dir, path.basename(testConfig)),
         path.join(ctx.dir, 'config.json'),
       )
@@ -267,12 +246,9 @@ describe('add-connection', () => {
     .it('Fails to add a duplicate connection Id')
   setup
     .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
+      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
 
-      await fsPromises.rename(
+      await rename(
         path.join(ctx.dir, path.basename(testConfig)),
         path.join(ctx.dir, 'config.json'),
       )
@@ -298,10 +274,9 @@ describe('add-connection', () => {
     .it(
       'overwrites an existing custom connection and does not check URL',
       async ctx => {
-        const contents = await fsPromises.readFile(
-          path.join(ctx.dir, 'config.json'),
-          { encoding: 'utf8' },
-        )
+        const contents = await readFile(path.join(ctx.dir, 'config.json'), {
+          encoding: 'utf8',
+        })
         expect(JSON.parse(contents)).toEqual({
           ...defaultConfig,
           connections: [
