@@ -299,57 +299,62 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
           // normal SNP based coloring
           else {
-            const mismatches = feature.get('mismatches') as Mismatch[]
-            for (let i = 0; i < mismatches.length; i++) {
-              const mismatch = mismatches[i]
-              const mstart = fstart + mismatch.start
-              for (let j = mstart; j < mstart + mismatchLen(mismatch); j++) {
-                const epos = j - region.start
-                if (epos >= 0 && epos < bins.length) {
-                  const bin = bins[epos]
-                  const { base, type } = mismatch
-                  const interbase = isInterbase(type)
-                  if (!interbase) {
-                    dec(bin, fstrand, 'ref', 'ref')
-                  } else {
-                    inc(bin, fstrand, 'noncov', type)
-                  }
+            const mismatches = feature.get('mismatches') as
+              | Mismatch[]
+              | undefined
 
-                  if (type === 'deletion' || type === 'skip') {
-                    inc(bin, fstrand, 'delskips', type)
-                    bin.total--
-                  } else if (!interbase) {
-                    inc(bin, fstrand, 'cov', base)
+            if (mismatches) {
+              for (let i = 0; i < mismatches.length; i++) {
+                const mismatch = mismatches[i]
+                const mstart = fstart + mismatch.start
+                for (let j = mstart; j < mstart + mismatchLen(mismatch); j++) {
+                  const epos = j - region.start
+                  if (epos >= 0 && epos < bins.length) {
+                    const bin = bins[epos]
+                    const { base, type } = mismatch
+                    const interbase = isInterbase(type)
+                    if (!interbase) {
+                      dec(bin, fstrand, 'ref', 'ref')
+                    } else {
+                      inc(bin, fstrand, 'noncov', type)
+                    }
+
+                    if (type === 'deletion' || type === 'skip') {
+                      inc(bin, fstrand, 'delskips', type)
+                      bin.total--
+                    } else if (!interbase) {
+                      inc(bin, fstrand, 'cov', base)
+                    }
                   }
                 }
               }
-            }
 
-            mismatches
-              .filter(mismatch => mismatch.type === 'skip')
-              .forEach(mismatch => {
-                const mstart = feature.get('start') + mismatch.start
-                const start = mstart
-                const end = mstart + mismatch.length
-                const strand = feature.get('strand')
-                const hash = `${start}_${end}_${strand}`
-                if (!skipmap[hash]) {
-                  skipmap[hash] = {
-                    feature: feature,
-                    start,
-                    end,
-                    strand,
-                    xs:
-                      feature.get('xs') ||
-                      feature.get('ts') ||
-                      feature.get('tags').XS ||
-                      feature.get('tags').TS,
-                    score: 1,
+              mismatches
+                .filter(mismatch => mismatch.type === 'skip')
+                .forEach(mismatch => {
+                  const mstart = feature.get('start') + mismatch.start
+                  const start = mstart
+                  const end = mstart + mismatch.length
+                  const strand = feature.get('strand')
+                  const hash = `${start}_${end}_${strand}`
+                  if (!skipmap[hash]) {
+                    skipmap[hash] = {
+                      feature: feature,
+                      start,
+                      end,
+                      strand,
+                      xs:
+                        feature.get('xs') ||
+                        feature.get('ts') ||
+                        feature.get('tags').XS ||
+                        feature.get('tags').TS,
+                      score: 1,
+                    }
+                  } else {
+                    skipmap[hash].score++
                   }
-                } else {
-                  skipmap[hash].score++
-                }
-              })
+                })
+            }
           }
 
           return bins
