@@ -4,12 +4,24 @@ import { Instance, types } from 'mobx-state-tree'
 import { RemoteFileWithRangeCache } from '@jbrowse/core/util/io'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { SvgIconProps, SvgIcon } from '@material-ui/core'
+import {
+  FilehandleOptions,
+  Stats,
+  PolyfilledResponse,
+} from 'generic-filehandle'
 import { GoogleDriveOAuthInternetAccountConfigModel } from './configSchema'
 import baseModel from '../OAuthModel/model'
 import { configSchema as OAuthConfigSchema } from '../OAuthModel'
 
 interface RequestInitWithMetadata extends RequestInit {
   metadataOnly?: boolean
+}
+
+interface GoogleDriveFilehandleOptions extends FilehandleOptions {
+  fetch(
+    input: RequestInfo,
+    opts?: RequestInitWithMetadata,
+  ): Promise<PolyfilledResponse>
 }
 
 interface GoogleDriveError {
@@ -27,16 +39,23 @@ interface GoogleDriveError {
 }
 
 class GoogleDriveFile extends RemoteFileWithRangeCache {
-  async stat() {
-    const response = await this.fetch(this.url, {
-      //@ts-ignore
+  private statsPromise: Promise<{ size: number }>
+  constructor(source: string, opts: GoogleDriveFilehandleOptions) {
+    super(source, opts)
+    this.statsPromise = this.fetch(source, {
       metadataOnly: true,
-    })
+    }).then((response: Response) => response.json())
+  }
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status} failed`)
-    }
-    return response.json()
+  async fetch(
+    input: RequestInfo,
+    opts?: RequestInitWithMetadata,
+  ): Promise<PolyfilledResponse> {
+    return super.fetch(input, opts)
+  }
+
+  async stat(): Promise<Stats> {
+    return this.statsPromise
   }
 }
 
@@ -92,9 +111,7 @@ const stateModelFactory = (
           }
         }
         throw new Error(
-          `Network response failure — ${
-            response.status
-          } (${await response.text()})`,
+          `Network response failure — ${response.status} (${errorMessage})`,
         )
       },
       // used to check if token is still valid for the file
@@ -113,8 +130,6 @@ const stateModelFactory = (
             },
           },
         )
-
-        console.log({ response })
 
         if (!response.ok) {
           await this.processBadResponse(response)
