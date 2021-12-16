@@ -47,11 +47,13 @@ function createGlobalMap(jbrowseGlobals: string[], dotSyntax = false) {
   return globalMap
 }
 
+let tsDeclarationGenerated = false
+
 function getPlugins(
   mode: 'umd' | 'cjs' | 'npm' | 'esmBundle',
   jbrowseGlobals: string[],
 ): Plugin[] {
-  return [
+  const plugins = [
     resolve({
       mainFields: ['module', 'main', 'browser'],
       extensions: [...RESOLVE_DEFAULTS.extensions, '.jsx'],
@@ -83,9 +85,9 @@ function getPlugins(
       tsconfig: './tsconfig.json',
       outDir: distPath,
       target: 'esnext',
-      ...(mode === 'esmBundle' || mode === 'umd'
-        ? { declaration: false, declarationMap: false }
-        : { declarationDir: './' }),
+      ...(tsDeclarationGenerated
+        ? { declarationDir: './' }
+        : { declaration: false, declarationMap: false }),
     }),
     (mode === 'cjs' || mode === 'esmBundle') &&
       externalGlobals(createGlobalMap(jbrowseGlobals)),
@@ -122,6 +124,11 @@ if (process.env.NODE_ENV === 'production') {
     (mode === 'esmBundle' || mode === 'umd') && globals(),
     (mode === 'esmBundle' || mode === 'umd') && builtins(),
   ].filter(Boolean)
+
+  if (tsDeclarationGenerated === false) {
+    tsDeclarationGenerated = true
+  }
+  return plugins
 }
 
 export function createRollupConfig(
@@ -246,6 +253,7 @@ export function createRollupConfig(
           format: 'esm',
           freeze: false,
           esModule: true,
+          sourcemap: true,
           exports: 'named',
         },
       ],
@@ -275,6 +283,7 @@ export function createRollupConfig(
           format: 'cjs',
           freeze: false,
           esModule: true,
+          sourcemap: true,
           exports: 'named',
         },
       ],
