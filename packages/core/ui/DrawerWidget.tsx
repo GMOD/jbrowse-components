@@ -159,6 +159,10 @@ const DrawerHeader = observer(
                 data-testid="drawer-minimize"
                 color="inherit"
                 onClick={() => {
+                  session.notify(
+                    `Drawer minimized, click button on ${drawerPosition} side of screen to re-open`,
+                    'info',
+                  )
                   session.minimizeWidgetDrawer()
                 }}
               >
