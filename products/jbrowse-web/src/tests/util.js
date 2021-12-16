@@ -84,3 +84,17 @@ export function setup() {
 
 // eslint-disable-next-line no-native-reassign,no-global-assign
 window = Object.assign(window, { innerWidth: 800 })
+
+export function canvasToBuffer(canvas) {
+  return Buffer.from(
+    canvas.toDataURL().replace(/^data:image\/\w+;base64,/, ''),
+    'base64',
+  )
+}
+
+export function expectCanvasMatch(canvas) {
+  expect(canvasToBuffer(canvas)).toMatchImageSnapshot({
+    failureThreshold: 0.05,
+    failureThresholdType: 'percent',
+  })
+}

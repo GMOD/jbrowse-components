@@ -18,13 +18,6 @@ setup()
 
 afterEach(cleanup)
 
-function canvasToBuffer(canvas) {
-  return Buffer.from(
-    canvas.toDataURL().replace(/^data:image\/\w+;base64,/, ''),
-    'base64',
-  )
-}
-
 const readBuffer = generateReadBuffer(url => {
   return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
 })
@@ -64,14 +57,9 @@ describe('reload tests', () => {
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findByTestId(
-      'prerendered_canvas_{volvox}ctgA:1..400-0',
-      ...wait,
+    expectCanvasMatch(
+      await findByTestId('prerendered_canvas_{volvox}ctgA:1..400-0', ...wait),
     )
-    expect(canvasToBuffer(canvas)).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    })
   }, 20000)
 
   it('reloads alignments track (CRAM 404)', async () => {
@@ -98,14 +86,9 @@ describe('reload tests', () => {
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findByTestId(
-      'prerendered_canvas_{volvox}ctgA:1..400-0',
-      ...wait,
+    expectCanvasMatch(
+      await findByTestId('prerendered_canvas_{volvox}ctgA:1..400-0', ...wait),
     )
-    expect(canvasToBuffer(canvas)).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    })
   }, 20000)
   it('reloads alignments track (BAI 404)', async () => {
     const pluginManager = getPluginManager()
@@ -127,14 +110,9 @@ describe('reload tests', () => {
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findByTestId(
-      'prerendered_canvas_{volvox}ctgA:1..400-0',
-      ...wait,
+    expectCanvasMatch(
+      await findByTestId('prerendered_canvas_{volvox}ctgA:1..400-0', ...wait),
     )
-    expect(canvasToBuffer(canvas)).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    })
   }, 20000)
   it('reloads alignments track (BAM 404)', async () => {
     const pluginManager = getPluginManager()
@@ -156,14 +134,9 @@ describe('reload tests', () => {
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findByTestId(
-      'prerendered_canvas_{volvox}ctgA:1..400-0',
-      ...wait,
+    expectCanvasMatch(
+      await findByTestId('prerendered_canvas_{volvox}ctgA:1..400-0', ...wait),
     )
-    expect(canvasToBuffer(canvas)).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    })
   }, 20000)
 
   it('reloads bigwig (BW 404)', async () => {
@@ -188,14 +161,9 @@ describe('reload tests', () => {
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findByTestId(
-      'prerendered_canvas_{volvox}ctgA:1..8,000-0',
-      ...wait,
+    expectCanvasMatch(
+      await findByTestId('prerendered_canvas_{volvox}ctgA:1..8,000-0', ...wait),
     )
-    expect(canvasToBuffer(canvas)).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    })
   }, 20000)
 
   it('reloads vcf (VCF.GZ 404)', async () => {

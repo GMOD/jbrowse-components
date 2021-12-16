@@ -26,6 +26,8 @@ beforeEach(() => {
   )
 })
 
+const delay = { timeout: 10000 }
+
 describe('bigwig', () => {
   it('open a bigwig track', async () => {
     const pluginManager = getPluginManager()
@@ -36,20 +38,15 @@ describe('bigwig', () => {
     await findByText('Help')
     state.session.views[0].setNewView(5, 0)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray'))
-    const canvas = await findAllByTestId(
-      'prerendered_canvas',
-      {},
-      {
-        timeout: 10000,
-      },
+    expectCanvasMatch(
+      await findAllByTestId(
+        'prerendered_canvas',
+        {},
+        {
+          timeout: 10000,
+        },
+      ),
     )
-    const bigwigImg = canvas[0].toDataURL()
-    const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
-    const bigwigBuf = Buffer.from(bigwigData, 'base64')
-    expect(bigwigBuf).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    })
   }, 15000)
   it('open a bigwig line track 2', async () => {
     const pluginManager = getPluginManager()
@@ -60,20 +57,7 @@ describe('bigwig', () => {
     await findByText('Help')
     state.session.views[0].setNewView(10, 0)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray_line'))
-    const canvas = await findAllByTestId(
-      'prerendered_canvas',
-      {},
-      {
-        timeout: 10000,
-      },
-    )
-    const bigwigImg = canvas[0].toDataURL()
-    const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
-    const bigwigBuf = Buffer.from(bigwigData, 'base64')
-    expect(bigwigBuf).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    })
+    expectCanvasMatch(await findAllByTestId('prerendered_canvas', {}, delay))
   }, 15000)
   it('open a bigwig density track', async () => {
     const pluginManager = getPluginManager()
@@ -86,19 +70,6 @@ describe('bigwig', () => {
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_microarray_density'),
     )
-    const canvas = await findAllByTestId(
-      'prerendered_canvas',
-      {},
-      {
-        timeout: 10000,
-      },
-    )
-    const bigwigImg = canvas[0].toDataURL()
-    const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
-    const bigwigBuf = Buffer.from(bigwigData, 'base64')
-    expect(bigwigBuf).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    })
+    expectCanvasMatch(await findAllByTestId('prerendered_canvas', {}, delay))
   }, 15000)
 })
