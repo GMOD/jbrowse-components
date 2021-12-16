@@ -14,6 +14,11 @@ export default ConfigurationSchema(
         'the proportion of reads containing a insertion/clip indicator',
       defaultValue: 0.3,
     },
+    drawArcs: {
+      type: 'boolean',
+      description: 'Draw sashimi-style arcs for intron features',
+      defaultValue: true,
+    },
     drawInterbaseCounts: {
       type: 'boolean',
       description:

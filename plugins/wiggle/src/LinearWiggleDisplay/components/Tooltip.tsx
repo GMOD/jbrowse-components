@@ -1,8 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useMemo, useState } from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles, alpha, Portal } from '@material-ui/core'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
+
+// locals
 import { YSCALEBAR_LABEL_OFFSET } from '../models/model'
 import { usePopper } from 'react-popper'
 
@@ -86,18 +87,19 @@ const Tooltip = observer(
     clientRect,
     TooltipContents,
   }: {
-    model: any
+    model: { featureUnderMouse: Feature }
     height: number
     clientMouseCoord: Coord
     offsetMouseCoord: Coord
     clientRect?: ClientRect
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     TooltipContents: React.FC<any>
   }) => {
     const { featureUnderMouse } = model
-    const classes = useStyles()
     const [width, setWidth] = useState(0)
-
-    const [popperElement, setPopperElement] = useState<any>(null)
+    const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
+    const classes = useStyles()
 
     // must be memoized a la https://github.com/popperjs/react-popper/issues/391
     const virtElement = useMemo(
@@ -120,13 +122,13 @@ const Tooltip = observer(
       }),
       [clientRect?.top, clientMouseCoord, width],
     )
-    const { styles, attributes } = usePopper(virtElement, popperElement)
+    const { styles, attributes } = usePopper(virtElement, anchorEl)
 
     return featureUnderMouse ? (
       <>
         <Portal>
           <div
-            ref={setPopperElement}
+            ref={setAnchorEl}
             className={classes.tooltip}
             // zIndex needed to go over widget drawer
             style={{ ...styles.popper, zIndex: 100000 }}
@@ -155,7 +157,7 @@ const Tooltip = observer(
 
 const WiggleTooltip = observer(
   (props: {
-    model: any
+    model: { featureUnderMouse: Feature }
     height: number
     offsetMouseCoord: Coord
     clientMouseCoord: Coord

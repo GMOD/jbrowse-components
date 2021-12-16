@@ -3000,6 +3000,55 @@ Object {
       "trackId": "arc_track",
       "type": "FeatureTrack",
     },
+    Object {
+      "adapter": Object {
+        "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "spliced.bam",
+        },
+        "index": Object {
+          "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "spliced.bam.bai",
+          },
+        },
+        "sequenceAdapter": Object {
+          "twoBitLocation": Object {
+            "locationType": "UriLocation",
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Alignments",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "spliced-LinearAlignmentsDisplay",
+          "type": "LinearAlignmentsDisplay",
+        },
+        Object {
+          "displayId": "spliced-LinearPileupDisplay",
+          "type": "LinearPileupDisplay",
+        },
+        Object {
+          "displayId": "spliced-LinearSNPCoverageDisplay",
+          "type": "LinearSNPCoverageDisplay",
+        },
+      ],
+      "name": "volvox-rnaseq demo",
+      "trackId": "spliced",
+      "type": "AlignmentsTrack",
+    },
   ],
 }
 `;
