@@ -20,6 +20,16 @@ module.exports = {
           },
         },
       },
+      {
+        test: /\.css$/i,
+        use: ['style-loader', 'css-loader'],
+      },
+      {
+        test: /\.(woff|woff2)$/,
+        use: {
+          loader: 'url-loader',
+        },
+      },
     ],
   },
   resolve: {
@@ -27,6 +37,10 @@ module.exports = {
     fallback: {
       zlib: require.resolve('browserify-zlib'),
       stream: require.resolve('stream-browserify'),
+      os: false,
+      http: false,
+      path: false,
+      fs: false,
     },
   },
   output: {

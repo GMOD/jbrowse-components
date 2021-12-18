@@ -1,6 +1,7 @@
 import React, { lazy, Suspense } from 'react'
 import ReactDOM from 'react-dom'
 import Loading from './Loading'
+import 'regenerator-runtime'
 
 const Main = lazy(() => import('./Loader'))
 const initialTimeStamp = Date.now()
@@ -15,6 +16,8 @@ if (window && window.name.startsWith('JBrowseAuthWindow')) {
   }
   window.close()
 }
+
+console.log('wtf')
 
 ReactDOM.render(
   <Suspense fallback={<Loading />}>
