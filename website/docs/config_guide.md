@@ -4,6 +4,8 @@ title: Config guide
 toplevel: true
 ---
 
+import Figure from './figure'
+
 ## Intro to the config.json
 
 A JBrowse 2 configuration file, a config.json, is structured as follows
