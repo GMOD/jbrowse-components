@@ -255,7 +255,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     class="MuiAutocomplete-root"
                     data-testid="autocomplete"
                     role="combobox"
-                    style="width: 270px;"
+                    style="width: 200px;"
                   >
                     <div
                       class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-marginDense MuiFormControl-fullWidth"
