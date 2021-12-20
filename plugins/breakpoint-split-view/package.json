@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-breakpoint-split-view",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "JBrowse 2 breakpoint detail split view",
   "keywords": [
     "jbrowse",
