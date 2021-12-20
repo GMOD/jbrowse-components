@@ -45,6 +45,7 @@
     "babel-plugin-polyfill-regenerator": "^0.2.3",
     "babel-plugin-transform-rename-import": "^2.3.0",
     "builtin-modules": "^3.2.0",
+    "chalk": "^4.1.1",
     "cross-spawn": "^7.0.3",
     "lodash.merge": "^4.6.2",
     "patch-package": "^6.2.2",

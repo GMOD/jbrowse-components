@@ -7,15 +7,14 @@ import resolve, {
 } from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
 import path from 'path'
-import { defineConfig, Plugin } from 'rollup'
+import { defineConfig, Plugin, RollupOptions } from 'rollup'
 import externalGlobals from 'rollup-plugin-external-globals'
 import builtins from 'rollup-plugin-node-builtins'
 import globals from 'rollup-plugin-node-globals'
 import sourceMaps from 'rollup-plugin-sourcemaps'
 import { terser } from 'rollup-plugin-terser'
 import { babelPluginJBrowse } from './babelPluginJBrowse'
-import { safePackageName, external } from './util'
-import { RollupOptions } from 'rollup'
+import { safePackageName, external, writeIndex, omitUnresolved } from './util'
 import nodeBuiltins from 'builtin-modules'
 
 interface JBrowseRollupConfigOptions {
@@ -102,27 +101,10 @@ function getPlugins(
       babelHelpers: 'bundled',
     }),
     mode === 'npm' && sourceMaps(),
-    mode === 'npm' && {
-      name: 'write-index-file',
-      generateBundle() {
-        const baseLine = `module.exports = require('./${packageName}`
-        const contents = `'use strict'
-
-if (process.env.NODE_ENV === 'production') {
-  ${baseLine}.cjs.production.min.js')
-} else {
-  ${baseLine}.cjs.development.js')
-}
-`
-        if (!fs.existsSync(distPath)) {
-          fs.mkdirSync(distPath, { recursive: true })
-        }
-        return fs.writeFileSync(path.join(distPath, 'index.js'), contents)
-      },
-    },
-
+    mode === 'npm' && writeIndex(packageName, distPath),
     (mode === 'esmBundle' || mode === 'umd') && globals(),
     (mode === 'esmBundle' || mode === 'umd') && builtins(),
+    (mode === 'cjs' || mode === 'esmBundle') && omitUnresolved(),
   ].filter(Boolean)
 
   if (tsDeclarationGenerated === false) {
@@ -209,6 +191,7 @@ export function createRollupConfig(
           esModule: true,
           sourcemap: true,
           exports: 'named',
+          inlineDynamicImports: true,
           globals: createGlobalMap(jbrowseGlobals, true),
         },
         {
@@ -219,6 +202,7 @@ export function createRollupConfig(
           esModule: true,
           sourcemap: true,
           exports: 'named',
+          inlineDynamicImports: true,
           globals: createGlobalMap(jbrowseGlobals, true),
           plugins: [
             terser({
@@ -255,6 +239,7 @@ export function createRollupConfig(
           esModule: true,
           sourcemap: true,
           exports: 'named',
+          inlineDynamicImports: true,
         },
       ],
       watch: { clearScreen: false },
@@ -285,6 +270,7 @@ export function createRollupConfig(
           esModule: true,
           sourcemap: true,
           exports: 'named',
+          inlineDynamicImports: true,
         },
       ],
       watch: { clearScreen: false },
