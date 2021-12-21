@@ -22,7 +22,8 @@
     "postinstall.js"
   ],
   "bin": {
-    "jbrowse-plugin-postinstall": "./postinstall.js"
+    "jbrowse-plugin-postinstall": "./postinstall.js",
+    "jbrowse-plugin-setup": "./setup.js"
   },
   "engines": {
     "node": ">=10"
@@ -41,6 +42,7 @@
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.0.0",
     "@rollup/plugin-typescript": "^8.3.0",
+    "@schemastore/package": "^0.0.6",
     "babel-plugin-annotate-pure-calls": "^0.4.0",
     "babel-plugin-dev-expression": "^0.2.3",
     "babel-plugin-macros": "^3.1.0",
