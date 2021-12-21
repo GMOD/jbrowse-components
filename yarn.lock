@@ -3509,6 +3509,11 @@
     estree-walker "^2.0.1"
     picomatch "^2.2.2"
 
+"@schemastore/package@^0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@schemastore/package/-/package-0.0.6.tgz#9a76713da1c7551293b7e72e4f387f802bfd5d81"
+  integrity sha512-uNloNHoyHttSSdeuEkkSC+mdxJXMKlcUPOMb//qhQbIQijXg8x54VmAw3jm6GJZQ5DBtIqGBd66zEQCDCChQVA==
+
 "@sideway/address@^4.1.0":
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/@sideway/address/-/address-4.1.2.tgz#811b84333a335739d3969cfc434736268170cad1"
