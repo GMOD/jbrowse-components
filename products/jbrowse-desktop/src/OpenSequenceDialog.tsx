@@ -352,6 +352,9 @@ const OpenSequenceDialog = ({
         <Button
           onClick={async () => {
             try {
+              if (!assemblyName) {
+                throw new Error('No assembly name set')
+              }
               setError(undefined)
               const assemblyConf = await createAssemblyConfig()
               setAssemblyConfs([...assemblyConfs, assemblyConf])
