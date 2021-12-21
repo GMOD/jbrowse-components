@@ -1,3 +1,24 @@
+## 1.5.3 (2021-12-21)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                    | Download                                                 |
+| -------------------------- | -------------------------------------------------------- |
+| @jbrowse/development-tools | https://www.npmjs.com/package/@jbrowse/development-tools |
+
+</p>
+</details>
+
+#### :bug: Bug Fix
+
+- `development-tools`
+  - [#2600](https://github.com/GMOD/jbrowse-components/pull/2600) Fix broken published build of jbrowse/development-tools ([@garrettjstevens](https://github.com/garrettjstevens))
+
+#### Committers: 1
+
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+
 ## 1.5.2 (2021-12-20)
 
 <details><summary>Packages in this release</summary>
