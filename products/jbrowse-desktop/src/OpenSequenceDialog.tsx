@@ -27,6 +27,11 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(2),
     margin: theme.spacing(2),
   },
+  stagedAssemblies: {
+    background: '#dfd',
+    margin: theme.spacing(4),
+    padding: theme.spacing(2),
+  },
 }))
 
 function AdapterInput({
@@ -172,7 +177,17 @@ const OpenSequenceDialog = ({
   const [twoBitLocation, setTwoBitLocation] = useState(blank)
   const [chromSizesLocation, setChromSizesLocation] = useState(blank)
 
-  async function createAssemblyConfig() {
+  function clearState() {
+    setFastaLocation(blank)
+    setFaiLocation(blank)
+    setGziLocation(blank)
+    setTwoBitLocation(blank)
+    setChromSizesLocation(blank)
+    setAssemblyName('')
+    setAssemblyDisplayName('')
+  }
+
+  async function createAssemblyConfigHelper() {
     if (adapterSelection === 'FastaAdapter') {
       setLoading('Creating .fai file for FASTA')
       const faiLocation = await ipcRenderer.invoke('indexFasta', fastaLocation)
@@ -243,6 +258,19 @@ const OpenSequenceDialog = ({
     }
     throw new Error('Unknown adapter type')
   }
+
+  async function createAssemblyConfig() {
+    const conf = await createAssemblyConfigHelper()
+
+    return {
+      ...conf,
+      sequence: {
+        type: 'ReferenceSequenceTrack',
+        trackId: `${assemblyName}-${Date.now()}`,
+        ...conf.sequence,
+      },
+    }
+  }
   return (
     <Dialog open onClose={() => onClose()}>
       <DialogTitle>Open sequence(s)</DialogTitle>
@@ -252,6 +280,13 @@ const OpenSequenceDialog = ({
           bgzipped+indexed FASTA files, or .2bit files of a genome assembly or
           other sequence
         </Typography>
+
+        {assemblyConfs.length ? (
+          <Typography className={classes.stagedAssemblies}>
+            Currently staged assemblies:{' '}
+            {assemblyConfs.map(conf => conf.name).join(', ')}
+          </Typography>
+        ) : null}
 
         {loading ? (
           <Typography className={classes.message}>{loading}</Typography>
@@ -311,7 +346,8 @@ const OpenSequenceDialog = ({
         </Paper>
 
         <Typography>
-          Add this assembly if you want to create multiple assemblies
+          Use the "Add assembly" button to add the current one to a list, and
+          hit submit when done
         </Typography>
         <Button
           onClick={async () => {
@@ -319,6 +355,7 @@ const OpenSequenceDialog = ({
               setError(undefined)
               const assemblyConf = await createAssemblyConfig()
               setAssemblyConfs([...assemblyConfs, assemblyConf])
+              clearState()
             } catch (e) {
               setError(e)
               console.error(e)
@@ -340,10 +377,16 @@ const OpenSequenceDialog = ({
         <Button
           onClick={async () => {
             try {
-              setError(undefined)
-              const assemblyConf = await createAssemblyConfig()
-              setAssemblyConfs([...assemblyConfs, assemblyConf])
-              await onClose(assemblyConfs)
+              let confs = assemblyConfs
+
+              // if we want to add another one
+              if (assemblyName) {
+                setError(undefined)
+                const assemblyConf = await createAssemblyConfig()
+                confs = [...assemblyConfs, assemblyConf]
+                setAssemblyConfs(confs)
+              }
+              await onClose(confs)
             } catch (e) {
               setError(e)
               console.error(e)
