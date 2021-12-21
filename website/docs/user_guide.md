@@ -329,9 +329,15 @@ next to track label, then hovering over SNPCoverage options, and unchecking
 
 The alignments track will also draw a upside-down histogram of insertion and
 soft/hard clipped read counts at all positions, and mark significant positions
-(covering 30% of the reads) with a purple triangle.
+(covering 30% of the reads) with a colored triangle.
 
 <Figure caption="Clipping and insertion indicators are drawn at the top of the alignments track. Purple indicates insertions, the blue indicates soft clipping, and red indicates hard clipping." src="/img/alignment_clipping_indicators.png" />
+
+Also, insertions that are larger than 10bp are marked with a special larger
+purple rectangle, seen in the below screenshot. Generally, long reads span
+larger insertions better, so this feature is more prominant with large reads.
+
+<Figure caption="Large insertion indicator drawn from long reads, along with the 'show soft clipping' setting turned on for a short read track" src="/img/insertion_indicators.png" />
 
 Note that you can disable these by clicking on the track menu (vertical ...
 next to track label, then hovering over SNPCoverage options, and unchecking
