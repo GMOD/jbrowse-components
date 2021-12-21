@@ -306,9 +306,36 @@ JBrowse uses the same color scheme as IGV for coloring by pair orientation.
 These pair orientations can be used to reveal complex patterns of structural
 variation
 
-See https://software.broadinstitute.org/software/igv/interpreting_pair_orientations for a good guide on interpreting these pair orientations
+See
+https://software.broadinstitute.org/software/igv/interpreting_pair_orientations
+for a good guide on interpreting these pair orientations
 
 <Figure caption="This shows an inverted duplication, the tandem duplication can produce green arrows which have reads pointing in opposite directions e.g. <-- and -->, while blue arrows which can indicate an inversion point in the same direction e.g. --> and -->" src="/img/inverted_duplication.png" />
+
+### Sashimi-style arcs
+
+The alignments track will draw sashimi-track style arcs across spliced
+alignments (indicated by N in the CIGAR string). If the reads additionally are
+tagged with XS tags, it will try to draw the arcs using the strand indicated by
+the alignment
+
+<Figure caption="Sashimi-style arcs that are automatically drawn from spliced alignments. These arcs will be drawn by default on both short-reads e.g. RNA-seq and long reads e.g. Iso-Seq" src="/img/alignments_track_arcs.png" />
+
+Note that you can disable these by clicking on the track menu (vertical ...
+next to track label, then hovering over SNPCoverage options, and unchecking
+"Draw arcs")
+
+### Insertion and clipping indicators
+
+The alignments track will also draw a upside-down histogram of insertion and
+soft/hard clipped read counts at all positions, and mark significant positions
+(covering 30% of the reads) with a purple triangle.
+
+<Figure caption="Clipping and insertion indicators are drawn at the top of the alignments track. Purple indicates insertions, the blue indicates soft clipping, and red indicates hard clipping." src="/img/alignment_clipping_indicators.png" />
+
+Note that you can disable these by clicking on the track menu (vertical ...
+next to track label, then hovering over SNPCoverage options, and unchecking
+"Draw insertion/clipping indicators" and "Draw insertion/clipping counts")
 
 ## BigWig tracks
 
@@ -319,24 +346,24 @@ signal, can often be done by using BigWig files
 
 ### Viewing whole-genome coverage for profiling CNV
 
-The latest jbrowse also allows refining the resolution of BigWig
-tracks, and viewing whole genome coverage. This allows us to get detailed
-global views of CNV for example from whole-genome coverage profiling
+The latest jbrowse also allows refining the resolution of BigWig tracks, and
+viewing whole genome coverage. This allows us to get detailed global views of
+CNV for example from whole-genome coverage profiling
 
-Here is a short picture guide to setup a whole-genome view of a BigWig
-for CNV coverage visualization
+Here is a short picture guide to setup a whole-genome view of a BigWig for CNV
+coverage visualization
 
 1. Open your BigWig track
 2. Go to the view menu and select "Show all assembly regions"
-3. Adjust the "Autoscale type" to your liking, the new options for "Local
-   +/- 3sd" allows the autoscaling to avoid outliers
-4. Go to the track menu and select "Turn off histogram fill", which then
-   shows only a dot for each point on the graph
-5. Go to the track menu and select "Resolution->Finer resolution" a
-   couple times until resolution looks nice
+3. Adjust the "Autoscale type" to your liking, the new options for "Local +/-
+   3sd" allows the autoscaling to avoid outliers
+4. Go to the track menu and select "Turn off histogram fill", which then shows
+   only a dot for each point on the graph
+5. Go to the track menu and select "Resolution->Finer resolution" a couple
+   times until resolution looks nice
 
-Also note: all tracks have a drag handle on the bottom of it which you
-can drag down to make the track taller
+Also note: all tracks have a drag handle on the bottom of it which you can drag
+down to make the track taller
 
 <Figure caption="A step-by-step guide to view a whole-genome CNV profile of coverage from a BigWig file" src="/img/bigwig/whole_genome_coverage.png" />
 
