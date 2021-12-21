@@ -92,11 +92,13 @@ Pluggable elements are pieces of functionality that plugins can add to JBrowse. 
 
 - Adapters
 - Track types
+- Display types
 - Renderer types
 - Widgets
 - RPC calls
 - Display types
 - View types
+- Extension points
 
 In additional to creating plugins that create new adapters, track types,
 etc. note that you can also wrap the behavior of another track so these
@@ -124,43 +126,6 @@ multiple adapter types
 - `SNPCoverageAdapter` - this adapter takes a `BamAdapter` or `CramAdapter` as a
   subadapter, and calculates feature coverage from it
 
-### Displays
-
-A display is a method for displaying a particular track in a particular view
-
-For example, we have a notion of a synteny track type, and the synteny track
-type has two display models
-
-- DotplotDisplay, which is used in the dotplot view
-- LinearSyntenyDisplay, which is used in the linear synteny view
-
-This enables a single track entry to be used in multiple view types e.g. if I
-run jbrowse add-track myfile.paf, this automatically creates a synteny track
-that can be opened in both a dotplot and a linear synteny view.
-
-Most track types only have a "linear" display available, but one more example
-is the VariantTrack, which has two display methods
-
-- LinearVariantDisplay - used in linear genome view
-- ChordVariantDisplay - used in the circular view
-
-### Renderers
-
-Renderers are a new concept in JBrowse 2, and are related to the concept of
-server side rendering (SSR), but can be used not just on the server but also in
-contexts like the web worker (e.g. the webworker can draw the features to an
-OffscreenCanvas). For more info see [creating
-renderers](#creating-custom-renderers)
-
-Example renderers: the `@jbrowse/plugin-alignments` exports several
-renderer types
-
-- `PileupRenderer` - a renderer type that renders Pileup type display of
-  alignments fetched from the `BamAdapter`/`CramAdapter`
-- `SNPCoverageRenderer` - a renderer that draws the coverage. Note that this
-  renderer derives from the wiggle renderer, but does the additional step of
-  drawing the mismatches over the coverage track
-
 ### Track types
 
 Track types are a high level type that controls how features are drawn. In most
@@ -178,6 +143,44 @@ types
 - `SNPCoverageTrack` - this track type actually derives from the WiggleTrack type
 - `PileupTrack` - a track type that draws alignment pileup results
 - `AlignmentsTrack` - combines `SNPCoverageTrack` and `PileupTrack` as "subtracks"
+
+### Displays
+
+A display is a method for displaying a particular track in a particular view
+
+For example, we have a notion of a synteny track type, and the synteny track
+type has two display models
+
+- `DotplotDisplay`, which is used in the dotplot view
+- `LinearSyntenyDisplay`, which is used in the linear synteny view
+
+This enables a single track entry to be used in multiple view types e.g. if I
+run `jbrowse add-track myfile.paf`, this automatically creates a `SyntenyTrack`
+entry in the tracklist, and when this track is opened in the dotplot view, the
+`DotplotDisplay` is used for rendering
+
+Another example of a track type with multiple display types is `VariantTrack`,
+which has two display methods
+
+- `LinearVariantDisplay` - used in linear genome view
+- `ChordVariantDisplay` - used in the circular view to draw breakends and structural variants
+
+### Renderers
+
+Renderers are a new concept in JBrowse 2, and are related to the concept of
+server side rendering (SSR), but can be used not just on the server but also in
+contexts like the web worker (e.g. the webworker can draw the features to an
+OffscreenCanvas). For more info see [creating
+renderers](#creating-custom-renderers)
+
+Example renderers: the `@jbrowse/plugin-alignments` exports several
+renderer types
+
+- `PileupRenderer` - a renderer type that renders Pileup type display of
+  alignments fetched from the `BamAdapter`/`CramAdapter`
+- `SNPCoverageRenderer` - a renderer that draws the coverage. Note that this
+  renderer derives from the wiggle renderer, but does the additional step of
+  drawing the mismatches over the coverage track
 
 ### Widgets
 
@@ -221,8 +224,50 @@ be interplay between view types e.g. popup dotplot from a linear view, etc.
 ### RPC methods
 
 Plugins can register their own RPC methods, which can allow them to offload
-custom behaviors to a web-worker or server side process. The Wiggle track for
-example registers `WiggleGetGlobalStats` and `WiggleGetMultiRegionStats`
+custom behaviors to a web-worker or server side process.
+
+The wiggle plugin, for example, registers two custom RPC method types
+
+- `WiggleGetGlobalStats`
+- `WiggleGetMultiRegionStats`
+
+These methods can run in the webworker when available
+
+### Extension points
+
+Extension points are a pluggable element type which allows users to add a
+callback that is called at an appropriate time.
+
+See [example for adding context menu items](#adding-track-context-menu-items)
+for an example of using extension points
+
+The basic API is that producers can say
+
+```js
+const ret = pluginManager.evaluateExtensionPoint('ExtensionPointName', {
+  value: 1,
+})
+```
+
+And consumers can say
+
+```js
+pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
+  return arg.value + 1
+})
+
+pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
+  return arg.value + 1
+})
+```
+
+In this case, arg that is passed in evaluateExtensionPoint calls all the
+callbacks that have been registered by addToExtensionPoint. If multiple
+extension points are registered, the return value of the first extension point
+is passed as the new argument to the second and so on (they are chained together)
+
+So in the example above, ret would be `{value:3}` after evaluating the
+extension point
 
 ### MenuItems
 
