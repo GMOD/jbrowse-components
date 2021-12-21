@@ -274,18 +274,19 @@ extension point
 ### Adding a top-level menu
 
 These are the menus that appear in the top bar of JBrowse Web and JBrowse
-Desktop. By default there are `File` and `Help` menus. You can add your own menu,
-or you can add menu items or sub-menus to the existing menus and sub-menus.
+Desktop. By default there are `File` and `Help` menus. You can add your own
+menu, or you can add menu items or sub-menus to the existing menus and
+sub-menus.
 
 <Figure src="/img/top_level_menus.png" caption="In the above screenshot, the `File` menu has several items and an `Add` sub-menu, which has more items. You can have arbitrarily deep sub-menus."/>
 
-You add menus in the `configure` method of your plugin. Not all JBrowse products
-will have top-level menus, though. JBrowse Web and JBrowse Desktop have them, but
-something like JBrowse Linear View (which is an just a single view designed to
-be embedded in another page) does not. This means you need to check whether or
-not menus are supported using `isAbstractMenuManager` in the `configure` method.
-This way the rest of the plugin will still work if there is not a menu. Here's
-an example that adds an "Open My View" item to the `File -> Add` menu.
+You add menus in the `configure` method of your plugin. Not all JBrowse
+products will have top-level menus, though. JBrowse Web and JBrowse Desktop
+have them, but something like JBrowse Linear View (which is an just a single
+view designed to be embedded in another page) does not. This means you need to
+check whether or not menus are supported using `isAbstractMenuManager` in the
+`configure` method. This way the rest of the plugin will still work if there is
+not a menu. Here's an example that adds an "Open My View" item to the `File -> Add` menu.
 
 ```js
 import Plugin from '@jbrowse/core/Plugin'
@@ -314,7 +315,7 @@ class MyPlugin extends Plugin {
 ```
 
 This example uses `rootModel.appendToSubMenu`. See [top-level menu
-API](#top-level-menu-api) for more details on available functions.
+API](../api_guide#rootmodel-menu-api) for more details on available functions.
 
 ### Adding menu items to a custom track
 
@@ -1428,211 +1429,3 @@ For examples of custom track types, refer to things like
   `ChordVariantDisplay` and `LinearVariantDisplay`
 - `SyntenyTrack`, which can be displayed with `DotplotDisplay` or
   `LinearSyntenyDisplay`
-
-## API docs
-
-### MenuItems objects
-
-You can add menus or add items to existing menus in several places.
-
-In these different places, a `MenuItem` object defines the menu item's text,
-icon, action, and other attributes.
-
-Types of `MenuItem`s:
-
-- **Normal**: a standard menu item that performs an action when clicked
-- **Checkbox**: a menu item that has a checkbox
-- **Radio**: a menu item that has a radio button icon
-- **Divider**: a horizontal line (not clickable) that can be used to visually
-  divide menus
-- **SubHeader**: text (not clickable) that can be used to visually label a
-  section of a menu
-- **SubMenu**: contains menu items, for making nested menus
-
-| Name     | Description                                                                                                                                                                                              |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| type     | Options are 'normal', 'radio', 'checkbox', 'subMenu', 'subHeader', or 'divider'. If not provided, defaults to 'normal', unless a `subMenu` attribute is present, in which case it defaults to 'subMenu'. |
-| label    | The text for the menu item. Not applicable to 'divider', required for all others.                                                                                                                        |
-| subLabel | Additional descriptive text for the menu item. Not applicable to 'divider' or 'subHeader', optional for all others.                                                                                      |
-| icon     | An icon for the menu item. Must be compatible with Material-UI's [Icons](https://material-ui.com/components/icons/). Not applicable to 'divider' or 'subHeader', optional for all others.                |
-| disabled | Whether or not the menu item is disabled (meaning grayed out and not clickable). Not applicable to 'divider' or 'subHeader', optional for all others.                                                    |
-| checked  | Whether or not the checkbox or radio button are selected. Only applicable to 'radio' and 'checkbox'                                                                                                      |
-| onClick  | Callback of action to perform on click. Function signature is `(session) => undefined`. Required for 'normal', 'radio', and 'checkbox', not applicable to any others.                                    |
-| subMenu  | An array of menu items. Applicable only to 'subMenu'.                                                                                                                                                    |
-
-As an example, the here is an array of MenuItems and the resulting menu:
-
-```js
-;[
-  {
-    label: 'Normal menu item',
-    icon: AddIcon,
-    onClick: () => {},
-  },
-  {
-    label: 'Normal',
-    subLabel: 'with subLabel',
-    icon: AddIcon,
-    onClick: () => {},
-  },
-  {
-    label: 'Disabled menu item',
-    disabled: true,
-    icon: AddIcon,
-    onClick: () => {},
-  },
-  {
-    type: 'radio',
-    label: 'Radio checked',
-    checked: true,
-    onClick: () => {},
-  },
-  {
-    type: 'radio',
-    label: 'Radio unchecked',
-    checked: false,
-    onClick: () => {},
-  },
-  {
-    type: 'checkbox',
-    label: 'Checkbox checked',
-    checked: true,
-    onClick: () => {},
-  },
-  {
-    type: 'checkbox',
-    label: 'Checkbox unchecked',
-    checked: false,
-    onClick: () => {},
-  },
-  { type: 'divider' },
-  { type: 'subHeader', label: 'This is a subHeader' },
-  {
-    label: 'SubMenu',
-    subMenu: [
-      {
-        label: 'SubMenu item one',
-        onClick: () => {},
-      },
-      {
-        label: 'SubMenu item two',
-        onClick: () => {},
-      },
-    ],
-  },
-]
-```
-
-<Figure src="/img/menu_demo.png" caption="This screenshot shows all the various track menu options, generated by the code listing"/>
-
-### Top-level menu API
-
-Users can customize the top-level menu items using these functions that are
-available on the rootModel:
-
-#### appendMenu
-
-Add a top-level menu
-
-##### Parameters
-
-| Name     | Description                 |
-| -------- | --------------------------- |
-| menuName | Name of the menu to insert. |
-
-##### Return Value
-
-The new length of the top-level menus array
-
-#### insertMenu
-
-Insert a top-level menu
-
-##### Parameters
-
-| Name     | Description                                                                                                                                 |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| menuName | Name of the menu to insert.                                                                                                                 |
-| position | Position to insert menu. If negative, counts from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the second-to-last one. |
-
-##### Return Value
-
-The new length of the top-level menus array
-
-#### appendToMenu
-
-Add a menu item to a top-level menu
-
-##### Parameters
-
-| Name     | Description                              |
-| -------- | ---------------------------------------- |
-| menuName | Name of the top-level menu to append to. |
-| menuItem | Menu item to append.                     |
-
-##### Return Value
-
-The new length of the menu
-
-#### insertInMenu
-
-Insert a menu item into a top-level menu
-
-##### Parameters
-
-| Name     | Description                                                                                                                                      |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| menuName | Name of the top-level menu to insert into.                                                                                                       |
-| menuItem | Menu item to insert.                                                                                                                             |
-| position | Position to insert menu item. If negative, counts from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the second-to-last one. |
-
-##### Return Value
-
-The new length of the menu
-
-#### appendToSubMenu
-
-Add a menu item to a sub-menu
-
-##### Parameters
-
-| Name     | Description                                                                                   |
-| -------- | --------------------------------------------------------------------------------------------- |
-| menuPath | Path to the sub-menu to add to, starting with the top-level menu (e.g. `['File', 'Insert']`). |
-| menuItem | Menu item to append.                                                                          |
-
-##### Return value
-
-The new length of the sub-menu
-
-#### insertInSubMenu
-
-Insert a menu item into a sub-menu
-
-##### Parameters
-
-| Name     | Description                                                                                                                                      |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| menuPath | Path to the sub-menu to add to, starting with the top-level menu (e.g. `['File', 'Insert']`).                                                    |
-| menuItem | Menu item to insert.                                                                                                                             |
-| position | Position to insert menu item. If negative, counts from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the second-to-last one. |
-
-##### Return value
-
-The new length of the sub-menu
-
-### Extension points in core
-
-In the core codebase, these extension points are currently used
-
-- Core-extendPluggableElement - used to add extra functionality to existing
-  state tree models, for example, extra right-click context menus
-- Core-guessAdapterForLocation - used to infer an adapter type given a location
-  type from the "Add track" workflow
-- Core-guessTrackTypeForLocation - used to infer a track type given a location
-  type from the "Add track workflow"
-
-Note that users that want to add further extension points can do so. The naming
-system, "Core-" just refers to the fact that these extension points are from
-our core codebase. Plugin developers may choose their own prefix to avoid
-collisions
