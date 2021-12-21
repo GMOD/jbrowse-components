@@ -693,9 +693,21 @@ class MyAdapter extends BaseFeatureDataAdapter {
   async getRefNames() {
     // return refNames used in your adapter, used for refName renaming
   }
-  getFeatures(region) {
-    // return features from your adapter, using rxjs observable
+
+  getFeatures(region, opts) {
+    // region: {
+    //    refName:string, e.g. chr1
+    //    start:number, 0-based half open start coord
+    //    end:number, 0-based half open end coord
+    //    assemblyName:string, assembly name
+    //    originalRefName:string the name of the refName from the fasta file, e.g. 1 instead of chr1
+    // }
+    // opts: {
+    //   signal?: AbortSignal
+    //   ...rest: all the renderProps() object from the display type
+    // }
   }
+
   freeResources(region) {
     // can be empty
   }
