@@ -159,10 +159,12 @@ const OpenSequenceDialog = ({
     'FastaAdapter',
     'TwoBitAdapter',
   ]
+  type AssemblyConf = Awaited<ReturnType<typeof createAssemblyConfig>>
+  const [assemblyConfs, setAssemblyConfs] = useState<AssemblyConf[]>([])
   const [error, setError] = useState<unknown>()
   const [assemblyName, setAssemblyName] = useState('')
   const [assemblyDisplayName, setAssemblyDisplayName] = useState('')
-  const [loading, setLoading] = useState<string>()
+  const [loading, setLoading] = useState('')
   const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0])
   const [fastaLocation, setFastaLocation] = useState(blank)
   const [faiLocation, setFaiLocation] = useState(blank)
@@ -243,12 +245,14 @@ const OpenSequenceDialog = ({
   }
   return (
     <Dialog open onClose={() => onClose()}>
-      <DialogTitle>Open sequence</DialogTitle>
+      <DialogTitle>Open sequence(s)</DialogTitle>
       <DialogContent>
         <Typography>
-          Use this dialog to open a new indexed FASTA file, bgzipped+indexed
-          FASTA file, or .2bit file of a genome assembly or other sequence
+          Use this dialog to open one or more indexed FASTA files,
+          bgzipped+indexed FASTA files, or .2bit files of a genome assembly or
+          other sequence
         </Typography>
+
         {loading ? (
           <Typography className={classes.message}>{loading}</Typography>
         ) : null}
@@ -257,9 +261,7 @@ const OpenSequenceDialog = ({
 
         <Paper className={classes.paper}>
           <TextField
-            id="assembly-name"
             inputProps={{ 'data-testid': 'assembly-name' }}
-            defaultValue=""
             label="Assembly name"
             helperText="The assembly name e.g. hg38"
             variant="outlined"
@@ -268,12 +270,10 @@ const OpenSequenceDialog = ({
           />
 
           <TextField
-            id="assembly-name"
             inputProps={{ 'data-testid': 'assembly-display-name' }}
             label="Assembly display name"
             helperText='(optional) A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
             variant="outlined"
-            defaultValue=""
             value={assemblyDisplayName}
             onChange={event => setAssemblyDisplayName(event.target.value)}
           />
@@ -309,38 +309,53 @@ const OpenSequenceDialog = ({
             setChromSizesLocation={setChromSizesLocation}
           />
         </Paper>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => onClose()} color="secondary" variant="contained">
-          Cancel
-        </Button>
+
+        <Typography>
+          Add this assembly if you want to create multiple assemblies
+        </Typography>
         <Button
           onClick={async () => {
             try {
               setError(undefined)
               const assemblyConf = await createAssemblyConfig()
-
-              await onClose({
-                ...assemblyConf,
-                sequence: {
-                  type: 'ReferenceSequenceTrack',
-                  trackId: `${assemblyName}-${Date.now()}`,
-                  ...(assemblyConf.sequence || {}),
-                },
-              })
+              setAssemblyConfs([...assemblyConfs, assemblyConf])
             } catch (e) {
               setError(e)
               console.error(e)
             } finally {
-              setLoading(undefined)
+              setLoading('')
+            }
+          }}
+          disabled={!!loading}
+          variant="contained"
+        >
+          Add assembly
+        </Button>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => onClose()} color="secondary" variant="contained">
+          Cancel
+        </Button>
+
+        <Button
+          onClick={async () => {
+            try {
+              setError(undefined)
+              const assemblyConf = await createAssemblyConfig()
+              setAssemblyConfs([...assemblyConfs, assemblyConf])
+              await onClose(assemblyConfs)
+            } catch (e) {
+              setError(e)
+              console.error(e)
+            } finally {
+              setLoading('')
             }
           }}
           color="primary"
           disabled={!!loading}
           variant="contained"
-          autoFocus
         >
-          Open
+          Submit
         </Button>
       </DialogActions>
     </Dialog>
