@@ -28,7 +28,9 @@
     "node": ">=10"
   },
   "scripts": {
-    "build": "tsc"
+    "prebuild": "rimraf dist",
+    "build": "tsc",
+    "prepack": "yarn build"
   },
   "dependencies": {
     "@babel/core": "^7.15.8",
