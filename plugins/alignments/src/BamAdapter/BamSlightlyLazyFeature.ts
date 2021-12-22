@@ -15,17 +15,11 @@ import {
 import BamAdapter from './BamAdapter'
 
 export default class BamSlightlyLazyFeature implements Feature {
-  private record: BamRecord
-
-  private adapter: BamAdapter
-
-  private ref?: string
-
-  constructor(record: BamRecord, adapter: BamAdapter, ref?: string) {
-    this.record = record
-    this.adapter = adapter
-    this.ref = ref
-  }
+  constructor(
+    private record: BamRecord,
+    private adapter: BamAdapter,
+    private ref?: string,
+  ) {}
 
   _get_name() {
     return this.record.get('name')

@@ -75,11 +75,7 @@ function detectHardwareConcurrency() {
 class LazyWorker {
   worker?: WorkerHandle
 
-  driver: BaseRpcDriver
-
-  constructor(driver: BaseRpcDriver) {
-    this.driver = driver
-  }
+  constructor(public driver: BaseRpcDriver) {}
 
   getWorker(pluginManager: PluginManager, rpcDriverClassName: string) {
     if (!this.worker) {
