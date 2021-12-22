@@ -55,7 +55,7 @@
     "core-js": "^3.19.3",
     "crypto-js": "^3.0.0",
     "file-saver": "^2.0.0",
-    "fontsource-roboto": "3.0.3",
+    "@fontsource/roboto": "^4.5.0",
     "json-stable-stringify": "^1.0.1",
     "librpc-web-mod": "^1.1.4",
     "merge-deep": "^3.0.2",

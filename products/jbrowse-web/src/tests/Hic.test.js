@@ -4,7 +4,7 @@ import { LocalFile } from 'generic-filehandle'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 import {
-JBrowse, 
+  JBrowse,
   setup,
   expectCanvasMatch,
   generateReadBuffer,

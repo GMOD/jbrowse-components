@@ -6,7 +6,7 @@ import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import {
-JBrowse,
+  JBrowse,
   setup,
   getPluginManager,
   expectCanvasMatch,

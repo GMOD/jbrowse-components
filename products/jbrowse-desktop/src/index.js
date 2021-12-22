@@ -4,7 +4,7 @@ import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from 'react-error-boundary'
 import { QueryParamProvider } from 'use-query-params'
 
-import 'fontsource-roboto'
+import '@fontsource/roboto'
 
 import factoryReset from './factoryReset'
 import Loader from './Loader'
