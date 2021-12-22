@@ -1,9 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import SNPCoverageRenderer, {
-  configSchema as snpCoverageRendererConfigSchema,
-  ReactComponent as SNPCoverageRendererReactComponent,
-} from '../../SNPCoverageRenderer' // change renderer
+import SNPCoverageRenderer from '../../SNPCoverageRenderer' // change renderer
 import configSchemaFactory from './configSchema'
 
 // mock warnings to avoid unnecessary outputs
@@ -17,15 +14,7 @@ afterEach(() => {
 // change renderer
 class SNPCoverageRendererPlugin extends Plugin {
   install(pluginManager) {
-    pluginManager.addRendererType(
-      () =>
-        new SNPCoverageRenderer({
-          name: 'SNPCoverageRenderer',
-          ReactComponent: SNPCoverageRendererReactComponent,
-          configSchema: snpCoverageRendererConfigSchema,
-          pluginManager,
-        }),
-    )
+    SNPCoverageRenderer(pluginManager)
   }
 }
 

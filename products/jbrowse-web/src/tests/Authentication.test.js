@@ -62,7 +62,7 @@ describe('authentication', () => {
       await findByTestId('htsTrackEntry-volvox_microarray_dropbox'),
     )
     const canvas = await findAllByTestId(
-      'prerendered_canvas',
+      'prerendered_canvas_{volvox}ctgA:1..4,000-0',
       {},
       {
         timeout: 20000,
@@ -127,7 +127,7 @@ describe('authentication', () => {
     expect(Object.values(sessionStorage)).toContain('testentry')
 
     const canvas = await findAllByTestId(
-      'prerendered_canvas',
+      'prerendered_canvas_{volvox}ctgA:1..4,000-0',
       {},
       {
         timeout: 20000,
@@ -191,7 +191,7 @@ describe('authentication', () => {
     ).toContain(btoa(`username:password`))
 
     const canvas = await findAllByTestId(
-      'prerendered_canvas',
+      'prerendered_canvas_{volvox}ctgA:1..4,000-0',
       {},
       {
         timeout: 20000,

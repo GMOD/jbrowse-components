@@ -5,7 +5,13 @@ import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
-import { JBrowse, setup, generateReadBuffer, getPluginManager } from './util'
+import {
+  JBrowse,
+  setup,
+  generateReadBuffer,
+  expectCanvasMatch,
+  getPluginManager,
+} from './util'
 
 expect.extend({ toMatchImageSnapshot })
 setup()
@@ -22,59 +28,47 @@ beforeEach(() => {
   )
 })
 
+const delay = { timeout: 10000 }
+
 describe('bigwig', () => {
   it('open a bigwig track', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, findAllByTestId, findByText } = render(
+    const { findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
     state.session.views[0].setNewView(5, 0)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray'))
-    const canvas = await findAllByTestId(
-      'prerendered_canvas',
-      {},
-      {
-        timeout: 10000,
-      },
+    expectCanvasMatch(
+      await findByTestId(
+        'prerendered_canvas_{volvox}ctgA:1..4,000-0',
+        {},
+        delay,
+      ),
     )
-    const bigwigImg = canvas[0].toDataURL()
-    const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
-    const bigwigBuf = Buffer.from(bigwigData, 'base64')
-    expect(bigwigBuf).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    })
   }, 15000)
   it('open a bigwig line track 2', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, findAllByTestId, findByText } = render(
+    const { findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
     state.session.views[0].setNewView(10, 0)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray_line'))
-    const canvas = await findAllByTestId(
-      'prerendered_canvas',
-      {},
-      {
-        timeout: 10000,
-      },
+    expectCanvasMatch(
+      await findByTestId(
+        'prerendered_canvas_{volvox}ctgA:1..8,000-0',
+        {},
+        delay,
+      ),
     )
-    const bigwigImg = canvas[0].toDataURL()
-    const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
-    const bigwigBuf = Buffer.from(bigwigData, 'base64')
-    expect(bigwigBuf).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    })
   }, 15000)
   it('open a bigwig density track', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, findAllByTestId, findByText } = render(
+    const { findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
@@ -82,19 +76,12 @@ describe('bigwig', () => {
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_microarray_density'),
     )
-    const canvas = await findAllByTestId(
-      'prerendered_canvas',
-      {},
-      {
-        timeout: 10000,
-      },
+    expectCanvasMatch(
+      await findByTestId(
+        'prerendered_canvas_{volvox}ctgA:1..4,000-0',
+        {},
+        delay,
+      ),
     )
-    const bigwigImg = canvas[0].toDataURL()
-    const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
-    const bigwigBuf = Buffer.from(bigwigData, 'base64')
-    expect(bigwigBuf).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    })
   }, 15000)
 })

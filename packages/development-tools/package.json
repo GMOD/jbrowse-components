@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/development-tools",
-  "version": "1.5.1",
+  "version": "1.5.3",
   "description": "Tools to help with developing and building JBrowse 2 plugins",
   "keywords": [
     "jbrowse",
@@ -28,7 +28,9 @@
     "node": ">=10"
   },
   "scripts": {
-    "build": "tsc"
+    "prebuild": "rimraf dist",
+    "build": "tsc",
+    "prepack": "yarn build"
   },
   "dependencies": {
     "@babel/core": "^7.16.0",
@@ -45,6 +47,7 @@
     "babel-plugin-polyfill-regenerator": "^0.2.3",
     "babel-plugin-transform-rename-import": "^2.3.0",
     "builtin-modules": "^3.2.0",
+    "chalk": "^4.1.1",
     "cross-spawn": "^7.0.3",
     "lodash.merge": "^4.6.2",
     "patch-package": "^6.2.2",

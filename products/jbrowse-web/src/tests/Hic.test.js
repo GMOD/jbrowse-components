@@ -3,7 +3,13 @@ import { cleanup, fireEvent, render } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
-import { JBrowse, setup, generateReadBuffer, getPluginManager } from './util'
+import {
+JBrowse, 
+  setup,
+  expectCanvasMatch,
+  generateReadBuffer,
+  getPluginManager,
+} from './util'
 import hicConfig from '../../../../extra_test_data/hic_integration_test.json'
 
 expect.extend({ toMatchImageSnapshot })
@@ -16,6 +22,8 @@ hicConfig.configuration = {
   },
 }
 
+const delay = { timeout: 20000 }
+
 test('hic', async () => {
   fetch.resetMocks()
   fetch.mockResponse(
@@ -27,23 +35,10 @@ test('hic', async () => {
   const pluginManager = getPluginManager(hicConfig)
 
   const state = pluginManager.rootModel
-  const { findByTestId, findAllByTestId } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
+  const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
   state.session.views[0].setNewView(5000, 0)
   fireEvent.click(await findByTestId('htsTrackEntry-hic_test'))
-  const canvas = await findAllByTestId(
-    'prerendered_canvas',
-    {},
-    {
-      timeout: 10000,
-    },
+  expectCanvasMatch(
+    await findByTestId('prerendered_canvas_{hg19}1:1..4,000,000-0', {}, delay),
   )
-  const bigwigImg = canvas[0].toDataURL()
-  const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
-  const bigwigBuf = Buffer.from(bigwigData, 'base64')
-  expect(bigwigBuf).toMatchImageSnapshot({
-    failureThreshold: 0.05,
-    failureThresholdType: 'percent',
-  })
 }, 15000)
