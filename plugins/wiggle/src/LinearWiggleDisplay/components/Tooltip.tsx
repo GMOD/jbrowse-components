@@ -7,8 +7,9 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { YSCALEBAR_LABEL_OFFSET } from '../models/model'
 import { usePopper } from 'react-popper'
 
+// convert to number, apply shortened precision, and render
 function toP(s = 0) {
-  return parseFloat(s.toPrecision(6))
+  return +(+s).toPrecision(6)
 }
 
 function round(value: number) {
