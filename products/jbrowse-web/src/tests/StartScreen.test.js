@@ -1,8 +1,7 @@
+import React from 'react'
 import '@testing-library/jest-dom/extend-expect'
-
 import { cleanup, fireEvent, render } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
-import React from 'react'
 
 import StartScreen from '../StartScreen'
 import factoryReset from '../factoryReset'

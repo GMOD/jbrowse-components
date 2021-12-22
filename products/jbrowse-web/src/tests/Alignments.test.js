@@ -7,12 +7,12 @@ import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import {
+  JBrowse,
   setup,
   expectCanvasMatch,
   generateReadBuffer,
   getPluginManager,
 } from './util'
-import JBrowse from '../JBrowse'
 
 expect.extend({ toMatchImageSnapshot })
 setup()

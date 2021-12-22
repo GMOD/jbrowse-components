@@ -33,9 +33,9 @@
     "prepack": "yarn build"
   },
   "dependencies": {
-    "@babel/core": "^7.15.8",
+    "@babel/core": "^7.16.0",
     "@babel/plugin-proposal-class-properties": "^7.16.0",
-    "@babel/preset-env": "^7.16.0",
+    "@babel/preset-env": "^7.16.4",
     "@rollup/plugin-babel": "^5.3.0",
     "@rollup/plugin-commonjs": "^19.0.0",
     "@rollup/plugin-json": "^4.1.0",
@@ -51,14 +51,14 @@
     "cross-spawn": "^7.0.3",
     "lodash.merge": "^4.6.2",
     "patch-package": "^6.2.2",
-    "rollup": "^2.52.7",
+    "rollup": "^2.61.0",
     "rollup-plugin-external-globals": "^0.6.1",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-sourcemaps": "^0.6.3",
     "rollup-plugin-terser": "^7.0.2",
     "tsdx": "0.14.1",
-    "typescript": "^4.0.0"
+    "typescript": "^4.5.2"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.3",

@@ -10,7 +10,7 @@ of a single JBrowse 2 linear view.
 
 ```tsx
 import React from 'react'
-import 'fontsource-roboto'
+import '@fontsource/roboto'
 import {
   createViewState,
   JBrowseLinearGenomeView,
@@ -57,7 +57,7 @@ The latest Storybook documentation for the component is hosted [here](https://jb
 [Roboto](https://fonts.google.com/specimen/Roboto) is the recommended font for
 JBrowse, and this component will use that font if it is available. The easiest
 way to add it is to add the
-[`fontsource-roboto`](https://www.npmjs.com/package/fontsource-roboto) package
+[`@fontsource/roboto`](https://www.npmjs.com/package/@fontsource/roboto) package
 to your project and import it in your root `index.js`.
 
 ## Academic Use

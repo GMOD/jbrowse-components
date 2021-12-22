@@ -8,12 +8,12 @@ import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import dotplotConfig from '../../test_data/config_dotplot.json'
 
 import {
+  JBrowse,
   setup,
   generateReadBuffer,
   expectCanvasMatch,
   getPluginManager,
 } from './util'
-import JBrowse from '../JBrowse'
 
 dotplotConfig.configuration = {
   rpc: {

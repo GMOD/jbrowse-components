@@ -32,7 +32,6 @@ const useStyles = makeStyles(theme => ({
     lineHeight: `${round(14 / 10)}em`,
     maxWidth: 300,
     wordWrap: 'break-word',
-    fontWeight: theme.typography.fontWeightMedium,
   },
 
   hoverVertical: {

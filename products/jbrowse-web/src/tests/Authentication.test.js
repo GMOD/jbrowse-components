@@ -1,15 +1,11 @@
-// library
-import { cleanup, fireEvent, render, within } from '@testing-library/react'
 import React from 'react'
+import { cleanup, fireEvent, render, within } from '@testing-library/react'
 import { LocalFile, RemoteFile } from 'generic-filehandle'
-
-// locals
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import config from '../../test_data/volvox/config.json'
-import { setup, generateReadBuffer, getPluginManager } from './util'
-import JBrowse from '../JBrowse'
+import { JBrowse, setup, generateReadBuffer, getPluginManager } from './util'
 
 expect.extend({ toMatchImageSnapshot })
 setup()

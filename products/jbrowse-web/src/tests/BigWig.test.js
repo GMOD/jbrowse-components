@@ -6,12 +6,12 @@ import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 import {
+  JBrowse,
   setup,
   generateReadBuffer,
   expectCanvasMatch,
   getPluginManager,
 } from './util'
-import JBrowse from '../JBrowse'
 
 expect.extend({ toMatchImageSnapshot })
 setup()

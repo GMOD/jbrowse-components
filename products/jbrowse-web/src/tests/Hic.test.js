@@ -4,12 +4,12 @@ import { LocalFile } from 'generic-filehandle'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 import {
+  JBrowse,
   setup,
   expectCanvasMatch,
   generateReadBuffer,
   getPluginManager,
 } from './util'
-import JBrowse from '../JBrowse'
 import hicConfig from '../../../../extra_test_data/hic_integration_test.json'
 
 expect.extend({ toMatchImageSnapshot })

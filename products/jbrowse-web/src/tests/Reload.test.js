@@ -5,8 +5,8 @@ import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import JBrowse from '../JBrowse'
 import {
+  JBrowse,
   setup,
   getPluginManager,
   expectCanvasMatch,
