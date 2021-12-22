@@ -344,11 +344,8 @@ const OpenSequenceDialog = ({
             setChromSizesLocation={setChromSizesLocation}
           />
         </Paper>
-
-        <Typography>
-          Use the "Add assembly" button to add the current one to a list, and
-          hit submit when done
-        </Typography>
+      </DialogContent>
+      <DialogActions>
         <Button
           onClick={async () => {
             try {
@@ -369,14 +366,11 @@ const OpenSequenceDialog = ({
           disabled={!!loading}
           variant="contained"
         >
-          Add assembly
+          Add another assembly
         </Button>
-      </DialogContent>
-      <DialogActions>
         <Button onClick={() => onClose()} color="secondary" variant="contained">
           Cancel
         </Button>
-
         <Button
           onClick={async () => {
             try {
