@@ -193,7 +193,15 @@ export default class extends BaseFeatureDataAdapter {
   private featureData(data: GFF3FeatureLineWithRefs) {
     const f: Record<string, unknown> = { ...data }
     ;(f.start as number) -= 1 // convert to interbase
-    f.strand = { '+': 1, '-': -1, '.': 0, '?': undefined }[data.strand || '?'] // convert strand
+    if (data.strand === '+') {
+      f.strand = 1
+    } else if (data.strand === '-') {
+      f.strand = -1
+    } else if (data.strand === '.') {
+      f.strand = 0
+    } else {
+      f.strand = undefined
+    }
     f.phase = Number(data.phase)
     f.refName = data.seq_id
     if (data.score === null) {

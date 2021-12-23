@@ -164,11 +164,10 @@ const ImportWizard = types
       } catch (e) {
         console.warn(e)
       }
-      await filehandle.readFile()
       await filehandle
         .readFile()
         .then(buffer => (self.requiresUnzip ? unzip(buffer) : buffer))
-        .then(buffer => typeParser(buffer as Buffer, self))
+        .then(buffer => typeParser(buffer, self))
         .then(spreadsheet => {
           this.setLoaded()
           getParent(self).displaySpreadsheet(spreadsheet)
