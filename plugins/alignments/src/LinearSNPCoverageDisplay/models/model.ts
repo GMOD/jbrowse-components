@@ -30,6 +30,7 @@ const stateModelFactory = (
         type: types.literal('LinearSNPCoverageDisplay'),
         drawInterbaseCounts: types.maybe(types.boolean),
         drawIndicators: types.maybe(types.boolean),
+        drawArcs: types.maybe(types.boolean),
         filterBy: types.optional(
           types.model({
             flagInclude: types.optional(types.number, 0),
@@ -98,9 +99,18 @@ const stateModelFactory = (
                 self.drawIndicators === undefined
                   ? configBlob.drawIndicators
                   : self.drawIndicators,
+              drawArcs:
+                self.drawArcs === undefined
+                  ? configBlob.drawArcs
+                  : self.drawArcs,
             },
             getEnv(self),
           )
+        },
+        get drawArcsSetting() {
+          return self.drawArcs !== undefined
+            ? self.drawArcs
+            : readConfObject(this.rendererConfig, 'drawArcs')
         },
         get drawInterbaseCountsSetting() {
           return self.drawInterbaseCounts !== undefined
@@ -142,6 +152,9 @@ const stateModelFactory = (
       },
       toggleDrawInterbaseCounts() {
         self.drawInterbaseCounts = !self.drawInterbaseCountsSetting
+      },
+      toggleDrawArcs() {
+        self.drawArcs = !self.drawArcsSetting
       },
       afterAttach() {
         addDisposer(
@@ -215,6 +228,14 @@ const stateModelFactory = (
               checked: self.drawInterbaseCountsSetting,
               onClick: () => {
                 self.toggleDrawInterbaseCounts()
+              },
+            },
+            {
+              label: 'Draw arcs',
+              type: 'checkbox',
+              checked: self.drawArcsSetting,
+              onClick: () => {
+                self.toggleDrawArcs()
               },
             },
           ]

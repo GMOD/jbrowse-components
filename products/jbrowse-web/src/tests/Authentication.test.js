@@ -1,15 +1,11 @@
-// library
-import { cleanup, fireEvent, render, within } from '@testing-library/react'
 import React from 'react'
+import { cleanup, fireEvent, render, within } from '@testing-library/react'
 import { LocalFile, RemoteFile } from 'generic-filehandle'
-
-// locals
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import config from '../../test_data/volvox/config.json'
-import { setup, generateReadBuffer, getPluginManager } from './util'
-import JBrowse from '../JBrowse'
+import { JBrowse, setup, generateReadBuffer, getPluginManager } from './util'
 
 expect.extend({ toMatchImageSnapshot })
 setup()
@@ -66,7 +62,7 @@ describe('authentication', () => {
       await findByTestId('htsTrackEntry-volvox_microarray_dropbox'),
     )
     const canvas = await findAllByTestId(
-      'prerendered_canvas',
+      'prerendered_canvas_{volvox}ctgA:1..4,000-0',
       {},
       {
         timeout: 20000,
@@ -131,7 +127,7 @@ describe('authentication', () => {
     expect(Object.values(sessionStorage)).toContain('testentry')
 
     const canvas = await findAllByTestId(
-      'prerendered_canvas',
+      'prerendered_canvas_{volvox}ctgA:1..4,000-0',
       {},
       {
         timeout: 20000,
@@ -195,7 +191,7 @@ describe('authentication', () => {
     ).toContain(btoa(`username:password`))
 
     const canvas = await findAllByTestId(
-      'prerendered_canvas',
+      'prerendered_canvas_{volvox}ctgA:1..4,000-0',
       {},
       {
         timeout: 20000,

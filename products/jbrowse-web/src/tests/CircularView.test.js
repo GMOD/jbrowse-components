@@ -5,10 +5,8 @@ import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
-// locals
 import configSnapshot from '../../test_data/volvox/config.json'
-import JBrowse from '../JBrowse'
-import { setup, getPluginManager, generateReadBuffer } from './util'
+import { JBrowse, setup, getPluginManager, generateReadBuffer } from './util'
 
 setup()
 

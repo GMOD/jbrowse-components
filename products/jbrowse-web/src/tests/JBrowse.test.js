@@ -27,8 +27,7 @@ import corePlugins from '../corePlugins'
 import * as sessionSharing from '../sessionSharing'
 import volvoxConfigSnapshot from '../../test_data/volvox/config.json'
 import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
-import JBrowse from '../JBrowse'
-import { setup, getPluginManager, generateReadBuffer } from './util'
+import { JBrowse, setup, getPluginManager, generateReadBuffer } from './util'
 import TestPlugin from './TestPlugin'
 
 window.TextEncoder = TextEncoder

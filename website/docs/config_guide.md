@@ -4,6 +4,8 @@ title: Config guide
 toplevel: true
 ---
 
+import Figure from './figure'
+
 ## Intro to the config.json
 
 A JBrowse 2 configuration file, a config.json, is structured as follows
@@ -1279,7 +1281,7 @@ theme:
 
 <Figure src="/img/default_theme.png" caption="Example screenshot showing the default theme"/>
 
-<Figure src="/img/default_theme.png" caption="Example screenshot showing the customized theme"/>
+<Figure src="/img/customized_theme.png" caption="Example screenshot showing the customized theme"/>
 
 The customized theme screenshot uses the below configuration
 
@@ -1422,18 +1424,21 @@ jexl:trimStart('  kitty ') // kitty, starting whitespace trimmed
 jexl:trimEnd('  kitty ') // kitty, ending whitespace trimmed
 jexl:toUpperCase('kitty') // KITTY
 jexl:toLowerCase('KITTY') // kitty
+jexl:split('KITTY KITTY', ' ') // ['KITTY', 'KITTY']
 ```
 
 Math functions
 
 ```
 
-jexl:min(0,2)
 jexl:max(0,2)
-jexl:abs(-5)
+jexl:min(0,2)
+jexl:sqrt(4)
 jexl:ceil(0.5)
 jexl:floor(0.5)
 jexl:round(0.5)
+jexl:abs(-0.5)
+jexl:log10(50000)
 jexl:parseInt('2')
 jexl:parseFloat('2.054')
 

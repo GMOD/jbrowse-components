@@ -4,8 +4,6 @@ import { BaseLayout, SerializedLayout } from './BaseLayout'
 export default class MultiLayout<SUB_LAYOUT_CLASS extends BaseLayout<T>, T> {
   subLayouts: Map<string, SUB_LAYOUT_CLASS> = new Map()
 
-  SubLayoutClass: new (...args: any[]) => SUB_LAYOUT_CLASS
-
   subLayoutConstructorArgs: Record<string, any> = {}
 
   /**
@@ -14,11 +12,10 @@ export default class MultiLayout<SUB_LAYOUT_CLASS extends BaseLayout<T>, T> {
    * `{ layout1: new GranularRectLayout(), layout2: new GranularRectLayout() ...}`
    */
   constructor(
-    SubLayoutClass: new (...args: any[]) => SUB_LAYOUT_CLASS,
+    public SubLayoutClass: new (...args: any[]) => SUB_LAYOUT_CLASS,
     layoutArgs: Record<string, any> = {},
   ) {
     this.subLayouts = new Map()
-    this.SubLayoutClass = SubLayoutClass
     this.subLayoutConstructorArgs = layoutArgs
   }
 

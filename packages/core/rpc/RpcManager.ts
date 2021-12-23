@@ -27,23 +27,14 @@ export default class RpcManager {
 
   driverObjects: Map<string, DriverClass>
 
-  pluginManager: PluginManager
-
-  mainConfiguration: AnyConfigurationModel
-
-  backendConfigurations: BackendConfigurations
-
   constructor(
-    pluginManager: PluginManager,
-    mainConfiguration: AnyConfigurationModel,
-    backendConfigurations: BackendConfigurations,
+    public pluginManager: PluginManager,
+    public mainConfiguration: AnyConfigurationModel,
+    public backendConfigurations: BackendConfigurations,
   ) {
     if (!mainConfiguration) {
       throw new Error('RpcManager requires at least a main configuration')
     }
-    this.pluginManager = pluginManager
-    this.mainConfiguration = mainConfiguration
-    this.backendConfigurations = backendConfigurations
     this.driverObjects = new Map()
   }
 
