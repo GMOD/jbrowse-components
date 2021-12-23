@@ -225,7 +225,7 @@ function VariantFeatureDetails(props: any) {
         <BreakendPanel
           feature={feat}
           locStrings={feat.ALT.map(
-            (alt: string) => parseBreakend(alt).MatePosition,
+            (alt: string) => parseBreakend(alt)?.MatePosition || '',
           )}
           model={model}
         />
