@@ -15,6 +15,9 @@ export interface BaseArgs {
   pageNumber?: number
 }
 
+// TODO: implement Text background indexer class
+// start with a way to monitor the config for any changes
+// in order to get the right things you need to index
 export interface SearchScope {
   includeAggregateIndexes: boolean
   assemblyName: string
