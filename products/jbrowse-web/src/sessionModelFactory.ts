@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import {
   readConfObject,
   getConf,
@@ -257,10 +258,15 @@ export default function sessionModelFactory(
           self.sessionAssemblies.splice(index, 1)
         }
       },
-      removeSessionPlugin(pluginUrl: string) {
+      removeSessionPlugin(pluginDefinition: PluginDefinition) {
         const index = self.sessionPlugins.findIndex(
-          plugin => plugin.url === pluginUrl,
+          plugin =>
+            plugin.url !== pluginDefinition.url ||
+            plugin.umdUrl !== pluginDefinition.umdUrl ||
+            plugin.cjsUrl !== pluginDefinition.cjsUrl ||
+            plugin.esmUrl !== pluginDefinition.esmUrl,
         )
+
         if (index !== -1) {
           self.sessionPlugins.splice(index, 1)
         }
