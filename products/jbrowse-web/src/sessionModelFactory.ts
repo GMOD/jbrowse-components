@@ -29,6 +29,7 @@ import {
   isReferenceType,
   types,
   walk,
+  cast,
   IAnyStateTreeNode,
   Instance,
   SnapshotIn,
@@ -259,18 +260,16 @@ export default function sessionModelFactory(
         }
       },
       removeSessionPlugin(pluginDefinition: PluginDefinition) {
-        const index = self.sessionPlugins.findIndex(
-          plugin =>
-            plugin.url !== pluginDefinition.url ||
-            plugin.umdUrl !== pluginDefinition.umdUrl ||
-            plugin.cjsUrl !== pluginDefinition.cjsUrl ||
-            plugin.esmUrl !== pluginDefinition.esmUrl,
+        self.sessionPlugins = cast(
+          self.sessionPlugins.filter(
+            plugin =>
+              plugin.url !== pluginDefinition.url ||
+              plugin.umdUrl !== pluginDefinition.umdUrl ||
+              plugin.cjsUrl !== pluginDefinition.cjsUrl ||
+              plugin.esmUrl !== pluginDefinition.esmUrl,
+          ),
         )
-
-        if (index !== -1) {
-          self.sessionPlugins.splice(index, 1)
-        }
-        const rootModel = getRoot(self)
+        const rootModel = getParent(self)
         rootModel.setPluginsUpdated(true)
       },
       makeConnection(
