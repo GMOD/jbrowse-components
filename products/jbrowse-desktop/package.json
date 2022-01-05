@@ -40,7 +40,6 @@
     "build-electron-only-unpacked:linux": "electron-builder build -l --dir"
   },
   "dependencies": {
-    "@fontsource/roboto": "^4.5.0",
     "@gmod/faidx": "^1.0.1",
     "@jbrowse/core": "^1.5.3",
     "@jbrowse/plugin-alignments": "^1.5.3",
@@ -81,6 +80,7 @@
     "electron-updater": "^4.6.1",
     "electron-window-state": "^5.0.3",
     "follow-redirects": "^1.14.6",
+    "@fontsource/roboto": "^4.5.0",
     "json-stable-stringify": "^1.0.1",
     "librpc-web-mod": "^1.1.4",
     "mobx": "^5.10.1",
@@ -100,13 +100,13 @@
     "use-query-params": "1.2.3"
   },
   "devDependencies": {
-    "electron": "16.0.5"
+    "electron": "16.0.4"
   },
   "browserslist": [
     "last 1 chrome version"
   ],
   "build": {
-    "electronVersion": "16.0.5",
+    "electronVersion": "16.0.4",
     "extraMetadata": {
       "main": "build/electron.js"
     },
