@@ -11,7 +11,7 @@ const ColorPicker = lazy(() => import('./ColorPicker'))
 function serializeColor(color: Color) {
   if (color instanceof Object) {
     const { r, g, b, a } = color as RGBColor
-    return `rgb(${r},${g},${b},${a})`
+    return a === undefined ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${a})`
   }
   return color
 }
