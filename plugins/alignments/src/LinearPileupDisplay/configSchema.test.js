@@ -5,10 +5,7 @@ import {
   svgFeatureRendererConfigSchema,
   SvgFeatureRendererReactComponent,
 } from '@jbrowse/plugin-svg'
-import PileupRenderer, {
-  configSchema as pileupRendererConfigSchema,
-  ReactComponent as PileupRendererReactComponent,
-} from '../PileupRenderer'
+import PileupRenderer from '../PileupRenderer'
 import configSchemaFactory from './configSchema'
 
 // mock warnings to avoid unnecessary outputs
@@ -22,15 +19,7 @@ afterEach(() => {
 
 class PileupRendererPlugin extends Plugin {
   install(pluginManager) {
-    pluginManager.addRendererType(
-      () =>
-        new PileupRenderer({
-          name: 'PileupRenderer',
-          ReactComponent: PileupRendererReactComponent,
-          configSchema: pileupRendererConfigSchema,
-          pluginManager,
-        }),
-    )
+    PileupRenderer(pluginManager)
   }
 }
 

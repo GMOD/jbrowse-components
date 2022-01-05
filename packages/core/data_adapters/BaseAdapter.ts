@@ -9,7 +9,7 @@ import {
   ConfigurationSchema,
 } from '../configuration/configurationSchema'
 import { getSubAdapterType } from './dataAdapterCache'
-import { Region, NoAssemblyRegion } from '../util/types'
+import { AugmentedRegion as Region, NoAssemblyRegion } from '../util/types'
 import {
   blankStats,
   rectifyStats,
@@ -62,21 +62,14 @@ export abstract class BaseAdapter {
 
   static capabilities = [] as string[]
 
-  config: AnyConfigurationModel
-
-  getSubAdapter?: getSubAdapterType
-
-  pluginManager: PluginManager | undefined
-
   constructor(
-    config: AnyConfigurationModel = ConfigurationSchema('empty', {}).create(),
-    getSubAdapter?: getSubAdapterType,
-    pluginManager?: PluginManager,
+    public config: AnyConfigurationModel = ConfigurationSchema(
+      'empty',
+      {},
+    ).create(),
+    public getSubAdapter?: getSubAdapterType,
+    public pluginManager?: PluginManager,
   ) {
-    this.config = config
-    this.getSubAdapter = getSubAdapter
-    this.pluginManager = pluginManager
-
     // note: we use switch on jest here for more simple feature IDs
     // in test environment
     if (typeof jest === 'undefined') {

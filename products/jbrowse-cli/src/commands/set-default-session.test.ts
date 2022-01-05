@@ -6,7 +6,7 @@ import fs from 'fs'
 import * as path from 'path'
 import { setup } from '../testUtil'
 
-const fsPromises = fs.promises
+const { readFile, copyFile, rename } = fs.promises
 
 const defaultConfig = {
   assemblies: [
@@ -82,12 +82,9 @@ const testConfig = path.join(
 
 const setupWithAddTrack = setup
   .do(async ctx => {
-    await fsPromises.copyFile(
-      testConfig,
-      path.join(ctx.dir, path.basename(testConfig)),
-    )
+    await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
 
-    await fsPromises.rename(
+    await rename(
       path.join(ctx.dir, path.basename(testConfig)),
       path.join(ctx.dir, 'config.json'),
     )
@@ -97,12 +94,9 @@ const setupWithAddTrack = setup
 describe('set-default-session', () => {
   setup
     .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
+      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
 
-      await fsPromises.rename(
+      await rename(
         path.join(ctx.dir, path.basename(testConfig)),
         path.join(ctx.dir, 'config.json'),
       )
@@ -112,12 +106,9 @@ describe('set-default-session', () => {
     .it('fails when no necessary default session information is provided')
   setup
     .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
+      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
 
-      await fsPromises.rename(
+      await rename(
         path.join(ctx.dir, path.basename(testConfig)),
         path.join(ctx.dir, 'config.json'),
       )
@@ -127,12 +118,9 @@ describe('set-default-session', () => {
     .it('fails when default session is not readable')
   setup
     .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
+      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
 
-      await fsPromises.rename(
+      await rename(
         path.join(ctx.dir, path.basename(testConfig)),
         path.join(ctx.dir, 'config.json'),
       )
@@ -146,12 +134,9 @@ describe('set-default-session', () => {
     .it('fails when file does not exist')
   setup
     .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
+      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
 
-      await fsPromises.rename(
+      await rename(
         path.join(ctx.dir, path.basename(testConfig)),
         path.join(ctx.dir, 'config.json'),
       )
@@ -162,12 +147,9 @@ describe('set-default-session', () => {
 
   setupWithAddTrack
     .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
+      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
 
-      await fsPromises.rename(
+      await rename(
         path.join(ctx.dir, path.basename(testConfig)),
         path.join(ctx.dir, 'config.json'),
       )
@@ -187,22 +169,18 @@ describe('set-default-session', () => {
     .it('fails when specifying a track that does not exist')
   setup
     .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
+      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
 
-      await fsPromises.rename(
+      await rename(
         path.join(ctx.dir, path.basename(testConfig)),
         path.join(ctx.dir, 'config.json'),
       )
     })
     .command(['set-default-session', '--delete'])
     .it('deletes a default session', async ctx => {
-      const contents = await fsPromises.readFile(
-        path.join(ctx.dir, 'config.json'),
-        { encoding: 'utf8' },
-      )
+      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
+        encoding: 'utf8',
+      })
       expect(JSON.parse(contents)).toEqual({
         ...defaultConfig,
         tracks: [],
@@ -211,22 +189,18 @@ describe('set-default-session', () => {
     })
   setup
     .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
+      await copyFile(testConfig, path.join(ctx.dir, path.basename(testConfig)))
 
-      await fsPromises.rename(
+      await rename(
         path.join(ctx.dir, path.basename(testConfig)),
         path.join(ctx.dir, 'config.json'),
       )
     })
     .command(['set-default-session', '--session', simpleDefaultSession])
     .it('adds a default session from a file', async ctx => {
-      const contents = await fsPromises.readFile(
-        path.join(ctx.dir, 'config.json'),
-        { encoding: 'utf8' },
-      )
+      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
+        encoding: 'utf8',
+      })
       expect(JSON.parse(contents)).toEqual({
         ...defaultConfig,
         tracks: [],
@@ -258,10 +232,9 @@ describe('set-default-session', () => {
     .it(
       'adds a default session that is a linear genome view and a simple track',
       async ctx => {
-        const contents = await fsPromises.readFile(
-          path.join(ctx.dir, 'config.json'),
-          { encoding: 'utf8' },
-        )
+        const contents = await readFile(path.join(ctx.dir, 'config.json'), {
+          encoding: 'utf8',
+        })
         expect(JSON.parse(contents)).toEqual({
           ...defaultConfig,
           defaultSession: {

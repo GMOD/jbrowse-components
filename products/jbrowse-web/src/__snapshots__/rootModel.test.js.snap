@@ -345,6 +345,10 @@ Object {
       "displayId": "trackId0-LinearBasicDisplay",
       "type": "LinearBasicDisplay",
     },
+    Object {
+      "displayId": "trackId0-LinearArcDisplay",
+      "type": "LinearArcDisplay",
+    },
   ],
   "trackId": "trackId0",
   "type": "FeatureTrack",

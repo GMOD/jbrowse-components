@@ -204,7 +204,7 @@ describe('text-index tracks', () => {
     )
 })
 
-describe('text-index with multiple --files', () => {
+describe('text-index with multiple per-files', () => {
   setup
     .do(async ctx => {
       await copyDir(volvoxDir, ctx.dir)
@@ -216,7 +216,7 @@ describe('text-index with multiple --files', () => {
       '--file',
       'volvox.filtered.vcf.gz',
     ])
-    .it('Indexes with --file', ctx => {
+    .it('Indexes with multiple per-file args', ctx => {
       const ixdata = fs.readFileSync(
         path.join(ctx.dir, 'trix', 'aggregate.ix'),
         'utf8',
@@ -232,13 +232,13 @@ describe('text-index with multiple --files', () => {
     })
 })
 
-describe('text-index with single --file', () => {
+describe('text-index with single per-file', () => {
   setup
     .do(async ctx => {
       await copyDir(volvoxDir, ctx.dir)
     })
     .command(['text-index', '--file', 'volvox.sort.gff3.gz'])
-    .it('Indexes with --file', ctx => {
+    .it('Indexes with  single per-file arg', ctx => {
       const ixdata = fs.readFileSync(
         path.join(ctx.dir, 'trix', 'volvox.sort.gff3.gz.ix'),
         'utf8',

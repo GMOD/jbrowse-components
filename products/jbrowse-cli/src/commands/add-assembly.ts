@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import JBrowseCommand, { Assembly, Sequence, Config } from '../base'
 
-const fsPromises = fs.promises
+const { rename, copyFile, mkdir, symlink } = fs.promises
 
 function isValidJSON(string: string) {
   try {
@@ -388,7 +388,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
     const output = runFlags.target || runFlags.out || '.'
 
     if (!(await exists(output))) {
-      await fsPromises.mkdir(output, { recursive: true })
+      await mkdir(output, { recursive: true })
     }
 
     const isDir = fs.statSync(output).isDirectory()
@@ -573,7 +573,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
             if (!filePath) {
               return undefined
             }
-            return fsPromises.copyFile(
+            return copyFile(
               filePath,
               path.join(path.dirname(destination), path.basename(filePath)),
             )
@@ -587,7 +587,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
             if (!filePath) {
               return undefined
             }
-            return fsPromises.symlink(
+            return symlink(
               filePath,
               path.join(path.dirname(destination), path.basename(filePath)),
             )
@@ -601,7 +601,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
             if (!filePath) {
               return undefined
             }
-            return fsPromises.rename(
+            return rename(
               filePath,
               path.join(path.dirname(destination), path.basename(filePath)),
             )

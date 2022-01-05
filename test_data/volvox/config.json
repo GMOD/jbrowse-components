@@ -1593,6 +1593,92 @@
           }
         }
       ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "arc_track",
+      "name": "FromConfig Track (defaults to LinearArcDisplay)",
+      "assemblyNames": ["volvox"],
+      "category": ["Miscellaneous"],
+      "adapter": {
+        "type": "FromConfigAdapter",
+        "adapterId": "Y4yJ6gAC2E",
+        "features": [
+          {
+            "uniqueId": "arc-one",
+            "refName": "ctgA",
+            "start": 190,
+            "end": 200,
+            "type": "foo",
+            "score": 2,
+            "name": "SE_001"
+          },
+          {
+            "uniqueId": "arc-two",
+            "refName": "ctgA",
+            "start": 191,
+            "end": 192,
+            "type": "bar",
+            "score": 5,
+            "name": "SE_002"
+          },
+          {
+            "uniqueId": "arc-three",
+            "refName": "ctgA",
+            "start": 210,
+            "end": 290,
+            "type": "baz",
+            "score": 50,
+            "name": "SE_003"
+          },
+          {
+            "uniqueId": "arc-four",
+            "refName": "ctgA",
+            "start": 180,
+            "end": 189,
+            "score": 200,
+            "type": "quux",
+            "name": "SE_004, and some other characters that make the name extra long"
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "LinearArcDisplay",
+          "displayId": "arc_track_linear",
+          "renderer": {
+            "type": "ArcRenderer"
+          }
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "spliced",
+      "name": "volvox-rnaseq demo",
+      "category": ["Alignments"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "spliced.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "spliced.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      }
     }
   ],
   "defaultSession": {

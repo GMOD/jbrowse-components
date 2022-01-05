@@ -19,7 +19,6 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { cast, types, addDisposer, getEnv, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import SortIcon from '@material-ui/icons/Sort'
@@ -49,10 +48,7 @@ const rendererTypes = new Map([
 
 type LGV = LinearGenomeViewModel
 
-const stateModelFactory = (
-  pluginManager: PluginManager,
-  configSchema: LinearPileupDisplayConfigModel,
-) =>
+const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
   types
     .compose(
       'LinearPileupDisplay',
@@ -387,21 +383,20 @@ const stateModelFactory = (
 
         get filters() {
           let filters: string[] = []
-          if (self.filterBy) {
-            const { flagInclude, flagExclude } = self.filterBy
-            filters = [
-              `jexl:((get(feature,'flags')&${flagInclude})==${flagInclude}) && !(get(feature,'flags')&${flagExclude})`,
-            ]
-            if (self.filterBy.tagFilter) {
-              const { tag, value } = self.filterBy.tagFilter
-              filters.push(
-                `jexl:"${value}" =='*' ? getTag(feature,"${tag}") != undefined : getTag(feature,"${tag}") == "${value}"`,
-              )
-            }
-            if (self.filterBy.readName) {
-              const { readName } = self.filterBy
-              filters.push(`jexl:get(feature,'name') == "${readName}"`)
-            }
+          const { flagInclude, flagExclude, tagFilter, readName } =
+            self.filterBy
+
+          filters = [
+            `jexl:((get(feature,'flags')&${flagInclude})==${flagInclude}) && !(get(feature,'flags')&${flagExclude})`,
+          ]
+          if (tagFilter) {
+            const { tag, value } = tagFilter
+            filters.push(
+              `jexl:"${value}" =='*' ? getTag(feature,"${tag}") != undefined : getTag(feature,"${tag}") == "${value}"`,
+            )
+          }
+          if (readName) {
+            filters.push(`jexl:get(feature,'name') == "${readName}"`)
           }
           return new SerializableFilterChain({ filters })
         },

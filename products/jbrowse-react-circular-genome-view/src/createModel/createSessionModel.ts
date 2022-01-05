@@ -2,13 +2,11 @@
 import { lazy } from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import {
-  NotificationLevel,
   AbstractSessionModel,
   TrackViewModel,
   DialogComponentType,
 } from '@jbrowse/core/util/types'
 import { getContainingView } from '@jbrowse/core/util'
-import { observable } from 'mobx'
 import {
   getMembers,
   getParent,
@@ -26,11 +24,12 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 import InfoIcon from '@material-ui/icons/Info'
 import { ReferringNode } from '../types'
+import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
-  return types
+  const model = types
     .model('ReactCircularGenomeViewSession', {
       name: types.identifier,
       view: pluginManager.getViewType('CircularView').stateModel,
@@ -343,30 +342,8 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         ]
       },
     }))
-    .extend(() => {
-      const snackbarMessages = observable.array()
 
-      return {
-        views: {
-          get snackbarMessages() {
-            return snackbarMessages
-          },
-        },
-        actions: {
-          notify(message: string, level?: NotificationLevel) {
-            return this.pushSnackbarMessage(message, level)
-          },
-
-          pushSnackbarMessage(message: string, level?: NotificationLevel) {
-            return snackbarMessages.push([message, level])
-          },
-
-          popSnackbarMessage() {
-            return snackbarMessages.pop()
-          },
-        },
-      }
-    })
+  return addSnackbarToModel(model)
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>

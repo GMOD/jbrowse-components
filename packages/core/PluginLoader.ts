@@ -78,7 +78,7 @@ export interface LoadedPlugin {
   default: PluginConstructor
 }
 
-function getGlobalObject(): WindowOrWorkerGlobalScope {
+function getGlobalObject(): Window {
   // Based on window-or-global
   // https://github.com/purposeindustries/window-or-global/blob/322abc71de0010c9e5d9d0729df40959e1ef8775/lib/index.js
   return (
@@ -128,7 +128,16 @@ export default class PluginLoader {
   async loadCJSPlugin(
     pluginDefinition: CJSPluginDefinition,
   ): Promise<LoadedPlugin> {
-    const parsedUrl = new URL(pluginDefinition.cjsUrl)
+    let parsedUrl: URL
+    try {
+      parsedUrl = new URL(
+        pluginDefinition.cjsUrl,
+        getGlobalObject().location.href,
+      )
+    } catch (error) {
+      console.error(error)
+      throw new Error(`Error parsing URL: ${pluginDefinition.cjsUrl}`)
+    }
     if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
       throw new Error(
         `cannot load plugins using protocol "${parsedUrl.protocol}"`,
@@ -179,7 +188,16 @@ export default class PluginLoader {
   }
 
   async loadESMPlugin(pluginDefinition: ESMPluginDefinition) {
-    const parsedUrl = new URL(pluginDefinition.esmUrl)
+    let parsedUrl: URL
+    try {
+      parsedUrl = new URL(
+        pluginDefinition.esmUrl,
+        getGlobalObject().location.href,
+      )
+    } catch (error) {
+      console.error(error)
+      throw new Error(`Error parsing URL: ${pluginDefinition.esmUrl}`)
+    }
     if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
       throw new Error(
         `cannot load plugins using protocol "${parsedUrl.protocol}"`,
@@ -197,11 +215,15 @@ export default class PluginLoader {
   async loadUMDPlugin(
     pluginDefinition: UMDPluginDefinition | LegacyUMDPluginDefinition,
   ) {
-    const parsedUrl = new URL(
-      'url' in pluginDefinition
-        ? pluginDefinition.url
-        : pluginDefinition.umdUrl,
-    )
+    const umdUrl =
+      'url' in pluginDefinition ? pluginDefinition.url : pluginDefinition.umdUrl
+    let parsedUrl: URL
+    try {
+      parsedUrl = new URL(umdUrl, getGlobalObject().location.href)
+    } catch (error) {
+      console.error(error)
+      throw new Error(`Error parsing URL: ${umdUrl}`)
+    }
     if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
       throw new Error(
         `cannot load plugins using protocol "${parsedUrl.protocol}"`,

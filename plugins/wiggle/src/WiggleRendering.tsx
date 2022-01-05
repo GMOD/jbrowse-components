@@ -14,6 +14,7 @@ function WiggleRendering(props: {
   onMouseLeave: Function
   onMouseMove: Function
   onFeatureClick: Function
+  blockKey: string
 }) {
   const {
     regions,

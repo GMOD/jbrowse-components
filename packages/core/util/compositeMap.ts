@@ -1,11 +1,7 @@
 // takes an array or Map or Set (anything iterable with values()) of Maps
 // and lets you query them as one Map
 export default class CompositeMap<T, U> {
-  private submaps: Map<T, U>[]
-
-  constructor(submaps: Map<T, U>[]) {
-    this.submaps = submaps
-  }
+  constructor(private submaps: Map<T, U>[]) {}
 
   has(id: T) {
     for (const submap of this.submaps.values()) {

@@ -7,7 +7,7 @@ import path from 'path'
 import { Scope } from 'nock'
 import { setup } from '../testUtil'
 
-const fsPromises = fs.promises
+const { readdir } = fs.promises
 
 const releaseArray = [
   {
@@ -109,7 +109,7 @@ describe('create', () => {
     .nock('https://example.com', mockZip as any)
     .command(['create', 'jbrowse'])
     .it('download and unzips JBrowse 2 to new directory', async ctx => {
-      expect(await fsPromises.readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
+      expect(await readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
         'manifest.json',
       )
     })
@@ -123,7 +123,7 @@ describe('create', () => {
       'https://example.com/jbrowse-web-v0.0.1.zip',
     ])
     .it('upgrades a directory from a url', async ctx => {
-      expect(await fsPromises.readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
+      expect(await readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
         'manifest.json',
       )
     })
@@ -136,9 +136,9 @@ describe('create', () => {
     .it(
       'overwrites and succeeds in downloading JBrowse in a non-empty directory with version #',
       async ctx => {
-        expect(
-          await fsPromises.readdir(path.join(ctx.dir, 'jbrowse')),
-        ).toContain('manifest.json')
+        expect(await readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
+          'manifest.json',
+        )
       },
     )
   setup

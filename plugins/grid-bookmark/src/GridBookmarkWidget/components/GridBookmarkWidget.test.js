@@ -6,18 +6,6 @@ import { createTestSession } from '@jbrowse/web/src/rootModel'
 
 import GridBookmarkWidget from './GridBookmarkWidget'
 
-// need to mock out data grid and force all columns to render
-// https://github.com/mui-org/material-ui-x/issues/1151
-jest.mock('@mui/x-data-grid', () => {
-  const { DataGrid } = jest.requireActual('@mui/x-data-grid')
-  return {
-    ...jest.requireActual('@mui/x-data-grid'),
-    DataGrid: props => {
-      return <DataGrid {...props} columnBuffer={6} />
-    },
-  }
-})
-
 jest.mock('file-saver', () => {
   return {
     ...jest.requireActual('file-saver'),

@@ -12,7 +12,7 @@ import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import fromEntries from 'object.fromentries'
 import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
-import { Feature } from './simpleFeature'
+import SimpleFeature, { Feature, isFeature } from './simpleFeature'
 import {
   TypeTestedByPredicate,
   isSessionModel,
@@ -28,6 +28,7 @@ export * from './types'
 export * from './aborting'
 export * from './when'
 export * from './range'
+export { SimpleFeature, isFeature }
 
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
@@ -97,7 +98,10 @@ export function findParentThat(
   node: IAnyStateTreeNode,
   predicate: (thing: IAnyStateTreeNode) => boolean,
 ) {
-  let currentNode: IAnyStateTreeNode | undefined = node
+  if (!hasParent(node)) {
+    throw new Error('node does not have parent')
+  }
+  let currentNode: IAnyStateTreeNode | undefined = getParent(node)
   while (currentNode && isAlive(currentNode)) {
     if (predicate(currentNode)) {
       return currentNode

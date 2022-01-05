@@ -1,4 +1,4 @@
-// library
+import React from 'react'
 import {
   cleanup,
   createEvent,
@@ -7,26 +7,11 @@ import {
   waitFor,
   screen,
 } from '@testing-library/react'
-import React from 'react'
 import { LocalFile } from 'generic-filehandle'
-
-// locals
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { setup, generateReadBuffer, getPluginManager } from './util'
-import JBrowse from '../JBrowse'
 
-// need to mock out data grid and force all columns to render
-// https://github.com/mui-org/material-ui-x/issues/1151
-jest.mock('@mui/x-data-grid', () => {
-  const { DataGrid } = jest.requireActual('@mui/x-data-grid')
-  return {
-    ...jest.requireActual('@mui/x-data-grid'),
-    DataGrid: props => {
-      return <DataGrid {...props} columnBuffer={6} />
-    },
-  }
-})
+import { JBrowse, setup, generateReadBuffer, getPluginManager } from './util'
 
 setup()
 afterEach(cleanup)

@@ -83,17 +83,17 @@ OPTIONS
       type of sequence, by default inferred from sequence file
 
       indexedFasta   An index FASTA (e.g. .fa or .fasta) file;
-                      can optionally specify --faiLocation
+      can optionally specify --faiLocation
 
       bgzipFasta     A block-gzipped and indexed FASTA (e.g. .fa.gz or .fasta.gz) file;
-                      can optionally specify --faiLocation and/or --gziLocation
+      can optionally specify --faiLocation and/or --gziLocation
 
       twoBit         A twoBit (e.g. .2bit) file
 
       chromSizes     A chromosome sizes (e.g. .chrom.sizes) file
 
       custom         Either a JSON file location or inline JSON that defines a custom
-                      sequence adapter; must provide --name if using inline JSON
+      sequence adapter; must provide --name if using inline JSON
 
   --displayName=displayName
       The display name to specify for the assembly, e.g. "Homo sapiens (hg38)" while the name can be a shorter identifier
@@ -157,7 +157,7 @@ EXAMPLES
   $ jbrowse add-assembly myfile.fa.gz --load copy
 ```
 
-_See code: [src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.1/products/jbrowse-cli/src/commands/add-assembly.ts)_
+_See code: [src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.3/products/jbrowse-cli/src/commands/add-assembly.ts)_
 
 ## `jbrowse add-connection CONNECTIONURLORPATH`
 
@@ -211,7 +211,7 @@ EXAMPLES
   /path/to/jb2/installation/config.json
 ```
 
-_See code: [src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.1/products/jbrowse-cli/src/commands/add-connection.ts)_
+_See code: [src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.3/products/jbrowse-cli/src/commands/add-connection.ts)_
 
 ## `jbrowse add-track TRACK`
 
@@ -285,7 +285,7 @@ EXAMPLES
   $ jbrowse add-track /url/relative/path.bam --load inPlace
 ```
 
-_See code: [src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.1/products/jbrowse-cli/src/commands/add-track.ts)_
+_See code: [src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.3/products/jbrowse-cli/src/commands/add-track.ts)_
 
 ## `jbrowse add-track-json TRACK`
 
@@ -310,7 +310,7 @@ EXAMPLES
   $ jbrowse add-track-json track.json --update
 ```
 
-_See code: [src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.1/products/jbrowse-cli/src/commands/add-track-json.ts)_
+_See code: [src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.3/products/jbrowse-cli/src/commands/add-track-json.ts)_
 
 ## `jbrowse admin-server`
 
@@ -336,7 +336,7 @@ EXAMPLES
   $ jbrowse admin-server -p 8888
 ```
 
-_See code: [src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.1/products/jbrowse-cli/src/commands/admin-server.ts)_
+_See code: [src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.3/products/jbrowse-cli/src/commands/admin-server.ts)_
 
 ## `jbrowse create LOCALPATH`
 
@@ -380,7 +380,7 @@ EXAMPLES
   $ jbrowse create --listVersions
 ```
 
-_See code: [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.1/products/jbrowse-cli/src/commands/create.ts)_
+_See code: [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.3/products/jbrowse-cli/src/commands/create.ts)_
 
 ## `jbrowse help [COMMAND]`
 
@@ -397,7 +397,7 @@ OPTIONS
   --all  see all commands in CLI
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.3/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.14/src/commands/help.ts)_
 
 ## `jbrowse set-default-session`
 
@@ -434,7 +434,7 @@ EXAMPLES
   $ jbrowse set-default-session --currentSession # Prints out current default session
 ```
 
-_See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.1/products/jbrowse-cli/src/commands/set-default-session.ts)_
+_See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.3/products/jbrowse-cli/src/commands/set-default-session.ts)_
 
 ## `jbrowse text-index`
 
@@ -483,14 +483,14 @@ EXAMPLES
   $ jbrowse text-index --out /path/to/jb2/
 
   # indexes only a specific assembly, and overwrite what was previously there using force (which is needed if a previous
-  index already existed)
+   index already existed)
   $ jbrowse text-index -a hg19 --force
 
   # create index for some files for use in @jbrowse/react-linear-genome-view or similar
   $ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes
 ```
 
-_See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.1/products/jbrowse-cli/src/commands/text-index.ts)_
+_See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.3/products/jbrowse-cli/src/commands/text-index.ts)_
 
 ## `jbrowse upgrade [LOCALPATH]`
 
@@ -536,7 +536,7 @@ EXAMPLES
   $ jbrowse upgrade --nightly
 ```
 
-_See code: [src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.1/products/jbrowse-cli/src/commands/upgrade.ts)_
+_See code: [src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v1.5.3/products/jbrowse-cli/src/commands/upgrade.ts)_
 
 <!-- commandsstop -->
 

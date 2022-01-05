@@ -329,7 +329,7 @@ export function getModificationPositions(
       const [basemod, ...skips] = mod.split(',')
 
       // regexes based on parse_mm.pl from hts-specs
-      const matches = basemod.match(/([A-Z])([-+])([^,]+)/)
+      const matches = basemod.match(/([A-Z])([-+])([^,.?]+)([.?])?/)
       if (!matches) {
         throw new Error('bad format for MM tag')
       }
