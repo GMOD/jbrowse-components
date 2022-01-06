@@ -187,17 +187,13 @@ export default class extends BaseFeatureDataAdapter {
     return byteRanges.reduce((a, b) => a + b.end - b.start + 1, 0)
   }
 
-  async estimateGlobalStats(
-    region: Region,
-    opts?: BaseOptions,
-  ): Promise<BaseFeatureStats> {
+  async estimateGlobalStats(region: Region, opts?: BaseOptions) {
     const { vcf } = await this.configure()
     const featCount = await vcf.lineCount(region.refName)
     if (featCount === -1) {
       return super.estimateGlobalStats(region, opts)
     }
-    const featureDensity = featCount / (region.end - region.start)
-    return { featureDensity }
+    return { featureDensity: featCount / (region.end - region.start) }
   }
 
   public freeResources(/* { region } */): void {}

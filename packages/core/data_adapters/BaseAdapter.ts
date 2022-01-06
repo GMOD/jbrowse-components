@@ -279,37 +279,22 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     region: Region,
     opts?: BaseOptions,
   ): Promise<BaseFeatureStats> {
+    console.log('wow')
     const statsFromInterval = async (length: number, expansionTime: number) => {
-      const sampleCenter = region.start * 0.75 + region.end * 0.25
-      const start = Math.max(0, Math.round(sampleCenter - length / 2))
-      const end = Math.min(Math.round(sampleCenter + length / 2), region.end)
+      const { start, end } = region
+      const sampleCenter = start * 0.75 + end * 0.25
 
-      const feats = this.getFeatures(region, opts)
-      let features
-      try {
-        features = await feats
-          .pipe(
-            filter(
-              f =>
-                typeof f.get === 'function' &&
-                f.get('start') >= start &&
-                f.get('end') <= end,
-            ),
-            toArray(),
-          )
-          .toPromise()
-      } catch (e) {
-        if (`${e}`.match(/HTTP 404/)) {
-          throw new Error(`${e}`)
-        }
-        console.warn('Skipping feature density calculation: ', e)
-        return { featureDensity: Infinity }
-      }
+      const features = await this.getFeatures(
+        {
+          ...region,
+          start: Math.max(0, Math.round(sampleCenter - length / 2)),
+          end: Math.min(Math.round(sampleCenter + length / 2), end),
+        },
+        opts,
+      )
+        .pipe(toArray())
+        .toPromise()
 
-      // if no features in range or adapter has no f.get, cancel feature density calculation
-      if (features.length === 0) {
-        return { featureDensity: 0 }
-      }
       return maybeRecordStats(
         length,
         { featureDensity: features.length / length },

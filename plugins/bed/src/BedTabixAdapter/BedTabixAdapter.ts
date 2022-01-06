@@ -155,10 +155,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     }, opts.signal)
   }
 
-  async estimateGlobalStats(
-    region: Region,
-    opts?: BaseOptions,
-  ): Promise<BaseFeatureStats> {
+  async estimateGlobalStats(region: Region, opts?: BaseOptions) {
     const featCount = await this.bed.lineCount(region.refName)
     if (featCount === -1) {
       return super.estimateGlobalStats(region, opts)
