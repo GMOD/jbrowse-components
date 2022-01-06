@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,react/no-danger */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React from 'react'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
@@ -18,12 +19,10 @@ import {
   getParentRenderProps,
   getRpcSessionId,
 } from '@jbrowse/core/util/tracks'
-import Button from '@material-ui/core/Button'
-import Typography from '@material-ui/core/Typography'
+import { Button, Typography } from '@material-ui/core'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import { autorun } from 'mobx'
 import { addDisposer, Instance, isAlive, types } from 'mobx-state-tree'
-import React from 'react'
 import { Tooltip } from '../components/BaseLinearDisplay'
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
 
@@ -137,7 +136,7 @@ export const BaseLinearDisplay = types
           featureMaps.push(block.features)
         }
       }
-      return new CompositeMap<string, Feature>(featureMaps)
+      return new CompositeMap(featureMaps)
     },
 
     get featureUnderMouse() {
@@ -208,7 +207,7 @@ export const BaseLinearDisplay = types
         signal?: AbortSignal
         filters?: string[]
       },
-    ): Promise<BaseFeatureStats> {
+    ) {
       const { rpcManager } = getSession(self)
       const { adapterConfig } = self
       const sessionId = getRpcSessionId(self)
@@ -448,7 +447,9 @@ export const BaseLinearDisplay = types
             self.clearFeatureSelection()
           } else {
             const feature = self.features.get(f)
-            self.selectFeature(feature as Feature)
+            if (feature) {
+              self.selectFeature(feature)
+            }
           }
         },
         onClick() {
@@ -554,6 +555,7 @@ export const BaseLinearDisplay = types
                     {React.isValidElement(rendering.reactElement) ? (
                       rendering.reactElement
                     ) : (
+                      // eslint-disable-next-line react/no-danger
                       <g dangerouslySetInnerHTML={{ __html: rendering.html }} />
                     )}
                   </g>

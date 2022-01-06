@@ -11,54 +11,59 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
-import { GenericFilehandle } from 'generic-filehandle'
 import VcfParser from '@gmod/vcf'
 import { Observer } from 'rxjs'
 import { readConfObject } from '@jbrowse/core/configuration'
 import VcfFeature from './VcfFeature'
-import { BaseFeatureStats } from '@jbrowse/core/util/stats'
+
+interface VirtualOffset {
+  blockPosition: number
+}
+interface Block {
+  minv: VirtualOffset
+  maxv: VirtualOffset
+}
 
 export default class extends BaseFeatureDataAdapter {
-  protected configured?: Promise<{
-    vcf: TabixIndexedFile
-    parser: typeof VcfParser
-    filehandle: GenericFilehandle
-  }>
+  //eslint-disable-next-line no-undef
+  private configured?: ReturnType<typeof this.configurePre>
+
+  private async configurePre() {
+    const vcfGzLocation = readConfObject(this.config, 'vcfGzLocation')
+    const location = readConfObject(this.config, ['index', 'location'])
+    const indexType = readConfObject(this.config, ['index', 'indexType'])
+
+    const filehandle = openLocation(
+      vcfGzLocation as FileLocation,
+      this.pluginManager,
+    )
+    const isCSI = indexType === 'CSI'
+    const vcf = new TabixIndexedFile({
+      filehandle,
+      csiFilehandle: isCSI
+        ? openLocation(location, this.pluginManager)
+        : undefined,
+      tbiFilehandle: !isCSI
+        ? openLocation(location, this.pluginManager)
+        : undefined,
+      chunkCacheSize: 50 * 2 ** 20,
+      chunkSizeLimit: 1000000000,
+    })
+
+    const header = await vcf.getHeader()
+    return {
+      filehandle,
+      vcf,
+      parser: new VcfParser({ header }),
+    }
+  }
 
   protected async configure() {
     if (!this.configured) {
-      const vcfGzLocation = readConfObject(this.config, 'vcfGzLocation')
-      const location = readConfObject(this.config, ['index', 'location'])
-      const indexType = readConfObject(this.config, ['index', 'indexType'])
-
-      const filehandle = openLocation(
-        vcfGzLocation as FileLocation,
-        this.pluginManager,
-      )
-      const isCSI = indexType === 'CSI'
-      const vcf = new TabixIndexedFile({
-        filehandle,
-        csiFilehandle: isCSI
-          ? openLocation(location, this.pluginManager)
-          : undefined,
-        tbiFilehandle: !isCSI
-          ? openLocation(location, this.pluginManager)
-          : undefined,
-        chunkCacheSize: 50 * 2 ** 20,
-        chunkSizeLimit: 1000000000,
+      this.configured = this.configurePre().catch(e => {
+        this.configured = undefined
+        throw e
       })
-
-      this.configured = vcf
-        .getHeader()
-        .then(header => ({
-          filehandle,
-          vcf,
-          parser: new VcfParser({ header }),
-        }))
-        .catch(e => {
-          this.configured = undefined
-          throw e
-        })
     }
     return this.configured
   }
@@ -153,38 +158,16 @@ export default class extends BaseFeatureDataAdapter {
         vcf.index.blocksForRange(region.refName, region.start, region.end),
       ),
     )
-    interface ByteRange {
-      start: number
-      end: number
-    }
-    interface VirtualOffset {
-      blockPosition: number
-    }
-    interface Block {
-      minv: VirtualOffset
-      maxv: VirtualOffset
-    }
-    const byteRanges: ByteRange[] = []
-    blockResults.forEach((blocks: Block[]) => {
-      blocks.forEach(block => {
-        const start = block.minv.blockPosition
-        const end = block.maxv.blockPosition + 64000
-        if (
-          !byteRanges.find(range => {
-            if (range.start <= end && range.end >= start) {
-              range.start = Math.min(range.start, start)
-              range.end = Math.max(range.end, end)
-              return true
-            }
-            return false
-          })
-        ) {
-          byteRanges.push({ start, end })
-        }
-      })
-    })
 
-    return byteRanges.reduce((a, b) => a + b.end - b.start + 1, 0)
+    return blockResults
+      .map((blocks: Block[]) =>
+        blocks.map(block => ({
+          start: block.minv.blockPosition,
+          end: block.maxv.blockPosition + 65535,
+        })),
+      )
+      .flat()
+      .reduce((a, b) => a + b.end - b.start + 1, 0)
   }
 
   async estimateGlobalStats(region: Region, opts?: BaseOptions) {

@@ -26,6 +26,7 @@ interface Header {
 export default class CramAdapter extends BaseFeatureDataAdapter {
   samHeader: Header = {}
 
+  // eslint-disable-next-line no-undef
   private setupP?: ReturnType<typeof this.setupPre>
 
   // maps a refname to an id
@@ -43,6 +44,8 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     if (!craiLocation) {
       throw new Error('missing craiLocation argument')
     }
+
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cram: any = new IndexedCramFile({
       cramFilehandle: openLocation(cramLocation, this.pluginManager),
       index: new CraiIndex({

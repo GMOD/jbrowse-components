@@ -1,5 +1,5 @@
 import { Observable, merge } from 'rxjs'
-import { filter, takeUntil, toArray } from 'rxjs/operators'
+import { takeUntil, toArray } from 'rxjs/operators'
 import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { ObservableCreate } from '../util/rxjs'
 import { checkAbortSignal, observeAbortSignal } from '../util'
@@ -274,7 +274,6 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     region: Region,
     opts?: BaseOptions,
   ): Promise<BaseFeatureStats> {
-    console.log('wow')
     const statsFromInterval = async (length: number, expansionTime: number) => {
       const { start, end } = region
       const sampleCenter = start * 0.75 + end * 0.25
@@ -304,7 +303,6 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       statsSampleFeatures: number,
       expansionTime: number,
     ): Promise<BaseFeatureStats> => {
-      console.log({ interval, stats, statsSampleFeatures, expansionTime })
       const refLen = region.end - region.start
       if (statsSampleFeatures >= 300 || interval * 2 > refLen) {
         return stats
