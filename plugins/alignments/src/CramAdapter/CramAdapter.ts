@@ -255,19 +255,17 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
    * query regions
    * @param regions - list of query regions
    */
-  private async bytesForRegions(regions: Region[], opts?: BaseOptions) {
+  private async bytesForRegions(regions: Region[], _opts?: BaseOptions) {
     const { cram } = await this.configure()
     const blockResults = await Promise.all(
       regions.map(region => {
         const { refName, start, end } = region
-        // @ts-ignore
-        const chrId = bam.chrToIndex[refName]
-        // @ts-ignore
-        return bam.index.blocksForRange(chrId, start, end, opts) as Block[]
+        const chrId = this.refNameToId(refName)
+        return cram.index.getEntriesForRange(chrId, start, end)
       }),
     )
 
     // num blocks times 16kb
-    return blockResults.flat().length * 65535
+    return blockResults.flat().reduce((a, b) => a + b.sliceBytes, 0)
   }
 }
