@@ -108,6 +108,7 @@ exports[`open up a widget 1`] = `
             >
               <div
                 class="makeStyles-fieldName"
+                style="width: 40px;"
               >
                 score
               </div>

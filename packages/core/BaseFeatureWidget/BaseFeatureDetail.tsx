@@ -381,10 +381,9 @@ function accessNested(arr: string[], obj: Record<string, any> = {}) {
 
 function generateMaxWidth(array: any, prefix: any) {
   // @ts-ignore
-  let arr = []
+  const arr = []
   array.forEach((key: any, value: any) => {
     const val = [...prefix, key[0]].join('.')
-    console.log(key, val, measureText(val, 12))
     arr.push(measureText(val, 12))
   })
 
