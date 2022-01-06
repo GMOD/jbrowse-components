@@ -259,18 +259,13 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     })
   }
 
-  public async getGlobalStats(
-    regionToStart: Region,
-    opts?: BaseOptions,
-  ): Promise<BaseFeatureStats> {
+  public async getGlobalStats(region: Region, opts?: BaseOptions) {
     // Estimates once, then cache stats for future calls
     if (!this.estimatedStats) {
-      this.estimatedStats = this.estimateGlobalStats(regionToStart, opts).catch(
-        e => {
-          this.estimatedStats = undefined
-          throw e
-        },
-      )
+      this.estimatedStats = this.estimateGlobalStats(region, opts).catch(e => {
+        this.estimatedStats = undefined
+        throw e
+      })
     }
     return this.estimatedStats
   }
@@ -309,6 +304,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       statsSampleFeatures: number,
       expansionTime: number,
     ): Promise<BaseFeatureStats> => {
+      console.log({ interval, stats, statsSampleFeatures, expansionTime })
       const refLen = region.end - region.start
       if (statsSampleFeatures >= 300 || interval * 2 > refLen) {
         return stats

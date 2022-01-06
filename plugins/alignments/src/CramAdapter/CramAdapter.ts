@@ -24,14 +24,9 @@ interface Header {
 }
 
 export default class CramAdapter extends BaseFeatureDataAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private cram: any
+  samHeader: Header = {}
 
-  private setupP?: Promise<Header>
-
-  private sequenceAdapter?: BaseFeatureDataAdapter
-
-  public samHeader: Header = {}
+  private setupP?: ReturnType<typeof this.setupPre>
 
   // maps a refname to an id
   private seqIdToRefName: string[] | undefined
@@ -48,7 +43,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     if (!craiLocation) {
       throw new Error('missing craiLocation argument')
     }
-    this.cram = new IndexedCramFile({
+    const cram: any = new IndexedCramFile({
       cramFilehandle: openLocation(cramLocation, this.pluginManager),
       index: new CraiIndex({
         filehandle: openLocation(craiLocation, this.pluginManager),
@@ -67,62 +62,55 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       throw new Error('Error getting subadapter')
     }
 
-    const { dataAdapter } = await this.getSubAdapter(
-      readConfObject(this.config, 'sequenceAdapter'),
-    )
-    if (dataAdapter instanceof BaseFeatureDataAdapter) {
-      this.sequenceAdapter = dataAdapter
-    } else {
+    const seqConf = readConfObject(this.config, 'sequenceAdapter')
+    const { dataAdapter: sequenceAdapter } = await this.getSubAdapter(seqConf)
+
+    if (!(sequenceAdapter instanceof BaseFeatureDataAdapter)) {
       throw new Error(
         `CRAM feature adapters cannot use sequence adapters of type '${sequenceAdapterType}'`,
       )
     }
-    return { sequenceAdapter: this.sequenceAdapter }
+
+    return { cram, sequenceAdapter }
   }
 
   async getHeader(opts?: BaseOptions) {
-    await this.configure()
-    return this.cram.cram.getHeaderText(opts)
+    const { cram } = await this.configure()
+    return cram.cram.getHeaderText(opts)
   }
 
   private async seqFetch(seqId: number, start: number, end: number) {
     start -= 1 // convert from 1-based closed to interbase
 
-    const refSeqStore = this.sequenceAdapter
-    if (!refSeqStore) {
-      return undefined
-    }
+    const { sequenceAdapter } = await this.configure()
     const refName = this.refIdToOriginalName(seqId) || this.refIdToName(seqId)
     if (!refName) {
       return undefined
     }
 
-    const features = refSeqStore.getFeatures(
-      {
+    const seqChunks = await sequenceAdapter
+      .getFeatures({
         refName,
         start,
         end,
         assemblyName: '',
-      },
-      {},
-    )
+      })
+      .pipe(toArray())
+      .toPromise()
 
-    const seqChunks = await features.pipe(toArray()).toPromise()
-
-    const trimmed: string[] = []
-    seqChunks
+    const sequence = seqChunks
       .sort((a, b) => a.get('start') - b.get('start'))
-      .forEach((chunk: Feature) => {
+      .map(chunk => {
         const chunkStart = chunk.get('start')
         const chunkEnd = chunk.get('end')
         const trimStart = Math.max(start - chunkStart, 0)
         const trimEnd = Math.min(end - chunkStart, chunkEnd - chunkStart)
         const trimLength = trimEnd - trimStart
         const chunkSeq = chunk.get('seq') || chunk.get('residues')
-        trimmed.push(chunkSeq.substr(trimStart, trimLength))
+        return chunkSeq.substr(trimStart, trimLength)
       })
+      .join('')
 
-    const sequence = trimmed.join('')
     if (sequence.length !== end - start) {
       throw new Error(
         `sequence fetch failed: fetching ${refName}:${(
@@ -135,60 +123,56 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     return sequence
   }
 
-  private async setup(opts?: BaseOptions) {
+  private async setupPre(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
-    if (!this.setupP) {
-      this.setupP = this.configure()
-        .then(async () => {
-          statusCallback('Downloading index')
-          const samHeader: HeaderLine[] = await this.cram.cram.getSamHeader(
-            opts?.signal,
-          )
+    const configured = await this.configure()
+    statusCallback('Downloading index')
+    const { cram } = configured
+    const samHeader: HeaderLine[] = await cram.cram.getSamHeader(opts?.signal)
 
-          // use the @SQ lines in the header to figure out the
-          // mapping between ref ID numbers and names
-          const idToName: string[] = []
-          const nameToId: Record<string, number> = {}
-          samHeader
-            .filter(l => l.tag === 'SQ')
-            .forEach((sqLine, refId) => {
-              sqLine.data.forEach(item => {
-                if (item.tag === 'SN') {
-                  // this is the ref name
-                  const refName = item.value
-                  nameToId[refName] = refId
-                  idToName[refId] = refName
-                }
-              })
-            })
-
-          const readGroups = samHeader
-            .filter(l => l.tag === 'RG')
-            .map(rgLine => rgLine.data.find(item => item.tag === 'ID')?.value)
-
-          if (idToName.length) {
-            this.samHeader = { idToName, nameToId, readGroups }
+    // use the @SQ lines in the header to figure out the
+    // mapping between ref ID numbers and names
+    const idToName: string[] = []
+    const nameToId: Record<string, number> = {}
+    samHeader
+      .filter(l => l.tag === 'SQ')
+      .forEach((sqLine, refId) => {
+        sqLine.data.forEach(item => {
+          if (item.tag === 'SN') {
+            // this is the ref name
+            const refName = item.value
+            nameToId[refName] = refId
+            idToName[refId] = refName
           }
-          statusCallback('')
-          return this.samHeader
         })
-        .catch(e => {
-          this.setupP = undefined
-          throw e
-        })
+      })
+
+    const readGroups = samHeader
+      .filter(l => l.tag === 'RG')
+      .map(rgLine => rgLine.data.find(item => item.tag === 'ID')?.value)
+
+    const data = { idToName, nameToId, readGroups }
+    statusCallback('')
+    this.samHeader = data
+    return { samHeader: data, ...configured }
+  }
+
+  private async setup(opts?: BaseOptions) {
+    if (!this.setupP) {
+      this.setupP = this.setupPre(opts).catch(e => {
+        this.setupP = undefined
+        throw e
+      })
     }
     return this.setupP
   }
 
   async getRefNames(opts?: BaseOptions) {
-    await this.setup(opts)
-    if (this.samHeader.idToName) {
-      return this.samHeader.idToName
+    const { samHeader } = await this.setup(opts)
+    if (!samHeader.idToName) {
+      throw new Error('CRAM file has no header lines')
     }
-    if (this.sequenceAdapter) {
-      return this.sequenceAdapter.getRefNames()
-    }
-    throw new Error('unable to get refnames')
+    return samHeader.idToName
   }
 
   // use info from the SAM header if possible, but fall back to using
@@ -227,27 +211,24 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     const { refName, start, end, originalRefName } = region
 
     return ObservableCreate<Feature>(async observer => {
-      await this.setup(opts)
-      if (this.sequenceAdapter && !this.seqIdToRefName) {
-        this.seqIdToRefName = await this.sequenceAdapter.getRefNames(opts)
+      const { cram, sequenceAdapter } = await this.setup(opts)
+      statusCallback('Downloading alignments')
+      if (!this.seqIdToRefName) {
+        this.seqIdToRefName = await sequenceAdapter.getRefNames(opts)
       }
       const refId = this.refNameToId(refName)
       if (refId !== undefined) {
         if (originalRefName) {
           this.seqIdToOriginalRefName[refId] = originalRefName
         }
-        statusCallback('Downloading alignments')
-        const records = await this.cram.getRecordsForRange(
-          refId,
-          start,
-          end,
-          opts,
-        )
+        const records = await cram.getRecordsForRange(refId, start, end, opts)
         checkAbortSignal(signal)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         records.forEach((record: any) => {
           observer.next(this.cramRecordToFeature(record))
         })
+      } else {
+        console.warn('Unknown refName', refName)
       }
       statusCallback('')
       observer.complete()

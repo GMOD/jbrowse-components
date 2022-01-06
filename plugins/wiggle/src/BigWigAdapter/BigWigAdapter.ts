@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
+import { updateStatus } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { map, mergeAll } from 'rxjs/operators'
@@ -45,25 +46,24 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
 
   private async setup(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
-    statusCallback('Downloading bigwig header')
-    const result = await this.bigwig.getHeader(opts)
-    statusCallback('')
-    return result
+    return updateStatus('Downloading bigwig header', statusCallback, () =>
+      this.bigwig.getHeader(opts),
+    )
   }
 
   public async getRefNames(opts?: BaseOptions) {
-    const header = await this.setup(opts)
-    return Object.keys(header.refsByName)
+    const { refsByName } = await this.setup(opts)
+    return Object.keys(refsByName)
   }
 
   public async refIdToName(refId: number) {
-    const h = await this.setup()
-    return (h.refsByNumber[refId] || { name: undefined }).name
+    const { refsByNumber } = await this.setup()
+    return refsByNumber[refId]?.name
   }
 
-  public async getGlobalStats(opts?: BaseOptions) {
-    const header = await this.setup(opts)
-    return rectifyStats(header.totalSummary as UnrectifiedFeatureStats)
+  public async getGlobalStats(_region: Region, opts?: BaseOptions) {
+    const { totalSummary } = await this.setup(opts)
+    return rectifyStats(totalSummary as UnrectifiedFeatureStats)
   }
 
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
