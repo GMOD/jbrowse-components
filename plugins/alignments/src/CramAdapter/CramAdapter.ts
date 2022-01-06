@@ -45,7 +45,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       throw new Error('missing craiLocation argument')
     }
 
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cram: any = new IndexedCramFile({
       cramFilehandle: openLocation(cramLocation, this.pluginManager),
       index: new CraiIndex({
@@ -243,5 +243,31 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   cramRecordToFeature(record: any): Feature {
     return new CramSlightlyLazyFeature(record, this)
+  }
+
+  async estimateGlobalStats(region: Region, opts?: BaseOptions) {
+    const bytes = await this.bytesForRegions([region], opts)
+    return { bytes }
+  }
+
+  /**
+   * get the approximate number of bytes queried from the file for the given
+   * query regions
+   * @param regions - list of query regions
+   */
+  private async bytesForRegions(regions: Region[], opts?: BaseOptions) {
+    const { cram } = await this.configure()
+    const blockResults = await Promise.all(
+      regions.map(region => {
+        const { refName, start, end } = region
+        // @ts-ignore
+        const chrId = bam.chrToIndex[refName]
+        // @ts-ignore
+        return bam.index.blocksForRange(chrId, start, end, opts) as Block[]
+      }),
+    )
+
+    // num blocks times 16kb
+    return blockResults.flat().length * 65535
   }
 }

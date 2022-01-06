@@ -39,11 +39,7 @@ export default function SNPCoverageConfigFactory(pluginManager: PluginManager) {
         description: 'draw upside down',
         defaultValue: false,
       },
-      maxFeatureScreenDensity: {
-        type: 'number',
-        description: 'maximum features per pixel that is displayed in the view',
-        defaultValue: 15,
-      },
+
       headroom: {
         type: 'number',
         description:

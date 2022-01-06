@@ -3,23 +3,25 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
+import gffParser from '@gmod/gff'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
-import gff from '@gmod/gff'
 import { Observer } from 'rxjs'
-
-import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
-import MyConfigSchema from './configSchema'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { Region } from '@jbrowse/core/util/types'
 import { FeatureLoc } from '../util'
-import { BaseFeatureStats } from '@jbrowse/core/util/stats'
+
+interface VirtualOffset {
+  blockPosition: number
+}
+interface Block {
+  minv: VirtualOffset
+  maxv: VirtualOffset
+}
 
 interface LineFeature {
   start: number
@@ -29,23 +31,18 @@ interface LineFeature {
 }
 
 export default class extends BaseFeatureDataAdapter {
-  protected gff: TabixIndexedFile
+  private configured?: ReturnType<typeof this.configurePre>
 
-  protected dontRedispatch: string[]
-
-  public constructor(
-    config: Instance<typeof MyConfigSchema>,
-    getSubAdapter?: getSubAdapterType,
-    pluginManager?: PluginManager,
-  ) {
-    super(config, getSubAdapter, pluginManager)
-    const gffGzLocation = readConfObject(config, 'gffGzLocation')
-    const indexType = readConfObject(config, ['index', 'indexType'])
-    const location = readConfObject(config, ['index', 'location'])
-    const dontRedispatch = readConfObject(config, 'dontRedispatch')
-
-    this.dontRedispatch = dontRedispatch || ['chromosome', 'contig', 'region']
-    this.gff = new TabixIndexedFile({
+  public configurePre() {
+    const gffGzLocation = readConfObject(this.config, 'gffGzLocation')
+    const indexType = readConfObject(this.config, ['index', 'indexType'])
+    const location = readConfObject(this.config, ['index', 'location'])
+    const dontRedispatch = readConfObject(this.config, 'dontRedispatch') || [
+      'chromosome',
+      'contig',
+      'region',
+    ]
+    const gff = new TabixIndexedFile({
       filehandle: openLocation(gffGzLocation, this.pluginManager),
       csiFilehandle:
         indexType === 'CSI'
@@ -58,19 +55,30 @@ export default class extends BaseFeatureDataAdapter {
       chunkCacheSize: 50 * 2 ** 20,
       renameRefSeqs: (n: string) => n,
     })
+    return { dontRedispatch, gff }
+  }
+
+  public configure() {
+    if (!this.configured) {
+      this.configured = this.configurePre()
+    }
+    return this.configured
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
-    return this.gff.getReferenceSequenceNames(opts)
+    const { gff } = this.configure()
+    return gff.getReferenceSequenceNames(opts)
   }
 
   public async getHeader() {
-    return this.gff.getHeader()
+    const { gff } = this.configure()
+    return gff.getHeader()
   }
 
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const metadata = await this.gff.getMetadata()
+      const { gff } = this.configure()
+      const metadata = await gff.getMetadata()
       this.getFeaturesHelper(query, opts, metadata, observer, true)
     }, opts.signal)
   }
@@ -85,15 +93,11 @@ export default class extends BaseFeatureDataAdapter {
   ) {
     try {
       const lines: LineFeature[] = []
-
-      await this.gff.getLines(
-        query.refName,
-        query.start,
-        query.end,
-        (line: string, fileOffset: number) => {
-          lines.push(this.parseLine(metadata.columnNumbers, line, fileOffset))
-        },
-      )
+      const { gff, dontRedispatch } = this.configure()
+      const { refName, start, end } = query
+      await gff.getLines(refName, start, end, (line, fileOffset) => {
+        lines.push(this.parseLine(metadata.columnNumbers, line, fileOffset))
+      })
       if (allowRedispatch && lines.length) {
         let minStart = Infinity
         let maxEnd = -Infinity
@@ -101,7 +105,7 @@ export default class extends BaseFeatureDataAdapter {
           const featureType = line.fields[2]
           // only expand redispatch range if feature is not a "dontRedispatch" type
           // skips large regions like chromosome,region
-          if (!this.dontRedispatch.includes(featureType)) {
+          if (!dontRedispatch.includes(featureType)) {
             const start = line.start - 1 // gff is 1-based
             if (start < minStart) {
               minStart = start
@@ -139,7 +143,7 @@ export default class extends BaseFeatureDataAdapter {
         })
         .join('\n')
 
-      const features = gff.parseStringSync(gff3, {
+      const features = gffParser.parseStringSync(gff3, {
         parseFeatures: true,
         parseComments: false,
         parseDirectives: false,
@@ -247,16 +251,30 @@ export default class extends BaseFeatureDataAdapter {
     return f
   }
 
-  async estimateGlobalStats(
-    region: Region,
-    opts?: BaseOptions,
-  ): Promise<BaseFeatureStats> {
-    const featCount = await this.gff.lineCount(region.refName)
-    if (featCount === -1) {
-      return super.estimateGlobalStats(region, opts)
-    }
-    const featureDensity = featCount / (region.end - region.start)
-    return { featureDensity }
+  async estimateGlobalStats(region: Region, opts?: BaseOptions) {
+    const bytes = await this.bytesForRegions([region], opts)
+    return { bytes }
+  }
+
+  /**
+   * get the approximate number of bytes queried from the file for the given
+   * query regions
+   * @param regions - list of query regions
+   */
+  private async bytesForRegions(regions: Region[], opts?: BaseOptions) {
+    const { gff } = this.configure()
+    const blockResults = await Promise.all(
+      regions.map(region => {
+        const { refName, start, end } = region
+        // @ts-ignore
+        const chrId = bam.chrToIndex[refName]
+        // @ts-ignore
+        return gff.index.blocksForRange(chrId, start, end, opts) as Block[]
+      }),
+    )
+
+    // num blocks times 16kb
+    return blockResults.flat().length * 65535
   }
 
   public freeResources(/* { region } */) {}

@@ -10,7 +10,7 @@ import {
   isSelectionContainer,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { BaseFeatureStats } from '@jbrowse/core/util/stats'
+import { Stats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import { Region } from '@jbrowse/core/util/types'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
@@ -63,7 +63,7 @@ export const BaseLinearDisplay = types
     featureIdUnderMouse: undefined as undefined | string,
     contextMenuFeature: undefined as undefined | Feature,
     scrollTop: 0,
-    globalStats: undefined as undefined | BaseFeatureStats,
+    globalStats: undefined as undefined | Stats,
   }))
   .views(self => ({
     get blockType(): 'staticBlocks' | 'dynamicBlocks' {
@@ -232,9 +232,9 @@ export const BaseLinearDisplay = types
         sessionId,
         'CoreGetGlobalStats',
         params,
-      ) as Promise<BaseFeatureStats>
+      ) as Promise<Stats>
     },
-    updateGlobalStats(stats: BaseFeatureStats) {
+    updateGlobalStats(stats: Stats) {
       self.globalStats = stats
     },
     setHeight(displayHeight: number) {
@@ -311,10 +311,12 @@ export const BaseLinearDisplay = types
         let stats
         if (view.staticBlocks.contentBlocks[0]) {
           try {
+            console.log('t1')
             stats = await self.getGlobalStats(
               view.staticBlocks.contentBlocks[0],
               { signal: aborter.signal },
             )
+            console.log('t2', stats)
 
             if (isAlive(self)) {
               self.updateGlobalStats(stats)
@@ -339,18 +341,19 @@ export const BaseLinearDisplay = types
                 if (!view.initialized) {
                   return
                 }
+                const { currentFeatureScreenDensity, maxFeatureScreenDensity } =
+                  self
 
-                if (
-                  self.currentFeatureScreenDensity >
-                  self.maxFeatureScreenDensity
-                ) {
+                if (currentFeatureScreenDensity > maxFeatureScreenDensity) {
                   return
                 }
                 const block = view.staticBlocks.contentBlocks[0]
                 if (block) {
+                  console.log('t1')
                   const stats = await self.getGlobalStats(block, {
                     signal: aborter.signal,
                   })
+                  console.log('t2', stats)
 
                   if (isAlive(self)) {
                     self.updateGlobalStats(stats)

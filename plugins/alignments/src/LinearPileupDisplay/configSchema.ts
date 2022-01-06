@@ -26,7 +26,7 @@ function PileupConfigFactory(pluginManager: PluginManager) {
       maxFeatureScreenDensity: {
         type: 'number',
         description: 'maximum features per pixel that is displayed in the view',
-        defaultValue: 15,
+        defaultValue: 5,
       },
       colorScheme: {
         type: 'stringEnum',

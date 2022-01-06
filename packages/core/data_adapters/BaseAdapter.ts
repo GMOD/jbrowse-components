@@ -10,12 +10,7 @@ import {
 } from '../configuration/configurationSchema'
 import { getSubAdapterType } from './dataAdapterCache'
 import { AugmentedRegion as Region, NoAssemblyRegion } from '../util/types'
-import {
-  blankStats,
-  rectifyStats,
-  scoresToStats,
-  BaseFeatureStats,
-} from '../util/stats'
+import { blankStats, rectifyStats, scoresToStats } from '../util/stats'
 import BaseResult from '../TextSearch/BaseResults'
 import idMaker from '../util/idMaker'
 import PluginManager from '../PluginManager'
@@ -88,12 +83,18 @@ export abstract class BaseAdapter {
   public abstract freeResources(region: Region): void
 }
 
+export interface Stats {
+  featureDensity?: number
+  bytes?: number
+}
+
 /**
  * Base class for feature adapters to extend. Defines some methods that
  * subclasses must implement.
  */
 export abstract class BaseFeatureDataAdapter extends BaseAdapter {
-  protected estimatedStats?: Promise<BaseFeatureStats>
+  protected estimatedStats?: Promise<Stats>
+
   /**
    * Get all reference sequence names used in the data source
    *
@@ -232,22 +233,12 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       regions.map(region => this.getRegionStats(region, opts)),
     )
 
-    const scoreMax = feats
-      .map(s => s.scoreMax)
-      .reduce((acc, curr) => Math.max(acc, curr))
-    const scoreMin = feats
-      .map(s => s.scoreMin)
-      .reduce((acc, curr) => Math.min(acc, curr))
-    const scoreSum = feats.map(s => s.scoreSum).reduce((a, b) => a + b, 0)
-    const scoreSumSquares = feats
-      .map(s => s.scoreSumSquares)
-      .reduce((a, b) => a + b, 0)
-    const featureCount = feats
-      .map(s => s.featureCount)
-      .reduce((a, b) => a + b, 0)
-    const basesCovered = feats
-      .map(s => s.basesCovered)
-      .reduce((a, b) => a + b, 0)
+    const scoreMax = feats.reduce((a, b) => Math.max(a, b.scoreMax), 0)
+    const scoreMin = feats.reduce((a, b) => Math.min(a, b.scoreMin), 0)
+    const scoreSum = feats.reduce((a, b) => a + b.scoreSum, 0)
+    const scoreSumSquares = feats.reduce((a, b) => a + b.scoreSumSquares, 0)
+    const featureCount = feats.reduce((a, b) => a + b.featureCount, 0)
+    const basesCovered = feats.reduce((a, b) => a + b.basesCovered, 0)
 
     return rectifyStats({
       scoreMin,
@@ -260,7 +251,6 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   }
 
   public async getGlobalStats(region: Region, opts?: BaseOptions) {
-    // Estimates once, then cache stats for future calls
     if (!this.estimatedStats) {
       this.estimatedStats = this.estimateGlobalStats(region, opts).catch(e => {
         this.estimatedStats = undefined
@@ -270,10 +260,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     return this.estimatedStats
   }
 
-  public async estimateGlobalStats(
-    region: Region,
-    opts?: BaseOptions,
-  ): Promise<BaseFeatureStats> {
+  public async estimateGlobalStats(region: Region, opts?: BaseOptions) {
     const statsFromInterval = async (length: number, expansionTime: number) => {
       const { start, end } = region
       const sampleCenter = start * 0.75 + end * 0.25
@@ -299,10 +286,10 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
 
     const maybeRecordStats = async (
       interval: number,
-      stats: BaseFeatureStats,
+      stats: Stats,
       statsSampleFeatures: number,
       expansionTime: number,
-    ): Promise<BaseFeatureStats> => {
+    ): Promise<Stats> => {
       const refLen = region.end - region.start
       if (statsSampleFeatures >= 300 || interval * 2 > refLen) {
         return stats

@@ -18,7 +18,6 @@ import {
 import { Region } from '../util/types'
 import { checkAbortSignal, renameRegionsIfNeeded } from '../util'
 import SimpleFeature, { SimpleFeatureSerialized } from '../util/simpleFeature'
-import { BaseFeatureStats } from '../util/stats'
 
 export class CoreGetRefNames extends RpcMethodType {
   name = 'CoreGetRefNames'
@@ -219,7 +218,7 @@ export class CoreGetGlobalStats extends RpcMethodType {
       sessionId: string
     },
     rpcDriverClassName: string,
-  ): Promise<BaseFeatureStats> {
+  ) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,

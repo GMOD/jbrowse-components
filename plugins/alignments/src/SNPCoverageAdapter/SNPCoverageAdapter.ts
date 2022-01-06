@@ -16,7 +16,6 @@ import {
   getModificationPositions,
   Mismatch,
 } from '../BamAdapter/MismatchParser'
-import { BaseFeatureStats } from '@jbrowse/core/util/stats'
 
 interface SNPCoverageOptions extends BaseOptions {
   filters?: SerializableFilterChain
@@ -126,10 +125,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     }, opts.signal)
   }
 
-  async estimateGlobalStats(
-    region: Region,
-    opts?: BaseOptions,
-  ): Promise<BaseFeatureStats> {
+  async estimateGlobalStats(region: Region, opts?: BaseOptions) {
     const { subadapter } = await this.configure()
     return subadapter.estimateGlobalStats(region, opts)
   }

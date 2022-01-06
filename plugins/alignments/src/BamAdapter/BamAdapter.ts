@@ -8,7 +8,6 @@ import { checkAbortSignal } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { BaseFeatureStats } from '@jbrowse/core/util/stats'
 import { toArray } from 'rxjs/operators'
 import { readConfObject } from '@jbrowse/core/configuration'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
@@ -16,6 +15,14 @@ import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 interface Header {
   idToName: string[]
   nameToId: Record<string, number>
+}
+
+interface VirtualOffset {
+  blockPosition: number
+}
+interface Block {
+  minv: VirtualOffset
+  maxv: VirtualOffset
 }
 
 export default class BamAdapter extends BaseFeatureDataAdapter {
@@ -189,17 +196,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     }, signal)
   }
 
-  async estimateGlobalStats(
-    region: Region,
-    opts?: BaseOptions,
-  ): Promise<BaseFeatureStats> {
-    const { bam } = await this.configure()
-    const featCount = await bam.lineCount(region.refName)
-    if (featCount < 0) {
-      return super.estimateGlobalStats(region, opts)
-    }
-
-    return { featureDensity: featCount / (region.end - region.start) }
+  async estimateGlobalStats(region: Region, opts?: BaseOptions) {
+    const bytes = await this.bytesForRegions([region], opts)
+    return { bytes }
   }
 
   freeResources(/* { region } */): void {}
@@ -207,5 +206,26 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   // depends on setup being called before the BAM constructor
   refIdToName(refId: number): string | undefined {
     return this.samHeader?.idToName[refId]
+  }
+
+  /**
+   * get the approximate number of bytes queried from the file for the given
+   * query regions
+   * @param regions - list of query regions
+   */
+  private async bytesForRegions(regions: Region[], opts?: BaseOptions) {
+    const { bam } = await this.configure()
+    const blockResults = await Promise.all(
+      regions.map(region => {
+        const { refName, start, end } = region
+        // @ts-ignore
+        const chrId = bam.chrToIndex[refName]
+        // @ts-ignore
+        return bam.index.blocksForRange(chrId, start, end, opts) as Block[]
+      }),
+    )
+
+    // num blocks times 16kb
+    return blockResults.flat().length * 65535
   }
 }

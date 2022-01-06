@@ -25,7 +25,7 @@ interface Block {
 }
 
 export default class extends BaseFeatureDataAdapter {
-  //eslint-disable-next-line no-undef
+  // eslint-disable-next-line no-undef
   private configured?: ReturnType<typeof this.configurePre>
 
   private async configurePre() {
@@ -150,17 +150,22 @@ export default class extends BaseFeatureDataAdapter {
    * query regions
    * @param regions - list of query regions
    */
-  private async bytesForRegions(regions: Region[]) {
+  private async bytesForRegions(regions: Region[], opts?: BaseOptions) {
     const { vcf } = await this.configure()
     const blockResults = await Promise.all(
-      regions.map(region =>
-        // @ts-ignore
-        vcf.index.blocksForRange(region.refName, region.start, region.end),
+      regions.map(
+        region =>
+          // @ts-ignore
+          vcf.index.blocksForRange(
+            region.refName,
+            region.start,
+            region.end,
+          ) as Block[],
       ),
     )
 
     return blockResults
-      .map((blocks: Block[]) =>
+      .map(blocks =>
         blocks.map(block => ({
           start: block.minv.blockPosition,
           end: block.maxv.blockPosition + 65535,
@@ -171,12 +176,8 @@ export default class extends BaseFeatureDataAdapter {
   }
 
   async estimateGlobalStats(region: Region, opts?: BaseOptions) {
-    const { vcf } = await this.configure()
-    const featCount = await vcf.lineCount(region.refName)
-    if (featCount === -1) {
-      return super.estimateGlobalStats(region, opts)
-    }
-    return { featureDensity: featCount / (region.end - region.start) }
+    const bytes = await this.bytesForRegions([region], opts)
+    return { bytes }
   }
 
   public freeResources(/* { region } */): void {}
