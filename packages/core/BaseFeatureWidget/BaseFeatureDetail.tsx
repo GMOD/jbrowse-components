@@ -24,6 +24,8 @@ import { BaseCardProps, BaseProps } from './types'
 import { SimpleFeatureSerialized } from '../util/simpleFeature'
 import { ellipses } from './util'
 
+const MAX_FIELD_NAME_WIDTH = 170
+
 // these are always omitted as too detailed
 const globalOmit = [
   'length',
@@ -67,7 +69,6 @@ export const useStyles = makeStyles(theme => ({
   fieldName: {
     wordBreak: 'break-all',
     minWidth: '90px',
-    maxWidth: '150px',
     borderBottom: '1px solid #0003',
     background: theme.palette.grey[200],
     marginRight: theme.spacing(1),
@@ -119,10 +120,12 @@ export const FieldName = ({
   description,
   name,
   prefix = [],
+  width,
 }: {
   description?: React.ReactNode
   name: string
   prefix?: string[]
+  width?: number
 }) => {
   const classes = useStyles()
   const val = [...prefix, name].join('.')
@@ -133,7 +136,9 @@ export const FieldName = ({
       </div>
     </Tooltip>
   ) : (
-    <div className={classes.fieldName}>{val}</div>
+    <div className={classes.fieldName} style={{ width: width }}>
+      {val}
+    </div>
   )
 }
 
@@ -157,16 +162,23 @@ export const SimpleValue = ({
   value,
   description,
   prefix,
+  width,
 }: {
   description?: React.ReactNode
   name: string
   value: any
   prefix?: string[]
+  width?: number
 }) => {
   const classes = useStyles()
   return value !== null && value !== undefined ? (
     <div className={classes.field}>
-      <FieldName prefix={prefix} description={description} name={name} />
+      <FieldName
+        prefix={prefix}
+        description={description}
+        name={name}
+        width={width}
+      />
       <BasicValue value={value} />
     </div>
   ) : null
@@ -367,6 +379,19 @@ function accessNested(arr: string[], obj: Record<string, any> = {}) {
     : undefined
 }
 
+function generateMaxWidth(array: any, prefix: any) {
+  // @ts-ignore
+  let arr = []
+  array.forEach((key: any, value: any) => {
+    const val = [...prefix, key[0]].join('.')
+    console.log(key, val, measureText(val, 12))
+    arr.push(measureText(val, 12))
+  })
+
+  // @ts-ignore
+  return Math.ceil(Math.max(...arr)) + 10
+}
+
 export const Attributes: React.FunctionComponent<AttributeProps> = props => {
   const {
     attributes,
@@ -376,6 +401,16 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
     prefix = [],
   } = props
   const omits = [...omit, ...globalOmit]
+
+  const maxLabelWidth = generateMaxWidth(
+    Object.entries(attributes).filter(
+      ([k, v]) => v !== undefined && !omits.includes(k),
+    ),
+    prefix,
+  )
+
+  const labelWidth =
+    maxLabelWidth <= MAX_FIELD_NAME_WIDTH ? maxLabelWidth : MAX_FIELD_NAME_WIDTH
 
   return (
     <>
@@ -429,6 +464,7 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
               value={formatter(value, key)}
               description={description}
               prefix={prefix}
+              width={labelWidth}
             />
           )
         })}
