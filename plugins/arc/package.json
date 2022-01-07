@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-arc",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "description": "JBrowse 2 arc adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
