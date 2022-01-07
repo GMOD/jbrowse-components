@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
+import { Button, Typography } from '@material-ui/core'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
@@ -19,16 +20,14 @@ import {
   getParentRenderProps,
   getRpcSessionId,
 } from '@jbrowse/core/util/tracks'
-import { Button, Typography } from '@material-ui/core'
 import { autorun } from 'mobx'
 import { addDisposer, Instance, isAlive, types } from 'mobx-state-tree'
-import { Tooltip } from '../components/BaseLinearDisplay'
-import BlockState, { renderBlockData } from './serverSideRenderedBlock'
-
-//icons
+// icons
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 
 import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
+import { Tooltip } from '../components/BaseLinearDisplay'
+import BlockState, { renderBlockData } from './serverSideRenderedBlock'
 
 type LGV = LinearGenomeViewModel
 
@@ -86,7 +85,7 @@ export const BaseLinearDisplay = types
     },
     get blockDefinitions() {
       const { blockType } = this
-      const view = getContainingView(self) as LinearGenomeViewModel
+      const view = getContainingView(self) as LGV
       if (!view.initialized) {
         throw new Error('view not initialized yet')
       }
@@ -201,7 +200,7 @@ export const BaseLinearDisplay = types
       const blockWatchDisposer = autorun(() => {
         // create any blocks that we need to create
         const blocksPresent: { [key: string]: boolean } = {}
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = getContainingView(self) as LGV
         if (view.initialized) {
           self.blockDefinitions.contentBlocks.forEach(block => {
             blocksPresent[block.key] = true
@@ -360,7 +359,7 @@ export const BaseLinearDisplay = types
             async () => {
               try {
                 const aborter = new AbortController()
-                const view = getContainingView(self) as LinearGenomeViewModel
+                const view = getContainingView(self) as LGV
 
                 if (!view.initialized) {
                   return
@@ -408,7 +407,14 @@ export const BaseLinearDisplay = types
         maxAllowableBytes: maxBytes,
       } = self
 
-      return currentDensity > maxDensity || currentBytes > maxBytes
+      const view = getContainingView(self) as LGV
+
+      // if userBpPerPxLimit is defined, only check this
+      if (self.userBpPerPxLimit && view.bpPerPx <= self.userBpPerPxLimit) {
+        return false
+      } else {
+        return currentDensity > maxDensity || currentBytes > maxBytes
+      }
     },
 
     get regionTooLargeReason() {
@@ -417,9 +423,16 @@ export const BaseLinearDisplay = types
         maxAllowableBytes: maxBytes,
       } = self
 
-      return currentBytes > maxBytes
-        ? `Requested too much data (${getDisplayStr(currentBytes)})`
-        : ''
+      const view = getContainingView(self) as LGV
+
+      // if userBpPerPxLimit is defined, return message relevant to that
+      if (self.userBpPerPxLimit && view.bpPerPx > self.userBpPerPxLimit) {
+        return 'Region larger than previously set limit'
+      } else {
+        return currentBytes > maxBytes
+          ? `Requested too much data (${getDisplayStr(currentBytes)})`
+          : ''
+      }
     },
   }))
   .views(self => ({
@@ -435,7 +448,7 @@ export const BaseLinearDisplay = types
      *  react node allows user to force load at current setting
      */
     regionCannotBeRendered(_region: Region) {
-      const view = getContainingView(self) as LinearGenomeViewModel
+      const view = getContainingView(self) as LGV
       const { regionTooLarge, regionTooLargeReason } = self
 
       if (regionTooLarge) {
@@ -533,7 +546,7 @@ export const BaseLinearDisplay = types
     async renderSvg(opts: ExportSvgOptions & { overrideHeight: number }) {
       const { height, id } = self
       const { overrideHeight } = opts
-      const view = getContainingView(self) as LinearGenomeViewModel
+      const view = getContainingView(self) as LGV
       const {
         offsetPx: viewOffsetPx,
         roundedDynamicBlocks: dynamicBlocks,
