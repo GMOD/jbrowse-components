@@ -41,6 +41,18 @@ export interface Layout {
 }
 type LayoutRecord = [number, number, number, number]
 
+function getDisplayStr(totalBytes: number) {
+  let displayBp
+  if (Math.floor(totalBytes / 1000000) > 0) {
+    displayBp = `${parseFloat((totalBytes / 1000000).toPrecision(3))} Mb`
+  } else if (Math.floor(totalBytes / 1000) > 0) {
+    displayBp = `${parseFloat((totalBytes / 1000).toPrecision(3))} Kb`
+  } else {
+    displayBp = `${Math.floor(totalBytes)} bytes`
+  }
+  return displayBp
+}
+
 const minDisplayHeight = 20
 const defaultDisplayHeight = 100
 export const BaseLinearDisplay = types
@@ -172,6 +184,10 @@ export const BaseLinearDisplay = types
     get currentFeatureScreenDensity() {
       const { bpPerPx } = getContainingView(self) as LGV
       return (self.globalStats?.featureDensity || 0) * bpPerPx
+    },
+
+    get currentBytesRequested() {
+      return self.globalStats?.bytes || 0
     },
   }))
   .actions(self => ({
@@ -349,15 +365,17 @@ export const BaseLinearDisplay = types
                 if (!view.initialized) {
                   return
                 }
-                const { currentFeatureScreenDensity, maxFeatureScreenDensity } =
-                  self
+                const {
+                  currentFeatureScreenDensity,
+                  maxFeatureScreenDensity,
+                  maxAllowableBytes,
+                } = self
 
                 if (currentFeatureScreenDensity > maxFeatureScreenDensity) {
                   return
                 }
                 const block = view.staticBlocks.contentBlocks[0]
                 if (block) {
-                  console.log('t1')
                   const globalStats = await self.getGlobalStats(block, {
                     signal: aborter.signal,
                   })
@@ -382,12 +400,31 @@ export const BaseLinearDisplay = types
     }
   })
   .views(self => ({
+    get regionTooLarge() {
+      const {
+        currentFeatureScreenDensity: currentDensity,
+        currentBytesRequested: currentBytes,
+        maxFeatureScreenDensity: maxDensity,
+        maxAllowableBytes: maxBytes,
+      } = self
+
+      return currentDensity > maxDensity || currentBytes > maxBytes
+    },
+
+    get regionTooLargeReason() {
+      const {
+        currentBytesRequested: currentBytes,
+        maxAllowableBytes: maxBytes,
+      } = self
+
+      return currentBytes > maxBytes
+        ? `Requested too much data (${getDisplayStr(currentBytes)})`
+        : ''
+    },
+  }))
+  .views(self => ({
     regionCannotBeRenderedText(_region: Region) {
-      const { currentFeatureScreenDensity, maxFeatureScreenDensity } = self
-      if (currentFeatureScreenDensity > maxFeatureScreenDensity) {
-        return 'Force load to see features'
-      }
-      return ''
+      return self.regionTooLarge ? 'Force load to see features' : ''
     },
 
     /**
@@ -398,13 +435,14 @@ export const BaseLinearDisplay = types
      *  react node allows user to force load at current setting
      */
     regionCannotBeRendered(_region: Region) {
-      const { currentFeatureScreenDensity, maxFeatureScreenDensity } = self
       const view = getContainingView(self) as LinearGenomeViewModel
+      const { regionTooLarge, regionTooLargeReason } = self
 
-      if (currentFeatureScreenDensity > maxFeatureScreenDensity) {
+      if (regionTooLarge) {
         return (
           <>
             <Typography component="span" variant="body2">
+              {regionTooLargeReason ? regionTooLargeReason + '. ' : ''}
               Zoom in to see features or{' '}
             </Typography>
             <Button

@@ -584,7 +584,9 @@ const stateModelFactory = (
                     maxAllowableBytes,
                   } = self
 
-                  if (globalStats) {
+                  if (!globalStats) {
+                    return
+                  } else {
                     const { featureDensity = 0, bytes = 0 } = globalStats
                     if (featureDensity * bpPerPx > maxFeatureScreenDensity) {
                       return
