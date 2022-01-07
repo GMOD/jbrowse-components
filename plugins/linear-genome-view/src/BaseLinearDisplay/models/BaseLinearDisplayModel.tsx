@@ -248,13 +248,17 @@ export const BaseLinearDisplay = types
         ...opts,
       }
 
-      const globalStatsP = rpcManager.call(
-        sessionId,
-        'CoreGetGlobalStats',
-        params,
-      ) as Promise<Stats>
-      self.globalStatsP = globalStatsP
-      return globalStatsP
+      self.globalStatsP = rpcManager
+        .call(sessionId, 'CoreGetGlobalStats', params)
+        .catch(e => {
+          this.setGlobalStatsP(undefined)
+          throw e
+        }) as Promise<Stats>
+
+      return self.globalStatsP
+    },
+    setGlobalStatsP(p: any) {
+      self.globalStatsP = p
     },
     updateGlobalStats(globalStats: Stats) {
       self.globalStats = globalStats
