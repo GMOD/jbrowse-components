@@ -986,10 +986,10 @@ export function generateCodonTable(table: any) {
 }
 
 // call statusCallback with current status and clear when finished
-export async function updateStatus(
+export async function updateStatus<U>(
   statusMsg: string,
-  statusCallback: Function,
-  fn: Function,
+  statusCallback: (arg: string) => void,
+  fn: () => U,
 ) {
   statusCallback(statusMsg)
   const result = await fn()
