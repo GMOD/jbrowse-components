@@ -404,7 +404,6 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
         renderProps() {
           const view = getContainingView(self) as LGV
           const {
-            ready,
             colorTagMap,
             modificationTagMap,
             sortedBy,

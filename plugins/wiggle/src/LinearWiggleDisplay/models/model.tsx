@@ -570,11 +570,11 @@ const stateModelFactory = (
                   const view = getContainingView(self) as LGV
                   self.setLoading(aborter)
 
-                  if (!view.initialized) {
-                    return
-                  } else if (!self.globalStats) {
-                    return
-                  } else if (self.regionTooLarge) {
+                  if (
+                    !view.initialized ||
+                    !self.globalStats ||
+                    !self.regionTooLarge
+                  ) {
                     return
                   }
 

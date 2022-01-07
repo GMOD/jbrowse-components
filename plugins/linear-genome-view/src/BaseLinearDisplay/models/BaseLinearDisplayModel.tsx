@@ -321,6 +321,43 @@ export const BaseLinearDisplay = types
       self.contextMenuFeature = feature
     },
   }))
+  .views(self => ({
+    get regionTooLarge() {
+      const {
+        currentFeatureScreenDensity: currentDensity,
+        currentBytesRequested: currentBytes,
+        maxFeatureScreenDensity: maxDensity,
+        maxAllowableBytes: maxBytes,
+      } = self
+
+      const view = getContainingView(self) as LGV
+
+      // if userBpPerPxLimit is defined, only check this
+      if (self.userBpPerPxLimit && view.bpPerPx <= self.userBpPerPxLimit) {
+        return false
+      } else {
+        return currentDensity > maxDensity || currentBytes > maxBytes
+      }
+    },
+
+    get regionTooLargeReason() {
+      const {
+        currentBytesRequested: currentBytes,
+        maxAllowableBytes: maxBytes,
+      } = self
+
+      const view = getContainingView(self) as LGV
+
+      // if userBpPerPxLimit is defined, return message relevant to that
+      if (self.userBpPerPxLimit && view.bpPerPx > self.userBpPerPxLimit) {
+        return 'Region larger than previously set limit'
+      } else {
+        return currentBytes > maxBytes
+          ? `Requested too much data (${getDisplayStr(currentBytes)})`
+          : ''
+      }
+    },
+  }))
   .actions(self => {
     const { reload: superReload } = self
 
@@ -361,29 +398,20 @@ export const BaseLinearDisplay = types
                 const aborter = new AbortController()
                 const view = getContainingView(self) as LGV
 
-                if (!view.initialized) {
-                  return
-                }
-                const {
-                  currentFeatureScreenDensity,
-                  maxFeatureScreenDensity,
-                  maxAllowableBytes,
-                } = self
-
-                if (currentFeatureScreenDensity > maxFeatureScreenDensity) {
+                if (!view.initialized || self.regionTooLarge) {
                   return
                 }
                 const block = view.staticBlocks.contentBlocks[0]
-                if (block) {
-                  const globalStats = await self.getGlobalStats(block, {
-                    signal: aborter.signal,
-                  })
+                if (!block) {
+                  return
+                }
 
-                  if (isAlive(self)) {
-                    self.updateGlobalStats(globalStats)
-                  } else {
-                    return
-                  }
+                const globalStats = await self.getGlobalStats(block, {
+                  signal: aborter.signal,
+                })
+
+                if (isAlive(self)) {
+                  self.updateGlobalStats(globalStats)
                 }
               } catch (e) {
                 if (!isAbortException(e) && isAlive(self)) {
@@ -398,43 +426,6 @@ export const BaseLinearDisplay = types
       },
     }
   })
-  .views(self => ({
-    get regionTooLarge() {
-      const {
-        currentFeatureScreenDensity: currentDensity,
-        currentBytesRequested: currentBytes,
-        maxFeatureScreenDensity: maxDensity,
-        maxAllowableBytes: maxBytes,
-      } = self
-
-      const view = getContainingView(self) as LGV
-
-      // if userBpPerPxLimit is defined, only check this
-      if (self.userBpPerPxLimit && view.bpPerPx <= self.userBpPerPxLimit) {
-        return false
-      } else {
-        return currentDensity > maxDensity || currentBytes > maxBytes
-      }
-    },
-
-    get regionTooLargeReason() {
-      const {
-        currentBytesRequested: currentBytes,
-        maxAllowableBytes: maxBytes,
-      } = self
-
-      const view = getContainingView(self) as LGV
-
-      // if userBpPerPxLimit is defined, return message relevant to that
-      if (self.userBpPerPxLimit && view.bpPerPx > self.userBpPerPxLimit) {
-        return 'Region larger than previously set limit'
-      } else {
-        return currentBytes > maxBytes
-          ? `Requested too much data (${getDisplayStr(currentBytes)})`
-          : ''
-      }
-    },
-  }))
   .views(self => ({
     regionCannotBeRenderedText(_region: Region) {
       return self.regionTooLarge ? 'Force load to see features' : ''

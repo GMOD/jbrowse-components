@@ -31,6 +31,7 @@ interface LineFeature {
 }
 
 export default class extends BaseFeatureDataAdapter {
+  // eslint-disable-next-line no-undef
   private configured?: ReturnType<typeof this.configurePre>
 
   public configurePre() {
@@ -267,7 +268,7 @@ export default class extends BaseFeatureDataAdapter {
       regions.map(region => {
         const { refName, start, end } = region
         // @ts-ignore
-        const chrId = bam.chrToIndex[refName]
+        const chrId = gff.chrToIndex[refName]
         // @ts-ignore
         return gff.index.blocksForRange(chrId, start, end, opts) as Block[]
       }),
