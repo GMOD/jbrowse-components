@@ -499,6 +499,7 @@ export const BaseLinearDisplay = types
     renderProps() {
       return {
         ...getParentRenderProps(self),
+        notReady: !self.globalStats,
         rpcDriverName: self.rpcDriverName,
         displayModel: self,
         globalStatsNotReady: !self.globalStats,
