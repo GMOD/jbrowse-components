@@ -80,7 +80,7 @@ const stateModelFactory = (
       }),
     )
     .volatile(() => ({
-      ready: false,
+      statsReady: false,
       message: undefined as undefined | string,
       stats: observable({ scoreMin: 0, scoreMax: 50 }),
       statsFetchInProgress: undefined as undefined | AbortController,
@@ -89,7 +89,7 @@ const stateModelFactory = (
       updateStats(stats: { scoreMin: number; scoreMax: number }) {
         self.stats.scoreMin = stats.scoreMin
         self.stats.scoreMax = stats.scoreMax
-        self.ready = true
+        self.statsReady = true
       },
       setColor(color: string) {
         self.color = color
@@ -311,9 +311,10 @@ const stateModelFactory = (
       const { renderProps: superRenderProps } = self
       return {
         renderProps() {
+          const superProps = superRenderProps()
           return {
-            ...superRenderProps(),
-            notReady: !self.ready,
+            ...superProps,
+            notReady: !self.statsReady,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,
@@ -458,11 +459,7 @@ const stateModelFactory = (
       }
     })
     .actions(self => {
-      const {
-        reload: superReload,
-        renderSvg: superRenderSvg,
-        renderProps: superRenderProps,
-      } = self
+      const { reload: superReload, renderSvg: superRenderSvg } = self
 
       type ExportSvgOpts = Parameters<typeof superRenderSvg>[0]
 
@@ -575,24 +572,10 @@ const stateModelFactory = (
 
                   if (!view.initialized) {
                     return
-                  }
-
-                  const { bpPerPx } = view
-                  const {
-                    globalStats,
-                    maxFeatureScreenDensity,
-                    maxAllowableBytes,
-                  } = self
-
-                  if (!globalStats) {
+                  } else if (!self.globalStats) {
                     return
-                  } else {
-                    const { featureDensity = 0, bytes = 0 } = globalStats
-                    if (featureDensity * bpPerPx > maxFeatureScreenDensity) {
-                      return
-                    } else if (bytes > maxAllowableBytes) {
-                      return
-                    }
+                  } else if (self.regionTooLarge) {
+                    return
                   }
 
                   const wiggleStats = await getStats({
@@ -615,7 +598,7 @@ const stateModelFactory = (
           )
         },
         async renderSvg(opts: ExportSvgOpts) {
-          await when(() => self.ready && !!self.regionCannotBeRenderedText)
+          await when(() => self.statsReady && !!self.regionCannotBeRenderedText)
           const { needsScalebar, stats } = self
           const { offsetPx } = getContainingView(self) as LGV
           return (
