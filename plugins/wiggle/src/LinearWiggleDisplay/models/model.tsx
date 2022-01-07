@@ -314,7 +314,7 @@ const stateModelFactory = (
           const superProps = superRenderProps()
           return {
             ...superProps,
-            notReady: !self.statsReady,
+            notReady: superProps.notReady || !self.statsReady,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,
@@ -573,7 +573,7 @@ const stateModelFactory = (
                   if (
                     !view.initialized ||
                     !self.globalStats ||
-                    !self.regionTooLarge
+                    self.regionTooLarge
                   ) {
                     return
                   }
