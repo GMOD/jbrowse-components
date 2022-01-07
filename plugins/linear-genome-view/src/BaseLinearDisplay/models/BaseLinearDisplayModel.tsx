@@ -20,11 +20,13 @@ import {
   getRpcSessionId,
 } from '@jbrowse/core/util/tracks'
 import { Button, Typography } from '@material-ui/core'
-import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import { autorun } from 'mobx'
 import { addDisposer, Instance, isAlive, types } from 'mobx-state-tree'
 import { Tooltip } from '../components/BaseLinearDisplay'
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
+
+//icons
+import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 
 import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
 
@@ -55,7 +57,7 @@ export const BaseLinearDisplay = types
         defaultDisplayHeight,
       ),
       blockState: types.map(BlockState),
-      userFeatureScreenDensity: types.maybe(types.number),
+      userBpPerPxLimit: types.maybe(types.number),
     }),
   )
   .volatile(() => ({
@@ -63,6 +65,7 @@ export const BaseLinearDisplay = types
     featureIdUnderMouse: undefined as undefined | string,
     contextMenuFeature: undefined as undefined | Feature,
     scrollTop: 0,
+    globalStatsP: undefined as undefined | Promise<Stats>,
     globalStats: undefined as undefined | Stats,
   }))
   .views(self => ({
@@ -83,11 +86,12 @@ export const BaseLinearDisplay = types
      * set limit to config amount, or user amount if they force load,
      */
 
+    get maxAllowableBytes() {
+      return getConf(self, 'maxAllowableBytes')
+    },
+
     get maxFeatureScreenDensity() {
-      return (
-        self.userFeatureScreenDensity ||
-        getConf(self, 'maxFeatureScreenDensity')
-      )
+      return getConf(self, 'maxFeatureScreenDensity')
     },
 
     /**
@@ -166,8 +170,8 @@ export const BaseLinearDisplay = types
     },
 
     get currentFeatureScreenDensity() {
-      const view = getContainingView(self) as LGV
-      return (self.globalStats?.featureDensity || 0) * view.bpPerPx
+      const { bpPerPx } = getContainingView(self) as LGV
+      return (self.globalStats?.featureDensity || 0) * bpPerPx
     },
   }))
   .actions(self => ({
@@ -200,7 +204,8 @@ export const BaseLinearDisplay = types
 
       addDisposer(self, blockWatchDisposer)
     },
-    async getGlobalStats(
+
+    getGlobalStats(
       region: Region,
       opts: {
         headers?: Record<string, string>
@@ -208,13 +213,13 @@ export const BaseLinearDisplay = types
         filters?: string[]
       },
     ) {
+      if (self.globalStatsP) {
+        return self.globalStatsP
+      }
+
       const { rpcManager } = getSession(self)
       const { adapterConfig } = self
       const sessionId = getRpcSessionId(self)
-
-      if (self.globalStats) {
-        return self.globalStats
-      }
 
       const params = {
         sessionId,
@@ -228,14 +233,16 @@ export const BaseLinearDisplay = types
         ...opts,
       }
 
-      return rpcManager.call(
+      const globalStatsP = rpcManager.call(
         sessionId,
         'CoreGetGlobalStats',
         params,
       ) as Promise<Stats>
+      self.globalStatsP = globalStatsP
+      return globalStatsP
     },
-    updateGlobalStats(stats: Stats) {
-      self.globalStats = stats
+    updateGlobalStats(globalStats: Stats) {
+      self.globalStats = globalStats
     },
     setHeight(displayHeight: number) {
       if (displayHeight > minDisplayHeight) {
@@ -250,12 +257,15 @@ export const BaseLinearDisplay = types
       const newHeight = this.setHeight(self.height + distance)
       return newHeight - oldHeight
     },
+
     setScrollTop(scrollTop: number) {
       self.scrollTop = scrollTop
     },
-    setUserFeatureScreenDensity(limit: number) {
-      self.userFeatureScreenDensity = limit
+
+    setUserBpPerPxLimit(limit: number) {
+      self.userBpPerPxLimit = limit
     },
+
     addBlock(key: string, block: BaseBlock) {
       self.blockState.set(
         key,
@@ -308,18 +318,16 @@ export const BaseLinearDisplay = types
           return
         }
 
-        let stats
         if (view.staticBlocks.contentBlocks[0]) {
           try {
-            console.log('t1')
-            stats = await self.getGlobalStats(
+            self.globalStatsP = self.getGlobalStats(
               view.staticBlocks.contentBlocks[0],
               { signal: aborter.signal },
             )
-            console.log('t2', stats)
+            const globalStats = await self.globalStatsP
 
             if (isAlive(self)) {
-              self.updateGlobalStats(stats)
+              self.updateGlobalStats(globalStats)
               superReload()
             } else {
               return
@@ -350,13 +358,12 @@ export const BaseLinearDisplay = types
                 const block = view.staticBlocks.contentBlocks[0]
                 if (block) {
                   console.log('t1')
-                  const stats = await self.getGlobalStats(block, {
+                  const globalStats = await self.getGlobalStats(block, {
                     signal: aborter.signal,
                   })
-                  console.log('t2', stats)
 
                   if (isAlive(self)) {
-                    self.updateGlobalStats(stats)
+                    self.updateGlobalStats(globalStats)
                   } else {
                     return
                   }
@@ -392,6 +399,7 @@ export const BaseLinearDisplay = types
      */
     regionCannotBeRendered(_region: Region) {
       const { currentFeatureScreenDensity, maxFeatureScreenDensity } = self
+      const view = getContainingView(self) as LinearGenomeViewModel
 
       if (currentFeatureScreenDensity > maxFeatureScreenDensity) {
         return (
@@ -402,9 +410,8 @@ export const BaseLinearDisplay = types
             <Button
               data-testid="force_reload_button"
               onClick={() => {
-                self.setUserFeatureScreenDensity(
-                  currentFeatureScreenDensity * 1.05,
-                )
+                self.setUserBpPerPxLimit(view.bpPerPx)
+                self.reload()
               }}
               variant="outlined"
             >
@@ -443,7 +450,7 @@ export const BaseLinearDisplay = types
         ...getParentRenderProps(self),
         rpcDriverName: self.rpcDriverName,
         displayModel: self,
-        statsNotReady: !self.globalStats,
+        globalStatsNotReady: !self.globalStats,
         onFeatureClick(_: unknown, featureId: string | undefined) {
           const f = featureId || self.featureIdUnderMouse
           if (!f) {

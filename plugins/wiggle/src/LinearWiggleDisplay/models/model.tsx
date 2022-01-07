@@ -571,32 +571,35 @@ const stateModelFactory = (
                 try {
                   const aborter = new AbortController()
                   const view = getContainingView(self) as LGV
-                  const renderProps = superRenderProps()
                   self.setLoading(aborter)
 
                   if (!view.initialized) {
                     return
                   }
 
-                  if (renderProps.statsNotReady) {
-                    return
+                  const { bpPerPx } = view
+                  const {
+                    globalStats,
+                    maxFeatureScreenDensity,
+                    maxAllowableBytes,
+                  } = self
+
+                  if (globalStats) {
+                    const { featureDensity = 0, bytes = 0 } = globalStats
+                    if (featureDensity * bpPerPx > maxFeatureScreenDensity) {
+                      return
+                    } else if (bytes > maxAllowableBytes) {
+                      return
+                    }
                   }
 
-                  if (
-                    self.globalStats?.featureDensity &&
-                    self.globalStats.featureDensity * view.bpPerPx >
-                      self.maxFeatureScreenDensity
-                  ) {
-                    return
-                  }
-
-                  const stats = await getStats({
+                  const wiggleStats = await getStats({
                     signal: aborter.signal,
                     filters: self.filters,
                   })
 
                   if (isAlive(self)) {
-                    self.updateStats(stats)
+                    self.updateStats(wiggleStats)
                   }
                 } catch (e) {
                   if (!isAbortException(e) && isAlive(self)) {
