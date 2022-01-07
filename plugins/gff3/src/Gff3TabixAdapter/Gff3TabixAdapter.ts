@@ -268,9 +268,7 @@ export default class extends BaseFeatureDataAdapter {
       regions.map(region => {
         const { refName, start, end } = region
         // @ts-ignore
-        const chrId = gff.chrToIndex[refName]
-        // @ts-ignore
-        return gff.index.blocksForRange(chrId, start, end, opts) as Block[]
+        return gff.index.blocksForRange(refName, start, end, opts) as Block[]
       }),
     )
 
