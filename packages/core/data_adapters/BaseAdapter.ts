@@ -233,8 +233,8 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       regions.map(region => this.getRegionStats(region, opts)),
     )
 
-    const scoreMax = feats.reduce((a, b) => Math.max(a, b.scoreMax), 0)
-    const scoreMin = feats.reduce((a, b) => Math.min(a, b.scoreMin), 0)
+    const scoreMax = feats.map(a => a.scoreMax).reduce((a, b) => Math.max(a, b))
+    const scoreMin = feats.map(a => a.scoreMin).reduce((a, b) => Math.min(a, b))
     const scoreSum = feats.reduce((a, b) => a + b.scoreSum, 0)
     const scoreSumSquares = feats.reduce((a, b) => a + b.scoreSumSquares, 0)
     const featureCount = feats.reduce((a, b) => a + b.featureCount, 0)
