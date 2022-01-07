@@ -1474,10 +1474,20 @@
   resolved "https://registry.yarnpkg.com/@gmod/bed/-/bed-2.0.6.tgz#9ef995da968fadb4788c353a8d11ebf1b366c4da"
   integrity sha512-gPT9VFALXEyGu9liRDti5ifKW4cacaeEvo1cjXASSLViXecD8BGsozQr/fKyAKb5wxDsCyYX5OPXGGwZj8QE2w==
 
-"@gmod/bgzf-filehandle@^1.3.3", "@gmod/bgzf-filehandle@^1.4.0", "@gmod/bgzf-filehandle@^1.4.1":
+"@gmod/bgzf-filehandle@^1.3.3", "@gmod/bgzf-filehandle@^1.4.0":
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-1.4.1.tgz#df2f54b66f0b6b616c6c3a264ea51782fc69af86"
   integrity sha512-ekwwZS60lqKGTXIfp/yQnOEArim/SE/sU25xzYJ0ECI6waNR442groWOhpftUJhqqxEcN0c4OmtM2Xvh1hILcw==
+  dependencies:
+    es6-promisify "^7.0.0"
+    generic-filehandle "^2.2.1"
+    long "^5.1.0"
+    pako "^1.0.11"
+
+"@gmod/bgzf-filehandle@^1.4.2":
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-1.4.2.tgz#2523e50cebedfdcb49c7c040365bcb22de3ad964"
+  integrity sha512-eJBFPvH4fqIjVtJtFXw2DKiJYqL/9bOz/cLu5Xn+nGGve2avQ62Bl5aa20SNHSZyoL1QsgY5tGzJwH0IKUtvHg==
   dependencies:
     es6-promisify "^7.0.0"
     generic-filehandle "^2.2.1"
@@ -1514,7 +1524,7 @@
     pump "^3.0.0"
     split2 "^4.1.0"
 
-"@gmod/gff@^1.1.2":
+"@gmod/gff@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@gmod/gff/-/gff-1.2.0.tgz#f401ac4f3dc2f2a16c4d238c35619aeff2ac1c97"
   integrity sha512-fHyaJFXcMvNcraEE7DLodfVQLadhr2zRH0vAuPPPM9F5h0Mnk2qJ87Ar/uA1J9mE16hZv9ucR9wF8UwI+H+u9w==
@@ -1544,7 +1554,7 @@
     abortable-promise-cache "^1.0.1"
     quick-lru "^4.0.0"
 
-"@gmod/tabix@^1.5.0", "@gmod/tabix@^1.5.2":
+"@gmod/tabix@^1.5.2":
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-1.5.2.tgz#dfef5ea0c223acd320c6484138aca8a09c87548f"
   integrity sha512-OH1+k1zjtWbemXbOuMHVVqzgpViohrr0RfzHx+GSiQxk0bogWmJIoizkCYg5fQYPWy6CGj89kPw7thzwOyBmyw==
@@ -1575,10 +1585,10 @@
   resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-0.1.3.tgz#37d20b59be9e5153d68a529407237782ed15562d"
   integrity sha512-F60rkM5AdcOXiOqmiNG5ZdoMCwbAQAU6oGBs5UMFCE0vIX7X8i2Mv4X9HrQbmJupZJvyQRuXQNW6SEaUVa+KsQ==
 
-"@gmod/vcf@^5.0.3":
-  version "5.0.3"
-  resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-5.0.3.tgz#16a2a8d1cb408ae0593780bbabe96a1b3b2dd13e"
-  integrity sha512-9OcUx9tDLTPcnKsOn8S5+2foRrRPFq8zdlGuNGaH5iJp9txISrtdtgV7YnHb7jMIX7xCkOoOh+4oa7CmSBwnmQ==
+"@gmod/vcf@^5.0.4":
+  version "5.0.4"
+  resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-5.0.4.tgz#b5c7024cd852d337be479ce37165e52ab608c5b8"
+  integrity sha512-VIJcueh8Ghl5Scmk0fmczWYbpv7xz1L/YTELsNd2Rk00Hj/Q93DBozVysMIDeN33QUpl9F6ZThq8GVUnbh7yOg==
 
 "@hapi/address@2.x.x":
   version "2.1.4"
@@ -4750,6 +4760,11 @@
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/@types/normalize-package-data/-/normalize-package-data-2.4.1.tgz#d3357479a0fdfdd5907fe67e17e0a85c906e1301"
   integrity sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==
+
+"@types/normalize-wheel@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@types/normalize-wheel/-/normalize-wheel-1.0.0.tgz#d973b53557dc59c6136b5b737ae930e9218cb452"
+  integrity sha512-SzWYVzP7Q8w4/976Gi3a6+J/8/VNTq6AW7wDafXorr1MYTxyZqJTbUvwQt1hiG3PXyFUMIKr+s6q3+MLz2c/TQ==
 
 "@types/npmlog@^4.1.2":
   version "4.1.3"
@@ -11111,7 +11126,7 @@ gauge@~2.7.3:
     strip-ansi "^3.0.1"
     wide-align "^1.1.0"
 
-generic-filehandle@^2.0.0, generic-filehandle@^2.0.1, generic-filehandle@^2.2.0, generic-filehandle@^2.2.1, generic-filehandle@^2.2.2:
+generic-filehandle@^2.0.0, generic-filehandle@^2.0.1, generic-filehandle@^2.2.1, generic-filehandle@^2.2.2:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/generic-filehandle/-/generic-filehandle-2.2.2.tgz#6493f4e8c0f9fc26d4086fbfa5d51879d0046f40"
   integrity sha512-/YRwruMy53YNTNISJa7YWYVCKqSUzx1v+17xi/bYFX9TjBKNm4otuXZ8eXXeaf4S48ncufU8ihmsvHoi0RzJHA==
