@@ -42,11 +42,14 @@ const AssemblyTable = observer(
     setIsAssemblyBeingEdited,
     setAssemblyBeingEdited,
   }: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rootModel: any
+    rootModel: {
+      jbrowse: {
+        removeAssemblyConf: (arg: string) => void
+        assemblies: AnyConfigurationModel[]
+      }
+    }
     setIsAssemblyBeingEdited(arg: boolean): void
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setAssemblyBeingEdited(arg: any): void
+    setAssemblyBeingEdited(arg: AnyConfigurationModel): void
   }) => {
     const classes = useStyles()
 
@@ -54,41 +57,39 @@ const AssemblyTable = observer(
       rootModel.jbrowse.removeAssemblyConf(name)
     }
 
-    const rows = rootModel.jbrowse.assemblies.map(
-      (assembly: AnyConfigurationModel) => {
-        const name = readConfObject(assembly, 'name')
-        const displayName = readConfObject(assembly, 'displayName')
-        const aliases = readConfObject(assembly, 'aliases')
-        return (
-          <TableRow key={name}>
-            <TableCell>{name}</TableCell>
-            <TableCell>{displayName}</TableCell>
-            <TableCell>{aliases ? aliases.toString() : ''}</TableCell>
-            <TableCell className={classes.buttonCell}>
-              <IconButton
-                data-testid={`${name}-edit`}
-                className={classes.button}
-                onClick={() => {
-                  setIsAssemblyBeingEdited(true)
-                  setAssemblyBeingEdited(assembly)
-                }}
-              >
-                <CreateIcon color="primary" />
-              </IconButton>
-              <IconButton
-                data-testid={`${name}-delete`}
-                className={classes.button}
-                onClick={() => {
-                  removeAssembly(name)
-                }}
-              >
-                <DeleteIcon color="error" />
-              </IconButton>
-            </TableCell>
-          </TableRow>
-        )
-      },
-    )
+    const rows = rootModel.jbrowse.assemblies.map(assembly => {
+      const name = readConfObject(assembly, 'name')
+      const displayName = readConfObject(assembly, 'displayName')
+      const aliases = readConfObject(assembly, 'aliases')
+      return (
+        <TableRow key={name}>
+          <TableCell>{name}</TableCell>
+          <TableCell>{displayName}</TableCell>
+          <TableCell>{aliases ? aliases.toString() : ''}</TableCell>
+          <TableCell className={classes.buttonCell}>
+            <IconButton
+              data-testid={`${name}-edit`}
+              className={classes.button}
+              onClick={() => {
+                setIsAssemblyBeingEdited(true)
+                setAssemblyBeingEdited(assembly)
+              }}
+            >
+              <CreateIcon color="primary" />
+            </IconButton>
+            <IconButton
+              data-testid={`${name}-delete`}
+              className={classes.button}
+              onClick={() => {
+                removeAssembly(name)
+              }}
+            >
+              <DeleteIcon color="error" />
+            </IconButton>
+          </TableCell>
+        </TableRow>
+      )
+    })
 
     return (
       <TableContainer component={Paper}>
