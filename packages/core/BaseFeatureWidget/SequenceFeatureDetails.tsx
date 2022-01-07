@@ -198,6 +198,7 @@ export const SequencePanel = React.forwardRef<
           style={{
             fontFamily: 'monospace',
             wordWrap: 'break-word',
+            maxWidth: 600,
           }}
         >
           {`>${feature.name || feature.id || 'unknown'}-${mode}\n`}
