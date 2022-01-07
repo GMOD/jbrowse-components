@@ -268,10 +268,18 @@ describe('alignments track', () => {
     )
 
     expectCanvasMatch(
-      await findByTestId1('prerendered_canvas_{volvox}ctgA:2,657..2,688-0'),
+      await findByTestId1(
+        'prerendered_canvas_{volvox}ctgA:2,657..2,688-0',
+        {},
+        delay,
+      ),
     )
     expectCanvasMatch(
-      await findByTestId1('prerendered_canvas_{volvox}ctgA:2,689..2,720-0'),
+      await findByTestId1(
+        'prerendered_canvas_{volvox}ctgA:2,689..2,720-0',
+        {},
+        delay,
+      ),
     )
   }, 30000)
 })
