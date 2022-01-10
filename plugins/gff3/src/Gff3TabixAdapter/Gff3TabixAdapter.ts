@@ -3,7 +3,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import gffParser from '@gmod/gff'
+import gffParser, { GFF3Feature, GFF3FeatureLineWithRefs } from '@gmod/gff'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'

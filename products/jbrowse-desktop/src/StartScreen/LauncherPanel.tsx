@@ -36,13 +36,11 @@ export default function StartScreenOptionsPanel({
         className={classes.button}
         onClick={() => setSequenceDialogOpen(true)}
       >
-        Open sequence file
+        Open sequence file(s)
       </Button>
-      <div style={{ width: '50%' }}>
-        <Typography style={{ textAlign: 'center' }} variant="h6">
-          -or-
-        </Typography>
-      </div>
+      <Typography style={{ width: '50%', textAlign: 'center' }} variant="h6">
+        -or-
+      </Typography>
       <QuickstartPanel setPluginManager={setPluginManager} />
 
       {sequenceDialogOpen ? (
@@ -54,7 +52,7 @@ export default function StartScreenOptionsPanel({
               const path = await ipcRenderer.invoke(
                 'createInitialAutosaveFile',
                 {
-                  assemblies: [conf],
+                  assemblies: conf,
                   defaultSession: {
                     name: 'New Session ' + new Date().toLocaleString('en-US'),
                   },

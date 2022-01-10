@@ -178,10 +178,10 @@ export default function JBrowseDesktop(
         self.plugins = cast(
           self.plugins.filter(
             plugin =>
-              plugin.url === pluginDefinition.url ||
-              plugin.umdUrl === pluginDefinition.umdUrl ||
-              plugin.cjsUrl === pluginDefinition.cjsUrl ||
-              plugin.esmUrl === pluginDefinition.esmUrl,
+              plugin.url !== pluginDefinition.url ||
+              plugin.umdUrl !== pluginDefinition.umdUrl ||
+              plugin.cjsUrl !== pluginDefinition.cjsUrl ||
+              plugin.esmUrl !== pluginDefinition.esmUrl,
           ),
         )
         const rootModel = getParent(self)

@@ -21,7 +21,7 @@ class CytobandAdapter extends BaseAdapter {
     if (loc.uri === '' || loc.uri === '/path/to/cytoband.txt.gz') {
       return []
     }
-    const data = (await openLocation(loc).readFile('utf8')) as string
+    const data = await openLocation(loc).readFile('utf8')
     return data
       .split('\n')
       .filter(f => !!f.trim())

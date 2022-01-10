@@ -16,7 +16,7 @@ export default class TwoBitAdapter
   extends BaseFeatureDataAdapter
   implements SequenceAdapter
 {
-  private twobit: typeof TwoBitFile
+  private twobit: TwoBitFile
 
   // the chromSizesData can be used to speed up loading since TwoBit has to do
   // many range requests at startup to perform the getRegions request
@@ -29,7 +29,7 @@ export default class TwoBitAdapter
     // future
     if (conf.uri !== '/path/to/default.chrom.sizes' && conf.uri !== '') {
       const file = openLocation(conf, this.pluginManager)
-      const data = (await file.readFile('utf8')) as string
+      const data = await file.readFile('utf8')
       return Object.fromEntries(
         data
           ?.split('\n')
@@ -92,11 +92,7 @@ export default class TwoBitAdapter
     return ObservableCreate<Feature>(async observer => {
       const size = await this.twobit.getSequenceSize(refName)
       const regionEnd = size !== undefined ? Math.min(size, end) : end
-      const seq: string = await this.twobit.getSequence(
-        refName,
-        start,
-        regionEnd,
-      )
+      const seq = await this.twobit.getSequence(refName, start, regionEnd)
       if (seq) {
         observer.next(
           new SimpleFeature({
