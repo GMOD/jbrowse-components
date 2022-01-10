@@ -1,4 +1,4 @@
-import React, { lazy, useMemo, useEffect, useState } from 'react'
+import React, { Suspense, lazy, useMemo, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSession, useDebounce, measureText } from '@jbrowse/core/util'
 import BaseResult, {
@@ -270,7 +270,9 @@ function RefNameAutocomplete({
         }
       />
       {isHelpDialogDisplayed ? (
-        <HelpDialog handleClose={() => setHelpDialogDisplayed(false)} />
+        <Suspense fallback={<div />}>
+          <HelpDialog handleClose={() => setHelpDialogDisplayed(false)} />
+        </Suspense>
       ) : null}
     </>
   )
