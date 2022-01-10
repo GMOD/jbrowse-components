@@ -57,10 +57,10 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   async setup(opts?: BaseOptions) {
-    const text = (await this.pafLocation.readFile({
+    const text = await this.pafLocation.readFile({
       encoding: 'utf8',
       ...opts,
-    })) as string
+    })
     const pafRecords: PafRecord[] = []
     text.split('\n').forEach((line: string, index: number) => {
       if (line.length) {

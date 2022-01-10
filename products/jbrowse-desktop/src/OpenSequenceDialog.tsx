@@ -27,6 +27,11 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(2),
     margin: theme.spacing(2),
   },
+  stagedAssemblies: {
+    background: '#dfd',
+    margin: theme.spacing(4),
+    padding: theme.spacing(2),
+  },
 }))
 
 function AdapterInput({
@@ -159,10 +164,12 @@ const OpenSequenceDialog = ({
     'FastaAdapter',
     'TwoBitAdapter',
   ]
+  type AssemblyConf = Awaited<ReturnType<typeof createAssemblyConfig>>
+  const [assemblyConfs, setAssemblyConfs] = useState<AssemblyConf[]>([])
   const [error, setError] = useState<unknown>()
   const [assemblyName, setAssemblyName] = useState('')
   const [assemblyDisplayName, setAssemblyDisplayName] = useState('')
-  const [loading, setLoading] = useState<string>()
+  const [loading, setLoading] = useState('')
   const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0])
   const [fastaLocation, setFastaLocation] = useState(blank)
   const [faiLocation, setFaiLocation] = useState(blank)
@@ -170,7 +177,17 @@ const OpenSequenceDialog = ({
   const [twoBitLocation, setTwoBitLocation] = useState(blank)
   const [chromSizesLocation, setChromSizesLocation] = useState(blank)
 
-  async function createAssemblyConfig() {
+  function clearState() {
+    setFastaLocation(blank)
+    setFaiLocation(blank)
+    setGziLocation(blank)
+    setTwoBitLocation(blank)
+    setChromSizesLocation(blank)
+    setAssemblyName('')
+    setAssemblyDisplayName('')
+  }
+
+  async function createAssemblyConfigHelper() {
     if (adapterSelection === 'FastaAdapter') {
       setLoading('Creating .fai file for FASTA')
       const faiLocation = await ipcRenderer.invoke('indexFasta', fastaLocation)
@@ -241,14 +258,36 @@ const OpenSequenceDialog = ({
     }
     throw new Error('Unknown adapter type')
   }
+
+  async function createAssemblyConfig() {
+    const conf = await createAssemblyConfigHelper()
+
+    return {
+      ...conf,
+      sequence: {
+        type: 'ReferenceSequenceTrack',
+        trackId: `${assemblyName}-${Date.now()}`,
+        ...conf.sequence,
+      },
+    }
+  }
   return (
     <Dialog open onClose={() => onClose()}>
-      <DialogTitle>Open sequence</DialogTitle>
+      <DialogTitle>Open sequence(s)</DialogTitle>
       <DialogContent>
         <Typography>
-          Use this dialog to open a new indexed FASTA file, bgzipped+indexed
-          FASTA file, or .2bit file of a genome assembly or other sequence
+          Use this dialog to open one or more indexed FASTA files,
+          bgzipped+indexed FASTA files, or .2bit files of a genome assembly or
+          other sequence
         </Typography>
+
+        {assemblyConfs.length ? (
+          <Typography className={classes.stagedAssemblies}>
+            Currently staged assemblies:{' '}
+            {assemblyConfs.map(conf => conf.name).join(', ')}
+          </Typography>
+        ) : null}
+
         {loading ? (
           <Typography className={classes.message}>{loading}</Typography>
         ) : null}
@@ -257,9 +296,7 @@ const OpenSequenceDialog = ({
 
         <Paper className={classes.paper}>
           <TextField
-            id="assembly-name"
             inputProps={{ 'data-testid': 'assembly-name' }}
-            defaultValue=""
             label="Assembly name"
             helperText="The assembly name e.g. hg38"
             variant="outlined"
@@ -268,12 +305,10 @@ const OpenSequenceDialog = ({
           />
 
           <TextField
-            id="assembly-name"
             inputProps={{ 'data-testid': 'assembly-display-name' }}
             label="Assembly display name"
             helperText='(optional) A human readable display name for the assembly e.g. "Homo sapiens (hg38)"'
             variant="outlined"
-            defaultValue=""
             value={assemblyDisplayName}
             onChange={event => setAssemblyDisplayName(event.target.value)}
           />
@@ -311,36 +346,56 @@ const OpenSequenceDialog = ({
         </Paper>
       </DialogContent>
       <DialogActions>
+        <Button
+          onClick={async () => {
+            try {
+              if (!assemblyName) {
+                throw new Error('No assembly name set')
+              }
+              setError(undefined)
+              const assemblyConf = await createAssemblyConfig()
+              setAssemblyConfs([...assemblyConfs, assemblyConf])
+              clearState()
+            } catch (e) {
+              setError(e)
+              console.error(e)
+            } finally {
+              setLoading('')
+            }
+          }}
+          disabled={!!loading}
+          variant="contained"
+        >
+          Add another assembly
+        </Button>
         <Button onClick={() => onClose()} color="secondary" variant="contained">
           Cancel
         </Button>
         <Button
           onClick={async () => {
             try {
-              setError(undefined)
-              const assemblyConf = await createAssemblyConfig()
+              let confs = assemblyConfs
 
-              await onClose({
-                ...assemblyConf,
-                sequence: {
-                  type: 'ReferenceSequenceTrack',
-                  trackId: `${assemblyName}-${Date.now()}`,
-                  ...(assemblyConf.sequence || {}),
-                },
-              })
+              // if we want to add another one
+              if (assemblyName) {
+                setError(undefined)
+                const assemblyConf = await createAssemblyConfig()
+                confs = [...assemblyConfs, assemblyConf]
+                setAssemblyConfs(confs)
+              }
+              await onClose(confs)
             } catch (e) {
               setError(e)
               console.error(e)
             } finally {
-              setLoading(undefined)
+              setLoading('')
             }
           }}
           color="primary"
           disabled={!!loading}
           variant="contained"
-          autoFocus
         >
-          Open
+          Submit
         </Button>
       </DialogActions>
     </Dialog>

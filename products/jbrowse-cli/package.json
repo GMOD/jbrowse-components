@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/cli",
-  "version": "1.5.3",
+  "version": "1.5.5",
   "description": "A command line tool for working with JBrowse 2",
   "keywords": [
     "jbrowse",
@@ -44,7 +44,7 @@
     "docs:version:add": "git add README.md"
   },
   "dependencies": {
-    "@gmod/gff": "^1.1.2",
+    "@gmod/gff": "^1.2.0",
     "@oclif/command": "^1.8.11",
     "@oclif/config": "^1.18.2",
     "@oclif/errors": "^1",

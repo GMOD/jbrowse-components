@@ -203,19 +203,21 @@ export default function JBrowseWeb(
         const rootModel = getRoot(self)
         rootModel.setPluginsUpdated(true)
       },
+
       removePlugin(pluginDefinition: PluginDefinition) {
         self.plugins = cast(
           self.plugins.filter(
             plugin =>
-              plugin.url === pluginDefinition.url ||
-              plugin.umdUrl === pluginDefinition.umdUrl ||
-              plugin.cjsUrl === pluginDefinition.cjsUrl ||
-              plugin.esmUrl === pluginDefinition.esmUrl,
+              plugin.url !== pluginDefinition.url ||
+              plugin.umdUrl !== pluginDefinition.umdUrl ||
+              plugin.cjsUrl !== pluginDefinition.cjsUrl ||
+              plugin.esmUrl !== pluginDefinition.esmUrl,
           ),
         )
-        const rootModel = getRoot(self)
+        const rootModel = getParent(self)
         rootModel.setPluginsUpdated(true)
       },
+
       addInternetAccountConf(internetAccountConf: AnyConfigurationModel) {
         const { type } = internetAccountConf
         if (!type) {

@@ -27,7 +27,7 @@ export default class extends BaseFeatureDataAdapter {
       this.pluginManager,
     ).readFile()
 
-    const buf = isGzip(buffer as Buffer) ? await unzip(buffer) : buffer
+    const buf = isGzip(buffer) ? await unzip(buffer) : buffer
     // 512MB  max chrome string length is 512MB
     if (buf.length > 536_870_888) {
       throw new Error('Data exceeds maximum string length (512MB)')

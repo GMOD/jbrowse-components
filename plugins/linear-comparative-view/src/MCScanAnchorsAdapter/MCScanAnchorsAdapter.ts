@@ -79,7 +79,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
   async setup() {
     if (!this.initialized) {
       await this.configure()
-      const text = (await this.mcscanAnchorsLocation.readFile('utf8')) as string
+      const text = await this.mcscanAnchorsLocation.readFile('utf8')
       text.split('\n').forEach((line: string, index: number) => {
         if (line.length && line !== '###') {
           const [name1, name2, score] = line.split('\t')

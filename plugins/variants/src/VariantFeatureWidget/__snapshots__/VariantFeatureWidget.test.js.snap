@@ -182,6 +182,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
               >
                 <div
                   class="makeStyles-fieldName"
+                  style="width: 62px;"
                 >
                   INFO.MQ
                 </div>

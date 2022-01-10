@@ -101,9 +101,6 @@ export async function createFinalConfig(
 
 export async function fetchConfigFile(location: JBLocation): Promise<Config> {
   const result = await openLocation(location).readFile('utf8')
-  if (typeof result !== 'string') {
-    throw new Error(`Error opening location: ${location}`)
-  }
   if (isUriLocation(location)) {
     return parseJb1(result, location.uri)
   }

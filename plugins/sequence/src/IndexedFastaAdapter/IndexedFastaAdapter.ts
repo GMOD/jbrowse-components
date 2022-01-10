@@ -16,7 +16,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
-  protected fasta: typeof IndexedFasta
+  protected fasta: IndexedFasta
 
   private seqCache = new AbortablePromiseCache({
     cache: new LRU({ maxSize: 200 }),
