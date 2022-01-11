@@ -5,7 +5,11 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import DataUsageIcon from '@material-ui/icons/DataUsage'
-import stateModelFactory from './CircularView/models/CircularView'
+import stateModelFactory, {
+  CircularViewModel,
+} from './CircularView/models/CircularView'
+
+type CGV = CircularViewModel
 
 export default class CircularViewPlugin extends Plugin {
   name = 'CircularViewPlugin'
@@ -29,28 +33,34 @@ export default class CircularViewPlugin extends Plugin {
         session,
         assembly,
         loc,
-        tracks,
+        tracks = [],
       }: {
         session: AbstractSessionModel
-        assembly: string
+        assembly?: string
         loc: string
         tracks?: string[]
       }) => {
         const { assemblyManager } = session
-        const view = session?.addView('CircularView', {})
+        const view = session.addView('CircularView', {}) as CGV
 
-        // @ts-ignore
         await when(() => view.initialized)
 
+        if (!assembly) {
+          throw new Error(
+            'No assembly provided when launching circular genome view',
+          )
+        }
+
         const asm = await assemblyManager.waitForAssembly(assembly)
+        if (!asm) {
+          throw new Error(
+            `Assembly not found ${assembly} when launching circular genome view`,
+          )
+        }
 
-        // @ts-ignore
-        view.setDisplayedRegions(asm.regions)
+        view.setDisplayedRegions(asm.regions || [])
 
-        tracks?.forEach(track => {
-          // @ts-ignore
-          view.showTrack(track)
-        })
+        tracks.forEach(track => view.showTrack(track))
       },
     )
   }
