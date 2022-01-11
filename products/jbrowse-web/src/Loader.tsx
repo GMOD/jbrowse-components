@@ -9,7 +9,7 @@ import {
   useQueryParam,
 } from 'use-query-params'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
-import 'fontsource-roboto'
+import '@fontsource/roboto'
 import 'requestidlecallback-polyfill'
 import 'core-js/stable'
 import queryString from 'query-string'

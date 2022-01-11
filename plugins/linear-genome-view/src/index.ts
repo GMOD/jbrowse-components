@@ -30,6 +30,8 @@ import {
   RefNameAutocomplete,
 } from './LinearGenomeView'
 
+type LGV = LinearGenomeViewModel
+
 import {
   configSchema as linearBasicDisplayConfigSchemaFactory,
   modelFactory as linearBasicDisplayModelFactory,
@@ -127,28 +129,34 @@ export default class LinearGenomeViewPlugin extends Plugin {
         session,
         assembly,
         loc,
-        tracks,
+        tracks = [],
       }: {
         session: AbstractSessionModel
-        assembly: string
+        assembly?: string
         loc: string
         tracks?: string[]
       }) => {
         const { assemblyManager } = session
-        const view = session?.addView('LinearGenomeView', {})
+        const view = session.addView('LinearGenomeView', {}) as LGV
 
-        // @ts-ignore
-        await when(() => view.volatileWidth)
+        await when(() => !!view.volatileWidth)
 
-        await assemblyManager.waitForAssembly(assembly)
+        if (!assembly) {
+          throw new Error(
+            'No assembly provided when launching linear genome view',
+          )
+        }
 
-        // @ts-ignore
+        const asm = await assemblyManager.waitForAssembly(assembly)
+        if (!asm) {
+          throw new Error(
+            `Assembly not found ${assembly} when launching linear genome view`,
+          )
+        }
+
         view.navToLocString(loc, assembly)
 
-        tracks?.forEach(track => {
-          // @ts-ignore
-          view.showTrack(track)
-        })
+        tracks.forEach(track => view.showTrack(track))
       },
     )
   }

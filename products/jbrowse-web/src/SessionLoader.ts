@@ -28,16 +28,29 @@ function addRelativeUris(config: Config, configUri: URL) {
   }
 }
 
-async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
+// raw readConf alternative for before conf is initialized
+function readConf(
+  { configuration = {} }: { configuration?: { [key: string]: string } },
+  attr: string,
+  def: string,
+) {
+  return configuration[attr] || def
+}
+
+async function fetchPlugins(): Promise<{
+  plugins: PluginDefinition[]
+}> {
   const response = await fetch('https://jbrowse.org/plugin-store/plugins.json')
   if (!response.ok) {
     throw new Error(
       `HTTP ${response.status} ${response.statusText} fetching plugins`,
     )
   }
-  const storePlugins = (await response.json()) as {
-    plugins: PluginDefinition[]
-  }
+  return response.json()
+}
+
+async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
+  const storePlugins = await fetchPlugins()
   return pluginsToCheck.every(p => {
     if (isUMDPluginDefinition(p)) {
       return Boolean(
@@ -310,15 +323,6 @@ const SessionLoader = types
     },
 
     async fetchSharedSession() {
-      // raw readConf alternative for before conf is initialized
-      const readConf = (
-        conf: { configuration?: { [key: string]: string } },
-        attr: string,
-        def: string,
-      ) => {
-        return (conf.configuration || {})[attr] || def
-      }
-
       const defaultURL = 'https://share.jbrowse.org/api/v1/'
       const decryptedSession = await readSessionFromDynamo(
         `${readConf(self.configSnapshot, 'shareURL', defaultURL)}load`,
@@ -333,7 +337,7 @@ const SessionLoader = types
 
     async decodeEncodedUrlSession() {
       const session = JSON.parse(
-        // @ts-ignore
+        //@ts-ignore
         await fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
       )
       await this.setSessionSnapshot({ ...session, id: shortid() })
@@ -480,16 +484,22 @@ export function loadSessionSpec(
     rootModel.setSession({
       name: `New session ${new Date().toLocaleString()}`,
     })
-    Promise.all(
+
+    return Promise.all(
       views.map(async view => {
         const { type } = view
         const { session } = rootModel
 
-        return pluginManager.evaluateExtensionPoint('LaunchView-' + type, {
+        await pluginManager.evaluateExtensionPoint('LaunchView-' + type, {
           ...view,
           session,
         })
       }),
-    )
+    ).catch(e => {
+      console.error(e)
+      if (rootModel.session) {
+        rootModel.session.notify(`${e}`)
+      }
+    })
   }
 }
