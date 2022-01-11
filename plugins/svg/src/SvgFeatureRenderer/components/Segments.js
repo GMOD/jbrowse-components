@@ -52,27 +52,24 @@ function Segments(props) {
         points={points}
         stroke={selected ? emphasizedColor2 : color2}
       />
-      {
-        // eslint-disable-next-line react/prop-types
-        subfeatures.map(subfeature => {
-          const subfeatureId = String(subfeature.id())
-          const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
-          // This subfeature got filtered out
-          if (!subfeatureLayout) {
-            return null
-          }
-          const { GlyphComponent } = subfeatureLayout.data
-          return (
-            <GlyphComponent
-              key={`glyph-${subfeatureId}`}
-              {...props}
-              feature={subfeature}
-              featureLayout={subfeatureLayout}
-              selected={selected}
-            />
-          )
-        })
-      }
+      {subfeatures.map(subfeature => {
+        const subfeatureId = String(subfeature.id())
+        const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
+        // This subfeature got filtered out
+        if (!subfeatureLayout) {
+          return null
+        }
+        const { GlyphComponent } = subfeatureLayout.data
+        return (
+          <GlyphComponent
+            key={`glyph-${subfeatureId}`}
+            {...props}
+            feature={subfeature}
+            featureLayout={subfeatureLayout}
+            selected={selected}
+          />
+        )
+      })}
     </>
   )
 }

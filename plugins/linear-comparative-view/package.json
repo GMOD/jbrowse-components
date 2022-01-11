@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-linear-comparative-view",
-  "version": "1.5.1",
+  "version": "1.5.5",
   "description": "JBrowse 2 linear comparative view",
   "keywords": [
     "jbrowse",
@@ -41,7 +41,7 @@
     "clsx": "^1.1.0",
     "generic-filehandle": "^2.2.2",
     "json-stable-stringify": "^1.0.1",
-    "react-sizeme": "^2.6.12"
+    "react-sizeme": "^3.0.2"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",

@@ -517,7 +517,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   getByID(id: string): RectTuple | undefined {
     const r = this.rectangles.get(id)
     if (r) {
-      const t = (r.top as number) * this.pitchX
+      const t = (r.top as number) * this.pitchY
       return [r.l * this.pitchX, t, r.r * this.pitchX, t + r.originalHeight]
     }
 

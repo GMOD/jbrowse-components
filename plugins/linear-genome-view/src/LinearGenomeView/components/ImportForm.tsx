@@ -152,6 +152,8 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                     model={model}
                     assemblyName={assemblyError ? undefined : selectedAsm}
                     value={selectedRegion}
+                    // note: minWidth 270 accomodates full width of helperText
+                    minWidth={270}
                     onSelect={option => setOption(option)}
                     TextFieldProps={{
                       margin: 'normal',

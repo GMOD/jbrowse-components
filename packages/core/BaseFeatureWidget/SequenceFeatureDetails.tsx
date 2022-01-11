@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { useRef, useState, useEffect } from 'react'
 import {
   Button,
@@ -199,6 +198,7 @@ export const SequencePanel = React.forwardRef<
           style={{
             fontFamily: 'monospace',
             wordWrap: 'break-word',
+            maxWidth: 600,
           }}
         >
           {`>${feature.name || feature.id || 'unknown'}-${mode}\n`}

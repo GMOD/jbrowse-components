@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-linear-genome-view",
-  "version": "1.5.1",
+  "version": "1.5.5",
   "description": "JBrowse 2 linear genome view",
   "keywords": [
     "jbrowse",
@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@material-ui/icons": "^4.9.1",
-    "@popperjs/core": "^2.9.3",
+    "@popperjs/core": "^2.11.0",
     "clone": "^2.1.2",
     "clsx": "^1.0.4",
     "copy-to-clipboard": "^3.3.1",
@@ -45,7 +45,7 @@
     "json-stable-stringify": "^1.0.1",
     "normalize-wheel": "^1.0.1",
     "react-popper": "^2.0.0",
-    "react-sizeme": "^2.6.7"
+    "react-sizeme": "^3.0.2"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",

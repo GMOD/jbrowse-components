@@ -4,6 +4,8 @@ title: Config guide
 toplevel: true
 ---
 
+import Figure from './figure'
+
 ## Intro to the config.json
 
 A JBrowse 2 configuration file, a config.json, is structured as follows
@@ -1279,7 +1281,7 @@ theme:
 
 <Figure src="/img/default_theme.png" caption="Example screenshot showing the default theme"/>
 
-<Figure src="/img/default_theme.png" caption="Example screenshot showing the customized theme"/>
+<Figure src="/img/customized_theme.png" caption="Example screenshot showing the customized theme"/>
 
 The customized theme screenshot uses the below configuration
 

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/img",
-  "version": "1.5.1",
+  "version": "1.5.5",
   "main": "index.js",
   "author": "JBrowse Team",
   "license": "Apache-2.0",
@@ -25,13 +25,13 @@
     "postversion": "git push --follow-tags"
   },
   "dependencies": {
-    "@jbrowse/plugin-linear-genome-view": "^1.5.1",
-    "@jbrowse/react-linear-genome-view": "^1.5.1",
+    "@jbrowse/plugin-linear-genome-view": "^1.5.5",
+    "@jbrowse/react-linear-genome-view": "^1.5.5",
     "mobx": "^5.10.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "tmp": "^0.2.1",
-    "yargs": "^16.2.0"
+    "yargs": "^17.3.0"
   },
   "publishConfig": {
     "access": "public"

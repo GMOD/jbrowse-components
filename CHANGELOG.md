@@ -1,3 +1,205 @@
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                             | Download                                                          |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                       | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/desktop                    |                                                                   |
+| @jbrowse/img                        | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view   | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                        |                                                                   |
+
+</p>
+</details>
+
+## 1.5.4 (2022-01-07)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                          |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                           | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/development-tools              | https://www.npmjs.com/package/@jbrowse/development-tools          |
+| @jbrowse/plugin-alignments              | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-authentication          |                                                                   |
+| @jbrowse/plugin-bed                     | https://www.npmjs.com/package/@jbrowse/plugin-bed                 |
+| @jbrowse/plugin-breakpoint-split-view   |                                                                   |
+| @jbrowse/plugin-circular-view           | https://www.npmjs.com/package/@jbrowse/plugin-circular-view       |
+| @jbrowse/plugin-config                  | https://www.npmjs.com/package/@jbrowse/plugin-config              |
+| @jbrowse/plugin-data-management         | https://www.npmjs.com/package/@jbrowse/plugin-data-management     |
+| @jbrowse/plugin-dotplot-view            |                                                                   |
+| @jbrowse/plugin-gff3                    | https://www.npmjs.com/package/@jbrowse/plugin-gff3                |
+| @jbrowse/plugin-grid-bookmark           | https://www.npmjs.com/package/@jbrowse/plugin-grid-bookmark       |
+| @jbrowse/plugin-gtf                     | https://www.npmjs.com/package/@jbrowse/plugin-gtf                 |
+| @jbrowse/plugin-hic                     |                                                                   |
+| @jbrowse/plugin-legacy-jbrowse          | https://www.npmjs.com/package/@jbrowse/plugin-legacy-jbrowse      |
+| @jbrowse/plugin-linear-comparative-view |                                                                   |
+| @jbrowse/plugin-linear-genome-view      | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/plugin-sequence                | https://www.npmjs.com/package/@jbrowse/plugin-sequence            |
+| @jbrowse/plugin-spreadsheet-view        |                                                                   |
+| @jbrowse/plugin-sv-inspector            |                                                                   |
+| @jbrowse/plugin-svg                     | https://www.npmjs.com/package/@jbrowse/plugin-svg                 |
+| @jbrowse/plugin-variants                | https://www.npmjs.com/package/@jbrowse/plugin-variants            |
+| @jbrowse/plugin-wiggle                  | https://www.npmjs.com/package/@jbrowse/plugin-wiggle              |
+| @jbrowse/cli                            | https://www.npmjs.com/package/@jbrowse/cli                        |
+| @jbrowse/desktop                        |                                                                   |
+| @jbrowse/img                            | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view     | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                            |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- Other
+  - [#2601](https://github.com/GMOD/jbrowse-components/pull/2601) Allow opening multiple sequences from the desktop start screen ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#2623](https://github.com/GMOD/jbrowse-components/pull/2623) Adjust label width on base feature detail to enforce better alignment ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#2612](https://github.com/GMOD/jbrowse-components/pull/2612) Fix ability to remove plugins ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2622](https://github.com/GMOD/jbrowse-components/pull/2622) Fix GUI color editor rgba string format ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#2607](https://github.com/GMOD/jbrowse-components/pull/2607) Fix wiggle tooltip crash on non-numerical inputs ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#2626](https://github.com/GMOD/jbrowse-components/pull/2626) Fix bad layout resulting in features being unable to be clicked in embedded mode ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- `core`
+  - [#2595](https://github.com/GMOD/jbrowse-components/pull/2595) Use some newly available TypeScript types ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#2576](https://github.com/GMOD/jbrowse-components/pull/2576) Use TypeScript parameter properties ([@garrettjstevens](https://github.com/garrettjstevens))
+
+#### Committers: 3
+
+- Caroline Bridge ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+
+## 1.5.3 (2021-12-21)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                    | Download                                                 |
+| -------------------------- | -------------------------------------------------------- |
+| @jbrowse/development-tools | https://www.npmjs.com/package/@jbrowse/development-tools |
+
+</p>
+</details>
+
+#### :bug: Bug Fix
+
+- `development-tools`
+  - [#2600](https://github.com/GMOD/jbrowse-components/pull/2600) Fix broken published build of jbrowse/development-tools ([@garrettjstevens](https://github.com/garrettjstevens))
+
+#### Committers: 1
+
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+
+## 1.5.2 (2021-12-20)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                          |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                           | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/development-tools              | https://www.npmjs.com/package/@jbrowse/development-tools          |
+| @jbrowse/plugin-alignments              | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-arc                     |                                                                   |
+| @jbrowse/plugin-authentication          |                                                                   |
+| @jbrowse/plugin-bed                     | https://www.npmjs.com/package/@jbrowse/plugin-bed                 |
+| @jbrowse/plugin-breakpoint-split-view   |                                                                   |
+| @jbrowse/plugin-config                  | https://www.npmjs.com/package/@jbrowse/plugin-config              |
+| @jbrowse/plugin-data-management         | https://www.npmjs.com/package/@jbrowse/plugin-data-management     |
+| @jbrowse/plugin-dotplot-view            |                                                                   |
+| @jbrowse/plugin-gff3                    | https://www.npmjs.com/package/@jbrowse/plugin-gff3                |
+| @jbrowse/plugin-gtf                     | https://www.npmjs.com/package/@jbrowse/plugin-gtf                 |
+| @jbrowse/plugin-hic                     |                                                                   |
+| @jbrowse/plugin-legacy-jbrowse          | https://www.npmjs.com/package/@jbrowse/plugin-legacy-jbrowse      |
+| @jbrowse/plugin-linear-comparative-view |                                                                   |
+| @jbrowse/plugin-linear-genome-view      | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/plugin-menus                   |                                                                   |
+| @jbrowse/plugin-sequence                | https://www.npmjs.com/package/@jbrowse/plugin-sequence            |
+| @jbrowse/plugin-spreadsheet-view        |                                                                   |
+| @jbrowse/plugin-svg                     | https://www.npmjs.com/package/@jbrowse/plugin-svg                 |
+| @jbrowse/plugin-trix                    | https://www.npmjs.com/package/@jbrowse/plugin-trix                |
+| @jbrowse/plugin-variants                | https://www.npmjs.com/package/@jbrowse/plugin-variants            |
+| @jbrowse/plugin-wiggle                  | https://www.npmjs.com/package/@jbrowse/plugin-wiggle              |
+| @jbrowse/cli                            | https://www.npmjs.com/package/@jbrowse/cli                        |
+| @jbrowse/desktop                        |                                                                   |
+| @jbrowse/img                            | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view     | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                            |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- Other
+  - [#2579](https://github.com/GMOD/jbrowse-components/pull/2579) Add help text and help dialog for the RefNameAutocomplete ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2553](https://github.com/GMOD/jbrowse-components/pull/2553) Add sashimi-style arcs for RNA-seq type skips on SNPCoverage display ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2552](https://github.com/GMOD/jbrowse-components/pull/2552) Change border on non-cytoband OverviewScaleBar visible region back to blue and cytoband OverviewScaleBar to a little lighter fill ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2509](https://github.com/GMOD/jbrowse-components/pull/2509) Implement prop interface for providing arbitrary user-defined glyphs to SvgFeatureRenderer ([@hextraza](https://github.com/hextraza))
+  - [#2485](https://github.com/GMOD/jbrowse-components/pull/2485) Only use one button, "Go", in text search ambiguous results dialog ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2501](https://github.com/GMOD/jbrowse-components/pull/2501) Add a tooltip to desktop session path so you can see the full path if it's cut off ([@garrettjstevens](https://github.com/garrettjstevens))
+- `core`
+  - [#2580](https://github.com/GMOD/jbrowse-components/pull/2580) Make core snackbar notifications module with auto-dismissing info/success level notifications ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2534](https://github.com/GMOD/jbrowse-components/pull/2534) New display type for drawing arcs ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+  - [#2590](https://github.com/GMOD/jbrowse-components/pull/2590) Add more exports that can be used by plugins ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#2578](https://github.com/GMOD/jbrowse-components/pull/2578) Add layouts code to core re-exports ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#2523](https://github.com/GMOD/jbrowse-components/pull/2523) Performance optimizations for alignments tracks, particularly those with many short reads ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2500](https://github.com/GMOD/jbrowse-components/pull/2500) Add RenderProps to core/pluggableElementTypes export ([@garrettjstevens](https://github.com/garrettjstevens))
+- `core`, `development-tools`
+  - [#2487](https://github.com/GMOD/jbrowse-components/pull/2487) Add support for additional types of plugin formats (commonjs, esm) to allow access to node modules on jbrowse desktop ([@garrettjstevens](https://github.com/garrettjstevens))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#2594](https://github.com/GMOD/jbrowse-components/pull/2594) Fix infinite loop bug while searching certain strings and handle multi-word searches better ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2589](https://github.com/GMOD/jbrowse-components/pull/2589) Fix occasional failures observed from running text-index command ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2583](https://github.com/GMOD/jbrowse-components/pull/2583) Fix for alignments track base modifications display regarding skipped bases on Mm tag ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2556](https://github.com/GMOD/jbrowse-components/pull/2556) Fix ability to access BigWig tracks on http basic auth for some cases ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2577](https://github.com/GMOD/jbrowse-components/pull/2577) Fix ability to use --indexFile on VCF/GFF tabix and CRAM files and add plaintext VCF, GFF, GTF support to add-track CLI ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2521](https://github.com/GMOD/jbrowse-components/pull/2521) Fix ability to search for tracks with parentheses in tracklist ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2512](https://github.com/GMOD/jbrowse-components/pull/2512) Fix [object Window] issue in alignment read vs reference dialog ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2499](https://github.com/GMOD/jbrowse-components/pull/2499) Add missing dependency to CLI ([@garrettjstevens](https://github.com/garrettjstevens))
+- `core`
+  - [#2585](https://github.com/GMOD/jbrowse-components/pull/2585) Fix ability to use "Color by methylation" on files that require refname renaming ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2517](https://github.com/GMOD/jbrowse-components/pull/2517) Remove aborting on adapter loading process to fix some tracks getting stuck in infinite loading state ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2564](https://github.com/GMOD/jbrowse-components/pull/2564) Start looking for parents with parent, not self in findParentThat ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#2563](https://github.com/GMOD/jbrowse-components/pull/2563) Restore ability to load plugins from relative URL ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#2533](https://github.com/GMOD/jbrowse-components/pull/2533) Fix drawer widget minimized button being unclickable when overlapping with a view ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- [#2522](https://github.com/GMOD/jbrowse-components/pull/2522) Add circular genome view storybook ([@cmdcolin](https://github.com/cmdcolin))
+- [#2508](https://github.com/GMOD/jbrowse-components/pull/2508) Update docs for embedded components ([@teresam856](https://github.com/teresam856))
+- [#2495](https://github.com/GMOD/jbrowse-components/pull/2495) Improve organization on docs landing page ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- `core`
+  - [#2597](https://github.com/GMOD/jbrowse-components/pull/2597) Fix flaky tests related to auth and canvas image snapshots ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2504](https://github.com/GMOD/jbrowse-components/pull/2504) Spreadsheet change jbrequire to es6 imports ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 6
+
+- Caroline Bridge ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+- Peter Xie ([@peterkxie](https://github.com/peterkxie))
+- Sebastian Benjamin ([@hextraza](https://github.com/hextraza))
+- Teresa Martinez ([@teresam856](https://github.com/teresam856))
+
 ## 1.5.1 (2021-11-04)
 
 <details><summary>Packages in this release</summary>

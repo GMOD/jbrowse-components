@@ -24,10 +24,7 @@ export interface SearchScope {
 export default class TextSearchManager {
   adapterCache: QuickLRU
 
-  pluginManager: PluginManager
-
-  constructor(pluginManager: PluginManager) {
-    this.pluginManager = pluginManager
+  constructor(public pluginManager: PluginManager) {
     this.adapterCache = new QuickLRU({
       maxSize: 15,
     })

@@ -1,23 +1,27 @@
-// library
+import React from 'react'
 import { cleanup, render, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
-import React from 'react'
 import { LocalFile } from 'generic-filehandle'
-
-// locals
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import dotplotConfig from '../../test_data/config_dotplot.json'
 
-import { setup, generateReadBuffer, getPluginManager } from './util'
-import JBrowse from '../JBrowse'
+import {
+  JBrowse,
+  setup,
+  generateReadBuffer,
+  expectCanvasMatch,
+  getPluginManager,
+} from './util'
 
 dotplotConfig.configuration = {
   rpc: {
     defaultDriver: 'MainThreadRpcDriver',
   },
 }
+
+const delay = { timeout: 10000 }
 
 expect.extend({ toMatchImageSnapshot })
 setup()
@@ -39,21 +43,7 @@ describe('dotplot view', () => {
     const pluginManager = getPluginManager(dotplotConfig, false)
     const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
 
-    const canvas = await findByTestId(
-      'prerendered_canvas',
-      {},
-      { timeout: 10000 },
-    )
-
-    const img = canvas.toDataURL()
-    const data = img.replace(/^data:image\/\w+;base64,/, '')
-    const buf = Buffer.from(data, 'base64')
-    // this is needed to do a fuzzy image comparison because
-    // the travis-ci was 2 pixels different for some reason, see PR #710
-    expect(buf).toMatchImageSnapshot({
-      failureThreshold: 0.01,
-      failureThresholdType: 'percent',
-    })
+    expectCanvasMatch(await findByTestId('prerendered_canvas', {}, delay))
   }, 15000)
 
   it('open a dotplot view with import form', async () => {
@@ -82,20 +72,6 @@ describe('dotplot view', () => {
       },
     })
 
-    const canvas = await findByTestId(
-      'prerendered_canvas',
-      {},
-      { timeout: 10000 },
-    )
-
-    const img = canvas.toDataURL()
-    const data = img.replace(/^data:image\/\w+;base64,/, '')
-    const buf = Buffer.from(data, 'base64')
-    // this is needed to do a fuzzy image comparison because
-    // the travis-ci was 2 pixels different for some reason, see PR #710
-    expect(buf).toMatchImageSnapshot({
-      failureThreshold: 0.01,
-      failureThresholdType: 'percent',
-    })
+    expectCanvasMatch(await findByTestId('prerendered_canvas', {}, delay))
   }, 15000)
 })

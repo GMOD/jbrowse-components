@@ -4,7 +4,7 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
-import { parseBreakend } from '@gmod/vcf'
+import { parseBreakend, Breakend } from '@gmod/vcf'
 
 // locals
 import { yPos, getPxFromCoordinate, useNextFrame } from '../util'
@@ -12,19 +12,14 @@ import { BreakpointViewModel } from '../model'
 
 const [LEFT] = [0, 1, 2, 3]
 
-interface Breakend {
-  MatePosition: string
-  MateDirection: string
-  Join: string
-}
-
 function findMatchingAlt(feat1: Feature, feat2: Feature) {
   const candidates: Record<string, Breakend> = {}
   const alts = feat1.get('ALT') as string[] | undefined
-  alts?.forEach(alt => {
-    const bnd = parseBreakend(alt)
-    candidates[bnd.MatePosition] = bnd
-  })
+  alts
+    ?.map(alt => parseBreakend(alt))
+    .filter((f): f is Breakend => !!f)
+    .forEach(bnd => (candidates[bnd.MatePosition] = bnd))
+
   return candidates[`${feat2.get('refName')}:${feat2.get('start') + 1}`]
 }
 

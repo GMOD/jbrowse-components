@@ -36,7 +36,7 @@ export default class extends BaseAdapter implements RegionsAdapter {
   }
 
   private async init(file: GenericFilehandle) {
-    const data = (await file.readFile('utf8')) as string
+    const data = await file.readFile('utf8')
     const refSeqs: { [key: string]: number } = {}
     if (!data.length) {
       throw new Error(`Could not read file ${file.toString()}`)

@@ -4,7 +4,7 @@ reference sequence and a structural variant track.
 
 ```tsx
 import React from 'react'
-import 'fontsource-roboto'
+import '@fontsource/roboto'
 import {
   createViewState,
   JBrowseCircularGenomeView,

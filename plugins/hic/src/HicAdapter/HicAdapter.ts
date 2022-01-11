@@ -42,11 +42,7 @@ interface HicOptions extends BaseOptions {
 // in some ways, generic-filehandle wishes it was just this but it has
 // to adapt to the node.js fs promises API
 class GenericFilehandleWrapper {
-  private filehandle: GenericFilehandle
-
-  constructor(filehandle: GenericFilehandle) {
-    this.filehandle = filehandle
-  }
+  constructor(private filehandle: GenericFilehandle) {}
 
   async read(position: number, length: number) {
     const { buffer: b, bytesRead } = await this.filehandle.read(
