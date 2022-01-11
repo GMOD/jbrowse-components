@@ -4,7 +4,6 @@ module.exports = api => {
     babelrcRoots: ['.', './packages/*', './products/*', './plugins/*'],
     comments: true,
     presets: [
-      '@babel/preset-typescript',
       '@babel/preset-react',
       [
         '@babel/preset-env',
@@ -15,6 +14,7 @@ module.exports = api => {
           },
         },
       ],
+      '@babel/preset-typescript',
     ],
     ignore: [
       './node_modules',
