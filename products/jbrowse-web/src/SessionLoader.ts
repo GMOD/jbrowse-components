@@ -242,11 +242,12 @@ const SessionLoader = types
     async fetchConfig() {
       const { configPath = 'config.json' } = self
 
-      const data = (await openLocation({
-        uri: configPath,
-        locationType: 'UriLocation',
-      }).readFile('utf8')) as string
-      const config = JSON.parse(data)
+      const config = JSON.parse(
+        await openLocation({
+          uri: configPath,
+          locationType: 'UriLocation',
+        }).readFile('utf8'),
+      )
       const configUri = new URL(configPath, window.location.href)
       addRelativeUris(config, configUri)
 
