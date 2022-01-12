@@ -3,7 +3,19 @@ module.exports = api => {
   return {
     babelrcRoots: ['.', './packages/*', './products/*', './plugins/*'],
     comments: true,
-    presets: ['react-app'],
+    presets: [
+      '@babel/preset-typescript',
+      [
+        '@babel/preset-env',
+        {
+          targets: {
+            node: 8,
+            browsers: ['> 0.5%', 'last 2 versions'],
+          },
+        },
+      ],
+      'react-app',
+    ],
     ignore: [
       './node_modules',
       './packages/*/node_modules',
