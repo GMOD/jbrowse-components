@@ -178,9 +178,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
+        return self.volatileWidth
       },
       setHeight(newHeight: number) {
         self.height = newHeight
+        return self.height
       },
 
       setError(e: Error) {
