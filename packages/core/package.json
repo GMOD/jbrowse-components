@@ -26,7 +26,7 @@
     "clean": "rimraf dist",
     "prebuild": "yarn clean",
     "prepack": "yarn build",
-    "build": "NODE_ENV=production babel . --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json README.md ../../LICENSE dist/ && tsc",
+    "build": "NODE_ENV=production babel . --root-mode upward --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json README.md ../../LICENSE dist/ && tsc",
     "postpublish": "git push origin main --follow-tags"
   },
   "dependencies": {
