@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
 import { makeStyles, LinearProgress } from '@material-ui/core'
 import { getConf } from '@jbrowse/core/configuration'
-import { Menu } from '@jbrowse/core/ui'
+import { Menu, ResizeHandle } from '@jbrowse/core/ui'
 import normalizeWheel from 'normalize-wheel'
 import { DotplotViewModel } from '../model'
 import ImportForm from './ImportForm'
@@ -21,9 +21,7 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(1),
     overflow: 'hidden',
   },
-  viewContainer: {
-    marginTop: '3px',
-  },
+
   container: {
     display: 'grid',
     padding: 5,
@@ -405,6 +403,15 @@ const DotplotViewInternal = observer(
             />
           </div>
         </div>
+        <ResizeHandle
+          onDrag={n => model.setHeight(model.height + n)}
+          style={{
+            height: 4,
+            background: '#ccc',
+            boxSizing: 'border-box',
+            borderTop: '1px solid #fafafa',
+          }}
+        />
       </div>
     )
   },
