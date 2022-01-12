@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-gff3",
-  "version": "1.5.5",
+  "version": "1.5.6",
   "description": "JBrowse 2 gff3.",
   "keywords": [
     "jbrowse",
