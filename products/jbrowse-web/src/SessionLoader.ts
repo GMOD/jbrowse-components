@@ -337,7 +337,7 @@ const SessionLoader = types
 
     async decodeEncodedUrlSession() {
       const session = JSON.parse(
-        //@ts-ignore
+        // @ts-ignore
         await fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
       )
       await this.setSessionSnapshot({ ...session, id: shortid() })

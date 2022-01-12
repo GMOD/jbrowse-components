@@ -30,12 +30,12 @@ import {
   RefNameAutocomplete,
 } from './LinearGenomeView'
 
-type LGV = LinearGenomeViewModel
-
 import {
   configSchema as linearBasicDisplayConfigSchemaFactory,
   modelFactory as linearBasicDisplayModelFactory,
 } from './LinearBasicDisplay'
+
+type LGV = LinearGenomeViewModel
 
 export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'
@@ -156,7 +156,23 @@ export default class LinearGenomeViewPlugin extends Plugin {
 
         view.navToLocString(loc, assembly)
 
-        tracks.forEach(track => view.showTrack(track))
+        const idsNotFound = [] as string[]
+        tracks.forEach(track => {
+          try {
+            view.showTrack(track)
+          } catch (e) {
+            if (`${e}`.match('Could not resolve identifier')) {
+              idsNotFound.push(track)
+            } else {
+              throw e
+            }
+          }
+        })
+        if (idsNotFound.length) {
+          throw new Error(
+            `Could not resolve identifiers: ${idsNotFound.join(',')}`,
+          )
+        }
       },
     )
   }
