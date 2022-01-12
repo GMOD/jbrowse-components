@@ -54,7 +54,7 @@ export default class CircularViewPlugin extends Plugin {
         const asm = await assemblyManager.waitForAssembly(assembly)
         if (!asm) {
           throw new Error(
-            `Assembly not found ${assembly} when launching circular genome view`,
+            `Assembly "${assembly}" not found when launching circular genome view`,
           )
         }
 
