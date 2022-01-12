@@ -566,7 +566,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           trackId,
         )
         if (!configuration) {
-          throw new Error(`Could not resolve identifier ${trackId}`)
+          throw new Error(`Could not resolve identifier "${trackId}"`)
         }
         const trackType = pluginManager.getTrackType(configuration?.type)
         if (!trackType) {
