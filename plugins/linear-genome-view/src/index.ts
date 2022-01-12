@@ -150,7 +150,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
         const asm = await assemblyManager.waitForAssembly(assembly)
         if (!asm) {
           throw new Error(
-            `Assembly not found ${assembly} when launching linear genome view`,
+            `Assembly "${assembly}" not found when launching linear genome view`,
           )
         }
 
