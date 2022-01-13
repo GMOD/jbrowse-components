@@ -15,7 +15,7 @@
     "directory": "plugins/wiggle"
   },
   "author": "JBrowse Team",
-  "main": "dist/index.ts",
+  "main": "dist/index.js",
   "files": [
     "dist"
   ],

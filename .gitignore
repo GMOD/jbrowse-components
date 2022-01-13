@@ -17,3 +17,5 @@ yalc.lock
 lerna-debug.log
 .yarn
 .yarnrc
+
+packages/core/BaseFeatureWidget/
