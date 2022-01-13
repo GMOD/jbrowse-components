@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-data-management",
-  "version": "1.5.7",
+  "version": "1.5.8",
   "description": "JBrowse 2 linear genome view",
   "keywords": [
     "jbrowse",
