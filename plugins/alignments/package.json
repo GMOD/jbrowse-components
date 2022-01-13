@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-alignments",
-  "version": "1.5.6",
+  "version": "1.5.8",
   "description": "JBrowse 2 alignments adapters, tracks, etc.",
   "keywords": [
     "jbrowse",

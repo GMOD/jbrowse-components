@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-dotplot-view",
-  "version": "1.5.6",
+  "version": "1.5.8",
   "description": "JBrowse 2 dotplot view",
   "keywords": [
     "jbrowse",

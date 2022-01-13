@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/core",
-  "version": "1.5.6",
+  "version": "1.5.8",
   "description": "JBrowse 2 core libraries used by plugins",
   "keywords": [
     "jbrowse",
@@ -24,8 +24,7 @@
     "clean": "git clean -fdx",
     "prebuild": "yarn clean",
     "prepack": "yarn build",
-    "build": "tsc",
-    "postpublish": "git push origin main --follow-tags"
+    "build": "tsc"
   },
   "dependencies": {
     "@material-ui/icons": "^4.0.1",

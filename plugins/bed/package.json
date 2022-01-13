@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-bed",
-  "version": "1.5.6",
+  "version": "1.5.8",
   "description": "JBrowse 2 bed adapters, tracks, etc.",
   "keywords": [
     "jbrowse",

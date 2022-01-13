@@ -1,3 +1,40 @@
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                             | Download                                                          |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                       | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/desktop                    |                                                                   |
+| @jbrowse/img                        | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view   | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                        |                                                                   |
+
+</p>
+</details>
+
+## 1.5.7 (2022-01-13)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                      | Download |
+| ---------------------------- | -------- |
+| @jbrowse/plugin-dotplot-view |          |
+| @jbrowse/desktop             |          |
+| @jbrowse/web                 |          |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- [#2632](https://github.com/GMOD/jbrowse-components/pull/2632) Add vertical resize handle to dotplot view ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+
 ## 1.5.6 (2022-01-12)
 
 <details><summary>Packages in this release</summary>
