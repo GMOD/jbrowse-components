@@ -1,3 +1,25 @@
+## 1.5.7 (2022-01-13)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                      | Download |
+| ---------------------------- | -------- |
+| @jbrowse/plugin-dotplot-view |          |
+| @jbrowse/desktop             |          |
+| @jbrowse/web                 |          |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- [#2632](https://github.com/GMOD/jbrowse-components/pull/2632) Add vertical resize handle to dotplot view ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+
 ## 1.5.6 (2022-01-12)
 
 <details><summary>Packages in this release</summary>
