@@ -1,15 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import PluginManager from '../PluginManager'
 import PluggableElementBase from './PluggableElementBase'
 import { setBlobMap, getBlobMap } from '../util/tracks'
+import { getSnapshot, isAlive, isStateTreeNode } from 'mobx-state-tree'
 import {
-  UriLocation,
-  AbstractRootModel,
   isAppRootModel,
   isUriLocation,
+  isAuthNeededException,
   AuthNeededError,
   RetryError,
-  isAuthNeededException,
+  UriLocation,
 } from '../util/types'
 
 import {
@@ -33,26 +32,19 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     return { ...args, blobMap }
   }
 
-  async serializeNewAuthArguments(location: UriLocation) {
-    const rootModel: AbstractRootModel | undefined =
-      this.pluginManager.rootModel
+  async serializeNewAuthArguments(loc: UriLocation) {
+    const rootModel = this.pluginManager.rootModel
 
     // args dont need auth or already have auth
-    if (
-      !isAppRootModel(rootModel) ||
-      location.internetAccountPreAuthorization
-    ) {
+    if (!isAppRootModel(rootModel) || loc.internetAccountPreAuthorization) {
       return location
     }
 
-    const account = rootModel?.findAppropriateInternetAccount(location)
+    const account = rootModel?.findAppropriateInternetAccount(loc)
 
     if (account) {
-      const modifiedPreAuth = await account.getPreAuthorizationInformation(
-        location,
-      )
-
-      location.internetAccountPreAuthorization = modifiedPreAuth
+      loc.internetAccountPreAuthorization =
+        await account.getPreAuthorizationInformation(loc)
     }
     return location
   }
@@ -116,7 +108,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     return r
   }
 
-  private async augmentLocationObjects(thing: any): Promise<any> {
+  private async augmentLocationObjects<T>(thing: T) {
     if (isUriLocation(thing)) {
       await this.serializeNewAuthArguments(thing)
     }
@@ -126,13 +118,16 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       }
     }
     if (typeof thing === 'object' && thing !== null) {
-      for (const [key, value] of Object.entries(thing)) {
+      if (isStateTreeNode(thing) && isAlive(thing)) {
+        thing = getSnapshot(thing)
+      }
+      for (const value of Object.values(thing)) {
         if (Array.isArray(value)) {
-          for (const val of thing[key]) {
+          for (const val of value) {
             await this.augmentLocationObjects(val)
           }
         } else if (typeof value === 'object' && value !== null) {
-          await this.augmentLocationObjects(thing[key])
+          await this.augmentLocationObjects(value)
         }
       }
     }
