@@ -27,7 +27,7 @@ import {
   NewEmptySession,
   NewLinearGenomeViewSession,
   NewSVInspectorSession,
-} from '@jbrowse/core/ui/NewSessionCards'
+} from './NewSessionCards'
 import RecentSessionCard from './RecentSessionCard'
 
 const useStyles = makeStyles(theme => ({

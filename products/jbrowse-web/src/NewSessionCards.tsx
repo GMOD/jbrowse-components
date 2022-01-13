@@ -7,9 +7,9 @@ import {
   makeStyles,
 } from '@material-ui/core'
 
-import emptyIcon from './emptyIcon.png'
-import linearGenomeViewIcon from './linearGenomeViewIcon.png'
-import svInspectorIcon from './svInspectorIcon.png'
+import emptyIcon from './img/emptyIcon.png'
+import linearGenomeViewIcon from './img/linearGenomeViewIcon.png'
+import svInspectorIcon from './img/svInspectorIcon.png'
 
 const useStyles = makeStyles(theme => ({
   card: {
