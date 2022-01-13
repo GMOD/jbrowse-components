@@ -19,3 +19,4 @@ lerna-debug.log
 .yarnrc
 
 packages/core/BaseFeatureWidget/
+packages/core/util/
