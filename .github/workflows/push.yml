@@ -68,9 +68,7 @@ jobs:
       - name: Build project
         run: |
           echo $RELEASE_VERSION
-          cd products/jbrowse-web/
           NODE_OPTIONS='--max-old-space-size=6500' yarn build
-          cd ../../
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
