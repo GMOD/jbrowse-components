@@ -18,7 +18,6 @@
     "directory": "packages/core"
   },
   "author": "JBrowse Team",
-  "main": "index.js",
   "scripts": {
     "test": "cd ../..; jest packages/core",
     "coverage": "yarn test --coverage",
@@ -26,7 +25,7 @@
     "clean": "rimraf dist",
     "prebuild": "yarn clean",
     "prepack": "yarn build",
-    "build": "NODE_ENV=production babel . --root-mode upward --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json README.md ../../LICENSE dist/ && tsc",
+    "build": "tsc",
     "postpublish": "git push origin main --follow-tags"
   },
   "dependencies": {

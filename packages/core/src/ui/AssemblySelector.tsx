@@ -1,8 +1,9 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { getConf } from '@jbrowse/core/configuration'
 import { makeStyles, TextField, MenuItem } from '@material-ui/core'
-import { AbstractSessionModel } from '@jbrowse/core/util'
+import { getConf } from '../configuration'
+import { AbstractSessionModel } from '../util'
+
 const useStyles = makeStyles(() => ({
   importFormEntry: {
     minWidth: 180,
