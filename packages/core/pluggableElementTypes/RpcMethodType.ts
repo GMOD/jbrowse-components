@@ -37,7 +37,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
     // args dont need auth or already have auth
     if (!isAppRootModel(rootModel) || loc.internetAccountPreAuthorization) {
-      return location
+      return loc
     }
 
     const account = rootModel?.findAppropriateInternetAccount(loc)
@@ -46,7 +46,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       loc.internetAccountPreAuthorization =
         await account.getPreAuthorizationInformation(loc)
     }
-    return location
+    return loc
   }
 
   async deserializeArguments<
@@ -110,20 +110,22 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
   //@eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async augmentLocationObjects<T>(thing: T): any {
+    if (isStateTreeNode(thing) && isAlive(thing)) {
+      const type = thing.type
+      thing = JSON.parse(JSON.stringify(getSnapshot(thing)))
+      thing.type = type
+    }
     if (isUriLocation(thing)) {
       return this.serializeNewAuthArguments(thing)
     } else if (Array.isArray(thing)) {
       return Promise.all(thing.map(val => this.augmentLocationObjects(val)))
     } else if (typeof thing === 'object' && thing !== null) {
-      if (isStateTreeNode(thing) && isAlive(thing)) {
-        thing = getSnapshot(thing)
-      }
       return Object.fromEntries(
         await Promise.all(
-          Object.entries(thing).map(async ([key, val]) => [
-            key,
-            await this.augmentLocationObjects(val),
-          ]),
+          Object.entries(thing).map(async ([key, val]) => {
+            console.log(key, val)
+            return [key, await this.augmentLocationObjects(val)]
+          }),
         ),
       )
     } else {
