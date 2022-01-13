@@ -28,7 +28,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
   async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
     const blobMap = getBlobMap()
-    await this.augmentLocationObjects(args)
+    args = await this.augmentLocationObjects(args)
     return { ...args, blobMap }
   }
 
@@ -108,28 +108,26 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     return r
   }
 
-  private async augmentLocationObjects<T>(thing: T) {
+  //@eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async augmentLocationObjects<T>(thing: T): any {
     if (isUriLocation(thing)) {
-      await this.serializeNewAuthArguments(thing)
-    }
-    if (Array.isArray(thing)) {
-      for (const val of thing) {
-        await this.augmentLocationObjects(val)
-      }
-    }
-    if (typeof thing === 'object' && thing !== null) {
+      return this.serializeNewAuthArguments(thing)
+    } else if (Array.isArray(thing)) {
+      return Promise.all(thing.map(val => this.augmentLocationObjects(val)))
+    } else if (typeof thing === 'object' && thing !== null) {
       if (isStateTreeNode(thing) && isAlive(thing)) {
         thing = getSnapshot(thing)
       }
-      for (const value of Object.values(thing)) {
-        if (Array.isArray(value)) {
-          for (const val of value) {
-            await this.augmentLocationObjects(val)
-          }
-        } else if (typeof value === 'object' && value !== null) {
-          await this.augmentLocationObjects(value)
-        }
-      }
+      return Object.fromEntries(
+        await Promise.all(
+          Object.entries(thing).map(async ([key, val]) => [
+            key,
+            await this.augmentLocationObjects(val),
+          ]),
+        ),
+      )
+    } else {
+      return thing
     }
   }
 }
