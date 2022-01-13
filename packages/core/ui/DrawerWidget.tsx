@@ -14,7 +14,7 @@ import {
 } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import { SessionWithDrawerWidgets } from '@jbrowse/core/util/types'
+import { SessionWithDrawerWidgets } from '../util/types'
 
 // icons
 import DeleteIcon from '@material-ui/icons/Delete'
