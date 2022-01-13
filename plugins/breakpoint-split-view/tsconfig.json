@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.json",
   "include": ["src", "types"],
   "compilerOptions": {
+    "outDir": "dist",
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,
