@@ -15,16 +15,14 @@
     "directory": "plugins/trix"
   },
   "author": "JBrowse Team",
-  "main": "dist/index.ts",
+  "main": "dist/index.js",
   "files": [
     "dist"
   ],
   "scripts": {
     "build": "tsc",
     "prebuild": "npm run clean",
-    "clean": "rimraf dist",
-    "test": "cd ../..; jest plugins/trix",
-    "prepublishOnly": "yarn test"
+    "clean": "rimraf dist"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",

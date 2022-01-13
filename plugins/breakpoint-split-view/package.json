@@ -15,24 +15,14 @@
     "directory": "plugins/breakpoint-split-view"
   },
   "author": "JBrowse Team",
-  "distMain": "dist/index.js",
-  "srcMain": "src/index.ts",
-  "main": "src/index.ts",
-  "distModule": "dist/plugin-breakpoint-split-view.esm.js",
-  "module": "",
+  "main": "dist/index.js",
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "scripts": {
-    "start": "tsdx watch --verbose --noClean",
-    "build": "tsdx build",
-    "test": "cd ../..; jest plugins/breakpoint-split-view",
-    "prepublishOnly": "yarn test",
-    "prepack": "yarn build; yarn useDist",
-    "postpack": "yarn useSrc",
-    "useDist": "node ../../scripts/useDist.js",
-    "useSrc": "node ../../scripts/useSrc.js"
+    "build": "tsc",
+    "prebuild": "npm run clean",
+    "clean": "rimraf dist"
   },
   "dependencies": {
     "@gmod/vcf": "^5.0.4",

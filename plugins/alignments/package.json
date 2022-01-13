@@ -15,16 +15,14 @@
     "directory": "plugins/alignments"
   },
   "author": "JBrowse Team",
-  "main": "dist/index.ts",
+  "main": "dist/index.js",
   "files": [
     "dist"
   ],
   "scripts": {
     "build": "tsc",
     "prebuild": "npm run clean",
-    "clean": "rimraf dist",
-    "test": "cd ../..; jest plugins/alignments",
-    "prepublish": "yarn test"
+    "clean": "rimraf dist"
   },
   "dependencies": {
     "@gmod/bam": "^1.1.9",

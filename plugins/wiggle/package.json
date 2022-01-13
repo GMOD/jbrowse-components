@@ -21,9 +21,8 @@
   ],
   "scripts": {
     "build": "tsc",
-    "test": "cd ../..; jest plugins/wiggle",
-    "prepublishOnly": "yarn test",
-    "prepack": "yarn build"
+    "prebuild": "npm run clean",
+    "clean": "rimraf dist"
   },
   "dependencies": {
     "@gmod/bbi": "^1.0.31",
