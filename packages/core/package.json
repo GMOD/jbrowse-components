@@ -21,7 +21,7 @@
   "scripts": {
     "test": "cd ../..; jest packages/core",
     "coverage": "yarn test --coverage",
-    "clean": "rimraf dist",
+    "clean": "git clean -fdx",
     "prebuild": "yarn clean",
     "prepack": "yarn build",
     "build": "tsc",
