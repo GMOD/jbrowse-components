@@ -14,7 +14,7 @@ module.exports = api => {
           },
         },
       ],
-      'react-app',
+      ['react-app', { absoluteRuntime: false }],
     ],
     ignore: [
       './node_modules',
