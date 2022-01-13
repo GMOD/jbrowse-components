@@ -26,12 +26,38 @@ function main() {
     })
     const { signal, status } = spawn.sync(
       'yarn',
-      ['lerna', 'run', 'build', ...scopes],
+      ['lerna', 'exec', 'yarn', 'pack', ...scopes],
       { stdio: 'inherit' },
     )
     if (signal || (status !== null && status > 0)) {
       process.exit(status || 1)
     }
+  })
+  fs.mkdirSync(path.join('component_test', 'packed'), { recursive: true })
+  Object.values(packages).forEach(packageInfo => {
+    let { location } = packageInfo
+    if (location === 'packages/core') {
+      location = path.join(location, 'dist')
+      const { signal, status } = spawn.sync(
+        'yarn',
+        ['pack', '--ignore-scripts'],
+        { stdio: 'inherit', cwd: location },
+      )
+      if (signal || (status !== null && status > 0)) {
+        process.exit(status || 1)
+      }
+    }
+    const files = fs.readdirSync(location)
+    const tarball = files.find(fileName => fileName.endsWith('.tgz'))
+    if (!tarball) {
+      console.warn(`No tarball from ${location}`)
+      return
+    }
+    const newTarballName = tarball.replace(/-v\d+\.\d+\.\d+/, '')
+    fs.renameSync(
+      path.join(location, tarball),
+      path.join('component_test', 'packed', newTarballName),
+    )
   })
 }
 
