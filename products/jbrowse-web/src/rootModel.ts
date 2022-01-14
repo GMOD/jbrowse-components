@@ -45,8 +45,6 @@ import { Cable } from '@jbrowse/core/ui/Icons'
 // other
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
-// @ts-ignore
-import RenderWorker from './rpc.worker'
 import sessionModelFactory from './sessionModelFactory'
 
 // attempts to remove undefined references from the given MST model. can only actually
@@ -135,8 +133,12 @@ export default function RootModel(
         pluginManager,
         self.jbrowse.configuration.rpc,
         {
-          //@ts-ignore
-          WebWorkerRpcDriver: { WorkerClass: RenderWorker },
+          WebWorkerRpcDriver: {
+            //@ts-ignore
+            WorkerClass: new Worker(
+              new URL('./rpc.worker.ts', import.meta.url),
+            ),
+          },
           MainThreadRpcDriver: {},
         },
       ),
