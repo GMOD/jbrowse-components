@@ -27,7 +27,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
   async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
     const blobMap = getBlobMap()
-    args = await this.augmentLocationObjects(args)
+    await this.augmentLocationObjects(args)
     return { ...args, blobMap }
   }
 
@@ -114,23 +114,19 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     }
 
     if (isUriLocation(thing)) {
-      return this.serializeNewAuthArguments(thing)
+      this.serializeNewAuthArguments(thing)
     } else if (Array.isArray(thing)) {
-      return Promise.all(thing.map(val => this.augmentLocationObjects(val)))
+      await Promise.all(thing.map(val => this.augmentLocationObjects(val)))
     } else if (
       typeof thing === 'object' &&
       thing !== null &&
       !(thing instanceof AbortSignal)
     ) {
-      return Object.fromEntries(
-        await Promise.all(
-          Object.entries(thing).map(async ([key, val]) => {
-            return [key, await this.augmentLocationObjects(val)]
-          }),
-        ),
+      await Promise.all(
+        Object.entries(thing).map(async ([key, val]) => {
+          return [key, await this.augmentLocationObjects(val)]
+        }),
       )
-    } else {
-      return thing
     }
   }
 }
