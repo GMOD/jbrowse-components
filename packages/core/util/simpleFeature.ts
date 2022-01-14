@@ -149,7 +149,11 @@ export default class SimpleFeature implements Feature {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public get(name: string): any {
-    return name === 'subfeatures' ? this.subfeatures : this.data[name]
+    return name === 'subfeatures'
+      ? this.subfeatures
+      : name === 'parent'
+      ? this.parent()
+      : this.data[name]
   }
 
   /**

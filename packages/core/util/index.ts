@@ -48,11 +48,11 @@ export function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value)
 
   useEffect(() => {
-    const handler = setTimeout(() => {
+    const handle = setTimeout(() => {
       setDebouncedValue(value)
     }, delay)
     return () => {
-      clearTimeout(handler)
+      clearTimeout(handle)
     }
   }, [value, delay])
 
@@ -763,8 +763,9 @@ export async function renameRegionsIfNeeded<
 
   return {
     ...args,
-    regions: regions.map(region =>
-      renameRegionIfNeeded(assemblyMaps[region.assemblyName], region),
+    regions: regions.map((region, i) =>
+      // note: uses assemblyNames defined above since region could be dead now
+      renameRegionIfNeeded(assemblyMaps[assemblyNames[i]], region),
     ),
   }
 }
