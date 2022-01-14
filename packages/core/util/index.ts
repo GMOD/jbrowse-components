@@ -763,8 +763,9 @@ export async function renameRegionsIfNeeded<
 
   return {
     ...args,
-    regions: regions.map(region =>
-      renameRegionIfNeeded(assemblyMaps[region.assemblyName], region),
+    regions: regions.map((region, i) =>
+      // note: uses assemblyNames defined above since region could be dead now
+      renameRegionIfNeeded(assemblyMaps[assemblyNames[i]], region),
     ),
   }
 }
