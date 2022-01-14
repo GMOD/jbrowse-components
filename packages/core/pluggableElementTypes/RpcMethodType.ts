@@ -91,7 +91,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       r = await serializedReturn
     } catch (error) {
       if (isAuthNeededException(error)) {
-        //@ts-ignore
+        // @ts-ignore
         const retryAccount = rootModel?.createEphemeralInternetAccount(
           `HTTPBasicInternetAccount-${new URL(error.location.uri).origin}`,
           {},
@@ -107,7 +107,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     return r
   }
 
-  //@eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async augmentLocationObjects(thing: any): Promise<any> {
     if (isStateTreeNode(thing) && !isAlive(thing)) {
       return thing

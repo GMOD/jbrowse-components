@@ -65,7 +65,7 @@ export default class ServerSideRenderer extends RendererType {
       config: isStateTreeNode(args.config)
         ? getSnapshot(args.config)
         : args.config,
-      filters: args.filters?.filters,
+      filters: args.filters && args.filters.toJSON().filters,
     }
   }
 
