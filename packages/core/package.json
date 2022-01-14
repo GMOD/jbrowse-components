@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/core",
-  "version": "1.5.5",
+  "version": "1.5.9",
   "description": "JBrowse 2 core libraries used by plugins",
   "keywords": [
     "jbrowse",
@@ -26,8 +26,7 @@
     "clean": "rimraf dist",
     "prebuild": "yarn clean",
     "prepack": "yarn build",
-    "build": "NODE_ENV=production babel . --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json README.md ../../LICENSE dist/ && tsc",
-    "postpublish": "git push origin main --follow-tags"
+    "build": "NODE_ENV=production babel . --root-mode upward --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json README.md ../../LICENSE dist/ && tsc"
   },
   "dependencies": {
     "@babel/runtime": "^7.16.3",

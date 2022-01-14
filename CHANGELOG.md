@@ -1,3 +1,93 @@
+## 1.5.9 (2022-01-13)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                             | Download                                                          |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                       | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/desktop                    |                                                                   |
+| @jbrowse/img                        | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view   | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                        |                                                                   |
+
+</p>
+</details>
+
+#### :bug: Bug Fix
+
+- [#2645](https://github.com/GMOD/jbrowse-components/pull/2645) Fix core by not using absolute runtime in babel ([@garrettjstevens](https://github.com/garrettjstevens))
+
+#### Committers: 1
+
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                             | Download                                                          |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                       | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/desktop                    |                                                                   |
+| @jbrowse/img                        | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view   | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                        |                                                                   |
+
+</p>
+</details>
+
+## 1.5.7 (2022-01-13)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                      | Download |
+| ---------------------------- | -------- |
+| @jbrowse/plugin-dotplot-view |          |
+| @jbrowse/desktop             |          |
+| @jbrowse/web                 |          |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- [#2632](https://github.com/GMOD/jbrowse-components/pull/2632) Add vertical resize handle to dotplot view ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+
+## 1.5.6 (2022-01-12)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                             | Download                                                          |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                       | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/plugin-linear-genome-view  | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/desktop                    |                                                                   |
+| @jbrowse/img                        | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view   | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                        |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#2629](https://github.com/GMOD/jbrowse-components/pull/2629) Add ability to get parent feature in jexl syntax with either parent(feature) or get(feature,'parent') ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 2
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Teresa Martinez ([@teresam856](https://github.com/teresam856))
+
 <details><summary>Packages in this release</summary>
 <p>
 
