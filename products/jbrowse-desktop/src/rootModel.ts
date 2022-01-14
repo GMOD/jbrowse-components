@@ -31,8 +31,6 @@ import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 import sessionModelFactory from './sessionModelFactory'
 import JBrowseDesktop from './jbrowseModel'
 import OpenSequenceDialog from './OpenSequenceDialog'
-// @ts-ignore
-import RenderWorker from './rpc.worker'
 
 function getSaveSession(model: RootModel) {
   return {
@@ -370,7 +368,12 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         pluginManager,
         self.jbrowse.configuration.rpc,
         {
-          WebWorkerRpcDriver: { WorkerClass: RenderWorker },
+          WebWorkerRpcDriver: {
+            //@ts-ignore
+            WorkerClass: new Worker(
+              new URL('./rpc.worker.ts', import.meta.url),
+            ),
+          },
           MainThreadRpcDriver: {},
         },
       ),
