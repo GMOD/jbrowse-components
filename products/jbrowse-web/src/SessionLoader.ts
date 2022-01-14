@@ -490,7 +490,7 @@ export function loadSessionSpec(
         const { type } = view
         const { session } = rootModel
 
-        await pluginManager.evaluateExtensionPoint('LaunchView-' + type, {
+        await pluginManager.evaluateAsyncExtensionPoint('LaunchView-' + type, {
           ...view,
           session,
         })
