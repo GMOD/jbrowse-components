@@ -3,3 +3,5 @@ packed/
 /coverage
 /build
 yarn.lock
+cypress/screenshots/
+cypress/videos/
