@@ -6,6 +6,7 @@ import PluginManager from '../PluginManager'
 import QuickLRU from '../util/QuickLRU'
 import { SearchType, BaseTextSearchAdapter } from '../data_adapters/BaseAdapter'
 import { readConfObject } from '../configuration'
+import { indexDriver } from './TextIndexing'
 
 export interface BaseArgs {
   queryString: string
@@ -64,7 +65,6 @@ export default class TextSearchManager {
    * Instantiate/initialize list of relevant adapters
    */
   loadTextSearchAdapters(searchScope: SearchScope): BaseTextSearchAdapter[] {
-    // this.changesInConf()
     return this.relevantAdapters(searchScope).map(adapterConfig => {
       const adapterId = readConfObject(adapterConfig, 'textSearchAdapterId')
       if (this.adapterCache.has(adapterId)) {
@@ -95,7 +95,6 @@ export default class TextSearchManager {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       aggregateTextSearchAdapters: any
     }
-
     const { assemblyName } = searchScope
     return [
       ...this.getAdaptersWithAssembly(
@@ -146,6 +145,7 @@ export default class TextSearchManager {
       textSearchAdapters.map(adapter => adapter.searchIndex(args)),
     )
 
+    console.log(await indexDriver([]))
     // aggregate and return relevant results
     return this.sortResults(results.flat(), rankFn)
   }

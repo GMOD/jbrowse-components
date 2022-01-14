@@ -2,7 +2,9 @@
 import fs from 'fs'
 import path from 'path'
 import { cwd } from 'process'
-import { Readable } from 'stream'
+// import { Readable } from 'stream'
+import { indexGff3 } from './types/gff3Adapter'
+import { indexVcf } from './types/vcfAdapter'
 // import { ixIxxStream } from 'ixixx'
 import { Track, Config } from './util'
 
@@ -37,21 +39,45 @@ export async function indexDriver(
   console.log('current tracks', currentTracks)
   // TODO: create a readable
   //   const readable = Readable.from(
-  //     indexFiles(currentTracks, attributes, outDir, quiet, exclude),
+  //     indexFiles(
+  //       currentTracks,
+  //       attributes || [],
+  //       outDir,
+  //       quiet || true,
+  //       exclude || [],
+  //     ),
   //   )
+  //   console.log('readable', readable)
   // TODO: create an ixIxxStream
-  //   const ixIxxStream = await runIxIxx(readable, idxLocation || '', name)
+  //   const ixIxxStream = await runIxIxx(readable, idxLocation || '', name || '')
   // TODO: we can create a metafile here
   return
 }
 
-async function indexFiles(
+async function* indexFiles(
   tracks: Track[],
   attributes: string[],
-  idxLocation: string,
+  outLocation: string,
   quiet: boolean,
   typesToExclude: string[],
-) {}
+) {
+  for (const track of tracks) {
+    const { adapter, textSearching } = track
+    const { type } = adapter
+    const {
+      indexingFeatureTypesToExclude: types = typesToExclude,
+      indexingAttributes: attrs = attributes,
+    } = textSearching || {}
+
+    if (type === 'Gff3TabixAdapter') {
+      yield* indexGff3(track, attrs, outLocation, types, quiet)
+    } else if (type === 'VcfTabixAdapter') {
+      yield* indexVcf(track, attrs, outLocation, types, quiet)
+    }
+
+    // gtf unused currently
+  }
+}
 
 // function runIxIxx(readStream: Readable, idxLocation: string, name: string) {
 //   const ixFilename = path.join(idxLocation, 'trix', `${name}.ix`)
