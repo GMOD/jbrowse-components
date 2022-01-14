@@ -764,7 +764,9 @@ export async function renameRegionsIfNeeded<
   return {
     ...args,
     regions: regions.map(region =>
-      renameRegionIfNeeded(assemblyMaps[region.assemblyName], region),
+      isStateTreeNode(region) && !isAlive(region)
+        ? region
+        : renameRegionIfNeeded(assemblyMaps[region.assemblyName], region),
     ),
   }
 }

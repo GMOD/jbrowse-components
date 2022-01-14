@@ -117,11 +117,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       this.serializeNewAuthArguments(thing)
     } else if (Array.isArray(thing)) {
       await Promise.all(thing.map(val => this.augmentLocationObjects(val)))
-    } else if (
-      typeof thing === 'object' &&
-      thing !== null &&
-      !(thing instanceof AbortSignal)
-    ) {
+    } else if (typeof thing === 'object' && thing !== null) {
       await Promise.all(
         Object.entries(thing).map(async ([key, val]) => {
           return [key, await this.augmentLocationObjects(val)]
