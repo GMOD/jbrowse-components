@@ -7,10 +7,6 @@ import {
   makeStyles,
 } from '@material-ui/core'
 
-import emptyIcon from './img/emptyIcon.png'
-import linearGenomeViewIcon from './img/linearGenomeViewIcon.png'
-import svInspectorIcon from './img/svInspectorIcon.png'
-
 const useStyles = makeStyles(theme => ({
   card: {
     width: 200,
@@ -39,7 +35,7 @@ function NewSessionCard({
 }: {
   name: string
   onClick: () => void
-  image: string
+  image?: string
 }) {
   const classes = useStyles()
   const [hovered, setHovered] = useState(false)
@@ -77,7 +73,6 @@ export function NewEmptySession({ rootModel }: { rootModel: RootModel }) {
       onClick={() => {
         rootModel.setSession(emptySessionSnapshot)
       }}
-      image={emptyIcon}
     />
   )
 }
@@ -97,7 +92,6 @@ export function NewLinearGenomeViewSession({
           views: [{ type: 'LinearGenomeView' }],
         })
       }}
-      image={linearGenomeViewIcon}
     />
   )
 }
@@ -113,7 +107,6 @@ export function NewSVInspectorSession({ rootModel }: { rootModel: RootModel }) {
           views: [{ type: 'SvInspectorView' }],
         })
       }}
-      image={svInspectorIcon}
     />
   )
 }

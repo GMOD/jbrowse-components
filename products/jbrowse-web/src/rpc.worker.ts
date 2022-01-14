@@ -99,3 +99,7 @@ getPluginManager()
       },
     })
   })
+
+export default () => {
+  console.log('hello')
+}
