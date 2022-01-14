@@ -42,10 +42,8 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     const account = rootModel?.findAppropriateInternetAccount(loc)
 
     if (account) {
-      const auth = await account.getPreAuthorizationInformation(loc)
-      if (isStateTreeNode(loc) && isAlive(loc)) {
-        loc.internetAccountPreAuthorization = auth
-      }
+      loc.internetAccountPreAuthorization =
+        await account.getPreAuthorizationInformation(loc)
     }
     return loc
   }
@@ -114,15 +112,23 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     }
 
     if (isUriLocation(thing)) {
-      this.serializeNewAuthArguments(thing)
-    } else if (Array.isArray(thing)) {
-      await Promise.all(thing.map(val => this.augmentLocationObjects(val)))
-    } else if (typeof thing === 'object' && thing !== null) {
-      await Promise.all(
-        Object.entries(thing).map(async ([key, val]) => {
-          return [key, await this.augmentLocationObjects(val)]
-        }),
-      )
+      await this.serializeNewAuthArguments(thing)
+    }
+    if (Array.isArray(thing)) {
+      for (const val of thing) {
+        await this.augmentLocationObjects(val)
+      }
+    }
+    if (typeof thing === 'object' && thing !== null) {
+      for (const value of Object.values(thing)) {
+        if (Array.isArray(value)) {
+          for (const val of value) {
+            await this.augmentLocationObjects(val)
+          }
+        } else if (typeof value === 'object' && value !== null) {
+          await this.augmentLocationObjects(value)
+        }
+      }
     }
   }
 }
