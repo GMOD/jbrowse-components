@@ -60,6 +60,7 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     // note that we are making a Rpc.Client connection with a worker pool of
     // one for each worker, because we want to do our own state-group-aware
     // load balancing rather than using librpc's builtin round-robin
+    //@ts-ignore
     const worker = new WebWorkerHandle({ workers: [this.WorkerClass] })
 
     // send the worker its boot configuration using info from the pluginManager

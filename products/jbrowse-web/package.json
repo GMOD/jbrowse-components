@@ -10,6 +10,7 @@
     "build": "craco build",
     "postbuild": "node -e \"fs.writeFileSync('build/version.txt',JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version)\"",
     "test": "craco test",
+    "eject": "react-scripts eject",
     "checktypes": "tsc --noEmit",
     "jtest": "jest --config ../../jest.config.js --roots products/jbrowse-web/",
     "lint": "eslint --ext .js,.ts,.jsx,.tsx src"

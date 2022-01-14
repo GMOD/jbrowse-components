@@ -131,9 +131,9 @@
     "url-loader": "^4.1.1",
     "wait-on": "^6.0.0",
     "web-encoding": "^1.1.5",
-    "webpack": "^5.65.0",
+    "webpack": "^5.66.0",
     "webpack-cli": "^4.9.1",
-    "webpack-dev-server": "^4.6.0"
+    "webpack-dev-server": "^4.7.3"
   },
   "version": "0.0.0",
   "dependencies": {}

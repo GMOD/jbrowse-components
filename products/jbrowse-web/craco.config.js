@@ -4,6 +4,8 @@ const webpack = require('webpack')
 module.exports = {
   webpack: {
     target: 'node',
+
+    output: { publicPath: 'auto' },
     plugins: [
       new NodePolyfillPlugin({
         excludeAliases: ['console'],
