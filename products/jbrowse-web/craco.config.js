@@ -5,7 +5,6 @@ module.exports = {
   webpack: {
     target: 'node',
 
-    output: { publicPath: 'auto' },
     plugins: [
       new NodePolyfillPlugin({
         excludeAliases: ['console'],
@@ -14,6 +13,9 @@ module.exports = {
     ],
     configure: {
       resolve: { fallback: { fs: false } },
+      output: {
+        publicPath: 'auto',
+      },
     },
   },
 }

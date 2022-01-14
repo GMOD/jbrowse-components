@@ -17,8 +17,6 @@ if (window && window.name.startsWith('JBrowseAuthWindow')) {
   window.close()
 }
 
-console.log('wtf')
-
 ReactDOM.render(
   <Suspense fallback={<Loading />}>
     <Main initialTimestamp={initialTimeStamp} />
