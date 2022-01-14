@@ -68,7 +68,7 @@ const BookmarkGrid = observer(
           return (
             <Link
               className={classes.link}
-              onClick={event => {
+              onClick={(event: React.MouseEvent) => {
                 navToBookmark(value as string, views, model)
                 event.preventDefault()
               }}
