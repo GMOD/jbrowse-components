@@ -7,7 +7,7 @@ import { ipcRenderer } from 'electron'
 
 import JBrowseRootModelFactory from '../rootModel'
 import corePlugins from '../corePlugins'
-import { version } from '../../package.json'
+import packageJSON from '../../package.json'
 
 import {
   writeAWSAnalytics,
@@ -116,7 +116,7 @@ export async function createPluginManager(
     {
       jbrowse,
       assemblyManager: {},
-      version,
+      version: packageJSON.version,
     },
     { pluginManager: pm },
   )
