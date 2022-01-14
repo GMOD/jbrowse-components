@@ -1,12 +1,11 @@
 import PluginManager from '../PluginManager'
 import PluggableElementBase from './PluggableElementBase'
 import { setBlobMap, getBlobMap } from '../util/tracks'
-import { getSnapshot, isAlive, isStateTreeNode } from 'mobx-state-tree'
+import { isAlive, isStateTreeNode } from 'mobx-state-tree'
 import {
   isAppRootModel,
   isUriLocation,
   isAuthNeededException,
-  AuthNeededError,
   RetryError,
   UriLocation,
 } from '../util/types'
@@ -43,8 +42,10 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     const account = rootModel?.findAppropriateInternetAccount(loc)
 
     if (account) {
-      loc.internetAccountPreAuthorization =
-        await account.getPreAuthorizationInformation(loc)
+      const auth = await account.getPreAuthorizationInformation(loc)
+      if (isStateTreeNode(loc) && isAlive(loc)) {
+        loc.internetAccountPreAuthorization = auth
+      }
     }
     return loc
   }
@@ -85,19 +86,17 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     _rpcDriverClassName: string,
   ): Promise<unknown> {
     let r
+    const { rootModel } = this.pluginManager
     try {
       r = await serializedReturn
     } catch (error) {
-      if (isAuthNeededException(error as Error)) {
-        const retryAccount =
-          // @ts-ignore
-          this.pluginManager?.rootModel?.createEphemeralInternetAccount(
-            `HTTPBasicInternetAccount-${
-              new URL((error as AuthNeededError).location.uri).origin
-            }`,
-            {},
-            (error as AuthNeededError).location,
-          )
+      if (isAuthNeededException(error)) {
+        //@ts-ignore
+        const retryAccount = rootModel?.createEphemeralInternetAccount(
+          `HTTPBasicInternetAccount-${new URL(error.location.uri).origin}`,
+          {},
+          error.location,
+        )
         throw new RetryError(
           'Retrying with created internet account',
           retryAccount.internetAccountId,
@@ -109,21 +108,23 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   }
 
   //@eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private async augmentLocationObjects<T>(thing: T): any {
-    if (isStateTreeNode(thing) && isAlive(thing)) {
-      const type = thing.type
-      thing = JSON.parse(JSON.stringify(getSnapshot(thing)))
-      thing.type = type
+  private async augmentLocationObjects(thing: any): Promise<any> {
+    if (isStateTreeNode(thing) && !isAlive(thing)) {
+      return thing
     }
+
     if (isUriLocation(thing)) {
       return this.serializeNewAuthArguments(thing)
     } else if (Array.isArray(thing)) {
       return Promise.all(thing.map(val => this.augmentLocationObjects(val)))
-    } else if (typeof thing === 'object' && thing !== null) {
+    } else if (
+      typeof thing === 'object' &&
+      thing !== null &&
+      !(thing instanceof AbortSignal)
+    ) {
       return Object.fromEntries(
         await Promise.all(
           Object.entries(thing).map(async ([key, val]) => {
-            console.log(key, val)
             return [key, await this.augmentLocationObjects(val)]
           }),
         ),

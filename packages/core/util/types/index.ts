@@ -360,11 +360,14 @@ export class RetryError extends Error {
   }
 }
 
-export function isAuthNeededException(exception: Error): boolean {
+export function isAuthNeededException(
+  exception: unknown,
+): exception is AuthNeededError {
   return (
+    exception instanceof Error &&
     // DOMException
-    exception.name === 'AuthNeededError' ||
-    (exception as AuthNeededError).location !== undefined
+    (exception.name === 'AuthNeededError' ||
+      (exception as AuthNeededError).location !== undefined)
   )
 }
 
