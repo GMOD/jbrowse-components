@@ -135,6 +135,7 @@ export default function RootModel(
         pluginManager,
         self.jbrowse.configuration.rpc,
         {
+          //@ts-ignore
           WebWorkerRpcDriver: { WorkerClass: RenderWorker },
           MainThreadRpcDriver: {},
         },
