@@ -44,7 +44,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "test:e2e": "start-test 'serve --listen 5000 build/' 5000 'cypress run --headless --browser chrome'"
