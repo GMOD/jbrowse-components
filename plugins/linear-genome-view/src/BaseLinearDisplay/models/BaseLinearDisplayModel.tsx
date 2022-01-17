@@ -21,7 +21,7 @@ import {
   getRpcSessionId,
 } from '@jbrowse/core/util/tracks'
 import { autorun } from 'mobx'
-import { addDisposer, Instance, isAlive, types } from 'mobx-state-tree'
+import { addDisposer, isAlive, types, cast, Instance } from 'mobx-state-tree'
 // icons
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 
@@ -68,10 +68,16 @@ export const BaseLinearDisplay = types
         defaultDisplayHeight,
       ),
       blockState: types.map(BlockState),
-      userBpPerPxLimit: types.maybe(types.number),
+      statsLimit: types.maybe(
+        types.model({
+          featureDensity: types.maybe(types.number),
+          bytes: types.maybe(types.number),
+        }),
+      ),
     }),
   )
   .volatile(() => ({
+    currBpPerPx: 0,
     message: '',
     featureIdUnderMouse: undefined as undefined | string,
     contextMenuFeature: undefined as undefined | Feature,
@@ -260,8 +266,12 @@ export const BaseLinearDisplay = types
     setGlobalStatsP(p: any) {
       self.globalStatsP = p
     },
-    updateGlobalStats(globalStats: Stats) {
+    setGlobalStats(globalStats: Stats) {
       self.globalStats = globalStats
+    },
+    clearGlobalStats() {
+      self.globalStatsP = undefined
+      self.globalStats = undefined
     },
     setHeight(displayHeight: number) {
       if (displayHeight > minDisplayHeight) {
@@ -281,8 +291,8 @@ export const BaseLinearDisplay = types
       self.scrollTop = scrollTop
     },
 
-    setUserBpPerPxLimit(limit: number) {
-      self.userBpPerPxLimit = limit
+    updateStatsLimit(stats: Stats) {
+      self.statsLimit = stats
     },
 
     addBlock(key: string, block: BaseBlock) {
@@ -293,6 +303,9 @@ export const BaseLinearDisplay = types
           region: block.toRegion(),
         }),
       )
+    },
+    setCurrBpPerPx(n: number) {
+      self.currBpPerPx = n
     },
     deleteBlock(key: string) {
       self.blockState.delete(key)
@@ -337,11 +350,7 @@ export const BaseLinearDisplay = types
       const view = getContainingView(self) as LGV
 
       // if userBpPerPxLimit is defined, only check this
-      if (self.userBpPerPxLimit && view.bpPerPx <= self.userBpPerPxLimit) {
-        return false
-      } else {
-        return currentDensity > maxDensity || currentBytes > maxBytes
-      }
+      return currentDensity > maxDensity || currentBytes > maxBytes
     },
 
     get regionTooLargeReason() {
@@ -410,12 +419,17 @@ export const BaseLinearDisplay = types
                   return
                 }
 
-                const globalStats = await self.getGlobalStats(block, {
-                  signal: aborter.signal,
-                })
+                if (view.bpPerPx !== self.currBpPerPx) {
+                  self.setGlobalStatsP(undefined)
+                  self.setGlobalStats(undefined)
+                  const globalStats = await self.getGlobalStats(block, {
+                    signal: aborter.signal,
+                  })
 
-                if (isAlive(self)) {
-                  self.updateGlobalStats(globalStats)
+                  if (isAlive(self)) {
+                    self.setCurrBpPerPx(view.bpPerPx)
+                    self.updateGlobalStats(globalStats)
+                  }
                 }
               } catch (e) {
                 if (!isAbortException(e) && isAlive(self)) {
@@ -456,7 +470,7 @@ export const BaseLinearDisplay = types
             <Button
               data-testid="force_reload_button"
               onClick={() => {
-                self.setUserBpPerPxLimit(view.bpPerPx)
+                self.updateStatsLimit(self.globalStats)
                 self.reload()
               }}
               variant="outlined"

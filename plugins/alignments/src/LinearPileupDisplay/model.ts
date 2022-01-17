@@ -95,14 +95,10 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
       colorTagMap: observable.map<string, string>({}),
       modificationTagMap: observable.map<string, string>({}),
       ready: false,
-      currBpPerPx: 0,
     }))
     .actions(self => ({
       setReady(flag: boolean) {
         self.ready = flag
-      },
-      setCurrBpPerPx(n: number) {
-        self.currBpPerPx = n
       },
       setMaxHeight(n: number) {
         self.trackMaxHeight = n

@@ -1,19 +1,6 @@
 {
   "configuration": {},
-  "plugins": [
-    {
-      "name": "Biothings",
-      "url": "https://unpkg.com/jbrowse-plugin-biothings@^1/dist/jbrowse-plugin-biothings.umd.production.min.js"
-    },
-    {
-      "name": "GDC",
-      "url": "https://unpkg.com/jbrowse-plugin-gdc@^1/dist/jbrowse-plugin-gdc.umd.production.min.js"
-    },
-    {
-      "name": "UCSC",
-      "url": "https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js"
-    }
-  ],
+  "plugins": [],
   "assemblies": [
     {
       "name": "hg19",
@@ -218,85 +205,7 @@
         }
       }
     },
-    {
-      "type": "FeatureTrack",
-      "trackId": "mygene_hg38",
-      "name": "MyGene v3",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation"],
-      "adapter": {
-        "baseUrl": "https://mygene.info/v3/query?q=${ref}:${start}-${end}&size=1000&fields=all&size=1000&species=human",
-        "type": "MyGeneV3Adapter"
-      }
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "mygene_hg19",
-      "name": "MyGene v3",
-      "assemblyNames": ["hg19"],
-      "category": ["Annotation"],
-      "adapter": {
-        "baseUrl": "https://mygene.info/v3/query?q=hg19.${ref}:${start}-${end}&size=1000&fields=all&size=1000&species=human",
-        "type": "MyGeneV3Adapter"
-      }
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "cpgisland_ucsc_hg38",
-      "name": "UCSC CpG islands",
-      "category": ["Annotation"],
-      "assemblyNames": ["hg38"],
-      "adapter": {
-        "type": "UCSCAdapter",
-        "track": "cpgIslandExt"
-      }
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "segdups_ucsc_hg19",
-      "name": "UCSC SegDups",
-      "category": ["Annotation"],
-      "assemblyNames": ["hg19"],
-      "adapter": {
-        "type": "UCSCAdapter",
-        "track": "genomicSuperDups"
-      }
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "segdups_ucsc_hg38",
-      "name": "UCSC SegDups",
-      "category": ["Annotation"],
-      "assemblyNames": ["hg38"],
-      "adapter": {
-        "type": "UCSCAdapter",
-        "track": "genomicSuperDups"
-      }
-    },
 
-    {
-      "type": "GDCTrack",
-      "trackId": "gdc_plugin_track",
-      "name": "GDC cancer variants (GraphQL plugin)",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation"],
-      "adapter": {
-        "type": "GDCAdapter"
-      },
-      "displays": [
-        {
-          "type": "LinearGDCDisplay",
-          "displayId": "gdc_plugin_track_linear",
-          "renderer": {
-            "color1": "jexl:cast({LOW: 'blue', MODIFIER: 'goldenrod', MODERATE: 'orange', HIGH: 'red'})[get(feature,'consequence').hits.edges[.node.transcript.is_canonical == true][0].node.transcript.annotation.vep_impact] || 'lightgray'",
-            "labels": {
-              "name": "jexl:get(feature,'genomicDnaChange')"
-            },
-            "type": "SvgFeatureRenderer"
-          }
-        }
-      ]
-    },
     {
       "type": "FeatureTrack",
       "trackId": "clinvar_hg19",
