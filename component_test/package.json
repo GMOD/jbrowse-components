@@ -49,18 +49,6 @@
     "eject": "react-scripts eject",
     "test:e2e": "start-test 'serve --listen 5000 build/' 5000 'cypress run --headless --browser chrome'"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest",
-      "plugin:prettier/recommended"
-    ]
-  },
-  "prettier": {
-    "semi": false,
-    "singleQuote": true,
-    "trailingComma": "all"
-  },
   "browserslist": {
     "production": [
       ">0.2%",
