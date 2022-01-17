@@ -39,7 +39,7 @@ function main() {
     if (location === 'packages/core') {
       const files = fs.readdirSync(location)
       const tarball = files.find(fileName => fileName.endsWith('.tgz'))
-      fs.unlinkSync(tarball)
+      fs.unlinkSync(path.join(location, tarball))
       location = path.join(location, 'dist')
       const { signal, status } = spawn.sync(
         'yarn',
