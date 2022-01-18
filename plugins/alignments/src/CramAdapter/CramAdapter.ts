@@ -53,7 +53,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       }),
       seqFetch: this.seqFetch.bind(this),
       checkSequenceMD5: false,
-      fetchSizeLimit: this.config.fetchSizeLimit || 600000000,
+      fetchSizeLimit: 100_000_000, // just make this a large size to avoid hitting it
     })
     // instantiate the sequence adapter
     const sequenceAdapterType = readConfObject(this.config, [
@@ -240,14 +240,15 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   freeResources(/* { region } */): void {}
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  cramRecordToFeature(record: any): Feature {
+  cramRecordToFeature(record: unknown) {
     return new CramSlightlyLazyFeature(record, this)
   }
 
+  // we return the configured fetchSizeLimit, and the bytes for the region
   async estimateRegionStats(region: Region, opts?: BaseOptions) {
     const bytes = await this.bytesForRegions([region], opts)
-    return { bytes }
+    const fetchSizeLimit = readConfObject(this.config, 'fetchSizeLimit')
+    return { bytes, fetchSizeLimit }
   }
 
   /**
