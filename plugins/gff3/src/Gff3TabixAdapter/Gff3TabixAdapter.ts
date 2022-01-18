@@ -3,25 +3,20 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import gffParser, { GFF3Feature, GFF3FeatureLineWithRefs } from '@gmod/gff'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
-import { NoAssemblyRegion } from '@jbrowse/core/util/types'
+import { bytesForRegions } from '@jbrowse/core/util'
+import { Region } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
+import gff, { GFF3Feature, GFF3FeatureLineWithRefs } from '@gmod/gff'
 import { Observer } from 'rxjs'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { Region } from '@jbrowse/core/util/types'
-import { FeatureLoc } from '../util'
 
-interface VirtualOffset {
-  blockPosition: number
-}
-interface Block {
-  minv: VirtualOffset
-  maxv: VirtualOffset
-}
+import { readConfObject } from '@jbrowse/core/configuration'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 interface LineFeature {
   start: number
@@ -31,19 +26,23 @@ interface LineFeature {
 }
 
 export default class extends BaseFeatureDataAdapter {
-  // eslint-disable-next-line no-undef
-  private configured?: ReturnType<typeof this.configurePre>
+  protected gff: TabixIndexedFile
 
-  public configurePre() {
-    const gffGzLocation = readConfObject(this.config, 'gffGzLocation')
-    const indexType = readConfObject(this.config, ['index', 'indexType'])
-    const location = readConfObject(this.config, ['index', 'location'])
-    const dontRedispatch = readConfObject(this.config, 'dontRedispatch') || [
-      'chromosome',
-      'contig',
-      'region',
-    ]
-    const gff = new TabixIndexedFile({
+  protected dontRedispatch: string[]
+
+  public constructor(
+    config: AnyConfigurationModel,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    super(config, getSubAdapter, pluginManager)
+    const gffGzLocation = readConfObject(config, 'gffGzLocation')
+    const indexType = readConfObject(config, ['index', 'indexType'])
+    const location = readConfObject(config, ['index', 'location'])
+    const dontRedispatch = readConfObject(config, 'dontRedispatch')
+
+    this.dontRedispatch = dontRedispatch || ['chromosome', 'contig', 'region']
+    this.gff = new TabixIndexedFile({
       filehandle: openLocation(gffGzLocation, this.pluginManager),
       csiFilehandle:
         indexType === 'CSI'
@@ -56,36 +55,25 @@ export default class extends BaseFeatureDataAdapter {
       chunkCacheSize: 50 * 2 ** 20,
       renameRefSeqs: (n: string) => n,
     })
-    return { dontRedispatch, gff }
-  }
-
-  public configure() {
-    if (!this.configured) {
-      this.configured = this.configurePre()
-    }
-    return this.configured
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
-    const { gff } = this.configure()
-    return gff.getReferenceSequenceNames(opts)
+    return this.gff.getReferenceSequenceNames(opts)
   }
 
   public async getHeader() {
-    const { gff } = this.configure()
-    return gff.getHeader()
+    return this.gff.getHeader()
   }
 
-  public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
+  public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { gff } = this.configure()
-      const metadata = await gff.getMetadata()
+      const metadata = await this.gff.getMetadata()
       this.getFeaturesHelper(query, opts, metadata, observer, true)
     }, opts.signal)
   }
 
   private async getFeaturesHelper(
-    query: NoAssemblyRegion,
+    query: Region,
     opts: BaseOptions = {},
     metadata: { columnNumbers: { start: number; end: number } },
     observer: Observer<Feature>,
@@ -94,11 +82,15 @@ export default class extends BaseFeatureDataAdapter {
   ) {
     try {
       const lines: LineFeature[] = []
-      const { gff, dontRedispatch } = this.configure()
-      const { refName, start, end } = query
-      await gff.getLines(refName, start, end, (line, fileOffset) => {
-        lines.push(this.parseLine(metadata.columnNumbers, line, fileOffset))
-      })
+
+      await this.gff.getLines(
+        query.refName,
+        query.start,
+        query.end,
+        (line: string, fileOffset: number) => {
+          lines.push(this.parseLine(metadata.columnNumbers, line, fileOffset))
+        },
+      )
       if (allowRedispatch && lines.length) {
         let minStart = Infinity
         let maxEnd = -Infinity
@@ -106,7 +98,7 @@ export default class extends BaseFeatureDataAdapter {
           const featureType = line.fields[2]
           // only expand redispatch range if feature is not a "dontRedispatch" type
           // skips large regions like chromosome,region
-          if (!dontRedispatch.includes(featureType)) {
+          if (!this.dontRedispatch.includes(featureType)) {
             const start = line.start - 1 // gff is 1-based
             if (start < minStart) {
               minStart = start
@@ -144,12 +136,12 @@ export default class extends BaseFeatureDataAdapter {
         })
         .join('\n')
 
-      const features = gffParser.parseStringSync(gff3, {
+      const features = gff.parseStringSync(gff3, {
         parseFeatures: true,
         parseComments: false,
         parseDirectives: false,
         parseSequences: false,
-      }) as FeatureLoc[][]
+      })
 
       features.forEach(featureLocs =>
         this.formatFeatures(featureLocs).forEach(f => {
@@ -187,20 +179,29 @@ export default class extends BaseFeatureDataAdapter {
     }
   }
 
-  private formatFeatures(featureLocs: FeatureLoc[]) {
+  private formatFeatures(featureLocs: GFF3Feature) {
     return featureLocs.map(
       featureLoc =>
         new SimpleFeature({
           data: this.featureData(featureLoc),
-          id: `${this.id}-offset-${featureLoc.attributes._lineHash[0]}`,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          id: `${this.id}-offset-${featureLoc.attributes!._lineHash![0]}`,
         }),
     )
   }
 
-  private featureData(data: FeatureLoc) {
+  private featureData(data: GFF3FeatureLineWithRefs) {
     const f: Record<string, unknown> = { ...data }
     ;(f.start as number) -= 1 // convert to interbase
-    f.strand = { '+': 1, '-': -1, '.': 0, '?': undefined }[data.strand] // convert strand
+    if (data.strand === '+') {
+      f.strand = 1
+    } else if (data.strand === '-') {
+      f.strand = -1
+    } else if (data.strand === '.') {
+      f.strand = 0
+    } else {
+      f.strand = undefined
+    }
     f.phase = Number(data.phase)
     f.refName = data.seq_id
     if (data.score === null) {
@@ -219,15 +220,16 @@ export default class extends BaseFeatureDataAdapter {
       'phase',
       'strand',
     ]
-    Object.keys(data.attributes).forEach(a => {
+    const dataAttributes = data.attributes || {}
+    Object.keys(dataAttributes).forEach(a => {
       let b = a.toLowerCase()
       if (defaultFields.includes(b)) {
         // add "suffix" to tag name if it already exists
         // reproduces behavior of NCList
         b += '2'
       }
-      if (data.attributes[a] !== null) {
-        let attr = data.attributes[a]
+      if (dataAttributes[a] !== null) {
+        let attr: string | string[] | undefined = dataAttributes[a]
         if (Array.isArray(attr) && attr.length === 1) {
           ;[attr] = attr
         }
@@ -252,29 +254,10 @@ export default class extends BaseFeatureDataAdapter {
     return f
   }
 
+  public freeResources(/* { region } */) {}
+
   async estimateGlobalStats(region: Region, opts?: BaseOptions) {
-    const bytes = await this.bytesForRegions([region], opts)
+    const bytes = await bytesForRegions([region], this.gff)
     return { bytes }
   }
-
-  /**
-   * get the approximate number of bytes queried from the file for the given
-   * query regions
-   * @param regions - list of query regions
-   */
-  private async bytesForRegions(regions: Region[], opts?: BaseOptions) {
-    const { gff } = this.configure()
-    const blockResults = await Promise.all(
-      regions.map(region => {
-        const { refName, start, end } = region
-        // @ts-ignore
-        return gff.index.blocksForRange(refName, start, end, opts) as Block[]
-      }),
-    )
-
-    // num blocks times 16kb
-    return blockResults.flat().length * 65535
-  }
-
-  public freeResources(/* { region } */) {}
 }

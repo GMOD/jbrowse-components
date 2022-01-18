@@ -1013,3 +1013,29 @@ export function hashCode(str: string) {
 export function objectHash(obj: Record<string, any>) {
   return `${hashCode(JSON.stringify(obj))}`
 }
+
+interface VirtualOffset {
+  blockPosition: number
+}
+interface Block {
+  minv: VirtualOffset
+  maxv: VirtualOffset
+}
+
+export async function bytesForRegions(regions: Region[], tabix: any) {
+  const blockResults = await Promise.all(
+    regions.map(
+      r => tabix.blocksForRange(r.refName, r.start, r.end) as Block[],
+    ),
+  )
+
+  return blockResults
+    .map(blocks =>
+      blocks.map(block => ({
+        start: block.minv.blockPosition,
+        end: block.maxv.blockPosition + 65535,
+      })),
+    )
+    .flat()
+    .reduce((a, b) => a + b.end - b.start + 1, 0)
+}

@@ -8,6 +8,7 @@ import {
   Region,
 } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
+import { bytesForRegions } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
@@ -15,14 +16,6 @@ import VcfParser from '@gmod/vcf'
 import { Observer } from 'rxjs'
 import { readConfObject } from '@jbrowse/core/configuration'
 import VcfFeature from './VcfFeature'
-
-interface VirtualOffset {
-  blockPosition: number
-}
-interface Block {
-  minv: VirtualOffset
-  maxv: VirtualOffset
-}
 
 export default class extends BaseFeatureDataAdapter {
   // eslint-disable-next-line no-undef
@@ -125,7 +118,8 @@ export default class extends BaseFeatureDataAdapter {
     // xref: https://github.com/rollup/rollup/blob/master/CHANGELOG.md#bug-fixes-45
     const superGetFeaturesInMultipleRegions = super.getFeaturesInMultipleRegions
     return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
-      const bytes = await this.bytesForRegions(regions)
+      const { vcf } = await this.configure()
+      const bytes = await bytesForRegions(regions, vcf)
       const { filehandle } = await this.configure()
       const stat = await filehandle.stat()
       let pct = Math.round((bytes / stat.size) * 100)
@@ -145,38 +139,9 @@ export default class extends BaseFeatureDataAdapter {
     })
   }
 
-  /**
-   * get the approximate number of bytes queried from the file for the given
-   * query regions
-   * @param regions - list of query regions
-   */
-  private async bytesForRegions(regions: Region[], opts?: BaseOptions) {
-    const { vcf } = await this.configure()
-    const blockResults = await Promise.all(
-      regions.map(
-        region =>
-          // @ts-ignore
-          vcf.index.blocksForRange(
-            region.refName,
-            region.start,
-            region.end,
-          ) as Block[],
-      ),
-    )
-
-    return blockResults
-      .map(blocks =>
-        blocks.map(block => ({
-          start: block.minv.blockPosition,
-          end: block.maxv.blockPosition + 65535,
-        })),
-      )
-      .flat()
-      .reduce((a, b) => a + b.end - b.start + 1, 0)
-  }
-
   async estimateGlobalStats(region: Region, opts?: BaseOptions) {
-    const bytes = await this.bytesForRegions([region], opts)
+    const { vcf } = await this.configure()
+    const bytes = await bytesForRegions([region], vcf)
     return { bytes }
   }
 

@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { FileLocation, Region } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
+import { bytesForRegions } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
@@ -153,13 +154,9 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     }, opts.signal)
   }
 
-  async estimateGlobalStats(region: Region, opts?: BaseOptions) {
-    const featCount = await this.bed.lineCount(region.refName)
-    if (featCount === -1) {
-      return super.estimateGlobalStats(region, opts)
-    }
-    const featureDensity = featCount / (region.end - region.start)
-    return { featureDensity }
+  async estimateRegionStats(region: Region, opts?: BaseOptions) {
+    const bytes = await bytesForRegions([region], this.bed)
+    return { bytes }
   }
 
   public freeResources(): void {}
