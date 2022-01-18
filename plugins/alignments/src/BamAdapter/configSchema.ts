@@ -5,10 +5,6 @@ export default types.late(() =>
   ConfigurationSchema(
     'BamAdapter',
     {
-      byteLimit: {
-        type: 'number',
-        defaultValue: 7_000_000,
-      },
       bamLocation: {
         type: 'fileLocation',
         defaultValue: { uri: '/path/to/my.bam', locationType: 'UriLocation' },
@@ -29,11 +25,11 @@ export default types.late(() =>
       }),
       chunkSizeLimit: {
         type: 'number',
-        defaultValue: 100000000,
+        defaultValue: 100_000_000,
       },
       fetchSizeLimit: {
         type: 'number',
-        defaultValue: 500000000,
+        defaultValue: 10_000_000,
       },
       sequenceAdapter: {
         type: 'frozen',

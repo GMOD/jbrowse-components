@@ -4,7 +4,11 @@ import {
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { Region } from '@jbrowse/core/util/types'
-import { checkAbortSignal, updateStatus } from '@jbrowse/core/util'
+import {
+  checkAbortSignal,
+  bytesForRegions,
+  updateStatus,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -43,7 +47,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const location = readConfObject(this.config, ['index', 'location'])
       const indexType = readConfObject(this.config, ['index', 'indexType'])
       const chunkSizeLimit = readConfObject(this.config, 'chunkSizeLimit')
-      const fetchSizeLimit = readConfObject(this.config, 'fetchSizeLimit')
       const bam = new BamFile({
         bamFilehandle: openLocation(bamLocation, this.pluginManager),
         csiFilehandle:
@@ -55,7 +58,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
             ? openLocation(location, this.pluginManager)
             : undefined,
         chunkSizeLimit,
-        fetchSizeLimit,
+        fetchSizeLimit: 100_000_000,
       })
 
       const adapterConfig = readConfObject(this.config, 'sequenceAdapter')
@@ -201,8 +204,10 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   }
 
   async estimateGlobalStats(region: Region, opts?: BaseOptions) {
-    const bytes = await this.bytesForRegions([region], opts)
-    return { bytes }
+    const { bam } = await this.configure()
+    const bytes = await bytesForRegions([region], bam)
+    const fetchSizeLimit = readConfObject(this.config, 'fetchSizeLimit')
+    return { bytes, fetchSizeLimit }
   }
 
   freeResources(/* { region } */): void {}
@@ -210,26 +215,5 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   // depends on setup being called before the BAM constructor
   refIdToName(refId: number): string | undefined {
     return this.samHeader?.idToName[refId]
-  }
-
-  /**
-   * get the approximate number of bytes queried from the file for the given
-   * query regions
-   * @param regions - list of query regions
-   */
-  private async bytesForRegions(regions: Region[], opts?: BaseOptions) {
-    const { bam } = await this.configure()
-    const blockResults = await Promise.all(
-      regions.map(region => {
-        const { refName, start, end } = region
-        // @ts-ignore
-        const chrId = bam.chrToIndex[refName]
-        // @ts-ignore
-        return bam.index.blocksForRange(chrId, start, end, opts) as Block[]
-      }),
-    )
-
-    // num blocks times 16kb
-    return blockResults.flat().length * 65535
   }
 }

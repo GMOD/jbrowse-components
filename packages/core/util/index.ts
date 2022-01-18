@@ -1029,13 +1029,6 @@ export async function bytesForRegions(regions: Region[], tabix: any) {
     ),
   )
 
-  return blockResults
-    .map(blocks =>
-      blocks.map(block => ({
-        start: block.minv.blockPosition,
-        end: block.maxv.blockPosition + 65535,
-      })),
-    )
-    .flat()
-    .reduce((a, b) => a + b.end - b.start + 1, 0)
+  // assumes N 16kb blocks
+  return blockResults.flat().length * 65535
 }
