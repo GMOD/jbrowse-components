@@ -219,7 +219,7 @@ export const BaseLinearDisplay = types
     },
 
     estimateRegionStats(
-      region: Region,
+      regions: Region[],
       opts: {
         headers?: Record<string, string>
         signal?: AbortSignal
@@ -236,7 +236,7 @@ export const BaseLinearDisplay = types
 
       const params = {
         sessionId,
-        regions: [region],
+        regions,
         adapterConfig,
         statusCallback: (message: string) => {
           if (isAlive(self)) {
@@ -371,7 +371,7 @@ export const BaseLinearDisplay = types
 
         try {
           self.estimatedRegionStatsP = self.estimateRegionStats(
-            view.dynamicBlocks.contentBlocks[0],
+            view.staticBlocks.contentBlocks,
             { signal: aborter.signal },
           )
           const estimatedRegionStats = await self.estimatedRegionStatsP
@@ -403,12 +403,14 @@ export const BaseLinearDisplay = types
                   return
                 }
 
-                const block = view.dynamicBlocks.contentBlocks[0]
                 self.setCurrBpPerPx(view.bpPerPx)
                 self.clearRegionStats()
-                const statsP = self.estimateRegionStats(block, {
-                  signal: aborter.signal,
-                })
+                const statsP = self.estimateRegionStats(
+                  view.staticBlocks.contentBlocks,
+                  {
+                    signal: aborter.signal,
+                  },
+                )
                 self.setRegionStatsP(statsP)
                 const estimatedRegionStats = await statsP
 

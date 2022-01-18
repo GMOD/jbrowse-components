@@ -21,14 +21,6 @@ interface Header {
   nameToId: Record<string, number>
 }
 
-interface VirtualOffset {
-  blockPosition: number
-}
-interface Block {
-  minv: VirtualOffset
-  maxv: VirtualOffset
-}
-
 export default class BamAdapter extends BaseFeatureDataAdapter {
   private samHeader?: Header
 
@@ -205,9 +197,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   async estimateRegionStats(region: Region, opts?: BaseOptions) {
     const { bam } = await this.configure()
-    const bytes = await bytesForRegions([region], bam)
+    //@ts-ignore
+    const bytes = await bytesForRegions([region], bam.index)
     const fetchSizeLimit = readConfObject(this.config, 'fetchSizeLimit')
-    console.log({ bytes })
     return { bytes, fetchSizeLimit }
   }
 

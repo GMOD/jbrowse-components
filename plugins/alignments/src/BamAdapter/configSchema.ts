@@ -29,7 +29,7 @@ export default types.late(() =>
       },
       fetchSizeLimit: {
         type: 'number',
-        defaultValue: 10_000_000,
+        defaultValue: 5_000_000,
       },
       sequenceAdapter: {
         type: 'frozen',

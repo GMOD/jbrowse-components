@@ -1022,13 +1022,19 @@ interface Block {
   maxv: VirtualOffset
 }
 
-export async function bytesForRegions(regions: Region[], tabix: any) {
+export async function bytesForRegions(regions: Region[], index: any) {
   const blockResults = await Promise.all(
     regions.map(
-      r => tabix.blocksForRange(r.refName, r.start, r.end) as Block[],
+      r => index.blocksForRange(r.refName, r.start, r.end) as Block[],
     ),
   )
 
-  // assumes N 16kb blocks
-  return blockResults.flat().length * 65535
+  return blockResults
+    .flat()
+
+    .map(block => ({
+      start: block.minv.blockPosition,
+      end: block.maxv.blockPosition + 65535,
+    }))
+    .reduce((a, b) => a + b.end - b.start, 0)
 }
