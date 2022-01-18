@@ -85,6 +85,7 @@ export abstract class BaseAdapter {
 
 export interface Stats {
   featureDensity?: number
+  fetchSizeLimit?: number
   bytes?: number
 }
 

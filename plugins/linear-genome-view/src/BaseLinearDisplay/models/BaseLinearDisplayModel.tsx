@@ -99,14 +99,6 @@ export const BaseLinearDisplay = types
     },
   }))
   .views(self => ({
-    /**
-     * set limit to config amount, or user amount if they force load,
-     */
-
-    get maxAllowableBytes() {
-      return self.statsLimit?.bytes || getConf(self, 'maxAllowableBytes')
-    },
-
     get maxFeatureScreenDensity() {
       return getConf(self, 'maxFeatureScreenDensity')
     },
@@ -342,10 +334,19 @@ export const BaseLinearDisplay = types
     get estimatedStatsReady() {
       return !!self.estimatedRegionStats
     },
-    get regionTooLarge() {
-      const { currentBytesRequested, maxAllowableBytes } = self
+
+    get maxAllowableBytes() {
       return (
-        this.estimatedStatsReady &&
+        self.statsLimit?.bytes ||
+        self.estimatedRegionStats?.fetchSizeLimit ||
+        (getConf(self, 'maxAllowableBytes') as number)
+      )
+    },
+  }))
+  .views(self => ({
+    get regionTooLarge() {
+      return (
+        self.estimatedStatsReady &&
         self.currentBytesRequested > self.maxAllowableBytes
       )
     },

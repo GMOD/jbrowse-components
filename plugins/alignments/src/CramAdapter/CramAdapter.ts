@@ -53,7 +53,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       }),
       seqFetch: this.seqFetch.bind(this),
       checkSequenceMD5: false,
-      fetchSizeLimit: 100_000_000, // just make this a large size to avoid hitting it
+      fetchSizeLimit: 200_000_000, // just make this a large size to avoid hitting it
     })
     // instantiate the sequence adapter
     const sequenceAdapterType = readConfObject(this.config, [
@@ -248,7 +248,10 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   async estimateRegionStats(region: Region, opts?: BaseOptions) {
     const bytes = await this.bytesForRegions([region], opts)
     const fetchSizeLimit = readConfObject(this.config, 'fetchSizeLimit')
-    return { bytes, fetchSizeLimit }
+    return {
+      bytes,
+      fetchSizeLimit,
+    }
   }
 
   /**
