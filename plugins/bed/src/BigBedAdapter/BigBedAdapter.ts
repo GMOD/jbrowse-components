@@ -10,9 +10,10 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { map, mergeAll } from 'rxjs/operators'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { Instance } from 'mobx-state-tree'
-import configSchema from './configSchema'
+import {
+  readConfObject,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
 import { ucscProcessedTranscript } from '../util'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -34,7 +35,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
   private parser: Promise<Parser>
 
   public constructor(
-    config: Instance<typeof configSchema>,
+    config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {
