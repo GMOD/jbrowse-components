@@ -155,7 +155,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   }
 
   async estimateRegionStats(region: Region, opts?: BaseOptions) {
-    const bytes = await bytesForRegions([region], this.bed)
+    const bytes = await bytesForRegions([region], this.bed.index)
     return { bytes }
   }
 

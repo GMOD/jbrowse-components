@@ -119,7 +119,9 @@ export default class extends BaseFeatureDataAdapter {
     const superGetFeaturesInMultipleRegions = super.getFeaturesInMultipleRegions
     return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
       const { vcf } = await this.configure()
-      const bytes = await bytesForRegions(regions, vcf)
+
+      //@ts-ignore
+      const bytes = await bytesForRegions(regions, vcf.index)
       const { filehandle } = await this.configure()
       const stat = await filehandle.stat()
       let pct = Math.round((bytes / stat.size) * 100)
@@ -141,7 +143,9 @@ export default class extends BaseFeatureDataAdapter {
 
   async estimateRegionStats(region: Region, opts?: BaseOptions) {
     const { vcf } = await this.configure()
-    const bytes = await bytesForRegions([region], vcf)
+
+    //@ts-ignore
+    const bytes = await bytesForRegions([region], vcf.index)
     return { bytes }
   }
 

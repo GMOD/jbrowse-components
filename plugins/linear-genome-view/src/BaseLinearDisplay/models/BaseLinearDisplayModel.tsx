@@ -424,7 +424,7 @@ export const BaseLinearDisplay = types
                 }
               }
             },
-            { delay: 1000 },
+            { delay: 500 },
           ),
         )
       },
