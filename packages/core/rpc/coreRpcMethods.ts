@@ -189,8 +189,8 @@ export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
   rendererType: string
 }
 
-export class CoreGetGlobalStats extends RpcMethodType {
-  name = 'CoreGetGlobalStats'
+export class CoreEstimateRegionStats extends RpcMethodType {
+  name = 'CoreEstimateRegionStats'
 
   async serializeArguments(
     args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },
@@ -232,7 +232,7 @@ export class CoreGetGlobalStats extends RpcMethodType {
     )
 
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
-      return dataAdapter.getGlobalStats(regions[0], deserializedArgs)
+      return dataAdapter.estimateRegionStats(regions[0], deserializedArgs)
     }
     throw new Error('Data adapter not found')
   }

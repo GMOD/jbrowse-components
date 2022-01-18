@@ -245,7 +245,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     return new CramSlightlyLazyFeature(record, this)
   }
 
-  async estimateGlobalStats(region: Region, opts?: BaseOptions) {
+  async estimateRegionStats(region: Region, opts?: BaseOptions) {
     const bytes = await this.bytesForRegions([region], opts)
     return { bytes }
   }

@@ -82,8 +82,8 @@ export const BaseLinearDisplay = types
     featureIdUnderMouse: undefined as undefined | string,
     contextMenuFeature: undefined as undefined | Feature,
     scrollTop: 0,
-    globalStatsP: undefined as undefined | Promise<Stats>,
-    globalStats: undefined as undefined | Stats,
+    estimatedRegionStatsP: undefined as undefined | Promise<Stats>,
+    estimatedRegionStats: undefined as undefined | Stats,
   }))
   .views(self => ({
     get blockType(): 'staticBlocks' | 'dynamicBlocks' {
@@ -104,7 +104,7 @@ export const BaseLinearDisplay = types
      */
 
     get maxAllowableBytes() {
-      return getConf(self, 'maxAllowableBytes')
+      return self.statsLimit?.bytes || getConf(self, 'maxAllowableBytes')
     },
 
     get maxFeatureScreenDensity() {
@@ -188,11 +188,11 @@ export const BaseLinearDisplay = types
 
     get currentFeatureScreenDensity() {
       const { bpPerPx } = getContainingView(self) as LGV
-      return (self.globalStats?.featureDensity || 0) * bpPerPx
+      return (self.estimatedRegionStats?.featureDensity || 0) * bpPerPx
     },
 
     get currentBytesRequested() {
-      return self.globalStats?.bytes || 0
+      return self.estimatedRegionStats?.bytes || 0
     },
   }))
   .actions(self => ({
@@ -226,7 +226,7 @@ export const BaseLinearDisplay = types
       addDisposer(self, blockWatchDisposer)
     },
 
-    getGlobalStats(
+    estimateRegionStats(
       region: Region,
       opts: {
         headers?: Record<string, string>
@@ -234,8 +234,8 @@ export const BaseLinearDisplay = types
         filters?: string[]
       },
     ) {
-      if (self.globalStatsP) {
-        return self.globalStatsP
+      if (self.estimatedRegionStatsP) {
+        return self.estimatedRegionStatsP
       }
 
       const { rpcManager } = getSession(self)
@@ -254,24 +254,24 @@ export const BaseLinearDisplay = types
         ...opts,
       }
 
-      self.globalStatsP = rpcManager
-        .call(sessionId, 'CoreGetGlobalStats', params)
+      self.estimatedRegionStatsP = rpcManager
+        .call(sessionId, 'CoreEstimateRegionStats', params)
         .catch(e => {
-          this.setGlobalStatsP(undefined)
+          this.setRegionStatsP(undefined)
           throw e
         }) as Promise<Stats>
 
-      return self.globalStatsP
+      return self.estimatedRegionStatsP
     },
-    setGlobalStatsP(p: any) {
-      self.globalStatsP = p
+    setRegionStatsP(p: any) {
+      self.estimatedRegionStatsP = p
     },
-    setGlobalStats(globalStats: Stats) {
-      self.globalStats = globalStats
+    setRegionStats(estimatedRegionStats?: Stats) {
+      self.estimatedRegionStats = estimatedRegionStats
     },
-    clearGlobalStats() {
-      self.globalStatsP = undefined
-      self.globalStats = undefined
+    clearRegionStats() {
+      self.estimatedRegionStatsP = undefined
+      self.estimatedRegionStats = undefined
     },
     setHeight(displayHeight: number) {
       if (displayHeight > minDisplayHeight) {
@@ -292,7 +292,7 @@ export const BaseLinearDisplay = types
     },
 
     updateStatsLimit(stats: Stats) {
-      self.statsLimit = stats
+      self.statsLimit = cast(stats)
     },
 
     addBlock(key: string, block: BaseBlock) {
@@ -339,36 +339,21 @@ export const BaseLinearDisplay = types
     },
   }))
   .views(self => ({
+    get estimatedStatsReady() {
+      return !!self.estimatedRegionStats
+    },
     get regionTooLarge() {
-      const {
-        currentFeatureScreenDensity: currentDensity,
-        currentBytesRequested: currentBytes,
-        maxFeatureScreenDensity: maxDensity,
-        maxAllowableBytes: maxBytes,
-      } = self
-
-      const view = getContainingView(self) as LGV
-
-      // if userBpPerPxLimit is defined, only check this
-      return currentDensity > maxDensity || currentBytes > maxBytes
+      const { currentBytesRequested, maxAllowableBytes } = self
+      return (
+        this.estimatedStatsReady &&
+        self.currentBytesRequested > self.maxAllowableBytes
+      )
     },
 
     get regionTooLargeReason() {
-      const {
-        currentBytesRequested: currentBytes,
-        maxAllowableBytes: maxBytes,
-      } = self
-
-      const view = getContainingView(self) as LGV
-
-      // if userBpPerPxLimit is defined, return message relevant to that
-      if (self.userBpPerPxLimit && view.bpPerPx > self.userBpPerPxLimit) {
-        return 'Region larger than previously set limit'
-      } else {
-        return currentBytes > maxBytes
-          ? `Requested too much data (${getDisplayStr(currentBytes)})`
-          : ''
-      }
+      const req = self.currentBytesRequested
+      const max = self.maxAllowableBytes
+      return req > max ? `Requested too much data (${getDisplayStr(req)})` : ''
     },
   }))
   .actions(self => {
@@ -383,23 +368,21 @@ export const BaseLinearDisplay = types
           return
         }
 
-        if (view.staticBlocks.contentBlocks[0]) {
-          try {
-            self.globalStatsP = self.getGlobalStats(
-              view.staticBlocks.contentBlocks[0],
-              { signal: aborter.signal },
-            )
-            const globalStats = await self.globalStatsP
+        try {
+          self.estimatedRegionStatsP = self.estimateRegionStats(
+            view.dynamicBlocks.contentBlocks[0],
+            { signal: aborter.signal },
+          )
+          const estimatedRegionStats = await self.estimatedRegionStatsP
 
-            if (isAlive(self)) {
-              self.updateGlobalStats(globalStats)
-              superReload()
-            } else {
-              return
-            }
-          } catch (e) {
-            self.setError(e)
+          if (isAlive(self)) {
+            self.setRegionStats(estimatedRegionStats)
+            superReload()
+          } else {
+            return
           }
+        } catch (e) {
+          self.setError(e)
         }
       },
       afterAttach() {
@@ -411,25 +394,25 @@ export const BaseLinearDisplay = types
                 const aborter = new AbortController()
                 const view = getContainingView(self) as LGV
 
-                if (!view.initialized || self.regionTooLarge) {
-                  return
-                }
-                const block = view.staticBlocks.contentBlocks[0]
-                if (!block) {
+                if (!view.initialized) {
                   return
                 }
 
-                if (view.bpPerPx !== self.currBpPerPx) {
-                  self.setGlobalStatsP(undefined)
-                  self.setGlobalStats(undefined)
-                  const globalStats = await self.getGlobalStats(block, {
-                    signal: aborter.signal,
-                  })
+                if (view.bpPerPx === self.currBpPerPx) {
+                  return
+                }
 
-                  if (isAlive(self)) {
-                    self.setCurrBpPerPx(view.bpPerPx)
-                    self.updateGlobalStats(globalStats)
-                  }
+                const block = view.dynamicBlocks.contentBlocks[0]
+                self.setCurrBpPerPx(view.bpPerPx)
+                self.clearRegionStats()
+                const statsP = self.estimateRegionStats(block, {
+                  signal: aborter.signal,
+                })
+                self.setRegionStatsP(statsP)
+                const estimatedRegionStats = await statsP
+
+                if (isAlive(self)) {
+                  self.setRegionStats(estimatedRegionStats)
                 }
               } catch (e) {
                 if (!isAbortException(e) && isAlive(self)) {
@@ -457,7 +440,6 @@ export const BaseLinearDisplay = types
      *  react node allows user to force load at current setting
      */
     regionCannotBeRendered(_region: Region) {
-      const view = getContainingView(self) as LGV
       const { regionTooLarge, regionTooLargeReason } = self
 
       if (regionTooLarge) {
@@ -470,8 +452,12 @@ export const BaseLinearDisplay = types
             <Button
               data-testid="force_reload_button"
               onClick={() => {
-                self.updateStatsLimit(self.globalStats)
-                self.reload()
+                if (!self.estimatedRegionStats) {
+                  console.error('No global stats?')
+                } else {
+                  self.updateStatsLimit(self.estimatedRegionStats)
+                  self.reload()
+                }
               }}
               variant="outlined"
             >
@@ -508,10 +494,10 @@ export const BaseLinearDisplay = types
     renderProps() {
       return {
         ...getParentRenderProps(self),
-        notReady: !self.globalStats,
+        notReady: !self.estimatedRegionStats,
         rpcDriverName: self.rpcDriverName,
         displayModel: self,
-        globalStatsNotReady: !self.globalStats,
+        estimatedRegionStatsNotReady: !self.estimatedRegionStats,
         onFeatureClick(_: unknown, featureId: string | undefined) {
           const f = featureId || self.featureIdUnderMouse
           if (!f) {

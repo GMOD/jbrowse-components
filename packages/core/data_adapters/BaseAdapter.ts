@@ -93,8 +93,6 @@ export interface Stats {
  * subclasses must implement.
  */
 export abstract class BaseFeatureDataAdapter extends BaseAdapter {
-  protected estimatedStats?: Promise<Stats>
-
   /**
    * Get all reference sequence names used in the data source
    *
@@ -250,17 +248,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     })
   }
 
-  public async getGlobalStats(region: Region, opts?: BaseOptions) {
-    if (!this.estimatedStats) {
-      this.estimatedStats = this.estimateGlobalStats(region, opts).catch(e => {
-        this.estimatedStats = undefined
-        throw e
-      })
-    }
-    return this.estimatedStats
-  }
-
-  public async estimateGlobalStats(region: Region, opts?: BaseOptions) {
+  public async estimateRegionStats(region: Region, opts?: BaseOptions) {
     const statsFromInterval = async (length: number, expansionTime: number) => {
       const { start, end } = region
       const sampleCenter = start * 0.75 + end * 0.25
