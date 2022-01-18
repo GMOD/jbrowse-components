@@ -139,7 +139,7 @@ export default class extends BaseFeatureDataAdapter {
     })
   }
 
-  async estimateGlobalStats(region: Region, opts?: BaseOptions) {
+  async estimateRegionStats(region: Region, opts?: BaseOptions) {
     const { vcf } = await this.configure()
     const bytes = await bytesForRegions([region], vcf)
     return { bytes }

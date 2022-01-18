@@ -203,10 +203,11 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     }, signal)
   }
 
-  async estimateGlobalStats(region: Region, opts?: BaseOptions) {
+  async estimateRegionStats(region: Region, opts?: BaseOptions) {
     const { bam } = await this.configure()
     const bytes = await bytesForRegions([region], bam)
     const fetchSizeLimit = readConfObject(this.config, 'fetchSizeLimit')
+    console.log({ bytes })
     return { bytes, fetchSizeLimit }
   }
 
