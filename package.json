@@ -84,7 +84,6 @@
     "@types/react": "^17.0.0",
     "@types/react-color": "^3.0.4",
     "@types/react-dom": "^17.0.0",
-    "@types/react-measure": "^2.0.6",
     "@types/react-virtualized-auto-sizer": "^1.0.0",
     "@types/rollup-plugin-node-builtins": "^2.1.2",
     "@types/rollup-plugin-node-globals": "^1.4.1",
@@ -109,6 +108,7 @@
     "electron-notarize": "^1.0.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-config-react-app": "^6.0.0",
+    "eslint-plugin-cypress": "^2.12.1",
     "eslint-plugin-monorepo": "^0.2.1",
     "eslint-plugin-prettier": "^3.0.1",
     "eslint-plugin-react-hooks": "^4.3.0",
@@ -149,5 +149,8 @@
     "worker-loader": "^2.0.0"
   },
   "version": "0.0.0",
-  "dependencies": {}
+  "dependencies": {},
+  "resolutions": {
+    "react-error-overlay": "6.0.9"
+  }
 }

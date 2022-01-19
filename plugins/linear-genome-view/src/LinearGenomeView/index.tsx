@@ -566,11 +566,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
           trackId,
         )
         if (!configuration) {
-          throw new Error(`Could not resolve identifier`)
+          throw new Error(`Could not resolve identifier "${trackId}"`)
         }
         const trackType = pluginManager.getTrackType(configuration?.type)
         if (!trackType) {
-          throw new Error(`unknown track type ${configuration.type}`)
+          throw new Error(`Unknown track type ${configuration.type}`)
         }
         const viewType = pluginManager.getViewType(self.type)
         const supportedDisplays = viewType.displayTypes.map(
@@ -581,7 +581,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
         if (!displayConf) {
           throw new Error(
-            `could not find a compatible display for view type ${self.type}`,
+            `Could not find a compatible display for view type ${self.type}`,
           )
         }
 

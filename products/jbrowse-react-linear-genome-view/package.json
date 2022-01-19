@@ -16,7 +16,7 @@
   },
   "author": "JBrowse Team",
   "main": "dist/index.js",
-  "module": "dist/jbrowse-react-linear-genome-view.esm.js",
+  "module": "dist/react-linear-genome-view.esm.js",
   "typings": "dist/index.d.ts",
   "files": [
     "dist",
@@ -34,7 +34,7 @@
     "clean": "rimraf dist",
     "test": "cd ../..; jest plugins/linear-genome-view --passWithNoTests",
     "prepublishOnly": "yarn test",
-    "prepare": "npm run clean && npm run build:tsdx && npm run build:webpack:dev && npm run build:webpack:prod",
+    "prepack": "npm run clean && npm run build:tsdx && npm run build:webpack:dev && npm run build:webpack:prod",
     "storybook": "start-storybook --static-dir public --port 6006",
     "storybook:build": "build-storybook --quiet --static-dir public"
   },

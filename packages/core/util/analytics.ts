@@ -123,3 +123,17 @@ export async function writeGAAnalytics(
 
   document.getElementsByTagName('head')[0].appendChild(analyticsScriptNode)
 }
+
+export function doAnalytics(
+  rootModel: any,
+  initialTimestamp: number,
+  initialSessionQuery: string | null | undefined,
+) {
+  if (
+    rootModel &&
+    !readConfObject(rootModel.jbrowse.configuration, 'disableAnalytics')
+  ) {
+    writeAWSAnalytics(rootModel, initialTimestamp, initialSessionQuery)
+    writeGAAnalytics(rootModel, initialTimestamp)
+  }
+}
