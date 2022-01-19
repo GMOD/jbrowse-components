@@ -14,9 +14,10 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import shortid from 'shortid'
 
-type Config = SnapshotOut<AnyConfigurationModel>
-
-function addRelativeUris(config: Config, configUri: URL) {
+function addRelativeUris(
+  config: SnapshotOut<AnyConfigurationModel>,
+  configUri: URL,
+) {
   if (typeof config === 'object') {
     for (const key of Object.keys(config)) {
       if (typeof config[key] === 'object') {
@@ -37,16 +38,14 @@ function readConf(
   return configuration[attr] || def
 }
 
-async function fetchPlugins(): Promise<{
-  plugins: PluginDefinition[]
-}> {
+async function fetchPlugins() {
   const response = await fetch('https://jbrowse.org/plugin-store/plugins.json')
   if (!response.ok) {
     throw new Error(
       `HTTP ${response.status} ${response.statusText} fetching plugins`,
     )
   }
-  return response.json()
+  return response.json() as Promise<{ plugins: PluginDefinition[] }>
 }
 
 async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
@@ -95,6 +94,7 @@ const SessionLoader = types
     password: types.maybe(types.string),
     adminKey: types.maybe(types.string),
     loc: types.maybe(types.string),
+    sessionTracks: types.maybe(types.string),
     assembly: types.maybe(types.string),
     tracks: types.maybe(types.string),
   })
@@ -166,6 +166,10 @@ const SessionLoader = types
     get isConfigLoaded() {
       return Boolean(self.configError || self.configSnapshot)
     },
+
+    get sessionTracksParsed() {
+      return self.sessionTracks ? JSON.parse(self.sessionTracks) : []
+    },
   }))
   .actions(self => ({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any,
@@ -233,9 +237,7 @@ const SessionLoader = types
     ) {
       try {
         const { sessionPlugins = [] } = snap
-        const sessionPluginsAllowed = sessionPlugins.length
-          ? await checkPlugins(sessionPlugins)
-          : true
+        const sessionPluginsAllowed = await checkPlugins(sessionPlugins)
         if (sessionPluginsAllowed || userAcceptedConfirmation) {
           await this.fetchSessionPlugins(snap)
           self.setSessionSnapshotSuccess(snap)
@@ -254,22 +256,18 @@ const SessionLoader = types
 
     async fetchConfig() {
       const { configPath = 'config.json' } = self
-
-      const config = JSON.parse(
-        await openLocation({
-          uri: configPath,
-          locationType: 'UriLocation',
-        }).readFile('utf8'),
-      )
+      const text = await openLocation({
+        uri: configPath,
+        locationType: 'UriLocation',
+      }).readFile('utf8')
+      const config = JSON.parse(text)
       const configUri = new URL(configPath, window.location.href)
       addRelativeUris(config, configUri)
 
       // cross origin config check
       if (configUri.hostname !== window.location.hostname) {
         const configPlugins = config.plugins || []
-        const configPluginsAllowed = configPlugins.length
-          ? await checkPlugins(configPlugins)
-          : true
+        const configPluginsAllowed = await checkPlugins(configPlugins)
         if (!configPluginsAllowed) {
           self.setSessionTriaged({
             snap: config,
@@ -351,14 +349,17 @@ const SessionLoader = types
     },
 
     decodeJb1StyleSession() {
-      if (self.loc) {
+      const { loc, tracks, assembly, sessionTracksParsed: sessionTracks } = self
+      if (loc) {
         self.sessionSpec = {
+          sessionTracks,
           views: [
             {
               type: 'LinearGenomeView',
-              loc: self.loc,
-              tracks: self.tracks?.split(','),
-              assembly: self.assembly,
+              tracks: tracks?.split(','),
+              sessionTracks,
+              loc,
+              assembly,
             },
           ],
         }
@@ -373,13 +374,12 @@ const SessionLoader = types
 
     async afterCreate() {
       try {
-        // rename autosave to previousAutosave
-        const lastAutosave = localStorage.getItem(`autosave-${self.configPath}`)
+        // rename the current autosave from previously loaded jbrowse session
+        // into previousAutosave on load
+        const { configPath } = self
+        const lastAutosave = localStorage.getItem(`autosave-${configPath}`)
         if (lastAutosave) {
-          localStorage.setItem(
-            `previousAutosave-${self.configPath}`,
-            lastAutosave,
-          )
+          localStorage.setItem(`previousAutosave-${configPath}`, lastAutosave)
         }
       } catch (e) {
         console.error('failed to create previousAutosave', e)
@@ -466,40 +466,40 @@ interface ViewSpec {
 // use extension point named e.g. LaunchView-LinearGenomeView to initialize an
 // LGV session
 export function loadSessionSpec(
-  sessionSpec: {
+  {
+    views,
+    sessionTracks,
+  }: {
     views: ViewSpec[]
+    sessionTracks: unknown[]
   },
   pluginManager: PluginManager,
 ) {
-  const { views } = sessionSpec
-
-  return () => {
+  return async () => {
     const { rootModel } = pluginManager
-
     if (!rootModel) {
       throw new Error('rootModel not initialized')
     }
+    try {
+      // @ts-ignore
+      rootModel.setSession({
+        name: `New session ${new Date().toLocaleString()}`,
+      })
 
-    // @ts-ignore
-    rootModel.setSession({
-      name: `New session ${new Date().toLocaleString()}`,
-    })
+      // @ts-ignore
+      sessionTracks.forEach(track => rootModel.session.addTrackConf(track))
 
-    return Promise.all(
-      views.map(async view => {
-        const { type } = view
-        const { session } = rootModel
-
-        await pluginManager.evaluateAsyncExtensionPoint('LaunchView-' + type, {
-          ...view,
-          session,
-        })
-      }),
-    ).catch(e => {
+      await Promise.all(
+        views.map(view =>
+          pluginManager.evaluateAsyncExtensionPoint('LaunchView-' + view.type, {
+            ...view,
+            session: rootModel.session,
+          }),
+        ),
+      )
+    } catch (e) {
       console.error(e)
-      if (rootModel.session) {
-        rootModel.session.notify(`${e}`)
-      }
-    })
+      rootModel.session?.notify(`${e}`)
+    }
   }
 }
