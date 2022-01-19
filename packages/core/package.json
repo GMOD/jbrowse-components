@@ -54,7 +54,7 @@
     "rbush": "^3.0.1",
     "react-error-boundary": "^3.0.0",
     "react-intersection-observer": "^8.32.5",
-    "react-measure": "^2.3.0",
+    "react-sizeme": "^3.0.2",
     "sanitize-filename": "^1.6.3",
     "shortid": "^2.2.13",
     "svg-path-generator": "^1.1.0",
