@@ -41,16 +41,17 @@ export function chooseGlyphComponent(
       return ProcessedTranscript
     }
 
-    if (typeof extraGlyphs != 'undefined') {
-      for (const extraGlyph of extraGlyphs) {
-        if (extraGlyph.validator(feature) === true) {
-          return extraGlyph.glyph
-        }
-      }
-    }
-
     return Segments
   }
+
+  if (extraGlyphs) {
+    for (const extraGlyph of extraGlyphs) {
+      if (extraGlyph.validator(feature) === true) {
+        return extraGlyph.glyph
+      }
+    }
+  }
+
   return [1, -1].includes(strand) ? Chevron : Box
 }
 
