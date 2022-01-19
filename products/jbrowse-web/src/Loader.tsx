@@ -109,13 +109,16 @@ export function Loader({
   const load = (param: string | null | undefined) =>
     param === null ? undefined : param
 
-  const [config] = useQueryParam('config', StringParam)
-  const [session] = useQueryParam('session', StringParam)
-  const [adminKey] = useQueryParam('adminKey', StringParam)
-  const [password, setPassword] = useQueryParam('password', StringParam)
-  const [loc, setLoc] = useQueryParam('loc', StringParam)
-  const [assembly, setAssembly] = useQueryParam('assembly', StringParam)
-  const [tracks, setTracks] = useQueryParam('tracks', StringParam)
+  const Str = StringParam
+
+  const [config] = useQueryParam('config', Str)
+  const [session] = useQueryParam('session', Str)
+  const [adminKey] = useQueryParam('adminKey', Str)
+  const [password, setPassword] = useQueryParam('password', Str)
+  const [loc, setLoc] = useQueryParam('loc', Str)
+  const [sessionTracks, setSessionTracks] = useQueryParam('sessionTracks', Str)
+  const [assembly, setAssembly] = useQueryParam('assembly', Str)
+  const [tracks, setTracks] = useQueryParam('tracks', Str)
 
   const loader = SessionLoader.create({
     configPath: load(config),
@@ -125,6 +128,7 @@ export function Loader({
     loc: load(loc),
     assembly: load(assembly),
     tracks: load(tracks),
+    sessionTracks: load(sessionTracks),
   })
 
   useEffect(() => {
@@ -132,7 +136,8 @@ export function Loader({
     setTracks(undefined)
     setAssembly(undefined)
     setPassword(undefined)
-  }, [setAssembly, setLoc, setTracks, setPassword])
+    setSessionTracks(undefined)
+  }, [setAssembly, setLoc, setTracks, setPassword, setSessionTracks])
 
   return (
     <Renderer
