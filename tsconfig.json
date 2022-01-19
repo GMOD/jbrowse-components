@@ -18,5 +18,12 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true
   },
-  "exclude": ["**/build/", "**/dist/", "**/lib/", "**/umd/", "**/tmp/"]
+  "exclude": [
+    "**/build/",
+    "**/dist/",
+    "**/lib/",
+    "**/umd/",
+    "**/tmp/",
+    "**/component_test/"
+  ]
 }

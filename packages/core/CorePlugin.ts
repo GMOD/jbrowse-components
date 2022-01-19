@@ -2,7 +2,7 @@ import { lazy } from 'react'
 import { configSchema, stateModelFactory } from './BaseFeatureWidget'
 import Plugin from './Plugin'
 import PluginManager from './PluginManager'
-import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import AdapterType from './pluggableElementTypes/AdapterType'
 import * as coreRpcMethods from './rpc/coreRpcMethods'
 import WidgetType from './pluggableElementTypes/WidgetType'
 import {

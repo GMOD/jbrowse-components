@@ -1,6 +1,7 @@
 export * from './theme'
 export { LogoFull, Logomark } from './Logo'
 export { default as App } from './App'
+export { default as ErrorMessage } from './ErrorMessage'
 export { default as FileSelector } from './FileSelector'
 export { default as PrerenderedCanvas } from './PrerenderedCanvas'
 export { default as ResizeHandle } from './ResizeHandle'

@@ -1,15 +1,8 @@
 import React, { useState } from 'react'
+import { Button, Container, Grid, makeStyles } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
-
-// material-ui stuff
-import {
-  Button,
-  Container,
-  Grid,
-  Typography,
-  makeStyles,
-} from '@material-ui/core'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 
 const useStyles = makeStyles(theme => ({
@@ -17,14 +10,6 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(4),
   },
 }))
-
-const ErrorDisplay = observer(({ error }: { error?: Error | string }) => {
-  return (
-    <Typography variant="h6" color="error">
-      {`${error}`}
-    </Typography>
-  )
-})
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ImportForm = observer(({ model }: { model: any }) => {
@@ -42,45 +27,38 @@ const ImportForm = observer(({ model }: { model: any }) => {
   const err = assemblyError || error
 
   return (
-    <>
-      <Container className={classes.importFormContainer}>
-        {err ? (
-          <Grid
-            container
-            spacing={1}
-            justifyContent="center"
-            alignItems="center"
-          >
-            <Grid item>
-              <ErrorDisplay error={err} />
-            </Grid>
-          </Grid>
-        ) : null}
+    <Container className={classes.importFormContainer}>
+      {err ? (
         <Grid container spacing={1} justifyContent="center" alignItems="center">
           <Grid item>
-            <AssemblySelector
-              onChange={val => {
-                setError(undefined)
-                setSelectedAsm(val)
-              }}
-              session={session}
-              selected={selectedAsm}
-            />
-          </Grid>
-
-          <Grid item>
-            <Button
-              disabled={!(regions && regions.length)}
-              onClick={() => model.setDisplayedRegions(regions)}
-              variant="contained"
-              color="primary"
-            >
-              {regions.length ? 'Open' : 'Loading…'}
-            </Button>
+            <ErrorMessage error={err} />
           </Grid>
         </Grid>
-      </Container>
-    </>
+      ) : null}
+      <Grid container spacing={1} justifyContent="center" alignItems="center">
+        <Grid item>
+          <AssemblySelector
+            onChange={val => {
+              setError(undefined)
+              setSelectedAsm(val)
+            }}
+            session={session}
+            selected={selectedAsm}
+          />
+        </Grid>
+
+        <Grid item>
+          <Button
+            disabled={!regions?.length}
+            onClick={() => model.setDisplayedRegions(regions)}
+            variant="contained"
+            color="primary"
+          >
+            {regions.length ? 'Open' : 'Loading…'}
+          </Button>
+        </Grid>
+      </Grid>
+    </Container>
   )
 })
 

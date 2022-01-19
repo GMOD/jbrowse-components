@@ -99,6 +99,25 @@
       "rules": {
         "import/no-extraneous-dependencies": "off"
       }
+    },
+    {
+      "files": ["**/component_test/**"],
+      "parserOptions": {
+        "ecmaFeatures": {
+          "jsx": true
+        },
+        "project": "./component_test/tsconfig.json"
+      }
+    },
+    {
+      "files": ["**/component_test/cypress/**"],
+      "extends": ["plugin:cypress/recommended"],
+      "parserOptions": {
+        "ecmaFeatures": {
+          "jsx": true
+        },
+        "project": "./component_test/cypress/tsconfig.json"
+      }
     }
   ]
 }

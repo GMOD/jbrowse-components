@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+import { when } from 'mobx'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   createBaseTrackConfig,
@@ -33,6 +34,8 @@ import {
   configSchema as linearBasicDisplayConfigSchemaFactory,
   modelFactory as linearBasicDisplayModelFactory,
 } from './LinearBasicDisplay'
+
+type LGV = LinearGenomeViewModel
 
 export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'
@@ -117,6 +120,60 @@ export default class LinearGenomeViewPlugin extends Plugin {
             () => import('./LinearGenomeView/components/LinearGenomeView'),
           ),
         }),
+    )
+
+    pluginManager.addToExtensionPoint(
+      'LaunchView-LinearGenomeView',
+      // @ts-ignore
+      async ({
+        session,
+        assembly,
+        loc,
+        tracks = [],
+      }: {
+        session: AbstractSessionModel
+        assembly?: string
+        loc: string
+        tracks?: string[]
+      }) => {
+        const { assemblyManager } = session
+        const view = session.addView('LinearGenomeView', {}) as LGV
+
+        await when(() => !!view.volatileWidth)
+
+        if (!assembly) {
+          throw new Error(
+            'No assembly provided when launching linear genome view',
+          )
+        }
+
+        const asm = await assemblyManager.waitForAssembly(assembly)
+        if (!asm) {
+          throw new Error(
+            `Assembly "${assembly}" not found when launching linear genome view`,
+          )
+        }
+
+        view.navToLocString(loc, assembly)
+
+        const idsNotFound = [] as string[]
+        tracks.forEach(track => {
+          try {
+            view.showTrack(track)
+          } catch (e) {
+            if (`${e}`.match('Could not resolve identifier')) {
+              idsNotFound.push(track)
+            } else {
+              throw e
+            }
+          }
+        })
+        if (idsNotFound.length) {
+          throw new Error(
+            `Could not resolve identifiers: ${idsNotFound.join(',')}`,
+          )
+        }
+      },
     )
   }
 

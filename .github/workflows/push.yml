@@ -53,6 +53,14 @@ jobs:
         run: yarn build
       - name: Test build
         run: BUILT_TESTS=1 yarn built-test-ci
+      - name: Test embedded
+        # CI=false since we have a warning that gets treated as an error under CI
+        # Warning is: "Critical dependency: the request of a dependency is an expression"
+        run: |
+          yarn
+          CI=false yarn build
+          yarn test:e2e
+        working-directory: component_test
 
   buildjbrowseweb:
     name: Build only jbrowse-web and upload to s3 on node 14 and ubuntu-latest

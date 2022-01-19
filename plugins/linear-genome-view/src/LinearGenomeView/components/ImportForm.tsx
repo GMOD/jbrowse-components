@@ -9,9 +9,9 @@ import {
   makeStyles,
 } from '@material-ui/core'
 import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
-import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import CloseIcon from '@material-ui/icons/Close'
 
 // locals
