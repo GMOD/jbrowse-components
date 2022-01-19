@@ -232,7 +232,7 @@ export class CoreEstimateRegionStats extends RpcMethodType {
     )
 
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
-      return dataAdapter.estimateRegionStats(regions[0], deserializedArgs)
+      return dataAdapter.estimateRegionsStats(regions, deserializedArgs)
     }
     throw new Error('Data adapter not found')
   }

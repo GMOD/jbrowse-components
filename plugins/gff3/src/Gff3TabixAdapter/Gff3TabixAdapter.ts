@@ -12,9 +12,10 @@ import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
 import gff, { GFF3Feature, GFF3FeatureLineWithRefs } from '@gmod/gff'
 import { Observer } from 'rxjs'
-
-import { readConfObject } from '@jbrowse/core/configuration'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import {
+  readConfObject,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
@@ -256,9 +257,9 @@ export default class extends BaseFeatureDataAdapter {
 
   public freeResources(/* { region } */) {}
 
-  async estimateRegionStats(region: Region, opts?: BaseOptions) {
-    //@ts-ignore
-    const bytes = await bytesForRegions([region], this.gff.index)
+  async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
+    // @ts-ignore
+    const bytes = await bytesForRegions(regions, this.gff.index)
     return { bytes }
   }
 }

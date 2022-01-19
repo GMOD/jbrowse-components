@@ -125,9 +125,9 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     }, opts.signal)
   }
 
-  async estimateRegionStats(region: Region, opts?: BaseOptions) {
+  async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
     const { subadapter } = await this.configure()
-    return subadapter.estimateRegionStats(region, opts)
+    return subadapter.estimateRegionsStats(regions, opts)
   }
 
   async getRefNames(opts: BaseOptions = {}) {

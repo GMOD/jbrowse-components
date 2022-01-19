@@ -249,7 +249,8 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     })
   }
 
-  public async estimateRegionStats(region: Region, opts?: BaseOptions) {
+  public async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
+    const region = regions[0]
     const statsFromInterval = async (length: number, expansionTime: number) => {
       const { start, end } = region
       const sampleCenter = start * 0.75 + end * 0.25

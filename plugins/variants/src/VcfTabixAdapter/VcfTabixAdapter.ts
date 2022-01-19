@@ -120,7 +120,7 @@ export default class extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
       const { vcf } = await this.configure()
 
-      //@ts-ignore
+      // @ts-ignore
       const bytes = await bytesForRegions(regions, vcf.index)
       const { filehandle } = await this.configure()
       const stat = await filehandle.stat()
@@ -141,11 +141,11 @@ export default class extends BaseFeatureDataAdapter {
     })
   }
 
-  async estimateRegionStats(region: Region, opts?: BaseOptions) {
+  async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
     const { vcf } = await this.configure()
 
-    //@ts-ignore
-    const bytes = await bytesForRegions([region], vcf.index)
+    // @ts-ignore
+    const bytes = await bytesForRegions(regions, vcf.index)
     return { bytes }
   }
 
