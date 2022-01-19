@@ -682,11 +682,13 @@ export default class PileupRenderer extends BoxRendererType {
         const baseColor = colorForBase.deletion
         ctx.fillStyle = baseColor
         ctx.fillRect(leftPx, topPx, widthPx, heightPx)
-        if (widthPx >= charWidth && heightPx >= heightLim) {
+        const txt = `${mismatch.length}`
+        const rect = ctx.measureText(txt)
+        if (widthPx >= rect.width && heightPx >= heightLim) {
           ctx.fillStyle = theme.palette.getContrastText(baseColor)
           ctx.fillText(
-            mbase,
-            leftPx + (widthPx - charWidth) / 2 + 1,
+            txt,
+            leftPx + (rightPx - leftPx) / 2 - rect.width / 2,
             topPx + heightPx,
           )
         }
