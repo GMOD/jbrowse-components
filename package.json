@@ -149,5 +149,8 @@
     "worker-loader": "^2.0.0"
   },
   "version": "0.0.0",
-  "dependencies": {}
+  "dependencies": {},
+  "resolutions": {
+    "react-error-overlay": "6.0.9"
+  }
 }
