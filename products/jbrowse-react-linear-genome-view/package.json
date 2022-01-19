@@ -16,7 +16,7 @@
   },
   "author": "JBrowse Team",
   "main": "dist/index.js",
-  "module": "dist/jbrowse-react-linear-genome-view.esm.js",
+  "module": "dist/react-linear-genome-view.esm.js",
   "typings": "dist/index.d.ts",
   "files": [
     "dist",

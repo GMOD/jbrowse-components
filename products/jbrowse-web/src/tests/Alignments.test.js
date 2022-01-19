@@ -90,10 +90,12 @@ describe('alignments track', () => {
 
     // load track
     fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox-long-reads-sv-bam'),
+      await findByTestId('htsTrackEntry-volvox-long-reads-sv-bam', {}, delay),
     )
     await findByTestId(
       'display-volvox-long-reads-sv-bam-LinearAlignmentsDisplay',
+      {},
+      delay,
     )
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 

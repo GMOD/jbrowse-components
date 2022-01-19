@@ -47,6 +47,7 @@
           "type": "category",
           "label": "Archive",
           "items": [
+            "pag2022_synteny_tutorial",
             "bcc2020_plugin_development",
             {
               "type": "category",
