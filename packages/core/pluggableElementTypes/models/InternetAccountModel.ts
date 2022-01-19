@@ -7,7 +7,7 @@ import {
   FileLocation,
   UriLocation,
   AnyReactComponentType,
-} from '@jbrowse/core/util/types'
+} from '../../util/types'
 
 export const InternetAccount = types
   .model('InternetAccount', {
