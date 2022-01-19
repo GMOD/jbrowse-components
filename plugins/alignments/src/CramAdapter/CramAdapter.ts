@@ -26,8 +26,11 @@ interface Header {
 export default class CramAdapter extends BaseFeatureDataAdapter {
   samHeader: Header = {}
 
-  // eslint-disable-next-line no-undef
-  private setupP?: ReturnType<typeof this.setupPre>
+  private setupP?: Promise<{
+    samHeader: Header
+    cram: any // eslint-disable-line @typescript-eslint/no-explicit-any
+    sequenceAdapter: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  }>
 
   // maps a refname to an id
   private seqIdToRefName: string[] | undefined

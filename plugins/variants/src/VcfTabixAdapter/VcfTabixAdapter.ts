@@ -16,10 +16,14 @@ import VcfParser from '@gmod/vcf'
 import { Observer } from 'rxjs'
 import { readConfObject } from '@jbrowse/core/configuration'
 import VcfFeature from './VcfFeature'
+import { GenericFilehandle } from 'generic-filehandle'
 
 export default class extends BaseFeatureDataAdapter {
-  // eslint-disable-next-line no-undef
-  private configured?: ReturnType<typeof this.configurePre>
+  private configured?: Promise<{
+    filehandle: GenericFilehandle
+    vcf: TabixIndexedFile
+    parser: VcfParser
+  }>
 
   private async configurePre() {
     const vcfGzLocation = readConfObject(this.config, 'vcfGzLocation')
