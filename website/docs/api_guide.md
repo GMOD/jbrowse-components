@@ -264,7 +264,3 @@ workflow"
 Users that want to add further extension points can do so. The naming system,
 "Core-" just refers to the fact that these extension points are from our core
 codebase. Plugin developers may choose their own prefix to avoid collisions
-
-```
-
-```
