@@ -232,3 +232,43 @@ small with lazy loading and other methods but adding gzip will help your users.
 
 It will depend on your particular server setup e.g. apache, nginx, cloudfront,
 etc. how this may be done, but it is recommended to look into this.
+
+#### Why can't I copy and paste my URL bar to share it with another user
+
+In JBrowse Web, the current session can become too long to store in the URL
+bar, so instead, we store it in localStorage and only keep the key to the
+localStorage entry in the URL var. This is because otherwise URLs can get
+prohibitively long, and break server side navigations, intermediate caches,
+etc. Therefore, we make "sharing a session" a manual step that generates a
+shortened URL by default
+
+Note that user's of @jbrowse/react-linear-genome-view have to re-implement any
+URL query param logic themselves, as this component makes no attempt to access
+URL query params
+
+#### How does the session sharing with shortened URLs work in JBrowse Web
+
+We have a central database hosted as a AWS dynamoDB that stores encrypted
+session snapshots that users create when they use the "Share" button. The
+"Share" button creates a random key on the client side (which becomes the
+&password= component of the share URL), encrypts the session client side, and
+sends the encrypted session without the key to the AWS dynamoDB.
+
+This process, generates a URL with the format
+
+&session=share-&lt;DYNAMODBID&gt;&password=&lt;DECODEKEY&gt;
+
+The DECODEKEY is never transmitted to the server, but you can copy and paste
+the share URL, the person you shared automatically downloads the DynamoDB
+entry, and decodes it with the DECODEKEY from the URL that you provide
+
+With this system, the contents of the dynamoDB are safe and unable to be read
+even by JBrowse administrators
+
+#### What should I do if the Share system isn't working?
+
+If for any reason the session sharing system isn't working, e.g. you are behind
+a firewall or you are not able to connect to the central share server, you can
+click the "Gear" icon in the "Share" button pop-up, and it will give you the
+option to use "Long URL" instead of "Short URL" which let's you create share
+links without the central server
