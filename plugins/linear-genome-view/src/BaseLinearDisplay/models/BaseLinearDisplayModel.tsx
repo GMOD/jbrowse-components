@@ -371,14 +371,14 @@ export const BaseLinearDisplay = types
   .views(self => ({
     // region is too large if:
     // - stats are ready
-    // - we are not already all the way zoomed in (within factor of 4)
+    // - region is greater than 20kb (don't warn when zoomed in less than that)
     // - and bytes > max allowed bytes || curr density>max density
     get regionTooLarge() {
       const view = getContainingView(self) as LGV
 
       return (
         self.estimatedStatsReady &&
-        view.bpPerPx > view.minBpPerPx * 4 &&
+        view.dynamicBlocks.totalBp > 20_000 &&
         (self.currentBytesRequested > self.maxAllowableBytes ||
           self.currentFeatureScreenDensity > self.maxFeatureScreenDensity)
       )
