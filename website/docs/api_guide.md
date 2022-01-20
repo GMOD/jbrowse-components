@@ -199,18 +199,72 @@ Insert a menu item into a sub-menu
 
 The new length of the sub-menu
 
-## Core extension points
+## Extension points
 
-In the core codebase, these extension points are currently used
+In the core codebase, we have the concept of extension points that users can
+call or add to
 
-- Core-extendPluggableElement - used to add extra functionality to existing
-  state tree models, for example, extra right-click context menus
-- Core-guessAdapterForLocation - used to infer an adapter type given a location
-  type from the "Add track" workflow
-- Core-guessTrackTypeForLocation - used to infer a track type given a location
-  type from the "Add track workflow"
+The API is
 
-Note that users that want to add further extension points can do so. The naming
-system, "Core-" just refers to the fact that these extension points are from
-our core codebase. Plugin developers may choose their own prefix to avoid
-collisions
+```js
+pluginManager.evaluateExtensionPoint(extensionPointName, args)
+```
+
+There is also an async version
+
+```js
+pluginManager.evaluateAsyncExtensionPoint(extensionPointName, args)
+```
+
+Users can additionall add to extension points, so that when they are evaluated,
+it runs a chain of callbacks that are registered to that extension point
+
+This looks like
+
+```js
+pluginManager.addToExtensionPoint(extensionPointName, callback => newArgs)
+```
+
+Here are the extension points in the core codebase
+
+### Core-extendPluggableElement
+
+(sync) used to add extra functionality to existing state tree models, for
+example, extra right-click context menus
+
+### Core-guessAdapterForLocation
+
+(sync) used to infer an adapter type given a location type from the "Add track"
+workflow
+
+### Core-guessTrackTypeForLocation
+
+(sync) used to infer a track type given a location type from the "Add track
+workflow"
+
+### LaunchView-LinearGenomeView
+
+(async) launches a linear genome view given parameters
+
+- session:AbstractSessionModel - instance of the session which you can call
+  actions on
+- assembly:string - assembly name
+- loc:string - a locstring
+- tracks:string[] - array of trackIds
+
+### LaunchView-CircularView
+
+- session:AbstractSessionModel - instance of the session which you can call
+  actions on
+- assembly:string - assembly name
+- tracks:string[] - array of trackIds
+
+### Extension point footnote
+
+Users that want to add further extension points can do so. The naming system,
+"Core-" just refers to the fact that these extension points are from our core
+codebase. Plugin developers may choose their own prefix to avoid collisions
+
+```
+
+```
