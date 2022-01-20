@@ -495,9 +495,11 @@ export const BaseLinearDisplay = types
         : []
     },
     renderProps() {
+      const view = getContainingView(self) as LGV
       return {
         ...getParentRenderProps(self),
-        notReady: !self.estimatedRegionStats,
+        notReady:
+          self.currBpPerPx !== view.bpPerPx || !self.estimatedRegionStats,
         rpcDriverName: self.rpcDriverName,
         displayModel: self,
         estimatedRegionStatsNotReady: !self.estimatedRegionStats,
