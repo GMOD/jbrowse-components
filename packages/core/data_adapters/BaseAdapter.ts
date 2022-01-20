@@ -50,7 +50,11 @@ export type AnyDataAdapter =
   | BaseRefNameAliasAdapter
   | BaseTextSearchAdapter
   | RegionsAdapter
-  | SequenceAdapter
+  | BaseSequenceAdapter
+
+export interface SequenceAdapter
+  extends BaseFeatureDataAdapter,
+    RegionsAdapter {}
 
 export abstract class BaseAdapter {
   public id: string
@@ -302,13 +306,20 @@ export interface RegionsAdapter extends BaseAdapter {
   getRegions(opts: BaseOptions): Promise<NoAssemblyRegion[]>
 }
 
-export interface SequenceAdapter
-  extends BaseFeatureDataAdapter,
-    RegionsAdapter {}
+export abstract class BaseSequenceAdapter
+  extends BaseFeatureDataAdapter
+  implements RegionsAdapter
+{
+  async estimateRegionsStats() {
+    return { featureDensity: 0 }
+  }
+
+  abstract getRegions(opts: BaseOptions): Promise<NoAssemblyRegion[]>
+}
 
 export function isSequenceAdapter(
   thing: AnyDataAdapter,
-): thing is SequenceAdapter {
+): thing is BaseSequenceAdapter {
   return 'getRegions' in thing && 'getFeatures' in thing
 }
 

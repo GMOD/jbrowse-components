@@ -1,7 +1,6 @@
 import { IndexedFasta } from '@gmod/indexedfasta'
 import {
-  BaseFeatureDataAdapter,
-  SequenceAdapter,
+  BaseSequenceAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { FileLocation, NoAssemblyRegion } from '@jbrowse/core/util/types'
@@ -15,7 +14,7 @@ import LRU from '@jbrowse/core/util/QuickLRU'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
-export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
+export default class extends BaseSequenceAdapter {
   protected fasta: IndexedFasta
 
   private seqCache = new AbortablePromiseCache({

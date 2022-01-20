@@ -91,5 +91,10 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     }, signal)
   }
 
+  // always render bigwig instead of calculating a feature density for it
+  async estimateRegionsStats(_regions: Region[]) {
+    return { featureDensity: 0 }
+  }
+
   public freeResources(): void {}
 }
