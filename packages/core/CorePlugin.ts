@@ -2,8 +2,8 @@ import { lazy } from 'react'
 import { configSchema, stateModelFactory } from './BaseFeatureWidget'
 import Plugin from './Plugin'
 import PluginManager from './PluginManager'
-import AdapterType from './pluggableElementTypes/AdapterType'
 import * as coreRpcMethods from './rpc/coreRpcMethods'
+import AdapterType from './pluggableElementTypes/AdapterType'
 import WidgetType from './pluggableElementTypes/WidgetType'
 import {
   configSchema as cytobandConfigSchema,
