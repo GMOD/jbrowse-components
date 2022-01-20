@@ -38,6 +38,13 @@ export interface Layout {
   maxY: number
   name: string
 }
+
+// stabilize clipid under test for snapshot
+function getId(id: string, index: number) {
+  const isJest = typeof jest === 'undefined'
+  return `clip-${isJest ? id : 'jest'}-${index}`
+}
+
 type LayoutRecord = [number, number, number, number]
 
 function getDisplayStr(totalBytes: number) {
@@ -54,6 +61,17 @@ function getDisplayStr(totalBytes: number) {
 
 const minDisplayHeight = 20
 const defaultDisplayHeight = 100
+
+// the base display has checking that the amount of data downloaded is not too
+// large
+//
+// the general scheme of how this works is:
+//
+// - autorun re-runs estimateRegionsStats on viewing region
+// - hits individual data adapters estimateRegionsStats function
+// - data adapter also responds with their fetchSizeLimit if it exists
+// - we decide whether to render or not anytime a zoom level changes
+
 export const BaseLinearDisplay = types
   .compose(
     'BaseLinearDisplay',
@@ -100,7 +118,10 @@ export const BaseLinearDisplay = types
   }))
   .views(self => ({
     get maxFeatureScreenDensity() {
-      return getConf(self, 'maxFeatureScreenDensity')
+      return (
+        self.statsLimit?.featureDensity ||
+        getConf(self, 'maxFeatureScreenDensity')
+      )
     },
 
     /**
@@ -153,9 +174,8 @@ export const BaseLinearDisplay = types
     },
 
     get featureUnderMouse() {
-      return self.featureIdUnderMouse
-        ? this.features.get(self.featureIdUnderMouse)
-        : undefined
+      const feat = self.featureIdUnderMouse
+      return feat ? this.features.get(feat) : undefined
     },
 
     getFeatureOverlapping(blockKey: string, x: number, y: number) {
@@ -194,9 +214,10 @@ export const BaseLinearDisplay = types
     },
 
     afterAttach() {
-      // watch the parent's blocks to update our block state when they change
+      // watch the parent's blocks to update our block state when they change,
+      // then we recreate the blocks on our own model (creating and deleting to
+      // match the parent blocks)
       const blockWatchDisposer = autorun(() => {
-        // create any blocks that we need to create
         const blocksPresent: { [key: string]: boolean } = {}
         const view = getContainingView(self) as LGV
         if (view.initialized) {
@@ -206,7 +227,6 @@ export const BaseLinearDisplay = types
               this.addBlock(block.key, block)
             }
           })
-          // delete any blocks we need go delete
           self.blockState.forEach((_, key) => {
             if (!blocksPresent[key]) {
               this.deleteBlock(key)
@@ -255,7 +275,7 @@ export const BaseLinearDisplay = types
 
       return self.estimatedRegionStatsP
     },
-    setRegionStatsP(p: any) {
+    setRegionStatsP(p?: Promise<Stats>) {
       self.estimatedRegionStatsP = p
     },
     setRegionStats(estimatedRegionStats?: Stats) {
@@ -284,7 +304,12 @@ export const BaseLinearDisplay = types
     },
 
     updateStatsLimit(stats: Stats) {
-      self.statsLimit = cast(stats)
+      const view = getContainingView(self) as LGV
+      const { featureDensity = 0 } = stats
+      self.statsLimit = cast({
+        ...stats,
+        featureDensity: featureDensity * view.bpPerPx,
+      })
     },
 
     addBlock(key: string, block: BaseBlock) {
@@ -347,14 +372,21 @@ export const BaseLinearDisplay = types
     get regionTooLarge() {
       return (
         self.estimatedStatsReady &&
-        self.currentBytesRequested > self.maxAllowableBytes
+        (self.currentBytesRequested > self.maxAllowableBytes ||
+          self.currentFeatureScreenDensity > self.maxFeatureScreenDensity)
       )
     },
 
     get regionTooLargeReason() {
       const req = self.currentBytesRequested
       const max = self.maxAllowableBytes
-      return req > max ? `Requested too much data (${getDisplayStr(req)})` : ''
+
+      // only shows a message of bytes requested is defined, the feature
+      // density based stats don't produce any helpful message besides to zoom
+      // in
+      return req && req > max
+        ? `Requested too much data (${getDisplayStr(req)})`
+        : ''
     },
   }))
   .actions(self => {
@@ -413,7 +445,6 @@ export const BaseLinearDisplay = types
                 const estimatedRegionStats = await statsP
 
                 if (isAlive(self)) {
-                  console.log({ estimatedRegionStats })
                   self.setRegionStats(estimatedRegionStats)
                 }
               } catch (e) {
@@ -547,14 +578,10 @@ export const BaseLinearDisplay = types
       const { height, id } = self
       const { overrideHeight } = opts
       const view = getContainingView(self) as LGV
-      const {
-        offsetPx: viewOffsetPx,
-        roundedDynamicBlocks: dynamicBlocks,
-        width,
-      } = view
+      const { offsetPx: viewOffsetPx, roundedDynamicBlocks, width } = view
 
       const renderings = await Promise.all(
-        dynamicBlocks.map(block => {
+        roundedDynamicBlocks.map(block => {
           const blockState = BlockState.create({
             key: block.key,
             region: block,
@@ -593,12 +620,9 @@ export const BaseLinearDisplay = types
       return (
         <>
           {renderings.map((rendering, index) => {
-            const { offsetPx } = dynamicBlocks[index]
+            const { offsetPx } = roundedDynamicBlocks[index]
             const offset = offsetPx - viewOffsetPx
-            // stabalize clipid under test for snapshot
-            const clipid = `clip-${
-              typeof jest === 'undefined' ? id : 'jest'
-            }-${index}`
+            const clipid = getId(id, index)
             return (
               <React.Fragment key={`frag-${index}`}>
                 <defs>

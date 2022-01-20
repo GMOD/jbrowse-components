@@ -287,7 +287,9 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
         expansionTime++
         return statsFromInterval(interval * 2, expansionTime)
       } else {
-        console.error('Stats estimation reached timeout')
+        console.error(
+          "Stats estimation reached timeout, or didn't get enough features",
+        )
         return { featureDensity: Infinity }
       }
     }
