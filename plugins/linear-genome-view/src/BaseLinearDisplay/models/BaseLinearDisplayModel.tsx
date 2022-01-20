@@ -407,14 +407,13 @@ export const BaseLinearDisplay = types
                 self.clearRegionStats()
                 const statsP = self.estimateRegionStats(
                   view.staticBlocks.contentBlocks,
-                  {
-                    signal: aborter.signal,
-                  },
+                  { signal: aborter.signal },
                 )
                 self.setRegionStatsP(statsP)
                 const estimatedRegionStats = await statsP
 
                 if (isAlive(self)) {
+                  console.log({ estimatedRegionStats })
                   self.setRegionStats(estimatedRegionStats)
                 }
               } catch (e) {

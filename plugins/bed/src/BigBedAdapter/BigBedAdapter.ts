@@ -5,18 +5,17 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region, FileLocation } from '@jbrowse/core/util/types'
+import { Region } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { map, mergeAll } from 'rxjs/operators'
-import {
-  readConfObject,
-  AnyConfigurationModel,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { ucscProcessedTranscript } from '../util'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+
+function isUCSC(f: Feature) {
+  return f.get('thickStart') && f.get('blockCount') && f.get('strand') !== 0
+}
 
 interface BEDFeature {
   chrom: string
@@ -27,50 +26,51 @@ interface BEDFeature {
 
 interface Parser {
   parseLine: (line: string, opts: { uniqueId: string | number }) => BEDFeature
+  autoSql: { fields: { name: string; comment: string }[] }
 }
 
 export default class BigBedAdapter extends BaseFeatureDataAdapter {
-  private bigbed: BigBed
+  private cached?: Promise<{ bigbed: BigBed; header: any; parser: Parser }>
 
-  private parser: Promise<Parser>
-
-  public constructor(
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-    pluginManager?: PluginManager,
-  ) {
-    super(config, getSubAdapter, pluginManager)
-    const bigBedLocation = readConfObject(
-      config,
-      'bigBedLocation',
-    ) as FileLocation
-    this.bigbed = new BigBed({
-      filehandle: openLocation(bigBedLocation, this.pluginManager),
+  public async configurePre(opts?: BaseOptions) {
+    const bigbed = new BigBed({
+      filehandle: openLocation(
+        readConfObject(this.config, 'bigBedLocation'),
+        this.pluginManager,
+      ),
     })
-
-    this.parser = this.bigbed
-      .getHeader()
-      .then(({ autoSql }: { autoSql: string }) => new BED({ autoSql }))
+    const header = await bigbed.getHeader(opts)
+    const parser = new BED({ autoSql: header.autoSql }) as Parser
+    return { bigbed, header, parser }
   }
 
-  public async getRefNames() {
-    return Object.keys((await this.bigbed.getHeader()).refsByName)
+  public async configure(opts?: BaseOptions) {
+    if (!this.cached) {
+      this.cached = this.configurePre(opts).catch(e => {
+        this.cached = undefined
+        throw e
+      })
+    }
+    return this.cached
+  }
+
+  public async getRefNames(opts?: BaseOptions) {
+    const { header } = await this.configure(opts)
+    return Object.keys(header.refsByName)
   }
 
   async getHeader(opts?: BaseOptions) {
-    const { version, fileType } = await this.bigbed.getHeader(opts)
-    // @ts-ignore
-    const { autoSql } = await this.parser
-    const { fields, ...rest } = autoSql
-    const f = Object.fromEntries(
-      // @ts-ignore
-      fields.map(({ name, comment }) => [name, comment]),
-    )
-    return { version, fileType, autoSql: { ...rest }, fields: f }
-  }
-
-  public async refIdToName(refId: number) {
-    return ((await this.bigbed.getHeader()).refsByNumber[refId] || {}).name
+    const { parser, header } = await this.configure(opts)
+    const { version, fileType } = header
+    const { fields, ...rest } = parser.autoSql
+    return {
+      version,
+      fileType,
+      autoSql: { ...rest },
+      fields: Object.fromEntries(
+        fields.map(({ name, comment }) => [name, comment]),
+      ),
+    }
   }
 
   public getFeatures(region: Region, opts: BaseOptions = {}) {
@@ -78,70 +78,59 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     const { signal } = opts
     return ObservableCreate<Feature>(async observer => {
       try {
-        const parser = await this.parser
-        const ob = await this.bigbed.getFeatureStream(refName, start, end, {
+        const { parser, bigbed } = await this.configure(opts)
+        const ob = await bigbed.getFeatureStream(refName, start, end, {
           signal,
           basesPerSpan: end - start,
         })
         ob.pipe(
           mergeAll(),
-          map(
-            (r: {
-              start: number
-              end: number
-              rest?: string
-              uniqueId?: string
-            }) => {
-              const data = parser.parseLine(
-                `${refName}\t${r.start}\t${r.end}\t${r.rest}`,
-                {
-                  uniqueId: r.uniqueId as string,
-                },
-              )
+          map(r => {
+            const data = parser.parseLine(
+              `${refName}\t${r.start}\t${r.end}\t${r.rest}`,
+              {
+                uniqueId: r.uniqueId as string,
+              },
+            )
 
-              const { blockCount, blockSizes, blockStarts, chromStarts } = data
-              if (blockCount) {
-                const starts = chromStarts || blockStarts || []
-                const sizes = blockSizes
-                const blocksOffset = r.start
-                data.subfeatures = []
+            const { blockCount, blockSizes, blockStarts, chromStarts } = data
+            if (blockCount) {
+              const starts = chromStarts || blockStarts || []
+              const sizes = blockSizes
+              const blocksOffset = r.start
+              data.subfeatures = []
 
-                for (let b = 0; b < blockCount; b += 1) {
-                  const bmin = (starts[b] || 0) + blocksOffset
-                  const bmax = bmin + (sizes[b] || 0)
-                  data.subfeatures.push({
-                    uniqueId: `${r.uniqueId}-${b}`,
-                    start: bmin,
-                    end: bmax,
-                    type: 'block',
-                  })
-                }
+              for (let b = 0; b < blockCount; b += 1) {
+                const bmin = (starts[b] || 0) + blocksOffset
+                const bmax = bmin + (sizes[b] || 0)
+                data.subfeatures.push({
+                  uniqueId: `${r.uniqueId}-${b}`,
+                  start: bmin,
+                  end: bmax,
+                  type: 'block',
+                })
               }
-              if (r.uniqueId === undefined) {
-                throw new Error('invalid bbi feature')
-              }
-              const { chromStart, chromEnd, chrom, ...rest } = data
+            }
+            if (r.uniqueId === undefined) {
+              throw new Error('invalid bbi feature')
+            }
+            const { chromStart, chromEnd, chrom, ...rest } = data
 
-              const f = new SimpleFeature({
-                id: `${this.id}-${r.uniqueId}`,
-                data: {
-                  ...rest,
-                  start: r.start,
-                  end: r.end,
-                  refName,
-                },
-              })
+            const f = new SimpleFeature({
+              id: `${this.id}-${r.uniqueId}`,
+              data: {
+                ...rest,
+                start: r.start,
+                end: r.end,
+                refName,
+              },
+            })
 
-              // collection of heuristics for suggesting that this feature
-              // should be converted to a gene, CNV bigbed has many gene like
-              // features including thickStart and blockCount but no strand
-              return f.get('thickStart') &&
-                f.get('blockCount') &&
-                f.get('strand') !== 0
-                ? ucscProcessedTranscript(f)
-                : f
-            },
-          ),
+            // collection of heuristics for suggesting that this feature
+            // should be converted to a gene, CNV bigbed has many gene like
+            // features including thickStart and blockCount but no strand
+            return isUCSC(f) ? ucscProcessedTranscript(f) : f
+          }),
         ).subscribe(observer)
       } catch (e) {
         observer.error(e)
