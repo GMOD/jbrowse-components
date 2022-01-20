@@ -238,7 +238,7 @@ export const BaseLinearDisplay = types
       addDisposer(self, blockWatchDisposer)
     },
 
-    estimateRegionStats(
+    estimateRegionsStats(
       regions: Region[],
       opts: {
         headers?: Record<string, string>
@@ -369,21 +369,27 @@ export const BaseLinearDisplay = types
     },
   }))
   .views(self => ({
+    // region is too large if:
+    // - stats are ready
+    // - we are not already all the way zoomed in (within factor of 4)
+    // - and bytes > max allowed bytes || curr density>max density
     get regionTooLarge() {
+      const view = getContainingView(self) as LGV
+
       return (
         self.estimatedStatsReady &&
+        view.bpPerPx > view.minBpPerPx * 4 &&
         (self.currentBytesRequested > self.maxAllowableBytes ||
           self.currentFeatureScreenDensity > self.maxFeatureScreenDensity)
       )
     },
 
+    // only shows a message of bytes requested is defined, the feature density
+    // based stats don't produce any helpful message besides to zoom in
     get regionTooLargeReason() {
       const req = self.currentBytesRequested
       const max = self.maxAllowableBytes
 
-      // only shows a message of bytes requested is defined, the feature
-      // density based stats don't produce any helpful message besides to zoom
-      // in
       return req && req > max
         ? `Requested too much data (${getDisplayStr(req)})`
         : ''
@@ -402,7 +408,7 @@ export const BaseLinearDisplay = types
         }
 
         try {
-          self.estimatedRegionStatsP = self.estimateRegionStats(
+          self.estimatedRegionStatsP = self.estimateRegionsStats(
             view.staticBlocks.contentBlocks,
             { signal: aborter.signal },
           )
@@ -437,7 +443,7 @@ export const BaseLinearDisplay = types
 
                 self.setCurrBpPerPx(view.bpPerPx)
                 self.clearRegionStats()
-                const statsP = self.estimateRegionStats(
+                const statsP = self.estimateRegionsStats(
                   view.staticBlocks.contentBlocks,
                   { signal: aborter.signal },
                 )
