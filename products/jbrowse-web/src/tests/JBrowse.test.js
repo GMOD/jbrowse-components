@@ -78,8 +78,8 @@ test('lollipop track test', async () => {
   state.session.views[0].setNewView(1, 150)
   fireEvent.click(await findByTestId('htsTrackEntry-lollipop_track'))
 
-  await findByTestId('display-lollipop_track_linear', {}, { timeout: 10000 })
-  await findByTestId('three')
+  await findByTestId('display-lollipop_track_linear', {}, waitForOptions)
+  await findByTestId('three', {}, waitForOptions)
 }, 10000)
 
 test('toplevel configuration', () => {

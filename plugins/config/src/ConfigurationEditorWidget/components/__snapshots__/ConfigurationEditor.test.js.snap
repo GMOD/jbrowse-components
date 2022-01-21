@@ -797,7 +797,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
           class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
           data-shrink="true"
         >
-          maxAllowableBytes
+          fetchSizeLimit
         </label>
         <div
           class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
@@ -812,7 +812,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
         <p
           class="MuiFormHelperText-root MuiFormHelperText-filled"
         >
-          maximum data to attempt to download for a given track
+          maximum data to attempt to download for a given track, used if adapter doesn't specify one
         </p>
       </div>
     </div>

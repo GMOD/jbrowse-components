@@ -413,6 +413,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             ...superProps,
             notReady:
               superProps.notReady ||
+              !self.ready ||
               (sortedBy && self.currBpPerPx !== view.bpPerPx),
             rpcDriverName,
             displayModel: self,
