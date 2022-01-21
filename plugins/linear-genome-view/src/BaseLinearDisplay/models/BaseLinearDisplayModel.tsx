@@ -86,12 +86,8 @@ export const BaseLinearDisplay = types
         defaultDisplayHeight,
       ),
       blockState: types.map(BlockState),
-      statsLimit: types.maybe(
-        types.model({
-          bpPerPxLimit: types.maybe(types.number),
-          bytes: types.maybe(types.number),
-        }),
-      ),
+      userBpPerPxLimit: types.maybe(types.number),
+      userByteSizeLimit: types.maybe(types.number),
     }),
   )
   .volatile(() => ({
@@ -293,10 +289,11 @@ export const BaseLinearDisplay = types
 
     updateStatsLimit(stats: Stats) {
       const view = getContainingView(self) as LGV
-      self.statsLimit = cast({
-        ...stats,
-        bpPerPxLimit: view.bpPerPx,
-      })
+      if (stats.bytes) {
+        self.userByteSizeLimit = stats.bytes
+      } else {
+        self.userBpPerPxLimit = view.bpPerPx
+      }
     },
 
     addBlock(key: string, block: BaseBlock) {
@@ -349,14 +346,10 @@ export const BaseLinearDisplay = types
 
     get maxAllowableBytes() {
       return (
-        self.statsLimit?.bytes ||
+        self.userByteSizeLimit ||
         self.estimatedRegionStats?.fetchSizeLimit ||
         (getConf(self, 'fetchSizeLimit') as number)
       )
-    },
-
-    get userBpPerPxLimit() {
-      return self.statsLimit?.bpPerPxLimit || 0
     },
   }))
   .views(self => ({
@@ -370,7 +363,7 @@ export const BaseLinearDisplay = types
         self.estimatedStatsReady &&
         view.dynamicBlocks.totalBp > 20_000 &&
         (self.currentBytesRequested > self.maxAllowableBytes ||
-          view.bpPerPx > self.userBpPerPxLimit)
+          view.bpPerPx > (self.userBpPerPxLimit || 0))
       )
     },
 
