@@ -21,7 +21,7 @@ import {
   getRpcSessionId,
 } from '@jbrowse/core/util/tracks'
 import { autorun } from 'mobx'
-import { addDisposer, isAlive, types, cast, Instance } from 'mobx-state-tree'
+import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
 // icons
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 
@@ -190,6 +190,26 @@ export const BaseLinearDisplay = types
     get currentBytesRequested() {
       return self.estimatedRegionStats?.bytes || 0
     },
+
+    get currentFeatureScreenDensity() {
+      const view = getContainingView(self) as LGV
+      return (self.estimatedRegionStats?.featureDensity || 0) * view.bpPerPx
+    },
+
+    get maxFeatureScreenDensity() {
+      return getConf(self, 'maxFeatureScreenDensity')
+    },
+    get estimatedStatsReady() {
+      return !!self.estimatedRegionStats
+    },
+
+    get maxAllowableBytes() {
+      return (
+        self.userByteSizeLimit ||
+        self.estimatedRegionStats?.fetchSizeLimit ||
+        (getConf(self, 'fetchSizeLimit') as number)
+      )
+    },
   }))
   .actions(self => ({
     // base display reload does nothing, see specialized displays for details
@@ -340,30 +360,20 @@ export const BaseLinearDisplay = types
     },
   }))
   .views(self => ({
-    get estimatedStatsReady() {
-      return !!self.estimatedRegionStats
-    },
-
-    get maxAllowableBytes() {
-      return (
-        self.userByteSizeLimit ||
-        self.estimatedRegionStats?.fetchSizeLimit ||
-        (getConf(self, 'fetchSizeLimit') as number)
-      )
-    },
-  }))
-  .views(self => ({
     // region is too large if:
     // - stats are ready
     // - region is greater than 20kb (don't warn when zoomed in less than that)
     // - and bytes > max allowed bytes || curr density>max density
     get regionTooLarge() {
       const view = getContainingView(self) as LGV
+      if (!self.estimatedStatsReady || view.dynamicBlocks.totalBp < 20_000) {
+        return false
+      }
+
       return (
-        self.estimatedStatsReady &&
-        view.dynamicBlocks.totalBp > 20_000 &&
-        (self.currentBytesRequested > self.maxAllowableBytes ||
-          view.bpPerPx > (self.userBpPerPxLimit || 0))
+        self.currentBytesRequested > self.maxAllowableBytes ||
+        (view.bpPerPx > (self.userBpPerPxLimit || 0) &&
+          self.currentFeatureScreenDensity > self.maxFeatureScreenDensity)
       )
     },
 
@@ -422,7 +432,8 @@ export const BaseLinearDisplay = types
 
                 // don't re-estimate featureDensity even if zoom level changes,
                 // jbrowse1-style assume it's sort of representative
-                if (self.estimatedRegionStats?.featureDensity) {
+                if (self.estimatedRegionStats?.featureDensity !== undefined) {
+                  self.setCurrBpPerPx(view.bpPerPx)
                   return
                 }
 
@@ -431,8 +442,8 @@ export const BaseLinearDisplay = types
                   return
                 }
 
-                self.setCurrBpPerPx(view.bpPerPx)
                 self.clearRegionStats()
+                self.setCurrBpPerPx(view.bpPerPx)
                 const statsP = self.estimateRegionsStats(
                   view.staticBlocks.contentBlocks,
                   { signal: aborter.signal },
