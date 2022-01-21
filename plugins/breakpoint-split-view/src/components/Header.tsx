@@ -1,5 +1,4 @@
 import React from 'react'
-import { withSize } from 'react-sizeme'
 import { observer } from 'mobx-react'
 import { IconButton, makeStyles } from '@material-ui/core'
 
@@ -25,7 +24,6 @@ const useStyles = makeStyles(theme => ({
 
 const InteractWithSquiggles = observer(
   ({ model }: { model: BreakpointViewModel }) => {
-    const classes = useStyles()
     return (
       <IconButton
         onClick={() => model.toggleInteract()}
@@ -38,7 +36,6 @@ const InteractWithSquiggles = observer(
 )
 
 const LinkViews = observer(({ model }: { model: BreakpointViewModel }) => {
-  const classes = useStyles()
   return (
     <IconButton
       onClick={() => model.toggleLinkViews()}

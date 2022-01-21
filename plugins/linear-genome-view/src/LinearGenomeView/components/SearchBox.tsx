@@ -5,7 +5,7 @@ import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { getSession } from '@jbrowse/core/util'
 import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-//locals
+// locals
 import RefNameAutocomplete from './RefNameAutocomplete'
 import { dedupe } from './util'
 import { LinearGenomeViewModel, SPACING, WIDGET_HEIGHT } from '..'
