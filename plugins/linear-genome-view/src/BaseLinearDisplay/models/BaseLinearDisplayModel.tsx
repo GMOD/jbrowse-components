@@ -88,7 +88,7 @@ export const BaseLinearDisplay = types
       blockState: types.map(BlockState),
       statsLimit: types.maybe(
         types.model({
-          featureDensity: types.maybe(types.number),
+          bpPerPxLimit: types.maybe(types.number),
           bytes: types.maybe(types.number),
         }),
       ),
@@ -117,13 +117,6 @@ export const BaseLinearDisplay = types
     },
   }))
   .views(self => ({
-    get maxFeatureScreenDensity() {
-      return (
-        self.statsLimit?.featureDensity ||
-        getConf(self, 'maxFeatureScreenDensity')
-      )
-    },
-
     /**
      * how many milliseconds to wait for the display to
      * "settle" before re-rendering a block
@@ -196,11 +189,6 @@ export const BaseLinearDisplay = types
         }
       })
       return ret
-    },
-
-    get currentFeatureScreenDensity() {
-      const { bpPerPx } = getContainingView(self) as LGV
-      return (self.estimatedRegionStats?.featureDensity || 0) * bpPerPx
     },
 
     get currentBytesRequested() {
@@ -305,10 +293,9 @@ export const BaseLinearDisplay = types
 
     updateStatsLimit(stats: Stats) {
       const view = getContainingView(self) as LGV
-      const { featureDensity = 0 } = stats
       self.statsLimit = cast({
         ...stats,
-        featureDensity: featureDensity * view.bpPerPx,
+        bpPerPxLimit: view.bpPerPx,
       })
     },
 
@@ -364,8 +351,12 @@ export const BaseLinearDisplay = types
       return (
         self.statsLimit?.bytes ||
         self.estimatedRegionStats?.fetchSizeLimit ||
-        (getConf(self, 'maxAllowableBytes') as number)
+        (getConf(self, 'fetchSizeLimit') as number)
       )
+    },
+
+    get userBpPerPxLimit() {
+      return self.statsLimit?.bpPerPxLimit || 0
     },
   }))
   .views(self => ({
@@ -375,12 +366,11 @@ export const BaseLinearDisplay = types
     // - and bytes > max allowed bytes || curr density>max density
     get regionTooLarge() {
       const view = getContainingView(self) as LGV
-
       return (
         self.estimatedStatsReady &&
         view.dynamicBlocks.totalBp > 20_000 &&
         (self.currentBytesRequested > self.maxAllowableBytes ||
-          self.currentFeatureScreenDensity > self.maxFeatureScreenDensity)
+          view.bpPerPx > self.userBpPerPxLimit)
       )
     },
 
@@ -437,6 +427,13 @@ export const BaseLinearDisplay = types
                   return
                 }
 
+                // don't re-estimate featureDensity even if zoom level changes,
+                // jbrowse1-style assume it's sort of representative
+                if (self.estimatedRegionStats?.featureDensity) {
+                  return
+                }
+
+                // we estimate stats once at a given zoom level
                 if (view.bpPerPx === self.currBpPerPx) {
                   return
                 }

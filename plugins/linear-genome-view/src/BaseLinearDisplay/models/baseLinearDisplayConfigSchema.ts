@@ -5,13 +5,15 @@ export const baseLinearDisplayConfigSchema = ConfigurationSchema(
   {
     maxFeatureScreenDensity: {
       type: 'number',
-      description: 'maximum features per pixel that is displayed in the view',
+      description:
+        'maximum features per pixel that is displayed in the view, used if byte size estimates not available',
       defaultValue: 0.5,
     },
-    maxAllowableBytes: {
+    fetchSizeLimit: {
       type: 'number',
       defaultValue: 1_000_000,
-      description: 'maximum data to attempt to download for a given track',
+      description:
+        "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
     },
   },
   { explicitIdentifier: 'displayId' },
