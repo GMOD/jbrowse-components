@@ -71,8 +71,8 @@ export const UriLocationRaw = types.model('UriLocation', {
 
 export const UriLocation = types.snapshotProcessor(UriLocationRaw, {
   postProcessor: snap => {
-    const { baseUri, ...rest } = snap
-    if (!baseUri) {
+    const { baseUri, locationType, ...rest } = snap
+    if (!baseUri || locationType !== 'UriLocation') {
       return rest
     }
     return snap
