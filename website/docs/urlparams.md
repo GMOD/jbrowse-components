@@ -14,7 +14,7 @@ Note that the embedded components like @jbrowse/react-linaer-genome-view make
 no assumptions on how URL params are used, so would have to be implemented by
 the consumer of the library
 
-### Launching a linear genome view
+### Simple API for linear genome view
 
 We provide a simplified URL format specifically designed for launching a single
 linear genome view
@@ -62,7 +62,9 @@ Note: Navigating via a text search query e.g. supply &loc=gene_name is not yet s
 
 E.g. &tracks=gene_track,vcf_track
 
-This is a comma separated list of trackIds. You can see your trackId's in the config.json. Note, you can also refer to a trackId added by &sessionTracks= here
+This is a comma separated list of trackIds. You can see your trackId's in the
+config.json. Note, you can also refer to a trackId added by &sessionTracks=
+here
 
 ### More URL paramters
 
@@ -70,7 +72,8 @@ This is a comma separated list of trackIds. You can see your trackId's in the co
 
 If you want to dynamically add a track to the session, you can do so with &sessionTracks=
 
-You can also use this method to add a FromConfigAdapter track, which let's you specify features in JSON format, so you can e.g. add BLAST hits via the URL bar
+You can also use this method to add a FromConfigAdapter track, which let's you
+specify features in JSON format, so you can e.g. add BLAST hits via the URL bar
 
 Example
 
@@ -128,7 +131,7 @@ https://host/jbrowse2/?session=share-HShsEcnq3i&password=nYzTU
 
 See [this FAQ entry for more info about how shared sessions work](../faq
 
-##### Session specifications
+##### Session spec
 
 Another useful session URL is called a "session spec" or "session specification"
 
@@ -152,9 +155,10 @@ http://localhost:3000/?config=test_data/volvox/config.json&session=spec-{"views"
 ##### JSON sessions
 
 Similar to encoded sessions, but more readable, JSON session let you specify
-the input a JSON snapshot of a session session. This is slightly different from a session spec,
-which has extra logic that loads the session. JSON sessions are literal session
-snapshots, like those that might come from the "Export session..." process
+the input a JSON snapshot of a session session. This is slightly different from
+a session spec, which has extra logic that loads the session. JSON sessions are
+literal session snapshots, like those that might come from the "Export
+session..." process
 
 Example
 

@@ -262,8 +262,8 @@ The DECODEKEY is never transmitted to the server, but you can copy and paste
 the share URL, the person you shared automatically downloads the DynamoDB
 entry, and decodes it with the DECODEKEY from the URL that you provide
 
-With this system, the contents of the dynamoDB are safe and unable to be read
-even by JBrowse administrators
+With this system, the contents of the dynamoDB are safe and unable to be read,
+even by JBrowse administrators.
 
 #### What should I do if the Share system isn't working?
 
@@ -272,3 +272,7 @@ a firewall or you are not able to connect to the central share server, you can
 click the "Gear" icon in the "Share" button pop-up, and it will give you the
 option to use "Long URL" instead of "Short URL" which let's you create share
 links without the central server
+
+Also, if you are implementing JBrowse Web on your own server and would like to
+create your own URL shortener, you can use the shareURL parameter in the
+config.json file to point at your own server instead of ours.
