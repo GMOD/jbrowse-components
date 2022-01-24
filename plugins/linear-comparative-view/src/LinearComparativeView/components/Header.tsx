@@ -45,7 +45,9 @@ const Header = observer(
         <LinkViews model={model} />
         {ExtraButtons}
         {!anyShowHeaders
-          ? model.views.map(view => <SearchBox model={view} showHelp={false} />)
+          ? model.views.map(view => (
+              <SearchBox key={view.id} model={view} showHelp={false} />
+            ))
           : null}
 
         <div className={classes.spacer} />
