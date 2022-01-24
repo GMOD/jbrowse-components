@@ -1376,7 +1376,7 @@
         },
         {
           "type": "LinearVariantDisplay",
-          "maxFeatureScreenDensity": 0.0007,
+          "maxFeatureScreenDensity": 0.0006,
           "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
           "renderer": {
             "type": "SvgFeatureRenderer",

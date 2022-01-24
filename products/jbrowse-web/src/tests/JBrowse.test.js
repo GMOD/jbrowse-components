@@ -330,30 +330,30 @@ test('test stats estimation on vcf track, zoom in to see', async () => {
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
-  state.session.views[0].setNewView(17.289385920151016, 186)
+  state.session.views[0].setNewView(34, 5)
 
   // load track
   fireEvent.click(await findByTestId('htsTrackEntry-variant_colors'))
 
   await findAllByText(/Zoom in to see features/, {}, waitForOptions)
   fireEvent.click(await findByTestId('zoom_in'))
-  await findByTestId('box--1864799940-vcf-605560', {}, waitForOptions)
+  await findByTestId('box-test-vcf-605560', {}, waitForOptions)
 }, 30000)
 
-test('test stats estimation, force load to see', async () => {
+test('test stats estimation on vcf track, force load to see', async () => {
   const pluginManager = getPluginManager()
   const state = pluginManager.rootModel
   const { findByText, findAllByText, findByTestId } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
-  state.session.views[0].setNewView(17.289385920151016, 186)
+  state.session.views[0].setNewView(34, 5)
 
   // load track
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup'))
+  fireEvent.click(await findByTestId('htsTrackEntry-variant_colors'))
 
-  await findAllByText(/Requested too much data/, {}, waitForOptions)
+  await findAllByText(/Zoom in to see features/, {}, waitForOptions)
   const buttons = await findAllByText(/Force Load/, {}, waitForOptions)
   fireEvent.click(buttons[0])
-  await findByTestId('box--1864799940-vcf-605560', {}, waitForOptions)
+  await findByTestId('box-test-vcf-605223', {}, waitForOptions)
 }, 30000)
