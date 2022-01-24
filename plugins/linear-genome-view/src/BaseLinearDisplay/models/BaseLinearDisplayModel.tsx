@@ -369,11 +369,12 @@ export const BaseLinearDisplay = types
       if (!self.estimatedStatsReady || view.dynamicBlocks.totalBp < 20_000) {
         return false
       }
+      const bpLimitOrDensity = self.userBpPerPxLimit
+        ? view.bpPerPx > self.userBpPerPxLimit
+        : self.currentFeatureScreenDensity > self.maxFeatureScreenDensity
 
       return (
-        self.currentBytesRequested > self.maxAllowableBytes ||
-        (view.bpPerPx > (self.userBpPerPxLimit || 0) &&
-          self.currentFeatureScreenDensity > self.maxFeatureScreenDensity)
+        self.currentBytesRequested > self.maxAllowableBytes || bpLimitOrDensity
       )
     },
 

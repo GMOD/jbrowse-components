@@ -7,7 +7,7 @@ export const baseLinearDisplayConfigSchema = ConfigurationSchema(
       type: 'number',
       description:
         'maximum features per pixel that is displayed in the view, used if byte size estimates not available',
-      defaultValue: 0.5,
+      defaultValue: 0.3,
     },
     fetchSizeLimit: {
       type: 'number',
