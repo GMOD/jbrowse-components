@@ -256,5 +256,4 @@ export default class extends BaseFeatureDataAdapter {
   }
 
   public freeResources(/* { region } */) {}
-
 }
