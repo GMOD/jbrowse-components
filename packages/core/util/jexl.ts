@@ -15,6 +15,9 @@ export default function (/* config?: any*/): JexlNonBuildable {
   j.addFunction('get', (feature: Feature, data: string) => {
     return feature.get(data)
   })
+  j.addFunction('parent', (feature: Feature) => {
+    return feature.parent()
+  })
 
   j.addFunction('id', (feature: Feature) => {
     return feature.id()
@@ -42,6 +45,7 @@ export default function (/* config?: any*/): JexlNonBuildable {
   j.addFunction('floor', Math.floor)
   j.addFunction('round', Math.round)
   j.addFunction('abs', Math.abs)
+  j.addFunction('log10', Math.log10)
   j.addFunction('parseInt', Number.parseInt)
   j.addFunction('parseFloat', Number.parseFloat)
 

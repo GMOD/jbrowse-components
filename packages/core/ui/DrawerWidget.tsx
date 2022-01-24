@@ -14,7 +14,7 @@ import {
 } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import { SessionWithDrawerWidgets } from '@jbrowse/core/util/types'
+import { SessionWithDrawerWidgets } from '../util/types'
 
 // icons
 import DeleteIcon from '@material-ui/icons/Delete'
@@ -159,6 +159,10 @@ const DrawerHeader = observer(
                 data-testid="drawer-minimize"
                 color="inherit"
                 onClick={() => {
+                  session.notify(
+                    `Drawer minimized, click button on ${drawerPosition} side of screen to re-open`,
+                    'info',
+                  )
                   session.minimizeWidgetDrawer()
                 }}
               >

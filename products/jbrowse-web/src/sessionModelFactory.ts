@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import {
   readConfObject,
   getConf,
@@ -8,12 +9,13 @@ import {
 } from '@jbrowse/core/configuration'
 import {
   Region,
-  NotificationLevel,
   AbstractSessionModel,
   TrackViewModel,
   JBrowsePlugin,
   DialogComponentType,
 } from '@jbrowse/core/util/types'
+
+import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { getContainingView } from '@jbrowse/core/util'
 import { observable } from 'mobx'
 import {
@@ -27,6 +29,7 @@ import {
   isReferenceType,
   types,
   walk,
+  cast,
   IAnyStateTreeNode,
   Instance,
   SnapshotIn,
@@ -256,14 +259,17 @@ export default function sessionModelFactory(
           self.sessionAssemblies.splice(index, 1)
         }
       },
-      removeSessionPlugin(pluginUrl: string) {
-        const index = self.sessionPlugins.findIndex(
-          plugin => plugin.url === pluginUrl,
+      removeSessionPlugin(pluginDefinition: PluginDefinition) {
+        self.sessionPlugins = cast(
+          self.sessionPlugins.filter(
+            plugin =>
+              plugin.url !== pluginDefinition.url ||
+              plugin.umdUrl !== pluginDefinition.umdUrl ||
+              plugin.cjsUrl !== pluginDefinition.cjsUrl ||
+              plugin.esmUrl !== pluginDefinition.esmUrl,
+          ),
         )
-        if (index !== -1) {
-          self.sessionPlugins.splice(index, 1)
-        }
-        const rootModel = getRoot(self)
+        const rootModel = getParent(self)
         rootModel.setPluginsUpdated(true)
       },
       makeConnection(
@@ -622,30 +628,7 @@ export default function sessionModelFactory(
         return getParent(self).setSession(sessionSnapshot)
       },
     }))
-    .extend(() => {
-      const snackbarMessages = observable.array()
 
-      return {
-        views: {
-          get snackbarMessages() {
-            return snackbarMessages
-          },
-        },
-        actions: {
-          notify(message: string, level?: NotificationLevel) {
-            return this.pushSnackbarMessage(message, level)
-          },
-
-          pushSnackbarMessage(message: string, level?: NotificationLevel) {
-            return snackbarMessages.push([message, level])
-          },
-
-          popSnackbarMessage() {
-            return snackbarMessages.pop()
-          },
-        },
-      }
-    })
     .actions(self => ({
       /**
        * opens a configuration editor to configure the given thing,
@@ -745,7 +728,7 @@ export default function sessionModelFactory(
       },
     }))
 
-  return types.snapshotProcessor(sessionModel, {
+  return types.snapshotProcessor(addSnackbarToModel(sessionModel), {
     // @ts-ignore
     preProcessor(snapshot) {
       if (snapshot) {

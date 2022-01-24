@@ -1,6 +1,11 @@
 import React from 'react'
 import { observer } from 'mobx-react'
+import { ResizeHandle, ErrorMessage } from '@jbrowse/core/ui'
+import { assembleLocString } from '@jbrowse/core/util'
+import { IconButton, makeStyles } from '@material-ui/core'
+import { grey } from '@material-ui/core/colors'
 
+// icons
 import ZoomOut from '@material-ui/icons/ZoomOut'
 import ZoomIn from '@material-ui/icons/ZoomIn'
 import RotateLeft from '@material-ui/icons/RotateLeft'
@@ -9,84 +14,70 @@ import LockOutline from '@material-ui/icons/LockOutlined'
 import LockOpen from '@material-ui/icons/LockOpen'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
-// material-ui stuff
-import { IconButton, makeStyles } from '@material-ui/core'
-
-import { grey } from '@material-ui/core/colors'
-
-import { ResizeHandle } from '@jbrowse/core/ui'
-import { assembleLocString } from '@jbrowse/core/util'
+// locals
 import Ruler from './Ruler'
 import ImportForm from './ImportForm'
 
 const dragHandleHeight = 3
 
-const useStyles = makeStyles(theme => {
-  return {
-    root: {
-      position: 'relative',
-      marginBottom: theme.spacing(1),
-      overflow: 'hidden',
-      background: 'white',
-    },
-    scroller: {
-      overflow: 'auto',
-    },
-    sliceRoot: {
-      background: 'none',
-      // background: theme.palette.background.paper,
-      boxSizing: 'content-box',
-      display: 'block',
-    },
-    iconButton: {
-      padding: '4px',
-      margin: '0 2px 0 2px',
-    },
-    controls: {
-      overflow: 'hidden',
-      whiteSpace: 'nowrap',
-      position: 'absolute',
-      background: grey[200],
-      boxSizing: 'border-box',
-      borderRight: '1px solid #a2a2a2',
-      borderBottom: '1px solid #a2a2a2',
-      left: 0,
-      top: 0,
-    },
-    importFormContainer: {
-      marginBottom: theme.spacing(4),
-    },
-  }
-})
+const useStyles = makeStyles(theme => ({
+  root: {
+    position: 'relative',
+    marginBottom: theme.spacing(1),
+    overflow: 'hidden',
+    background: 'white',
+  },
+  scroller: {
+    overflow: 'auto',
+  },
+  sliceRoot: {
+    background: 'none',
+    // background: theme.palette.background.paper,
+    boxSizing: 'content-box',
+    display: 'block',
+  },
+  iconButton: {
+    padding: '4px',
+    margin: '0 2px 0 2px',
+  },
+  controls: {
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    position: 'absolute',
+    background: grey[200],
+    boxSizing: 'border-box',
+    borderRight: '1px solid #a2a2a2',
+    borderBottom: '1px solid #a2a2a2',
+    left: 0,
+    top: 0,
+  },
+  importFormContainer: {
+    marginBottom: theme.spacing(4),
+  },
+}))
 
 const Slices = observer(({ model }) => {
   return (
     <>
-      <>
-        {model.staticSlices.map(slice => {
-          return (
-            <Ruler
-              key={assembleLocString(
-                slice.region.elided ? slice.region.regions[0] : slice.region,
-              )}
-              model={model}
-              slice={slice}
-            />
-          )
-        })}
-      </>
-      <>
-        {model.tracks.map(track => {
-          const display = track.displays[0]
-          return (
-            <display.RenderingComponent
-              key={display.id}
-              display={display}
-              view={model}
-            />
-          )
-        })}
-      </>
+      {model.staticSlices.map(slice => (
+        <Ruler
+          key={assembleLocString(
+            slice.region.elided ? slice.region.regions[0] : slice.region,
+          )}
+          model={model}
+          slice={slice}
+        />
+      ))}
+      {model.tracks.map(track => {
+        const display = track.displays[0]
+        return (
+          <display.RenderingComponent
+            key={display.id}
+            display={display}
+            view={model}
+          />
+        )
+      })}
     </>
   )
 })
@@ -183,7 +174,7 @@ const CircularView = observer(({ model }) => {
       data-testid={model.id}
     >
       {model.error ? (
-        <p style={{ color: 'red' }}>{model.error.message}</p>
+        <ErrorMessage error={model.error} />
       ) : (
         <>
           {showImportForm ? <ImportForm model={model} /> : null}

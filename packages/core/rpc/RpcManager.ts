@@ -27,27 +27,18 @@ export default class RpcManager {
 
   driverObjects: Map<string, DriverClass>
 
-  pluginManager: PluginManager
-
-  mainConfiguration: AnyConfigurationModel
-
-  backendConfigurations: BackendConfigurations
-
   constructor(
-    pluginManager: PluginManager,
-    mainConfiguration: AnyConfigurationModel,
-    backendConfigurations: BackendConfigurations,
+    public pluginManager: PluginManager,
+    public mainConfiguration: AnyConfigurationModel,
+    public backendConfigurations: BackendConfigurations,
   ) {
     if (!mainConfiguration) {
       throw new Error('RpcManager requires at least a main configuration')
     }
-    this.pluginManager = pluginManager
-    this.mainConfiguration = mainConfiguration
-    this.backendConfigurations = backendConfigurations
     this.driverObjects = new Map()
   }
 
-  getDriver(backendName: keyof typeof DriverClasses): DriverClass {
+  getDriver(backendName: keyof typeof DriverClasses) {
     const driver = this.driverObjects.get(backendName)
     if (driver) {
       return driver
@@ -58,9 +49,12 @@ export default class RpcManager {
 
     if (!DriverClassImpl) {
       throw new Error(`requested RPC driver "${backendName}" is not installed`)
-    } else if (!backendConfiguration) {
+    }
+
+    if (!backendConfiguration) {
       throw new Error(`requested RPC driver "${backendName}" is missing config`)
     }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const newDriver = new DriverClassImpl(backendConfiguration as any, {
       plugins: this.pluginManager.runtimePluginDefinitions,
@@ -69,7 +63,7 @@ export default class RpcManager {
     return newDriver
   }
 
-  getDriverForCall(
+  async getDriverForCall(
     _sessionId: string,
     _functionName: string,
     args: { rpcDriverName?: string },
@@ -86,7 +80,12 @@ export default class RpcManager {
     if (!sessionId) {
       throw new Error('sessionId is required')
     }
-    return this.getDriverForCall(sessionId, functionName, args).call(
+    const driverForCall = await this.getDriverForCall(
+      sessionId,
+      functionName,
+      args,
+    )
+    return driverForCall.call(
       this.pluginManager,
       sessionId,
       functionName,

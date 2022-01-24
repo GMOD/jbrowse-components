@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from '@material-ui/core/styles'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import {
   Button,
   Dialog,
@@ -52,7 +53,8 @@ const AssemblyManager = observer(
     const classes = useStyles()
     const [isFormOpen, setFormOpen] = useState(false)
     const [isAssemblyBeingEdited, setIsAssemblyBeingEdited] = useState(false)
-    const [assemblyBeingEdited, setAssemblyBeingEdited] = useState()
+    const [assemblyBeingEdited, setAssemblyBeingEdited] =
+      useState<AnyConfigurationModel>()
 
     const showAssemblyTable = !isFormOpen && !isAssemblyBeingEdited
 

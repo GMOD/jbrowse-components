@@ -972,6 +972,10 @@ Object {
           "displayId": "nclist_long_names-LinearBasicDisplay",
           "type": "LinearBasicDisplay",
         },
+        Object {
+          "displayId": "nclist_long_names-LinearArcDisplay",
+          "type": "LinearArcDisplay",
+        },
       ],
       "name": "nclist with long names/descriptions",
       "trackId": "nclist_long_names",
@@ -1311,6 +1315,10 @@ Object {
         Object {
           "displayId": "lollipop_track-LinearBasicDisplay",
           "type": "LinearBasicDisplay",
+        },
+        Object {
+          "displayId": "lollipop_track-LinearArcDisplay",
+          "type": "LinearArcDisplay",
         },
       ],
       "name": "FromConfig Track (defaults to LinearLollipopDisplay)",
@@ -1726,6 +1734,10 @@ Object {
           "displayId": "gff3_genes-LinearBasicDisplay",
           "type": "LinearBasicDisplay",
         },
+        Object {
+          "displayId": "gff3_genes-LinearArcDisplay",
+          "type": "LinearArcDisplay",
+        },
       ],
       "name": "GFF3 genes",
       "trackId": "gff3_genes",
@@ -1759,6 +1771,10 @@ Object {
         Object {
           "displayId": "gff3tabix_genes-LinearBasicDisplay",
           "type": "LinearBasicDisplay",
+        },
+        Object {
+          "displayId": "gff3tabix_genes-LinearArcDisplay",
+          "type": "LinearArcDisplay",
         },
       ],
       "name": "GFF3Tabix genes",
@@ -1989,6 +2005,10 @@ Object {
           "displayId": "bigbed_genes-LinearBasicDisplay",
           "type": "LinearBasicDisplay",
         },
+        Object {
+          "displayId": "bigbed_genes-LinearArcDisplay",
+          "type": "LinearArcDisplay",
+        },
       ],
       "name": "BigBed genes",
       "trackId": "bigbed_genes",
@@ -2022,6 +2042,10 @@ Object {
         Object {
           "displayId": "bedtabix_genes-LinearBasicDisplay",
           "type": "LinearBasicDisplay",
+        },
+        Object {
+          "displayId": "bedtabix_genes-LinearArcDisplay",
+          "type": "LinearArcDisplay",
         },
       ],
       "name": "BedTabix genes",
@@ -2076,6 +2100,10 @@ Object {
         Object {
           "displayId": "Genes-LinearBasicDisplay",
           "type": "LinearBasicDisplay",
+        },
+        Object {
+          "displayId": "Genes-LinearArcDisplay",
+          "type": "LinearArcDisplay",
         },
       ],
       "name": "NCList genes",
@@ -2762,6 +2790,10 @@ Object {
           "displayId": "single_exon_gene-LinearBasicDisplay",
           "type": "LinearBasicDisplay",
         },
+        Object {
+          "displayId": "single_exon_gene-LinearArcDisplay",
+          "type": "LinearArcDisplay",
+        },
       ],
       "name": "Single exon gene",
       "trackId": "single_exon_gene",
@@ -2787,6 +2819,10 @@ Object {
         Object {
           "displayId": "gtf_plain_text_test-LinearBasicDisplay",
           "type": "LinearBasicDisplay",
+        },
+        Object {
+          "displayId": "gtf_plain_text_test-LinearArcDisplay",
+          "type": "LinearArcDisplay",
         },
       ],
       "name": "GTF - volvox.sorted.gtf",
@@ -2835,6 +2871,183 @@ Object {
       "name": "volvox inversions",
       "trackId": "volvox.inv.vcf",
       "type": "VariantTrack",
+    },
+    Object {
+      "adapter": Object {
+        "craiLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "deep_sequencing.cram.crai",
+        },
+        "cramLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "deep_sequencing.cram",
+        },
+        "sequenceAdapter": Object {
+          "chromSizesLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "/path/to/default.chrom.sizes",
+          },
+          "twoBitLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "CramAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Alignments",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "deep_seq_alignments",
+          "pileupDisplay": Object {
+            "displayId": "deep_seq_pileup",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "maxHeight": 10000,
+                "type": "PileupRenderer",
+              },
+            },
+            "type": "LinearPileupDisplay",
+          },
+          "type": "LinearAlignmentsDisplay",
+        },
+        Object {
+          "displayId": "Deep sequencing-LinearPileupDisplay",
+          "type": "LinearPileupDisplay",
+        },
+        Object {
+          "displayId": "Deep sequencing-LinearSNPCoverageDisplay",
+          "type": "LinearSNPCoverageDisplay",
+        },
+      ],
+      "name": "deep_sequencing",
+      "trackId": "Deep sequencing",
+      "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "adapterId": "Y4yJ6gAC2E",
+        "features": Array [
+          Object {
+            "end": 200,
+            "name": "SE_001",
+            "refName": "ctgA",
+            "score": 2,
+            "start": 190,
+            "type": "foo",
+            "uniqueId": "arc-one",
+          },
+          Object {
+            "end": 192,
+            "name": "SE_002",
+            "refName": "ctgA",
+            "score": 5,
+            "start": 191,
+            "type": "bar",
+            "uniqueId": "arc-two",
+          },
+          Object {
+            "end": 290,
+            "name": "SE_003",
+            "refName": "ctgA",
+            "score": 50,
+            "start": 210,
+            "type": "baz",
+            "uniqueId": "arc-three",
+          },
+          Object {
+            "end": 189,
+            "name": "SE_004, and some other characters that make the name extra long",
+            "refName": "ctgA",
+            "score": 200,
+            "start": 180,
+            "type": "quux",
+            "uniqueId": "arc-four",
+          },
+        ],
+        "type": "FromConfigAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Miscellaneous",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "arc_track_linear",
+          "type": "LinearArcDisplay",
+        },
+        Object {
+          "displayId": "arc_track-LinearBasicDisplay",
+          "type": "LinearBasicDisplay",
+        },
+      ],
+      "name": "FromConfig Track (defaults to LinearArcDisplay)",
+      "trackId": "arc_track",
+      "type": "FeatureTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bamLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "spliced.bam",
+        },
+        "index": Object {
+          "location": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "spliced.bam.bai",
+          },
+        },
+        "sequenceAdapter": Object {
+          "twoBitLocation": Object {
+            "locationType": "UriLocation",
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Alignments",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "spliced-LinearAlignmentsDisplay",
+          "type": "LinearAlignmentsDisplay",
+        },
+        Object {
+          "displayId": "spliced-LinearPileupDisplay",
+          "type": "LinearPileupDisplay",
+        },
+        Object {
+          "displayId": "spliced-LinearSNPCoverageDisplay",
+          "type": "LinearSNPCoverageDisplay",
+        },
+      ],
+      "name": "volvox-rnaseq demo",
+      "trackId": "spliced",
+      "type": "AlignmentsTrack",
     },
   ],
 }

@@ -14,6 +14,14 @@ import {
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
 
+function uniqBy<T>(a: T[], key: (arg: T) => string) {
+  const seen = new Set()
+  return a.filter(item => {
+    const k = key(item)
+    return seen.has(k) ? false : seen.add(k)
+  })
+}
+
 const defaultInternetAccounts = [
   {
     type: 'DropboxOAuthInternetAccount',
@@ -75,7 +83,12 @@ export async function createPluginManager(
     ...runtimePlugins.map(({ plugin: P, definition }) => ({
       plugin: new P(),
       definition,
-      metadata: { url: definition.url },
+      metadata: {
+        url: definition.url,
+        esmUrl: definition.esmUrl,
+        umdUrl: definition.umdUrl,
+        cjsUrl: definition.cjsUrl,
+      },
     })),
   ])
   pm.createPluggableElements()
@@ -92,26 +105,11 @@ export async function createPluginManager(
     tracks: { trackId: string }[]
   }
 
-  const internetAccountIds = jbrowse.internetAccounts.map(
-    o => o.internetAccountId,
-  )
-
-  // remove duplicates while mixing in default internet accounts
-  jbrowse.internetAccounts = jbrowse.internetAccounts.filter(
-    ({ internetAccountId }, index) =>
-      !internetAccountIds.includes(internetAccountId, index + 1),
-  )
-
-  const assemblyNames = jbrowse.assemblies.map(o => o.name)
-
-  jbrowse.assemblies = jbrowse.assemblies.filter(
-    ({ name }, index) => !assemblyNames.includes(name, index + 1),
-  )
-
-  const trackIds = jbrowse.tracks.map(o => o.trackId)
-
-  jbrowse.tracks = jbrowse.tracks.filter(
-    ({ trackId }, index) => !trackIds.includes(trackId, index + 1),
+  jbrowse.assemblies = uniqBy(jbrowse.assemblies, asm => asm.name)
+  jbrowse.tracks = uniqBy(jbrowse.tracks, acct => acct.trackId)
+  jbrowse.internetAccounts = uniqBy(
+    jbrowse.internetAccounts,
+    acct => acct.internetAccountId,
   )
 
   const rootModel = JBrowseRootModel.create(

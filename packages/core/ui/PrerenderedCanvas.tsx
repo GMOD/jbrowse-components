@@ -10,6 +10,7 @@ function PrerenderedCanvas(props: {
   style: any
   imageData: any
   showSoftClip?: boolean
+  blockKey?: string
 }) {
   const {
     width,
@@ -17,8 +18,10 @@ function PrerenderedCanvas(props: {
     highResolutionScaling,
     style,
     imageData,
+    blockKey,
     showSoftClip,
   } = props
+
   const featureCanvas = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -56,9 +59,11 @@ function PrerenderedCanvas(props: {
   }, [imageData])
 
   const softClipString = showSoftClip ? '_softclipped' : ''
+  const blockKeyStr = blockKey ? '_' + blockKey : ''
+  const testId = `prerendered_canvas${softClipString}${blockKeyStr}`
   return (
     <canvas
-      data-testid={`prerendered_canvas${softClipString}`}
+      data-testid={testId}
       ref={featureCanvas}
       width={width * highResolutionScaling}
       height={height * highResolutionScaling}

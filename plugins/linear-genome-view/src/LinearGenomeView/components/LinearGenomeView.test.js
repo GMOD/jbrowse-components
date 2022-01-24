@@ -1,11 +1,8 @@
 import React from 'react'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
-import sizeMe from 'react-sizeme'
 import 'requestidlecallback-polyfill'
 import LinearGenomeView from './LinearGenomeView'
-
-sizeMe.noPlaceholders = true
 
 const assemblyConf = {
   name: 'volMyt1',

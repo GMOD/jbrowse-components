@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, lazy } from 'react'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import {
@@ -6,17 +6,18 @@ import {
   CircularProgress,
   Container,
   Grid,
-  Typography,
   makeStyles,
 } from '@material-ui/core'
 import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
+import CloseIcon from '@material-ui/icons/Close'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
-import SearchResultsDialog from './SearchResultsDialog'
 import { LinearGenomeViewModel } from '..'
+const SearchResultsDialog = lazy(() => import('./SearchResultsDialog'))
 
 const useStyles = makeStyles(theme => ({
   importFormContainer: {
@@ -28,14 +29,6 @@ const useStyles = makeStyles(theme => ({
 }))
 
 type LGV = LinearGenomeViewModel
-
-const ErrorDisplay = observer(({ error }: { error?: Error | string }) => {
-  return (
-    <Typography variant="h6" color="error">
-      {`${error}`}
-    </Typography>
-  )
-})
 
 const ImportForm = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
@@ -91,13 +84,11 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     return [...(refNameResults || []), ...(textSearchResults || [])]
   }
 
-  /**
-   * gets a string as input, or use stored option results from previous query,
-   * then re-query and
-   * 1) if it has multiple results: pop a dialog
-   * 2) if it's a single result navigate to it
-   * 3) else assume it's a locstring and navigate to it
-   */
+  // gets a string as input, or use stored option results from previous query,
+  // then re-query and
+  // 1) if it has multiple results: pop a dialog
+  // 2) if it's a single result navigate to it
+  // 3) else assume it's a locstring and navigate to it
   async function handleSelectedRegion(input: string) {
     if (!option) {
       return
@@ -132,13 +123,9 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   // having this wrapped in a form allows intuitive use of enter key to submit
   return (
     <div>
-      {err ? <ErrorDisplay error={err} /> : null}
+      {err ? <ErrorMessage error={err} /> : null}
       <Container className={classes.importFormContainer}>
-        <form
-          onSubmit={event => {
-            event.preventDefault()
-          }}
-        >
+        <form onSubmit={event => event.preventDefault()}>
           <Grid
             container
             spacing={1}
@@ -158,18 +145,21 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             <Grid item>
               {selectedAsm ? (
                 err ? (
-                  <Typography color="error">X</Typography>
-                ) : selectedRegion && model.volatileWidth ? (
+                  <CloseIcon style={{ color: 'red' }} />
+                ) : selectedRegion ? (
                   <RefNameAutocomplete
                     fetchResults={fetchResults}
                     model={model}
                     assemblyName={assemblyError ? undefined : selectedAsm}
                     value={selectedRegion}
+                    // note: minWidth 270 accomodates full width of helperText
+                    minWidth={270}
                     onSelect={option => setOption(option)}
                     TextFieldProps={{
                       margin: 'normal',
                       variant: 'outlined',
-                      helperText: 'Enter a sequence or location',
+                      helperText:
+                        'Enter sequence name, feature name, or location',
                     }}
                   />
                 ) : (
@@ -181,6 +171,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                 )
               ) : null}
             </Grid>
+            <Grid item></Grid>
             <Grid item>
               <Button
                 type="submit"

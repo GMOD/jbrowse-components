@@ -1,5 +1,9 @@
+import React from 'react'
 import rangeParser from 'range-parser'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { QueryParamProvider } from 'use-query-params'
+
+import JBrowseWithoutQueryParamProvider from '../JBrowse'
 import JBrowseRootModelFactory from '../rootModel'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
@@ -84,3 +88,25 @@ export function setup() {
 
 // eslint-disable-next-line no-native-reassign,no-global-assign
 window = Object.assign(window, { innerWidth: 800 })
+
+export function canvasToBuffer(canvas) {
+  return Buffer.from(
+    canvas.toDataURL().replace(/^data:image\/\w+;base64,/, ''),
+    'base64',
+  )
+}
+
+export function expectCanvasMatch(canvas) {
+  expect(canvasToBuffer(canvas)).toMatchImageSnapshot({
+    failureThreshold: 0.05,
+    failureThresholdType: 'percent',
+  })
+}
+
+export function JBrowse(props) {
+  return (
+    <QueryParamProvider>
+      <JBrowseWithoutQueryParamProvider {...props} />
+    </QueryParamProvider>
+  )
+}

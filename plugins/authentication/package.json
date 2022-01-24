@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-authentication",
-  "version": "1.5.1",
+  "version": "1.5.9",
   "description": "JBrowse 2 Authentication",
   "keywords": [
     "jbrowse",
@@ -35,7 +35,7 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@jbrowse/plugin-variants": "^1.5.1",
+    "@jbrowse/plugin-variants": "^1.5.9",
     "@material-ui/icons": "^4.9.1"
   },
   "peerDependencies": {

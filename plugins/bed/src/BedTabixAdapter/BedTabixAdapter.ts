@@ -133,7 +133,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
           }
 
           if (this.scoreColumn) {
-            data.score = data[this.scoreColumn]
+            data.score = +data[this.scoreColumn]
           }
           delete data.chrom
           delete data.chromStart

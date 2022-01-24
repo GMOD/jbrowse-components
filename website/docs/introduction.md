@@ -7,21 +7,36 @@ toplevel: true
 
 Welcome to the JBrowse 2 documentation.
 
-We provide
+Resources for desktop users
 
-- [Quick start for desktop](quickstart_desktop) - a quick-start guide to getting JBrowse desktop running on your machine
-- [Super-quick start guide](superquickstart_web) - super brief setup
-  instructions e.g. 10 lines of CLI commands to help admins who are familiar
-  with jbrowse with getting set up
-- [Quick start guide](quickstart_web) - a more thourough quick-start guide to
-  help admins setting up JBrowse 2 on their website
+- [Quick-start for JBrowse desktop](quickstart_desktop) - a quick-start guide to
+  getting JBrowse desktop running on your machine
+
+Resources for both desktop/web users
+
 - [User guide](user_guide) - screenshots of the app and general usage
+
+Resources for users of the embedded components
+
+- [Embedded components](embedded_components) - Docs for our reusable React
+  components
+
+Resources for web developers and admins
+
+- [Quick-start for JBrowse web](quickstart_web) - a quick-start guide to
+  help admins setting up JBrowse 2 on their website
+- [Cheatsheet for JBrowse web](superquickstart_web) - brief setup instructions
+  for admins who are familiar with jbrowse with getting set up
 - [Configuration guide](config_guide) - for detailed configuration settings
-- [Developer guide](developer_guide) - for developers of plugins and
-  core codebase topics
+- [Developer guide](developer_guide) - for developers of plugins
+
+Other resources
+
 - [FAQ](faq) - Some Q&A for troubleshooting or other topics
-- [@jbrowse/linear-genome-view docs](https://jbrowse.org/storybook/lgv/main/) -
-  Docs for the reusable linear genome view React component
+- [@jbrowse/cli](cli) - docs for our CLI tools for loading tracks,
+  assemblies, text indexing, and more
+- [@jbrowse/img](https://www.npmjs.com/package/@jbrowse/img) - Docs for our
+  static image export tool
 
 We also keep a log of our previous training classes in the sidebar
 

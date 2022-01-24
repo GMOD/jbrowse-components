@@ -16,7 +16,7 @@ export function ObservableCreate<T>(
       const ret = func(observer)
       // catch async errors
       if (ret && ret.catch) {
-        ret.catch((error: Error) => observer.error(error))
+        ret.catch(error => observer.error(error))
       }
     } catch (error) {
       // catch sync errors

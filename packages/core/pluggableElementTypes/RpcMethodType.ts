@@ -1,15 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import PluginManager from '../PluginManager'
 import PluggableElementBase from './PluggableElementBase'
 import { setBlobMap, getBlobMap } from '../util/tracks'
+import { isAlive, isStateTreeNode } from 'mobx-state-tree'
 import {
-  UriLocation,
-  AbstractRootModel,
   isAppRootModel,
   isUriLocation,
-  AuthNeededError,
-  RetryError,
   isAuthNeededException,
+  RetryError,
+  UriLocation,
 } from '../util/types'
 
 import {
@@ -21,13 +19,10 @@ import {
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 
 export default abstract class RpcMethodType extends PluggableElementBase {
-  pluginManager: PluginManager
-
   name = 'UNKNOWN'
 
-  constructor(pluginManager: PluginManager) {
+  constructor(public pluginManager: PluginManager) {
     super({ name: '' })
-    this.pluginManager = pluginManager
   }
 
   async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
@@ -36,28 +31,21 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     return { ...args, blobMap }
   }
 
-  async serializeNewAuthArguments(location: UriLocation) {
-    const rootModel: AbstractRootModel | undefined =
-      this.pluginManager.rootModel
+  async serializeNewAuthArguments(loc: UriLocation) {
+    const rootModel = this.pluginManager.rootModel
 
     // args dont need auth or already have auth
-    if (
-      !isAppRootModel(rootModel) ||
-      location.internetAccountPreAuthorization
-    ) {
-      return location
+    if (!isAppRootModel(rootModel) || loc.internetAccountPreAuthorization) {
+      return loc
     }
 
-    const account = rootModel?.findAppropriateInternetAccount(location)
+    const account = rootModel?.findAppropriateInternetAccount(loc)
 
     if (account) {
-      const modifiedPreAuth = await account.getPreAuthorizationInformation(
-        location,
-      )
-
-      location.internetAccountPreAuthorization = modifiedPreAuth
+      loc.internetAccountPreAuthorization =
+        await account.getPreAuthorizationInformation(loc)
     }
-    return location
+    return loc
   }
 
   async deserializeArguments<
@@ -96,19 +84,17 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     _rpcDriverClassName: string,
   ): Promise<unknown> {
     let r
+    const { rootModel } = this.pluginManager
     try {
       r = await serializedReturn
     } catch (error) {
-      if (isAuthNeededException(error as Error)) {
-        const retryAccount =
-          // @ts-ignore
-          this.pluginManager?.rootModel?.createEphemeralInternetAccount(
-            `HTTPBasicInternetAccount-${
-              new URL((error as AuthNeededError).location.uri).origin
-            }`,
-            {},
-            (error as AuthNeededError).location,
-          )
+      if (isAuthNeededException(error)) {
+        // @ts-ignore
+        const retryAccount = rootModel?.createEphemeralInternetAccount(
+          `HTTPBasicInternetAccount-${new URL(error.location.uri).origin}`,
+          {},
+          error.location,
+        )
         throw new RetryError(
           'Retrying with created internet account',
           retryAccount.internetAccountId,
@@ -119,7 +105,12 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     return r
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async augmentLocationObjects(thing: any): Promise<any> {
+    if (isStateTreeNode(thing) && !isAlive(thing)) {
+      return thing
+    }
+
     if (isUriLocation(thing)) {
       await this.serializeNewAuthArguments(thing)
     }
@@ -129,13 +120,13 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       }
     }
     if (typeof thing === 'object' && thing !== null) {
-      for (const [key, value] of Object.entries(thing)) {
+      for (const value of Object.values(thing)) {
         if (Array.isArray(value)) {
-          for (const val of thing[key]) {
+          for (const val of value) {
             await this.augmentLocationObjects(val)
           }
         } else if (typeof value === 'object' && value !== null) {
-          await this.augmentLocationObjects(thing[key])
+          await this.augmentLocationObjects(value)
         }
       }
     }

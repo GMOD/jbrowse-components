@@ -1,7 +1,6 @@
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { openLocation } from '@jbrowse/core/util/io'
+import SimpleFeature from '../util/simpleFeature'
+import { ConfigurationSchema, readConfObject } from '../configuration'
+import { openLocation } from '../util/io'
 import { BaseAdapter } from './BaseAdapter'
 
 const configSchema = ConfigurationSchema(
@@ -21,7 +20,7 @@ class CytobandAdapter extends BaseAdapter {
     if (loc.uri === '' || loc.uri === '/path/to/cytoband.txt.gz') {
       return []
     }
-    const data = (await openLocation(loc).readFile('utf8')) as string
+    const data = await openLocation(loc).readFile('utf8')
     return data
       .split('\n')
       .filter(f => !!f.trim())

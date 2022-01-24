@@ -124,7 +124,11 @@ function RecentSessionsList({
       flex: 0.7,
       renderCell: (params: GridCellParams) => {
         const { value } = params
-        return value
+        return (
+          <Tooltip title={String(value)}>
+            <div>{value}</div>
+          </Tooltip>
+        )
       },
     },
     {

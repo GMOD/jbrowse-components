@@ -12,7 +12,7 @@ import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import fromEntries from 'object.fromentries'
 import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
-import { Feature } from './simpleFeature'
+import SimpleFeature, { Feature, isFeature } from './simpleFeature'
 import {
   TypeTestedByPredicate,
   isSessionModel,
@@ -28,6 +28,7 @@ export * from './types'
 export * from './aborting'
 export * from './when'
 export * from './range'
+export { SimpleFeature, isFeature }
 
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
@@ -47,11 +48,11 @@ export function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value)
 
   useEffect(() => {
-    const handler = setTimeout(() => {
+    const handle = setTimeout(() => {
       setDebouncedValue(value)
     }, delay)
     return () => {
-      clearTimeout(handler)
+      clearTimeout(handle)
     }
   }, [value, delay])
 
@@ -97,7 +98,10 @@ export function findParentThat(
   node: IAnyStateTreeNode,
   predicate: (thing: IAnyStateTreeNode) => boolean,
 ) {
-  let currentNode: IAnyStateTreeNode | undefined = node
+  if (!hasParent(node)) {
+    throw new Error('node does not have parent')
+  }
+  let currentNode: IAnyStateTreeNode | undefined = getParent(node)
   while (currentNode && isAlive(currentNode)) {
     if (predicate(currentNode)) {
       return currentNode
@@ -759,8 +763,9 @@ export async function renameRegionsIfNeeded<
 
   return {
     ...args,
-    regions: regions.map(region =>
-      renameRegionIfNeeded(assemblyMaps[region.assemblyName], region),
+    regions: regions.map((region, i) =>
+      // note: uses assemblyNames defined above since region could be dead now
+      renameRegionIfNeeded(assemblyMaps[assemblyNames[i]], region),
     ),
   }
 }
@@ -995,13 +1000,11 @@ export async function updateStatus(
 
 export function hashCode(str: string) {
   let hash = 0
-  let i
-  let chr
   if (str.length === 0) {
     return hash
   }
-  for (i = 0; i < str.length; i++) {
-    chr = str.charCodeAt(i)
+  for (let i = 0; i < str.length; i++) {
+    const chr = str.charCodeAt(i)
     hash = (hash << 5) - hash + chr
     hash |= 0 // Convert to 32bit integer
   }

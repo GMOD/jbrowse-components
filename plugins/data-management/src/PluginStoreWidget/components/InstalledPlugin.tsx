@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
-
-import { makeStyles } from '@material-ui/core/styles'
 import {
   Button,
   Dialog,
@@ -13,6 +11,7 @@ import {
   ListItem,
   Tooltip,
   Typography,
+  makeStyles,
 } from '@material-ui/core'
 
 import CloseIcon from '@material-ui/icons/Close'
@@ -71,7 +70,9 @@ function PluginDialog({
       </DialogTitle>
       <DialogContent>
         <Typography>
-          Please confirm that you want to remove {plugin}:
+          Please confirm that you want to remove {plugin}. Note: if any
+          resources in this session still use this plugin, it may cause your
+          session to crash
         </Typography>
         <DialogActions>
           <Button
@@ -113,11 +114,11 @@ function InstalledPlugin({
   const [dialogPlugin, setDialogPlugin] = useState<string>()
 
   const session = getSession(model)
-
-  // @ts-ignore
-  const { sessionPlugins } = session
+  const { sessionPlugins } = session as unknown as {
+    sessionPlugins: BasePlugin[]
+  }
   const isSessionPlugin = sessionPlugins?.some(
-    (p: BasePlugin) => pluginManager.pluginMetadata[plugin.name].url === p.url,
+    p => pluginManager.pluginMetadata[plugin.name].url === p.url,
   )
 
   const rootModel = getParent(model, 3)
@@ -131,11 +132,11 @@ function InstalledPlugin({
           onClose={name => {
             if (name) {
               const pluginMetadata = pluginManager.pluginMetadata[plugin.name]
-              const pluginUrl = pluginMetadata.url
+
               if (adminMode) {
-                jbrowse.removePlugin(pluginUrl)
+                jbrowse.removePlugin(pluginMetadata)
               } else if (isSessionWithSessionPlugins(session)) {
-                session.removeSessionPlugin(pluginUrl)
+                session.removeSessionPlugin(pluginMetadata)
               }
             }
             setDialogPlugin(undefined)

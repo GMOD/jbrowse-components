@@ -153,15 +153,16 @@ export function mdToMismatches(
   const md = mdstring.match(/(\d+|\^[a-z]+|[a-z])/gi) || []
   for (let i = 0; i < md.length; i++) {
     const token = md[i]
-    if (token.match(/^\d/)) {
-      curr.start += parseInt(token, 10)
-    } else if (token.match(/^\^/)) {
+    const num = +token
+    if (!Number.isNaN(num)) {
+      curr.start += num
+    } else if (token.startsWith('^')) {
       curr.length = token.length - 1
       curr.base = '*'
       curr.type = 'deletion'
       curr.seq = token.substring(1)
       nextRecord()
-    } else if (token.match(/^[a-z]/i)) {
+    } else {
       // mismatch
       for (let j = 0; j < token.length; j += 1) {
         curr.length = 1
@@ -328,7 +329,7 @@ export function getModificationPositions(
       const [basemod, ...skips] = mod.split(',')
 
       // regexes based on parse_mm.pl from hts-specs
-      const matches = basemod.match(/([A-Z])([-+])([^,]+)/)
+      const matches = basemod.match(/([A-Z])([-+])([^,.?]+)([.?])?/)
       if (!matches) {
         throw new Error('bad format for MM tag')
       }

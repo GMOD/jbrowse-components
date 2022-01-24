@@ -2,7 +2,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region } from '@jbrowse/core/util/types'
+import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readConfObject } from '@jbrowse/core/configuration'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
@@ -81,7 +81,11 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         stream = stream.pipe(filter(f => filters.passes(f, opts)))
       }
 
-      const bins = await this.generateCoverageBins(stream, region, opts)
+      const { bins, skipmap } = await this.generateCoverageBins(
+        stream,
+        region,
+        opts,
+      )
 
       bins.forEach((bin, index) => {
         if (bin.total) {
@@ -98,6 +102,23 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
             }),
           )
         }
+      })
+
+      // make fake features from the coverage
+      Object.entries(skipmap).forEach(([key, skip]) => {
+        observer.next(
+          new SimpleFeature({
+            id: key,
+            data: {
+              type: 'skip',
+              start: skip.start,
+              end: skip.end,
+              strand: skip.strand,
+              score: skip.score,
+              xs: skip.xs,
+            },
+          }),
+        )
       })
 
       observer.complete()
@@ -126,8 +147,19 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   ) {
     const { colorBy } = opts
     const { sequenceAdapter } = await this.configure()
-    const { refName, start, end } = region
+    const { originalRefName, refName, start, end } = region
     const binMax = Math.ceil(region.end - region.start)
+
+    const skipmap = {} as {
+      [key: string]: {
+        score: number
+        feature: unknown
+        start: number
+        end: number
+        strand: number
+        xs: string
+      }
+    }
 
     // bins contain cov feature if they contribute to coverage, or noncov which
     // are interbase or other features that don't contribute to coverage.
@@ -148,13 +180,18 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
     if (sequenceAdapter) {
       const [feat] = await sequenceAdapter
-        .getFeatures({ refName, start, end: end + 1, assemblyName: 'na' })
+        .getFeatures({
+          refName: originalRefName || refName,
+          start,
+          end: end + 1,
+          assemblyName: 'na',
+        })
         .pipe(toArray())
         .toPromise()
       regionSeq = feat?.get('seq')
     }
 
-    return features
+    const bins = await features
       .pipe(
         reduce((bins, feature) => {
           const cigar = feature.get('CIGAR')
@@ -262,30 +299,61 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
           // normal SNP based coloring
           else {
-            const mismatches = feature.get('mismatches')
-            for (let i = 0; i < mismatches?.length; i++) {
-              const mismatch = mismatches[i] as Mismatch
-              const mstart = fstart + mismatch.start
-              for (let j = mstart; j < mstart + mismatchLen(mismatch); j++) {
-                const epos = j - region.start
-                if (epos >= 0 && epos < bins.length) {
-                  const bin = bins[epos]
-                  const { base, type } = mismatch
-                  const interbase = isInterbase(type)
-                  if (!interbase) {
-                    dec(bin, fstrand, 'ref', 'ref')
-                  } else {
-                    inc(bin, fstrand, 'noncov', type)
-                  }
+            const mismatches = feature.get('mismatches') as
+              | Mismatch[]
+              | undefined
 
-                  if (type === 'deletion' || type === 'skip') {
-                    inc(bin, fstrand, 'delskips', type)
-                    bin.total--
-                  } else if (!interbase) {
-                    inc(bin, fstrand, 'cov', base)
+            if (mismatches) {
+              for (let i = 0; i < mismatches.length; i++) {
+                const mismatch = mismatches[i]
+                const mstart = fstart + mismatch.start
+                for (let j = mstart; j < mstart + mismatchLen(mismatch); j++) {
+                  const epos = j - region.start
+                  if (epos >= 0 && epos < bins.length) {
+                    const bin = bins[epos]
+                    const { base, type } = mismatch
+                    const interbase = isInterbase(type)
+                    if (!interbase) {
+                      dec(bin, fstrand, 'ref', 'ref')
+                    } else {
+                      inc(bin, fstrand, 'noncov', type)
+                    }
+
+                    if (type === 'deletion' || type === 'skip') {
+                      inc(bin, fstrand, 'delskips', type)
+                      bin.total--
+                    } else if (!interbase) {
+                      inc(bin, fstrand, 'cov', base)
+                    }
                   }
                 }
               }
+
+              mismatches
+                .filter(mismatch => mismatch.type === 'skip')
+                .forEach(mismatch => {
+                  const mstart = feature.get('start') + mismatch.start
+                  const start = mstart
+                  const end = mstart + mismatch.length
+                  const strand = feature.get('strand')
+                  const hash = `${start}_${end}_${strand}`
+                  if (!skipmap[hash]) {
+                    skipmap[hash] = {
+                      feature: feature,
+                      start,
+                      end,
+                      strand,
+                      xs:
+                        feature.get('xs') ||
+                        feature.get('ts') ||
+                        feature.get('tags').XS ||
+                        feature.get('tags').TS,
+                      score: 1,
+                    }
+                  } else {
+                    skipmap[hash].score++
+                  }
+                })
             }
           }
 
@@ -293,6 +361,8 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         }, initBins),
       )
       .toPromise()
+
+    return { bins, skipmap }
   }
 }
 

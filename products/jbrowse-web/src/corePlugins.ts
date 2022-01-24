@@ -12,6 +12,7 @@ import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
 import LinearComparativeView from '@jbrowse/plugin-linear-comparative-view'
 import Lollipop from '@jbrowse/plugin-lollipop'
+import Arc from '@jbrowse/plugin-arc'
 import Menus from '@jbrowse/plugin-menus'
 import RDF from '@jbrowse/plugin-rdf'
 import Sequence from '@jbrowse/plugin-sequence'
@@ -42,6 +43,7 @@ const corePlugins = [
   LegacyJBrowse,
   LinearComparativeView,
   Lollipop,
+  Arc,
   Menus,
   RDF,
   Sequence,

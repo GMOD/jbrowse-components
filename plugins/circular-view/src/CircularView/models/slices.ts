@@ -9,8 +9,6 @@ import { thetaRangesOverlap } from './viewportVisibleRegion'
 export class Slice {
   key: string
 
-  region: Region & { widthBp: number; elided: boolean }
-
   offsetRadians: number
 
   startRadians: number
@@ -19,22 +17,18 @@ export class Slice {
 
   bpPerRadian: number
 
-  radianWidth: number
-
   flipped: boolean
 
   constructor(
     view: { bpPerRadian: number },
-    region: Region & { widthBp: number; elided: boolean },
+    public region: Region & { widthBp: number; elided: boolean },
     currentRadianOffset: number,
-    radianWidth: number,
+    public radianWidth: number,
   ) {
     const { bpPerRadian } = view
     this.key = assembleLocString(region)
-    this.region = region
     this.offsetRadians = currentRadianOffset
     this.bpPerRadian = bpPerRadian
-    this.radianWidth = radianWidth
     this.flipped = false
 
     this.startRadians = this.offsetRadians

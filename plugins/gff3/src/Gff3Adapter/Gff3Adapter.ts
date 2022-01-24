@@ -10,9 +10,7 @@ import IntervalTree from '@flatten-js/interval-tree'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { unzip } from '@gmod/bgzf-filehandle'
 
-import gff from '@gmod/gff'
-
-import { FeatureLoc } from '../util'
+import gff, { GFF3FeatureLineWithRefs } from '@gmod/gff'
 
 function isGzip(buf: Buffer) {
   return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
@@ -29,7 +27,7 @@ export default class extends BaseFeatureDataAdapter {
       readConfObject(this.config, 'gffLocation'),
       this.pluginManager,
     ).readFile()
-    const buf = isGzip(buffer as Buffer) ? await unzip(buffer) : buffer
+    const buf = isGzip(buffer) ? await unzip(buffer) : buffer
     // 512MB  max chrome string length is 512MB
     if (buf.length > 536_870_888) {
       throw new Error('Data exceeds maximum string length (512MB)')
@@ -47,7 +45,7 @@ export default class extends BaseFeatureDataAdapter {
       parseComments: false,
       parseDirectives: false,
       parseSequences: false,
-    }) as FeatureLoc[][]
+    })
 
     const intervalTree = feats
       .flat()
@@ -106,10 +104,18 @@ export default class extends BaseFeatureDataAdapter {
     }, opts.signal)
   }
 
-  private featureData(data: FeatureLoc) {
+  private featureData(data: GFF3FeatureLineWithRefs) {
     const f: Record<string, unknown> = { ...data }
     ;(f.start as number) -= 1 // convert to interbase
-    f.strand = { '+': 1, '-': -1, '.': 0, '?': undefined }[data.strand] // convert strand
+    if (data.strand === '+') {
+      f.strand = 1
+    } else if (data.strand === '-') {
+      f.strand = -1
+    } else if (data.strand === '.') {
+      f.strand = 0
+    } else {
+      f.strand = undefined
+    }
     f.phase = Number(data.phase)
     f.refName = data.seq_id
     if (data.score === null) {
@@ -128,15 +134,16 @@ export default class extends BaseFeatureDataAdapter {
       'phase',
       'strand',
     ]
-    Object.keys(data.attributes).forEach(a => {
+    const dataAttributes = data.attributes || {}
+    Object.keys(dataAttributes).forEach(a => {
       let b = a.toLowerCase()
       if (defaultFields.includes(b)) {
         // add "suffix" to tag name if it already exists
         // reproduces behavior of NCList
         b += '2'
       }
-      if (data.attributes[a] !== null) {
-        let attr = data.attributes[a]
+      if (dataAttributes[a] !== null) {
+        let attr: string | string[] | undefined = dataAttributes[a]
         if (Array.isArray(attr) && attr.length === 1) {
           ;[attr] = attr
         }

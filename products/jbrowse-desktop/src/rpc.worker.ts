@@ -1,4 +1,4 @@
-/* eslint-disable no-restricted-globals, no-console, react-hooks/rules-of-hooks */
+/* eslint-disable no-restricted-globals, react-hooks/rules-of-hooks */
 import './workerPolyfill'
 
 import RpcServer from 'librpc-web-mod'
@@ -6,7 +6,6 @@ import { useStaticRendering } from 'mobx-react'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { remoteAbortRpcHandler } from '@jbrowse/core/rpc/remoteAbortSignals'
-import { isAbortException } from '@jbrowse/core/util'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import corePlugins from './corePlugins'
@@ -54,68 +53,26 @@ async function getPluginManager() {
   return pluginManager
 }
 
-const logBuffer: [string, ...unknown[]][] = []
-function flushLog() {
-  if (logBuffer.length) {
-    for (const l of logBuffer) {
-      const [head, ...rest] = l
-      if (head === 'rpc-error') {
-        console.error(head, ...rest)
-      } else {
-        console.log(head, ...rest)
-      }
-    }
-    logBuffer.length = 0
-  }
-}
-setInterval(flushLog, 1000)
-
 interface WrappedFuncArgs {
   rpcDriverClassName: string
   channel: string
   [key: string]: unknown
 }
 
-let callCounter = 0
 function wrapForRpc(
   func: (args: unknown, rpcDriverClassName: string) => unknown,
-  funcName: string = func.name,
 ) {
   return (args: WrappedFuncArgs) => {
-    callCounter += 1
-    const myId = callCounter
-    // logBuffer.push(['rpc-call', myId, funcName, args])
-    const retP = Promise.resolve()
-      .then(() => getPluginManager())
-      .then(() =>
-        func(
-          {
-            ...args,
-            statusCallback: (message: string) => {
-              // @ts-ignore
-              self.rpcServer.emit(args.channel, message)
-            },
-          },
-          args.rpcDriverClassName,
-        ),
-      )
-      .catch(error => {
-        if (isAbortException(error)) {
-          // logBuffer.push(['rpc-abort', myId, funcName, args])
-        } else {
-          logBuffer.push(['rpc-error', myId, funcName, error])
-          flushLog()
-        }
-        throw error
-      })
-
-    // uncomment below to log returns
-    // retP.then(
-    //   result => logBuffer.push(['rpc-return', myId, funcName, result]),
-    //   err => {},
-    // )
-
-    return retP
+    return func(
+      {
+        ...args,
+        statusCallback: (message: string) => {
+          // @ts-ignore
+          self.rpcServer.emit(args.channel, message)
+        },
+      },
+      args.rpcDriverClassName,
+    )
   }
 }
 
@@ -128,10 +85,7 @@ getPluginManager()
         throw new Error('invalid rpc method??')
       }
 
-      rpcConfig[rpcMethod.name] = wrapForRpc(
-        rpcMethod.execute.bind(rpcMethod),
-        rpcMethod.name,
-      )
+      rpcConfig[rpcMethod.name] = wrapForRpc(rpcMethod.execute.bind(rpcMethod))
     })
 
     // @ts-ignore

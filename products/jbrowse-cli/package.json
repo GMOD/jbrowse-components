@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/cli",
-  "version": "1.5.1",
+  "version": "1.5.9",
   "description": "A command line tool for working with JBrowse 2",
   "keywords": [
     "jbrowse",
@@ -44,26 +44,27 @@
     "docs:version:add": "git add README.md"
   },
   "dependencies": {
-    "@gmod/gff": "^1.1.2",
-    "@oclif/command": "^1",
-    "@oclif/config": "^1",
-    "@oclif/plugin-help": "^3",
+    "@gmod/gff": "^1.2.0",
+    "@oclif/command": "^1.8.11",
+    "@oclif/config": "^1.18.2",
+    "@oclif/errors": "^1",
+    "@oclif/plugin-help": "3.2.14",
     "boxen": "^4.2.0",
     "chalk": "^4.1.0",
     "cli-progress": "^3.9.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "follow-redirects": "^1.14.1",
-    "ixixx": "^1.0.17",
+    "follow-redirects": "^1.14.6",
+    "ixixx": "^1.0.19",
     "json-parse-better-errors": "^1.0.2",
     "node-fetch": "^2.6.0",
     "object.fromentries": "^2.0.5",
-    "tslib": "^1",
+    "tslib": "^2.3.1",
     "unzipper": "^0.10.11"
   },
   "devDependencies": {
     "@types/follow-redirects": "^1.13.0",
-    "typescript": "^4.0.0"
+    "typescript": "^4.5.2"
   },
   "oclif": {
     "commands": "./lib/commands",

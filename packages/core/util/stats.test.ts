@@ -1,4 +1,4 @@
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import SimpleFeature from './simpleFeature'
 import { from } from 'rxjs'
 import {
   calcStdFromSums,

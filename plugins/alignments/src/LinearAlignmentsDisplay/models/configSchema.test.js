@@ -1,4 +1,3 @@
-import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
@@ -6,24 +5,10 @@ import {
   svgFeatureRendererConfigSchema,
   SvgFeatureRendererReactComponent,
 } from '@jbrowse/plugin-svg'
-import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
-import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
-import PileupRenderer, {
-  configSchema as pileupRendererConfigSchema,
-  ReactComponent as PileupRendererReactComponent,
-} from '../../PileupRenderer'
-import SNPCoverageRenderer, {
-  configSchema as snpCoverageRendererConfigSchema,
-  ReactComponent as SNPCoverageRendererReactComponent,
-} from '../../SNPCoverageRenderer'
-import {
-  configSchemaFactory as linearPileupDisplayConfigSchemaFactory,
-  modelFactory as linearPileupDisplayModelFactory,
-} from '../../LinearPileupDisplay'
-import {
-  configSchemaFactory as linearSNPCoverageDisplayConfigSchemaFactory,
-  modelFactory as linearSNPCoverageDisplayModelFactory,
-} from '../../LinearSNPCoverageDisplay'
+import PileupRenderer from '../../PileupRenderer'
+import SNPCoverageRenderer from '../../SNPCoverageRenderer'
+import LinearPileupDisplay from '../../LinearPileupDisplay'
+import LinearSNPCoverageDisplay from '../../LinearSNPCoverageDisplay'
 import configSchemaFactory from './configSchema'
 
 // mock warnings to avoid unnecessary outputs
@@ -37,15 +22,7 @@ afterEach(() => {
 
 class AlignmentsPlugin extends Plugin {
   install(pluginManager) {
-    pluginManager.addRendererType(
-      () =>
-        new PileupRenderer({
-          name: 'PileupRenderer',
-          ReactComponent: PileupRendererReactComponent,
-          configSchema: pileupRendererConfigSchema,
-          pluginManager,
-        }),
-    )
+    PileupRenderer(pluginManager)
 
     pluginManager.addRendererType(
       () =>
@@ -57,46 +34,9 @@ class AlignmentsPlugin extends Plugin {
         }),
     )
 
-    pluginManager.addRendererType(
-      () =>
-        new SNPCoverageRenderer({
-          name: 'SNPCoverageRenderer',
-          ReactComponent: SNPCoverageRendererReactComponent,
-          configSchema: snpCoverageRendererConfigSchema,
-          pluginManager,
-        }),
-    )
-
-    pluginManager.addDisplayType(() => {
-      const configSchema = linearPileupDisplayConfigSchemaFactory(pluginManager)
-      return new DisplayType({
-        name: 'LinearPileupDisplay',
-        configSchema,
-        stateModel: linearPileupDisplayModelFactory(
-          pluginManager,
-          configSchema,
-        ),
-        trackType: 'AlignmentsTrack',
-        viewType: 'LinearGenomeView',
-        ReactComponent: BaseLinearDisplayComponent,
-      })
-    })
-
-    pluginManager.addDisplayType(() => {
-      const configSchema =
-        linearSNPCoverageDisplayConfigSchemaFactory(pluginManager)
-      return new DisplayType({
-        name: 'LinearSNPCoverageDisplay',
-        configSchema,
-        stateModel: linearSNPCoverageDisplayModelFactory(
-          pluginManager,
-          configSchema,
-        ),
-        trackType: 'AlignmentsTrack',
-        viewType: 'LinearGenomeView',
-        ReactComponent: LinearWiggleDisplayReactComponent,
-      })
-    })
+    SNPCoverageRenderer(pluginManager)
+    LinearPileupDisplay(pluginManager)
+    LinearSNPCoverageDisplay(pluginManager)
   }
 }
 

@@ -18,14 +18,10 @@ export interface Mismatch {
 }
 
 export default class CramSlightlyLazyFeature implements Feature {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private record: any
-
   private _store: CramAdapter
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(record: any, store: CramAdapter) {
-    this.record = record
+  constructor(private record: any, store: CramAdapter) {
     this._store = store
   }
 

@@ -771,15 +771,15 @@
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
             "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
             "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
             "locationType": "UriLocation"
           }
         }
@@ -3350,7 +3350,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw",
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw",
           "locationType": "UriLocation"
         }
       },
@@ -3781,6 +3781,29 @@
           "indexType": "TBI"
         }
       }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dbsuper",
+      "name": "dbSUPER adipose enhancers",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/dbSUPER/adipose_interactions.sorted.bed.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/dbSUPER/adipose_interactions.sorted.bed.gz.tbi"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearArcDisplay",
+          "displayId": "LinearBasicDisplay"
+        }
+      ]
     }
   ],
   "connections": [],

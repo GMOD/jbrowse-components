@@ -58,7 +58,10 @@ export interface JBrowsePlugin {
   authors: string[]
   description: string
   location: string
-  url: string
+  url?: string
+  umdUrl?: string
+  esmUrl?: string
+  cjsUrl?: string
   license: string
   image?: string
 }
@@ -323,6 +326,10 @@ export interface NoAssemblyRegion
 
 export interface Region extends SnapshotIn<typeof MUIRegion> {}
 
+export interface AugmentedRegion extends Region {
+  originalRefName?: string
+}
+
 export interface LocalPathLocation
   extends SnapshotIn<typeof MULocalPathLocation> {}
 
@@ -338,10 +345,8 @@ export function isUriLocation(location: unknown): location is UriLocation {
 }
 
 export class AuthNeededError extends Error {
-  location: UriLocation
-  constructor(message: string, location: UriLocation) {
+  constructor(public message: string, public location: UriLocation) {
     super(message)
-    this.location = location
     this.name = 'AuthNeededError'
 
     Object.setPrototypeOf(this, AuthNeededError.prototype)
@@ -349,20 +354,20 @@ export class AuthNeededError extends Error {
 }
 
 export class RetryError extends Error {
-  internetAccountId: string
-  constructor(message: string, internetAccountId: string) {
+  constructor(public message: string, public internetAccountId: string) {
     super(message)
-    this.message = message
-    this.internetAccountId = internetAccountId
     this.name = 'RetryError'
   }
 }
 
-export function isAuthNeededException(exception: Error): boolean {
+export function isAuthNeededException(
+  exception: unknown,
+): exception is AuthNeededError {
   return (
+    exception instanceof Error &&
     // DOMException
-    exception.name === 'AuthNeededError' ||
-    (exception as AuthNeededError).location !== undefined
+    (exception.name === 'AuthNeededError' ||
+      (exception as AuthNeededError).location !== undefined)
   )
 }
 

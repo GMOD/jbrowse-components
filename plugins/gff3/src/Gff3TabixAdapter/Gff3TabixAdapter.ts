@@ -9,7 +9,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
-import gff from '@gmod/gff'
+import gff, { GFF3Feature, GFF3FeatureLineWithRefs } from '@gmod/gff'
 import { Observer } from 'rxjs'
 
 import { Instance } from 'mobx-state-tree'
@@ -17,7 +17,6 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import MyConfigSchema from './configSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { FeatureLoc } from '../util'
 
 interface LineFeature {
   start: number
@@ -110,12 +109,8 @@ export default class extends BaseFeatureDataAdapter {
           }
         })
         if (maxEnd > query.end || minStart < query.start) {
-          // console.log(
-          //   `redispatching ${query.start}-${query.end} => ${minStart}-${maxEnd}`,
-          // )
           // make a new feature callback to only return top-level features
           // in the original query range
-
           this.getFeaturesHelper(
             { ...query, start: minStart, end: maxEnd },
             opts,
@@ -146,7 +141,7 @@ export default class extends BaseFeatureDataAdapter {
         parseComments: false,
         parseDirectives: false,
         parseSequences: false,
-      }) as FeatureLoc[][]
+      })
 
       features.forEach(featureLocs =>
         this.formatFeatures(featureLocs).forEach(f => {
@@ -184,20 +179,29 @@ export default class extends BaseFeatureDataAdapter {
     }
   }
 
-  private formatFeatures(featureLocs: FeatureLoc[]) {
+  private formatFeatures(featureLocs: GFF3Feature) {
     return featureLocs.map(
       featureLoc =>
         new SimpleFeature({
           data: this.featureData(featureLoc),
-          id: `${this.id}-offset-${featureLoc.attributes._lineHash[0]}`,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          id: `${this.id}-offset-${featureLoc.attributes!._lineHash![0]}`,
         }),
     )
   }
 
-  private featureData(data: FeatureLoc) {
+  private featureData(data: GFF3FeatureLineWithRefs) {
     const f: Record<string, unknown> = { ...data }
     ;(f.start as number) -= 1 // convert to interbase
-    f.strand = { '+': 1, '-': -1, '.': 0, '?': undefined }[data.strand] // convert strand
+    if (data.strand === '+') {
+      f.strand = 1
+    } else if (data.strand === '-') {
+      f.strand = -1
+    } else if (data.strand === '.') {
+      f.strand = 0
+    } else {
+      f.strand = undefined
+    }
     f.phase = Number(data.phase)
     f.refName = data.seq_id
     if (data.score === null) {
@@ -216,15 +220,16 @@ export default class extends BaseFeatureDataAdapter {
       'phase',
       'strand',
     ]
-    Object.keys(data.attributes).forEach(a => {
+    const dataAttributes = data.attributes || {}
+    Object.keys(dataAttributes).forEach(a => {
       let b = a.toLowerCase()
       if (defaultFields.includes(b)) {
         // add "suffix" to tag name if it already exists
         // reproduces behavior of NCList
         b += '2'
       }
-      if (data.attributes[a] !== null) {
-        let attr = data.attributes[a]
+      if (dataAttributes[a] !== null) {
+        let attr: string | string[] | undefined = dataAttributes[a]
         if (Array.isArray(attr) && attr.length === 1) {
           ;[attr] = attr
         }

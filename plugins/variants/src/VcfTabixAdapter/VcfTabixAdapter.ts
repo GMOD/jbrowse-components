@@ -20,7 +20,7 @@ import VcfFeature from './VcfFeature'
 export default class extends BaseFeatureDataAdapter {
   protected configured?: Promise<{
     vcf: TabixIndexedFile
-    parser: typeof VcfParser
+    parser: VcfParser
     filehandle: GenericFilehandle
   }>
 

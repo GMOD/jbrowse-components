@@ -1,4 +1,4 @@
-import { HtsgetFile } from '@gmod/bam'
+import { BamFile, HtsgetFile } from '@gmod/bam'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import BamAdapter from '../BamAdapter/BamAdapter'
@@ -11,7 +11,7 @@ export default class HtsgetBamAdapter extends BamAdapter {
       const bam = new HtsgetFile({
         baseUrl: htsgetBase,
         trackId: htsgetTrackId,
-      })
+      }) as unknown as BamFile
 
       const adapterConfig = readConfObject(this.config, 'sequenceAdapter')
       if (adapterConfig && this.getSubAdapter) {

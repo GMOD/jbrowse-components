@@ -4,7 +4,7 @@ reference sequence and a genes track.
 
 ```tsx
 import React from 'react'
-import 'fontsource-roboto'
+import '@fontsource/roboto'
 import {
   createViewState,
   JBrowseLinearGenomeView,

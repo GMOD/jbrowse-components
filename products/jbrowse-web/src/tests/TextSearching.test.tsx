@@ -1,4 +1,3 @@
-// library
 import React from 'react'
 import {
   screen,
@@ -8,12 +7,10 @@ import {
   render,
 } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
-
-// locals
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { setup, generateReadBuffer, getPluginManager } from './util'
-import JBrowse from '../JBrowse'
+
+import { setup, generateReadBuffer, getPluginManager, JBrowse } from './util'
 import jb1_config from '../../test_data/volvox/volvox_jb1_text_config.json'
 
 setup()
@@ -115,7 +112,7 @@ test('opens a dialog with multiple results', async () => {
   fireEvent.mouseDown(input)
   fireEvent.change(input, { target: { value: 'seg02' } })
   fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
-  await screen.findByText('Search Results', {}, { timeout: 10000 })
+  await screen.findByText('Search results', {}, { timeout: 10000 })
   // @ts-ignore
   expect(state.session.views[0].searchResults.length).toBeGreaterThan(0)
 }, 30000)
@@ -138,7 +135,7 @@ test('opens a dialog with multiple results with jb1 text search adapter results'
   fireEvent.mouseDown(input)
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
-  await screen.findByText('Search Results', {}, { timeout: 10000 })
+  await screen.findByText('Search results', {}, { timeout: 10000 })
   // @ts-ignore
   expect(state.session.views[0].searchResults.length).toBeGreaterThan(0)
 }, 30000)

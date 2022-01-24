@@ -3,12 +3,11 @@ import { Instance, types } from 'mobx-state-tree'
 import { getConf } from '../../configuration'
 import { RemoteFileWithRangeCache } from '../../util/io'
 import { ElementId } from '../../util/types/mst'
-import { GenericFilehandle } from 'generic-filehandle'
 import {
   FileLocation,
   UriLocation,
   AnyReactComponentType,
-} from '@jbrowse/core/util/types'
+} from '../../util/types'
 
 export const InternetAccount = types
   .model('InternetAccount', {
@@ -43,7 +42,7 @@ export const InternetAccount = types
     },
   }))
   .actions(self => ({
-    openLocation(location: UriLocation): GenericFilehandle {
+    openLocation(location: UriLocation) {
       return new RemoteFileWithRangeCache(String(location.uri))
     },
     async getPreAuthorizationInformation(location: UriLocation) {
