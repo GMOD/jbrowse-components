@@ -61,9 +61,14 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       encoding: 'utf8',
       ...opts,
     })
-    const pafRecords: PafRecord[] = []
-    text.split('\n').forEach((line: string, index: number) => {
-      if (line.length) {
+
+    // mashmap produces PAF-like data that is space separated instead of tab
+    const hasTab = text.indexOf('\t')
+    const splitChar = hasTab !== -1 ? '\t' : ' '
+    return text
+      .split('\n')
+      .filter(line => !!line)
+      .map(line => {
         const [
           chr1,
           ,
@@ -78,7 +83,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
           blockLen,
           mappingQual,
           ...fields
-        ] = line.split('\t')
+        ] = line.split(splitChar)
 
         const rest = Object.fromEntries(
           fields.map(field => {
@@ -89,7 +94,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
           }),
         )
 
-        pafRecords[index] = {
+        return {
           records: [
             { refName: chr1, start: +start1, end: +end1 },
             { refName: chr2, start: +start2, end: +end2 },
@@ -101,10 +106,8 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             mappingQual: +mappingQual,
             ...rest,
           },
-        }
-      }
-    })
-    return pafRecords
+        } as PafRecord
+      })
   }
 
   async hasDataForRefName() {
