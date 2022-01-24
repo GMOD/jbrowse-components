@@ -295,31 +295,6 @@ test('test stats estimation, zoom in to see', async () => {
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup'))
 
   await findAllByText(/Requested too much data/, {}, delay)
-  const buttons = await findAllByText(/Force Load/, {}, delay)
-  fireEvent.click(await findByTestId('zoom_in'))
-
-  expectCanvasMatch(
-    await findByTestId(
-      'prerendered_canvas_{volvox}ctgA:1..15,263-0',
-      {},
-      delay,
-    ),
-  )
-}, 30000)
-
-test('test stats estimation', async () => {
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
-  const { findByText, findAllByText, findByTestId } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
-  await findByText('Help')
-  state.session.views[0].setNewView(25.07852564102564, 283)
-
-  // load track
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup'))
-
-  await findAllByText(/Requested too much data/, {}, delay)
   fireEvent.click(await findByTestId('zoom_in'))
 
   expectCanvasMatch(
@@ -349,7 +324,7 @@ test('test stats estimation, force load to see', async () => {
 
   expectCanvasMatch(
     await findByTestId(
-      'prerendered_canvas_{volvox}ctgA:1..15,263-0',
+      'prerendered_canvas_{volvox}ctgA:1..20,063-0',
       {},
       delay,
     ),
