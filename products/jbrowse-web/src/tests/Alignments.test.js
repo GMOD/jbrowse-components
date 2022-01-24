@@ -31,257 +31,327 @@ beforeEach(() => {
 
 const delay = { timeout: 20000 }
 
-describe('alignments track', () => {
-  it('opens an alignments track', async () => {
-    const pluginManager = getPluginManager()
-    const state = pluginManager.rootModel
-    const { findByTestId, findByText, findAllByTestId } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
-    await findByText('Help')
-    state.session.views[0].setNewView(5, 100)
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
-    )
+test('opens an alignments track', async () => {
+  const pluginManager = getPluginManager()
+  const state = pluginManager.rootModel
+  const { findByTestId, findByText, findAllByTestId } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+  await findByText('Help')
+  state.session.views[0].setNewView(5, 100)
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
+  )
 
-    const { findByTestId: findByTestId1 } = within(
-      await findByTestId('Blockset-pileup', {}, delay),
-    )
-    expectCanvasMatch(
-      await findByTestId1(
-        'prerendered_canvas_{volvox}ctgA:1..4,000-0',
-        {},
-        delay,
-      ),
-    )
-
-    const { findByTestId: findByTestId2 } = within(
-      await findByTestId('Blockset-snpcoverage', {}, delay),
-    )
-    expectCanvasMatch(
-      await findByTestId2(
-        'prerendered_canvas_{volvox}ctgA:1..4,000-0',
-        {},
-        delay,
-      ),
-    )
-
-    const track = await findAllByTestId('pileup_overlay_canvas')
-    fireEvent.mouseMove(track[0], { clientX: 200, clientY: 20 })
-    fireEvent.click(track[0], { clientX: 200, clientY: 40 })
-    fireEvent.mouseDown(track[0], { clientX: 200, clientY: 20 })
-    fireEvent.mouseMove(track[0], { clientX: 300, clientY: 20 })
-    fireEvent.mouseUp(track[0], { clientX: 300, clientY: 20 })
-    fireEvent.mouseMove(track[0], { clientX: -100, clientY: -100 })
-
-    // this is to confirm a alignment detail widget opened
-    await findByTestId('alignment-side-drawer')
-  }, 20000)
-
-  // Note: tracks with assembly volvox don't have much soft clipping
-  it('opens the track menu and enables soft clipping', async () => {
-    const pluginManager = getPluginManager()
-    const state = pluginManager.rootModel
-    const { findByTestId, findByText } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
-    await findByText('Help')
-    state.session.views[0].setNewView(0.02, 142956)
-
-    // load track
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox-long-reads-sv-bam', {}, delay),
-    )
-    await findByTestId(
-      'display-volvox-long-reads-sv-bam-LinearAlignmentsDisplay',
+  const { findByTestId: findByTestId1 } = within(
+    await findByTestId('Blockset-pileup', {}, delay),
+  )
+  expectCanvasMatch(
+    await findByTestId1(
+      'prerendered_canvas_{volvox}ctgA:1..4,000-0',
       {},
       delay,
-    )
-    expect(state.session.views[0].tracks[0]).toBeTruthy()
+    ),
+  )
 
-    // opens the track menu
-    fireEvent.click(await findByTestId('track_menu_icon'))
-    fireEvent.click(await findByText('Show soft clipping'))
-
-    // wait for block to rerender
-    const { findByTestId: findByTestId1 } = within(
-      await findByTestId('Blockset-pileup'),
-    )
-
-    expectCanvasMatch(
-      await findByTestId1(
-        'prerendered_canvas_softclipped_{volvox}ctgA:2,849..2,864-0',
-        {},
-        delay,
-      ),
-    )
-  }, 30000)
-
-  it('selects a sort, updates object and layout', async () => {
-    const pluginManager = getPluginManager()
-    const state = pluginManager.rootModel
-    const { findByTestId, findByText, findAllByTestId } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
-    await findByText('Help')
-    state.session.views[0].setNewView(0.02, 2086500)
-
-    // load track
-    fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
-    await findByTestId(
-      'display-volvox-long-reads-cram-LinearAlignmentsDisplay',
+  const { findByTestId: findByTestId2 } = within(
+    await findByTestId('Blockset-snpcoverage', {}, delay),
+  )
+  expectCanvasMatch(
+    await findByTestId2(
+      'prerendered_canvas_{volvox}ctgA:1..4,000-0',
       {},
       delay,
-    )
-    expect(state.session.views[0].tracks[0]).toBeTruthy()
+    ),
+  )
 
-    // opens the track menu
-    const trackMenu = await findByTestId('track_menu_icon')
+  const track = await findAllByTestId('pileup_overlay_canvas')
+  fireEvent.mouseMove(track[0], { clientX: 200, clientY: 20 })
+  fireEvent.click(track[0], { clientX: 200, clientY: 40 })
+  fireEvent.mouseDown(track[0], { clientX: 200, clientY: 20 })
+  fireEvent.mouseMove(track[0], { clientX: 300, clientY: 20 })
+  fireEvent.mouseUp(track[0], { clientX: 300, clientY: 20 })
+  fireEvent.mouseMove(track[0], { clientX: -100, clientY: -100 })
 
-    fireEvent.click(trackMenu)
-    fireEvent.click(await findByText('Sort by'))
-    fireEvent.click(await findByText('Read strand'))
+  // this is to confirm a alignment detail widget opened
+  await findByTestId('alignment-side-drawer')
+}, 20000)
 
-    // wait for pileup track to render with sort
-    await findAllByTestId('pileup-Read strand', {}, delay)
+// Note: tracks with assembly volvox don't have much soft clipping
+test('opens the track menu and enables soft clipping', async () => {
+  const pluginManager = getPluginManager()
+  const state = pluginManager.rootModel
+  const { findByTestId, findByText } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+  await findByText('Help')
+  state.session.views[0].setNewView(0.02, 142956)
 
-    const { findByTestId: findByTestId1 } = within(
-      await findByTestId('Blockset-pileup'),
-    )
+  // load track
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox-long-reads-sv-bam', {}, delay),
+  )
+  await findByTestId(
+    'display-volvox-long-reads-sv-bam-LinearAlignmentsDisplay',
+    {},
+    delay,
+  )
+  expect(state.session.views[0].tracks[0]).toBeTruthy()
 
-    expectCanvasMatch(
-      await findByTestId1(
-        'prerendered_canvas_{volvox}ctgA:41,729..41,744-0',
-        {},
-        delay,
-      ),
-    )
-  }, 35000)
+  // opens the track menu
+  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByText('Show soft clipping'))
 
-  it('selects a color, updates object and layout', async () => {
-    const pluginManager = getPluginManager()
-    const state = pluginManager.rootModel
-    const { findByTestId, findByText, findAllByTestId } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
-    await findByText('Help')
-    state.session.views[0].setNewView(0.02, 2086500)
+  // wait for block to rerender
+  const { findByTestId: findByTestId1 } = within(
+    await findByTestId('Blockset-pileup'),
+  )
 
-    // load track
-    fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
-    await findByTestId(
-      'display-volvox-long-reads-cram-LinearAlignmentsDisplay',
+  expectCanvasMatch(
+    await findByTestId1(
+      'prerendered_canvas_softclipped_{volvox}ctgA:2,849..2,864-0',
       {},
       delay,
-    )
-    expect(state.session.views[0].tracks[0]).toBeTruthy()
+    ),
+  )
+}, 30000)
 
-    // opens the track menu and turns on soft clipping
-    fireEvent.click(await findByTestId('track_menu_icon'))
-    fireEvent.click(await findByText('Color scheme'))
-    fireEvent.click(await findByText('Strand'))
+test('selects a sort, updates object and layout', async () => {
+  const pluginManager = getPluginManager()
+  const state = pluginManager.rootModel
+  const { findByTestId, findByText, findAllByTestId } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+  await findByText('Help')
+  state.session.views[0].setNewView(0.02, 2086500)
 
-    // wait for pileup track to render with color
-    await findAllByTestId('pileup-strand', {}, delay)
+  // load track
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
+  await findByTestId(
+    'display-volvox-long-reads-cram-LinearAlignmentsDisplay',
+    {},
+    delay,
+  )
+  expect(state.session.views[0].tracks[0]).toBeTruthy()
 
-    // wait for pileup track to render
-    const { findByTestId: findByTestId1 } = within(
-      await findByTestId('Blockset-pileup'),
-    )
-    expectCanvasMatch(
-      await findByTestId1(
-        'prerendered_canvas_{volvox}ctgA:41,729..41,744-0',
-        {},
-        delay,
-      ),
-    )
-  }, 30000)
+  // opens the track menu
+  const trackMenu = await findByTestId('track_menu_icon')
 
-  it('colors by tag, updates object and layout', async () => {
-    const pluginManager = getPluginManager()
-    const state = pluginManager.rootModel
-    const { findByTestId, findByText, findAllByTestId } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
-    await findByText('Help')
-    state.session.views[0].setNewView(0.465, 85055)
+  fireEvent.click(trackMenu)
+  fireEvent.click(await findByText('Sort by'))
+  fireEvent.click(await findByText('Read strand'))
 
-    // load track
-    fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram'))
-    await findByTestId('display-volvox_cram-LinearAlignmentsDisplay', {}, delay)
-    expect(state.session.views[0].tracks[0]).toBeTruthy()
+  // wait for pileup track to render with sort
+  await findAllByTestId('pileup-Read strand', {}, delay)
 
-    // opens the track menu
-    const trackMenu = await findByTestId('track_menu_icon')
+  const { findByTestId: findByTestId1 } = within(
+    await findByTestId('Blockset-pileup'),
+  )
 
-    // colors by HP tag
-    fireEvent.click(trackMenu)
-    fireEvent.click(await findByText('Color scheme'))
-    fireEvent.click(await findByText('Color by tag...'))
-    fireEvent.change(await findByTestId('color-tag-name-input'), {
-      target: { value: 'HP' },
-    })
-    fireEvent.click(await findByText('Submit'))
-    // wait for pileup track to render with color
-    await findAllByTestId('pileup-tagHP', {}, delay)
+  expectCanvasMatch(
+    await findByTestId1(
+      'prerendered_canvas_{volvox}ctgA:41,729..41,744-0',
+      {},
+      delay,
+    ),
+  )
+}, 35000)
 
-    // wait for pileup track to render
-    const { findByTestId: findByTestId1 } = within(
-      await findByTestId('Blockset-pileup'),
-    )
+test('selects a color, updates object and layout', async () => {
+  const pluginManager = getPluginManager()
+  const state = pluginManager.rootModel
+  const { findByTestId, findByText, findAllByTestId } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+  await findByText('Help')
+  state.session.views[0].setNewView(0.02, 2086500)
 
-    expectCanvasMatch(
-      await findByTestId1(
-        'prerendered_canvas_{volvox}ctgA:39,805..40,176-0',
-        {},
-        delay,
-      ),
-    )
-  }, 30000)
+  // load track
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
+  await findByTestId(
+    'display-volvox-long-reads-cram-LinearAlignmentsDisplay',
+    {},
+    delay,
+  )
+  expect(state.session.views[0].tracks[0]).toBeTruthy()
 
-  it('test that bam with small max height displays message', async () => {
-    const pluginManager = getPluginManager()
-    const { findByTestId, findAllByText } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_bam_small_max_height'),
-    )
+  // opens the track menu and turns on soft clipping
+  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByText('Color scheme'))
+  fireEvent.click(await findByText('Strand'))
 
-    await findAllByText('Max height reached', {}, delay)
-  }, 30000)
+  // wait for pileup track to render with color
+  await findAllByTestId('pileup-strand', {}, delay)
 
-  it('test snpcoverage doesnt count snpcoverage', async () => {
-    const pluginManager = getPluginManager()
-    const state = pluginManager.rootModel
-    const { findByText, findByTestId } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
-    await findByText('Help')
-    state.session.views[0].setNewView(0.03932, 67884.16536402702)
+  // wait for pileup track to render
+  const { findByTestId: findByTestId1 } = within(
+    await findByTestId('Blockset-pileup'),
+  )
+  expectCanvasMatch(
+    await findByTestId1(
+      'prerendered_canvas_{volvox}ctgA:41,729..41,744-0',
+      {},
+      delay,
+    ),
+  )
+}, 30000)
 
-    // load track
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox-long-reads-sv-cram'),
-    )
+test('colors by tag, updates object and layout', async () => {
+  const pluginManager = getPluginManager()
+  const state = pluginManager.rootModel
+  const { findByTestId, findByText, findAllByTestId } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+  await findByText('Help')
+  state.session.views[0].setNewView(0.465, 85055)
 
-    const { findByTestId: findByTestId1 } = within(
-      await findByTestId('Blockset-snpcoverage'),
-    )
+  // load track
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram'))
+  await findByTestId('display-volvox_cram-LinearAlignmentsDisplay', {}, delay)
+  expect(state.session.views[0].tracks[0]).toBeTruthy()
 
-    expectCanvasMatch(
-      await findByTestId1(
-        'prerendered_canvas_{volvox}ctgA:2,657..2,688-0',
-        {},
-        delay,
-      ),
-    )
-    expectCanvasMatch(
-      await findByTestId1(
-        'prerendered_canvas_{volvox}ctgA:2,689..2,720-0',
-        {},
-        delay,
-      ),
-    )
-  }, 30000)
-})
+  // opens the track menu
+  const trackMenu = await findByTestId('track_menu_icon')
+
+  // colors by HP tag
+  fireEvent.click(trackMenu)
+  fireEvent.click(await findByText('Color scheme'))
+  fireEvent.click(await findByText('Color by tag...'))
+  fireEvent.change(await findByTestId('color-tag-name-input'), {
+    target: { value: 'HP' },
+  })
+  fireEvent.click(await findByText('Submit'))
+  // wait for pileup track to render with color
+  await findAllByTestId('pileup-tagHP', {}, delay)
+
+  // wait for pileup track to render
+  const { findByTestId: findByTestId1 } = within(
+    await findByTestId('Blockset-pileup'),
+  )
+
+  expectCanvasMatch(
+    await findByTestId1(
+      'prerendered_canvas_{volvox}ctgA:39,805..40,176-0',
+      {},
+      delay,
+    ),
+  )
+}, 30000)
+
+test('test that bam with small max height displays message', async () => {
+  const pluginManager = getPluginManager()
+  const { findByTestId, findAllByText } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox_bam_small_max_height'),
+  )
+
+  await findAllByText('Max height reached', {}, delay)
+}, 30000)
+
+test('test snpcoverage doesnt count snpcoverage', async () => {
+  const pluginManager = getPluginManager()
+  const state = pluginManager.rootModel
+  const { findByText, findByTestId } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+  await findByText('Help')
+  state.session.views[0].setNewView(0.03932, 67884.16536402702)
+
+  // load track
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-sv-cram'))
+
+  const { findByTestId: findByTestId1 } = within(
+    await findByTestId('Blockset-snpcoverage'),
+  )
+
+  expectCanvasMatch(
+    await findByTestId1(
+      'prerendered_canvas_{volvox}ctgA:2,657..2,688-0',
+      {},
+      delay,
+    ),
+  )
+  expectCanvasMatch(
+    await findByTestId1(
+      'prerendered_canvas_{volvox}ctgA:2,689..2,720-0',
+      {},
+      delay,
+    ),
+  )
+}, 30000)
+
+test('test stats estimation, zoom in to see', async () => {
+  const pluginManager = getPluginManager()
+  const state = pluginManager.rootModel
+  const { findByText, findAllByText, findByTestId } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+  await findByText('Help')
+  state.session.views[0].setNewView(25.07852564102564, 283)
+
+  // load track
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup'))
+
+  await findAllByText(/Requested too much data/, {}, delay)
+  const buttons = await findAllByText(/Force Load/, {}, delay)
+  fireEvent.click(await findByTestId('zoom_in'))
+
+  expectCanvasMatch(
+    await findByTestId(
+      'prerendered_canvas_{volvox}ctgA:1..15,263-0',
+      {},
+      delay,
+    ),
+  )
+}, 30000)
+
+test('test stats estimation', async () => {
+  const pluginManager = getPluginManager()
+  const state = pluginManager.rootModel
+  const { findByText, findAllByText, findByTestId } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+  await findByText('Help')
+  state.session.views[0].setNewView(25.07852564102564, 283)
+
+  // load track
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup'))
+
+  await findAllByText(/Requested too much data/, {}, delay)
+  fireEvent.click(await findByTestId('zoom_in'))
+
+  expectCanvasMatch(
+    await findByTestId(
+      'prerendered_canvas_{volvox}ctgA:20,065..30,096-0',
+      {},
+      delay,
+    ),
+  )
+}, 30000)
+
+test('test stats estimation, force load to see', async () => {
+  const pluginManager = getPluginManager()
+  const state = pluginManager.rootModel
+  const { findByText, findAllByText, findByTestId } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+  await findByText('Help')
+  state.session.views[0].setNewView(25.07852564102564, 283)
+
+  // load track
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup'))
+
+  await findAllByText(/Requested too much data/, {}, delay)
+  const buttons = await findAllByText(/Force Load/, {}, delay)
+  fireEvent.click(buttons[0])
+
+  expectCanvasMatch(
+    await findByTestId(
+      'prerendered_canvas_{volvox}ctgA:1..15,263-0',
+      {},
+      delay,
+    ),
+  )
+}, 30000)

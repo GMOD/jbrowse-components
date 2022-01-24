@@ -540,7 +540,6 @@ export const BaseLinearDisplay = types
           self.currBpPerPx !== view.bpPerPx || !self.estimatedRegionStats,
         rpcDriverName: self.rpcDriverName,
         displayModel: self,
-        estimatedRegionStatsNotReady: !self.estimatedRegionStats,
         onFeatureClick(_: unknown, featureId: string | undefined) {
           const f = featureId || self.featureIdUnderMouse
           if (!f) {

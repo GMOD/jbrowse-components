@@ -175,7 +175,8 @@
             "uri": "volvox.2bit",
             "locationType": "UriLocation"
           }
-        }
+        },
+        "fetchSizeLimit": 1000
       },
       "displays": [
         {
