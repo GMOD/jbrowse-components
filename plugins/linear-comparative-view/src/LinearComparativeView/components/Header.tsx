@@ -39,13 +39,14 @@ const LinkViews = observer(({ model }: { model: LCV }) => {
 const Header = observer(
   ({ model, ExtraButtons }: { ExtraButtons?: React.ReactNode; model: LCV }) => {
     const classes = useStyles()
+    const anyShowHeaders = model.views.some(view => !view.hideHeader)
     return (
       <div className={classes.headerBar}>
         <LinkViews model={model} />
         {ExtraButtons}
-        {model.views.map(view => (
-          <SearchBox model={view} showHelp={false} />
-        ))}
+        {!anyShowHeaders
+          ? model.views.map(view => <SearchBox model={view} showHelp={false} />)
+          : null}
 
         <div className={classes.spacer} />
       </div>
