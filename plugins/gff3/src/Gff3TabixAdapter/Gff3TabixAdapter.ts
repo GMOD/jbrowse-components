@@ -257,9 +257,4 @@ export default class extends BaseFeatureDataAdapter {
 
   public freeResources(/* { region } */) {}
 
-  async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
-    // @ts-ignore
-    const bytes = await bytesForRegions(regions, this.gff.index)
-    return { bytes }
-  }
 }

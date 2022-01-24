@@ -163,7 +163,6 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       const hasData = await this.hasDataForRefName(region.refName, opts)
       checkAbortSignal(opts.signal)
       if (!hasData) {
-        // console.warn(`no data for ${region.refName}`)
         observer.complete()
       } else {
         this.getFeatures(region, opts)
@@ -198,7 +197,6 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
           const hasData = await this.hasDataForRefName(region.refName, opts)
           checkAbortSignal(opts.signal)
           if (!hasData) {
-            // console.warn(`no data for ${region.refName}`)
             observer.complete()
           } else {
             this.getFeatures(region, opts).subscribe(observer)
@@ -255,18 +253,17 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
 
   public async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
     const region = regions[0]
+    let lastTime = +Date.now()
     const statsFromInterval = async (length: number, expansionTime: number) => {
       const { start, end } = region
       const sampleCenter = start * 0.75 + end * 0.25
+      const query = {
+        ...region,
+        start: Math.max(0, Math.round(sampleCenter - length / 2)),
+        end: Math.min(Math.round(sampleCenter + length / 2), end),
+      }
 
-      const features = await this.getFeatures(
-        {
-          ...region,
-          start: Math.max(0, Math.round(sampleCenter - length / 2)),
-          end: Math.min(Math.round(sampleCenter + length / 2), end),
-        },
-        opts,
-      )
+      const features = await this.getFeatures(query, opts)
         .pipe(toArray())
         .toPromise()
 
@@ -287,11 +284,13 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       const refLen = region.end - region.start
       if (statsSampleFeatures >= 300 || interval * 2 > refLen) {
         return stats
-      } else if (expansionTime <= 4) {
-        expansionTime++
+      } else if (expansionTime <= 5000) {
+        let currTime = +Date.now()
+        expansionTime += currTime - lastTime
+        lastTime = currTime
         return statsFromInterval(interval * 2, expansionTime)
       } else {
-        console.error(
+        console.warn(
           "Stats estimation reached timeout, or didn't get enough features",
         )
         return { featureDensity: Infinity }
