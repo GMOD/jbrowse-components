@@ -6,7 +6,6 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { FileLocation, Region } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
-import { bytesForRegions } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'

@@ -4,7 +4,6 @@ import {
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
-import { bytesForRegions } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'

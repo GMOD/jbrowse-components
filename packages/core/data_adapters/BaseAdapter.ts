@@ -285,7 +285,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       if (statsSampleFeatures >= 300 || interval * 2 > refLen) {
         return stats
       } else if (expansionTime <= 5000) {
-        let currTime = +Date.now()
+        const currTime = +Date.now()
         expansionTime += currTime - lastTime
         lastTime = currTime
         return statsFromInterval(interval * 2, expansionTime)
