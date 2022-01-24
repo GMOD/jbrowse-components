@@ -105,7 +105,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
               </a>{' '}
               file for the dotplot view. Note that the first assembly should be
               the left column of the PAF and the second assembly should be the
-              right column
+              right column. PAF-like files from MashMap (.out) are also allowed
             </p>
             <Grid container justifyContent="center">
               <Grid item>

@@ -137,7 +137,8 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
             </a>{' '}
             file for the linear synteny view. Note that the first assembly
             should be the left column of the PAF and the second assembly should
-            be the right column
+            be the right column. PAF-like files from MashMap (.out) are also
+            allowed
           </Typography>
           <Grid item>
             <FileSelector
