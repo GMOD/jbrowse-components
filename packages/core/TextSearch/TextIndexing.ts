@@ -2,10 +2,10 @@
 import fs from 'fs'
 import path from 'path'
 import { cwd } from 'process'
-// import { Readable } from 'stream'
+import { Readable } from 'stream'
 import { indexGff3 } from './types/gff3Adapter'
 import { indexVcf } from './types/vcfAdapter'
-// import { ixIxxStream } from 'ixixx'
+import { ixIxxStream } from 'ixixx'
 import { Track, Config } from './util'
 
 function readConf(confFilePath: string) {
@@ -38,18 +38,18 @@ export async function indexDriver(
   const currentTracks = config.tracks || []
   console.log('current tracks', currentTracks)
   // TODO: create a readable
-  //   const readable = Readable.from(
-  //     indexFiles(
-  //       currentTracks,
-  //       attributes || [],
-  //       outDir,
-  //       quiet || true,
-  //       exclude || [],
-  //     ),
-  //   )
-  //   console.log('readable', readable)
+  const readable = Readable.from(
+    indexFiles(
+      currentTracks,
+      attributes || [],
+      outDir,
+      quiet || true,
+      exclude || [],
+    ),
+  )
+  console.log('readable', readable)
   // TODO: create an ixIxxStream
-  //   const ixIxxStream = await runIxIxx(readable, idxLocation || '', name || '')
+  const ixIxxStream = await runIxIxx(readable, idxLocation || '', name || '')
   // TODO: we can create a metafile here
   return
 }
@@ -79,9 +79,9 @@ async function* indexFiles(
   }
 }
 
-// function runIxIxx(readStream: Readable, idxLocation: string, name: string) {
-//   const ixFilename = path.join(idxLocation, 'trix', `${name}.ix`)
-//   const ixxFilename = path.join(idxLocation, 'trix', `${name}.ixx`)
+function runIxIxx(readStream: Readable, idxLocation: string, name: string) {
+  const ixFilename = path.join(idxLocation, 'trix', `${name}.ix`)
+  const ixxFilename = path.join(idxLocation, 'trix', `${name}.ixx`)
 
-//   return ixIxxStream(readStream, ixFilename, ixxFilename)
-// }
+  return ixIxxStream(readStream, ixFilename, ixxFilename)
+}
