@@ -19,12 +19,12 @@ export default ConfigurationSchema(
     posColor: {
       type: 'color',
       description: 'the color for forward alignments',
-      defaultValue: 'darkblue',
+      defaultValue: 'purple',
     },
     negColor: {
       type: 'color',
       description: 'the color for reverse alignments',
-      defaultValue: 'red',
+      defaultValue: 'blue',
     },
     lineWidth: {
       type: 'number',
