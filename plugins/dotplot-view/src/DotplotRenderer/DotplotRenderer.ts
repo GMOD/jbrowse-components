@@ -35,9 +35,10 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const canvas = createCanvas(Math.ceil(width * scale), height * scale)
     const ctx = canvas.getContext('2d')
     const lineWidth = readConfObject(config, 'lineWidth')
+    const posColor = readConfObject(config, 'posColor')
+    const negColor = readConfObject(config, 'negColor')
     ctx.lineWidth = lineWidth
     ctx.scale(scale, scale)
-    ctx.fillStyle = readConfObject(config, 'color')
     const [hview, vview] = views
     const db1 = hview.dynamicBlocks.contentBlocks[0].offsetPx
     const db2 = vview.dynamicBlocks.contentBlocks[0].offsetPx
@@ -50,9 +51,11 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const mate = feature.get('mate')
       const mateRef = mate.refName
       const color = readConfObject(config, 'color', { feature })
-      ctx.fillStyle = color
-      ctx.strokeStyle = color
+      ctx.fillStyle = posColor
+      ctx.strokeStyle = posColor
       if (strand === -1) {
+        ctx.fillStyle = negColor
+        ctx.strokeStyle = negColor
         ;[end, start] = [start, end]
       }
       const b10 = hview.bpToPx({ refName, coord: start })
