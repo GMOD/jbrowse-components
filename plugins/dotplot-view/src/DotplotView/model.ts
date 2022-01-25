@@ -441,6 +441,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           }),
         )
       },
+      squareView() {
+        const bpPerPxs = self.views.map(v => v.bpPerPx)
+        const avg = bpPerPxs.reduce((a, b) => a + b, 0) / bpPerPxs.length
+        self.views.forEach(view => {
+          const center = view.pxToBp(view.width / 2)
+          view.offsetPx = view.offsetPx
+          view.bpPerPx = avg
+          view.centerAt(center.coord, center.refName, center.index)
+        })
+      },
     }))
     .views(self => ({
       menuItems() {

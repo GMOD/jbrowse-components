@@ -325,6 +325,22 @@ const Base1DView = types
       )
     },
 
+    scrollTo(offsetPx: number) {
+      const newOffsetPx = clamp(offsetPx, self.minOffset, self.maxOffset)
+      self.offsetPx = newOffsetPx
+      return newOffsetPx
+    },
+    centerAt(bp: number, refName: string, regionIndex: number) {
+      const centerPx = self.bpToPx({
+        refName,
+        coord: bp,
+        regionNumber: regionIndex,
+      })
+      if (centerPx) {
+        this.scrollTo(Math.round(centerPx - self.width / 2))
+      }
+    },
+
     scroll(distance: number) {
       const oldOffsetPx = self.offsetPx
       // the scroll is clamped to keep the linear genome on the main screen
