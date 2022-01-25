@@ -19,17 +19,17 @@ export default ConfigurationSchema(
     posColor: {
       type: 'color',
       description: 'the color for forward alignments',
-      defaultValue: 'purple',
+      defaultValue: 'blue',
     },
     negColor: {
       type: 'color',
       description: 'the color for reverse alignments',
-      defaultValue: 'blue',
+      defaultValue: 'red',
     },
     lineWidth: {
       type: 'number',
       description: 'width of the lines to be drawn',
-      defaultValue: 2,
+      defaultValue: 1.5,
     },
   },
   { explicitlyTyped: true },

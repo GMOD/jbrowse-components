@@ -9,11 +9,13 @@ const useStyles = makeStyles(() => ({
     gridColumn: '1/2',
     gridRow: '1/2',
     pointerEvents: 'none',
+    userSelect: 'none',
   },
   htext: {
     gridColumn: '2/2',
     gridRow: '2/2',
     pointerEvents: 'none',
+    userSelect: 'none',
   },
   majorTickLabel: {
     fontSize: '11px',
