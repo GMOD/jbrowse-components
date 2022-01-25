@@ -1055,10 +1055,10 @@ export function viewBpToPx({
     }
 
     // add the interRegionPaddingWidth if the boundary is in the screen
-    // e.g. offset>0 && offset<width
+    // e.g. offset>=0 && offset<width
     if (
-      region.end - region.start > minimumBlockBp &&
-      offsetBp / self.bpPerPx > 0 &&
+      len > minimumBlockBp &&
+      offsetBp / self.bpPerPx >= 0 &&
       offsetBp / self.bpPerPx < self.width
     ) {
       offsetBp += len + interRegionPaddingBp
@@ -1067,7 +1067,6 @@ export function viewBpToPx({
     }
     return false
   })
-
   const foundRegion = self.displayedRegions[index]
   if (foundRegion) {
     return {

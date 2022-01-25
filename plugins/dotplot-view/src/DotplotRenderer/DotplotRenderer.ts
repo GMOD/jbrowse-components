@@ -36,14 +36,28 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const canvas = createCanvas(Math.ceil(width * scale), height * scale)
     const ctx = canvas.getContext('2d')
     const lineWidth = readConfObject(config, 'lineWidth')
-    const posColor = readConfObject(config, 'posColor')
-    const negColor = readConfObject(config, 'negColor')
+    const color = readConfObject(config, 'color')
     ctx.lineWidth = lineWidth
     ctx.scale(scale, scale)
     const [hview, vview] = views
     const db1 = hview.dynamicBlocks.contentBlocks[0].offsetPx
     const db2 = vview.dynamicBlocks.contentBlocks[0].offsetPx
 
+    // we operate on snapshots of these attributes of the hview/vview because
+    // it is significantly faster than accessing the mobx objects
+    const { bpPerPx: hBpPerPx } = hview
+    const { bpPerPx: vBpPerPx } = vview
+
+    const hvsnap = {
+      ...getSnapshot(hview),
+      width: hview.width,
+    }
+    const vvsnap = {
+      ...getSnapshot(vview),
+      width: vview.width,
+    }
+    ctx.fillStyle = color
+    ctx.strokeStyle = color
     hview.features?.forEach(feature => {
       let start = feature.get('start')
       let end = feature.get('end')
@@ -51,23 +65,11 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const refName = feature.get('refName')
       const mate = feature.get('mate')
       const mateRef = mate.refName
-      ctx.fillStyle = posColor
-      ctx.strokeStyle = posColor
+
       if (strand === -1) {
-        ctx.fillStyle = negColor
-        ctx.strokeStyle = negColor
         ;[end, start] = [start, end]
       }
-      const hvsnap = {
-        ...getSnapshot(hview),
-        interRegionPaddingWidth: hview.interRegionPaddingWidth,
-        width: hview.width,
-      }
-      const vvsnap = {
-        ...getSnapshot(vview),
-        interRegionPaddingWidth: vview.interRegionPaddingWidth,
-        width: vview.width,
-      }
+
       const b10 = viewBpToPx({
         self: hvsnap,
         refName,
@@ -120,12 +122,12 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
               const prevY = currY
 
               if (op === 'M' || op === '=' || op === 'X') {
-                currX += (val / hview.bpPerPx) * strand
-                currY += val / vview.bpPerPx
+                currX += (val / hBpPerPx) * strand
+                currY += val / vBpPerPx
               } else if (op === 'D' || op === 'N') {
-                currX += (val / hview.bpPerPx) * strand
+                currX += (val / hBpPerPx) * strand
               } else if (op === 'I') {
-                currY += val / vview.bpPerPx
+                currY += val / vBpPerPx
               }
               ctx.moveTo(prevX, height - prevY)
               ctx.lineTo(currX, height - currY)
