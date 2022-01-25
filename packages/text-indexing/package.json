@@ -12,7 +12,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/GMOD/jbrowse-components.git",
-    "directory": "packages/development-tools"
+    "directory": "packages/text-indexing"
   },
   "author": "JBrowse Team",
   "main": "dist/index.js",
