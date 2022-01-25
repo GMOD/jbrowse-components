@@ -282,7 +282,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       expansionTime: number,
     ): Promise<Stats> => {
       const refLen = region.end - region.start
-      if (statsSampleFeatures >= 300 || interval * 2 > refLen) {
+      if (statsSampleFeatures >= 70 || interval * 2 > refLen) {
         return stats
       } else if (expansionTime <= 5000) {
         const currTime = +Date.now()
@@ -297,7 +297,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       }
     }
 
-    return statsFromInterval(100, 0)
+    return statsFromInterval(1000, 0)
   }
 }
 
