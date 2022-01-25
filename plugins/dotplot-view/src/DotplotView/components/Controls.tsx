@@ -2,7 +2,7 @@ import React from 'react'
 
 import { IconButton, makeStyles } from '@material-ui/core'
 
-//icons
+// icons
 import ZoomOut from '@material-ui/icons/ZoomOut'
 import ZoomIn from '@material-ui/icons/ZoomIn'
 import ArrowUp from '@material-ui/icons/KeyboardArrowUp'
