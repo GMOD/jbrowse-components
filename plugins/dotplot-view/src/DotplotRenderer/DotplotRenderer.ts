@@ -3,6 +3,7 @@ import {
   createCanvas,
   createImageBitmap,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { viewBpToPx } from '@jbrowse/core/util'
 import { getSnapshot, Instance } from 'mobx-state-tree'
 import ComparativeServerSideRendererType, {
   RenderArgsDeserialized as ComparativeRenderArgsDeserialized,
@@ -20,67 +21,6 @@ export interface RenderArgsDeserialized
   width: number
   highResolutionScaling: number
   view: { hview: Dim; vview: Dim }
-}
-
-function bpToPx({
-  refName,
-  coord,
-  regionNumber,
-  self,
-}: {
-  refName: string
-  coord: number
-  regionNumber?: number
-  self: {
-    bpPerPx: number
-    interRegionPaddingWidth: number
-    minimumBlockWidth: number
-    width: number
-    displayedRegions: {
-      start: number
-      end: number
-      refName: string
-      reversed: boolean
-    }[]
-  }
-}) {
-  let offsetBp = 0
-
-  const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
-  const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
-  const index = self.displayedRegions.findIndex((region, idx) => {
-    const len = region.end - region.start
-    if (
-      refName === region.refName &&
-      coord >= region.start &&
-      coord <= region.end
-    ) {
-      if (regionNumber ? regionNumber === idx : true) {
-        offsetBp += region.reversed ? region.end - coord : coord - region.start
-        return true
-      }
-    }
-
-    // add the interRegionPaddingWidth if the boundary is in the screen
-    // e.g. offset>0 && offset<width
-    if (
-      region.end - region.start > minimumBlockBp &&
-      offsetBp / self.bpPerPx > 0 &&
-      offsetBp / self.bpPerPx < self.width
-    ) {
-      offsetBp += len + interRegionPaddingBp
-    } else {
-      offsetBp += len
-    }
-    return false
-  })
-
-  const foundRegion = self.displayedRegions[index]
-  if (foundRegion) {
-    return Math.round(offsetBp / self.bpPerPx)
-  }
-
-  return undefined
 }
 
 export default class DotplotRenderer extends ComparativeServerSideRendererType {
@@ -128,10 +68,26 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         interRegionPaddingWidth: vview.interRegionPaddingWidth,
         width: vview.width,
       }
-      const b10 = bpToPx({ self: hvsnap, refName, coord: start })
-      const b20 = bpToPx({ self: hvsnap, refName, coord: end })
-      const e10 = bpToPx({ self: vvsnap, refName: mateRef, coord: mate.start })
-      const e20 = bpToPx({ self: vvsnap, refName: mateRef, coord: mate.end })
+      const b10 = viewBpToPx({
+        self: hvsnap,
+        refName,
+        coord: start,
+      })?.offsetPx
+      const b20 = viewBpToPx({
+        self: hvsnap,
+        refName,
+        coord: end,
+      })?.offsetPx
+      const e10 = viewBpToPx({
+        self: vvsnap,
+        refName: mateRef,
+        coord: mate.start,
+      })?.offsetPx
+      const e20 = viewBpToPx({
+        self: vvsnap,
+        refName: mateRef,
+        coord: mate.end,
+      })?.offsetPx
       if (
         b10 !== undefined &&
         b20 !== undefined &&
