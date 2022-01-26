@@ -3,7 +3,8 @@ import {
   createCanvas,
   createImageBitmap,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { Instance } from 'mobx-state-tree'
+import { viewBpToPx } from '@jbrowse/core/util'
+import { getSnapshot, Instance } from 'mobx-state-tree'
 import ComparativeServerSideRendererType, {
   RenderArgsDeserialized as ComparativeRenderArgsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
@@ -35,13 +36,28 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const canvas = createCanvas(Math.ceil(width * scale), height * scale)
     const ctx = canvas.getContext('2d')
     const lineWidth = readConfObject(config, 'lineWidth')
+    const color = readConfObject(config, 'color')
     ctx.lineWidth = lineWidth
     ctx.scale(scale, scale)
-    ctx.fillStyle = readConfObject(config, 'color')
     const [hview, vview] = views
     const db1 = hview.dynamicBlocks.contentBlocks[0].offsetPx
     const db2 = vview.dynamicBlocks.contentBlocks[0].offsetPx
 
+    // we operate on snapshots of these attributes of the hview/vview because
+    // it is significantly faster than accessing the mobx objects
+    const { bpPerPx: hBpPerPx } = hview
+    const { bpPerPx: vBpPerPx } = vview
+
+    const hvsnap = {
+      ...getSnapshot(hview),
+      width: hview.width,
+    }
+    const vvsnap = {
+      ...getSnapshot(vview),
+      width: vview.width,
+    }
+    ctx.fillStyle = color
+    ctx.strokeStyle = color
     hview.features?.forEach(feature => {
       let start = feature.get('start')
       let end = feature.get('end')
@@ -49,16 +65,31 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const refName = feature.get('refName')
       const mate = feature.get('mate')
       const mateRef = mate.refName
-      const color = readConfObject(config, 'color', { feature })
-      ctx.fillStyle = color
-      ctx.strokeStyle = color
+
       if (strand === -1) {
         ;[end, start] = [start, end]
       }
-      const b10 = hview.bpToPx({ refName, coord: start })
-      const b20 = hview.bpToPx({ refName, coord: end })
-      const e10 = vview.bpToPx({ refName: mateRef, coord: mate.start })
-      const e20 = vview.bpToPx({ refName: mateRef, coord: mate.end })
+
+      const b10 = viewBpToPx({
+        self: hvsnap,
+        refName,
+        coord: start,
+      })?.offsetPx
+      const b20 = viewBpToPx({
+        self: hvsnap,
+        refName,
+        coord: end,
+      })?.offsetPx
+      const e10 = viewBpToPx({
+        self: vvsnap,
+        refName: mateRef,
+        coord: mate.start,
+      })?.offsetPx
+      const e20 = viewBpToPx({
+        self: vvsnap,
+        refName: mateRef,
+        coord: mate.end,
+      })?.offsetPx
       if (
         b10 !== undefined &&
         b20 !== undefined &&
@@ -91,12 +122,12 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
               const prevY = currY
 
               if (op === 'M' || op === '=' || op === 'X') {
-                currX += (val / hview.bpPerPx) * strand
-                currY += val / vview.bpPerPx
+                currX += (val / hBpPerPx) * strand
+                currY += val / vBpPerPx
               } else if (op === 'D' || op === 'N') {
-                currX += (val / hview.bpPerPx) * strand
+                currX += (val / hBpPerPx) * strand
               } else if (op === 'I') {
-                currY += val / vview.bpPerPx
+                currY += val / vBpPerPx
               }
               ctx.moveTo(prevX, height - prevY)
               ctx.lineTo(currX, height - currY)

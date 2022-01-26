@@ -1014,3 +1014,66 @@ export function hashCode(str: string) {
 export function objectHash(obj: Record<string, any>) {
   return `${hashCode(JSON.stringify(obj))}`
 }
+
+export function viewBpToPx({
+  refName,
+  coord,
+  regionNumber,
+  self,
+}: {
+  refName: string
+  coord: number
+  regionNumber?: number
+  self: {
+    bpPerPx: number
+    interRegionPaddingWidth: number
+    minimumBlockWidth: number
+    width: number
+    displayedRegions: {
+      start: number
+      end: number
+      refName: string
+      reversed: boolean
+    }[]
+  }
+}) {
+  let offsetBp = 0
+
+  const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
+  const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
+  const index = self.displayedRegions.findIndex((region, idx) => {
+    const len = region.end - region.start
+    if (
+      refName === region.refName &&
+      coord >= region.start &&
+      coord <= region.end
+    ) {
+      if (regionNumber ? regionNumber === idx : true) {
+        offsetBp += region.reversed ? region.end - coord : coord - region.start
+        return true
+      }
+    }
+
+    // add the interRegionPaddingWidth if the boundary is in the screen
+    // e.g. offset>=0 && offset<width
+    if (
+      len > minimumBlockBp &&
+      offsetBp / self.bpPerPx >= 0 &&
+      offsetBp / self.bpPerPx < self.width
+    ) {
+      offsetBp += len + interRegionPaddingBp
+    } else {
+      offsetBp += len
+    }
+    return false
+  })
+  const foundRegion = self.displayedRegions[index]
+  if (foundRegion) {
+    return {
+      index,
+      offsetPx: Math.round(offsetBp / self.bpPerPx),
+    }
+  }
+
+  return undefined
+}
