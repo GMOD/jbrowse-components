@@ -14,6 +14,7 @@ import {
   measureText,
   parseLocString,
   springAnimate,
+  viewBpToPx,
 } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -291,47 +292,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         coord: number
         regionNumber?: number
       }) {
-        let offsetBp = 0
-
-        const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
-        const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
-        const index = self.displayedRegions.findIndex((region, idx) => {
-          const len = region.end - region.start
-          if (
-            refName === region.refName &&
-            coord >= region.start &&
-            coord <= region.end
-          ) {
-            if (regionNumber ? regionNumber === idx : true) {
-              offsetBp += region.reversed
-                ? region.end - coord
-                : coord - region.start
-              return true
-            }
-          }
-
-          // add the interRegionPaddingWidth if the boundary is in the screen
-          // e.g. offset>=0 && offset<width
-          if (
-            len > minimumBlockBp &&
-            offsetBp / self.bpPerPx >= 0 &&
-            offsetBp / self.bpPerPx < self.width
-          ) {
-            offsetBp += len + interRegionPaddingBp
-          } else {
-            offsetBp += len
-          }
-          return false
-        })
-        const foundRegion = self.displayedRegions[index]
-        if (foundRegion) {
-          return {
-            index,
-            offsetPx: Math.round(offsetBp / self.bpPerPx),
-          }
-        }
-
-        return undefined
+        return viewBpToPx({ refName, coord, regionNumber, self })
       },
       /**
        *

@@ -75,9 +75,9 @@ const Grid = observer(
     const hblocks = hview.dynamicBlocks.contentBlocks
     const vblocks = vview.dynamicBlocks.contentBlocks
     const htop = hview.displayedRegionsTotalPx - hview.offsetPx
-    const hbottom = hblocks[0].offsetPx - hview.offsetPx
+    const hbottom = hblocks[0]?.offsetPx - hview.offsetPx
     const vtop = vview.displayedRegionsTotalPx - vview.offsetPx
-    const vbottom = vblocks[0].offsetPx - vview.offsetPx
+    const vbottom = vblocks[0]?.offsetPx - vview.offsetPx
     return (
       <svg
         style={{ background: 'rgba(0,0,0,0.12)' }}
