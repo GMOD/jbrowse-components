@@ -51,6 +51,7 @@ test('open a dotplot view with import form', async () => {
     <JBrowse pluginManager={pluginManager} />,
   )
 
+  fireEvent.click(await findByTestId('close_view'))
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Dotplot view'))
