@@ -376,6 +376,7 @@ Object {
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.cram",
         },
+        "fetchSizeLimit": 1000,
         "sequenceAdapter": Object {
           "chromSizesLocation": Object {
             "internetAccountId": undefined,
@@ -2554,6 +2555,7 @@ Object {
         },
         Object {
           "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
+          "maxFeatureScreenDensity": 0.0006,
           "renderer": Object {
             "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'",
             "type": "SvgFeatureRenderer",

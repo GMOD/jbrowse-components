@@ -71,12 +71,12 @@ describe('<JBrowseLinearGenomeView />', () => {
       defaultSession,
     })
     state.session.view.setWidth(800)
-    const { container, findByText } = render(
+    const { container, findByTestId } = render(
       <Suspense fallback={<div>Loading...</div>}>
         <JBrowseLinearGenomeView viewState={state} />
       </Suspense>,
     )
-    await findByText(/Reference Sequence/)
+    await findByTestId('sequence_track')
     expect(container.firstChild).toMatchSnapshot()
   })
 })

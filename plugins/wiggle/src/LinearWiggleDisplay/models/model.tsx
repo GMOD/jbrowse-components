@@ -80,7 +80,7 @@ const stateModelFactory = (
       }),
     )
     .volatile(() => ({
-      ready: false,
+      statsReady: false,
       message: undefined as undefined | string,
       stats: observable({ scoreMin: 0, scoreMax: 50 }),
       statsFetchInProgress: undefined as undefined | AbortController,
@@ -89,7 +89,7 @@ const stateModelFactory = (
       updateStats(stats: { scoreMin: number; scoreMax: number }) {
         self.stats.scoreMin = stats.scoreMin
         self.stats.scoreMax = stats.scoreMax
-        self.ready = true
+        self.statsReady = true
       },
       setColor(color: string) {
         self.color = color
@@ -311,9 +311,10 @@ const stateModelFactory = (
       const { renderProps: superRenderProps } = self
       return {
         renderProps() {
+          const superProps = superRenderProps()
           return {
-            ...superRenderProps(),
-            notReady: !self.ready,
+            ...superProps,
+            notReady: superProps.notReady || !self.statsReady,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,
@@ -481,6 +482,7 @@ const stateModelFactory = (
           },
           ...opts,
         }
+
         if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
           const results: FeatureStats = (await rpcManager.call(
             sessionId,
@@ -572,17 +574,20 @@ const stateModelFactory = (
                     return
                   }
 
-                  if (view.bpPerPx > self.maxViewBpPerPx) {
+                  if (!self.estimatedStatsReady) {
+                    return
+                  }
+                  if (self.regionTooLarge) {
                     return
                   }
 
-                  const stats = await getStats({
+                  const wiggleStats = await getStats({
                     signal: aborter.signal,
                     filters: self.filters,
                   })
 
                   if (isAlive(self)) {
-                    self.updateStats(stats)
+                    self.updateStats(wiggleStats)
                   }
                 } catch (e) {
                   if (!isAbortException(e) && isAlive(self)) {
@@ -596,7 +601,7 @@ const stateModelFactory = (
           )
         },
         async renderSvg(opts: ExportSvgOpts) {
-          await when(() => self.ready && !!self.regionCannotBeRenderedText)
+          await when(() => self.statsReady && !!self.regionCannotBeRenderedText)
           const { needsScalebar, stats } = self
           const { offsetPx } = getContainingView(self) as LGV
           return (

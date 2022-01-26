@@ -34,17 +34,11 @@ export default class BamSlightlyLazyFeature implements Feature {
   }
 
   _get_flags(): string {
-    // @ts-ignore
     return this.record.flags
   }
 
   _get_strand(): number {
     return this.record.isReverseComplemented() ? -1 : 1
-  }
-
-  _get_read_group_id(): number {
-    // @ts-ignore
-    return this.record.readGroupId
   }
 
   _get_pair_orientation() {
@@ -60,36 +54,35 @@ export default class BamSlightlyLazyFeature implements Feature {
     return this.record._refID
   }
 
-  _get_next_refName(): string | undefined {
+  _get_next_refName() {
     return this.adapter.refIdToName(this.record._next_refid())
   }
 
-  _get_next_segment_position(): string | undefined {
-    return this.record.isPaired()
-      ? `${this.adapter.refIdToName(this.record._next_refid())}:${
-          this.record._next_pos() + 1
-        }`
+  _get_next_segment_position() {
+    const { record, adapter } = this
+    return record.isPaired()
+      ? `${adapter.refIdToName(record._next_refid())}:${record._next_pos() + 1}`
       : undefined
   }
 
-  _get_seq(): string {
+  _get_seq() {
     return this.record.getReadBases()
   }
 
-  _get_MD(): string | undefined {
-    const md = this.record.get('MD')
-    const seq = this.get('seq')
+  _get_MD() {
+    const md = this.record.get('MD') as string | undefined
+    const seq = this.get('seq') as string
     if (!md && seq && this.ref) {
       return generateMD(this.ref, this.record.getReadBases(), this.get('CIGAR'))
     }
     return md
   }
 
-  qualRaw(): Buffer | undefined {
+  qualRaw() {
     return this.record.qualRaw()
   }
 
-  set(): void {}
+  set() {}
 
   tags() {
     const properties = Object.getOwnPropertyNames(
@@ -115,7 +108,7 @@ export default class BamSlightlyLazyFeature implements Feature {
     ]
   }
 
-  id(): string {
+  id() {
     return `${this.adapter.id}-${this.record.id()}`
   }
 
@@ -130,19 +123,19 @@ export default class BamSlightlyLazyFeature implements Feature {
     return this.record.get(field)
   }
 
-  _get_refName(): string | undefined {
+  _get_refName() {
     return this.adapter.refIdToName(this.record.seq_id())
   }
 
-  parent(): undefined {
+  parent() {
     return undefined
   }
 
-  children(): undefined {
+  children() {
     return undefined
   }
 
-  pairedFeature(): boolean {
+  pairedFeature() {
     return false
   }
 
@@ -163,7 +156,7 @@ export default class BamSlightlyLazyFeature implements Feature {
     } = {
       cigarAttributeName: 'CIGAR',
     },
-  ): Mismatch[] {
+  ) {
     const { cigarAttributeName } = opts
     let mismatches: Mismatch[] = []
     let cigarOps: string[] = []
@@ -185,7 +178,7 @@ export default class BamSlightlyLazyFeature implements Feature {
   }: {
     cigarAttributeName?: string
     mdAttributeName?: string
-  } = {}): Mismatch[] {
+  } = {}) {
     let mismatches: Mismatch[] = []
     let cigarOps: string[] = []
 

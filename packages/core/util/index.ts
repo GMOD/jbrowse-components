@@ -987,10 +987,10 @@ export function generateCodonTable(table: any) {
 }
 
 // call statusCallback with current status and clear when finished
-export async function updateStatus(
+export async function updateStatus<U>(
   statusMsg: string,
-  statusCallback: Function,
-  fn: Function,
+  statusCallback: (arg: string) => void,
+  fn: () => U,
 ) {
   statusCallback(statusMsg)
   const result = await fn()
@@ -1013,6 +1013,31 @@ export function hashCode(str: string) {
 
 export function objectHash(obj: Record<string, any>) {
   return `${hashCode(JSON.stringify(obj))}`
+}
+
+interface VirtualOffset {
+  blockPosition: number
+}
+interface Block {
+  minv: VirtualOffset
+  maxv: VirtualOffset
+}
+
+export async function bytesForRegions(regions: Region[], index: any) {
+  const blockResults = await Promise.all(
+    regions.map(
+      r => index.blocksForRange(r.refName, r.start, r.end) as Block[],
+    ),
+  )
+
+  return blockResults
+    .flat()
+
+    .map(block => ({
+      start: block.minv.blockPosition,
+      end: block.maxv.blockPosition + 65535,
+    }))
+    .reduce((a, b) => a + b.end - b.start, 0)
 }
 
 export function viewBpToPx({

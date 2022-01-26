@@ -1,7 +1,5 @@
-// library
+import React from 'react'
 import '@testing-library/jest-dom/extend-expect'
-import fs from 'fs'
-import path from 'path'
 
 import {
   cleanup,
@@ -11,17 +9,14 @@ import {
   getByRole,
 } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
-import React from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { LocalFile } from 'generic-filehandle'
 import { TextEncoder } from 'web-encoding'
-import FileSaver from 'file-saver'
-
-// locals
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { readConfObject, getConf } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
+
 import JBrowseRootModelFactory from '../rootModel'
 import corePlugins from '../corePlugins'
 import * as sessionSharing from '../sessionSharing'
@@ -42,7 +37,7 @@ setup()
 
 afterEach(cleanup)
 
-const waitForOptions = { timeout: 10000 }
+const waitForOptions = { timeout: 15000 }
 
 beforeEach(() => {
   clearCache()
@@ -78,8 +73,8 @@ test('lollipop track test', async () => {
   state.session.views[0].setNewView(1, 150)
   fireEvent.click(await findByTestId('htsTrackEntry-lollipop_track'))
 
-  await findByTestId('display-lollipop_track_linear', {}, { timeout: 10000 })
-  await findByTestId('three')
+  await findByTestId('display-lollipop_track_linear', {}, waitForOptions)
+  await findByTestId('three', {}, waitForOptions)
 }, 10000)
 
 test('toplevel configuration', () => {
@@ -169,7 +164,7 @@ test('widget drawer navigation', async () => {
   )
   fireEvent.click(await findByTestId('ConfigurationEditorWidget-drawer-delete'))
   expect(state.session.activeWidgets.size).toEqual(1)
-}, 10000)
+}, 20000)
 
 describe('assembly aliases', () => {
   it('allow a track with an alias assemblyName to display', async () => {
@@ -184,7 +179,7 @@ describe('assembly aliases', () => {
       await findByTestId('htsTrackEntry-volvox_filtered_vcf_assembly_alias'),
     )
     await findByTestId('box-test-vcf-604452', {}, waitForOptions)
-  }, 10000)
+  }, 20000)
 })
 
 describe('nclist track test with long name', () => {
@@ -203,7 +198,7 @@ describe('nclist track test with long name', () => {
       {},
       waitForOptions,
     )
-  }, 10000)
+  }, 20000)
 })
 
 describe('test configuration editor', () => {
@@ -229,7 +224,7 @@ describe('test configuration editor', () => {
         ),
       waitForOptions,
     )
-  }, 10000)
+  }, 20000)
 })
 
 // eslint-disable-next-line react/prop-types
@@ -300,27 +295,3 @@ test('looks at about this track dialog', async () => {
   fireEvent.click(await findByText('About track'))
   await findAllByText(/SQ/, {}, waitForOptions)
 }, 15000)
-
-test('export svg', async () => {
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
-  const { findByTestId, findByText } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
-  await findByText('Help')
-  state.session.views[0].setNewView(0.1, 1)
-  fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
-  )
-
-  state.session.views[0].exportSvg()
-
-  await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), {
-    timeout: 25000,
-  })
-
-  const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
-  const dir = path.dirname(module.filename)
-  fs.writeFileSync(`${dir}/__image_snapshots__/snapshot.svg`, svg)
-  expect(svg).toMatchSnapshot()
-}, 25000)

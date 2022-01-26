@@ -217,11 +217,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
       },
       get totalBp() {
-        let totalbp = 0
-        self.displayedRegions.forEach(region => {
-          totalbp += region.end - region.start
-        })
-        return totalbp
+        return self.displayedRegions.reduce((a, b) => a + b.end - b.start, 0)
       },
 
       get maxBpPerPx() {

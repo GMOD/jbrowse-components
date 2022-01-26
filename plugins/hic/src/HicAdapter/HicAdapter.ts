@@ -138,5 +138,10 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     }, opts.signal) as any // eslint-disable-line @typescript-eslint/no-explicit-any
   }
 
+  // don't do feature stats estimation, similar to bigwigadapter
+  async estimateRegionsStats(_regions: Region[]) {
+    return { featureDensity: 0 }
+  }
+
   freeResources(/* { region } */): void {}
 }

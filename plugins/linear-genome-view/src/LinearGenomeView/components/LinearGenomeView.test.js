@@ -1,5 +1,6 @@
 import React from 'react'
 import { fireEvent, render, waitFor } from '@testing-library/react'
+import '@testing-library/jest-dom/extend-expect'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import 'requestidlecallback-polyfill'
 import LinearGenomeView from './LinearGenomeView'
@@ -139,9 +140,17 @@ describe('<LinearGenomeView />', () => {
     })
     const model = session.views[0]
     model.setWidth(800)
-    const { container, findByText } = render(<LinearGenomeView model={model} />)
+    const { container, findByText, queryByText } = render(
+      <LinearGenomeView model={model} />,
+    )
     await findByText('Foo Track')
     await findByText('798 bp')
+
+    // make sure we don't hit stats estimation
+    await waitFor(() => {
+      expect(queryByText('Loading')).not.toBeInTheDocument()
+    })
+
     expect(container.firstChild).toMatchSnapshot()
   })
 })

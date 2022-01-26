@@ -34,7 +34,7 @@ export interface RenderArgs extends BaseRenderArgs {
 }
 
 export interface RenderArgsSerialized extends BaseRenderArgs {
-  statusCallback?: Function
+  statusCallback?: (arg: string) => void
   config: SnapshotIn<AnyConfigurationModel>
   filters: SerializedFilterChain
 }

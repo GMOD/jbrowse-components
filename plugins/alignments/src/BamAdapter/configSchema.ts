@@ -25,11 +25,11 @@ export default types.late(() =>
       }),
       chunkSizeLimit: {
         type: 'number',
-        defaultValue: 100000000,
+        defaultValue: 100_000_000,
       },
       fetchSizeLimit: {
         type: 'number',
-        defaultValue: 500000000,
+        defaultValue: 5_000_000,
       },
       sequenceAdapter: {
         type: 'frozen',
