@@ -1,5 +1,5 @@
 import React from 'react'
-import { cleanup, fireEvent, render, within } from '@testing-library/react'
+import { cleanup, fireEvent, render } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
@@ -80,8 +80,6 @@ test('test stats estimation pileup, force load to see', async () => {
   )
 }, 30000)
 
-const waitForOptions = { delay: 10000 }
-
 test('test stats estimation on vcf track, zoom in to see', async () => {
   const pluginManager = getPluginManager()
   const state = pluginManager.rootModel
@@ -94,9 +92,9 @@ test('test stats estimation on vcf track, zoom in to see', async () => {
   // load track
   fireEvent.click(await findByTestId('htsTrackEntry-variant_colors'))
 
-  await findAllByText(/Zoom in to see features/, {}, waitForOptions)
+  await findAllByText(/Zoom in to see features/, {}, delay)
   fireEvent.click(await findByTestId('zoom_in'))
-  await findByTestId('box-test-vcf-605560', {}, waitForOptions)
+  await findByTestId('box-test-vcf-605560', {}, delay)
 }, 30000)
 
 test('test stats estimation on vcf track, force load to see', async () => {
@@ -111,8 +109,8 @@ test('test stats estimation on vcf track, force load to see', async () => {
   // load track
   fireEvent.click(await findByTestId('htsTrackEntry-variant_colors'))
 
-  await findAllByText(/Zoom in to see features/, {}, waitForOptions)
-  const buttons = await findAllByText(/Force Load/, {}, waitForOptions)
+  await findAllByText(/Zoom in to see features/, {}, delay)
+  const buttons = await findAllByText(/Force Load/, {}, delay)
   fireEvent.click(buttons[0])
-  await findByTestId('box-test-vcf-605223', {}, waitForOptions)
+  await findByTestId('box-test-vcf-605223', {}, delay)
 }, 30000)

@@ -32,6 +32,7 @@ beforeEach(() => {
 })
 
 test('export svg', async () => {
+  console.error = jest.fn()
   const pluginManager = getPluginManager()
   const state = pluginManager.rootModel
   const { findByTestId, findByText } = render(
