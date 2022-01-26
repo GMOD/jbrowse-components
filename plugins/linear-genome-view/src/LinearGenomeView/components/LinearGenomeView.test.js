@@ -140,16 +140,12 @@ describe('<LinearGenomeView />', () => {
     })
     const model = session.views[0]
     model.setWidth(800)
-    const { container, findByText, queryByText } = render(
+    const { container, findByText, findAllByTestId } = render(
       <LinearGenomeView model={model} />,
     )
     await findByText('Foo Track')
     await findByText('798 bp')
-
-    // make sure we don't hit stats estimation
-    await waitFor(() => {
-      expect(queryByText('Loading')).not.toBeInTheDocument()
-    })
+    await findAllByTestId('svgfeatures')
 
     expect(container.firstChild).toMatchSnapshot()
   })

@@ -142,6 +142,82 @@ so they will not display softclipping.
 
 The soft clipping indicators on these reads will appear black.
 
+#### How does JBrowse know when to display the "Zoom in to see more features" message
+
+The rules that JBrowse uses to determine when to display the "Zoom in to see more features" message are called stats estimation rules
+
+The general outline is:
+
+- It doesn't display a zoom in message if zoomed in closer than 20kb
+- It performs byte size estimation for BAM and CRAM type files (you will see a
+  byte size estimation displayed alongside the "Zoom in to see features"
+  message
+- Other data types that don't use byte size estimation use feature density
+  based calculation
+- Hi-C, BigWig, and sequence adapters are hardcoded to return `{ featureDensity:0 }` to always render
+
+If you need to customize your particular track, you can set config variables on
+the "display" section of your config
+
+- `maxFeatureScreenDensity` - number of features times bpPerPx
+- `fetchSizeLimit` - this config variable exists on the adapters (can increase size limit)
+
+Example config with a small feature screen density
+
+```json
+{
+  "type": "VariantTrack",
+  "trackId": "variant_density",
+  "name": "test variants (small featuredensity limit)",
+  "assemblyNames": ["volvox"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "vcfGzLocation": {
+      "uri": "volvox.filtered.vcf.gz"
+    },
+    "index": {
+      "location": {
+        "uri": "volvox.filtered.vcf.gz.tbi"
+      }
+    }
+  },
+  "displays": [
+    {
+      "type": "LinearVariantDisplay",
+      "maxFeatureScreenDensity": 0.0006,
+      "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay"
+    }
+  ]
+}
+```
+
+Example config for a CRAM file with a small fetchSizeLimit configured
+
+```json
+{
+  "type": "AlignmentsTrack",
+  "trackId": "volvox_cram",
+  "name": "test track (small fetch size limit)",
+  "assemblyNames": ["volvox"],
+  "adapter": {
+    "type": "CramAdapter",
+    "cramLocation": {
+      "uri": "volvox-sorted-altname.cram"
+    },
+    "craiLocation": {
+      "uri": "volvox-sorted-altname.cram.crai"
+    },
+    "sequenceAdapter": {
+      "type": "TwoBitAdapter",
+      "twoBitLocation": {
+        "uri": "volvox.2bit"
+      }
+    },
+    "fetchSizeLimit": 1000
+  }
+}
+```
+
 ### Text searching
 
 #### Why I am running out of disk space while trix is running
@@ -276,3 +352,5 @@ links without the central server
 Also, if you are implementing JBrowse Web on your own server and would like to
 create your own URL shortener, you can use the shareURL parameter in the
 config.json file to point at your own server instead of ours.
+
+###
