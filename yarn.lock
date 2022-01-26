@@ -1441,10 +1441,10 @@
   resolved "https://registry.yarnpkg.com/@gar/promisify/-/promisify-1.1.2.tgz#30aa825f11d438671d585bd44e7fd564535fc210"
   integrity sha512-82cpyJyKRoQoRi+14ibCeGPu0CwypgtBAdBhq1WfvagpCZNKqwXbKwXllYSMG91DhmG4jt9gN8eP6lGOtozuaw==
 
-"@gmod/bam@^1.1.10":
-  version "1.1.10"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.1.10.tgz#93bd0c95d5e57a2c1956b7ebf045b62898979129"
-  integrity sha512-sz02lsYwmzoPnAJ8lZ3SNBQzamGHHbcF73J3xKnCHlFF83aWE67TNYrfiYYVcirf3L4+VyWeGd0VsptGR2okgA==
+"@gmod/bam@^1.1.11":
+  version "1.1.11"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.1.11.tgz#010bb579c9c1d95e94a8aab49ad05be500e69086"
+  integrity sha512-84MhCfXd2Q7/R8/HTdJ1M0o40zpRAgBhiJpo+qv8h84GqXyGLwZ0j9CPBDQ+v9N2brQwPVIPb3cEonRR/kuLkw==
   dependencies:
     "@gmod/bgzf-filehandle" "^1.3.3"
     abortable-promise-cache "^1.4.0"
