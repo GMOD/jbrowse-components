@@ -31,14 +31,7 @@ describe('adapter can fetch features from volvox.bw', () => {
     expect(featuresJsonArray.slice(1000, 1010)).toMatchSnapshot()
   })
   it('adapter can fetch stats from volvox.bw', async () => {
-    expect(
-      await adapter.getGlobalStats({
-        start: 0,
-        end: 100,
-        refName: 'ctgA',
-        assemblyName: 'volvox',
-      }),
-    ).toMatchSnapshot()
+    expect(await adapter.getGlobalStats()).toMatchSnapshot()
   })
   it('get region stats', async () => {
     expect(

@@ -60,7 +60,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     return refsByNumber[refId]?.name
   }
 
-  public async getGlobalStats(_region: Region, opts?: BaseOptions) {
+  public async getGlobalStats(opts?: BaseOptions) {
     const { totalSummary } = await this.setup(opts)
     return rectifyStats(totalSummary as UnrectifiedFeatureStats)
   }
