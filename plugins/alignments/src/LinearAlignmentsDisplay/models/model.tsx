@@ -32,6 +32,7 @@ const stateModelFactory = (
         height: 250,
         showCoverage: true,
         showPileup: true,
+        userFeatureScreenDensity: types.maybe(types.number),
       }),
     )
     .volatile(() => ({
