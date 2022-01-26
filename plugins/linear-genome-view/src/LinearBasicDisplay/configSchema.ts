@@ -14,11 +14,6 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         contextVariable: ['feature'],
       },
       renderer: pluginManager.pluggableConfigSchemaType('renderer'),
-      maxFeatureScreenDensity: {
-        type: 'number',
-        description: 'maximum features per pixel that is displayed in the view',
-        defaultValue: 0.5,
-      },
     },
     { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },
   )

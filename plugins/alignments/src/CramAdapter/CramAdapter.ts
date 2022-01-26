@@ -272,7 +272,6 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       }),
     )
 
-    // num blocks times 16kb
     return blockResults.flat().reduce((a, b) => a + b.sliceBytes, 0)
   }
 }
