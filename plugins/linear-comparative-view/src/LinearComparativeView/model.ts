@@ -142,12 +142,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.headerHeight = height
       },
 
-      toggleInteract() {
-        self.interactToggled = !self.interactToggled
-      },
-      toggleIntraviewLinks() {
-        self.showIntraviewLinks = !self.showIntraviewLinks
-      },
       toggleLinkViews() {
         self.linkViews = !self.linkViews
       },
@@ -179,21 +173,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       showTrack(trackId: string, initialSnapshot = {}) {
-        const trackConfigSchema =
-          pluginManager.pluggableConfigSchemaType('track')
-        const configuration = resolveIdentifier(
-          trackConfigSchema,
-          getRoot(self),
-          trackId,
-        )
+        const schema = pluginManager.pluggableConfigSchemaType('track')
+        const configuration = resolveIdentifier(schema, getRoot(self), trackId)
         const trackType = pluginManager.getTrackType(configuration.type)
         if (!trackType) {
           throw new Error(`unknown track type ${configuration.type}`)
         }
         const viewType = pluginManager.getViewType(self.type)
-        const supportedDisplays = viewType.displayTypes.map(
-          displayType => displayType.name,
-        )
+        const supportedDisplays = viewType.displayTypes.map(d => d.name)
         const displayConf = configuration.displays.find(
           (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
         )
@@ -213,14 +200,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       hideTrack(trackId: string) {
-        const trackConfigSchema =
-          pluginManager.pluggableConfigSchemaType('track')
-        const config = resolveIdentifier(
-          trackConfigSchema,
-          getRoot(self),
-          trackId,
-        )
-        // if we have any tracks with that configuration, turn them off
+        const schema = pluginManager.pluggableConfigSchemaType('track')
+        const config = resolveIdentifier(schema, getRoot(self), trackId)
         const shownTracks = self.tracks.filter(t => t.configuration === config)
         transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
         return shownTracks.length
