@@ -40,7 +40,6 @@ test('test stats estimation pileup, zoom in to see', async () => {
   await findByText('Help')
   state.session.views[0].setNewView(25.07852564102564, 283)
 
-  // load track
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup'))
 
   await findAllByText(/Requested too much data/, {}, delay)
@@ -64,7 +63,6 @@ test('test stats estimation pileup, force load to see', async () => {
   await findByText('Help')
   state.session.views[0].setNewView(25.07852564102564, 283)
 
-  // load track
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup'))
 
   await findAllByText(/Requested too much data/, {}, delay)
@@ -89,7 +87,6 @@ test('test stats estimation on vcf track, zoom in to see', async () => {
   await findByText('Help')
   state.session.views[0].setNewView(34, 5)
 
-  // load track
   fireEvent.click(await findByTestId('htsTrackEntry-variant_colors'))
 
   await findAllByText(/Zoom in to see features/, {}, delay)
@@ -106,7 +103,6 @@ test('test stats estimation on vcf track, force load to see', async () => {
   await findByText('Help')
   state.session.views[0].setNewView(34, 5)
 
-  // load track
   fireEvent.click(await findByTestId('htsTrackEntry-variant_colors'))
 
   await findAllByText(/Zoom in to see features/, {}, delay)

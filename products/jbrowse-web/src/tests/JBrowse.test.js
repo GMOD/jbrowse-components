@@ -1,7 +1,5 @@
 import React from 'react'
 import '@testing-library/jest-dom/extend-expect'
-import fs from 'fs'
-import path from 'path'
 
 import {
   cleanup,
@@ -14,7 +12,6 @@ import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { ErrorBoundary } from 'react-error-boundary'
 import { LocalFile } from 'generic-filehandle'
 import { TextEncoder } from 'web-encoding'
-import FileSaver from 'file-saver'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { readConfObject, getConf } from '@jbrowse/core/configuration'
@@ -298,27 +295,3 @@ test('looks at about this track dialog', async () => {
   fireEvent.click(await findByText('About track'))
   await findAllByText(/SQ/, {}, waitForOptions)
 }, 15000)
-
-test('export svg', async () => {
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
-  const { findByTestId, findByText } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
-  await findByText('Help')
-  state.session.views[0].setNewView(0.1, 1)
-  fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
-  )
-
-  state.session.views[0].exportSvg()
-
-  await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), {
-    timeout: 25000,
-  })
-
-  const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
-  const dir = path.dirname(module.filename)
-  fs.writeFileSync(`${dir}/__image_snapshots__/snapshot.svg`, svg)
-  expect(svg).toMatchSnapshot()
-}, 25000)
