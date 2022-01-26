@@ -37,9 +37,9 @@ const LinkViews = observer(({ model }: { model: LCV }) => {
       title="Toggle linked scrolls and behavior across views"
     >
       {model.linkViews ? (
-        <LinkIcon color="secondary" />
-      ) : (
         <LinkOffIcon color="secondary" />
+      ) : (
+        <LinkIcon color="secondary" />
       )}
     </IconButton>
   )

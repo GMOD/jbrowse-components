@@ -103,7 +103,10 @@ function LinearSyntenyRendering(props: {
   } catch (e) {}
   const views = worker ? undefined : parentView?.views
   const drawCurves = worker ? undefined : parentView?.drawCurves
-  const color = worker ? undefined : getConf(display, ['renderer', 'color'])
+  const color =
+    worker || !isAlive(display)
+      ? undefined
+      : getConf(display, ['renderer', 'color'])
   const offsets = views?.map(view => view.offsetPx)
   useEffect(() => {
     if (!ref.current || !offsets || !views || !isAlive(display)) {
