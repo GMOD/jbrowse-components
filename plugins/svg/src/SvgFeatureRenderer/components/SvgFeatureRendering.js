@@ -359,6 +359,7 @@ function SvgFeatureRendering(props) {
       <svg
         ref={ref}
         className="SvgFeatureRendering"
+        data-testid="svgfeatures"
         width={width}
         height={height + svgHeightPadding}
         onMouseDown={mouseDown}

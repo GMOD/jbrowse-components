@@ -95,14 +95,10 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
       colorTagMap: observable.map<string, string>({}),
       modificationTagMap: observable.map<string, string>({}),
       ready: false,
-      currBpPerPx: 0,
     }))
     .actions(self => ({
       setReady(flag: boolean) {
         self.ready = flag
-      },
-      setCurrBpPerPx(n: number) {
-        self.currBpPerPx = n
       },
       setMaxHeight(n: number) {
         self.trackMaxHeight = n
@@ -404,16 +400,21 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
         renderProps() {
           const view = getContainingView(self) as LGV
           const {
-            ready,
             colorTagMap,
             modificationTagMap,
             sortedBy,
             colorBy,
             rpcDriverName,
           } = self
+
+          const superProps = superRenderProps()
+
           return {
-            ...superRenderProps(),
-            notReady: !ready || (sortedBy && self.currBpPerPx !== view.bpPerPx),
+            ...superProps,
+            notReady:
+              superProps.notReady ||
+              !self.ready ||
+              (sortedBy && self.currBpPerPx !== view.bpPerPx),
             rpcDriverName,
             displayModel: self,
             sortedBy,

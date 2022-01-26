@@ -6,6 +6,7 @@ exports[`no features 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
+    data-testid="svgfeatures"
     height="120"
     style="display: block;"
     width="100"
@@ -19,6 +20,7 @@ exports[`one feature (compact mode) 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
+    data-testid="svgfeatures"
     height="105"
     style="display: block;"
     width="333.3333333333333"
@@ -152,6 +154,7 @@ exports[`one feature 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
+    data-testid="svgfeatures"
     height="110"
     style="display: block;"
     width="333.3333333333333"
@@ -176,6 +179,7 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
+    data-testid="svgfeatures"
     height="140"
     style="display: block;"
     width="333.3333333333333"
@@ -404,6 +408,7 @@ exports[`processed transcript (reducedRepresentation mode) 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
+    data-testid="svgfeatures"
     height="110"
     style="display: block;"
     width="333.3333333333333"
@@ -428,6 +433,7 @@ exports[`processed transcript 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
+    data-testid="svgfeatures"
     height="125"
     style="display: block;"
     width="333.3333333333333"

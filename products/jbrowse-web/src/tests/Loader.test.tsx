@@ -255,6 +255,6 @@ describe('<Loader />', () => {
     const elt = await findByPlaceholderText('Search for location')
 
     // @ts-ignore
-    expect(elt.value).toBe('ctgA:5,999..6,999')
+    await waitFor(() => expect(elt.value).toBe('ctgA:5,999..6,999'))
   }, 20000)
 })

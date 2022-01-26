@@ -28,6 +28,7 @@ import {
   stateModelFactory as linearGenomeViewStateModelFactory,
   renderToSvg,
   RefNameAutocomplete,
+  SearchBox,
 } from './LinearGenomeView'
 
 import {
@@ -191,14 +192,15 @@ export default class LinearGenomeViewPlugin extends Plugin {
 }
 
 export {
-  BaseLinearDisplayComponent,
-  BaseLinearDisplay,
   baseLinearDisplayConfigSchema,
   linearBareDisplayConfigSchemaFactory,
   linearBasicDisplayConfigSchemaFactory,
   linearBasicDisplayModelFactory,
   renderToSvg,
+  BaseLinearDisplayComponent,
+  BaseLinearDisplay,
   RefNameAutocomplete,
+  SearchBox,
 }
 
 export type { LinearGenomeViewModel, LinearGenomeViewStateModel, BlockModel }

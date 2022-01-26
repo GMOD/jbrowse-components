@@ -9,11 +9,10 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
-import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { ucscProcessedTranscript } from '../util'
-import MyConfigSchema from './configSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 export default class BedTabixAdapter extends BaseFeatureDataAdapter {
@@ -28,7 +27,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(
-    config: Instance<typeof MyConfigSchema>,
+    config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {

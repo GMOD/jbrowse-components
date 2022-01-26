@@ -987,10 +987,10 @@ export function generateCodonTable(table: any) {
 }
 
 // call statusCallback with current status and clear when finished
-export async function updateStatus(
+export async function updateStatus<U>(
   statusMsg: string,
-  statusCallback: Function,
-  fn: Function,
+  statusCallback: (arg: string) => void,
+  fn: () => U,
 ) {
   statusCallback(statusMsg)
   const result = await fn()
@@ -1013,4 +1013,92 @@ export function hashCode(str: string) {
 
 export function objectHash(obj: Record<string, any>) {
   return `${hashCode(JSON.stringify(obj))}`
+}
+
+interface VirtualOffset {
+  blockPosition: number
+}
+interface Block {
+  minv: VirtualOffset
+  maxv: VirtualOffset
+}
+
+export async function bytesForRegions(regions: Region[], index: any) {
+  const blockResults = await Promise.all(
+    regions.map(
+      r => index.blocksForRange(r.refName, r.start, r.end) as Block[],
+    ),
+  )
+
+  return blockResults
+    .flat()
+
+    .map(block => ({
+      start: block.minv.blockPosition,
+      end: block.maxv.blockPosition + 65535,
+    }))
+    .reduce((a, b) => a + b.end - b.start, 0)
+}
+
+export function viewBpToPx({
+  refName,
+  coord,
+  regionNumber,
+  self,
+}: {
+  refName: string
+  coord: number
+  regionNumber?: number
+  self: {
+    bpPerPx: number
+    interRegionPaddingWidth: number
+    minimumBlockWidth: number
+    width: number
+    displayedRegions: {
+      start: number
+      end: number
+      refName: string
+      reversed: boolean
+    }[]
+  }
+}) {
+  let offsetBp = 0
+
+  const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
+  const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
+  const index = self.displayedRegions.findIndex((region, idx) => {
+    const len = region.end - region.start
+    if (
+      refName === region.refName &&
+      coord >= region.start &&
+      coord <= region.end
+    ) {
+      if (regionNumber ? regionNumber === idx : true) {
+        offsetBp += region.reversed ? region.end - coord : coord - region.start
+        return true
+      }
+    }
+
+    // add the interRegionPaddingWidth if the boundary is in the screen
+    // e.g. offset>=0 && offset<width
+    if (
+      len > minimumBlockBp &&
+      offsetBp / self.bpPerPx >= 0 &&
+      offsetBp / self.bpPerPx < self.width
+    ) {
+      offsetBp += len + interRegionPaddingBp
+    } else {
+      offsetBp += len
+    }
+    return false
+  })
+  const foundRegion = self.displayedRegions[index]
+  if (foundRegion) {
+    return {
+      index,
+      offsetPx: Math.round(offsetBp / self.bpPerPx),
+    }
+  }
+
+  return undefined
 }

@@ -26,11 +26,11 @@ export const YScaleBar = observer(
 
 const LinearWiggleDisplay = observer((props: { model: WiggleDisplayModel }) => {
   const { model } = props
-  const { ready, stats, height, needsScalebar } = model
+  const { stats, height, needsScalebar } = model
   return (
     <div>
       <BaseLinearDisplayComponent {...props} />
-      {ready && stats && needsScalebar ? (
+      {stats && needsScalebar ? (
         <svg
           style={{
             position: 'absolute',

@@ -255,7 +255,8 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         <p
           class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
         >
-          100 bp
+          100
+           bp
         </p>
         <div
           class="makeStyles-container"
@@ -555,15 +556,8 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                 style="width: 100px;"
               >
                 <div
-                  style="position: relative;"
-                >
-                  <svg
-                    class="SvgFeatureRendering"
-                    height="100"
-                    style="display: block;"
-                    width="100"
-                  />
-                </div>
+                  style="display: flex;"
+                />
               </div>
               <div
                 class="makeStyles-boundaryPaddingBlock"
@@ -858,7 +852,8 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         <p
           class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
         >
-          798 bp
+          798
+           bp
         </p>
         <div
           class="makeStyles-container"
@@ -1457,6 +1452,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 >
                   <svg
                     class="SvgFeatureRendering"
+                    data-testid="svgfeatures"
                     height="100"
                     style="display: block;"
                     width="100"
@@ -1476,6 +1472,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 >
                   <svg
                     class="SvgFeatureRendering"
+                    data-testid="svgfeatures"
                     height="100"
                     style="display: block;"
                     width="1000"
@@ -1609,6 +1606,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 >
                   <svg
                     class="SvgFeatureRendering"
+                    data-testid="svgfeatures"
                     height="100"
                     style="display: block;"
                     width="100"
@@ -1628,6 +1626,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 >
                   <svg
                     class="SvgFeatureRendering"
+                    data-testid="svgfeatures"
                     height="100"
                     style="display: block;"
                     width="1000"
