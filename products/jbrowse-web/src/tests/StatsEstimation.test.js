@@ -38,7 +38,7 @@ test('test stats estimation pileup, zoom in to see', async () => {
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
-  state.session.views[0].setNewView(25, 283)
+  state.session.views[0].setNewView(30, 183)
 
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup'))
 
@@ -47,7 +47,7 @@ test('test stats estimation pileup, zoom in to see', async () => {
 
   expectCanvasMatch(
     await findByTestId(
-      'prerendered_canvas_{volvox}ctgA:20,001..30,000-0',
+      'prerendered_canvas_{volvox}ctgA:1..12,000-0',
       {},
       delay,
     ),
