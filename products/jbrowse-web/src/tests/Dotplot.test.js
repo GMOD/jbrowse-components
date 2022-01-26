@@ -21,7 +21,7 @@ dotplotConfig.configuration = {
   },
 }
 
-const delay = { timeout: 10000 }
+const delay = { timeout: 15000 }
 
 expect.extend({ toMatchImageSnapshot })
 setup()
@@ -43,7 +43,7 @@ test('open a dotplot view', async () => {
   const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
 
   expectCanvasMatch(await findByTestId('prerendered_canvas', {}, delay))
-}, 15000)
+}, 20000)
 
 test('open a dotplot view with import form', async () => {
   const pluginManager = getPluginManager(dotplotConfig, false)
@@ -68,4 +68,4 @@ test('open a dotplot view with import form', async () => {
   fireEvent.click(await findByTestId('submitDotplot'))
 
   expectCanvasMatch(await findByTestId('prerendered_canvas', {}, delay))
-}, 15000)
+}, 20000)
