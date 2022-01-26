@@ -66,6 +66,7 @@ const MyPopper = function (
 
 function RefNameAutocomplete({
   model,
+  showHelp = true,
   onSelect,
   assemblyName,
   style,
@@ -81,6 +82,7 @@ function RefNameAutocomplete({
   fetchResults: (query: string) => Promise<BaseResult[]>
   style?: React.CSSProperties
   minWidth?: number
+  showHelp?: boolean
   TextFieldProps?: TFP
 }) {
   const session = getSession(model)
@@ -238,11 +240,13 @@ function RefNameAutocomplete({
                     ) : (
                       <InputAdornment position="end" style={{ marginRight: 7 }}>
                         <SearchIcon />
-                        <IconButton
-                          onClick={() => setHelpDialogDisplayed(true)}
-                        >
-                          <HelpIcon />
-                        </IconButton>
+                        {showHelp ? (
+                          <IconButton
+                            onClick={() => setHelpDialogDisplayed(true)}
+                          >
+                            <HelpIcon />
+                          </IconButton>
+                        ) : null}
                       </InputAdornment>
                     )}
                     {params.InputProps.endAdornment}
