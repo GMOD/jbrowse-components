@@ -45,6 +45,8 @@ test('test stats estimation pileup, zoom in to see', async () => {
   await findAllByText(/Requested too much data/, {}, delay)
   const before = session.views[0].bpPerPx
   fireEvent.click(await findByTestId('zoom_in'))
+  // found it helps avoid flaky test to check that it is zoomed in before
+  // checking snapshot (even though it seems like it is unneeded) #2673
   await waitFor(() => expect(session.views[0].bpPerPx).toBe(before / 2), delay)
 
   expectCanvasMatch(
@@ -94,6 +96,8 @@ test('test stats estimation on vcf track, zoom in to see', async () => {
   await findAllByText(/Zoom in to see features/, {}, delay)
   const before = session.views[0].bpPerPx
   fireEvent.click(await findByTestId('zoom_in'))
+  // found it helps avoid flaky test to check that it is zoomed in before
+  // checking snapshot (even though it seems like it is unneeded) #2673
   await waitFor(() => expect(session.views[0].bpPerPx).toBe(before / 2), delay)
 
   await findByTestId('box-test-vcf-605560', {}, delay)
