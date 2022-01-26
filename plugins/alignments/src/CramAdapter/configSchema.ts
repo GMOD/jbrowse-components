@@ -9,7 +9,7 @@ export default (pluginManager: PluginManager) => {
       {
         fetchSizeLimit: {
           type: 'number',
-          defaultValue: 5_000_000,
+          defaultValue: 3_000_000,
         },
         cramLocation: {
           type: 'fileLocation',
