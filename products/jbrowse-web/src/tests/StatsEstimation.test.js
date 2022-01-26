@@ -1,5 +1,5 @@
 import React from 'react'
-import { cleanup, fireEvent, render } from '@testing-library/react'
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
@@ -33,21 +33,25 @@ const delay = { timeout: 20000 }
 
 test('test stats estimation pileup, zoom in to see', async () => {
   const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
+  const { session } = pluginManager.rootModel
   const { findByText, findAllByText, findByTestId } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
-  state.session.views[0].setNewView(25, 283)
+  session.views[0].setNewView(30, 183)
 
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup'))
 
   await findAllByText(/Requested too much data/, {}, delay)
+  const before = session.views[0].bpPerPx
   fireEvent.click(await findByTestId('zoom_in'))
+  // found it helps avoid flaky test to check that it is zoomed in before
+  // checking snapshot (even though it seems like it is unneeded) #2673
+  await waitFor(() => expect(session.views[0].bpPerPx).toBe(before / 2), delay)
 
   expectCanvasMatch(
     await findByTestId(
-      'prerendered_canvas_{volvox}ctgA:20,001..30,000-0',
+      'prerendered_canvas_{volvox}ctgA:1..12,000-0',
       {},
       delay,
     ),
@@ -56,12 +60,12 @@ test('test stats estimation pileup, zoom in to see', async () => {
 
 test('test stats estimation pileup, force load to see', async () => {
   const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
+  const { session } = pluginManager.rootModel
   const { findByText, findAllByText, findByTestId } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
-  state.session.views[0].setNewView(25.07852564102564, 283)
+  session.views[0].setNewView(25.07852564102564, 283)
 
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup'))
 
@@ -80,17 +84,22 @@ test('test stats estimation pileup, force load to see', async () => {
 
 test('test stats estimation on vcf track, zoom in to see', async () => {
   const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
+  const { session } = pluginManager.rootModel
   const { findByText, findAllByText, findByTestId } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
-  state.session.views[0].setNewView(34, 5)
+  session.views[0].setNewView(34, 5)
 
   fireEvent.click(await findByTestId('htsTrackEntry-variant_colors'))
 
   await findAllByText(/Zoom in to see features/, {}, delay)
+  const before = session.views[0].bpPerPx
   fireEvent.click(await findByTestId('zoom_in'))
+  // found it helps avoid flaky test to check that it is zoomed in before
+  // checking snapshot (even though it seems like it is unneeded) #2673
+  await waitFor(() => expect(session.views[0].bpPerPx).toBe(before / 2), delay)
+
   await findByTestId('box-test-vcf-605560', {}, delay)
 }, 30000)
 
@@ -102,6 +111,7 @@ test('test stats estimation on vcf track, force load to see', async () => {
   )
   await findByText('Help')
   state.session.views[0].setNewView(34, 5)
+  await findAllByText('ctgA', {}, { timeout: 10000 })
 
   fireEvent.click(await findByTestId('htsTrackEntry-variant_colors'))
 

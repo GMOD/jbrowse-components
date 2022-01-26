@@ -161,30 +161,20 @@ describe('valid file tests', () => {
 
   it('click and zoom in and back out', async () => {
     const pluginManager = getPluginManager()
-    const state = pluginManager.rootModel
+    const { session } = pluginManager.rootModel
     const { findByTestId, findAllByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     await findAllByText('ctgA', {}, { timeout: 10000 })
-    const before = state.session.views[0].bpPerPx
+    const view = session.views[0]
+    const before = view.bpPerPx
     fireEvent.click(await findByTestId('zoom_in'))
-    await waitFor(
-      () => {
-        const after = state.session.views[0].bpPerPx
-        expect(after).toBe(before / 2)
-      },
-      { timeout: 10000 },
-    )
-    expect(state.session.views[0].bpPerPx).toBe(before / 2)
+    const timeout = { timeout: 10000 }
+    await waitFor(() => expect(view.bpPerPx).toBe(before / 2), timeout)
+    expect(view.bpPerPx).toBe(before / 2)
     fireEvent.click(await findByTestId('zoom_out'))
-    await waitFor(
-      () => {
-        const after = state.session.views[0].bpPerPx
-        expect(after).toBe(before)
-      },
-      { timeout: 10000 },
-    )
-    expect(state.session.views[0].bpPerPx).toBe(before)
+    await waitFor(() => expect(view.bpPerPx).toBe(before), timeout)
+    expect(view.bpPerPx).toBe(before)
   }, 30000)
 
   it('opens track selector', async () => {
