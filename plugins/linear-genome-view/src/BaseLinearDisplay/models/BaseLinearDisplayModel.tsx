@@ -62,16 +62,6 @@ function getDisplayStr(totalBytes: number) {
 const minDisplayHeight = 20
 const defaultDisplayHeight = 100
 
-// the base display has checking that the amount of data downloaded is not too
-// large
-//
-// the general scheme of how this works is:
-//
-// - autorun re-runs estimateRegionsStats on viewing region
-// - hits individual data adapters estimateRegionsStats function
-// - data adapter also responds with their fetchSizeLimit if it exists
-// - we decide whether to render or not anytime a zoom level changes
-
 export const BaseLinearDisplay = types
   .compose(
     'BaseLinearDisplay',
@@ -419,6 +409,12 @@ export const BaseLinearDisplay = types
         }
       },
       afterAttach() {
+        // this autorun performs stats estimation
+        //
+        // the chain of events calls estimateRegionStats against the data
+        // adapter which by default uses featureDensity, but can also respond
+        // with a byte size estimate and fetch size limit (data adapter can
+        // define what is too much data)
         addDisposer(
           self,
           autorun(

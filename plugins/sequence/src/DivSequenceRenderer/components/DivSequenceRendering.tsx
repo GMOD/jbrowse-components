@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import React from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { contrastingTextColor } from '@jbrowse/core/util/color'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
-import React from 'react'
 import {
   bpSpanPx,
   revcom,
@@ -273,6 +273,7 @@ const Wrapper = ({ exportSVG, width, totalHeight, children }: any) => {
     <>{children}</>
   ) : (
     <svg
+      data-testid="sequence_track"
       width={width}
       height={totalHeight}
       style={{ width, height: totalHeight }}
