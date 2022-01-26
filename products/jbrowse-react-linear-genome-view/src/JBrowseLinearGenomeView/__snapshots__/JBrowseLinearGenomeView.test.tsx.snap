@@ -339,7 +339,8 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 <p
                   class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
                 >
-                  40 bp
+                  40
+                   bp
                 </p>
                 <div
                   class="makeStyles-container"

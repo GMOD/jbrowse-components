@@ -14,6 +14,7 @@ import {
   measureText,
   parseLocString,
   springAnimate,
+  viewBpToPx,
 } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -50,6 +51,7 @@ import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 // locals
 import { renderToSvg } from './components/LinearGenomeViewSvg'
 import RefNameAutocomplete from './components/RefNameAutocomplete'
+import SearchBox from './components/SearchBox'
 import ExportSvgDlg from './components/ExportSvgDialog'
 import ReturnToImportFormDlg from './components/ReturnToImportFormDialog'
 
@@ -99,6 +101,8 @@ export const HEADER_OVERVIEW_HEIGHT = 20
 export const SCALE_BAR_HEIGHT = 17
 export const RESIZE_HANDLE_HEIGHT = 3
 export const INTER_REGION_PADDING_WIDTH = 2
+export const WIDGET_HEIGHT = 32
+export const SPACING = 7
 
 export function stateModelFactory(pluginManager: PluginManager) {
   return types
@@ -284,47 +288,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         coord: number
         regionNumber?: number
       }) {
-        let offsetBp = 0
-
-        const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
-        const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
-        const index = self.displayedRegions.findIndex((region, idx) => {
-          const len = region.end - region.start
-          if (
-            refName === region.refName &&
-            coord >= region.start &&
-            coord <= region.end
-          ) {
-            if (regionNumber ? regionNumber === idx : true) {
-              offsetBp += region.reversed
-                ? region.end - coord
-                : coord - region.start
-              return true
-            }
-          }
-
-          // add the interRegionPaddingWidth if the boundary is in the screen
-          // e.g. offset>=0 && offset<width
-          if (
-            len > minimumBlockBp &&
-            offsetBp / self.bpPerPx >= 0 &&
-            offsetBp / self.bpPerPx < self.width
-          ) {
-            offsetBp += len + interRegionPaddingBp
-          } else {
-            offsetBp += len
-          }
-          return false
-        })
-        const foundRegion = self.displayedRegions[index]
-        if (foundRegion) {
-          return {
-            index,
-            offsetPx: Math.round(offsetBp / self.bpPerPx),
-          }
-        }
-
-        return undefined
+        return viewBpToPx({ refName, coord, regionNumber, self })
       },
       /**
        *
@@ -1452,7 +1416,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
 }
 
-export { renderToSvg, RefNameAutocomplete }
+export { renderToSvg, RefNameAutocomplete, SearchBox }
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>
 export { default as ReactComponent } from './components/LinearGenomeView'

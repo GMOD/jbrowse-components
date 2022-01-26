@@ -1,19 +1,18 @@
 import React from 'react'
-import { IconButton, makeStyles } from '@material-ui/core'
-import { withSize } from 'react-sizeme'
+import { IconButton, Typography, makeStyles } from '@material-ui/core'
+import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 // icons
-import LeakAddIcon from '@material-ui/icons/LeakAdd'
-import LeakRemoveIcon from '@material-ui/icons/LeakRemove'
 import LinkIcon from '@material-ui/icons/Link'
 import LinkOffIcon from '@material-ui/icons/LinkOff'
-import LocationSearchingIcon from '@material-ui/icons/LocationSearching'
-import LocationDisabledIcon from '@material-ui/icons/LocationDisabled'
+import CropFreeIcon from '@material-ui/icons/CropFree'
 
 import { LinearComparativeViewModel } from '../model'
 
-const useStyles = makeStyles(theme => ({
+type LCV = LinearComparativeViewModel
+
+const useStyles = makeStyles(() => ({
   headerBar: {
     gridArea: '1/1/auto/span 2',
     display: 'flex',
@@ -21,98 +20,68 @@ const useStyles = makeStyles(theme => ({
   spacer: {
     flexGrow: 1,
   },
-  emphasis: {
-    background: theme.palette.secondary.main,
-    padding: theme.spacing(1),
+  bp: {
+    display: 'flex',
+    alignItems: 'center',
+    marginLeft: 10,
   },
-  hovered: {
-    background: theme.palette.secondary.light,
-  },
-  displayName: {
-    background: theme.palette.secondary.main,
-    paddingTop: 3,
-    paddingLeft: theme.spacing(1),
-    paddingRight: theme.spacing(1),
-  },
-  inputBase: {
-    color: theme.palette.secondary.contrastText,
-  },
-  inputRoot: {
-    '&:hover': {
-      backgroundColor: theme.palette.secondary.light,
-    },
-  },
-  inputFocused: {
-    borderColor: theme.palette.primary.main,
-    backgroundColor: theme.palette.secondary.light,
+  searchContainer: {
+    marginLeft: 5,
   },
 }))
 
-const InteractWithSquiggles = observer(
-  ({ model }: { model: LinearComparativeViewModel }) => {
-    return (
-      <IconButton
-        onClick={model.toggleInteract}
-        title="Toggle interacting with the overlay"
-      >
-        {model.interactToggled ? (
-          <LocationSearchingIcon />
-        ) : (
-          <LocationDisabledIcon />
-        )}
-      </IconButton>
-    )
-  },
-)
-
-const LinkViews = observer(
-  ({ model }: { model: LinearComparativeViewModel }) => {
-    return (
-      <IconButton
-        onClick={model.toggleLinkViews}
-        title="Toggle linked scrolls and behavior across views"
-      >
-        {model.linkViews ? (
-          <LinkIcon color="secondary" />
-        ) : (
-          <LinkOffIcon color="secondary" />
-        )}
-      </IconButton>
-    )
-  },
-)
-
-const Sync = observer(({ model }: { model: LinearComparativeViewModel }) => {
+const LinkViews = observer(({ model }: { model: LCV }) => {
   return (
     <IconButton
-      onClick={model.toggleIntraviewLinks}
-      title="Toggle rendering intraview links"
+      onClick={model.toggleLinkViews}
+      title="Toggle linked scrolls and behavior across views"
     >
-      {model.showIntraviewLinks ? (
-        <LeakAddIcon color="secondary" />
+      {model.linkViews ? (
+        <LinkOffIcon color="secondary" />
       ) : (
-        <LeakRemoveIcon color="secondary" />
+        <LinkIcon color="secondary" />
       )}
     </IconButton>
   )
 })
 
-const Header = observer(
-  ({
-    model,
-    size,
-  }: {
-    model: LinearComparativeViewModel
-    size: { height: number }
-  }) => {
-    const classes = useStyles()
+const SquareView = observer(({ model }: { model: LCV }) => {
+  return (
+    <IconButton
+      onClick={model.squareView}
+      title="Square view (make both the same zoom level)"
+    >
+      <CropFreeIcon color="secondary" />
+    </IconButton>
+  )
+})
 
-    model.setHeaderHeight(size.height)
+const Header = observer(
+  ({ model, ExtraButtons }: { ExtraButtons?: React.ReactNode; model: LCV }) => {
+    const classes = useStyles()
+    const anyShowHeaders = model.views.some(view => !view.hideHeader)
     return (
       <div className={classes.headerBar}>
         <LinkViews model={model} />
-        <InteractWithSquiggles model={model} />
-        <Sync model={model} />
+        <SquareView model={model} />
+        {ExtraButtons}
+        {!anyShowHeaders
+          ? model.views.map(view => (
+              <div className={classes.searchContainer}>
+                <SearchBox key={view.id} model={view} showHelp={false} />
+              </div>
+            ))
+          : null}
+        {model.views.map(view => (
+          <Typography
+            key={view.id}
+            variant="body2"
+            color="textSecondary"
+            className={classes.bp}
+          >
+            {Math.round(view.coarseTotalBp).toLocaleString('en-US')} bp
+          </Typography>
+        ))}
 
         <div className={classes.spacer} />
       </div>
@@ -120,4 +89,4 @@ const Header = observer(
   },
 )
 
-export default withSize({ monitorHeight: true })(Header)
+export default Header

@@ -255,7 +255,8 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         <p
           class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
         >
-          100 bp
+          100
+           bp
         </p>
         <div
           class="makeStyles-container"
@@ -851,7 +852,8 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         <p
           class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
         >
-          798 bp
+          798
+           bp
         </p>
         <div
           class="makeStyles-container"
