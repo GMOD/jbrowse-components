@@ -1,5 +1,5 @@
 import { Observable, merge } from 'rxjs'
-import { takeUntil } from 'rxjs/operators'
+import { takeUntil, toArray } from 'rxjs/operators'
 import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { ObservableCreate } from '../util/rxjs'
 import { checkAbortSignal, observeAbortSignal } from '../util'
@@ -50,7 +50,11 @@ export type AnyDataAdapter =
   | BaseRefNameAliasAdapter
   | BaseTextSearchAdapter
   | RegionsAdapter
-  | SequenceAdapter
+  | BaseSequenceAdapter
+
+export interface SequenceAdapter
+  extends BaseFeatureDataAdapter,
+    RegionsAdapter {}
 
 export abstract class BaseAdapter {
   public id: string
@@ -81,6 +85,12 @@ export abstract class BaseAdapter {
    * @param region - Region
    */
   public abstract freeResources(region: Region): void
+}
+
+export interface Stats {
+  featureDensity?: number
+  fetchSizeLimit?: number
+  bytes?: number
 }
 
 /**
@@ -153,7 +163,6 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       const hasData = await this.hasDataForRefName(region.refName, opts)
       checkAbortSignal(opts.signal)
       if (!hasData) {
-        // console.warn(`no data for ${region.refName}`)
         observer.complete()
       } else {
         this.getFeatures(region, opts)
@@ -188,7 +197,6 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
           const hasData = await this.hasDataForRefName(region.refName, opts)
           checkAbortSignal(opts.signal)
           if (!hasData) {
-            // console.warn(`no data for ${region.refName}`)
             observer.complete()
           } else {
             this.getFeatures(region, opts).subscribe(observer)
@@ -226,22 +234,12 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       regions.map(region => this.getRegionStats(region, opts)),
     )
 
-    const scoreMax = feats
-      .map(s => s.scoreMax)
-      .reduce((acc, curr) => Math.max(acc, curr))
-    const scoreMin = feats
-      .map(s => s.scoreMin)
-      .reduce((acc, curr) => Math.min(acc, curr))
-    const scoreSum = feats.map(s => s.scoreSum).reduce((a, b) => a + b, 0)
-    const scoreSumSquares = feats
-      .map(s => s.scoreSumSquares)
-      .reduce((a, b) => a + b, 0)
-    const featureCount = feats
-      .map(s => s.featureCount)
-      .reduce((a, b) => a + b, 0)
-    const basesCovered = feats
-      .map(s => s.basesCovered)
-      .reduce((a, b) => a + b, 0)
+    const scoreMax = feats.map(a => a.scoreMax).reduce((a, b) => Math.max(a, b))
+    const scoreMin = feats.map(a => a.scoreMin).reduce((a, b) => Math.min(a, b))
+    const scoreSum = feats.reduce((a, b) => a + b.scoreSum, 0)
+    const scoreSumSquares = feats.reduce((a, b) => a + b.scoreSumSquares, 0)
+    const featureCount = feats.reduce((a, b) => a + b.featureCount, 0)
+    const basesCovered = feats.reduce((a, b) => a + b.basesCovered, 0)
 
     return rectifyStats({
       scoreMin,
@@ -252,19 +250,75 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       scoreSum,
     })
   }
+
+  public async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
+    const region = regions[0]
+    let lastTime = +Date.now()
+    const statsFromInterval = async (length: number, expansionTime: number) => {
+      const { start, end } = region
+      const sampleCenter = start * 0.75 + end * 0.25
+      const query = {
+        ...region,
+        start: Math.max(0, Math.round(sampleCenter - length / 2)),
+        end: Math.min(Math.round(sampleCenter + length / 2), end),
+      }
+
+      const features = await this.getFeatures(query, opts)
+        .pipe(toArray())
+        .toPromise()
+
+      return maybeRecordStats(
+        length,
+        { featureDensity: features.length / length },
+        features.length,
+        expansionTime,
+      )
+    }
+
+    const maybeRecordStats = async (
+      interval: number,
+      stats: Stats,
+      statsSampleFeatures: number,
+      expansionTime: number,
+    ): Promise<Stats> => {
+      const refLen = region.end - region.start
+      if (statsSampleFeatures >= 70 || interval * 2 > refLen) {
+        return stats
+      } else if (expansionTime <= 5000) {
+        const currTime = +Date.now()
+        expansionTime += currTime - lastTime
+        lastTime = currTime
+        return statsFromInterval(interval * 2, expansionTime)
+      } else {
+        console.warn(
+          "Stats estimation reached timeout, or didn't get enough features",
+        )
+        return { featureDensity: Infinity }
+      }
+    }
+
+    return statsFromInterval(1000, 0)
+  }
 }
 
 export interface RegionsAdapter extends BaseAdapter {
   getRegions(opts: BaseOptions): Promise<NoAssemblyRegion[]>
 }
 
-export interface SequenceAdapter
-  extends BaseFeatureDataAdapter,
-    RegionsAdapter {}
+export abstract class BaseSequenceAdapter
+  extends BaseFeatureDataAdapter
+  implements RegionsAdapter
+{
+  async estimateRegionsStats() {
+    return { featureDensity: 0 }
+  }
+
+  abstract getRegions(opts: BaseOptions): Promise<NoAssemblyRegion[]>
+}
 
 export function isSequenceAdapter(
   thing: AnyDataAdapter,
-): thing is SequenceAdapter {
+): thing is BaseSequenceAdapter {
   return 'getRegions' in thing && 'getFeatures' in thing
 }
 

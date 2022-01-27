@@ -56,6 +56,7 @@ export function stateModelFactory(configSchema: any) {
         return {
           rpcDriverName: self.rpcDriverName,
           displayModel: self,
+          highResolutionScaling: 2,
         }
       },
     }))

@@ -41,7 +41,6 @@ export function getScale({
     throw new Error('undefined scaleType')
   }
   scale.domain(pivotValue !== undefined ? [min, pivotValue, max] : [min, max])
-  // console.log('before', scale.domain())
   scale.nice()
 
   const [rangeMin, rangeMax] = range
@@ -49,8 +48,6 @@ export function getScale({
     throw new Error('invalid range')
   }
   scale.range(inverted ? range.slice().reverse() : range)
-
-  // console.log('after', scale.domain())
   return scale
 }
 /**
@@ -118,7 +115,7 @@ export function getNiceDomain({
     }
   }
   if (min === undefined || max === undefined) {
-    throw new Error('invalid domain')
+    throw new Error('invalid domain supplied to stats function')
   }
   if (minScore !== undefined && minScore !== Number.MIN_VALUE) {
     min = minScore

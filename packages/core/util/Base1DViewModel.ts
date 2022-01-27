@@ -1,5 +1,5 @@
 import { types, cast, getSnapshot, Instance } from 'mobx-state-tree'
-import { clamp } from './index'
+import { clamp, viewBpToPx } from './index'
 import { Feature } from './simpleFeature'
 import { Region } from './types/mst'
 import { Region as IRegion } from './types'
@@ -61,63 +61,6 @@ const Base1DView = types
       return self.displayedRegions
         .map(a => a.end - a.start)
         .reduce((a, b) => a + b, 0)
-    },
-
-    /**
-     * calculates the Px at which coord is found.
-     *
-     * @param refName - string, refName of region
-     * @param coord - number, bp to be translated to Px
-     * @param regionNumber - number, index of displayedRegion in displayedRegions array
-     */
-    bpToPx({
-      refName,
-      coord,
-      regionNumber,
-    }: {
-      refName: string
-      coord: number
-      regionNumber?: number
-    }) {
-      let offsetBp = 0
-
-      const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
-      const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
-      const index = self.displayedRegions.findIndex((region, idx) => {
-        const len = region.end - region.start
-        if (
-          refName === region.refName &&
-          coord >= region.start &&
-          coord <= region.end
-        ) {
-          if (regionNumber ? regionNumber === idx : true) {
-            offsetBp += region.reversed
-              ? region.end - coord
-              : coord - region.start
-            return true
-          }
-        }
-
-        // add the interRegionPaddingWidth if the boundary is in the screen
-        // e.g. offset>0 && offset<width
-        if (
-          region.end - region.start > minimumBlockBp &&
-          offsetBp / self.bpPerPx > 0 &&
-          offsetBp / self.bpPerPx < this.width
-        ) {
-          offsetBp += len + interRegionPaddingBp
-        } else {
-          offsetBp += len
-        }
-        return false
-      })
-
-      const foundRegion = self.displayedRegions[index]
-      if (foundRegion) {
-        return Math.round(offsetBp / self.bpPerPx)
-      }
-
-      return undefined
     },
 
     pxToBp(px: number) {
@@ -207,6 +150,25 @@ const Base1DView = types
       return this.dynamicBlocks
         .map(a => a.end - a.start)
         .reduce((a, b) => a + b, 0)
+    },
+
+    /**
+     * calculates the Px at which coord is found.
+     *
+     * @param refName - string, refName of region
+     * @param coord - number, bp to be translated to Px
+     * @param regionNumber - number, index of displayedRegion in displayedRegions array
+     */
+    bpToPx({
+      refName,
+      coord,
+      regionNumber,
+    }: {
+      refName: string
+      coord: number
+      regionNumber?: number
+    }) {
+      return viewBpToPx({ refName, coord, regionNumber, self })?.offsetPx
     },
   }))
   .actions(self => ({
@@ -323,6 +285,22 @@ const Base1DView = types
         self.minOffset,
         self.maxOffset,
       )
+    },
+
+    scrollTo(offsetPx: number) {
+      const newOffsetPx = clamp(offsetPx, self.minOffset, self.maxOffset)
+      self.offsetPx = newOffsetPx
+      return newOffsetPx
+    },
+    centerAt(bp: number, refName: string, regionIndex: number) {
+      const centerPx = self.bpToPx({
+        refName,
+        coord: bp,
+        regionNumber: regionIndex,
+      })
+      if (centerPx) {
+        this.scrollTo(Math.round(centerPx - self.width / 2))
+      }
     },
 
     scroll(distance: number) {

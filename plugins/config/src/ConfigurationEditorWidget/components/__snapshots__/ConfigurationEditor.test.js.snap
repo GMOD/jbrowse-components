@@ -761,7 +761,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
           class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
           data-shrink="true"
         >
-          maxDisplayedBpPerPx
+          maxFeatureScreenDensity
         </label>
         <div
           class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
@@ -770,13 +770,49 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             aria-invalid="false"
             class="MuiInputBase-input MuiInput-input"
             type="number"
-            value="1000"
+            value="0.3"
           />
         </div>
         <p
           class="MuiFormHelperText-root MuiFormHelperText-filled"
         >
-          maximum bpPerPx that is displayed in the view
+          maximum features per pixel that is displayed in the view, used if byte size estimates not available
+        </p>
+      </div>
+    </div>
+    <div
+      class="makeStyles-slotModeSwitch"
+    />
+  </div>
+  <div
+    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
+  >
+    <div
+      class="makeStyles-paperContent"
+    >
+      <div
+        class="MuiFormControl-root MuiTextField-root"
+      >
+        <label
+          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
+          data-shrink="true"
+        >
+          fetchSizeLimit
+        </label>
+        <div
+          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+        >
+          <input
+            aria-invalid="false"
+            class="MuiInputBase-input MuiInput-input"
+            type="number"
+            value="1000000"
+          />
+        </div>
+        <p
+          class="MuiFormHelperText-root MuiFormHelperText-filled"
+        >
+          maximum data to attempt to download for a given track, used if adapter doesn't specify one
         </p>
       </div>
     </div>

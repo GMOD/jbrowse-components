@@ -23,6 +23,7 @@ describe('adapter can fetch features from volvox.gff3', () => {
       refName: 'ctgB',
       start: 0,
       end: 200000,
+      assemblyName: 'volvox',
     })
     expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
     expect(await adapter.hasDataForRefName('ctgB')).toBe(true)

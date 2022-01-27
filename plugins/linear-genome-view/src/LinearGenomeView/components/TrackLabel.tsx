@@ -1,12 +1,17 @@
+import React from 'react'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
-import IconButton from '@material-ui/core/IconButton'
-import Paper from '@material-ui/core/Paper'
-import { makeStyles } from '@material-ui/core/styles'
-import { alpha } from '@material-ui/core/styles'
-import Typography from '@material-ui/core/Typography'
+import {
+  IconButton,
+  Paper,
+  Typography,
+  alpha,
+  makeStyles,
+} from '@material-ui/core'
+
+// icons
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import DragIcon from '@material-ui/icons/DragIndicator'
 import CloseIcon from '@material-ui/icons/Close'
@@ -14,7 +19,6 @@ import CloseIcon from '@material-ui/icons/Close'
 import clsx from 'clsx'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
-import React from 'react'
 import { LinearGenomeViewStateModel } from '..'
 
 const useStyles = makeStyles(theme => ({

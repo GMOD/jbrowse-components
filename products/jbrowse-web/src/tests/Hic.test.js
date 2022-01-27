@@ -41,4 +41,4 @@ test('hic', async () => {
   expectCanvasMatch(
     await findByTestId('prerendered_canvas_{hg19}1:1..4,000,000-0', {}, delay),
   )
-}, 15000)
+}, 25000)

@@ -583,4 +583,22 @@ export default class PluginManager {
     }
     return accumulator
   }
+
+  async evaluateAsyncExtensionPoint(
+    extensionPointName: string,
+    extendee: unknown,
+  ) {
+    const callbacks = this.extensionPoints.get(extensionPointName)
+    let accumulator = extendee
+    if (callbacks) {
+      for (const callback of callbacks) {
+        try {
+          accumulator = await callback(accumulator)
+        } catch (error) {
+          console.error(error)
+        }
+      }
+    }
+    return accumulator
+  }
 }

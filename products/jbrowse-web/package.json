@@ -13,7 +13,8 @@
     "eject": "rescripts eject",
     "checktypes": "tsc --noEmit",
     "jtest": "jest --config ../../jest.config.js --roots products/jbrowse-web/",
-    "lint": "eslint --ext .js,.ts,.jsx,.tsx src"
+    "lint": "eslint --ext .js,.ts,.jsx,.tsx src",
+    "prepack": "yarn build"
   },
   "dependencies": {
     "@fontsource/roboto": "^4.5.0",

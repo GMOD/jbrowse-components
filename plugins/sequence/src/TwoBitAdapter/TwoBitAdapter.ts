@@ -1,7 +1,4 @@
-import {
-  BaseFeatureDataAdapter,
-  SequenceAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -12,10 +9,7 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
-export default class TwoBitAdapter
-  extends BaseFeatureDataAdapter
-  implements SequenceAdapter
-{
+export default class TwoBitAdapter extends BaseSequenceAdapter {
   private twobit: TwoBitFile
 
   // the chromSizesData can be used to speed up loading since TwoBit has to do

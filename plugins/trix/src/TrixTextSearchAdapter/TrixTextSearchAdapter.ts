@@ -6,8 +6,10 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 

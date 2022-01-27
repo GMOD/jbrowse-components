@@ -34,10 +34,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
 
   const { assemblyNames, assemblyManager } = session
   const [selected, setSelected] = useState([assemblyNames[0], assemblyNames[0]])
-  const [trackData, setTrackData] = useState<FileLocation>({
-    uri: '',
-    locationType: 'UriLocation',
-  })
+  const [trackData, setTrackData] = useState<FileLocation>()
   const [numRows] = useState(2)
   const [error, setError] = useState<unknown>()
   const assemblyError = assemblyNames.length
@@ -72,24 +69,26 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
 
       model.views.forEach(view => view.setWidth(model.width))
 
-      const name =
-        'uri' in trackData && trackData.uri
-          ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
-          : 'MyTrack'
+      if (trackData) {
+        const name =
+          'uri' in trackData
+            ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
+            : 'MyTrack'
 
-      const trackId = `${name}-${Date.now()}`
-      session.addTrackConf({
-        trackId,
-        name,
-        assemblyNames: selected,
-        type: 'SyntenyTrack',
-        adapter: {
-          type: 'PAFAdapter',
-          pafLocation: trackData,
+        const trackId = `${name}-${Date.now()}`
+        session.addTrackConf({
+          trackId,
+          name,
           assemblyNames: selected,
-        },
-      })
-      model.toggleTrack(trackId)
+          type: 'SyntenyTrack',
+          adapter: {
+            type: 'PAFAdapter',
+            pafLocation: trackData,
+            assemblyNames: selected,
+          },
+        })
+        model.toggleTrack(trackId)
+      }
     } catch (e) {
       console.error(e)
       setError(e)
@@ -137,7 +136,8 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
             </a>{' '}
             file for the linear synteny view. Note that the first assembly
             should be the left column of the PAF and the second assembly should
-            be the right column
+            be the right column. PAF-like files from MashMap (.out) are also
+            allowed
           </Typography>
           <Grid item>
             <FileSelector
@@ -168,13 +168,3 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
 })
 
 export default ImportForm
-
-/* ability to add another assembly commented out for now
-    Add another assembly...
-        <IconButton
-          onClick={() => setNumRows(rows => rows + 1)}
-          color="primary"
-        >
-          <AddIcon />
-      </IconButton>
-            */

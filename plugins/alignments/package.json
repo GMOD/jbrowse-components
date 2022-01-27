@@ -35,7 +35,7 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@gmod/bam": "^1.1.9",
+    "@gmod/bam": "^1.1.11",
     "@gmod/cram": "^1.5.9",
     "@material-ui/icons": "^4.9.1",
     "abortable-promise-cache": "^1.1.3",

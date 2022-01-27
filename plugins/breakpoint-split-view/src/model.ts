@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { MenuItem } from '@jbrowse/core/ui'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 import {
@@ -14,6 +13,8 @@ import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { parseBreakend } from '@gmod/vcf'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+
+type LGV = Instance<LinearGenomeViewStateModel>
 
 // https://stackoverflow.com/a/49186706/2129219 the array-intersection package
 // on npm has a large kb size, and we are just intersecting open track ids so
@@ -44,7 +45,6 @@ export default function stateModelFactory(pluginManager: any) {
   const model = types
     .model('BreakpointSplitView', {
       type: types.literal('BreakpointSplitView'),
-      headerHeight: 0,
       height: types.optional(
         types.refinement(
           'viewHeight',
@@ -79,16 +79,10 @@ export default function stateModelFactory(pluginManager: any) {
       },
 
       menuItems() {
-        const menuItems: MenuItem[] = []
-        self.views.forEach((view, idx) => {
-          if (view.menuItems?.()) {
-            menuItems.push({
-              label: `View ${idx + 1} Menu`,
-              subMenu: view.menuItems(),
-            })
-          }
-        })
-        return menuItems
+        self.views
+          .map((view, idx) => [idx, view.menuItems?.()])
+          .filter(f => !!f[1])
+          .map(f => ({ label: `View ${f[0]} Menu`, subMenu: f[1] }))
       },
 
       get viewDividerHeight() {
@@ -297,16 +291,12 @@ export default function stateModelFactory(pluginManager: any) {
         self.views.forEach(v => v.setWidth(newWidth))
       },
 
-      removeView(view: Instance<LinearGenomeViewStateModel>) {
+      removeView(view: LGV) {
         self.views.remove(view)
       },
 
       closeView() {
         getParent(self, 2).removeView(self)
-      },
-
-      setHeaderHeight(height: number) {
-        self.headerHeight = height
       },
 
       toggleInteract() {

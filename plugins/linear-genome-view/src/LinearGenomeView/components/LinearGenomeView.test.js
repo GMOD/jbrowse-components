@@ -1,11 +1,9 @@
 import React from 'react'
 import { fireEvent, render, waitFor } from '@testing-library/react'
+import '@testing-library/jest-dom/extend-expect'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
-import sizeMe from 'react-sizeme'
 import 'requestidlecallback-polyfill'
 import LinearGenomeView from './LinearGenomeView'
-
-sizeMe.noPlaceholders = true
 
 const assemblyConf = {
   name: 'volMyt1',
@@ -142,9 +140,13 @@ describe('<LinearGenomeView />', () => {
     })
     const model = session.views[0]
     model.setWidth(800)
-    const { container, findByText } = render(<LinearGenomeView model={model} />)
+    const { container, findByText, findAllByTestId } = render(
+      <LinearGenomeView model={model} />,
+    )
     await findByText('Foo Track')
     await findByText('798 bp')
+    await findAllByTestId('svgfeatures')
+
     expect(container.firstChild).toMatchSnapshot()
   })
 })

@@ -39,6 +39,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         showIntraviewLinks: true,
         linkViews: false,
         interactToggled: false,
+        middleComparativeHeight: 100,
         tracks: types.array(
           pluginManager.pluggableMstType('track', 'stateModel'),
         ),
@@ -60,6 +61,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       width: 800,
     }))
     .views(self => ({
+      get highResolutionScaling() {
+        return 2
+      },
       get initialized() {
         return self.views.length > 0
       },
@@ -142,12 +146,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.headerHeight = height
       },
 
-      toggleInteract() {
-        self.interactToggled = !self.interactToggled
+      setMiddleComparativeHeight(n: number) {
+        self.middleComparativeHeight = n
+        return self.middleComparativeHeight
       },
-      toggleIntraviewLinks() {
-        self.showIntraviewLinks = !self.showIntraviewLinks
-      },
+
       toggleLinkViews() {
         self.linkViews = !self.linkViews
       },
@@ -179,21 +182,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       showTrack(trackId: string, initialSnapshot = {}) {
-        const trackConfigSchema =
-          pluginManager.pluggableConfigSchemaType('track')
-        const configuration = resolveIdentifier(
-          trackConfigSchema,
-          getRoot(self),
-          trackId,
-        )
+        const schema = pluginManager.pluggableConfigSchemaType('track')
+        const configuration = resolveIdentifier(schema, getRoot(self), trackId)
         const trackType = pluginManager.getTrackType(configuration.type)
         if (!trackType) {
           throw new Error(`unknown track type ${configuration.type}`)
         }
         const viewType = pluginManager.getViewType(self.type)
-        const supportedDisplays = viewType.displayTypes.map(
-          displayType => displayType.name,
-        )
+        const supportedDisplays = viewType.displayTypes.map(d => d.name)
         const displayConf = configuration.displays.find(
           (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
         )
@@ -213,17 +209,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       hideTrack(trackId: string) {
-        const trackConfigSchema =
-          pluginManager.pluggableConfigSchemaType('track')
-        const config = resolveIdentifier(
-          trackConfigSchema,
-          getRoot(self),
-          trackId,
-        )
-        // if we have any tracks with that configuration, turn them off
+        const schema = pluginManager.pluggableConfigSchemaType('track')
+        const config = resolveIdentifier(schema, getRoot(self), trackId)
         const shownTracks = self.tracks.filter(t => t.configuration === config)
         transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
         return shownTracks.length
+      },
+      squareView() {
+        const bpPerPxs = self.views.map(v => v.bpPerPx)
+        const avg = bpPerPxs.reduce((a, b) => a + b, 0) / bpPerPxs.length
+        self.views.forEach(view => {
+          const center = view.pxToBp(view.width / 2)
+          view.setNewView(avg, view.offsetPx)
+          view.centerAt(center.coord, center.refName, center.index)
+        })
       },
     }))
     .views(self => ({

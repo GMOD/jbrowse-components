@@ -1,28 +1,35 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,react/no-danger */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React from 'react'
+import { Button, Typography } from '@material-ui/core'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
 import {
+  isAbortException,
   getContainingView,
   getSession,
   isSelectionContainer,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import { Stats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import { Region } from '@jbrowse/core/util/types'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { Feature, isFeature } from '@jbrowse/core/util/simpleFeature'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import Button from '@material-ui/core/Button'
-import Typography from '@material-ui/core/Typography'
-import MenuOpenIcon from '@material-ui/icons/MenuOpen'
+import {
+  getParentRenderProps,
+  getRpcSessionId,
+} from '@jbrowse/core/util/tracks'
 import { autorun } from 'mobx'
-import { addDisposer, Instance, isAlive, types } from 'mobx-state-tree'
-import React from 'react'
+import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
+// icons
+import MenuOpenIcon from '@material-ui/icons/MenuOpen'
+
+import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
 import { Tooltip } from '../components/BaseLinearDisplay'
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
 
-import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
+type LGV = LinearGenomeViewModel
 
 export interface Layout {
   minX: number
@@ -31,10 +38,30 @@ export interface Layout {
   maxY: number
   name: string
 }
+
+// stabilize clipid under test for snapshot
+function getId(id: string, index: number) {
+  const isJest = typeof jest === 'undefined'
+  return `clip-${isJest ? id : 'jest'}-${index}`
+}
+
 type LayoutRecord = [number, number, number, number]
+
+function getDisplayStr(totalBytes: number) {
+  let displayBp
+  if (Math.floor(totalBytes / 1000000) > 0) {
+    displayBp = `${parseFloat((totalBytes / 1000000).toPrecision(3))} Mb`
+  } else if (Math.floor(totalBytes / 1000) > 0) {
+    displayBp = `${parseFloat((totalBytes / 1000).toPrecision(3))} Kb`
+  } else {
+    displayBp = `${Math.floor(totalBytes)} bytes`
+  }
+  return displayBp
+}
 
 const minDisplayHeight = 20
 const defaultDisplayHeight = 100
+
 export const BaseLinearDisplay = types
   .compose(
     'BaseLinearDisplay',
@@ -50,13 +77,17 @@ export const BaseLinearDisplay = types
       ),
       blockState: types.map(BlockState),
       userBpPerPxLimit: types.maybe(types.number),
+      userByteSizeLimit: types.maybe(types.number),
     }),
   )
   .volatile(() => ({
+    currBpPerPx: 0,
     message: '',
     featureIdUnderMouse: undefined as undefined | string,
     contextMenuFeature: undefined as undefined | Feature,
     scrollTop: 0,
+    estimatedRegionStatsP: undefined as undefined | Promise<Stats>,
+    estimatedRegionStats: undefined as undefined | Stats,
   }))
   .views(self => ({
     get blockType(): 'staticBlocks' | 'dynamicBlocks' {
@@ -64,7 +95,7 @@ export const BaseLinearDisplay = types
     },
     get blockDefinitions() {
       const { blockType } = this
-      const view = getContainingView(self) as LinearGenomeViewModel
+      const view = getContainingView(self) as LGV
       if (!view.initialized) {
         throw new Error('view not initialized yet')
       }
@@ -72,13 +103,6 @@ export const BaseLinearDisplay = types
     },
   }))
   .views(self => ({
-    /**
-     * set limit to config amount, or user amount if they force load,
-     */
-    get maxViewBpPerPx() {
-      return self.userBpPerPxLimit || getConf(self, 'maxDisplayedBpPerPx')
-    },
-
     /**
      * how many milliseconds to wait for the display to
      * "settle" before re-rendering a block
@@ -113,56 +137,83 @@ export const BaseLinearDisplay = types
       return undefined as undefined | React.FC<any>
     },
   }))
-  .views(self => {
-    return {
-      /**
-       * a CompositeMap of `featureId -> feature obj` that
-       * just looks in all the block data for that feature
-       */
-      get features() {
-        const featureMaps = []
-        for (const block of self.blockState.values()) {
-          if (block && block.features) {
-            featureMaps.push(block.features)
-          }
+  .views(self => ({
+    /**
+     * a CompositeMap of `featureId -> feature obj` that
+     * just looks in all the block data for that feature
+     */
+    get features() {
+      const featureMaps = []
+      for (const block of self.blockState.values()) {
+        if (block && block.features) {
+          featureMaps.push(block.features)
         }
-        return new CompositeMap<string, Feature>(featureMaps)
-      },
+      }
+      return new CompositeMap(featureMaps)
+    },
 
-      get featureUnderMouse() {
-        return self.featureIdUnderMouse
-          ? this.features.get(self.featureIdUnderMouse)
-          : undefined
-      },
+    get featureUnderMouse() {
+      const feat = self.featureIdUnderMouse
+      return feat ? this.features.get(feat) : undefined
+    },
 
-      getFeatureOverlapping(blockKey: string, x: number, y: number) {
-        return self.blockState.get(blockKey)?.layout?.getByCoord(x, y)
-      },
+    getFeatureOverlapping(blockKey: string, x: number, y: number) {
+      return self.blockState.get(blockKey)?.layout?.getByCoord(x, y)
+    },
 
-      getFeatureByID(blockKey: string, id: string): LayoutRecord | undefined {
-        return self.blockState.get(blockKey)?.layout?.getByID(id)
-      },
+    getFeatureByID(blockKey: string, id: string): LayoutRecord | undefined {
+      return self.blockState.get(blockKey)?.layout?.getByID(id)
+    },
 
-      // if block key is not supplied, can look at all blocks
-      searchFeatureByID(id: string): LayoutRecord | undefined {
-        let ret
-        self.blockState.forEach(block => {
-          const val = block?.layout?.getByID(id)
-          if (val) {
-            ret = val
-          }
-        })
-        return ret
-      },
-    }
-  })
+    // if block key is not supplied, can look at all blocks
+    searchFeatureByID(id: string): LayoutRecord | undefined {
+      let ret
+      self.blockState.forEach(block => {
+        const val = block?.layout?.getByID(id)
+        if (val) {
+          ret = val
+        }
+      })
+      return ret
+    },
+
+    get currentBytesRequested() {
+      return self.estimatedRegionStats?.bytes || 0
+    },
+
+    get currentFeatureScreenDensity() {
+      const view = getContainingView(self) as LGV
+      return (self.estimatedRegionStats?.featureDensity || 0) * view.bpPerPx
+    },
+
+    get maxFeatureScreenDensity() {
+      return getConf(self, 'maxFeatureScreenDensity')
+    },
+    get estimatedStatsReady() {
+      return !!self.estimatedRegionStats
+    },
+
+    get maxAllowableBytes() {
+      return (
+        self.userByteSizeLimit ||
+        self.estimatedRegionStats?.fetchSizeLimit ||
+        (getConf(self, 'fetchSizeLimit') as number)
+      )
+    },
+  }))
   .actions(self => ({
+    // base display reload does nothing, see specialized displays for details
+    setMessage(message: string) {
+      self.message = message
+    },
+
     afterAttach() {
-      // watch the parent's blocks to update our block state when they change
+      // watch the parent's blocks to update our block state when they change,
+      // then we recreate the blocks on our own model (creating and deleting to
+      // match the parent blocks)
       const blockWatchDisposer = autorun(() => {
-        // create any blocks that we need to create
         const blocksPresent: { [key: string]: boolean } = {}
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = getContainingView(self) as LGV
         if (view.initialized) {
           self.blockDefinitions.contentBlocks.forEach(block => {
             blocksPresent[block.key] = true
@@ -170,7 +221,6 @@ export const BaseLinearDisplay = types
               this.addBlock(block.key, block)
             }
           })
-          // delete any blocks we need go delete
           self.blockState.forEach((_, key) => {
             if (!blocksPresent[key]) {
               this.deleteBlock(key)
@@ -180,6 +230,54 @@ export const BaseLinearDisplay = types
       })
 
       addDisposer(self, blockWatchDisposer)
+    },
+
+    estimateRegionsStats(
+      regions: Region[],
+      opts: {
+        headers?: Record<string, string>
+        signal?: AbortSignal
+        filters?: string[]
+      },
+    ) {
+      if (self.estimatedRegionStatsP) {
+        return self.estimatedRegionStatsP
+      }
+
+      const { rpcManager } = getSession(self)
+      const { adapterConfig } = self
+      const sessionId = getRpcSessionId(self)
+
+      const params = {
+        sessionId,
+        regions,
+        adapterConfig,
+        statusCallback: (message: string) => {
+          if (isAlive(self)) {
+            this.setMessage(message)
+          }
+        },
+        ...opts,
+      }
+
+      self.estimatedRegionStatsP = rpcManager
+        .call(sessionId, 'CoreEstimateRegionStats', params)
+        .catch(e => {
+          this.setRegionStatsP(undefined)
+          throw e
+        }) as Promise<Stats>
+
+      return self.estimatedRegionStatsP
+    },
+    setRegionStatsP(p?: Promise<Stats>) {
+      self.estimatedRegionStatsP = p
+    },
+    setRegionStats(estimatedRegionStats?: Stats) {
+      self.estimatedRegionStats = estimatedRegionStats
+    },
+    clearRegionStats() {
+      self.estimatedRegionStatsP = undefined
+      self.estimatedRegionStats = undefined
     },
     setHeight(displayHeight: number) {
       if (displayHeight > minDisplayHeight) {
@@ -194,17 +292,20 @@ export const BaseLinearDisplay = types
       const newHeight = this.setHeight(self.height + distance)
       return newHeight - oldHeight
     },
+
     setScrollTop(scrollTop: number) {
       self.scrollTop = scrollTop
     },
-    // sets the new bpPerPxLimit if user chooses to force load
-    setUserBpPerPxLimit(limit: number) {
-      self.userBpPerPxLimit = limit
+
+    updateStatsLimit(stats: Stats) {
+      const view = getContainingView(self) as LGV
+      if (stats.bytes) {
+        self.userByteSizeLimit = stats.bytes
+      } else {
+        self.userBpPerPxLimit = view.bpPerPx
+      }
     },
-    // base display reload does nothing, see specialized displays for details
-    setMessage(message: string) {
-      self.message = message
-    },
+
     addBlock(key: string, block: BaseBlock) {
       self.blockState.set(
         key,
@@ -213,6 +314,9 @@ export const BaseLinearDisplay = types
           region: block.toRegion(),
         }),
       )
+    },
+    setCurrBpPerPx(n: number) {
+      self.currBpPerPx = n
     },
     deleteBlock(key: string) {
       self.blockState.delete(key)
@@ -246,12 +350,123 @@ export const BaseLinearDisplay = types
     },
   }))
   .views(self => ({
-    regionCannotBeRenderedText(_region: Region) {
-      const view = getContainingView(self) as LinearGenomeViewModel
-      if (view && view.bpPerPx > self.maxViewBpPerPx) {
-        return 'Zoom in to see features'
+    // region is too large if:
+    // - stats are ready
+    // - region is greater than 20kb (don't warn when zoomed in less than that)
+    // - and bytes > max allowed bytes || curr density>max density
+    get regionTooLarge() {
+      const view = getContainingView(self) as LGV
+      if (!self.estimatedStatsReady || view.dynamicBlocks.totalBp < 20_000) {
+        return false
       }
-      return ''
+      const bpLimitOrDensity = self.userBpPerPxLimit
+        ? view.bpPerPx > self.userBpPerPxLimit
+        : self.currentFeatureScreenDensity > self.maxFeatureScreenDensity
+
+      return (
+        self.currentBytesRequested > self.maxAllowableBytes || bpLimitOrDensity
+      )
+    },
+
+    // only shows a message of bytes requested is defined, the feature density
+    // based stats don't produce any helpful message besides to zoom in
+    get regionTooLargeReason() {
+      const req = self.currentBytesRequested
+      const max = self.maxAllowableBytes
+
+      return req && req > max
+        ? `Requested too much data (${getDisplayStr(req)})`
+        : ''
+    },
+  }))
+  .actions(self => {
+    const { reload: superReload } = self
+
+    return {
+      async reload() {
+        self.setError()
+        const aborter = new AbortController()
+        const view = getContainingView(self) as LGV
+        if (!view.initialized) {
+          return
+        }
+
+        try {
+          self.estimatedRegionStatsP = self.estimateRegionsStats(
+            view.staticBlocks.contentBlocks,
+            { signal: aborter.signal },
+          )
+          const estimatedRegionStats = await self.estimatedRegionStatsP
+
+          if (isAlive(self)) {
+            self.setRegionStats(estimatedRegionStats)
+            superReload()
+          } else {
+            return
+          }
+        } catch (e) {
+          self.setError(e)
+        }
+      },
+      afterAttach() {
+        // this autorun performs stats estimation
+        //
+        // the chain of events calls estimateRegionStats against the data
+        // adapter which by default uses featureDensity, but can also respond
+        // with a byte size estimate and fetch size limit (data adapter can
+        // define what is too much data)
+        addDisposer(
+          self,
+          autorun(
+            async () => {
+              try {
+                const aborter = new AbortController()
+                const view = getContainingView(self) as LGV
+
+                if (!view.initialized) {
+                  return
+                }
+
+                // don't re-estimate featureDensity even if zoom level changes,
+                // jbrowse1-style assume it's sort of representative
+                if (self.estimatedRegionStats?.featureDensity !== undefined) {
+                  self.setCurrBpPerPx(view.bpPerPx)
+                  return
+                }
+
+                // we estimate stats once at a given zoom level
+                if (view.bpPerPx === self.currBpPerPx) {
+                  return
+                }
+
+                self.clearRegionStats()
+                self.setCurrBpPerPx(view.bpPerPx)
+                const statsP = self.estimateRegionsStats(
+                  view.staticBlocks.contentBlocks,
+                  { signal: aborter.signal },
+                )
+                self.setRegionStatsP(statsP)
+                const estimatedRegionStats = await statsP
+
+                if (isAlive(self)) {
+                  self.setRegionStats(estimatedRegionStats)
+                }
+              } catch (e) {
+                if (!isAbortException(e) && isAlive(self)) {
+                  console.error(e)
+                  self.setError(e)
+                }
+              }
+            },
+            { delay: 500 },
+          ),
+        )
+      },
+    }
+  })
+  .views(self => ({
+    regionCannotBeRenderedText(_region: Region) {
+      return self.regionTooLarge ? 'Force load to see features' : ''
     },
 
     /**
@@ -262,18 +477,24 @@ export const BaseLinearDisplay = types
      *  react node allows user to force load at current setting
      */
     regionCannotBeRendered(_region: Region) {
-      const view = getContainingView(self) as LinearGenomeViewModel
-      if (view && view.bpPerPx > self.maxViewBpPerPx) {
+      const { regionTooLarge, regionTooLargeReason } = self
+
+      if (regionTooLarge) {
         return (
           <>
             <Typography component="span" variant="body2">
+              {regionTooLargeReason ? regionTooLargeReason + '. ' : ''}
               Zoom in to see features or{' '}
             </Typography>
             <Button
-              data-testid="reload_button"
+              data-testid="force_reload_button"
               onClick={() => {
-                self.setUserBpPerPxLimit(view.bpPerPx)
-                self.reload()
+                if (!self.estimatedRegionStats) {
+                  console.error('No global stats?')
+                } else {
+                  self.updateStatsLimit(self.estimatedRegionStats)
+                  self.reload()
+                }
               }}
               variant="outlined"
             >
@@ -308,8 +529,11 @@ export const BaseLinearDisplay = types
         : []
     },
     renderProps() {
+      const view = getContainingView(self) as LGV
       return {
         ...getParentRenderProps(self),
+        notReady:
+          self.currBpPerPx !== view.bpPerPx || !self.estimatedRegionStats,
         rpcDriverName: self.rpcDriverName,
         displayModel: self,
         onFeatureClick(_: unknown, featureId: string | undefined) {
@@ -318,7 +542,9 @@ export const BaseLinearDisplay = types
             self.clearFeatureSelection()
           } else {
             const feature = self.features.get(f)
-            self.selectFeature(feature as Feature)
+            if (feature) {
+              self.selectFeature(feature)
+            }
           }
         },
         onClick() {
@@ -354,15 +580,11 @@ export const BaseLinearDisplay = types
     async renderSvg(opts: ExportSvgOptions & { overrideHeight: number }) {
       const { height, id } = self
       const { overrideHeight } = opts
-      const view = getContainingView(self) as LinearGenomeViewModel
-      const {
-        offsetPx: viewOffsetPx,
-        roundedDynamicBlocks: dynamicBlocks,
-        width,
-      } = view
+      const view = getContainingView(self) as LGV
+      const { offsetPx: viewOffsetPx, roundedDynamicBlocks, width } = view
 
       const renderings = await Promise.all(
-        dynamicBlocks.map(block => {
+        roundedDynamicBlocks.map(block => {
           const blockState = BlockState.create({
             key: block.key,
             region: block,
@@ -401,12 +623,9 @@ export const BaseLinearDisplay = types
       return (
         <>
           {renderings.map((rendering, index) => {
-            const { offsetPx } = dynamicBlocks[index]
+            const { offsetPx } = roundedDynamicBlocks[index]
             const offset = offsetPx - viewOffsetPx
-            // stabalize clipid under test for snapshot
-            const clipid = `clip-${
-              typeof jest === 'undefined' ? id : 'jest'
-            }-${index}`
+            const clipid = getId(id, index)
             return (
               <React.Fragment key={`frag-${index}`}>
                 <defs>
@@ -424,6 +643,7 @@ export const BaseLinearDisplay = types
                     {React.isValidElement(rendering.reactElement) ? (
                       rendering.reactElement
                     ) : (
+                      // eslint-disable-next-line react/no-danger
                       <g dangerouslySetInnerHTML={{ __html: rendering.html }} />
                     )}
                   </g>

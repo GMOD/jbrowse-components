@@ -27,6 +27,7 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
         description:
           'global/local using their min/max values or w/ standard deviations (globalsd/localsd)',
       },
+
       minScore: {
         type: 'number',
         defaultValue: Number.MIN_VALUE,

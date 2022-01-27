@@ -14,6 +14,7 @@ import {
   measureText,
   parseLocString,
   springAnimate,
+  viewBpToPx,
 } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -50,6 +51,7 @@ import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 // locals
 import { renderToSvg } from './components/LinearGenomeViewSvg'
 import RefNameAutocomplete from './components/RefNameAutocomplete'
+import SearchBox from './components/SearchBox'
 import ExportSvgDlg from './components/ExportSvgDialog'
 import ReturnToImportFormDlg from './components/ReturnToImportFormDialog'
 
@@ -99,6 +101,8 @@ export const HEADER_OVERVIEW_HEIGHT = 20
 export const SCALE_BAR_HEIGHT = 17
 export const RESIZE_HANDLE_HEIGHT = 3
 export const INTER_REGION_PADDING_WIDTH = 2
+export const WIDGET_HEIGHT = 32
+export const SPACING = 7
 
 export function stateModelFactory(pluginManager: PluginManager) {
   return types
@@ -122,9 +126,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
           types.enumeration(['hierarchical']),
           'hierarchical',
         ),
-        trackLabels: 'overlapping' as 'overlapping' | 'hidden' | 'offset',
-        showCenterLine: false,
-        showCytobandsSetting: true,
+        trackLabels: types.optional(
+          types.string,
+          () => localStorage.getItem('lgv-trackLabels') || 'overlapping',
+        ),
+        showCenterLine: types.optional(types.boolean, () => {
+          const setting = localStorage.getItem('lgv-showCenterLine')
+          return setting !== undefined ? !!setting : false
+        }),
+        showCytobandsSetting: types.optional(types.boolean, () => {
+          const setting = localStorage.getItem('lgv-showCytobands')
+          return setting !== undefined ? !!setting : true
+        }),
       }),
     )
     .volatile(() => ({
@@ -213,11 +226,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
       },
       get totalBp() {
-        let totalbp = 0
-        self.displayedRegions.forEach(region => {
-          totalbp += region.end - region.start
-        })
-        return totalbp
+        return self.displayedRegions.reduce((a, b) => a + b.end - b.start, 0)
       },
 
       get maxBpPerPx() {
@@ -288,47 +297,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         coord: number
         regionNumber?: number
       }) {
-        let offsetBp = 0
-
-        const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
-        const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
-        const index = self.displayedRegions.findIndex((region, idx) => {
-          const len = region.end - region.start
-          if (
-            refName === region.refName &&
-            coord >= region.start &&
-            coord <= region.end
-          ) {
-            if (regionNumber ? regionNumber === idx : true) {
-              offsetBp += region.reversed
-                ? region.end - coord
-                : coord - region.start
-              return true
-            }
-          }
-
-          // add the interRegionPaddingWidth if the boundary is in the screen
-          // e.g. offset>=0 && offset<width
-          if (
-            len > minimumBlockBp &&
-            offsetBp / self.bpPerPx >= 0 &&
-            offsetBp / self.bpPerPx < self.width
-          ) {
-            offsetBp += len + interRegionPaddingBp
-          } else {
-            offsetBp += len
-          }
-          return false
-        })
-        const foundRegion = self.displayedRegions[index]
-        if (foundRegion) {
-          return {
-            index,
-            offsetPx: Math.round(offsetBp / self.bpPerPx),
-          }
-        }
-
-        return undefined
+        return viewBpToPx({ refName, coord, regionNumber, self })
       },
       /**
        *
@@ -474,6 +443,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       setShowCytobands(flag: boolean) {
         self.showCytobandsSetting = flag
+        localStorage.setItem('lgv-showCytobands', `${+flag}`)
       },
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
@@ -566,11 +536,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
           trackId,
         )
         if (!configuration) {
-          throw new Error(`Could not resolve identifier`)
+          throw new Error(`Could not resolve identifier "${trackId}"`)
         }
         const trackType = pluginManager.getTrackType(configuration?.type)
         if (!trackType) {
-          throw new Error(`unknown track type ${configuration.type}`)
+          throw new Error(`Unknown track type ${configuration.type}`)
         }
         const viewType = pluginManager.getViewType(self.type)
         const supportedDisplays = viewType.displayTypes.map(
@@ -581,7 +551,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
         if (!displayConf) {
           throw new Error(
-            `could not find a compatible display for view type ${self.type}`,
+            `Could not find a compatible display for view type ${self.type}`,
           )
         }
 
@@ -666,10 +636,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
         self.trackLabels = setting
+        localStorage.setItem('lgv-trackLabels', setting)
       },
 
       toggleCenterLine() {
         self.showCenterLine = !self.showCenterLine
+        localStorage.setItem('lgv-showCenterLine', `${+self.showCenterLine}`)
       },
 
       setDisplayedRegions(regions: Region[]) {
@@ -1456,7 +1428,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
 }
 
-export { renderToSvg, RefNameAutocomplete }
+export { renderToSvg, RefNameAutocomplete, SearchBox }
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>
 export { default as ReactComponent } from './components/LinearGenomeView'
