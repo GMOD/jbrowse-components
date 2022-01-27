@@ -80,7 +80,6 @@ const MiddleComparativeView = observer(
             }
             style={{
               height: 4,
-              zIndex: 100000,
               background: '#ccc',
             }}
           />
