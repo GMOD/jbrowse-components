@@ -126,9 +126,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
           types.enumeration(['hierarchical']),
           'hierarchical',
         ),
-        trackLabels: 'overlapping' as 'overlapping' | 'hidden' | 'offset',
-        showCenterLine: false,
-        showCytobandsSetting: true,
+        trackLabels: types.optional(
+          types.string,
+          () =>
+            (localStorage.getItem('trackLabelsPosition') || 'overlapping') as
+              | 'overlapping'
+              | 'hidden'
+              | 'offset',
+        ),
+        showCenterLine: types.optional(
+          types.boolean,
+          () => Boolean(localStorage.getItem('showCenterLine')) || false,
+        ),
+        showCytobandsSetting: types.optional(
+          types.boolean,
+          () => Boolean(localStorage.getItem('showCytobands')) || true,
+        ),
       }),
     )
     .volatile(() => ({
@@ -434,6 +447,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       setShowCytobands(flag: boolean) {
         self.showCytobandsSetting = flag
+        localStorage.setItem('showCytobands', flag)
       },
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
@@ -626,10 +640,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
         self.trackLabels = setting
+        localStorage.setItem('trackLabelsPosition', setting)
       },
 
       toggleCenterLine() {
         self.showCenterLine = !self.showCenterLine
+        localStorage.setItem('showCenterLine', `${+self.showCenterLine}`)
       },
 
       setDisplayedRegions(regions: Region[]) {

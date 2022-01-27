@@ -20,6 +20,7 @@ self.document = {
     return { appendChild() {} }
   },
   documentElement: {},
+  localStorage: {},
   createElement() {
     return {
       style: {},
