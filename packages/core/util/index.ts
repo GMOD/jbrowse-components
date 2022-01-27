@@ -1040,6 +1040,18 @@ export async function bytesForRegions(regions: Region[], index: any) {
     .reduce((a, b) => a + b.end - b.start, 0)
 }
 
+export type ViewSnap = {
+  bpPerPx: number
+  interRegionPaddingWidth: number
+  minimumBlockWidth: number
+  width: number
+  displayedRegions: {
+    start: number
+    end: number
+    refName: string
+    reversed: boolean
+  }[]
+}
 export function viewBpToPx({
   refName,
   coord,
@@ -1049,18 +1061,7 @@ export function viewBpToPx({
   refName: string
   coord: number
   regionNumber?: number
-  self: {
-    bpPerPx: number
-    interRegionPaddingWidth: number
-    minimumBlockWidth: number
-    width: number
-    displayedRegions: {
-      start: number
-      end: number
-      refName: string
-      reversed: boolean
-    }[]
-  }
+  self: ViewSnap
 }) {
   let offsetBp = 0
 

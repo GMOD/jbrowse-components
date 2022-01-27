@@ -54,7 +54,7 @@ export function stateModelFactory(
           displayModel: self,
           config: getConf(self, 'renderer'),
           width: parentView.width,
-          height: 100,
+          height: parentView.middleComparativeHeight,
           highResolutionScaling: 2,
         }
       },

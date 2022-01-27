@@ -375,13 +375,13 @@ const OpenSequenceDialog = ({
           onClick={async () => {
             try {
               let confs = assemblyConfs
+
+              // if we want to add another one
               if (assemblyName) {
+                setError(undefined)
                 const assemblyConf = await createAssemblyConfig()
                 confs = [...assemblyConfs, assemblyConf]
                 setAssemblyConfs(confs)
-              }
-              if (!confs.length) {
-                throw new Error('No assemblies specified')
               }
               await onClose(confs)
             } catch (e) {

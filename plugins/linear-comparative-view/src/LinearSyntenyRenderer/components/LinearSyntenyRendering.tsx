@@ -6,7 +6,7 @@ import SimpleFeature, {
   Feature,
 } from '@jbrowse/core/util/simpleFeature'
 import { getConf } from '@jbrowse/core/configuration'
-import { getContainingView, viewBpToPx } from '@jbrowse/core/util'
+import { getContainingView, viewBpToPx, ViewSnap } from '@jbrowse/core/util'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { interstitialYPos, overlayYPos, generateMatches } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
@@ -18,7 +18,7 @@ type RectTuple = [number, number, number, number]
 
 const { parseCigar } = MismatchParser
 
-function px(view: any, arg: { refName: string; coord: number }) {
+function px(view: ViewSnap, arg: { refName: string; coord: number }) {
   return (viewBpToPx({ ...arg, self: view }) || {}).offsetPx || 0
 }
 
@@ -123,6 +123,8 @@ function LinearSyntenyRendering(props: {
     const viewSnaps = views.map(view => ({
       ...getSnapshot(view),
       width: view.width,
+      interRegionPaddingWidth: view.interRegionPaddingWidth,
+      minimumBlockWidth: view.minimumBlockWidth,
     }))
     matches.forEach(m => {
       // we follow a path in the list of chunks, not from top to bottom, just
