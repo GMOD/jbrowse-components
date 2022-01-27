@@ -51,7 +51,8 @@ export default function SetColorDialog({
   return (
     <Dialog open onClose={handleClose}>
       <DialogTitle>
-        Select a color
+        Select either an overall color, or the positive/negative colors. Note
+        that density renderers only work properly with positive/negative colors
         <IconButton
           aria-label="close"
           className={classes.closeButton}
@@ -78,18 +79,26 @@ export default function SetColorDialog({
           <>
             <Typography>Positive color</Typography>
             <CompactPicker
-              onChange={event => model.setPosColor(serialize(event.rgb))}
+              onChange={event => {
+                model.setPosColor(serialize(event.rgb))
+                model.setColor(undefined)
+              }}
             />
             <Typography>Negative color</Typography>
             <CompactPicker
-              onChange={event => model.setNegColor(serialize(event.rgb))}
+              onChange={event => {
+                model.setNegColor(serialize(event.rgb))
+                model.setColor(undefined)
+              }}
             />
           </>
         ) : (
           <>
             <Typography>Overall color</Typography>
             <CompactPicker
-              onChange={event => model.setColor(serialize(event.rgb))}
+              onChange={event => {
+                model.setColor(serialize(event.rgb))
+              }}
             />
           </>
         )}
