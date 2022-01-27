@@ -47,9 +47,6 @@ export function stateModelFactory(
     )
 
     .views(self => ({
-      get highResolutionScaling() {
-        return 1
-      },
       renderProps() {
         const parentView = getContainingView(self) as LinearSyntenyViewModel
         return {
@@ -57,7 +54,8 @@ export function stateModelFactory(
           displayModel: self,
           config: getConf(self, 'renderer'),
           width: parentView.width,
-          height: 100,
+          height: parentView.middleComparativeHeight,
+          highResolutionScaling: 2,
         }
       },
       get rendererTypeName() {

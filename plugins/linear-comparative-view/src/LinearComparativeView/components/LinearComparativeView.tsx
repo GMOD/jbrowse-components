@@ -4,6 +4,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { makeStyles } from '@material-ui/core/styles'
 import { getEnv } from 'mobx-state-tree'
+import { ResizeHandle } from '@jbrowse/core/ui'
 import { LinearComparativeViewModel } from '../model'
 import Header from './Header'
 
@@ -35,10 +36,17 @@ const Overlays = observer(({ model }: { model: LCV }) => {
     <>
       {model.tracks.map(track => {
         const [display] = track.displays
-        const { height, RenderingComponent } = display
+        const { RenderingComponent } = display
         const trackId = getConf(track, 'trackId')
         return RenderingComponent ? (
-          <div className={classes.overlay} key={trackId} style={{ height }}>
+          <div
+            className={classes.overlay}
+            key={trackId}
+            style={{
+              height: model.middleComparativeHeight,
+              overflow: 'hidden',
+            }}
+          >
             <RenderingComponent model={display} />
           </div>
         ) : null
@@ -64,6 +72,17 @@ const MiddleComparativeView = observer(
           <div className={classes.grid}>
             <Overlays model={model} />
           </div>
+          <ResizeHandle
+            onDrag={n =>
+              model.setMiddleComparativeHeight(
+                model.middleComparativeHeight + n,
+              )
+            }
+            style={{
+              height: 4,
+              background: '#ccc',
+            }}
+          />
           <ReactComponent model={views[1]} />
         </div>
       </div>

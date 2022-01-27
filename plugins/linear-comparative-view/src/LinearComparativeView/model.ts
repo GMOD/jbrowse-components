@@ -39,6 +39,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         showIntraviewLinks: true,
         linkViews: false,
         interactToggled: false,
+        middleComparativeHeight: 100,
         tracks: types.array(
           pluginManager.pluggableMstType('track', 'stateModel'),
         ),
@@ -60,6 +61,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       width: 800,
     }))
     .views(self => ({
+      get highResolutionScaling() {
+        return 2
+      },
       get initialized() {
         return self.views.length > 0
       },
@@ -140,6 +144,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       setHeaderHeight(height: number) {
         self.headerHeight = height
+      },
+
+      setMiddleComparativeHeight(n: number) {
+        self.middleComparativeHeight = n
+        return self.middleComparativeHeight
       },
 
       toggleLinkViews() {
