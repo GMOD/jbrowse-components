@@ -40,7 +40,7 @@ const useStyles = makeStyles(theme => ({
     position: 'absolute',
   },
   trackRenderingContainer: {
-    borderBottom: '1px solid lightgrey',
+    borderBottom: `1px solid ${theme.palette.divider}`,
     overflowY: 'auto',
     overflowX: 'hidden',
     whiteSpace: 'nowrap',
