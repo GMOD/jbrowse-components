@@ -56,12 +56,13 @@ export default class extends BaseFeatureDataAdapter {
         return
       }
 
-      const ret = sequenceAdapter.getFeatures(
-        { ...query, start: queryStart, end: queryEnd },
-        opts,
-      )
-      const [feat] = await ret.pipe(toArray()).toPromise()
-      const residues = feat.get('seq')
+      const ret = sequenceAdapter.getFeatures({
+        ...query,
+        start: queryStart,
+        end: queryEnd,
+      })
+      const feats = await ret.pipe(toArray()).toPromise()
+      const residues = feats[0]?.get('seq') || ''
 
       for (let i = hw; i < residues.length - hw; i += this.windowDelta) {
         const r = f ? residues[i] : residues.slice(i - hw, i + hw)
@@ -86,7 +87,6 @@ export default class extends BaseFeatureDataAdapter {
           score = (ng - nc) / (ng + nc || 1)
         }
 
-        // if (r[Math.floor(r.length / 2)] !== 'N') {
         observer.next(
           new SimpleFeature({
             uniqueId: `${this.id}_${pos + i}`,
@@ -95,7 +95,6 @@ export default class extends BaseFeatureDataAdapter {
             score,
           }),
         )
-        // }
       }
       observer.complete()
     })
