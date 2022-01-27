@@ -169,7 +169,7 @@ const stateModelFactory = (
       },
     }))
     .views(self => ({
-      get TooltipComponent(): React.FC {
+      get TooltipComponent() {
         return Tooltip as unknown as React.FC
       },
 
@@ -195,11 +195,6 @@ const stateModelFactory = (
       get scaleType() {
         return self.scale || getConf(self, 'scaleType')
       },
-      get filled() {
-        return typeof self.fill !== 'undefined'
-          ? self.fill
-          : readConfObject(this.rendererConfig, 'filled')
-      },
 
       get maxScore() {
         const { max } = self.constraints
@@ -210,21 +205,22 @@ const stateModelFactory = (
         const { min } = self.constraints
         return min !== undefined ? min : getConf(self, 'minScore')
       },
-
+    }))
+    .views(self => ({
       get rendererConfig() {
         const configBlob =
-          getConf(self, ['renderers', this.rendererTypeName]) || {}
+          getConf(self, ['renderers', self.rendererTypeName]) || {}
 
         return self.rendererType.configSchema.create(
           {
             ...configBlob,
             filled: self.fill,
-            scaleType: this.scaleType,
+            scaleType: self.scaleType,
             displayCrossHatches: self.displayCrossHatches,
             summaryScoreMode: self.summaryScoreMode,
-            color: self.color,
-            posColor: self.posColor,
-            negColor: self.negColor,
+            ...(self.color ? { color: self.color } : {}),
+            ...(self.negColor ? { negColor: self.negColor } : {}),
+            ...(self.posColor ? { posColor: self.posColor } : {}),
           },
           getEnv(self),
         )
@@ -233,6 +229,11 @@ const stateModelFactory = (
     .views(self => {
       let oldDomain: [number, number] = [0, 0]
       return {
+        get filled() {
+          return typeof self.fill !== 'undefined'
+            ? self.fill
+            : readConfObject(self.rendererConfig, 'filled')
+        },
         get summaryScoreModeSetting() {
           return (
             self.summaryScoreMode ||
