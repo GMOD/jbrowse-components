@@ -109,7 +109,6 @@ function TrackContainer(props: {
       ) : null}
 
       <Paper
-        variant="outlined"
         className={classes.trackRenderingContainer}
         style={{ height }}
         onScroll={event => {
