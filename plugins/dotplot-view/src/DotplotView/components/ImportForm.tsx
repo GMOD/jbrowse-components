@@ -43,25 +43,27 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
       ])
       model.setAssemblyNames([selected1, selected2])
 
-      const fileName =
-        trackData && 'uri' in trackData && trackData.uri
-          ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
-          : 'MyTrack'
+      if (trackData) {
+        const fileName =
+          trackData && 'uri' in trackData && trackData.uri
+            ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
+            : 'MyTrack'
 
-      const trackId = `${fileName}-${Date.now()}`
+        const trackId = `${fileName}-${Date.now()}`
 
-      session.addTrackConf({
-        trackId: trackId,
-        name: fileName,
-        assemblyNames: selected,
-        type: 'SyntenyTrack',
-        adapter: {
-          type: 'PAFAdapter',
-          pafLocation: trackData,
+        session.addTrackConf({
+          trackId: trackId,
+          name: fileName,
           assemblyNames: selected,
-        },
-      })
-      model.toggleTrack(trackId)
+          type: 'SyntenyTrack',
+          adapter: {
+            type: 'PAFAdapter',
+            pafLocation: trackData,
+            assemblyNames: selected,
+          },
+        })
+        model.toggleTrack(trackId)
+      }
     } catch (e) {
       console.error(e)
       setError(e)
