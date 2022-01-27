@@ -1,5 +1,4 @@
-import React from 'react'
-import { makeStyles } from '@material-ui/core/styles'
+import React, { useState } from 'react'
 import {
   Button,
   Dialog,
@@ -8,12 +7,14 @@ import {
   DialogTitle,
   IconButton,
   Typography,
+  FormControlLabel,
+  Radio,
+  makeStyles,
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 import { CompactPicker, Color, RGBColor } from 'react-color'
 
 const useStyles = makeStyles(theme => ({
-  root: {},
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -24,7 +25,7 @@ const useStyles = makeStyles(theme => ({
 
 // this is needed because passing a entire color object into the react-color
 // for alpha, can't pass in an rgba string for example
-function serializeColor(color: Color) {
+function serialize(color: Color) {
   if (color instanceof Object) {
     const { r, g, b } = color as RGBColor
     return `rgb(${r},${g},${b})`
@@ -32,15 +33,20 @@ function serializeColor(color: Color) {
   return color
 }
 
-export default function SetColorDialog(props: {
+export default function SetColorDialog({
+  model,
+  handleClose,
+}: {
   model: {
     color: number
-    setColor: Function
+    setColor: (arg?: string) => void
+    setPosColor: (arg?: string) => void
+    setNegColor: (arg?: string) => void
   }
   handleClose: () => void
 }) {
   const classes = useStyles()
-  const { model, handleClose } = props
+  const [posneg, setPosNeg] = useState(false)
 
   return (
     <Dialog open onClose={handleClose}>
@@ -55,24 +61,38 @@ export default function SetColorDialog(props: {
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <Typography>Positive color</Typography>
-        <CompactPicker
-          onChange={event => {
-            model.setPosColor(serializeColor(event.rgb))
-          }}
+        <FormControlLabel
+          checked={!posneg}
+          onClick={() => setPosNeg(false)}
+          control={<Radio />}
+          label={'Overall color'}
         />
-        <Typography>Negative color</Typography>
-        <CompactPicker
-          onChange={event => {
-            model.setNegColor(serializeColor(event.rgb))
-          }}
+        <FormControlLabel
+          checked={posneg}
+          onClick={() => setPosNeg(true)}
+          control={<Radio />}
+          label={'Positive/negative color'}
         />
-        <Typography>Overall color</Typography>
-        <CompactPicker
-          onChange={event => {
-            model.setColor(serializeColor(event.rgb))
-          }}
-        />
+
+        {posneg ? (
+          <>
+            <Typography>Positive color</Typography>
+            <CompactPicker
+              onChange={event => model.setPosColor(serialize(event.rgb))}
+            />
+            <Typography>Negative color</Typography>
+            <CompactPicker
+              onChange={event => model.setNegColor(serialize(event.rgb))}
+            />
+          </>
+        ) : (
+          <>
+            <Typography>Overall color</Typography>
+            <CompactPicker
+              onChange={event => model.setColor(serialize(event.rgb))}
+            />
+          </>
+        )}
       </DialogContent>
       <DialogActions>
         <Button
