@@ -33,6 +33,7 @@ import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
 import InfoIcon from '@material-ui/icons/Info'
+import FindReplaceIcon from '@material-ui/icons/FindReplace'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -592,6 +593,17 @@ export default function sessionModelFactory(
               session.addTrackConf(trackSnapshot)
             },
             icon: CopyIcon,
+          },
+          {
+            label: 'Index track',
+            onClick: () => {
+              // adds job to the queue
+              const trackSnapshot = JSON.parse(
+                JSON.stringify(getSnapshot(config)),
+              )
+              console.log("trackSnapshot", trackSnapshot)
+            },
+            icon: FindReplaceIcon,
           },
         ]
       },
