@@ -24,11 +24,10 @@ export default class DensityRenderer extends WiggleBaseRenderer {
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
     const posColor = readConfObject(config, 'posColor')
+    const color = readConfObject(config, 'color')
     let colorCallback
-    let colorScale: ReturnType<typeof getScale>
-    if (readConfObject(config, 'color') === '#f0f') {
-      // default color, use posColor/negColor instead
-      colorScale =
+    if (color === '#f0f') {
+      const colorScale =
         pivot !== 'none'
           ? getScale({
               ...scaleOpts,
