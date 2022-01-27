@@ -269,8 +269,9 @@ function LinearSyntenyRendering(props: {
     <canvas
       ref={ref}
       data-testid="synteny_canvas"
-      width={width}
-      height={height}
+      style={{ width, height }}
+      width={width * highResolutionScaling}
+      height={height * highResolutionScaling}
     />
   )
 }

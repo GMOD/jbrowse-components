@@ -60,6 +60,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       width: 800,
     }))
     .views(self => ({
+      get highResolutionScaling() {
+        return 2
+      },
       get initialized() {
         return self.views.length > 0
       },
