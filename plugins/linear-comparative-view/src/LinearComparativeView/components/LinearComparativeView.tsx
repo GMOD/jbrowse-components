@@ -79,10 +79,9 @@ const MiddleComparativeView = observer(
               )
             }
             style={{
-              height: 8,
+              height: 4,
               zIndex: 100000,
               background: '#ccc',
-              borderTop: '1px solid #fafafa',
             }}
           />
           <ReactComponent model={views[1]} />
