@@ -128,20 +128,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ),
         trackLabels: types.optional(
           types.string,
-          () =>
-            (localStorage.getItem('trackLabelsPosition') || 'overlapping') as
-              | 'overlapping'
-              | 'hidden'
-              | 'offset',
+          () => localStorage.getItem('lgv-trackLabels') || 'overlapping',
         ),
-        showCenterLine: types.optional(
-          types.boolean,
-          () => Boolean(localStorage.getItem('showCenterLine')) || false,
-        ),
-        showCytobandsSetting: types.optional(
-          types.boolean,
-          () => Boolean(localStorage.getItem('showCytobands')) || true,
-        ),
+        showCenterLine: types.optional(types.boolean, () => {
+          const setting = localStorage.getItem('lgv-showCenterLine')
+          return setting !== undefined ? !!setting : false
+        }),
+        showCytobandsSetting: types.optional(types.boolean, () => {
+          const setting = localStorage.getItem('lgv-showCytobands')
+          return setting !== undefined ? !!setting : true
+        }),
       }),
     )
     .volatile(() => ({
@@ -447,7 +443,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       setShowCytobands(flag: boolean) {
         self.showCytobandsSetting = flag
-        localStorage.setItem('showCytobands', flag)
+        localStorage.setItem('lgv-showCytobands', `${+flag}`)
       },
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
@@ -640,12 +636,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
         self.trackLabels = setting
-        localStorage.setItem('trackLabelsPosition', setting)
+        localStorage.setItem('lgv-trackLabels', setting)
       },
 
       toggleCenterLine() {
         self.showCenterLine = !self.showCenterLine
-        localStorage.setItem('showCenterLine', `${+self.showCenterLine}`)
+        localStorage.setItem('lgv-showCenterLine', `${+self.showCenterLine}`)
       },
 
       setDisplayedRegions(regions: Region[]) {
