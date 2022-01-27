@@ -93,10 +93,10 @@ function LinearSyntenyRendering(props: {
   )
   const matches = layoutMatches(deserializedFeatures)
   const worker = !('type' in display)
-  let parentView
-  try {
-    parentView = worker ? undefined : (getContainingView(display) as LSV)
-  } catch (e) {}
+  const parentView =
+    worker || !isAlive(display)
+      ? undefined
+      : (getContainingView(display) as LSV)
   const views = worker ? undefined : parentView?.views
   const drawCurves = worker ? undefined : parentView?.drawCurves
   const color =
