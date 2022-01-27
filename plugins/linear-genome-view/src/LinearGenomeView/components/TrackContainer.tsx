@@ -6,7 +6,6 @@ import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { useDebouncedCallback, getContainingView } from '@jbrowse/core/util'
 import clsx from 'clsx'
-import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
 
 import { LinearGenomeViewModel, RESIZE_HANDLE_HEIGHT } from '..'
@@ -29,13 +28,6 @@ const useStyles = makeStyles(theme => ({
     zIndex: 3,
     borderRadius: theme.shape.borderRadius,
   },
-  renderingComponentContainer: {
-    position: 'absolute',
-    // -1 offset because of the 1px border of the Paper
-    left: -1,
-    height: '100%',
-    width: '100%',
-  },
   trackLabel: {
     zIndex: 3,
     margin: theme.spacing(1),
@@ -48,6 +40,7 @@ const useStyles = makeStyles(theme => ({
     position: 'absolute',
   },
   trackRenderingContainer: {
+    borderBottom: '1px solid lightgrey',
     overflowY: 'auto',
     overflowX: 'hidden',
     whiteSpace: 'nowrap',
@@ -108,8 +101,7 @@ function TrackContainer(props: {
         />
       ) : null}
 
-      <Paper
-        variant="outlined"
+      <div
         className={classes.trackRenderingContainer}
         style={{ height }}
         onScroll={event => {
@@ -120,11 +112,7 @@ function TrackContainer(props: {
         data-testid={`trackRenderingContainer-${view.id}-${trackId}`}
         role="presentation"
       >
-        <div
-          ref={ref}
-          className={classes.renderingComponentContainer}
-          style={{ transform: `scaleX(${model.scaleFactor})` }}
-        >
+        <div ref={ref} style={{ transform: `scaleX(${model.scaleFactor})` }}>
           <RenderingComponent
             model={display}
             blockState={{}}
@@ -144,7 +132,7 @@ function TrackContainer(props: {
             <DisplayBlurb model={display} />
           </div>
         ) : null}
-      </Paper>
+      </div>
       <div
         className={classes.overlay}
         style={{

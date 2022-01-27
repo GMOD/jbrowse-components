@@ -846,13 +846,12 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 </button>
               </div>
               <div
-                class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
+                class="makeStyles-trackRenderingContainer"
                 data-testid="trackRenderingContainer-test_view-volvox_refseq"
                 role="presentation"
                 style="height: 180px;"
               >
                 <div
-                  class="makeStyles-renderingComponentContainer"
                   style="transform: scaleX(1);"
                 >
                   <div
