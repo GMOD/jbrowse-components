@@ -51,6 +51,9 @@ samtools faidx genome.fa
 jbrowse add-assembly genome.fa --out /var/www/html/jbrowse2 --load copy
 ```
 
+Note: you can add --gc to the add-assembly command to automatically create a
+GCContent track from your assembly
+
 ### Loading a BAM file
 
 ```

@@ -47,6 +47,8 @@ mythicus_, that you can use.
 jbrowse add-assembly http://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.fa
 ```
 
+If we want a GC content track, you can add --gc to this command
+
 :::caution
 
 A FASTA must have an index to work in JBrowse 2. This command assumes that the

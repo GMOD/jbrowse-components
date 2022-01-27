@@ -84,6 +84,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
       description:
         'Name of the assembly; if not specified, will be guessed using the sequence file name',
     }),
+    gc: flags.boolean({
+      description: 'Add a GC content track to the assembly',
+    }),
     alias: flags.string({
       char: 'a',
       description:
@@ -413,43 +416,34 @@ custom         Either a JSON file location or inline JSON that defines a custom
     }
 
     if (runFlags.refNameAliases) {
-      if (
-        runFlags.refNameAliasesType &&
-        runFlags.refNameAliasesType === 'custom'
-      ) {
-        const refNameAliasesConfig = await this.readInlineOrFileJson(
-          runFlags.refNameAliases,
-        )
-        if (!refNameAliasesConfig.type) {
+      if (runFlags?.refNameAliasesType === 'custom') {
+        const conf = await this.readInlineOrFileJson(runFlags.refNameAliases)
+        if (!conf.type) {
           this.error(
             `No "type" specified in refNameAliases adapter "${JSON.stringify(
-              refNameAliasesConfig,
+              conf,
             )}"`,
             { exit: 150 },
           )
         }
         this.debug(
-          `Adding custom refNameAliases config: ${JSON.stringify(
-            refNameAliasesConfig,
-          )}`,
+          `Adding custom refNameAliases config: ${JSON.stringify(conf)}`,
         )
         assembly.refNameAliases = {
-          adapter: refNameAliasesConfig,
+          adapter: conf,
         }
       } else {
-        const refNameAliasesLocation = await this.resolveFileLocation(
+        const loc = await this.resolveFileLocation(
           runFlags.refNameAliases,
           !(runFlags.skipCheck || runFlags.force),
           runFlags.load === 'inPlace',
         )
-        this.debug(
-          `refName aliases file location resolved to: ${refNameAliasesLocation}`,
-        )
+        this.debug(`refName aliases file location resolved to: ${loc}`)
         assembly.refNameAliases = {
           adapter: {
             type: 'RefNameAliasAdapter',
             location: {
-              uri: refNameAliasesLocation,
+              uri: loc,
               locationType: 'UriLocation',
             },
           },
@@ -503,6 +497,36 @@ custom         Either a JSON file location or inline JSON that defines a custom
       }
     } else {
       configContents.assemblies.push(assembly)
+    }
+
+    if (runFlags.gc) {
+      if (!configContents.tracks) {
+        configContents.tracks = []
+      }
+      const trackId = assembly.name + '_gc'
+      const exists = configContents.tracks.findIndex(f => f.trackId === trackId)
+      const obj = {
+        trackId,
+        type: 'QuantitativeTrack',
+        adapter: {
+          // @ts-ignore
+          type: 'GCContentAdapter',
+          sequenceAdapter: assembly.sequence.adapter,
+        },
+        name: 'GCContent',
+        assemblyNames: [assembly.name],
+      }
+      if (exists !== -1) {
+        if (runFlags.force) {
+          // @ts-ignore
+          configContents.tracks[idx] = obj
+        } else {
+          this.debug('GC track already exists, use --force to overwrite')
+        }
+      } else {
+        // @ts-ignore
+        configContents.tracks.push(obj)
+      }
     }
 
     this.debug(`Writing configuration to file ${this.target}`)

@@ -102,6 +102,9 @@ OPTIONS
   --faiLocation=faiLocation
       [default: <fastaLocation>.fai] FASTA index file or URL
 
+  --gc
+      Add a GC content track to the assembly
+
   --gziLocation=gziLocation
       [default: <fastaLocation>.gzi] FASTA gzip index file or URL
 
