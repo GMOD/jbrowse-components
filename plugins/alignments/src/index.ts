@@ -60,12 +60,15 @@ export default class AlignmentsPlugin extends Plugin {
           const regexGuess = /\.cram$/i
           const adapterName = 'CramAdapter'
           const fileName = getFileName(file)
-          if (regexGuess.test(fileName) || adapterHint === adapterName) {
-            return {
-              type: adapterName,
-              cramLocation: file,
-              craiLocation: index || makeIndex(file, '.crai'),
-            }
+          const obj = {
+            type: adapterName,
+            cramLocation: file,
+            craiLocation: index || makeIndex(file, '.crai'),
+          }
+          if (regexGuess.test(fileName) && !adapterHint) {
+            return obj
+          } else if (adapterHint === adapterName) {
+            return obj
           }
           return adapterGuesser(file, index, adapterHint)
         }
@@ -84,15 +87,19 @@ export default class AlignmentsPlugin extends Plugin {
           const adapterName = 'BamAdapter'
           const fileName = getFileName(file)
           const indexName = index && getFileName(index)
-          if (regexGuess.test(fileName) || adapterHint === adapterName) {
-            return {
-              type: adapterName,
-              bamLocation: file,
-              index: {
-                location: index || makeIndex(file, '.bai'),
-                indexType: makeIndexType(indexName, 'CSI', 'BAI'),
-              },
-            }
+
+          const obj = {
+            type: adapterName,
+            bamLocation: file,
+            index: {
+              location: index || makeIndex(file, '.bai'),
+              indexType: makeIndexType(indexName, 'CSI', 'BAI'),
+            },
+          }
+          if (regexGuess.test(fileName) && !adapterHint) {
+            return obj
+          } else if (adapterHint === adapterName) {
+            return obj
           }
           return adapterGuesser(file, index, adapterHint)
         }
