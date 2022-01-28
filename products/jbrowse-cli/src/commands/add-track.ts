@@ -183,15 +183,10 @@ export default class AddTrack extends JBrowseCommand {
 
     const inPlace = load === 'inPlace'
     const useIndex = isUrl(index) || inPlace || index
-    const effectiveLocation =
-      isUrl(location) || inPlace
-        ? location
-        : path.join(subDir, path.basename(location))
-
-    const effectiveIndexLocation =
-      !index || isUrl(index) || inPlace
-        ? index
-        : path.join(subDir, path.basename(index))
+    const getLoc = (loc: string) =>
+      isUrl(loc) || inPlace ? loc : path.join(subDir, path.basename(loc))
+    const effectiveLocation = getLoc(location)
+    const effectiveIndexLocation = index && getLoc(index)
     const adapter = useIndex
       ? this.guessAdapter(effectiveLocation, protocol, effectiveIndexLocation)
       : this.guessAdapter(effectiveLocation, protocol)

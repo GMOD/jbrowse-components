@@ -44,6 +44,7 @@ export interface BgzipFastaAdapter {
 export interface TwoBitAdapter {
   type: 'TwoBitAdapter'
   twoBitLocation: UriLocation
+  chromSizesLocation?: UriLocation
 }
 
 export interface ChromeSizesAdapter {
@@ -166,7 +167,12 @@ export default abstract class JBrowseCommand extends Command {
     return fsPromises.writeFile(location, JSON.stringify(contents, null, 2))
   }
 
-  async resolveFileLocation(location: string, check = true, inPlace = false) {
+  async resolveFileLocation(
+    location: string,
+    loadType: string | undefined,
+    check = true,
+  ) {
+    const warn = loadType === 'inPlace'
     let locationUrl: URL | undefined
     try {
       locationUrl = new URL(location)
@@ -194,12 +200,12 @@ export default abstract class JBrowseCommand extends Command {
     }
     if (locationPath) {
       const filePath = path.relative(process.cwd(), locationPath)
-      if (inPlace && filePath.startsWith('..')) {
+      if (warn && filePath.startsWith('..')) {
         this.warn(
           `Location ${filePath} is not in the JBrowse directory. Make sure it is still in your server directory.`,
         )
       }
-      return inPlace ? location : filePath
+      return warn ? location : filePath
     }
     return this.error(`Could not resolve to a file or a URL: "${location}"`, {
       exit: 40,

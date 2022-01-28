@@ -95,6 +95,9 @@ OPTIONS
       custom         Either a JSON file location or inline JSON that defines a custom
       sequence adapter; must provide --name if using inline JSON
 
+  --chromSizesLocation=chromSizesLocation
+      optional chrom.sizes adapter to use with a twobit adapter, which speeds up initial load of twobit files
+
   --displayName=displayName
       The display name to specify for the assembly, e.g. "Homo sapiens (hg38)" while the name can be a shorter identifier
       like "hg38"
@@ -125,6 +128,9 @@ OPTIONS
 
   --skipCheck
       Don't check whether or not the sequence file or URL exists or if you are in a JBrowse directory
+
+  --subDir=subDir
+      when using --load a file, output to a subdirectory of the target dir
 
   --target=target
       path to config file in JB2 installation directory to write out to.

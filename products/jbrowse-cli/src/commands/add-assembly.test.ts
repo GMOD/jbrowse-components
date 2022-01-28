@@ -91,7 +91,7 @@ describe('add-assembly', () => {
 
   setup
     .command(['add-assembly', 'simple.doesNotExist.fasta', '--load', 'copy'])
-    .catch(/Could not resolve/)
+    .catch(/no such file or directory/)
     .it('fails if it cannot find a file')
 
   setup
@@ -858,9 +858,6 @@ describe('add-assembly', () => {
     ])
 
   setup
-    .nock('https://mysite.com', site =>
-      site.head('/data/simple.2bit').reply(200),
-    )
     .command(['add-assembly', 'https://mysite.com/data/simple.2bit'])
     .it('adds an assembly from a URL', async ctx => {
       expect(await readdir(ctx.dir)).toContain('config.json')

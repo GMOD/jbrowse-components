@@ -5,6 +5,11 @@ import JBrowseCommand, { Assembly, Sequence, Config } from '../base'
 
 const { rename, copyFile, mkdir, symlink } = fs.promises
 
+// https://stackoverflow.com/a/35008327/2129219
+function exists(s: string) {
+  return new Promise(r => fs.access(s, fs.constants.F_OK, e => r(!e)))
+}
+
 function isValidJSON(string: string) {
   try {
     JSON.parse(string)
@@ -101,6 +106,15 @@ custom         Either a JSON file location or inline JSON that defines a custom
       description:
         '[default: <fastaLocation>.gzi] FASTA gzip index file or URL',
     }),
+    chromSizesLocation: flags.string({
+      description:
+        'optional chrom.sizes adapter to use with a twobit adapter, which speeds up initial load of twobit files',
+    }),
+    subDir: flags.string({
+      description:
+        'when using --load a file, output to a subdirectory of the target dir',
+      default: '',
+    }),
     refNameAliases: flags.string({
       description:
         'Reference sequence name aliases file or URL; assumed to be a tab-separated aliases\nfile unless --refNameAliasesType is specified',
@@ -133,6 +147,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
       description:
         "Don't check whether or not the sequence file or URL exists or if you are in a JBrowse directory",
     }),
+
     overwrite: flags.boolean({
       description:
         'Overwrite existing assembly if one with the same name exists',
@@ -160,6 +175,8 @@ custom         Either a JSON file location or inline JSON that defines a custom
       )
     }
 
+    const { load, subDir, faiLocation, gziLocation, chromSizesLocation } =
+      runFlags
     let { name } = runFlags
     let { type } = runFlags as {
       type:
@@ -179,105 +196,71 @@ custom         Either a JSON file location or inline JSON that defines a custom
     if (name) {
       this.debug(`Name is: ${name}`)
     }
+
+    const inPlace = load === 'inPlace'
+    const isUrl = (loc?: string) => loc?.match(/^https?:\/\//)
+    const getLoc = (loc: string) =>
+      isUrl(loc) || inPlace ? loc : path.join(subDir, path.basename(loc))
     switch (type) {
       case 'indexedFasta': {
-        let sequenceLocation = await this.resolveFileLocation(
-          argsSequence,
-          !(runFlags.skipCheck || runFlags.force),
-          runFlags.load === 'inPlace',
-        )
-        this.debug(`FASTA location resolved to: ${sequenceLocation}`)
-        let indexLocation = await this.resolveFileLocation(
-          runFlags.faiLocation || `${argsSequence}.fai`,
-          !(runFlags.skipCheck || runFlags.force),
-          runFlags.load === 'inPlace',
-        )
-        this.debug(`FASTA index location resolved to: ${indexLocation}`)
-        if (!name) {
-          if (sequenceLocation.endsWith('.fasta')) {
-            name = path.basename(sequenceLocation, '.fasta')
-          } else {
-            name = path.basename(sequenceLocation, '.fa')
-          }
-          this.debug(`Guessing name: ${name}`)
+        const effLoc = getLoc(argsSequence)
+        const effIdxLoc = getLoc(faiLocation || argsSequence + '.fai')
+        name =
+          name ||
+          (effLoc.endsWith('.fasta')
+            ? path.basename(effLoc, '.fasta')
+            : path.basename(effLoc, '.fa'))
+
+        if (load) {
+          await this.loadData(load, [effLoc, effIdxLoc])
         }
-        const loaded = runFlags.load
-          ? await this.loadData(runFlags.load, [
-              sequenceLocation,
-              indexLocation,
-            ])
-          : false
-        if (loaded) {
-          sequenceLocation = path.basename(sequenceLocation)
-          indexLocation = path.basename(indexLocation)
-        }
+
         sequence = {
           type: 'ReferenceSequenceTrack',
           trackId: `${name}-ReferenceSequenceTrack`,
           adapter: {
             type: 'IndexedFastaAdapter',
             fastaLocation: {
-              uri: sequenceLocation,
+              uri: load ? path.basename(effLoc) : effLoc,
               locationType: 'UriLocation',
             },
-            faiLocation: { uri: indexLocation, locationType: 'UriLocation' },
+            faiLocation: {
+              uri: load ? path.basename(effIdxLoc) : effIdxLoc,
+              locationType: 'UriLocation',
+            },
           },
         }
         break
       }
       case 'bgzipFasta': {
-        let sequenceLocation = await this.resolveFileLocation(
-          argsSequence,
-          !(runFlags.skipCheck || runFlags.force),
-          runFlags.load === 'inPlace',
-        )
-        this.debug(`compressed FASTA location resolved to: ${sequenceLocation}`)
-        let indexLocation = await this.resolveFileLocation(
-          runFlags.faiLocation || `${sequenceLocation}.fai`,
-          !(runFlags.skipCheck || runFlags.force),
-          runFlags.load === 'inPlace',
-        )
-        this.debug(
-          `compressed FASTA index location resolved to: ${indexLocation}`,
-        )
-        let bgzipIndexLocation = await this.resolveFileLocation(
-          runFlags.gziLocation || `${sequenceLocation}.gzi`,
-          !(runFlags.skipCheck || runFlags.force),
-          runFlags.load === 'inPlace',
-        )
-        this.debug(`bgzip index location resolved to: ${bgzipIndexLocation}`)
-        if (!name) {
-          if (sequenceLocation.endsWith('.fasta.gz')) {
-            name = path.basename(sequenceLocation, '.fasta.gz')
-          } else {
-            name = path.basename(sequenceLocation, '.fa.gz')
-          }
-          this.debug(`Guessing name: ${name}`)
+        const effLoc = getLoc(argsSequence)
+        const effIdxLoc = getLoc(faiLocation || argsSequence + '.fai')
+        const effGziLoc = getLoc(gziLocation || argsSequence + '.gzi')
+        name =
+          name ||
+          (effLoc.endsWith('.fasta.gz')
+            ? path.basename(effLoc, '.fasta.gz')
+            : path.basename(effLoc, '.fa.gz'))
+
+        if (load) {
+          await this.loadData(load, [effLoc, effIdxLoc, effGziLoc])
         }
-        const loaded = runFlags.load
-          ? await this.loadData(runFlags.load, [
-              sequenceLocation,
-              indexLocation,
-              bgzipIndexLocation,
-            ])
-          : false
-        if (loaded) {
-          sequenceLocation = path.basename(sequenceLocation)
-          indexLocation = path.basename(indexLocation)
-          bgzipIndexLocation = path.basename(bgzipIndexLocation)
-        }
+
         sequence = {
           type: 'ReferenceSequenceTrack',
           trackId: `${name}-ReferenceSequenceTrack`,
           adapter: {
             type: 'BgzipFastaAdapter',
             fastaLocation: {
-              uri: sequenceLocation,
+              uri: load ? path.basename(effLoc) : effLoc,
               locationType: 'UriLocation',
             },
-            faiLocation: { uri: indexLocation, locationType: 'UriLocation' },
+            faiLocation: {
+              uri: load ? path.basename(effIdxLoc) : effIdxLoc,
+              locationType: 'UriLocation',
+            },
             gziLocation: {
-              uri: bgzipIndexLocation,
+              uri: load ? path.basename(effGziLoc) : effGziLoc,
               locationType: 'UriLocation',
             },
           },
@@ -285,21 +268,10 @@ custom         Either a JSON file location or inline JSON that defines a custom
         break
       }
       case 'twoBit': {
-        let sequenceLocation = await this.resolveFileLocation(
-          argsSequence,
-          !(runFlags.skipCheck || runFlags.force),
-          runFlags.load === 'inPlace',
-        )
-        this.debug(`2bit location resolved to: ${sequenceLocation}`)
-        if (!name) {
-          name = path.basename(sequenceLocation, '.2bit')
-          this.debug(`Guessing name: ${name}`)
-        }
-        const loaded = runFlags.load
-          ? await this.loadData(runFlags.load, [sequenceLocation])
-          : false
-        if (loaded) {
-          sequenceLocation = path.basename(sequenceLocation)
+        const effLoc = getLoc(argsSequence)
+        name = name || path.basename(effLoc, '.2bit')
+        if (load) {
+          await this.loadData(load, [effLoc])
         }
         sequence = {
           type: 'ReferenceSequenceTrack',
@@ -307,29 +279,29 @@ custom         Either a JSON file location or inline JSON that defines a custom
           adapter: {
             type: 'TwoBitAdapter',
             twoBitLocation: {
-              uri: sequenceLocation,
+              uri: load ? path.basename(effLoc) : effLoc,
               locationType: 'UriLocation',
             },
           },
         }
+        if (chromSizesLocation) {
+          const effChromSizesLoc = getLoc(chromSizesLocation)
+          if (load) {
+            await this.loadData(load, [effChromSizesLoc])
+          }
+
+          // @ts-ignore
+          sequence.adapter.chromSizesLocation = {
+            uri: load ? path.basename(effChromSizesLoc) : effChromSizesLoc,
+          }
+        }
         break
       }
       case 'chromSizes': {
-        let sequenceLocation = await this.resolveFileLocation(
-          argsSequence,
-          !(runFlags.skipCheck || runFlags.force),
-          runFlags.load === 'inPlace',
-        )
-        this.debug(`chrom.sizes location resolved to: ${sequenceLocation}`)
-        if (!name) {
-          name = path.basename(sequenceLocation, '.chrom.sizes')
-          this.debug(`Guessing name: ${name}`)
-        }
-        const loaded = runFlags.load
-          ? await this.loadData(runFlags.load, [sequenceLocation])
-          : false
-        if (loaded) {
-          sequenceLocation = path.basename(sequenceLocation)
+        const effLoc = getLoc(argsSequence)
+        name = name || path.basename(effLoc, '.chrom.sizes')
+        if (load) {
+          await this.loadData(load, [effLoc])
         }
         sequence = {
           type: 'ReferenceSequenceTrack',
@@ -337,7 +309,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
           adapter: {
             type: 'ChromSizesAdapter',
             chromSizesLocation: {
-              uri: sequenceLocation,
+              uri: load ? path.basename(effLoc) : effLoc,
               locationType: 'UriLocation',
             },
           },
@@ -379,10 +351,6 @@ custom         Either a JSON file location or inline JSON that defines a custom
   }
 
   async run() {
-    // https://stackoverflow.com/a/35008327/2129219
-    const exists = (s: string) =>
-      new Promise(r => fs.access(s, fs.constants.F_OK, e => r(!e)))
-
     const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
 
     const output = runFlags.target || runFlags.out || '.'
@@ -405,18 +373,13 @@ custom         Either a JSON file location or inline JSON that defines a custom
     }
 
     if (runFlags.refNameColors) {
-      const colors = runFlags.refNameColors
-        .split(',')
-        .map(color => color.trim())
+      const colors = runFlags.refNameColors.split(',').map(c => c.trim())
       this.debug(`Adding refName colors: ${colors}`)
       assembly.refNameColors = colors
     }
 
     if (runFlags.refNameAliases) {
-      if (
-        runFlags.refNameAliasesType &&
-        runFlags.refNameAliasesType === 'custom'
-      ) {
+      if (runFlags.refNameAliasesType === 'custom') {
         const refNameAliasesConfig = await this.readInlineOrFileJson(
           runFlags.refNameAliases,
         )
@@ -439,8 +402,8 @@ custom         Either a JSON file location or inline JSON that defines a custom
       } else {
         const refNameAliasesLocation = await this.resolveFileLocation(
           runFlags.refNameAliases,
+          runFlags.load,
           !(runFlags.skipCheck || runFlags.force),
-          runFlags.load === 'inPlace',
         )
         this.debug(
           `refName aliases file location resolved to: ${refNameAliasesLocation}`,
