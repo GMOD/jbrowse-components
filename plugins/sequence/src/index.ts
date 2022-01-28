@@ -71,11 +71,14 @@ export default class SequencePlugin extends Plugin {
           const regexGuess = /\.2bit$/i
           const adapterName = 'TwoBitAdapter'
           const fileName = getFileName(file)
-          if (regexGuess.test(fileName) || adapterHint === adapterName) {
-            return {
-              type: adapterName,
-              twoBitLocation: file,
-            }
+          const obj = {
+            type: adapterName,
+            twoBitLocation: file,
+          }
+          if (regexGuess.test(fileName) && !adapterHint) {
+            return obj
+          } else if (adapterHint === adapterName) {
+            return obj
           }
           return adapterGuesser(file, index, adapterHint)
         }
@@ -139,12 +142,16 @@ export default class SequencePlugin extends Plugin {
           const regexGuess = /\.(fa|fasta|fas|fna|mfa)$/i
           const adapterName = 'IndexedFastaAdapter'
           const fileName = getFileName(file)
-          if (regexGuess.test(fileName) || adapterHint === adapterName) {
-            return {
-              type: adapterName,
-              fastaLocation: file,
-              faiLocation: index || makeIndex(file, '.fai'),
-            }
+          const obj = {
+            type: adapterName,
+            fastaLocation: file,
+            faiLocation: index || makeIndex(file, '.fai'),
+          }
+
+          if (regexGuess.test(fileName) && !adapterHint) {
+            return obj
+          } else if (adapterHint === adapterName) {
+            return obj
           }
           return adapterGuesser(file, index, adapterHint)
         }
@@ -191,12 +198,16 @@ export default class SequencePlugin extends Plugin {
           const regexGuess = /\.(fa|fasta|fas|fna|mfa)\.b?gz$/i
           const adapterName = 'BgzipFastaAdapter'
           const fileName = getFileName(file)
-          if (regexGuess.test(fileName) || adapterHint === adapterName) {
-            return {
-              type: adapterName,
-              faiLocation: makeIndex(file, '.fai'),
-              gziLocation: makeIndex(file, '.gzi'),
-            }
+          const obj = {
+            type: adapterName,
+            faiLocation: makeIndex(file, '.fai'),
+            gziLocation: makeIndex(file, '.gzi'),
+          }
+
+          if (regexGuess.test(fileName) && !adapterHint) {
+            return obj
+          } else if (adapterHint === adapterName) {
+            return obj
           }
           return adapterGuesser(file, index, adapterHint)
         }
