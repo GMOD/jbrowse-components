@@ -1,3 +1,18 @@
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                             | Download                                                          |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                       | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/desktop                    |                                                                   |
+| @jbrowse/img                        | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view   | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                        |                                                                   |
+
+</p>
+</details>
+
 ## 1.6.0 (2022-01-28)
 
 <details><summary>Packages in this release</summary>
