@@ -42,7 +42,7 @@ function readConf(confFilePath: string) {
 //     console.log('this is the status of the worker')
 //   }
 // }
-async function indexTracks(
+export function indexTracks(
   // model: LGV,
   tracks: Track[],
   signal?: AbortSignal,
@@ -66,7 +66,7 @@ async function indexTracks(
   // assumes that we get whole sequence in a single getFeatures call
   return []
 }
-export async function indexDriver(
+async function indexDriver(
   tracks: Track[],
   attributes?: string[],
   idxLocation?: string,
@@ -83,7 +83,7 @@ export async function indexDriver(
   const outDir = path.dirname(confPath)
   const config = readConf(confPath)
 
-  console.log('output dir', outDir)
+  // console.log('output dir', outDir)
   //   console.log(`Current directory: ${confPath}`)
   const trixDir = path.join(outDir, 'trix')
   if (!fs.existsSync(trixDir)) {

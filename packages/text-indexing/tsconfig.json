@@ -1,13 +1,9 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "emitDeclarationOnly": true,
     "noEmit": false,
     "declaration": true,
-    "outDir": "dist/",
-    // node 12 target: https://github.com/microsoft/TypeScript/wiki/Node-Target-Mapping#node-10
-    "lib": ["ES2019"],
-    "module": "commonjs",
-    "target": "ES2019"
-  },
-  "include": ["src"]
+    "outDir": "dist/"
+  }
 }
