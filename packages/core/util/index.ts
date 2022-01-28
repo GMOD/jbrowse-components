@@ -993,9 +993,9 @@ export async function updateStatus<U>(
   fn: () => U,
 ) {
   cb(msg)
-  const result = await fn()
+  const res = await fn()
   cb('')
-  return result
+  return res
 }
 
 export function hashCode(str: string) {
