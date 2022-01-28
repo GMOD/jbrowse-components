@@ -1093,8 +1093,8 @@ export function viewBpToPx({
     }
     return false
   })
-  const foundRegion = self.displayedRegions[index]
-  if (foundRegion) {
+  const found = self.displayedRegions[index]
+  if (found) {
     return {
       index,
       offsetPx: Math.round(offsetBp / self.bpPerPx),
