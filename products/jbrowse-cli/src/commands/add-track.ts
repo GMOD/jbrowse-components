@@ -315,7 +315,7 @@ export default class AddTrack extends JBrowseCommand {
     const callbacks = {
       copy: (src: string, dest: string) => copyFile(src, dest, COPYFILE_EXCL),
       move: (src: string, dest: string) => rename(src, dest),
-      symlink: (src: string, dest: string) => symlink(src, dest),
+      symlink: (src: string, dest: string) => symlink(path.resolve(src), dest),
     }
 
     await Promise.all(
