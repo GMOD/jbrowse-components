@@ -1,6 +1,22 @@
 <details><summary>Packages in this release</summary>
 <p>
 
+| Package                             | Download                                                          |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                       | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/plugin-linear-genome-view  | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/desktop                    |                                                                   |
+| @jbrowse/img                        | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view   | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                        |                                                                   |
+
+</p>
+</details>
+
+<details><summary>Packages in this release</summary>
+<p>
+
 | Package      | Download                                   |
 | ------------ | ------------------------------------------ |
 | @jbrowse/cli | https://www.npmjs.com/package/@jbrowse/cli |
