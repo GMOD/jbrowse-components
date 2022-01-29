@@ -352,5 +352,3 @@ links without the central server
 Also, if you are implementing JBrowse Web on your own server and would like to
 create your own URL shortener, you can use the shareURL parameter in the
 config.json file to point at your own server instead of ours.
-
-###
