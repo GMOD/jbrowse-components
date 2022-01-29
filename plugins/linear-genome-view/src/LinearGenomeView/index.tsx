@@ -104,6 +104,12 @@ export const INTER_REGION_PADDING_WIDTH = 2
 export const WIDGET_HEIGHT = 32
 export const SPACING = 7
 
+function localStorageGetItem(item: string) {
+  return typeof localStorage !== 'undefined'
+    ? localStorage.getItem(item)
+    : undefined
+}
+
 export function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
@@ -128,15 +134,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ),
         trackLabels: types.optional(
           types.string,
-          () =>
-            window.localStorage?.getItem('lgv-trackLabels') || 'overlapping',
+          () => localStorageGetItem('lgv-trackLabels') || 'overlapping',
         ),
         showCenterLine: types.optional(types.boolean, () => {
-          const setting = window.localStorage?.getItem('lgv-showCenterLine')
+          const setting = localStorageGetItem('lgv-showCenterLine')
           return setting !== undefined ? !!setting : false
         }),
         showCytobandsSetting: types.optional(types.boolean, () => {
-          const setting = window.localStorage?.getItem('lgv-showCytobands')
+          const setting = localStorageGetItem('lgv-showCytobands')
           return setting !== undefined ? !!setting : true
         }),
       }),
