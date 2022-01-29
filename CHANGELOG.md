@@ -1,6 +1,16 @@
 <details><summary>Packages in this release</summary>
 <p>
 
+| Package      | Download                                   |
+| ------------ | ------------------------------------------ |
+| @jbrowse/cli | https://www.npmjs.com/package/@jbrowse/cli |
+
+</p>
+</details>
+
+<details><summary>Packages in this release</summary>
+<p>
+
 | Package                             | Download                                                          |
 | ----------------------------------- | ----------------------------------------------------------------- |
 | @jbrowse/core                       | https://www.npmjs.com/package/@jbrowse/core                       |
