@@ -128,14 +128,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ),
         trackLabels: types.optional(
           types.string,
-          () => localStorage.getItem('lgv-trackLabels') || 'overlapping',
+          () =>
+            window.localStorage?.getItem('lgv-trackLabels') || 'overlapping',
         ),
         showCenterLine: types.optional(types.boolean, () => {
-          const setting = localStorage.getItem('lgv-showCenterLine')
+          const setting = window.localStorage?.getItem('lgv-showCenterLine')
           return setting !== undefined ? !!setting : false
         }),
         showCytobandsSetting: types.optional(types.boolean, () => {
-          const setting = localStorage.getItem('lgv-showCytobands')
+          const setting = window.localStorage?.getItem('lgv-showCytobands')
           return setting !== undefined ? !!setting : true
         }),
       }),
