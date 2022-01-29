@@ -139,7 +139,7 @@ export class MockRendererShort extends RpcMethodType {
 }
 
 test('test RPC driver operation timeout and worker replace', async () => {
-  console.warn = jest.fn()
+  console.error = jest.fn()
   expect.assertions(1)
   const config = ConfigurationSchema('Mock', {}).create()
   const driver = new MockRpcDriver({ config })
@@ -157,7 +157,7 @@ test('test RPC driver operation timeout and worker replace', async () => {
 })
 
 test('remote abort', async () => {
-  console.warn = jest.fn()
+  console.error = jest.fn()
   expect.assertions(1)
   const config = ConfigurationSchema('Mock', {}).create()
   const driver = new MockRpcDriver({ config })
