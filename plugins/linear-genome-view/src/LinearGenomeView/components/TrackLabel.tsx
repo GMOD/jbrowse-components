@@ -138,7 +138,6 @@ const TrackLabel = React.forwardRef(
             className={classes.iconButton}
             color="secondary"
             data-testid="track_menu_icon"
-            disabled={!items.length}
           >
             <MoreVertIcon />
           </IconButton>
