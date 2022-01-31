@@ -102,7 +102,10 @@ const TrackLabel = React.forwardRef(
       handleClose()
     }
 
-    const items = track.trackMenuItems()
+    const items = [
+      ...session.getTrackActionMenuItems?.(trackConf),
+      ...track.trackMenuItems(),
+    ].sort((a, b) => (b.priority || 0) - (a.priority || 0))
 
     return (
       <>
@@ -138,6 +141,7 @@ const TrackLabel = React.forwardRef(
             className={classes.iconButton}
             color="secondary"
             data-testid="track_menu_icon"
+            disabled={!items.length}
           >
             <MoreVertIcon />
           </IconButton>
@@ -147,10 +151,7 @@ const TrackLabel = React.forwardRef(
           onMenuItemClick={handleMenuItemClick}
           open={Boolean(anchorEl)}
           onClose={handleClose}
-          menuItems={[
-            ...session.getTrackActionMenuItems?.(trackConf),
-            ...items,
-          ].sort((a, b) => (b.priority || 0) - (a.priority || 0))}
+          menuItems={items}
         />
       </>
     )
