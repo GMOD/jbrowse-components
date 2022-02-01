@@ -44,6 +44,7 @@
     "@fontsource/roboto": "^4.5.0",
     "@gmod/faidx": "^1.0.1",
     "@jbrowse/core": "^1.5.9",
+    "@jbrowse/text-indexing": "^1.5.9",
     "@jbrowse/plugin-alignments": "^1.5.9",
     "@jbrowse/plugin-arc": "^1.5.9",
     "@jbrowse/plugin-authentication": "^1.5.9",

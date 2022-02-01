@@ -1,7 +1,6 @@
 // import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import fs from 'fs'
 import path from 'path'
-import { cwd } from 'process'
 import { Readable } from 'stream'
 import { indexGff3 } from './types/gff3Adapter'
 import { indexVcf } from './types/vcfAdapter'
@@ -25,19 +24,21 @@ export async function indexTracks(
   //   throw new Error(`assembly ${assemblyName} not found`)
   // }
   // const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
+  const outFlag = '.'
 
-  // const sessionId = 'indexTracks'
-  // await rpcManager.call(sessionId, 'CoreIndexTracks', {
-  //   // adapterConfig,
-  //   tracks,
-  //   sessionId,
-  //   signal,
-  // })
+  const isDir = fs.lstatSync(outFlag).isDirectory()
+  const confPath = isDir ? path.join(outFlag, 'JBrowse/config.json') : outFlag
+  const outDir = path.dirname(confPath)
+  const trixDir = path.join(outDir, 'trix')
+  if (!fs.existsSync(trixDir)) {
+    fs.mkdirSync(trixDir)
+  }
+  await indexDriver([track],[],trixDir)
   const test = await rpcManager.call(
     'indexTracksSessionId',
     'CoreIndexTracks',
     {
-      trackConfig: track,
+      trackConfigs: track,
       sessionId: 'indexTracksSessionId',
     },
   )
@@ -53,37 +54,20 @@ async function indexDriver(
   exclude?: string[],
   assemblyNames?: string[],
 ) {
-  //   const confLocation = idxLocation || '.'
-  //   const isDir = fs.lstatSync(confLocation).isDirectory()
-  //   const confPath = isDir ? path.join(cwd(), 'config.json') : confLocation
-  const confPath = path.join(cwd(), 'JBrowse/config.json')
-
-  const outDir = path.dirname(confPath)
-  const config = readConf(confPath)
-
-  // console.log('output dir', outDir)
-  //   console.log(`Current directory: ${confPath}`)
-  const trixDir = path.join(outDir, 'trix')
-  if (!fs.existsSync(trixDir)) {
-    fs.mkdirSync(trixDir)
-  }
-  const aggregateAdapters = config.aggregateTextSearchAdapters || []
-  const currentTracks = config.tracks || []
-  console.log('current tracks', currentTracks)
-  // TODO: create a readable
   const readable = Readable.from(
     indexFiles(
-      currentTracks,
+      tracks,
       attributes || [],
-      outDir,
+      idxLocation || '.',
       quiet || true,
       exclude || [],
     ),
   )
   console.log('readable', readable)
   // TODO: create an ixIxxStream
-  const ixIxxStream = await runIxIxx(readable, idxLocation || '', name || '')
+  const ixIxxStream = await runIxIxx(readable, idxLocation || '.', name || 'test')
   // TODO: we can create a metafile here
+  console.log('ixixx', ixIxxStream)
   return
 }
 
@@ -113,8 +97,8 @@ async function* indexFiles(
 }
 
 function runIxIxx(readStream: Readable, idxLocation: string, name: string) {
-  const ixFilename = path.join(idxLocation, 'trix', `${name}.ix`)
-  const ixxFilename = path.join(idxLocation, 'trix', `${name}.ixx`)
+  const ixFilename = path.join(idxLocation, `${name}.ix`)
+  const ixxFilename = path.join(idxLocation, `${name}.ixx`)
 
   return ixIxxStream(readStream, ixFilename, ixxFilename)
 }
