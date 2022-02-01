@@ -138,11 +138,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ),
         showCenterLine: types.optional(types.boolean, () => {
           const setting = localStorageGetItem('lgv-showCenterLine')
-          return setting !== undefined ? !!setting : false
+          return setting !== undefined && setting !== null ? !!+setting : false
         }),
         showCytobandsSetting: types.optional(types.boolean, () => {
           const setting = localStorageGetItem('lgv-showCytobands')
-          return setting !== undefined ? !!setting : true
+          return setting !== undefined && setting !== null ? !!+setting : true
         }),
       }),
     )
