@@ -321,15 +321,19 @@ USAGE
   $ jbrowse admin-server
 
 OPTIONS
-  -h, --help       show CLI help
+  -h, --help                     show CLI help
 
-  -p, --port=port  Specifified port to start the server on;
-                   Default is 9090.
+  -p, --port=port                Specifified port to start the server on;
+                                 Default is 9090.
 
-  --out=out        synonym for target
+  --bodySizeLimit=bodySizeLimit  [default: 25mb] Size limit of the update message; may need to increase if config is
+                                 large.
+                                 Argument is passed to bytes library for parsing: https://www.npmjs.com/package/bytes.
 
-  --target=target  path to config file in JB2 installation directory to write out to.
-                   Creates ./config.json if nonexistent
+  --out=out                      synonym for target
+
+  --target=target                path to config file in JB2 installation directory to write out to.
+                                 Creates ./config.json if nonexistent
 
 EXAMPLES
   $ jbrowse admin-server
