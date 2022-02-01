@@ -12,39 +12,9 @@ function readConf(confFilePath: string) {
   return JSON.parse(fs.readFileSync(confFilePath, 'utf8')) as Config
 }
 
-// TODO: implement Text background indexer class
-// 1) detect changes in the config
-// 2) determine wether to index changes or not
-// 3) index changes in a separate thread
-//    create a temp dir to store index
-// export class Jobs {
-//   param: number
-//   constructor(param: number) {
-//     // add a queue here to handle job requests
-//     // keep the state of the jobs
-//     this.param = param
-//     console.log(param)
-//   }
-//   // we can have a way to detect type of job
-//   // for our case we would want an indexing job
-//   // handle aborting jobs
-//   cancelJob() {
-//     // will use abort signals to cancel jobs
-//     // if a job is cancelled, do not create another one unitl JBrowse restarts
-//     console.log('handling error...')
-//   }
-
-//   runJob() {
-//     console.log('running the job in another thread')
-//   }
-//   // provide progress updates from workers
-//   provideStatus() {
-//     console.log('this is the status of the worker')
-//   }
-// }
-export function indexTracks(
-  // model: LGV,
-  tracks: Track[],
+export async function indexTracks(
+  rpcManager: any,
+  track: Track,
   signal?: AbortSignal,
 ) {
   // const session = getSession(model)
@@ -63,6 +33,14 @@ export function indexTracks(
   //   sessionId,
   //   signal,
   // })
+  const test = await rpcManager.call(
+    'indexTracksSessionId',
+    'CoreIndexTracks',
+    {
+      trackConfig: track,
+      sessionId: 'indexTracksSessionId',
+    },
+  )
   // assumes that we get whole sequence in a single getFeatures call
   return []
 }
