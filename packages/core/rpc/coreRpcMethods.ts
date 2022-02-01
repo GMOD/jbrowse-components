@@ -48,6 +48,36 @@ export class CoreGetRefNames extends RpcMethodType {
   }
 }
 
+export class CoreIndexTracks extends RpcMethodType {
+  name = 'CoreIndexTracks'
+
+  async execute(
+    args: {
+      sessionId: string
+      signal: RemoteAbortSignal
+      trackConfig: {}
+    },
+    rpcDriverClassName: string,
+  ) {
+    const deserializedArgs = await this.deserializeArguments(
+      args,
+      rpcDriverClassName,
+    )
+    const { sessionId, trackConfig } = deserializedArgs
+    // const { dataAdapter } = await getAdapter(
+    //   this.pluginManager,
+    //   sessionId,
+    //   adapterConfig,
+    // )
+
+    // if (dataAdapter instanceof BaseFeatureDataAdapter) {
+    //   return dataAdapter.getRefNames(deserializedArgs)
+    // }
+    console.log("sessionId", sessionId)
+    console.log("trackConf", trackConfig)
+    return []
+  }
+}
 export class CoreGetFileInfo extends RpcMethodType {
   name = 'CoreGetInfo'
 

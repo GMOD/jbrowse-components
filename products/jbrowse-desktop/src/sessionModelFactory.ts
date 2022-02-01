@@ -596,12 +596,20 @@ export default function sessionModelFactory(
           },
           {
             label: 'Index track',
-            onClick: () => {
+            onClick: async () => {
               // adds job to the queue
               const trackSnapshot = JSON.parse(
                 JSON.stringify(getSnapshot(config)),
               )
-              console.log("trackSnapshot", trackSnapshot)
+              const rpcManager = getParent(self).jbrowse.rpcManager
+              const test = await rpcManager.call(
+                'indexTracksSessionId',
+                'CoreIndexTracks',
+                {
+                  trackConfig: trackSnapshot,
+                  sessionId: 'indexTracksSessionId',
+                },
+              )
             },
             icon: FindReplaceIcon,
           },
