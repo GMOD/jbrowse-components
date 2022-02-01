@@ -77,7 +77,7 @@ export default class AdminServer extends JBrowseCommand {
     app.use(cors())
 
     // POST route to save config
-    app.use(express.json())
+    app.use(express.json({ limit: '25mb' }))
     app.post('/updateConfig', async (req, res) => {
       if (adminKey === req.body.adminKey) {
         this.debug('Admin key matches')
