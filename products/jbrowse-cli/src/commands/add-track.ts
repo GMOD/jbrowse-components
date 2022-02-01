@@ -331,9 +331,11 @@ export default class AddTrack extends JBrowseCommand {
     await this.writeJsonFile(this.target, configContents)
 
     this.log(
-      `${idx !== -1 ? 'Overwrote' : 'Added'} track "${name}" ${
-        idx !== -1 ? 'in' : 'to'
-      } ${this.target}`,
+      `${
+        idx !== -1 ? 'Overwrote' : 'Added'
+      } track "${name}" with ID "${trackId}" ${idx !== -1 ? 'in' : 'to'} ${
+        this.target
+      }`,
     )
   }
 
