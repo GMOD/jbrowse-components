@@ -29,6 +29,7 @@ export * from './aborting'
 export * from './when'
 export * from './range'
 export { SimpleFeature, isFeature }
+export type { Feature }
 
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
