@@ -65,6 +65,8 @@ const stateModelFactory = (
         resolution: types.optional(types.number, 1),
         fill: types.maybe(types.boolean),
         color: types.maybe(types.string),
+        posColor: types.maybe(types.string),
+        negColor: types.maybe(types.string),
         summaryScoreMode: types.maybe(types.string),
         rendererTypeNameState: types.maybe(types.string),
         scale: types.maybe(types.string),
@@ -93,6 +95,12 @@ const stateModelFactory = (
       },
       setColor(color: string) {
         self.color = color
+      },
+      setPosColor(color: string) {
+        self.posColor = color
+      },
+      setNegColor(color: string) {
+        self.negColor = color
       },
 
       setLoading(aborter: AbortController) {
@@ -161,7 +169,7 @@ const stateModelFactory = (
       },
     }))
     .views(self => ({
-      get TooltipComponent(): React.FC {
+      get TooltipComponent() {
         return Tooltip as unknown as React.FC
       },
 
@@ -187,11 +195,6 @@ const stateModelFactory = (
       get scaleType() {
         return self.scale || getConf(self, 'scaleType')
       },
-      get filled() {
-        return typeof self.fill !== 'undefined'
-          ? self.fill
-          : readConfObject(this.rendererConfig, 'filled')
-      },
 
       get maxScore() {
         const { max } = self.constraints
@@ -202,19 +205,22 @@ const stateModelFactory = (
         const { min } = self.constraints
         return min !== undefined ? min : getConf(self, 'minScore')
       },
-
+    }))
+    .views(self => ({
       get rendererConfig() {
         const configBlob =
-          getConf(self, ['renderers', this.rendererTypeName]) || {}
+          getConf(self, ['renderers', self.rendererTypeName]) || {}
 
         return self.rendererType.configSchema.create(
           {
             ...configBlob,
             filled: self.fill,
-            scaleType: this.scaleType,
+            scaleType: self.scaleType,
             displayCrossHatches: self.displayCrossHatches,
             summaryScoreMode: self.summaryScoreMode,
-            color: self.color,
+            ...(self.color ? { color: self.color } : {}),
+            ...(self.negColor ? { negColor: self.negColor } : {}),
+            ...(self.posColor ? { posColor: self.posColor } : {}),
           },
           getEnv(self),
         )
@@ -223,6 +229,11 @@ const stateModelFactory = (
     .views(self => {
       let oldDomain: [number, number] = [0, 0]
       return {
+        get filled() {
+          return typeof self.fill !== 'undefined'
+            ? self.fill
+            : readConfObject(self.rendererConfig, 'filled')
+        },
         get summaryScoreModeSetting() {
           return (
             self.summaryScoreMode ||

@@ -1,17 +1,20 @@
-import React from 'react'
-import { makeStyles } from '@material-ui/core/styles'
+import React, { useState } from 'react'
 import {
+  Button,
   Dialog,
   DialogContent,
+  DialogActions,
   DialogTitle,
   IconButton,
-  Button,
+  Typography,
+  FormControlLabel,
+  Radio,
+  makeStyles,
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 import { CompactPicker, Color, RGBColor } from 'react-color'
 
 const useStyles = makeStyles(theme => ({
-  root: {},
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -22,33 +25,34 @@ const useStyles = makeStyles(theme => ({
 
 // this is needed because passing a entire color object into the react-color
 // for alpha, can't pass in an rgba string for example
-function serializeColor(color: Color) {
+function serialize(color: Color) {
   if (color instanceof Object) {
-    const { r, g, b, a } = color as RGBColor
-    return `rgb(${r},${g},${b},${a})`
+    const { r, g, b } = color as RGBColor
+    return `rgb(${r},${g},${b})`
   }
   return color
 }
 
-export default function SetColorDialog(props: {
+export default function SetColorDialog({
+  model,
+  handleClose,
+}: {
   model: {
     color: number
-    setColor: Function
+    setColor: (arg?: string) => void
+    setPosColor: (arg?: string) => void
+    setNegColor: (arg?: string) => void
   }
   handleClose: () => void
 }) {
   const classes = useStyles()
-  const { model, handleClose } = props
+  const [posneg, setPosNeg] = useState(false)
 
   return (
-    <Dialog
-      open
-      onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-    >
-      <DialogTitle id="alert-dialog-title">
-        Select a color
+    <Dialog open onClose={handleClose}>
+      <DialogTitle>
+        Select either an overall color, or the positive/negative colors. Note
+        that density renderers only work properly with positive/negative colors
         <IconButton
           aria-label="close"
           className={classes.closeButton}
@@ -57,37 +61,72 @@ export default function SetColorDialog(props: {
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent style={{ overflowX: 'hidden' }}>
-        <div className={classes.root}>
-          <CompactPicker
-            onChange={event => {
-              model.setColor(serializeColor(event.rgb))
-            }}
-          />
-          <br />
-          <div style={{ margin: 20 }}>
-            <Button
-              onClick={() => {
+      <DialogContent>
+        <FormControlLabel
+          checked={!posneg}
+          onClick={() => setPosNeg(false)}
+          control={<Radio />}
+          label={'Overall color'}
+        />
+        <FormControlLabel
+          checked={posneg}
+          onClick={() => setPosNeg(true)}
+          control={<Radio />}
+          label={'Positive/negative color'}
+        />
+
+        {posneg ? (
+          <>
+            <Typography>Positive color</Typography>
+            <CompactPicker
+              onChange={event => {
+                model.setPosColor(serialize(event.rgb))
                 model.setColor(undefined)
               }}
-              color="secondary"
-              variant="contained"
-            >
-              Restore default from config
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              type="submit"
-              onClick={() => {
-                handleClose()
+            />
+            <Typography>Negative color</Typography>
+            <CompactPicker
+              onChange={event => {
+                model.setNegColor(serialize(event.rgb))
+                model.setColor(undefined)
               }}
-            >
-              Submit
-            </Button>
-          </div>
-        </div>
+            />
+          </>
+        ) : (
+          <>
+            <Typography>Overall color</Typography>
+            <CompactPicker
+              onChange={event => {
+                model.setColor(serialize(event.rgb))
+              }}
+            />
+          </>
+        )}
       </DialogContent>
+      <DialogActions>
+        <Button
+          onClick={() => {
+            model.setPosColor(undefined)
+            model.setNegColor(undefined)
+            model.setColor(undefined)
+          }}
+          color="secondary"
+          variant="contained"
+        >
+          Restore default
+        </Button>
+
+        <Button
+          variant="contained"
+          color="primary"
+          type="submit"
+          onClick={() => {
+            handleClose()
+          }}
+        >
+          Submit
+        </Button>
+      </DialogActions>
     </Dialog>
   )
 }

@@ -1,13 +1,12 @@
 import React, { useRef, useMemo, useEffect } from 'react'
 import { observer } from 'mobx-react'
-import { isAlive } from 'mobx-state-tree'
+import { getSnapshot, isAlive } from 'mobx-state-tree'
 import SimpleFeature, {
   SimpleFeatureSerialized,
   Feature,
 } from '@jbrowse/core/util/simpleFeature'
 import { getConf } from '@jbrowse/core/configuration'
-import { getContainingView } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { getContainingView, viewBpToPx, ViewSnap } from '@jbrowse/core/util'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { interstitialYPos, overlayYPos, generateMatches } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
@@ -19,11 +18,8 @@ type RectTuple = [number, number, number, number]
 
 const { parseCigar } = MismatchParser
 
-function px(
-  view: LinearGenomeViewModel,
-  arg: { refName: string; coord: number },
-) {
-  return (view.bpToPx(arg) || {}).offsetPx || 0
+function px(view: ViewSnap, arg: { refName: string; coord: number }) {
+  return (viewBpToPx({ ...arg, self: view }) || {}).offsetPx || 0
 }
 
 function layoutMatches(features: Feature[][]) {
@@ -97,10 +93,10 @@ function LinearSyntenyRendering(props: {
   )
   const matches = layoutMatches(deserializedFeatures)
   const worker = !('type' in display)
-  let parentView
-  try {
-    parentView = worker ? undefined : (getContainingView(display) as LSV)
-  } catch (e) {}
+  const parentView =
+    worker || !isAlive(display)
+      ? undefined
+      : (getContainingView(display) as LSV)
   const views = worker ? undefined : parentView?.views
   const drawCurves = worker ? undefined : parentView?.drawCurves
   const color =
@@ -116,21 +112,28 @@ function LinearSyntenyRendering(props: {
     if (!ctx) {
       return
     }
-    ctx.clearRect(0, 0, width, height)
+    ctx.resetTransform()
     ctx.scale(highResolutionScaling, highResolutionScaling)
+    ctx.clearRect(0, 0, width, height)
     ctx.fillStyle = color
     ctx.strokeStyle = color
     const showIntraviewLinks = false
     const middle = true
     const hideTiny = false
+    const viewSnaps = views.map(view => ({
+      ...getSnapshot(view),
+      width: view.width,
+      interRegionPaddingWidth: view.interRegionPaddingWidth,
+      minimumBlockWidth: view.minimumBlockWidth,
+    }))
     matches.forEach(m => {
       // we follow a path in the list of chunks, not from top to bottom, just
       // in series following x1,y1 -> x2,y2
       for (let i = 0; i < m.length - 1; i += 1) {
         const { layout: c1, feature: f1, level: l1, refName: ref1 } = m[i]
         const { layout: c2, feature: f2, level: l2, refName: ref2 } = m[i + 1]
-        const v1 = views[l1]
-        const v2 = views[l2]
+        const v1 = viewSnaps[l1]
+        const v2 = viewSnaps[l2]
 
         if (!c1 || !c2) {
           console.warn('received null layout for a overlay feature')
@@ -269,8 +272,9 @@ function LinearSyntenyRendering(props: {
     <canvas
       ref={ref}
       data-testid="synteny_canvas"
-      width={width}
-      height={height}
+      style={{ width, height }}
+      width={width * highResolutionScaling}
+      height={height * highResolutionScaling}
     />
   )
 }

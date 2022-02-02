@@ -166,7 +166,7 @@ export default abstract class JBrowseCommand extends Command {
     return fsPromises.writeFile(location, JSON.stringify(contents, null, 2))
   }
 
-  async resolveFileLocation(location: string, check = true, warn = false) {
+  async resolveFileLocation(location: string, check = true, inPlace = false) {
     let locationUrl: URL | undefined
     try {
       locationUrl = new URL(location)
@@ -194,12 +194,12 @@ export default abstract class JBrowseCommand extends Command {
     }
     if (locationPath) {
       const filePath = path.relative(process.cwd(), locationPath)
-      if (warn && filePath.startsWith('..')) {
+      if (inPlace && filePath.startsWith('..')) {
         this.warn(
           `Location ${filePath} is not in the JBrowse directory. Make sure it is still in your server directory.`,
         )
       }
-      return filePath
+      return inPlace ? location : filePath
     }
     return this.error(`Could not resolve to a file or a URL: "${location}"`, {
       exit: 40,

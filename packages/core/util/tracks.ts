@@ -164,10 +164,7 @@ export function guessAdapter(
   model?: IAnyStateTreeNode,
 ) {
   if (model) {
-    // @ts-ignore
-    const session = getSession(model)
-
-    const adapterGuesser = getEnv(session).pluginManager.evaluateExtensionPoint(
+    const adapterGuesser = getEnv(model).pluginManager.evaluateExtensionPoint(
       'Core-guessAdapterForLocation',
       (
         _file: FileLocation,

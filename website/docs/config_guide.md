@@ -137,6 +137,10 @@ Y	chrY
 M	chrM	MT
 ```
 
+Note that "chromAliases" files from UCSC match this format
+
+https://hgdownload.soe.ucsc.edu/goldenPath/canFam6/bigZips/canFam6.chromAlias.txt
+
 ## Adding an assembly with the CLI
 
 Generally we add a new assembly with the CLI using something like

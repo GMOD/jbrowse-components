@@ -18,7 +18,8 @@ export default class RefNameAliasAdapter
     return results
       .trim()
       .split('\n')
-      .map((row: string) => {
+      .filter(f => !!f && !f.startsWith('#'))
+      .map(row => {
         const [refName, ...aliases] = row.split('\t')
         return { refName, aliases }
       })

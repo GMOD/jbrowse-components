@@ -35,13 +35,18 @@ export default class AdminServer extends JBrowseCommand {
     out: flags.string({
       description: 'synonym for target',
     }),
+    bodySizeLimit: flags.string({
+      description:
+        'Size limit of the update message; may need to increase if config is large.\nArgument is passed to bytes library for parsing: https://www.npmjs.com/package/bytes.',
+      default: '25mb',
+    }),
 
     help: flags.help({ char: 'h' }),
   }
 
   async run() {
     const { flags: runFlags } = this.parse(AdminServer)
-    const { target, out } = runFlags
+    const { target, out, bodySizeLimit } = runFlags
 
     const output = target || out || '.'
     const isDir = fs.lstatSync(output).isDirectory()
@@ -77,7 +82,7 @@ export default class AdminServer extends JBrowseCommand {
     app.use(cors())
 
     // POST route to save config
-    app.use(express.json())
+    app.use(express.json({ limit: bodySizeLimit }))
     app.post('/updateConfig', async (req, res) => {
       if (adminKey === req.body.adminKey) {
         this.debug('Admin key matches')

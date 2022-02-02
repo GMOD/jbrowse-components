@@ -83,9 +83,10 @@ class LazyWorker {
       watchWorker(worker, this.driver.maxPingTime, rpcDriverClassName).catch(
         error => {
           if (this.worker) {
-            console.warn(
-              `worker did not respond, killing and generating new one ${error}`,
+            console.error(
+              'worker did not respond, killing and generating new one',
             )
+            console.error(error)
             this.worker.destroy()
             this.worker.status = 'killed'
             this.worker.error = error

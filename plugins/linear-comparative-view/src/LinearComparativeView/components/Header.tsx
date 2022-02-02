@@ -67,8 +67,8 @@ const Header = observer(
         {ExtraButtons}
         {!anyShowHeaders
           ? model.views.map(view => (
-              <div className={classes.searchContainer}>
-                <SearchBox key={view.id} model={view} showHelp={false} />
+              <div key={view.id} className={classes.searchContainer}>
+                <SearchBox model={view} showHelp={false} />
               </div>
             ))
           : null}

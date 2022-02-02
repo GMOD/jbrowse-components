@@ -988,14 +988,14 @@ export function generateCodonTable(table: any) {
 
 // call statusCallback with current status and clear when finished
 export async function updateStatus<U>(
-  statusMsg: string,
-  statusCallback: (arg: string) => void,
+  msg: string,
+  cb: (arg: string) => void,
   fn: () => U,
 ) {
-  statusCallback(statusMsg)
-  const result = await fn()
-  statusCallback('')
-  return result
+  cb(msg)
+  const res = await fn()
+  cb('')
+  return res
 }
 
 export function hashCode(str: string) {
@@ -1040,6 +1040,18 @@ export async function bytesForRegions(regions: Region[], index: any) {
     .reduce((a, b) => a + b.end - b.start, 0)
 }
 
+export type ViewSnap = {
+  bpPerPx: number
+  interRegionPaddingWidth: number
+  minimumBlockWidth: number
+  width: number
+  displayedRegions: {
+    start: number
+    end: number
+    refName: string
+    reversed: boolean
+  }[]
+}
 export function viewBpToPx({
   refName,
   coord,
@@ -1049,18 +1061,7 @@ export function viewBpToPx({
   refName: string
   coord: number
   regionNumber?: number
-  self: {
-    bpPerPx: number
-    interRegionPaddingWidth: number
-    minimumBlockWidth: number
-    width: number
-    displayedRegions: {
-      start: number
-      end: number
-      refName: string
-      reversed: boolean
-    }[]
-  }
+  self: ViewSnap
 }) {
   let offsetBp = 0
 
@@ -1092,8 +1093,8 @@ export function viewBpToPx({
     }
     return false
   })
-  const foundRegion = self.displayedRegions[index]
-  if (foundRegion) {
+  const found = self.displayedRegions[index]
+  if (found) {
     return {
       index,
       offsetPx: Math.round(offsetBp / self.bpPerPx),

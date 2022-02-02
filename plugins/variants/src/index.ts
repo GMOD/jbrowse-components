@@ -57,15 +57,18 @@ export default class VariantsPlugin extends Plugin {
           const adapterName = 'VcfTabixAdapter'
           const fileName = getFileName(file)
           const indexName = index && getFileName(index)
-          if (regexGuess.test(fileName) || adapterHint === adapterName) {
-            return {
-              type: adapterName,
-              vcfGzLocation: file,
-              index: {
-                location: index || makeIndex(file, '.tbi'),
-                indexType: makeIndexType(indexName, 'CSI', 'TBI'),
-              },
-            }
+          const obj = {
+            type: adapterName,
+            vcfGzLocation: file,
+            index: {
+              location: index || makeIndex(file, '.tbi'),
+              indexType: makeIndexType(indexName, 'CSI', 'TBI'),
+            },
+          }
+          if (regexGuess.test(fileName) && !adapterHint) {
+            return obj
+          } else if (adapterHint === adapterName) {
+            return obj
           }
           return adapterGuesser(file, index, adapterHint)
         }

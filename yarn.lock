@@ -1181,7 +1181,7 @@
     core-js "^2.6.5"
     regenerator-runtime "^0.13.4"
 
-"@babel/runtime-corejs3@^7.10.2", "@babel/runtime-corejs3@^7.4.5":
+"@babel/runtime-corejs3@^7.10.2":
   version "7.16.8"
   resolved "https://registry.yarnpkg.com/@babel/runtime-corejs3/-/runtime-corejs3-7.16.8.tgz#ea533d96eda6fdc76b1812248e9fbd0c11d4a1a7"
   integrity sha512-3fKhuICS1lMz0plI5ktOE/yEtBRMVxplzRkdn6mJQ197XiY0JnrzYV0+Mxozq3JZ8SBV9Ecurmw1XsGbwOf+Sg==
@@ -1441,10 +1441,10 @@
   resolved "https://registry.yarnpkg.com/@gar/promisify/-/promisify-1.1.2.tgz#30aa825f11d438671d585bd44e7fd564535fc210"
   integrity sha512-82cpyJyKRoQoRi+14ibCeGPu0CwypgtBAdBhq1WfvagpCZNKqwXbKwXllYSMG91DhmG4jt9gN8eP6lGOtozuaw==
 
-"@gmod/bam@^1.1.10":
-  version "1.1.10"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.1.10.tgz#93bd0c95d5e57a2c1956b7ebf045b62898979129"
-  integrity sha512-sz02lsYwmzoPnAJ8lZ3SNBQzamGHHbcF73J3xKnCHlFF83aWE67TNYrfiYYVcirf3L4+VyWeGd0VsptGR2okgA==
+"@gmod/bam@^1.1.11":
+  version "1.1.11"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.1.11.tgz#010bb579c9c1d95e94a8aab49ad05be500e69086"
+  integrity sha512-84MhCfXd2Q7/R8/HTdJ1M0o40zpRAgBhiJpo+qv8h84GqXyGLwZ0j9CPBDQ+v9N2brQwPVIPb3cEonRR/kuLkw==
   dependencies:
     "@gmod/bgzf-filehandle" "^1.3.3"
     abortable-promise-cache "^1.4.0"
@@ -1492,15 +1492,16 @@
   dependencies:
     long "^4.0.0"
 
-"@gmod/cram@^1.5.9":
-  version "1.5.9"
-  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-1.5.9.tgz#be4db99f01b13ff04b09cc512ee7b924098559b4"
-  integrity sha512-yUGhMCvZytOkbvgHue0EJ9SuH5ae9kA5bc83Wjd9ahoQ5nG9tj6aLFt79nAQmKG789IOV1nql/ITZoymmUT+ow==
+"@gmod/cram@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-1.6.0.tgz#0af001fbdac98fc350f826bb0e4943c9d06374cd"
+  integrity sha512-wEVWfv+HbhKaYtNf/HHo0JObjHEMJG8w1P4lKnwPpt3RQRzUAdWw6s4j0OdNP6WZW9+5LonzOqXNcJyG0vz9Mw==
   dependencies:
-    "@babel/runtime-corejs3" "^7.4.5"
     "@gmod/binary-parser" "^1.3.5"
+    "@jkbonfield/htscodecs" "^0.5.1"
     abortable-promise-cache "^1.2.0"
     buffer-crc32 "^0.2.13"
+    bzip2 "^0.1.1"
     cross-fetch "^3.0.0"
     es6-promisify "^6.0.1"
     long "^4.0.0"
@@ -2003,6 +2004,11 @@
     "@types/node" "*"
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
+
+"@jkbonfield/htscodecs@^0.5.1":
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/@jkbonfield/htscodecs/-/htscodecs-0.5.1.tgz#a8b16be1076883837640234fe4fdd8e0187c094c"
+  integrity sha512-1qNMsatU8i6qOsbtZnZxQwJnCRPMeviRo8+i44hoZ7W5OWUnXSKSx9273aLv9M6DxcuLapIiFvWAaoi5x7Loiw==
 
 "@lerna/add@4.0.0":
   version "4.0.0"
@@ -7042,6 +7048,11 @@ bytes@3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/bytes/-/bytes-3.1.1.tgz#3f018291cb4cbad9accb6e6970bca9c8889e879a"
   integrity sha512-dWe4nWO/ruEOY7HkUJ5gFt1DCFV9zPRoJr8pV0/ASQermOZjtq8jMjOprC0Kd10GLN+l7xaUPvxzJFWtxGu8Fg==
+
+bzip2@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/bzip2/-/bzip2-0.1.1.tgz#b0d232bd0f0f750d2023306d40a886ee51b901f4"
+  integrity sha1-sNIyvQ8PdQ0gIzBtQKiG7lG5AfQ=
 
 c8@^7.6.0:
   version "7.11.0"
