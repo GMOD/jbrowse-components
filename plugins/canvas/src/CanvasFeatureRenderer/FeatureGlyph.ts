@@ -28,7 +28,6 @@ export interface LaidOutFeatureRect extends FeatureRect {
 
 interface Rect {
   l: number
-  r: number
   t: number
   w: number
 }

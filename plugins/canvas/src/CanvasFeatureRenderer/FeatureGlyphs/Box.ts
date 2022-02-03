@@ -63,7 +63,6 @@ export default class Box extends FeatureGlyph {
   getFeatureRectangle(viewArgs: ViewInfo, feature: Feature) {
     const fRect = super.getFeatureRectangle(viewArgs, feature)
 
-    const { l, h } = fRect
     const w = Math.max(fRect.w, 2)
 
     // fixme maybe
@@ -78,7 +77,7 @@ export default class Box extends FeatureGlyph {
     return this.expandRectangleWithLabels(viewArgs, feature, {
       ...fRect,
       w,
-      rect: { h, l, w, t: 0 },
+      rect: { ...fRect, w, t: 0 },
     })
   }
 
@@ -89,8 +88,8 @@ export default class Box extends FeatureGlyph {
     feature: Feature,
     fRect: FeatureRect & {
       h: number
-      t?: number
-      rect?: { l: number; w: number; h: number; t: number }
+      t: number
+      rect?: { l: number; w: number; h: number; t: number; r: number }
     },
   ) {
     // maybe get the feature's name, and update the layout box accordingly

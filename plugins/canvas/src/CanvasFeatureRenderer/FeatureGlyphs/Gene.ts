@@ -19,11 +19,9 @@ export default class Gene extends BoxGlyph {
   getFeatureRectangle(viewArgs: ViewInfo, feature: Feature) {
     // we need to lay out rects for each of the subfeatures
     const subArgs = viewArgs
-    // subArgs.showDescriptions = false
-    // subArgs.showLabels = false
     const subfeatures = feature.children()
 
-    // if this gene weirdly has no subfeatures, just render as a box
+    // if this gene has no subfeatures, just render as a box
     if (!subfeatures?.length) {
       return super.getFeatureRectangle(viewArgs, feature)
     }
@@ -56,8 +54,6 @@ export default class Gene extends BoxGlyph {
 
       const padding = 1
       const newTop = fRect.h ? fRect.h + padding : 0
-      subRect.t = newTop
-      rect.t = newTop
 
       // const transcriptLabel = this.makeSideLabel(
       //   this.getFeatureLabel(sub),
@@ -74,10 +70,14 @@ export default class Gene extends BoxGlyph {
       //   transcriptLabel.offsetX = 0
       // }
 
-      fRect.subRects.push(subRect) // { ...subRect, label: transcriptLabel })
+      fRect.subRects.push({
+        ...subRect,
+        t: newTop,
+        rect: { ...rect, t: newTop },
+      })
       fRect.r = Math.max(fRect.r, subRect.l + subRect.w - 1)
       fRect.l = Math.min(fRect.l, subRect.l)
-      fRect.h = subRect.t + rect.h + padding
+      fRect.h = newTop + rect.h + padding
     })
 
     // calculate the width
