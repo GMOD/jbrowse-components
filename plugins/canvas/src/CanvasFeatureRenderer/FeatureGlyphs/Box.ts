@@ -65,8 +65,6 @@ export default class Box extends FeatureGlyph {
 
     const { l, h } = fRect
     const w = Math.max(fRect.w, 2)
-    fRect.rect = { h, l, w, t: 0 }
-    fRect.w = w
 
     // fixme maybe
     // const i = { width: 16 }
@@ -77,7 +75,11 @@ export default class Box extends FeatureGlyph {
     //   fRect.w += i.width
     // }
 
-    return this.expandRectangleWithLabels(viewArgs, feature, fRect)
+    return this.expandRectangleWithLabels(viewArgs, feature, {
+      ...fRect,
+      w,
+      rect: { h, l, w, t: 0 },
+    })
   }
 
   // given an under-construction feature layout rectangle, expand it to
@@ -87,11 +89,11 @@ export default class Box extends FeatureGlyph {
     feature: Feature,
     fRect: FeatureRect & {
       h: number
-      rect?: { l: number; w: number; h: number }
+      t?: number
+      rect?: { l: number; w: number; h: number; t: number }
     },
   ) {
-    // maybe get the feature's name, and update the layout box
-    // accordingly
+    // maybe get the feature's name, and update the layout box accordingly
     const { config } = viewInfo
     const showLabels = readConfObject(config, 'showLabels')
     const label = showLabels ? this.makeFeatureLabel(feature, fRect) : undefined

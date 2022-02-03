@@ -9,7 +9,7 @@ import { ViewInfo, LaidOutFeatureRect } from '../FeatureGlyph'
 
 interface FeatureRectWithGlyph extends LaidOutFeatureRect {
   label: any
-  rect: { h: number }
+  rect: { h: number; t: number }
 }
 interface LaidOutFeatureRectWithSubRects extends LaidOutFeatureRect {
   subRects?: FeatureRectWithGlyph[]
@@ -48,11 +48,16 @@ export default class Gene extends BoxGlyph {
     subfeatures.forEach(sub => {
       const glyph = this.getSubGlyph(sub)
       const subRect = glyph.getFeatureRectangle(subArgs, sub)
+      const rect = subRect.rect
+      if (!rect) {
+        console.warn('feature not laid out')
+        return
+      }
 
       const padding = 1
       const newTop = fRect.h ? fRect.h + padding : 0
       subRect.t = newTop
-      subRect.rect.t = newTop
+      rect.t = newTop
 
       // const transcriptLabel = this.makeSideLabel(
       //   this.getFeatureLabel(sub),
@@ -72,7 +77,7 @@ export default class Gene extends BoxGlyph {
       fRect.subRects.push(subRect) // { ...subRect, label: transcriptLabel })
       fRect.r = Math.max(fRect.r, subRect.l + subRect.w - 1)
       fRect.l = Math.min(fRect.l, subRect.l)
-      fRect.h = subRect.t + subRect.rect.h + padding
+      fRect.h = subRect.t + rect.h + padding
     })
 
     // calculate the width

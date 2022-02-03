@@ -1,7 +1,8 @@
-import { readConfObject } from '@jbrowse/core/configuration'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { bpSpanPx } from '@jbrowse/core/util'
+import {
+  readConfObject,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
+import { bpSpanPx, Feature } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 
@@ -22,9 +23,17 @@ export interface LaidOutFeatureRect extends FeatureRect {
   description?: { text: string; offsetY: number }
   t: number
   h: number
+  rect: any
 }
 
-export default class FeatureGlyph {
+interface Rect {
+  l: number
+  r: number
+  t: number
+  w: number
+}
+
+export default abstract class FeatureGlyph {
   layoutFeature(
     viewArgs: ViewInfo,
     layout: BaseLayout<Feature>,
@@ -45,12 +54,11 @@ export default class FeatureGlyph {
     return { ...fRect, f: feature, t: top }
   }
 
-  // stub
-  renderFeature(
+  abstract renderFeature(
     context: CanvasRenderingContext2D,
     viewInfo: ViewInfo,
     fRect: LaidOutFeatureRect,
-  ) {}
+  ): void
 
   getFeatureRectangle(viewInfo: ViewInfo, feature: Feature) {
     const { region, bpPerPx } = viewInfo
@@ -67,11 +75,11 @@ export default class FeatureGlyph {
       h: this.getFeatureHeight(viewInfo, feature),
       f: feature,
       t: 0,
+      rect: undefined as Rect | undefined,
     }
   }
 
   getFeatureHeight(viewInfo: ViewInfo, feature: Feature) {
-    const { config } = viewInfo
-    return readConfObject(config, 'height', { feature })
+    return readConfObject(viewInfo.config, 'height', { feature })
   }
 }
