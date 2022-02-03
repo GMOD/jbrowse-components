@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { RemoteFile } from 'generic-filehandle'
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { getParent } from 'mobx-state-tree'
@@ -31,27 +31,12 @@ const stateModelFactory = (
       }),
     )
     .views(self => ({
-      get authHeader(): string {
-        return getConf(self, 'authHeader') || 'Authorization'
-      },
-      get tokenType(): string {
-        return getConf(self, 'tokenType') || 'Basic'
-      },
-      get internetAccountType() {
-        return 'HTTPBasicInternetAccount'
-      },
-      handlesLocation(location: UriLocation): boolean {
-        const validDomains = self.accountConfig.domains || []
-        return validDomains.some((domain: string) =>
-          location?.uri.includes(domain),
-        )
-      },
       generateAuthInfo() {
         return {
-          internetAccountType: this.internetAccountType,
+          internetAccountType: self.type,
           authInfo: {
-            authHeader: this.authHeader,
-            tokenType: this.tokenType,
+            authHeader: self.authHeader,
+            tokenType: self.tokenType,
             configuration: self.accountConfig,
           },
         }

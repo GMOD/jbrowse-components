@@ -81,9 +81,6 @@ const stateModelFactory = (
       }),
     )
     .views(() => ({
-      get internetAccountType() {
-        return 'GoogleDriveOAuthInternetAccount'
-      },
       get toggleContents() {
         return <GoogleDriveIcon />
       },

@@ -1,4 +1,4 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { RemoteFileWithRangeCache } from '@jbrowse/core/util/io'
 import { UriLocation } from '@jbrowse/core/util/types'
@@ -31,27 +31,12 @@ const stateModelFactory = (
       needsToken: false,
     }))
     .views(self => ({
-      get authHeader(): string {
-        return getConf(self, 'authHeader')
-      },
-      get tokenType(): string {
-        return getConf(self, 'tokenType')
-      },
-      get internetAccountType() {
-        return 'ExternalTokenInternetAccount'
-      },
-      handlesLocation(location: UriLocation): boolean {
-        const validDomains = self.accountConfig.domains || []
-        return validDomains.some((domain: string) =>
-          location?.uri.includes(domain),
-        )
-      },
       generateAuthInfo() {
         return {
-          internetAccountType: this.internetAccountType,
+          internetAccountType: self.type,
           authInfo: {
-            authHeader: this.authHeader,
-            tokenType: this.tokenType,
+            authHeader: self.authHeader,
+            tokenType: self.tokenType,
             configuration: self.accountConfig,
           },
         }

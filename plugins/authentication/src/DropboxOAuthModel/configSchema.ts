@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { Instance } from 'mobx-state-tree'
-import { BaseInternetAccountConfig } from '@jbrowse/core/pluggableElementTypes/models'
+import OAuthConfigSchema from '../OAuthModel/configSchema'
 
 const DropboxOAuthConfigSchema = ConfigurationSchema(
   'DropboxOAuthInternetAccount',
@@ -8,54 +8,39 @@ const DropboxOAuthConfigSchema = ConfigurationSchema(
     authEndpoint: {
       description: 'the authorization code endpoint of the internet account',
       type: 'string',
-      defaultValue: '',
+      defaultValue: 'https://www.dropbox.com/oauth2/authorize',
     },
     tokenEndpoint: {
       description: 'the token endpoint of the internet account',
       type: 'string',
-      defaultValue: '',
-    },
-    needsAuthorization: {
-      description: 'boolean to indicate if the endpoint needs authorization',
-      type: 'boolean',
-      defaultValue: false,
+      defaultValue: 'https://api.dropbox.com/oauth2/token',
     },
     needsPKCE: {
       description: 'boolean to indicate if the endpoint needs a PKCE code',
       type: 'boolean',
-      defaultValue: false,
-    },
-    clientId: {
-      description: 'id for the OAuth application',
-      type: 'string',
-      defaultValue: '',
-    },
-    scopes: {
-      description: 'optional scopes for the authorization call',
-      type: 'string',
-      defaultValue: '',
+      defaultValue: true,
     },
     domains: {
       description:
         'array of valid domains the url can contain to use this account',
       type: 'stringArray',
-      defaultValue: [],
-    },
-    responseType: {
-      description: 'the type of response from the authorization endpoint',
-      type: 'string',
-      defaultValue: 'code',
+      defaultValue: [
+        'addtodropbox.com',
+        'db.tt',
+        'dropbox.com',
+        'dropboxapi.com',
+        'dropboxbusiness.com',
+        'dropbox.tech',
+        'getdropbox.com',
+      ],
     },
     hasRefreshToken: {
       description: 'true if the endpoint can supply a refresh token',
       type: 'boolean',
-      defaultValue: false,
+      defaultValue: true,
     },
   },
-  {
-    baseConfiguration: BaseInternetAccountConfig,
-    explicitlyTyped: true,
-  },
+  { baseConfiguration: OAuthConfigSchema, explicitlyTyped: true },
 )
 
 export type DropboxOAuthInternetAccountConfigModel =

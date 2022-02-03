@@ -38,27 +38,33 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       errorMessage: '',
     }))
     .views(self => ({
-      get authHeader(): string {
-        return getConf(self, 'authHeader') || 'Authorization'
+      get authEndpoint() {
+        return getConf(self, 'authEndpoint')
       },
-      get tokenType(): string {
-        return getConf(self, 'tokenType') || 'Bearer'
+      get tokenEndpoint() {
+        return getConf(self, 'tokenEndpoint')
       },
-      get internetAccountType() {
-        return 'OAuthInternetAccount'
+      get needsPKCE() {
+        return getConf(self, 'needsPKCE')
       },
-      handlesLocation(location: UriLocation): boolean {
-        const validDomains = self.accountConfig.domains || []
-        return validDomains.some((domain: string) =>
-          location?.uri.includes(domain),
-        )
+      get clientId() {
+        return getConf(self, 'clientId')
+      },
+      get scopes() {
+        return getConf(self, 'scopes')
+      },
+      get responseType() {
+        return getConf(self, 'responseType')
+      },
+      get hasRefreshToken() {
+        return getConf(self, 'hasRefreshToken')
       },
       generateAuthInfo() {
         const generatedInfo = {
-          internetAccountType: this.internetAccountType,
+          internetAccountType: self.type,
           authInfo: {
-            authHeader: this.authHeader,
-            tokenType: this.tokenType,
+            authHeader: self.authHeader,
+            tokenType: self.tokenType,
             configuration: self.accountConfig,
             redirectUri: window.location.origin + window.location.pathname,
           },
@@ -102,18 +108,17 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
                 ?.redirectUri
             }
           }
-          const config = self.accountConfig
           const data: OAuthData = {
-            client_id: config.clientId,
+            client_id: self.clientId,
             redirect_uri: determineRedirectUri(),
-            response_type: config.responseType || 'code',
+            response_type: self.responseType || 'code',
           }
 
-          if (config.scopes) {
-            data.scope = config.scopes
+          if (self.scopes) {
+            data.scope = self.scopes
           }
 
-          if (config.needsPKCE) {
+          if (self.needsPKCE) {
             const fixup = (buf: string) => {
               return buf
                 .replace(/\+/g, '-')
@@ -129,7 +134,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             self.setCodeVerifierPKCE(codeVerifier)
           }
 
-          if (config.hasRefreshToken) {
+          if (self.hasRefreshToken) {
             data.token_access_type = 'offline'
           }
 
@@ -137,7 +142,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
             .join('&')
 
-          const url = `${config.authEndpoint}?${params}`
+          const url = `${self.authEndpoint}?${params}`
 
           if (isElectron) {
             const model = self
@@ -234,11 +239,10 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           token: string,
           redirectUri: string,
         ) {
-          const config = self.accountConfig
           const data = {
             code: token,
             grant_type: 'authorization_code',
-            client_id: config.clientId,
+            client_id: self.clientId,
             code_verifier: self.codeVerifierPKCE,
             redirect_uri: redirectUri,
           }
@@ -247,7 +251,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
             .join('&')
 
-          const response = await fetch(`${config.tokenEndpoint}`, {
+          const response = await fetch(`${self.tokenEndpoint}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
@@ -277,18 +281,17 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               : null)
 
           if (foundRefreshToken) {
-            const config = self.accountConfig
             const data = {
               grant_type: 'refresh_token',
               refresh_token: foundRefreshToken,
-              client_id: config.clientId,
+              client_id: self.clientId,
             }
 
             const params = Object.entries(data)
               .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
               .join('&')
 
-            const response = await fetch(`${config.tokenEndpoint}`, {
+            const response = await fetch(`${self.tokenEndpoint}`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',

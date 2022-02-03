@@ -47,9 +47,6 @@ const stateModelFactory = (
       }),
     )
     .views(() => ({
-      get internetAccountType() {
-        return 'DropboxOAuthInternetAccount'
-      },
       get toggleContents() {
         return <DropboxIcon />
       },

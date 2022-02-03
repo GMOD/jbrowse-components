@@ -3,11 +3,7 @@ import { Instance, types } from 'mobx-state-tree'
 import { getConf } from '../../configuration'
 import { RemoteFileWithRangeCache } from '../../util/io'
 import { ElementId } from '../../util/types/mst'
-import {
-  FileLocation,
-  UriLocation,
-  AnyReactComponentType,
-} from '../../util/types'
+import { UriLocation, AnyReactComponentType } from '../../util/types'
 
 export const InternetAccount = types
   .model('InternetAccount', {
@@ -21,8 +17,14 @@ export const InternetAccount = types
     get internetAccountId() {
       return getConf(self, 'internetAccountId')
     },
+    get authHeader() {
+      return getConf(self, 'authHeader')
+    },
     get tokenType() {
       return getConf(self, 'tokenType')
+    },
+    get domains() {
+      return getConf(self, 'domains')
     },
     get accountConfig() {
       return getConf(self)
@@ -36,9 +38,12 @@ export const InternetAccount = types
     get selectorLabel(): string | undefined {
       return undefined
     },
-
-    handlesLocation(location: FileLocation): boolean {
-      return false
+  }))
+  .views(self => ({
+    handlesLocation(location: UriLocation): boolean {
+      return self.domains.some((domain: string) =>
+        location?.uri.includes(domain),
+      )
     },
   }))
   .actions(self => ({
