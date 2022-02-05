@@ -26,6 +26,11 @@ export interface LaidOutFeatureRect extends FeatureRect {
   rect: any
 }
 
+export interface PostDrawFeatureRect extends LaidOutFeatureRect {
+  start: number
+  end: number
+}
+
 interface Rect {
   l: number
   t: number

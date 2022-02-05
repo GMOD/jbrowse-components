@@ -6,15 +6,19 @@ import BoxRendererType, {
   ResultsSerialized,
   ResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { Region } from '@jbrowse/core/util/types'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
-import { iterMap } from '@jbrowse/core/util'
+import { iterMap, Feature } from '@jbrowse/core/util'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 
 // locals
 import BoxGlyph from './FeatureGlyphs/Box'
 import GeneGlyph from './FeatureGlyphs/Gene'
-import { LaidOutFeatureRect } from './FeatureGlyph'
+import { PostDrawFeatureRect, LaidOutFeatureRect } from './FeatureGlyph'
+
+export interface PostDrawFeatureRectWithGlyph extends PostDrawFeatureRect {
+  glyph: BoxGlyph
+}
 
 export interface LaidOutFeatureRectWithGlyph extends LaidOutFeatureRect {
   glyph: BoxGlyph
@@ -82,17 +86,12 @@ export default class CanvasRenderer extends BoxRendererType {
     if (props.exportSVG) {
       postDraw({
         ctx,
-        layoutRecords: layoutRecords.map(
-          ({ glyph, label, description, l, f, t }) => ({
-            label,
-            description,
-            l,
-            t,
-            glyph,
-            start: f.get('start'),
-            end: f.get('end'),
-          }),
-        ),
+        layoutRecords: layoutRecords.map(rec => ({
+          ...rec,
+          type: rec.f.get('type'),
+          start: rec.f.get('start'),
+          end: rec.f.get('end'),
+        })),
         offsetPx: 0,
         ...props,
       })
@@ -138,14 +137,11 @@ export default class CanvasRenderer extends BoxRendererType {
     return {
       ...results,
       ...res,
-      layoutRecords: layoutRecords.map(({ f, l, t, label, description }) => ({
-        label,
-        description,
-        l,
-        t,
-        type: f.get('type'),
-        start: f.get('start'),
-        end: f.get('end'),
+      layoutRecords: layoutRecords.map(rec => ({
+        ...rec,
+        type: rec.f.get('type'),
+        start: rec.f.get('start'),
+        end: rec.f.get('end'),
       })),
       features,
       layout,
@@ -163,19 +159,19 @@ export function postDraw({
   regions,
 }: {
   ctx: CanvasRenderingContext2D
-  regions: { start: number; end: number; reversed: boolean }[]
+  regions: Region[]
   offsetPx: number
-  layoutRecords: LaidOutFeatureRectWithGlyph[]
+  layoutRecords: PostDrawFeatureRectWithGlyph[]
 }) {
   ctx.fillStyle = 'black'
   ctx.font = '10px sans-serif'
   layoutRecords
     .filter(f => !!f)
-    .forEach(record => {
+    .forEach(record =>
       record.glyph.postDraw(ctx, {
         record,
         regions,
         offsetPx,
-      })
-    })
+      }),
+    )
 }

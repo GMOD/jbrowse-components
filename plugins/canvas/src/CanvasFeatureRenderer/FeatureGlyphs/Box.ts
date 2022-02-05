@@ -1,12 +1,12 @@
-import { measureText } from '@jbrowse/core/util'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { measureText, bpSpanPx, Feature } from '@jbrowse/core/util'
+import { Region } from '@jbrowse/core/util/types'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { bpSpanPx } from '@jbrowse/core/util'
 
 // locals
 import FeatureGlyph, {
   ViewInfo,
   FeatureRect,
+  PostDrawFeatureRect,
   LaidOutFeatureRect,
 } from '../FeatureGlyph'
 
@@ -89,7 +89,7 @@ export default class Box extends FeatureGlyph {
     fRect: FeatureRect & {
       h: number
       t: number
-      rect?: { l: number; w: number; h: number; t: number; r: number }
+      rect: { l: number; w: number; h: number; t: number }
     },
   ) {
     // maybe get the feature's name, and update the layout box accordingly
@@ -167,8 +167,8 @@ export default class Box extends FeatureGlyph {
   postDraw(
     ctx: CanvasRenderingContext2D,
     props: {
-      record: LaidOutFeatureRect
-      regions: { start: number; end: number; reversed: boolean }[]
+      record: PostDrawFeatureRect
+      regions: Region[]
       offsetPx: number
     },
   ) {

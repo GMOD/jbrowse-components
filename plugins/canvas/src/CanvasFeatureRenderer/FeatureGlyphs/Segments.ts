@@ -1,5 +1,4 @@
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { bpSpanPx } from '@jbrowse/core/util'
+import { bpSpanPx, Feature } from '@jbrowse/core/util'
 
 // locals
 import { LaidOutFeatureRect, ViewInfo } from '../FeatureGlyph'
