@@ -30,7 +30,7 @@ export default class AdminServer extends JBrowseCommand {
     }),
     target: flags.string({
       description:
-        'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
+        'path to the root of the JB2 installation.\nCreates ./config.json if nonexistent. note that you can navigate to ?config=path/to/subconfig.json in the web browser and it will write to rootDir/path/to/subconfig.json',
     }),
     out: flags.string({
       description: 'synonym for target',
