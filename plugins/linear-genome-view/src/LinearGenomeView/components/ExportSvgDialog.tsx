@@ -86,14 +86,18 @@ export default function ExportSvgDlg({
           onClick={async () => {
             setLoading(true)
             setError(undefined)
+            const err = console.error
+            console.error = (...args) =>
+              args[0]?.match('useLayoutEffect') ? null : err(args)
             try {
               await model.exportSvg({ rasterizeLayers })
               handleClose()
             } catch (e) {
               console.error(e)
               setError(e)
-            } finally {
               setLoading(false)
+            } finally {
+              console.error = err
             }
           }}
         >
