@@ -18,6 +18,14 @@ export interface FeatureRect {
   f: Feature
 }
 
+export interface PreLaidOutFeatureRect {
+  l: number
+  w: number
+  f: Feature
+  h: number
+  t: number
+}
+
 export interface LaidOutFeatureRect extends FeatureRect {
   label?: { text: string; offsetY: number }
   description?: { text: string; offsetY: number }
@@ -31,7 +39,7 @@ export interface PostDrawFeatureRect extends LaidOutFeatureRect {
   end: number
 }
 
-interface Rect {
+export interface Rect {
   l: number
   t: number
   w: number
@@ -51,11 +59,8 @@ export default abstract class FeatureGlyph {
     const startbp = fRect.l / scale + leftBase
     const endbp = (fRect.l + fRect.w) / scale + leftBase
     const top = layout.addRect(feature.id(), startbp, endbp, fRect.h)
-    if (top === null) {
-      return null
-    }
 
-    return { ...fRect, f: feature, t: top }
+    return top === null ? null : { ...fRect, f: feature, t: top }
   }
 
   abstract renderFeature(
@@ -79,11 +84,10 @@ export default abstract class FeatureGlyph {
       h: this.getFeatureHeight(viewInfo, feature),
       f: feature,
       t: 0,
-      rect: undefined as Rect | undefined,
     }
   }
 
   getFeatureHeight(viewInfo: ViewInfo, feature: Feature) {
-    return readConfObject(viewInfo.config, 'height', { feature })
+    return readConfObject(viewInfo.config, 'height', { feature }) as number
   }
 }
