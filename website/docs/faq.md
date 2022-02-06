@@ -268,7 +268,7 @@ an encoded format.
 
 We recommend that you have the following
 
-- Node v10+
+- Node v12+
 - Git
 - [Yarn](https://classic.yarnpkg.com/en/docs/install/#debian-stable)
 
