@@ -15,6 +15,8 @@ interface LaidOutFeatureRectWithSubRects extends LaidOutFeatureRect {
   subRects?: FeatureRectWithGlyph[]
 }
 
+const getLabel = (f: Feature) => f.get('name') || f.get('id') || ''
+
 export default class Gene extends BoxGlyph {
   getFeatureRectangle(viewArgs: ViewInfo, feature: Feature) {
     // we need to lay out rects for each of the subfeatures
@@ -26,65 +28,63 @@ export default class Gene extends BoxGlyph {
       return super.getFeatureRectangle(viewArgs, feature)
     }
 
-    // get the rects for the children
-    const fRect = {
-      l: 0,
-      h: 0,
-      r: 0,
-      w: 0,
-      subRects: [] as FeatureRectWithGlyph[],
-      f: feature,
-      t: 0,
-    }
-    // sort the children by name
-    const label = (f: Feature) => f.get('name') || f.get('id') || ''
-    subfeatures?.sort((a, b) => label(a).localeCompare(label(b)))
+    let l = Infinity
+    let r = -Infinity
+    let h = 0
 
-    fRect.l = Infinity
-    fRect.r = -Infinity
+    const subRects = subfeatures
+      .sort((a, b) => getLabel(a).localeCompare(getLabel(b)))
+      .map(sub => {
+        const glyph = this.getSubGlyph(sub)
+        const subRect = glyph.getFeatureRectangle(subArgs, sub)
+        const rect = subRect.rect
+        if (!rect) {
+          console.warn('feature not laid out')
+          return
+        }
 
-    subfeatures.forEach(sub => {
-      const glyph = this.getSubGlyph(sub)
-      const subRect = glyph.getFeatureRectangle(subArgs, sub)
-      const rect = subRect.rect
-      if (!rect) {
-        console.warn('feature not laid out')
-        return
-      }
+        const padding = 1
+        const newTop = h + padding
 
-      const padding = 1
-      const newTop = fRect.h ? fRect.h + padding : 0
+        // const transcriptLabel = this.makeSideLabel(
+        //   this.getFeatureLabel(sub),
+        //   subRect,
+        // )
 
-      // const transcriptLabel = this.makeSideLabel(
-      //   this.getFeatureLabel(sub),
-      //   subRect,
-      // )
+        // if (transcriptLabel) {
+        //   subRect.l -= transcriptLabel.w
+        //   subRect.w += transcriptLabel.w
+        //   if (transcriptLabel.h > subRect.h) {
+        //     subRect.h = transcriptLabel.h
+        //   }
+        //   transcriptLabel.offsetY = Math.floor(subRect.h / 2)
+        //   transcriptLabel.offsetX = 0
+        // }
 
-      // if (transcriptLabel) {
-      //   subRect.l -= transcriptLabel.w
-      //   subRect.w += transcriptLabel.w
-      //   if (transcriptLabel.h > subRect.h) {
-      //     subRect.h = transcriptLabel.h
-      //   }
-      //   transcriptLabel.offsetY = Math.floor(subRect.h / 2)
-      //   transcriptLabel.offsetX = 0
-      // }
+        h = newTop + rect.h + padding
+        r = Math.max(r, subRect.l + subRect.w - 1)
+        l = Math.min(l, subRect.l)
 
-      fRect.subRects.push({
-        ...subRect,
-        t: newTop,
-        rect: { ...rect, t: newTop },
+        return {
+          ...subRect,
+          t: newTop,
+          rect: { ...rect, t: newTop },
+        }
       })
-      fRect.r = Math.max(fRect.r, subRect.l + subRect.w - 1)
-      fRect.l = Math.min(fRect.l, subRect.l)
-      fRect.h = newTop + rect.h + padding
-    })
 
     // calculate the width
-    fRect.w = Math.max(fRect.r - fRect.l + 1, 2)
+    const w = Math.max(r - l + 1, 2)
 
     // expand the fRect to accommodate labels if necessary
-    return this.expandRectangleWithLabels(viewArgs, feature, fRect)
+    return this.expandRectangleWithLabels(viewArgs, feature, {
+      l,
+      h,
+      w,
+      subRects,
+      f: feature,
+      rect: { t: 0, l, h, w },
+      t: 0,
+    })
   }
 
   layoutFeature(

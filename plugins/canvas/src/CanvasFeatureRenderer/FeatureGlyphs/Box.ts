@@ -6,6 +6,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import FeatureGlyph, {
   ViewInfo,
   FeatureRect,
+  PreLaidOutFeatureRect,
   PostDrawFeatureRect,
   LaidOutFeatureRect,
 } from '../FeatureGlyph'
@@ -62,6 +63,7 @@ export default class Box extends FeatureGlyph {
 
   getFeatureRectangle(viewArgs: ViewInfo, feature: Feature) {
     const fRect = super.getFeatureRectangle(viewArgs, feature)
+    const { l, h } = fRect
 
     const w = Math.max(fRect.w, 2)
 
@@ -77,35 +79,28 @@ export default class Box extends FeatureGlyph {
     return this.expandRectangleWithLabels(viewArgs, feature, {
       ...fRect,
       w,
-      rect: { ...fRect, w, t: 0 },
+      rect: { l, h, w, t: 0 },
     })
   }
 
   // given an under-construction feature layout rectangle, expand it to
   // accomodate a label and/or a description
-  expandRectangleWithLabels(
-    viewInfo: ViewInfo,
-    feature: Feature,
-    fRect: FeatureRect & {
-      h: number
-      t: number
-      rect: { l: number; w: number; h: number; t: number }
-    },
+  expandRectangleWithLabels<T extends PreLaidOutFeatureRect>(
+    view: ViewInfo,
+    f: Feature,
+    fRect: T,
   ) {
-    // maybe get the feature's name, and update the layout box accordingly
-    const { config } = viewInfo
+    const { config } = view
     const showLabels = readConfObject(config, 'showLabels')
-    const label = showLabels ? this.makeFeatureLabel(feature, fRect) : undefined
+    const label = showLabels ? this.makeFeatureLabel(f, fRect) : undefined
     if (label) {
       fRect.h += label.h
       fRect.w = Math.max(label.w, fRect.w)
       label.offsetY = fRect.h
     }
-    // maybe get the feature's description if available, and
-    // update the layout box accordingly
     const showDescriptions = readConfObject(config, 'showDescriptions')
     const description = showDescriptions
-      ? this.makeFeatureDescriptionLabel(feature, fRect)
+      ? this.makeFeatureDescriptionLabel(f, fRect)
       : undefined
     if (description) {
       fRect.h += description.h

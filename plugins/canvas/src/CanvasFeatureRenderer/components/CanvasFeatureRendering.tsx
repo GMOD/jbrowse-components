@@ -11,7 +11,7 @@ import { postDraw } from '../CanvasFeatureRenderer'
 // locals
 import BoxGlyph from '../FeatureGlyphs/Box'
 import GeneGlyph from '../FeatureGlyphs/Gene'
-import { LaidOutFeatureRect } from '../FeatureGlyph'
+import { PostDrawFeatureRect } from '../FeatureGlyph'
 
 // used so that user can click-away-from-feature below the laid out features
 // (issue #1248)
@@ -24,8 +24,8 @@ function CanvasRendering(props: {
   height: number
   regions: Region[]
   bpPerPx: number
-  layoutRecords: LaidOutFeatureRect[]
-  onMouseMove?: (event: React.MouseEvent, featureId: string | undefined) => void
+  layoutRecords: PostDrawFeatureRect[]
+  onMouseMove?: (event: React.MouseEvent, featureId?: string) => void
 }) {
   const {
     onMouseMove,
@@ -69,14 +69,14 @@ function CanvasRendering(props: {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     postDraw({
       ctx,
-      layoutRecords: layoutRecords.map(f => {
+      layoutRecords: layoutRecords.map(rec => {
         let glyph
-        if (f.type === 'gene') {
+        if (rec.f.type === 'gene') {
           glyph = new GeneGlyph()
         } else {
           glyph = new BoxGlyph()
         }
-        return { ...f, glyph }
+        return { ...rec, glyph }
       }),
       offsetPx,
       regions: [{ start: viewStart }],

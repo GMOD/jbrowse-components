@@ -86,12 +86,7 @@ export default class CanvasRenderer extends BoxRendererType {
     if (props.exportSVG) {
       postDraw({
         ctx,
-        layoutRecords: layoutRecords.map(rec => ({
-          ...rec,
-          type: rec.f.get('type'),
-          start: rec.f.get('start'),
-          end: rec.f.get('end'),
-        })),
+        layoutRecords: layoutRecords,
         offsetPx: 0,
         ...props,
       })
@@ -138,10 +133,15 @@ export default class CanvasRenderer extends BoxRendererType {
       ...results,
       ...res,
       layoutRecords: layoutRecords.map(rec => ({
-        ...rec,
-        type: rec.f.get('type'),
-        start: rec.f.get('start'),
-        end: rec.f.get('end'),
+        label: rec.label,
+        description: rec.description,
+        l: rec.l,
+        t: rec.t,
+        f: {
+          start: rec.f.get('start'),
+          end: rec.f.get('end'),
+          type: rec.f.get('type'),
+        },
       })),
       features,
       layout,

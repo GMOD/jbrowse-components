@@ -84,6 +84,7 @@ export default abstract class FeatureGlyph {
       h: this.getFeatureHeight(viewInfo, feature),
       f: feature,
       t: 0,
+      rect: undefined as Rect | undefined,
     }
   }
 
