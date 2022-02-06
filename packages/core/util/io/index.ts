@@ -113,32 +113,22 @@ export function openLocation(
         throw new Error('Could not find associated internet account')
       }
       return internetAccount.openLocation(location)
-    } else if (location.internetAccountId) {
-      if (!pluginManager) {
-        throw new Error(
-          'need plugin manager to open locations with an internet account',
-        )
-      }
+    } else if (pluginManager) {
       const { rootModel } = pluginManager
-      if (rootModel && !isAppRootModel(rootModel)) {
-        throw new Error('This context does not support internet accounts')
-      }
-      if (rootModel) {
+      if (rootModel && isAppRootModel(rootModel)) {
         const modifiedLocation = JSON.parse(JSON.stringify(location))
         const internetAccount = rootModel.findAppropriateInternetAccount(
           location,
         ) as BaseInternetAccountModel | undefined
-        if (!internetAccount) {
-          throw new Error('Could not find associated internet account')
+        if (internetAccount) {
+          internetAccount.getPreAuthorizationInformation(location).then(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (preAuthInfo: any) =>
+              (modifiedLocation.internetAccountPreAuthorization = preAuthInfo),
+          )
+          return internetAccount.openLocation(modifiedLocation)
         }
-        internetAccount.getPreAuthorizationInformation(location).then(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (preAuthInfo: any) =>
-            (modifiedLocation.internetAccountPreAuthorization = preAuthInfo),
-        )
-        return internetAccount.openLocation(modifiedLocation)
       }
-      throw new Error('Could not pre-authorize location')
     }
 
     const url = location.baseUri

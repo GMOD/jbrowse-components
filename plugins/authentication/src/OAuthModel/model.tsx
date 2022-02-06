@@ -212,8 +212,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
                   resolve = r
                   reject = x
                 })
-                token = await openLocationPromise
               }
+              token = await openLocationPromise
             }
           }
           resolve()
