@@ -333,9 +333,9 @@ export default class AddTrack extends JBrowseCommand {
     this.log(
       `${
         idx !== -1 ? 'Overwrote' : 'Added'
-      } track "${name}" with ID "${trackId}" ${idx !== -1 ? 'in' : 'to'} ${
-        this.target
-      }`,
+      } track with name "${name}" and trackId "${trackId}" ${
+        idx !== -1 ? 'in' : 'to'
+      } ${this.target}`,
     )
   }
 
