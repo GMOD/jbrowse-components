@@ -330,10 +330,10 @@ OPTIONS
                                  large.
                                  Argument is passed to bytes library for parsing: https://www.npmjs.com/package/bytes.
 
-  --out=out                      synonym for target
-
-  --target=target                path to config file in JB2 installation directory to write out to.
-                                 Creates ./config.json if nonexistent
+  --root=root                    path to the root of the JB2 installation.
+                                 Creates ./config.json if nonexistent. note that you can navigate to
+                                 ?config=path/to/subconfig.json in the web browser and it will write to
+                                 rootDir/path/to/subconfig.json
 
 EXAMPLES
   $ jbrowse admin-server

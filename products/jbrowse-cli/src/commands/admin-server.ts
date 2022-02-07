@@ -28,12 +28,9 @@ export default class AdminServer extends JBrowseCommand {
       char: 'p',
       description: 'Specifified port to start the server on;\nDefault is 9090.',
     }),
-    target: flags.string({
+    root: flags.string({
       description:
-        'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
-    }),
-    out: flags.string({
-      description: 'synonym for target',
+        'path to the root of the JB2 installation.\nCreates ./config.json if nonexistent. note that you can navigate to ?config=path/to/subconfig.json in the web browser and it will write to rootDir/path/to/subconfig.json',
     }),
     bodySizeLimit: flags.string({
       description:
@@ -46,9 +43,9 @@ export default class AdminServer extends JBrowseCommand {
 
   async run() {
     const { flags: runFlags } = this.parse(AdminServer)
-    const { target, out, bodySizeLimit } = runFlags
+    const { root, bodySizeLimit } = runFlags
 
-    const output = target || out || '.'
+    const output = root || '.'
     const isDir = fs.lstatSync(output).isDirectory()
     const outFile = isDir ? `${output}/config.json` : output
     const baseDir = path.dirname(outFile)
@@ -57,7 +54,7 @@ export default class AdminServer extends JBrowseCommand {
       this.debug(`Found existing config file ${outFile}`)
     } else {
       this.debug(`Creating config file ${outFile}`)
-      await this.writeJsonFile('./config.json', {
+      await this.writeJsonFile(outFile, {
         assemblies: [],
         configuration: {},
         connections: [],
@@ -78,7 +75,7 @@ export default class AdminServer extends JBrowseCommand {
       }
     }
     const app = express()
-    app.use(express.static('.'))
+    app.use(express.static(baseDir))
     app.use(cors())
 
     // POST route to save config
