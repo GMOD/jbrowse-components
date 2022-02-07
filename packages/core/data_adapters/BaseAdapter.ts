@@ -252,6 +252,9 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   }
 
   public async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
+    if (!regions.length) {
+      throw new Error('No regions to estimate stats for')
+    }
     const region = regions[0]
     let lastTime = +Date.now()
     const statsFromInterval = async (length: number, expansionTime: number) => {
