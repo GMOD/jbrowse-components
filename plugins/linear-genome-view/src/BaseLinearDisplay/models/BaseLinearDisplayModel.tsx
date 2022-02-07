@@ -387,7 +387,10 @@ export const BaseLinearDisplay = types
         self.setError()
         const aborter = new AbortController()
         const view = getContainingView(self) as LGV
-        if (!view.initialized) {
+
+        // extra check for contentBlocks.length
+        // https://github.com/GMOD/jbrowse-components/issues/2694
+        if (!view.initialized || !view.staticBlocks.contentBlocks.length) {
           return
         }
 
