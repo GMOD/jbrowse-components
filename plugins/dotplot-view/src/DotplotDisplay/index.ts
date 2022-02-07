@@ -5,6 +5,7 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from '@jbrowse/core/configuration'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import {
   getParentRenderProps,
   getRpcSessionId,
@@ -16,12 +17,27 @@ import {
   getSession,
   makeAbortableReaction,
 } from '@jbrowse/core/util'
+import PluginManager from '@jbrowse/core/PluginManager'
 import React from 'react'
 
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { DotplotViewModel } from '../DotplotView/model'
 
-export { default as ReactComponent } from './components/DotplotDisplay'
+import ReactComponent from './components/DotplotDisplay'
+
+export default (pluginManager: PluginManager) => {
+  pluginManager.addDisplayType(() => {
+    const configSchema = configSchemaFactory(pluginManager)
+    return new DisplayType({
+      name: 'DotplotDisplay',
+      configSchema,
+      stateModel: stateModelFactory(configSchema),
+      trackType: 'SyntenyTrack',
+      viewType: 'DotplotView',
+      ReactComponent,
+    })
+  })
+}
 
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
