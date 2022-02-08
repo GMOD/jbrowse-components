@@ -37,7 +37,7 @@ function RenderedFeatureGlyph(props) {
     bpPerPx,
     reversed,
     config,
-    extraGlyphs
+    extraGlyphs,
   })
   let shouldShowName
   let shouldShowDescription
