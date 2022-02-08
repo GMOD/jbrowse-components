@@ -103,7 +103,7 @@ export function layOut({
 }
 
 export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
-  const { layout, feature, bpPerPx, reversed, config, extraGlyphs, } = args
+  const { layout, feature, bpPerPx, reversed, config, extraGlyphs } = args
   const displayMode = readConfObject(config, 'displayMode')
   const GlyphComponent =
     displayMode === 'reducedRepresentation'
@@ -132,9 +132,19 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
 }
 
 export function layOutSubfeatures(args: SubfeatureLayOutArgs): void {
-  const { layout: subLayout, subfeatures, bpPerPx, reversed, config, extraGlyphs, } = args
+  const {
+    layout: subLayout,
+    subfeatures,
+    bpPerPx,
+    reversed,
+    config,
+    extraGlyphs,
+  } = args
   subfeatures.forEach(subfeature => {
-    const SubfeatureGlyphComponent = chooseGlyphComponent(subfeature, extraGlyphs)
+    const SubfeatureGlyphComponent = chooseGlyphComponent(
+      subfeature,
+      extraGlyphs,
+    )
     ;(SubfeatureGlyphComponent.layOut || layOut)({
       layout: subLayout,
       feature: subfeature,

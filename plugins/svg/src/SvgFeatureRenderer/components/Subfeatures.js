@@ -41,7 +41,14 @@ Subfeatures.defaultProps = {
   reversed: false,
 }
 
-Subfeatures.layOut = ({ layout, feature, bpPerPx, reversed, config, extraGlyphs, }) => {
+Subfeatures.layOut = ({
+  layout,
+  feature,
+  bpPerPx,
+  reversed,
+  config,
+  extraGlyphs,
+}) => {
   const subLayout = layOutFeature({
     layout,
     feature,
@@ -55,7 +62,10 @@ Subfeatures.layOut = ({ layout, feature, bpPerPx, reversed, config, extraGlyphs,
     const subfeatures = feature.get('subfeatures') || []
     let topOffset = 0
     subfeatures.forEach(subfeature => {
-      const SubfeatureGlyphComponent = chooseGlyphComponent(subfeature, extraGlyphs,)
+      const SubfeatureGlyphComponent = chooseGlyphComponent(
+        subfeature,
+        extraGlyphs,
+      )
       const subfeatureHeight = readConfObject(config, 'height', {
         feature: subfeature,
       })
