@@ -10,6 +10,7 @@ import ServerSideRendererType, {
   RenderResults,
   ResultsSerialized,
 } from '../pluggableElementTypes/renderers/ServerSideRendererType'
+import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { RemoteAbortSignal } from './remoteAbortSignals'
 import {
   BaseFeatureDataAdapter,
@@ -18,6 +19,8 @@ import {
 import { Region } from '../util/types'
 import { checkAbortSignal, renameRegionsIfNeeded } from '../util'
 import SimpleFeature, { SimpleFeatureSerialized } from '../util/simpleFeature'
+import { SnapshotIn } from 'mobx-state-tree'
+import { indexTracks } from '@jbrowse/text-indexing'
 
 export class CoreGetRefNames extends RpcMethodType {
   name = 'CoreGetRefNames'
@@ -55,7 +58,9 @@ export class CoreIndexTracks extends RpcMethodType {
     args: {
       sessionId: string
       signal: RemoteAbortSignal
-      trackConfigs: {}
+      trackConfigs:
+        | AnyConfigurationModel[]
+        | SnapshotIn<AnyConfigurationModel>[]
     },
     rpcDriverClassName: string,
   ) {
@@ -64,6 +69,7 @@ export class CoreIndexTracks extends RpcMethodType {
       rpcDriverClassName,
     )
     const { sessionId, trackConfigs } = deserializedArgs
+
     // const { dataAdapter } = await getAdapter(
     //   this.pluginManager,
     //   sessionId,
@@ -73,8 +79,9 @@ export class CoreIndexTracks extends RpcMethodType {
     // if (dataAdapter instanceof BaseFeatureDataAdapter) {
     //   return dataAdapter.getRefNames(deserializedArgs)
     // }
-    console.log("sessionId", sessionId)
-    console.log("trackConf", trackConfigs)
+    console.log('sessionId', sessionId)
+    console.log('trackConf', trackConfigs)
+    await indexTracks(trackConfigs, process.cwd())
     return []
   }
 }

@@ -1,6 +1,5 @@
 import { Gff3TabixAdapter, Track } from '../util'
 import { isURL, createRemoteStream } from './common'
-// import { SingleBar, Presets } from 'cli-progress'
 import { createGunzip } from 'zlib'
 import readline from 'readline'
 import path from 'path'
@@ -18,16 +17,6 @@ export async function* indexGff3(
     gffGzLocation: { uri },
   } = adapter as Gff3TabixAdapter
 
-  // progress bar code was aided by blog post at
-  // https://webomnizz.com/download-a-file-with-progressbar-using-node-js/
-  //   const progressBar = new SingleBar(
-  //     {
-  //       format: '{bar} ' + trackId + ' {percentage}% | ETA: {eta}s',
-  //       etaBuffer: 2000,
-  //     },
-  //     Presets.shades_classic,
-  //   )
-
   let fileDataStream
   let totalBytes = 0
   let receivedBytes = 0
@@ -40,14 +29,11 @@ export async function* indexGff3(
     fileDataStream = fs.createReadStream(filename)
   }
 
-  //   if (!quiet) {
-  //     progressBar.start(totalBytes, 0)
-  //   }
-
+  console.log('total bytes', totalBytes)
   fileDataStream.on('data', chunk => {
     receivedBytes += chunk.length
-    // progressBar.update(receivedBytes)
     // send an update?
+    console.log('received', receivedBytes)
   })
 
   const rl = readline.createInterface({
@@ -95,6 +81,5 @@ export async function* indexGff3(
       }
     }
   }
-
-  //   progressBar.stop()
+  console.log('done')
 }

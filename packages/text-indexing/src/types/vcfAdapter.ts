@@ -18,16 +18,6 @@ export async function* indexVcf(
     vcfGzLocation: { uri },
   } = adapter as VcfTabixAdapter
 
-  // progress bar code was aided by blog post at
-  // https://webomnizz.com/download-a-file-with-progressbar-using-node-js/
-  //   const progressBar = new SingleBar(
-  //     {
-  //       format: '{bar} ' + trackId + ' {percentage}% | ETA: {eta}s',
-  //       etaBuffer: 2000,
-  //     },
-  //     Presets.shades_classic,
-  //   )
-
   let fileDataStream
   let totalBytes = 0
   let receivedBytes = 0
@@ -40,13 +30,11 @@ export async function* indexVcf(
     fileDataStream = fs.createReadStream(filename)
   }
 
-  //   if (!quiet) {
-  //     progressBar.start(totalBytes, 0)
-  //   }
-
+  console.log("totalBytes", totalBytes)
   fileDataStream.on('data', chunk => {
     receivedBytes += chunk.length
     // progressBar.update(receivedBytes)
+    console.log("received", receivedBytes)
   })
 
   const gzStream = uri.endsWith('.gz')
@@ -65,7 +53,7 @@ export async function* indexVcf(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [ref, pos, id, _ref, _alt, _qual, _filter, info] = line.split('\t')
 
-    // turns gff3 attrs into a map, and converts the arrays into space
+    // turns vcf info attrs into a map, and converts the arrays into space
     // separated strings
     const fields = Object.fromEntries(
       info
@@ -104,5 +92,5 @@ export async function* indexVcf(
     }
   }
 
-  //   progressBar.stop()
+  console.log("done")
 }

@@ -28,7 +28,7 @@ import {
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import {indexTracks} from '../../../packages/text-indexing/src/TextIndexing'
+// import { indexTracks } from '@jbrowse/text-indexing'
 import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
@@ -602,7 +602,14 @@ export default function sessionModelFactory(
                 JSON.stringify(getSnapshot(config)),
               )
               const rpcManager = getParent(self).jbrowse.rpcManager
-              indexTracks(rpcManager, trackSnapshot)
+              const test = await rpcManager.call(
+                'indexTracksSessionId',
+                'CoreIndexTracks',
+                {
+                  trackConfigs: [trackSnapshot],
+                  sessionId: 'indexTracksSessionId',
+                },
+              )
             },
             icon: FindReplaceIcon,
           },
