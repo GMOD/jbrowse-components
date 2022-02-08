@@ -5,7 +5,7 @@ import React from 'react'
 import { chooseGlyphComponent, layOut, layOutFeature } from './util'
 
 function Subfeatures(props) {
-  const { feature, featureLayout, selected } = props
+  const { feature, featureLayout, selected, extraGlyph} = props
 
   return (
     <>
@@ -41,20 +41,21 @@ Subfeatures.defaultProps = {
   reversed: false,
 }
 
-Subfeatures.layOut = ({ layout, feature, bpPerPx, reversed, config }) => {
+Subfeatures.layOut = ({ layout, feature, bpPerPx, reversed, config, extraGlyphs }) => {
   const subLayout = layOutFeature({
     layout,
     feature,
     bpPerPx,
     reversed,
     config,
+    extraGlyphs,
   })
   const displayMode = readConfObject(config, 'displayMode')
   if (displayMode !== 'reducedRepresentation') {
     const subfeatures = feature.get('subfeatures') || []
     let topOffset = 0
     subfeatures.forEach(subfeature => {
-      const SubfeatureGlyphComponent = chooseGlyphComponent(subfeature)
+      const SubfeatureGlyphComponent = chooseGlyphComponent(subfeature, extraGlyphs)
       const subfeatureHeight = readConfObject(config, 'height', {
         feature: subfeature,
       })
@@ -65,6 +66,7 @@ Subfeatures.layOut = ({ layout, feature, bpPerPx, reversed, config }) => {
         bpPerPx,
         reversed,
         config,
+        extraGlyphs,
       })
       subSubLayout.move(0, topOffset)
       topOffset +=
