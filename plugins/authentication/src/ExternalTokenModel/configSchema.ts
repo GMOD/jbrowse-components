@@ -4,7 +4,13 @@ import { BaseInternetAccountConfig } from '@jbrowse/core/pluggableElementTypes/m
 
 const ExternalTokenConfigSchema = ConfigurationSchema(
   'ExternalTokenInternetAccount',
-  {},
+  {
+    validateWithHEAD: {
+      description: 'validate the token with a HEAD request before using it',
+      type: 'boolean',
+      defaultValue: true,
+    },
+  },
   {
     baseConfiguration: BaseInternetAccountConfig,
     explicitlyTyped: true,

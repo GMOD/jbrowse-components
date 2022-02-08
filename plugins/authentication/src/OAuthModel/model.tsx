@@ -4,7 +4,6 @@ import { isElectron } from '@jbrowse/core/util'
 import sha256 from 'crypto-js/sha256'
 import Base64 from 'crypto-js/enc-base64'
 import { Instance, types } from 'mobx-state-tree'
-import { RemoteFileWithRangeCache } from '@jbrowse/core/util/io'
 import { UriLocation } from '@jbrowse/core/util/types'
 
 // locals
@@ -20,7 +19,21 @@ interface OAuthData {
   token_access_type?: string
 }
 
-const inWebWorker = typeof sessionStorage === 'undefined'
+function fixup(buf: string) {
+  return buf.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+}
+
+function getGlobalObject(): Window {
+  // Based on window-or-global
+  // https://github.com/purposeindustries/window-or-global/blob/322abc71de0010c9e5d9d0729df40959e1ef8775/lib/index.js
+  return (
+    /* eslint-disable-next-line no-restricted-globals */
+    (typeof self === 'object' && self.self === self && self) ||
+    (typeof global === 'object' && global.global === global && global) ||
+    // @ts-ignore
+    this
+  )
+}
 
 const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
   return types
@@ -33,84 +46,202 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .volatile(() => ({
-      codeVerifierPKCE: '',
-      errorMessage: '',
-    }))
+    .volatile(() => {
+      const global = getGlobalObject()
+      const array = new Uint8Array(32)
+      global.crypto.getRandomValues(array)
+      const codeVerifierPKCE = fixup(Buffer.from(array).toString('base64'))
+      return { codeVerifierPKCE }
+    })
     .views(self => ({
-      get authEndpoint() {
+      get authEndpoint(): string {
         return getConf(self, 'authEndpoint')
       },
-      get tokenEndpoint() {
+      get tokenEndpoint(): string {
         return getConf(self, 'tokenEndpoint')
       },
-      get needsPKCE() {
+      get needsPKCE(): boolean {
         return getConf(self, 'needsPKCE')
       },
-      get clientId() {
+      get clientId(): string {
         return getConf(self, 'clientId')
       },
-      get scopes() {
+      get scopes(): string {
         return getConf(self, 'scopes')
       },
-      get responseType() {
+      get responseType(): 'token' | 'code' {
         return getConf(self, 'responseType')
       },
-      get hasRefreshToken() {
+      get hasRefreshToken(): boolean {
         return getConf(self, 'hasRefreshToken')
       },
-      generateAuthInfo() {
-        const generatedInfo = {
-          internetAccountType: self.type,
-          authInfo: {
-            authHeader: self.authHeader,
-            tokenType: self.tokenType,
-            configuration: self.accountConfig,
-            redirectUri: window.location.origin + window.location.pathname,
-          },
-        }
-        return generatedInfo
+      get refreshTokenKey() {
+        return `${self.internetAccountId}-refreshToken`
       },
     }))
     .actions(self => ({
-      setCodeVerifierPKCE(codeVerifier: string) {
-        self.codeVerifierPKCE = codeVerifier
+      storeRefreshToken(refreshToken: string) {
+        localStorage.setItem(self.refreshTokenKey, refreshToken)
       },
-      setErrorMessage(message: string) {
-        self.errorMessage = message
+      removeRefreshToken() {
+        localStorage.removeItem(self.refreshTokenKey)
       },
-      async fetchFile(locationUri: string, accessToken: string) {
-        if (!locationUri || !accessToken) {
-          return
+      retrieveRefreshToken() {
+        return localStorage.getItem(self.refreshTokenKey)
+      },
+      async exchangeAuthorizationForAccessToken(
+        token: string,
+        redirectUri: string,
+      ): Promise<string> {
+        const data = {
+          code: token,
+          grant_type: 'authorization_code',
+          client_id: self.clientId,
+          code_verifier: self.codeVerifierPKCE,
+          redirect_uri: redirectUri,
         }
-        return locationUri
+
+        const params = new URLSearchParams(Object.entries(data))
+
+        const response = await fetch(self.tokenEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: params.toString(),
+        })
+
+        if (!response.ok) {
+          let errorMessage
+          try {
+            errorMessage = await response.text()
+          } catch (error) {
+            errorMessage = ''
+          }
+          throw new Error(
+            `Failed to obtain token from endpoint: ${response.status} (${
+              response.statusText
+            })${errorMessage ? ` (${errorMessage})` : ''}`,
+          )
+        }
+
+        const accessToken = await response.json()
+        if (accessToken.refresh_token) {
+          this.storeRefreshToken(accessToken.refresh_token)
+        }
+        return accessToken.access_token
       },
-    }))
-    .volatile(() => ({
-      uriToPreAuthInfoMap: new Map(),
+      async exchangeRefreshForAccessToken(
+        refreshToken: string,
+      ): Promise<string> {
+        const data = {
+          grant_type: 'refresh_token',
+          refresh_token: refreshToken,
+          client_id: self.clientId,
+        }
+
+        const params = new URLSearchParams(Object.entries(data))
+
+        const response = await fetch(self.tokenEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: params.toString(),
+        })
+
+        if (!response.ok) {
+          self.removeToken()
+          let errorMessage
+          try {
+            errorMessage = await response.text()
+          } catch (error) {
+            errorMessage = ''
+          }
+          throw new Error(
+            `Network response failure — ${response.status} (${
+              response.statusText
+            }) ${errorMessage ? ` (${errorMessage})` : ''}`,
+          )
+        }
+
+        const accessToken = await response.json()
+        return accessToken.access_token
+      },
     }))
     .actions(self => {
-      let resolve: Function = () => {}
-      let reject: Function = () => {}
-      let openLocationPromise: Promise<string> | undefined = undefined
+      let listener: (event: MessageEvent) => void
       return {
-        // opens external OAuth flow, popup for web and new browser window for desktop
-        async useEndpointForAuthorization(location: UriLocation) {
-          const determineRedirectUri = () => {
-            if (!inWebWorker) {
-              if (isElectron) {
-                return 'http://localhost/auth'
+        // used to listen to child window for auth code/token
+        addMessageChannel(
+          resolve: (token: string) => void,
+          reject: (error: Error) => void,
+        ) {
+          listener = event => {
+            this.finishOAuthWindow(event, resolve, reject)
+          }
+          window.addEventListener('message', listener)
+        },
+        deleteMessageChannel() {
+          window.removeEventListener('message', listener)
+        },
+        async finishOAuthWindow(
+          event: MessageEvent,
+          resolve: (token: string) => void,
+          reject: (error: Error) => void,
+        ) {
+          if (
+            event.data.name !== `JBrowseAuthWindow-${self.internetAccountId}`
+          ) {
+            return this.deleteMessageChannel()
+          }
+          const redirectUriWithInfo = event.data.redirectUri
+          if (redirectUriWithInfo.includes('access_token')) {
+            const fixedQueryString = redirectUriWithInfo.replace('#', '?')
+            const queryStringSearch = new URL(fixedQueryString).search
+            const urlParams = new URLSearchParams(queryStringSearch)
+            const token = urlParams.get('access_token')
+            if (!token) {
+              return reject(new Error('Error with token endpoint'))
+            }
+            self.storeToken(token)
+            return resolve(token)
+          }
+          if (redirectUriWithInfo.includes('code')) {
+            const redirectUri = new URL(redirectUriWithInfo)
+            const queryString = redirectUri.search
+            const urlParams = new URLSearchParams(queryString)
+            const code = urlParams.get('code')
+            if (!code) {
+              return reject(new Error('Error with authorization endpoint'))
+            }
+            try {
+              const token = await self.exchangeAuthorizationForAccessToken(
+                code,
+                redirectUri.origin + redirectUri.pathname,
+              )
+              self.storeToken(token)
+              return resolve(token)
+            } catch (error) {
+              if (error instanceof Error) {
+                return reject(error)
               } else {
-                return window.location.origin + window.location.pathname
+                return reject(new Error(String(error)))
               }
-            } else {
-              return self.uriToPreAuthInfoMap.get(location.uri)?.authInfo
-                ?.redirectUri
             }
           }
+          if (redirectUriWithInfo.includes('access_denied')) {
+            return reject(new Error('OAuth flow was cancelled'))
+          }
+          this.deleteMessageChannel()
+        },
+        // opens external OAuth flow, popup for web and new browser window for desktop
+        async useEndpointForAuthorization(
+          resolve: (token: string) => void,
+          reject: (error: Error) => void,
+        ) {
+          const redirectUri = isElectron
+            ? 'http://localhost/auth'
+            : window.location.origin + window.location.pathname
           const data: OAuthData = {
             client_id: self.clientId,
-            redirect_uri: determineRedirectUri(),
+            redirect_uri: redirectUri,
             response_type: self.responseType || 'code',
           }
 
@@ -119,397 +250,53 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
 
           if (self.needsPKCE) {
-            const fixup = (buf: string) => {
-              return buf
-                .replace(/\+/g, '-')
-                .replace(/\//g, '_')
-                .replace(/=/g, '')
-            }
-            const array = new Uint8Array(32)
-            window.crypto.getRandomValues(array)
-            const codeVerifier = fixup(Buffer.from(array).toString('base64'))
-            const codeChallenge = fixup(Base64.stringify(sha256(codeVerifier)))
+            const { codeVerifierPKCE } = self
+            const codeChallenge = fixup(
+              Base64.stringify(sha256(codeVerifierPKCE)),
+            )
             data.code_challenge = codeChallenge
             data.code_challenge_method = 'S256'
-            self.setCodeVerifierPKCE(codeVerifier)
           }
 
           if (self.hasRefreshToken) {
             data.token_access_type = 'offline'
           }
 
-          const params = Object.entries(data)
-            .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
-            .join('&')
+          const params = new URLSearchParams(Object.entries(data))
 
-          const url = `${self.authEndpoint}?${params}`
+          const url = new URL(self.authEndpoint)
+          url.search = params.toString()
 
+          const eventName = `JBrowseAuthWindow-${self.internetAccountId}`
           if (isElectron) {
-            const model = self
             const electron = require('electron')
             const { ipcRenderer } = electron
             const redirectUri = await ipcRenderer.invoke('openAuthWindow', {
               internetAccountId: self.internetAccountId,
-              data: data,
-              url: url,
+              data,
+              url: url.toString(),
             })
 
             const eventFromDesktop = new MessageEvent('message', {
-              data: {
-                name: `JBrowseAuthWindow-${self.internetAccountId}`,
-                redirectUri: redirectUri,
-              },
+              data: { name: eventName, redirectUri: redirectUri },
             })
-            // @ts-ignore
-            model.finishOAuthWindow(eventFromDesktop)
-            return
+            this.finishOAuthWindow(eventFromDesktop, resolve, reject)
           } else {
             const options = `width=500,height=600,left=0,top=0`
-            return window.open(
-              url,
-              `JBrowseAuthWindow-${self.internetAccountId}`,
-              options,
-            )
+            window.open(url, eventName, options)
           }
         },
-        async setAccessTokenInfo(token: string, generateNew = false) {
-          if (generateNew && token) {
-            sessionStorage.setItem(`${self.internetAccountId}-token`, token)
-          }
-
-          if (!token) {
-            reject()
-          } else {
-            resolve(token)
-          }
-
-          resolve = () => {}
-          reject = () => {}
-          this.deleteMessageChannel()
-        },
-        async checkToken(
-          authInfo: { token: string; refreshToken: string },
-          location: UriLocation,
-        ) {
-          let token =
-            authInfo?.token ||
-            (!inWebWorker
-              ? (sessionStorage.getItem(
-                  `${self.internetAccountId}-token`,
-                ) as string)
-              : '')
+        async getTokenFromUser(
+          resolve: (token: string) => void,
+          reject: (error: Error) => void,
+        ): Promise<void> {
           const refreshToken =
-            authInfo?.refreshToken ||
-            (!inWebWorker
-              ? (localStorage.getItem(
-                  `${self.internetAccountId}-refreshToken`,
-                ) as string)
-              : '')
-
-          if (!token) {
-            if (refreshToken) {
-              token = await this.exchangeRefreshForAccessToken(location)
-            } else {
-              if (!openLocationPromise) {
-                openLocationPromise = new Promise(async (r, x) => {
-                  this.addMessageChannel()
-                  this.useEndpointForAuthorization(location)
-                  resolve = r
-                  reject = x
-                })
-              }
-              token = await openLocationPromise
-            }
+            self.hasRefreshToken && self.retrieveRefreshToken()
+          if (refreshToken) {
+            resolve(await self.exchangeRefreshForAccessToken(refreshToken))
           }
-          resolve()
-          openLocationPromise = undefined
-          return { token, refreshToken }
-        },
-        setRefreshToken(token: string) {
-          const refreshTokenKey = `${self.internetAccountId}-refreshToken`
-          const existingToken = localStorage.getItem(refreshTokenKey)
-          if (!existingToken) {
-            localStorage.setItem(
-              `${self.internetAccountId}-refreshToken`,
-              token,
-            )
-          }
-        },
-        async exchangeAuthorizationForAccessToken(
-          token: string,
-          redirectUri: string,
-        ) {
-          const data = {
-            code: token,
-            grant_type: 'authorization_code',
-            client_id: self.clientId,
-            code_verifier: self.codeVerifierPKCE,
-            redirect_uri: redirectUri,
-          }
-
-          const params = Object.entries(data)
-            .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
-            .join('&')
-
-          const response = await fetch(`${self.tokenEndpoint}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: params,
-          })
-
-          if (!response.ok) {
-            resolve()
-            await this.handleError('Failed to obtain token from endpoint')
-          }
-
-          const accessToken = await response.json()
-          if (!inWebWorker) {
-            this.setAccessTokenInfo(accessToken.access_token, true)
-            if (accessToken.refresh_token) {
-              this.setRefreshToken(accessToken.refresh_token)
-            }
-          }
-        },
-        async exchangeRefreshForAccessToken(location: UriLocation) {
-          const foundRefreshToken =
-            self.uriToPreAuthInfoMap.get(location.uri)?.authInfo
-              ?.refreshToken ||
-            (!inWebWorker
-              ? localStorage.getItem(`${self.internetAccountId}-refreshToken`)
-              : null)
-
-          if (foundRefreshToken) {
-            const data = {
-              grant_type: 'refresh_token',
-              refresh_token: foundRefreshToken,
-              client_id: self.clientId,
-            }
-
-            const params = Object.entries(data)
-              .map(([key, val]) => `${key}=${encodeURIComponent(val)}`)
-              .join('&')
-
-            const response = await fetch(`${self.tokenEndpoint}`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-              },
-              body: params,
-            })
-
-            if (!response.ok) {
-              if (!inWebWorker) {
-                localStorage.removeItem(
-                  `${self.internetAccountId}-refreshToken`,
-                )
-              }
-              throw new Error(
-                `Network response failure: ${
-                  response.status
-                } (${await response.text()})`,
-              )
-            }
-
-            const accessToken = await response.json()
-            if (!inWebWorker) {
-              this.setAccessTokenInfo(accessToken.access_token, true)
-            }
-            return accessToken.access_token
-          } else {
-            throw new Error(
-              `Malformed or expired access token, and refresh token not found`,
-            )
-          }
-        },
-        // used to listen to child window for auth code/token
-        addMessageChannel() {
-          window.addEventListener('message', this.finishOAuthWindow)
-        },
-        deleteMessageChannel() {
-          window.removeEventListener('message', this.finishOAuthWindow)
-        },
-        finishOAuthWindow(event: MessageEvent) {
-          if (
-            event.data.name === `JBrowseAuthWindow-${self.internetAccountId}`
-          ) {
-            const redirectUriWithInfo = event.data.redirectUri
-            if (redirectUriWithInfo.includes('access_token')) {
-              const fixedQueryString = redirectUriWithInfo.replace('#', '?')
-              const queryStringSearch = new URL(fixedQueryString).search
-              const urlParams = new URLSearchParams(queryStringSearch)
-              const token = urlParams.get('access_token')
-              if (!token) {
-                self.setErrorMessage('Error with token endpoint')
-                reject(self.errorMessage)
-                openLocationPromise = undefined
-                return
-              }
-              this.setAccessTokenInfo(token, true)
-            }
-            if (redirectUriWithInfo.includes('code')) {
-              const redirectUri = new URL(redirectUriWithInfo)
-              const queryString = redirectUri.search
-              const urlParams = new URLSearchParams(queryString)
-              const code = urlParams.get('code')
-              if (!code) {
-                self.setErrorMessage('Error with authorization endpoint')
-                reject(self.errorMessage)
-                openLocationPromise = undefined
-                return
-              }
-              this.exchangeAuthorizationForAccessToken(
-                code,
-                redirectUri.origin + redirectUri.pathname,
-              )
-            }
-            if (redirectUriWithInfo.includes('access_denied')) {
-              self.setErrorMessage('OAuth flow was cancelled')
-              reject(self.errorMessage)
-              openLocationPromise = undefined
-              return
-            }
-          }
-        },
-        // modified fetch that includes the headers
-        async getFetcher(
-          url: RequestInfo,
-          opts?: RequestInit,
-        ): Promise<Response> {
-          const preAuthInfo = self.uriToPreAuthInfoMap.get(url)
-          if (!preAuthInfo || !preAuthInfo.authInfo) {
-            throw new Error(
-              `Failed to obtain authorization information needed to fetch ${
-                inWebWorker ? '. Try reloading the page' : ''
-              }`,
-            )
-          }
-
-          let fileUrl = preAuthInfo.authInfo.fileUrl
-          let foundTokens = {
-            token: '',
-            refreshToken: '',
-          }
-          try {
-            foundTokens = await this.checkToken(preAuthInfo.authInfo, {
-              uri: String(url),
-              locationType: 'UriLocation',
-            })
-          } catch (e) {
-            await this.handleError(e as string)
-          }
-          let newOpts = opts
-
-          if (foundTokens.token) {
-            if (!fileUrl) {
-              try {
-                fileUrl = await self.fetchFile(String(url), foundTokens.token)
-              } catch (e) {
-                await this.handleError(e as string)
-              }
-            }
-            const tokenInfoString = self.tokenType
-              ? `${self.tokenType} ${foundTokens.token}`
-              : `${foundTokens.token}`
-            const newHeaders = {
-              ...opts?.headers,
-              [self.authHeader]: `${tokenInfoString}`,
-            }
-            newOpts = {
-              ...opts,
-              headers: newHeaders,
-            }
-          }
-
-          return fetch(fileUrl, {
-            method: 'GET',
-            credentials: 'same-origin',
-            ...newOpts,
-          })
-        },
-        openLocation(location: UriLocation) {
-          const preAuthInfo =
-            location.internetAccountPreAuthorization || self.generateAuthInfo()
-          self.uriToPreAuthInfoMap.set(location.uri, preAuthInfo)
-          return new RemoteFileWithRangeCache(String(location.uri), {
-            fetch: this.getFetcher,
-          })
-        },
-        // fills in a locations preauth information with all necessary information
-        async getPreAuthorizationInformation(
-          location: UriLocation,
-          retried = false,
-        ) {
-          if (!self.uriToPreAuthInfoMap.get(location.uri)) {
-            self.uriToPreAuthInfoMap.set(location.uri, self.generateAuthInfo())
-          }
-          if (inWebWorker && !location.internetAccountPreAuthorization) {
-            throw new Error(
-              'Failed to obtain authorization information needed to fetch',
-            )
-          }
-
-          let foundTokens = {
-            token: '',
-            refreshToken: '',
-          }
-          try {
-            foundTokens = await this.checkToken(
-              self.uriToPreAuthInfoMap.get(location.uri).authInfo,
-              location,
-            )
-            self.uriToPreAuthInfoMap.set(location.uri, {
-              ...self.uriToPreAuthInfoMap.get(location.uri),
-              authInfo: {
-                ...self.uriToPreAuthInfoMap.get(location.uri).authInfo,
-                token: foundTokens.token,
-                refreshToken: foundTokens.refreshToken,
-              },
-            })
-          } catch (error) {
-            await this.handleError(error as string, retried)
-          }
-
-          if (foundTokens.token) {
-            let fileUrl = self.uriToPreAuthInfoMap.get(location.uri).authInfo
-              ?.fileUrl
-            if (!fileUrl) {
-              try {
-                fileUrl = await self.fetchFile(location.uri, foundTokens.token)
-                self.uriToPreAuthInfoMap.set(location.uri, {
-                  ...self.uriToPreAuthInfoMap.get(location.uri),
-                  authInfo: {
-                    ...self.uriToPreAuthInfoMap.get(location.uri).authInfo,
-                    fileUrl: fileUrl,
-                  },
-                })
-              } catch (error) {
-                await this.handleError(error as string, retried, location)
-                if (!retried) {
-                  await this.getPreAuthorizationInformation(location, true)
-                }
-              }
-            }
-          }
-          return self.uriToPreAuthInfoMap.get(location.uri)
-        },
-        // in the error message to the flow above, add a conditional that is like
-        // if inWebWorker try to reload the page
-        async handleError(
-          error: string,
-          triedRefreshToken = false,
-          location?: UriLocation,
-        ) {
-          if (!inWebWorker && location) {
-            sessionStorage.removeItem(`${self.internetAccountId}-token`)
-            self.uriToPreAuthInfoMap.set(location.uri, self.generateAuthInfo()) // if it reaches here the token was bad
-          }
-          if (!triedRefreshToken && location) {
-            await this.exchangeRefreshForAccessToken(location)
-          } else {
-            throw error
-          }
+          this.addMessageChannel(resolve, reject)
+          this.useEndpointForAuthorization(resolve, reject)
         },
       }
     })

@@ -1,13 +1,11 @@
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
-import { RemoteFileWithRangeCache } from '@jbrowse/core/util/io'
+import { getSession } from '@jbrowse/core/util'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { ExternalTokenInternetAccountConfigModel } from './configSchema'
-import { Instance, types, getParent } from 'mobx-state-tree'
+import { Instance, types } from 'mobx-state-tree'
 
 import { ExternalTokenEntryForm } from './ExternalTokenEntryForm'
-
-const inWebWorker = typeof sessionStorage === 'undefined'
 
 const stateModelFactory = (
   configSchema: ExternalTokenInternetAccountConfigModel,
@@ -22,171 +20,54 @@ const stateModelFactory = (
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .volatile(() => ({
-      needsToken: false,
-    }))
     .views(self => ({
-      generateAuthInfo() {
-        return {
-          internetAccountType: self.type,
-          authInfo: {
-            authHeader: self.authHeader,
-            tokenType: self.tokenType,
-            configuration: self.accountConfig,
-          },
-        }
+      get validateWithHEAD(): boolean {
+        return getConf(self, 'validateWithHEAD')
       },
     }))
     .actions(self => ({
-      setNeedsToken(bool: boolean) {
-        self.needsToken = bool
+      getTokenFromUser(
+        resolve: (token: string) => void,
+        reject: (error: Error) => void,
+      ) {
+        const session = getSession(self)
+        session.queueDialog((doneCallback: Function) => [
+          ExternalTokenEntryForm,
+          {
+            internetAccountId: self.internetAccountId,
+            handleClose: (token: string) => {
+              if (token) {
+                resolve(token)
+              } else {
+                reject(new Error('user cancelled entry'))
+              }
+              doneCallback()
+            },
+          },
+        ])
+      },
+      async validateToken(token: string, location: UriLocation) {
+        if (!self.validateWithHEAD) {
+          return token
+        }
+        const newInit = self.addAuthHeaderToInit({ method: 'HEAD' }, token)
+        const response = await fetch(location.uri, newInit)
+        if (!response.ok) {
+          let errorMessage
+          try {
+            errorMessage = await response.text()
+          } catch (error) {
+            errorMessage = ''
+          }
+          throw new Error(
+            `Token could not be validated — ${response.status} (${
+              response.statusText
+            })${errorMessage ? ` (${errorMessage})` : ''}`,
+          )
+        }
+        return token
       },
     }))
-    .actions(self => {
-      let resolve: Function = () => {}
-      let reject: Function = () => {}
-      let openLocationPromise: Promise<string> | undefined = undefined
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let preAuthInfo: any = {}
-      return {
-        setTokenInfo(token: string) {
-          sessionStorage.setItem(`${self.internetAccountId}-token`, token)
-        },
-        handleClose(token?: string) {
-          if (token) {
-            if (!inWebWorker) {
-              this.setTokenInfo(token)
-            }
-            resolve(token)
-          } else {
-            reject(new Error('user cancelled entry'))
-          }
-          resolve = () => {}
-          reject = () => {}
-          openLocationPromise = undefined
-        },
-        async checkToken() {
-          let token =
-            preAuthInfo?.authInfo?.token ||
-            (!inWebWorker
-              ? sessionStorage.getItem(`${self.internetAccountId}-token`)
-              : null)
-          if (!token) {
-            if (!openLocationPromise) {
-              openLocationPromise = new Promise(async (r, x) => {
-                const { session } = getParent(self, 2)
-                session.queueDialog((doneCallback: Function) => [
-                  ExternalTokenEntryForm,
-                  {
-                    internetAccountId: self.internetAccountId,
-                    handleClose: (token: string) => {
-                      this.handleClose(token)
-                      doneCallback()
-                    },
-                  },
-                ])
-                resolve = r
-                reject = x
-              })
-            }
-            token = await openLocationPromise
-          }
-
-          if (!preAuthInfo.authInfo.token) {
-            preAuthInfo.authInfo.token = token
-          }
-          resolve()
-          openLocationPromise = undefined
-          return token
-        },
-        async getFetcher(
-          url: RequestInfo,
-          opts?: RequestInit,
-        ): Promise<Response> {
-          if (!preAuthInfo || !preAuthInfo.authInfo) {
-            throw new Error(
-              'Failed to obtain authorization information needed to fetch',
-            )
-          }
-
-          let foundToken
-          try {
-            foundToken = await this.checkToken()
-          } catch (e) {}
-
-          let newOpts = opts
-          if (foundToken) {
-            const tokenInfoString = self.tokenType
-              ? `${self.tokenType} ${preAuthInfo.authInfo.token}`
-              : `${preAuthInfo.authInfo.token}`
-            if (self.authHeader) {
-              const newHeaders = {
-                ...opts?.headers,
-                [self.authHeader]: `${tokenInfoString}`,
-              }
-              newOpts = {
-                ...opts,
-                headers: newHeaders,
-              }
-            }
-          }
-
-          return fetch(url, {
-            method: 'GET',
-            credentials: 'same-origin',
-            ...newOpts,
-          })
-        },
-        openLocation(location: UriLocation) {
-          preAuthInfo =
-            location.internetAccountPreAuthorization || self.generateAuthInfo()
-          return new RemoteFileWithRangeCache(String(location.uri), {
-            fetch: this.getFetcher,
-          })
-        },
-        async getPreAuthorizationInformation(location: UriLocation) {
-          if (!preAuthInfo.authInfo) {
-            preAuthInfo = self.generateAuthInfo()
-          }
-
-          if (inWebWorker && !location.internetAccountPreAuthorization) {
-            throw new Error(
-              'Failed to obtain authorization information needed to fetch',
-            )
-          }
-          let accessToken
-          try {
-            accessToken = await this.checkToken()
-          } catch (error) {
-            await this.handleError()
-          }
-
-          // test
-          if (accessToken) {
-            const response = await fetch(location.uri, {
-              method: 'HEAD',
-              headers: {
-                Authorization: `${self.tokenType} ${accessToken}`,
-              },
-            })
-
-            if (!response.ok) {
-              await this.handleError()
-            }
-          }
-
-          return preAuthInfo
-        },
-        async handleError() {
-          if (!inWebWorker) {
-            preAuthInfo = self.generateAuthInfo()
-            sessionStorage.removeItem(`${self.internetAccountId}-token`)
-          }
-
-          throw new Error('Could not access resource with token')
-        },
-      }
-    })
 }
 
 export default stateModelFactory

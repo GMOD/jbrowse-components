@@ -10,6 +10,11 @@ const HTTPBasicConfigSchema = ConfigurationSchema(
       type: 'string',
       defaultValue: 'Basic',
     },
+    validateWithHEAD: {
+      description: 'validate the token with a HEAD request before using it',
+      type: 'boolean',
+      defaultValue: true,
+    },
   },
   {
     baseConfiguration: BaseInternetAccountConfig,
