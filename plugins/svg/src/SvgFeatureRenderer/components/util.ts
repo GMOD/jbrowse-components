@@ -31,7 +31,7 @@ export function chooseGlyphComponent(
       return !!subfeature.get('subfeatures')
     })
     if (hasSubSub) {
-      return Subfeatures(extraGlyphs)
+      return Subfeatures
     }
     const transcriptTypes = ['mRNA', 'transcript']
     if (
