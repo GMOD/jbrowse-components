@@ -15,8 +15,27 @@ const { unlink, readFile, copyFile, readdir, writeFile } = fs.promises
 
 const { app, ipcMain, shell, BrowserWindow, Menu } = electron
 
+interface Session {
+  path: string
+  updated: number
+  name: string
+}
+
 function stringify(obj: unknown) {
   return JSON.stringify(obj, null, 2)
+}
+
+async function readSessions(): Promise<Session[]> {
+  let data: string
+  try {
+    data = await readFile(recentSessionsPath, 'utf8')
+    return JSON.parse(data)
+  } catch (e) {
+    console.error(
+      `Failed to parse existing recentSessionsPath, data was ${data}`,
+    )
+    return e
+  }
 }
 
 // manual auto-updates https://github.com/electron-userland/electron-builder/blob/docs/encapsulated%20manual%20update%20via%20menu.js
@@ -424,9 +443,7 @@ ipcMain.handle(
 ipcMain.handle(
   'createInitialAutosaveFile',
   async (_event: unknown, snap: SessionSnap) => {
-    const rows = JSON.parse(fs.readFileSync(recentSessionsPath, 'utf8')) as [
-      { path: string; updated: number },
-    ]
+    const rows = await readSessions()
     const idx = rows.findIndex(r => r.path === path)
     const path = getAutosavePath(`${+Date.now()}`)
     const entry = {
@@ -452,10 +469,10 @@ ipcMain.handle(
 ipcMain.handle(
   'saveSession',
   async (_event: unknown, path: string, snap: SessionSnap) => {
-    const page = await mainWindow?.capturePage()
-    const rows = JSON.parse(fs.readFileSync(recentSessionsPath, 'utf8')) as [
-      { path: string; updated: number },
-    ]
+    const [page, rows] = await Promise.all([
+      mainWindow?.capturePage(),
+      readSessions(),
+    ])
     const idx = rows.findIndex(r => r.path === path)
     const png = page?.resize({ width: 500 }).toDataURL()
     const entry = {
@@ -508,11 +525,7 @@ ipcMain.handle('promptSessionSaveAs', async (_event: unknown) => {
 ipcMain.handle(
   'deleteSessions',
   async (_event: unknown, sessionPaths: string[]) => {
-    const sessions = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as {
-      path: string
-      name: string
-    }[]
-
+    const sessions = await readSessions()
     const indexes: number[] = []
     sessions.forEach((row, idx) => {
       if (sessionPaths.includes(row.path)) {
@@ -536,35 +549,9 @@ ipcMain.handle(
 )
 
 ipcMain.handle(
-  'deleteSession',
-  async (_event: unknown, sessionPath: string) => {
-    const sessions = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as {
-      path: string
-      name: string
-    }[]
-
-    const idx = sessions.findIndex(row => row.path === sessionPath)
-    if (idx !== -1) {
-      sessions.splice(idx, 1)
-    } else {
-      throw new Error(`Session at ${path} not found`)
-    }
-
-    await Promise.all([
-      writeFile(recentSessionsPath, stringify(sessions)),
-      unlink(getThumbnailPath(sessionPath)).catch(e => console.error(e)),
-      unlink(sessionPath).catch(e => console.error(e)),
-    ])
-  },
-)
-
-ipcMain.handle(
   'renameSession',
   async (_event: unknown, path: string, newName: string) => {
-    const sessions = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as {
-      path: string
-      name: string
-    }[]
+    const sessions = await readSessions()
     const session = JSON.parse(await readFile(path, 'utf8'))
     const idx = sessions.findIndex(row => row.path === path)
     if (idx !== -1) {
