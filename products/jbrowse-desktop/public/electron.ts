@@ -15,8 +15,58 @@ const { unlink, readFile, copyFile, readdir, writeFile } = fs.promises
 
 const { app, ipcMain, shell, BrowserWindow, Menu } = electron
 
+interface RecentSession {
+  path: string
+  updated: number
+  name: string
+}
+
 function stringify(obj: unknown) {
   return JSON.stringify(obj, null, 2)
+}
+
+async function readRecentSessions(): Promise<RecentSession[]> {
+  let data = ''
+  try {
+    data = await readFile(recentSessionsPath, 'utf8')
+    return JSON.parse(data)
+  } catch (e) {
+    console.error(
+      `Failed to parse existing recentSessionsPath, data was ${data}`,
+      e,
+    )
+    return []
+  }
+}
+
+async function readSession(
+  sessionPath: string,
+): Promise<{ assemblies?: unknown[] }> {
+  let data = ''
+  try {
+    data = await readFile(sessionPath, 'utf8')
+    return JSON.parse(data)
+  } catch (e) {
+    console.error(
+      `Failed to parse session at "${sessionPath}", data was ${data}`,
+      e,
+    )
+    return {}
+  }
+}
+
+async function readQuickstart(quickstartPath: string): Promise<unknown> {
+  let data = ''
+  try {
+    data = await readFile(quickstartPath, 'utf8')
+    return JSON.parse(data)
+  } catch (e) {
+    console.error(
+      `Failed to parse quickstart at "${quickstartPath}", data was ${data}`,
+      e,
+    )
+    return {}
+  }
 }
 
 // manual auto-updates https://github.com/electron-userland/electron-builder/blob/docs/encapsulated%20manual%20update%20via%20menu.js
@@ -332,9 +382,7 @@ ipcMain.handle(
 ipcMain.handle(
   'listSessions',
   async (_event: unknown, showAutosaves: boolean) => {
-    const sessions = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as {
-      path: string
-    }[]
+    const sessions = await readRecentSessions()
 
     if (!showAutosaves) {
       return sessions.filter(f => !f.path.startsWith(autosaveDir))
@@ -349,7 +397,7 @@ ipcMain.handle('loadExternalConfig', (_event: unknown, sessionPath) => {
 })
 
 ipcMain.handle('loadSession', async (_event: unknown, sessionPath: string) => {
-  const sessionSnapshot = JSON.parse(await readFile(sessionPath, 'utf8'))
+  const sessionSnapshot = await readSession(sessionPath)
   if (!sessionSnapshot.assemblies) {
     throw new Error(
       `File at ${sessionPath} does not appear to be a JBrowse session. It does not contain any assemblies.`,
@@ -388,7 +436,7 @@ ipcMain.handle(
 )
 
 ipcMain.handle('getQuickstart', async (_event: unknown, name: string) => {
-  return JSON.parse(await readFile(getQuickstartPath(name), 'utf8'))
+  return readQuickstart(getQuickstartPath(name))
 })
 
 ipcMain.handle(
@@ -424,9 +472,7 @@ ipcMain.handle(
 ipcMain.handle(
   'createInitialAutosaveFile',
   async (_event: unknown, snap: SessionSnap) => {
-    const rows = JSON.parse(fs.readFileSync(recentSessionsPath, 'utf8')) as [
-      { path: string; updated: number },
-    ]
+    const rows = await readRecentSessions()
     const idx = rows.findIndex(r => r.path === path)
     const path = getAutosavePath(`${+Date.now()}`)
     const entry = {
@@ -452,10 +498,10 @@ ipcMain.handle(
 ipcMain.handle(
   'saveSession',
   async (_event: unknown, path: string, snap: SessionSnap) => {
-    const page = await mainWindow?.capturePage()
-    const rows = JSON.parse(fs.readFileSync(recentSessionsPath, 'utf8')) as [
-      { path: string; updated: number },
-    ]
+    const [page, rows] = await Promise.all([
+      mainWindow?.capturePage(),
+      readRecentSessions(),
+    ])
     const idx = rows.findIndex(r => r.path === path)
     const png = page?.resize({ width: 500 }).toDataURL()
     const entry = {
@@ -508,19 +554,13 @@ ipcMain.handle('promptSessionSaveAs', async (_event: unknown) => {
 ipcMain.handle(
   'deleteSessions',
   async (_event: unknown, sessionPaths: string[]) => {
-    const sessions = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as {
-      path: string
-      name: string
-    }[]
+    const sessions = await readRecentSessions()
+    const indices = sessions
+      .map((r, i) => (sessionPaths.includes(r.path) ? i : undefined))
+      .filter((f): f is number => f !== undefined)
 
-    const indexes: number[] = []
-    sessions.forEach((row, idx) => {
-      if (sessionPaths.includes(row.path)) {
-        indexes.push(idx)
-      }
-    })
-    for (let i = indexes.length - 1; i >= 0; i--) {
-      sessions.splice(indexes[i], 1)
+    for (let i = indices.length - 1; i >= 0; i--) {
+      sessions.splice(indices[i], 1)
     }
 
     await Promise.all([
@@ -536,35 +576,9 @@ ipcMain.handle(
 )
 
 ipcMain.handle(
-  'deleteSession',
-  async (_event: unknown, sessionPath: string) => {
-    const sessions = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as {
-      path: string
-      name: string
-    }[]
-
-    const idx = sessions.findIndex(row => row.path === sessionPath)
-    if (idx !== -1) {
-      sessions.splice(idx, 1)
-    } else {
-      throw new Error(`Session at ${path} not found`)
-    }
-
-    await Promise.all([
-      writeFile(recentSessionsPath, stringify(sessions)),
-      unlink(getThumbnailPath(sessionPath)).catch(e => console.error(e)),
-      unlink(sessionPath).catch(e => console.error(e)),
-    ])
-  },
-)
-
-ipcMain.handle(
   'renameSession',
   async (_event: unknown, path: string, newName: string) => {
-    const sessions = JSON.parse(await readFile(recentSessionsPath, 'utf8')) as {
-      path: string
-      name: string
-    }[]
+    const sessions = await readRecentSessions()
     const session = JSON.parse(await readFile(path, 'utf8'))
     const idx = sessions.findIndex(row => row.path === path)
     if (idx !== -1) {
