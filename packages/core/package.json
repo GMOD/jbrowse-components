@@ -26,7 +26,7 @@
     "clean": "rimraf dist",
     "prebuild": "yarn clean",
     "prepack": "yarn build",
-    "build": "NODE_ENV=production babel . --root-mode upward --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json README.md ../../LICENSE dist/ && tsc"
+    "build": "babel . --root-mode upward --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json README.md ../../LICENSE dist/ && tsc"
   },
   "dependencies": {
     "@babel/runtime": "^7.16.3",
