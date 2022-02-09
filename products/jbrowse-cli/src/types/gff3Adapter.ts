@@ -50,7 +50,7 @@ export async function* indexGff3(
   })
 
   const rl = readline.createInterface({
-    input: uri.endsWith('.gz')
+    input: uri.match(/.b?gz$/)
       ? fileDataStream.pipe(createGunzip())
       : fileDataStream,
   })

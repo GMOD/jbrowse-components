@@ -49,7 +49,7 @@ export async function* indexGtf(
     progressBar.update(receivedBytes)
   })
 
-  const gzStream = uri.endsWith('.gz')
+  const gzStream = uri.match(/.b?gz$/)
     ? fileDataStream.pipe(createGunzip())
     : fileDataStream
 
