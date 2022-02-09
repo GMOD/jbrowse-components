@@ -4,7 +4,6 @@ import { isElectron } from '@jbrowse/core/util'
 import sha256 from 'crypto-js/sha256'
 import Base64 from 'crypto-js/enc-base64'
 import { Instance, types } from 'mobx-state-tree'
-import { UriLocation } from '@jbrowse/core/util/types'
 
 // locals
 import { OAuthInternetAccountConfigModel } from './configSchema'

@@ -1,9 +1,8 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
-import { getSession } from '@jbrowse/core/util'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { ExternalTokenInternetAccountConfigModel } from './configSchema'
-import { Instance, types } from 'mobx-state-tree'
+import { Instance, types, getRoot } from 'mobx-state-tree'
 
 import { ExternalTokenEntryForm } from './ExternalTokenEntryForm'
 
@@ -30,7 +29,7 @@ const stateModelFactory = (
         resolve: (token: string) => void,
         reject: (error: Error) => void,
       ) {
-        const session = getSession(self)
+        const { session } = getRoot(self)
         session.queueDialog((doneCallback: Function) => [
           ExternalTokenEntryForm,
           {
