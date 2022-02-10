@@ -125,7 +125,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
           const { extra, records } = pafRecords[i]
           const { start, end, refName } = records[index]
           if (
-            records[index].refName === region.refName &&
+            refName === region.refName &&
             doesIntersect2(region.start, region.end, start, end)
           ) {
             observer.next(
