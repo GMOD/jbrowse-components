@@ -10,17 +10,9 @@ const useStyles = makeStyles({
     backgroundColor: '#f1f1f1',
     backgroundImage:
       'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,.5) 5px, rgba(255,255,255,.5) 10px)',
-    height: '100%',
-    width: '100%',
     textAlign: 'center',
   },
-  error: {
-    display: 'block',
-    color: 'red',
-    width: '30em',
-    wordWrap: 'normal',
-    whiteSpace: 'normal',
-  },
+
   blockMessage: {
     background: '#f1f1f1',
     padding: '10px',
@@ -57,9 +49,6 @@ function BlockMessage({ messageText }: { messageText: string }) {
     </div>
   )
 }
-BlockMessage.propTypes = {
-  messageText: PropTypes.string.isRequired,
-}
 
 function BlockError({ error }: { error: Error }) {
   const classes = useStyles()
@@ -71,17 +60,19 @@ function BlockError({ error }: { error: Error }) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ServerSideRenderedBlockContent = observer(({ model }: { model: any }) => {
-  if (model.error) {
-    return <BlockError error={model.error} data-testid="reload_button" />
-  }
-  if (model.message) {
-    return <BlockMessage messageText={model.message} />
-  }
-  if (!model.filled) {
-    return <LoadingMessage />
-  }
-  return model.reactElement
-})
+const ServerSideRenderedBlockContent = observer(
+  ({ model, style }: { model: any; style: any }) => {
+    if (model.error) {
+      return <BlockError error={model.error} data-testid="reload_button" />
+    }
+    if (model.message) {
+      return <BlockMessage messageText={model.message} />
+    }
+    if (!model.filled) {
+      return <LoadingMessage />
+    }
+    return <div style={style}>{model.reactElement}</div>
+  },
+)
 
 export default ServerSideRenderedBlockContent

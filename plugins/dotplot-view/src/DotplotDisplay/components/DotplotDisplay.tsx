@@ -16,16 +16,15 @@ const DotplotDisplay: React.FC<{
   const left = -(view.hview.offsetPx - offsetX)
   return (
     <div style={{ position: 'relative' }}>
-      <div
+      <model.ReactComponent2
+        {...props}
         style={{
           position: 'absolute',
           top,
           left,
         }}
-      >
-        <model.ReactComponent2 {...props} />
-        {children}
-      </div>
+      />
+      {children}
     </div>
   )
 }
