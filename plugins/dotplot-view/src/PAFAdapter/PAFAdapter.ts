@@ -8,6 +8,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { unzip } from '@gmod/bgzf-filehandle'
 
 interface PafRecord {
   records: NoAssemblyRegion[]
@@ -17,6 +18,10 @@ interface PafRecord {
     numMatches: number
     strand: number
   }
+}
+
+function isGzip(buf: Buffer) {
+  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
 }
 
 export default class PAFAdapter extends BaseFeatureDataAdapter {
@@ -39,10 +44,13 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       readConfObject(this.config, 'pafLocation'),
       this.pluginManager,
     )
-    const text = await pafLocation.readFile({
-      encoding: 'utf8',
-      ...opts,
-    })
+    const buffer = (await pafLocation.readFile(opts)) as Buffer
+    const buf = isGzip(buffer) ? await unzip(buffer) : buffer
+    // 512MB  max chrome string length is 512MB
+    if (buf.length > 536_870_888) {
+      throw new Error('Data exceeds maximum string length (512MB)')
+    }
+    const text = new TextDecoder('utf8', { fatal: true }).decode(buf)
 
     // mashmap produces PAF-like data that is space separated instead of tab
     const hasTab = text.indexOf('\t')

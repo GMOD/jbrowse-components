@@ -37,7 +37,10 @@ export const HorizontalAxis = observer(
       viewWidth,
       hview.offsetPx,
     )
-    const ticks = makeTicks(hview.staticBlocks.contentBlocks, hview.bpPerPx)
+    const ticks =
+      hview.staticBlocks.contentBlocks.length > 5
+        ? []
+        : makeTicks(hview.staticBlocks.contentBlocks, hview.bpPerPx)
     return (
       <svg width={viewWidth} height={borderY} className={classes.htext}>
         <g>
@@ -58,11 +61,12 @@ export const HorizontalAxis = observer(
                   dominantBaseline="hanging"
                   textAnchor="end"
                 >
-                  {`${region.refName}:${
-                    region.start !== 0
-                      ? Math.floor(region.start).toLocaleString('en-US')
-                      : ''
-                  }`}
+                  {[
+                    region.refName,
+                    region.start !== 0 ? Math.floor(region.start) : '',
+                  ]
+                    .filter(f => !!f)
+                    .join(':')}
                 </text>
               )
             })}
@@ -122,7 +126,10 @@ export const VerticalAxis = observer(
       viewHeight,
       vview.offsetPx,
     )
-    const ticks = makeTicks(vview.staticBlocks.contentBlocks, vview.bpPerPx)
+    const ticks =
+      vview.staticBlocks.contentBlocks.length > 5
+        ? []
+        : makeTicks(vview.staticBlocks.contentBlocks, vview.bpPerPx)
     return (
       <svg className={classes.vtext} width={borderX} height={viewHeight}>
         <g>
@@ -140,9 +147,12 @@ export const VerticalAxis = observer(
                   fill="#000000"
                   textAnchor="end"
                 >
-                  {`${region.refName}:${
-                    region.start !== 0 ? Math.floor(region.start) : ''
-                  }`}
+                  {[
+                    region.refName,
+                    region.start !== 0 ? Math.floor(region.start) : '',
+                  ]
+                    .filter(f => !!f)
+                    .join(':')}
                 </text>
               )
             })}
