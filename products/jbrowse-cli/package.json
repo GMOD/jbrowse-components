@@ -62,7 +62,6 @@
     "unzipper": "^0.10.11"
   },
   "devDependencies": {
-    "@types/follow-redirects": "^1.13.0",
     "typescript": "^4.5.2"
   },
   "oclif": {

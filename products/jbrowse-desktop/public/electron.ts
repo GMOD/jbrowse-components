@@ -374,6 +374,8 @@ ipcMain.handle(
     const faiPath = getFaiPath(path.basename(filename) + Date.now() + '.fai')
     const stream = await getFileStream(location)
     const write = fs.createWriteStream(faiPath)
+
+    //@ts-ignore
     await generateFastaIndex(write, stream)
     return faiPath
   },
