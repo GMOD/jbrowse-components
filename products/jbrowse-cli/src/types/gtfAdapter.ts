@@ -34,6 +34,7 @@ export async function* indexGtf(
   if (isURL(uri)) {
     fileDataStream = await createRemoteStream(uri)
     totalBytes = +(fileDataStream.headers['content-length'] || 0)
+    fileDataStream = fileDataStream.body
   } else {
     const filename = path.join(outLocation, uri)
     totalBytes = fs.statSync(filename).size

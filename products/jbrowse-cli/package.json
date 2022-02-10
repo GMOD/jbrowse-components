@@ -54,7 +54,6 @@
     "cli-progress": "^3.9.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "follow-redirects": "^1.14.6",
     "ixixx": "^1.0.19",
     "json-parse-better-errors": "^1.0.2",
     "node-fetch": "^2.6.0",
