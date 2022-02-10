@@ -70,7 +70,7 @@ export function stateModelFactory(configSchema: any) {
           message: undefined as string | undefined,
           renderingComponent: undefined as any,
           ReactComponent2:
-            ServerSideRenderedBlockContent as unknown as React.FC,
+            ServerSideRenderedBlockContent as unknown as React.FC<any>,
         })),
     )
     .views(self => ({

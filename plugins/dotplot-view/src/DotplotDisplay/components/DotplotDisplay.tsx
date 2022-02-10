@@ -1,6 +1,5 @@
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import PropTypes from 'prop-types'
 import React from 'react'
+import { observer } from 'mobx-react'
 import { getContainingView } from '@jbrowse/core/util'
 import { DotplotDisplayModel } from '..'
 
@@ -28,12 +27,5 @@ const DotplotDisplay: React.FC<{
     </div>
   )
 }
-DotplotDisplay.propTypes = {
-  model: MobxPropTypes.objectOrObservableObject.isRequired,
-  children: PropTypes.element,
-}
 
-DotplotDisplay.defaultProps = {
-  children: null,
-}
 export default observer(DotplotDisplay)
