@@ -3,8 +3,6 @@ import { getLocalOrRemoteStream } from '../util'
 import { SingleBar, Presets } from 'cli-progress'
 import { createGunzip } from 'zlib'
 import readline from 'readline'
-import path from 'path'
-import fs from 'fs'
 
 export async function* indexGff3(
   config: Track,

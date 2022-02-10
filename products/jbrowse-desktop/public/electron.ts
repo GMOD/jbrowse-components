@@ -375,7 +375,7 @@ ipcMain.handle(
     const stream = await getFileStream(location)
     const write = fs.createWriteStream(faiPath)
 
-    //@ts-ignore
+    // @ts-ignore
     await generateFastaIndex(write, stream)
     return faiPath
   },
