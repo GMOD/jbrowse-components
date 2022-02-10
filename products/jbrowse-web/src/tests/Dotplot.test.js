@@ -5,8 +5,9 @@ import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
-import dotplotConfig from '../../test_data/config_dotplot.json'
+import { TextEncoder, TextDecoder } from 'web-encoding'
 
+import dotplotConfig from '../../test_data/config_dotplot.json'
 import {
   JBrowse,
   setup,
@@ -15,6 +16,12 @@ import {
   getPluginManager,
 } from './util'
 
+if (!window.TextEncoder) {
+  window.TextEncoder = TextEncoder
+}
+if (!window.TextDecoder) {
+  window.TextDecoder = TextDecoder
+}
 dotplotConfig.configuration = {
   rpc: {
     defaultDriver: 'MainThreadRpcDriver',

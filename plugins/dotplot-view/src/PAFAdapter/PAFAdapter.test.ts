@@ -2,6 +2,15 @@ import { toArray } from 'rxjs/operators'
 import Adapter from './PAFAdapter'
 import MyConfigSchema from './configSchema'
 
+import { TextEncoder, TextDecoder } from 'web-encoding'
+
+if (!window.TextEncoder) {
+  window.TextEncoder = TextEncoder
+}
+if (!window.TextDecoder) {
+  window.TextDecoder = TextDecoder
+}
+
 test('adapter can fetch features from peach_grape.paf', async () => {
   const adapter = new Adapter(
     MyConfigSchema.create({
