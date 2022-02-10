@@ -3,7 +3,8 @@ import fs from 'fs'
 import path from 'path'
 import JBrowseCommand, { Assembly, Sequence, Config } from '../base'
 
-const { rename, copyFile, mkdir, symlink } = fs.promises
+const { rename, unlink, copyFile, mkdir, symlink } = fs.promises
+const { COPYFILE_EXCL } = fs.constants
 
 // https://stackoverflow.com/a/35008327/2129219
 function exists(s: string) {
@@ -175,9 +176,15 @@ custom         Either a JSON file location or inline JSON that defines a custom
       )
     }
 
-    const { load, subDir, faiLocation, gziLocation, chromSizesLocation } =
-      runFlags
-    let { name } = runFlags
+    const {
+      load,
+      force,
+      name,
+      subDir,
+      faiLocation,
+      gziLocation,
+      chromSizesLocation,
+    } = runFlags
     let { type } = runFlags as {
       type:
         | 'indexedFasta'
@@ -193,40 +200,38 @@ custom         Either a JSON file location or inline JSON that defines a custom
       type = this.guessSequenceType(argsSequence)
       this.debug(`No type specified, guessing type: ${type}`)
     }
-    if (name) {
-      this.debug(`Name is: ${name}`)
-    }
 
     const inPlace = load === 'inPlace'
     const isUrl = (loc?: string) => loc?.match(/^https?:\/\//)
     const getLoc = (loc: string) =>
       isUrl(loc) || inPlace ? loc : path.join(subDir, path.basename(loc))
+
+    let effName
     switch (type) {
       case 'indexedFasta': {
         const effLoc = getLoc(argsSequence)
-        const effIdxLoc = getLoc(faiLocation || argsSequence + '.fai')
-        name =
+        const rawIdxLoc = faiLocation || argsSequence + '.fai'
+        const effIdxLoc = getLoc(rawIdxLoc)
+        effName =
           name ||
           (effLoc.endsWith('.fasta')
             ? path.basename(effLoc, '.fasta')
             : path.basename(effLoc, '.fa'))
 
         if (load) {
-          await this.loadData(load, [effLoc, effIdxLoc])
+          await this.loadData(load, [argsSequence, rawIdxLoc], subDir, force)
         }
 
         sequence = {
           type: 'ReferenceSequenceTrack',
-          trackId: `${name}-ReferenceSequenceTrack`,
+          trackId: `${effName}-ReferenceSequenceTrack`,
           adapter: {
             type: 'IndexedFastaAdapter',
             fastaLocation: {
-              uri: load ? path.basename(effLoc) : effLoc,
-              locationType: 'UriLocation',
+              uri: effLoc,
             },
             faiLocation: {
-              uri: load ? path.basename(effIdxLoc) : effIdxLoc,
-              locationType: 'UriLocation',
+              uri: effIdxLoc,
             },
           },
         }
@@ -234,34 +239,38 @@ custom         Either a JSON file location or inline JSON that defines a custom
       }
       case 'bgzipFasta': {
         const effLoc = getLoc(argsSequence)
-        const effIdxLoc = getLoc(faiLocation || argsSequence + '.fai')
-        const effGziLoc = getLoc(gziLocation || argsSequence + '.gzi')
-        name =
+        const rawIdxLoc = faiLocation || argsSequence + '.fai'
+        const rawGziLoc = faiLocation || argsSequence + '.gzi'
+        const effIdxLoc = getLoc(rawIdxLoc)
+        const effGziLoc = getLoc(rawGziLoc)
+        effName =
           name ||
           (effLoc.endsWith('.fasta.gz')
             ? path.basename(effLoc, '.fasta.gz')
             : path.basename(effLoc, '.fa.gz'))
 
         if (load) {
-          await this.loadData(load, [effLoc, effIdxLoc, effGziLoc])
+          await this.loadData(
+            load,
+            [argsSequence, rawIdxLoc, rawGziLoc],
+            subDir,
+            force,
+          )
         }
 
         sequence = {
           type: 'ReferenceSequenceTrack',
-          trackId: `${name}-ReferenceSequenceTrack`,
+          trackId: `${effName}-ReferenceSequenceTrack`,
           adapter: {
             type: 'BgzipFastaAdapter',
             fastaLocation: {
-              uri: load ? path.basename(effLoc) : effLoc,
-              locationType: 'UriLocation',
+              uri: effLoc,
             },
             faiLocation: {
-              uri: load ? path.basename(effIdxLoc) : effIdxLoc,
-              locationType: 'UriLocation',
+              uri: effIdxLoc,
             },
             gziLocation: {
-              uri: load ? path.basename(effGziLoc) : effGziLoc,
-              locationType: 'UriLocation',
+              uri: effGziLoc,
             },
           },
         }
@@ -269,48 +278,46 @@ custom         Either a JSON file location or inline JSON that defines a custom
       }
       case 'twoBit': {
         const effLoc = getLoc(argsSequence)
-        name = name || path.basename(effLoc, '.2bit')
+        effName = name || path.basename(effLoc, '.2bit')
         if (load) {
-          await this.loadData(load, [effLoc])
+          await this.loadData(load, [argsSequence], subDir, force)
         }
         sequence = {
           type: 'ReferenceSequenceTrack',
-          trackId: `${name}-ReferenceSequenceTrack`,
+          trackId: `${effName}-ReferenceSequenceTrack`,
           adapter: {
             type: 'TwoBitAdapter',
             twoBitLocation: {
-              uri: load ? path.basename(effLoc) : effLoc,
-              locationType: 'UriLocation',
+              uri: effLoc,
             },
           },
         }
         if (chromSizesLocation) {
           const effChromSizesLoc = getLoc(chromSizesLocation)
           if (load) {
-            await this.loadData(load, [effChromSizesLoc])
+            await this.loadData(load, [chromSizesLocation], subDir, force)
           }
 
           // @ts-ignore
           sequence.adapter.chromSizesLocation = {
-            uri: load ? path.basename(effChromSizesLoc) : effChromSizesLoc,
+            uri: effChromSizesLoc,
           }
         }
         break
       }
       case 'chromSizes': {
         const effLoc = getLoc(argsSequence)
-        name = name || path.basename(effLoc, '.chrom.sizes')
+        effName = name || path.basename(effLoc, '.chrom.sizes')
         if (load) {
-          await this.loadData(load, [effLoc])
+          await this.loadData(load, [argsSequence], subDir, force)
         }
         sequence = {
           type: 'ReferenceSequenceTrack',
-          trackId: `${name}-ReferenceSequenceTrack`,
+          trackId: `${effName}-ReferenceSequenceTrack`,
           adapter: {
             type: 'ChromSizesAdapter',
             chromSizesLocation: {
-              uri: load ? path.basename(effLoc) : effLoc,
-              locationType: 'UriLocation',
+              uri: effLoc,
             },
           },
         }
@@ -325,11 +332,10 @@ custom         Either a JSON file location or inline JSON that defines a custom
               'Must provide --name when using custom inline JSON sequence',
               { exit: 130 },
             )
-          } else {
-            name = path.basename(argsSequence, '.json')
           }
           this.debug(`Guessing name: ${name}`)
         }
+        effName = name || path.basename(argsSequence, '.json')
         if (!('type' in adapter)) {
           this.error(
             `No "type" specified in sequence adapter "${JSON.stringify(
@@ -340,20 +346,21 @@ custom         Either a JSON file location or inline JSON that defines a custom
         }
         sequence = {
           type: 'ReferenceSequenceTrack',
-          trackId: `${name}-ReferenceSequenceTrack`,
+          trackId: `${effName}-ReferenceSequenceTrack`,
           adapter,
         }
         break
       }
     }
 
-    return { name, sequence }
+    return { name: effName, sequence }
   }
 
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
+    const { target, out, subDir } = runFlags
 
-    const output = runFlags.target || runFlags.out || '.'
+    const output = target || out || '.'
 
     if (!(await exists(output))) {
       await mkdir(output, { recursive: true })
@@ -361,7 +368,14 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
     const isDir = fs.statSync(output).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
+    const configDirectory = path.dirname(this.target)
 
+    if (subDir) {
+      const dir = path.join(configDirectory, subDir)
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir)
+      }
+    }
     const { sequence: argsSequence } = runArgs as { sequence: string }
     this.debug(`Sequence location is: ${argsSequence}`)
     const { name } = runFlags
@@ -413,7 +427,6 @@ custom         Either a JSON file location or inline JSON that defines a custom
             type: 'RefNameAliasAdapter',
             location: {
               uri: refNameAliasesLocation,
-              locationType: 'UriLocation',
             },
           },
         }
@@ -517,9 +530,14 @@ custom         Either a JSON file location or inline JSON that defines a custom
     return true
   }
 
-  async loadData(load: string, filePaths: string[]) {
+  async loadData(
+    load: string,
+    filePaths: string[],
+    subDir: string,
+    force: boolean,
+  ) {
     let locationUrl: URL | undefined
-    const destination = this.target
+    const configDirectory = path.dirname(this.target)
     try {
       locationUrl = new URL(filePaths[0])
     } catch (error) {
@@ -529,53 +547,34 @@ custom         Either a JSON file location or inline JSON that defines a custom
     if (locationUrl) {
       return false
     }
-    switch (load) {
-      case 'copy': {
-        await Promise.all(
-          filePaths.map(async filePath => {
-            if (!filePath) {
-              return undefined
-            }
-            return copyFile(
-              filePath,
-              path.join(path.dirname(destination), path.basename(filePath)),
-            )
-          }),
-        )
-        return true
+
+    // get path of destination, and remove file at that path if it exists and
+    // force is set
+    const destinationFn = async (dir: string, file: string) => {
+      const dest = path.join(dir, subDir, path.basename(file))
+      if (force && fs.existsSync(dest)) {
+        await unlink(dest)
       }
-      case 'symlink': {
-        await Promise.all(
-          filePaths.map(async filePath => {
-            if (!filePath) {
-              return undefined
-            }
-            return symlink(
-              path.resolve(filePath),
-              path.join(path.dirname(destination), path.basename(filePath)),
-            )
-          }),
-        )
-        return true
-      }
-      case 'move': {
-        await Promise.all(
-          filePaths.map(async filePath => {
-            if (!filePath) {
-              return undefined
-            }
-            return rename(
-              filePath,
-              path.join(path.dirname(destination), path.basename(filePath)),
-            )
-          }),
-        )
-        return true
-      }
-      case 'inPlace': {
-        return false
-      }
+      return dest
     }
+
+    console.log({ filePaths })
+
+    const callbacks = {
+      copy: (src: string, dest: string) => copyFile(src, dest, COPYFILE_EXCL),
+      move: (src: string, dest: string) => rename(src, dest),
+      symlink: (src: string, dest: string) => symlink(path.resolve(src), dest),
+    }
+
+    await Promise.all(
+      filePaths.map(async src => {
+        const dest = await destinationFn(configDirectory, src)
+        if (load === 'copy' || load === 'move' || load === 'symlink') {
+          console.log({ src })
+          return callbacks[load](src, dest)
+        }
+      }),
+    )
     return false
   }
 }
