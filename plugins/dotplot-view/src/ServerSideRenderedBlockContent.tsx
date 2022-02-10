@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import { Typography, LinearProgress } from '@material-ui/core'
 import { observer } from 'mobx-react'
-import PropTypes from 'prop-types'
 
 const useStyles = makeStyles({
   loading: {
@@ -59,8 +58,8 @@ function BlockError({ error }: { error: Error }) {
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ServerSideRenderedBlockContent = observer(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ({ model, style }: { model: any; style: any }) => {
     if (model.error) {
       return <BlockError error={model.error} data-testid="reload_button" />

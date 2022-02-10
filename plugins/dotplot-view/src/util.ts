@@ -1,5 +1,5 @@
 import { MismatchParser } from '@jbrowse/plugin-alignments'
-import { Feature } from '@jbrowse/core/util'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 const { parseCigar } = MismatchParser
 
 export function getLengthOnRef(cigar: string) {

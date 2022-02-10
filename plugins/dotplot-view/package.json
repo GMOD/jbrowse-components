@@ -35,6 +35,7 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
+    "@gmod/bgzf-filehandle": "^1.4.2",
     "@material-ui/icons": "^4.9.1",
     "abortable-promise-cache": "^1.1.3",
     "clsx": "^1.0.0",

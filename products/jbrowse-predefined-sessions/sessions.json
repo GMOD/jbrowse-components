@@ -535,58 +535,5 @@
     "defaultSession": {
       "name": "New Session"
     }
-  },
-  "t2t-chm13-v1.1": {
-    "assemblies": [
-      {
-        "name": "t2t-chm13-v1.1",
-        "displayName": "Homo sapiens (t2t-chm13-v1.1)",
-        "sequence": {
-          "type": "ReferenceSequenceTrack",
-          "trackId": "t2t-chm13-v1.1-asm",
-          "adapter": {
-            "type": "BgzipFastaAdapter",
-            "fastaLocation": {
-              "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13.draft_v1.1.fasta.gz",
-              "locationType": "UriLocation"
-            },
-            "faiLocation": {
-              "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13.draft_v1.1.fasta.gz.fai",
-              "locationType": "UriLocation"
-            },
-            "gziLocation": {
-              "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13.draft_v1.1.fasta.gz.gzi",
-              "locationType": "UriLocation"
-            }
-          }
-        }
-      }
-    ],
-    "tracks": [
-      {
-        "type": "FeatureTrack",
-        "trackId": "genes",
-        "name": "Gene annotation v4",
-        "category": ["Annotation"],
-        "assemblyNames": ["t2t-chm13-v1.1"],
-        "adapter": {
-          "type": "Gff3TabixAdapter",
-          "gffGzLocation": {
-            "uri": "https://jbrowse.org/genomes/CHM13/genes/chm13.draft_v1.1.gene_annotation.v4.sorted.gff.gz",
-            "locationType": "UriLocation"
-          },
-          "index": {
-            "location": {
-              "uri": "https://jbrowse.org/genomes/CHM13/genes/chm13.draft_v1.1.gene_annotation.v4.sorted.gff.gz.tbi",
-              "locationType": "UriLocation"
-            },
-            "indexType": "TBI"
-          }
-        }
-      }
-    ],
-    "defaultSession": {
-      "name": "New Session"
-    }
   }
 }
