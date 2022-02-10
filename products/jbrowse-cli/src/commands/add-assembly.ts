@@ -240,7 +240,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
       case 'bgzipFasta': {
         const effLoc = getLoc(argsSequence)
         const rawIdxLoc = faiLocation || argsSequence + '.fai'
-        const rawGziLoc = faiLocation || argsSequence + '.gzi'
+        const rawGziLoc = gziLocation || argsSequence + '.gzi'
         const effIdxLoc = getLoc(rawIdxLoc)
         const effGziLoc = getLoc(rawGziLoc)
         effName =
@@ -558,10 +558,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
       return dest
     }
 
-    console.log({ filePaths })
-
     const callbacks = {
-      copy: (src: string, dest: string) => copyFile(src, dest, COPYFILE_EXCL),
+      copy: (src: string, dest: string) =>
+        copyFile(path.resolve(src), dest, COPYFILE_EXCL),
       move: (src: string, dest: string) => rename(src, dest),
       symlink: (src: string, dest: string) => symlink(path.resolve(src), dest),
     }
@@ -570,7 +569,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
       filePaths.map(async src => {
         const dest = await destinationFn(configDirectory, src)
         if (load === 'copy' || load === 'move' || load === 'symlink') {
-          console.log({ src })
+          console.log({ src: path.resolve(src), dest, configDirectory })
           return callbacks[load](src, dest)
         }
       }),

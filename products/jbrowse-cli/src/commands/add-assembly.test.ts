@@ -85,7 +85,13 @@ describe('add-assembly', () => {
     .it('fails if trying to add an assembly with a name that already exists')
 
   setup
-    .command(['add-assembly', 'simple.unusual.extension.xyz', '--load', 'copy'])
+    .command([
+      'add-assembly',
+      'simple.unusual.extension.xyz',
+      '--load',
+      'copy',
+      '--force',
+    ])
     .exit(170)
     .it('fails if it cannot guess the sequence type')
 
@@ -138,7 +144,7 @@ describe('add-assembly', () => {
         path.join(ctx.dir, path.basename(`${simpleFasta}.fai`)),
       )
     })
-    .command(['add-assembly', 'simple.fasta', '--load', 'copy'])
+    .command(['add-assembly', 'simple.fasta', '--load', 'copy', '--force'])
     .it('adds an assembly from a FASTA', async ctx => {
       expect(await readdir(ctx.dir)).toContain('config.json')
       const contents = await readFile(path.join(ctx.dir, 'config.json'), {
@@ -240,7 +246,7 @@ describe('add-assembly', () => {
         path.join(ctx.dir, path.basename(`${simpleCompressedFasta}.gzi`)),
       )
     })
-    .command(['add-assembly', 'simple.fasta.gz', '--load', 'copy'])
+    .command(['add-assembly', 'simple.fasta.gz', '--load', 'copy', '--force'])
     .it('adds an assembly from a compressed FASTA', async ctx => {
       expect(await readdir(ctx.dir)).toContain('config.json')
       const contents = await readFile(path.join(ctx.dir, 'config.json'), {
@@ -467,6 +473,7 @@ describe('add-assembly', () => {
       'twoBit',
       '--load',
       'copy',
+      '--force',
     ])
     .it(
       "can specify --type when the type can't be inferred from the extension",
@@ -529,6 +536,7 @@ describe('add-assembly', () => {
       'simple.fasta.gz.gzi.def',
       '--load',
       'copy',
+      '--force',
     ])
     .it('can specify a custom faiLocation and gziLocation', async ctx => {
       expect(await readdir(ctx.dir)).toContain('config.json')
@@ -811,8 +819,15 @@ describe('add-assembly', () => {
       )
       await copyFile(simple2bit, path.join(ctx.dir, path.basename(simple2bit)))
     })
-    .command(['add-assembly', 'simple.2bit', '--load', 'copy'])
-    .command(['add-assembly', 'simple.2bit', '--overwrite', '--load', 'copy'])
+    .command(['add-assembly', 'simple.2bit', '--load', 'copy', '--force'])
+    .command([
+      'add-assembly',
+      'simple.2bit',
+      '--overwrite',
+      '--load',
+      'copy',
+      '--force',
+    ])
     .it('can use --overwrite to replace an existing assembly', async ctx => {
       expect(await readdir(ctx.dir)).toContain('config.json')
       const contents = await readFile(path.join(ctx.dir, 'config.json'), {

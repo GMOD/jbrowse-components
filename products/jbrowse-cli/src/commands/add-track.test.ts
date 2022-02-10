@@ -449,7 +449,7 @@ describe('add-track', () => {
   setup
     .do(initctx)
     .do(init2bit)
-    .command(['add-assembly', 'simple.2bit', '--load', 'copy'])
+    .command(['add-assembly', 'simple.2bit', '--load', 'copy', '--force'])
     .command(['add-track', simpleBam, '--load', 'copy'])
     .exit(2)
     .it('fails multiple assemblies exist but no assemblyNames passed')
@@ -459,7 +459,7 @@ describe('add-track', () => {
   setup
     .do(initctx)
     .do(init2bit)
-    .command(['add-assembly', 'simple.2bit', '--load', 'copy'])
+    .command(['add-assembly', 'simple.2bit', '--load', 'copy', '--force'])
     .command([
       'add-track',
       simpleBam,
