@@ -12,8 +12,7 @@
         "adapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit",
-            "locationType": "UriLocation"
+            "uri": "volvox.2bit"
           }
         }
       },
@@ -43,8 +42,7 @@
         "adapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "volvox.2bit",
-            "locationType": "UriLocation"
+            "uri": "volvox.2bit"
           }
         }
       }
@@ -60,13 +58,11 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "au9_scaffold_subset_sync.gff3",
-          "locationType": "UriLocation"
+          "uri": "au9_scaffold_subset_sync.gff3"
         },
         "index": {
           "location": {
-            "uri": "au9_scaffold_subset_sync.gff3.tbi",
-            "locationType": "UriLocation"
+            "uri": "au9_scaffold_subset_sync.gff3.tbi"
           }
         }
       },
@@ -77,16 +73,13 @@
           "type": "TrixTextSearchAdapter",
           "textSearchAdapterId": "au9_scaffold-index",
           "ixFilePath": {
-            "uri": "trix/au9_scaffold.ix",
-            "locationType": "UriLocation"
+            "uri": "trix/au9_scaffold.ix"
           },
           "ixxFilePath": {
-            "uri": "trix/au9_scaffold.ixx",
-            "locationType": "UriLocation"
+            "uri": "trix/au9_scaffold.ixx"
           },
           "metaFilePath": {
-            "uri": "trix/au9_scaffold_meta.json",
-            "locationType": "UriLocation"
+            "uri": "trix/au9_scaffold_meta.json"
           },
           "assemblies": ["volvox"]
         }
@@ -101,13 +94,11 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "volvox.sort.gff3.gz",
-          "locationType": "UriLocation"
+          "uri": "volvox.sort.gff3.gz"
         },
         "index": {
           "location": {
-            "uri": "volvox.sort.gff3.gz.tbi",
-            "locationType": "UriLocation"
+            "uri": "volvox.sort.gff3.gz.tbi"
           }
         }
       },
@@ -118,16 +109,13 @@
           "type": "TrixTextSearchAdapter",
           "textSearchAdapterId": "gff3tabix_genes-index",
           "ixFilePath": {
-            "uri": "trix/gff3tabix_genes.ix",
-            "locationType": "UriLocation"
+            "uri": "trix/gff3tabix_genes.ix"
           },
           "ixxFilePath": {
-            "uri": "trix/gff3tabix_genes.ixx",
-            "locationType": "UriLocation"
+            "uri": "trix/gff3tabix_genes.ixx"
           },
           "metaFilePath": {
-            "uri": "trix/gff3tabix_genes_meta.json",
-            "locationType": "UriLocation"
+            "uri": "trix/gff3tabix_genes_meta.json"
           },
           "assemblies": ["volvox"]
         }
@@ -142,13 +130,11 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz",
-          "locationType": "UriLocation"
+          "uri": "https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz"
         },
         "index": {
           "location": {
-            "uri": "https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz.tbi",
-            "locationType": "UriLocation"
+            "uri": "https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz.tbi"
           }
         }
       },
@@ -159,16 +145,13 @@
           "type": "TrixTextSearchAdapter",
           "textSearchAdapterId": "online_gff3tabix_genes-index",
           "ixFilePath": {
-            "uri": "trix/online_gff3tabix_genes.ix",
-            "locationType": "UriLocation"
+            "uri": "trix/online_gff3tabix_genes.ix"
           },
           "ixxFilePath": {
-            "uri": "trix/online_gff3tabix_genes.ixx",
-            "locationType": "UriLocation"
+            "uri": "trix/online_gff3tabix_genes.ixx"
           },
           "metaFilePath": {
-            "uri": "trix/online_gff3tabix_genes_meta.json",
-            "locationType": "UriLocation"
+            "uri": "trix/online_gff3tabix_genes_meta.json"
           },
           "assemblies": ["volvox"]
         }
@@ -183,13 +166,11 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "demo.gtf",
-          "locationType": "UriLocation"
+          "uri": "demo.gtf"
         },
         "index": {
           "location": {
-            "uri": "demo.gtf.tbi",
-            "locationType": "UriLocation"
+            "uri": "demo.gtf.tbi"
           }
         }
       },
@@ -199,16 +180,13 @@
           "type": "TrixTextSearchAdapter",
           "textSearchAdapterId": "gtfdemo-index",
           "ixFilePath": {
-            "uri": "trix/gtfdemo.ix",
-            "locationType": "UriLocation"
+            "uri": "trix/gtfdemo.ix"
           },
           "ixxFilePath": {
-            "uri": "trix/gtfdemo.ixx",
-            "locationType": "UriLocation"
+            "uri": "trix/gtfdemo.ixx"
           },
           "metaFilePath": {
-            "uri": "trix/gtfdemo_meta.json",
-            "locationType": "UriLocation"
+            "uri": "trix/gtfdemo_meta.json"
           },
           "assemblies": ["volvox"]
         }
@@ -223,13 +201,11 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3",
-          "locationType": "UriLocation"
+          "uri": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3"
         },
         "index": {
           "location": {
-            "uri": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3.tbi",
-            "locationType": "UriLocation"
+            "uri": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3.tbi"
           }
         }
       },
@@ -240,16 +216,13 @@
           "type": "TrixTextSearchAdapter",
           "textSearchAdapterId": "online_au9_scaffold-index",
           "ixFilePath": {
-            "uri": "trix/online_au9_scaffold.ix",
-            "locationType": "UriLocation"
+            "uri": "trix/online_au9_scaffold.ix"
           },
           "ixxFilePath": {
-            "uri": "trix/online_au9_scaffold.ixx",
-            "locationType": "UriLocation"
+            "uri": "trix/online_au9_scaffold.ixx"
           },
           "metaFilePath": {
-            "uri": "trix/online_au9_scaffold_meta.json",
-            "locationType": "UriLocation"
+            "uri": "trix/online_au9_scaffold_meta.json"
           },
           "assemblies": ["volvox"]
         }
@@ -264,8 +237,7 @@
       "adapter": {
         "type": "NCListAdapter",
         "rootUrlTemplate": {
-          "uri": "volvox_genes_nclist/{refseq}/trackData.json",
-          "locationType": "UriLocation"
+          "uri": "volvox_genes_nclist/{refseq}/trackData.json"
         }
       }
     }
@@ -305,16 +277,13 @@
       "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "volvox-index",
       "ixFilePath": {
-        "uri": "trix/volvox.ix",
-        "locationType": "UriLocation"
+        "uri": "trix/volvox.ix"
       },
       "ixxFilePath": {
-        "uri": "trix/volvox.ixx",
-        "locationType": "UriLocation"
+        "uri": "trix/volvox.ixx"
       },
       "metaFilePath": {
-        "uri": "trix/volvox_meta.json",
-        "locationType": "UriLocation"
+        "uri": "trix/volvox_meta.json"
       },
       "assemblies": ["volvox"]
     }

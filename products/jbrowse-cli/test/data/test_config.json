@@ -8,8 +8,7 @@
         "adapter": {
           "type": "testSeqAdapter",
           "twoBitLocation": {
-            "uri": "test.2bit",
-            "locationType": "UriLocation"
+            "uri": "test.2bit"
           }
         }
       }

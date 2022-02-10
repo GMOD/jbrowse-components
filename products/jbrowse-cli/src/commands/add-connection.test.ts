@@ -190,7 +190,7 @@ describe('add-connection', () => {
       '--assemblyName',
       'testAssembly',
       '--config',
-      '{"url":{"uri":"https://mysite.com/custom"}, "locationType": "UriLocation"}',
+      '{"url":{"uri":"https://mysite.com/custom"}}',
     ])
     .it('adds a custom connection with user set fields', async ctx => {
       const contents = await readFile(path.join(ctx.dir, 'config.json'), {
@@ -228,7 +228,7 @@ describe('add-connection', () => {
       '--connectionId',
       'newConnectionId',
       '--config',
-      '{"url":{"uri":"https://mysite.com/custom"}, "locationType": "UriLocation"}',
+      '{"url":{"uri":"https://mysite.com/custom"}}',
     ])
     .nock('https://mysite.com', site => site.head('/custom').reply(200))
     .command([
@@ -237,7 +237,7 @@ describe('add-connection', () => {
       '--connectionId',
       'newConnectionId',
       '--config',
-      '{"url":{"uri":"https://mysite.com/custom"}, "locationType": "UriLocation"}',
+      '{"url":{"uri":"https://mysite.com/custom"}}',
     ])
     .exit(150)
     .it('Fails to add a duplicate connection Id')
@@ -256,7 +256,7 @@ describe('add-connection', () => {
       '--connectionId',
       'newConnectionId',
       '--config',
-      '{"url":{"uri":"https://mysite.com/custom"}, "locationType": "UriLocation"}',
+      '{"url":{"uri":"https://mysite.com/custom"}}',
       '--force',
     ])
     .command([
@@ -265,7 +265,7 @@ describe('add-connection', () => {
       '--connectionId',
       'newConnectionId',
       '--config',
-      '{"url":{"uri":"https://mysite.com/custom"}, "locationType": "UriLocation"}',
+      '{"url":{"uri":"https://mysite.com/custom"}}',
       '--force',
     ])
     .it(

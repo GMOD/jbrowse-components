@@ -344,13 +344,11 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               localPath: 'bam/simple.bam',
-              locationType: 'LocalPathLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 localPath: 'bam/simple.bam.bai',
-                locationType: 'LocalPathLocation',
               },
             },
             sequenceAdapter: {

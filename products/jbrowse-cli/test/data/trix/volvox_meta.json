@@ -8,13 +8,11 @@
       "adapterConf": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "au9_scaffold_subset_sync.gff3",
-          "locationType": "UriLocation"
+          "uri": "au9_scaffold_subset_sync.gff3"
         },
         "index": {
           "location": {
-            "uri": "au9_scaffold_subset_sync.gff3.tbi",
-            "locationType": "UriLocation"
+            "uri": "au9_scaffold_subset_sync.gff3.tbi"
           }
         }
       }
@@ -26,13 +24,11 @@
       "adapterConf": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "volvox.sort.gff3.gz",
-          "locationType": "UriLocation"
+          "uri": "volvox.sort.gff3.gz"
         },
         "index": {
           "location": {
-            "uri": "volvox.sort.gff3.gz.tbi",
-            "locationType": "UriLocation"
+            "uri": "volvox.sort.gff3.gz.tbi"
           }
         }
       }
@@ -44,13 +40,11 @@
       "adapterConf": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz",
-          "locationType": "UriLocation"
+          "uri": "https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz"
         },
         "index": {
           "location": {
-            "uri": "https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz.tbi",
-            "locationType": "UriLocation"
+            "uri": "https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz.tbi"
           }
         }
       }
@@ -62,13 +56,11 @@
       "adapterConf": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "demo.gtf",
-          "locationType": "UriLocation"
+          "uri": "demo.gtf"
         },
         "index": {
           "location": {
-            "uri": "demo.gtf.tbi",
-            "locationType": "UriLocation"
+            "uri": "demo.gtf.tbi"
           }
         }
       }
@@ -80,13 +72,11 @@
       "adapterConf": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3",
-          "locationType": "UriLocation"
+          "uri": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3"
         },
         "index": {
           "location": {
-            "uri": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3.tbi",
-            "locationType": "UriLocation"
+            "uri": "https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3.tbi"
           }
         }
       }
