@@ -1,10 +1,8 @@
 import { Track, VcfTabixAdapter } from '../base'
-import { isURL, createRemoteStream } from '../types/common'
+import { getLocalOrRemoteStream } from '../util'
 import { SingleBar, Presets } from 'cli-progress'
 import { createGunzip } from 'zlib'
 import readline from 'readline'
-import path from 'path'
-import fs from 'fs'
 
 export async function* indexVcf(
   config: Track,
@@ -28,31 +26,19 @@ export async function* indexVcf(
     Presets.shades_classic,
   )
 
-  let fileDataStream
-  let totalBytes = 0
   let receivedBytes = 0
-  if (isURL(uri)) {
-    fileDataStream = await createRemoteStream(uri)
-    totalBytes = +(fileDataStream.headers['content-length'] || 0)
-    fileDataStream = fileDataStream.body
-  } else {
-    const filename = path.isAbsolute(uri) ? uri : path.join(outLocation, uri)
-    totalBytes = fs.statSync(filename).size
-    fileDataStream = fs.createReadStream(filename)
-  }
+  const { totalBytes, stream } = await getLocalOrRemoteStream(uri, outLocation)
 
   if (!quiet) {
     progressBar.start(totalBytes, 0)
   }
 
-  fileDataStream.on('data', chunk => {
+  stream.on('data', chunk => {
     receivedBytes += chunk.length
     progressBar.update(receivedBytes)
   })
 
-  const gzStream = uri.match(/.b?gz$/)
-    ? fileDataStream.pipe(createGunzip())
-    : fileDataStream
+  const gzStream = uri.match(/.b?gz$/) ? stream.pipe(createGunzip()) : stream
 
   const rl = readline.createInterface({
     input: gzStream,
