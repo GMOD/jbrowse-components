@@ -111,20 +111,17 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: 'simple.bam',
-              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: 'simple.bam.bai',
-                locationType: 'UriLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
-                locationType: 'UriLocation',
               },
             },
           },
@@ -156,20 +153,17 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: 'simple.bam',
-              locationType: 'UriLocation',
             },
             index: {
               indexType: 'CSI',
               location: {
                 uri: 'simple.bam.csi',
-                locationType: 'UriLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
-                locationType: 'UriLocation',
               },
             },
           },
@@ -192,20 +186,17 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: '/testing/in/place.bam',
-              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: '/testing/in/place.bam.bai',
-                locationType: 'UriLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
-                locationType: 'UriLocation',
               },
             },
           },
@@ -235,20 +226,17 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: '/testing/in/place.bam',
-              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: '/something/else/random.bai',
-                locationType: 'UriLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
-                locationType: 'UriLocation',
               },
             },
           },
@@ -281,20 +269,17 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: 'simple.bam',
-              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: 'simple.bai',
-                locationType: 'UriLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
-                locationType: 'UriLocation',
               },
             },
           },
@@ -317,20 +302,17 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: 'bam/simple.bam',
-              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: 'bam/simple.bam.bai',
-                locationType: 'UriLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
-                locationType: 'UriLocation',
               },
             },
           },
@@ -375,7 +357,6 @@ describe('add-track', () => {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
-                locationType: 'UriLocation',
               },
             },
           },
@@ -419,13 +400,11 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: 'simple.bam',
-              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: 'simple.bam.bai',
-                locationType: 'UriLocation',
               },
             },
           },
@@ -449,20 +428,17 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: 'https://mysite.com/data/simple.bam',
-              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: 'https://mysite.com/data/simple.bam.bai',
-                locationType: 'UriLocation',
               },
             },
             sequenceAdapter: {
               type: 'testSeqAdapter',
               twoBitLocation: {
                 uri: 'test.2bit',
-                locationType: 'UriLocation',
               },
             },
           },
@@ -506,20 +482,17 @@ describe('add-track', () => {
             type: 'BamAdapter',
             bamLocation: {
               uri: 'simple.bam',
-              locationType: 'UriLocation',
             },
             index: {
               indexType: 'BAI',
               location: {
                 uri: 'simple.bam.bai',
-                locationType: 'UriLocation',
               },
             },
 
             sequenceAdapter: {
               twoBitLocation: {
                 uri: 'test.2bit',
-                locationType: 'UriLocation',
               },
               type: 'testSeqAdapter',
             },
@@ -544,7 +517,6 @@ describe('add-track', () => {
             type: 'Gff3Adapter',
             gffLocation: {
               uri: 'volvox.sort.gff3',
-              locationType: 'UriLocation',
             },
           },
         },
@@ -569,7 +541,6 @@ describe('add-track', () => {
             type: 'VcfAdapter',
             vcfLocation: {
               uri: 'volvox.filtered.vcf',
-              locationType: 'UriLocation',
             },
           },
         },
@@ -594,7 +565,6 @@ describe('add-track', () => {
             type: 'GtfAdapter',
             gtfLocation: {
               uri: 'volvox.sorted.gtf',
-              locationType: 'UriLocation',
             },
           },
         },
@@ -629,12 +599,10 @@ describe('add-track', () => {
             type: 'Gff3TabixAdapter',
             gffGzLocation: {
               uri: 'volvox.sort.gff3.gz',
-              locationType: 'UriLocation',
             },
             index: {
               location: {
                 uri: 'volvox.sort.gff3.gz.csi',
-                locationType: 'UriLocation',
               },
               indexType: 'CSI',
             },
@@ -664,12 +632,10 @@ describe('add-track', () => {
             type: 'Gff3TabixAdapter',
             gffGzLocation: {
               uri: 'volvox.sort.gff3.gz',
-              locationType: 'UriLocation',
             },
             index: {
               location: {
                 uri: 'volvox.sort.gff3.gz.tbi',
-                locationType: 'UriLocation',
               },
               indexType: 'TBI',
             },

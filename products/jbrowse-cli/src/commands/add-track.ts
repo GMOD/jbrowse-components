@@ -21,16 +21,6 @@ interface Config {
   tracks?: Track[]
 }
 
-interface UriLocation {
-  uri: string
-  locationType: 'UriLocation'
-}
-
-interface LocalPathLocation {
-  localPath: string
-  locationType: 'LocalPathLocation'
-}
-
 const isUrl = (loc?: string) => loc?.match(/^https?:\/\//)
 
 export default class AddTrack extends JBrowseCommand {
@@ -466,13 +456,12 @@ export default class AddTrack extends JBrowseCommand {
   guessAdapter(fileName: string, protocol: string, index?: string) {
     function makeLocation(location: string) {
       if (protocol === 'uri') {
-        return { uri: location, locationType: 'UriLocation' } as UriLocation
+        return { uri: location }
       }
       if (protocol === 'localPath') {
         return {
           localPath: location,
-          locationType: 'LocalPathLocation',
-        } as LocalPathLocation
+        }
       }
       throw new Error(`invalid protocol ${protocol}`)
     }

@@ -170,14 +170,12 @@ export default class AddConnection extends JBrowseCommand {
       case 'UCSCTrackHubConnection': {
         connectionConfig.hubTxtLocation = {
           uri: url,
-          locationType: 'UriLocation',
         }
         break
       }
       case 'JBrowse1Connection': {
         connectionConfig.dataDirLocation = {
           uri: url,
-          locationType: 'UriLocation',
         }
         break
       }

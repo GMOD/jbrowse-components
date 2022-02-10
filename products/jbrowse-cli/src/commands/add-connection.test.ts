@@ -20,7 +20,6 @@ const defaultConfig = {
           type: 'testSeqAdapter',
           twoBitLocation: {
             uri: 'test.2bit',
-            locationType: 'UriLocation',
           },
         },
       },
@@ -111,7 +110,6 @@ describe('add-connection', () => {
             connectionId: 'UCSCTrackHubConnection-testAssembly-1',
             hubTxtLocation: {
               uri: 'https://mysite.com/data/hub.txt',
-              locationType: 'UriLocation',
             },
             name: 'UCSCTrackHubConnection-testAssembly-1',
           },
@@ -142,7 +140,6 @@ describe('add-connection', () => {
             connectionId: 'JBrowse1Connection-testAssembly-1',
             dataDirLocation: {
               uri: 'https://mysite.com/jbrowse/data',
-              locationType: 'UriLocation',
             },
             name: 'JBrowse1Connection-testAssembly-1',
           },
@@ -206,7 +203,7 @@ describe('add-connection', () => {
             type: 'newType',
             assemblyName: 'testAssembly',
             connectionId: 'newConnectionId',
-            locationType: 'UriLocation',
+
             url: {
               uri: 'https://mysite.com/custom',
             },
@@ -284,7 +281,7 @@ describe('add-connection', () => {
               type: 'custom',
               assemblyName: 'testAssembly',
               connectionId: 'newConnectionId',
-              locationType: 'UriLocation',
+
               url: {
                 uri: 'https://mysite.com/custom',
               },

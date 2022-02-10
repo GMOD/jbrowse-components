@@ -155,11 +155,9 @@ describe('add-assembly', () => {
                 type: 'IndexedFastaAdapter',
                 fastaLocation: {
                   uri: 'simple.fasta',
-                  locationType: 'UriLocation',
                 },
                 faiLocation: {
                   uri: 'simple.fasta.fai',
-                  locationType: 'UriLocation',
                 },
               },
             },
@@ -208,11 +206,9 @@ describe('add-assembly', () => {
                 type: 'IndexedFastaAdapter',
                 fastaLocation: {
                   uri: 'simple.fa',
-                  locationType: 'UriLocation',
                 },
                 faiLocation: {
                   uri: 'simple.fa.fai',
-                  locationType: 'UriLocation',
                 },
               },
             },
@@ -261,15 +257,12 @@ describe('add-assembly', () => {
                 type: 'BgzipFastaAdapter',
                 fastaLocation: {
                   uri: 'simple.fasta.gz',
-                  locationType: 'UriLocation',
                 },
                 faiLocation: {
                   uri: 'simple.fasta.gz.fai',
-                  locationType: 'UriLocation',
                 },
                 gziLocation: {
                   uri: 'simple.fasta.gz.gzi',
-                  locationType: 'UriLocation',
                 },
               },
             },
@@ -307,7 +300,6 @@ describe('add-assembly', () => {
                 type: 'TwoBitAdapter',
                 twoBitLocation: {
                   uri: 'simple.2bit',
-                  locationType: 'UriLocation',
                 },
               },
             },
@@ -348,7 +340,6 @@ describe('add-assembly', () => {
                 type: 'ChromSizesAdapter',
                 chromSizesLocation: {
                   uri: 'simple.chrom.sizes',
-                  locationType: 'UriLocation',
                 },
               },
             },
@@ -497,7 +488,6 @@ describe('add-assembly', () => {
                   type: 'TwoBitAdapter',
                   twoBitLocation: {
                     uri: 'simple.2bit.xyz',
-                    locationType: 'UriLocation',
                   },
                 },
               },
@@ -556,15 +546,12 @@ describe('add-assembly', () => {
                 type: 'BgzipFastaAdapter',
                 fastaLocation: {
                   uri: 'simple.fasta.gz',
-                  locationType: 'UriLocation',
                 },
                 faiLocation: {
                   uri: 'simple.fasta.gz.fai.abc',
-                  locationType: 'UriLocation',
                 },
                 gziLocation: {
                   uri: 'simple.fasta.gz.gzi.def',
-                  locationType: 'UriLocation',
                 },
               },
             },
@@ -681,7 +668,6 @@ describe('add-assembly', () => {
               adapter: {
                 location: {
                   uri: 'simple.aliases',
-                  locationType: 'UriLocation',
                 },
                 type: 'RefNameAliasAdapter',
               },
@@ -875,7 +861,6 @@ describe('add-assembly', () => {
                 type: 'TwoBitAdapter',
                 twoBitLocation: {
                   uri: 'https://mysite.com/data/simple.2bit',
-                  locationType: 'UriLocation',
                 },
               },
             },
