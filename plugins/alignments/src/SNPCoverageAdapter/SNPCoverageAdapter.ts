@@ -9,7 +9,7 @@ import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/rendere
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { reduce, filter, toArray } from 'rxjs/operators'
 import { Observable } from 'rxjs'
-import { getTagAlt } from '../util'
+import { getTag, getTagAlt } from '../util'
 import {
   parseCigar,
   getNextRefPos,
@@ -358,11 +358,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
                         start,
                         end,
                         strand,
-                        xs:
-                          feature.get('xs') ||
-                          feature.get('ts') ||
-                          feature.get('tags').XS ||
-                          feature.get('tags').TS,
+                        xs: getTag(feature, 'XS') || getTag(feature, 'TS'),
                         score: 1,
                       }
                     } else {
