@@ -96,9 +96,7 @@ const Tooltip = observer(
           {...attributes.popper}
         >
           <TooltipContents
-            ref={(elt: HTMLDivElement) =>
-              setWidth(elt?.getBoundingClientRect().width || 0)
-            }
+            ref={elt => setWidth(elt?.getBoundingClientRect().width || 0)}
             message={contents}
           />
         </div>
