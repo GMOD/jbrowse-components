@@ -86,7 +86,7 @@ function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
       assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
     }),
   )
-  return locs.join(';')
+  return locs.join(' ')
 }
 
 export interface NavLocation {
@@ -1244,9 +1244,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
           {
             label: 'Return to import form',
             onClick: () => {
-              getSession(self).queueDialog(doneCallback => [
-                ReturnToImportFormDialog,
-                { model: self, handleClose: doneCallback },
+              getSession(self).queueDialog(handleClose => [
+                ReturnToImportFormDlg,
+                { model: self, handleClose },
               ])
             },
             icon: FolderOpenIcon,
@@ -1255,9 +1255,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
             label: 'Export SVG',
             icon: PhotoCameraIcon,
             onClick: () => {
-              getSession(self).queueDialog(doneCallback => [
+              getSession(self).queueDialog(handleClose => [
                 ExportSvgDlg,
-                { model: self, handleClose: doneCallback },
+                { model: self, handleClose },
               ])
             },
           },
