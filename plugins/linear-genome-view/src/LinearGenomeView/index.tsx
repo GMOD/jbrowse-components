@@ -672,14 +672,30 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       navToLocString(locString: string, optAssemblyName?: string) {
+        const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
-        const locStrings = locString.split(';')
-        if (self.displayedRegions.length > 1) {
-          const locations = locStrings.map(ls =>
-            parseLocString(ls, isValidRefName),
-          )
-          this.navToMultiple(locations)
+        const locStrings = locString.split(',')
+        if (locStrings.length > 1) {
+          let assemblyName: string | undefined
+          if (optAssemblyName) {
+            assemblyName = optAssemblyName
+          } else if (assemblyNames.length === 1) {
+            assemblyName = assemblyNames[0]
+          }
+
+          const locations = locStrings.map(locString => {
+            const region = parseLocString(locString, (locString, asm) =>
+              isValidRefName(locString, asm || assemblyName),
+            )
+
+            return {
+              ...region,
+              assemblyName: region.assemblyName || assemblyName,
+            }
+          })
+          self.displayedRegions = JSON.parse(JSON.stringify(locations))
+          this.showAllRegions()
           return
         }
         let assemblyName = optAssemblyName
