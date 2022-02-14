@@ -769,7 +769,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             class="MuiAutocomplete-root"
             data-testid="autocomplete"
             role="combobox"
-            style="width: 255.22500000000002px;"
+            style="width: 255.27500000000003px;"
           >
             <div
               class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
@@ -789,7 +789,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                   placeholder="Search for location"
                   spellcheck="false"
                   type="text"
-                  value="ctgA:1..100;ctgB:1,001..1,698"
+                  value="ctgA:1..100 ctgB:1,001..1,698"
                 />
                 <div
                   class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
