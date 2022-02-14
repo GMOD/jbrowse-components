@@ -1,7 +1,7 @@
+import React from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import { getContainingView } from '@jbrowse/core/util'
-import { observer, PropTypes } from 'mobx-react'
-import React from 'react'
+import { observer } from 'mobx-react'
 import {
   ContentBlock,
   ElidedBlock,
@@ -14,6 +14,7 @@ import {
   ElidedBlock as ElidedBlockComponent,
   InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
 } from './Block'
+import { LinearGenomeViewModel } from '../../LinearGenomeView'
 
 const useStyles = makeStyles({
   linearBlocks: {
@@ -96,8 +97,7 @@ const RenderedBlocks = observer(
 function LinearBlocks({ model }: { model: BaseLinearDisplayModel }) {
   const classes = useStyles()
   const { blockDefinitions } = model
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const viewModel = getContainingView(model) as any
+  const viewModel = getContainingView(model) as LinearGenomeViewModel
   return (
     <div
       data-testid="Blockset"
@@ -109,10 +109,6 @@ function LinearBlocks({ model }: { model: BaseLinearDisplayModel }) {
       <RenderedBlocks model={model} />
     </div>
   )
-}
-
-LinearBlocks.propTypes = {
-  model: PropTypes.observableObject.isRequired,
 }
 
 export { RenderedBlocks, useStyles }
