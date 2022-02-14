@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import Typography from '@material-ui/core/Typography'
-import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import Button from '@material-ui/core/Button'
+import { Button, Typography, makeStyles } from '@material-ui/core'
 import RefreshIcon from '@material-ui/icons/Refresh'
 
 const useStyles = makeStyles(theme => ({
@@ -87,15 +85,15 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
     }
   }, [])
 
-  const { status: blockStatus } = model
-  const { message: displayStatus } = getParent(model, 2)
-  const status = displayStatus || blockStatus
+  const { status } = model
+  const { message } = getParent(model, 2)
+  const msg = status || message
   return (
     <>
       {shown ? (
         <div className={classes.loading}>
           <Typography className={classes.dots} variant="body2">
-            {status ? `${status}` : 'Loading'}
+            {msg ? `${msg}` : 'Loading'}
           </Typography>
         </div>
       ) : null}
