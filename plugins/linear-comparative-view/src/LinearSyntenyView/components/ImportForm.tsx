@@ -5,6 +5,9 @@ import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import {
   Button,
   Container,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
   Grid,
   Paper,
   Typography,
@@ -36,6 +39,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   const [selected, setSelected] = useState([assemblyNames[0], assemblyNames[0]])
   const [trackData, setTrackData] = useState<FileLocation>()
   const [numRows] = useState(2)
+  const [value, setValue] = useState('PAF')
   const [error, setError] = useState<unknown>()
   const assemblyError = assemblyNames.length
     ? selected
@@ -128,17 +132,41 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
       </Paper>
 
       <Paper className={classes.formPaper}>
+        <Typography style={{ textAlign: 'center' }}>
+          <b>Optional</b>: Add a PAF{' '}
+          <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
+            (pairwise mapping format)
+          </a>{' '}
+          or .delta file (mummer) file for the linear synteny view. Note that
+          the first assembly should be the left column of the PAF and the second
+          assembly should be the right column. PAF-like files from MashMap
+          (.out) are also allowed
+        </Typography>
+        <RadioGroup
+          value={value}
+          onChange={event => setValue(event.target.value)}
+        >
+          <Grid container justifyContent="center">
+            <Grid item>
+              <FormControlLabel value="PAF" control={<Radio />} label="PAF" />
+            </Grid>
+            <Grid item>
+              <FormControlLabel
+                value="delta"
+                control={<Radio />}
+                label="Delta"
+              />
+            </Grid>
+            <Grid item>
+              <FormControlLabel
+                value="other"
+                control={<Radio />}
+                label="Other"
+              />
+            </Grid>
+          </Grid>
+        </RadioGroup>
         <Grid container justifyContent="center">
-          <Typography style={{ textAlign: 'center' }}>
-            <b>Optional</b>: Add a PAF{' '}
-            <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
-              (pairwise mapping format)
-            </a>{' '}
-            file for the linear synteny view. Note that the first assembly
-            should be the left column of the PAF and the second assembly should
-            be the right column. PAF-like files from MashMap (.out) are also
-            allowed
-          </Typography>
           <Grid item>
             <FileSelector
               name="URL"

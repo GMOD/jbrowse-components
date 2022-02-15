@@ -63,7 +63,7 @@ function paf_delta2paf(lines: string[]) {
   let re = 0
   let strand = 0
   let NM = 0
-  let cigar = [] as any[]
+  let cigar = [] as number[]
   let x = 0
   let y = 0
   let seen_gt = false

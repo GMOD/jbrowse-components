@@ -7,6 +7,7 @@ import {
   Paper,
   Container,
   Grid,
+  Typography,
   makeStyles,
 } from '@material-ui/core'
 import { FileSelector } from '@jbrowse/core/ui'
@@ -34,7 +35,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   const [selected2, setSelected2] = useState(assemblyNames[0])
   const selected = [selected1, selected2]
   const [error, setError] = useState<unknown>()
-  const [value, setValue] = useState('')
+  const [value, setValue] = useState('PAF')
 
   const assemblyError = assemblyNames.length
     ? selected
@@ -120,7 +121,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
           </Paper>
 
           <Paper style={{ padding: 12 }}>
-            <p style={{ textAlign: 'center' }}>
+            <Typography style={{ textAlign: 'center' }}>
               <b>Optional</b>: Add a PAF{' '}
               <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
                 (pairwise mapping format)
@@ -128,7 +129,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
               file for the dotplot view. Note that the first assembly should be
               the left column of the PAF and the second assembly should be the
               right column. PAF-like files from MashMap (.out) are also allowed
-            </p>
+            </Typography>
             <RadioGroup
               value={value}
               onChange={event => setValue(event.target.value)}
