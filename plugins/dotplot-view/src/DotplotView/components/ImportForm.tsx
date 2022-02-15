@@ -1,8 +1,18 @@
 import React, { useState } from 'react'
-import { Button, Paper, Container, Grid, makeStyles } from '@material-ui/core'
+import {
+  Button,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
+  Paper,
+  Container,
+  Grid,
+  makeStyles,
+} from '@material-ui/core'
 import { FileSelector } from '@jbrowse/core/ui'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
+import { transaction } from 'mobx'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
@@ -24,6 +34,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   const [selected2, setSelected2] = useState(assemblyNames[0])
   const selected = [selected1, selected2]
   const [error, setError] = useState<unknown>()
+  const [value, setValue] = useState('')
 
   const assemblyError = assemblyNames.length
     ? selected
@@ -37,33 +48,42 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
       if (!isSessionWithAddTracks(session)) {
         return
       }
-      model.setViews([
-        { bpPerPx: 0.1, offsetPx: 0 },
-        { bpPerPx: 0.1, offsetPx: 0 },
-      ])
-      model.setAssemblyNames([selected1, selected2])
+      transaction(() => {
+        model.setViews([
+          { bpPerPx: 0.1, offsetPx: 0 },
+          { bpPerPx: 0.1, offsetPx: 0 },
+        ])
+        model.setAssemblyNames([selected1, selected2])
 
-      if (trackData) {
-        const fileName =
-          trackData && 'uri' in trackData && trackData.uri
-            ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
-            : 'MyTrack'
+        if (trackData) {
+          const fileName =
+            trackData && 'uri' in trackData && trackData.uri
+              ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
+              : 'MyTrack'
 
-        const trackId = `${fileName}-${Date.now()}`
+          const trackId = `${fileName}-${Date.now()}`
 
-        session.addTrackConf({
-          trackId: trackId,
-          name: fileName,
-          assemblyNames: selected,
-          type: 'SyntenyTrack',
-          adapter: {
-            type: 'PAFAdapter',
-            pafLocation: trackData,
+          session.addTrackConf({
+            trackId: trackId,
+            name: fileName,
             assemblyNames: selected,
-          },
-        })
-        model.toggleTrack(trackId)
-      }
+            type: 'SyntenyTrack',
+            adapter:
+              value === 'PAF'
+                ? {
+                    type: 'PAFAdapter',
+                    pafLocation: trackData,
+                    assemblyNames: selected,
+                  }
+                : {
+                    type: 'DeltaAdapter',
+                    deltaLocation: trackData,
+                    assemblyNames: selected,
+                  },
+          })
+          model.toggleTrack(trackId)
+        }
+      })
     } catch (e) {
       console.error(e)
       setError(e)
@@ -109,6 +129,34 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
               the left column of the PAF and the second assembly should be the
               right column. PAF-like files from MashMap (.out) are also allowed
             </p>
+            <RadioGroup
+              value={value}
+              onChange={event => setValue(event.target.value)}
+            >
+              <Grid container justifyContent="center">
+                <Grid item>
+                  <FormControlLabel
+                    value="PAF"
+                    control={<Radio />}
+                    label="PAF"
+                  />
+                </Grid>
+                <Grid item>
+                  <FormControlLabel
+                    value="delta"
+                    control={<Radio />}
+                    label="Delta"
+                  />
+                </Grid>
+                <Grid item>
+                  <FormControlLabel
+                    value="other"
+                    control={<Radio />}
+                    label="Other"
+                  />
+                </Grid>
+              </Grid>
+            </RadioGroup>
             <Grid container justifyContent="center">
               <Grid item>
                 <FileSelector

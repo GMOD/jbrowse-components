@@ -37,18 +37,36 @@
       }
     }
   ],
-  "configuration": {},
-  "connections": [],
   "tracks": [
     {
       "type": "SyntenyTrack",
       "trackId": "dotplot_track",
-      "name": "r64_vs_yjm1447",
+      "name": "r64_vs_yjm1447_paf",
       "assemblyNames": ["YJM1447", "R64"],
+      "metadata": {
+        "command": "minimap2 r64.fa yjm1447.fa"
+      },
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64_vs_yjm1447.paf",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["YJM1447", "R64"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "dotplot_track_delta",
+      "name": "r64_vs_yjm1447_delta",
+      "assemblyNames": ["YJM1447", "R64"],
+      "metadata": {
+        "command": "nucmer r64.fa yjm1447.fa"
+      },
+      "adapter": {
+        "type": "DeltaAdapter",
+        "deltaLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64_vs_yjm1447.delta.gz",
           "locationType": "UriLocation"
         },
         "assemblyNames": ["YJM1447", "R64"]
@@ -679,10 +697,6 @@
       }
     ],
     "widgets": {
-      "aboutWidget": {
-        "id": "aboutWidget",
-        "type": "AboutWidget"
-      },
       "hierarchicalTrackSelector": {
         "id": "hierarchicalTrackSelector",
         "type": "HierarchicalTrackSelectorWidget",

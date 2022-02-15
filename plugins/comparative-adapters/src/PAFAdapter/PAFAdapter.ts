@@ -115,6 +115,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const pafRecords = await this.setup(opts)
+      console.log({ pafRecords })
       const assemblyNames = readConfObject(this.config, 'assemblyNames')
 
       // The index of the assembly name in the region list corresponds to
