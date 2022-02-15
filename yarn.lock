@@ -1183,14 +1183,6 @@
     pirates "^4.0.5"
     source-map-support "^0.5.16"
 
-"@babel/runtime-corejs2@^7.4.3":
-  version "7.17.2"
-  resolved "https://registry.yarnpkg.com/@babel/runtime-corejs2/-/runtime-corejs2-7.17.2.tgz#4d7dbc218e958ce48df6250faa73616e8495bc1a"
-  integrity sha512-EamjJvKlHTdSmJ8t6yHtqttdiA3xThvTNdmGb0Kh0oqRhV1SU2JGFU5TjVCg35Vnn8MYfUBHHtLZYHIY+W28qw==
-  dependencies:
-    core-js "^2.6.5"
-    regenerator-runtime "^0.13.4"
-
 "@babel/runtime-corejs3@^7.10.2":
   version "7.17.2"
   resolved "https://registry.yarnpkg.com/@babel/runtime-corejs3/-/runtime-corejs3-7.17.2.tgz#fdca2cd05fba63388babe85d349b6801b008fd13"
@@ -1547,12 +1539,11 @@
     generic-filehandle "^2.2.1"
     object.fromentries "^2.0.4"
 
-"@gmod/nclist@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@gmod/nclist/-/nclist-0.1.1.tgz#9038c4d809f825edc2a4dceb43754aa3dfb6d090"
-  integrity sha512-wn1ItoJwBWqLOSjKM8+2AQEBM/Uxy4LJ0jOxe01VfvYEO0EKXdXHFvrEe8n6wWYqmiUey3DKBI1qu0w9UewdBg==
+"@gmod/nclist@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@gmod/nclist/-/nclist-0.2.1.tgz#cf14decb77908cdf821b7bcc60d9144de2746fea"
+  integrity sha512-hyYcyEMqOLhMZbw8lBN+vTQitjLb1j1x2u7GTiHEJdh/AaY+L/3EUHCHeaQjGdb9ufMnA73DaZvJKgyxl3zOtQ==
   dependencies:
-    "@babel/runtime-corejs2" "^7.4.3"
     abortable-promise-cache "^1.0.1"
     quick-lru "^4.0.0"
 
@@ -8174,7 +8165,7 @@ core-js-pure@^3.20.2, core-js-pure@^3.8.1, core-js-pure@^3.8.2:
   resolved "https://registry.yarnpkg.com/core-js-pure/-/core-js-pure-3.21.0.tgz#819adc8dfb808205ce25b51d50591becd615db7e"
   integrity sha512-VaJUunCZLnxuDbo1rNOzwbet9E1K9joiXS5+DQMPtgxd24wfsZbJZMMfQLGYMlCUvSxLfsRUUhoOR2x28mFfeg==
 
-core-js@^2.4.0, core-js@^2.6.5:
+core-js@^2.4.0:
   version "2.6.12"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.12.tgz#d9333dfa7b065e347cc5682219d6f690859cc2ec"
   integrity sha512-Kb2wC0fvsWfQrgk8HU5lW6U/Lcs8+9aaYcy4ZFc6DDlo4nZ7n70dEgE5rtR0oG6ufKDUnrwfWL1mXR5ljDatrQ==
@@ -18344,7 +18335,12 @@ react-error-boundary@^3.0.0:
   dependencies:
     "@babel/runtime" "^7.12.5"
 
-react-error-overlay@6.0.9, react-error-overlay@^5.1.4, react-error-overlay@^6.0.9:
+react-error-overlay@^5.1.4:
+  version "5.1.6"
+  resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-5.1.6.tgz#0cd73407c5d141f9638ae1e0c63e7b2bf7e9929d"
+  integrity sha512-X1Y+0jR47ImDVr54Ab6V9eGk0Hnu7fVWGeHQSOXHf/C2pF9c6uy3gef8QUeuUiWlNb0i08InPSE5a/KJzNzw1Q==
+
+react-error-overlay@^6.0.9:
   version "6.0.9"
   resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-6.0.9.tgz#3c743010c9359608c375ecd6bc76f35d93995b0a"
   integrity sha512-nQTTcUu+ATDbrSD1BZHr5kgSD4oF8OFjxun8uAaL8RwPBacGBNPf/yAuVVdx17N8XNzRDMrZ9XcKZHCjPW+9ew==
