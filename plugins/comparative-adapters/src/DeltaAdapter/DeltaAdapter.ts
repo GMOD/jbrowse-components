@@ -55,8 +55,6 @@ function isGzip(buf: Buffer) {
 function paf_delta2paf(lines: string[]) {
   let rname = ''
   let qname = ''
-  let rlen = 0
-  let qlen = 0
   let qs = 0
   let qe = 0
   let rs = 0
@@ -76,8 +74,6 @@ function paf_delta2paf(lines: string[]) {
     if (m !== null) {
       rname = m[1]
       qname = m[2]
-      rlen = +m[3]
-      qlen = +m[4]
       seen_gt = true
       continue
     }
@@ -113,22 +109,21 @@ function paf_delta2paf(lines: string[]) {
           blen += cigar[i] >> 4
           cigar_str.push((cigar[i] >> 4) + 'MID'.charAt(cigar[i] & 0xf))
         }
-        records.push([
-          qname,
-          qlen,
-          qs,
-          qe,
-          strand > 0 ? '+' : '-',
-          rname,
-          rlen,
-          rs,
-          re,
-          blen - NM,
-          blen,
-          0,
-          'NM:i:' + NM,
-          'cg:Z:' + cigar_str.join(''),
-        ])
+
+        records.push({
+          records: [
+            { refName: qname, start: qs, end: qe },
+            { refName: rname, start: rs, end: re },
+          ],
+          extra: {
+            numMatches: blen - NM,
+            blockLen: blen,
+            strand,
+            mappingQual: 0,
+            NM,
+            cg: cigar_str.join(''),
+          },
+        } as PafRecord)
       } else if (d > 0) {
         const l = d - 1
         x += l + 1
@@ -187,48 +182,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     }
     const text = new TextDecoder('utf8', { fatal: true }).decode(buf)
 
-    const records = paf_delta2paf(text.split('\n').filter(line => !!line))
-
-    return records.map(record => {
-      const [
-        chr1,
-        ,
-        start1,
-        end1,
-        strand,
-        chr2,
-        ,
-        start2,
-        end2,
-        numMatches,
-        blockLen,
-        mappingQual,
-        ...fields
-      ] = record
-
-      const rest = Object.fromEntries(
-        fields.map(field => {
-          const r = field.indexOf(':')
-          const fieldName = field.slice(0, r)
-          const fieldValue = field.slice(r + 3)
-          return [fieldName, fieldValue]
-        }),
-      )
-
-      return {
-        records: [
-          { refName: chr1, start: +start1, end: +end1 },
-          { refName: chr2, start: +start2, end: +end2 },
-        ],
-        extra: {
-          numMatches: +numMatches,
-          blockLen: +blockLen,
-          strand: strand === '-' ? -1 : 1,
-          mappingQual: +mappingQual,
-          ...rest,
-        },
-      } as PafRecord
-    })
+    return paf_delta2paf(text.split('\n').filter(line => !!line))
   }
 
   async hasDataForRefName() {
