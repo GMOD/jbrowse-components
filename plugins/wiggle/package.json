@@ -35,7 +35,7 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@gmod/bbi": "^1.0.31",
+    "@gmod/bbi": "^1.0.32",
     "@material-ui/icons": "^4.11.2",
     "@popperjs/core": "^2.11.0",
     "abortable-promise-cache": "^1.5.0",
