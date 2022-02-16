@@ -24,7 +24,7 @@ function isGzip(buf: Buffer) {
   return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
 }
 
-/* adapted from paf2chain by Andrea Guarracino, license reproduced below
+/* adapted from chain2paf by Andrea Guarracino, license reproduced below
  *
  * MIT License
  *
@@ -49,11 +49,34 @@ function isGzip(buf: Buffer) {
  * SOFTWARE.
  */
 
+function generate_record(
+  q_name,
+  q_start,
+  q_end,
+  q_strand,
+  t_name,
+  t_start,
+  t_end,
+  cigar,
+  num_matches,
+) {
+  return {
+    records: [
+      { refName: q_name, start: q_start, end: q_end },
+      { refName: t_name, start: t_start, end: t_end },
+    ],
+    extra: {
+      numMatches: num_matches,
+      blockLen: Math.max(q_end - q_start, t_end - t_start),
+      strand: q_strand === '-' ? -1 : 1,
+      mappingQual: 0,
+      cg: cigar,
+    },
+  } as PafRecord
+}
+
 function paf_chain2paf(lines: string[]) {
-  // Initialize PAF information
   let t_name = ''
-  let t_size = ''
-  //let  t_strand;
   let t_start = 0
   let t_end = 0
   let q_name = ''
@@ -72,19 +95,19 @@ function paf_chain2paf(lines: string[]) {
     if (l_vec[0] === 'chain') {
       // Emit previous PAF row, if available
       if (cigar) {
-        records.push({
-          records: [
-            { refName: q_name, start: q_start, end: q_end },
-            { refName: t_name, start: t_start, end: t_end },
-          ],
-          extra: {
-            numMatches: num_matches,
-            blockLen: Math.max(q_end - q_start, t_end - t_start),
-            strand: q_strand === '-' ? -1 : 1,
-            mappingQual: 0,
-            cg: cigar,
-          },
-        } as PafRecord)
+        records.push(
+          generate_record(
+            q_name,
+            q_start,
+            q_end,
+            q_strand,
+            t_name,
+            t_start,
+            t_end,
+            cigar,
+            num_matches,
+          ),
+        )
       }
 
       // Save query/target information
@@ -101,8 +124,6 @@ function paf_chain2paf(lines: string[]) {
       // qEnd -- alignment end position (query sequence)
       // id -- chain ID
       t_name = l_vec[2]
-      t_size = l_vec[3]
-      //t_strand = line_vec[4];
       t_start = +l_vec[5]
       t_end = +l_vec[6]
       q_name = l_vec[7]
@@ -115,15 +136,18 @@ function paf_chain2paf(lines: string[]) {
         q_start = +q_size - q_end
         q_end = +q_size - tmp
       }
-      //let id = l_vec[12].clone();
 
       // Initialize PAF fields
       num_matches = 0
       cigar = ''
     } else {
       // size -- the size of the ungapped alignment
-      // dt -- the difference between the end of this block and the beginning of the next block (reference sequence)
-      // dq -- the difference between the end of this block and the beginning of the next block (query sequence)
+      //
+      // dt -- the difference between the end of this block and the beginning
+      //    of the next block (reference sequence)
+      //
+      // dq -- the difference between the end of this block and the beginning
+      //    of the next block (query sequence)
       let size_ungapped_alignment = l_vec[0] || '0'
       let diff_in_target = l_vec.length > 1 ? l_vec[1] : '0'
       let diff_in_query = l_vec.length > 2 ? l_vec[2] : '0'
@@ -147,19 +171,17 @@ function paf_chain2paf(lines: string[]) {
 
   // Emit last PAF row, if available
   if (cigar) {
-    records.push({
-      records: [
-        { refName: q_name, start: q_start, end: q_end },
-        { refName: t_name, start: t_start, end: t_end },
-      ],
-      extra: {
-        numMatches: num_matches,
-        blockLen: 0,
-        strand: q_strand === '-' ? -1 : 1,
-        mappingQual: 0,
-        cg: cigar,
-      },
-    } as PafRecord)
+    generate_record(
+      q_name,
+      q_start,
+      q_end,
+      q_strand,
+      t_name,
+      t_start,
+      t_end,
+      cigar,
+      num_matches,
+    )
   }
   return records
 }
