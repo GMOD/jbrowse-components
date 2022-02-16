@@ -16,6 +16,9 @@ export const InternetAccount = types
     get name(): string {
       return getConf(self, 'name')
     },
+    get description(): string {
+      return getConf(self, 'description')
+    },
     get internetAccountId(): string {
       return getConf(self, 'internetAccountId')
     },
