@@ -727,9 +727,14 @@ export default class PileupRenderer extends BoxRendererType {
             widthPx - (bpPerPx > 10 ? 1.5 : 0),
             heightPx,
           )
+          ctx.fillStyle = '#333'
+          ctx.fillRect(
+            Math.max(0, leftPx),
+            topPx + heightPx / 2 - 1,
+            widthPx + (leftPx < 0 ? leftPx : 0),
+            2,
+          )
         }
-        ctx.fillStyle = '#333'
-        ctx.fillRect(leftPx, topPx + heightPx / 2, widthPx, 2)
       }
     }
 
