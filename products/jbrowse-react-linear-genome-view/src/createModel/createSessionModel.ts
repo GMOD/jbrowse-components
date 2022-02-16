@@ -151,7 +151,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       queueDialog(
-        callback: (doneCallback: Function) => [DialogComponentType, any],
+        callback: (doneCallback: () => void) => [DialogComponentType, any],
       ): void {
         const [component, props] = callback(() => {
           this.removeActiveDialog()
@@ -337,7 +337,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           {
             label: 'About track',
             onClick: () => {
-              self.queueDialog((doneCallback: Function) => [
+              self.queueDialog(doneCallback => [
                 AboutDialog,
                 { config, handleClose: doneCallback },
               ])

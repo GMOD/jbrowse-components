@@ -30,7 +30,7 @@ const stateModelFactory = (
         reject: (error: Error) => void,
       ) {
         const { session } = getRoot(self)
-        session.queueDialog((doneCallback: Function) => [
+        session.queueDialog((doneCallback: () => void) => [
           HTTPBasicLoginForm,
           {
             internetAccountId: self.internetAccountId,

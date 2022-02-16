@@ -1231,7 +1231,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Return to import form',
               onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
+                getSession(self).queueDialog(doneCallback => [
                   ReturnToImportFormDlg,
                   { model: self, handleClose: doneCallback },
                 ])
@@ -1242,7 +1242,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               label: 'Export SVG',
               icon: PhotoCameraIcon,
               onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
+                getSession(self).queueDialog(doneCallback => [
                   ExportSvgDlg,
                   { model: self, handleClose: doneCallback },
                 ])
