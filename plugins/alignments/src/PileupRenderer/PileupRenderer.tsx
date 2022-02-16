@@ -716,22 +716,18 @@ export default class PileupRenderer extends BoxRendererType {
           ctx.fillText(`(${mismatch.base})`, leftPx + 2, topPx + heightPx)
         }
       } else if (mismatch.type === 'skip') {
-        // fix to avoid bad rendering
-        // note that this was also related to chrome bug https://bugs.chromium.org/p/chro>
-        // ref #1236
+        // fix to avoid bad rendering note that this was also related to chrome
+        // bug https://bugs.chromium.org/p/chromium/issues/detail?id=1131528
+        // also affected firefox ref #1236 #2750
         if (leftPx + widthPx > 0) {
           // make small exons more visible when zoomed far out
-          ctx.clearRect(
-            leftPx,
-            topPx,
-            widthPx - (bpPerPx > 10 ? 1.5 : 0),
-            heightPx,
-          )
+          const adjustPx = widthPx - (bpPerPx > 10 ? 1.5 : 0)
+          ctx.clearRect(leftPx, topPx, adjustPx, heightPx)
           ctx.fillStyle = '#333'
           ctx.fillRect(
             Math.max(0, leftPx),
             topPx + heightPx / 2 - 1,
-            widthPx + (leftPx < 0 ? leftPx : 0),
+            adjustPx + (leftPx < 0 ? leftPx : 0),
             2,
           )
         }
