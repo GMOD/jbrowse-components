@@ -57,6 +57,23 @@
     },
     {
       "type": "SyntenyTrack",
+      "trackId": "dotplot_track_chain",
+      "name": "r64_vs_yjm1447_chain",
+      "assemblyNames": ["YJM1447", "R64"],
+      "metadata": {
+        "command": "paf2chain --input out.paf > out.chain"
+      },
+      "adapter": {
+        "type": "ChainAdapter",
+        "chainLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64_vs_yjm1447.chain.gz",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["YJM1447", "R64"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
       "trackId": "dotplot_track_delta",
       "name": "r64_vs_yjm1447_delta",
       "assemblyNames": ["YJM1447", "R64"],

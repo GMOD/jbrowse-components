@@ -154,7 +154,7 @@ function paf_delta2paf(lines: string[]) {
   return records
 }
 
-export default class PAFAdapter extends BaseFeatureDataAdapter {
+export default class DeltaAdapter extends BaseFeatureDataAdapter {
   private setupP?: Promise<PafRecord[]>
 
   public static capabilities = ['getFeatures', 'getRefNames']

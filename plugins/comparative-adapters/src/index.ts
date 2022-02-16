@@ -4,6 +4,7 @@ import { FileLocation } from '@jbrowse/core/util/types'
 
 import PAFAdapterF from './PAFAdapter'
 import DeltaAdapterF from './DeltaAdapter'
+import ChainAdapterF from './ChainAdapter'
 
 import {
   getFileName,
@@ -17,6 +18,7 @@ export default class ComparativeAdaptersPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     PAFAdapterF(pluginManager)
     DeltaAdapterF(pluginManager)
+    ChainAdapterF(pluginManager)
 
     pluginManager.addToExtensionPoint(
       'Core-guessAdapterForLocation',
