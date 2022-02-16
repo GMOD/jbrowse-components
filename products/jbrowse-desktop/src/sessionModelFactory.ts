@@ -26,6 +26,7 @@ import {
   types,
   walk,
 } from 'mobx-state-tree'
+import { ipcRenderer } from 'electron'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 // import { indexTracks } from '@jbrowse/text-indexing'
@@ -598,18 +599,21 @@ export default function sessionModelFactory(
             label: 'Index track',
             onClick: async () => {
               // adds job to the queue
-              const trackSnapshot = JSON.parse(
-                JSON.stringify(getSnapshot(config)),
-              )
+              // const trackSnapshot = JSON.parse(
+              //   JSON.stringify(getSnapshot(config)),
+              // )
+              // console.log(trackSnapshot)
+              console.log(readConfObject(config, "textSearching"))
+              // const usrData = await ipcRenderer.invoke('userData')
               const rpcManager = getParent(self).jbrowse.rpcManager
-              const test = await rpcManager.call(
-                'indexTracksSessionId',
-                'CoreIndexTracks',
-                {
-                  trackConfigs: [trackSnapshot],
-                  sessionId: 'indexTracksSessionId',
-                },
-              )
+              // console.log(outputPath)
+              // const outoutPath = path.join(app.getPath('documents'), 'JBrowse')
+              await rpcManager.call('indexTracksSessionId', 'CoreIndexTracks', {
+                trackConfigs: [config],
+                sessionId: 'indexTracksSessionId',
+                outputPath: process.cwd(),
+                timeout: 5 * 60 * 60 * 1000, // 5 hours
+              })
             },
             icon: FindReplaceIcon,
           },

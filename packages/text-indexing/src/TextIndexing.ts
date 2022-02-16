@@ -13,17 +13,17 @@ export async function indexTracks(
   outLocation: string,
   signal?: AbortSignal,
 ) {
-  const outFlag = outLocation || process.cwd()
+  const outFlag = outLocation
   const isDir = fs.lstatSync(outFlag).isDirectory()
   const confPath = isDir ? path.join(outFlag, 'JBrowse/config.json') : outFlag
   const outDir = path.dirname(confPath)
   const trixDir = path.join(outDir, 'trix')
   if (!fs.existsSync(trixDir)) {
-    console.log('Hi')
     fs.mkdirSync(trixDir)
   }
+  // default settings
   const attributes = ['Name', 'ID']
-  const attrsExclude = ['exon']
+  const attrsExclude = ['exon', 'CDS']
   const assemblyNames = [] as string[]
   const nameOfIndex = 'test'
   await indexDriver(
@@ -46,14 +46,17 @@ async function indexDriver(
   exclude: string[],
   assemblyNames: string[],
 ) {
+  const startTime = performance.now()
   const readable = Readable.from(
     indexFiles(tracks, attributes, idxLocation, quiet, exclude),
   )
   console.log('readable', readable)
   console.log('idxLocation', idxLocation)
   // idx location will be the output or temp directory
-  const ixIxxStream = await runIxIxx(readable, idxLocation, name)
+  await runIxIxx(readable, idxLocation, name)
   // console.log('ixIxxStream', ixIxxStream)
+  const endTime = performance.now()
+  console.log(`Indexing took ${endTime - startTime} milliseconds`)
   await generateMeta({
     configs: tracks,
     attributes,
@@ -62,6 +65,7 @@ async function indexDriver(
     exclude,
     assemblyNames,
   })
+  console.log("done generating meta")
   return
 }
 

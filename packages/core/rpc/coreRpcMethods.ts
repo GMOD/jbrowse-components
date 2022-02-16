@@ -58,6 +58,7 @@ export class CoreIndexTracks extends RpcMethodType {
     args: {
       sessionId: string
       signal: RemoteAbortSignal
+      outputPath: string
       trackConfigs:
         | AnyConfigurationModel[]
         | SnapshotIn<AnyConfigurationModel>[]
@@ -68,7 +69,7 @@ export class CoreIndexTracks extends RpcMethodType {
       args,
       rpcDriverClassName,
     )
-    const { sessionId, trackConfigs } = deserializedArgs
+    const { sessionId, trackConfigs, outputPath } = deserializedArgs
 
     // const { dataAdapter } = await getAdapter(
     //   this.pluginManager,
@@ -79,9 +80,10 @@ export class CoreIndexTracks extends RpcMethodType {
     // if (dataAdapter instanceof BaseFeatureDataAdapter) {
     //   return dataAdapter.getRefNames(deserializedArgs)
     // }
+    console.log(process.cwd(), outputPath)
     console.log('sessionId', sessionId)
     console.log('trackConf', trackConfigs)
-    await indexTracks(trackConfigs, process.cwd())
+    await indexTracks(trackConfigs, outputPath)
     return []
   }
 }
