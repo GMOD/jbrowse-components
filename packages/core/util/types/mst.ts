@@ -25,6 +25,7 @@ export const NoAssemblyRegion = types
     start: types.number,
     end: types.number,
     reversed: types.optional(types.boolean, false),
+    originalRefName: types.maybe(types.string),
   })
   .actions(self => ({
     setRefName(newRefName: string): void {
