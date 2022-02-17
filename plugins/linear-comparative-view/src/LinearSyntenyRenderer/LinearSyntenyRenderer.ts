@@ -4,6 +4,7 @@ import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import React from 'react'
 
 export default class LinearSyntenyRenderer extends ComparativeServerSideRendererType {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async renameRegionsIfNeeded(args: any) {
     const assemblyManager =
       this.pluginManager.rootModel?.session?.assemblyManager
