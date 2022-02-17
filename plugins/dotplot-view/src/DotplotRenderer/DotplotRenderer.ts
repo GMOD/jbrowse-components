@@ -9,6 +9,7 @@ import { Region } from '@jbrowse/core/util/types'
 import { getSnapshot, Instance } from 'mobx-state-tree'
 import ComparativeServerSideRendererType, {
   RenderArgsDeserialized as ComparativeRenderArgsDeserialized,
+  RenderArgs as ComparativeRenderArgs,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { Dotplot1DView } from '../DotplotView/model'
@@ -17,7 +18,7 @@ type Dim = Instance<typeof Dotplot1DView>
 
 const { parseCigar } = MismatchParser
 
-export interface RenderArgsDeserialized
+export interface DotplotRenderArgsDeserialized
   extends ComparativeRenderArgsDeserialized {
   height: number
   width: number
@@ -25,15 +26,17 @@ export interface RenderArgsDeserialized
   view: { hview: Dim; vview: Dim }
 }
 
+interface DotplotRenderArgs extends ComparativeRenderArgs {
+  adapterConfig: AnyConfigurationModel
+  sessionId: string
+  view: {
+    hview: { displayedRegions: Region[] }
+    vview: { displayedRegions: Region[] }
+  }
+}
+
 export default class DotplotRenderer extends ComparativeServerSideRendererType {
-  async renameRegionsIfNeeded(args: {
-    adapterConfig: AnyConfigurationModel
-    sessionId: string
-    view: {
-      hview: { displayedRegions: Region[] }
-      vview: { displayedRegions: Region[] }
-    }
-  }) {
+  async renameRegionsIfNeeded(args: DotplotRenderArgs) {
     const assemblyManager =
       this.pluginManager.rootModel?.session?.assemblyManager
 
@@ -57,7 +60,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     ).regions
     return args
   }
-  async makeImageData(props: RenderArgsDeserialized & { views: Dim[] }) {
+  async makeImageData(props: DotplotRenderArgsDeserialized & { views: Dim[] }) {
     const {
       highResolutionScaling: scale = 1,
       width,
@@ -182,7 +185,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     return createImageBitmap(canvas)
   }
 
-  async render(renderProps: RenderArgsDeserialized) {
+  async render(renderProps: DotplotRenderArgsDeserialized) {
     const {
       width,
       height,

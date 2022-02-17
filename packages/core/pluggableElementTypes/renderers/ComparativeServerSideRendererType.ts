@@ -53,7 +53,7 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
    * @returns the same object
    */
 
-  async renameRegionsIfNeeded<T>(args: T): Promise<T> {
+  async renameRegionsIfNeeded(args: RenderArgs) {
     return args
   }
 
