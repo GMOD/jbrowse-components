@@ -33,7 +33,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   const [selected2, setSelected2] = useState(assemblyNames[0])
   const selected = [selected1, selected2]
   const [error, setError] = useState<unknown>()
-  const [value, setValue] = useState()
+  const [value, setValue] = useState('')
 
   const assemblyError = assemblyNames.length
     ? selected

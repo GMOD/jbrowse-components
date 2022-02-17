@@ -37,7 +37,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   const [selected, setSelected] = useState([assemblyNames[0], assemblyNames[0]])
   const [trackData, setTrackData] = useState<FileLocation>()
   const [numRows] = useState(2)
-  const [value, setValue] = useState()
+  const [value, setValue] = useState('')
   const [error, setError] = useState<unknown>()
   const assemblyError = assemblyNames.length
     ? selected
