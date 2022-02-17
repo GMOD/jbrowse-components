@@ -26,10 +26,10 @@ interface RenderArgsSerialized extends ComparativeRenderArgsSerialized {
 export default class ComparativeRender extends RpcMethodType {
   name = 'ComparativeRender'
 
-  async renameRegionsIfNeeeded(
-    args: RenderArgs,
+  async renameRegionsIfNeeeded<T>(
+    args: T,
     renderer: ComparativeRenderer,
-  ) {
+  ): Promise<T> {
     return renderer.renameRegionsIfNeeded(args)
   }
 
