@@ -37,7 +37,8 @@
   "dependencies": {
     "@material-ui/icons": "^4.9.1",
     "@gmod/bgzf-filehandle": "^1.4.2",
-    "clone": "^2.1.2"
+    "clone": "^2.1.2",
+    "normalize-wheel": "^1.0.1"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",
