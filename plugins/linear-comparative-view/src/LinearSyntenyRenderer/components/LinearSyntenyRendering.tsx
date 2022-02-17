@@ -115,7 +115,7 @@ function LinearSyntenyRendering({
         ),
         assemblyManager,
       ),
-    [features],
+    [features, assemblyManager],
   )
   const drawCurves = parentView?.drawCurves
   const views = parentView?.views

@@ -29,7 +29,7 @@ function getName(
   trackData?: { uri: string } | { localPath: string } | { name: string },
 ) {
   return trackData
-    ? //@ts-ignore
+    ? // @ts-ignore
       trackData.uri || trackData.localPath || trackData.name
     : undefined
 }
@@ -167,10 +167,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
             <Typography style={{ textAlign: 'center' }}>
               <b>Optional</b>: Add a .paf, .out (MashMap), .delta (Mummer), or
               .chain file to view in the dotplot. These file types can also be
-              gzipped.
-            </Typography>
-            <Typography style={{ textAlign: 'center' }}>
-              <b>Note</b>: the first assembly should be the query sequence (e.g.
+              gzipped. The first assembly should be the query sequence (e.g.
               left column of the PAF) and the second assembly should be the
               target sequence (e.g. right column of the PAF)
             </Typography>
