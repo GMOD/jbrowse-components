@@ -1026,13 +1026,15 @@ interface Block {
 export async function bytesForRegions(
   regions: Region[],
   index: {
-    blocksForRange: (ref: string, start: number, end: number) => Block[]
+    blocksForRange: (
+      ref: string,
+      start: number,
+      end: number,
+    ) => Promise<Block[]>
   },
 ) {
   const blockResults = await Promise.all(
-    regions.map(
-      r => index.blocksForRange(r.refName, r.start, r.end) as Block[],
-    ),
+    regions.map(r => index.blocksForRange(r.refName, r.start, r.end)),
   )
 
   return blockResults
