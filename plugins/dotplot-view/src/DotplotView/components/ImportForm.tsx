@@ -10,13 +10,11 @@ import {
   Typography,
   makeStyles,
 } from '@material-ui/core'
-import { FileSelector } from '@jbrowse/core/ui'
+import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
-import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
-import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import { DotplotViewModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
@@ -44,6 +42,24 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
         .join(', ')
     : 'No configured assemblies'
 
+  function getAdapter() {
+    if (value === 'PAF') {
+      return {
+        type: 'PAFAdapter',
+        pafLocation: trackData,
+        assemblyNames: selected,
+      }
+    } else if (value === 'Delta') {
+      return {
+        type: 'DeltaAdapter',
+        deltaLocation: trackData,
+        assemblyNames: selected,
+      }
+    } else {
+      throw new Error('Unknown')
+    }
+  }
+
   function onOpenClick() {
     try {
       if (!isSessionWithAddTracks(session)) {
@@ -69,18 +85,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
             name: fileName,
             assemblyNames: selected,
             type: 'SyntenyTrack',
-            adapter:
-              value === 'PAF'
-                ? {
-                    type: 'PAFAdapter',
-                    pafLocation: trackData,
-                    assemblyNames: selected,
-                  }
-                : {
-                    type: 'DeltaAdapter',
-                    deltaLocation: trackData,
-                    assemblyNames: selected,
-                  },
+            adapter: getAdapter(),
           })
           model.toggleTrack(trackId)
         }
@@ -151,9 +156,9 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
                 </Grid>
                 <Grid item>
                   <FormControlLabel
-                    value="other"
+                    value="chain"
                     control={<Radio />}
-                    label="Other"
+                    label="Chain"
                   />
                 </Grid>
               </Grid>
