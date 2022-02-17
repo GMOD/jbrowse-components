@@ -1023,7 +1023,12 @@ interface Block {
   maxv: VirtualOffset
 }
 
-export async function bytesForRegions(regions: Region[], index: any) {
+export async function bytesForRegions(
+  regions: Region[],
+  index: {
+    blocksForRange: (ref: string, start: number, end: number) => Block[]
+  },
+) {
   const blockResults = await Promise.all(
     regions.map(
       r => index.blocksForRange(r.refName, r.start, r.end) as Block[],
@@ -1032,7 +1037,6 @@ export async function bytesForRegions(regions: Region[], index: any) {
 
   return blockResults
     .flat()
-
     .map(block => ({
       start: block.minv.blockPosition,
       end: block.maxv.blockPosition + 65535,

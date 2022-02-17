@@ -414,7 +414,7 @@ export const BaseLinearDisplay = types
       afterAttach() {
         // this autorun performs stats estimation
         //
-        // the chain of events calls estimateRegionStats against the data
+        // the chain of events calls estimateRegionsStats against the data
         // adapter which by default uses featureDensity, but can also respond
         // with a byte size estimate and fetch size limit (data adapter can
         // define what is too much data)

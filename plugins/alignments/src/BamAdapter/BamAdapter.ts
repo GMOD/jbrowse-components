@@ -197,11 +197,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
     const { bam } = await this.configure()
-    // @ts-ignore
-    const index = bam.index
     // this is a method to avoid calling on htsget adapters
-    if (index.filehandle !== '?') {
-      const bytes = await bytesForRegions(regions, index)
+    if (bam.index.filehandle !== '?') {
+      const bytes = await bytesForRegions(regions, bam)
       const fetchSizeLimit = readConfObject(this.config, 'fetchSizeLimit')
       return { bytes, fetchSizeLimit }
     } else {
