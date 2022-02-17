@@ -126,6 +126,7 @@ function LinearSyntenyRendering(props: {
       interRegionPaddingWidth: view.interRegionPaddingWidth,
       minimumBlockWidth: view.minimumBlockWidth,
     }))
+
     matches.forEach(m => {
       // we follow a path in the list of chunks, not from top to bottom, just
       // in series following x1,y1 -> x2,y2
@@ -160,12 +161,12 @@ function LinearSyntenyRendering(props: {
           ? interstitialYPos(l1 < l2, height)
           : // prettier-ignore
             // @ts-ignore
-            overlayYPos(trackIds[0], l1, views, c1, l1 < l2)
+            overlayYPos(trackIds[0], l1, viewSnaps, c1, l1 < l2)
         const y2 = middle
           ? interstitialYPos(l2 < l1, height)
           : // prettier-ignore
             // @ts-ignore
-            overlayYPos(trackIds[1], l2, views, c2, l2 < l1)
+            overlayYPos(trackIds[1], l2, viewSnaps, c2, l2 < l1)
 
         const mid = (y2 - y1) / 2
 
@@ -201,38 +202,42 @@ function LinearSyntenyRendering(props: {
 
               if (op === 'M' || op === '=') {
                 ctx.fillStyle = '#f003'
-                cx1 += (val / views[0].bpPerPx) * rev1
-                cx2 += (val / views[1].bpPerPx) * rev2
+                cx1 += (val / viewSnaps[0].bpPerPx) * rev1
+                cx2 += (val / viewSnaps[1].bpPerPx) * rev2
               } else if (op === 'X') {
                 ctx.fillStyle = 'brown'
-                cx1 += (val / views[0].bpPerPx) * rev1
-                cx2 += (val / views[1].bpPerPx) * rev2
+                cx1 += (val / viewSnaps[0].bpPerPx) * rev1
+                cx2 += (val / viewSnaps[1].bpPerPx) * rev2
               } else if (op === 'D') {
                 ctx.fillStyle = '#00f3'
-                cx1 += (val / views[0].bpPerPx) * rev1
+                cx1 += (val / viewSnaps[0].bpPerPx) * rev1
               } else if (op === 'N') {
                 ctx.fillStyle = '#0a03'
-                cx1 += (val / views[0].bpPerPx) * rev1
+                cx1 += (val / viewSnaps[0].bpPerPx) * rev1
               } else if (op === 'I') {
                 ctx.fillStyle = '#ff03'
-                cx2 += (val / views[1].bpPerPx) * rev2
+                cx2 += (val / viewSnaps[1].bpPerPx) * rev2
               }
-              ctx.beginPath()
-              ctx.moveTo(px1, y1)
-              ctx.lineTo(cx1, y1)
-              if (drawCurves) {
-                ctx.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
-              } else {
-                ctx.lineTo(cx2, y2)
+
+              // only draw cigar entries that are larger than a pixel wide!
+              if (Math.abs(px1 - cx1) > 0.5 || Math.abs(px2 - cx2) > 0.5) {
+                ctx.beginPath()
+                ctx.moveTo(px1, y1)
+                ctx.lineTo(cx1, y1)
+                if (drawCurves) {
+                  ctx.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
+                } else {
+                  ctx.lineTo(cx2, y2)
+                }
+                ctx.lineTo(px2, y2)
+                if (drawCurves) {
+                  ctx.bezierCurveTo(px2, mid, px1, mid, px1, y1)
+                } else {
+                  ctx.lineTo(px1, y1)
+                }
+                ctx.closePath()
+                ctx.fill()
               }
-              ctx.lineTo(px2, y2)
-              if (drawCurves) {
-                ctx.bezierCurveTo(px2, mid, px1, mid, px1, y1)
-              } else {
-                ctx.lineTo(px1, y1)
-              }
-              ctx.closePath()
-              ctx.fill()
             }
           } else {
             ctx.beginPath()
