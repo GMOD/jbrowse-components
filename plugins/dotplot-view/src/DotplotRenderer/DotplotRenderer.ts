@@ -3,7 +3,7 @@ import {
   createCanvas,
   createImageBitmap,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { viewBpToPx } from '@jbrowse/core/util'
+import { viewBpToPx, renameRegionsIfNeeded } from '@jbrowse/core/util'
 import { getSnapshot, Instance } from 'mobx-state-tree'
 import ComparativeServerSideRendererType, {
   RenderArgsDeserialized as ComparativeRenderArgsDeserialized,
@@ -24,6 +24,30 @@ export interface RenderArgsDeserialized
 }
 
 export default class DotplotRenderer extends ComparativeServerSideRendererType {
+  async renameRegionsIfNeeded(args: any) {
+    const assemblyManager =
+      this.pluginManager.rootModel?.session?.assemblyManager
+
+    if (!assemblyManager) {
+      throw new Error('No assembly manager provided')
+    }
+
+    args.view.hview.displayedRegions = (
+      await renameRegionsIfNeeded(assemblyManager, {
+        sessionId: args.sessionId,
+        regions: args.view.hview.displayedRegions,
+        adapterConfig: args.adapterConfig,
+      })
+    ).regions
+    args.view.vview.displayedRegions = (
+      await renameRegionsIfNeeded(assemblyManager, {
+        sessionId: args.sessionId,
+        regions: args.view.vview.displayedRegions,
+        adapterConfig: args.adapterConfig,
+      })
+    ).regions
+    return args
+  }
   async makeImageData(props: RenderArgsDeserialized & { views: Dim[] }) {
     const {
       highResolutionScaling: scale = 1,

@@ -1,6 +1,6 @@
-import { checkAbortSignal, renameRegionsIfNeeded } from '@jbrowse/core/util'
+import { checkAbortSignal } from '@jbrowse/core/util'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import ComparativeServerSideRendererType, {
+import ComparativeRenderer, {
   RenderArgs as ComparativeRenderArgs,
   RenderArgsSerialized as ComparativeRenderArgsSerialized,
   RenderResults,
@@ -26,52 +26,28 @@ interface RenderArgsSerialized extends ComparativeRenderArgsSerialized {
 export default class ComparativeRender extends RpcMethodType {
   name = 'ComparativeRender'
 
+  async renameRegionsIfNeeeded(
+    args: RenderArgs,
+    renderer: ComparativeRenderer,
+  ) {
+    console.log('wowowow', renderer)
+    return renderer.renameRegionsIfNeeded(args)
+  }
+
   async serializeArguments(args: RenderArgs, rpcDriverClassName: string) {
-    const assemblyManager =
-      this.pluginManager.rootModel?.session?.assemblyManager
+    const { rendererType } = args
+    const renderer = this.pluginManager.getRendererType(
+      rendererType,
+    ) as ComparativeRenderer
 
-    if (!assemblyManager) {
-      throw new Error('No assembly maanger provided')
-    }
-    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, args)
+    const result = await this.renameRegionsIfNeeeded(
+      (await super.serializeArguments(args, rpcDriverClassName)) as RenderArgs,
+      renderer,
+    )
 
-    const superArgs = (await super.serializeArguments(
-      renamedArgs,
-      rpcDriverClassName,
-    )) as RenderArgs
-
-    console.log('t1', superArgs)
-
-    //@ts-ignore
-    superArgs.view.hview.displayedRegions = (
-      await renameRegionsIfNeeded(assemblyManager, {
-        sessionId: superArgs.sessionId,
-        //@ts-ignore
-        regions: superArgs.view.hview.displayedRegions,
-        adapterConfig: superArgs.adapterConfig,
-      })
-    ).regions
-    //@ts-ignore
-    superArgs.view.vview.displayedRegions = (
-      await renameRegionsIfNeeded(assemblyManager, {
-        sessionId: superArgs.sessionId,
-        //@ts-ignore
-        regions: superArgs.view.vview.displayedRegions,
-        adapterConfig: superArgs.adapterConfig,
-      })
-    ).regions
-
-    console.log({ superArgs })
-
-    if (rpcDriverClassName === 'MainThreadRpcDriver') {
-      return superArgs
-    }
-
-    const RendererType = this.pluginManager.getRendererType(
-      args.rendererType,
-    ) as ComparativeServerSideRendererType
-
-    return RendererType.serializeArgsInClient(superArgs)
+    return rpcDriverClassName === 'MainThreadRpcDriver'
+      ? result
+      : renderer.serializeArgsInClient(result)
   }
 
   async execute(
@@ -92,7 +68,9 @@ export default class ComparativeRender extends RpcMethodType {
 
     checkAbortSignal(signal)
 
-    const RendererType = this.pluginManager.getRendererType(rendererType)
+    const RendererType = this.pluginManager.getRendererType(
+      rendererType,
+    ) as ComparativeRenderer
 
     if (!RendererType) {
       throw new Error(`renderer "${rendererType}" not found`)
@@ -100,12 +78,6 @@ export default class ComparativeRender extends RpcMethodType {
     if (!RendererType.ReactComponent) {
       throw new Error(
         `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
-      )
-    }
-
-    if (!(RendererType instanceof ComparativeServerSideRendererType)) {
-      throw new Error(
-        'CoreRender requires a renderer that is a subclass of ServerSideRendererType',
       )
     }
 
@@ -132,7 +104,9 @@ export default class ComparativeRender extends RpcMethodType {
     }
 
     const { rendererType } = args
-    const RendererType = this.pluginManager.getRendererType(rendererType)
+    const RendererType = this.pluginManager.getRendererType(
+      rendererType,
+    ) as ComparativeRenderer
     if (!RendererType) {
       throw new Error(`renderer "${rendererType}" not found`)
     }
@@ -141,11 +115,7 @@ export default class ComparativeRender extends RpcMethodType {
         `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
       )
     }
-    if (!(RendererType instanceof ComparativeServerSideRendererType)) {
-      throw new Error(
-        'CoreRender requires a renderer that is a subclass of ServerSideRendererType',
-      )
-    }
+
     return RendererType.deserializeResultsInClient(
       superDeserialized as ResultsSerialized,
       args,
