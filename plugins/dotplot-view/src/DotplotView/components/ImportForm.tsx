@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import path from 'path'
 import {
   Button,
   FormControlLabel,
@@ -24,6 +25,21 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+function getName(
+  trackData?: { uri: string } | { localPath: string } | { name: string },
+) {
+  return trackData
+    ? //@ts-ignore
+      trackData.uri || trackData.localPath || trackData.name
+    : undefined
+}
+
+function stripGz(fileName: string) {
+  return fileName.endsWith('.gz')
+    ? fileName.slice(0, fileName.length - 3)
+    : fileName
+}
+
 const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   const classes = useStyles()
   const session = getSession(model)
@@ -34,6 +50,8 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   const selected = [selected1, selected2]
   const [error, setError] = useState<unknown>()
   const [value, setValue] = useState('')
+  const fileName = getName(trackData)
+  const radioOption = value || (fileName ? path.extname(stripGz(fileName)) : '')
 
   const assemblyError = assemblyNames.length
     ? selected
@@ -43,19 +61,25 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
     : 'No configured assemblies'
 
   function getAdapter() {
-    if (value === 'PAF') {
+    if (radioOption === '.paf') {
       return {
         type: 'PAFAdapter',
         pafLocation: trackData,
         assemblyNames: selected,
       }
-    } else if (value === 'delta') {
+    } else if (radioOption === '.out') {
+      return {
+        type: 'PAFAdapter',
+        pafLocation: trackData,
+        assemblyNames: selected,
+      }
+    } else if (radioOption === '.delta') {
       return {
         type: 'DeltaAdapter',
         deltaLocation: trackData,
         assemblyNames: selected,
       }
-    } else if (value === 'chain') {
+    } else if (radioOption === '.chain') {
       return {
         type: 'ChainAdapter',
         chainLocation: trackData,
@@ -73,11 +97,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
       }
       transaction(() => {
         if (trackData) {
-          const fileName =
-            trackData && 'uri' in trackData && trackData.uri
-              ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
-              : 'MyTrack'
-
+          const fileName = path.basename(getName(trackData)) || 'MyTrack'
           const trackId = `${fileName}-${Date.now()}`
 
           session.addTrackConf({
@@ -118,50 +138,71 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
             <p style={{ textAlign: 'center' }}>
               Select assemblies for dotplot view
             </p>
-            <AssemblySelector
-              selected={selected1}
-              onChange={val => setSelected1(val)}
-              session={session}
-            />
-            <AssemblySelector
-              selected={selected2}
-              onChange={val => setSelected2(val)}
-              session={session}
-            />
+            <Grid
+              container
+              spacing={1}
+              justifyContent="center"
+              alignItems="center"
+            >
+              <Grid item>
+                <Typography>Query</Typography>
+                <AssemblySelector
+                  selected={selected1}
+                  onChange={val => setSelected1(val)}
+                  session={session}
+                />
+              </Grid>
+              <Grid item>
+                <Typography>Target</Typography>
+                <AssemblySelector
+                  selected={selected2}
+                  onChange={val => setSelected2(val)}
+                  session={session}
+                />
+              </Grid>
+            </Grid>
           </Paper>
 
           <Paper style={{ padding: 12 }}>
             <Typography style={{ textAlign: 'center' }}>
-              <b>Optional</b>: Add a PAF{' '}
-              <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
-                (pairwise mapping format)
-              </a>{' '}
-              file for the dotplot view. Note that the first assembly should be
-              the left column of the PAF and the second assembly should be the
-              right column. PAF-like files from MashMap (.out) are also allowed
+              <b>Optional</b>: Add a .paf, .out (MashMap), .delta (Mummer), or
+              .chain file to view in the dotplot. These file types can also be
+              gzipped.
+            </Typography>
+            <Typography style={{ textAlign: 'center' }}>
+              <b>Note</b>: the first assembly should be the query sequence (e.g.
+              left column of the PAF) and the second assembly should be the
+              target sequence (e.g. right column of the PAF)
             </Typography>
             <RadioGroup
-              value={value}
+              value={radioOption}
               onChange={event => setValue(event.target.value)}
             >
               <Grid container justifyContent="center">
                 <Grid item>
                   <FormControlLabel
-                    value="PAF"
+                    value=".paf"
                     control={<Radio />}
                     label="PAF"
                   />
                 </Grid>
                 <Grid item>
                   <FormControlLabel
-                    value="delta"
+                    value=".out"
+                    control={<Radio />}
+                    label="Out"
+                  />
+                </Grid>
+                <Grid item>
+                  <FormControlLabel
+                    value=".delta"
                     control={<Radio />}
                     label="Delta"
                   />
                 </Grid>
                 <Grid item>
                   <FormControlLabel
-                    value="chain"
+                    value=".chain"
                     control={<Radio />}
                     label="Chain"
                   />

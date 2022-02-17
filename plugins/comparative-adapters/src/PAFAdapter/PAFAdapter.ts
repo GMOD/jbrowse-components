@@ -128,10 +128,11 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const pafRecords = await this.setup(opts)
       const assemblyNames = readConfObject(this.config, 'assemblyNames')
+      const { assemblyName } = region
 
-      // The index of the assembly name in the region list corresponds to
-      // the adapter in the subadapters list
-      const index = assemblyNames.indexOf(region.assemblyName)
+      // The index of the assembly name in the region list corresponds to the
+      // adapter in the subadapters list
+      const index = assemblyNames.indexOf(assemblyName)
       if (index !== -1) {
         for (let i = 0; i < pafRecords.length; i++) {
           const { extra, records } = pafRecords[i]
@@ -141,14 +142,15 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             doesIntersect2(region.start, region.end, start, end)
           ) {
             const mate = records[+!index]
+            const syntenyId = i
             observer.next(
               new SimpleFeature({
-                uniqueId: `row_${i}`,
+                uniqueId: `${i}`,
                 start,
                 end,
                 refName,
-                originalRefName: region.parentRegion.originalRefName || refName,
-                syntenyId: i,
+                assemblyName,
+                syntenyId,
                 mate,
                 ...extra,
               }),

@@ -6,7 +6,13 @@ import SimpleFeature, {
   Feature,
 } from '@jbrowse/core/util/simpleFeature'
 import { getConf } from '@jbrowse/core/configuration'
-import { getContainingView, viewBpToPx, ViewSnap } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  viewBpToPx,
+  getSession,
+  ViewSnap,
+  AssemblyManager,
+} from '@jbrowse/core/util'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { interstitialYPos, overlayYPos, generateMatches } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
@@ -19,10 +25,13 @@ type RectTuple = [number, number, number, number]
 const { parseCigar } = MismatchParser
 
 function px(view: ViewSnap, arg: { refName: string; coord: number }) {
-  return (viewBpToPx({ ...arg, self: view }) || {}).offsetPx || 0
+  return viewBpToPx({ ...arg, self: view })?.offsetPx || 0
 }
 
-function layoutMatches(features: Feature[][]) {
+function layoutMatches(
+  features: Feature[][],
+  assemblyManager?: AssemblyManager,
+) {
   const matches = []
   for (let i = 0; i < features.length; i++) {
     for (let j = i; j < features.length; j++) {
@@ -37,17 +46,22 @@ function layoutMatches(features: Feature[][]) {
           if (f1.get('strand') === -1) {
             ;[f1e, f1s] = [f1s, f1e]
           }
+          const a1 = assemblyManager?.get(f1.get('assemblyName'))
+          const a2 = assemblyManager?.get(f2.get('assemblyName'))
+          const r1 = f1.get('refName')
+          const r2 = f2.get('refName')
+
           matches.push([
             {
               feature: f1,
               level: i,
-              refName: f1.get('originalRefName') || f1.get('refName'),
+              refName: a1?.getCanonicalRefName(f1.get('refName')) || r1,
               layout: [f1s, 0, f1e, 10] as RectTuple,
             },
             {
               feature: f2,
               level: j,
-              refName: f2.get('originalRefName') || f2.get('refName'),
+              refName: a2?.getCanonicalRefName(f1.get('refName')) || r2,
               layout: [f2s, 0, f2e, 10] as RectTuple,
             },
           ])
@@ -62,6 +76,18 @@ function layoutMatches(features: Feature[][]) {
  * A block whose content is rendered outside of the main thread and hydrated by
  * this component.
  */
+
+function getResources(displayModel: LinearComparativeDisplay) {
+  const worker = !('type' in displayModel)
+  if (!worker && isAlive(displayModel)) {
+    const parentView = getContainingView(displayModel) as LinearSyntenyViewModel
+    const color = getConf(displayModel, ['renderer', 'color'])
+    const session = getSession(displayModel)
+    const { assemblyManager } = session
+    return { color, session, parentView, assemblyManager }
+  }
+  return {}
+}
 function LinearSyntenyRendering({
   height,
   width,
@@ -78,29 +104,23 @@ function LinearSyntenyRendering({
   trackIds: string[]
 }) {
   const ref = useRef<HTMLCanvasElement>(null)
-
-  const deserializedFeatures = useMemo(
+  const { color, assemblyManager, parentView } = getResources(displayModel)
+  const matches = useMemo(
     () =>
-      features.map(level => {
-        return level
-          .map(f => new SimpleFeature(f))
-          .sort((a, b) => a.get('syntenyId') - b.get('syntenyId'))
-      }),
+      layoutMatches(
+        features.map(level =>
+          level
+            .map(f => new SimpleFeature(f))
+            .sort((a, b) => a.get('syntenyId') - b.get('syntenyId')),
+        ),
+        assemblyManager,
+      ),
     [features],
   )
-  const matches = layoutMatches(deserializedFeatures)
-  const worker = !('type' in displayModel)
-  const parentView =
-    worker || !isAlive(displayModel)
-      ? undefined
-      : (getContainingView(displayModel) as LinearSyntenyViewModel)
-  const views = worker ? undefined : parentView?.views
-  const drawCurves = worker ? undefined : parentView?.drawCurves
-  const color =
-    worker || !isAlive(displayModel)
-      ? undefined
-      : getConf(displayModel, ['renderer', 'color'])
+  const drawCurves = parentView?.drawCurves
+  const views = parentView?.views
   const offsets = views?.map(view => view.offsetPx)
+
   useEffect(() => {
     if (!ref.current || !offsets || !views || !isAlive(displayModel)) {
       return
