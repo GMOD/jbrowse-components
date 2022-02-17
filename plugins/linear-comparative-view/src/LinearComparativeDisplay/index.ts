@@ -6,6 +6,7 @@ import {
   ConfigurationSchema,
 } from '@jbrowse/core/configuration'
 import { types, getSnapshot, Instance } from 'mobx-state-tree'
+import clone from 'clone'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 import {
   getContainingView,
@@ -152,7 +153,7 @@ function renderBlockData(self: LinearComparativeDisplay) {
     rpcManager,
     renderProps: {
       ...display.renderProps(),
-      view: getSnapshot(parent),
+      view: clone(getSnapshot(parent)),
       adapterConfig,
       rendererType: rendererType.name,
       sessionId,

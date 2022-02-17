@@ -140,18 +140,16 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             refName === region.refName &&
             doesIntersect2(region.start, region.end, start, end)
           ) {
+            const mate = records[+!index]
             observer.next(
               new SimpleFeature({
                 uniqueId: `row_${i}`,
                 start,
                 end,
                 refName,
+                originalRefName: region.parentRegion.originalRefName || refName,
                 syntenyId: i,
-                mate: {
-                  start: records[+!index].start,
-                  end: records[+!index].end,
-                  refName: records[+!index].refName,
-                },
+                mate,
                 ...extra,
               }),
             )

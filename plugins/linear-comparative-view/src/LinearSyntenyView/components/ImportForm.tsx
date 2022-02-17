@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
-import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import {
   Button,
   Container,
@@ -14,9 +13,8 @@ import {
   makeStyles,
 } from '@material-ui/core'
 import { FileLocation } from '@jbrowse/core/util/types'
-import { FileSelector } from '@jbrowse/core/ui'
+import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import { LinearSyntenyViewModel } from '../model'
-import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 
 const useStyles = makeStyles(theme => ({
   importFormContainer: {
@@ -39,7 +37,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   const [selected, setSelected] = useState([assemblyNames[0], assemblyNames[0]])
   const [trackData, setTrackData] = useState<FileLocation>()
   const [numRows] = useState(2)
-  const [value, setValue] = useState('PAF')
+  const [value, setValue] = useState()
   const [error, setError] = useState<unknown>()
   const assemblyError = assemblyNames.length
     ? selected
@@ -159,9 +157,9 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
             </Grid>
             <Grid item>
               <FormControlLabel
-                value="other"
+                value="chain"
                 control={<Radio />}
-                label="Other"
+                label="Chain"
               />
             </Grid>
           </Grid>

@@ -41,13 +41,13 @@ function layoutMatches(features: Feature[][]) {
             {
               feature: f1,
               level: i,
-              refName: f1.get('refName'),
+              refName: f1.get('originalRefName') || f1.get('refName'),
               layout: [f1s, 0, f1e, 10] as RectTuple,
             },
             {
               feature: f2,
               level: j,
-              refName: f2.get('refName'),
+              refName: f2.get('originalRefName') || f2.get('refName'),
               layout: [f2s, 0, f2e, 10] as RectTuple,
             },
           ])
