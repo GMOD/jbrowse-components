@@ -108,7 +108,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   async getRefNames(opts: BaseOptions = {}) {
-    //@ts-ignore
+    // @ts-ignore
     const r1 = opts.regions?.[0].assemblyName
     const feats = await this.setup()
     const assemblyNames = readConfObject(this.config, 'assemblyNames')

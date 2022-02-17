@@ -4,6 +4,8 @@ import {
   createImageBitmap,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { viewBpToPx, renameRegionsIfNeeded } from '@jbrowse/core/util'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { Region } from '@jbrowse/core/util/types'
 import { getSnapshot, Instance } from 'mobx-state-tree'
 import ComparativeServerSideRendererType, {
   RenderArgsDeserialized as ComparativeRenderArgsDeserialized,
@@ -24,7 +26,14 @@ export interface RenderArgsDeserialized
 }
 
 export default class DotplotRenderer extends ComparativeServerSideRendererType {
-  async renameRegionsIfNeeded(args: any) {
+  async renameRegionsIfNeeded(args: {
+    adapterConfig: AnyConfigurationModel
+    sessionId: string
+    view: {
+      hview: { displayedRegions: Region[] }
+      vview: { displayedRegions: Region[] }
+    }
+  }) {
     const assemblyManager =
       this.pluginManager.rootModel?.session?.assemblyManager
 

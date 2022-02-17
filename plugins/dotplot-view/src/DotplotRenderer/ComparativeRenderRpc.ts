@@ -30,7 +30,6 @@ export default class ComparativeRender extends RpcMethodType {
     args: RenderArgs,
     renderer: ComparativeRenderer,
   ) {
-    console.log('wowowow', renderer)
     return renderer.renameRegionsIfNeeded(args)
   }
 

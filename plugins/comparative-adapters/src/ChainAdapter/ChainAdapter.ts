@@ -1,12 +1,6 @@
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { NoAssemblyRegion, Region } from '@jbrowse/core/util/types'
-import { doesIntersect2 } from '@jbrowse/core/util/range'
+import { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { unzip } from '@gmod/bgzf-filehandle'
 import PAFAdapter from '../PAFAdapter/PAFAdapter'
@@ -87,11 +81,11 @@ function paf_chain2paf(lines: string[]) {
   let q_end = 0
   let num_matches = 0
   let cigar = ''
-  let records = []
+  const records = []
   for (let i = 0; i < lines.length; i++) {
     const l = lines[i]
-    let l_tab = l.replace(' ', '\t') // There are CHAIN files with space-separated fields
-    let l_vec = l_tab.split('\t')
+    const l_tab = l.replace(' ', '\t') // There are CHAIN files with space-separated fields
+    const l_vec = l_tab.split('\t')
 
     if (l_vec[0] === 'chain') {
       // Emit previous PAF row, if available
@@ -132,8 +126,8 @@ function paf_chain2paf(lines: string[]) {
       q_strand = l_vec[9]
       q_start = +l_vec[10]
       q_end = +l_vec[11]
-      if (q_strand == '-') {
-        let tmp = q_start
+      if (q_strand === '-') {
+        const tmp = q_start
         q_start = +q_size - q_end
         q_end = +q_size - tmp
       }
@@ -149,9 +143,9 @@ function paf_chain2paf(lines: string[]) {
       //
       // dq -- the difference between the end of this block and the beginning
       //    of the next block (query sequence)
-      let size_ungapped_alignment = +l_vec[0] || 0
-      let diff_in_target = l_vec.length > 1 ? +l_vec[1] : 0
-      let diff_in_query = l_vec.length > 2 ? +l_vec[2] : 0
+      const size_ungapped_alignment = +l_vec[0] || 0
+      const diff_in_target = l_vec.length > 1 ? +l_vec[1] : 0
+      const diff_in_query = l_vec.length > 2 ? +l_vec[2] : 0
 
       if (size_ungapped_alignment !== 0) {
         num_matches += +size_ungapped_alignment
@@ -200,8 +194,6 @@ export default class ChainAdapter extends PAFAdapter {
       throw new Error('Data exceeds maximum string length (512MB)')
     }
     const text = new TextDecoder('utf8', { fatal: true }).decode(buf)
-    console.log({ text })
-
     return paf_chain2paf(text.split('\n').filter(line => !!line))
   }
 }

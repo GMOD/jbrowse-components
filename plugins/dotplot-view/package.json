@@ -36,20 +36,10 @@
   },
   "dependencies": {
     "@gmod/bgzf-filehandle": "^1.4.2",
-    "@material-ui/icons": "^4.9.1",
-    "abortable-promise-cache": "^1.5.0",
-    "clsx": "^1.0.0",
-    "generic-filehandle": "^2.2.2",
-    "json-stable-stringify": "^1.0.1",
-    "normalize-wheel": "^1.0.1",
-    "react-sizeme": "^3.0.2"
+    "clone": "^2.1.2"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",
-    "@jbrowse/plugin-alignments": "^1.0.0",
-    "@jbrowse/plugin-linear-genome-view": "^1.0.0",
-    "@material-ui/core": "^4.12.2",
-    "@material-ui/lab": "^4.0.0-alpha.45",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
