@@ -58,13 +58,18 @@ function layoutMatches(features: Feature[][]) {
   return matches
 }
 
-type LSV = LinearSyntenyViewModel
-
 /**
  * A block whose content is rendered outside of the main thread and hydrated by
  * this component.
  */
-function LinearSyntenyRendering(props: {
+function LinearSyntenyRendering({
+  height,
+  width,
+  displayModel,
+  highResolutionScaling = 1,
+  features,
+  trackIds,
+}: {
   width: number
   height: number
   displayModel: LinearComparativeDisplay
@@ -73,14 +78,6 @@ function LinearSyntenyRendering(props: {
   trackIds: string[]
 }) {
   const ref = useRef<HTMLCanvasElement>(null)
-  const {
-    height,
-    width,
-    displayModel: display = {},
-    highResolutionScaling = 1,
-    features,
-    trackIds,
-  } = props
 
   const deserializedFeatures = useMemo(
     () =>
@@ -92,20 +89,20 @@ function LinearSyntenyRendering(props: {
     [features],
   )
   const matches = layoutMatches(deserializedFeatures)
-  const worker = !('type' in display)
+  const worker = !('type' in displayModel)
   const parentView =
-    worker || !isAlive(display)
+    worker || !isAlive(displayModel)
       ? undefined
-      : (getContainingView(display) as LSV)
+      : (getContainingView(displayModel) as LinearSyntenyViewModel)
   const views = worker ? undefined : parentView?.views
   const drawCurves = worker ? undefined : parentView?.drawCurves
   const color =
-    worker || !isAlive(display)
+    worker || !isAlive(displayModel)
       ? undefined
-      : getConf(display, ['renderer', 'color'])
+      : getConf(displayModel, ['renderer', 'color'])
   const offsets = views?.map(view => view.offsetPx)
   useEffect(() => {
-    if (!ref.current || !offsets || !views || !isAlive(display)) {
+    if (!ref.current || !offsets || !views || !isAlive(displayModel)) {
       return
     }
     const ctx = ref.current.getContext('2d')
@@ -261,7 +258,7 @@ function LinearSyntenyRendering(props: {
       }
     })
   }, [
-    display,
+    displayModel,
     highResolutionScaling,
     trackIds,
     width,
