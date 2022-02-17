@@ -137,7 +137,7 @@ export const InternetAccount = types
           tokenPromise = Promise.resolve(token)
           return tokenPromise
         }
-        return new Promise(async (r, x) => {
+        tokenPromise = new Promise(async (r, x) => {
           function resolve(token: string) {
             self.storeToken(token)
             r(token)
@@ -148,6 +148,7 @@ export const InternetAccount = types
           }
           self.getTokenFromUser(resolve, reject)
         })
+        return tokenPromise
       },
     }
   })
