@@ -9,6 +9,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { unzip } from '@gmod/bgzf-filehandle'
+import PAFAdapter from '../PAFAdapter/PAFAdapter'
 
 interface PafRecord {
   records: NoAssemblyRegion[]
@@ -50,15 +51,15 @@ function isGzip(buf: Buffer) {
  */
 
 function generate_record(
-  q_name,
-  q_start,
-  q_end,
-  q_strand,
-  t_name,
-  t_start,
-  t_end,
-  cigar,
-  num_matches,
+  q_name: string,
+  q_start: number,
+  q_end: number,
+  q_strand: string,
+  t_name: string,
+  t_start: number,
+  t_end: number,
+  cigar: string,
+  num_matches: number,
 ) {
   return {
     records: [
@@ -148,21 +149,21 @@ function paf_chain2paf(lines: string[]) {
       //
       // dq -- the difference between the end of this block and the beginning
       //    of the next block (query sequence)
-      let size_ungapped_alignment = l_vec[0] || '0'
-      let diff_in_target = l_vec.length > 1 ? l_vec[1] : '0'
-      let diff_in_query = l_vec.length > 2 ? l_vec[2] : '0'
+      let size_ungapped_alignment = +l_vec[0] || 0
+      let diff_in_target = l_vec.length > 1 ? +l_vec[1] : 0
+      let diff_in_query = l_vec.length > 2 ? +l_vec[2] : 0
 
-      if (size_ungapped_alignment !== '0') {
+      if (size_ungapped_alignment !== 0) {
         num_matches += +size_ungapped_alignment
 
         cigar += size_ungapped_alignment
         cigar += 'M'
       }
-      if (diff_in_query !== '0') {
+      if (diff_in_query !== 0) {
         cigar += diff_in_query
         cigar += 'I'
       }
-      if (diff_in_target !== '0') {
+      if (diff_in_target !== 0) {
         cigar += diff_in_target
         cigar += 'D'
       }
@@ -186,21 +187,7 @@ function paf_chain2paf(lines: string[]) {
   return records
 }
 
-export default class ChainAdapter extends BaseFeatureDataAdapter {
-  private setupP?: Promise<PafRecord[]>
-
-  public static capabilities = ['getFeatures', 'getRefNames']
-
-  async setup(opts?: BaseOptions) {
-    if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch(e => {
-        this.setupP = undefined
-        throw e
-      })
-    }
-    return this.setupP
-  }
-
+export default class ChainAdapter extends PAFAdapter {
   async setupPre(opts?: BaseOptions) {
     const chainLocation = openLocation(
       readConfObject(this.config, 'chainLocation'),
@@ -217,58 +204,4 @@ export default class ChainAdapter extends BaseFeatureDataAdapter {
 
     return paf_chain2paf(text.split('\n').filter(line => !!line))
   }
-
-  async hasDataForRefName() {
-    // determining this properly is basically a call to getFeatures
-    // so is not really that important, and has to be true or else
-    // getFeatures is never called (BaseAdapter filters it out)
-    return true
-  }
-
-  async getRefNames() {
-    // we cannot determine this accurately
-    return []
-  }
-
-  getFeatures(region: Region, opts: BaseOptions = {}) {
-    return ObservableCreate<Feature>(async observer => {
-      const pafRecords = await this.setup(opts)
-      console.log({ pafRecords })
-      const assemblyNames = readConfObject(this.config, 'assemblyNames')
-
-      // The index of the assembly name in the region list corresponds to
-      // the adapter in the subadapters list
-      const index = assemblyNames.indexOf(region.assemblyName)
-      if (index !== -1) {
-        for (let i = 0; i < pafRecords.length; i++) {
-          const { extra, records } = pafRecords[i]
-          const { start, end, refName } = records[index]
-          if (
-            refName === region.refName &&
-            doesIntersect2(region.start, region.end, start, end)
-          ) {
-            observer.next(
-              new SimpleFeature({
-                uniqueId: `row_${i}`,
-                start,
-                end,
-                refName,
-                syntenyId: i,
-                mate: {
-                  start: records[+!index].start,
-                  end: records[+!index].end,
-                  refName: records[+!index].refName,
-                },
-                ...extra,
-              }),
-            )
-          }
-        }
-      }
-
-      observer.complete()
-    })
-  }
-
-  freeResources(/* { region } */): void {}
 }

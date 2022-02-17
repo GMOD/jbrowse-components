@@ -1,14 +1,9 @@
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
-import { NoAssemblyRegion, Region } from '@jbrowse/core/util/types'
-import { doesIntersect2 } from '@jbrowse/core/util/range'
+import { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { unzip } from '@gmod/bgzf-filehandle'
+import PAFAdapter from '../PAFAdapter/PAFAdapter'
 
 interface PafRecord {
   records: NoAssemblyRegion[]
@@ -154,21 +149,7 @@ function paf_delta2paf(lines: string[]) {
   return records
 }
 
-export default class DeltaAdapter extends BaseFeatureDataAdapter {
-  private setupP?: Promise<PafRecord[]>
-
-  public static capabilities = ['getFeatures', 'getRefNames']
-
-  async setup(opts?: BaseOptions) {
-    if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch(e => {
-        this.setupP = undefined
-        throw e
-      })
-    }
-    return this.setupP
-  }
-
+export default class DeltaAdapter extends PAFAdapter {
   async setupPre(opts?: BaseOptions) {
     const deltaLocation = openLocation(
       readConfObject(this.config, 'deltaLocation'),
@@ -184,57 +165,4 @@ export default class DeltaAdapter extends BaseFeatureDataAdapter {
 
     return paf_delta2paf(text.split('\n').filter(line => !!line))
   }
-
-  async hasDataForRefName() {
-    // determining this properly is basically a call to getFeatures
-    // so is not really that important, and has to be true or else
-    // getFeatures is never called (BaseAdapter filters it out)
-    return true
-  }
-
-  async getRefNames() {
-    // we cannot determine this accurately
-    return []
-  }
-
-  getFeatures(region: Region, opts: BaseOptions = {}) {
-    return ObservableCreate<Feature>(async observer => {
-      const pafRecords = await this.setup(opts)
-      const assemblyNames = readConfObject(this.config, 'assemblyNames')
-
-      // The index of the assembly name in the region list corresponds to
-      // the adapter in the subadapters list
-      const index = assemblyNames.indexOf(region.assemblyName)
-      if (index !== -1) {
-        for (let i = 0; i < pafRecords.length; i++) {
-          const { extra, records } = pafRecords[i]
-          const { start, end, refName } = records[index]
-          if (
-            refName === region.refName &&
-            doesIntersect2(region.start, region.end, start, end)
-          ) {
-            observer.next(
-              new SimpleFeature({
-                uniqueId: `row_${i}`,
-                start,
-                end,
-                refName,
-                syntenyId: i,
-                mate: {
-                  start: records[+!index].start,
-                  end: records[+!index].end,
-                  refName: records[+!index].refName,
-                },
-                ...extra,
-              }),
-            )
-          }
-        }
-      }
-
-      observer.complete()
-    })
-  }
-
-  freeResources(/* { region } */): void {}
 }

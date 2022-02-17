@@ -3848,6 +3848,19 @@
           "indexType": "TBI"
         }
       }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hg19_hg38_chain",
+      "name": "hg19 to hg38 chain file",
+      "assemblyNames": ["hg19", "hg38"],
+      "adapter": {
+        "type": "ChainAdapter",
+        "chainLocation": {
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/liftOver/hg19ToHg38.over.chain.gz"
+        },
+        "assemblyNames": ["YJM1447", "R64"]
+      }
     }
   ],
   "connections": [],

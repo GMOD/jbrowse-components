@@ -29,25 +29,47 @@ export default class ComparativeRender extends RpcMethodType {
   async serializeArguments(args: RenderArgs, rpcDriverClassName: string) {
     const assemblyManager =
       this.pluginManager.rootModel?.session?.assemblyManager
-    const renamedArgs = assemblyManager
-      ? await renameRegionsIfNeeded(assemblyManager, args)
-      : args
+
+    if (!assemblyManager) {
+      throw new Error('No assembly maanger provided')
+    }
+    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, args)
 
     const superArgs = (await super.serializeArguments(
       renamedArgs,
       rpcDriverClassName,
     )) as RenderArgs
+
+    console.log('t1', superArgs)
+
+    //@ts-ignore
+    superArgs.view.hview.displayedRegions = (
+      await renameRegionsIfNeeded(assemblyManager, {
+        sessionId: superArgs.sessionId,
+        //@ts-ignore
+        regions: superArgs.view.hview.displayedRegions,
+        adapterConfig: superArgs.adapterConfig,
+      })
+    ).regions
+    //@ts-ignore
+    superArgs.view.vview.displayedRegions = (
+      await renameRegionsIfNeeded(assemblyManager, {
+        sessionId: superArgs.sessionId,
+        //@ts-ignore
+        regions: superArgs.view.vview.displayedRegions,
+        adapterConfig: superArgs.adapterConfig,
+      })
+    ).regions
+
+    console.log({ superArgs })
+
     if (rpcDriverClassName === 'MainThreadRpcDriver') {
       return superArgs
     }
 
-    const RendererType = this.pluginManager.getRendererType(args.rendererType)
-
-    if (!(RendererType instanceof ComparativeServerSideRendererType)) {
-      throw new Error(
-        'CoreRender requires a renderer that is a subclass of ServerSideRendererType',
-      )
-    }
+    const RendererType = this.pluginManager.getRendererType(
+      args.rendererType,
+    ) as ComparativeServerSideRendererType
 
     return RendererType.serializeArgsInClient(superArgs)
   }

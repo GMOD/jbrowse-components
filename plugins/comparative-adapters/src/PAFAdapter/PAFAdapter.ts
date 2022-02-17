@@ -107,8 +107,20 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return true
   }
 
-  async getRefNames() {
-    // we cannot determine this accurately
+  async getRefNames(opts: BaseOptions = {}) {
+    //@ts-ignore
+    const r1 = opts.regions?.[0].assemblyName
+    const feats = await this.setup()
+    const assemblyNames = readConfObject(this.config, 'assemblyNames')
+    const idx = assemblyNames.indexOf(r1)
+    if (idx !== -1) {
+      const set = new Set<string>()
+      for (let i = 0; i < feats.length; i++) {
+        set.add(feats[i].records[idx].refName)
+      }
+      return Array.from(set)
+    }
+    console.warn('Unable to do ref renaming on adapter')
     return []
   }
 
