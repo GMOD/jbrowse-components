@@ -84,7 +84,7 @@ function paf_chain2paf(lines: string[]) {
   const records = []
   for (let i = 0; i < lines.length; i++) {
     const l = lines[i]
-    const l_tab = l.replace(' ', '\t') // There are CHAIN files with space-separated fields
+    const l_tab = l.replace(/ /g, '\t') // There are CHAIN files with space-separated fields
     const l_vec = l_tab.split('\t')
 
     if (l_vec[0] === 'chain') {

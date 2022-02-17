@@ -49,14 +49,20 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
         pafLocation: trackData,
         assemblyNames: selected,
       }
-    } else if (value === 'Delta') {
+    } else if (value === 'delta') {
       return {
         type: 'DeltaAdapter',
         deltaLocation: trackData,
         assemblyNames: selected,
       }
+    } else if (value === 'chain') {
+      return {
+        type: 'ChainAdapter',
+        chainLocation: trackData,
+        assemblyNames: selected,
+      }
     } else {
-      throw new Error('Unknown')
+      throw new Error('Unknown type')
     }
   }
 
@@ -66,12 +72,6 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
         return
       }
       transaction(() => {
-        model.setViews([
-          { bpPerPx: 0.1, offsetPx: 0 },
-          { bpPerPx: 0.1, offsetPx: 0 },
-        ])
-        model.setAssemblyNames([selected1, selected2])
-
         if (trackData) {
           const fileName =
             trackData && 'uri' in trackData && trackData.uri
@@ -89,6 +89,11 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
           })
           model.toggleTrack(trackId)
         }
+        model.setViews([
+          { bpPerPx: 0.1, offsetPx: 0 },
+          { bpPerPx: 0.1, offsetPx: 0 },
+        ])
+        model.setAssemblyNames([selected1, selected2])
       })
     } catch (e) {
       console.error(e)
