@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/cli",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "description": "A command line tool for working with JBrowse 2",
   "keywords": [
     "jbrowse",
