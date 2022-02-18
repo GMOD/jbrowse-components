@@ -11,6 +11,7 @@ import { LinearGenomeViewStateModel, stateModelFactory } from '.'
 import { BaseLinearDisplayComponent } from '..'
 import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBareDisplay'
 import hg38DisplayedRegions from './hg38DisplayedRegions.json'
+import volvoxDisplayedRegions from './volvoxDisplayedRegions.json'
 
 // use initializer function to avoid having console.warn jest.fn in a global
 function initialize() {
@@ -54,22 +55,7 @@ function initialize() {
   const Assembly = types
     .model({})
     .volatile(() => ({
-      regions: [
-        {
-          assemblyName: 'volvox',
-          start: 0,
-          end: 50001,
-          refName: 'ctgA',
-          reversed: false,
-        },
-        {
-          assemblyName: 'volvox',
-          start: 0,
-          end: 6079,
-          refName: 'ctgB',
-          reversed: false,
-        },
-      ],
+      regions: volvoxDisplayedRegions,
     }))
     .views(() => ({
       getCanonicalRefName(refName: string) {
@@ -79,6 +65,19 @@ function initialize() {
         return refName
       },
     }))
+
+  const AssemblyManager = types
+    .model({
+      assemblies: types.map(Assembly),
+    })
+    .actions(self => ({
+      isValidRefName(str: string) {
+        return !str.includes(':')
+      },
+      get(str: string) {
+        return self.assemblies.get(str)
+      },
+    }))
   const LinearGenomeModel = stateModelFactory(stubManager)
   const Session = types
     .model({
@@ -86,15 +85,19 @@ function initialize() {
       rpcManager: 'rpcManagerExists',
       view: types.maybe(LinearGenomeModel),
       configuration: types.map(types.string),
+      assemblyManager: types.optional(AssemblyManager, {
+        assemblies: {
+          volvox: {
+            regions: volvoxDisplayedRegions,
+          },
+        },
+      }),
     })
     .actions(self => ({
       setView(view: Instance<LinearGenomeViewStateModel>) {
         self.view = view
         return view
       },
-    }))
-    .volatile((/* self */) => ({
-      assemblyManager: new Map([['volvox', Assembly.create({})]]),
     }))
 
   return { Session, LinearGenomeModel, Assembly }
@@ -991,4 +994,26 @@ test('navToLocString with human assembly', () => {
   expect(model.view.bpPerPx).toBe(0.02)
   expect(model.view.offsetPx).toBe(9914777550)
   model.view.navToLocString('chr3:-1,100,000,000..-1,000,000,000')
+})
+
+test('multi region', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const model = Session.create({
+    configuration: {},
+  }).setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+    }),
+  )
+  model.setWidth(800)
+  model.setDisplayedRegions(volvoxDisplayedRegions.slice(0, 1))
+
+  model.navToLocString('ctgA ctgB')
+  expect(model.displayedRegions[0].refName).toBe('ctgA')
+  expect(model.displayedRegions[1].refName).toBe('ctgB')
+  // [
+  //   { refName: 'ctgA', start: 0, end: 50001 },
+  //   { refName: 'ctgB', start: 0, end: 6079 },
+  // ])
 })

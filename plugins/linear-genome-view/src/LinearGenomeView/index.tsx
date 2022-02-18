@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
 import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'
@@ -35,7 +35,6 @@ import {
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import PluginManager from '@jbrowse/core/PluginManager'
 import clone from 'clone'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { saveAs } from 'file-saver'
 
 // icons
@@ -694,7 +693,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               assemblyName: region.assemblyName || assemblyName,
             }
           })
-          self.displayedRegions = JSON.parse(JSON.stringify(locations))
+          this.navToMultiple(locations)
           this.showAllRegions()
           return
         }
