@@ -10,6 +10,10 @@ export default ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    refNameColumn: {
+      type: 'number',
+      defaultValue: 0,
+    },
   },
   { explicitlyTyped: true },
 )
