@@ -603,7 +603,7 @@ export default function sessionModelFactory(
               //   JSON.stringify(getSnapshot(config)),
               // )
               // console.log(trackSnapshot)
-              console.log(readConfObject(config, "textSearching"))
+              // console.log(readConfObject(config, "textSearching"))
               // const usrData = await ipcRenderer.invoke('userData')
               const rpcManager = getParent(self).jbrowse.rpcManager
               // console.log(outputPath)
