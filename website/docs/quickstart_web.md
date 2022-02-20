@@ -11,7 +11,7 @@ In this guide, we'll get an instance of JBrowse running on your computer.
 ## Pre-requisites
 
 - Ability to run commands on the command line
-- Node.js 10.4+
+- Node.js 12+
 
 :::caution
 

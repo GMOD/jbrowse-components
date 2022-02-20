@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-dotplot-view",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "description": "JBrowse 2 dotplot view",
   "keywords": [
     "jbrowse",
@@ -35,8 +35,9 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
+    "@gmod/bgzf-filehandle": "^1.4.2",
     "@material-ui/icons": "^4.9.1",
-    "abortable-promise-cache": "^1.1.3",
+    "abortable-promise-cache": "^1.5.0",
     "clsx": "^1.0.0",
     "generic-filehandle": "^2.2.2",
     "json-stable-stringify": "^1.0.1",

@@ -11,7 +11,7 @@ also assumes you have:
 
 - a web server that reads files from /var/www/html/ e.g. Apache or nginx (not
   strictly necessary for jbrowse to run, see footnote)
-- node 10+ installed
+- node 12+ installed
 - genometools installed e.g. `sudo apt install genometools` or `brew install brewsci/bio/genometools`, used for sorting GFF3 for creating tabix GFF
 - samtools installed e.g. `sudo apt install samtools` or `brew install samtools`, used for creating FASTA index and BAM/CRAM processing
 - tabix installed e.g. `sudo apt install tabix` or `brew install htslib`, used
