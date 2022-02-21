@@ -1,19 +1,22 @@
 import React, { useState } from 'react'
+import path from 'path'
+import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
-import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import {
   Button,
   Container,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
   Grid,
   Paper,
   Typography,
   makeStyles,
 } from '@material-ui/core'
 import { FileLocation } from '@jbrowse/core/util/types'
-import { FileSelector } from '@jbrowse/core/ui'
+import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import { LinearSyntenyViewModel } from '../model'
-import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 
 const useStyles = makeStyles(theme => ({
   importFormContainer: {
@@ -28,6 +31,21 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+function getName(
+  trackData?: { uri: string } | { localPath: string } | { name: string },
+) {
+  return trackData
+    ? // @ts-ignore
+      trackData.uri || trackData.localPath || trackData.name
+    : undefined
+}
+
+function stripGz(fileName: string) {
+  return fileName.endsWith('.gz')
+    ? fileName.slice(0, fileName.length - 3)
+    : fileName
+}
+
 const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   const classes = useStyles()
   const session = getSession(model)
@@ -37,12 +55,47 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   const [trackData, setTrackData] = useState<FileLocation>()
   const [numRows] = useState(2)
   const [error, setError] = useState<unknown>()
+
+  const [value, setValue] = useState('')
+  const fileName = getName(trackData)
+  const radioOption = value || (fileName ? path.extname(stripGz(fileName)) : '')
+
   const assemblyError = assemblyNames.length
     ? selected
         .map(a => assemblyManager.get(a)?.error)
         .filter(f => !!f)
         .join(', ')
     : 'No configured assemblies'
+
+  function getAdapter() {
+    if (radioOption === '.paf') {
+      return {
+        type: 'PAFAdapter',
+        pafLocation: trackData,
+        assemblyNames: selected,
+      }
+    } else if (radioOption === '.out') {
+      return {
+        type: 'PAFAdapter',
+        pafLocation: trackData,
+        assemblyNames: selected,
+      }
+    } else if (radioOption === '.delta') {
+      return {
+        type: 'DeltaAdapter',
+        deltaLocation: trackData,
+        assemblyNames: selected,
+      }
+    } else if (radioOption === '.chain') {
+      return {
+        type: 'ChainAdapter',
+        chainLocation: trackData,
+        assemblyNames: selected,
+      }
+    } else {
+      throw new Error('Unknown type')
+    }
+  }
 
   async function onOpenClick() {
     try {
@@ -69,26 +122,22 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
 
       model.views.forEach(view => view.setWidth(model.width))
 
-      if (trackData) {
-        const name =
-          'uri' in trackData
-            ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
-            : 'MyTrack'
+      transaction(() => {
+        if (trackData) {
+          const fileName = path.basename(getName(trackData)) || 'MyTrack'
+          const trackId = `${fileName}-${Date.now()}`
 
-        const trackId = `${name}-${Date.now()}`
-        session.addTrackConf({
-          trackId,
-          name,
-          assemblyNames: selected,
-          type: 'SyntenyTrack',
-          adapter: {
-            type: 'PAFAdapter',
-            pafLocation: trackData,
+          session.addTrackConf({
+            trackId: trackId,
+            name: fileName,
             assemblyNames: selected,
-          },
-        })
-        model.toggleTrack(trackId)
-      }
+            type: 'SyntenyTrack',
+            adapter: getAdapter(),
+          })
+
+          model.toggleTrack(trackId)
+        }
+      })
     } catch (e) {
       console.error(e)
       setError(e)
@@ -128,17 +177,41 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
       </Paper>
 
       <Paper className={classes.formPaper}>
+        <Typography style={{ textAlign: 'center' }}>
+          <b>Optional</b>: Add a .paf, .out (MashMap), .delta (Mummer), or
+          .chain file to view in the dotplot. These file types can also be
+          gzipped. The first assembly should be the query sequence (e.g. left
+          column of the PAF) and the second assembly should be the target
+          sequence (e.g. right column of the PAF)
+        </Typography>
+        <RadioGroup
+          value={radioOption}
+          onChange={event => setValue(event.target.value)}
+        >
+          <Grid container justifyContent="center">
+            <Grid item>
+              <FormControlLabel value=".paf" control={<Radio />} label="PAF" />
+            </Grid>
+            <Grid item>
+              <FormControlLabel value=".out" control={<Radio />} label="Out" />
+            </Grid>
+            <Grid item>
+              <FormControlLabel
+                value=".delta"
+                control={<Radio />}
+                label="Delta"
+              />
+            </Grid>
+            <Grid item>
+              <FormControlLabel
+                value=".chain"
+                control={<Radio />}
+                label="Chain"
+              />
+            </Grid>
+          </Grid>
+        </RadioGroup>
         <Grid container justifyContent="center">
-          <Typography style={{ textAlign: 'center' }}>
-            <b>Optional</b>: Add a PAF{' '}
-            <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
-              (pairwise mapping format)
-            </a>{' '}
-            file for the linear synteny view. Note that the first assembly
-            should be the left column of the PAF and the second assembly should
-            be the right column. PAF-like files from MashMap (.out) are also
-            allowed
-          </Typography>
           <Grid item>
             <FileSelector
               name="URL"
