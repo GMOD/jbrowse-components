@@ -18,7 +18,7 @@ const LinearWiggleDisplay = observer((props: { model: WiggleDisplayModel }) => {
   const { trackLabels } = getContainingView(model)
   const left =
     trackLabels === 'overlapping'
-      ? measureText(getConf(getContainingTrack(model), 'name')) + 160
+      ? measureText(getConf(getContainingTrack(model), 'name'), 12.8) + 160
       : 50
   return (
     <div>
