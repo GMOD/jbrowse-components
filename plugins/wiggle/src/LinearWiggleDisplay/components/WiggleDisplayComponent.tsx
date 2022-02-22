@@ -1,28 +1,8 @@
+import React from 'react'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
-import React from 'react'
-import { Axis, LEFT, RIGHT } from 'react-d3-axis'
 import { WiggleDisplayModel } from '../models/model'
-
-export const YScaleBar = observer(
-  ({
-    model,
-    orientation,
-  }: {
-    model: WiggleDisplayModel
-    orientation?: string
-  }) => {
-    const { ticks } = model
-
-    return (
-      <Axis
-        {...ticks}
-        format={(n: number) => n}
-        style={{ orient: orientation === 'left' ? LEFT : RIGHT }}
-      />
-    )
-  },
-)
+import YScaleBar from './YScaleBar'
 
 const LinearWiggleDisplay = observer((props: { model: WiggleDisplayModel }) => {
   const { model } = props
@@ -49,3 +29,5 @@ const LinearWiggleDisplay = observer((props: { model: WiggleDisplayModel }) => {
 })
 
 export default LinearWiggleDisplay
+
+export { YScaleBar }
