@@ -68,7 +68,11 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
 
     const opts = { ...scaleOpts, range: [0, height] }
     const viewScale = getScale(opts)
-    const snpViewScale = getScale({ ...opts, scaleType: 'linear' })
+    const snpViewScale = getScale({
+      ...opts,
+      range: [0, height / 2],
+      scaleType: 'linear',
+    })
     const originY = getOrigin(scaleOpts.scaleType)
     const snpOriginY = getOrigin('linear')
 
@@ -148,14 +152,14 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         }, 0)
 
       const interbaseEvents = Object.entries(snpinfo.noncov)
-      const indicatorHeight = 4.5
+      const indicatorHeight = 3.5
       if (drawInterbaseCounts) {
         interbaseEvents.reduce((curr, [base, { total }]) => {
           ctx.fillStyle = colorForBase[base]
           ctx.fillRect(
-            leftPx - 0.6,
+            leftPx - 0.5,
             indicatorHeight + snpToHeight(curr),
-            1.2,
+            1,
             snpToHeight(total),
           )
           return curr + total
@@ -179,8 +183,8 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         if (accum > totalScore * indicatorThreshold && totalScore > 7) {
           ctx.fillStyle = colorForBase[maxBase]
           ctx.beginPath()
-          ctx.moveTo(leftPx - 3, 0)
-          ctx.lineTo(leftPx + 3, 0)
+          ctx.moveTo(leftPx - 2, 0)
+          ctx.lineTo(leftPx + 2, 0)
           ctx.lineTo(leftPx, indicatorHeight)
           ctx.fill()
         }

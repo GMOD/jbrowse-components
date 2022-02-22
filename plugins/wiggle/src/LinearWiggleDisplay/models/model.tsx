@@ -257,11 +257,13 @@ const stateModelFactory = (
 
           // heuristic to just give some extra headroom on bigwig scores if no
           // maxScore/minScore specified (they have MAX_VALUE/MIN_VALUE if so)
-          if (maxScore === Number.MAX_VALUE && ret[1] > 1.0) {
-            ret[1] = round(ret[1] + headroom)
-          }
-          if (minScore === Number.MIN_VALUE && ret[0] < -1.0) {
-            ret[0] = round(ret[0] - headroom)
+          if (headroom !== 0) {
+            if (maxScore === Number.MAX_VALUE && ret[1] > 1.0) {
+              ret[1] = round(ret[1], headroom)
+            }
+            if (minScore === Number.MIN_VALUE && ret[0] < -1.0) {
+              ret[0] = round(ret[0], headroom)
+            }
           }
 
           // avoid returning a new object if it matches the old value
