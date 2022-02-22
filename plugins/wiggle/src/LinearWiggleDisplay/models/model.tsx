@@ -1,6 +1,7 @@
 import React, { lazy } from 'react'
 import {
   ConfigurationReference,
+  AnyConfigurationSchemaType,
   getConf,
   readConfObject,
 } from '@jbrowse/core/configuration'
@@ -19,7 +20,6 @@ import { autorun, observable, when } from 'mobx'
 import { addDisposer, isAlive, types, getEnv, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 import { FeatureStats } from '@jbrowse/core/util/stats'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { axisPropsFromTickScale } from 'react-d3-axis'
@@ -316,8 +316,8 @@ const stateModelFactory = (
           range,
           inverted: getConf(self, 'inverted'),
         })
-        const ticks = height < 50 ? 2 : 4
-        return axisPropsFromTickScale(scale, ticks)
+        const ticks = axisPropsFromTickScale(scale, 4)
+        return height < 50 ? { ...ticks, values: domain } : ticks
       },
     }))
     .views(self => {
