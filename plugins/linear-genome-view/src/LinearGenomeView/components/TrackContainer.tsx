@@ -15,8 +15,7 @@ const useStyles = makeStyles(theme => ({
   root: {},
   resizeHandle: {
     height: RESIZE_HANDLE_HEIGHT,
-    boxSizing: 'border-box',
-    position: 'relative',
+    background: theme.palette.divider,
     zIndex: 2,
   },
   overlay: {
