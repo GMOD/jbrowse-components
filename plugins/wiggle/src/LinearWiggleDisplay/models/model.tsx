@@ -16,7 +16,7 @@ import {
   BaseLinearDisplay,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import { autorun, observable, when } from 'mobx'
+import { autorun, when } from 'mobx'
 import { addDisposer, isAlive, types, getEnv, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
@@ -84,13 +84,12 @@ const stateModelFactory = (
     .volatile(() => ({
       statsReady: false,
       message: undefined as undefined | string,
-      stats: observable({ scoreMin: 0, scoreMax: 50 }),
+      stats: undefined as undefined | { scoreMin: number; scoreMax: number },
       statsFetchInProgress: undefined as undefined | AbortController,
     }))
     .actions(self => ({
       updateStats(stats: { scoreMin: number; scoreMax: number }) {
-        self.stats.scoreMin = stats.scoreMin
-        self.stats.scoreMax = stats.scoreMax
+        self.stats = { scoreMin: stats.scoreMin, scoreMax: stats.scoreMax }
         self.statsReady = true
       },
       setColor(color: string) {
@@ -242,6 +241,9 @@ const stateModelFactory = (
         },
         get domain() {
           const { stats, scaleType, minScore, maxScore } = self
+          if (!stats) {
+            return undefined
+          }
 
           const ret = getNiceDomain({
             domain: [stats.scoreMin, stats.scoreMax],
@@ -309,7 +311,11 @@ const stateModelFactory = (
     .views(self => ({
       get ticks() {
         const { scaleType, domain, height } = self
+        const minimalTicks = getConf(self, 'minimalTicks')
         const range = [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET]
+        if (!domain) {
+          return {}
+        }
         const scale = getScale({
           scaleType,
           domain,
@@ -317,7 +323,9 @@ const stateModelFactory = (
           inverted: getConf(self, 'inverted'),
         })
         const ticks = axisPropsFromTickScale(scale, 4)
-        return height < 50 ? { ...ticks, values: domain } : ticks
+        return height < 50 || minimalTicks
+          ? { ...ticks, values: domain }
+          : ticks
       },
     }))
     .views(self => {

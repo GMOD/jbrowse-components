@@ -47,6 +47,12 @@ export default function SNPCoverageConfigFactory(pluginManager: PluginManager) {
         defaultValue: 0,
       },
 
+      multiTicks: {
+        type: 'boolean',
+        description: 'Display multiple values for the ticks',
+        defaultValue: false,
+      },
+
       renderers: ConfigurationSchema('RenderersConfiguration', {
         SNPCoverageRenderer: SNPCoverageRendererConfigSchema,
       }),
