@@ -134,7 +134,7 @@ test('can instantiate a model that lets you navigate', () => {
   expect(model.maxBpPerPx).toBeCloseTo(13.888)
   model.setNewView(0.02, 0)
 
-  expect(model.scaleBarHeight).toEqual(19)
+  expect(model.scaleBarHeight).toEqual(20)
   // header height 20 + area where polygons get drawn has height of 48
   expect(model.headerHeight).toEqual(68)
   // TODO: figure out how to better test height

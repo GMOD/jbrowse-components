@@ -39,14 +39,12 @@ const useStyles = makeStyles(theme => ({
     position: 'absolute',
   },
   trackRenderingContainer: {
-    borderBottom: `1px solid ${theme.palette.divider}`,
     overflowY: 'auto',
     overflowX: 'hidden',
     whiteSpace: 'nowrap',
     position: 'relative',
     background: 'none',
     zIndex: 2,
-    boxSizing: 'content-box',
   },
 }))
 
