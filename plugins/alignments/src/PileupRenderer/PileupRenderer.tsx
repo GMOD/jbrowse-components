@@ -696,11 +696,12 @@ export default class PileupRenderer extends BoxRendererType {
         ctx.fillStyle = 'purple'
         const pos = leftPx - 1
         const len = +mismatch.base || mismatch.length
+        const insW = Math.max(minWidth, Math.min(1.2, 1 / bpPerPx))
         if (len < 10) {
-          ctx.fillRect(pos, topPx, w, heightPx)
+          ctx.fillRect(pos, topPx, insW, heightPx)
           if (1 / bpPerPx >= charWidth) {
-            ctx.fillRect(pos - w, topPx, w * 3, 1)
-            ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
+            ctx.fillRect(pos - insW, topPx, insW * 3, 1)
+            ctx.fillRect(pos - insW, topPx + heightPx - 1, insW * 3, 1)
           }
           if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
             ctx.fillText(`(${mismatch.base})`, leftPx + 2, topPx + heightPx)
