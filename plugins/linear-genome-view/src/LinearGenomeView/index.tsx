@@ -674,114 +674,58 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
-        const locStrings = locString.split(' ')
-        if (locStrings.length > 1) {
-          let assemblyName: string | undefined
-          if (optAssemblyName) {
-            assemblyName = optAssemblyName
-          } else if (assemblyNames.length === 1) {
-            assemblyName = assemblyNames[0]
-          }
+        const assemblyName = optAssemblyName || assemblyNames[0]
 
-          const locations = locStrings.map(locString => {
-            const region = parseLocString(locString, (locString, asm) =>
-              isValidRefName(locString, asm || assemblyName),
-            )
+        const parsedLocStrings = locString
+          .split(' ')
+          .filter(f => !!f.trim())
+          .map(l => parseLocString(l, ref => isValidRefName(ref, assemblyName)))
 
-            return {
-              ...region,
-              assemblyName: region.assemblyName || assemblyName,
-            }
-          })
-          this.navToMultiple(locations)
-          this.showAllRegions()
-          return
-        }
-        let assemblyName = optAssemblyName
-        let defaultRefName = ''
-        if (self.displayedRegions.length !== 0) {
-          // defaults
-          assemblyName = self.displayedRegions[0].assemblyName
-          defaultRefName = self.displayedRegions[0].refName
-        }
-        let assembly = assemblyName && assemblyManager.get(assemblyName)
-        if (!assembly) {
-          throw new Error(`Could not find assembly ${assemblyName}`)
-        }
-        let { regions } = assembly
-        if (!regions) {
-          throw new Error(`Regions for assembly ${assemblyName} not yet loaded`)
-        }
-        if (locStrings.length > 1) {
-          throw new Error(
-            'Navigating to multiple locations is not allowed when viewing a whole chromosome',
-          )
-        }
-        const parsedLocString = parseLocString(locStrings[0], refName =>
-          isValidRefName(refName, assemblyName),
-        )
-        let changedAssembly = false
-        if (
-          parsedLocString.assemblyName &&
-          parsedLocString.assemblyName !== assemblyName
-        ) {
-          const newAssembly = assemblyManager.get(parsedLocString.assemblyName)
-          if (!newAssembly) {
-            throw new Error(
-              `Could not find assembly ${parsedLocString.assemblyName}`,
-            )
+        const locations = parsedLocStrings.map(region => {
+          const asmName = region.assemblyName || assemblyName
+          const asm = assemblyManager.get(asmName)
+          const { refName } = region
+          if (!asm) {
+            throw new Error(`assembly ${asmName} not found`)
           }
-          assembly = newAssembly
-          changedAssembly = true
-          const newRegions = newAssembly.regions
-          if (!newRegions) {
-            throw new Error(
-              `Regions for assembly ${parsedLocString.assemblyName} not yet loaded`,
-            )
+          const { regions } = asm
+          if (!regions) {
+            throw new Error(`regions not loaded yet for ${asmName}`)
           }
-          regions = newRegions
-        }
-        const canonicalRefName = assembly.getCanonicalRefName(
-          parsedLocString.refName,
-        )
-
-        if (!canonicalRefName) {
-          throw new Error(
-            `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
-          )
-        }
-        if (changedAssembly || canonicalRefName !== defaultRefName) {
-          const newDisplayedRegion = regions.find(
+          const canonicalRefName = asm.getCanonicalRefName(region.refName)
+          if (!canonicalRefName) {
+            throw new Error(`Could not find refName ${refName} in ${asm.name}`)
+          }
+          const parentRegion = regions.find(
             region => region.refName === canonicalRefName,
           )
-          if (newDisplayedRegion) {
-            this.setDisplayedRegions([newDisplayedRegion])
-          } else {
-            throw new Error(
-              `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
-            )
+          if (!parentRegion) {
+            throw new Error(`Could not find refName ${refName} in ${asmName}`)
           }
-        }
-        const displayedRegion = regions.find(
-          region => region.refName === canonicalRefName,
-        )
-        if (displayedRegion) {
-          const start = clamp(
-            parsedLocString?.start ?? 0,
-            0,
-            displayedRegion.end,
-          )
-          const end = clamp(
-            parsedLocString?.end ?? displayedRegion.end,
-            0,
-            displayedRegion.end,
-          )
+
+          return {
+            ...region,
+            assemblyName: asmName,
+            parentRegion,
+          }
+        })
+
+        if (locations.length === 1) {
+          this.setDisplayedRegions(locations.map(r => r.parentRegion))
+          const region = locations[0]
+          const { start, end, parentRegion } = region
 
           this.navTo({
-            ...parsedLocString,
-            start,
-            end,
+            ...region,
+            start: clamp(start ?? 0, 0, parentRegion.end),
+            end: clamp(end ?? parentRegion.end, 0, parentRegion.end),
           })
+        } else {
+          this.setDisplayedRegions(
+            // @ts-ignore
+            locations.map(r => (r.start === undefined ? r.parentRegion : r)),
+          )
+          this.showAllRegions()
         }
       },
 
@@ -903,43 +847,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
                     location,
                   )} does not match with displayed regions`,
                 )
-              }
-              if (locationIndex > 0) {
-                // does it reach the left side?
-                const matchesLeft = region.reversed
-                  ? locationEnd === region.end
-                  : locationStart === region.start
-                if (!matchesLeft) {
-                  throw new Error(
-                    `${
-                      region.reversed ? 'End' : 'Start'
-                    } of region ${assembleLocString(
-                      location,
-                    )} should be ${(region.reversed
-                      ? region.end
-                      : region.start + 1
-                    ).toLocaleString('en-US')}, but it is not`,
-                  )
-                }
-              }
-              const isLast = locationIndex === locations.length - 1
-              if (!isLast) {
-                // does it reach the right side?
-                const matchesRight = region.reversed
-                  ? locationStart === region.start
-                  : locationEnd === region.end
-                if (!matchesRight) {
-                  throw new Error(
-                    `${
-                      region.reversed ? 'Start' : 'End'
-                    } of region ${assembleLocString(
-                      location,
-                    )} should be ${(region.reversed
-                      ? region.start + 1
-                      : region.end
-                    ).toLocaleString('en-US')}, but it is not`,
-                  )
-                }
               }
             }
             locationIndex -= 1

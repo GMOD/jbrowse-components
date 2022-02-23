@@ -297,29 +297,6 @@ test('can navToMultiple', () => {
   ])
   expect(model.offsetPx).toBe(2799)
   expect(model.bpPerPx).toBeCloseTo(12.531)
-
-  expect(() =>
-    model.navToMultiple([
-      { refName: 'ctgB', start: 5000, end: 10000 },
-      { refName: 'ctgC', start: 5000, end: 10000 },
-    ]),
-  ).toThrow('Start of region ctgC:5,001..10,000 should be 1, but it is not')
-
-  expect(() =>
-    model.navToMultiple([
-      { refName: 'ctgB', start: 0, end: 5000 },
-      { refName: 'ctgC', start: 0, end: 5000 },
-    ]),
-  ).toThrow('End of region ctgB:1..5,000 should be 10,000, but it is not')
-
-  expect(() =>
-    model.navToMultiple([
-      { refName: 'ctgA', start: 5000, end: 10000 },
-      { refName: 'ctgA', start: 0, end: 5000 },
-    ]),
-  ).toThrow(
-    'Entered location ctgA:1..5,000 does not match with displayed regions',
-  )
 })
 
 describe('Zoom to selected displayed regions', () => {
