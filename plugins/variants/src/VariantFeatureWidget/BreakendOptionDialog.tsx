@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@material-ui/core/styles'
 import {
   Button,
   Dialog,
@@ -12,6 +11,7 @@ import {
   IconButton,
   FormControlLabel,
   Checkbox,
+  makeStyles,
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 import { getSnapshot } from 'mobx-state-tree'
@@ -52,9 +52,7 @@ function BreakendOptionDialog({
         {handleClose ? (
           <IconButton
             className={classes.closeButton}
-            onClick={() => {
-              handleClose()
-            }}
+            onClick={() => handleClose()}
           >
             <CloseIcon />
           </IconButton>
@@ -90,22 +88,25 @@ function BreakendOptionDialog({
           onClick={() => {
             const { view } = model
             const session = getSession(model)
+            try {
+              const viewSnapshot = viewType.snapshotFromBreakendFeature(
+                feature,
+                view,
+              )
+              viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
+              viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
+              viewSnapshot.featureData = feature
+              const viewTracks: any = getSnapshot(view.tracks)
+              viewSnapshot.views[0].tracks = viewTracks
+              viewSnapshot.views[1].tracks = mirrorTracks
+                ? viewTracks.slice().reverse()
+                : viewTracks
 
-            const viewSnapshot = viewType.snapshotFromBreakendFeature(
-              feature,
-              view,
-            )
-            viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
-            viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
-            viewSnapshot.featureData = feature
-            const viewTracks: any = getSnapshot(view.tracks)
-            viewSnapshot.views[0].tracks = viewTracks
-            viewSnapshot.views[1].tracks = mirrorTracks
-              ? viewTracks.slice().reverse()
-              : viewTracks
-
-            session.addView('BreakpointSplitView', viewSnapshot)
-
+              session.addView('BreakpointSplitView', viewSnapshot)
+            } catch (e) {
+              console.error(e)
+              session.notify(`${e}`)
+            }
             handleClose()
           }}
           variant="contained"
@@ -115,12 +116,9 @@ function BreakendOptionDialog({
           OK
         </Button>
         <Button
-          onClick={() => {
-            handleClose()
-          }}
+          onClick={() => handleClose()}
           color="secondary"
           variant="contained"
-          autoFocus
         >
           Cancel
         </Button>
