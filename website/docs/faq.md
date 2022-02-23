@@ -268,7 +268,7 @@ an encoded format.
 
 We recommend that you have the following
 
-- Node v10+
+- Node v12+
 - Git
 - [Yarn](https://classic.yarnpkg.com/en/docs/install/#debian-stable)
 
@@ -353,4 +353,13 @@ Also, if you are implementing JBrowse Web on your own server and would like to
 create your own URL shortener, you can use the shareURL parameter in the
 config.json file to point at your own server instead of ours.
 
-###
+### Troubleshooting
+
+Doing things like:
+
+- Changing trackIds
+- Deleting tracks
+
+Can make user's saved sessions fail to load. If part of a session is
+inconsistent, currently, the entire session will fail to load. Therefore, make
+decisions to delete or change IDs carefully.

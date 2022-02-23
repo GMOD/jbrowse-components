@@ -63,7 +63,7 @@ Here are some examples of working plugins.
 You can use these to see how plugins are generally structured, and can use the
 pluggable elements in them as templates for your own pluggable elements.
 
-We will go over what plugins do and what is in them now
+Now, let's explore what plugins can do and how they are structured.
 
 ## What's in a plugin
 
@@ -92,11 +92,13 @@ Pluggable elements are pieces of functionality that plugins can add to JBrowse. 
 
 - Adapters
 - Track types
+- Display types
 - Renderer types
 - Widgets
 - RPC calls
 - Display types
 - View types
+- Extension points
 
 In additional to creating plugins that create new adapters, track types,
 etc. note that you can also wrap the behavior of another track so these
@@ -124,43 +126,6 @@ multiple adapter types
 - `SNPCoverageAdapter` - this adapter takes a `BamAdapter` or `CramAdapter` as a
   subadapter, and calculates feature coverage from it
 
-### Displays
-
-A display is a method for displaying a particular track in a particular view
-
-For example, we have a notion of a synteny track type, and the synteny track
-type has two display models
-
-- DotplotDisplay, which is used in the dotplot view
-- LinearSyntenyDisplay, which is used in the linear synteny view
-
-This enables a single track entry to be used in multiple view types e.g. if I
-run jbrowse add-track myfile.paf, this automatically creates a synteny track
-that can be opened in both a dotplot and a linear synteny view.
-
-Most track types only have a "linear" display available, but one more example
-is the VariantTrack, which has two display methods
-
-- LinearVariantDisplay - used in linear genome view
-- ChordVariantDisplay - used in the circular view
-
-### Renderers
-
-Renderers are a new concept in JBrowse 2, and are related to the concept of
-server side rendering (SSR), but can be used not just on the server but also in
-contexts like the web worker (e.g. the webworker can draw the features to an
-OffscreenCanvas). For more info see [creating
-renderers](#creating-custom-renderers)
-
-Example renderers: the `@jbrowse/plugin-alignments` exports several
-renderer types
-
-- `PileupRenderer` - a renderer type that renders Pileup type display of
-  alignments fetched from the `BamAdapter`/`CramAdapter`
-- `SNPCoverageRenderer` - a renderer that draws the coverage. Note that this
-  renderer derives from the wiggle renderer, but does the additional step of
-  drawing the mismatches over the coverage track
-
 ### Track types
 
 Track types are a high level type that controls how features are drawn. In most
@@ -178,6 +143,44 @@ types
 - `SNPCoverageTrack` - this track type actually derives from the WiggleTrack type
 - `PileupTrack` - a track type that draws alignment pileup results
 - `AlignmentsTrack` - combines `SNPCoverageTrack` and `PileupTrack` as "subtracks"
+
+### Displays
+
+A display is a method for displaying a particular track in a particular view
+
+For example, we have a notion of a synteny track type, and the synteny track
+type has two display models
+
+- `DotplotDisplay`, which is used in the dotplot view
+- `LinearSyntenyDisplay`, which is used in the linear synteny view
+
+This enables a single track entry to be used in multiple view types e.g. if I
+run `jbrowse add-track myfile.paf`, this automatically creates a `SyntenyTrack`
+entry in the tracklist, and when this track is opened in the dotplot view, the
+`DotplotDisplay` is used for rendering
+
+Another example of a track type with multiple display types is `VariantTrack`,
+which has two display methods
+
+- `LinearVariantDisplay` - used in linear genome view
+- `ChordVariantDisplay` - used in the circular view to draw breakends and structural variants
+
+### Renderers
+
+Renderers are a new concept in JBrowse 2, and are related to the concept of
+server side rendering (SSR), but can be used not just on the server but also in
+contexts like the web worker (e.g. the webworker can draw the features to an
+OffscreenCanvas). For more info see [creating
+renderers](#creating-custom-renderers)
+
+Example renderers: the `@jbrowse/plugin-alignments` exports several
+renderer types
+
+- `PileupRenderer` - a renderer type that renders Pileup type display of
+  alignments fetched from the `BamAdapter`/`CramAdapter`
+- `SNPCoverageRenderer` - a renderer that draws the coverage. Note that this
+  renderer derives from the wiggle renderer, but does the additional step of
+  drawing the mismatches over the coverage track
 
 ### Widgets
 
@@ -221,118 +224,69 @@ be interplay between view types e.g. popup dotplot from a linear view, etc.
 ### RPC methods
 
 Plugins can register their own RPC methods, which can allow them to offload
-custom behaviors to a web-worker or server side process. The Wiggle track for
-example registers `WiggleGetGlobalStats` and `WiggleGetMultiRegionStats`
+custom behaviors to a web-worker or server side process.
 
-### MenuItems
+The wiggle plugin, for example, registers two custom RPC method types
 
-You can add menus or add items to existing menus in several places.
+- `WiggleGetGlobalStats`
+- `WiggleGetMultiRegionStats`
 
-A MenuItem object defines the menu item's text, icon, action, and other
-attributes.
+These methods can run in the webworker when available
 
-Types of MenuItems:
+### Extension points
 
-- **Normal**: a standard menu item that performs an action when clicked
-- **Checkbox**: a menu item that has a checkbox
-- **Radio**: a menu item that has a radio button icon
-- **Divider**: a horizontal line (not clickable) that can be used to visually
-  divide menus
-- **SubHeader**: text (not clickable) that can be used to visually label a
-  section of a menu
-- **SubMenu**: contains menu items, for making nested menus
+Extension points are a pluggable element type which allows users to add a
+callback that is called at an appropriate time.
 
-| Name     | Description                                                                                                                                                                                              |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| type     | Options are 'normal', 'radio', 'checkbox', 'subMenu', 'subHeader', or 'divider'. If not provided, defaults to 'normal', unless a `subMenu` attribute is present, in which case it defaults to 'subMenu'. |
-| label    | The text for the menu item. Not applicable to 'divider', required for all others.                                                                                                                        |
-| subLabel | Additional descriptive text for the menu item. Not applicable to 'divider' or 'subHeader', optional for all others.                                                                                      |
-| icon     | An icon for the menu item. Must be compatible with Material-UI's [Icons](https://material-ui.com/components/icons/). Not applicable to 'divider' or 'subHeader', optional for all others.                |
-| disabled | Whether or not the menu item is disabled (meaning grayed out and not clickable). Not applicable to 'divider' or 'subHeader', optional for all others.                                                    |
-| checked  | Whether or not the checkbox or radio button are selected. Only applicable to 'radio' and 'checkbox'                                                                                                      |
-| onClick  | Callback of action to perform on click. Function signature is `(session) => undefined`. Required for 'normal', 'radio', and 'checkbox', not applicable to any others.                                    |
-| subMenu  | An array of menu items. Applicable only to 'subMenu'.                                                                                                                                                    |
+See [example for adding context menu items](#adding-track-context-menu-items)
+for an example of using extension points
 
-As an example, the here is an array of MenuItems and the resulting menu:
+The basic API is that producers can say
 
 ```js
-;[
-  {
-    label: 'Normal menu item',
-    icon: AddIcon,
-    onClick: () => {},
-  },
-  {
-    label: 'Normal',
-    subLabel: 'with subLabel',
-    icon: AddIcon,
-    onClick: () => {},
-  },
-  {
-    label: 'Disabled menu item',
-    disabled: true,
-    icon: AddIcon,
-    onClick: () => {},
-  },
-  {
-    type: 'radio',
-    label: 'Radio checked',
-    checked: true,
-    onClick: () => {},
-  },
-  {
-    type: 'radio',
-    label: 'Radio unchecked',
-    checked: false,
-    onClick: () => {},
-  },
-  {
-    type: 'checkbox',
-    label: 'Checkbox checked',
-    checked: true,
-    onClick: () => {},
-  },
-  {
-    type: 'checkbox',
-    label: 'Checkbox unchecked',
-    checked: false,
-    onClick: () => {},
-  },
-  { type: 'divider' },
-  { type: 'subHeader', label: 'This is a subHeader' },
-  {
-    label: 'SubMenu',
-    subMenu: [
-      {
-        label: 'SubMenu item one',
-        onClick: () => {},
-      },
-      {
-        label: 'SubMenu item two',
-        onClick: () => {},
-      },
-    ],
-  },
-]
+const ret = pluginManager.evaluateExtensionPoint('ExtensionPointName', {
+  value: 1,
+})
 ```
 
-<Figure src="/img/menu_demo.png" caption="This screenshot shows all the various track menu options, generated by the code listing"/>
+And consumers can say
+
+```js
+pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
+  return arg.value + 1
+})
+
+pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
+  return arg.value + 1
+})
+```
+
+In this case, arg that is passed in evaluateExtensionPoint calls all the
+callbacks that have been registered by addToExtensionPoint. If multiple
+extension points are registered, the return value of the first extension point
+is passed as the new argument to the second and so on (they are chained together)
+
+So in the example above, ret would be `{value:3}` after evaluating the
+extension point
+
+## Common plugin use cases
 
 ### Adding a top-level menu
 
 These are the menus that appear in the top bar of JBrowse Web and JBrowse
-Desktop. By default there are `File` and `Help` menus. You can add your own menu,
-or you can add menu items or sub-menus to the existing menus and sub-menus.
+Desktop. By default there are `File` and `Help` menus. You can add your own
+menu, or you can add menu items or sub-menus to the existing menus and
+sub-menus.
 
 <Figure src="/img/top_level_menus.png" caption="In the above screenshot, the `File` menu has several items and an `Add` sub-menu, which has more items. You can have arbitrarily deep sub-menus."/>
 
-You add menus in the `configure` method of your plugin. Not all JBrowse products
-will have top-level menus, though. JBrowse Web and JBrowse Desktop have them, but
-something like JBrowse Linear View (which is an just a single view designed to
-be embedded in another page) does not. This means you need to check whether or
-not menus are supported using `isAbstractMenuManager` in the `configure` method.
-This way the rest of the plugin will still work if there is not a menu. Here's
-an example that adds an "Open My View" item to the `File -> Add` menu.
+You add menus in the `configure` method of your plugin. Not all JBrowse
+products will have top-level menus, though. JBrowse Web and JBrowse Desktop
+have them, but something like JBrowse Linear View (which is an just a single
+view designed to be embedded in another page) does not. This means you need to
+check whether or not menus are supported using `isAbstractMenuManager` in the
+`configure` method. This way the rest of the plugin will still work if there is
+not a menu. Here's an example that adds an "Open My View" item to the `File -> Add` menu.
 
 ```js
 import Plugin from '@jbrowse/core/Plugin'
@@ -360,99 +314,8 @@ class MyPlugin extends Plugin {
 }
 ```
 
-This example uses `rootModel.appendToSubMenu`. These are all the
-menu-manipulation methods available on the root model:
-
-#### appendMenu
-
-Add a top-level menu
-
-##### Parameters
-
-| Name     | Description                 |
-| -------- | --------------------------- |
-| menuName | Name of the menu to insert. |
-
-##### Return Value
-
-The new length of the top-level menus array
-
-#### insertMenu
-
-Insert a top-level menu
-
-##### Parameters
-
-| Name     | Description                                                                                                                                 |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| menuName | Name of the menu to insert.                                                                                                                 |
-| position | Position to insert menu. If negative, counts from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the second-to-last one. |
-
-##### Return Value
-
-The new length of the top-level menus array
-
-#### appendToMenu
-
-Add a menu item to a top-level menu
-
-##### Parameters
-
-| Name     | Description                              |
-| -------- | ---------------------------------------- |
-| menuName | Name of the top-level menu to append to. |
-| menuItem | Menu item to append.                     |
-
-##### Return Value
-
-The new length of the menu
-
-#### insertInMenu
-
-Insert a menu item into a top-level menu
-
-##### Parameters
-
-| Name     | Description                                                                                                                                      |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| menuName | Name of the top-level menu to insert into.                                                                                                       |
-| menuItem | Menu item to insert.                                                                                                                             |
-| position | Position to insert menu item. If negative, counts from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the second-to-last one. |
-
-##### Return Value
-
-The new length of the menu
-
-#### appendToSubMenu
-
-Add a menu item to a sub-menu
-
-##### Parameters
-
-| Name     | Description                                                                                   |
-| -------- | --------------------------------------------------------------------------------------------- |
-| menuPath | Path to the sub-menu to add to, starting with the top-level menu (e.g. `['File', 'Insert']`). |
-| menuItem | Menu item to append.                                                                          |
-
-##### Return value
-
-The new length of the sub-menu
-
-#### insertInSubMenu
-
-Insert a menu item into a sub-menu
-
-##### Parameters
-
-| Name     | Description                                                                                                                                      |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| menuPath | Path to the sub-menu to add to, starting with the top-level menu (e.g. `['File', 'Insert']`).                                                    |
-| menuItem | Menu item to insert.                                                                                                                             |
-| position | Position to insert menu item. If negative, counts from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the second-to-last one. |
-
-##### Return value
-
-The new length of the sub-menu
+This example uses `rootModel.appendToSubMenu`. See [top-level menu
+API](../api_guide#rootmodel-menu-api) for more details on available functions.
 
 ### Adding menu items to a custom track
 
@@ -567,27 +430,27 @@ a type, and a value.
 
 Here is a mostly comprehensive list of config types
 
-- stringEnum - allows assigning one of a limited set of entries, becomes a
+- `stringEnum` - allows assigning one of a limited set of entries, becomes a
   dropdown box in the GUI
-- color - allows selecting a color, becomes a color picker in the GUI
-- number - allows entering any numeric value
-- string - allows entering any string
-- integer - allows entering a integer value
-- boolean
-- frozen - an arbitrary JSON can be specified in this config slot, becomes
+- `color` - allows selecting a color, becomes a color picker in the GUI
+- `number` - allows entering any numeric value
+- `string` - allows entering any string
+- `integer` - allows entering a integer value
+- `boolean
+- `frozen` - an arbitrary JSON can be specified in this config slot, becomes
   textarea in the GUI
-- fileLocation - refers to a URL, local file path on desktop, or file blob
+- `fileLocation` - refers to a URL, local file path on desktop, or file blob
   object in the browser
-- text - allows entering a string, becomes textarea in the GUI
-- stringArray - allows entering a list of strings, becomes a "todolist" style
+- `text` - allows entering a string, becomes textarea in the GUI
+- `stringArray` - allows entering a list of strings, becomes a "todolist" style
   editor in the GUI where you can add or delete things
-- stringArrayMap - allows entering a list of key-value entries
+- `stringArrayMap` - allows entering a list of key-value entries
 
-Let's examine the PileupRenderer configuration as an example.
+Let's examine the `PileupRenderer` configuration as an example.
 
 ### Example config with multiple slot types
 
-This PileupRenderer config contains an example of several different slot types
+This `PileupRenderer` config contains an example of several different slot types
 
 ```js
 import { types } from 'mobx-state-tree'
@@ -730,7 +593,7 @@ const ThingStateModel = types.model('MyThingsState', {
 })
 ```
 
-An example of a config schema with a sub-config schema is the BamAdapter, with
+An example of a config schema with a sub-config schema is the `BamAdapter`, with
 the index sub-config schema
 
 ```js
@@ -831,9 +694,21 @@ class MyAdapter extends BaseFeatureDataAdapter {
   async getRefNames() {
     // return refNames used in your adapter, used for refName renaming
   }
-  getFeatures(region) {
-    // return features from your adapter, using rxjs observable
+
+  getFeatures(region, opts) {
+    // region: {
+    //    refName:string, e.g. chr1
+    //    start:number, 0-based half open start coord
+    //    end:number, 0-based half open end coord
+    //    assemblyName:string, assembly name
+    //    originalRefName:string the name of the refName from the fasta file, e.g. 1 instead of chr1
+    // }
+    // opts: {
+    //   signal?: AbortSignal
+    //   ...rest: all the renderProps() object from the display type
+    // }
   }
+
   freeResources(region) {
     // can be empty
   }
@@ -990,12 +865,12 @@ This is uncommonly used, so most adapters make this an empty function
 Most adapters in fact use an LRU cache to make resources go away over time
 instead of manually cleaning up resources
 
-### Writing your own plugin
+## Writing your own plugin
 
 JBrowse 2 plugins can be used to add new pluggable elements (views, tracks,
-adapters, etc), and to modify behavior of the application by adding code
-that watches the application's state. For the full list of what kinds of
-pluggable element types plugins can add, see the [pluggable
+adapters, etc), and to modify behavior of the application by adding code that
+watches the application's state. For the full list of what kinds of pluggable
+element types plugins can add, see the [pluggable
 elements](#pluggable-elements) page.
 
 The first thing that we have is a `src/index.js` which exports a default class
@@ -1285,7 +1160,7 @@ The above code is relatively simple but it is fairly quirky. Here are some notes
 ### Bringing the two together
 
 We can bring these two contexts together with a new track in our config.json.
-Remember our previous track.json? Now we can edit it to use our own ArcRenderer
+Remember our previous track.json? Now we can edit it to use our own `ArcRenderer`
 
 track.json
 
@@ -1354,10 +1229,10 @@ class MyRenderer implements ServerSideRendererType {
 
 In the above simplified example, our renderer creates a canvas using width and
 height that are supplied via arguments, and draw a rectangle. We then return a
-React.createElement call which creates a "rendering" component that will
+`React.createElement` call which creates a "rendering" component that will
 contain the output
 
-Note that the above canvas operations use an OffscreenCanvas for Chrome, or in
+Note that the above canvas operations use an `OffscreenCanvas` for Chrome, or in
 other browsers serialize the drawing commands to be drawn in the main thread
 
 ### What are the props passed to the renderer
@@ -1404,7 +1279,7 @@ class MyRenderer extends ServerSideRendererType {
 
 Note that track models themselves can extend this using their renderProps function
 
-For example the WiggleTrack has code similar to this, which adds a scaleOpts
+For example the `WiggleTrack` has code similar to this, which adds a scaleOpts
 prop that gets passed to the renderer
 
 ```js
@@ -1494,21 +1369,21 @@ Notes:
 
 - The above SVG renderer is highly simplified but serves an example, but it
   shows that you can have a simple React component that leverages the existing
-  BoxRendererType, so that you do not have to necessarily create your own
+  `BoxRendererType`, so that you do not have to necessarily create your own
   renderer class
 - The renderers receive an array of regions to render, but if they are only
   equipped to handle one region at a time then they can select only rendering
-  to regions[0]
+  to `regions[0]`
 
 ### Overriding the renderer's getFeatures method
 
-Normally, it is sufficient to override the getFeatures function in your
+Normally, it is sufficient to override the `getFeatures` function in your
 dataAdapter
 
 If you want to drastically modify the feature fetching behavior, you can modify
 the renderer's getFeatures call
 
-The base ServerSideRendererType class has a built-in getFeatures function that,
+The base `ServerSideRendererType` class has a built-in `getFeatures` function that,
 in turn, calls your adapter's getFeatures function, but if you need
 tighter control over how your adapter's getFeatures method is called then
 your renderer. The Hi-C renderer type does not operate on conventional
@@ -1539,18 +1414,18 @@ instead of a track, but here are some reasons you might want a custom track
   in the wiggle track)
 - Implementing custom track menu items (e.g. Show soft clipping in the
   alignments track)
-- Adding custom widgets (e.g. custom VariantFeatureWidget in
+- Adding custom widgets (e.g. custom `VariantFeatureWidget` in
   variant track)
 - You want to bundle your renderer and adapter as a specific thing that is
-  automatically initialized rather than the BasicTrack (which combines any
+  automatically initialized rather than the `BasicTrack` (which combines any
   adapter and renderer)
 
 For examples of custom track types, refer to things like
 
-- HicTrack, which uses a custom HicRenderer to draw contact matrix
-- GDCPlugin, which has a custom track type that registers custom feature detail
+- `HicTrack`, which uses a custom HicRenderer to draw contact matrix
+- `GDCPlugin`, which has a custom track type that registers custom feature detail
   widgets
-- VariantTrack, which also registers custom widgets, and has
-  ChordVariantDisplay and LinearVariantDisplay
-- SyntenyTrack, which can be displayed with DotplotDisplay or
-  LinearSyntenyDisplay
+- `VariantTrack`, which also registers custom widgets, and has
+  `ChordVariantDisplay` and `LinearVariantDisplay`
+- `SyntenyTrack`, which can be displayed with `DotplotDisplay` or
+  `LinearSyntenyDisplay`

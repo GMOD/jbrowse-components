@@ -315,7 +315,7 @@ export default class AddTrack extends JBrowseCommand {
     const callbacks = {
       copy: (src: string, dest: string) => copyFile(src, dest, COPYFILE_EXCL),
       move: (src: string, dest: string) => rename(src, dest),
-      symlink: (src: string, dest: string) => symlink(src, dest),
+      symlink: (src: string, dest: string) => symlink(path.resolve(src), dest),
     }
 
     await Promise.all(
@@ -331,7 +331,9 @@ export default class AddTrack extends JBrowseCommand {
     await this.writeJsonFile(this.target, configContents)
 
     this.log(
-      `${idx !== -1 ? 'Overwrote' : 'Added'} track "${name}" ${
+      `${
+        idx !== -1 ? 'Overwrote' : 'Added'
+      } track with name "${name}" and trackId "${trackId}" ${
         idx !== -1 ? 'in' : 'to'
       } ${this.target}`,
     )

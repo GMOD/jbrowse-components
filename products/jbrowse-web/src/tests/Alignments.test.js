@@ -104,7 +104,7 @@ describe('alignments track', () => {
     )
 
     const { findByTestId: findByTestId1 } = within(
-      await findByTestId('Blockset-snpcoverage'),
+      await findByTestId('Blockset-snpcoverage', {}, delay),
     )
 
     expectCanvasMatch(

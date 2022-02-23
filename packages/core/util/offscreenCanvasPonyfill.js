@@ -51,6 +51,10 @@ export class PonyfillOffscreenContext {
     this.commands.push({ type: 'arcTo', args })
   }
 
+  bezierCurveTo(...args) {
+    this.commands.push({ type: 'bezierCurveTo', args })
+  }
+
   beginPath(...args) {
     this.commands.push({ type: 'beginPath', args })
   }

@@ -988,14 +988,14 @@ export function generateCodonTable(table: any) {
 
 // call statusCallback with current status and clear when finished
 export async function updateStatus<U>(
-  statusMsg: string,
-  statusCallback: (arg: string) => void,
+  msg: string,
+  cb: (arg: string) => void,
   fn: () => U,
 ) {
-  statusCallback(statusMsg)
-  const result = await fn()
-  statusCallback('')
-  return result
+  cb(msg)
+  const res = await fn()
+  cb('')
+  return res
 }
 
 export function hashCode(str: string) {
@@ -1023,16 +1023,22 @@ interface Block {
   maxv: VirtualOffset
 }
 
-export async function bytesForRegions(regions: Region[], index: any) {
+export async function bytesForRegions(
+  regions: Region[],
+  index: {
+    blocksForRange: (
+      ref: string,
+      start: number,
+      end: number,
+    ) => Promise<Block[]>
+  },
+) {
   const blockResults = await Promise.all(
-    regions.map(
-      r => index.blocksForRange(r.refName, r.start, r.end) as Block[],
-    ),
+    regions.map(r => index.blocksForRange(r.refName, r.start, r.end)),
   )
 
   return blockResults
     .flat()
-
     .map(block => ({
       start: block.minv.blockPosition,
       end: block.maxv.blockPosition + 65535,
@@ -1093,8 +1099,8 @@ export function viewBpToPx({
     }
     return false
   })
-  const foundRegion = self.displayedRegions[index]
-  if (foundRegion) {
+  const found = self.displayedRegions[index]
+  if (found) {
     return {
       index,
       offsetPx: Math.round(offsetBp / self.bpPerPx),

@@ -104,6 +104,12 @@ export const INTER_REGION_PADDING_WIDTH = 2
 export const WIDGET_HEIGHT = 32
 export const SPACING = 7
 
+function localStorageGetItem(item: string) {
+  return typeof localStorage !== 'undefined'
+    ? localStorage.getItem(item)
+    : undefined
+}
+
 export function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
@@ -128,15 +134,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ),
         trackLabels: types.optional(
           types.string,
-          () => localStorage.getItem('lgv-trackLabels') || 'overlapping',
+          () => localStorageGetItem('lgv-trackLabels') || 'overlapping',
         ),
         showCenterLine: types.optional(types.boolean, () => {
-          const setting = localStorage.getItem('lgv-showCenterLine')
-          return setting !== undefined ? !!setting : false
+          const setting = localStorageGetItem('lgv-showCenterLine')
+          return setting !== undefined && setting !== null ? !!+setting : false
         }),
         showCytobandsSetting: types.optional(types.boolean, () => {
-          const setting = localStorage.getItem('lgv-showCytobands')
-          return setting !== undefined ? !!setting : true
+          const setting = localStorageGetItem('lgv-showCytobands')
+          return setting !== undefined && setting !== null ? !!+setting : true
         }),
       }),
     )
@@ -1214,127 +1220,128 @@ export function stateModelFactory(pluginManager: PluginManager) {
           : 0
       },
     }))
+    .views(self => ({
+      menuItems(): MenuItem[] {
+        const { canShowCytobands, showCytobands } = self
+
+        const menuItems: MenuItem[] = [
+          {
+            label: 'Return to import form',
+            onClick: () => {
+              getSession(self).queueDialog((doneCallback: Function) => [
+                ReturnToImportFormDlg,
+                { model: self, handleClose: doneCallback },
+              ])
+            },
+            icon: FolderOpenIcon,
+          },
+          {
+            label: 'Export SVG',
+            icon: PhotoCameraIcon,
+            onClick: () => {
+              getSession(self).queueDialog((doneCallback: Function) => [
+                ExportSvgDlg,
+                { model: self, handleClose: doneCallback },
+              ])
+            },
+          },
+          {
+            label: 'Open track selector',
+            onClick: self.activateTrackSelector,
+            icon: TrackSelectorIcon,
+          },
+          {
+            label: 'Horizontally flip',
+            icon: SyncAltIcon,
+            onClick: self.horizontallyFlip,
+          },
+          { type: 'divider' },
+          {
+            label: 'Show all regions in assembly',
+            icon: VisibilityIcon,
+            onClick: self.showAllRegionsInAssembly,
+          },
+          {
+            label: 'Show center line',
+            icon: VisibilityIcon,
+            type: 'checkbox',
+            checked: self.showCenterLine,
+            onClick: self.toggleCenterLine,
+          },
+          {
+            label: 'Show header',
+            icon: VisibilityIcon,
+            type: 'checkbox',
+            checked: !self.hideHeader,
+            onClick: self.toggleHeader,
+          },
+          {
+            label: 'Show header overview',
+            icon: VisibilityIcon,
+            type: 'checkbox',
+            checked: !self.hideHeaderOverview,
+            onClick: self.toggleHeaderOverview,
+            disabled: self.hideHeader,
+          },
+          {
+            label: 'Track labels',
+            icon: LabelIcon,
+            subMenu: [
+              {
+                label: 'Overlapping',
+                icon: VisibilityIcon,
+                type: 'radio',
+                checked: self.trackLabels === 'overlapping',
+                onClick: () => self.setTrackLabels('overlapping'),
+              },
+              {
+                label: 'Offset',
+                icon: VisibilityIcon,
+                type: 'radio',
+                checked: self.trackLabels === 'offset',
+                onClick: () => self.setTrackLabels('offset'),
+              },
+              {
+                label: 'Hidden',
+                icon: VisibilityIcon,
+                type: 'radio',
+                checked: self.trackLabels === 'hidden',
+                onClick: () => self.setTrackLabels('hidden'),
+              },
+            ],
+          },
+          ...(canShowCytobands
+            ? [
+                {
+                  label: showCytobands ? 'Hide ideogram' : 'Show ideograms',
+                  onClick: () => {
+                    self.setShowCytobands(!showCytobands)
+                  },
+                },
+              ]
+            : []),
+        ]
+
+        // add track's view level menu options
+        for (const [key, value] of self.trackTypeActions.entries()) {
+          if (value.length) {
+            menuItems.push(
+              { type: 'divider' },
+              { type: 'subHeader', label: key },
+            )
+            value.forEach(action => {
+              menuItems.push(action)
+            })
+          }
+        }
+
+        return menuItems
+      },
+    }))
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
-        menuItems(): MenuItem[] {
-          const { canShowCytobands, showCytobands } = self
-
-          const menuItems: MenuItem[] = [
-            {
-              label: 'Return to import form',
-              onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
-                  ReturnToImportFormDlg,
-                  { model: self, handleClose: doneCallback },
-                ])
-              },
-              icon: FolderOpenIcon,
-            },
-            {
-              label: 'Export SVG',
-              icon: PhotoCameraIcon,
-              onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
-                  ExportSvgDlg,
-                  { model: self, handleClose: doneCallback },
-                ])
-              },
-            },
-            {
-              label: 'Open track selector',
-              onClick: self.activateTrackSelector,
-              icon: TrackSelectorIcon,
-            },
-            {
-              label: 'Horizontally flip',
-              icon: SyncAltIcon,
-              onClick: self.horizontallyFlip,
-            },
-            { type: 'divider' },
-            {
-              label: 'Show all regions in assembly',
-              icon: VisibilityIcon,
-              onClick: self.showAllRegionsInAssembly,
-            },
-            {
-              label: 'Show center line',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showCenterLine,
-              onClick: self.toggleCenterLine,
-            },
-            {
-              label: 'Show header',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: !self.hideHeader,
-              onClick: self.toggleHeader,
-            },
-            {
-              label: 'Show header overview',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: !self.hideHeaderOverview,
-              onClick: self.toggleHeaderOverview,
-              disabled: self.hideHeader,
-            },
-            {
-              label: 'Track labels',
-              icon: LabelIcon,
-              subMenu: [
-                {
-                  label: 'Overlapping',
-                  icon: VisibilityIcon,
-                  type: 'radio',
-                  checked: self.trackLabels === 'overlapping',
-                  onClick: () => self.setTrackLabels('overlapping'),
-                },
-                {
-                  label: 'Offset',
-                  icon: VisibilityIcon,
-                  type: 'radio',
-                  checked: self.trackLabels === 'offset',
-                  onClick: () => self.setTrackLabels('offset'),
-                },
-                {
-                  label: 'Hidden',
-                  icon: VisibilityIcon,
-                  type: 'radio',
-                  checked: self.trackLabels === 'hidden',
-                  onClick: () => self.setTrackLabels('hidden'),
-                },
-              ],
-            },
-            ...(canShowCytobands
-              ? [
-                  {
-                    label: showCytobands ? 'Hide ideogram' : 'Show ideograms',
-                    onClick: () => {
-                      self.setShowCytobands(!showCytobands)
-                    },
-                  },
-                ]
-              : []),
-          ]
-
-          // add track's view level menu options
-          for (const [key, value] of self.trackTypeActions.entries()) {
-            if (value.length) {
-              menuItems.push(
-                { type: 'divider' },
-                { type: 'subHeader', label: key },
-              )
-              value.forEach(action => {
-                menuItems.push(action)
-              })
-            }
-          }
-
-          return menuItems
-        },
-
         get staticBlocks() {
           const ret = calculateStaticBlocks(self)
           const sret = JSON.stringify(ret)

@@ -6,15 +6,14 @@ toplevel: true
 
 import Figure from './figure'
 
-## URL query parameter API
-
-JBrowse Web features the ability to automatically provide URL parameters to setup a session
+JBrowse Web features the ability to automatically provide URL parameters to
+setup a session
 
 Note that the embedded components like @jbrowse/react-linaer-genome-view make
 no assumptions on how URL params are used, so would have to be implemented by
 the consumer of the library
 
-### Simple API for linear genome view
+## Simple API for linear genome view
 
 We provide a simplified URL format specifically designed for launching a single
 linear genome view
@@ -25,7 +24,7 @@ http://host/jbrowse2/?config=test_data/config.json&loc=chr1:6000-7000&assembly=h
 
 Here are the query params used here
 
-#### ?config=
+### ?config=
 
 E.g. config=test_data/volvox/config.json
 
@@ -35,18 +34,19 @@ file reads. If ?config= is not specified, it looks for a file named config.json
 e.g. http://host/jbrowse2/config.json which is what the @jbrowse/cli tool sets
 up by default
 
-#### &assembly=
+### &assembly=
 
 E.g. &assembly=hg19
 
 The &assembly parameter refers to an assembly's "name" field one of the
 "assemblies" array in the from the config.json.
 
-#### &loc=
+### &loc=
 
 E.g. &loc=chr1:6000-7000
 
-This performs a navigation to this region on load, which can be specified using the syntax
+This performs a navigation to this region on load, which can be specified using
+the syntax
 
 Example strings
 
@@ -58,7 +58,7 @@ chr1:7000 // centered on this position
 
 Note: Navigating via a text search query e.g. supply &loc=gene_name is not yet supported
 
-#### &tracks=
+### &tracks=
 
 E.g. &tracks=gene_track,vcf_track
 
@@ -66,11 +66,12 @@ This is a comma separated list of trackIds. You can see your trackId's in the
 config.json. Note, you can also refer to a trackId added by &sessionTracks=
 here
 
-### More URL paramters
+## More URL paramters
 
-#### &sessionTracks=
+### &sessionTracks=
 
-If you want to dynamically add a track to the session, you can do so with &sessionTracks=
+If you want to dynamically add a track to the session, you can do so with
+&sessionTracks=
 
 You can also use this method to add a FromConfigAdapter track, which let's you
 specify features in JSON format, so you can e.g. add BLAST hits via the URL bar
@@ -109,29 +110,30 @@ above URL, looks like this when pretty-printed
 ]
 ```
 
-#### &session=
+### &session=
 
 The session parameter, e.g. &session= has a number of different "input formats"
 
-By default, after a session is loaded, it is stored into localStorage, and then
-the URL bar is updated to reflect the key of the localStorage entry
-
-##### Local sessions
+#### Local sessions
 
 The local sessions look like this
 
 https://host/jbrowse2/?session=local-Fjphq8kjY
 
-##### Shared sessions
+By default, after a session is loaded, it is stored into localStorage, and then
+the URL bar uses the ?session=local- format to reflect the key of the
+localStorage entry.
+
+#### Shared sessions
 
 If you click the "Share button" in the header bar, it will generate a
 "shareable link" that you can give to other users
 
 https://host/jbrowse2/?session=share-HShsEcnq3i&password=nYzTU
 
-See [this FAQ entry for more info about how shared sessions work](../faq
+See [this FAQ entry for more info about how shared sessions work](../faq#how-does-the-session-sharing-with-shortened-urls-work-in-jbrowse-web)
 
-##### Session spec
+#### Session spec
 
 Another useful session URL is called a "session spec" or "session specification"
 
@@ -152,7 +154,7 @@ Here is a session spec for a Circular Genome View
 http://localhost:3000/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type": "CircularView","tracks":["volvox_sv_test"]}]}
 ```
 
-##### JSON sessions
+#### JSON sessions
 
 Similar to encoded sessions, but more readable, JSON session let you specify
 the input a JSON snapshot of a session session. This is slightly different from
@@ -168,7 +170,7 @@ Example
 
 This loads a session with an extra plugin loaded
 
-##### Encoded sessions
+#### Encoded sessions
 
 This is similar to JSON sessions but uses a URL encoding (base64+gzip)
 

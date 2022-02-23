@@ -35,11 +35,15 @@ export default class BedPlugin extends Plugin {
           const regexGuess = /\.(bb|bigbed)$/i
           const adapterName = 'BigBedAdapter'
           const fileName = getFileName(file)
-          if (regexGuess.test(fileName) || adapterHint === adapterName) {
-            return {
-              type: adapterName,
-              bigBedLocation: file,
-            }
+          const obj = {
+            type: adapterName,
+            bigBedLocation: file,
+          }
+
+          if (regexGuess.test(fileName) && !adapterHint) {
+            return obj
+          } else if (adapterHint === adapterName) {
+            return obj
           }
           return adapterGuesser(file, index, adapterHint)
         }

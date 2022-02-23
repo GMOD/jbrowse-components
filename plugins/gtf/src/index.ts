@@ -29,11 +29,15 @@ export default class GtfPlugin extends Plugin {
           const regexGuess = /\.gtf(\.gz)?$/i
           const adapterName = 'GtfAdapter'
           const fileName = getFileName(file)
-          if (regexGuess.test(fileName) || adapterHint === adapterName) {
-            return {
-              type: adapterName,
-              gtfLocation: file,
-            }
+
+          const obj = {
+            type: adapterName,
+            gtfLocation: file,
+          }
+          if (regexGuess.test(fileName) && !adapterHint) {
+            return obj
+          } else if (adapterHint === adapterName) {
+            return obj
           }
           return adapterGuesser(file, index, adapterHint)
         }

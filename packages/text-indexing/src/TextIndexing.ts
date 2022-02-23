@@ -10,10 +10,11 @@ import { Track } from './util'
 
 export async function indexTracks(
   tracks: Track[],
-  outLocation: string,
+  outLocation?: string,
   signal?: AbortSignal,
 ) {
-  const outFlag = outLocation
+  console.log(outLocation)
+  const outFlag = outLocation || '.'
   const isDir = fs.lstatSync(outFlag).isDirectory()
   const confPath = isDir ? path.join(outFlag, 'JBrowse/config.json') : outFlag
   const outDir = path.dirname(confPath)
@@ -26,6 +27,7 @@ export async function indexTracks(
   const attrsExclude = ['exon', 'CDS']
   const assemblyNames = [] as string[]
   const nameOfIndex = 'test'
+  console.log("hellooooo")
   await indexDriver(
     tracks,
     outDir,
