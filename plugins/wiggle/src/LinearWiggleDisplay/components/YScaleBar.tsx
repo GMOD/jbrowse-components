@@ -16,6 +16,7 @@ const YScaleBar = observer(
     return (
       <Axis
         {...ticks}
+        shadow={2}
         format={(n: number) => n}
         style={{ orient: orientation === 'left' ? LEFT : RIGHT }}
       />
