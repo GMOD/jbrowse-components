@@ -13,14 +13,14 @@ const YScaleBar = observer(
   }) => {
     const { ticks } = model
 
-    return (
+    return ticks ? (
       <Axis
         {...ticks}
         shadow={2}
         format={(n: number) => n}
         style={{ orient: orientation === 'left' ? LEFT : RIGHT }}
       />
-    )
+    ) : null
   },
 )
 export default YScaleBar

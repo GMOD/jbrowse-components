@@ -21,9 +21,9 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
 export interface RenderArgsDeserializedWithFeatures
   extends RenderArgsDeserialized {
   features: Map<string, Feature>
-  ticks: { values: number[] }
+  ticks?: { values: number[] }
   displayCrossHatches: boolean
-  modificationTagMap: Record<string, string>
+  modificationTagMap?: Record<string, string>
 }
 
 type Counts = {
@@ -48,12 +48,12 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       regions,
       bpPerPx,
       displayCrossHatches,
-      modificationTagMap,
+      modificationTagMap = {},
       scaleOpts,
       height: unadjustedHeight,
       theme: configTheme,
       config: cfg,
-      ticks: { values },
+      ticks,
     } = props
     const theme = createJBrowseTheme(configTheme)
     const [region] = regions
@@ -65,6 +65,10 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     const offset = YSCALEBAR_LABEL_OFFSET
     const height = unadjustedHeight - offset * 2
 
+    const { domain } = scaleOpts
+    if (!domain) {
+      return
+    }
     const opts = { ...scaleOpts, range: [0, height] }
     const viewScale = getScale(opts)
     const snpViewScale = getScale({
@@ -251,13 +255,12 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     if (displayCrossHatches) {
       ctx.lineWidth = 1
       ctx.strokeStyle = 'rgba(140,140,140,0.8)'
-      for (let i = 0; i < values.length; i++) {
-        const tick = values[i]
+      ticks?.values.forEach(tick => {
         ctx.beginPath()
         ctx.moveTo(0, Math.round(toY(tick)))
         ctx.lineTo(width, Math.round(toY(tick)))
         ctx.stroke()
-      }
+      })
     }
   }
 }

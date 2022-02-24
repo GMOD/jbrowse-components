@@ -82,15 +82,19 @@ const stateModelFactory = (
       }),
     )
     .volatile(() => ({
-      statsReady: false,
       message: undefined as undefined | string,
       stats: undefined as undefined | { scoreMin: number; scoreMax: number },
       statsFetchInProgress: undefined as undefined | AbortController,
     }))
     .actions(self => ({
-      updateStats(stats: { scoreMin: number; scoreMax: number }) {
-        self.stats = { scoreMin: stats.scoreMin, scoreMax: stats.scoreMax }
-        self.statsReady = true
+      updateStats({
+        scoreMin,
+        scoreMax,
+      }: {
+        scoreMin: number
+        scoreMax: number
+      }) {
+        self.stats = { scoreMin, scoreMax }
       },
       setColor(color: string) {
         self.color = color
@@ -245,8 +249,13 @@ const stateModelFactory = (
             return undefined
           }
 
+          const { scoreMin, scoreMax } = stats
+          if (scoreMax === Number.MIN_VALUE || scoreMin === Number.MAX_VALUE) {
+            return undefined
+          }
+
           const ret = getNiceDomain({
-            domain: [stats.scoreMin, stats.scoreMax],
+            domain: [scoreMin, scoreMax],
             bounds: [minScore, maxScore],
             scaleType,
           })
@@ -314,7 +323,7 @@ const stateModelFactory = (
         const minimalTicks = getConf(self, 'minimalTicks')
         const range = [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET]
         if (!domain) {
-          return {}
+          return undefined
         }
         const scale = getScale({
           scaleType,
@@ -335,7 +344,7 @@ const stateModelFactory = (
           const superProps = superRenderProps()
           return {
             ...superProps,
-            notReady: superProps.notReady || !self.statsReady,
+            notReady: superProps.notReady || !self.stats,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,
@@ -622,7 +631,7 @@ const stateModelFactory = (
           )
         },
         async renderSvg(opts: ExportSvgOpts) {
-          await when(() => self.statsReady && !!self.regionCannotBeRenderedText)
+          await when(() => !!self.stats && !!self.regionCannotBeRenderedText)
           const { needsScalebar, stats } = self
           const { offsetPx } = getContainingView(self) as LGV
           return (
