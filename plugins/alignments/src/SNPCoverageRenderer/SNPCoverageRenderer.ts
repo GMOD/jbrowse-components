@@ -110,12 +110,13 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     // Use two pass rendering, which helps in visualizing the SNPs at higher
     // bpPerPx First pass: draw the gray background
     ctx.fillStyle = colorForBase.total
-    coverage.forEach(feature => {
+    for (let i = 0; i < coverage.length; i++) {
+      const feature = coverage[i]
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const w = rightPx - leftPx + 0.3
       const score = feature.get('score') as number
       ctx.fillRect(leftPx, toY(score), w, toHeight(score))
-    })
+    }
     ctx.fillStyle = 'grey'
     ctx.beginPath()
     ctx.lineTo(0, 0)
@@ -132,29 +133,27 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       const w = Math.max(rightPx - leftPx + 0.3, 1)
       const totalScore = snpinfo.total
 
-      Object.entries(snpinfo.cov)
-        .sort(([a], [b]) => {
-          if (a < b) {
-            return -1
-          }
-          if (a > b) {
-            return 1
-          }
-          return 0
-        })
-        .reduce((curr, [base, { total }]) => {
-          ctx.fillStyle =
-            colorForBase[base] ||
-            modificationTagMap[base.replace('mod_', '')] ||
-            'red'
-          ctx.fillRect(leftPx, snpToY(total + curr), w, snpToHeight(total))
-          return curr + total
-        }, 0)
+      const entries = Object.entries(snpinfo.cov).sort(([a], [b]) =>
+        a < b ? -1 : a > b ? 1 : 0,
+      )
+
+      let curr = 0
+      for (let i = 0; i < entries.length; i++) {
+        const [base, { total }] = entries[i]
+        ctx.fillStyle =
+          colorForBase[base] ||
+          modificationTagMap[base.replace('mod_', '')] ||
+          '#888'
+        ctx.fillRect(leftPx, snpToY(total + curr), w, snpToHeight(total))
+        curr += total
+      }
 
       const interbaseEvents = Object.entries(snpinfo.noncov)
       const indicatorHeight = 4.5
       if (drawInterbaseCounts) {
-        interbaseEvents.reduce((curr, [base, { total }]) => {
+        let curr = 0
+        for (let i = 0; i < interbaseEvents.length; i++) {
+          const [base, { total }] = interbaseEvents[i]
           ctx.fillStyle = colorForBase[base]
           ctx.fillRect(
             leftPx - 0.6,
@@ -162,21 +161,22 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
             1.2,
             snpToHeight(total),
           )
-          return curr + total
-        }, 0)
+          curr += total
+        }
       }
 
       if (drawIndicators) {
         let accum = 0
         let max = 0
         let maxBase = ''
-        interbaseEvents.forEach(([base, { total }]) => {
+        for (let i = 0; i < interbaseEvents.length; i++) {
+          const [base, { total }] = interbaseEvents[i]
           accum += total
           if (total > max) {
             max = total
             maxBase = base
           }
-        })
+        }
 
         // avoid drawing a bunch of indicators if coverage is very low e.g.
         // less than 7
@@ -191,10 +191,10 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       }
     })
 
-    ctx.globalAlpha = 0.7
-
     if (drawArcs) {
-      skips.forEach(f => {
+      ctx.globalAlpha = 0.7
+      for (let i = 0; i < skips.length; i++) {
+        const f = skips[i]
         const [left, right] = bpSpanPx(
           f.get('start'),
           f.get('end'),
@@ -225,18 +225,19 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         ctx.moveTo(left, height - offset * 2)
         ctx.bezierCurveTo(left, 0, right, 0, right, height - offset * 2)
         ctx.stroke()
-      })
+      }
     }
 
     if (displayCrossHatches) {
       ctx.lineWidth = 1
       ctx.strokeStyle = 'rgba(140,140,140,0.8)'
-      values.forEach(tick => {
+      for (let i = 0; i < values.length; i++) {
+        const tick = values[i]
         ctx.beginPath()
         ctx.moveTo(0, Math.round(toY(tick)))
         ctx.lineTo(width, Math.round(toY(tick)))
         ctx.stroke()
-      })
+      }
     }
   }
 }
