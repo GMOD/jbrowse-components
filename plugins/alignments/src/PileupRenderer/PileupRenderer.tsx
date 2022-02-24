@@ -345,7 +345,8 @@ export default class PileupRenderer extends BoxRendererType {
 
     // probIndex applies across multiple modifications e.g.
     let probIndex = 0
-    modifications.forEach(({ type, positions }) => {
+    for (let i = 0; i < modifications.length; i++) {
+      const { type, positions } = modifications[i]
       const col = modificationTagMap[type] || 'black'
       const base = Color(col)
       for (const readPos of getNextRefPos(cigarOps, positions)) {
@@ -367,7 +368,7 @@ export default class PileupRenderer extends BoxRendererType {
         }
         probIndex++
       }
-    })
+    }
   }
 
   // Color by methylation is slightly modified version of color by
@@ -399,7 +400,9 @@ export default class PileupRenderer extends BoxRendererType {
     const { start: rstart, end: rend } = region
 
     const methBins = new Array(rend - rstart).fill(0)
-    getModificationPositions(mm, seq, strand).forEach(({ type, positions }) => {
+    const modifications = getModificationPositions(mm, seq, strand)
+    for (let i = 0; i < modifications.length; i++) {
+      const { type, positions } = modifications[i]
       if (type === 'm' && positions) {
         for (const pos of getNextRefPos(cigarOps, positions)) {
           const epos = pos + fstart - rstart
@@ -408,7 +411,7 @@ export default class PileupRenderer extends BoxRendererType {
           }
         }
       }
-    })
+    }
 
     for (let j = fstart; j < fend; j++) {
       const i = j - rstart

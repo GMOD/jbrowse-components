@@ -1,8 +1,7 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { featureSpanPx } from '@jbrowse/core/util'
+import { featureSpanPx, bpSpanPx } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { bpSpanPx } from '@jbrowse/core/util'
 import { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import {
   getOrigin,
@@ -123,23 +122,32 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     ctx.moveTo(0, width)
     ctx.stroke()
 
+    // Keep track of previous total which we will use it to draw the interbase
+    // indicator (if there is a sudden clip, there will be no read coverage but
+    // there will be "clip" coverage) at that position beyond the read. if the
+    // clip is right at a block boundary then prevTotal will not be available,
+    // so this is a best attempt to plot interbase indicator at the "cliffs"
+    let prevTotal = 0
+
     // Second pass: draw the SNP data, and add a minimum feature width of 1px
     // which can be wider than the actual bpPerPx This reduces overdrawing of
     // the grey background over the SNPs
-    coverage.forEach(feature => {
+    for (let i = 0; i < coverage.length; i++) {
+      const feature = coverage[i]
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
       const snpinfo = feature.get('snpinfo') as SNPInfo
       const w = Math.max(rightPx - leftPx + 0.3, 1)
       const totalScore = snpinfo.total
 
-      const entries = Object.entries(snpinfo.cov).sort(([a], [b]) =>
+      const keys = Object.keys(snpinfo.cov).sort((a, b) =>
         a < b ? -1 : a > b ? 1 : 0,
       )
 
       let curr = 0
-      for (let i = 0; i < entries.length; i++) {
-        const [base, { total }] = entries[i]
+      for (let i = 0; i < keys.length; i++) {
+        const base = keys[i]
+        const { total } = snpinfo.cov[base]
         ctx.fillStyle =
           colorForBase[base] ||
           modificationTagMap[base.replace('mod_', '')] ||
@@ -148,16 +156,17 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         curr += total
       }
 
-      const interbaseEvents = Object.entries(snpinfo.noncov)
+      const interbaseEvents = Object.keys(snpinfo.noncov)
       const indicatorHeight = 4.5
       if (drawInterbaseCounts) {
         let curr = 0
         for (let i = 0; i < interbaseEvents.length; i++) {
-          const [base, { total }] = interbaseEvents[i]
+          const base = interbaseEvents[i]
+          const { total } = snpinfo.noncov[base]
           ctx.fillStyle = colorForBase[base]
           ctx.fillRect(
             leftPx - 0.6,
-            indicatorHeight - 1 + snpToHeight(curr),
+            indicatorHeight + snpToHeight(curr),
             1.2,
             snpToHeight(total),
           )
@@ -170,7 +179,8 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         let max = 0
         let maxBase = ''
         for (let i = 0; i < interbaseEvents.length; i++) {
-          const [base, { total }] = interbaseEvents[i]
+          const base = interbaseEvents[i]
+          const { total } = snpinfo.noncov[base]
           accum += total
           if (total > max) {
             max = total
@@ -179,8 +189,12 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         }
 
         // avoid drawing a bunch of indicators if coverage is very low e.g.
-        // less than 7
-        if (accum > totalScore * indicatorThreshold && totalScore > 7) {
+        // less than 7, uses the prev total in the case of the "cliff"
+        const indicatorComparatorScore = Math.max(totalScore, prevTotal)
+        if (
+          accum > indicatorComparatorScore * indicatorThreshold &&
+          indicatorComparatorScore > 7
+        ) {
           ctx.fillStyle = colorForBase[maxBase]
           ctx.beginPath()
           ctx.moveTo(leftPx - 3.5, 0)
@@ -189,10 +203,10 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           ctx.fill()
         }
       }
-    })
+      prevTotal = totalScore
+    }
 
     if (drawArcs) {
-      ctx.globalAlpha = 0.7
       for (let i = 0; i < skips.length; i++) {
         const f = skips[i]
         const [left, right] = bpSpanPx(
@@ -205,9 +219,9 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         ctx.beginPath()
         const str = f.get('strand') as number
         const xs = f.get('xs') as string
-        const pos = 'rgb(255,200,200)'
-        const neg = 'rgb(200,200,255)'
-        const neutral = 'rgb(200,200,200)'
+        const pos = 'rgba(255,200,200,0.7)'
+        const neg = 'rgba(200,200,255,0.7)'
+        const neutral = 'rgba(200,200,200,0.7)'
 
         if (xs === '+') {
           ctx.strokeStyle = pos

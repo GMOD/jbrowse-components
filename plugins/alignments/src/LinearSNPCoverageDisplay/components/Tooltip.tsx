@@ -64,7 +64,9 @@ const TooltipContents = React.forwardRef(
                     <td>
                       {base === 'total' || base === 'skip'
                         ? '---'
-                        : `${Math.floor((score.total / total) * 100)}%`}
+                        : `${Math.floor(
+                            (score.total / (total || score.total)) * 100,
+                          )}%`}
                     </td>
                     <td>
                       {strands['-1'] ? `${strands['-1']}(-)` : ''}
@@ -90,7 +92,7 @@ const SNPCoverageTooltip = observer(
     height: number
     offsetMouseCoord: Coord
     clientMouseCoord: Coord
-    clientRect?: ClientRect
+    clientRect?: DOMRect
   }) => {
     const { model } = props
     const { featureUnderMouse: feat } = model
