@@ -653,6 +653,12 @@ export default class PileupRenderer extends BoxRendererType {
       return color
     }
 
+    // extraHorizontallyFlippedOffset is used to draw interbase items, which
+    // are located to the left when forward and right when reversed
+    const extraHorizontallyFlippedOffset = region.reversed
+      ? 1 / bpPerPx + 1
+      : -1
+
     // two pass rendering: first pass, draw all the mismatches except wide
     // insertion markers
     for (let i = 0; i < mismatches.length; i += 1) {
@@ -697,7 +703,7 @@ export default class PileupRenderer extends BoxRendererType {
         }
       } else if (mismatch.type === 'insertion' && drawIndels) {
         ctx.fillStyle = 'purple'
-        const pos = leftPx - 1
+        const pos = leftPx + extraHorizontallyFlippedOffset
         const len = +mismatch.base || mismatch.length
         const insW = Math.max(minWidth, Math.min(1.2, 1 / bpPerPx))
         if (len < 10) {
@@ -707,17 +713,19 @@ export default class PileupRenderer extends BoxRendererType {
             ctx.fillRect(pos - insW, topPx + heightPx - 1, insW * 3, 1)
           }
           if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
-            ctx.fillText(`(${mismatch.base})`, leftPx + 2, topPx + heightPx)
+            ctx.fillText(`(${mismatch.base})`, pos + 3, topPx + heightPx)
           }
         }
       } else if (mismatch.type === 'hardclip' || mismatch.type === 'softclip') {
         ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
-        const pos = leftPx - 1
-        ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
-        ctx.fillRect(pos - w, topPx, w * 3, 1)
-        ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
+        const pos = leftPx + extraHorizontallyFlippedOffset
+        ctx.fillRect(pos, topPx, w, heightPx)
+        if (1 / bpPerPx >= charWidth) {
+          ctx.fillRect(pos - w, topPx, w * 3, 1)
+          ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
+        }
         if (widthPx >= charWidth && heightPx >= heightLim) {
-          ctx.fillText(`(${mismatch.base})`, leftPx + 2, topPx + heightPx)
+          ctx.fillText(`(${mismatch.base})`, pos + 3, topPx + heightPx)
         }
       } else if (mismatch.type === 'skip') {
         // fix to avoid bad rendering note that this was also related to chrome
@@ -801,10 +809,9 @@ export default class PileupRenderer extends BoxRendererType {
         .filter(mismatch => mismatch.type === 'softclip')
         .forEach(mismatch => {
           const softClipLength = mismatch.cliplen || 0
+          const s = feature.get('start')
           const softClipStart =
-            mismatch.start === 0
-              ? feature.get('start') - softClipLength
-              : feature.get('start') + mismatch.start
+            mismatch.start === 0 ? s - softClipLength : s + mismatch.start
 
           for (let k = 0; k < softClipLength; k += 1) {
             const base = seq.charAt(k + mismatch.start)

@@ -129,9 +129,14 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     // so this is a best attempt to plot interbase indicator at the "cliffs"
     let prevTotal = 0
 
+    // extraHorizontallyFlippedOffset is used to draw interbase items, which
+    // are located to the left when forward and right when reversed
+    const extraHorizontallyFlippedOffset = region.reversed ? 1 / bpPerPx : 0
+
     // Second pass: draw the SNP data, and add a minimum feature width of 1px
     // which can be wider than the actual bpPerPx This reduces overdrawing of
     // the grey background over the SNPs
+
     for (let i = 0; i < coverage.length; i++) {
       const feature = coverage[i]
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
@@ -165,7 +170,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           const { total } = snpinfo.noncov[base]
           ctx.fillStyle = colorForBase[base]
           ctx.fillRect(
-            leftPx - 0.6,
+            leftPx - 0.6 + extraHorizontallyFlippedOffset,
             indicatorHeight + snpToHeight(curr),
             1.2,
             snpToHeight(total),
@@ -197,9 +202,10 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         ) {
           ctx.fillStyle = colorForBase[maxBase]
           ctx.beginPath()
-          ctx.moveTo(leftPx - 3.5, 0)
-          ctx.lineTo(leftPx + 3.5, 0)
-          ctx.lineTo(leftPx, indicatorHeight)
+          const l = leftPx + extraHorizontallyFlippedOffset
+          ctx.moveTo(l - 3.5, 0)
+          ctx.lineTo(l + 3.5, 0)
+          ctx.lineTo(l, indicatorHeight)
           ctx.fill()
         }
       }
