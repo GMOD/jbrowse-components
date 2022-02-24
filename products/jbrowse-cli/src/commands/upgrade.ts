@@ -1,11 +1,10 @@
 import { flags } from '@oclif/command'
+import rimraf from 'rimraf'
 import fs from 'fs'
 import path from 'path'
 import fetch from 'node-fetch'
 import unzip from 'unzipper'
 import JBrowseCommand from '../base'
-
-const { rm } = fs.promises
 
 export default class Upgrade extends JBrowseCommand {
   static description = 'Upgrades JBrowse 2 to latest version'
@@ -114,10 +113,8 @@ export default class Upgrade extends JBrowseCommand {
     }
 
     if (clean) {
-      this.log('Note: Clean requires node.js 14+')
-      await rm(path.join(argsPath, 'static'), { force: true, recursive: true })
-      const files = fs.readdirSync(argsPath)
-      files
+      rimraf.sync(path.join(argsPath, 'static'))
+      fs.readdirSync(argsPath)
         .filter(f => f.includes('worker.js'))
         .forEach(f => fs.unlinkSync(path.join(argsPath, f)))
     }

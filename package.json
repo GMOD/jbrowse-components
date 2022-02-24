@@ -85,6 +85,7 @@
     "@types/react-color": "^3.0.4",
     "@types/react-dom": "^17.0.0",
     "@types/react-virtualized-auto-sizer": "^1.0.0",
+    "@types/rimraf": "^3.0.2",
     "@types/rollup-plugin-node-builtins": "^2.1.2",
     "@types/rollup-plugin-node-globals": "^1.4.1",
     "@types/set-value": "^2.0.0",
