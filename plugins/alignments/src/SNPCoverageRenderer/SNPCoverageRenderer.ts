@@ -158,7 +158,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           ctx.fillStyle = colorForBase[base]
           ctx.fillRect(
             leftPx - 0.6,
-            indicatorHeight + snpToHeight(curr),
+            indicatorHeight - 1 + snpToHeight(curr),
             1.2,
             snpToHeight(total),
           )
@@ -183,8 +183,8 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         if (accum > totalScore * indicatorThreshold && totalScore > 7) {
           ctx.fillStyle = colorForBase[maxBase]
           ctx.beginPath()
-          ctx.moveTo(leftPx - 3, 0)
-          ctx.lineTo(leftPx + 3, 0)
+          ctx.moveTo(leftPx - 3.5, 0)
+          ctx.lineTo(leftPx + 3.5, 0)
           ctx.lineTo(leftPx, indicatorHeight)
           ctx.fill()
         }
