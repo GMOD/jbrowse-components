@@ -170,6 +170,19 @@ const colorMap: { [key: string]: string | undefined } = {
   acen: '#800',
 }
 
+function getCytobands(assembly: Assembly | undefined, refName: string) {
+  return (
+    assembly?.cytobands
+      ?.map(f => ({
+        refName: assembly.getCanonicalRefName(f.get('refName')),
+        start: f.get('start'),
+        end: f.get('end'),
+        type: f.get('type'),
+      }))
+      .filter(f => f.refName === refName) || []
+  )
+}
+
 const Cytobands = observer(
   ({
     overview,
@@ -181,37 +194,30 @@ const Cytobands = observer(
     block: ContentBlock
   }) => {
     const { offsetPx, reversed } = block
-    const cytobands = assembly?.cytobands
-      ?.map(f => ({
-        refName: assembly.getCanonicalRefName(f.get('refName')),
-        start: f.get('start'),
-        end: f.get('end'),
-        type: f.get('type'),
-      }))
-      .filter(f => f.refName === block.refName)
-      .map(f => {
-        const { refName, start, end, type } = f
-        return [
-          overview.bpToPx({
-            refName,
-            coord: start,
-          }),
-          overview.bpToPx({
-            refName,
-            coord: end,
-          }),
-          type,
-        ]
-      })
+    const cytobands = getCytobands(assembly, block.refName)
+    const coords = cytobands.map(f => {
+      const { refName, start, end, type } = f
+      return [
+        overview.bpToPx({
+          refName,
+          coord: start,
+        }),
+        overview.bpToPx({
+          refName,
+          coord: end,
+        }),
+        type,
+      ]
+    })
 
     const arr = cytobands || []
     const lcap = reversed ? arr.length - 1 : 0
     const rcap = reversed ? 0 : arr.length - 1
 
     let firstCent = true
-    return cytobands ? (
+    return (
       <g transform={`translate(-${offsetPx})`}>
-        {cytobands.map(([start, end, type], index) => {
+        {coords.map(([start, end, type], index) => {
           const key = `${start}-${end}-${type}`
           if (type === 'acen' && firstCent) {
             firstCent = false
@@ -283,7 +289,7 @@ const Cytobands = observer(
           }
         })}
       </g>
-    ) : null
+    )
   },
 )
 
@@ -313,13 +319,16 @@ const OverviewBox = observer(
       tickLabels.push(reversed ? end - offsetLabel : start + offsetLabel)
     }
 
+    const canDisplayCytobands =
+      showCytobands && getCytobands(assembly, block.refName).length
+
     return (
       <div>
         {/* name of sequence */}
         <Typography
           style={{
             left: block.offsetPx + 3,
-            color: showCytobands ? 'black' : refNameColor,
+            color: canDisplayCytobands ? 'black' : refNameColor,
           }}
           className={classes.scaleBarRefName}
         >
@@ -328,12 +337,12 @@ const OverviewBox = observer(
         <div
           className={clsx(
             classes.scaleBarContig,
-            showCytobands
+            canDisplayCytobands
               ? undefined
               : reversed
               ? classes.scaleBarContigReverse
               : classes.scaleBarContigForward,
-            !showCytobands ? classes.scaleBarBorder : undefined,
+            !canDisplayCytobands ? classes.scaleBarBorder : undefined,
           )}
           style={{
             left: block.offsetPx + cytobandOffset,
@@ -341,7 +350,7 @@ const OverviewBox = observer(
             borderColor: refNameColor,
           }}
         >
-          {!showCytobands
+          {!canDisplayCytobands
             ? tickLabels.map((tickLabel, labelIdx) => (
                 <Typography
                   key={`${JSON.stringify(block)}-${tickLabel}-${labelIdx}`}
@@ -358,7 +367,7 @@ const OverviewBox = observer(
               ))
             : null}
 
-          {showCytobands ? (
+          {canDisplayCytobands ? (
             <svg style={{ width: '100%' }}>
               <Cytobands
                 overview={overview}
