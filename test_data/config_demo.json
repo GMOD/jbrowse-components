@@ -3043,12 +3043,12 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG003.hs37d5.consensusalignments.bam",
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG003.SequelII.merged_15kb_20kb.pbmm2.hs37d5.haplotag.RTG.10x.trio.bam",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG003.hs37d5.consensusalignments.bam.bai",
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG003.SequelII.merged_15kb_20kb.pbmm2.hs37d5.haplotag.RTG.10x.trio.bam.bai",
             "locationType": "UriLocation"
           },
           "indexType": "BAI"
@@ -3151,12 +3151,12 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG004.hs37d5.consensusalignments.bam",
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG004.SequelII.merged_15kb_20kb.pbmm2.hs37d5.haplotag.RTG.10x.trio.bam",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG004.hs37d5.consensusalignments.bam.bai",
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG004.SequelII.merged_15kb_20kb.pbmm2.hs37d5.haplotag.RTG.10x.trio.bam.bai",
             "locationType": "UriLocation"
           },
           "indexType": "BAI"

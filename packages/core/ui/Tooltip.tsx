@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import { Feature } from '../util/simpleFeature'
-import { readConfObject } from '../configuration'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
+import { readConfObject, AnyConfigurationModel } from '../configuration'
 
 const useStyles = makeStyles({
   hoverLabel: {
