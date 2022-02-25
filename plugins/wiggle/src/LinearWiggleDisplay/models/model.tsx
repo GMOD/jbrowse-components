@@ -22,7 +22,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 import { FeatureStats } from '@jbrowse/core/util/stats'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { axisPropsFromTickScale } from 'react-d3-axis'
+import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 import { getNiceDomain, getScale } from '../../util'
 
 import Tooltip from '../components/Tooltip'

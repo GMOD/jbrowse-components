@@ -7,6 +7,9 @@ export interface Feature {
    * 'start' and 'end', but everything else is optional.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  get(name: 'refName'): string
+  get(name: 'start'): number
+  get(name: 'end'): number
   get(name: string): any
 
   /**
