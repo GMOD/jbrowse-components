@@ -27,16 +27,18 @@ function Segments(props) {
     emphasizedColor2 = color2
   }
   const { left, top, width, height } = featureLayout.absolute
+  const strand = feature.get('strand')
+  const arrowSize = 3
+  const arrowOffset = 10
   const points = [
     [left, top + height / 2],
-    [left + width, top + height / 2],
+    [left + width + (strand ? arrowOffset : 0), top + height / 2],
   ]
-  const strand = feature.get('strand')
   if (strand) {
     points.push(
-      [left + width - height / 4, top + height / 4],
-      [left + width - height / 4, top + 3 * (height / 4)],
-      [left + width, top + height / 2],
+      [left + width + arrowOffset / 2, top + height / 2 - arrowSize / 2],
+      [left + width + arrowOffset / 2, top + height / 2 + arrowSize / 2],
+      [left + width + arrowOffset, top + height / 2],
     )
   }
 

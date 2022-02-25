@@ -59,28 +59,6 @@ function Chevron(props) {
         width={widthWithinBlock}
         height={height}
       />
-      {direction < 0 && diff === 0 ? (
-        <polygon
-          stroke={selected ? color2 : undefined}
-          fill={selected ? emphasizedColor : color}
-          points={[
-            [left, top],
-            [left - height / 2, top + height / 2],
-            [left, top + height],
-          ]}
-        />
-      ) : null}
-      {direction > 0 && leftWithinBlock + widthWithinBlock < screenWidth ? (
-        <polygon
-          stroke={selected ? color2 : undefined}
-          fill={selected ? emphasizedColor : color}
-          points={[
-            [leftWithinBlock + widthWithinBlock, top],
-            [leftWithinBlock + widthWithinBlock + height / 2, top + height / 2],
-            [leftWithinBlock + widthWithinBlock, top + height],
-          ]}
-        />
-      ) : null}
     </>
   )
 }
