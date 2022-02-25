@@ -91,7 +91,7 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
       )}
       <TracksContainer model={model}>
         {!tracks.length ? (
-          <Paper variant="outlined" className={classes.note}>
+          <Paper className={classes.note}>
             <Typography>No tracks active.</Typography>
             <Button
               variant="contained"
