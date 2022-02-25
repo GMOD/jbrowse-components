@@ -41,13 +41,6 @@ const rendererTypes = new Map([
   ['line', 'LinePlotRenderer'],
 ])
 
-function logb(x: number, y: number) {
-  return Math.log(y) / Math.log(x)
-}
-function round(v: number, b = 1.5) {
-  return (v >= 0 ? 1 : -1) * Math.pow(b, 1 + Math.floor(logb(b, Math.abs(v))))
-}
-
 type LGV = LinearGenomeViewModel
 
 const stateModelFactory = (
@@ -82,8 +75,9 @@ const stateModelFactory = (
       }),
     )
     .volatile(() => ({
+      statsReady: false,
       message: undefined as undefined | string,
-      stats: undefined as undefined | { scoreMin: number; scoreMax: number },
+      stats: { scoreMin: 0, scoreMax: 50 },
       statsFetchInProgress: undefined as undefined | AbortController,
     }))
     .actions(self => ({
@@ -94,13 +88,8 @@ const stateModelFactory = (
         scoreMin: number
         scoreMax: number
       }) {
-        if (
-          !self.stats ||
-          self.stats.scoreMin !== scoreMin ||
-          self.stats.scoreMax !== scoreMax
-        ) {
-          self.stats = { scoreMin, scoreMax }
-        }
+        self.stats = { scoreMin, scoreMax }
+        self.statsReady = true
       },
       setColor(color: string) {
         self.color = color
@@ -251,14 +240,7 @@ const stateModelFactory = (
         },
         get domain() {
           const { stats, scaleType, minScore, maxScore } = self
-          if (!stats) {
-            return undefined
-          }
-
           const { scoreMin, scoreMax } = stats
-          if (scoreMax === Number.MIN_VALUE || scoreMin === Number.MAX_VALUE) {
-            return undefined
-          }
 
           const ret = getNiceDomain({
             domain: [scoreMin, scoreMax],
@@ -316,9 +298,6 @@ const stateModelFactory = (
         const { scaleType, domain, height } = self
         const minimalTicks = getConf(self, 'minimalTicks')
         const range = [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET]
-        if (!domain) {
-          return undefined
-        }
         const scale = getScale({
           scaleType,
           domain,
@@ -326,7 +305,7 @@ const stateModelFactory = (
           inverted: getConf(self, 'inverted'),
         })
         const ticks = axisPropsFromTickScale(scale, 4)
-        return height < 50 || minimalTicks
+        return height < 100 || minimalTicks
           ? { ...ticks, values: domain }
           : ticks
       },
@@ -338,7 +317,7 @@ const stateModelFactory = (
           const superProps = superRenderProps()
           return {
             ...superProps,
-            notReady: superProps.notReady || !self.stats,
+            notReady: superProps.notReady || !self.statsReady,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,
@@ -625,7 +604,7 @@ const stateModelFactory = (
           )
         },
         async renderSvg(opts: ExportSvgOpts) {
-          await when(() => !!self.stats && !!self.regionCannotBeRenderedText)
+          await when(() => self.statsReady && !!self.regionCannotBeRenderedText)
           const { needsScalebar, stats } = self
           const { offsetPx } = getContainingView(self) as LGV
           return (

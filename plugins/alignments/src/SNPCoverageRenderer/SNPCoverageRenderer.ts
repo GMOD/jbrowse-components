@@ -21,7 +21,7 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
 export interface RenderArgsDeserializedWithFeatures
   extends RenderArgsDeserialized {
   features: Map<string, Feature>
-  ticks?: { values: number[] }
+  ticks: { values: number[] }
   displayCrossHatches: boolean
   modificationTagMap?: Record<string, string>
 }
@@ -120,11 +120,6 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       const score = feature.get('score') as number
       ctx.fillRect(leftPx, toY(score), w, toHeight(score))
     }
-    ctx.fillStyle = 'grey'
-    ctx.beginPath()
-    ctx.lineTo(0, 0)
-    ctx.moveTo(0, width)
-    ctx.stroke()
 
     // Keep track of previous total which we will use it to draw the interbase
     // indicator (if there is a sudden clip, there will be no read coverage but
@@ -255,7 +250,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     if (displayCrossHatches) {
       ctx.lineWidth = 1
       ctx.strokeStyle = 'rgba(140,140,140,0.8)'
-      ticks?.values.forEach(tick => {
+      ticks.values.forEach(tick => {
         ctx.beginPath()
         ctx.moveTo(0, Math.round(toY(tick)))
         ctx.lineTo(width, Math.round(toY(tick)))
