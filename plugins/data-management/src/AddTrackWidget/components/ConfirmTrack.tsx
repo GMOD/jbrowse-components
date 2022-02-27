@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import {
@@ -8,11 +8,30 @@ import {
   ListSubheader,
   Typography,
   makeStyles,
+  FormControl,
+  FormControlLabel,
+  FormHelperText,
+  Checkbox,
+  Paper,
+  Card,
+  List,
+  ListItem,
+  CardContent,
+  CardHeader,
+  IconButton,
+  InputLabel,
+  InputAdornment,
 } from '@material-ui/core'
+
+// icons
+import DeleteIcon from '@material-ui/icons/Delete'
+import AddIcon from '@material-ui/icons/Add'
+// other
 import PluginManager from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { UNKNOWN } from '@jbrowse/core/util/tracks'
+import { TextSearching } from '@jbrowse/core/util/types'
 
 // locals
 import { AddTrackModel } from '../model'
@@ -21,6 +40,17 @@ import { AdapterMetadata } from '@jbrowse/core/pluggableElementTypes/AdapterType
 const useStyles = makeStyles(theme => ({
   spacing: {
     marginBottom: theme.spacing(3),
+  },
+  paper: {
+    display: 'flex',
+    flexDirection: 'column',
+    padding: theme.spacing(1),
+  },
+  spacer: {
+    height: theme.spacing(8),
+  },
+  card: {
+    marginTop: theme.spacing(1),
   },
 }))
 
@@ -97,6 +127,107 @@ function getAdapterTypes(pluginManager: PluginManager) {
 function getTrackTypes(pluginManager: PluginManager) {
   return pluginManager.getElementTypesInGroup('track') as { name: string }[]
 }
+
+// const IndexTrackSelector = observer(({ model }: { model: AddTrackModel }) => {
+//   const [indexTrack, setIndexTrack] = useState(false)
+//   return (
+//     <FormControl>
+//       <FormControlLabel
+//         label={'Index track for text searching?'}
+//         control={
+//           <Checkbox
+//             checked={false}
+//             onChange={e => {
+//               setIndexTrack(indexTrack)
+//               model.setTextIndexTrack(e.target.checked)
+//             }}
+//           />
+//         }
+//       />
+//       <FormHelperText>Index Track?</FormHelperText>
+//     </FormControl>
+//   )
+// })
+const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
+  const classes = useStyles()
+  const [value, setValue] = useState('')
+  const [attributes, setAttributes] = useState(['Name', 'ID', 'type'])
+  // const session = getSession(model)
+  // const { trackType } = model
+  const textSearchingConf: TextSearching = {
+    indexingAttributes: ['Name', 'ID', 'type'],
+    indexingFeatureTypesToExclude: ['CDS', 'exon'],
+  }
+  return (
+    <Paper className={classes.paper}>
+      <InputLabel>indexing parameters</InputLabel>
+      {/* {Object.keys(textSearchingConf).forEach((key, value) => ( */}
+      <Card raised key="indexingAttributes" className={classes.card}>
+        <CardContent>
+          <InputLabel>{'indexingAttributes'}</InputLabel>
+          <List disablePadding>
+            {attributes.map((val: string, idx: number) => (
+              <ListItem key={idx} disableGutters>
+                <TextField
+                  value={val}
+                  // onChange={e => console.log("what index?", idx)}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          color="secondary"
+                          onClick={() => {
+                            // console.log('I am supposed to remove', idx)
+                            const newAttr = attributes.filter((a, index) => {
+                              return index !== idx
+                            })
+                            setAttributes(newAttr)
+                            // console.log(newAttr)
+                          }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </ListItem>
+            ))}
+            <ListItem disableGutters>
+              <TextField
+                value={value}
+                placeholder="add new"
+                onChange={event => setValue(event.target.value)}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => {
+                          // slot.add(value)
+                          const newAttr: string[] = attributes
+                          newAttr.push(value)
+                          setAttributes(newAttr)
+                          // console.log('I am supposed to add this', value)
+                          setValue('')
+                        }}
+                        disabled={value === ''}
+                        color="secondary"
+                        data-testid={`stringArrayAdd-`}
+                      >
+                        <AddIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </ListItem>
+          </List>
+        </CardContent>
+      </Card>
+      <FormHelperText>indexing</FormHelperText>
+    </Paper>
+  )
+})
 
 const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
   const classes = useStyles()
@@ -233,8 +364,15 @@ const TrackAssemblySelector = observer(
 
 function ConfirmTrack({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
-  const { trackName, trackAdapter, trackType, warningMessage, adapterHint } =
-    model
+  const [check, setCheck] = useState(false)
+  const {
+    trackName,
+    trackAdapter,
+    trackType,
+    warningMessage,
+    adapterHint,
+    textIndexTrack,
+  } = model
 
   if (model.unsupported) {
     return (
@@ -293,6 +431,29 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
       <TrackAdapterSelector model={model} />
       <TrackTypeSelector model={model} />
       <TrackAssemblySelector model={model} />
+      {/* <IndexTrackSelector model={model} /> */}
+      {/* <Checkbox
+        checked={check}
+        onChange={e => {
+          setCheck(e.target.checked)
+          console.log(check)
+          // model.setTextIndexTrack(e.target.checked)
+        }}
+      /> */}
+      <FormControl>
+        <FormControlLabel
+          label={'Index track for text searching?'}
+          control={
+            <Checkbox
+              checked={check}
+              onChange={e => {
+                setCheck(e.target.checked)
+              }}
+            />
+          }
+        />
+      </FormControl>
+      {check ? <TextIndexingConfig model={model} /> : null}
     </div>
   )
 }

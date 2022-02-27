@@ -13,7 +13,7 @@ export async function indexTracks(
   outLocation?: string,
   signal?: AbortSignal,
 ) {
-  console.log(outLocation)
+  console.time('Indexing...')
   const outFlag = outLocation || '.'
   const isDir = fs.lstatSync(outFlag).isDirectory()
   const confPath = isDir ? path.join(outFlag, 'JBrowse/config.json') : outFlag
@@ -27,7 +27,6 @@ export async function indexTracks(
   const attrsExclude = ['exon', 'CDS']
   const assemblyNames = [] as string[]
   const nameOfIndex = 'test'
-  console.log("hellooooo")
   await indexDriver(
     tracks,
     outDir,
@@ -67,6 +66,7 @@ async function indexDriver(
     exclude,
     assemblyNames,
   })
+  console.timeEnd('Indexing...')
   console.log("done generating meta")
   return
 }
