@@ -4,7 +4,7 @@ import path from 'path'
 import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
 
-const { copyFile, rename, symlink, lstat, unlink } = fs.promises
+const { copyFile, rename, symlink } = fs.promises
 const { COPYFILE_EXCL } = fs.constants
 
 interface Track {
@@ -160,7 +160,7 @@ export default class AddTrack extends JBrowseCommand {
     } = runFlags
 
     const output = target || out || '.'
-    const isDir = (await lstat(output)).isDirectory()
+    const isDir = fs.lstatSync(output).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
 
     let { trackType, trackId, name, assemblyNames } = runFlags
@@ -304,27 +304,34 @@ export default class AddTrack extends JBrowseCommand {
 
     // get path of destination, and remove file at that path if it exists and
     // force is set
-    const destinationFn = async (dir: string, file: string) => {
-      const dest = path.join(dir, subDir, path.basename(file))
-      if (force && fs.existsSync(dest)) {
-        await unlink(dest)
+    const destinationFn = (dir: string, file: string) => {
+      const dest = path.resolve(path.join(dir, subDir, path.basename(file)))
+      if (force) {
+        try {
+          fs.unlinkSync(dest)
+        } catch (e) {
+          /* unconditionally unlinkSync, due to
+           * https://github.com/nodejs/node/issues/14025#issuecomment-754021370
+           * and https://github.com/GMOD/jbrowse-components/issues/2768 */
+        }
       }
       return dest
     }
 
+    const loadType = load as 'copy' | 'inPlace' | 'move' | 'symlink'
     const callbacks = {
       copy: (src: string, dest: string) => copyFile(src, dest, COPYFILE_EXCL),
       move: (src: string, dest: string) => rename(src, dest),
       symlink: (src: string, dest: string) => symlink(path.resolve(src), dest),
+      inPlace: () => {
+        /*doNothing*/
+      },
     }
 
     await Promise.all(
-      filePaths.map(async src => {
-        const dest = await destinationFn(configDirectory, src)
-        if (load === 'copy' || load === 'move' || load === 'symlink') {
-          return callbacks[load](src, dest)
-        }
-      }),
+      filePaths.map(src =>
+        callbacks[loadType](src, destinationFn(configDirectory, src)),
+      ),
     )
 
     this.debug(`Writing configuration to file ${this.target}`)
