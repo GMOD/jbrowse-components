@@ -298,10 +298,6 @@ export default class AddTrack extends JBrowseCommand {
       configContents.tracks.push(trackConfig)
     }
 
-    const filePaths = Object.values(
-      this.guessFileNames(location, index),
-    ).filter((f): f is string => !!f)
-
     // get path of destination, and remove file at that path if it exists and
     // force is set
     const destinationFn = (dir: string, file: string) => {
@@ -318,20 +314,23 @@ export default class AddTrack extends JBrowseCommand {
       return dest
     }
 
-    const loadType = load as 'copy' | 'inPlace' | 'move' | 'symlink'
+    const loadType =
+      (load as 'copy' | 'inPlace' | 'move' | 'symlink' | undefined) || 'inPlace'
     const callbacks = {
       copy: (src: string, dest: string) => copyFile(src, dest, COPYFILE_EXCL),
       move: (src: string, dest: string) => rename(src, dest),
       symlink: (src: string, dest: string) => symlink(path.resolve(src), dest),
       inPlace: () => {
-        /*doNothing*/
+        /* do nothing */
       },
     }
 
     await Promise.all(
-      filePaths.map(src =>
-        callbacks[loadType](src, destinationFn(configDirectory, src)),
-      ),
+      Object.values(this.guessFileNames(location, index))
+        .filter(f => !!f)
+        .map(src =>
+          callbacks[loadType](src, destinationFn(configDirectory, src)),
+        ),
     )
 
     this.debug(`Writing configuration to file ${this.target}`)
