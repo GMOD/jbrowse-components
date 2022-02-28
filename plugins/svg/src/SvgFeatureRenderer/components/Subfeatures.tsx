@@ -13,11 +13,10 @@ function Subfeatures(props: {
   selected: boolean
 }) {
   const { feature, featureLayout, selected } = props
-  const subfeatures = feature.get('subfeatures') as Feature[] | undefined
 
   return (
     <>
-      {subfeatures?.map(subfeature => {
+      {feature.get('subfeatures')?.map(subfeature => {
         const subfeatureId = String(subfeature.id())
         const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
         const { GlyphComponent } = subfeatureLayout.data
@@ -60,9 +59,8 @@ Subfeatures.layOut = ({
   })
   const displayMode = readConfObject(config, 'displayMode')
   if (displayMode !== 'reducedRepresentation') {
-    const subfeatures = feature.get('subfeatures') as Feature[] | undefined
     let topOffset = 0
-    subfeatures?.forEach(subfeature => {
+    feature.get('subfeatures')?.forEach(subfeature => {
       const SubfeatureGlyphComponent = chooseGlyphComponent(
         subfeature,
         extraGlyphs,

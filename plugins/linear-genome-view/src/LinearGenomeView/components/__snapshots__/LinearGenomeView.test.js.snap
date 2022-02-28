@@ -1451,17 +1451,12 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 class="makeStyles-contentBlock"
                 style="width: 100px;"
               >
-                <div
-                  style="position: relative;"
-                >
-                  <svg
-                    class="SvgFeatureRendering"
-                    data-testid="svgfeatures"
-                    height="100"
-                    style="display: block;"
-                    width="100"
-                  />
-                </div>
+                <svg
+                  class="SvgFeatureRendering"
+                  data-testid="svgfeatures"
+                  height="100"
+                  width="100"
+                />
               </div>
               <div
                 class="makeStyles-interRegionPaddingBlock"
@@ -1471,17 +1466,12 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 class="makeStyles-contentBlock"
                 style="width: 1000px;"
               >
-                <div
-                  style="position: relative;"
-                >
-                  <svg
-                    class="SvgFeatureRendering"
-                    data-testid="svgfeatures"
-                    height="100"
-                    style="display: block;"
-                    width="1000"
-                  />
-                </div>
+                <svg
+                  class="SvgFeatureRendering"
+                  data-testid="svgfeatures"
+                  height="100"
+                  width="1000"
+                />
               </div>
               <div
                 class="makeStyles-boundaryPaddingBlock"
@@ -1607,17 +1597,12 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 class="makeStyles-contentBlock"
                 style="width: 100px;"
               >
-                <div
-                  style="position: relative;"
-                >
-                  <svg
-                    class="SvgFeatureRendering"
-                    data-testid="svgfeatures"
-                    height="100"
-                    style="display: block;"
-                    width="100"
-                  />
-                </div>
+                <svg
+                  class="SvgFeatureRendering"
+                  data-testid="svgfeatures"
+                  height="100"
+                  width="100"
+                />
               </div>
               <div
                 class="makeStyles-interRegionPaddingBlock"
@@ -1627,17 +1612,12 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 class="makeStyles-contentBlock"
                 style="width: 1000px;"
               >
-                <div
-                  style="position: relative;"
-                >
-                  <svg
-                    class="SvgFeatureRendering"
-                    data-testid="svgfeatures"
-                    height="100"
-                    style="display: block;"
-                    width="1000"
-                  />
-                </div>
+                <svg
+                  class="SvgFeatureRendering"
+                  data-testid="svgfeatures"
+                  height="100"
+                  width="1000"
+                />
               </div>
               <div
                 class="makeStyles-boundaryPaddingBlock"
