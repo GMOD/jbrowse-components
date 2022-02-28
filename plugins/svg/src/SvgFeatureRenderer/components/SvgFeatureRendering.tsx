@@ -138,7 +138,7 @@ const RenderedFeatures = observer(
     layout: any
     [key: string]: unknown
   }) => {
-    const { features, isFeatureDisplayed } = props
+    const { features = new Map(), isFeatureDisplayed } = props
 
     return (
       <>
@@ -182,7 +182,7 @@ function SvgFeatureRendering(props: {
     regions,
     bpPerPx,
     config,
-    displayModel,
+    displayModel = {},
     exportSVG,
     featureDisplayHandler = () => true,
     onMouseOut,

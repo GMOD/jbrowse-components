@@ -8,7 +8,7 @@ type LayoutRecord = [number, number, number, number]
 interface SvgOverlayProps {
   region: Region
   displayModel: {
-    getFeatureByID: (arg0: string, arg1: string) => LayoutRecord
+    getFeatureByID?: (arg0: string, arg1: string) => LayoutRecord
     selectedFeatureId?: string
     featureIdUnderMouse?: string
     contextMenuFeature?: SimpleFeature
@@ -100,7 +100,7 @@ function OverlayRect({
 }
 
 function SvgOverlay({
-  displayModel,
+  displayModel = {},
   blockKey,
   region,
   bpPerPx,
