@@ -19,7 +19,7 @@ function FeatureGlyph(props: {
   allowedWidthExpansion: number
   selected?: boolean
   reversed?: boolean
-  topLevel: boolean
+  topLevel?: boolean
 }) {
   const {
     feature,

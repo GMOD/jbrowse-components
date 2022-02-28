@@ -16,20 +16,12 @@ function Box(props: {
   region: Region
   config: AnyConfigurationModel
   featureLayout: any
-  selected: any
   bpPerPx: number
-  topLevel: boolean
+  selected?: boolean
+  topLevel?: boolean
   children?: React.ReactNode
 }) {
-  const {
-    feature,
-    region,
-    config,
-    featureLayout,
-    bpPerPx,
-    topLevel,
-    selected = false,
-  } = props
+  const { feature, region, config, featureLayout, bpPerPx, topLevel } = props
   const { start, end } = region
   const screenWidth = (end - start) / bpPerPx
   const color2 = readConfObject(config, 'color2', { feature }) as string
@@ -62,7 +54,7 @@ function Box(props: {
         width={widthWithinBlock}
         height={height}
         fill={color}
-        stroke={selected ? color2 : undefined}
+        stroke={color2}
       />
       {topLevel ? <Arrow {...props} /> : null}
     </>
