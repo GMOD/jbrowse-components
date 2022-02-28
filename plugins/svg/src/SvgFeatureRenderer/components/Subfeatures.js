@@ -1,7 +1,7 @@
+import React from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
-import React from 'react'
 import { chooseGlyphComponent, layOut, layOutFeature } from './util'
 
 function Subfeatures(props) {

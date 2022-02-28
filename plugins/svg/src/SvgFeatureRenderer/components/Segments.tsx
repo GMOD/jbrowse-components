@@ -1,11 +1,21 @@
-import { readConfObject } from '@jbrowse/core/configuration'
-import { PropTypes as CommonPropTypes } from '@jbrowse/core/util/types/mst'
+import React from 'react'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { emphasize } from '@jbrowse/core/util/color'
 import { observer } from 'mobx-react'
-import PropTypes from 'prop-types'
-import React from 'react'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 
-function Segments(props) {
+function Segments(props: {
+  feature: Feature
+  featureLayout: any
+  selected: boolean
+  config: AnyConfigurationModel
+  reversed: boolean
+  subfeatures?: Feature[]
+  children?: React.ReactNode
+}) {
   const {
     feature,
     featureLayout,
@@ -18,7 +28,8 @@ function Segments(props) {
     subfeatures: subfeaturesProp,
   } = props
 
-  const subfeatures = subfeaturesProp || feature.get('subfeatures')
+  const subfeatures =
+    subfeaturesProp || (feature.get('subfeatures') as Feature[])
   const color2 = readConfObject(config, 'color2', { feature })
   let emphasizedColor2
   try {
@@ -51,10 +62,10 @@ function Segments(props) {
             ? `rotate(180,${left + width / 2},${top + height / 2})`
             : undefined
         }
-        points={points}
+        points={points.toString()}
         stroke={selected ? emphasizedColor2 : color2}
       />
-      {subfeatures.map(subfeature => {
+      {subfeatures?.map(subfeature => {
         const subfeatureId = String(subfeature.id())
         const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
         // This subfeature got filtered out
@@ -74,30 +85,6 @@ function Segments(props) {
       })}
     </>
   )
-}
-
-Segments.propTypes = {
-  feature: PropTypes.shape({
-    id: PropTypes.func.isRequired,
-    get: PropTypes.func.isRequired,
-  }).isRequired,
-  featureLayout: PropTypes.shape({
-    absolute: PropTypes.shape({
-      top: PropTypes.number.isRequired,
-      left: PropTypes.number.isRequired,
-      width: PropTypes.number.isRequired,
-      height: PropTypes.number.isRequired,
-    }),
-    getSubRecord: PropTypes.func.isRequired,
-  }).isRequired,
-  selected: PropTypes.bool,
-  config: CommonPropTypes.ConfigSchema.isRequired,
-  reversed: PropTypes.bool,
-}
-
-Segments.defaultProps = {
-  selected: false,
-  reversed: false,
 }
 
 export default observer(Segments)

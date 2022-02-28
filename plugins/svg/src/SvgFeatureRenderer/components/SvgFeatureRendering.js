@@ -1,10 +1,11 @@
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { PropTypes as CommonPropTypes } from '@jbrowse/core/util/types/mst'
 import { bpToPx, measureText } from '@jbrowse/core/util'
 import SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
-import React, { useEffect, useRef, useState, useCallback } from 'react'
+
 import FeatureGlyph from './FeatureGlyph'
 import SvgOverlay from './SvgOverlay'
 import { chooseGlyphComponent, layOut } from './util'

@@ -1,7 +1,8 @@
-import { observer } from 'mobx-react'
 import React from 'react'
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { observer } from 'mobx-react'
+import { SimpleFeature } from '@jbrowse/core/util'
 import { readConfObject } from '@jbrowse/core/configuration'
+
 import Segments from './Segments'
 import { layOutFeature, layOutSubfeatures } from './util'
 
@@ -25,15 +26,15 @@ function makeSubpartsFilter(confKey = 'subParts', config) {
   }
 
   if (Array.isArray(filter)) {
-    const typeNames = filter.map(typeName => typeName.toLowerCase())
-    return feature => {
-      return typeNames.includes(feature.get('type').toLowerCase())
-    }
-  }
-  if (typeof filter === 'function') {
+    return feature =>
+      filter
+        .map(typeName => typeName.toLowerCase())
+        .includes(feature.get('type').toLowerCase())
+  } else if (typeof filter === 'function') {
     return filter
+  } else {
+    return () => true
   }
-  return () => true
 }
 
 function filterSubpart(feature, config) {
