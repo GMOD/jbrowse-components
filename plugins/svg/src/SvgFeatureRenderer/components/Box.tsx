@@ -25,12 +25,6 @@ function Box(props: {
   const { feature, region, config, featureLayout, bpPerPx, topLevel } = props
   const { start, end } = region
   const screenWidth = (end - start) / bpPerPx
-  const color2 = readConfObject(config, 'color2', { feature }) as string
-
-  const color = isUTR(feature)
-    ? readConfObject(config, 'color3', { feature })
-    : readConfObject(config, 'color1', { feature })
-
   const { left = 0, width = 0 } = featureLayout.absolute
   let { top = 0, height = 0 } = featureLayout.absolute
 
@@ -54,8 +48,12 @@ function Box(props: {
         y={top}
         width={widthWithinBlock}
         height={height}
-        fill={color}
-        stroke={color2}
+        fill={
+          isUTR(feature)
+            ? readConfObject(config, 'color3', { feature })
+            : readConfObject(config, 'color1', { feature })
+        }
+        stroke={readConfObject(config, 'outline', { feature }) as string}
       />
       {topLevel ? <Arrow {...props} /> : null}
     </>
