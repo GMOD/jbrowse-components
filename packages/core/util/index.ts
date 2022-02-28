@@ -492,21 +492,22 @@ function roundToNearestPointOne(num: number): number {
  */
 export function bpToPx(
   bp: number,
-  region: { start: number; end: number; reversed?: boolean },
+  {
+    reversed,
+    end = 0,
+    start = 0,
+  }: { start?: number; end?: number; reversed?: boolean },
   bpPerPx: number,
-): number {
-  if (region.reversed) {
-    return roundToNearestPointOne((region.end - bp) / bpPerPx)
-  }
-  return roundToNearestPointOne((bp - region.start) / bpPerPx)
+) {
+  return roundToNearestPointOne((reversed ? end - bp : bp - start) / bpPerPx)
 }
 
 const oneEightyOverPi = 180.0 / Math.PI
 const piOverOneEighty = Math.PI / 180.0
-export function radToDeg(radians: number): number {
+export function radToDeg(radians: number) {
   return (radians * oneEightyOverPi) % 360
 }
-export function degToRad(degrees: number): number {
+export function degToRad(degrees: number) {
   return (degrees * piOverOneEighty) % (2 * Math.PI)
 }
 
