@@ -10,9 +10,9 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 function Segments(props: {
   feature: Feature
   featureLayout: any
-  selected: boolean
   config: AnyConfigurationModel
-  reversed: boolean
+  selected?: boolean
+  reversed?: boolean
   subfeatures?: Feature[]
   children?: React.ReactNode
 }) {
