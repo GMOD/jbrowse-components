@@ -4,7 +4,6 @@ import SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import Box from './Box'
-import Chevron from './Chevron'
 import ProcessedTranscript from './ProcessedTranscript'
 import Segments from './Segments'
 import Subfeatures from './Subfeatures'
@@ -97,14 +96,15 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
   const displayMode = readConfObject(config, 'displayMode') as string
   const GlyphComponent =
     displayMode === 'reducedRepresentation'
-      ? Chevron
+      ? Box
       : chooseGlyphComponent(feature, extraGlyphs)
   const parentFeature = feature.parent()
   let x = 0
   if (parentFeature) {
-    x = reversed
-      ? (parentFeature.get('end') - feature.get('end')) / bpPerPx
-      : (feature.get('start') - parentFeature.get('start')) / bpPerPx
+    x =
+      (reversed
+        ? parentFeature.get('end') - feature.get('end')
+        : feature.get('start') - parentFeature.get('start')) / bpPerPx
   }
   const height = readConfObject(config, 'height', { feature }) as number
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
