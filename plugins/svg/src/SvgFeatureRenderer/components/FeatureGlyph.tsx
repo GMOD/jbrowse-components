@@ -19,6 +19,7 @@ function FeatureGlyph(props: {
   allowedWidthExpansion: number
   selected?: boolean
   reversed?: boolean
+  topLevel: boolean
 }) {
   const {
     feature,
@@ -41,10 +42,9 @@ function FeatureGlyph(props: {
     <g>
       <GlyphComponent
         key={`glyph-${feature.id()}`}
-        {...props}
-        feature={feature}
         featureLayout={featureLayout}
         selected={selected}
+        {...props}
       />
       {shouldShowName ? (
         <FeatureLabel
