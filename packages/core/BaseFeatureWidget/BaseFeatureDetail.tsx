@@ -8,9 +8,9 @@ import {
   Typography,
   Divider,
   Tooltip,
+  makeStyles,
 } from '@material-ui/core'
 import ExpandMore from '@material-ui/icons/ExpandMore'
-import { makeStyles } from '@material-ui/core/styles'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 import clsx from 'clsx'
@@ -149,9 +149,7 @@ export const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
       {React.isValidElement(value) ? (
         value
       ) : (
-        <SanitizedHTML
-          html={isObject(value) ? JSON.stringify(value) : String(value)}
-        />
+        <SanitizedHTML html={JSON.stringify(value)} />
       )}
     </div>
   )

@@ -5,15 +5,13 @@ import {
 } from '@jbrowse/core/configuration'
 import { bpToPx, measureText } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
-import SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { BaseLayout, SceneGraph } from '@jbrowse/core/util/layouts'
 import { observer } from 'mobx-react'
 
 import FeatureGlyph from './FeatureGlyph'
 import SvgOverlay from './SvgOverlay'
-import { chooseGlyphComponent, layOut } from './util'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { BaseLayout } from '@jbrowse/core/util/layouts'
-import { ExtraGlyphValidator } from './util'
+import { chooseGlyphComponent, layOut, ExtraGlyphValidator } from './util'
 
 // used to make features have a little padding for their labels
 const namePadding = 2
