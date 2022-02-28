@@ -7,8 +7,20 @@ import Box from './Box'
 import ProcessedTranscript from './ProcessedTranscript'
 import Segments from './Segments'
 import Subfeatures from './Subfeatures'
+import { Region } from '@jbrowse/core/util'
 
-interface Glyph extends React.FC<any> {
+interface Glyph
+  extends React.FC<{
+    children: React.ReactNode
+    feature: Feature
+    featureLayout: any
+    selected?: boolean
+    config: AnyConfigurationModel
+    region: Region
+    bpPerPx: number
+    topLevel?: boolean
+    [key: string]: unknown
+  }> {
   layOut?: Function
 }
 

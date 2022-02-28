@@ -10,7 +10,7 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 function Subfeatures(props: {
   feature: Feature
   featureLayout: any
-  selected: boolean
+  selected?: boolean
 }) {
   const { feature, featureLayout, selected } = props
 
