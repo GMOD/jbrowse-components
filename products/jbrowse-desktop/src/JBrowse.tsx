@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Suspense } from 'react'
+import React, { Suspense } from 'react'
 import { observer } from 'mobx-react'
 import { CssBaseline, ThemeProvider } from '@material-ui/core'
 import { getConf } from '@jbrowse/core/configuration'
