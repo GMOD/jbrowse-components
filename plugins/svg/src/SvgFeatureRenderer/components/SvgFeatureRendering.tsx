@@ -120,6 +120,7 @@ function RenderedFeatureGlyph(props: {
       fontHeight={fontHeight}
       allowedWidthExpansion={expansion}
       reversed={region.reversed}
+      topLevel={true}
       {...props}
     />
   )
@@ -227,14 +228,9 @@ function SvgFeatureRendering(props: {
       if (mouseIsDown) {
         setMovedDuringLastMouseDown(true)
       }
-      let offsetX = 0
-      let offsetY = 0
-      if (ref.current) {
-        offsetX = ref.current.getBoundingClientRect().left
-        offsetY = ref.current.getBoundingClientRect().top
-      }
-      offsetX = event.clientX - offsetX
-      offsetY = event.clientY - offsetY
+      const { left, top } = ref.current.getBoundingClientRect()
+      const offsetX = event.clientX - left
+      const offsetY = event.clientY - top
       const px = region.reversed ? width - offsetX : offsetX
       const clientBp = region.start + bpPerPx * px
 

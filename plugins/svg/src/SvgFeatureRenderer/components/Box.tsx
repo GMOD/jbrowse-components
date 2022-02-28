@@ -7,25 +7,29 @@ import { Region } from '@jbrowse/core/util/types'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { observer } from 'mobx-react'
 import { isUTR } from './util'
+import Arrow from './Arrow'
 
 const utrHeightFraction = 0.65
 
-function Box({
-  feature,
-  region,
-  config,
-  featureLayout,
-  selected = false,
-  bpPerPx,
-}: {
+function Box(props: {
   feature: Feature
   region: Region
   config: AnyConfigurationModel
   featureLayout: any
   selected: any
   bpPerPx: number
+  topLevel: boolean
   children?: React.ReactNode
 }) {
+  const {
+    feature,
+    region,
+    config,
+    featureLayout,
+    bpPerPx,
+    topLevel,
+    selected = false,
+  } = props
   const screenWidth = (region.end - region.start) / bpPerPx
   const color2 = readConfObject(config, 'color2', { feature }) as string
 
@@ -49,15 +53,18 @@ function Box({
   const widthWithinBlock = Math.max(1, Math.min(width - diff, screenWidth))
 
   return (
-    <rect
-      data-testid={`box-${feature.id()}`}
-      x={leftWithinBlock}
-      y={top}
-      width={widthWithinBlock}
-      height={height}
-      fill={color}
-      stroke={selected ? color2 : undefined}
-    />
+    <>
+      <rect
+        data-testid={`box-${feature.id()}`}
+        x={leftWithinBlock}
+        y={top}
+        width={widthWithinBlock}
+        height={height}
+        fill={color}
+        stroke={selected ? color2 : undefined}
+      />
+      {topLevel ? <Arrow {...props} /> : null}
+    </>
   )
 }
 
