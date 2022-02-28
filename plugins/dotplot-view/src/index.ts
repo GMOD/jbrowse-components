@@ -1,10 +1,8 @@
 import Plugin from '@jbrowse/core/Plugin'
 
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import DotplotViewF from './DotplotView'
 import DotplotDisplayF from './DotplotDisplay'
-import PAFAdapterF from './PAFAdapter'
 import DotplotRendererF from './DotplotRenderer'
 
 import AddIcon from '@material-ui/icons/Add'
@@ -12,16 +10,10 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
 
 import TimelineIcon from '@material-ui/icons/Timeline'
-import { FileLocation } from '@jbrowse/core/util/types'
 
 import ComparativeRender from './DotplotRenderer/ComparativeRenderRpc'
 import { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
 import { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
-import {
-  AdapterGuesser,
-  getFileName,
-  TrackTypeGuesser,
-} from '@jbrowse/core/util/tracks'
 
 import { onClick } from './DotplotReadVsRef'
 
@@ -32,40 +24,6 @@ export default class DotplotPlugin extends Plugin {
     DotplotViewF(pluginManager)
     DotplotDisplayF(pluginManager)
     DotplotRendererF(pluginManager)
-    PAFAdapterF(pluginManager)
-
-    pluginManager.addToExtensionPoint(
-      'Core-guessAdapterForLocation',
-      (adapterGuesser: AdapterGuesser) => {
-        return (
-          file: FileLocation,
-          index?: FileLocation,
-          adapterHint?: string,
-        ) => {
-          const regexGuess = /\.paf/i
-          const adapterName = 'PAFAdapter'
-          const fileName = getFileName(file)
-          if (regexGuess.test(fileName) || adapterHint === adapterName) {
-            return {
-              type: adapterName,
-              pafLocation: file,
-            }
-          }
-          return adapterGuesser(file, index, adapterHint)
-        }
-      },
-    )
-    pluginManager.addToExtensionPoint(
-      'Core-guessTrackTypeForLocation',
-      (trackTypeGuesser: TrackTypeGuesser) => {
-        return (adapterName: string) => {
-          if (adapterName === 'PAFAdapter') {
-            return 'SyntenyTrack'
-          }
-          return trackTypeGuesser(adapterName)
-        }
-      },
-    )
 
     // install our comparative rendering rpc callback
     pluginManager.addRpcMethod(() => new ComparativeRender(pluginManager))
@@ -101,7 +59,7 @@ export default class DotplotPlugin extends Plugin {
             },
           )
 
-          ;(pluggableElement as DisplayType).stateModel = newStateModel
+          ;(pluggableElement as ViewType).stateModel = newStateModel
         }
         return pluggableElement
       },

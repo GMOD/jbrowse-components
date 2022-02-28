@@ -3,10 +3,13 @@ import {
   createCanvas,
   createImageBitmap,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { viewBpToPx } from '@jbrowse/core/util'
+import { viewBpToPx, renameRegionsIfNeeded } from '@jbrowse/core/util'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { Region } from '@jbrowse/core/util/types'
 import { getSnapshot, Instance } from 'mobx-state-tree'
 import ComparativeServerSideRendererType, {
   RenderArgsDeserialized as ComparativeRenderArgsDeserialized,
+  RenderArgs as ComparativeRenderArgs,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { Dotplot1DView } from '../DotplotView/model'
@@ -15,7 +18,7 @@ type Dim = Instance<typeof Dotplot1DView>
 
 const { parseCigar } = MismatchParser
 
-export interface RenderArgsDeserialized
+export interface DotplotRenderArgsDeserialized
   extends ComparativeRenderArgsDeserialized {
   height: number
   width: number
@@ -23,8 +26,41 @@ export interface RenderArgsDeserialized
   view: { hview: Dim; vview: Dim }
 }
 
+interface DotplotRenderArgs extends ComparativeRenderArgs {
+  adapterConfig: AnyConfigurationModel
+  sessionId: string
+  view: {
+    hview: { displayedRegions: Region[] }
+    vview: { displayedRegions: Region[] }
+  }
+}
+
 export default class DotplotRenderer extends ComparativeServerSideRendererType {
-  async makeImageData(props: RenderArgsDeserialized & { views: Dim[] }) {
+  async renameRegionsIfNeeded(args: DotplotRenderArgs) {
+    const assemblyManager =
+      this.pluginManager.rootModel?.session?.assemblyManager
+
+    if (!assemblyManager) {
+      throw new Error('No assembly manager provided')
+    }
+
+    args.view.hview.displayedRegions = (
+      await renameRegionsIfNeeded(assemblyManager, {
+        sessionId: args.sessionId,
+        regions: args.view.hview.displayedRegions,
+        adapterConfig: args.adapterConfig,
+      })
+    ).regions
+    args.view.vview.displayedRegions = (
+      await renameRegionsIfNeeded(assemblyManager, {
+        sessionId: args.sessionId,
+        regions: args.view.vview.displayedRegions,
+        adapterConfig: args.adapterConfig,
+      })
+    ).regions
+    return args
+  }
+  async makeImageData(props: DotplotRenderArgsDeserialized & { views: Dim[] }) {
     const {
       highResolutionScaling: scale = 1,
       width,
@@ -149,7 +185,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     return createImageBitmap(canvas)
   }
 
-  async render(renderProps: RenderArgsDeserialized) {
+  async render(renderProps: DotplotRenderArgsDeserialized) {
     const {
       width,
       height,

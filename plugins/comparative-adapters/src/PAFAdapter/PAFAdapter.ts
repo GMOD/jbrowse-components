@@ -107,8 +107,20 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return true
   }
 
-  async getRefNames() {
-    // we cannot determine this accurately
+  async getRefNames(opts: BaseOptions = {}) {
+    // @ts-ignore
+    const r1 = opts.regions?.[0].assemblyName
+    const feats = await this.setup()
+    const assemblyNames = readConfObject(this.config, 'assemblyNames')
+    const idx = assemblyNames.indexOf(r1)
+    if (idx !== -1) {
+      const set = new Set<string>()
+      for (let i = 0; i < feats.length; i++) {
+        set.add(feats[i].records[idx].refName)
+      }
+      return Array.from(set)
+    }
+    console.warn('Unable to do ref renaming on adapter')
     return []
   }
 
@@ -116,10 +128,11 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       const pafRecords = await this.setup(opts)
       const assemblyNames = readConfObject(this.config, 'assemblyNames')
+      const { assemblyName } = region
 
-      // The index of the assembly name in the region list corresponds to
-      // the adapter in the subadapters list
-      const index = assemblyNames.indexOf(region.assemblyName)
+      // The index of the assembly name in the region list corresponds to the
+      // adapter in the subadapters list
+      const index = assemblyNames.indexOf(assemblyName)
       if (index !== -1) {
         for (let i = 0; i < pafRecords.length; i++) {
           const { extra, records } = pafRecords[i]
@@ -128,18 +141,17 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             refName === region.refName &&
             doesIntersect2(region.start, region.end, start, end)
           ) {
+            const mate = records[+!index]
+            const syntenyId = i
             observer.next(
               new SimpleFeature({
-                uniqueId: `row_${i}`,
+                uniqueId: `${i}`,
                 start,
                 end,
                 refName,
-                syntenyId: i,
-                mate: {
-                  start: records[+!index].start,
-                  end: records[+!index].end,
-                  refName: records[+!index].refName,
-                },
+                assemblyName,
+                syntenyId,
+                mate,
                 ...extra,
               }),
             )

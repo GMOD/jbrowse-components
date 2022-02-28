@@ -43,7 +43,7 @@
     "d3-scale": "^3.2.3",
     "json-stable-stringify": "^1.0.1",
     "react-color": "^2.19.3",
-    "react-d3-axis": "^0.1.2",
+    "react-d3-axis-mod": "^0.1.3",
     "react-popper": "^2.0.0"
   },
   "peerDependencies": {

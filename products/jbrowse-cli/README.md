@@ -518,6 +518,8 @@ OPTIONS
 
   --branch=branch     Download a development build from a named git branch
 
+  --clean             Removes old js,map,and LICENSE files in the installation
+
   --nightly           Download the latest development build from the main branch
 
 EXAMPLES

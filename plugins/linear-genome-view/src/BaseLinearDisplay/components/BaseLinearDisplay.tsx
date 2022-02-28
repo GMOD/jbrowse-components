@@ -31,7 +31,7 @@ const useStyles = makeStyles(theme => ({
     color: theme.palette.common.white,
     fontFamily: theme.typography.fontFamily,
     padding: '4px 8px',
-    fontSize: theme.typography.pxToRem(10),
+    fontSize: theme.typography.pxToRem(12),
     lineHeight: `${round(14 / 10)}em`,
     maxWidth: 300,
     wordWrap: 'break-word',

@@ -26,6 +26,7 @@
     "@jbrowse/plugin-breakpoint-split-view": "^1.6.5",
     "@jbrowse/plugin-canvas": "^1.6.5",
     "@jbrowse/plugin-circular-view": "^1.6.5",
+    "@jbrowse/plugin-comparative-adapters": "^1.6.5",
     "@jbrowse/plugin-config": "^1.6.5",
     "@jbrowse/plugin-data-management": "^1.6.5",
     "@jbrowse/plugin-dotplot-view": "^1.6.5",

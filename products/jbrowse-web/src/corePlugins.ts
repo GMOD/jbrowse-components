@@ -4,6 +4,7 @@ import Bed from '@jbrowse/plugin-bed'
 import BreakpointSplitView from '@jbrowse/plugin-breakpoint-split-view'
 import CircularView from '@jbrowse/plugin-circular-view'
 import Config from '@jbrowse/plugin-config'
+import ComparativeAdapters from '@jbrowse/plugin-comparative-adapters'
 import DataManagement from '@jbrowse/plugin-data-management'
 import DotplotView from '@jbrowse/plugin-dotplot-view'
 import GtfPlugin from '@jbrowse/plugin-gtf'
@@ -56,6 +57,7 @@ const corePlugins = [
   HicPlugin,
   TrixPlugin,
   GridBookmarkPlugin,
+  ComparativeAdapters,
 ]
 
 export default corePlugins
