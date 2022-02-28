@@ -29,6 +29,7 @@ function RenderedFeatureGlyph(props: {
   displayMode: string
   layout: any
   extraGlyphs: any
+  [key: string]: unknown
 }) {
   const { feature, bpPerPx, region, config, displayMode, layout, extraGlyphs } =
     props
@@ -116,12 +117,7 @@ function RenderedFeatureGlyph(props: {
 
   return (
     <FeatureGlyph
-      key={`svg-feature-${feature.id()}`}
-      feature={feature}
-      layout={layout}
       rootLayout={rootLayout}
-      bpPerPx={bpPerPx}
-      config={config}
       name={String(name)}
       shouldShowName={shouldShowName}
       description={String(description)}
@@ -134,22 +130,29 @@ function RenderedFeatureGlyph(props: {
   )
 }
 
-const RenderedFeatures = observer(props => {
-  const { features, isFeatureDisplayed } = props
-  const featuresRendered = []
-  for (const feature of features.values()) {
-    if (isFeatureDisplayed(feature)) {
-      featuresRendered.push(
-        <RenderedFeatureGlyph
-          key={feature.id()}
-          feature={feature}
-          {...props}
-        />,
-      )
-    }
-  }
-  return <>{featuresRendered}</>
-})
+const RenderedFeatures = observer(
+  (props: {
+    features: Map<string, Feature>
+    isFeatureDisplayed: (f: Feature) => boolean
+    [key: string]: unknown
+  }) => {
+    const { features, isFeatureDisplayed } = props
+
+    return (
+      <>
+        {[...features.values()]
+          .filter(feature => isFeatureDisplayed(feature))
+          .map(feature => (
+            <RenderedFeatureGlyph
+              key={feature.id()}
+              feature={feature}
+              {...props}
+            />
+          ))}
+      </>
+    )
+  },
+)
 
 function SvgFeatureRendering(props: {
   layout: any
@@ -161,14 +164,14 @@ function SvgFeatureRendering(props: {
   displayModel: any
   exportSVG: boolean
   featureDisplayHandler: (f: Feature) => boolean
-  onMouseOut?: Function
-  onMouseDown?: Function
-  onMouseLeave?: Function
-  onMouseEnter?: Function
-  onMouseOver?: Function
-  onMouseMove?: Function
-  onMouseUp?: Function
-  onClick?: Function
+  onMouseOut?: React.MouseEventHandler
+  onMouseDown?: React.MouseEventHandler
+  onMouseLeave?: React.MouseEventHandler
+  onMouseEnter?: React.MouseEventHandler
+  onMouseOver?: React.MouseEventHandler
+  onMouseMove?: (event: React.MouseEvent, featureId: string) => void
+  onMouseUp?: React.MouseEventHandler
+  onClick?: React.MouseEventHandler
 }) {
   const {
     layout,
@@ -193,9 +196,9 @@ function SvgFeatureRendering(props: {
   const width = (region.end - region.start) / bpPerPx
   const displayMode = readConfObject(config, 'displayMode') as string
 
-  const ref = useRef<SVGSVGElement>()
+  const ref = useRef<SVGSVGElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
-  const [height, setHeight] = useState(false)
+  const [height, setHeight] = useState(0)
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
   const mouseDown = useCallback(
@@ -276,70 +279,43 @@ function SvgFeatureRendering(props: {
   if (exportSVG) {
     return (
       <RenderedFeatures
-        features={features}
         displayMode={displayMode}
         isFeatureDisplayed={featureDisplayHandler}
-        {...props}
         region={region}
+        {...props}
       />
     )
   }
   return (
-    <div
-      style={{
-        position: 'relative',
-      }}
+    <svg
+      ref={ref}
+      className="SvgFeatureRendering"
+      data-testid="svgfeatures"
+      width={width}
+      height={height + svgHeightPadding}
+      onMouseDown={mouseDown}
+      onMouseUp={mouseUp}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onMouseOver={onMouseOver}
+      onMouseOut={onMouseOut}
+      onMouseMove={mouseMove}
+      onClick={click}
     >
-      <svg
-        ref={ref}
-        className="SvgFeatureRendering"
-        data-testid="svgfeatures"
-        width={width}
-        height={height + svgHeightPadding}
-        onMouseDown={mouseDown}
-        onMouseUp={mouseUp}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-        onMouseOver={onMouseOver}
-        onMouseOut={onMouseOut}
-        onMouseMove={mouseMove}
-        onClick={click}
-        style={{ display: 'block' }}
-      >
-        <RenderedFeatures
-          features={features}
-          displayMode={displayMode}
-          {...props}
-          region={region}
-          movedDuringLastMouseDown={movedDuringLastMouseDown}
-          isFeatureDisplayed={featureDisplayHandler}
-        />
-        <SvgOverlay {...props} region={region} />
-      </svg>
-    </div>
+      <RenderedFeatures
+        displayMode={displayMode}
+        region={region}
+        movedDuringLastMouseDown={movedDuringLastMouseDown}
+        isFeatureDisplayed={featureDisplayHandler}
+        {...props}
+      />
+      <SvgOverlay
+        {...props}
+        region={region}
+        movedDuringLastMouseDown={movedDuringLastMouseDown}
+      />
+    </svg>
   )
 }
-
-//SvgFeatureRendering.defaultProps = {
-//  displayModel: {},
-//  exportSVG: undefined,
-//
-//  features: new Map(),
-//  blockKey: undefined,
-//
-//  onMouseDown: undefined,
-//  onMouseUp: undefined,
-//  onMouseEnter: undefined,
-//  onMouseLeave: undefined,
-//  onMouseOver: undefined,
-//  onMouseOut: undefined,
-//  onMouseMove: undefined,
-//  onClick: undefined,
-//  onContextMenu: undefined,
-//  onFeatureClick: undefined,
-//  onFeatureContextMenu: undefined,
-//  extraGlyphs: [],
-//  featureDisplayHandler: () => true,
-//}
 
 export default observer(SvgFeatureRendering)

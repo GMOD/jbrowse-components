@@ -10,7 +10,6 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 function FeatureGlyph(props: {
   feature: Feature
   rootLayout: any
-  selected: boolean
   config: AnyConfigurationModel
   name: string
   description: string
@@ -18,7 +17,8 @@ function FeatureGlyph(props: {
   shouldShowDescription: boolean
   fontHeight: number
   allowedWidthExpansion: number
-  reversed: boolean
+  selected?: boolean
+  reversed?: boolean
 }) {
   const {
     feature,
