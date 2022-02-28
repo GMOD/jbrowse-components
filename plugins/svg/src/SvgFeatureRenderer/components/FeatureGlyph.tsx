@@ -6,10 +6,11 @@ import {
 import { observer } from 'mobx-react'
 import FeatureLabel from './FeatureLabel'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { SceneGraph } from '@jbrowse/core/util/layouts'
 
 function FeatureGlyph(props: {
   feature: Feature
-  rootLayout: any
+  rootLayout: SceneGraph
   config: AnyConfigurationModel
   name: string
   description: string
@@ -36,7 +37,10 @@ function FeatureGlyph(props: {
   } = props
 
   const featureLayout = rootLayout.getSubRecord(String(feature.id()))
-  const { GlyphComponent } = featureLayout.data
+  if (!featureLayout) {
+    return null
+  }
+  const { GlyphComponent } = featureLayout.data || {}
 
   return (
     <g>
@@ -49,8 +53,8 @@ function FeatureGlyph(props: {
       {shouldShowName ? (
         <FeatureLabel
           text={name}
-          x={rootLayout.getSubRecord('nameLabel').absolute.left}
-          y={rootLayout.getSubRecord('nameLabel').absolute.top}
+          x={rootLayout.getSubRecord('nameLabel')?.absolute.left || 0}
+          y={rootLayout.getSubRecord('nameLabel')?.absolute.top || 0}
           color={readConfObject(config, ['labels', 'nameColor'], { feature })}
           fontHeight={fontHeight}
           reversed={reversed}
@@ -61,8 +65,8 @@ function FeatureGlyph(props: {
       {shouldShowDescription ? (
         <FeatureLabel
           text={description}
-          x={rootLayout.getSubRecord('descriptionLabel').absolute.left}
-          y={rootLayout.getSubRecord('descriptionLabel').absolute.top}
+          x={rootLayout.getSubRecord('descriptionLabel')?.absolute.left || 0}
+          y={rootLayout.getSubRecord('descriptionLabel')?.absolute.top || 0}
           color={readConfObject(config, ['labels', 'descriptionColor'], {
             feature,
           })}

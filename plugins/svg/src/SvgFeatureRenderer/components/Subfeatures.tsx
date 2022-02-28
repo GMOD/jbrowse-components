@@ -4,12 +4,18 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
-import { chooseGlyphComponent, layOut, layOutFeature } from './util'
+import {
+  chooseGlyphComponent,
+  ExtraGlyphValidator,
+  layOut,
+  layOutFeature,
+} from './util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { SceneGraph } from '@jbrowse/core/util/layouts'
 
 function Subfeatures(props: {
   feature: Feature
-  featureLayout: any
+  featureLayout: SceneGraph
   selected?: boolean
 }) {
   const { feature, featureLayout, selected } = props
@@ -19,7 +25,10 @@ function Subfeatures(props: {
       {feature.get('subfeatures')?.map(subfeature => {
         const subfeatureId = String(subfeature.id())
         const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
-        const { GlyphComponent } = subfeatureLayout.data
+        if (!subfeatureLayout) {
+          return null
+        }
+        const { GlyphComponent } = subfeatureLayout.data || {}
         return (
           <GlyphComponent
             key={`glyph-${subfeatureId}`}
@@ -42,12 +51,12 @@ Subfeatures.layOut = ({
   config,
   extraGlyphs,
 }: {
-  layout: any
+  layout: SceneGraph
   feature: Feature
   bpPerPx: number
   reversed: boolean
   config: AnyConfigurationModel
-  extraGlyphs: any
+  extraGlyphs: ExtraGlyphValidator[]
 }) => {
   const subLayout = layOutFeature({
     layout,

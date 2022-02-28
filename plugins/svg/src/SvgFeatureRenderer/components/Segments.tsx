@@ -6,10 +6,11 @@ import {
 import { observer } from 'mobx-react'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import Arrow from './Arrow'
+import { SceneGraph } from '@jbrowse/core/util/layouts'
 
 function Segments(props: {
   feature: Feature
-  featureLayout: any
+  featureLayout: SceneGraph
   config: AnyConfigurationModel
   selected?: boolean
   reversed?: boolean
@@ -28,7 +29,7 @@ function Segments(props: {
 
   const color2 = readConfObject(config, 'color2', { feature })
 
-  const { left, top, width, height } = featureLayout.absolute
+  const { left = 0, top = 0, width = 0, height = 0 } = featureLayout.absolute
 
   const y = top + height / 2
   return (
@@ -48,7 +49,7 @@ function Segments(props: {
         if (!subfeatureLayout) {
           return null
         }
-        const { GlyphComponent } = subfeatureLayout.data
+        const { GlyphComponent } = subfeatureLayout.data || {}
         return (
           <GlyphComponent
             key={`glyph-${subfeatureId}`}
