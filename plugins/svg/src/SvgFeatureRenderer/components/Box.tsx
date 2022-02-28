@@ -30,7 +30,8 @@ function Box(props: {
     topLevel,
     selected = false,
   } = props
-  const screenWidth = (region.end - region.start) / bpPerPx
+  const { start, end } = region
+  const screenWidth = (end - start) / bpPerPx
   const color2 = readConfObject(config, 'color2', { feature }) as string
 
   const color = isUTR(feature)
