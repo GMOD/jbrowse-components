@@ -40,21 +40,26 @@ function Box(props: {
   const diff = leftWithinBlock - left
   const widthWithinBlock = Math.max(1, Math.min(width - diff, screenWidth))
 
+  // if feature has parent and type is intron, then don't render the intron
+  // subfeature (if it doesn't have a parent, then maybe the introns are
+  // separately displayed features that should be displayed)
   return (
     <>
-      <rect
-        data-testid={`box-${feature.id()}`}
-        x={leftWithinBlock}
-        y={top}
-        width={widthWithinBlock}
-        height={height}
-        fill={
-          isUTR(feature)
-            ? readConfObject(config, 'color3', { feature })
-            : readConfObject(config, 'color1', { feature })
-        }
-        stroke={readConfObject(config, 'outline', { feature }) as string}
-      />
+      {feature.parent() && feature.get('type') === 'intron' ? null : (
+        <rect
+          data-testid={`box-${feature.id()}`}
+          x={leftWithinBlock}
+          y={top}
+          width={widthWithinBlock}
+          height={height}
+          fill={
+            isUTR(feature)
+              ? readConfObject(config, 'color3', { feature })
+              : readConfObject(config, 'color1', { feature })
+          }
+          stroke={readConfObject(config, 'outline', { feature }) as string}
+        />
+      )}
       {topLevel ? <Arrow {...props} /> : null}
     </>
   )
