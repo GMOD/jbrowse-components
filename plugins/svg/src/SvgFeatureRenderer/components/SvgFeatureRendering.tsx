@@ -14,8 +14,8 @@ import { chooseGlyphComponent, layOut } from './util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 
 // used to make features have a little padding for their labels
-const nameWidthPadding = 2
-const textVerticalPadding = 2
+const namePadding = 2
+const textPadding = 2
 
 // used so that user can click-away-from-feature below the laid out features
 // (issue #1248)
@@ -59,46 +59,41 @@ function RenderedFeatureGlyph(props: {
     const showDescriptions = readConfObject(config, 'showDescriptions')
     fontHeight = readConfObject(config, ['labels', 'fontSize'], { feature })
     expansion = readConfObject(config, 'maxFeatureGlyphExpansion') || 0
-    name = readConfObject(config, ['labels', 'name'], { feature }) || ''
+    name = String(readConfObject(config, ['labels', 'name'], { feature }) || '')
     shouldShowName = /\S/.test(name) && showLabels
 
-    description =
-      readConfObject(config, ['labels', 'description'], { feature }) || ''
+    const getWidth = (text: string) => {
+      const glyphWidth = rootLayout.width + expansion
+      const textWidth = measureText(text, fontHeight)
+      return Math.round(Math.min(textWidth, glyphWidth)) + namePadding
+    }
+
+    description = String(
+      readConfObject(config, ['labels', 'description'], { feature }) || '',
+    )
     shouldShowDescription =
       /\S/.test(description) && showLabels && showDescriptions
 
-    let nameWidth = 0
     if (shouldShowName) {
-      nameWidth =
-        Math.round(
-          Math.min(measureText(name, fontHeight), rootLayout.width + expansion),
-        ) + nameWidthPadding
       rootLayout.addChild(
         'nameLabel',
         0,
-        featureLayout.bottom + textVerticalPadding,
-        nameWidth,
+        featureLayout.bottom + textPadding,
+        getWidth(name),
         fontHeight,
       )
     }
 
-    let descriptionWidth = 0
     if (shouldShowDescription) {
       const aboveLayout = shouldShowName
         ? rootLayout.getSubRecord('nameLabel')
         : featureLayout
-      descriptionWidth =
-        Math.round(
-          Math.min(
-            measureText(description, fontHeight),
-            rootLayout.width + expansion,
-          ),
-        ) + nameWidthPadding
+
       rootLayout.addChild(
         'descriptionLabel',
         0,
-        aboveLayout.bottom + textVerticalPadding,
-        descriptionWidth,
+        aboveLayout.bottom + textPadding,
+        getWidth(description),
         fontHeight,
       )
     }
@@ -118,9 +113,9 @@ function RenderedFeatureGlyph(props: {
   return (
     <FeatureGlyph
       rootLayout={rootLayout}
-      name={String(name)}
+      name={name}
       shouldShowName={shouldShowName}
-      description={String(description)}
+      description={description}
       shouldShowDescription={shouldShowDescription}
       fontHeight={fontHeight}
       allowedWidthExpansion={expansion}
