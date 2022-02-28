@@ -341,6 +341,7 @@ const Renderer = observer(
                     : errorMessage
                 }`,
               )
+              console.error(e)
             }
 
             // send analytics
