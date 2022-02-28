@@ -12,6 +12,10 @@ import { layOutFeature, layOutSubfeatures } from './util'
 function ProcessedTranscript(props: {
   feature: Feature
   config: AnyConfigurationModel
+  featureLayout: any
+  selected?: boolean
+  reversed?: boolean
+  [key: string]: unknown
 }) {
   // eslint-disable-next-line react/prop-types
   const { feature, config } = props

@@ -48,12 +48,12 @@ function RenderedFeatureGlyph(props: {
     config,
     extraGlyphs,
   })
-  let shouldShowName
-  let shouldShowDescription
-  let name
-  let description
-  let fontHeight
-  let expansion
+  let shouldShowName = false
+  let shouldShowDescription = false
+  let name = ''
+  let description = ''
+  let fontHeight = 0
+  let expansion = 0
   if (labelsAllowed) {
     const showLabels = readConfObject(config, 'showLabels')
     const showDescriptions = readConfObject(config, 'showDescriptions')
@@ -134,6 +134,12 @@ const RenderedFeatures = observer(
   (props: {
     features: Map<string, Feature>
     isFeatureDisplayed: (f: Feature) => boolean
+    bpPerPx: number
+    config: AnyConfigurationModel
+    displayMode: string
+    region: Region
+    extraGlyphs: any
+    layout: any
     [key: string]: unknown
   }) => {
     const { features, isFeatureDisplayed } = props
@@ -164,6 +170,7 @@ function SvgFeatureRendering(props: {
   displayModel: any
   exportSVG: boolean
   featureDisplayHandler: (f: Feature) => boolean
+  extraGlyphs: any
   onMouseOut?: React.MouseEventHandler
   onMouseDown?: React.MouseEventHandler
   onMouseLeave?: React.MouseEventHandler
@@ -178,7 +185,6 @@ function SvgFeatureRendering(props: {
     blockKey,
     regions,
     bpPerPx,
-    features,
     config,
     displayModel,
     exportSVG,
