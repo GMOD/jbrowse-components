@@ -6,6 +6,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { SceneGraph } from '@jbrowse/core/util/layouts'
 
 const Arrow = ({
   feature,
@@ -13,13 +14,13 @@ const Arrow = ({
   config,
 }: {
   feature: Feature
-  featureLayout: any
+  featureLayout: SceneGraph
   config: AnyConfigurationModel
 }) => {
   const strand = feature.get('strand')
   const arrowSize = 3
   const arrowOffset = 7
-  const { left, top, width, height } = featureLayout.absolute
+  const { left = 0, top = 0, width = 0, height = 0 } = featureLayout.absolute
   const color2 = readConfObject(config, 'color2', { feature })
   const r = left + width
   const l = left

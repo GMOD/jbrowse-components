@@ -9,11 +9,11 @@ import Segments from './Segments'
 import Subfeatures from './Subfeatures'
 import { Region } from '@jbrowse/core/util'
 
-interface Glyph
+export interface Glyph
   extends React.FC<{
     children: React.ReactNode
     feature: Feature
-    featureLayout: any
+    featureLayout: SceneGraph
     selected?: boolean
     config: AnyConfigurationModel
     region: Region
@@ -24,7 +24,7 @@ interface Glyph
   layOut?: Function
 }
 
-interface ExtraGlyphValidator {
+export interface ExtraGlyphValidator {
   glyph: Glyph
   validator: (feature: Feature) => boolean
 }
