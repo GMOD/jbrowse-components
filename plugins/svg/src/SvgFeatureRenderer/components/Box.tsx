@@ -3,10 +3,12 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { emphasize } from '@jbrowse/core/util/color'
 import { Region } from '@jbrowse/core/util/types'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { observer } from 'mobx-react'
+import { isUTR } from './util'
+
+const utrHeightFraction = 0.65
 
 function Box({
   feature,
@@ -25,18 +27,22 @@ function Box({
   children?: React.ReactNode
 }) {
   const screenWidth = (region.end - region.start) / bpPerPx
-  const color1 = readConfObject(config, 'color1', { feature }) as string
   const color2 = readConfObject(config, 'color2', { feature }) as string
-  let emphasizedColor1
-  try {
-    emphasizedColor1 = emphasize(color1, 0.3)
-  } catch (error) {
-    emphasizedColor1 = color1
-  }
-  const { left, top, width, height } = featureLayout.absolute
+
+  const color = isUTR(feature)
+    ? readConfObject(config, 'color3', { feature })
+    : readConfObject(config, 'color1', { feature })
+
+  const { left, width } = featureLayout.absolute
+  let { top, height } = featureLayout.absolute
 
   if (left + width < 0) {
     return null
+  }
+
+  if (isUTR(feature)) {
+    top += ((1 - utrHeightFraction) / 2) * height
+    height *= utrHeightFraction
   }
   const leftWithinBlock = Math.max(left, 0)
   const diff = leftWithinBlock - left
@@ -49,7 +55,7 @@ function Box({
       y={top}
       width={widthWithinBlock}
       height={height}
-      fill={selected ? emphasizedColor1 : color1}
+      fill={color}
       stroke={selected ? color2 : undefined}
     />
   )

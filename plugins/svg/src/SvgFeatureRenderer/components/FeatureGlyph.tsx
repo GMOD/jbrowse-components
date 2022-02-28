@@ -1,19 +1,33 @@
 import React from 'react'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { PropTypes as CommonPropTypes } from '@jbrowse/core/util/types/mst'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
-import PropTypes from 'prop-types'
 import FeatureLabel from './FeatureLabel'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 
-function FeatureGlyph(props) {
+function FeatureGlyph(props: {
+  feature: Feature
+  rootLayout: any
+  selected: boolean
+  config: AnyConfigurationModel
+  name: string
+  description: string
+  shouldShowName: boolean
+  shouldShowDescription: boolean
+  fontHeight: number
+  allowedWidthExpansion: number
+  reversed: boolean
+}) {
   const {
     feature,
     rootLayout,
     selected,
     config,
-    name,
+    name = '',
+    description = '',
     shouldShowName,
-    description,
     shouldShowDescription,
     fontHeight,
     allowedWidthExpansion,
@@ -68,44 +82,6 @@ function FeatureGlyph(props) {
   }
 
   return <g>{glyphComponents}</g>
-}
-
-FeatureGlyph.propTypes = {
-  feature: PropTypes.shape({
-    id: PropTypes.func.isRequired,
-    get: PropTypes.func.isRequired,
-  }).isRequired,
-  layout: PropTypes.shape({
-    addRect: PropTypes.func.isRequired,
-    getTotalHeight: PropTypes.func.isRequired,
-  }).isRequired,
-  rootLayout: PropTypes.shape({
-    addChild: PropTypes.func.isRequired,
-    getSubRecord: PropTypes.func.isRequired,
-  }).isRequired,
-  region: CommonPropTypes.Region.isRequired,
-  bpPerPx: PropTypes.number.isRequired,
-  reversed: PropTypes.bool,
-  selected: PropTypes.bool,
-  config: CommonPropTypes.ConfigSchema.isRequired,
-  name: PropTypes.string,
-  shouldShowName: PropTypes.bool,
-  description: PropTypes.string,
-  shouldShowDescription: PropTypes.bool,
-  fontHeight: PropTypes.number,
-  allowedWidthExpansion: PropTypes.number,
-  movedDuringLastMouseDown: PropTypes.bool.isRequired,
-}
-
-FeatureGlyph.defaultProps = {
-  reversed: false,
-  selected: false,
-  name: '',
-  shouldShowName: false,
-  description: '',
-  shouldShowDescription: false,
-  fontHeight: undefined,
-  allowedWidthExpansion: undefined,
 }
 
 export default observer(FeatureGlyph)

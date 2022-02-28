@@ -1,12 +1,18 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { SimpleFeature } from '@jbrowse/core/util'
-import { readConfObject } from '@jbrowse/core/configuration'
+import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 
 import Segments from './Segments'
 import { layOutFeature, layOutSubfeatures } from './util'
 
-function ProcessedTranscript(props) {
+function ProcessedTranscript(props: {
+  feature: Feature
+  config: AnyConfigurationModel
+}) {
   // eslint-disable-next-line react/prop-types
   const { feature, config } = props
   const subfeatures = getSubparts(feature, config)
@@ -17,37 +23,34 @@ function ProcessedTranscript(props) {
 
 // make a function that will filter features features according to the
 // subParts conf var
-function makeSubpartsFilter(confKey = 'subParts', config) {
-  let filter = readConfObject(config, confKey)
+function makeSubpartsFilter(
+  confKey = 'subParts',
+  config: AnyConfigurationModel,
+) {
+  let filter = readConfObject(config, confKey) as string[] | string
 
   if (typeof filter == 'string') {
     // convert to array
     filter = filter.split(/\s*,\s*/)
   }
 
-  if (Array.isArray(filter)) {
-    return feature =>
-      filter
-        .map(typeName => typeName.toLowerCase())
-        .includes(feature.get('type').toLowerCase())
-  } else if (typeof filter === 'function') {
-    return filter
-  } else {
-    return () => true
-  }
+  return (feature: Feature) =>
+    (filter as string[])
+      .map(typeName => typeName.toLowerCase())
+      .includes(feature.get('type').toLowerCase())
 }
 
-function filterSubpart(feature, config) {
+function filterSubpart(feature: Feature, config: AnyConfigurationModel) {
   return makeSubpartsFilter('subParts', config)(feature)
 }
 
-function isUTR(feature) {
+function isUTR(feature: Feature) {
   return /(\bUTR|_UTR|untranslated[_\s]region)\b/.test(
     feature.get('type') || '',
   )
 }
 
-function makeUTRs(parent, subs) {
+function makeUTRs(parent: Feature, subs: Feature[]) {
   // based on Lincoln's UTR-making code in Bio::Graphics::Glyph::processed_transcript
   const subparts = [...subs]
 
@@ -130,8 +133,8 @@ function makeUTRs(parent, subs) {
   return subparts
 }
 
-function getSubparts(f, config) {
-  let c = f.get('subfeatures')
+function getSubparts(f: Feature, config: AnyConfigurationModel) {
+  let c = f.get('subfeatures') as Feature[]
   if (!c || !c.length) {
     return []
   }
@@ -155,6 +158,13 @@ ProcessedTranscript.layOut = ({
   reversed,
   config,
   extraGlyphs,
+}: {
+  layout: any
+  feature: Feature
+  bpPerPx: number
+  reversed: boolean
+  config: AnyConfigurationModel
+  extraGlyphs: any
 }) => {
   const subLayout = layOutFeature({
     layout,
