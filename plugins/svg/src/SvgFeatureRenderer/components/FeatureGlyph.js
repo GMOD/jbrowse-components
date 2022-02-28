@@ -1,8 +1,8 @@
+import React from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { PropTypes as CommonPropTypes } from '@jbrowse/core/util/types/mst'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
-import React from 'react'
 import FeatureLabel from './FeatureLabel'
 
 function FeatureGlyph(props) {

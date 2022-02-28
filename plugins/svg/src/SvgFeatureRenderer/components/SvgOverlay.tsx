@@ -1,8 +1,8 @@
+import React from 'react'
 import { bpSpanPx } from '@jbrowse/core/util'
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { SimpleFeature } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
-import React from 'react'
 
 type LayoutRecord = [number, number, number, number]
 interface SvgOverlayProps {

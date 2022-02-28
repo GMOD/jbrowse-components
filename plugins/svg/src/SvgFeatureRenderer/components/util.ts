@@ -9,7 +9,7 @@ import ProcessedTranscript from './ProcessedTranscript'
 import Segments from './Segments'
 import Subfeatures from './Subfeatures'
 
-interface Glyph extends React.FunctionComponent {
+interface Glyph extends React.FC<any> {
   layOut?: Function
 }
 
@@ -23,19 +23,17 @@ export function chooseGlyphComponent(
   extraGlyphs?: ExtraGlyphValidator[],
 ): Glyph {
   const type = feature.get('type')
-  const strand = feature.get('strand')
-  const subfeatures: Feature[] = feature.get('subfeatures')
+  const subfeatures = feature.get('subfeatures') as Feature[] | undefined
 
   if (subfeatures) {
-    const hasSubSub = subfeatures.find(subfeature => {
-      return !!subfeature.get('subfeatures')
-    })
+    const hasSubSub = subfeatures.find(
+      subfeature => !!subfeature.get('subfeatures'),
+    )
     if (hasSubSub) {
       return Subfeatures
     }
-    const transcriptTypes = ['mRNA', 'transcript']
     if (
-      transcriptTypes.includes(type) &&
+      ['mRNA', 'transcript'].includes(type) &&
       subfeatures.find(f => f.get('type') === 'CDS')
     ) {
       return ProcessedTranscript
@@ -44,15 +42,7 @@ export function chooseGlyphComponent(
     return Segments
   }
 
-  if (extraGlyphs) {
-    for (const extraGlyph of extraGlyphs) {
-      if (extraGlyph.validator(feature) === true) {
-        return extraGlyph.glyph
-      }
-    }
-  }
-
-  return [1, -1].includes(strand) ? Chevron : Box
+  return extraGlyphs?.find(f => f.validator(feature))?.glyph || Box
 }
 
 interface BaseLayOutArgs {
@@ -104,7 +94,7 @@ export function layOut({
 
 export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
   const { layout, feature, bpPerPx, reversed, config, extraGlyphs } = args
-  const displayMode = readConfObject(config, 'displayMode')
+  const displayMode = readConfObject(config, 'displayMode') as string
   const GlyphComponent =
     displayMode === 'reducedRepresentation'
       ? Chevron
@@ -116,7 +106,7 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
       ? (parentFeature.get('end') - feature.get('end')) / bpPerPx
       : (feature.get('start') - parentFeature.get('start')) / bpPerPx
   }
-  const height = readConfObject(config, 'height', { feature })
+  const height = readConfObject(config, 'height', { feature }) as number
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
   const layoutParent = layout.parent
   const top = layoutParent ? layoutParent.top : 0
@@ -132,22 +122,11 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
 }
 
 export function layOutSubfeatures(args: SubfeatureLayOutArgs): void {
-  const {
-    layout: subLayout,
-    subfeatures,
-    bpPerPx,
-    reversed,
-    config,
-    extraGlyphs,
-  } = args
-  subfeatures.forEach(subfeature => {
-    const SubfeatureGlyphComponent = chooseGlyphComponent(
-      subfeature,
-      extraGlyphs,
-    )
-    ;(SubfeatureGlyphComponent.layOut || layOut)({
-      layout: subLayout,
-      feature: subfeature,
+  const { layout, subfeatures, bpPerPx, reversed, config, extraGlyphs } = args
+  subfeatures.forEach(feature => {
+    ;(chooseGlyphComponent(feature, extraGlyphs).layOut || layOut)({
+      layout,
+      feature,
       bpPerPx,
       reversed,
       config,
