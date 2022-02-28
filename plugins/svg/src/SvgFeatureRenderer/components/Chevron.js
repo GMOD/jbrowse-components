@@ -30,16 +30,7 @@ function Chevron(props) {
 
   const strand = feature.get('strand')
   const direction = strand * (reversed ? -1 : 1)
-  const color = isUTR(feature)
-    ? readConfObject(config, 'color3', { feature })
-    : readConfObject(config, 'color1', { feature })
-  let emphasizedColor
-  try {
-    emphasizedColor = emphasize(color, 0.3)
-  } catch (error) {
-    emphasizedColor = color
-  }
-  const color2 = readConfObject(config, 'color2', { feature })
+  
 
   if (left + width < 0) {
     return null
