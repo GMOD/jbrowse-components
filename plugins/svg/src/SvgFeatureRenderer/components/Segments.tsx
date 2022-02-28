@@ -21,7 +21,6 @@ function Segments(props: {
     featureLayout,
     selected,
     config,
-    reversed,
     // some subfeatures may be computed e.g. makeUTRs,
     // so these are passed as a prop
     // eslint-disable-next-line react/prop-types
@@ -31,39 +30,33 @@ function Segments(props: {
   const subfeatures =
     subfeaturesProp || (feature.get('subfeatures') as Feature[])
   const color2 = readConfObject(config, 'color2', { feature })
-  let emphasizedColor2
-  try {
-    emphasizedColor2 = emphasize(color2, 0.3)
-  } catch (error) {
-    emphasizedColor2 = color2
-  }
-  const { left, top, width, height } = featureLayout.absolute
-  const strand = feature.get('strand')
-  const arrowSize = 3
-  const arrowOffset = 10
-  const points = [
-    [left, top + height / 2],
-    [left + width + (strand ? arrowOffset : 0), top + height / 2],
-  ]
-  if (strand) {
-    points.push(
-      [left + width + arrowOffset / 2, top + height / 2 - arrowSize / 2],
-      [left + width + arrowOffset / 2, top + height / 2 + arrowSize / 2],
-      [left + width + arrowOffset, top + height / 2],
-    )
-  }
 
+  const { left, top, width, height } = featureLayout.absolute
+  // const strand = feature.get('strand')
+  // const arrowSize = 3
+  // const arrowOffset = 10
+  // const points = [
+  //   [left, top + height / 2],
+  //   [left + width + (strand ? arrowOffset : 0), top + height / 2],
+  // ]
+  // if (strand) {
+  //   points.push(
+  //     [left + width + arrowOffset / 2, top + height / 2 - arrowSize / 2],
+  //     [left + width + arrowOffset / 2, top + height / 2 + arrowSize / 2],
+  //     [left + width + arrowOffset, top + height / 2],
+  //   )
+  // }
+
+  const y = top + height / 2
   return (
     <>
-      <polyline
+      <line
         data-testid={feature.id()}
-        transform={
-          strand && ((!reversed && strand < 0) || (reversed && strand > 0))
-            ? `rotate(180,${left + width / 2},${top + height / 2})`
-            : undefined
-        }
-        points={points.toString()}
-        stroke={selected ? emphasizedColor2 : color2}
+        x1={left}
+        y1={y}
+        y2={y}
+        x2={left + width}
+        stroke={color2}
       />
       {subfeatures?.map(subfeature => {
         const subfeatureId = String(subfeature.id())

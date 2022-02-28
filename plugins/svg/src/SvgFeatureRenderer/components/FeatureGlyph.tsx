@@ -25,8 +25,8 @@ function FeatureGlyph(props: {
     rootLayout,
     selected,
     config,
-    name = '',
-    description = '',
+    name,
+    description,
     shouldShowName,
     shouldShowDescription,
     fontHeight,
@@ -37,51 +37,43 @@ function FeatureGlyph(props: {
   const featureLayout = rootLayout.getSubRecord(String(feature.id()))
   const { GlyphComponent } = featureLayout.data
 
-  const glyphComponents = [
-    <GlyphComponent
-      key={`glyph-${feature.id()}`}
-      {...props}
-      feature={feature}
-      featureLayout={featureLayout}
-      selected={selected}
-    />,
-  ]
-
-  if (shouldShowName) {
-    glyphComponents.push(
-      <FeatureLabel
-        key={`glyph-name-${feature.id()}`}
-        text={name}
-        x={rootLayout.getSubRecord('nameLabel').absolute.left}
-        y={rootLayout.getSubRecord('nameLabel').absolute.top}
-        color={readConfObject(config, ['labels', 'nameColor'], { feature })}
-        fontHeight={fontHeight}
-        reversed={reversed}
-        featureWidth={featureLayout.width}
-        allowedWidthExpansion={allowedWidthExpansion}
-      />,
-    )
-  }
-
-  if (shouldShowDescription) {
-    glyphComponents.push(
-      <FeatureLabel
-        key={`glyph-description-${feature.id()}`}
-        text={description}
-        x={rootLayout.getSubRecord('descriptionLabel').absolute.left}
-        y={rootLayout.getSubRecord('descriptionLabel').absolute.top}
-        color={readConfObject(config, ['labels', 'descriptionColor'], {
-          feature,
-        })}
-        fontHeight={fontHeight}
-        featureWidth={featureLayout.width}
-        reversed={reversed}
-        allowedWidthExpansion={allowedWidthExpansion}
-      />,
-    )
-  }
-
-  return <g>{glyphComponents}</g>
+  return (
+    <g>
+      <GlyphComponent
+        key={`glyph-${feature.id()}`}
+        {...props}
+        feature={feature}
+        featureLayout={featureLayout}
+        selected={selected}
+      />
+      {shouldShowName ? (
+        <FeatureLabel
+          text={name}
+          x={rootLayout.getSubRecord('nameLabel').absolute.left}
+          y={rootLayout.getSubRecord('nameLabel').absolute.top}
+          color={readConfObject(config, ['labels', 'nameColor'], { feature })}
+          fontHeight={fontHeight}
+          reversed={reversed}
+          featureWidth={featureLayout.width}
+          allowedWidthExpansion={allowedWidthExpansion}
+        />
+      ) : null}
+      {shouldShowDescription ? (
+        <FeatureLabel
+          text={description}
+          x={rootLayout.getSubRecord('descriptionLabel').absolute.left}
+          y={rootLayout.getSubRecord('descriptionLabel').absolute.top}
+          color={readConfObject(config, ['labels', 'descriptionColor'], {
+            feature,
+          })}
+          fontHeight={fontHeight}
+          featureWidth={featureLayout.width}
+          reversed={reversed}
+          allowedWidthExpansion={allowedWidthExpansion}
+        />
+      ) : null}
+    </g>
+  )
 }
 
 export default observer(FeatureGlyph)
