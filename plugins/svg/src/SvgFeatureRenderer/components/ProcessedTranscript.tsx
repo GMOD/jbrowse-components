@@ -17,7 +17,6 @@ function ProcessedTranscript(props: {
   reversed?: boolean
   [key: string]: unknown
 }) {
-  // eslint-disable-next-line react/prop-types
   const { feature, config } = props
   const subfeatures = getSubparts(feature, config)
 
@@ -25,7 +24,7 @@ function ProcessedTranscript(props: {
   return <Segments {...props} subfeatures={subfeatures} />
 }
 
-// make a function that will filter features features according to the
+// returns a callback that will filter features features according to the
 // subParts conf var
 function makeSubpartsFilter(
   confKey = 'subParts',
@@ -138,7 +137,7 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
 }
 
 function getSubparts(f: Feature, config: AnyConfigurationModel) {
-  let c = f.get('subfeatures') as Feature[]
+  let c = f.get('subfeatures')
   if (!c || !c.length) {
     return []
   }

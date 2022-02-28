@@ -22,23 +22,20 @@ export function chooseGlyphComponent(
   extraGlyphs?: ExtraGlyphValidator[],
 ): Glyph {
   const type = feature.get('type')
-  const subfeatures = feature.get('subfeatures') as Feature[] | undefined
+  const subfeatures = feature.get('subfeatures')
 
   if (subfeatures) {
-    const hasSubSub = subfeatures.find(
-      subfeature => !!subfeature.get('subfeatures'),
-    )
+    const hasSubSub = subfeatures.find(sub => !!sub.get('subfeatures'))
     if (hasSubSub) {
       return Subfeatures
-    }
-    if (
+    } else if (
       ['mRNA', 'transcript'].includes(type) &&
       subfeatures.find(f => f.get('type') === 'CDS')
     ) {
       return ProcessedTranscript
+    } else {
+      return Segments
     }
-
-    return Segments
   }
 
   return extraGlyphs?.find(f => f.validator(feature))?.glyph || Box
