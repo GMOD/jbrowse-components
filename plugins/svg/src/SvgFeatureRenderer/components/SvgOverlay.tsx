@@ -1,6 +1,6 @@
 import React from 'react'
 import { bpSpanPx } from '@jbrowse/core/util'
-import { SimpleFeature } from '@jbrowse/core/util'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
 
@@ -11,7 +11,7 @@ interface SvgOverlayProps {
     getFeatureByID?: (arg0: string, arg1: string) => LayoutRecord
     selectedFeatureId?: string
     featureIdUnderMouse?: string
-    contextMenuFeature?: SimpleFeature
+    contextMenuFeature?: Feature
   }
   bpPerPx: number
   blockKey: string

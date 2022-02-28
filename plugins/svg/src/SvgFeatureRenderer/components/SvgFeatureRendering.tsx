@@ -12,6 +12,8 @@ import FeatureGlyph from './FeatureGlyph'
 import SvgOverlay from './SvgOverlay'
 import { chooseGlyphComponent, layOut } from './util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { BaseLayout } from '@jbrowse/core/util/layouts'
+import { ExtraGlyphValidator } from './util'
 
 // used to make features have a little padding for their labels
 const namePadding = 2
@@ -27,8 +29,8 @@ function RenderedFeatureGlyph(props: {
   region: Region
   config: AnyConfigurationModel
   displayMode: string
-  layout: any
-  extraGlyphs: any
+  layout: BaseLayout<unknown>
+  extraGlyphs: ExtraGlyphValidator[]
   [key: string]: unknown
 }) {
   const { feature, bpPerPx, region, config, displayMode, layout, extraGlyphs } =
@@ -134,8 +136,8 @@ const RenderedFeatures = observer(
     config: AnyConfigurationModel
     displayMode: string
     region: Region
-    extraGlyphs: any
-    layout: any
+    extraGlyphs: ExtraGlyphValidator[]
+    layout: BaseLayout<unknown>
     [key: string]: unknown
   }) => {
     const { features = new Map(), isFeatureDisplayed } = props
@@ -156,23 +158,35 @@ const RenderedFeatures = observer(
   },
 )
 
+type LayoutRecord = [number, number, number, number]
+
 function SvgFeatureRendering(props: {
-  layout: any
+  layout: BaseLayout<unknown>
   blockKey: string
   regions: Region[]
   bpPerPx: number
   config: AnyConfigurationModel
   features: Map<string, Feature>
-  displayModel: any
+  displayModel: {
+    getFeatureByID?: (arg0: string, arg1: string) => LayoutRecord
+    getFeatureOverlapping?: (
+      blockKey: string,
+      bp: number,
+      y: number,
+    ) => string | undefined
+    selectedFeatureId?: string
+    featureIdUnderMouse?: string
+    contextMenuFeature?: Feature
+  }
   exportSVG: boolean
   featureDisplayHandler: (f: Feature) => boolean
-  extraGlyphs: any
+  extraGlyphs: ExtraGlyphValidator[]
   onMouseOut?: React.MouseEventHandler
   onMouseDown?: React.MouseEventHandler
   onMouseLeave?: React.MouseEventHandler
   onMouseEnter?: React.MouseEventHandler
   onMouseOver?: React.MouseEventHandler
-  onMouseMove?: (event: React.MouseEvent, featureId: string) => void
+  onMouseMove?: (event: React.MouseEvent, featureId?: string) => void
   onMouseUp?: React.MouseEventHandler
   onClick?: React.MouseEventHandler
 }) {
@@ -234,7 +248,7 @@ function SvgFeatureRendering(props: {
       const px = region.reversed ? width - offsetX : offsetX
       const clientBp = region.start + bpPerPx * px
 
-      const featureIdCurrentlyUnderMouse = displayModel.getFeatureOverlapping(
+      const featureIdCurrentlyUnderMouse = displayModel.getFeatureOverlapping?.(
         blockKey,
         clientBp,
         offsetY,

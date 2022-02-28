@@ -8,6 +8,7 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { observer } from 'mobx-react'
 import { isUTR } from './util'
 import Arrow from './Arrow'
+import { SceneGraph } from '@jbrowse/core/util/layouts'
 
 const utrHeightFraction = 0.65
 
@@ -15,7 +16,7 @@ function Box(props: {
   feature: Feature
   region: Region
   config: AnyConfigurationModel
-  featureLayout: any
+  featureLayout: SceneGraph
   bpPerPx: number
   selected?: boolean
   topLevel?: boolean
@@ -30,8 +31,8 @@ function Box(props: {
     ? readConfObject(config, 'color3', { feature })
     : readConfObject(config, 'color1', { feature })
 
-  const { left, width } = featureLayout.absolute
-  let { top, height } = featureLayout.absolute
+  const { left = 0, width = 0 } = featureLayout.absolute
+  let { top = 0, height = 0 } = featureLayout.absolute
 
   if (left + width < 0) {
     return null

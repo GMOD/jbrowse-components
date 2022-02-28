@@ -8,11 +8,12 @@ import {
 
 import Segments from './Segments'
 import { layOutFeature, layOutSubfeatures } from './util'
+import { SceneGraph } from '@jbrowse/core/util/layouts'
 
 function ProcessedTranscript(props: {
   feature: Feature
   config: AnyConfigurationModel
-  featureLayout: any
+  featureLayout: SceneGraph
   selected?: boolean
   reversed?: boolean
   [key: string]: unknown
