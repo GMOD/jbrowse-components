@@ -143,11 +143,6 @@ export interface Widget {
   type: string
   id: string
 }
-// text searching conf for indexing params
-export interface TextSearching {
-  indexingAttributes: string[]
-  indexingFeatureTypesToExclude: string[]
-}
 
 /** abstract interface for a session that manages widgets */
 export interface SessionWithWidgets extends AbstractSessionModel {

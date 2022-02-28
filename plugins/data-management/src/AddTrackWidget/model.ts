@@ -1,7 +1,7 @@
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { FileLocation, TextSearching } from '@jbrowse/core/util/types'
+import { FileLocation } from '@jbrowse/core/util/types'
 import {
   guessAdapter,
   guessTrackType,
@@ -17,7 +17,11 @@ function isAbsoluteUrl(url = '') {
     return url.startsWith('/')
   }
 }
-
+interface TrackTextIndexing {
+  indexingAttributes: string[]
+  indexingFeatureTypesToExclude: string[]
+  assemblies: string[]
+}
 export default function f(pluginManager: PluginManager) {
   return types
     .model('AddTrackModel', {
@@ -38,8 +42,7 @@ export default function f(pluginManager: PluginManager) {
       altTrackType: '',
 
       adapterHint: '',
-      textIndexTrack: false,
-      textSearchConf: undefined as TextSearching | undefined,
+      textIndexingConf: undefined as TrackTextIndexing | undefined,
     }))
     .actions(self => ({
       setAdapterHint(obj: string) {
@@ -48,14 +51,14 @@ export default function f(pluginManager: PluginManager) {
       setTrackSource(str: string) {
         self.trackSource = str
       },
+      setTrackIndexingConf(conf: TrackTextIndexing) {
+        self.textIndexingConf = conf
+      },
       setTrackData(obj: FileLocation) {
         self.trackData = obj
       },
       setIndexTrackData(obj: FileLocation) {
         self.indexTrackData = obj
-      },
-      setTextIndexTrack(flag: boolean) {
-        self.textIndexTrack = flag
       },
       setAssembly(str: string) {
         self.altAssemblyName = str
@@ -75,7 +78,7 @@ export default function f(pluginManager: PluginManager) {
         self.adapterHint = ''
         self.indexTrackData = undefined
         self.trackData = undefined
-        self.textIndexTrack = false
+        self.textIndexingConf = undefined
       },
     }))
     .views(self => ({

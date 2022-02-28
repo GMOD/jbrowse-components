@@ -31,7 +31,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { UNKNOWN } from '@jbrowse/core/util/tracks'
-import { TextSearching } from '@jbrowse/core/util/types'
 
 // locals
 import { AddTrackModel } from '../model'
@@ -128,40 +127,24 @@ function getTrackTypes(pluginManager: PluginManager) {
   return pluginManager.getElementTypesInGroup('track') as { name: string }[]
 }
 
-// const IndexTrackSelector = observer(({ model }: { model: AddTrackModel }) => {
-//   const [indexTrack, setIndexTrack] = useState(false)
-//   return (
-//     <FormControl>
-//       <FormControlLabel
-//         label={'Index track for text searching?'}
-//         control={
-//           <Checkbox
-//             checked={false}
-//             onChange={e => {
-//               setIndexTrack(indexTrack)
-//               model.setTextIndexTrack(e.target.checked)
-//             }}
-//           />
-//         }
-//       />
-//       <FormHelperText>Index Track?</FormHelperText>
-//     </FormControl>
-//   )
-// })
+interface TrackTextIndexing {
+  indexingAttributes: string[]
+  indexingFeatureTypesToExclude: string[]
+  assemblies: string[]
+}
 const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
   const classes = useStyles()
-  const [value, setValue] = useState('')
+  const [value1, setValue1] = useState('')
+  const [value2, setValue2] = useState('')
   const [attributes, setAttributes] = useState(['Name', 'ID', 'type'])
+  const [featuresExclude, setFeaturesExclude] = useState(['CDS', 'exon'])
   // const session = getSession(model)
   // const { trackType } = model
-  const textSearchingConf: TextSearching = {
-    indexingAttributes: ['Name', 'ID', 'type'],
-    indexingFeatureTypesToExclude: ['CDS', 'exon'],
-  }
+  console.log(attributes)
+  console.log(featuresExclude)
   return (
     <Paper className={classes.paper}>
       <InputLabel>indexing parameters</InputLabel>
-      {/* {Object.keys(textSearchingConf).forEach((key, value) => ( */}
       <Card raised key="indexingAttributes" className={classes.card}>
         <CardContent>
           <InputLabel>{'indexingAttributes'}</InputLabel>
@@ -195,24 +178,81 @@ const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
             ))}
             <ListItem disableGutters>
               <TextField
-                value={value}
+                value={value1}
                 placeholder="add new"
-                onChange={event => setValue(event.target.value)}
+                onChange={event => setValue1(event.target.value)}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
                         onClick={() => {
-                          // slot.add(value)
                           const newAttr: string[] = attributes
-                          newAttr.push(value)
+                          newAttr.push(value1)
                           setAttributes(newAttr)
-                          // console.log('I am supposed to add this', value)
-                          setValue('')
+                          setValue1('')
                         }}
-                        disabled={value === ''}
+                        disabled={value1 === ''}
                         color="secondary"
                         data-testid={`stringArrayAdd-`}
+                      >
+                        <AddIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </ListItem>
+          </List>
+        </CardContent>
+      </Card>
+      <Card raised key="featureTypesToExclude" className={classes.card}>
+        <CardContent>
+          <InputLabel>{'featureTypesToExclude'}</InputLabel>
+          <List disablePadding>
+            {featuresExclude.map((feature: string, i: number) => (
+              <ListItem key={i} disableGutters>
+                <TextField
+                  value={feature}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          color="secondary"
+                          onClick={() => {
+                            const newFeat = featuresExclude.filter(
+                              (a, index) => {
+                                return index !== i
+                              },
+                            )
+                            setFeaturesExclude(newFeat)
+                          }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </ListItem>
+            ))}
+            <ListItem disableGutters>
+              <TextField
+                value={value2}
+                placeholder="add new"
+                onChange={event => setValue2(event.target.value)}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => {
+                          const newFeat: string[] = featuresExclude
+                          newFeat.push(value2)
+                          setFeaturesExclude(newFeat)
+                          setValue2('')
+                        }}
+                        disabled={value2 === ''}
+                        color="secondary"
+                        data-testid={`stringArrayAdd-Feat`}
                       >
                         <AddIcon />
                       </IconButton>
@@ -371,7 +411,7 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
     trackType,
     warningMessage,
     adapterHint,
-    textIndexTrack,
+    textIndexingConf
   } = model
 
   if (model.unsupported) {
@@ -431,15 +471,6 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
       <TrackAdapterSelector model={model} />
       <TrackTypeSelector model={model} />
       <TrackAssemblySelector model={model} />
-      {/* <IndexTrackSelector model={model} /> */}
-      {/* <Checkbox
-        checked={check}
-        onChange={e => {
-          setCheck(e.target.checked)
-          console.log(check)
-          // model.setTextIndexTrack(e.target.checked)
-        }}
-      /> */}
       <FormControl>
         <FormControlLabel
           label={'Index track for text searching?'}

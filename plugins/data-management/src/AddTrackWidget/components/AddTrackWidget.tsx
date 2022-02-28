@@ -11,6 +11,7 @@ import {
 import { getSession } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
+import { getEnv } from 'mobx-state-tree'
 import { Alert } from '@material-ui/lab'
 
 // locals
@@ -40,13 +41,28 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+interface TrackTextIndexing {
+  indexingAttributes: string[]
+  indexingFeatureTypesToExclude: string[]
+  assemblies: string[]
+}
+
 const steps = ['Enter track data', 'Confirm track type']
 
 function AddTrackWidget({ model }: { model: AddTrackModel }) {
   const [activeStep, setActiveStep] = useState(0)
   const classes = useStyles()
   const session = getSession(model)
-  const { assembly, trackAdapter, trackData, trackName, trackType } = model
+  const { pluginManager } = getEnv(session)
+  const { rootModel } = pluginManager
+  const {
+    assembly,
+    trackAdapter,
+    trackData,
+    trackName,
+    trackType,
+    textIndexingConf,
+  } = model
   const [trackErrorMessage, setTrackErrorMessage] = useState<String>()
 
   function getStepContent(step: number) {
@@ -86,8 +102,13 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
           sequenceAdapter: getConf(assemblyInstance, ['sequence', 'adapter']),
         },
       })
+      const textSearchingDefault = {
+        indexingAttributes: ['Name', 'ID', 'type'],
+        indexingFeatureTypesToExclude: ['CDS', 'exon'],
+      }
       if (model.view) {
         model.view.showTrack(trackId)
+        rootModel.enqueueIndexingJob(textIndexingConf || textSearchingDefault)
       } else {
         session.notify(
           'Open a new view, or use the track selector in an existing view, to view this track',
