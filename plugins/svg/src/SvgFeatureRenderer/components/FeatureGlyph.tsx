@@ -3,7 +3,9 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
+import { isStateTreeNode } from 'mobx-state-tree'
 import FeatureLabel from './FeatureLabel'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { SceneGraph } from '@jbrowse/core/util/layouts'
@@ -34,6 +36,7 @@ function FeatureGlyph(props: {
     shouldShowName,
     shouldShowDescription,
     reversed,
+    displayModel,
   } = props
 
   const featureLayout = rootLayout.getSubRecord(String(feature.id()))

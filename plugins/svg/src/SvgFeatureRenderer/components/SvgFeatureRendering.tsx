@@ -31,9 +31,9 @@ function RenderedFeatureGlyph(props: {
   bpPerPx: number
   region: Region
   config: AnyConfigurationModel
-  displayMode: string
   layout: BaseLayout<unknown>
   extraGlyphs: ExtraGlyphValidator[]
+  displayMode: string
   displayModel: DisplayModel
   [key: string]: unknown
 }) {
@@ -139,13 +139,13 @@ const RenderedFeatures = observer(
     bpPerPx: number
     config: AnyConfigurationModel
     displayMode: string
+    displayModel: DisplayModel
     region: Region
     extraGlyphs: ExtraGlyphValidator[]
     layout: BaseLayout<unknown>
     [key: string]: unknown
   }) => {
     const { features = new Map(), isFeatureDisplayed } = props
-
     return (
       <>
         {[...features.values()]
@@ -268,9 +268,7 @@ function SvgFeatureRendering(props: {
       if (movedDuringLastMouseDown) {
         return
       }
-      if (onClick) {
-        onClick(event)
-      }
+      onClick?.(event)
     },
     [movedDuringLastMouseDown, onClick],
   )
@@ -292,7 +290,6 @@ function SvgFeatureRendering(props: {
   return (
     <svg
       ref={ref}
-      className="SvgFeatureRendering"
       data-testid="svgfeatures"
       width={width}
       height={height + svgHeightPadding}

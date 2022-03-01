@@ -1,7 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { measureText } from '@jbrowse/core/util'
-import {DisplayModel} from './util'
+import { DisplayModel } from './util'
 
 export default observer(
   ({
@@ -27,7 +27,6 @@ export default observer(
   }) => {
     const totalWidth = featureWidth + allowedWidthExpansion
     const measuredTextWidth = measureText(text, fontHeight)
-    const view = {
 
     return (
       <text
