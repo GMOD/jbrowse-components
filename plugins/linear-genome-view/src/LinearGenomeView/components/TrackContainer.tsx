@@ -1,12 +1,12 @@
 import React, { useEffect, useRef } from 'react'
+import { Paper, makeStyles } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
-import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
+import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { useDebouncedCallback } from '@jbrowse/core/util'
 import clsx from 'clsx'
-import { makeStyles } from '@material-ui/core/styles'
 
 import { LinearGenomeViewModel, RESIZE_HANDLE_HEIGHT } from '..'
 import TrackLabel from './TrackLabel'
@@ -15,7 +15,6 @@ const useStyles = makeStyles(theme => ({
   root: {},
   resizeHandle: {
     height: RESIZE_HANDLE_HEIGHT,
-    background: theme.palette.divider,
     zIndex: 2,
   },
   overlay: {
@@ -83,19 +82,8 @@ function TrackContainer(props: { model: LGV; track: BaseTrackModel }) {
 
   return (
     <div className={classes.root}>
-      {trackLabels !== 'hidden' ? (
-        <TrackLabel
-          track={track}
-          className={clsx(
-            classes.trackLabel,
-            trackLabels === 'overlapping'
-              ? classes.trackLabelOverlap
-              : classes.trackLabelInline,
-          )}
-        />
-      ) : null}
-
-      <div
+      <Paper
+        variant="outlined"
         className={classes.trackRenderingContainer}
         style={{ height }}
         onScroll={event => {
@@ -106,6 +94,17 @@ function TrackContainer(props: { model: LGV; track: BaseTrackModel }) {
         data-testid={`trackRenderingContainer-${id}-${trackId}`}
         role="presentation"
       >
+        {trackLabels !== 'hidden' ? (
+          <TrackLabel
+            track={track}
+            className={clsx(
+              classes.trackLabel,
+              trackLabels === 'overlapping'
+                ? classes.trackLabelOverlap
+                : classes.trackLabelInline,
+            )}
+          />
+        ) : null}
         <div ref={ref} style={{ transform: `scaleX(${model.scaleFactor})` }}>
           <RenderingComponent
             model={display}
@@ -126,7 +125,7 @@ function TrackContainer(props: { model: LGV; track: BaseTrackModel }) {
             <DisplayBlurb model={display} />
           </div>
         ) : null}
-      </div>
+      </Paper>
       <div
         className={classes.overlay}
         style={{
