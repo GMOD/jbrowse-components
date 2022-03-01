@@ -126,12 +126,11 @@ function getAdapterTypes(pluginManager: PluginManager) {
 function getTrackTypes(pluginManager: PluginManager) {
   return pluginManager.getElementTypesInGroup('track') as { name: string }[]
 }
-
-interface TrackTextIndexing {
+interface IndexingAttr {
   indexingAttributes: string[]
   indexingFeatureTypesToExclude: string[]
-  assemblies: string[]
 }
+
 const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
   const classes = useStyles()
   const [value1, setValue1] = useState('')
@@ -140,8 +139,13 @@ const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
   const [featuresExclude, setFeaturesExclude] = useState(['CDS', 'exon'])
   // const session = getSession(model)
   // const { trackType } = model
-  console.log(attributes)
-  console.log(featuresExclude)
+  // console.log(attributes)
+  // console.log(featuresExclude)
+  const indexingAttr = {
+    indexingAttributes: attributes,
+    indexingFeatureTypesToExclude: featuresExclude,
+  }
+  model.setTextIndexingConf(indexingAttr)
   return (
     <Paper className={classes.paper}>
       <InputLabel>indexing parameters</InputLabel>
@@ -405,14 +409,8 @@ const TrackAssemblySelector = observer(
 function ConfirmTrack({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
   const [check, setCheck] = useState(false)
-  const {
-    trackName,
-    trackAdapter,
-    trackType,
-    warningMessage,
-    adapterHint,
-    textIndexingConf
-  } = model
+  const { trackName, trackAdapter, trackType, warningMessage, adapterHint } =
+    model
 
   if (model.unsupported) {
     return (
@@ -479,6 +477,7 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
               checked={check}
               onChange={e => {
                 setCheck(e.target.checked)
+                model.setTextIndexTrack(e.target.checked)
               }}
             />
           }

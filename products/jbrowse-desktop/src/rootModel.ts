@@ -7,7 +7,7 @@ import {
   SnapshotIn,
   Instance,
 } from 'mobx-state-tree'
-import { autorun } from 'mobx'
+import { autorun, observable, toJS } from 'mobx'
 
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
@@ -16,6 +16,7 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { UriLocation } from '@jbrowse/core/util/types'
+// import { indexTracks } from '@jbrowse/text-indexing'
 import { ipcRenderer } from 'electron'
 
 // icons
@@ -33,6 +34,7 @@ import JBrowseDesktop from './jbrowseModel'
 import OpenSequenceDialog from './OpenSequenceDialog'
 // @ts-ignore
 import RenderWorker from './rpc.worker'
+import { selectedIdsLookupSelector } from '@mui/x-data-grid'
 
 function getSaveSession(model: RootModel) {
   return {
@@ -44,6 +46,16 @@ function getSaveSession(model: RootModel) {
 interface Menu {
   label: string
   menuItems: MenuItem[]
+}
+
+interface Track {
+  [key: string]: any
+}
+interface TrackTextIndexing {
+  indexingAttributes: string[]
+  indexingFeatureTypesToExclude: string[]
+  assemblies: string[]
+  tracks: Track[]
 }
 
 export default function rootModelFactory(pluginManager: PluginManager) {
@@ -64,6 +76,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       ),
       isAssemblyEditing: false,
       sessionPath: types.optional(types.string, ''),
+      // indexingQueue: types.array(types.frozen()),
     })
     .volatile(() => ({
       error: undefined as unknown,
@@ -72,6 +85,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         console.error('openNewSessionCallback unimplemented')
       },
       pluginManager,
+      indexingQueue: observable.array([] as TrackTextIndexing[]),
     }))
     .actions(self => ({
       async saveSession(val: unknown) {
@@ -180,6 +194,47 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         self.internetAccounts.push(internetAccount)
         return internetAccount
       },
+      queueIndexingJob(props: TrackTextIndexing) {
+        self.indexingQueue.push(props)
+      },
+      dequeueIndexingJob() {
+        self.indexingQueue.splice(0, 1)
+      },
+      async runIndexingJob() {
+        if (self.indexingQueue.length) {
+          const firstIndexingJob = self.indexingQueue[0] as TrackTextIndexing
+          // console.log('first', firstIndexingJob)
+          const {
+            tracks,
+            indexingFeatureTypesToExclude,
+            indexingAttributes,
+            assemblies,
+          } = toJS(firstIndexingJob)
+          // console.log('queue', self.indexingQueue.length)
+          const rpcManager = self.jbrowse.rpcManager
+          // console.log(outputPath)
+          // console.log('hiiiiiii')
+          // console.log(rpcManager)
+          const pathLocation = process.cwd()
+          // await setTimeout(() => {
+          //   console.log(`waiting 50s for track`, firstIndexingJob)
+          // }, 50000)
+          // console.log(config)
+          // console.log(process.cwd())
+          // const pathLocation = process.cwd()
+          // const outoutPath = path.join(app.getPath('documents'), 'JBrowse')
+          await rpcManager.call('indexTracksSessionId', 'CoreIndexTracks', {
+            trackConfigs: tracks,
+            indexingAttributes: indexingAttributes,
+            indexingFeatureTypesToExclude: indexingFeatureTypesToExclude,
+            assemblies: assemblies,
+            sessionId: 'indexTracksSessionId',
+            outputPath: pathLocation,
+            timeout: 1 * 60 * 60 * 1000, // 1 hours
+          })
+        }
+        return
+      },
       findAppropriateInternetAccount(location: UriLocation) {
         // find the existing account selected from menu
         const selectedId = location.internetAccountId
@@ -208,10 +263,19 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       afterCreate() {
         addDisposer(
           self,
-          autorun(() => {
+          autorun(async () => {
             self.jbrowse.internetAccounts.forEach(account => {
               this.initializeInternetAccount(account.internetAccountId)
             })
+            if (self.indexingQueue.length > 0) {
+              // const first = self.indexingQueue[0]
+              // console.log('first', first)
+              // self.indexingQueue.splice(0, 1)
+              // console.log(self.indexingQueue)
+              await this.runIndexingJob()
+              self.session?.notify('done indexing...', 'success')
+              this.dequeueIndexingJob()
+            }
           }),
         )
       },

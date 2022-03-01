@@ -17,10 +17,9 @@ function isAbsoluteUrl(url = '') {
     return url.startsWith('/')
   }
 }
-interface TrackTextIndexing {
+interface IndexingAttr {
   indexingAttributes: string[]
   indexingFeatureTypesToExclude: string[]
-  assemblies: string[]
 }
 export default function f(pluginManager: PluginManager) {
   return types
@@ -42,7 +41,8 @@ export default function f(pluginManager: PluginManager) {
       altTrackType: '',
 
       adapterHint: '',
-      textIndexingConf: undefined as TrackTextIndexing | undefined,
+      textIndexTrack: false,
+      textIndexingConf: undefined as IndexingAttr | undefined,
     }))
     .actions(self => ({
       setAdapterHint(obj: string) {
@@ -51,8 +51,11 @@ export default function f(pluginManager: PluginManager) {
       setTrackSource(str: string) {
         self.trackSource = str
       },
-      setTrackIndexingConf(conf: TrackTextIndexing) {
+      setTextIndexingConf(conf: IndexingAttr) {
         self.textIndexingConf = conf
+      },
+      setTextIndexTrack(flag: boolean) {
+        self.textIndexTrack = flag
       },
       setTrackData(obj: FileLocation) {
         self.trackData = obj
@@ -79,6 +82,7 @@ export default function f(pluginManager: PluginManager) {
         self.indexTrackData = undefined
         self.trackData = undefined
         self.textIndexingConf = undefined
+        self.textIndexTrack = false
       },
     }))
     .views(self => ({

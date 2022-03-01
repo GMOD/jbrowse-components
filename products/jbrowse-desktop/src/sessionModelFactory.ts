@@ -42,6 +42,12 @@ declare interface ReferringNode {
   key: string
 }
 
+interface TrackTextIndexing {
+  indexingAttributes: string[]
+  indexingFeatureTypesToExclude: string[]
+  assemblies: string[]
+}
+
 export default function sessionModelFactory(
   pluginManager: PluginManager,
   assemblyConfigSchemasType = types.frozen(), // if not using sessionAssemblies
@@ -75,6 +81,7 @@ export default function sessionModelFactory(
         types.string,
         localStorage.getItem('drawerPosition') || 'right',
       ),
+      indexingQueue: types.array(types.frozen()),
     })
     .volatile((/* self */) => ({
       /**
@@ -90,6 +97,7 @@ export default function sessionModelFactory(
        */
       task: undefined,
       queueOfDialogs: observable.array([] as [DialogComponentType, any][]),
+      // queueOfIndexingJobs: observable.array([] as any[]),
     }))
     .views(self => ({
       get DialogComponent() {
@@ -197,6 +205,18 @@ export default function sessionModelFactory(
           self.queueOfDialogs.shift()
         })
         self.queueOfDialogs.push([component, props])
+      },
+      queueIndexingJob(props: TrackTextIndexing) {
+        self.indexingQueue.push(props)
+        console.log('queue', self.indexingQueue)
+      },
+      runIndexingJob() {
+        if (self.indexingQueue.length) {
+          const firstIndexingJob = self.indexingQueue[0]
+          console.log('first', firstIndexingJob)
+          self.indexingQueue.splice(0, 1)
+          console.log('queue', self.indexingQueue)
+        }
       },
       makeConnection(
         configuration: AnyConfigurationModel,
