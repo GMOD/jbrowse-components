@@ -45,8 +45,8 @@ interface Track {
   [key: string]: any
 }
 interface TrackTextIndexing {
-  indexingAttributes: string[]
-  indexingFeatureTypesToExclude: string[]
+  attributes: string[]
+  exclude: string[]
   assemblies: string[]
   tracks: Track[]
 }
@@ -108,13 +108,14 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
         },
       })
       const textSearchingDefault = {
-        indexingAttributes: ['Name', 'ID', 'type'],
-        indexingFeatureTypesToExclude: ['CDS', 'exon'],
+        attributes: ['Name', 'ID', 'type'],
+        exclude: ['CDS', 'exon'],
       }
       if (model.view) {
         model.view.showTrack(trackId)
         if (textIndexTrack) {
           console.log('indexing track', trackId)
+          console.log(textIndexingConf)
           const attr = textIndexingConf || textSearchingDefault
           const indexingParams = {
             ...attr,

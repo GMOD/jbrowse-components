@@ -58,13 +58,11 @@ export class CoreIndexTracks extends RpcMethodType {
     args: {
       sessionId: string
       signal: RemoteAbortSignal
-      outputPath?: string
-      indexingAttributes?: string[]
-      indexingFeatureTypesToExclude?: string[]
-      assemblies: string[]
-      trackConfigs:
-        | AnyConfigurationModel[]
-        | SnapshotIn<AnyConfigurationModel>[]
+      outLocation?: string
+      attributes?: string[]
+      exclude?: string[]
+      assemblies?: string[]
+      tracks: AnyConfigurationModel[] | SnapshotIn<AnyConfigurationModel>[]
     },
     rpcDriverClassName: string,
   ) {
@@ -72,30 +70,23 @@ export class CoreIndexTracks extends RpcMethodType {
       args,
       rpcDriverClassName,
     )
-    const {
-      sessionId,
-      trackConfigs,
-      outputPath,
-      indexingFeatureTypesToExclude,
-      indexingAttributes,
-    } = deserializedArgs
-
-    // const { dataAdapter } = await getAdapter(
-    //   this.pluginManager,
-    //   sessionId,
-    //   adapterConfig,
-    // )
-
-    // if (dataAdapter instanceof BaseFeatureDataAdapter) {
-    //   return dataAdapter.getRefNames(deserializedArgs)
-    // }
-    // console.log(process.cwd(), outputPath || '.')
+    const { sessionId, tracks, outLocation, exclude, attributes, assemblies } =
+      deserializedArgs
+      
     console.log('sessionId', sessionId)
-    console.log('trackConf', trackConfigs)
-    console.log('outPath', outputPath)
-    console.log('attr', indexingAttributes)
-    console.log('attr', indexingFeatureTypesToExclude)
-    await indexTracks(trackConfigs, outputPath)
+    console.log('trackConf', tracks)
+    console.log('outPath', outLocation)
+    console.log('attr', attributes)
+    console.log('exclude', exclude)
+    console.log('assemblies', assemblies)
+    const indexingParams = {
+      outLocation,
+      tracks,
+      exclude,
+      attributes,
+      assemblies,
+    }
+    await indexTracks(indexingParams)
     return []
   }
 }

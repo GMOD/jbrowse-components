@@ -8,11 +8,18 @@ import { generateMeta } from './types/common'
 import { ixIxxStream } from 'ixixx'
 import { Track } from './util'
 
-export async function indexTracks(
-  tracks: Track[],
-  outLocation?: string,
-  signal?: AbortSignal,
-) {
+type indexType = 'aggregate' | 'perTrack'
+export async function indexTracks(args: {
+  tracks: Track[]
+  outLocation?: string
+  signal?: AbortSignal
+  attributes?: string[]
+  assemblies?: string[]
+  exclude?: string[]
+  indexType?: indexType
+}) {
+  const { tracks, outLocation, attributes, exclude, assemblies, indexType } =
+    args
   console.time('Indexing...')
   const outFlag = outLocation || '.'
   const isDir = fs.lstatSync(outFlag).isDirectory()
@@ -23,17 +30,19 @@ export async function indexTracks(
     fs.mkdirSync(trixDir)
   }
   // default settings
-  const attributes = ['Name', 'ID']
-  const attrsExclude = ['exon', 'CDS']
-  const assemblyNames = [] as string[]
+  const idxType = indexType || 'perTrack'
+  console.log(idxType)
+  const attrs = attributes || ['Name', 'ID']
+  const excludeTypes = exclude || ['exon', 'CDS']
+  const assemblyNames = assemblies || []
   const nameOfIndex = 'test'
   await indexDriver(
     tracks,
     outDir,
-    attributes,
+    attrs,
     nameOfIndex,
     false,
-    attrsExclude,
+    excludeTypes,
     assemblyNames,
   )
   return []
@@ -58,6 +67,7 @@ async function indexDriver(
   // console.log('ixIxxStream', ixIxxStream)
   const endTime = performance.now()
   console.log(`Indexing took ${endTime - startTime} milliseconds`)
+  console.log('Generating metadata...')
   await generateMeta({
     configs: tracks,
     attributes,
@@ -66,8 +76,7 @@ async function indexDriver(
     exclude,
     assemblyNames,
   })
-  console.timeEnd('Indexing...')
-  console.log("done generating meta")
+  console.log('Indexing completed.')
   return
 }
 

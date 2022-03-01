@@ -18,8 +18,8 @@ function isAbsoluteUrl(url = '') {
   }
 }
 interface IndexingAttr {
-  indexingAttributes: string[]
-  indexingFeatureTypesToExclude: string[]
+  attributes: string[]
+  exclude: string[]
 }
 export default function f(pluginManager: PluginManager) {
   return types

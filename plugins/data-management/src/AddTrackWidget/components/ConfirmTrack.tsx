@@ -127,8 +127,8 @@ function getTrackTypes(pluginManager: PluginManager) {
   return pluginManager.getElementTypesInGroup('track') as { name: string }[]
 }
 interface IndexingAttr {
-  indexingAttributes: string[]
-  indexingFeatureTypesToExclude: string[]
+  attributes: string[]
+  exclude: string[]
 }
 
 const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
@@ -142,8 +142,8 @@ const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
   // console.log(attributes)
   // console.log(featuresExclude)
   const indexingAttr = {
-    indexingAttributes: attributes,
-    indexingFeatureTypesToExclude: featuresExclude,
+    attributes: attributes,
+    exclude: featuresExclude,
   }
   model.setTextIndexingConf(indexingAttr)
   return (

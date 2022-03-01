@@ -42,10 +42,14 @@ declare interface ReferringNode {
   key: string
 }
 
+interface Track {
+  [key: string]: any
+}
 interface TrackTextIndexing {
-  indexingAttributes: string[]
-  indexingFeatureTypesToExclude: string[]
+  attributes: string[]
+  exclude: string[]
   assemblies: string[]
+  tracks: Track[]
 }
 
 export default function sessionModelFactory(
@@ -633,9 +637,9 @@ export default function sessionModelFactory(
               const pathLocation = process.cwd()
               // const outoutPath = path.join(app.getPath('documents'), 'JBrowse')
               await rpcManager.call('indexTracksSessionId', 'CoreIndexTracks', {
-                trackConfigs: [trackSnapshot],
+                tracks: [trackSnapshot],
                 sessionId: 'indexTracksSessionId',
-                outputPath: pathLocation,
+                outLocation: pathLocation,
                 timeout: 1 * 60 * 60 * 1000, // 1 hours
               })
             },

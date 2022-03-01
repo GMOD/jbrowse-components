@@ -34,7 +34,6 @@ import JBrowseDesktop from './jbrowseModel'
 import OpenSequenceDialog from './OpenSequenceDialog'
 // @ts-ignore
 import RenderWorker from './rpc.worker'
-import { selectedIdsLookupSelector } from '@mui/x-data-grid'
 
 function getSaveSession(model: RootModel) {
   return {
@@ -52,8 +51,8 @@ interface Track {
   [key: string]: any
 }
 interface TrackTextIndexing {
-  indexingAttributes: string[]
-  indexingFeatureTypesToExclude: string[]
+  attributes: string[]
+  exclude: string[]
   assemblies: string[]
   tracks: Track[]
 }
@@ -204,34 +203,24 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         if (self.indexingQueue.length) {
           const firstIndexingJob = self.indexingQueue[0] as TrackTextIndexing
           // console.log('first', firstIndexingJob)
-          const {
-            tracks,
-            indexingFeatureTypesToExclude,
-            indexingAttributes,
-            assemblies,
-          } = toJS(firstIndexingJob)
+          const { tracks, exclude, attributes, assemblies } =
+            toJS(firstIndexingJob)
           // console.log('queue', self.indexingQueue.length)
           const rpcManager = self.jbrowse.rpcManager
-          // console.log(outputPath)
-          // console.log('hiiiiiii')
-          // console.log(rpcManager)
-          const pathLocation = process.cwd()
-          // await setTimeout(() => {
-          //   console.log(`waiting 50s for track`, firstIndexingJob)
-          // }, 50000)
-          // console.log(config)
-          // console.log(process.cwd())
-          // const pathLocation = process.cwd()
-          // const outoutPath = path.join(app.getPath('documents'), 'JBrowse')
+          const outLocation = process.cwd()
+          console.log(attributes)
+          console.log(exclude)
+          console.log(tracks)
           await rpcManager.call('indexTracksSessionId', 'CoreIndexTracks', {
-            trackConfigs: tracks,
-            indexingAttributes: indexingAttributes,
-            indexingFeatureTypesToExclude: indexingFeatureTypesToExclude,
-            assemblies: assemblies,
+            tracks,
+            attributes,
+            exclude,
+            assemblies,
+            outLocation,
             sessionId: 'indexTracksSessionId',
-            outputPath: pathLocation,
             timeout: 1 * 60 * 60 * 1000, // 1 hours
           })
+          self.session?.notify('Indexing completed', 'success')
         }
         return
       },
@@ -273,7 +262,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               // self.indexingQueue.splice(0, 1)
               // console.log(self.indexingQueue)
               await this.runIndexingJob()
-              self.session?.notify('done indexing...', 'success')
               this.dequeueIndexingJob()
             }
           }),

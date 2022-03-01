@@ -28,12 +28,12 @@ export async function* indexGff3(
     totalBytes = fs.statSync(filename).size
     fileDataStream = fs.createReadStream(filename)
   }
-
-  console.log('total bytes', totalBytes)
+  console.log(`Indexing track with trackId: ${trackId}`)
   fileDataStream.on('data', chunk => {
     receivedBytes += chunk.length
     // send an update?
-    console.log('received', receivedBytes)
+    const progress = Math.round((receivedBytes / totalBytes) * 100)
+    console.log(`${progress}%`)
   })
 
   const rl = readline.createInterface({
