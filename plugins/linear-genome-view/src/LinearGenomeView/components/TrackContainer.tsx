@@ -49,15 +49,20 @@ const useStyles = makeStyles(theme => ({
 
 type LGV = LinearGenomeViewModel
 
-function TrackContainer(props: { model: LGV; track: BaseTrackModel }) {
+function TrackContainer({
+  model,
+  track,
+}: {
+  model: LGV
+  track: BaseTrackModel
+}) {
   const classes = useStyles()
-  const { model, track } = props
   const display = track.displays[0]
   const { id, trackLabels, horizontalScroll, draggingTrackId, moveTrack } =
     model
   const { height } = display
   const trackId = getConf(track, 'trackId')
-  const ref = useRef(null)
+  const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (ref.current) {
@@ -121,7 +126,6 @@ function TrackContainer(props: { model: LGV; track: BaseTrackModel }) {
               top: display.height - 20,
             }}
           >
-            {' '}
             <DisplayBlurb model={display} />
           </div>
         ) : null}
