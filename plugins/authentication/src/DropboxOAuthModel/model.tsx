@@ -64,7 +64,6 @@ const stateModelFactory = (
       'DropboxOAuthInternetAccount',
       baseModel(OAuthConfigSchema),
       types.model({
-        id: 'DropboxOAuth',
         type: types.literal('DropboxOAuthInternetAccount'),
         configuration: ConfigurationReference(configSchema),
       }),

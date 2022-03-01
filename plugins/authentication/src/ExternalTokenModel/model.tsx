@@ -14,7 +14,6 @@ const stateModelFactory = (
       'ExternalTokenInternetAccount',
       InternetAccount,
       types.model({
-        id: 'ExternalToken',
         type: types.literal('ExternalTokenInternetAccount'),
         configuration: ConfigurationReference(configSchema),
       }),

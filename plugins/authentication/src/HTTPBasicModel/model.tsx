@@ -14,7 +14,6 @@ const stateModelFactory = (
       'HTTPBasicInternetAccount',
       InternetAccount,
       types.model({
-        id: 'HTTPBasic',
         type: types.literal('HTTPBasicInternetAccount'),
         configuration: ConfigurationReference(configSchema),
       }),

@@ -98,7 +98,6 @@ const stateModelFactory = (
       'GoogleDriveOAuthInternetAccount',
       baseModel(OAuthConfigSchema),
       types.model({
-        id: 'GoogleDriveOAuth',
         type: types.literal('GoogleDriveOAuthInternetAccount'),
         configuration: ConfigurationReference(configSchema),
       }),

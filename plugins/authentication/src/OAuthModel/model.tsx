@@ -40,7 +40,6 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       'OAuthInternetAccount',
       InternetAccount,
       types.model('OAuthModel', {
-        id: 'OAuth',
         type: types.literal('OAuthInternetAccount'),
         configuration: ConfigurationReference(configSchema),
       }),
