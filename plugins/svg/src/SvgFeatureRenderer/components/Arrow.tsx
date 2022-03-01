@@ -18,39 +18,26 @@ const Arrow = ({
   config: AnyConfigurationModel
 }) => {
   const strand = feature.get('strand')
-  const arrowSize = 3
-  const arrowOffset = 7
+  const size = 5
+  const offset = 7 * strand
   const { left = 0, top = 0, width = 0, height = 0 } = featureLayout.absolute
   const color2 = readConfObject(config, 'color2', { feature })
-  const r = left + width
-  const l = left
+  const p = strand === -1 ? left : left + width
   const y = top + height / 2
 
-  return strand === 1 ? (
+  return (
     <>
-      <line x1={r} x2={r + arrowOffset} y1={y} y2={y} stroke={color2} />
+      <line x1={p} x2={p + offset} y1={y} y2={y} stroke={color2} />
       <polygon
         points={[
-          [r + arrowOffset / 2, y - arrowSize / 2],
-          [r + arrowOffset / 2, y + arrowSize / 2],
-          [r + arrowOffset, y],
+          [p + offset / 2, y - size / 2],
+          [p + offset / 2, y + size / 2],
+          [p + offset, y],
         ].toString()}
         stroke={color2}
       />
     </>
-  ) : strand === -1 ? (
-    <>
-      <line x1={l} x2={l - arrowOffset} y1={y} y2={y} stroke={color2} />
-      <polygon
-        points={[
-          [l - arrowOffset / 2, y - arrowSize / 2],
-          [l - arrowOffset / 2, y + arrowSize / 2],
-          [l - arrowOffset, y],
-        ].toString()}
-        stroke={color2}
-      />
-    </>
-  ) : null
+  )
 }
 
 export default observer(Arrow)
