@@ -12,17 +12,20 @@ const Arrow = ({
   feature,
   featureLayout,
   config,
+  reversed,
 }: {
   feature: Feature
   featureLayout: SceneGraph
   config: AnyConfigurationModel
+  reversed: boolean
 }) => {
   const strand = feature.get('strand')
   const size = 5
-  const offset = 7 * strand
+  const rev = reversed ? -1 : 1
+  const offset = 7 * strand * rev
   const { left = 0, top = 0, width = 0, height = 0 } = featureLayout.absolute
   const color2 = readConfObject(config, 'color2', { feature })
-  const p = strand === -1 ? left : left + width
+  const p = strand * rev === -1 ? left : left + width
   const y = top + height / 2
 
   return (
