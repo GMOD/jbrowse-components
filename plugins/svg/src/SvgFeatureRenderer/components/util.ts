@@ -24,6 +24,20 @@ export interface Glyph
   layOut?: Function
 }
 
+type LayoutRecord = [number, number, number, number]
+
+export interface DisplayModel {
+  getFeatureByID?: (arg0: string, arg1: string) => LayoutRecord
+  getFeatureOverlapping?: (
+    blockKey: string,
+    bp: number,
+    y: number,
+  ) => string | undefined
+  selectedFeatureId?: string
+  featureIdUnderMouse?: string
+  contextMenuFeature?: Feature
+}
+
 export interface ExtraGlyphValidator {
   glyph: Glyph
   validator: (feature: Feature) => boolean

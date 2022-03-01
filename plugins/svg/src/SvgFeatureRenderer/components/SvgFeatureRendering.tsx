@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
+import { observer } from 'mobx-react'
 import {
   AnyConfigurationModel,
   readConfObject,
@@ -7,11 +8,15 @@ import { bpToPx, measureText } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { BaseLayout, SceneGraph } from '@jbrowse/core/util/layouts'
-import { observer } from 'mobx-react'
 
 import FeatureGlyph from './FeatureGlyph'
 import SvgOverlay from './SvgOverlay'
-import { chooseGlyphComponent, layOut, ExtraGlyphValidator } from './util'
+import {
+  chooseGlyphComponent,
+  layOut,
+  ExtraGlyphValidator,
+  DisplayModel,
+} from './util'
 
 // used to make features have a little padding for their labels
 const namePadding = 2
@@ -29,6 +34,7 @@ function RenderedFeatureGlyph(props: {
   displayMode: string
   layout: BaseLayout<unknown>
   extraGlyphs: ExtraGlyphValidator[]
+  displayModel: DisplayModel
   [key: string]: unknown
 }) {
   const { feature, bpPerPx, region, config, displayMode, layout, extraGlyphs } =
@@ -156,8 +162,6 @@ const RenderedFeatures = observer(
   },
 )
 
-type LayoutRecord = [number, number, number, number]
-
 function SvgFeatureRendering(props: {
   layout: BaseLayout<unknown>
   blockKey: string
@@ -165,17 +169,7 @@ function SvgFeatureRendering(props: {
   bpPerPx: number
   config: AnyConfigurationModel
   features: Map<string, Feature>
-  displayModel: {
-    getFeatureByID?: (arg0: string, arg1: string) => LayoutRecord
-    getFeatureOverlapping?: (
-      blockKey: string,
-      bp: number,
-      y: number,
-    ) => string | undefined
-    selectedFeatureId?: string
-    featureIdUnderMouse?: string
-    contextMenuFeature?: Feature
-  }
+  displayModel: DisplayModel
   exportSVG: boolean
   featureDisplayHandler: (f: Feature) => boolean
   extraGlyphs: ExtraGlyphValidator[]

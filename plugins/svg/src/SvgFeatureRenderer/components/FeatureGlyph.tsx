@@ -7,6 +7,7 @@ import { observer } from 'mobx-react'
 import FeatureLabel from './FeatureLabel'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { SceneGraph } from '@jbrowse/core/util/layouts'
+import type { DisplayModel } from './util'
 
 function FeatureGlyph(props: {
   feature: Feature
@@ -18,6 +19,7 @@ function FeatureGlyph(props: {
   shouldShowDescription: boolean
   fontHeight: number
   allowedWidthExpansion: number
+  displayModel: DisplayModel
   selected?: boolean
   reversed?: boolean
   topLevel?: boolean
@@ -31,8 +33,6 @@ function FeatureGlyph(props: {
     description,
     shouldShowName,
     shouldShowDescription,
-    fontHeight,
-    allowedWidthExpansion,
     reversed,
   } = props
 
@@ -56,10 +56,9 @@ function FeatureGlyph(props: {
           x={rootLayout.getSubRecord('nameLabel')?.absolute.left || 0}
           y={rootLayout.getSubRecord('nameLabel')?.absolute.top || 0}
           color={readConfObject(config, ['labels', 'nameColor'], { feature })}
-          fontHeight={fontHeight}
           reversed={reversed}
           featureWidth={featureLayout.width}
-          allowedWidthExpansion={allowedWidthExpansion}
+          {...props}
         />
       ) : null}
       {shouldShowDescription ? (
@@ -70,10 +69,9 @@ function FeatureGlyph(props: {
           color={readConfObject(config, ['labels', 'descriptionColor'], {
             feature,
           })}
-          fontHeight={fontHeight}
           featureWidth={featureLayout.width}
           reversed={reversed}
-          allowedWidthExpansion={allowedWidthExpansion}
+          {...props}
         />
       ) : null}
     </g>
