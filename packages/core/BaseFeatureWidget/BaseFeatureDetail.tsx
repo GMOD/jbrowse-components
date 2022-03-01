@@ -149,7 +149,9 @@ export const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
       {React.isValidElement(value) ? (
         value
       ) : (
-        <SanitizedHTML html={JSON.stringify(value)} />
+        <SanitizedHTML
+          html={isObject(value) ? JSON.stringify(value) : String(value)}
+        />
       )}
     </div>
   )
