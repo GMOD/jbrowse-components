@@ -1,18 +1,17 @@
 import React, { useRef, useEffect, useState } from 'react'
-import ReactPropTypes from 'prop-types'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
-// material ui
-import { alpha } from '@material-ui/core/styles/colorManipulator'
-import { makeStyles } from '@material-ui/core/styles'
-import Popover from '@material-ui/core/Popover'
-import Tooltip from '@material-ui/core/Tooltip'
-import Typography from '@material-ui/core/Typography'
+import { observer } from 'mobx-react'
+import {
+  Popover,
+  Tooltip,
+  Typography,
+  makeStyles,
+  alpha,
+} from '@material-ui/core'
 import { stringify } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
-import { LinearGenomeViewStateModel, BpOffset } from '..'
+import { LinearGenomeViewModel, BpOffset } from '..'
 
-type LGV = Instance<LinearGenomeViewStateModel>
+type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles(theme => {
   const background = theme.palette.tertiary
@@ -52,6 +51,9 @@ const useStyles = makeStyles(theme => {
       position: 'absolute',
       zIndex: 10,
     },
+    tooltip: {
+      fontSize: '1em',
+    },
   }
 })
 
@@ -61,6 +63,7 @@ const VerticalGuide = observer(
     return (
       <Tooltip
         open
+        classes={{ tooltip: classes.tooltip }}
         placement="top"
         title={stringify(model.pxToBp(coordX))}
         arrow
@@ -311,15 +314,6 @@ function RubberBand({
       ) : null}
     </>
   )
-}
-
-RubberBand.propTypes = {
-  model: MobxPropTypes.objectOrObservableObject.isRequired,
-  ControlComponent: ReactPropTypes.node,
-}
-
-RubberBand.defaultProps = {
-  ControlComponent: <div />,
 }
 
 export default observer(RubberBand)

@@ -51,6 +51,9 @@ const useStyles = makeStyles(theme => {
       position: 'absolute',
       zIndex: 10,
     },
+    tooltip: {
+      fontSize: '1em',
+    },
   }
 })
 
@@ -82,6 +85,7 @@ const HoverTooltip = observer(
     return (
       <Tooltip
         open={open}
+        classes={{ tooltip: classes.tooltip }}
         placement="top"
         title={[stringify(px), cytoband?.get('name')].join(' ')}
         arrow

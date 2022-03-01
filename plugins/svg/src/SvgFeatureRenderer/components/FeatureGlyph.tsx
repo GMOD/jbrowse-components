@@ -53,24 +53,30 @@ function FeatureGlyph(props: {
     // @ts-ignore
     const { dynamicBlocks, offsetPx: viewOffsetPx } = view
 
-    const { start: viewStart } = dynamicBlocks?.contentBlocks[0] || {}
+    const { start: viewStart, end: viewEnd } =
+      dynamicBlocks?.contentBlocks[0] || {}
+
+    const viewLeft = reversed ? viewEnd : viewStart
+    console.log({ viewLeft, viewStart, viewEnd })
+
+    console.log({ viewStart, viewEnd })
     // @ts-ignore
     const blockOffsetPx = view.bpToPx({
       refName: region.refName,
       coord: region.start,
     })?.offsetPx
     const baseOffsetPx = viewOffsetPx - blockOffsetPx
-    if (
-      feature.get('start') < viewStart + featureLayout.width &&
-      viewStart - featureLayout.width < feature.get('end')
-    ) {
+    const fstart = feature.get('start')
+    const fend = feature.get('end')
+    // const [fstart, fend] = reversed ? [end, start] : [start, end]
+    const w = featureLayout.width
+    if (fstart < viewLeft + w && viewLeft - w < fend) {
       offsetPx = baseOffsetPx
     }
   }
   return (
     <>
       <GlyphComponent
-        key={`glyph-${feature.id()}`}
         featureLayout={featureLayout}
         selected={selected}
         {...props}
