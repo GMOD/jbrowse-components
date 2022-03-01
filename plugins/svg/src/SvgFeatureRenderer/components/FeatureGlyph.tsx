@@ -30,7 +30,6 @@ function FeatureGlyph(props: {
   const {
     feature,
     rootLayout,
-    selected,
     config,
     name,
     description,
@@ -70,24 +69,25 @@ function FeatureGlyph(props: {
     const fend = feature.get('end')
     // const [fstart, fend] = reversed ? [end, start] : [start, end]
     const w = featureLayout.width
-    if (fstart < viewLeft + w && viewLeft - w < fend) {
-      offsetPx = baseOffsetPx
+    if (reversed) {
+      if (fstart < viewLeft + w && viewLeft - w < fend) {
+        offsetPx = baseOffsetPx
+      }
+    } else {
+      if (fstart < viewLeft + w && viewLeft - w < fend) {
+        offsetPx = baseOffsetPx
+      }
     }
   }
   return (
     <>
-      <GlyphComponent
-        featureLayout={featureLayout}
-        selected={selected}
-        {...props}
-      />
+      <GlyphComponent featureLayout={featureLayout} {...props} />
       {shouldShowName ? (
         <FeatureLabel
           text={name}
           x={offsetPx}
           y={rootLayout.getSubRecord('nameLabel')?.absolute.top || 0}
           color={readConfObject(config, ['labels', 'nameColor'], { feature })}
-          reversed={reversed}
           featureWidth={featureLayout.width}
           {...props}
         />
@@ -101,7 +101,6 @@ function FeatureGlyph(props: {
             feature,
           })}
           featureWidth={featureLayout.width}
-          reversed={reversed}
           {...props}
         />
       ) : null}

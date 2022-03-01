@@ -29,12 +29,7 @@ export default observer(
     const measuredTextWidth = measureText(text, fontHeight)
 
     return (
-      <text
-        x={reversed ? x + featureWidth - measuredTextWidth : x}
-        y={y + fontHeight}
-        fill={color}
-        fontSize={fontHeight}
-      >
+      <text x={x} y={y + fontHeight} fill={color} fontSize={fontHeight}>
         {measuredTextWidth > totalWidth
           ? `${text.slice(0, measuredTextWidth)}...`
           : text}
