@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-bed",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "description": "JBrowse 2 bed adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -35,7 +35,7 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@gmod/bbi": "^1.0.31",
+    "@gmod/bbi": "^1.0.32",
     "@gmod/bed": "^2.0.6",
     "@gmod/tabix": "^1.5.2"
   },

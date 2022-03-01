@@ -52,6 +52,11 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
    * @param args - the arguments passed to render
    * @returns the same object
    */
+
+  async renameRegionsIfNeeded(args: RenderArgs) {
+    return args
+  }
+
   serializeArgsInClient(args: RenderArgs) {
     const deserializedArgs = {
       ...args,

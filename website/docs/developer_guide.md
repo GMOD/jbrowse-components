@@ -63,7 +63,7 @@ Here are some examples of working plugins.
 You can use these to see how plugins are generally structured, and can use the
 pluggable elements in them as templates for your own pluggable elements.
 
-We will go over what plugins do and what is in them now
+Now, let's explore what plugins can do and how they are structured.
 
 ## What's in a plugin
 

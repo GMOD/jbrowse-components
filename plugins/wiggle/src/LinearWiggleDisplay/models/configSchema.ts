@@ -27,6 +27,11 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
         description:
           'global/local using their min/max values or w/ standard deviations (globalsd/localsd)',
       },
+      minimalTicks: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'use the minimal amount of ticks',
+      },
 
       minScore: {
         type: 'number',

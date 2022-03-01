@@ -1,32 +1,25 @@
+import React from 'react'
+import {
+  measureText,
+  getContainingView,
+  getContainingTrack,
+} from '@jbrowse/core/util'
+import { getConf } from '@jbrowse/core/configuration'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
-import React from 'react'
-import { Axis, LEFT, RIGHT } from 'react-d3-axis'
 import { WiggleDisplayModel } from '../models/model'
-
-export const YScaleBar = observer(
-  ({
-    model,
-    orientation,
-  }: {
-    model: WiggleDisplayModel
-    orientation?: string
-  }) => {
-    const { ticks } = model
-
-    return (
-      <Axis
-        {...ticks}
-        format={(n: number) => n}
-        style={{ orient: orientation === 'left' ? LEFT : RIGHT }}
-      />
-    )
-  },
-)
+import YScaleBar from './YScaleBar'
 
 const LinearWiggleDisplay = observer((props: { model: WiggleDisplayModel }) => {
   const { model } = props
   const { stats, height, needsScalebar } = model
+
+  // @ts-ignore
+  const { trackLabels } = getContainingView(model)
+  const left =
+    trackLabels === 'overlapping'
+      ? measureText(getConf(getContainingTrack(model), 'name'), 12.8) + 100
+      : 50
   return (
     <div>
       <BaseLinearDisplayComponent {...props} />
@@ -35,7 +28,7 @@ const LinearWiggleDisplay = observer((props: { model: WiggleDisplayModel }) => {
           style={{
             position: 'absolute',
             top: 0,
-            left: 300,
+            left,
             pointerEvents: 'none',
             height,
             width: 50,
@@ -49,3 +42,5 @@ const LinearWiggleDisplay = observer((props: { model: WiggleDisplayModel }) => {
 })
 
 export default LinearWiggleDisplay
+
+export { YScaleBar }

@@ -6,7 +6,13 @@ import SimpleFeature, {
   Feature,
 } from '@jbrowse/core/util/simpleFeature'
 import { getConf } from '@jbrowse/core/configuration'
-import { getContainingView, viewBpToPx, ViewSnap } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  viewBpToPx,
+  getSession,
+  ViewSnap,
+  AssemblyManager,
+} from '@jbrowse/core/util'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { interstitialYPos, overlayYPos, generateMatches } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
@@ -19,10 +25,13 @@ type RectTuple = [number, number, number, number]
 const { parseCigar } = MismatchParser
 
 function px(view: ViewSnap, arg: { refName: string; coord: number }) {
-  return (viewBpToPx({ ...arg, self: view }) || {}).offsetPx || 0
+  return viewBpToPx({ ...arg, self: view })?.offsetPx || 0
 }
 
-function layoutMatches(features: Feature[][]) {
+function layoutMatches(
+  features: Feature[][],
+  assemblyManager?: AssemblyManager,
+) {
   const matches = []
   for (let i = 0; i < features.length; i++) {
     for (let j = i; j < features.length; j++) {
@@ -37,17 +46,22 @@ function layoutMatches(features: Feature[][]) {
           if (f1.get('strand') === -1) {
             ;[f1e, f1s] = [f1s, f1e]
           }
+          const a1 = assemblyManager?.get(f1.get('assemblyName'))
+          const a2 = assemblyManager?.get(f2.get('assemblyName'))
+          const r1 = f1.get('refName')
+          const r2 = f2.get('refName')
+
           matches.push([
             {
               feature: f1,
               level: i,
-              refName: f1.get('refName'),
+              refName: a1?.getCanonicalRefName(f1.get('refName')) || r1,
               layout: [f1s, 0, f1e, 10] as RectTuple,
             },
             {
               feature: f2,
               level: j,
-              refName: f2.get('refName'),
+              refName: a2?.getCanonicalRefName(f1.get('refName')) || r2,
               layout: [f2s, 0, f2e, 10] as RectTuple,
             },
           ])
@@ -58,13 +72,30 @@ function layoutMatches(features: Feature[][]) {
   return matches
 }
 
-type LSV = LinearSyntenyViewModel
-
 /**
  * A block whose content is rendered outside of the main thread and hydrated by
  * this component.
  */
-function LinearSyntenyRendering(props: {
+
+function getResources(displayModel: LinearComparativeDisplay) {
+  const worker = !('type' in displayModel)
+  if (!worker && isAlive(displayModel)) {
+    const parentView = getContainingView(displayModel) as LinearSyntenyViewModel
+    const color = getConf(displayModel, ['renderer', 'color'])
+    const session = getSession(displayModel)
+    const { assemblyManager } = session
+    return { color, session, parentView, assemblyManager }
+  }
+  return {}
+}
+function LinearSyntenyRendering({
+  height,
+  width,
+  displayModel,
+  highResolutionScaling = 1,
+  features,
+  trackIds,
+}: {
   width: number
   height: number
   displayModel: LinearComparativeDisplay
@@ -73,39 +104,25 @@ function LinearSyntenyRendering(props: {
   trackIds: string[]
 }) {
   const ref = useRef<HTMLCanvasElement>(null)
-  const {
-    height,
-    width,
-    displayModel: display = {},
-    highResolutionScaling = 1,
-    features,
-    trackIds,
-  } = props
-
-  const deserializedFeatures = useMemo(
+  const { color, assemblyManager, parentView } = getResources(displayModel)
+  const matches = useMemo(
     () =>
-      features.map(level => {
-        return level
-          .map(f => new SimpleFeature(f))
-          .sort((a, b) => a.get('syntenyId') - b.get('syntenyId'))
-      }),
-    [features],
+      layoutMatches(
+        features.map(level =>
+          level
+            .map(f => new SimpleFeature(f))
+            .sort((a, b) => a.get('syntenyId') - b.get('syntenyId')),
+        ),
+        assemblyManager,
+      ),
+    [features, assemblyManager],
   )
-  const matches = layoutMatches(deserializedFeatures)
-  const worker = !('type' in display)
-  const parentView =
-    worker || !isAlive(display)
-      ? undefined
-      : (getContainingView(display) as LSV)
-  const views = worker ? undefined : parentView?.views
-  const drawCurves = worker ? undefined : parentView?.drawCurves
-  const color =
-    worker || !isAlive(display)
-      ? undefined
-      : getConf(display, ['renderer', 'color'])
+  const drawCurves = parentView?.drawCurves
+  const views = parentView?.views
   const offsets = views?.map(view => view.offsetPx)
+
   useEffect(() => {
-    if (!ref.current || !offsets || !views || !isAlive(display)) {
+    if (!ref.current || !offsets || !views || !isAlive(displayModel)) {
       return
     }
     const ctx = ref.current.getContext('2d')
@@ -126,6 +143,7 @@ function LinearSyntenyRendering(props: {
       interRegionPaddingWidth: view.interRegionPaddingWidth,
       minimumBlockWidth: view.minimumBlockWidth,
     }))
+
     matches.forEach(m => {
       // we follow a path in the list of chunks, not from top to bottom, just
       // in series following x1,y1 -> x2,y2
@@ -160,12 +178,12 @@ function LinearSyntenyRendering(props: {
           ? interstitialYPos(l1 < l2, height)
           : // prettier-ignore
             // @ts-ignore
-            overlayYPos(trackIds[0], l1, views, c1, l1 < l2)
+            overlayYPos(trackIds[0], l1, viewSnaps, c1, l1 < l2)
         const y2 = middle
           ? interstitialYPos(l2 < l1, height)
           : // prettier-ignore
             // @ts-ignore
-            overlayYPos(trackIds[1], l2, views, c2, l2 < l1)
+            overlayYPos(trackIds[1], l2, viewSnaps, c2, l2 < l1)
 
         const mid = (y2 - y1) / 2
 
@@ -201,38 +219,42 @@ function LinearSyntenyRendering(props: {
 
               if (op === 'M' || op === '=') {
                 ctx.fillStyle = '#f003'
-                cx1 += (val / views[0].bpPerPx) * rev1
-                cx2 += (val / views[1].bpPerPx) * rev2
+                cx1 += (val / viewSnaps[0].bpPerPx) * rev1
+                cx2 += (val / viewSnaps[1].bpPerPx) * rev2
               } else if (op === 'X') {
                 ctx.fillStyle = 'brown'
-                cx1 += (val / views[0].bpPerPx) * rev1
-                cx2 += (val / views[1].bpPerPx) * rev2
+                cx1 += (val / viewSnaps[0].bpPerPx) * rev1
+                cx2 += (val / viewSnaps[1].bpPerPx) * rev2
               } else if (op === 'D') {
                 ctx.fillStyle = '#00f3'
-                cx1 += (val / views[0].bpPerPx) * rev1
+                cx1 += (val / viewSnaps[0].bpPerPx) * rev1
               } else if (op === 'N') {
                 ctx.fillStyle = '#0a03'
-                cx1 += (val / views[0].bpPerPx) * rev1
+                cx1 += (val / viewSnaps[0].bpPerPx) * rev1
               } else if (op === 'I') {
                 ctx.fillStyle = '#ff03'
-                cx2 += (val / views[1].bpPerPx) * rev2
+                cx2 += (val / viewSnaps[1].bpPerPx) * rev2
               }
-              ctx.beginPath()
-              ctx.moveTo(px1, y1)
-              ctx.lineTo(cx1, y1)
-              if (drawCurves) {
-                ctx.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
-              } else {
-                ctx.lineTo(cx2, y2)
+
+              // only draw cigar entries that are larger than a pixel wide!
+              if (Math.abs(px1 - cx1) > 0.5 || Math.abs(px2 - cx2) > 0.5) {
+                ctx.beginPath()
+                ctx.moveTo(px1, y1)
+                ctx.lineTo(cx1, y1)
+                if (drawCurves) {
+                  ctx.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
+                } else {
+                  ctx.lineTo(cx2, y2)
+                }
+                ctx.lineTo(px2, y2)
+                if (drawCurves) {
+                  ctx.bezierCurveTo(px2, mid, px1, mid, px1, y1)
+                } else {
+                  ctx.lineTo(px1, y1)
+                }
+                ctx.closePath()
+                ctx.fill()
               }
-              ctx.lineTo(px2, y2)
-              if (drawCurves) {
-                ctx.bezierCurveTo(px2, mid, px1, mid, px1, y1)
-              } else {
-                ctx.lineTo(px1, y1)
-              }
-              ctx.closePath()
-              ctx.fill()
             }
           } else {
             ctx.beginPath()
@@ -256,7 +278,7 @@ function LinearSyntenyRendering(props: {
       }
     })
   }, [
-    display,
+    displayModel,
     highResolutionScaling,
     trackIds,
     width,

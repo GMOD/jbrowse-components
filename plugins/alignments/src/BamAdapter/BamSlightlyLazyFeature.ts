@@ -15,6 +15,7 @@ import {
 import BamAdapter from './BamAdapter'
 
 export default class BamSlightlyLazyFeature implements Feature {
+  private cachedMD = ''
   constructor(
     private record: BamRecord,
     private adapter: BamAdapter,
@@ -70,10 +71,13 @@ export default class BamSlightlyLazyFeature implements Feature {
   }
 
   _get_MD() {
-    const md = this.record.get('MD') as string | undefined
-    const seq = this.get('seq') as string
-    if (!md && seq && this.ref) {
-      return generateMD(this.ref, this.record.getReadBases(), this.get('CIGAR'))
+    const md = this.record.get('MD') || this.cachedMD
+    if (!md) {
+      const seq = this.get('seq')
+      if (seq && this.ref) {
+        this.cachedMD = generateMD(this.ref, this.get('seq'), this.get('CIGAR'))
+        return this.cachedMD
+      }
     }
     return md
   }

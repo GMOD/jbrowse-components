@@ -2347,6 +2347,42 @@ Object {
           "internetAccountId": undefined,
           "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
+          "uri": "volvox_fake_synteny_alt.paf",
+        },
+        "type": "PAFAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+        "volvox",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox_fake_synteny_alt-DotplotDisplay",
+          "type": "DotplotDisplay",
+        },
+        Object {
+          "displayId": "volvox_fake_synteny_alt-LinearComparativeDisplay",
+          "type": "LinearComparativeDisplay",
+        },
+        Object {
+          "displayId": "volvox_fake_synteny_alt-LinearSyntenyDisplay",
+          "type": "LinearSyntenyDisplay",
+        },
+      ],
+      "name": "volvox_fake_synteny_alt",
+      "trackId": "volvox_fake_synteny_alt",
+      "type": "SyntenyTrack",
+    },
+    Object {
+      "adapter": Object {
+        "assemblyNames": Array [
+          "volvox",
+          "volvox",
+        ],
+        "pafLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
           "uri": "volvox_fake_synteny.paf",
         },
         "type": "PAFAdapter",

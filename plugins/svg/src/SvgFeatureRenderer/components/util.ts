@@ -64,10 +64,12 @@ interface BaseLayOutArgs {
 
 interface FeatureLayOutArgs extends BaseLayOutArgs {
   feature: Feature
+  extraGlyphs: ExtraGlyphValidator[]
 }
 
 interface SubfeatureLayOutArgs extends BaseLayOutArgs {
   subfeatures: Feature[]
+  extraGlyphs: ExtraGlyphValidator[]
 }
 
 export function layOut({
@@ -76,6 +78,7 @@ export function layOut({
   bpPerPx,
   reversed,
   config,
+  extraGlyphs,
 }: FeatureLayOutArgs): SceneGraph {
   const displayMode = readConfObject(config, 'displayMode')
   const subLayout = layOutFeature({
@@ -84,6 +87,7 @@ export function layOut({
     bpPerPx,
     reversed,
     config,
+    extraGlyphs,
   })
   if (displayMode !== 'reducedRepresentation') {
     layOutSubfeatures({
@@ -92,18 +96,19 @@ export function layOut({
       bpPerPx,
       reversed,
       config,
+      extraGlyphs,
     })
   }
   return subLayout
 }
 
 export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
-  const { layout, feature, bpPerPx, reversed, config } = args
+  const { layout, feature, bpPerPx, reversed, config, extraGlyphs } = args
   const displayMode = readConfObject(config, 'displayMode')
   const GlyphComponent =
     displayMode === 'reducedRepresentation'
       ? Chevron
-      : chooseGlyphComponent(feature)
+      : chooseGlyphComponent(feature, extraGlyphs)
   const parentFeature = feature.parent()
   let x = 0
   if (parentFeature) {
@@ -127,15 +132,26 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
 }
 
 export function layOutSubfeatures(args: SubfeatureLayOutArgs): void {
-  const { layout: subLayout, subfeatures, bpPerPx, reversed, config } = args
+  const {
+    layout: subLayout,
+    subfeatures,
+    bpPerPx,
+    reversed,
+    config,
+    extraGlyphs,
+  } = args
   subfeatures.forEach(subfeature => {
-    const SubfeatureGlyphComponent = chooseGlyphComponent(subfeature)
+    const SubfeatureGlyphComponent = chooseGlyphComponent(
+      subfeature,
+      extraGlyphs,
+    )
     ;(SubfeatureGlyphComponent.layOut || layOut)({
       layout: subLayout,
       feature: subfeature,
       bpPerPx,
       reversed,
       config,
+      extraGlyphs,
     })
   })
 }
