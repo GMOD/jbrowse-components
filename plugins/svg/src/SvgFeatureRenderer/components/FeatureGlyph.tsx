@@ -46,7 +46,7 @@ function FeatureGlyph(props: {
   const { GlyphComponent } = featureLayout.data || {}
 
   return (
-    <g>
+    <>
       <GlyphComponent
         key={`glyph-${feature.id()}`}
         featureLayout={featureLayout}
@@ -77,7 +77,7 @@ function FeatureGlyph(props: {
           {...props}
         />
       ) : null}
-    </g>
+    </>
   )
 }
 
