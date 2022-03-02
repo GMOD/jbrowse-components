@@ -56,17 +56,18 @@ async function indexDriver(
   exclude: string[],
   assemblyNames: string[],
 ) {
-  const startTime = performance.now()
+  // const startTime = performance.now()
   const readable = Readable.from(
     indexFiles(tracks, attributes, idxLocation, quiet, exclude),
   )
-  console.log('readable', readable)
-  console.log('idxLocation', idxLocation)
+  // console.log("Indexing begins...")
+  // console.log('readable', readable)
+  // console.log('idxLocation', idxLocation)
   // idx location will be the output or temp directory
   await runIxIxx(readable, idxLocation, name)
   // console.log('ixIxxStream', ixIxxStream)
-  const endTime = performance.now()
-  console.log(`Indexing took ${endTime - startTime} milliseconds`)
+  // const endTime = performance.now()
+  // console.log(`Indexing took ${endTime - startTime} milliseconds`)
   console.log('Generating metadata...')
   await generateMeta({
     configs: tracks,
@@ -76,7 +77,7 @@ async function indexDriver(
     exclude,
     assemblyNames,
   })
-  console.log('Indexing completed.')
+  // console.log('Indexing completed.')
   return
 }
 

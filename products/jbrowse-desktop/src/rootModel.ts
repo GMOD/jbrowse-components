@@ -202,15 +202,10 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       async runIndexingJob() {
         if (self.indexingQueue.length) {
           const firstIndexingJob = self.indexingQueue[0] as TrackTextIndexing
-          // console.log('first', firstIndexingJob)
           const { tracks, exclude, attributes, assemblies } =
             toJS(firstIndexingJob)
-          // console.log('queue', self.indexingQueue.length)
           const rpcManager = self.jbrowse.rpcManager
           const outLocation = process.cwd()
-          console.log(attributes)
-          console.log(exclude)
-          console.log(tracks)
           await rpcManager.call('indexTracksSessionId', 'CoreIndexTracks', {
             tracks,
             attributes,
@@ -220,7 +215,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             sessionId: 'indexTracksSessionId',
             timeout: 1 * 60 * 60 * 1000, // 1 hours
           })
-          self.session?.notify('Indexing completed', 'success')
+          self.session?.notify('Done Indexing', 'info')
         }
         return
       },
@@ -256,13 +251,16 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             self.jbrowse.internetAccounts.forEach(account => {
               this.initializeInternetAccount(account.internetAccountId)
             })
+          }),
+        )
+        addDisposer(
+          self,
+          autorun(async () => {
             if (self.indexingQueue.length > 0) {
-              // const first = self.indexingQueue[0]
-              // console.log('first', first)
-              // self.indexingQueue.splice(0, 1)
-              // console.log(self.indexingQueue)
+              console.time('indexing took')
               await this.runIndexingJob()
               this.dequeueIndexingJob()
+              console.timeEnd('indexing took')
             }
           }),
         )
