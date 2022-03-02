@@ -6,15 +6,13 @@ import {
   SnapshotIn,
   Instance,
 } from 'mobx-state-tree'
-import { observable } from 'mobx'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { MenuItem, ReturnToImportFormDialog } from '@jbrowse/core/ui'
+import { MenuItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 
 // icons
 import DoneIcon from '@material-ui/icons/Done'
-import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 
 import SpreadsheetModel from './Spreadsheet'
 import ImportWizardModel from './ImportWizard'
@@ -82,7 +80,7 @@ const model = types
   })
   .volatile(() => ({
     width: 400,
-    rowMenuItems: observable(defaultRowMenuItems),
+    rowMenuItems: defaultRowMenuItems,
   }))
   .views(self => ({
     get readyToDisplay() {
@@ -115,7 +113,7 @@ const model = types
   }))
   .actions(self => ({
     setRowMenuItems(newItems: MenuItem[]) {
-      self.rowMenuItems.replace(newItems)
+      self.rowMenuItems = newItems
     },
     setWidth(newWidth: number) {
       self.width = newWidth
@@ -159,20 +157,6 @@ const model = types
 
     closeView() {
       getParent(self, 2).removeView(self)
-    },
-    menuItems() {
-      return [
-        {
-          label: 'Return to import form',
-          onClick: () => {
-            getSession(self).queueDialog(doneCallback => [
-              ReturnToImportFormDialog,
-              { model: self, handleClose: doneCallback },
-            ])
-          },
-          icon: FolderOpenIcon,
-        },
-      ]
     },
   }))
 
