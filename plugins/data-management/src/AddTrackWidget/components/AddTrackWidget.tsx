@@ -114,8 +114,8 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
       if (model.view) {
         model.view.showTrack(trackId)
         if (textIndexTrack) {
-          console.log('indexing track', trackId)
-          console.log(textIndexingConf)
+          // console.log('indexing track', trackId)
+          // console.log(textIndexingConf)
           const attr = textIndexingConf || textSearchingDefault
           const indexingParams = {
             ...attr,

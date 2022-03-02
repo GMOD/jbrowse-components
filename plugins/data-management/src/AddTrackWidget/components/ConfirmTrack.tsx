@@ -137,11 +137,7 @@ const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
   const [value2, setValue2] = useState('')
   const [attributes, setAttributes] = useState(['Name', 'ID', 'type'])
   const [featuresExclude, setFeaturesExclude] = useState(['CDS', 'exon'])
-  // const session = getSession(model)
-  // const { trackType } = model
-  // console.log(attributes)
-  // console.log(featuresExclude)
-  const indexingAttr = {
+  const indexingAttr: IndexingAttr = {
     attributes: attributes,
     exclude: featuresExclude,
   }

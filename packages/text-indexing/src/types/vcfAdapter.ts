@@ -30,11 +30,11 @@ export async function* indexVcf(
     fileDataStream = fs.createReadStream(filename)
   }
 
-  console.log("totalBytes", totalBytes)
+  // console.log("totalBytes", totalBytes)
   fileDataStream.on('data', chunk => {
     receivedBytes += chunk.length
     // progressBar.update(receivedBytes)
-    console.log("received", receivedBytes)
+    // console.log("received", receivedBytes)
   })
 
   const gzStream = uri.endsWith('.gz')
@@ -91,6 +91,4 @@ export async function* indexVcf(
       yield `${record} ${[...new Set(attrs)].join(' ')}\n`
     }
   }
-
-  console.log("done")
 }

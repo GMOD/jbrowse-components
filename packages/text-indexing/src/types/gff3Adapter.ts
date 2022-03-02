@@ -32,8 +32,8 @@ export async function* indexGff3(
   fileDataStream.on('data', chunk => {
     receivedBytes += chunk.length
     // send an update?
-    const progress = Math.round((receivedBytes / totalBytes) * 100)
-    console.log(`${progress}%`)
+    // const progress = Math.round((receivedBytes / totalBytes) * 100)
+    // console.log(`${progress}%`)
   })
 
   const rl = readline.createInterface({
@@ -81,5 +81,5 @@ export async function* indexGff3(
       }
     }
   }
-  console.log('done')
+  // console.log('done')
 }
