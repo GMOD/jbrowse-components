@@ -167,7 +167,7 @@ function gatherOverlaps(regions: BasicFeature[]) {
     .flat()
 }
 
-function WindowSizeDlg(props: {
+export function WindowSizeDlg(props: {
   feature: Feature
   handleClose: () => void
   track: any
