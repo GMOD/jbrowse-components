@@ -1764,7 +1764,7 @@
       "adapter": {
         "type": "MCScanAnchorsAdapter",
         "mcscanAnchorsLocation": {
-          "uri": "grape.peach.anchors.gz",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape.peach.anchors.gz",
           "locationType": "UriLocation"
         },
         "subadapters": [
