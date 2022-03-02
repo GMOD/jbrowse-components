@@ -9,6 +9,7 @@ import {
 import { transaction } from 'mobx'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
 import {
   addDisposer,
   cast,
@@ -22,8 +23,8 @@ import {
   SnapshotIn,
 } from 'mobx-state-tree'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 
 export default function stateModelFactory(pluginManager: PluginManager) {
   const defaultHeight = 400
@@ -235,6 +236,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               subMenu: view.menuItems(),
             })
           }
+        })
+        menuItems.push({
+          label: 'Return to import form',
+          onClick: () => {
+            getSession(self).queueDialog(handleClose => [
+              ReturnToImportFormDialog,
+              { model: self, handleClose },
+            ])
+          },
+          icon: FolderOpenIcon,
         })
         menuItems.push({
           label: 'Open track selector',
