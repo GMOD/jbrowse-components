@@ -4,10 +4,7 @@ import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { ObservableCreate } from '../util/rxjs'
 import { checkAbortSignal, observeAbortSignal } from '../util'
 import { Feature } from '../util/simpleFeature'
-import {
-  AnyConfigurationModel,
-  ConfigurationSchema,
-} from '../configuration/configurationSchema'
+import { AnyConfigurationModel, ConfigurationSchema } from '../configuration'
 import { getSubAdapterType } from './dataAdapterCache'
 import { AugmentedRegion as Region, NoAssemblyRegion } from '../util/types'
 import { blankStats, rectifyStats, scoresToStats } from '../util/stats'
