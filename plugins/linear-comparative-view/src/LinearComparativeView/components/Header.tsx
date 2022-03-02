@@ -28,6 +28,9 @@ const useStyles = makeStyles(() => ({
   searchContainer: {
     marginLeft: 5,
   },
+  searchBox: {
+    display: 'flex',
+  },
 }))
 
 const LinkViews = observer(({ model }: { model: LCV }) => {
@@ -67,21 +70,22 @@ const Header = observer(
         {ExtraButtons}
         {!anyShowHeaders
           ? model.views.map(view => (
-              <div key={view.id} className={classes.searchContainer}>
-                <SearchBox model={view} showHelp={false} />
+              <div key={view.id} className={classes.searchBox}>
+                <div className={classes.searchContainer}>
+                  <SearchBox model={view} showHelp={false} />
+                </div>
+                <div className={classes.bp}>
+                  <Typography
+                    variant="body2"
+                    color="textSecondary"
+                    className={classes.bp}
+                  >
+                    {Math.round(view.coarseTotalBp).toLocaleString('en-US')} bp
+                  </Typography>
+                </div>
               </div>
             ))
           : null}
-        {model.views.map(view => (
-          <Typography
-            key={view.id}
-            variant="body2"
-            color="textSecondary"
-            className={classes.bp}
-          >
-            {Math.round(view.coarseTotalBp).toLocaleString('en-US')} bp
-          </Typography>
-        ))}
 
         <div className={classes.spacer} />
       </div>
