@@ -1896,8 +1896,12 @@
     {
       "type": "SyntenyTrack",
       "trackId": "fileName-1606319049337",
-      "name": "peach_grape.paf",
+      "name": "Grape vs Peach (minimap2)",
       "assemblyNames": ["peach", "grape"],
+      "metadata": {
+        "command": "./minimap2 -t8 -c  Vvinifera_145_Genoscope.12X.fa Ppersica_298_v2.0.fa > out.paf",
+        "version": "2.24-r1122"
+      },
       "adapter": {
         "type": "PAFAdapter",
         "assemblyNames": ["peach", "grape"],
