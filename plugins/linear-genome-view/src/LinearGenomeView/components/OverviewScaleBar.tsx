@@ -205,8 +205,9 @@ const Cytobands = observer(
         ]
       })
 
-    const lcap = reversed ? cytobands.length - 1 : 0
-    const rcap = reversed ? 0 : cytobands.length - 1
+    const arr = cytobands || []
+    const lcap = reversed ? arr.length - 1 : 0
+    const rcap = reversed ? 0 : arr.length - 1
 
     let firstCent = true
     return cytobands ? (
@@ -241,7 +242,7 @@ const Cytobands = observer(
             )
           }
 
-          if (lcap == index) {
+          if (lcap === index) {
             return (
               <path
                 key={key}
@@ -255,7 +256,7 @@ const Cytobands = observer(
                 fill={colorMap[type]}
               />
             )
-          } else if (rcap == index) {
+          } else if (rcap === index) {
             return (
               <path
                 key={key}
