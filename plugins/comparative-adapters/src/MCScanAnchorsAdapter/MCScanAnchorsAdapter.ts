@@ -123,14 +123,14 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
           .getFeatures(region, opts)
           .pipe(
             tap(feature => {
-              ;[...feature.get('subfeatures'), feature].map(f => {
+              ;[...feature.get('subfeatures'), feature].forEach(f => {
                 // We first fetch from the NCList and connect each result with
                 // the anchor file via geneNameToRows. Note that each gene name
                 // can correspond to multiple rows
                 this.geneNameToRows[f.get('name')]?.forEach(row => {
                   observer.next(
                     new SimpleFeature({
-                      ...feature.toJSON(),
+                      ...f.toJSON(),
                       syntenyId: row,
                     }),
                   )

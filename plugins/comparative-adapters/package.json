@@ -35,7 +35,8 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@gmod/bgzf-filehandle": "^1.4.2"
+    "@gmod/bgzf-filehandle": "^1.4.2",
+    "generic-filehandle": "^2.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",
