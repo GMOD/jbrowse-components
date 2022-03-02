@@ -37,9 +37,7 @@ function ReturnToImportFormDialog({
         {handleClose ? (
           <IconButton
             className={classes.closeButton}
-            onClick={() => {
-              handleClose()
-            }}
+            onClick={() => handleClose()}
           >
             <CloseIcon />
           </IconButton>
