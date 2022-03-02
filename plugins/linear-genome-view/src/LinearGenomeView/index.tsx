@@ -711,12 +711,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
         })
 
         if (locations.length === 1) {
-          this.setDisplayedRegions(locations.map(r => r.parentRegion))
-          const region = locations[0]
-          const { start, end, parentRegion } = region
+          const loc = locations[0]
+          this.setDisplayedRegions([
+            { reversed: loc.reversed, ...loc.parentRegion },
+          ])
+          const { start, end, parentRegion } = loc
 
           this.navTo({
-            ...region,
+            ...loc,
             start: clamp(start ?? 0, 0, parentRegion.end),
             end: clamp(end ?? parentRegion.end, 0, parentRegion.end),
           })
@@ -1151,7 +1153,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             label: 'Return to import form',
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
-                ReturnToImportFormDlg,
+                ReturnToImportFormDialog,
                 { model: self, handleClose },
               ])
             },
