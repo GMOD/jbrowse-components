@@ -28,12 +28,10 @@ import {
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-// import { indexTracks } from '@jbrowse/text-indexing'
 import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
 import InfoIcon from '@material-ui/icons/Info'
-import FindReplaceIcon from '@material-ui/icons/FindReplace'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -209,18 +207,6 @@ export default function sessionModelFactory(
           self.queueOfDialogs.shift()
         })
         self.queueOfDialogs.push([component, props])
-      },
-      queueIndexingJob(props: TrackTextIndexing) {
-        self.indexingQueue.push(props)
-        console.log('queue', self.indexingQueue)
-      },
-      runIndexingJob() {
-        if (self.indexingQueue.length) {
-          const firstIndexingJob = self.indexingQueue[0]
-          console.log('first', firstIndexingJob)
-          self.indexingQueue.splice(0, 1)
-          console.log('queue', self.indexingQueue)
-        }
       },
       makeConnection(
         configuration: AnyConfigurationModel,
@@ -617,33 +603,6 @@ export default function sessionModelFactory(
               session.addTrackConf(trackSnapshot)
             },
             icon: CopyIcon,
-          },
-          {
-            label: 'Index track',
-            onClick: async () => {
-              // adds job to the queue
-              const trackSnapshot = JSON.parse(
-                JSON.stringify(getSnapshot(config)),
-              )
-              // console.log(trackSnapshot)
-              // console.log(readConfObject(config, "textSearching"))
-              // const usrData = await ipcRenderer.invoke('userData')
-              const rpcManager = getParent(self).jbrowse.rpcManager
-              // console.log(outputPath)
-              console.log('hiiiiiii')
-              console.log(rpcManager)
-              // console.log(config)
-              console.log(process.cwd())
-              const pathLocation = process.cwd()
-              // const outoutPath = path.join(app.getPath('documents'), 'JBrowse')
-              await rpcManager.call('indexTracksSessionId', 'CoreIndexTracks', {
-                tracks: [trackSnapshot],
-                sessionId: 'indexTracksSessionId',
-                outLocation: pathLocation,
-                timeout: 1 * 60 * 60 * 1000, // 1 hours
-              })
-            },
-            icon: FindReplaceIcon,
           },
         ]
       },
