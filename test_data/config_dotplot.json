@@ -68,10 +68,14 @@
       "type": "SyntenyTrack",
       "name": "Grape vs Peach (PAF)",
       "assemblyNames": ["peach", "grape"],
+      "metadata": {
+        "command": "minimap2 -c Vvinifera_145_Genoscope.12X.fa Ppersica_298_v2.0.fa > out.paf",
+        "version": "2.24-r1122"
+      },
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf.gz",
           "locationType": "UriLocation"
         },
         "assemblyNames": ["peach", "grape"]
