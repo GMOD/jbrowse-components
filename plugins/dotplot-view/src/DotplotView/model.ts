@@ -11,6 +11,8 @@ import {
 } from 'mobx-state-tree'
 
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
+import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
+import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 import { observable, autorun, transaction } from 'mobx'
 import { BaseTrackStateModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
@@ -18,17 +20,13 @@ import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import {
   getSession,
-  minmax,
   isSessionModelWithWidgets,
+  minmax,
+  measureText,
 } from '@jbrowse/core/util'
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-
-function px(str: string) {
-  return str.length * 0.7 * 12
-}
 
 type Coord = [number, number]
 
@@ -170,6 +168,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      clearView() {
+        self.hview.setDisplayedRegions([])
+        self.vview.setDisplayedRegions([])
+        self.assemblyNames = cast([])
+      },
       setBorderX(n: number) {
         self.borderX = n
       },
@@ -387,32 +390,33 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           autorun(
             () => {
               const session = getSession(self)
-              if (self.volatileWidth !== undefined) {
-                const axis = [self.viewWidth, self.viewHeight]
-                const views = [self.hview, self.vview]
-                if (!self.initialized) {
-                  self.assemblyNames.forEach((name, index) => {
-                    const assembly = session.assemblyManager.get(name)
-                    if (assembly) {
-                      if (assembly.error) {
-                        self.setError(assembly.error)
-                      }
-                      const { regions } = assembly
-                      if (regions && regions.length) {
-                        const regionsSnapshot = regions
-                        if (regionsSnapshot) {
-                          transaction(() => {
-                            views[index].setDisplayedRegions(regionsSnapshot)
-                            views[index].setBpPerPx(
-                              views[index].totalBp / axis[index],
-                            )
-                          })
-                        }
-                      }
-                    }
-                  })
-                }
+              if (self.volatileWidth === undefined) {
+                return
               }
+              const axis = [self.viewWidth, self.viewHeight]
+              const views = [self.hview, self.vview]
+              if (self.initialized) {
+                return
+              }
+              self.assemblyNames.forEach((name, index) => {
+                const assembly = session.assemblyManager.get(name)
+                if (assembly) {
+                  if (assembly.error) {
+                    self.setError(assembly.error)
+                  }
+                  const { regions } = assembly
+                  if (regions && regions.length) {
+                    const regionsSnapshot = regions
+                    if (regionsSnapshot) {
+                      transaction(() => {
+                        const view = views[index]
+                        view.setDisplayedRegions(regionsSnapshot)
+                        view.setBpPerPx(view.totalBp / axis[index])
+                      })
+                    }
+                  }
+                }
+              })
             },
             { delay: 1000 },
           ),
@@ -427,14 +431,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             const padding = 10
             const vblocks = self.vview.dynamicBlocks.contentBlocks
             const hblocks = self.hview.dynamicBlocks.contentBlocks
-            const by = hblocks.reduce(
-              (a, b) => Math.max(a, px(b.refName.slice(0, 30))),
-              0,
-            )
-            const bx = vblocks.reduce(
-              (a, b) => Math.max(a, px(b.refName.slice(0, 30))),
-              0,
-            )
+            const len = (a: string) => measureText(a.slice(0, 30))
+            const by = hblocks.reduce((a, b) => Math.max(a, len(b.refName)), 0)
+            const bx = vblocks.reduce((a, b) => Math.max(a, len(b.refName)), 0)
             // these are set via autorun to avoid dependency cycle
             self.setBorderY(Math.max(by + padding, 100))
             self.setBorderX(Math.max(bx + padding, 100))
@@ -445,23 +444,35 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const bpPerPxs = self.views.map(v => v.bpPerPx)
         const avg = bpPerPxs.reduce((a, b) => a + b, 0) / bpPerPxs.length
         self.views.forEach(view => {
-          const center = view.pxToBp(view.width / 2)
-          view.bpPerPx = avg
-          view.centerAt(center.coord, center.refName, center.index)
+          const { coord, refName, index } = view.pxToBp(view.width / 2)
+          view.setBpPerPx(avg)
+          view.centerAt(coord, refName, index)
         })
       },
     }))
     .views(self => ({
       menuItems() {
         const session = getSession(self)
-        return isSessionModelWithWidgets(session)
-          ? [
-              {
-                label: 'Open track selector',
-                onClick: self.activateTrackSelector,
-              },
-            ]
-          : []
+        return [
+          {
+            label: 'Return to import form',
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                ReturnToImportFormDialog,
+                { model: self, handleClose },
+              ])
+            },
+            icon: FolderOpenIcon,
+          },
+          ...(isSessionModelWithWidgets(session)
+            ? [
+                {
+                  label: 'Open track selector',
+                  onClick: self.activateTrackSelector,
+                },
+              ]
+            : []),
+        ]
       },
       get error() {
         return self.volatileError || self.assemblyErrors

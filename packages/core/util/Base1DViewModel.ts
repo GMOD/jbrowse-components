@@ -1,7 +1,7 @@
 import { types, cast, getSnapshot, Instance } from 'mobx-state-tree'
 import { clamp, viewBpToPx } from './index'
 import { Feature } from './simpleFeature'
-import { Region } from './types/mst'
+import { Region, ElementId } from './types/mst'
 import { Region as IRegion } from './types'
 import calculateDynamicBlocks from './calculateDynamicBlocks'
 import calculateStaticBlocks from './calculateStaticBlocks'
@@ -16,6 +16,7 @@ export interface BpOffset {
 
 const Base1DView = types
   .model('Base1DView', {
+    id: ElementId,
     displayedRegions: types.array(Region),
     bpPerPx: 0,
     offsetPx: 0,
@@ -40,6 +41,11 @@ const Base1DView = types
   .views(self => ({
     get width() {
       return self.volatileWidth
+    },
+    get assemblyNames() {
+      return [
+        ...new Set(self.displayedRegions.map(region => region.assemblyName)),
+      ]
     },
 
     get displayedRegionsTotalPx() {
