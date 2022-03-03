@@ -322,7 +322,7 @@ export function parseLocStringOneBased(
   const lastColonIdx = location.lastIndexOf(':')
   if (lastColonIdx === -1) {
     if (isValidRefName(location, assemblyName)) {
-      return { assemblyName, refName: location }
+      return { assemblyName, refName: location, reversed }
     }
     throw new Error(`Unknown reference sequence "${location}"`)
   }

@@ -8,43 +8,69 @@ import {
 
 describe('parseLocString', () => {
   const cases: [string, ParsedLocString][] = [
-    ['chr1:1..200', { start: 0, end: 200, refName: 'chr1' }],
+    ['chr1:1..200', { start: 0, end: 200, refName: 'chr1', reversed: false }],
+    [
+      'chr1:1..200[rev]',
+      { start: 0, end: 200, refName: 'chr1', reversed: true },
+    ],
     [
       'chr1:1,000,000..2,000,000',
-      { start: 999999, end: 2000000, refName: 'chr1' },
+      { start: 999999, end: 2000000, refName: 'chr1', reversed: false },
     ],
-    ['chr1:1-200', { start: 0, end: 200, refName: 'chr1' }],
+    ['chr1:1-200', { start: 0, end: 200, refName: 'chr1', reversed: false }],
     [
       '{hg19}chr1:1-200',
-      { assemblyName: 'hg19', start: 0, end: 200, refName: 'chr1' },
+      {
+        assemblyName: 'hg19',
+        start: 0,
+        end: 200,
+        refName: 'chr1',
+        reversed: false,
+      },
     ],
     [
       '{hg19}chr1:1..200',
-      { assemblyName: 'hg19', start: 0, end: 200, refName: 'chr1' },
+      {
+        assemblyName: 'hg19',
+        start: 0,
+        end: 200,
+        refName: 'chr1',
+        reversed: false,
+      },
     ],
     [
       '{hg19}chr1:1',
-      { assemblyName: 'hg19', start: 0, end: 1, refName: 'chr1' },
+      {
+        assemblyName: 'hg19',
+        start: 0,
+        end: 1,
+        refName: 'chr1',
+        reversed: false,
+      },
     ],
-    ['chr1:1', { start: 0, end: 1, refName: 'chr1' }],
-    ['chr1:-1', { start: -2, end: -1, refName: 'chr1' }],
-    ['chr1:-100..-1', { start: -101, end: -1, refName: 'chr1' }],
+    ['chr1:1', { start: 0, end: 1, refName: 'chr1', reversed: false }],
+    ['chr1:-1', { start: -2, end: -1, refName: 'chr1', reversed: false }],
+    [
+      'chr1:-100..-1',
+      { start: -101, end: -1, refName: 'chr1', reversed: false },
+    ],
     [
       'chr1:-100--1', // weird but valid
-      { start: -101, end: -1, refName: 'chr1' },
+      { start: -101, end: -1, refName: 'chr1', reversed: false },
     ],
-    ['chr2:1000-', { refName: 'chr2', start: 999 }],
-    ['chr2:1,000-', { refName: 'chr2', start: 999 }],
-    ['chr1', { refName: 'chr1' }],
-    ['{hg19}chr1', { assemblyName: 'hg19', refName: 'chr1' }],
+    ['chr2:1000-', { refName: 'chr2', start: 999, reversed: false }],
+    ['chr2:1,000-', { refName: 'chr2', start: 999, reversed: false }],
+    ['chr1', { refName: 'chr1', reversed: false }],
+    ['{hg19}chr1', { assemblyName: 'hg19', refName: 'chr1', reversed: false }],
+    [
+      '{hg19}chr1[rev]',
+      { assemblyName: 'hg19', refName: 'chr1', reversed: true },
+    ],
   ]
   cases.forEach(([input, output]) => {
     test(`${input}`, () => {
       expect(
-        parseLocString(
-          input,
-          refName => refName === 'chr1' || refName === 'chr2',
-        ),
+        parseLocString(input, refName => ['chr1', 'chr2'].includes(refName)),
       ).toEqual(output)
     })
   })
@@ -78,15 +104,17 @@ describe('assembleLocString', () => {
           assembleLocString(input),
           refName => refName === 'chr1' || refName === 'chr2',
         ),
-      ).toEqual(input)
+      ).toEqual({ ...input, reversed: false })
     })
   })
+
   // Special case since undefined `start` will result in `start` being assumed
   // to be `0`
   const location = { refName: 'chr1', end: 100 }
   test("assemble 'chr1:1..100'", () => {
     expect(assembleLocString(location)).toEqual('chr1:1..100')
   })
+
   test('test empty assemblyName', () => {
     const location = '{}chr1:1..100'
     expect(() => {
@@ -96,13 +124,19 @@ describe('assembleLocString', () => {
       )
     }).toThrow(`no assembly name was provided in location "${location}"`)
   })
+
   test("assemble and parse 'chr1:1..100'", () => {
     expect(
       parseLocString(
         assembleLocString(location),
         refName => refName === 'chr1' || refName === 'chr2',
       ),
-    ).toEqual({ ...location, start: 0 })
+    ).toEqual({
+      ...location,
+      start: 0,
+      reversed: false,
+      assemblyName: undefined,
+    })
   })
 })
 
