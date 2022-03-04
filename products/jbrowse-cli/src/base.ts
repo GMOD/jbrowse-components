@@ -297,7 +297,7 @@ export default abstract class JBrowseCommand extends Command {
       }
       return file
     }
-    return this.error(`Error: Could not find version: ${response.statusText}`, {
+    return this.error(`Could not find version: ${response.statusText}`, {
       exit: 90,
     })
   }

@@ -1,4 +1,5 @@
 import { flags } from '@oclif/command'
+import rimraf from 'rimraf'
 import fs from 'fs'
 import path from 'path'
 import fetch from 'node-fetch'
@@ -55,6 +56,9 @@ export default class Upgrade extends JBrowseCommand {
     nightly: flags.boolean({
       description: 'Download the latest development build from the main branch',
     }),
+    clean: flags.boolean({
+      description: 'Removes old js,map,and LICENSE files in the installation',
+    }),
     url: flags.string({
       char: 'u',
       description: 'A direct URL to a JBrowse 2 release',
@@ -64,13 +68,10 @@ export default class Upgrade extends JBrowseCommand {
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(Upgrade)
     const { localPath: argsPath } = runArgs as { localPath: string }
-
-    const { listVersions, tag, url, branch, nightly } = runFlags
+    const { clean, listVersions, tag, url, branch, nightly } = runFlags
 
     if (listVersions) {
-      const versions = (await this.fetchGithubVersions()).map(
-        version => version.tag_name,
-      )
+      const versions = (await this.fetchGithubVersions()).map(v => v.tag_name)
       this.log(`All JBrowse versions:\n${versions.join('\n')}`)
       this.exit()
     }
@@ -111,6 +112,12 @@ export default class Upgrade extends JBrowseCommand {
       )
     }
 
+    if (clean) {
+      rimraf.sync(path.join(argsPath, 'static'))
+      fs.readdirSync(argsPath)
+        .filter(f => f.includes('worker.js'))
+        .forEach(f => fs.unlinkSync(path.join(argsPath, f)))
+    }
     await response.body.pipe(unzip.Extract({ path: argsPath })).promise()
     this.log(`Unpacked ${locationUrl} at ${argsPath}`)
   }

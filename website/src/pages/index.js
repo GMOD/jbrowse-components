@@ -102,7 +102,7 @@ function Home() {
               width={1362}
               height={731}
               alt="screenshot of jbrowse 2"
-              src="img/screenshot.png"
+              src="img/screenshot.webp"
             />
           </Box>
         </Box>

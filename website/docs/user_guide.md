@@ -567,3 +567,24 @@ needs extra work on the part of the plugin developer to make them useful in the
 GUI, some plugins require hand editing of configuration files).
 
 <Figure caption="Screenshot showing the plugin store inside the app" src="/img/plugin_store.png" />
+
+## Using the bookmark widget
+
+JBrowse Web and JBrowse Desktop by default come with a "bookmark widget"
+
+<Figure caption="Clicking and dragging on a region can be used to create a bookmark that can be returned to later on" src="/img/bookmark_widget.png"/>
+
+The bookmark stores a list of single regions (chromosome, start, and end
+coordinate), and clicking on the regions in the bookmark widget will launch a
+linear genome view at that region.
+
+You can also import a list of regions from a BED file
+
+<Figure caption="Importing a list of regions from a BED file" src="/img/bookmark_widget_import.png"/>
+
+Note also that you can add "notes" for your list of regions, allowing a simple
+way to "annotate" your datasets
+
+<Figure caption="Editing description" src="/img/bookmark_widget_edit_label.png"/>
+
+Finally, you can export your list of regions to a BED file or TSV

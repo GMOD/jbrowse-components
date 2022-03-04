@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/development-tools",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "description": "Tools to help with developing and building JBrowse 2 plugins",
   "keywords": [
     "jbrowse",

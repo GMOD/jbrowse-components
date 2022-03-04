@@ -1167,6 +1167,21 @@
     },
     {
       "type": "SyntenyTrack",
+      "trackId": "volvox_fake_synteny_alt",
+      "name": "volvox_fake_synteny_alt",
+      "assemblyNames": ["volvox", "volvox"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "volvox_fake_synteny_alt.paf",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["volvox", "volvox"]
+      }
+    },
+
+    {
+      "type": "SyntenyTrack",
       "trackId": "volvox_fake_synteny",
       "name": "volvox_fake_synteny",
       "assemblyNames": ["volvox", "volvox"],

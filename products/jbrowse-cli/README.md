@@ -163,7 +163,7 @@ EXAMPLES
   $ jbrowse add-assembly myfile.fa.gz --load copy
 ```
 
-_See code: [src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v1.6.4/products/jbrowse-cli/src/commands/add-assembly.ts)_
+_See code: [src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v1.6.5/products/jbrowse-cli/src/commands/add-assembly.ts)_
 
 ## `jbrowse add-connection CONNECTIONURLORPATH`
 
@@ -217,7 +217,7 @@ EXAMPLES
   /path/to/jb2/installation/config.json
 ```
 
-_See code: [src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/v1.6.4/products/jbrowse-cli/src/commands/add-connection.ts)_
+_See code: [src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/v1.6.5/products/jbrowse-cli/src/commands/add-connection.ts)_
 
 ## `jbrowse add-track TRACK`
 
@@ -291,7 +291,7 @@ EXAMPLES
   $ jbrowse add-track /url/relative/path.bam --load inPlace
 ```
 
-_See code: [src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v1.6.4/products/jbrowse-cli/src/commands/add-track.ts)_
+_See code: [src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v1.6.5/products/jbrowse-cli/src/commands/add-track.ts)_
 
 ## `jbrowse add-track-json TRACK`
 
@@ -316,7 +316,7 @@ EXAMPLES
   $ jbrowse add-track-json track.json --update
 ```
 
-_See code: [src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/v1.6.4/products/jbrowse-cli/src/commands/add-track-json.ts)_
+_See code: [src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/v1.6.5/products/jbrowse-cli/src/commands/add-track-json.ts)_
 
 ## `jbrowse admin-server`
 
@@ -336,17 +336,17 @@ OPTIONS
                                  large.
                                  Argument is passed to bytes library for parsing: https://www.npmjs.com/package/bytes.
 
-  --out=out                      synonym for target
-
-  --target=target                path to config file in JB2 installation directory to write out to.
-                                 Creates ./config.json if nonexistent
+  --root=root                    path to the root of the JB2 installation.
+                                 Creates ./config.json if nonexistent. note that you can navigate to
+                                 ?config=path/to/subconfig.json in the web browser and it will write to
+                                 rootDir/path/to/subconfig.json
 
 EXAMPLES
   $ jbrowse admin-server
   $ jbrowse admin-server -p 8888
 ```
 
-_See code: [src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v1.6.4/products/jbrowse-cli/src/commands/admin-server.ts)_
+_See code: [src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v1.6.5/products/jbrowse-cli/src/commands/admin-server.ts)_
 
 ## `jbrowse create LOCALPATH`
 
@@ -390,7 +390,7 @@ EXAMPLES
   $ jbrowse create --listVersions
 ```
 
-_See code: [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v1.6.4/products/jbrowse-cli/src/commands/create.ts)_
+_See code: [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v1.6.5/products/jbrowse-cli/src/commands/create.ts)_
 
 ## `jbrowse help [COMMAND]`
 
@@ -444,7 +444,7 @@ EXAMPLES
   $ jbrowse set-default-session --currentSession # Prints out current default session
 ```
 
-_See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v1.6.4/products/jbrowse-cli/src/commands/set-default-session.ts)_
+_See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v1.6.5/products/jbrowse-cli/src/commands/set-default-session.ts)_
 
 ## `jbrowse text-index`
 
@@ -500,7 +500,7 @@ EXAMPLES
   $ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes
 ```
 
-_See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v1.6.4/products/jbrowse-cli/src/commands/text-index.ts)_
+_See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v1.6.5/products/jbrowse-cli/src/commands/text-index.ts)_
 
 ## `jbrowse upgrade [LOCALPATH]`
 
@@ -524,6 +524,8 @@ OPTIONS
 
   --branch=branch     Download a development build from a named git branch
 
+  --clean             Removes old js,map,and LICENSE files in the installation
+
   --nightly           Download the latest development build from the main branch
 
 EXAMPLES
@@ -546,7 +548,7 @@ EXAMPLES
   $ jbrowse upgrade --nightly
 ```
 
-_See code: [src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v1.6.4/products/jbrowse-cli/src/commands/upgrade.ts)_
+_See code: [src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v1.6.5/products/jbrowse-cli/src/commands/upgrade.ts)_
 
 <!-- commandsstop -->
 

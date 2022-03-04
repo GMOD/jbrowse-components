@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import React from 'react'
 import {
   getConf,
   readConfObject,
@@ -6,6 +7,7 @@ import {
   ConfigurationSchema,
 } from '@jbrowse/core/configuration'
 import { types, getSnapshot, Instance } from 'mobx-state-tree'
+import clone from 'clone'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 import {
   getContainingView,
@@ -14,11 +16,26 @@ import {
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import React from 'react'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { LinearComparativeViewModel } from '../LinearComparativeView/model'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
+import PluginManager from '@jbrowse/core/PluginManager'
 
-export { default as ReactComponent } from './components/LinearComparativeDisplay'
+import ReactComponent from './components/LinearComparativeDisplay'
+
+export default (pluginManager: PluginManager) => {
+  pluginManager.addDisplayType(() => {
+    const configSchema = configSchemaFactory(pluginManager)
+    return new DisplayType({
+      name: 'LinearComparativeDisplay',
+      configSchema,
+      stateModel: stateModelFactory(configSchema),
+      trackType: 'SyntenyTrack',
+      viewType: 'LinearComparativeView',
+      ReactComponent,
+    })
+  })
+}
 
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
@@ -152,7 +169,7 @@ function renderBlockData(self: LinearComparativeDisplay) {
     rpcManager,
     renderProps: {
       ...display.renderProps(),
-      view: getSnapshot(parent),
+      view: clone(getSnapshot(parent)),
       adapterConfig,
       rendererType: rendererType.name,
       sessionId,
@@ -178,3 +195,5 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
 
 export type LinearComparativeDisplayModel = ReturnType<typeof stateModelFactory>
 export type LinearComparativeDisplay = Instance<LinearComparativeDisplayModel>
+
+export { ReactComponent }
