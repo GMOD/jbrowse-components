@@ -8,16 +8,12 @@ import {
 
 describe('parseLocString', () => {
   const cases: [string, ParsedLocString][] = [
-    ['chr1:1..200', { start: 0, end: 200, refName: 'chr1', reversed: false }],
-    [
-      'chr1:1..200[rev]',
-      { start: 0, end: 200, refName: 'chr1', reversed: true },
-    ],
+    ['chr1:1..200', { start: 0, end: 200, refName: 'chr1' }],
     [
       'chr1:1,000,000..2,000,000',
-      { start: 999999, end: 2000000, refName: 'chr1', reversed: false },
+      { start: 999999, end: 2000000, refName: 'chr1' },
     ],
-    ['chr1:1-200', { start: 0, end: 200, refName: 'chr1', reversed: false }],
+    ['chr1:1-200', { start: 0, end: 200, refName: 'chr1' }],
     [
       '{hg19}chr1:1-200',
       {
@@ -25,7 +21,6 @@ describe('parseLocString', () => {
         start: 0,
         end: 200,
         refName: 'chr1',
-        reversed: false,
       },
     ],
     [
@@ -35,7 +30,6 @@ describe('parseLocString', () => {
         start: 0,
         end: 200,
         refName: 'chr1',
-        reversed: false,
       },
     ],
     [
@@ -45,33 +39,38 @@ describe('parseLocString', () => {
         start: 0,
         end: 1,
         refName: 'chr1',
-        reversed: false,
       },
     ],
-    ['chr1:1', { start: 0, end: 1, refName: 'chr1', reversed: false }],
-    ['chr1:-1', { start: -2, end: -1, refName: 'chr1', reversed: false }],
-    [
-      'chr1:-100..-1',
-      { start: -101, end: -1, refName: 'chr1', reversed: false },
-    ],
+    ['chr1:1', { start: 0, end: 1, refName: 'chr1' }],
+    ['chr1:-1', { start: -2, end: -1, refName: 'chr1' }],
+    ['chr1:-100..-1', { start: -101, end: -1, refName: 'chr1' }],
     [
       'chr1:-100--1', // weird but valid
-      { start: -101, end: -1, refName: 'chr1', reversed: false },
+      { start: -101, end: -1, refName: 'chr1' },
     ],
-    ['chr2:1000-', { refName: 'chr2', start: 999, reversed: false }],
-    ['chr2:1,000-', { refName: 'chr2', start: 999, reversed: false }],
-    ['chr1', { refName: 'chr1', reversed: false }],
-    ['{hg19}chr1', { assemblyName: 'hg19', refName: 'chr1', reversed: false }],
-    [
-      '{hg19}chr1[rev]',
-      { assemblyName: 'hg19', refName: 'chr1', reversed: true },
-    ],
+    ['chr2:1000-', { refName: 'chr2', start: 999 }],
+    ['chr2:1,000-', { refName: 'chr2', start: 999 }],
+    ['chr1', { refName: 'chr1' }],
+    ['{hg19}chr1', { assemblyName: 'hg19', refName: 'chr1' }],
   ]
+
+  // test unreversed
   cases.forEach(([input, output]) => {
     test(`${input}`, () => {
       expect(
         parseLocString(input, refName => ['chr1', 'chr2'].includes(refName)),
-      ).toEqual(output)
+      ).toEqual({ ...output, reversed: false })
+    })
+  })
+
+  // test reversed
+  cases.forEach(([input, output]) => {
+    test(`${input}`, () => {
+      expect(
+        parseLocString(input + '[rev]', refName =>
+          ['chr1', 'chr2'].includes(refName),
+        ),
+      ).toEqual({ ...output, reversed: true })
     })
   })
 })
