@@ -493,8 +493,7 @@ export default function RootModel(
             {
               label: 'Open track...',
               icon: StorageIcon,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick: (session: any) => {
+              onClick: (session: SessionWithWidgets) => {
                 if (session.views.length === 0) {
                   session.notify('Please open a view to add a track first')
                 } else if (session.views.length >= 1) {
@@ -515,14 +514,12 @@ export default function RootModel(
             {
               label: 'Open connection...',
               icon: Cable,
-              onClick: () => {
-                if (self.session) {
-                  const widget = self.session.addWidget(
-                    'AddConnectionWidget',
-                    'addConnectionWidget',
-                  )
-                  self.session.showWidget(widget)
-                }
+              onClick: (session: SessionWithWidgets) => {
+                const widget = session.addWidget(
+                  'AddConnectionWidget',
+                  'addConnectionWidget',
+                )
+                session.showWidget(widget)
               },
             },
             { type: 'divider' },
@@ -608,9 +605,11 @@ export default function RootModel(
        * @returns The new length of the top-level menus array
        */
       insertMenu(menuName: string, position: number) {
-        const insertPosition =
-          position < 0 ? self.menus.length + position : position
-        self.menus.splice(insertPosition, 0, { label: menuName, menuItems: [] })
+        self.menus.splice(
+          (position < 0 ? self.menus.length : 0) + position,
+          0,
+          { label: menuName, menuItems: [] },
+        )
         return self.menus.length
       },
       /**
@@ -724,8 +723,7 @@ export function createTestSession(snapshot = {}, adminMode = false) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
-  const JBrowseRootModel = RootModel(pluginManager, adminMode)
-  const root = JBrowseRootModel.create(
+  const root = RootModel(pluginManager, adminMode).create(
     {
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
@@ -743,5 +741,5 @@ export function createTestSession(snapshot = {}, adminMode = false) {
   pluginManager.setRootModel(root)
 
   pluginManager.configure()
-  return root.session as AbstractSessionModel
+  return root.session
 }

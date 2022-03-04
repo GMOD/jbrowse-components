@@ -70,8 +70,8 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     } = props
 
     const canvas = createCanvas(Math.ceil(width * scale), height * scale)
-    const ctx = canvas.getContext('2d')
-    const lineWidth = readConfObject(config, 'lineWidth')
+    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+    const lineWidth = 1 //readConfObject(config, 'lineWidth')
     const color = readConfObject(config, 'color')
     ctx.lineWidth = lineWidth
     ctx.scale(scale, scale)
@@ -104,6 +104,11 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
 
       if (strand === -1) {
         ;[end, start] = [start, end]
+        ctx.fillStyle = 'red'
+        ctx.strokeStyle = 'red'
+      } else {
+        ctx.fillStyle = 'blue'
+        ctx.strokeStyle = 'blue'
       }
 
       const b10 = viewBpToPx({
@@ -147,8 +152,10 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
           let currX = b1
           let currY = e1
           const cigar = feature.get('cg') || feature.get('CIGAR')
+          const bulb = 4
           if (cigar) {
             const cigarOps = parseCigar(cigar)
+            ctx.fillRect(currX - bulb / 2, currY - bulb / 2, bulb, bulb)
             ctx.beginPath()
             for (let i = 0; i < cigarOps.length; i += 2) {
               const val = +cigarOps[i]
@@ -169,6 +176,8 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
               ctx.lineTo(currX, height - currY)
             }
             ctx.stroke()
+            ctx.closePath()
+            ctx.fillRect(currX - bulb / 2, currY - bulb / 2, bulb, bulb)
           } else {
             ctx.beginPath()
             ctx.moveTo(b1, height - e1)
