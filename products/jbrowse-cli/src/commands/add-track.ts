@@ -2,7 +2,7 @@ import { flags } from '@oclif/command'
 import fs from 'fs'
 import path from 'path'
 import parseJSON from 'json-parse-better-errors'
-import JBrowseCommand from '../base'
+import JBrowseCommand, { destinationFn } from '../base'
 
 const { copyFile, rename, symlink } = fs.promises
 const { COPYFILE_EXCL } = fs.constants
@@ -283,26 +283,13 @@ export default class AddTrack extends JBrowseCommand {
       configContents.tracks.push(trackConfig)
     }
 
-    // get path of destination, and remove file at that path if it exists and
-    // force is set
-    const destinationFn = (dir: string, file: string) => {
-      const dest = path.resolve(path.join(dir, subDir, path.basename(file)))
-      if (force) {
-        try {
-          fs.unlinkSync(dest)
-        } catch (e) {
-          /* unconditionally unlinkSync, due to
-           * https://github.com/nodejs/node/issues/14025#issuecomment-754021370
-           * and https://github.com/GMOD/jbrowse-components/issues/2768 */
-        }
-      }
-      return dest
-    }
-
     const loadType =
       (load as 'copy' | 'inPlace' | 'move' | 'symlink' | undefined) || 'inPlace'
     const callbacks = {
-      copy: (src: string, dest: string) => copyFile(src, dest, COPYFILE_EXCL),
+      copy: (src: string, dest: string) => {
+        console.log('wtgffff')
+        return copyFile(src, dest, COPYFILE_EXCL)
+      },
       move: (src: string, dest: string) => rename(src, dest),
       symlink: (src: string, dest: string) => symlink(path.resolve(src), dest),
       inPlace: () => {
@@ -314,7 +301,10 @@ export default class AddTrack extends JBrowseCommand {
       Object.values(this.guessFileNames(location, index))
         .filter(f => !!f)
         .map(src =>
-          callbacks[loadType](src, destinationFn(configDirectory, src)),
+          callbacks[loadType](
+            src,
+            destinationFn(configDirectory, subDir, src, force),
+          ),
         ),
     )
 

@@ -1,9 +1,14 @@
 import { flags } from '@oclif/command'
 import fs from 'fs'
 import path from 'path'
-import JBrowseCommand, { Assembly, Sequence, Config } from '../base'
+import JBrowseCommand, {
+  Assembly,
+  Sequence,
+  Config,
+  destinationFn,
+} from '../base'
 
-const { rename, unlink, copyFile, mkdir, symlink } = fs.promises
+const { rename, copyFile, mkdir, symlink } = fs.promises
 const { COPYFILE_EXCL } = fs.constants
 
 // https://stackoverflow.com/a/35008327/2129219
@@ -466,6 +471,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
     const idx = configContents.assemblies.findIndex(
       configAssembly => configAssembly.name === assembly.name,
     )
+
     if (idx !== -1) {
       this.debug(`Found existing assembly ${name} in configuration`)
       if (runFlags.overwrite || runFlags.force) {
@@ -548,30 +554,26 @@ custom         Either a JSON file location or inline JSON that defines a custom
       return false
     }
 
-    // get path of destination, and remove file at that path if it exists and
-    // force is set
-    const destinationFn = async (dir: string, file: string) => {
-      const dest = path.join(dir, subDir, path.basename(file))
-      if (force && fs.existsSync(dest)) {
-        await unlink(dest)
-      }
-      return dest
-    }
+    const loadType =
+      (load as 'copy' | 'inPlace' | 'move' | 'symlink' | undefined) || 'inPlace'
 
     const callbacks = {
-      copy: (src: string, dest: string) =>
-        copyFile(path.resolve(src), dest, COPYFILE_EXCL),
+      copy: (src: string, dest: string) => {
+        return copyFile(path.resolve(src), dest, COPYFILE_EXCL)
+      },
       move: (src: string, dest: string) => rename(src, dest),
       symlink: (src: string, dest: string) => symlink(path.resolve(src), dest),
+      inPlace: () => {
+        /* do nothing */
+      },
     }
 
     await Promise.all(
-      filePaths.map(async src => {
-        const dest = await destinationFn(configDirectory, src)
-        if (load === 'copy' || load === 'move' || load === 'symlink') {
-          console.log({ src: path.resolve(src), dest, configDirectory })
-          return callbacks[load](src, dest)
-        }
+      filePaths.map(src => {
+        return callbacks[loadType](
+          src,
+          destinationFn(configDirectory, subDir, src, force),
+        )
       }),
     )
     return false

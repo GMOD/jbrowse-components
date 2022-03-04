@@ -3,10 +3,12 @@
  */
 
 import Command from '@oclif/command'
-import { promises as fsPromises } from 'fs'
+import fs from 'fs'
 import path from 'path'
 import parseJSON from 'json-parse-better-errors'
 import fetch from 'node-fetch'
+
+const { readFile, writeFile, realpath } = fs.promises
 
 export interface UriLocation {
   uri: string
@@ -133,13 +135,13 @@ export default abstract class JBrowseCommand extends Command {
   async init() {}
 
   async readFile(location: string) {
-    return fsPromises.readFile(location, { encoding: 'utf8' })
+    return readFile(location, { encoding: 'utf8' })
   }
 
   async readJsonFile(location: string) {
     let contents
     try {
-      contents = await fsPromises.readFile(location, { encoding: 'utf8' })
+      contents = await readFile(location, { encoding: 'utf8' })
     } catch (error) {
       this.error(error instanceof Error ? error : `${error}`, {
         suggestions: [
@@ -164,7 +166,7 @@ export default abstract class JBrowseCommand extends Command {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async writeJsonFile(location: string, contents: any) {
     this.debug(`Writing JSON file to ${process.cwd()} ${location}`)
-    return fsPromises.writeFile(location, JSON.stringify(contents, null, 2))
+    return writeFile(location, JSON.stringify(contents, null, 2))
   }
 
   async resolveFileLocation(
@@ -191,7 +193,7 @@ export default abstract class JBrowseCommand extends Command {
     let locationPath: string | undefined
     try {
       if (check) {
-        locationPath = await fsPromises.realpath(location)
+        locationPath = await realpath(location)
       } else {
         locationPath = location
       }
@@ -305,4 +307,25 @@ export default abstract class JBrowseCommand extends Command {
   async getBranch(branch: string) {
     return `https://s3.amazonaws.com/jbrowse.org/code/jb2/${branch}/jbrowse-web-${branch}.zip`
   }
+}
+
+// get path of destination, and remove file at that path if it exists and
+// force is set
+export const destinationFn = (
+  dir: string,
+  subDir: string,
+  file: string,
+  force: boolean,
+) => {
+  const dest = path.resolve(path.join(dir, subDir, path.basename(file)))
+  if (force) {
+    try {
+      fs.unlinkSync(dest)
+    } catch (e) {
+      /* unconditionally unlinkSync, due to
+       * https://github.com/nodejs/node/issues/14025#issuecomment-754021370
+       * and https://github.com/GMOD/jbrowse-components/issues/2768 */
+    }
+  }
+  return dest
 }
