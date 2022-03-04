@@ -380,9 +380,9 @@ export default class TextIndex extends JBrowseCommand {
         indexingAttributes: attrs = attributes,
       } = textSearching || {}
 
-      if (type === 'Gff3TabixAdapter') {
+      if (type === 'Gff3TabixAdapter' || type === 'GffAdapter') {
         yield* indexGff3(config, attrs, outLocation, types, quiet)
-      } else if (type === 'VcfTabixAdapter') {
+      } else if (type === 'VcfTabixAdapter' || type === 'VcfAdapter') {
         yield* indexVcf(config, attrs, outLocation, types, quiet)
       }
 
