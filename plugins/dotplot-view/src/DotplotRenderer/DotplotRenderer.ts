@@ -153,7 +153,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         const b2 = b20 - db1
         const e1 = e10 - db2
         const e2 = e20 - db2
-        if (Math.abs(b1 - b2) < 3 && Math.abs(e1 - e2) < 3) {
+        if (Math.abs(b1 - b2) < 2 && Math.abs(e1 - e2) < 2) {
           drawCir(ctx, b1, height - e1)
         } else {
           let currX = b1
@@ -169,13 +169,10 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
               const val = +cigarOps[i]
               const op = cigarOps[i + 1]
 
-              const prevX = currX
-              const prevY = currY
-
               if (op === 'M' || op === '=' || op === 'X') {
+                ctx.moveTo(currX, height - currY)
                 currX += (val / hBpPerPx) * strand
                 currY += val / vBpPerPx
-                ctx.moveTo(prevX, height - prevY)
                 ctx.lineTo(currX, height - currY)
               } else if (op === 'D' || op === 'N') {
                 const changePx = (val / hBpPerPx) * strand
@@ -186,7 +183,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
                   drawCir(ctx, currX, height - currY, false, 2)
                   ctx.beginPath()
                 } else {
-                  currX += (val / hBpPerPx) * strand
+                  currX += changePx
                 }
               } else if (op === 'I') {
                 const changePx = (val / hBpPerPx) * strand
@@ -197,12 +194,12 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
                   drawCir(ctx, currX, height - currY, false, 2)
                   ctx.beginPath()
                 } else {
-                  currY += val / vBpPerPx
+                  currY += changePx
                 }
               }
             }
             ctx.stroke()
-            // drawCir(ctx, currX, height - currY)
+            drawCir(ctx, currX, height - currY)
           } else {
             ctx.beginPath()
             ctx.moveTo(b1, height - e1)
@@ -221,8 +218,9 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     if (unableToDraw.length)
       console.warn(
         unableToDraw.length > 5
-          ? 'Many features fell outside the boundaries of the contigs'
+          ? 'Many features fell outside the boundaries of the contigs...sample'
           : unableToDraw,
+        unableToDraw.join('\n'),
       )
     return createImageBitmap(canvas)
   }

@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { IconButton, Typography, makeStyles } from '@material-ui/core'
+import { getBpDisplayStr } from '@jbrowse/core/util'
 
 // icons
 import ZoomOut from '@material-ui/icons/ZoomOut'
@@ -130,6 +131,7 @@ const Header = observer(
     selection?: { width: number; height: number }
   }) => {
     const classes = useStyles()
+    const { hview, vview } = model
     return (
       <div className={classes.headerBar}>
         <DotplotControls model={model} />
@@ -138,10 +140,8 @@ const Header = observer(
           variant="body2"
           color="textSecondary"
         >
-          x: {model.hview.assemblyNames.join(',')}{' '}
-          {Math.round(model.hview.totalBp).toLocaleString('en-US')}bp y:{' '}
-          {model.vview.assemblyNames.join(',')}{' '}
-          {Math.round(model.vview.totalBp).toLocaleString('en-US')}bp
+          x: {hview.assemblyNames.join(',')} {getBpDisplayStr(hview.currBp)} y:{' '}
+          {vview.assemblyNames.join(',')} {getBpDisplayStr(vview.currBp)}
         </Typography>
         {selection ? (
           <Typography
@@ -149,8 +149,8 @@ const Header = observer(
             variant="body2"
             color="textSecondary"
           >
-            {`width:${px(model.hview.bpPerPx, selection.width)}bp`}{' '}
-            {`height:${px(model.vview.bpPerPx, selection.height)}bp`}
+            {`width:${getBpDisplayStr(hview.bpPerPx * selection.width)}`}{' '}
+            {`height:${getBpDisplayStr(vview.bpPerPx * selection.height)}`}
           </Typography>
         ) : null}
         <div className={classes.spacer} />
