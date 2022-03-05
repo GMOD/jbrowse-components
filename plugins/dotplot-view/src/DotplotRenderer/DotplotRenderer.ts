@@ -40,7 +40,7 @@ function drawCir(
   x: number,
   y: number,
   fill = true,
-  r = 1,
+  r = 1.5,
 ) {
   ctx.beginPath()
   ctx.arc(x, y, r, 0, 2 * Math.PI)
@@ -82,8 +82,9 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
 
     const canvas = createCanvas(Math.ceil(width * scale), height * scale)
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-    const lineWidth = 1 //readConfObject(config, 'lineWidth')
+    const lineWidth = readConfObject(config, 'lineWidth')
     const color = readConfObject(config, 'color')
+    const connectIndelDistance = readConfObject(config, 'connectIndelDistance')
     ctx.lineWidth = lineWidth
     ctx.scale(scale, scale)
     const [hview, vview] = views
@@ -153,7 +154,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         const b2 = b20 - db1
         const e1 = e10 - db2
         const e2 = e20 - db2
-        if (Math.abs(b1 - b2) < 2 && Math.abs(e1 - e2) < 2) {
+        if (Math.abs(b1 - b2) <= 4 && Math.abs(e1 - e2) <= 4) {
           drawCir(ctx, b1, height - e1)
         } else {
           let currX = b1
@@ -176,35 +177,41 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
                 ctx.lineTo(currX, height - currY)
               } else if (op === 'D' || op === 'N') {
                 const changePx = (val / hBpPerPx) * strand
-                if (changePx > 3) {
+                if (Math.abs(changePx) > connectIndelDistance) {
                   ctx.stroke()
                   drawCir(ctx, currX, height - currY, false, 2)
                   currX += changePx
                   drawCir(ctx, currX, height - currY, false, 2)
                   ctx.beginPath()
                 } else {
+                  ctx.moveTo(currX, height - currY)
                   currX += changePx
+                  ctx.lineTo(currX, height - currY)
                 }
               } else if (op === 'I') {
                 const changePx = (val / hBpPerPx) * strand
-                if (changePx > 3) {
+                if (Math.abs(changePx) > connectIndelDistance) {
                   ctx.stroke()
                   drawCir(ctx, currX, height - currY, false, 2)
                   currY += changePx
                   drawCir(ctx, currX, height - currY, false, 2)
                   ctx.beginPath()
                 } else {
+                  ctx.moveTo(currX, height - currY)
                   currY += changePx
+                  ctx.lineTo(currX, height - currY)
                 }
               }
             }
             ctx.stroke()
             drawCir(ctx, currX, height - currY)
           } else {
+            drawCir(ctx, b1, height - e1, false, 2)
             ctx.beginPath()
             ctx.moveTo(b1, height - e1)
             ctx.lineTo(b2, height - e2)
             ctx.stroke()
+            drawCir(ctx, b2, height - e2, false, 2)
           }
         }
       } else {
