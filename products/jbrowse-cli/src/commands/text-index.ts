@@ -380,10 +380,48 @@ export default class TextIndex extends JBrowseCommand {
         indexingAttributes: attrs = attributes,
       } = textSearching || {}
 
-      if (type === 'Gff3TabixAdapter' || type === 'GffAdapter') {
-        yield* indexGff3(config, attrs, outLocation, types, quiet)
-      } else if (type === 'VcfTabixAdapter' || type === 'VcfAdapter') {
-        yield* indexVcf(config, attrs, outLocation, types, quiet)
+      function getLoc(attr: string) {
+        //@ts-ignore
+        const elt = config.adapter[attr]
+        return elt.uri || elt.localPath
+      }
+
+      if (type === 'Gff3TabixAdapter') {
+        yield* indexGff3(
+          config,
+          attrs,
+          getLoc('gffGzLocation'),
+          outLocation,
+          types,
+          quiet,
+        )
+      } else if (type === 'Gff3Adapter') {
+        yield* indexGff3(
+          config,
+          attrs,
+          getLoc('gffLocation'),
+          outLocation,
+          types,
+          quiet,
+        )
+      } else if (type === 'VcfTabixAdapter') {
+        yield* indexVcf(
+          config,
+          attrs,
+          getLoc('vcfGzLocation'),
+          outLocation,
+          types,
+          quiet,
+        )
+      } else if (type === 'VcfAdapter') {
+        yield* indexVcf(
+          config,
+          attrs,
+          getLoc('vcfLocation'),
+          outLocation,
+          types,
+          quiet,
+        )
       }
 
       // gtf unused currently
