@@ -133,7 +133,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
             },
             {
               onClick: () => model.squareViewProportional(),
-              label: 'Rectangle view - same total bp',
+              label: 'Rectanglular view - same total bp',
             },
           ]}
           onClose={() => {

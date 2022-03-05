@@ -10,6 +10,7 @@ import {
   getRoot,
 } from 'mobx-state-tree'
 
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { makeTicks } from './components/util'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
@@ -499,11 +500,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             },
             icon: FolderOpenIcon,
           },
+          {
+            label: 'Square view - same bp per pixel',
+            onClick: () => self.squareView(),
+          },
+          {
+            label: 'Rectangular view - same total bp',
+            onClick: () => self.squareView(),
+          },
           ...(isSessionModelWithWidgets(session)
             ? [
                 {
                   label: 'Open track selector',
                   onClick: self.activateTrackSelector,
+                  icon: TrackSelectorIcon,
                 },
               ]
             : []),
