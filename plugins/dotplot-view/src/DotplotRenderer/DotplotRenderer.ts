@@ -175,16 +175,34 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
               if (op === 'M' || op === '=' || op === 'X') {
                 currX += (val / hBpPerPx) * strand
                 currY += val / vBpPerPx
+                ctx.moveTo(prevX, height - prevY)
+                ctx.lineTo(currX, height - currY)
               } else if (op === 'D' || op === 'N') {
-                currX += (val / hBpPerPx) * strand
+                const changePx = (val / hBpPerPx) * strand
+                if (changePx > 3) {
+                  ctx.stroke()
+                  drawCir(ctx, currX, height - currY, false, 2)
+                  currX += changePx
+                  drawCir(ctx, currX, height - currY, false, 2)
+                  ctx.beginPath()
+                } else {
+                  currX += (val / hBpPerPx) * strand
+                }
               } else if (op === 'I') {
-                currY += val / vBpPerPx
+                const changePx = (val / hBpPerPx) * strand
+                if (changePx > 3) {
+                  ctx.stroke()
+                  drawCir(ctx, currX, height - currY, false, 2)
+                  currY += changePx
+                  drawCir(ctx, currX, height - currY, false, 2)
+                  ctx.beginPath()
+                } else {
+                  currY += val / vBpPerPx
+                }
               }
-              ctx.moveTo(prevX, height - prevY)
-              ctx.lineTo(currX, height - currY)
             }
             ctx.stroke()
-            drawCir(ctx, currX, height - currY)
+            // drawCir(ctx, currX, height - currY)
           } else {
             ctx.beginPath()
             ctx.moveTo(b1, height - e1)
