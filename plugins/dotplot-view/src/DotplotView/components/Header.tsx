@@ -140,8 +140,9 @@ const Header = observer(
           variant="body2"
           color="textSecondary"
         >
-          x: {hview.assemblyNames.join(',')} {getBpDisplayStr(hview.currBp)} y:{' '}
-          {vview.assemblyNames.join(',')} {getBpDisplayStr(vview.currBp)}
+          x: {hview.assemblyNames.join(',')} {getBpDisplayStr(hview.currBp)}
+          <br />
+          y: {vview.assemblyNames.join(',')} {getBpDisplayStr(vview.currBp)}
         </Typography>
         {selection ? (
           <Typography
@@ -149,7 +150,7 @@ const Header = observer(
             variant="body2"
             color="textSecondary"
           >
-            {`width:${getBpDisplayStr(hview.bpPerPx * selection.width)}`}{' '}
+            {`width:${getBpDisplayStr(hview.bpPerPx * selection.width)}`} <br />
             {`height:${getBpDisplayStr(vview.bpPerPx * selection.height)}`}
           </Typography>
         ) : null}
