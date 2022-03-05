@@ -10,6 +10,7 @@ import {
   getRoot,
 } from 'mobx-state-tree'
 
+import { makeTicks } from './components/util'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
@@ -144,6 +145,23 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           this.assembliesInitialized
         )
       },
+
+      get hticks() {
+        const { hview } = self
+        const { dynamicBlocks, staticBlocks, bpPerPx } = hview
+        return dynamicBlocks.contentBlocks.length > 5
+          ? []
+          : makeTicks(staticBlocks.contentBlocks, bpPerPx)
+      },
+
+      get vticks() {
+        const { vview } = self
+        const { dynamicBlocks, staticBlocks, bpPerPx } = vview
+        return dynamicBlocks.contentBlocks.length > 5
+          ? []
+          : makeTicks(staticBlocks.contentBlocks, bpPerPx)
+      },
+
       get loading() {
         return self.assemblyNames.length > 0 && !this.initialized
       },

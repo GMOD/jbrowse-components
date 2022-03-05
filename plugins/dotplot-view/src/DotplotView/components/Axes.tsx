@@ -33,12 +33,10 @@ const useStyles = makeStyles(() => ({
 export const HorizontalAxis = observer(
   ({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
-    const { viewWidth, borderX, borderY, hview, htextRotation } = model
-    const { offsetPx, bpPerPx, width, staticBlocks, dynamicBlocks } = hview
+    const { viewWidth, borderX, borderY, hview, htextRotation, hticks } = model
+    const { offsetPx, width, dynamicBlocks } = hview
     const dblocks = dynamicBlocks.contentBlocks
-    const sblocks = staticBlocks.contentBlocks
     const hide = getBlockLabelKeysToHide(dblocks, viewWidth, offsetPx)
-    const ticks = dblocks.length > 5 ? [] : makeTicks(sblocks, bpPerPx)
     const hviewSnap = { ...getSnapshot(hview), width }
     return (
       <svg width={viewWidth} height={borderY} className={classes.htext}>
@@ -67,7 +65,7 @@ export const HorizontalAxis = observer(
               </text>
             )
           })}
-        {ticks.map(tick => {
+        {hticks.map(tick => {
           const x =
             (viewBpToPx({
               refName: tick.refName,
@@ -90,7 +88,7 @@ export const HorizontalAxis = observer(
             />
           )
         })}
-        {ticks
+        {hticks
           .filter(tick => tick.type === 'major')
           .map(tick => {
             const x =
@@ -127,12 +125,10 @@ export const HorizontalAxis = observer(
 export const VerticalAxis = observer(
   ({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
-    const { borderX, viewHeight, borderY, vview, vtextRotation } = model
-    const { offsetPx, bpPerPx, width, staticBlocks, dynamicBlocks } = vview
+    const { borderX, viewHeight, borderY, vview, vtextRotation, vticks } = model
+    const { offsetPx, width, dynamicBlocks } = vview
     const dblocks = dynamicBlocks.contentBlocks
-    const sblocks = staticBlocks.contentBlocks
     const hide = getBlockLabelKeysToHide(dblocks, viewHeight, offsetPx)
-    const ticks = dblocks.length > 5 ? [] : makeTicks(sblocks, bpPerPx)
     const vviewSnap = { ...getSnapshot(vview), width }
     return (
       <svg className={classes.vtext} width={borderX} height={viewHeight}>
@@ -159,7 +155,7 @@ export const VerticalAxis = observer(
               </text>
             )
           })}
-        {ticks.map(tick => {
+        {vticks.map(tick => {
           const y =
             (viewBpToPx({
               refName: tick.refName,
@@ -182,7 +178,7 @@ export const VerticalAxis = observer(
             />
           )
         })}
-        {ticks
+        {vticks
           .filter(tick => tick.type === 'major')
           .map(tick => {
             const y =
