@@ -19,7 +19,7 @@ export default ConfigurationSchema(
     posColor: {
       type: 'color',
       description: 'the color for forward alignments',
-      defaultValue: 'blue',
+      defaultValue: 'black',
     },
     negColor: {
       type: 'color',
@@ -31,10 +31,11 @@ export default ConfigurationSchema(
       description: 'width of the lines to be drawn',
       defaultValue: 1,
     },
-    connectIndelDistance: {
+    largeIndelLimit: {
       type: 'number',
-      description: 'Distance under which to connect indels in pixels',
-      defaultValue: 200,
+      description:
+        'Distance over which to not draw the connecting line for large D/I in CIGAR strings in base pairs. Very large deletions/insertions will be drawn with open circles across the boundary instead of being connected with large horizontal and vertical lines, often happens around centromeres with chain files',
+      defaultValue: 10_000_000,
     },
   },
   { explicitlyTyped: true },

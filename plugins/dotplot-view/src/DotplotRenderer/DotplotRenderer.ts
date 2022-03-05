@@ -40,7 +40,7 @@ function drawCir(
   x: number,
   y: number,
   fill = true,
-  r = 1.5,
+  r = 1,
 ) {
   ctx.beginPath()
   ctx.arc(x, y, r, 0, 2 * Math.PI)
@@ -82,10 +82,10 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
 
     const canvas = createCanvas(Math.ceil(width * scale), height * scale)
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-    const lineWidth = readConfObject(config, 'lineWidth')
-    const color = readConfObject(config, 'color')
-    const connectIndelDistance = readConfObject(config, 'connectIndelDistance')
-    ctx.lineWidth = lineWidth
+    const posColor = readConfObject(config, 'posColor')
+    const negColor = readConfObject(config, 'negColor')
+    const largeIndelLimit = readConfObject(config, 'connectIndelDistance')
+    ctx.lineWidth = readConfObject(config, 'lineWidth')
     ctx.scale(scale, scale)
     const [hview, vview] = views
     const db1 = hview.dynamicBlocks.contentBlocks[0].offsetPx
@@ -105,8 +105,6 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       ...getSnapshot(vview),
       width: vview.width,
     }
-    ctx.fillStyle = color
-    ctx.strokeStyle = color
     hview.features?.forEach(feature => {
       let start = feature.get('start')
       let end = feature.get('end')
@@ -117,11 +115,11 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
 
       if (strand === -1) {
         ;[end, start] = [start, end]
-        ctx.fillStyle = 'red'
-        ctx.strokeStyle = 'red'
+        ctx.fillStyle = negColor
+        ctx.strokeStyle = negColor
       } else {
-        ctx.fillStyle = 'blue'
-        ctx.strokeStyle = 'blue'
+        ctx.fillStyle = posColor
+        ctx.strokeStyle = posColor
       }
 
       const b10 = viewBpToPx({
@@ -177,7 +175,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
                 ctx.lineTo(currX, height - currY)
               } else if (op === 'D' || op === 'N') {
                 const changePx = (val / hBpPerPx) * strand
-                if (Math.abs(changePx) > connectIndelDistance) {
+                if (val > largeIndelLimit) {
                   ctx.stroke()
                   drawCir(ctx, currX, height - currY, false, 2)
                   currX += changePx
@@ -189,8 +187,8 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
                   ctx.lineTo(currX, height - currY)
                 }
               } else if (op === 'I') {
-                const changePx = (val / hBpPerPx) * strand
-                if (Math.abs(changePx) > connectIndelDistance) {
+                const changePx = (val / vBpPerPx) * strand
+                if (val > largeIndelLimit) {
                   ctx.stroke()
                   drawCir(ctx, currX, height - currY, false, 2)
                   currY += changePx
