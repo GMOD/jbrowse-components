@@ -425,12 +425,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             // make sure we have a width on the view before trying to load
+            const { vview, hview } = self
             if (self.volatileWidth === undefined) {
               return
             }
             const padding = 10
-            const vblocks = self.vview.dynamicBlocks.contentBlocks
-            const hblocks = self.hview.dynamicBlocks.contentBlocks
+            const vblocks = vview.dynamicBlocks.contentBlocks
+            const hblocks = hview.dynamicBlocks.contentBlocks
             const len = (a: string) => measureText(a.slice(0, 30))
             const by = hblocks.reduce((a, b) => Math.max(a, len(b.refName)), 0)
             const bx = vblocks.reduce((a, b) => Math.max(a, len(b.refName)), 0)

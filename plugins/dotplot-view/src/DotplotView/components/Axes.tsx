@@ -33,7 +33,7 @@ const useStyles = makeStyles(() => ({
 export const HorizontalAxis = observer(
   ({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
-    const { viewWidth, borderY, hview, htextRotation } = model
+    const { viewWidth, borderX, borderY, hview, htextRotation } = model
     const { offsetPx, bpPerPx, width, staticBlocks, dynamicBlocks } = hview
     const dblocks = dynamicBlocks.contentBlocks
     const sblocks = staticBlocks.contentBlocks
@@ -115,6 +115,11 @@ export const HorizontalAxis = observer(
               </text>
             )
           })}
+        {hview.assemblyNames.length == 1 ? (
+          <text y={borderY - 12} x={(viewWidth - borderX) / 2} fill="black">
+            {hview.assemblyNames[0]}
+          </text>
+        ) : null}
       </svg>
     )
   },
@@ -122,7 +127,7 @@ export const HorizontalAxis = observer(
 export const VerticalAxis = observer(
   ({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
-    const { borderX, viewHeight, vview, vtextRotation } = model
+    const { borderX, viewHeight, borderY, vview, vtextRotation } = model
     const { offsetPx, bpPerPx, width, staticBlocks, dynamicBlocks } = vview
     const dblocks = dynamicBlocks.contentBlocks
     const sblocks = staticBlocks.contentBlocks
@@ -200,6 +205,16 @@ export const VerticalAxis = observer(
               </text>
             )
           })}
+        {vview.assemblyNames.length == 1 ? (
+          <text
+            y={(viewHeight - borderY) / 2}
+            x={12}
+            transform={`rotate(-90,12,${(viewHeight - borderY) / 2})`}
+            textAnchor="middle"
+          >
+            {vview.assemblyNames[0]}
+          </text>
+        ) : null}
       </svg>
     )
   },

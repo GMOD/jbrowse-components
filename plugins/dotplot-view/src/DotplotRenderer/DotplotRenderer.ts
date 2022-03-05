@@ -72,21 +72,18 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     return args
   }
   async makeImageData(props: DotplotRenderArgsDeserialized & { views: Dim[] }) {
-    const {
-      highResolutionScaling: scale = 1,
-      width,
-      height,
-      config,
-      views,
-    } = props
+    const { highResolutionScaling = 1, width, height, config, views } = props
 
-    const canvas = createCanvas(Math.ceil(width * scale), height * scale)
+    const canvas = createCanvas(
+      Math.ceil(width * highResolutionScaling),
+      height * highResolutionScaling,
+    )
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
     const posColor = readConfObject(config, 'posColor')
     const negColor = readConfObject(config, 'negColor')
-    const largeIndelLimit = readConfObject(config, 'connectIndelDistance')
+    const largeIndelLimit = readConfObject(config, 'largeIndelLimit')
     ctx.lineWidth = readConfObject(config, 'lineWidth')
-    ctx.scale(scale, scale)
+    ctx.scale(highResolutionScaling, highResolutionScaling)
     const [hview, vview] = views
     const db1 = hview.dynamicBlocks.contentBlocks[0].offsetPx
     const db2 = vview.dynamicBlocks.contentBlocks[0].offsetPx
@@ -187,7 +184,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
                   ctx.lineTo(currX, height - currY)
                 }
               } else if (op === 'I') {
-                const changePx = (val / vBpPerPx) * strand
+                const changePx = val / vBpPerPx
                 if (val > largeIndelLimit) {
                   ctx.stroke()
                   drawCir(ctx, currX, height - currY, false, 2)

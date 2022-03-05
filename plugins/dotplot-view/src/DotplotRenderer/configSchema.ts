@@ -35,7 +35,7 @@ export default ConfigurationSchema(
       type: 'number',
       description:
         'Distance over which to not draw the connecting line for large D/I in CIGAR strings in base pairs. Very large deletions/insertions will be drawn with open circles across the boundary instead of being connected with large horizontal and vertical lines, often happens around centromeres with chain files',
-      defaultValue: 10_000_000,
+      defaultValue: 1_000_000,
     },
   },
   { explicitlyTyped: true },
