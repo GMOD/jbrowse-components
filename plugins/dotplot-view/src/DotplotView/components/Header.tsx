@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 import { IconButton, Typography, makeStyles } from '@material-ui/core'
 import { getBpDisplayStr } from '@jbrowse/core/util'
+import { Menu } from '@jbrowse/core/ui'
 
 // icons
 import ZoomOut from '@material-ui/icons/ZoomOut'
@@ -36,6 +37,7 @@ const useStyles = makeStyles({
 
 const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
   const classes = useStyles()
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
   return (
     <div>
       <IconButton
@@ -107,20 +109,41 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
       </IconButton>
 
       <IconButton
-        onClick={model.squareView}
+        onClick={event => setMenuAnchorEl(event.currentTarget)}
         className={classes.iconButton}
         title="Square view"
         color="secondary"
       >
         <CropFreeIcon />
       </IconButton>
+
+      {menuAnchorEl ? (
+        <Menu
+          anchorEl={menuAnchorEl}
+          keepMounted
+          open={Boolean(menuAnchorEl)}
+          onMenuItemClick={(_event, callback) => {
+            callback()
+            setMenuAnchorEl(null)
+          }}
+          menuItems={[
+            {
+              onClick: () => model.squareView(),
+              label: 'Square view - same base pairs per pixel',
+            },
+            {
+              onClick: () => model.squareViewProportional(),
+              label: 'Rectangle view - same total bp',
+            },
+          ]}
+          onClose={() => {
+            setMenuAnchorEl(null)
+          }}
+        />
+      ) : null}
     </div>
   )
 })
-
-function px(bpPerPx: number, width: number) {
-  return Math.round(bpPerPx * width).toLocaleString('en-US')
-}
 
 const Header = observer(
   ({

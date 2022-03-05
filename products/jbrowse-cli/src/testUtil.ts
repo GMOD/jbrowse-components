@@ -69,13 +69,13 @@ const mockStdoutWrite = (opts?: { print?: boolean }) => ({
 })
 
 export const test = oclifTest
-// .register('mockConsoleLog', mockConsoleLog)
-// .register('mockConsoleWarn', mockConsoleWarn)
-// .register('mockConsoleError', mockConsoleError)
-// .register('mockStdoutWrite', mockStdoutWrite)
+  .register('mockConsoleLog', mockConsoleLog)
+  .register('mockConsoleWarn', mockConsoleWarn)
+  .register('mockConsoleError', mockConsoleError)
+  .register('mockStdoutWrite', mockStdoutWrite)
 
 export const setup = test
-  // .mockStdoutWrite()
+  .mockStdoutWrite()
   .add('originalDir', () => process.cwd())
   .add('dir', async () => {
     const jbrowseTmpDir = path.join(tmpDir, 'jbrowse')

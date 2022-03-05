@@ -460,12 +460,28 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         )
       },
       squareView() {
-        const bpPerPxs = self.views.map(v => v.bpPerPx)
-        const avg = bpPerPxs.reduce((a, b) => a + b, 0) / bpPerPxs.length
-        self.views.forEach(view => {
-          const { coord, refName, index } = view.pxToBp(view.width / 2)
-          view.setBpPerPx(avg)
-          view.centerAt(coord, refName, index)
+        const { hview, vview } = self
+        const avg = (hview.bpPerPx + vview.bpPerPx) / 2
+        const hpx = hview.pxToBp(hview.width / 2)
+        const vpx = vview.pxToBp(vview.width / 2)
+        transaction(() => {
+          hview.setBpPerPx(avg)
+          hview.centerAt(hpx.coord, hpx.refName, hpx.index)
+          vview.setBpPerPx(avg)
+          vview.centerAt(vpx.coord, vpx.refName, vpx.index)
+        })
+      },
+      squareViewProportional() {
+        const { hview, vview } = self
+        const ratio = hview.width / vview.width
+        const avg = (hview.bpPerPx + vview.bpPerPx) / 2
+        const hpx = hview.pxToBp(hview.width / 2)
+        const vpx = vview.pxToBp(vview.width / 2)
+        transaction(() => {
+          hview.setBpPerPx(avg / ratio)
+          hview.centerAt(hpx.coord, hpx.refName, hpx.index)
+          vview.setBpPerPx(avg)
+          vview.centerAt(vpx.coord, vpx.refName, vpx.index)
         })
       },
     }))

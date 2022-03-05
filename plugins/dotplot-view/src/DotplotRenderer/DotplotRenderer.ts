@@ -82,7 +82,8 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const posColor = readConfObject(config, 'posColor')
     const negColor = readConfObject(config, 'negColor')
     const largeIndelLimit = readConfObject(config, 'largeIndelLimit')
-    ctx.lineWidth = readConfObject(config, 'lineWidth')
+    const lineWidth = readConfObject(config, 'lineWidth')
+    ctx.lineWidth = lineWidth
     ctx.scale(highResolutionScaling, highResolutionScaling)
     const [hview, vview] = views
     const db1 = hview.dynamicBlocks.contentBlocks[0].offsetPx
@@ -150,7 +151,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         const e1 = e10 - db2
         const e2 = e20 - db2
         if (Math.abs(b1 - b2) <= 4 && Math.abs(e1 - e2) <= 4) {
-          drawCir(ctx, b1, height - e1)
+          drawCir(ctx, b1, height - e1, true, lineWidth)
         } else {
           let currX = b1
           let currY = e1
@@ -159,7 +160,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
           if (cigar) {
             const cigarOps = parseCigar(cigar)
 
-            drawCir(ctx, currX, height - currY)
+            drawCir(ctx, currX, height - currY, true, lineWidth)
             ctx.beginPath()
             for (let i = 0; i < cigarOps.length; i += 2) {
               const val = +cigarOps[i]
@@ -174,9 +175,9 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
                 const changePx = (val / hBpPerPx) * strand
                 if (val > largeIndelLimit) {
                   ctx.stroke()
-                  drawCir(ctx, currX, height - currY, false, 2)
+                  drawCir(ctx, currX, height - currY, false, lineWidth)
                   currX += changePx
-                  drawCir(ctx, currX, height - currY, false, 2)
+                  drawCir(ctx, currX, height - currY, false, lineWidth)
                   ctx.beginPath()
                 } else {
                   ctx.moveTo(currX, height - currY)
@@ -187,9 +188,9 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
                 const changePx = val / vBpPerPx
                 if (val > largeIndelLimit) {
                   ctx.stroke()
-                  drawCir(ctx, currX, height - currY, false, 2)
+                  drawCir(ctx, currX, height - currY, false, lineWidth)
                   currY += changePx
-                  drawCir(ctx, currX, height - currY, false, 2)
+                  drawCir(ctx, currX, height - currY, false, lineWidth)
                   ctx.beginPath()
                 } else {
                   ctx.moveTo(currX, height - currY)
@@ -199,14 +200,14 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
               }
             }
             ctx.stroke()
-            drawCir(ctx, currX, height - currY)
+            drawCir(ctx, currX, height - currY, true, lineWidth)
           } else {
-            drawCir(ctx, b1, height - e1, false, 2)
+            drawCir(ctx, b1, height - e1, false, lineWidth)
             ctx.beginPath()
             ctx.moveTo(b1, height - e1)
             ctx.lineTo(b2, height - e2)
             ctx.stroke()
-            drawCir(ctx, b2, height - e2, false, 2)
+            drawCir(ctx, b2, height - e2, false, lineWidth)
           }
         }
       } else {
