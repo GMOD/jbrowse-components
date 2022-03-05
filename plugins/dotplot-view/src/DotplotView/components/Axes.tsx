@@ -38,7 +38,7 @@ export const HorizontalAxis = observer(
     const dblocks = dynamicBlocks.contentBlocks
     const sblocks = staticBlocks.contentBlocks
     const hide = getBlockLabelKeysToHide(dblocks, viewWidth, offsetPx)
-    const ticks = sblocks.length > 5 ? [] : makeTicks(sblocks, bpPerPx)
+    const ticks = dblocks.length > 5 ? [] : makeTicks(sblocks, bpPerPx)
     const hviewSnap = { ...getSnapshot(hview), width }
     return (
       <svg width={viewWidth} height={borderY} className={classes.htext}>
@@ -127,7 +127,7 @@ export const VerticalAxis = observer(
     const dblocks = dynamicBlocks.contentBlocks
     const sblocks = staticBlocks.contentBlocks
     const hide = getBlockLabelKeysToHide(dblocks, viewHeight, offsetPx)
-    const ticks = sblocks.length > 5 ? [] : makeTicks(sblocks, bpPerPx)
+    const ticks = dblocks.length > 5 ? [] : makeTicks(sblocks, bpPerPx)
     const vviewSnap = { ...getSnapshot(vview), width }
     return (
       <svg className={classes.vtext} width={borderX} height={viewHeight}>
