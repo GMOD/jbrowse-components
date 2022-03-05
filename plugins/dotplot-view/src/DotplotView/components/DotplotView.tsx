@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react'
 import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
 import { makeStyles, LinearProgress } from '@material-ui/core'
-import { getConf } from '@jbrowse/core/configuration'
 import { Menu, ResizeHandle } from '@jbrowse/core/ui'
 import normalizeWheel from 'normalize-wheel'
 import { DotplotViewModel } from '../model'
@@ -160,8 +159,6 @@ const DotplotViewInternal = observer(
     const distanceY = useRef(0)
     const lref = useRef<HTMLDivElement>(null)
     const rref = useRef<HTMLDivElement>(null)
-    const timeout = useRef<Timer>()
-    const delta = useRef(0)
     const scheduled = useRef(false)
     const blank = { left: 0, top: 0, width: 0, height: 0 }
     const svg = ref.current?.getBoundingClientRect() || blank
