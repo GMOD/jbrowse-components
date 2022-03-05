@@ -65,7 +65,7 @@ const Grid = observer(
   ({
     model,
     children,
-    stroke = '#000a',
+    stroke = '#0003',
   }: {
     model: DotplotViewModel
     children: React.ReactNode

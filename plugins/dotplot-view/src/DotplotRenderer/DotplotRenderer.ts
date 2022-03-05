@@ -35,6 +35,17 @@ interface DotplotRenderArgs extends ComparativeRenderArgs {
   }
 }
 
+function drawCir(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  fill = true,
+  r = 1,
+) {
+  ctx.beginPath()
+  ctx.arc(x, y, r, 0, 2 * Math.PI)
+  fill ? ctx.fill() : ctx.stroke()
+}
 export default class DotplotRenderer extends ComparativeServerSideRendererType {
   async renameRegionsIfNeeded(args: DotplotRenderArgs) {
     const assemblyManager =
@@ -78,6 +89,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const [hview, vview] = views
     const db1 = hview.dynamicBlocks.contentBlocks[0].offsetPx
     const db2 = vview.dynamicBlocks.contentBlocks[0].offsetPx
+    const unableToDraw = [] as string[]
 
     // we operate on snapshots of these attributes of the hview/vview because
     // it is significantly faster than accessing the mobx objects
@@ -142,20 +154,16 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         const e1 = e10 - db2
         const e2 = e20 - db2
         if (Math.abs(b1 - b2) < 3 && Math.abs(e1 - e2) < 3) {
-          ctx.fillRect(
-            b1 - lineWidth / 2,
-            height - e1 - lineWidth / 2,
-            lineWidth,
-            lineWidth,
-          )
+          drawCir(ctx, b1, height - e1)
         } else {
           let currX = b1
           let currY = e1
           const cigar = feature.get('cg') || feature.get('CIGAR')
-          const bulb = 4
+
           if (cigar) {
             const cigarOps = parseCigar(cigar)
-            ctx.fillRect(currX - bulb / 2, currY - bulb / 2, bulb, bulb)
+
+            drawCir(ctx, currX, height - currY)
             ctx.beginPath()
             for (let i = 0; i < cigarOps.length; i += 2) {
               const val = +cigarOps[i]
@@ -176,8 +184,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
               ctx.lineTo(currX, height - currY)
             }
             ctx.stroke()
-            ctx.closePath()
-            ctx.fillRect(currX - bulb / 2, currY - bulb / 2, bulb, bulb)
+            drawCir(ctx, currX, height - currY)
           } else {
             ctx.beginPath()
             ctx.moveTo(b1, height - e1)
@@ -186,11 +193,19 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
           }
         }
       } else {
-        console.warn(
-          `feature at ${refName}:${start}-${end} ${mateRef}:${mate.start}-${mate.end} not plotted, fell outside of range ${b10} ${b20} ${e10} ${e20}`,
-        )
+        if (unableToDraw.length <= 5) {
+          unableToDraw.push(
+            `feature at ${refName}:${start}-${end} ${mateRef}:${mate.start}-${mate.end} not plotted, fell outside of range ${b10} ${b20} ${e10} ${e20}`,
+          )
+        }
       }
     })
+    if (unableToDraw.length)
+      console.warn(
+        unableToDraw.length > 5
+          ? 'Many features fell outside the boundaries of the contigs'
+          : unableToDraw,
+      )
     return createImageBitmap(canvas)
   }
 
