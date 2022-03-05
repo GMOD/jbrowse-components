@@ -361,7 +361,7 @@ const DotplotViewInternal = observer(
                     }
                   : undefined
               }
-              style={{ zIndex: 1000 }}
+              style={{ zIndex: 10000 }}
               menuItems={[
                 {
                   label: 'Zoom in',
