@@ -29,7 +29,12 @@ export default ConfigurationSchema(
     lineWidth: {
       type: 'number',
       description: 'width of the lines to be drawn',
-      defaultValue: 1.5,
+      defaultValue: 1,
+    },
+    connectIndelDistance: {
+      type: 'number',
+      description: 'Distance under which to connect indels in pixels',
+      defaultValue: 200,
     },
   },
   { explicitlyTyped: true },
