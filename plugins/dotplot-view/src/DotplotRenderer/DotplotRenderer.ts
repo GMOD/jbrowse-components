@@ -218,13 +218,14 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         }
       }
     })
-    if (unableToDraw.length)
+    if (unableToDraw.length) {
       console.warn(
         unableToDraw.length > 5
           ? 'Many features fell outside the boundaries of the contigs...sample'
           : unableToDraw,
         unableToDraw.join('\n'),
       )
+    }
     return createImageBitmap(canvas)
   }
 

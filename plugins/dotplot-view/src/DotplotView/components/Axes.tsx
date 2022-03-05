@@ -2,7 +2,7 @@ import React from 'react'
 import { makeStyles } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
-import { getBlockLabelKeysToHide, makeTicks } from './util'
+import { getBlockLabelKeysToHide } from './util'
 import { viewBpToPx } from '@jbrowse/core/util'
 import { DotplotViewModel } from '../model'
 
@@ -113,7 +113,7 @@ export const HorizontalAxis = observer(
               </text>
             )
           })}
-        {hview.assemblyNames.length == 1 ? (
+        {hview.assemblyNames.length === 1 ? (
           <text y={borderY - 12} x={(viewWidth - borderX) / 2} fill="black">
             {hview.assemblyNames[0]}
           </text>
@@ -201,7 +201,7 @@ export const VerticalAxis = observer(
               </text>
             )
           })}
-        {vview.assemblyNames.length == 1 ? (
+        {vview.assemblyNames.length === 1 ? (
           <text
             y={(viewHeight - borderY) / 2}
             x={12}

@@ -58,7 +58,6 @@ const useStyles = makeStyles(theme => ({
 }))
 
 type Coord = [number, number] | undefined
-type Timer = ReturnType<typeof setTimeout>
 type Rect = { left: number; top: number }
 
 const Grid = observer(
