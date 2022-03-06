@@ -29,7 +29,7 @@ export default ConfigurationSchema(
     lineWidth: {
       type: 'number',
       description: 'width of the lines to be drawn',
-      defaultValue: 1,
+      defaultValue: 2.5, // 2.5 is similar to D-GENIES
     },
     largeIndelLimit: {
       type: 'number',
@@ -37,9 +37,14 @@ export default ConfigurationSchema(
         'Distance over which to not draw the connecting line for large D/I in CIGAR strings in base pairs. Very large deletions/insertions will be drawn with open circles across the boundary instead of being connected with large horizontal and vertical lines, often happens around centromeres with chain files',
       defaultValue: 1_000_000,
     },
-    colorByQual: {
+    colorByMappingQual: {
       type: 'boolean',
-      description: 'Color by alignment quality',
+      description: 'Color by mapping quality',
+      defaultValue: false,
+    },
+    colorByIdentity: {
+      type: 'boolean',
+      description: 'Color by identity (similar to D-GENIES)',
       defaultValue: true,
     },
   },

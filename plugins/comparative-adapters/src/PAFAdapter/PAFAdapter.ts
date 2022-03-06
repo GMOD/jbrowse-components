@@ -2,7 +2,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { NoAssemblyRegion, Region } from '@jbrowse/core/util/types'
+import { Region } from '@jbrowse/core/util/types'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -11,12 +11,17 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { unzip } from '@gmod/bgzf-filehandle'
 
 interface PafRecord {
-  records: NoAssemblyRegion[]
+  qname: string
+  qstart: number
+  qend: number
+  tname: string
+  tstart: number
+  tend: number
+  strand: number
   extra: {
     blockLen: number
     mappingQual: number
     numMatches: number
-    strand: number
   }
 }
 
@@ -60,15 +65,15 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       .filter(line => !!line)
       .map(line => {
         const [
-          chr1,
+          qname,
           ,
-          start1,
-          end1,
+          qstart,
+          qend,
           strand,
-          chr2,
+          tname,
           ,
-          start2,
-          end2,
+          tstart,
+          tend,
           numMatches,
           blockLen,
           mappingQual,
@@ -85,14 +90,16 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         )
 
         return {
-          records: [
-            { refName: chr1, start: +start1, end: +end1 },
-            { refName: chr2, start: +start2, end: +end2 },
-          ],
+          tname,
+          tstart: +tstart,
+          tend: +tend,
+          qname,
+          qstart: +qstart,
+          qend: +qend,
+          strand: strand === '-' ? -1 : 1,
           extra: {
             numMatches: +numMatches,
             blockLen: +blockLen,
-            strand: strand === '-' ? -1 : 1,
             mappingQual: +mappingQual,
             ...rest,
           },
@@ -126,7 +133,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     if (idx !== -1) {
       const set = new Set<string>()
       for (let i = 0; i < feats.length; i++) {
-        set.add(feats[i].records[idx].refName)
+        set.add(feats[i].tname)
       }
       return Array.from(set)
     }
@@ -142,26 +149,26 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
       // The index of the assembly name in the region list corresponds to the
       // adapter in the subadapters list
-      const index = assemblyNames.indexOf(assemblyName)
+      const index = (assemblyNames.indexOf(assemblyName) + 1) % 2
       if (index !== -1) {
         for (let i = 0; i < pafRecords.length; i++) {
-          const { extra, records } = pafRecords[i]
-          const { start, end, refName } = records[index]
+          const { extra, tname, strand, tstart, tend, qname, qstart, qend } =
+            pafRecords[i]
+
           if (
-            refName === region.refName &&
-            doesIntersect2(region.start, region.end, start, end)
+            tname === region.refName &&
+            doesIntersect2(region.start, region.end, tstart, tend)
           ) {
-            const mate = records[+!index]
-            const syntenyId = i
             observer.next(
               new SimpleFeature({
                 uniqueId: `${i}`,
-                start,
-                end,
-                refName,
+                start: tstart,
+                end: tend,
+                refName: tname,
+                strand: strand,
                 assemblyName,
-                syntenyId,
-                mate,
+                syntenyId: i,
+                mate: { start: qstart, end: qend, refName: qname },
                 ...extra,
               }),
             )
