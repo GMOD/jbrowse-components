@@ -39,7 +39,8 @@ export default ConfigurationSchema(
     },
     colorByMappingQual: {
       type: 'boolean',
-      description: 'Color by mapping quality',
+      description:
+        'Color by mapping quality. Note: not all adapters supply this e.g. .delta does not, PAF does though',
       defaultValue: false,
     },
     colorByIdentity: {
