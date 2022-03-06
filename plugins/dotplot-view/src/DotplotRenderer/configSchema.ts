@@ -37,6 +37,11 @@ export default ConfigurationSchema(
         'Distance over which to not draw the connecting line for large D/I in CIGAR strings in base pairs. Very large deletions/insertions will be drawn with open circles across the boundary instead of being connected with large horizontal and vertical lines, often happens around centromeres with chain files',
       defaultValue: 1_000_000,
     },
+    colorByQual: {
+      type: 'boolean',
+      description: 'Color by alignment quality',
+      defaultValue: true,
+    },
   },
   { explicitlyTyped: true },
 )

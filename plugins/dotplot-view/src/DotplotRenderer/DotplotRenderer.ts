@@ -82,6 +82,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const posColor = readConfObject(config, 'posColor')
     const negColor = readConfObject(config, 'negColor')
     const largeIndelLimit = readConfObject(config, 'largeIndelLimit')
+    const colorByQual = readConfObject(config, 'colorByQual')
     const lineWidth = readConfObject(config, 'lineWidth')
     ctx.lineWidth = lineWidth
     ctx.scale(highResolutionScaling, highResolutionScaling)
@@ -110,14 +111,22 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const refName = feature.get('refName')
       const mate = feature.get('mate')
       const mateRef = mate.refName
+      const mq = feature.get('mappingQual')
+      console.log({ mq })
 
       if (strand === -1) {
         ;[end, start] = [start, end]
-        ctx.fillStyle = negColor
-        ctx.strokeStyle = negColor
+      }
+      if (colorByQual) {
+        ctx.fillStyle = `hsl(${mq},50%,50%)`
       } else {
-        ctx.fillStyle = posColor
-        ctx.strokeStyle = posColor
+        if (strand === -1) {
+          ctx.fillStyle = negColor
+          ctx.strokeStyle = negColor
+        } else {
+          ctx.fillStyle = posColor
+          ctx.strokeStyle = posColor
+        }
       }
 
       const b10 = viewBpToPx({
