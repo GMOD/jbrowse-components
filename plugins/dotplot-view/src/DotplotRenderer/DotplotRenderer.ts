@@ -43,7 +43,7 @@ function drawCir(
   r = 1,
 ) {
   ctx.beginPath()
-  ctx.arc(x, y, r, 0, 2 * Math.PI)
+  ctx.arc(x, y, r / 2, 0, 2 * Math.PI)
   fill ? ctx.fill() : ctx.stroke()
 }
 export default class DotplotRenderer extends ComparativeServerSideRendererType {
@@ -82,7 +82,8 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const posColor = readConfObject(config, 'posColor')
     const negColor = readConfObject(config, 'negColor')
     const largeIndelLimit = readConfObject(config, 'largeIndelLimit')
-    const colorByQual = readConfObject(config, 'colorByQual')
+    const colorByIdentity = readConfObject(config, 'colorByIdentity')
+    const colorByMappingQual = readConfObject(config, 'colorByMappingQual')
     const lineWidth = readConfObject(config, 'lineWidth')
     ctx.lineWidth = lineWidth
     ctx.scale(highResolutionScaling, highResolutionScaling)
@@ -112,22 +113,24 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const mate = feature.get('mate')
       const mateRef = mate.refName
       const mq = feature.get('mappingQual')
-      console.log({ mq })
+      const numMatches = feature.get('numMatches')
+      const blockLen = feature.get('blockLen')
 
       if (strand === -1) {
         ;[end, start] = [start, end]
       }
-      if (colorByQual) {
-        ctx.fillStyle = `hsl(${mq},50%,50%)`
+
+      const scale = ['yellow', 'orange', 'green', 'darkgreen']
+      let r
+      if (colorByIdentity) {
+        r = scale[Math.floor((numMatches / blockLen) * 4)]
+      } else if (colorByMappingQual) {
+        r = `hsl(${mq * 2},50%,50%)`
       } else {
-        if (strand === -1) {
-          ctx.fillStyle = negColor
-          ctx.strokeStyle = negColor
-        } else {
-          ctx.fillStyle = posColor
-          ctx.strokeStyle = posColor
-        }
+        r = strand === -1 ? negColor : posColor
       }
+      ctx.fillStyle = r
+      ctx.strokeStyle = r
 
       const b10 = viewBpToPx({
         self: hvsnap,
