@@ -37,16 +37,25 @@ export default ConfigurationSchema(
         'Distance over which to not draw the connecting line for large D/I in CIGAR strings in base pairs. Very large deletions/insertions will be drawn with open circles across the boundary instead of being connected with large horizontal and vertical lines, often happens around centromeres with chain files',
       defaultValue: 1_000_000,
     },
-    colorByMappingQual: {
-      type: 'boolean',
-      description:
-        'Color by mapping quality. Note: not all adapters supply this e.g. .delta does not, PAF does though',
-      defaultValue: false,
+
+    colorBy: {
+      type: 'stringEnum',
+      model: types.enumeration('colorBy', [
+        'identity',
+        'mappingQuality',
+        'strand',
+        'none',
+      ]),
+      description: `Color by. Setting "identity" (similar to D-GENIES), setting "identityHigherThreshold" (similar to D-GENIES, but when using full cigar strings from minimap2 or higher similarity), setting "mappingQuality" (uses mapping quality from PAF, some adapters don't have this setting), setting "strand" colors negative alignments with negColor and positive alignments with posColor, none is black`,
+      defaultValue: 'strand',
     },
-    colorByIdentity: {
-      type: 'boolean',
-      description: 'Color by identity (similar to D-GENIES)',
-      defaultValue: true,
+    thresholdsPalette: {
+      type: 'stringArray',
+      defaultValue: ['#094b09', '#2ebd40', '#d5670b', '#ffd84b'],
+    },
+    thresholds: {
+      type: 'stringArray',
+      defaultValue: ['0.75', '0.5', '0.25', '0'],
     },
   },
   { explicitlyTyped: true },

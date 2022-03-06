@@ -82,8 +82,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const posColor = readConfObject(config, 'posColor')
     const negColor = readConfObject(config, 'negColor')
     const largeIndelLimit = readConfObject(config, 'largeIndelLimit')
-    const colorByIdentity = readConfObject(config, 'colorByIdentity')
-    const colorByMappingQual = readConfObject(config, 'colorByMappingQual')
+    const colorBy = readConfObject(config, 'colorBy')
     const lineWidth = readConfObject(config, 'lineWidth')
     ctx.lineWidth = lineWidth
     ctx.scale(highResolutionScaling, highResolutionScaling)
@@ -112,22 +111,31 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const refName = feature.get('refName')
       const mate = feature.get('mate')
       const mateRef = mate.refName
-      const mq = feature.get('mappingQual')
-      const numMatches = feature.get('numMatches')
-      const blockLen = feature.get('blockLen')
 
       if (strand === -1) {
         ;[end, start] = [start, end]
       }
 
-      const scale = ['yellow', 'orange', 'green', 'darkgreen']
       let r
-      if (colorByIdentity) {
-        r = scale[Math.floor((numMatches / blockLen) * 4)]
-      } else if (colorByMappingQual) {
-        r = `hsl(${mq * 2},50%,50%)`
-      } else {
+      if (colorBy === 'identity') {
+        const numMatches = feature.get('numMatches')
+        const blockLen = feature.get('blockLen')
+        const identity = numMatches / blockLen
+        const thresholds = readConfObject(config, 'thresholds')
+        const palette = readConfObject(config, 'thresholdsPalette')
+        for (let i = 0; i < thresholds.length; i++) {
+          if (identity > +thresholds[i]) {
+            r = palette[i]
+            break
+          }
+        }
+      } else if (colorBy === 'mappingQuality') {
+        const mq = feature.get('mappingQual')
+        r = `hsl(${mq},50%,50%)`
+      } else if (colorBy === 'strand') {
         r = strand === -1 ? negColor : posColor
+      } else {
+        r = 'black'
       }
       ctx.fillStyle = r
       ctx.strokeStyle = r

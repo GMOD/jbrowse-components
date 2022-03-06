@@ -146,29 +146,52 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       const pafRecords = await this.setup(opts)
       const assemblyNames = this.getAssemblyNames()
       const { assemblyName } = region
+      console.log({ assemblyName })
 
       // The index of the assembly name in the region list corresponds to the
       // adapter in the subadapters list
       const index = (assemblyNames.indexOf(assemblyName) + 1) % 2
       if (index !== -1) {
+        console.log(index)
         for (let i = 0; i < pafRecords.length; i++) {
-          const { extra, tname, strand, tstart, tend, qname, qstart, qend } =
-            pafRecords[i]
+          const r = pafRecords[i]
+          let start = 0
+          let end = 0
+          let refName = ''
+          let mateName = ''
+          let mateStart = 0
+          let mateEnd = 0
+          if (index === 1) {
+            start = r.qstart
+            end = r.qend
+            refName = r.qname
+            mateName = r.tname
+            mateStart = r.tstart
+            mateEnd = r.tend
+          } else {
+            start = r.tstart
+            end = r.tend
+            refName = r.tname
+            mateName = r.qname
+            mateStart = r.qstart
+            mateEnd = r.qend
+          }
+          const { extra, strand } = r
 
           if (
-            tname === region.refName &&
-            doesIntersect2(region.start, region.end, tstart, tend)
+            refName === region.refName &&
+            doesIntersect2(region.start, region.end, start, end)
           ) {
             observer.next(
               new SimpleFeature({
                 uniqueId: `${i}`,
-                start: tstart,
-                end: tend,
-                refName: tname,
-                strand: strand,
+                start,
+                end,
+                refName,
+                strand,
                 assemblyName,
                 syntenyId: i,
-                mate: { start: qstart, end: qend, refName: qname },
+                mate: { start: mateStart, end: mateEnd, refName: mateName },
                 ...extra,
               }),
             )
