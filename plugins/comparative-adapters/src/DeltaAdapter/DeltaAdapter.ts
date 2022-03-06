@@ -1,19 +1,8 @@
 import { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { unzip } from '@gmod/bgzf-filehandle'
 import PAFAdapter from '../PAFAdapter/PAFAdapter'
-
-interface PafRecord {
-  records: NoAssemblyRegion[]
-  extra: {
-    blockLen: number
-    mappingQual: number
-    numMatches: number
-    strand: number
-  }
-}
 
 function isGzip(buf: Buffer) {
   return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
@@ -106,19 +95,21 @@ function paf_delta2paf(lines: string[]) {
         }
 
         records.push({
-          records: [
-            { refName: qname, start: qs, end: qe },
-            { refName: rname, start: rs, end: re },
-          ],
+          qname,
+          qstart: qs,
+          qend: qe,
+          tname: rname,
+          tstart: rs,
+          tend: re,
+          strand,
           extra: {
             numMatches: blen - NM,
             blockLen: blen,
-            strand,
             mappingQual: 0,
             NM,
             cg: cigar_str.join(''),
           },
-        } as PafRecord)
+        })
       } else if (d > 0) {
         const l = d - 1
         x += l + 1
