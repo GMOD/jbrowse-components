@@ -180,7 +180,6 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
           if (cigar) {
             const cigarOps = parseCigar(cigar)
 
-            drawCir(ctx, currX, height - currY, true, lineWidth)
             ctx.beginPath()
             for (let i = 0; i < cigarOps.length; i += 2) {
               const val = +cigarOps[i]
@@ -220,14 +219,11 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
               }
             }
             ctx.stroke()
-            drawCir(ctx, currX, height - currY, true, lineWidth)
           } else {
-            drawCir(ctx, b1, height - e1, false, lineWidth)
             ctx.beginPath()
             ctx.moveTo(b1, height - e1)
             ctx.lineTo(b2, height - e2)
             ctx.stroke()
-            drawCir(ctx, b2, height - e2, false, lineWidth)
           }
         }
       } else {
