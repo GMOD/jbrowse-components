@@ -7,7 +7,6 @@ import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { unzip } from '@gmod/bgzf-filehandle'
 
 export interface PAFRecord {
@@ -19,9 +18,9 @@ export interface PAFRecord {
   tend: number
   strand: number
   extra: {
-    blockLen: number
+    blockLen?: number
     mappingQual: number
-    numMatches: number
+    numMatches?: number
   }
 }
 
@@ -46,7 +45,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
   async setupPre(opts?: BaseOptions) {
     const pafLocation = openLocation(
-      readConfObject(this.config, 'pafLocation'),
+      this.getConf('pafLocation'),
       this.pluginManager,
     )
     const buffer = (await pafLocation.readFile(opts)) as Buffer
@@ -57,9 +56,6 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     }
     const text = new TextDecoder('utf8', { fatal: true }).decode(buf)
 
-    // mashmap produces PAF-like data that is space separated instead of tab
-    const hasTab = text.indexOf('\t')
-    const splitChar = hasTab !== -1 ? '\t' : ' '
     return text
       .split('\n')
       .filter(line => !!line)
@@ -78,7 +74,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
           blockLen,
           mappingQual,
           ...fields
-        ] = line.split(splitChar)
+        ] = line.split('\t')
 
         const rest = Object.fromEntries(
           fields.map(field => {
@@ -115,10 +111,10 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   getAssemblyNames() {
-    let assemblyNames = readConfObject(this.config, 'assemblyNames') as string[]
+    let assemblyNames = this.getConf('assemblyNames') as string[]
     if (assemblyNames.length === 0) {
-      const query = readConfObject(this.config, 'queryAssembly') as string
-      const target = readConfObject(this.config, 'targetAssembly') as string
+      const query = this.getConf('queryAssembly') as string
+      const target = this.getConf('targetAssembly') as string
       assemblyNames = [query, target]
     }
     return assemblyNames
@@ -133,7 +129,11 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     if (idx !== -1) {
       const set = new Set<string>()
       for (let i = 0; i < feats.length; i++) {
-        set.add(feats[i].tname)
+        if (idx === 0) {
+          set.add(feats[i].qname)
+        } else {
+          set.add(feats[i].tname)
+        }
       }
       return Array.from(set)
     }
@@ -146,13 +146,11 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       const pafRecords = await this.setup(opts)
       const assemblyNames = this.getAssemblyNames()
       const { assemblyName } = region
-      console.log({ assemblyName })
 
       // The index of the assembly name in the region list corresponds to the
       // adapter in the subadapters list
-      const index = (assemblyNames.indexOf(assemblyName) + 1) % 2
+      const index = assemblyNames.indexOf(assemblyName)
       if (index !== -1) {
-        console.log(index)
         for (let i = 0; i < pafRecords.length; i++) {
           const r = pafRecords[i]
           let start = 0
@@ -161,7 +159,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
           let mateName = ''
           let mateStart = 0
           let mateEnd = 0
-          if (index === 1) {
+          if (index === 0) {
             start = r.qstart
             end = r.qend
             refName = r.qname

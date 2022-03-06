@@ -142,11 +142,8 @@ function paf_delta2paf(lines: string[]) {
 
 export default class DeltaAdapter extends PAFAdapter {
   async setupPre(opts?: BaseOptions) {
-    const deltaLocation = openLocation(
-      readConfObject(this.config, 'deltaLocation'),
-      this.pluginManager,
-    )
-    const buffer = (await deltaLocation.readFile(opts)) as Buffer
+    const loc = openLocation(this.getConf('deltaLocation'), this.pluginManager)
+    const buffer = (await loc.readFile(opts)) as Buffer
     const buf = isGzip(buffer) ? await unzip(buffer) : buffer
     // 512MB  max chrome string length is 512MB
     if (buf.length > 536_870_888) {

@@ -76,8 +76,8 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
       }
     } else if (radioOption === '.out') {
       return {
-        type: 'PAFAdapter',
-        pafLocation: trackData,
+        type: 'MashMapAdapter',
+        outLocation: trackData,
         assemblyNames: selected,
       }
     } else if (radioOption === '.delta') {
