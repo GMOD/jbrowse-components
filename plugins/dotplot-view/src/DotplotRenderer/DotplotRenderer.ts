@@ -241,15 +241,12 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       view.setVolatileWidth(dimensions[idx])
       return view
     })
-    await Promise.all(
-      realizedViews.map(async view => {
-        const feats = await this.getFeatures({
-          ...renderProps,
-          regions: view.dynamicBlocks.contentBlocks,
-        })
-        view.setFeatures(feats)
-      }),
-    )
+    const target = realizedViews[0]
+    const feats = await this.getFeatures({
+      ...renderProps,
+      regions: target.dynamicBlocks.contentBlocks,
+    })
+    target.setFeatures(feats)
     const imageData = await this.makeImageData({
       ...renderProps,
       views: realizedViews,

@@ -132,18 +132,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           .join(', ')
       },
       get assembliesInitialized() {
+        const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
-        return self.assemblyNames.every(assemblyName => {
-          const assembly = assemblyManager.get(assemblyName)
-          return assembly !== undefined ? assembly.initialized : true
-        })
+        return assemblyNames.every(
+          n => assemblyManager.get(n)?.initialized ?? true,
+        )
       },
+    }))
+    .views(self => ({
       get initialized() {
         return (
           self.volatileWidth !== undefined &&
           self.hview.displayedRegions.length > 0 &&
           self.vview.displayedRegions.length > 0 &&
-          this.assembliesInitialized
+          self.assembliesInitialized
         )
       },
 
@@ -305,8 +307,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           this.showTrack(trackId)
         }
       },
-      setAssemblyNames(assemblyNames: string[]) {
-        self.assemblyNames = cast(assemblyNames)
+      setAssemblyNames(target: string, query: string) {
+        self.assemblyNames = cast([target, query])
       },
       setViews(arr: SnapshotIn<Base1DViewModel>[]) {
         self.hview = cast(arr[0])
@@ -407,16 +409,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(
-            () => {
+            function initializer() {
               const session = getSession(self)
               if (self.volatileWidth === undefined) {
                 return
               }
-              const axis = [self.viewWidth, self.viewHeight]
-              const views = [self.hview, self.vview]
+
               if (self.initialized) {
                 return
               }
+              const axis = [self.viewWidth, self.viewHeight]
+              const views = [self.hview, self.vview]
               self.assemblyNames.forEach((name, index) => {
                 const assembly = session.assemblyManager.get(name)
                 if (assembly) {
@@ -442,7 +445,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         )
         addDisposer(
           self,
-          autorun(() => {
+          autorun(function borderSetter() {
             // make sure we have a width on the view before trying to load
             const { vview, hview } = self
             if (self.volatileWidth === undefined) {
@@ -465,12 +468,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const avg = (hview.bpPerPx + vview.bpPerPx) / 2
         const hpx = hview.pxToBp(hview.width / 2)
         const vpx = vview.pxToBp(vview.width / 2)
-        transaction(() => {
-          hview.setBpPerPx(avg)
-          hview.centerAt(hpx.coord, hpx.refName, hpx.index)
-          vview.setBpPerPx(avg)
-          vview.centerAt(vpx.coord, vpx.refName, vpx.index)
-        })
+        hview.setBpPerPx(avg)
+        hview.centerAt(hpx.coord, hpx.refName, hpx.index)
+        vview.setBpPerPx(avg)
+        vview.centerAt(vpx.coord, vpx.refName, vpx.index)
       },
       squareViewProportional() {
         const { hview, vview } = self
@@ -478,12 +479,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const avg = (hview.bpPerPx + vview.bpPerPx) / 2
         const hpx = hview.pxToBp(hview.width / 2)
         const vpx = vview.pxToBp(vview.width / 2)
-        transaction(() => {
-          hview.setBpPerPx(avg / ratio)
-          hview.centerAt(hpx.coord, hpx.refName, hpx.index)
-          vview.setBpPerPx(avg)
-          vview.centerAt(vpx.coord, vpx.refName, vpx.index)
-        })
+        hview.setBpPerPx(avg / ratio)
+        hview.centerAt(hpx.coord, hpx.refName, hpx.index)
+        vview.setBpPerPx(avg)
+        vview.centerAt(vpx.coord, vpx.refName, vpx.index)
       },
     }))
     .views(self => ({

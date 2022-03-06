@@ -23,6 +23,10 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(4),
     margin: '0 auto',
   },
+  assemblySelector: {
+    width: '50%',
+    margin: '0 auto',
+  },
 }))
 
 function getName(
@@ -45,9 +49,9 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   const session = getSession(model)
   const { assemblyNames, assemblyManager } = session
   const [trackData, setTrackData] = useState<FileLocation>()
-  const [selected1, setSelected1] = useState(assemblyNames[0])
-  const [selected2, setSelected2] = useState(assemblyNames[0])
-  const selected = [selected1, selected2]
+  const [targetAssembly, setTargetAssembly] = useState(assemblyNames[0])
+  const [queryAssembly, setQueryAssembly] = useState(assemblyNames[0])
+  const selected = [queryAssembly, targetAssembly]
   const [error, setError] = useState<unknown>()
   const [value, setValue] = useState('')
   const fileName = getName(trackData)
@@ -65,25 +69,27 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
       return {
         type: 'PAFAdapter',
         pafLocation: trackData,
-        assemblyNames: selected,
+        queryAssembly,
+        targetAssembly,
       }
     } else if (radioOption === '.out') {
       return {
         type: 'PAFAdapter',
         pafLocation: trackData,
-        assemblyNames: selected,
+        queryAssembly,
+        targetAssembly,
       }
     } else if (radioOption === '.delta') {
       return {
         type: 'DeltaAdapter',
-        deltaLocation: trackData,
-        assemblyNames: selected,
+        queryAssembly,
+        targetAssembly,
       }
     } else if (radioOption === '.chain') {
       return {
         type: 'ChainAdapter',
-        chainLocation: trackData,
-        assemblyNames: selected,
+        queryAssembly,
+        targetAssembly,
       }
     } else {
       throw new Error('Unknown type')
@@ -103,7 +109,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
           session.addTrackConf({
             trackId: trackId,
             name: fileName,
-            assemblyNames: selected,
+            assemblyNames: [targetAssembly, queryAssembly],
             type: 'SyntenyTrack',
             adapter: getAdapter(),
           })
@@ -113,7 +119,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
           { bpPerPx: 0.1, offsetPx: 0 },
           { bpPerPx: 0.1, offsetPx: 0 },
         ])
-        model.setAssemblyNames([selected1, selected2])
+        model.setAssemblyNames(targetAssembly, queryAssembly)
       })
     } catch (e) {
       console.error(e)
@@ -131,7 +137,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
         spacing={1}
         justifyContent="center"
         alignItems="center"
-        style={{ width: '50%', margin: '0 auto' }}
+        className={classes.assemblySelector}
       >
         <Grid item>
           <Paper style={{ padding: 12 }}>
@@ -147,16 +153,16 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
               <Grid item>
                 <Typography>Query</Typography>
                 <AssemblySelector
-                  selected={selected1}
-                  onChange={val => setSelected1(val)}
+                  selected={queryAssembly}
+                  onChange={val => setQueryAssembly(val)}
                   session={session}
                 />
               </Grid>
               <Grid item>
                 <Typography>Target</Typography>
                 <AssemblySelector
-                  selected={selected2}
-                  onChange={val => setSelected2(val)}
+                  selected={targetAssembly}
+                  onChange={val => setTargetAssembly(val)}
                   session={session}
                 />
               </Grid>
