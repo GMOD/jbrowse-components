@@ -10,7 +10,7 @@ import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { unzip } from '@gmod/bgzf-filehandle'
 
-interface PafRecord {
+export interface PAFRecord {
   qname: string
   qstart: number
   qend: number
@@ -30,7 +30,7 @@ function isGzip(buf: Buffer) {
 }
 
 export default class PAFAdapter extends BaseFeatureDataAdapter {
-  private setupP?: Promise<PafRecord[]>
+  private setupP?: Promise<PAFRecord[]>
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
@@ -103,7 +103,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             mappingQual: +mappingQual,
             ...rest,
           },
-        } as PafRecord
+        }
       })
   }
 

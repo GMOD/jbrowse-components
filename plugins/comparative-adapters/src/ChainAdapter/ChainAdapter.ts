@@ -1,19 +1,8 @@
 import { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { unzip } from '@gmod/bgzf-filehandle'
 import PAFAdapter from '../PAFAdapter/PAFAdapter'
-
-interface PafRecord {
-  records: NoAssemblyRegion[]
-  extra: {
-    blockLen: number
-    mappingQual: number
-    numMatches: number
-    strand: number
-  }
-}
 
 function isGzip(buf: Buffer) {
   return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
@@ -45,29 +34,31 @@ function isGzip(buf: Buffer) {
  */
 
 function generate_record(
-  q_name: string,
-  q_start: number,
-  q_end: number,
-  q_strand: string,
-  t_name: string,
-  t_start: number,
-  t_end: number,
+  qname: string,
+  qstart: number,
+  qend: number,
+  qstrand: string,
+  tname: string,
+  tstart: number,
+  tend: number,
   cigar: string,
-  num_matches: number,
+  numMatches: number,
 ) {
   return {
-    records: [
-      { refName: q_name, start: q_start, end: q_end },
-      { refName: t_name, start: t_start, end: t_end },
-    ],
+    qname,
+    qstart,
+    qend,
+    tname,
+    tstart,
+    tend,
+    strand: qstrand === '-' ? -1 : 1,
     extra: {
-      numMatches: num_matches,
-      blockLen: Math.max(q_end - q_start, t_end - t_start),
-      strand: q_strand === '-' ? -1 : 1,
+      numMatches,
+      blockLen: Math.max(qend - qstart, tend - tstart),
       mappingQual: 0,
       cg: cigar,
     },
-  } as PafRecord
+  }
 }
 
 function paf_chain2paf(lines: string[]) {
