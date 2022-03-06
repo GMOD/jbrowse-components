@@ -74,8 +74,8 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
       }
     } else if (radioOption === '.out') {
       return {
-        type: 'PAFAdapter',
-        pafLocation: trackData,
+        type: 'MashMapAdapter',
+        outLocation: trackData,
         queryAssembly,
         targetAssembly,
       }

@@ -46,7 +46,7 @@ export default ConfigurationSchema(
         'strand',
         'none',
       ]),
-      description: `Color by. Setting "identity" (similar to D-GENIES), setting "identityHigherThreshold" (similar to D-GENIES, but when using full cigar strings from minimap2 or higher similarity), setting "mappingQuality" (uses mapping quality from PAF, some adapters don't have this setting), setting "strand" colors negative alignments with negColor and positive alignments with posColor, none is black`,
+      description: `Color by. Setting "identity" (similar to D-GENIES, use thresholds and thresholds palette to define colors for this setting), setting "mappingQuality" (uses mapping quality from PAF, some adapters don't have this setting), setting "strand" colors negative alignments with negColor and positive alignments with posColor, none is black`,
       defaultValue: 'strand',
     },
     thresholdsPalette: {
