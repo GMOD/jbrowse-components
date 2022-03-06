@@ -114,7 +114,12 @@ export const HorizontalAxis = observer(
             )
           })}
         {hview.assemblyNames.length === 1 ? (
-          <text y={borderY - 12} x={(viewWidth - borderX) / 2} fill="black">
+          <text
+            y={borderY - 12}
+            x={(viewWidth - borderX) / 2}
+            fill="black"
+            textAnchor="middle"
+          >
             {hview.assemblyNames[0]}
           </text>
         ) : null}

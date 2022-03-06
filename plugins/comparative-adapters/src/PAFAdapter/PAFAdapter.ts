@@ -107,12 +107,22 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return true
   }
 
+  getAssemblyNames() {
+    let assemblyNames = readConfObject(this.config, 'assemblyNames') as string[]
+    if (assemblyNames.length === 0) {
+      const query = readConfObject(this.config, 'queryAssembly') as string
+      const target = readConfObject(this.config, 'targetAssembly') as string
+      assemblyNames = [query, target]
+    }
+    return assemblyNames
+  }
+
   async getRefNames(opts: BaseOptions = {}) {
     // @ts-ignore
     const r1 = opts.regions?.[0].assemblyName
     const feats = await this.setup()
-    const assemblyNames = readConfObject(this.config, 'assemblyNames')
-    const idx = assemblyNames.indexOf(r1)
+
+    const idx = this.getAssemblyNames().indexOf(r1)
     if (idx !== -1) {
       const set = new Set<string>()
       for (let i = 0; i < feats.length; i++) {
@@ -127,7 +137,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const pafRecords = await this.setup(opts)
-      const assemblyNames = readConfObject(this.config, 'assemblyNames')
+      const assemblyNames = this.getAssemblyNames()
       const { assemblyName } = region
 
       // The index of the assembly name in the region list corresponds to the

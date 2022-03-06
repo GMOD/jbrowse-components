@@ -1,10 +1,18 @@
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import { Dotplot1DViewModel } from '../model'
 
-export function locstr(px: number, view: Dotplot1DViewModel) {
-  const { refName, start, offset, oob } = view.pxToBp(px)
+export function locstr(
+  px: number,
+  view: Dotplot1DViewModel,
+  includeAsm = true,
+) {
+  const { assemblyName, refName, start, offset, oob } = view.pxToBp(px)
   const coord = Math.floor(start + offset)
-  return oob ? 'out of bounds' : `${refName}:${coord.toLocaleString('en-US')}`
+  return oob
+    ? 'out of bounds'
+    : `${
+        includeAsm ? '{' + assemblyName + '}' : ''
+      }${refName}:${coord.toLocaleString('en-US')}`
 }
 
 export function getBlockLabelKeysToHide(
