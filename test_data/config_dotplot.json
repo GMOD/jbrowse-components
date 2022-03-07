@@ -50,6 +50,26 @@
         "assemblyNames": ["grape", "peach"]
       }
     },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "grape_peach_synteny_mcscan_simple",
+      "name": "Grape peach synteny (MCScan, simple anchors)",
+      "assemblyNames": ["peach", "grape"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "MCScanSimpleAnchorsAdapter",
+        "mcscanSimpleAnchorsLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/grape.peach.anchors.simple.gz"
+        },
+        "bed1Location": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/grape.bed.gz"
+        },
+        "bed2Location": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/peach.bed.gz"
+        },
+        "assemblyNames": ["grape", "peach"]
+      }
+    },
 
     {
       "trackId": "grape_peach_paf",
