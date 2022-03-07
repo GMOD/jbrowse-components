@@ -150,6 +150,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
               new SimpleFeature({
                 ...f0,
                 uniqueId: `${rowNum}`,
+                syntenyId: rowNum,
                 score,
                 mate: f1 as BareFeature,
               }),
