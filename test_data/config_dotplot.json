@@ -31,52 +31,26 @@
   ],
   "tracks": [
     {
-      "trackId": "grape_peach_synteny_mcscan",
       "type": "SyntenyTrack",
+      "trackId": "grape_peach_synteny_mcscan",
+      "name": "Grape peach synteny (MCScan, anchors)",
       "assemblyNames": ["peach", "grape"],
-      "trackIds": [],
-      "renderDelay": 100,
+      "category": ["Annotation"],
       "adapter": {
+        "type": "MCScanAnchorsAdapter",
         "mcscanAnchorsLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape.peach.anchors.gz",
-          "locationType": "UriLocation"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape.peach.anchors.gz"
         },
-        "subadapters": [
-          {
-            "type": "Gff3TabixAdapter",
-            "gffGzLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/peach/Ppersica_298_v2.1.gene.sorted.gff3.gz",
-              "locationType": "UriLocation"
-            },
-            "index": {
-              "location": {
-                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/peach/Ppersica_298_v2.1.gene.sorted.gff3.gz.tbi",
-                "locationType": "UriLocation"
-              },
-              "indexType": "TBI"
-            }
-          },
-          {
-            "type": "Gff3TabixAdapter",
-            "gffGzLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/grape/Vvinifera_457_v2.1.gene.sorted.gff.gz",
-              "locationType": "UriLocation"
-            },
-            "index": {
-              "location": {
-                "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/grape/Vvinifera_457_v2.1.gene.sorted.gff.gz.tbi",
-                "locationType": "UriLocation"
-              },
-              "indexType": "TBI"
-            }
-          }
-        ],
-        "assemblyNames": ["peach", "grape"],
-        "type": "MCScanAnchorsAdapter"
-      },
-      "name": "Grape peach synteny (MCScan)",
-      "category": ["Annotation"]
+        "bed1Location": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/grape.bed.gz"
+        },
+        "bed2Location": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/peach.bed.gz"
+        },
+        "assemblyNames": ["peach", "grape"]
+      }
     },
+
     {
       "trackId": "grape_peach_paf",
       "type": "SyntenyTrack",

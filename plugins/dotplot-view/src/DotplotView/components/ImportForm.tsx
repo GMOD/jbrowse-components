@@ -24,7 +24,7 @@ const useStyles = makeStyles(theme => ({
     margin: '0 auto',
   },
   assemblySelector: {
-    width: '50%',
+    width: '75%',
     margin: '0 auto',
   },
 }))
@@ -49,6 +49,8 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   const session = getSession(model)
   const { assemblyNames, assemblyManager } = session
   const [trackData, setTrackData] = useState<FileLocation>()
+  const [bed2Location, setBed2Location] = useState<FileLocation>()
+  const [bed1Location, setBed1Location] = useState<FileLocation>()
   const [targetAssembly, setTargetAssembly] = useState(assemblyNames[0])
   const [queryAssembly, setQueryAssembly] = useState(assemblyNames[0])
   const selected = [queryAssembly, targetAssembly]
@@ -92,6 +94,14 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
         chainLocation: trackData,
         queryAssembly,
         targetAssembly,
+      }
+    } else if (radioOption === '.anchors') {
+      return {
+        type: 'MCScanAnchorsAdapter',
+        mcscanAnchorsLocation: trackData,
+        bed1Location,
+        bed2Location,
+        assemblyNames: [queryAssembly, targetAssembly],
       }
     } else {
       throw new Error('Unknown type')
@@ -188,21 +198,21 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
                   <FormControlLabel
                     value=".paf"
                     control={<Radio />}
-                    label="PAF"
+                    label=".paf"
                   />
                 </Grid>
                 <Grid item>
                   <FormControlLabel
                     value=".out"
                     control={<Radio />}
-                    label="Out"
+                    label="mashmap.out"
                   />
                 </Grid>
                 <Grid item>
                   <FormControlLabel
                     value=".delta"
                     control={<Radio />}
-                    label="Delta"
+                    label=".delta"
                   />
                 </Grid>
                 <Grid item>
@@ -212,16 +222,61 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
                     label="Chain"
                   />
                 </Grid>
+                <Grid item>
+                  <FormControlLabel
+                    value=".anchors"
+                    control={<Radio />}
+                    label=".anchors (MCScan)"
+                  />
+                </Grid>
               </Grid>
             </RadioGroup>
             <Grid container justifyContent="center">
               <Grid item>
-                <FileSelector
-                  name="URL"
-                  description=""
-                  location={trackData}
-                  setLocation={loc => setTrackData(loc)}
-                />
+                {value === '.anchors' ? (
+                  <div>
+                    <div style={{ margin: 20 }}>
+                      Open the .anchors, and .bed files for both genome
+                      assemblies from the MCScan (Python verson) pipeline{' '}
+                      <a href="https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)">
+                        (more info)
+                      </a>
+                    </div>
+                    <div style={{ display: 'flex' }}>
+                      <div>
+                        <FileSelector
+                          name=".anchors file"
+                          description=""
+                          location={trackData}
+                          setLocation={loc => setTrackData(loc)}
+                        />
+                      </div>
+                      <div>
+                        <FileSelector
+                          name="genome 1 .bed"
+                          description=""
+                          location={bed1Location}
+                          setLocation={loc => setBed1Location(loc)}
+                        />
+                      </div>
+                      <div>
+                        <FileSelector
+                          name="genome 2 .bed"
+                          description=""
+                          location={bed2Location}
+                          setLocation={loc => setBed2Location(loc)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <FileSelector
+                    name={value ? value + ' location' : ''}
+                    description=""
+                    location={trackData}
+                    setLocation={loc => setTrackData(loc)}
+                  />
+                )}
               </Grid>
             </Grid>
           </Paper>
