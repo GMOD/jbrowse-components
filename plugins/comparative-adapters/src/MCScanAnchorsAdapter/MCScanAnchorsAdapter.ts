@@ -93,7 +93,8 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       .split('\n')
       .filter(f => !!f && f !== '###')
       .map((line, index) => {
-        const [name1, name2, score] = line.split('\t')
+        // the order of assemblyNames is right-col, left-col, hence the name2 then name1
+        const [name2, name1, score] = line.split('\t')
         const r1 = bed1Map.get(name1)
         const r2 = bed2Map.get(name2)
         if (!r1 || !r2) {
@@ -138,7 +139,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       if (index !== -1) {
         feats.forEach(f => {
           let [f0, f1, score, rowNum] = f
-          if (index === 0) {
+          if (index === 1) {
             ;[f1, f0] = [f0, f1]
           }
           if (

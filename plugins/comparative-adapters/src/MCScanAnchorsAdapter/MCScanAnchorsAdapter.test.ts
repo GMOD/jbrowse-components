@@ -18,11 +18,11 @@ test('adapter can fetch features from mcscan anchors file', async () => {
         locationType: 'LocalPathLocation',
       },
       bed1Location: {
-        localPath: require.resolve('./test_data/grape.bed.gz'),
+        localPath: require.resolve('./test_data/peach.bed.gz'),
         locationType: 'LocalPathLocation',
       },
       bed2Location: {
-        localPath: require.resolve('./test_data/peach.bed.gz'),
+        localPath: require.resolve('./test_data/grape.bed.gz'),
         locationType: 'LocalPathLocation',
       },
 
