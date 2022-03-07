@@ -82,12 +82,14 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
     } else if (radioOption === '.delta') {
       return {
         type: 'DeltaAdapter',
+        deltaLocation: trackData,
         queryAssembly,
         targetAssembly,
       }
     } else if (radioOption === '.chain') {
       return {
         type: 'ChainAdapter',
+        chainLocation: trackData,
         queryAssembly,
         targetAssembly,
       }
