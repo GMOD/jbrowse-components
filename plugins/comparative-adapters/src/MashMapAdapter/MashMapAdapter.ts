@@ -23,18 +23,13 @@ export default class ChainAdapter extends PAFAdapter {
       .split('\n')
       .filter(line => !!line)
       .map(line => {
-        const [
-          qname,
-          ,
-          qstart,
-          qend,
-          strand,
-          tname,
-          ,
-          tstart,
-          tend,
-          mappingQual,
-        ] = line.split(' ')
+        const fields = line.split(' ')
+        if (fields.length < 9) {
+          // xref https://github.com/marbl/MashMap/issues/38
+          throw new Error('improperly formatted line: ' + line)
+        }
+        const [qname, , qstart, qend, strand, tname, , tstart, tend, mq] =
+          fields
 
         return {
           tname,
@@ -45,7 +40,7 @@ export default class ChainAdapter extends PAFAdapter {
           qend: +qend,
           strand: strand === '-' ? -1 : 1,
           extra: {
-            mappingQual: +mappingQual,
+            mappingQual: +mq,
           },
         }
       })

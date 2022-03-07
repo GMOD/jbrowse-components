@@ -1,6 +1,5 @@
 import { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { unzip } from '@gmod/bgzf-filehandle'
 import PAFAdapter from '../PAFAdapter/PAFAdapter'
 
