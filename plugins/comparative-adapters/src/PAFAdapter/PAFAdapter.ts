@@ -129,10 +129,11 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     if (idx !== -1) {
       const set = new Set<string>()
       for (let i = 0; i < feats.length; i++) {
+        const f = feats[i]
         if (idx === 0) {
-          set.add(feats[i].qname)
+          set.add(f.qname)
         } else {
-          set.add(feats[i].tname)
+          set.add(f.tname)
         }
       }
       return Array.from(set)

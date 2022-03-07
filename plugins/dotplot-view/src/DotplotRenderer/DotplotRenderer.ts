@@ -81,7 +81,6 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
     const posColor = readConfObject(config, 'posColor')
     const negColor = readConfObject(config, 'negColor')
-    const largeIndelLimit = readConfObject(config, 'largeIndelLimit')
     const colorBy = readConfObject(config, 'colorBy')
     const lineWidth = readConfObject(config, 'lineWidth')
     ctx.lineWidth = lineWidth
@@ -184,7 +183,6 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
             for (let i = 0; i < cigarOps.length; i += 2) {
               const val = +cigarOps[i]
               const op = cigarOps[i + 1]
-
               if (op === 'M' || op === '=' || op === 'X') {
                 ctx.moveTo(currX, height - currY)
                 currX += (val / hBpPerPx) * strand
@@ -192,30 +190,15 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
                 ctx.lineTo(currX, height - currY)
               } else if (op === 'D' || op === 'N') {
                 const changePx = (val / hBpPerPx) * strand
-                if (val > largeIndelLimit) {
-                  ctx.stroke()
-                  drawCir(ctx, currX, height - currY, false, lineWidth)
-                  currX += changePx
-                  drawCir(ctx, currX, height - currY, false, lineWidth)
-                  ctx.beginPath()
-                } else {
-                  ctx.moveTo(currX, height - currY)
-                  currX += changePx
-                  ctx.lineTo(currX, height - currY)
-                }
+
+                ctx.moveTo(currX, height - currY)
+                currX += changePx
+                ctx.lineTo(currX, height - currY)
               } else if (op === 'I') {
                 const changePx = val / vBpPerPx
-                if (val > largeIndelLimit) {
-                  ctx.stroke()
-                  drawCir(ctx, currX, height - currY, false, lineWidth)
-                  currY += changePx
-                  drawCir(ctx, currX, height - currY, false, lineWidth)
-                  ctx.beginPath()
-                } else {
-                  ctx.moveTo(currX, height - currY)
-                  currY += changePx
-                  ctx.lineTo(currX, height - currY)
-                }
+                ctx.moveTo(currX, height - currY)
+                currY += changePx
+                ctx.lineTo(currX, height - currY)
               }
             }
             ctx.stroke()
