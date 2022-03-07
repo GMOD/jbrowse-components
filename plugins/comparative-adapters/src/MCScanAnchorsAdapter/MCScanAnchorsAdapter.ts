@@ -94,7 +94,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       .filter(f => !!f && f !== '###')
       .map((line, index) => {
         // the order of assemblyNames is right-col, left-col, hence the name2 then name1
-        const [name2, name1, score] = line.split('\t')
+        const [name1, name2, score] = line.split('\t')
         const r1 = bed1Map.get(name1)
         const r2 = bed2Map.get(name2)
         if (!r1 || !r2) {

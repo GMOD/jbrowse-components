@@ -183,11 +183,12 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
 
           <Paper style={{ padding: 12 }}>
             <Typography style={{ textAlign: 'center' }}>
-              <b>Optional</b>: Add a .paf, .out (MashMap), .delta (Mummer), or
-              .chain file to view in the dotplot. These file types can also be
-              gzipped. The first assembly should be the query sequence (e.g.
-              left column of the PAF) and the second assembly should be the
-              target sequence (e.g. right column of the PAF)
+              <b>Optional</b>: Add a .paf, .out (MashMap), .delta (Mummer),
+              .chain, or .anchors (MCScan) file to view in the dotplot. These
+              file types can also be gzipped. The first assembly should be the
+              query sequence (e.g. left column of the PAF) and the second
+              assembly should be the target sequence (e.g. right column of the
+              PAF)
             </Typography>
             <RadioGroup
               value={radioOption}
@@ -205,7 +206,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
                   <FormControlLabel
                     value=".out"
                     control={<Radio />}
-                    label="mashmap.out"
+                    label=".out"
                   />
                 </Grid>
                 <Grid item>
@@ -219,14 +220,14 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
                   <FormControlLabel
                     value=".chain"
                     control={<Radio />}
-                    label="Chain"
+                    label=".chain"
                   />
                 </Grid>
                 <Grid item>
                   <FormControlLabel
                     value=".anchors"
                     control={<Radio />}
-                    label=".anchors (MCScan)"
+                    label=".anchors"
                   />
                 </Grid>
               </Grid>
