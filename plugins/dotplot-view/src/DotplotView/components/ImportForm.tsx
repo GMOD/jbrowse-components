@@ -103,6 +103,14 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
         bed2Location,
         assemblyNames: [queryAssembly, targetAssembly],
       }
+    } else if (radioOption === '.anchors.simple') {
+      return {
+        type: 'MCScanSimpleAnchorsAdapter',
+        mcscanSimpleAnchorsLocation: trackData,
+        bed1Location,
+        bed2Location,
+        assemblyNames: [queryAssembly, targetAssembly],
+      }
     } else {
       throw new Error('Unknown type')
     }
@@ -164,7 +172,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
             >
               <Grid item>
                 <Typography>
-                  {value === '.anchors'
+                  {value === '.anchors' || value === '.anchors.simple'
                     ? 'Left column of anchors file'
                     : 'Query'}
                 </Typography>
@@ -176,7 +184,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
               </Grid>
               <Grid item>
                 <Typography>
-                  {value === '.anchors'
+                  {value === '.anchors' || value === '.anchors.simple'
                     ? 'Right column of anchors file'
                     : 'Target'}
                 </Typography>
@@ -192,11 +200,11 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
           <Paper style={{ padding: 12 }}>
             <Typography style={{ textAlign: 'center' }}>
               <b>Optional</b>: Add a .paf, .out (MashMap), .delta (Mummer),
-              .chain, or .anchors (MCScan) file to view in the dotplot. These
-              file types can also be gzipped. The first assembly should be the
-              query sequence (e.g. left column of the PAF) and the second
-              assembly should be the target sequence (e.g. right column of the
-              PAF)
+              .chain, .anchors or .anchors.simple (MCScan) file to view in the
+              dotplot. These file types can also be gzipped. The first assembly
+              should be the query sequence (e.g. left column of the PAF) and the
+              second assembly should be the target sequence (e.g. right column
+              of the PAF)
             </Typography>
             <RadioGroup
               value={radioOption}
@@ -238,15 +246,22 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
                     label=".anchors"
                   />
                 </Grid>
+                <Grid item>
+                  <FormControlLabel
+                    value=".anchors.simple"
+                    control={<Radio />}
+                    label=".anchors.simple"
+                  />
+                </Grid>
               </Grid>
             </RadioGroup>
             <Grid container justifyContent="center">
               <Grid item>
-                {value === '.anchors' ? (
+                {value === '.anchors' || value === '.anchors.simple' ? (
                   <div>
                     <div style={{ margin: 20 }}>
-                      Open the .anchors, and .bed files for both genome
-                      assemblies from the MCScan (Python verson) pipeline{' '}
+                      Open the {value} and .bed files for both genome assemblies
+                      from the MCScan (Python verson) pipeline{' '}
                       <a href="https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)">
                         (more info)
                       </a>

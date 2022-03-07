@@ -101,6 +101,14 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
         bed2Location,
         assemblyNames: selected,
       }
+    } else if (radioOption === '.anchors.simple') {
+      return {
+        type: 'MCScanSimpleAnchorsAdapter',
+        mcscanSimpleAnchorsLocation: trackData,
+        bed1Location,
+        bed2Location,
+        assemblyNames: selected,
+      }
     } else {
       throw new Error('Unknown type')
     }
@@ -188,10 +196,10 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
       <Paper className={classes.formPaper}>
         <Typography style={{ textAlign: 'center' }}>
           <b>Optional</b>: Add a .paf, .out (MashMap), .delta (Mummer), .chain,
-          or .anchors file to view in the dotplot. These file types can also be
-          gzipped. The first assembly should be the query sequence (e.g. left
-          column of the PAF) and the second assembly should be the target
-          sequence (e.g. right column of the PAF)
+          .anchors or .anchors.simple (MCScan) file to view in the synteny view.
+          These file types can also be gzipped. The first assembly should be the
+          query sequence (e.g. left column of the PAF) and the second assembly
+          should be the target sequence (e.g. right column of the PAF)
         </Typography>
         <RadioGroup
           value={radioOption}
@@ -225,14 +233,21 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
                 label=".anchors"
               />
             </Grid>
+            <Grid item>
+              <FormControlLabel
+                value=".anchors.simple"
+                control={<Radio />}
+                label=".anchors.simple"
+              />
+            </Grid>
           </Grid>
         </RadioGroup>
         <Grid container justifyContent="center">
           <Grid item>
-            {value === '.anchors' ? (
+            {value === '.anchors' || value === '.anchors.simple' ? (
               <div>
                 <div style={{ margin: 20 }}>
-                  Open the .anchors, and .bed files for both genome assemblies
+                  Open the {value}, and .bed files for both genome assemblies
                   from the MCScan (Python verson) pipeline{' '}
                   <a href="https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)">
                     (more info)
