@@ -24,7 +24,6 @@ const useStyles = makeStyles(theme => ({
   },
 
   formPaper: {
-    maxWidth: 600,
     margin: '0 auto',
     padding: 12,
     marginBottom: 10,
@@ -53,6 +52,8 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   const { assemblyNames, assemblyManager } = session
   const [selected, setSelected] = useState([assemblyNames[0], assemblyNames[0]])
   const [trackData, setTrackData] = useState<FileLocation>()
+  const [bed2Location, setBed2Location] = useState<FileLocation>()
+  const [bed1Location, setBed1Location] = useState<FileLocation>()
   const [numRows] = useState(2)
   const [error, setError] = useState<unknown>()
 
@@ -90,6 +91,14 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
       return {
         type: 'ChainAdapter',
         chainLocation: trackData,
+        assemblyNames: selected,
+      }
+    } else if (radioOption === '.anchors') {
+      return {
+        type: 'MCScanAnchorsAdapter',
+        mcscanAnchorsLocation: trackData,
+        bed1Location,
+        bed2Location,
         assemblyNames: selected,
       }
     } else {
@@ -240,7 +249,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
                   </div>
                   <div>
                     <FileSelector
-                      name="genome 1 .bed"
+                      name="genome 1 .bed (left column of anchors file)"
                       description=""
                       location={bed1Location}
                       setLocation={loc => setBed1Location(loc)}
@@ -248,7 +257,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
                   </div>
                   <div>
                     <FileSelector
-                      name="genome 2 .bed"
+                      name="genome 2 .bed (right column of anchors file)"
                       description=""
                       location={bed2Location}
                       setLocation={loc => setBed2Location(loc)}

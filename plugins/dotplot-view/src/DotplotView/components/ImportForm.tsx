@@ -163,7 +163,11 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
               alignItems="center"
             >
               <Grid item>
-                <Typography>Query</Typography>
+                <Typography>
+                  {value === '.anchors'
+                    ? 'Left column of anchors file'
+                    : 'Query'}
+                </Typography>
                 <AssemblySelector
                   selected={queryAssembly}
                   onChange={val => setQueryAssembly(val)}
@@ -171,7 +175,11 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
                 />
               </Grid>
               <Grid item>
-                <Typography>Target</Typography>
+                <Typography>
+                  {value === '.anchors'
+                    ? 'Right column of anchors file'
+                    : 'Target'}
+                </Typography>
                 <AssemblySelector
                   selected={targetAssembly}
                   onChange={val => setTargetAssembly(val)}
@@ -254,7 +262,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
                       </div>
                       <div>
                         <FileSelector
-                          name="genome 1 .bed"
+                          name="genome 1 .bed (left column of anchors file)"
                           description=""
                           location={bed1Location}
                           setLocation={loc => setBed1Location(loc)}
@@ -262,7 +270,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
                       </div>
                       <div>
                         <FileSelector
-                          name="genome 2 .bed"
+                          name="genome 2 .bed (right column of anchors file)"
                           description=""
                           location={bed2Location}
                           setLocation={loc => setBed2Location(loc)}
