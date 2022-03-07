@@ -99,7 +99,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             mappingQual: +mappingQual,
             ...rest,
           },
-        }
+        } as PAFRecord
       })
   }
 
