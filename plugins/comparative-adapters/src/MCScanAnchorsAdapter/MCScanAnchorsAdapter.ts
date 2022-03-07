@@ -138,7 +138,8 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       const index = assemblyNames.indexOf(region.assemblyName)
       if (index !== -1) {
         feats.forEach(f => {
-          let [f0, f1, score, rowNum] = f
+          let [f0, f1] = f
+          const [score, rowNum] = f
           if (index === 1) {
             ;[f1, f0] = [f0, f1]
           }
