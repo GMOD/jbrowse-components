@@ -6,18 +6,19 @@ export default ConfigurationSchema(
   {
     color: {
       type: 'color',
-      description: 'the color of each feature in a synteny',
-      defaultValue: '#f0f',
+      description:
+        'the color of each feature in a synteny, used with colorBy:default or colorBy:callback',
+      defaultValue: 'black',
       contextVariable: ['feature'],
     },
     posColor: {
       type: 'color',
-      description: 'the color for forward alignments',
+      description: 'the color for forward alignments, used with colorBy:strand',
       defaultValue: 'black',
     },
     negColor: {
       type: 'color',
-      description: 'the color for reverse alignments',
+      description: 'the color for reverse alignments, used with colorBy:strand',
       defaultValue: 'red',
     },
     lineWidth: {
@@ -32,18 +33,21 @@ export default ConfigurationSchema(
         'identity',
         'mappingQuality',
         'strand',
-        'none',
+        'default',
+        'callback',
       ]),
-      description: `Color by. Setting "identity" (similar to D-GENIES, use thresholds and thresholds palette to define colors for this setting), setting "mappingQuality" (uses mapping quality from PAF, some adapters don't have this setting), setting "strand" colors negative alignments with negColor and positive alignments with posColor, none is black`,
-      defaultValue: 'strand',
+      description: `Color by. Setting "identity" (similar to D-GENIES, use thresholds and thresholds palette to define colors for this setting), setting "mappingQuality" (uses mapping quality from PAF, some adapters don't have this setting), setting "strand" colors negative alignments with negColor and positive alignments with posColor, default uses the 'color' field, callback uses the 'color' field as a callback`,
+      defaultValue: 'default',
     },
     thresholdsPalette: {
       type: 'stringArray',
       defaultValue: ['#094b09', '#2ebd40', '#d5670b', '#ffd84b'],
+      description: 'threshold colors, used with colorBy:identity',
     },
     thresholds: {
       type: 'stringArray',
       defaultValue: ['0.75', '0.5', '0.25', '0'],
+      description: 'threshold breakpoints, used with colorBy:identity',
     },
   },
   { explicitlyTyped: true },

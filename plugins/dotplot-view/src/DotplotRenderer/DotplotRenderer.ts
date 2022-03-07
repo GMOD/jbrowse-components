@@ -79,6 +79,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       height * highResolutionScaling,
     )
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+    const color = readConfObject(config, 'color')
     const posColor = readConfObject(config, 'posColor')
     const negColor = readConfObject(config, 'negColor')
     const colorBy = readConfObject(config, 'colorBy')
@@ -133,8 +134,10 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         r = `hsl(${mq},50%,50%)`
       } else if (colorBy === 'strand') {
         r = strand === -1 ? negColor : posColor
-      } else {
-        r = 'black'
+      } else if (colorBy === 'default') {
+        r = color
+      } else if (colorBy === 'callback') {
+        r = readConfObject(config, 'color', { feature })
       }
       ctx.fillStyle = r
       ctx.strokeStyle = r
@@ -180,27 +183,20 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
             const cigarOps = parseCigar(cigar)
 
             ctx.beginPath()
+            ctx.moveTo(currX, height - currY)
             for (let i = 0; i < cigarOps.length; i += 2) {
               const val = +cigarOps[i]
               const op = cigarOps[i + 1]
               if (op === 'M' || op === '=' || op === 'X') {
-                ctx.moveTo(currX, height - currY)
                 currX += (val / hBpPerPx) * strand
                 currY += val / vBpPerPx
-                ctx.lineTo(currX, height - currY)
               } else if (op === 'D' || op === 'N') {
-                const changePx = (val / hBpPerPx) * strand
-
-                ctx.moveTo(currX, height - currY)
-                currX += changePx
-                ctx.lineTo(currX, height - currY)
+                currX += (val / hBpPerPx) * strand
               } else if (op === 'I') {
-                const changePx = val / vBpPerPx
-                ctx.moveTo(currX, height - currY)
-                currY += changePx
-                ctx.lineTo(currX, height - currY)
+                currY += val / vBpPerPx
               }
             }
+            ctx.lineTo(currX, height - currY)
             ctx.stroke()
           } else {
             ctx.beginPath()
