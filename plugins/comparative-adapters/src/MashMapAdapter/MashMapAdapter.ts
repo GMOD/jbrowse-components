@@ -7,7 +7,7 @@ function isGzip(buf: Buffer) {
   return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
 }
 
-export default class ChainAdapter extends PAFAdapter {
+export default class MashMapAdapter extends PAFAdapter {
   async setupPre(opts?: BaseOptions) {
     const outLoc = openLocation(this.getConf('outLocation'), this.pluginManager)
     const buffer = (await outLoc.readFile(opts)) as Buffer

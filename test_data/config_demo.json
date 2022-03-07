@@ -1,4 +1,19 @@
 {
+  "configuration": {},
+  "plugins": [
+    {
+      "name": "Biothings",
+      "url": "https://unpkg.com/jbrowse-plugin-biothings@^1/dist/jbrowse-plugin-biothings.umd.production.min.js"
+    },
+    {
+      "name": "GDC",
+      "url": "https://unpkg.com/jbrowse-plugin-gdc@^1/dist/jbrowse-plugin-gdc.umd.production.min.js"
+    },
+    {
+      "name": "UCSC",
+      "url": "https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js"
+    }
+  ],
   "assemblies": [
     {
       "name": "hg19",
@@ -31,6 +46,7 @@
           }
         }
       },
+
       "cytobands": {
         "adapter": {
           "type": "CytobandAdapter",
@@ -102,30 +118,8 @@
           }
         }
       }
-    },
-    {
-      "name": "gorGor6",
-      "sequence": {
-        "type": "ReferenceSequenceTrack",
-        "trackId": "gorGor6-ReferenceSequenceTrack",
-        "adapter": {
-          "type": "TwoBitAdapter",
-          "twoBitLocation": {
-            "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/gorGor6/bigZips/gorGor6.2bit",
-            "locationType": "UriLocation"
-          },
-          "chromSizesLocation": {
-            "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/gorGor6/bigZips/gorGor6.chrom.sizes"
-          }
-        }
-      }
     }
   ],
-  "configuration": {},
-  "connections": [],
-  "defaultSession": {
-    "name": "New Session"
-  },
   "tracks": [
     {
       "type": "FeatureTrack",
@@ -302,6 +296,7 @@
         "track": "genomicSuperDups"
       }
     },
+
     {
       "type": "GDCTrack",
       "trackId": "gdc_plugin_track",
@@ -3869,20 +3864,10 @@
       }
     }
   ],
-  "plugins": [
-    {
-      "name": "Biothings",
-      "url": "https://unpkg.com/jbrowse-plugin-biothings@^1/dist/jbrowse-plugin-biothings.umd.production.min.js"
-    },
-    {
-      "name": "GDC",
-      "url": "https://unpkg.com/jbrowse-plugin-gdc@^1/dist/jbrowse-plugin-gdc.umd.production.min.js"
-    },
-    {
-      "name": "UCSC",
-      "url": "https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js"
-    }
-  ],
+  "connections": [],
+  "defaultSession": {
+    "name": "New Session"
+  },
   "aggregateTextSearchAdapters": [
     {
       "type": "TrixTextSearchAdapter",
