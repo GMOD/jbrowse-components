@@ -89,8 +89,9 @@ function paf_delta2paf(lines: string[]) {
         }
         cigar.push((re - rs - x) << 4)
         for (let i = 0; i < cigar.length; ++i) {
-          blen += cigar[i] >> 4
-          cigar_str.push((cigar[i] >> 4) + 'MID'.charAt(cigar[i] & 0xf))
+          const rlen = cigar[i] >> 4
+          blen += rlen
+          cigar_str.push(rlen + 'MID'.charAt(cigar[i] & 0xf))
         }
 
         records.push({

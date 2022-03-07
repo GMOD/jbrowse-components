@@ -1767,10 +1767,10 @@
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape.peach.anchors.gz"
         },
         "bed1Location": {
-          "uri": "grape.bed"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/grape.bed.gz"
         },
         "bed2Location": {
-          "uri": "peach.bed"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/peach.bed.gz"
         },
         "assemblyNames": ["peach", "grape"]
       }
