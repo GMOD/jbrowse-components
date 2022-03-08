@@ -6,15 +6,13 @@ import {
 import { viewBpToPx, renameRegionsIfNeeded } from '@jbrowse/core/util'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { Region } from '@jbrowse/core/util/types'
-import { getSnapshot, Instance } from 'mobx-state-tree'
+import { getSnapshot } from 'mobx-state-tree'
 import ComparativeServerSideRendererType, {
   RenderArgsDeserialized as ComparativeRenderArgsDeserialized,
   RenderArgs as ComparativeRenderArgs,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
-import { Dotplot1DView } from '../DotplotView/model'
-
-type Dim = Instance<typeof Dotplot1DView>
+import { Dotplot1DView, Dotplot1DViewModel } from '../DotplotView/model'
 
 const { parseCigar } = MismatchParser
 
@@ -23,7 +21,10 @@ export interface DotplotRenderArgsDeserialized
   height: number
   width: number
   highResolutionScaling: number
-  view: { hview: Dim; vview: Dim }
+  view: {
+    hview: Dotplot1DViewModel
+    vview: Dotplot1DViewModel
+  }
 }
 
 interface DotplotRenderArgs extends ComparativeRenderArgs {
@@ -71,7 +72,9 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     ).regions
     return args
   }
-  async makeImageData(props: DotplotRenderArgsDeserialized & { views: Dim[] }) {
+  async makeImageData(
+    props: DotplotRenderArgsDeserialized & { views: Dotplot1DViewModel[] },
+  ) {
     const { highResolutionScaling = 1, width, height, config, views } = props
 
     const canvas = createCanvas(
