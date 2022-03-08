@@ -138,19 +138,16 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       const index = assemblyNames.indexOf(region.assemblyName)
       if (index !== -1) {
         feats.forEach(f => {
-          let [f0, f1] = f
-          const [score, rowNum] = f
-          if (index === 1) {
-            ;[f1, f0] = [f0, f1]
-          }
+          const [r0, r1, score, rowNum] = f
+          const [f0, f1] = index === 1 ? [r1, r0] : [r0, r1]
           if (
             f0.refName === region.refName &&
-            doesIntersect2(f0.start, f0.end, region.start, region.end)
+            doesIntersect2(region.start, region.end, f0.start, f0.end)
           ) {
             observer.next(
               new SimpleFeature({
                 ...f0,
-                uniqueId: `${rowNum}`,
+                uniqueId: `${index}-${rowNum}`,
                 syntenyId: rowNum,
                 score,
                 mate: f1 as BareFeature,
