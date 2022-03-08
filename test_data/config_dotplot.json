@@ -72,6 +72,21 @@
     },
 
     {
+      "trackId": "grape_peach_nucmer",
+      "type": "SyntenyTrack",
+      "name": "Grape vs Peach (nucmer)",
+      "assemblyNames": ["peach", "grape"],
+      "adapter": {
+        "type": "DeltaAdapter",
+        "deltaLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/out1.delta.gz",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["peach", "grape"]
+      }
+    },
+
+    {
       "trackId": "grape_peach_paf",
       "type": "SyntenyTrack",
       "name": "Grape vs Peach (PAF)",
