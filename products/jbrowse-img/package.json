@@ -4,7 +4,9 @@
   "main": "index.js",
   "author": "JBrowse Team",
   "license": "Apache-2.0",
-  "engines": ">=16",
+  "engines": {
+    "node": ">=16"
+  },
   "bin": {
     "jb2export": "./dist/bin.js"
   },
