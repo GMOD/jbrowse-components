@@ -62,6 +62,7 @@ export class CoreIndexTracks extends RpcMethodType {
       attributes?: string[]
       exclude?: string[]
       assemblies?: string[]
+      indexType?: string
       tracks: AnyConfigurationModel[] | SnapshotIn<AnyConfigurationModel>[]
     },
     rpcDriverClassName: string,
@@ -70,21 +71,16 @@ export class CoreIndexTracks extends RpcMethodType {
       args,
       rpcDriverClassName,
     )
-    const { sessionId, tracks, outLocation, exclude, attributes, assemblies } =
+    const { tracks, outLocation, exclude, attributes, assemblies, indexType } =
       deserializedArgs
-      
-    console.log('sessionId', sessionId)
-    console.log('trackConf', tracks)
-    console.log('outPath', outLocation)
-    console.log('attr', attributes)
-    console.log('exclude', exclude)
-    console.log('assemblies', assemblies)
+
     const indexingParams = {
       outLocation,
       tracks,
       exclude,
       attributes,
       assemblies,
+      indexType,
     }
     await indexTracks(indexingParams)
     return []

@@ -41,16 +41,6 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-interface Track {
-  [key: string]: any
-}
-interface TrackTextIndexing {
-  attributes: string[]
-  exclude: string[]
-  assemblies: string[]
-  tracks: Track[]
-}
-
 const steps = ['Enter track data', 'Confirm track type']
 
 function AddTrackWidget({ model }: { model: AddTrackModel }) {
@@ -108,33 +98,18 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
         },
       })
       const textSearchingDefault = {
-        attributes: ['Name', 'ID', 'type'],
+        attributes: ['Name', 'ID'],
         exclude: ['CDS', 'exon'],
       }
       if (model.view) {
         model.view.showTrack(trackId)
         if (textIndexTrack) {
-          // console.log('indexing track', trackId)
-          // console.log(textIndexingConf)
           const attr = textIndexingConf || textSearchingDefault
           const indexingParams = {
             ...attr,
             assemblies: [assembly],
-            tracks: [
-              {
-                trackId,
-                type: trackType,
-                name: trackName,
-                assemblyNames: [assembly],
-                adapter: {
-                  ...trackAdapter,
-                  sequenceAdapter: getConf(assemblyInstance, [
-                    'sequence',
-                    'adapter',
-                  ]),
-                },
-              },
-            ],
+            tracks: [trackId],
+            indexType: 'perTrack',
           }
           rootModel.queueIndexingJob(indexingParams)
         }
