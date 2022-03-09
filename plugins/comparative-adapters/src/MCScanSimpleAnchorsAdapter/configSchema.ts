@@ -1,12 +1,12 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 export default ConfigurationSchema(
-  'MCScanAnchorsAdapter',
+  'MCScanSimpleAnchorsAdapter',
   {
-    mcscanAnchorsLocation: {
+    mcscanSimpleAnchorsLocation: {
       type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/mcscan.anchors',
+        uri: '/path/to/mcscan.anchors.simple',
         locationType: 'UriLocation',
       },
     },

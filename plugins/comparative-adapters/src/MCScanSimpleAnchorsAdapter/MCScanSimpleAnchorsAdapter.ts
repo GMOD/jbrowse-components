@@ -56,8 +56,16 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
     assemblyNames: string[]
     bed1Location: GenericFilehandle
     bed2Location: GenericFilehandle
-    mcscanAnchorsLocation: GenericFilehandle
-    feats: [BareFeature, BareFeature, number, number][]
+    mcscanSimpleAnchorsLocation: GenericFilehandle
+    feats: [
+      BareFeature,
+      BareFeature,
+      BareFeature,
+      BareFeature,
+      number,
+      number,
+      number,
+    ][]
   }>
 
   public static capabilities = ['getFeatures', 'getRefNames']
@@ -81,28 +89,44 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       this.getConf('bed2Location'),
       this.pluginManager,
     )
-    const mcscanAnchorsLocation = openLocation(
-      this.getConf('mcscanAnchorsLocation'),
+    const mcscanSimpleAnchorsLocation = openLocation(
+      this.getConf('mcscanSimpleAnchorsLocation'),
       this.pluginManager,
     )
 
     const bed1Map = parseBed(await readFile(bed1Location, opts))
     const bed2Map = parseBed(await readFile(bed2Location, opts))
-    const text = await readFile(mcscanAnchorsLocation, opts)
+    const text = await readFile(mcscanSimpleAnchorsLocation, opts)
     const feats = text
       .split('\n')
       .filter(f => !!f && f !== '###')
       .map((line, index) => {
         // the order of assemblyNames is right-col, left-col, hence the name2 then name1
-        const [name1, name2, score] = line.split('\t')
-        const r1 = bed1Map.get(name1)
-        const r2 = bed2Map.get(name2)
-        if (!r1 || !r2) {
-          throw new Error(`feature not found, ${name1} ${name2} ${r1} ${r2}`)
+        const [name1_1, name1_2, name2_1, name2_2, score, strand] =
+          line.split('\t')
+        const r1_1 = bed1Map.get(name1_1)
+        const r1_2 = bed1Map.get(name1_2)
+        const r2_1 = bed2Map.get(name2_1)
+        const r2_2 = bed2Map.get(name2_2)
+        if (!r1_1 || !r1_2 || !r2_1 || !r2_2) {
+          throw new Error(
+            `feature not found, ${name1_1} ${name1_2} ${name2_1} ${name2_2} ${r1_1} ${r1_2} ${r2_1} ${r2_2}`,
+          )
         }
-        return [r1, r2, +score, index] as [
+        return [
+          r1_1,
+          r1_2,
+          r2_1,
+          r2_2,
+          +score,
+          strand === '-' ? -1 : 1,
+          index,
+        ] as [
           BareFeature,
           BareFeature,
+          BareFeature,
+          BareFeature,
+          number,
           number,
           number,
         ]
@@ -112,7 +136,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       assemblyNames,
       bed1Location,
       bed2Location,
-      mcscanAnchorsLocation,
+      mcscanSimpleAnchorsLocation,
       feats,
     }
   }
@@ -138,19 +162,32 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       const index = assemblyNames.indexOf(region.assemblyName)
       if (index !== -1) {
         feats.forEach(f => {
-          const [r0, r1, score, rowNum] = f
-          const [f0, f1] = index === 1 ? [r1, r0] : [r0, r1]
+          const [f0_1, f0_2, f1_1, f1_2, score, strand, rowNum] = f
+          let r1 = {
+            refName: f0_1.refName,
+            start: Math.min(f0_1.start, f0_2.start),
+            end: Math.max(f0_1.end, f0_2.end),
+          }
+          let r2 = {
+            refName: f1_1.refName,
+            start: Math.min(f1_1.start, f1_2.start),
+            end: Math.max(f1_1.end, f1_2.end),
+          }
+          if (index === 1) {
+            ;[r2, r1] = [r1, r2]
+          }
           if (
-            f0.refName === region.refName &&
-            doesIntersect2(region.start, region.end, f0.start, f0.end)
+            r1.refName === region.refName &&
+            doesIntersect2(r1.start, r1.end, region.start, region.end)
           ) {
             observer.next(
               new SimpleFeature({
-                ...f0,
-                uniqueId: `${index}-${rowNum}`,
+                ...r1,
+                uniqueId: `${rowNum}`,
                 syntenyId: rowNum,
                 score,
-                mate: f1 as BareFeature,
+                strand,
+                mate: r2 as BareFeature,
               }),
             )
           }

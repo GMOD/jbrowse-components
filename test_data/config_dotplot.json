@@ -31,38 +31,61 @@
   ],
   "tracks": [
     {
-      "trackId": "grape_peach_synteny_mcscan",
       "type": "SyntenyTrack",
+      "trackId": "grape_peach_synteny_mcscan",
+      "name": "Grape peach synteny (MCScan, anchors)",
       "assemblyNames": ["peach", "grape"],
-      "trackIds": [],
-      "renderDelay": 100,
+      "category": ["Annotation"],
       "adapter": {
+        "type": "MCScanAnchorsAdapter",
         "mcscanAnchorsLocation": {
-          "uri": "grape.peach.anchors",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape.peach.anchors.gz"
+        },
+        "bed1Location": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/grape.bed.gz"
+        },
+        "bed2Location": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/peach.bed.gz"
+        },
+        "assemblyNames": ["grape", "peach"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "grape_peach_synteny_mcscan_simple",
+      "name": "Grape peach synteny (MCScan, simple anchors)",
+      "assemblyNames": ["peach", "grape"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "MCScanSimpleAnchorsAdapter",
+        "mcscanSimpleAnchorsLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/grape.peach.anchors.simple.gz"
+        },
+        "bed1Location": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/grape.bed.gz"
+        },
+        "bed2Location": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/peach.bed.gz"
+        },
+        "assemblyNames": ["grape", "peach"]
+      }
+    },
+
+    {
+      "trackId": "grape_peach_nucmer",
+      "type": "SyntenyTrack",
+      "name": "Grape vs Peach (nucmer)",
+      "assemblyNames": ["peach", "grape"],
+      "adapter": {
+        "type": "DeltaAdapter",
+        "deltaLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/out1.delta.gz",
           "locationType": "UriLocation"
         },
-        "subadapters": [
-          {
-            "type": "NCListAdapter",
-            "rootUrlTemplate": {
-              "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json",
-              "locationType": "UriLocation"
-            }
-          },
-          {
-            "type": "NCListAdapter",
-            "rootUrlTemplate": {
-              "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json",
-              "locationType": "UriLocation"
-            }
-          }
-        ],
-        "assemblyNames": ["peach", "grape"],
-        "type": "MCScanAnchorsAdapter"
-      },
-      "name": "Grape peach synteny (MCScan)",
-      "category": ["Annotation"]
+        "assemblyNames": ["peach", "grape"]
+      }
     },
+
     {
       "trackId": "grape_peach_paf",
       "type": "SyntenyTrack",
