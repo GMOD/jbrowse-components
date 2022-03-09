@@ -194,38 +194,17 @@ Object {
   },
   "internetAccounts": Array [
     Object {
-      "authEndpoint": "https://www.dropbox.com/oauth2/authorize",
       "clientId": "50knr6xrjfc39sk",
-      "description": "OAuth Info for Dropbox",
-      "domains": Array [
-        "addtodropbox.com",
-        "db.tt",
-        "dropbox.com",
-        "dropboxapi.com",
-        "dropboxbusiness.com",
-        "dropbox.tech",
-        "getdropbox.com",
-      ],
-      "hasRefreshToken": true,
+      "description": "Account to access Dropbox files",
       "internetAccountId": "dropboxOAuth",
       "name": "Dropbox",
-      "needsAuthorization": true,
-      "needsPKCE": true,
-      "tokenEndpoint": "https://api.dropbox.com/oauth2/token",
       "type": "DropboxOAuthInternetAccount",
     },
     Object {
-      "authEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
       "clientId": "109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com",
-      "description": "OAuth Info for Google Drive",
-      "domains": Array [
-        "drive.google.com",
-      ],
+      "description": "Account to access Google Drive files",
       "internetAccountId": "googleOAuth",
       "name": "Google Drive",
-      "needsAuthorization": true,
-      "responseType": "token",
-      "scopes": "https://www.googleapis.com/auth/drive.readonly",
       "type": "GoogleDriveOAuthInternetAccount",
     },
   ],
@@ -2357,6 +2336,42 @@ Object {
       "name": "Volvox - BAM coverage",
       "trackId": "pOOtg9wxcUC",
       "type": "QuantitativeTrack",
+    },
+    Object {
+      "adapter": Object {
+        "assemblyNames": Array [
+          "volvox",
+          "volvox",
+        ],
+        "pafLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox_fake_synteny_alt.paf",
+        },
+        "type": "PAFAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+        "volvox",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox_fake_synteny_alt-DotplotDisplay",
+          "type": "DotplotDisplay",
+        },
+        Object {
+          "displayId": "volvox_fake_synteny_alt-LinearComparativeDisplay",
+          "type": "LinearComparativeDisplay",
+        },
+        Object {
+          "displayId": "volvox_fake_synteny_alt-LinearSyntenyDisplay",
+          "type": "LinearSyntenyDisplay",
+        },
+      ],
+      "name": "volvox_fake_synteny_alt",
+      "trackId": "volvox_fake_synteny_alt",
+      "type": "SyntenyTrack",
     },
     Object {
       "adapter": Object {

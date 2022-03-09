@@ -78,7 +78,10 @@ export default class VariantsPlugin extends Plugin {
       'Core-guessTrackTypeForLocation',
       (trackTypeGuesser: TrackTypeGuesser) => {
         return (adapterName: string) => {
-          if (adapterName === 'VcfTabixAdapter') {
+          if (
+            adapterName === 'VcfTabixAdapter' ||
+            adapterName === 'VcfAdapter'
+          ) {
             return 'VariantTrack'
           }
           return trackTypeGuesser(adapterName)

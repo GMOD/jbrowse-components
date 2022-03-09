@@ -414,7 +414,7 @@ export const BaseLinearDisplay = types
       afterAttach() {
         // this autorun performs stats estimation
         //
-        // the chain of events calls estimateRegionStats against the data
+        // the chain of events calls estimateRegionsStats against the data
         // adapter which by default uses featureDensity, but can also respond
         // with a byte size estimate and fetch size limit (data adapter can
         // define what is too much data)
@@ -426,7 +426,12 @@ export const BaseLinearDisplay = types
                 const aborter = new AbortController()
                 const view = getContainingView(self) as LGV
 
-                if (!view.initialized) {
+                // extra check for contentBlocks.length
+                // https://github.com/GMOD/jbrowse-components/issues/2694
+                if (
+                  !view.initialized ||
+                  !view.staticBlocks.contentBlocks.length
+                ) {
                   return
                 }
 

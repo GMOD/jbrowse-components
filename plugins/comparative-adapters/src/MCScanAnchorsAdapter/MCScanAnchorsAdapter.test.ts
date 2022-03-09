@@ -6,7 +6,15 @@ import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { ConfigurationSchema } from '@jbrowse/core/configuration/configurationSchema'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import Adapter from './MCScanAnchorsAdapter'
+import { TextEncoder, TextDecoder } from 'web-encoding'
 import configSchema from './configSchema'
+
+if (!window.TextEncoder) {
+  window.TextEncoder = TextEncoder
+}
+if (!window.TextDecoder) {
+  window.TextDecoder = TextDecoder
+}
 
 class CustomAdapter extends BaseFeatureDataAdapter {
   async getRefNames() {
@@ -68,14 +76,14 @@ test('adapter can fetch features from volvox.bam', async () => {
     getSubAdapter,
   )
 
-  const features1 = await adapter.getFeatures({
+  const features1 = adapter.getFeatures({
     refName: 'peach_chr1',
     start: 0,
     end: 20000,
     assemblyName: 'peach',
   })
 
-  const features2 = await adapter.getFeatures({
+  const features2 = adapter.getFeatures({
     refName: 'grape_chr1',
     start: 0,
     end: 20000,

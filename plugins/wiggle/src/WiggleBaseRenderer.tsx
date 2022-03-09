@@ -78,8 +78,8 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
    * draw features to context given props, to be used by derived renderer
    * classes
    */
-  abstract draw(
+  abstract draw<T extends RenderArgsDeserializedWithFeatures>(
     ctx: CanvasRenderingContext2D,
-    props: RenderArgsDeserialized,
+    props: T,
   ): void
 }

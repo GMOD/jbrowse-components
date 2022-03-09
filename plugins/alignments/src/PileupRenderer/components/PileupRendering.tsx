@@ -136,9 +136,11 @@ function PileupRendering(props: {
     }
     let offsetX = 0
     let offsetY = 0
-    if (highlightOverlayCanvas.current) {
-      offsetX = highlightOverlayCanvas.current.getBoundingClientRect().left
-      offsetY = highlightOverlayCanvas.current.getBoundingClientRect().top
+    const canvas = highlightOverlayCanvas.current
+    if (canvas) {
+      const { left, top } = canvas.getBoundingClientRect()
+      offsetX = left
+      offsetY = top
     }
     offsetX = event.clientX - offsetX
     offsetY = event.clientY - offsetY

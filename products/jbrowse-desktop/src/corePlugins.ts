@@ -11,6 +11,7 @@ import GtfPlugin from '@jbrowse/plugin-gtf'
 import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
 import LinearComparativeView from '@jbrowse/plugin-linear-comparative-view'
+import ComparativeAdapters from '@jbrowse/plugin-comparative-adapters'
 import Lollipop from '@jbrowse/plugin-lollipop'
 import Arc from '@jbrowse/plugin-arc'
 import Menus from '@jbrowse/plugin-menus'
@@ -54,6 +55,7 @@ const corePlugins = [
   HicPlugin,
   TrixPlugin,
   GridBookmarkPlugin,
+  ComparativeAdapters,
 ]
 
 export default corePlugins
