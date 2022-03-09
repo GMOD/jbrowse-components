@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
 import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'
@@ -35,7 +35,6 @@ import {
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import PluginManager from '@jbrowse/core/PluginManager'
 import clone from 'clone'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { saveAs } from 'file-saver'
 
 // icons
@@ -86,7 +85,7 @@ function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
       assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
     }),
   )
-  return locs.join(';')
+  return locs.join(' ')
 }
 
 export interface NavLocation {
@@ -672,101 +671,63 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       navToLocString(locString: string, optAssemblyName?: string) {
+        const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
-        const locStrings = locString.split(';')
-        if (self.displayedRegions.length > 1) {
-          const locations = locStrings.map(ls =>
-            parseLocString(ls, isValidRefName),
-          )
-          this.navToMultiple(locations)
-          return
-        }
-        let assemblyName = optAssemblyName
-        let defaultRefName = ''
-        if (self.displayedRegions.length !== 0) {
-          // defaults
-          assemblyName = self.displayedRegions[0].assemblyName
-          defaultRefName = self.displayedRegions[0].refName
-        }
-        let assembly = assemblyName && assemblyManager.get(assemblyName)
-        if (!assembly) {
-          throw new Error(`Could not find assembly ${assemblyName}`)
-        }
-        let { regions } = assembly
-        if (!regions) {
-          throw new Error(`Regions for assembly ${assemblyName} not yet loaded`)
-        }
-        if (locStrings.length > 1) {
-          throw new Error(
-            'Navigating to multiple locations is not allowed when viewing a whole chromosome',
-          )
-        }
-        const parsedLocString = parseLocString(locStrings[0], refName =>
-          isValidRefName(refName, assemblyName),
-        )
-        let changedAssembly = false
-        if (
-          parsedLocString.assemblyName &&
-          parsedLocString.assemblyName !== assemblyName
-        ) {
-          const newAssembly = assemblyManager.get(parsedLocString.assemblyName)
-          if (!newAssembly) {
-            throw new Error(
-              `Could not find assembly ${parsedLocString.assemblyName}`,
-            )
-          }
-          assembly = newAssembly
-          changedAssembly = true
-          const newRegions = newAssembly.regions
-          if (!newRegions) {
-            throw new Error(
-              `Regions for assembly ${parsedLocString.assemblyName} not yet loaded`,
-            )
-          }
-          regions = newRegions
-        }
-        const canonicalRefName = assembly.getCanonicalRefName(
-          parsedLocString.refName,
-        )
+        const assemblyName = optAssemblyName || assemblyNames[0]
 
-        if (!canonicalRefName) {
-          throw new Error(
-            `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
-          )
-        }
-        if (changedAssembly || canonicalRefName !== defaultRefName) {
-          const newDisplayedRegion = regions.find(
+        const parsedLocStrings = locString
+          .split(' ')
+          .filter(f => !!f.trim())
+          .map(l => parseLocString(l, ref => isValidRefName(ref, assemblyName)))
+
+        const locations = parsedLocStrings.map(region => {
+          const asmName = region.assemblyName || assemblyName
+          const asm = assemblyManager.get(asmName)
+          const { refName } = region
+          if (!asm) {
+            throw new Error(`assembly ${asmName} not found`)
+          }
+          const { regions } = asm
+          if (!regions) {
+            throw new Error(`regions not loaded yet for ${asmName}`)
+          }
+          const canonicalRefName = asm.getCanonicalRefName(region.refName)
+          if (!canonicalRefName) {
+            throw new Error(`Could not find refName ${refName} in ${asm.name}`)
+          }
+          const parentRegion = regions.find(
             region => region.refName === canonicalRefName,
           )
-          if (newDisplayedRegion) {
-            this.setDisplayedRegions([newDisplayedRegion])
-          } else {
-            throw new Error(
-              `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
-            )
+          if (!parentRegion) {
+            throw new Error(`Could not find refName ${refName} in ${asmName}`)
           }
-        }
-        const displayedRegion = regions.find(
-          region => region.refName === canonicalRefName,
-        )
-        if (displayedRegion) {
-          const start = clamp(
-            parsedLocString?.start ?? 0,
-            0,
-            displayedRegion.end,
-          )
-          const end = clamp(
-            parsedLocString?.end ?? displayedRegion.end,
-            0,
-            displayedRegion.end,
-          )
+
+          return {
+            ...region,
+            assemblyName: asmName,
+            parentRegion,
+          }
+        })
+
+        if (locations.length === 1) {
+          const loc = locations[0]
+          this.setDisplayedRegions([
+            { reversed: loc.reversed, ...loc.parentRegion },
+          ])
+          const { start, end, parentRegion } = loc
 
           this.navTo({
-            ...parsedLocString,
-            start,
-            end,
+            ...loc,
+            start: clamp(start ?? 0, 0, parentRegion.end),
+            end: clamp(end ?? parentRegion.end, 0, parentRegion.end),
           })
+        } else {
+          this.setDisplayedRegions(
+            // @ts-ignore
+            locations.map(r => (r.start === undefined ? r.parentRegion : r)),
+          )
+          this.showAllRegions()
         }
       },
 
@@ -888,43 +849,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
                     location,
                   )} does not match with displayed regions`,
                 )
-              }
-              if (locationIndex > 0) {
-                // does it reach the left side?
-                const matchesLeft = region.reversed
-                  ? locationEnd === region.end
-                  : locationStart === region.start
-                if (!matchesLeft) {
-                  throw new Error(
-                    `${
-                      region.reversed ? 'End' : 'Start'
-                    } of region ${assembleLocString(
-                      location,
-                    )} should be ${(region.reversed
-                      ? region.end
-                      : region.start + 1
-                    ).toLocaleString('en-US')}, but it is not`,
-                  )
-                }
-              }
-              const isLast = locationIndex === locations.length - 1
-              if (!isLast) {
-                // does it reach the right side?
-                const matchesRight = region.reversed
-                  ? locationStart === region.start
-                  : locationEnd === region.end
-                if (!matchesRight) {
-                  throw new Error(
-                    `${
-                      region.reversed ? 'Start' : 'End'
-                    } of region ${assembleLocString(
-                      location,
-                    )} should be ${(region.reversed
-                      ? region.start + 1
-                      : region.end
-                    ).toLocaleString('en-US')}, but it is not`,
-                  )
-                }
               }
             }
             locationIndex -= 1
@@ -1228,9 +1152,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
           {
             label: 'Return to import form',
             onClick: () => {
-              getSession(self).queueDialog(doneCallback => [
+              getSession(self).queueDialog(handleClose => [
                 ReturnToImportFormDialog,
-                { model: self, handleClose: doneCallback },
+                { model: self, handleClose },
               ])
             },
             icon: FolderOpenIcon,
@@ -1239,9 +1163,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
             label: 'Export SVG',
             icon: PhotoCameraIcon,
             onClick: () => {
-              getSession(self).queueDialog(doneCallback => [
+              getSession(self).queueDialog(handleClose => [
                 ExportSvgDlg,
-                { model: self, handleClose: doneCallback },
+                { model: self, handleClose },
               ])
             },
           },
