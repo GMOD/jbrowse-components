@@ -442,7 +442,7 @@ const stateModelFactory = (
             {
               label: 'Set min/max score',
               onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
+                getSession(self).queueDialog(doneCallback => [
                   SetMinMaxDlg,
                   { model: self, handleClose: doneCallback },
                 ])
@@ -451,7 +451,7 @@ const stateModelFactory = (
             {
               label: 'Set color',
               onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
+                getSession(self).queueDialog(doneCallback => [
                   SetColorDlg,
                   { model: self, handleClose: doneCallback },
                 ])

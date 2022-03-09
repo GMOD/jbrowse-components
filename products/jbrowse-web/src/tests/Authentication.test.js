@@ -1,8 +1,15 @@
 import React from 'react'
-import { cleanup, fireEvent, render, within } from '@testing-library/react'
+import {
+  cleanup,
+  fireEvent,
+  render,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import { LocalFile, RemoteFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import crypto from 'crypto'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import config from '../../test_data/volvox/config.json'
 import { JBrowse, setup, generateReadBuffer, getPluginManager } from './util'
@@ -10,6 +17,8 @@ import { JBrowse, setup, generateReadBuffer, getPluginManager } from './util'
 expect.extend({ toMatchImageSnapshot })
 setup()
 afterEach(cleanup)
+
+global.crypto = { getRandomValues: crypto.randomFillSync }
 
 beforeEach(() => {
   clearCache()
@@ -49,10 +58,10 @@ describe('authentication', () => {
     const { findByTestId, findAllByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
-    sessionStorage.setItem('dropboxOAuth-token', '1234')
-    state.internetAccounts[0].fetchFile = jest
-      .fn()
-      .mockReturnValue('volvox_microarray_dropbox.bw')
+    const token = '1234'
+    sessionStorage.setItem('dropboxOAuth-token', token)
+    await waitFor(() => expect(state.internetAccounts.length).toBe(2))
+    state.internetAccounts[0].validateToken = jest.fn().mockReturnValue(token)
     state.internetAccounts[0].openLocation = jest
       .fn()
       .mockReturnValue(new RemoteFile('volvox_microarray_dropbox.bw'))
