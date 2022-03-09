@@ -9,8 +9,12 @@ import { ixIxxStream } from 'ixixx'
 import { Track } from './util'
 
 type indexType = 'aggregate' | 'perTrack'
+
+// function readConf(confFilePath: string) {
+//   return JSON.parse(fs.readFileSync(confFilePath, 'utf8')) as Config
+// }
 export async function indexTracks(args: {
-  tracks: Track[]
+  tracks: Track[] // array of trackIds to index
   outLocation?: string
   signal?: AbortSignal
   attributes?: string[]
@@ -20,33 +24,91 @@ export async function indexTracks(args: {
 }) {
   const { tracks, outLocation, attributes, exclude, assemblies, indexType } =
     args
-  console.time('Indexing...')
+  const idxType = indexType || 'perTrack'
+  console.log(idxType)
+  if (idxType === 'perTrack') {
+    await perTrackIndex(tracks, outLocation, attributes, assemblies, exclude)
+  }
+  //  else {
+  //   await aggregateIndex(tracks, outLocation, attributes, assemblies, exclude)
+  // }
+  return []
+}
+
+async function perTrackIndex(
+  tracks: Track[],
+  outLocation?: string,
+  attributes?: string[],
+  assemblies?: string[],
+  exclude?: string[],
+) {
   const outFlag = outLocation || '.'
+
   const isDir = fs.lstatSync(outFlag).isDirectory()
-  const confPath = isDir ? path.join(outFlag, 'JBrowse/config.json') : outFlag
-  const outDir = path.dirname(confPath)
+  const confFilePath = isDir ? path.join(outFlag, 'config.json') : outFlag
+  const outDir = path.dirname(confFilePath)
   const trixDir = path.join(outDir, 'trix')
   if (!fs.existsSync(trixDir)) {
     fs.mkdirSync(trixDir)
   }
+
   // default settings
-  const idxType = indexType || 'perTrack'
-  console.log(idxType)
   const attrs = attributes || ['Name', 'ID']
   const excludeTypes = exclude || ['exon', 'CDS']
-  const assemblyNames = assemblies || []
-  const nameOfIndex = 'test'
-  await indexDriver(
-    tracks,
-    outDir,
-    attrs,
-    nameOfIndex,
-    false,
-    excludeTypes,
-    assemblyNames,
-  )
-  return []
+  const force = true
+  // check if track adapter is supported .filter(track => supported(track.adapter?.type))
+  for (const trackConfig of tracks) {
+    const { textSearching, trackId, assemblyNames } = trackConfig
+    if (textSearching?.textSearchAdapter && !force) {
+      console.warn(
+        `Note: ${trackId} has already been indexed with this configuration, use --force to overwrite this track. Skipping for now`,
+      )
+      continue
+    }
+    // console.log('Indexing track ' + trackId + '...')
+
+    // const id = trackId + '-index'
+    await indexDriver(
+      [trackConfig],
+      outDir,
+      attrs,
+      trackId,
+      true,
+      excludeTypes,
+      assemblyNames,
+    )
+    console.log('Done Indexing: ' + trackId)
+    // if (!textSearching || !textSearching?.textSearchAdapter) {
+    //   const newTrackConfig = {
+    //     ...trackConfig,
+    //     textSearching: {
+    //       ...textSearching,
+    //       textSearchAdapter: {
+    //         type: 'TrixTextSearchAdapter',
+    //         textSearchAdapterId: id,
+    //         ixFilePath: {
+    //           uri: `trix/${trackId}.ix`,
+    //           locationType: 'UriLocation' as const,
+    //         },
+    //         ixxFilePath: {
+    //           uri: `trix/${trackId}.ixx`,
+    //           locationType: 'UriLocation' as const,
+    //         },
+    //         metaFilePath: {
+    //           uri: `trix/${trackId}_meta.json`,
+    //           locationType: 'UriLocation' as const,
+    //         },
+    //         assemblyNames: assemblyNames,
+    //       },
+    //     },
+    //   }
+    //   // modifies track with new text search adapter
+    //   const index = configTracks.findIndex(track => trackId === track.trackId)
+    //   configTracks[index] = newTrackConfig
+    // }
+  }
 }
+
 async function indexDriver(
   tracks: Track[],
   idxLocation: string,
@@ -56,19 +118,10 @@ async function indexDriver(
   exclude: string[],
   assemblyNames: string[],
 ) {
-  // const startTime = performance.now()
   const readable = Readable.from(
     indexFiles(tracks, attributes, idxLocation, quiet, exclude),
   )
-  // console.log("Indexing begins...")
-  // console.log('readable', readable)
-  // console.log('idxLocation', idxLocation)
-  // idx location will be the output or temp directory
-  await runIxIxx(readable, idxLocation, name)
-  // console.log('ixIxxStream', ixIxxStream)
-  // const endTime = performance.now()
-  // console.log(`Indexing took ${endTime - startTime} milliseconds`)
-  console.log('Generating metadata...')
+  const ixIxxStream = await runIxIxx(readable, idxLocation, name)
   await generateMeta({
     configs: tracks,
     attributes,
@@ -77,8 +130,7 @@ async function indexDriver(
     exclude,
     assemblyNames,
   })
-  // console.log('Indexing completed.')
-  return
+  return ixIxxStream
 }
 
 async function* indexFiles(
@@ -109,3 +161,29 @@ function runIxIxx(readStream: Readable, idxLocation: string, name: string) {
   const ixxFilename = path.join(idxLocation, 'trix', `${name}.ixx`)
   return ixIxxStream(readStream, ixFilename, ixxFilename)
 }
+
+// async function getTrackConfigs(
+//   configPath: string,
+//   trackIds?: string[],
+//   assemblyName?: string,
+// ) {
+//   const { tracks } = readConf(configPath)
+//   if (!tracks) {
+//     return []
+//   }
+//   const trackIdsToIndex = trackIds || tracks?.map(track => track.trackId)
+//   return trackIdsToIndex
+//     .map(trackId => {
+//       const currentTrack = tracks.find(t => trackId === t.trackId)
+//       if (!currentTrack) {
+//         throw new Error(
+//           `Track not found in config.json for trackId ${trackId}, please add track configuration before indexing.`,
+//         )
+//       }
+//       return currentTrack
+//     })
+//     .filter(track => supported(track.adapter?.type))
+//     .filter(track =>
+//       assemblyName ? track.assemblyNames.includes(assemblyName) : true,
+//     )
+// }

@@ -40,15 +40,6 @@ declare interface ReferringNode {
   key: string
 }
 
-interface Track {
-  [key: string]: any
-}
-interface TrackTextIndexing {
-  attributes: string[]
-  exclude: string[]
-  assemblies: string[]
-  tracks: Track[]
-}
 
 export default function sessionModelFactory(
   pluginManager: PluginManager,
@@ -83,7 +74,6 @@ export default function sessionModelFactory(
         types.string,
         localStorage.getItem('drawerPosition') || 'right',
       ),
-      indexingQueue: types.array(types.frozen()),
     })
     .volatile((/* self */) => ({
       /**
@@ -99,7 +89,6 @@ export default function sessionModelFactory(
        */
       task: undefined,
       queueOfDialogs: observable.array([] as [DialogComponentType, any][]),
-      // queueOfIndexingJobs: observable.array([] as any[]),
     }))
     .views(self => ({
       get DialogComponent() {

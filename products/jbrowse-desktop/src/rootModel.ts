@@ -54,7 +54,7 @@ interface TrackTextIndexing {
   attributes: string[]
   exclude: string[]
   assemblies: string[]
-  tracks: Track[]
+  tracks: string[] // trackIds
 }
 
 export default function rootModelFactory(pluginManager: PluginManager) {
@@ -75,7 +75,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       ),
       isAssemblyEditing: false,
       sessionPath: types.optional(types.string, ''),
-      // indexingQueue: types.array(types.frozen()),
     })
     .volatile(() => ({
       error: undefined as unknown,
@@ -202,22 +201,44 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       async runIndexingJob() {
         if (self.indexingQueue.length) {
           const firstIndexingJob = self.indexingQueue[0] as TrackTextIndexing
-          const { tracks, exclude, attributes, assemblies } =
-            toJS(firstIndexingJob)
+          const {
+            tracks: trackIds,
+            exclude,
+            attributes,
+            assemblies,
+          } = toJS(firstIndexingJob)
           const rpcManager = self.jbrowse.rpcManager
-          const outLocation = process.cwd()
+          const trackConfigs = this.findTrackConfigsToIndex(trackIds)
           await rpcManager.call('indexTracksSessionId', 'CoreIndexTracks', {
-            tracks,
+            tracks: trackConfigs,
             attributes,
             exclude,
             assemblies,
-            outLocation,
+            outLocation: self.sessionPath,
             sessionId: 'indexTracksSessionId',
             timeout: 1 * 60 * 60 * 1000, // 1 hours
           })
-          self.session?.notify('Done Indexing', 'info')
+          self.session?.notify('Done Indexing', 'success')
         }
         return
+      },
+      findTrackConfigsToIndex(trackIds: string[]) {
+        const configs = trackIds
+          .map(trackId => {
+            const currentTrack = (self.session?.tracks as Track[]).find(
+              t => trackId === t.trackId,
+            )
+            if (!currentTrack) {
+              throw new Error(
+                `Track not found in session for trackId ${trackId}`,
+              )
+            }
+            return currentTrack
+          })
+          .map(conf => {
+            return JSON.parse(JSON.stringify(getSnapshot(conf)))
+          })
+        return configs
       },
       findAppropriateInternetAccount(location: UriLocation) {
         // find the existing account selected from menu
