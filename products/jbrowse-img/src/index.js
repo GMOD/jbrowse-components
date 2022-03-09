@@ -4,6 +4,7 @@ import yargs from 'yargs'
 import { standardizeArgv, parseArgv } from './parseArgv'
 import { renderRegion } from './renderRegion'
 import tmp from 'tmp'
+import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
 
 import { spawnSync } from 'child_process'
 

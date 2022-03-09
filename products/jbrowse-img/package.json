@@ -5,7 +5,7 @@
   "author": "JBrowse Team",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=16"
+    "node": ">=14"
   },
   "bin": {
     "jb2export": "./dist/bin.js"
@@ -30,6 +30,7 @@
   "dependencies": {
     "@jbrowse/plugin-linear-genome-view": "^1.6.5",
     "@jbrowse/react-linear-genome-view": "^1.6.5",
+    "abortcontroller-polyfill": "^1.7.3",
     "mobx": "^5.10.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
