@@ -2,46 +2,12 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { GenericFilehandle } from 'generic-filehandle'
 import { Region } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
-import { unzip } from '@gmod/bgzf-filehandle'
-
-function isGzip(buf: Buffer) {
-  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
-}
-
-function parseBed(text: string) {
-  return new Map(
-    text
-      .split('\n')
-      .filter(f => !!f || f.startsWith('#'))
-      .map(line => {
-        const [refName, start, end, name, score, strand] = line.split('\t')
-        return [
-          name,
-          {
-            refName,
-            start: +start,
-            end: +end,
-            score: +score,
-            name,
-            strand: strand === '-' ? -1 : 1,
-          },
-        ]
-      }),
-  )
-}
-
-async function readFile(file: GenericFilehandle, opts?: BaseOptions) {
-  const buffer = (await file.readFile(opts)) as Buffer
-  return new TextDecoder('utf8', { fatal: true }).decode(
-    isGzip(buffer) ? await unzip(buffer) : buffer,
-  )
-}
+import { readFile, parseBed } from '../util'
 
 interface BareFeature {
   refName: string
@@ -51,13 +17,12 @@ interface BareFeature {
   name: string
 }
 
+type Row = [BareFeature, BareFeature, number, number]
+
 export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
   private setupP?: Promise<{
     assemblyNames: string[]
-    bed1Location: GenericFilehandle
-    bed2Location: GenericFilehandle
-    mcscanAnchorsLocation: GenericFilehandle
-    feats: [BareFeature, BareFeature, number, number][]
+    feats: Row[]
   }>
 
   public static capabilities = ['getFeatures', 'getRefNames']
@@ -73,46 +38,32 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
   }
   async setupPre(opts: BaseOptions) {
     const assemblyNames = this.getConf('assemblyNames') as string[]
-    const bed1Location = openLocation(
-      this.getConf('bed1Location'),
-      this.pluginManager,
-    )
-    const bed2Location = openLocation(
-      this.getConf('bed2Location'),
-      this.pluginManager,
-    )
-    const mcscanAnchorsLocation = openLocation(
-      this.getConf('mcscanAnchorsLocation'),
-      this.pluginManager,
+
+    const pm = this.pluginManager
+    const bed1 = openLocation(this.getConf('bed1Location'), pm)
+    const bed2 = openLocation(this.getConf('bed2Location'), pm)
+    const mcscan = openLocation(this.getConf('mcscanAnchorsLocation'), pm)
+    const [bed1text, bed2text, mcscantext] = await Promise.all(
+      [bed1, bed2, mcscan].map(r => readFile(r, opts)),
     )
 
-    const bed1Map = parseBed(await readFile(bed1Location, opts))
-    const bed2Map = parseBed(await readFile(bed2Location, opts))
-    const text = await readFile(mcscanAnchorsLocation, opts)
-    const feats = text
+    const bed1Map = parseBed(bed1text)
+    const bed2Map = parseBed(bed2text)
+    const feats = mcscantext
       .split('\n')
       .filter(f => !!f && f !== '###')
       .map((line, index) => {
-        // the order of assemblyNames is right-col, left-col, hence the name2 then name1
         const [name1, name2, score] = line.split('\t')
         const r1 = bed1Map.get(name1)
         const r2 = bed2Map.get(name2)
         if (!r1 || !r2) {
           throw new Error(`feature not found, ${name1} ${name2} ${r1} ${r2}`)
         }
-        return [r1, r2, +score, index] as [
-          BareFeature,
-          BareFeature,
-          number,
-          number,
-        ]
+        return [r1, r2, +score, index] as Row
       })
 
     return {
       assemblyNames,
-      bed1Location,
-      bed2Location,
-      mcscanAnchorsLocation,
       feats,
     }
   }
@@ -138,19 +89,19 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       const index = assemblyNames.indexOf(region.assemblyName)
       if (index !== -1) {
         feats.forEach(f => {
-          const [r0, r1, score, rowNum] = f
-          const [f0, f1] = index === 1 ? [r1, r0] : [r0, r1]
+          const [r1, r2, score, rowNum] = f
+          const [f1, f2] = index === 1 ? [r2, r1] : [r1, r2]
           if (
-            f0.refName === region.refName &&
-            doesIntersect2(region.start, region.end, f0.start, f0.end)
+            f1.refName === region.refName &&
+            doesIntersect2(region.start, region.end, f1.start, f1.end)
           ) {
             observer.next(
               new SimpleFeature({
-                ...f0,
+                ...f1,
                 uniqueId: `${index}-${rowNum}`,
                 syntenyId: rowNum,
                 score,
-                mate: f1 as BareFeature,
+                mate: f2 as BareFeature,
               }),
             )
           }
