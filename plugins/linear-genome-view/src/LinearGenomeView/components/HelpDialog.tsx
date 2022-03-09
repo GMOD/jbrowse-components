@@ -53,7 +53,9 @@ export default function HelpDialog({
           <li>
             Jump to a specific region by typing the region into the location box
             as: <code>ref:start..end</code> or <code>ref:start-end</code>.
-            Commas are allowed in the start and end coordinates.
+            Commas are allowed in the start and end coordinates. A
+            space-separated list of locstrings can be used to open up multiple
+            chromosomes at a time
           </li>
         </ul>
         <h3>Example Searches</h3>
@@ -67,6 +69,17 @@ export default function HelpDialog({
           <li>
             <code>chr4:79,500,000..80,000,000</code> - jumps the region on
             chromosome 4 between 79.5Mb and 80Mb.
+          </li>
+          <li>
+            <code>chr1:1-100 chr2:1-100</code> - create a split view of
+            chr1:1-100 and chr2:1-100
+          </li>
+          <li>
+            <code>chr1 chr2 chr3</code> - open up multiple chromosomes at once
+          </li>
+          <li>
+            <code>chr1:1-100[rev] chr2:1-100</code> - open up the first region
+            in the horizontally flipped orientation
           </li>
         </ul>
       </DialogContent>
