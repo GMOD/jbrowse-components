@@ -10,6 +10,8 @@ import {
   getRoot,
 } from 'mobx-state-tree'
 
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { makeTicks } from './components/util'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
@@ -130,20 +132,39 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           .join(', ')
       },
       get assembliesInitialized() {
+        const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
-        return self.assemblyNames.every(assemblyName => {
-          const assembly = assemblyManager.get(assemblyName)
-          return assembly !== undefined ? assembly.initialized : true
-        })
+        return assemblyNames.every(
+          n => assemblyManager.get(n)?.initialized ?? true,
+        )
       },
+    }))
+    .views(self => ({
       get initialized() {
         return (
           self.volatileWidth !== undefined &&
           self.hview.displayedRegions.length > 0 &&
           self.vview.displayedRegions.length > 0 &&
-          this.assembliesInitialized
+          self.assembliesInitialized
         )
       },
+
+      get hticks() {
+        const { hview } = self
+        const { dynamicBlocks, staticBlocks, bpPerPx } = hview
+        return dynamicBlocks.contentBlocks.length > 5
+          ? []
+          : makeTicks(staticBlocks.contentBlocks, bpPerPx)
+      },
+
+      get vticks() {
+        const { vview } = self
+        const { dynamicBlocks, staticBlocks, bpPerPx } = vview
+        return dynamicBlocks.contentBlocks.length > 5
+          ? []
+          : makeTicks(staticBlocks.contentBlocks, bpPerPx)
+      },
+
       get loading() {
         return self.assemblyNames.length > 0 && !this.initialized
       },
@@ -286,8 +307,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           this.showTrack(trackId)
         }
       },
-      setAssemblyNames(assemblyNames: string[]) {
-        self.assemblyNames = cast(assemblyNames)
+      setAssemblyNames(target: string, query: string) {
+        self.assemblyNames = cast([target, query])
       },
       setViews(arr: SnapshotIn<Base1DViewModel>[]) {
         self.hview = cast(arr[0])
@@ -388,16 +409,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(
-            () => {
+            function initializer() {
               const session = getSession(self)
               if (self.volatileWidth === undefined) {
                 return
               }
-              const axis = [self.viewWidth, self.viewHeight]
-              const views = [self.hview, self.vview]
+
               if (self.initialized) {
                 return
               }
+              const axis = [self.viewWidth, self.viewHeight]
+              const views = [self.hview, self.vview]
               self.assemblyNames.forEach((name, index) => {
                 const assembly = session.assemblyManager.get(name)
                 if (assembly) {
@@ -423,14 +445,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         )
         addDisposer(
           self,
-          autorun(() => {
+          autorun(function borderSetter() {
             // make sure we have a width on the view before trying to load
+            const { vview, hview } = self
             if (self.volatileWidth === undefined) {
               return
             }
             const padding = 10
-            const vblocks = self.vview.dynamicBlocks.contentBlocks
-            const hblocks = self.hview.dynamicBlocks.contentBlocks
+            const vblocks = vview.dynamicBlocks.contentBlocks
+            const hblocks = hview.dynamicBlocks.contentBlocks
             const len = (a: string) => measureText(a.slice(0, 30))
             const by = hblocks.reduce((a, b) => Math.max(a, len(b.refName)), 0)
             const bx = vblocks.reduce((a, b) => Math.max(a, len(b.refName)), 0)
@@ -441,13 +464,25 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         )
       },
       squareView() {
-        const bpPerPxs = self.views.map(v => v.bpPerPx)
-        const avg = bpPerPxs.reduce((a, b) => a + b, 0) / bpPerPxs.length
-        self.views.forEach(view => {
-          const { coord, refName, index } = view.pxToBp(view.width / 2)
-          view.setBpPerPx(avg)
-          view.centerAt(coord, refName, index)
-        })
+        const { hview, vview } = self
+        const avg = (hview.bpPerPx + vview.bpPerPx) / 2
+        const hpx = hview.pxToBp(hview.width / 2)
+        const vpx = vview.pxToBp(vview.width / 2)
+        hview.setBpPerPx(avg)
+        hview.centerAt(hpx.coord, hpx.refName, hpx.index)
+        vview.setBpPerPx(avg)
+        vview.centerAt(vpx.coord, vpx.refName, vpx.index)
+      },
+      squareViewProportional() {
+        const { hview, vview } = self
+        const ratio = hview.width / vview.width
+        const avg = (hview.bpPerPx + vview.bpPerPx) / 2
+        const hpx = hview.pxToBp(hview.width / 2)
+        const vpx = vview.pxToBp(vview.width / 2)
+        hview.setBpPerPx(avg / ratio)
+        hview.centerAt(hpx.coord, hpx.refName, hpx.index)
+        vview.setBpPerPx(avg)
+        vview.centerAt(vpx.coord, vpx.refName, vpx.index)
       },
     }))
     .views(self => ({
@@ -464,11 +499,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             },
             icon: FolderOpenIcon,
           },
+          {
+            label: 'Square view - same bp per pixel',
+            onClick: () => self.squareView(),
+          },
+          {
+            label: 'Rectangular view - same total bp',
+            onClick: () => self.squareView(),
+          },
           ...(isSessionModelWithWidgets(session)
             ? [
                 {
                   label: 'Open track selector',
                   onClick: self.activateTrackSelector,
+                  icon: TrackSelectorIcon,
                 },
               ]
             : []),

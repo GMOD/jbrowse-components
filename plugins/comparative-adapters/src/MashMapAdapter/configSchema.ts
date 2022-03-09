@@ -1,27 +1,30 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 export default ConfigurationSchema(
-  'PAFAdapter',
+  'MashMapAdapter',
   {
     assemblyNames: {
       type: 'stringArray',
       defaultValue: [],
       description:
-        'Array of assembly names to use for this file. The target assembly name is the first value in the array, query assembly name is the second',
+        'Target is the first value in the array, query is the second',
     },
     targetAssembly: {
       type: 'string',
       defaultValue: '',
-      description: 'Alternative to assemblyNames: the target assembly name',
+      description: 'Alternative to assemblyNames array: the target assembly',
     },
     queryAssembly: {
       type: 'string',
       defaultValue: '',
-      description: 'Alternative to assemblyNames: the query assembly name',
+      description: 'Alternative to assemblyNames array: the query assembly',
     },
-    pafLocation: {
+    outLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/file.paf', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/mashmap.out',
+        locationType: 'UriLocation',
+      },
     },
   },
   { explicitlyTyped: true },

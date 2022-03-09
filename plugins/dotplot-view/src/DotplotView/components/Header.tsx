@@ -1,6 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 import { IconButton, Typography, makeStyles } from '@material-ui/core'
+import { getBpDisplayStr } from '@jbrowse/core/util'
+import { Menu } from '@jbrowse/core/ui'
 
 // icons
 import ZoomOut from '@material-ui/icons/ZoomOut'
@@ -35,6 +37,7 @@ const useStyles = makeStyles({
 
 const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
   const classes = useStyles()
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
   return (
     <div>
       <IconButton
@@ -106,20 +109,41 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
       </IconButton>
 
       <IconButton
-        onClick={model.squareView}
+        onClick={event => setMenuAnchorEl(event.currentTarget)}
         className={classes.iconButton}
         title="Square view"
         color="secondary"
       >
         <CropFreeIcon />
       </IconButton>
+
+      {menuAnchorEl ? (
+        <Menu
+          anchorEl={menuAnchorEl}
+          keepMounted
+          open={Boolean(menuAnchorEl)}
+          onMenuItemClick={(_event, callback) => {
+            callback()
+            setMenuAnchorEl(null)
+          }}
+          menuItems={[
+            {
+              onClick: () => model.squareView(),
+              label: 'Square view - same base pairs per pixel',
+            },
+            {
+              onClick: () => model.squareViewProportional(),
+              label: 'Rectanglular view - same total bp',
+            },
+          ]}
+          onClose={() => {
+            setMenuAnchorEl(null)
+          }}
+        />
+      ) : null}
     </div>
   )
 })
-
-function px(bpPerPx: number, width: number) {
-  return Math.round(bpPerPx * width).toLocaleString('en-US')
-}
 
 const Header = observer(
   ({
@@ -130,6 +154,7 @@ const Header = observer(
     selection?: { width: number; height: number }
   }) => {
     const classes = useStyles()
+    const { hview, vview } = model
     return (
       <div className={classes.headerBar}>
         <DotplotControls model={model} />
@@ -138,10 +163,9 @@ const Header = observer(
           variant="body2"
           color="textSecondary"
         >
-          x: {model.hview.assemblyNames.join(',')}{' '}
-          {Math.round(model.hview.totalBp).toLocaleString('en-US')}bp y:{' '}
-          {model.vview.assemblyNames.join(',')}{' '}
-          {Math.round(model.vview.totalBp).toLocaleString('en-US')}bp
+          x: {hview.assemblyNames.join(',')} {getBpDisplayStr(hview.currBp)}
+          <br />
+          y: {vview.assemblyNames.join(',')} {getBpDisplayStr(vview.currBp)}
         </Typography>
         {selection ? (
           <Typography
@@ -149,8 +173,8 @@ const Header = observer(
             variant="body2"
             color="textSecondary"
           >
-            {`width:${px(model.hview.bpPerPx, selection.width)}bp`}{' '}
-            {`height:${px(model.vview.bpPerPx, selection.height)}bp`}
+            {`width:${getBpDisplayStr(hview.bpPerPx * selection.width)}`} <br />
+            {`height:${getBpDisplayStr(vview.bpPerPx * selection.height)}`}
           </Typography>
         ) : null}
         <div className={classes.spacer} />

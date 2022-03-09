@@ -2,21 +2,25 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { NoAssemblyRegion, Region } from '@jbrowse/core/util/types'
+import { Region } from '@jbrowse/core/util/types'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { unzip } from '@gmod/bgzf-filehandle'
 
-interface PafRecord {
-  records: NoAssemblyRegion[]
+export interface PAFRecord {
+  qname: string
+  qstart: number
+  qend: number
+  tname: string
+  tstart: number
+  tend: number
+  strand: number
   extra: {
-    blockLen: number
+    blockLen?: number
     mappingQual: number
-    numMatches: number
-    strand: number
+    numMatches?: number
   }
 }
 
@@ -25,7 +29,7 @@ function isGzip(buf: Buffer) {
 }
 
 export default class PAFAdapter extends BaseFeatureDataAdapter {
-  private setupP?: Promise<PafRecord[]>
+  private setupP?: Promise<PAFRecord[]>
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
@@ -41,7 +45,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
   async setupPre(opts?: BaseOptions) {
     const pafLocation = openLocation(
-      readConfObject(this.config, 'pafLocation'),
+      this.getConf('pafLocation'),
       this.pluginManager,
     )
     const buffer = (await pafLocation.readFile(opts)) as Buffer
@@ -52,28 +56,25 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     }
     const text = new TextDecoder('utf8', { fatal: true }).decode(buf)
 
-    // mashmap produces PAF-like data that is space separated instead of tab
-    const hasTab = text.indexOf('\t')
-    const splitChar = hasTab !== -1 ? '\t' : ' '
     return text
       .split('\n')
       .filter(line => !!line)
       .map(line => {
         const [
-          chr1,
+          qname,
           ,
-          start1,
-          end1,
+          qstart,
+          qend,
           strand,
-          chr2,
+          tname,
           ,
-          start2,
-          end2,
+          tstart,
+          tend,
           numMatches,
           blockLen,
           mappingQual,
           ...fields
-        ] = line.split(splitChar)
+        ] = line.split('\t')
 
         const rest = Object.fromEntries(
           fields.map(field => {
@@ -85,18 +86,20 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         )
 
         return {
-          records: [
-            { refName: chr1, start: +start1, end: +end1 },
-            { refName: chr2, start: +start2, end: +end2 },
-          ],
+          tname,
+          tstart: +tstart,
+          tend: +tend,
+          qname,
+          qstart: +qstart,
+          qend: +qend,
+          strand: strand === '-' ? -1 : 1,
           extra: {
             numMatches: +numMatches,
             blockLen: +blockLen,
-            strand: strand === '-' ? -1 : 1,
             mappingQual: +mappingQual,
             ...rest,
           },
-        } as PafRecord
+        } as PAFRecord
       })
   }
 
@@ -107,16 +110,31 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return true
   }
 
+  getAssemblyNames() {
+    let assemblyNames = this.getConf('assemblyNames') as string[]
+    if (assemblyNames.length === 0) {
+      const query = this.getConf('queryAssembly') as string
+      const target = this.getConf('targetAssembly') as string
+      assemblyNames = [query, target]
+    }
+    return assemblyNames
+  }
+
   async getRefNames(opts: BaseOptions = {}) {
     // @ts-ignore
     const r1 = opts.regions?.[0].assemblyName
     const feats = await this.setup()
-    const assemblyNames = readConfObject(this.config, 'assemblyNames')
-    const idx = assemblyNames.indexOf(r1)
+
+    const idx = this.getAssemblyNames().indexOf(r1)
     if (idx !== -1) {
       const set = new Set<string>()
       for (let i = 0; i < feats.length; i++) {
-        set.add(feats[i].records[idx].refName)
+        const f = feats[i]
+        if (idx === 0) {
+          set.add(f.qname)
+        } else {
+          set.add(f.tname)
+        }
       }
       return Array.from(set)
     }
@@ -127,7 +145,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const pafRecords = await this.setup(opts)
-      const assemblyNames = readConfObject(this.config, 'assemblyNames')
+      const assemblyNames = this.getAssemblyNames()
       const { assemblyName } = region
 
       // The index of the assembly name in the region list corresponds to the
@@ -135,23 +153,44 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       const index = assemblyNames.indexOf(assemblyName)
       if (index !== -1) {
         for (let i = 0; i < pafRecords.length; i++) {
-          const { extra, records } = pafRecords[i]
-          const { start, end, refName } = records[index]
+          const r = pafRecords[i]
+          let start = 0
+          let end = 0
+          let refName = ''
+          let mateName = ''
+          let mateStart = 0
+          let mateEnd = 0
+          if (index === 0) {
+            start = r.qstart
+            end = r.qend
+            refName = r.qname
+            mateName = r.tname
+            mateStart = r.tstart
+            mateEnd = r.tend
+          } else {
+            start = r.tstart
+            end = r.tend
+            refName = r.tname
+            mateName = r.qname
+            mateStart = r.qstart
+            mateEnd = r.qend
+          }
+          const { extra, strand } = r
+
           if (
             refName === region.refName &&
             doesIntersect2(region.start, region.end, start, end)
           ) {
-            const mate = records[+!index]
-            const syntenyId = i
             observer.next(
               new SimpleFeature({
                 uniqueId: `${i}`,
                 start,
                 end,
                 refName,
+                strand,
                 assemblyName,
-                syntenyId,
-                mate,
+                syntenyId: i,
+                mate: { start: mateStart, end: mateEnd, refName: mateName },
                 ...extra,
               }),
             )

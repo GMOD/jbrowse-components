@@ -17,7 +17,15 @@ interface BareFeature {
   name: string
 }
 
-type Row = [BareFeature, BareFeature, number, number]
+type Row = [
+  BareFeature,
+  BareFeature,
+  BareFeature,
+  BareFeature,
+  number,
+  number,
+  number,
+]
 
 export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
   private setupP?: Promise<{
@@ -38,28 +46,38 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
   }
   async setupPre(opts: BaseOptions) {
     const assemblyNames = this.getConf('assemblyNames') as string[]
-
     const pm = this.pluginManager
     const bed1 = openLocation(this.getConf('bed1Location'), pm)
     const bed2 = openLocation(this.getConf('bed2Location'), pm)
-    const mcscan = openLocation(this.getConf('mcscanAnchorsLocation'), pm)
+    const mcscan = openLocation(this.getConf('mcscanSimpleAnchorsLocation'), pm)
     const [bed1text, bed2text, mcscantext] = await Promise.all(
       [bed1, bed2, mcscan].map(r => readFile(r, opts)),
     )
-
     const bed1Map = parseBed(bed1text)
     const bed2Map = parseBed(bed2text)
     const feats = mcscantext
       .split('\n')
       .filter(f => !!f && f !== '###')
       .map((line, index) => {
-        const [name1, name2, score] = line.split('\t')
-        const r1 = bed1Map.get(name1)
-        const r2 = bed2Map.get(name2)
-        if (!r1 || !r2) {
-          throw new Error(`feature not found, ${name1} ${name2} ${r1} ${r2}`)
+        const [n11, n12, n21, n22, score, strand] = line.split('\t')
+        const r11 = bed1Map.get(n11)
+        const r12 = bed1Map.get(n12)
+        const r21 = bed2Map.get(n21)
+        const r22 = bed2Map.get(n22)
+        if (!r11 || !r12 || !r21 || !r22) {
+          throw new Error(
+            `feature not found, ${n11} ${n12} ${n21} ${n22} ${r11} ${r12} ${r21} ${r22}`,
+          )
         }
-        return [r1, r2, +score, index] as Row
+        return [
+          r11,
+          r12,
+          r21,
+          r22,
+          +score,
+          strand === '-' ? -1 : 1,
+          index,
+        ] as Row
       })
 
     return {
@@ -89,19 +107,32 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       const index = assemblyNames.indexOf(region.assemblyName)
       if (index !== -1) {
         feats.forEach(f => {
-          const [r1, r2, score, rowNum] = f
-          const [f1, f2] = index === 1 ? [r2, r1] : [r1, r2]
+          const [f11, f12, f21, f22, score, strand, rowNum] = f
+          let r1 = {
+            refName: f11.refName,
+            start: Math.min(f11.start, f12.start),
+            end: Math.max(f11.end, f12.end),
+          }
+          let r2 = {
+            refName: f21.refName,
+            start: Math.min(f21.start, f22.start),
+            end: Math.max(f21.end, f22.end),
+          }
+          if (index === 1) {
+            ;[r2, r1] = [r1, r2]
+          }
           if (
-            f1.refName === region.refName &&
-            doesIntersect2(region.start, region.end, f1.start, f1.end)
+            r1.refName === region.refName &&
+            doesIntersect2(r1.start, r1.end, region.start, region.end)
           ) {
             observer.next(
               new SimpleFeature({
-                ...f1,
-                uniqueId: `${index}-${rowNum}`,
+                ...r1,
+                uniqueId: `${rowNum}`,
                 syntenyId: rowNum,
                 score,
-                mate: f2 as BareFeature,
+                strand,
+                mate: r2 as BareFeature,
               }),
             )
           }

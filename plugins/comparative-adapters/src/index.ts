@@ -4,6 +4,8 @@ import { FileLocation } from '@jbrowse/core/util/types'
 
 import PAFAdapterF from './PAFAdapter'
 import MCScanAnchorsAdapterF from './MCScanAnchorsAdapter'
+import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter'
+import MashMapAdapterF from './MashMapAdapter'
 import DeltaAdapterF from './DeltaAdapter'
 import ChainAdapterF from './ChainAdapter'
 
@@ -21,6 +23,8 @@ export default class ComparativeAdaptersPlugin extends Plugin {
     DeltaAdapterF(pluginManager)
     ChainAdapterF(pluginManager)
     MCScanAnchorsAdapterF(pluginManager)
+    MCScanSimpleAnchorsAdapterF(pluginManager)
+    MashMapAdapterF(pluginManager)
 
     pluginManager.addToExtensionPoint(
       'Core-guessAdapterForLocation',
