@@ -53,7 +53,7 @@ import { renderToSvg } from './components/LinearGenomeViewSvg'
 import RefNameAutocomplete from './components/RefNameAutocomplete'
 import SearchBox from './components/SearchBox'
 import ExportSvgDlg from './components/ExportSvgDialog'
-import ReturnToImportFormDlg from './components/ReturnToImportFormDialog'
+import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
 
 export interface BpOffset {
   refName?: string
@@ -1229,7 +1229,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             label: 'Return to import form',
             onClick: () => {
               getSession(self).queueDialog(doneCallback => [
-                ReturnToImportFormDlg,
+                ReturnToImportFormDialog,
                 { model: self, handleClose: doneCallback },
               ])
             },

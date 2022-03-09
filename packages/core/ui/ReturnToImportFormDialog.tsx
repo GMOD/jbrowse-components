@@ -37,9 +37,7 @@ function ReturnToImportFormDialog({
         {handleClose ? (
           <IconButton
             className={classes.closeButton}
-            onClick={() => {
-              handleClose()
-            }}
+            onClick={() => handleClose()}
           >
             <CloseIcon />
           </IconButton>
@@ -66,12 +64,9 @@ function ReturnToImportFormDialog({
           OK
         </Button>
         <Button
-          onClick={() => {
-            handleClose()
-          }}
+          onClick={() => handleClose()}
           color="secondary"
           variant="contained"
-          autoFocus
         >
           Cancel
         </Button>

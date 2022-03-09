@@ -7,7 +7,7 @@ import { Menu, ResizeHandle } from '@jbrowse/core/ui'
 import normalizeWheel from 'normalize-wheel'
 import { DotplotViewModel } from '../model'
 import ImportForm from './ImportForm'
-import Controls from './Controls'
+import Header from './Header'
 import { locstr } from './util'
 import { HorizontalAxis, VerticalAxis } from './Axes'
 
@@ -163,6 +163,19 @@ const DotplotViewInternal = observer(
     const mousecurr = getOffset(mousecurrClient, svg)
     const mouseup = getOffset(mouseupClient, svg)
     const mouserect = mouseup || mousecurr
+    let selection
+    if (mousedown && mousecurr) {
+      selection = {
+        width: Math.abs(mousedown[0] - mousecurr[0]),
+        height: Math.abs(mousedown[1] - mousecurr[1]),
+      }
+    }
+    if (mouseup && mousedown) {
+      selection = {
+        width: Math.abs(mouseup[0] - mousedown[0]),
+        height: Math.abs(mouseup[1] - mousedown[1]),
+      }
+    }
 
     // use non-React wheel handler to properly prevent body scrolling
     useEffect(() => {
@@ -265,7 +278,7 @@ const DotplotViewInternal = observer(
 
     return (
       <div>
-        <Controls model={model} />
+        <Header model={model} selection={selection} />
         <div
           ref={root}
           className={classes.root}
@@ -303,9 +316,10 @@ const DotplotViewInternal = observer(
                           : 0),
                     }}
                   >
-                    {`x-${locstr(mouserect[0], hview)}`}
+                    {`x - ${locstr(mouserect[0], hview)}`}
                     <br />
-                    {`y-${locstr(viewHeight - mouserect[1], vview)}`}
+                    {`y - ${locstr(viewHeight - mouserect[1], vview)}`}
+                    <br />
                   </div>
                 ) : null}
                 {mousedown &&
@@ -324,9 +338,10 @@ const DotplotViewInternal = observer(
                         (mouserect[1] - mousedown[1] < 0 ? 0 : rrect.height),
                     }}
                   >
-                    {`x-${locstr(mousedown[0], hview)}`}
+                    {`x - ${locstr(mousedown[0], hview)}`}
                     <br />
-                    {`y-${locstr(viewHeight - mousedown[1], vview)}`}
+                    {`y - ${locstr(viewHeight - mousedown[1], vview)}`}
+                    <br />
                   </div>
                 ) : null}
 

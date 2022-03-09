@@ -181,7 +181,7 @@ const Cytobands = observer(
     assembly?: Assembly
     block: ContentBlock
   }) => {
-    const { offsetPx } = block
+    const { offsetPx, reversed } = block
     const cytobands = assembly?.cytobands
       ?.map(f => ({
         refName: assembly.getCanonicalRefName(f.get('refName')),
@@ -204,6 +204,10 @@ const Cytobands = observer(
           type,
         ]
       })
+
+    const arr = cytobands || []
+    const lcap = reversed ? arr.length - 1 : 0
+    const rcap = reversed ? 0 : arr.length - 1
 
     let firstCent = true
     return cytobands ? (
@@ -238,7 +242,7 @@ const Cytobands = observer(
             )
           }
 
-          if (index === 0) {
+          if (lcap === index) {
             return (
               <path
                 key={key}
@@ -252,7 +256,7 @@ const Cytobands = observer(
                 fill={colorMap[type]}
               />
             )
-          } else if (index === cytobands.length - 1) {
+          } else if (rcap === index) {
             return (
               <path
                 key={key}

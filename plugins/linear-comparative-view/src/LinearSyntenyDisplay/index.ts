@@ -1,4 +1,5 @@
 import { types, Instance } from 'mobx-state-tree'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import {
   getConf,
   ConfigurationReference,
@@ -9,8 +10,23 @@ import { getContainingView } from '@jbrowse/core/util'
 import {
   configSchemaFactory as baseConfigFactory,
   stateModelFactory as baseModelFactory,
+  ReactComponent,
 } from '../LinearComparativeDisplay'
 import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
+
+export default (pluginManager: PluginManager) => {
+  pluginManager.addDisplayType(() => {
+    const configSchema = configSchemaFactory(pluginManager)
+    return new DisplayType({
+      name: 'LinearSyntenyDisplay',
+      configSchema,
+      stateModel: stateModelFactory(configSchema),
+      trackType: 'SyntenyTrack',
+      viewType: 'LinearSyntenyView',
+      ReactComponent,
+    })
+  })
+}
 
 export function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
