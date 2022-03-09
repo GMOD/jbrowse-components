@@ -75,9 +75,22 @@ const Grid = observer(
     const vblocks = vview.dynamicBlocks.contentBlocks
     const htop = hview.displayedRegionsTotalPx - hview.offsetPx
     const vtop = vview.displayedRegionsTotalPx - vview.offsetPx
+    const hbottom = hblocks[0]?.offsetPx - hview.offsetPx
+    const vbottom = vblocks[0]?.offsetPx - vview.offsetPx
 
     return (
-      <svg style={{ background: '#fff' }} width={viewWidth} height={viewHeight}>
+      <svg
+        style={{ background: 'rgba(0,0,0,0.12)' }}
+        width={viewWidth}
+        height={viewHeight}
+      >
+        <rect
+          x={hbottom}
+          y={viewHeight - vtop}
+          width={htop - hbottom}
+          height={vtop - vbottom}
+          fill="#fff"
+        />
         <g>
           {hblocks.map(region => {
             const x = region.offsetPx - hview.offsetPx
