@@ -183,17 +183,6 @@ exports[`one feature 1`] = `
       x="0.3"
       y="0"
     />
-    <line
-      stroke="black"
-      x1="0.9666666666666666"
-      x2="NaN"
-      y1="5"
-      y2="5"
-    />
-    <polygon
-      points="NaN,2.5,NaN,7.5,NaN,5"
-      stroke="black"
-    />
   </g>
 </svg>
 `;
@@ -403,17 +392,6 @@ exports[`processed transcript (reducedRepresentation mode) 1`] = `
       width="1"
       x="0.3"
       y="0"
-    />
-    <line
-      stroke="black"
-      x1="0.9666666666666666"
-      x2="NaN"
-      y1="5"
-      y2="5"
-    />
-    <polygon
-      points="NaN,2.5,NaN,7.5,NaN,5"
-      stroke="black"
     />
   </g>
 </svg>

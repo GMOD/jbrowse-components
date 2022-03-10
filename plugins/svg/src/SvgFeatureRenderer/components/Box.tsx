@@ -42,6 +42,7 @@ function Box(props: {
 
   return (
     <>
+      {topLevel ? <Arrow {...props} /> : null}
       <rect
         data-testid={`box-${feature.id()}`}
         x={leftWithinBlock}
@@ -55,7 +56,6 @@ function Box(props: {
         }
         stroke={readConfObject(config, 'outline', { feature }) as string}
       />
-      {topLevel ? <Arrow {...props} /> : null}
     </>
   )
 }
