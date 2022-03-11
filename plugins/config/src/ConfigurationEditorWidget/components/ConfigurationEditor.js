@@ -7,8 +7,8 @@ import {
 } from '@jbrowse/core/configuration'
 import {
   FormGroup,
-  FormLabel,
   Accordion,
+  AccordionDetails,
   AccordionSummary,
   Typography,
   makeStyles,
@@ -17,29 +17,23 @@ import { observer } from 'mobx-react'
 import { getMembers } from 'mobx-state-tree'
 import { singular } from 'pluralize'
 
-//icons
+// icons
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 
-//locals
+// locals
 import SlotEditor from './SlotEditor'
 import TypeSelector from './TypeSelector'
 
 const useStyles = makeStyles(theme => ({
-  subSchemaContainer: {
-    margin: theme.spacing(1),
-    padding: theme.spacing(1),
-  },
   expandIcon: {
     color: '#fff',
   },
   root: {
     padding: theme.spacing(1, 3, 1, 1),
-    width: '100%',
   },
-  accordion: {
-    maxWidth: '100%',
-    display: 'grid',
-    gridTemplateColumn: '100%',
+  expansionPanelDetails: {
+    display: 'block',
+    padding: theme.spacing(1),
   },
 }))
 
@@ -75,6 +69,7 @@ const Member = observer(props => {
       <>
         <Accordion
           defaultExpanded
+          className={classes.accordion}
           TransitionProps={{ unmountOnExit: true, timeout: 0 }}
         >
           <AccordionSummary
@@ -82,13 +77,12 @@ const Member = observer(props => {
           >
             <Typography>Config {slotName}</Typography>
           </AccordionSummary>
-          <FormLabel>{slotName}</FormLabel>
-          <div className={classes.subSchemaContainer}>
+          <AccordionDetails className={classes.expansionPanelDetails}>
             {typeSelector}
             <FormGroup>
               <Schema schema={slot} />
             </FormGroup>
-          </div>
+          </AccordionDetails>
         </Accordion>
       </>
     )
@@ -123,6 +117,7 @@ const ConfigurationEditor = observer(({ model }) => {
   const name = model.target && readConfObject(model.target, 'name')
   return (
     <Accordion
+      key={key}
       defaultExpanded
       className={classes.accordion}
       TransitionProps={{ unmountOnExit: true, timeout: 0 }}
@@ -132,9 +127,9 @@ const ConfigurationEditor = observer(({ model }) => {
       >
         <Typography>Configuration{name ? ' - ' + name : ''}</Typography>
       </AccordionSummary>
-      <div className={classes.root} key={key} data-testid="configEditor">
+      <AccordionDetails className={classes.expansionPanelDetails}>
         {!model.target ? 'no target set' : <Schema schema={model.target} />}
-      </div>
+      </AccordionDetails>
     </Accordion>
   )
 })

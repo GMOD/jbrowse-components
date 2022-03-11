@@ -8,14 +8,16 @@ import {
   Typography,
   Divider,
   Tooltip,
+  makeStyles,
 } from '@material-ui/core'
 import ExpandMore from '@material-ui/icons/ExpandMore'
-import { makeStyles } from '@material-ui/core/styles'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 import clsx from 'clsx'
 import isObject from 'is-object'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
+
+// locals
 import { getConf } from '../configuration'
 import { measureText, getSession } from '../util'
 import SanitizedHTML from '../ui/SanitizedHTML'
