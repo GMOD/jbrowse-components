@@ -243,7 +243,15 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
                       epos < bins.length &&
                       pos + fstart < fend
                     ) {
-                      const bin = bins[epos]
+                      const bin = bins[epos] || {
+                        total: 0,
+                        lowqual: {} as BinType,
+                        cov: {} as BinType,
+                        delskips: {} as BinType,
+                        noncov: {} as BinType,
+                        ref: {} as BinType,
+                      }
+
                       if (probabilities[probIndex] > 0.5) {
                         inc(bin, fstrand, 'cov', mod)
                       } else {
