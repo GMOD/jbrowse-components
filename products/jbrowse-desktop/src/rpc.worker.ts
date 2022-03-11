@@ -25,13 +25,15 @@ let jbPluginManager: PluginManager | undefined
 // waits for a message from the main thread containing our configuration,
 // which must be sent on boot
 function receiveConfiguration(): Promise<WorkerConfiguration> {
-  return new Promise(resolve => {
+  const configurationP: Promise<WorkerConfiguration> = new Promise(resolve => {
     // listen for the configuration
     self.onmessage = (event: MessageEvent) => {
       resolve(event.data as WorkerConfiguration)
       self.onmessage = () => {}
     }
   })
+  postMessage('ready')
+  return configurationP
 }
 
 async function getPluginManager() {

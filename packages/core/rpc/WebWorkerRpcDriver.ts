@@ -63,8 +63,18 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     const worker = new WebWorkerHandle({ workers: [new this.WorkerClass()] })
 
     // send the worker its boot configuration using info from the pluginManager
-    worker.workers[0].postMessage(this.workerBootConfiguration)
+    const p = new Promise((resolve: (w: WebWorkerHandle) => void, reject) => {
+      worker.workers[0].onmessage = e => {
+        if (e.data === 'ready') {
+          resolve(worker)
+        } else if (e.data === 'readyForConfig') {
+          worker.workers[0].postMessage(this.workerBootConfiguration)
+        } else {
+          reject()
+        }
+      }
+    })
 
-    return worker
+    return p
   }
 }
