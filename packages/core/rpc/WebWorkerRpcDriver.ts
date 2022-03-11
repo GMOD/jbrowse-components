@@ -56,7 +56,7 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     this.WorkerClass = args.WorkerClass
   }
 
-  makeWorker() {
+  async makeWorker() {
     // note that we are making a Rpc.Client connection with a worker pool of
     // one for each worker, because we want to do our own state-group-aware
     // load balancing rather than using librpc's builtin round-robin

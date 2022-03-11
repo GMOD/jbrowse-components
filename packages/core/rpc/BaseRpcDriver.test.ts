@@ -121,7 +121,7 @@ class MockRpcDriver extends BaseRpcDriver {
 
   workerCheckFrequency = 500
 
-  makeWorker(_pluginManager: PluginManager) {
+  async makeWorker(_pluginManager: PluginManager) {
     return new MockWorkerHandle()
   }
 }
