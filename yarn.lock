@@ -1456,9 +1456,9 @@
     object.entries-ponyfill "^1.0.1"
 
 "@gmod/bbi@^1.0.32":
-  version "1.0.33"
-  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-1.0.33.tgz#7e642863fd047699f4ac172d66f85b8cf6413efe"
-  integrity sha512-7zF72rGjuVike3oaXdJr5PDVUzuqWX/IMuSltKd+GpgUFdJ2P7fpS6f23gn78+TwHVkkMLGjiwpnAK4F+CDefQ==
+  version "1.0.34"
+  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-1.0.34.tgz#2e0a2a09fe6b13fba1e0b092c915df9baf6891f2"
+  integrity sha512-sL8LpFqiSY87RF3OImNMyX1xjgpGsTUZfV7yurBgydcoX16km5sqikqfQDgjIF0nO9INBQMv6/LLgRJul4mNbg==
   dependencies:
     "@gmod/binary-parser" "^1.4.0"
     abortable-promise-cache "^1.4.1"
