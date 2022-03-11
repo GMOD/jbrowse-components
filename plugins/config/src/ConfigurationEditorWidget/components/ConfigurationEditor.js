@@ -128,7 +128,9 @@ const ConfigurationEditor = observer(({ model }) => {
         <Typography>Configuration{name ? ' - ' + name : ''}</Typography>
       </AccordionSummary>
       <AccordionDetails className={classes.expansionPanelDetails}>
-        {!model.target ? 'no target set' : <Schema schema={model.target} />}
+        <div data-testid="configEditor">
+          {!model.target ? 'no target set' : <Schema schema={model.target} />}
+        </div>
       </AccordionDetails>
     </Accordion>
   )
