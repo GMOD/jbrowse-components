@@ -50,6 +50,7 @@ function CallbackEditor({ slot }) {
       slot.set(jexlDebouncedCode) // slot.set `jexl:${debouncedCode}`
       setCodeError(null)
     } catch (e) {
+      console.log({ e })
       setCodeError(e)
     }
   }, [debouncedCode, slot])
@@ -72,6 +73,11 @@ function CallbackEditor({ slot }) {
           padding={10}
           style={{ background: error ? '#fdd' : undefined }}
         />
+        {error ? (
+          <FormHelperText
+            style={{ color: '#f00' }}
+          >{`${error}`}</FormHelperText>
+        ) : null}
         <FormHelperText>{slot.description}</FormHelperText>
       </FormControl>
       <Tooltip
