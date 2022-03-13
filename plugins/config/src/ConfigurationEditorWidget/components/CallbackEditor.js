@@ -50,7 +50,7 @@ function CallbackEditor({ slot }) {
       slot.set(jexlDebouncedCode) // slot.set `jexl:${debouncedCode}`
       setCodeError(null)
     } catch (e) {
-      console.log({ e })
+      console.error({ e })
       setCodeError(e)
     }
   }, [debouncedCode, slot])
