@@ -139,49 +139,49 @@ const args = standardizeArgv(parseArgv(process.argv.slice(2)), [
   'configtracks',
 ])
 
-time(() =>
-  renderRegion(args).then(result => {
-    const outfile = args.out || 'out.svg'
-    if (outfile.endsWith('.png')) {
-      const tmpobj = tmp.fileSync({
-        mode: 0o644,
-        prefix: 'prefix-',
-        postfix: '.svg',
-      })
-      fs.writeFileSync(tmpobj.name, result)
-      const ls = spawnSync('rsvg-convert', [
-        '-w',
-        args.pngwidth || 2048,
-        tmpobj.name,
-        '-o',
-        outfile,
-      ])
+time(async () => {
+  const result = await renderRegion(args)
+  const outfile = args.out || 'out.svg'
+  if (outfile.endsWith('.png')) {
+    const tmpobj = tmp.fileSync({
+      mode: 0o644,
+      prefix: 'prefix-',
+      postfix: '.svg',
+    })
+    fs.writeFileSync(tmpobj.name, result)
+    const ls = spawnSync('rsvg-convert', [
+      '-w',
+      args.pngwidth || 2048,
+      tmpobj.name,
+      '-o',
+      outfile,
+    ])
 
-      console.log(`rsvg-convert stderr: ${ls.stderr.toString()}`)
-      console.log(`rsvg-convert stdout: ${ls.stdout.toString()}`)
-      fs.unlinkSync(tmpobj.name)
-    } else if (outfile.endsWith('.pdf')) {
-      const tmpobj = tmp.fileSync({
-        mode: 0o644,
-        prefix: 'prefix-',
-        postfix: '.svg',
-      })
-      fs.writeFileSync(tmpobj.name, result)
-      const ls = spawnSync('rsvg-convert', [
-        '-w',
-        args.pngwidth || 2048,
-        tmpobj.name,
-        '-f',
-        'pdf',
-        '-o',
-        outfile,
-      ])
+    console.log(`rsvg-convert stderr: ${ls.stderr.toString()}`)
+    console.log(`rsvg-convert stdout: ${ls.stdout.toString()}`)
+    fs.unlinkSync(tmpobj.name)
+  } else if (outfile.endsWith('.pdf')) {
+    const tmpobj = tmp.fileSync({
+      mode: 0o644,
+      prefix: 'prefix-',
+      postfix: '.svg',
+    })
+    fs.writeFileSync(tmpobj.name, result)
+    const ls = spawnSync('rsvg-convert', [
+      '-w',
+      args.pngwidth || 2048,
+      tmpobj.name,
+      '-f',
+      'pdf',
+      '-o',
+      outfile,
+    ])
 
-      console.log(`rsvg-convert stderr: ${ls.stderr.toString()}`)
-      console.log(`rsvg-convert stdout: ${ls.stdout.toString()}`)
-      fs.unlinkSync(tmpobj.name)
-    } else {
-      fs.writeFileSync(outfile, result)
-    }
-  }, console.error),
-)
+    console.log(`rsvg-convert stderr: ${ls.stderr.toString()}`)
+    console.log(`rsvg-convert stdout: ${ls.stdout.toString()}`)
+    fs.unlinkSync(tmpobj.name)
+  } else {
+    fs.writeFileSync(outfile, result)
+  }
+  process.exit(0)
+})
