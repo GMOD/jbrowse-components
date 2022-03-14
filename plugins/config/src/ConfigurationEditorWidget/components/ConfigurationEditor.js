@@ -84,7 +84,7 @@ const Member = observer(props => {
         <AccordionSummary
           expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
         >
-          <Typography>{[...path, slotName].join('→')}</Typography>
+          <Typography>{[...path, slotName].join('🡒')}</Typography>
         </AccordionSummary>
         <AccordionDetails className={classes.expansionPanelDetails}>
           {typeSelector}
