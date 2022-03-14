@@ -42,9 +42,6 @@ export async function watchWorker(
   pingTime: number,
   rpcDriverClassName: string,
 ) {
-  // first ping call has no timeout, wait for worker download
-  await worker.call('ping', [], { timeout: 100000000, rpcDriverClassName })
-
   // after first ping succeeds, apply wait for timeout
   return new Promise((_resolve, reject) => {
     function delay() {
@@ -77,9 +74,9 @@ class LazyWorker {
 
   constructor(public driver: BaseRpcDriver) {}
 
-  getWorker(pluginManager: PluginManager, rpcDriverClassName: string) {
+  async getWorker(pluginManager: PluginManager, rpcDriverClassName: string) {
     if (!this.worker) {
-      const worker = this.driver.makeWorker(pluginManager)
+      const worker = await this.driver.makeWorker(pluginManager)
       watchWorker(worker, this.driver.maxPingTime, rpcDriverClassName).catch(
         error => {
           if (this.worker) {
@@ -109,7 +106,7 @@ export default abstract class BaseRpcDriver {
 
   private workerCount = 0
 
-  abstract makeWorker(pluginManager: PluginManager): WorkerHandle
+  abstract makeWorker(pluginManager: PluginManager): Promise<WorkerHandle>
 
   private workerPool?: LazyWorker[]
 
@@ -164,13 +161,13 @@ export default abstract class BaseRpcDriver {
     return thing
   }
 
-  remoteAbort(
+  async remoteAbort(
     pluginManager: PluginManager,
     sessionId: string,
     functionName: string,
     signalId: number,
   ) {
-    const worker = this.getWorker(sessionId, pluginManager)
+    const worker = await this.getWorker(sessionId, pluginManager)
     worker.call(
       functionName,
       { signalId },
@@ -196,7 +193,10 @@ export default abstract class BaseRpcDriver {
     return this.workerPool
   }
 
-  getWorker(sessionId: string, pluginManager: PluginManager): WorkerHandle {
+  async getWorker(
+    sessionId: string,
+    pluginManager: PluginManager,
+  ): Promise<WorkerHandle> {
     const workers = this.getWorkerPool()
     let workerNumber = this.workerAssignments.get(sessionId)
     if (workerNumber === undefined) {
@@ -225,7 +225,7 @@ export default abstract class BaseRpcDriver {
       throw new TypeError('sessionId is required')
     }
     let done = false
-    const worker = this.getWorker(sessionId, pluginManager)
+    const worker = await this.getWorker(sessionId, pluginManager)
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
     const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
     const filteredAndSerializedArgs = this.filterArgs(
