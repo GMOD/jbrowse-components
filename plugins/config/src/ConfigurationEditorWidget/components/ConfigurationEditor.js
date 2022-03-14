@@ -79,7 +79,7 @@ const Member = observer(props => {
       <Accordion
         defaultExpanded
         className={classes.accordion}
-        TransitionProps={{ unmountOnExit: true, timeout: 0 }}
+        TransitionProps={{ unmountOnExit: true, timeout: 150 }}
       >
         <AccordionSummary
           expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
@@ -129,7 +129,7 @@ const ConfigurationEditor = observer(({ model }) => {
       key={key}
       defaultExpanded
       className={classes.accordion}
-      TransitionProps={{ unmountOnExit: true, timeout: 0 }}
+      TransitionProps={{ unmountOnExit: true, timeout: 150 }}
     >
       <AccordionSummary
         expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
