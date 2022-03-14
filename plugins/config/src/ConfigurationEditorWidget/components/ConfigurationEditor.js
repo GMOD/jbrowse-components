@@ -43,7 +43,13 @@ const useStyles = makeStyles(theme => ({
 
 const Member = observer(props => {
   const classes = useStyles()
-  const { slotName, slotSchema, schema, slot = schema[slotName] } = props
+  const {
+    slotName,
+    slotSchema,
+    schema,
+    slot = schema[slotName],
+    path = [],
+  } = props
   let typeSelector
   if (isConfigurationSchemaType(slotSchema)) {
     if (slot.length) {
@@ -70,25 +76,23 @@ const Member = observer(props => {
       )
     }
     return (
-      <>
-        <Accordion
-          defaultExpanded
-          className={classes.accordion}
-          TransitionProps={{ unmountOnExit: true, timeout: 0 }}
+      <Accordion
+        defaultExpanded
+        className={classes.accordion}
+        TransitionProps={{ unmountOnExit: true, timeout: 0 }}
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
         >
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-          >
-            <Typography>Config {slotName}</Typography>
-          </AccordionSummary>
-          <AccordionDetails className={classes.expansionPanelDetails}>
-            {typeSelector}
-            <FormGroup>
-              <Schema schema={slot} />
-            </FormGroup>
-          </AccordionDetails>
-        </Accordion>
-      </>
+          <Typography>{[...path, slotName].join('→')}</Typography>
+        </AccordionSummary>
+        <AccordionDetails className={classes.expansionPanelDetails}>
+          {typeSelector}
+          <FormGroup>
+            <Schema schema={slot} path={[...path, slotName]} />
+          </FormGroup>
+        </AccordionDetails>
+      </Accordion>
     )
   }
 
@@ -100,13 +104,14 @@ const Member = observer(props => {
   return null
 })
 
-const Schema = observer(({ schema }) => {
+const Schema = observer(({ schema, path = [] }) => {
   const properties = getMembers(schema).properties
   return Object.entries(properties).map(([slotName, slotSchema]) => (
     <Member
       key={slotName}
       slotName={slotName}
       slotSchema={slotSchema}
+      path={path}
       schema={schema}
     />
   ))
@@ -129,12 +134,13 @@ const ConfigurationEditor = observer(({ model }) => {
       <AccordionSummary
         expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
       >
-        <Typography>Configuration{name ? ' - ' + name : ''}</Typography>
+        <Typography>{name ? name : 'Configuration'}</Typography>
       </AccordionSummary>
-      <AccordionDetails className={classes.expansionPanelDetails}>
-        <div data-testid="configEditor">
-          {!model.target ? 'no target set' : <Schema schema={model.target} />}
-        </div>
+      <AccordionDetails
+        className={classes.expansionPanelDetails}
+        data-testid="configEditor"
+      >
+        {!model.target ? 'no target set' : <Schema schema={model.target} />}
       </AccordionDetails>
     </Accordion>
   )
