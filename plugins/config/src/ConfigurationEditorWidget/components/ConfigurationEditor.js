@@ -35,6 +35,10 @@ const useStyles = makeStyles(theme => ({
     display: 'block',
     padding: theme.spacing(1),
   },
+
+  accordion: {
+    border: '1px solid #444',
+  },
 }))
 
 const Member = observer(props => {
