@@ -37,7 +37,7 @@ const useStyles = makeStyles(theme => ({
   },
 
   accordion: {
-    border: '1px solid #444',
+    border: `1px solid ${theme.palette.text.primary}`,
   },
 }))
 
