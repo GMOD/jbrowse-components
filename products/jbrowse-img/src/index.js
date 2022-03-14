@@ -5,8 +5,11 @@ import { standardizeArgv, parseArgv } from './parseArgv'
 import { renderRegion } from './renderRegion'
 import tmp from 'tmp'
 import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
-
 import { spawnSync } from 'child_process'
+
+const err = console.error
+console.error = (...args) =>
+  args[0]?.match('useLayoutEffect') ? null : err(args)
 
 // eslint-disable-next-line no-unused-expressions
 yargs
@@ -139,8 +142,9 @@ const args = standardizeArgv(parseArgv(process.argv.slice(2)), [
   'configtracks',
 ])
 
-time(() =>
-  renderRegion(args).then(result => {
+time(async () => {
+  try {
+    const result = await renderRegion(args)
     const outfile = args.out || 'out.svg'
     if (outfile.endsWith('.png')) {
       const tmpobj = tmp.fileSync({
@@ -183,5 +187,13 @@ time(() =>
     } else {
       fs.writeFileSync(outfile, result)
     }
-  }, console.error),
-)
+
+    // manually exit the process after done rendering because autoruns or
+    // something similar otherwise keeps the nodejs process alive xref
+    // https://github.com/GMOD/jb2export/issues/6
+    process.exit(0)
+  } catch (e) {
+    console.error(e)
+    process.exit(1)
+  }
+})
