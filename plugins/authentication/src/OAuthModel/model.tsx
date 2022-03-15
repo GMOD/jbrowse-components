@@ -44,12 +44,20 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .volatile(() => {
-      const global = getGlobalObject()
-      const array = new Uint8Array(32)
-      global.crypto.getRandomValues(array)
-      const codeVerifierPKCE = fixup(Buffer.from(array).toString('base64'))
-      return { codeVerifierPKCE }
+    .views(() => {
+      let codeVerifier: string | undefined = undefined
+      return {
+        get codeVerifierPKCE() {
+          if (codeVerifier) {
+            return codeVerifier
+          }
+          const global = getGlobalObject()
+          const array = new Uint8Array(32)
+          global.crypto.getRandomValues(array)
+          codeVerifier = fixup(Buffer.from(array).toString('base64'))
+          return codeVerifier
+        },
+      }
     })
     .views(self => ({
       get authEndpoint(): string {
