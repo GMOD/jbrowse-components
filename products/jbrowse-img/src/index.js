@@ -8,8 +8,13 @@ import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
 import { spawnSync } from 'child_process'
 
 const err = console.error
-console.error = (...args) =>
-  args[0]?.match('useLayoutEffect') ? null : err(args)
+console.error = (...args) => {
+  if (`${args[0]}`.match('useLayoutEffect')) {
+    return null
+  } else {
+    err(args)
+  }
+}
 
 // eslint-disable-next-line no-unused-expressions
 yargs
