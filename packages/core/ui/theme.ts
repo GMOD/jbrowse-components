@@ -143,6 +143,15 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
         color: generatedPalette.tertiary.main,
       },
     },
+    MuiAccordion: {
+      root: {
+        // avoid extra padding around accordion element
+        margin: 0,
+        '&$expanded': {
+          margin: 0,
+        },
+      },
+    },
     MuiAccordionSummary: {
       root: {
         // !important needed to combat the MuiButton being applied to

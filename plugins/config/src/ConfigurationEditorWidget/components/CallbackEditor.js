@@ -47,7 +47,7 @@ function CallbackEditor({ slot }) {
         jexlDebouncedCode,
         getEnv(slot).pluginManager?.jexl,
       )
-      slot.set(jexlDebouncedCode) // slot.set `jexl:${debouncedCode}`
+      slot.set(jexlDebouncedCode)
       setCodeError(null)
     } catch (e) {
       console.error({ e })
@@ -66,9 +66,7 @@ function CallbackEditor({ slot }) {
         <Editor
           className={classes.callbackEditor}
           value={code.startsWith('jexl:') ? code.split('jexl:')[1] : code}
-          onValueChange={newCode => {
-            setCode(newCode)
-          }}
+          onValueChange={newCode => setCode(newCode)}
           highlight={newCode => newCode}
           padding={10}
           style={{ background: error ? '#fdd' : undefined }}
