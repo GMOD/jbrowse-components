@@ -29,6 +29,7 @@ module.exports = {
     '<rootDir>/config/jest/createRange.js',
     '<rootDir>/config/jest/fetchMock.js',
     '<rootDir>/config/jest/console.js',
+    '<rootDir>/config/jest/crypto.js',
     'jest-localstorage-mock',
   ],
   testURL: 'http://localhost',
