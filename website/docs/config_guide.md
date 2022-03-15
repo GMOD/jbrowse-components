@@ -665,26 +665,189 @@ Example SyntenyTrack config
   "adapter": {
     "type": "PAFAdapter",
     "pafLocation": {
-      "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.paf",
-      "locationType": "UriLocation"
+      "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.paf"
     },
     "assemblyNames": ["YJM1447", "R64"]
   }
 }
 ```
 
-We can add a SyntenyTrack from PAF with the CLI e.g. with
+We can load a SyntenyTrack from PAF with the CLI e.g. with
 
 ```sh
 jbrowse add-track myfile.paf --type SyntenyTrack --assemblyNames \
     grape,peach --load copy --out /var/www/html/jbrowse2
 ```
 
+The first assembly is the "target" and the second assembly is the "query"
+
+See the [super quickstart guide](../superquickstart_web) for more recipes on
+loading synteny tracks with the CLI.
+
+### PAFAdapter config
+
+The PAF adapter reflects a pairwise alignment, and is outputted by tools like
+minimap2. It can be used for SyntenyTracks
+
+```json
+{
+  "type": "PAFAdapter",
+  "pafLocation": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.paf"
+  },
+  "assemblyNames": ["YJM1447", "R64"]
+}
+```
+
+Slots
+
+- pafLocation - the location of the PAF file. The pafLocation can refer to a
+  gzipped or unzipped delta file. It will be read into memory entirely as it is
+  not an indexed file format.
+- assemblyNames - list of assembly names, typically two (first in list is
+  target, second is query)
+- queryAssembly - alternative to assemblyNames: just the assemblyName of the
+  query
+- targetAssembly - alternative to assemblyNames: just the assemblyName of the
+  query
+
+### DeltaAdapter config
+
+The DeltaAdapter is used to load .delta files from MUMmer/nucmer. It can be
+used for SyntenyTracks
+
+```json
+{
+  "type": "DeltaAdapter",
+  "deltaLocation": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.paf"
+  },
+  "assemblyNames": ["YJM1447", "R64"]
+}
+```
+
+Slots
+
+- deltaLocation - the location of the delta file. The deltaLocation can refer to a
+  gzipped or unzipped delta file. It will be read into memory entirely as it is
+  not an indexed file format.
+- assemblyNames - list of assembly names, typically two (first in list is
+  target, second is query)
+- queryAssembly - alternative to assemblyNames: just the assemblyName of the
+  query
+- targetAssembly - alternative to assemblyNames: just the assemblyName of the
+  query
+
+### ChainAdapter config
+
+The ChainAdapter is used to load .chain files from MUMmer/nucmer. It can be
+used for SyntenyTracks
+
+```json
+{
+  "type": "DeltaAdapter",
+  "deltaLocation": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.paf"
+  },
+  "assemblyNames": ["YJM1447", "R64"]
+}
+```
+
+Slots
+
+- chainLocation - the location of the UCSC chain file. The chainLocation can
+  refer to a gzipped or unzipped delta file. It will be read into memory
+  entirely as it is not an indexed file format.
+- assemblyNames - list of assembly names, typically two (first in list is
+  target, second is query)
+- queryAssembly - alternative to assemblyNames: just the assemblyName of the
+  query
+- targetAssembly - alternative to assemblyNames: just the assemblyName of the
+  query
+
+### MCScanAnchorsAdapter
+
+The .anchors file from MCScan refers to pairs of homologous genes and can be loaded into synteny tracks in jbrowse 2
+
+```json
+{
+  "type": "MCScanAnchorsAdapter",
+  "mcscanAnchorsLocation": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape.peach.anchors.gz"
+  },
+  "bed1Location": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/grape.bed.gz"
+  },
+  "bed2Location": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/peach.bed.gz"
+  },
+  "assemblyNames": ["grape", "peach"]
+}
+```
+
+The guide at https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)
+shows a demonstration of how to create the anchors and bed files (the .bed
+files are intermediate steps in creating the anchors files and are required by
+the MCScanAnchorsAdapter)
+
+Slots
+
+- mcscanAnchorsLocation - the location of the .anchors file from the MCScan
+  workflow. The .anchors file has three columns. It can be gzipped or
+  ungzipped, and is read into memory whole
+- bed1Location - the location of the first assemblies .bed file from the MCScan
+  workflow. It can be gzipped or ungzipped, and is read into memory whole. This
+  would refer to the gene names on the "left" side of the .anchors file.
+- bed2Location - the location of the second assemblies .bed file from the
+  MCScan workflow. It can be gzipped or ungzipped, and is read into memory
+  whole. This would refer to the gene names on the "right" side of the .anchors
+  file.
+
+### MCScanSimpleAnchorsAdapter
+
+The "simple" .anchors.simple file from MCScan refers to pairs of homologous
+genes and can be loaded into synteny tracks in jbrowse 2
+
+```json
+{
+  "type": "MCScanSimpleAnchorsAdapter",
+  "mcscanSimpleAnchorsLocation": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape.peach.anchors.simple.gz"
+  },
+  "bed1Location": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/grape.bed.gz"
+  },
+  "bed2Location": {
+    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/peach.bed.gz"
+  },
+  "assemblyNames": ["grape", "peach"]
+}
+```
+
+The guide at https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)
+shows a demonstration of how to create the anchors and bed files (the .bed
+files are intermediate steps in creating the anchors.simple files and are
+required by the MCScanSimpleAnchorsAdapter)
+
+Slots
+
+- `mcscanSimpleAnchorsLocation` - the location of the .anchors.simple file from
+  the MCScan workflow (this file has 5 columns, start and end gene from bed1,
+  start and end genes from bed2, and score). It can be gzipped or ungzipped,
+  and is read into memory whole
+- `bed1Location` - the location of the first assemblies .bed file from the MCScan
+  workflow. It can be gzipped or ungzipped, and is read into memory whole. This
+  would refer to the gene names on the "left" side of the .anchors file.
+- `bed2Location` - the location of the second assemblies .bed file from the
+  MCScan workflow. It can be gzipped or ungzipped, and is read into memory
+  whole. This would refer to the gene names on the "right" side of the .anchors
+  file.
+
 ### Advanced adapters
 
 There are two useful adapter types that can be used for more advanced use
 cases, such as generating configuration for data returned by an API. These are
-the FromConfigAdapter and FromConfigSequenceAdapter. They can be used as the
+the `FromConfigAdapter` and `FromConfigSequenceAdapter`. They can be used as the
 `adapter` value for any track type.
 
 #### FromConfigAdapter
@@ -692,7 +855,7 @@ the FromConfigAdapter and FromConfigSequenceAdapter. They can be used as the
 This adapter can be used to generate features directly from values stored in
 the configuration.
 
-Example FromConfigAdapter
+Example `FromConfigAdapter`
 
 ```json
 {
@@ -714,10 +877,10 @@ Example FromConfigAdapter
 
 #### FromConfigSequenceAdapter
 
-Similar behavior to FromConfigAdapter, with a specific emphasis on performance
+Similar behavior to `FromConfigAdapter`, with a specific emphasis on performance
 when the features are sequences.
 
-Example FromConfigSequenceAdapter
+Example `FromConfigSequenceAdapter`
 
 ```json
 {
@@ -872,392 +1035,13 @@ index created by generate-names.pl
 
 ## DotplotView config
 
-The configuration of a view is technically a configuration of the "state of the
-view" but it can be added to the `defaultSession`
-
-An example of a dotplot config can help explain. This is relatively advanced so
-let's look at an example
-
-```json
-{
-  "assemblies": [
-    {
-      "name": "grape",
-      "sequence": {
-        "trackId": "grape_seq",
-        "type": "ReferenceSequenceTrack",
-        "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "grape.chrom.sizes",
-            "locationType": "UriLocation"
-          }
-        }
-      }
-    },
-    {
-      "name": "peach",
-      "sequence": {
-        "trackId": "peach_seq",
-        "type": "ReferenceSequenceTrack",
-        "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "peach.chrom.sizes",
-            "locationType": "UriLocation"
-          }
-        }
-      }
-    }
-  ],
-  "tracks": [
-    {
-      "trackId": "grape_peach_synteny_mcscan",
-      "type": "SyntenyTrack",
-      "assemblyNames": ["peach", "grape"],
-      "trackIds": [],
-      "renderDelay": 100,
-      "adapter": {
-        "mcscanAnchorsLocation": {
-          "uri": "grape.peach.anchors",
-          "locationType": "UriLocation"
-        },
-        "subadapters": [
-          {
-            "type": "NCListAdapter",
-            "rootUrlTemplate": {
-              "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json",
-              "locationType": "UriLocation"
-            }
-          },
-          {
-            "type": "NCListAdapter",
-            "rootUrlTemplate": {
-              "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json",
-              "locationType": "UriLocation"
-            }
-          }
-        ],
-        "assemblyNames": ["peach", "grape"],
-        "type": "MCScanAnchorsAdapter"
-      },
-      "name": "Grape peach synteny (MCScan)",
-      "category": ["Annotation"]
-    },
-    {
-      "trackId": "grape_peach_paf",
-      "type": "SyntenyTrack",
-      "name": "Grape vs Peach (PAF)",
-      "assemblyNames": ["peach", "grape"],
-      "adapter": {
-        "type": "PAFAdapter",
-        "pafLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf",
-          "locationType": "UriLocation"
-        },
-        "assemblyNames": ["peach", "grape"]
-      }
-    },
-    {
-      "type": "SyntenyTrack",
-      "trackId": "dotplot_track_small",
-      "name": "Grape vs peach small (PAF)",
-      "assemblyNames": ["grape", "peach"],
-      "adapter": {
-        "type": "PAFAdapter",
-        "pafLocation": {
-          "uri": "peach_grape_small.paf",
-          "locationType": "UriLocation"
-        },
-        "assemblyNames": ["peach", "grape"]
-      }
-    }
-  ],
-  "defaultSession": {
-    "name": "Grape vs Peach (small)",
-    "views": [
-      {
-        "id": "MiDMyyWpp",
-        "type": "DotplotView",
-        "assemblyNames": ["peach", "grape"],
-        "hview": {
-          "displayedRegions": [],
-          "bpPerPx": 100000,
-          "offsetPx": 0
-        },
-        "vview": {
-          "displayedRegions": [],
-          "bpPerPx": 100000,
-          "offsetPx": 0
-        },
-        "tracks": [
-          {
-            "type": "SyntenyTrack",
-            "configuration": "dotplot_track_small",
-            "displays": [
-              {
-                "type": "DotplotDisplay",
-                "configuration": "dotplot_track_small-DotplotDisplay"
-              }
-            ]
-          }
-        ],
-        "displayName": "Grape vs Peach dotplot"
-      }
-    ]
-  }
-}
-```
-
-Note that configuring the dotplot involves creating a "defaultSession"
-
-Users can also open synteny views using the File->Add->Dotplot view workflow,
-and create their own synteny view outside of the default configuration
+It is recommended to use the DotplotView's importform or a session spec to
+initialize a dotplot view.
 
 ## LinearSyntenyView config
 
-Currently, configuring synteny is made by pre-configuring a session in the view
-and adding synteny tracks
-
-```json
-{
-  "defaultSession": {
-    "name": "Grape vs Peach Demo",
-    "drawerWidth": 384,
-    "views": [
-      {
-        "type": "LinearSyntenyView",
-        "id": "test1",
-        "headerHeight": 44,
-        "datasetName": "grape_vs_peach_dataset",
-        "tracks": [
-          {
-            "type": "SyntenyTrack",
-            "configuration": "grape_peach_synteny_mcscan",
-            "displays": [
-              {
-                "configuration": "grape_peach_synteny_mcscan-LinearSyntenyDisplay",
-                "height": 100,
-                "type": "LinearSyntenyDisplay"
-              }
-            ]
-          }
-        ],
-        "height": 400,
-        "displayName": "Grape vs Peach",
-        "trackSelectorType": "hierarchical",
-        "views": [
-          {
-            "type": "LinearGenomeView",
-            "id": "test1_1",
-            "offsetPx": 28249,
-            "bpPerPx": 1000,
-            "displayedRegions": [
-              {
-                "refName": "Pp01",
-                "assemblyName": "peach",
-                "start": 0,
-                "end": 100000000
-              }
-            ],
-            "tracks": [
-              {
-                "type": "FeatureTrack",
-                "configuration": "peach_genes",
-                "displays": [
-                  {
-                    "configuration": "peach_genes_linear",
-                    "height": 100,
-                    "type": "LinearBasicDisplay"
-                  }
-                ]
-              }
-            ],
-            "hideControls": false,
-            "hideHeader": true,
-            "hideCloseButton": true,
-            "trackSelectorType": "hierarchical"
-          },
-          {
-            "type": "LinearGenomeView",
-            "id": "test1_2",
-            "offsetPx": 0,
-            "bpPerPx": 1000,
-            "displayedRegions": [
-              {
-                "refName": "chr1",
-                "assemblyName": "grape",
-                "start": 0,
-                "end": 100000000
-              }
-            ],
-            "tracks": [
-              {
-                "type": "FeatureTrack",
-                "configuration": "grape_genes",
-                "displays": [
-                  {
-                    "configuration": "grape_genes_linear",
-                    "height": 100,
-                    "type": "LinearBasicDisplay"
-                  }
-                ]
-              }
-            ],
-            "hideControls": false,
-            "hideHeader": true,
-            "hideCloseButton": true,
-            "trackSelectorType": "hierarchical"
-          }
-        ]
-      }
-    ],
-    "widgets": {},
-    "activeWidgets": {},
-    "connections": {}
-  },
-  "assemblies": [
-    {
-      "name": "grape",
-      "sequence": {
-        "trackId": "grape_seq",
-        "type": "ReferenceSequenceTrack",
-        "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "grape.chrom.sizes",
-            "locationType": "UriLocation"
-          }
-        }
-      }
-    },
-    {
-      "name": "peach",
-      "sequence": {
-        "trackId": "peach_seq",
-        "type": "ReferenceSequenceTrack",
-        "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "peach.chrom.sizes",
-            "locationType": "UriLocation"
-          }
-        }
-      }
-    }
-  ],
-  "tracks": [
-    {
-      "trackId": "grape_peach_synteny_mcscan",
-      "type": "SyntenyTrack",
-      "assemblyNames": ["peach", "grape"],
-      "trackIds": [],
-      "renderDelay": 100,
-      "adapter": {
-        "mcscanAnchorsLocation": {
-          "uri": "grape.peach.anchors",
-          "locationType": "UriLocation"
-        },
-        "subadapters": [
-          {
-            "type": "NCListAdapter",
-            "rootUrlTemplate": {
-              "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json",
-              "locationType": "UriLocation"
-            }
-          },
-          {
-            "type": "NCListAdapter",
-            "rootUrlTemplate": {
-              "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json",
-              "locationType": "UriLocation"
-            }
-          }
-        ],
-        "assemblyNames": ["peach", "grape"],
-        "type": "MCScanAnchorsAdapter"
-      },
-      "name": "Grape peach synteny (MCScan)",
-      "category": ["Annotation"]
-    },
-    {
-      "trackId": "peach_genes",
-      "type": "FeatureTrack",
-      "assemblyNames": ["peach"],
-      "name": "mcscan",
-      "category": ["Annotation"],
-      "adapter": {
-        "type": "NCListAdapter",
-        "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json",
-          "locationType": "UriLocation"
-        }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "peach_genes_linear",
-          "renderer": {
-            "type": "PileupRenderer"
-          }
-        }
-      ]
-    },
-    {
-      "trackId": "peach_genes2",
-      "type": "FeatureTrack",
-      "assemblyNames": ["peach"],
-      "name": "mcscan2",
-      "category": ["Annotation"],
-      "adapter": {
-        "type": "NCListAdapter",
-        "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json",
-          "locationType": "UriLocation"
-        }
-      }
-    },
-    {
-      "trackId": "grape_genes",
-      "type": "FeatureTrack",
-      "name": "mcscan",
-      "assemblyNames": ["grape"],
-      "category": ["Annotation"],
-      "adapter": {
-        "type": "NCListAdapter",
-        "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json",
-          "locationType": "UriLocation"
-        }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "grape_genes_linear",
-          "renderer": {
-            "type": "PileupRenderer"
-          }
-        }
-      ]
-    },
-    {
-      "trackId": "grape_genes2",
-      "type": "FeatureTrack",
-      "name": "mcscan2",
-      "category": ["Annotation"],
-      "assemblyNames": ["grape"],
-      "adapter": {
-        "type": "NCListAdapter",
-        "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json",
-          "locationType": "UriLocation"
-        }
-      }
-    }
-  ],
-  "configuration": {}
-}
-```
+It is recommended to use the LinearSyntenyView's importform or a session spec
+to initialize a dotplot view.
 
 ## Configuring the theme
 
