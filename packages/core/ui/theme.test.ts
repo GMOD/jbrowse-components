@@ -42,7 +42,7 @@ describe('theme utils', () => {
       overrides: { MuiPaper: muiPaperStyle },
     })
     expect(theme.overrides?.MuiPaper).toEqual(muiPaperStyle)
-    expect(Object.keys(theme.overrides || {}).length).toBe(9)
+    expect(Object.keys(theme.overrides || {}).length).toBe(10)
   })
   it('allows modifying a default override', () => {
     const muiButtonStyle = { textSecondary: { color: 'orange' } }
@@ -50,7 +50,7 @@ describe('theme utils', () => {
       overrides: { MuiButton: muiButtonStyle },
     })
     expect(theme.overrides?.MuiButton).toEqual(muiButtonStyle)
-    expect(Object.keys(theme.overrides || {}).length).toBe(8)
+    expect(Object.keys(theme.overrides || {}).length).toBe(9)
   })
   it('allows adding a custom prop', () => {
     const muiPaperProps = { variant: 'outlined' as 'outlined' }
