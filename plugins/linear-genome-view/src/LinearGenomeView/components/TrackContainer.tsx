@@ -1,20 +1,25 @@
 import React, { useEffect, useRef } from 'react'
-import { Paper, makeStyles } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
-import { getConf } from '@jbrowse/core/configuration'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
+import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { useDebouncedCallback } from '@jbrowse/core/util'
 import clsx from 'clsx'
+import Paper from '@material-ui/core/Paper'
+import { makeStyles } from '@material-ui/core/styles'
 
 import { LinearGenomeViewModel, RESIZE_HANDLE_HEIGHT } from '..'
 import TrackLabel from './TrackLabel'
 
 const useStyles = makeStyles(theme => ({
-  root: {},
+  root: {
+    margin: 2,
+  },
   resizeHandle: {
     height: RESIZE_HANDLE_HEIGHT,
+    boxSizing: 'border-box',
+    position: 'relative',
     zIndex: 2,
   },
   overlay: {
@@ -28,7 +33,6 @@ const useStyles = makeStyles(theme => ({
   },
   trackLabel: {
     zIndex: 3,
-    margin: theme.spacing(1),
   },
   trackLabelInline: {
     position: 'relative',
@@ -44,25 +48,45 @@ const useStyles = makeStyles(theme => ({
     position: 'relative',
     background: 'none',
     zIndex: 2,
+    boxSizing: 'content-box',
   },
 }))
 
 type LGV = LinearGenomeViewModel
 
+function TrackContainerLabel({
+  model,
+  view,
+}: {
+  model: BaseTrackModel
+  view: LGV
+}) {
+  const classes = useStyles()
+  const labelStyle =
+    view.trackLabels === 'overlapping'
+      ? classes.trackLabelOverlap
+      : classes.trackLabelInline
+  return view.trackLabels !== 'hidden' ? (
+    <TrackLabel
+      track={model}
+      className={clsx(classes.trackLabel, labelStyle)}
+    />
+  ) : null
+}
+
 function TrackContainer({
   model,
   track,
 }: {
-  model: LGV
+  model: LinearGenomeViewModel
   track: BaseTrackModel
 }) {
   const classes = useStyles()
   const display = track.displays[0]
-  const { id, trackLabels, horizontalScroll, draggingTrackId, moveTrack } =
-    model
+  const { horizontalScroll, draggingTrackId, moveTrack } = model
   const { height } = display
   const trackId = getConf(track, 'trackId')
-  const ref = useRef<HTMLDivElement>(null)
+  const ref = useRef(null)
 
   useEffect(() => {
     if (ref.current) {
@@ -86,9 +110,9 @@ function TrackContainer({
   const dimmed = draggingTrackId !== undefined && draggingTrackId !== display.id
 
   return (
-    <div className={classes.root}>
-      <Paper
-        variant="outlined"
+    <Paper className={classes.root} variant="outlined">
+      <TrackContainerLabel model={track} view={model} />
+      <div
         className={classes.trackRenderingContainer}
         style={{ height }}
         onScroll={event => {
@@ -96,24 +120,12 @@ function TrackContainer({
           display.setScrollTop(target.scrollTop)
         }}
         onDragEnter={debouncedOnDragEnter}
-        data-testid={`trackRenderingContainer-${id}-${trackId}`}
+        data-testid={`trackRenderingContainer-${model.id}-${trackId}`}
         role="presentation"
       >
-        {trackLabels !== 'hidden' ? (
-          <TrackLabel
-            track={track}
-            className={clsx(
-              classes.trackLabel,
-              trackLabels === 'overlapping'
-                ? classes.trackLabelOverlap
-                : classes.trackLabelInline,
-            )}
-          />
-        ) : null}
         <div ref={ref} style={{ transform: `scaleX(${model.scaleFactor})` }}>
           <RenderingComponent
             model={display}
-            blockState={{}}
             onHorizontalScroll={horizontalScroll}
           />
         </div>
@@ -129,7 +141,7 @@ function TrackContainer({
             <DisplayBlurb model={display} />
           </div>
         ) : null}
-      </Paper>
+      </div>
       <div
         className={classes.overlay}
         style={{
@@ -142,7 +154,7 @@ function TrackContainer({
         onDrag={display.resizeHeight}
         className={classes.resizeHandle}
       />
-    </div>
+    </Paper>
   )
 }
 
