@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@flatten-js/interval-tree": "^1.0.15",
-    "@gmod/bgzf-filehandle": "^1.4.2",
+    "@gmod/bgzf-filehandle": "^1.4.3",
     "@gmod/tabix": "^1.5.2",
     "@gmod/vcf": "^5.0.5",
     "@material-ui/icons": "^4.11.2",
