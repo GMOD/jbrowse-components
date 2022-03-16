@@ -1,3 +1,43 @@
+## 1.6.7 (2022-03-16)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                              | Download                                                          |
+| ------------------------------------ | ----------------------------------------------------------------- |
+| @jbrowse/plugin-alignments           | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-authentication       |                                                                   |
+| @jbrowse/plugin-comparative-adapters |                                                                   |
+| @jbrowse/plugin-dotplot-view         |                                                                   |
+| @jbrowse/plugin-gff3                 | https://www.npmjs.com/package/@jbrowse/plugin-gff3                |
+| @jbrowse/plugin-gtf                  | https://www.npmjs.com/package/@jbrowse/plugin-gtf                 |
+| @jbrowse/plugin-linear-genome-view   | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/plugin-spreadsheet-view     |                                                                   |
+| @jbrowse/plugin-variants             | https://www.npmjs.com/package/@jbrowse/plugin-variants            |
+| @jbrowse/plugin-wiggle               | https://www.npmjs.com/package/@jbrowse/plugin-wiggle              |
+| @jbrowse/desktop                     |                                                                   |
+| @jbrowse/img                         | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view  | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view    | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                         |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- [#2820](https://github.com/GMOD/jbrowse-components/pull/2820) Add optimization for BAM and unzip operations ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- [#2821](https://github.com/GMOD/jbrowse-components/pull/2821) Fixup scroll on wiggle tracks with trackLabels->offset ([@cmdcolin](https://github.com/cmdcolin))
+- [#2819](https://github.com/GMOD/jbrowse-components/pull/2819) Fix bug in desktop where first track gets stuck loading ([@garrettjstevens](https://github.com/garrettjstevens))
+
+#### Committers: 2
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+
 ## 1.6.6 (2022-03-15)
 
 <details><summary>Packages in this release</summary>
