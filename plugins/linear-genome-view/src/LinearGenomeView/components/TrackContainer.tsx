@@ -54,25 +54,21 @@ const useStyles = makeStyles(theme => ({
 
 type LGV = LinearGenomeViewModel
 
-function TrackContainerLabel({
-  model,
-  view,
-}: {
-  model: BaseTrackModel
-  view: LGV
-}) {
-  const classes = useStyles()
-  const labelStyle =
-    view.trackLabels === 'overlapping'
-      ? classes.trackLabelOverlap
-      : classes.trackLabelInline
-  return view.trackLabels !== 'hidden' ? (
-    <TrackLabel
-      track={model}
-      className={clsx(classes.trackLabel, labelStyle)}
-    />
-  ) : null
-}
+const TrackContainerLabel = observer(
+  ({ model, view }: { model: BaseTrackModel; view: LGV }) => {
+    const classes = useStyles()
+    const labelStyle =
+      view.trackLabels === 'overlapping'
+        ? classes.trackLabelOverlap
+        : classes.trackLabelInline
+    return view.trackLabels !== 'hidden' ? (
+      <TrackLabel
+        track={model}
+        className={clsx(classes.trackLabel, labelStyle)}
+      />
+    ) : null
+  },
+)
 
 function TrackContainer({
   model,
