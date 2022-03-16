@@ -4,7 +4,7 @@ import { isAlive } from 'mobx-state-tree'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
-import { useDebouncedCallback, getContainingView } from '@jbrowse/core/util'
+import { useDebouncedCallback } from '@jbrowse/core/util'
 import clsx from 'clsx'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
@@ -111,6 +111,7 @@ function TrackContainer({
 
   return (
     <Paper className={classes.root} variant="outlined">
+      <TrackContainerLabel model={track} view={model} />
       <div
         className={classes.trackRenderingContainer}
         style={{ height }}
@@ -122,7 +123,6 @@ function TrackContainer({
         data-testid={`trackRenderingContainer-${model.id}-${trackId}`}
         role="presentation"
       >
-        <TrackContainerLabel model={track} view={model} />
         <div ref={ref} style={{ transform: `scaleX(${model.scaleFactor})` }}>
           <RenderingComponent
             model={display}
