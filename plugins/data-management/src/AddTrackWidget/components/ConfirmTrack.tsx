@@ -17,7 +17,6 @@ import {
   List,
   ListItem,
   CardContent,
-  CardHeader,
   IconButton,
   InputLabel,
   InputAdornment,
@@ -153,7 +152,6 @@ const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
               <ListItem key={idx} disableGutters>
                 <TextField
                   value={val}
-                  // onChange={e => console.log("what index?", idx)}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -264,7 +262,6 @@ const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
           </List>
         </CardContent>
       </Card>
-      <FormHelperText>indexing</FormHelperText>
     </Paper>
   )
 })

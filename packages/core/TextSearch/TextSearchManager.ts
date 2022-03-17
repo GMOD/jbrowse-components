@@ -66,18 +66,16 @@ export default class TextSearchManager {
     }
 
     const { assemblyName } = searchScope
-    return [
+
+    const relevant = [
       ...this.getAdaptersWithAssembly(
         assemblyName,
         aggregateTextSearchAdapters,
       ),
-      ...this.getAdaptersWithAssembly(
-        assemblyName,
-        tracks.map(track =>
-          readConfObject(track, ['textSearching', 'textSearchAdapter']),
-        ),
-      ),
+      ...this.getTrackAdaptersWithAssembly(assemblyName, tracks),
     ]
+    console.log('relevant', relevant)
+    return relevant
   }
 
   getAdaptersWithAssembly(
@@ -87,6 +85,35 @@ export default class TextSearchManager {
     return adapterConfs.filter(conf =>
       readConfObject(conf, 'assemblyNames')?.includes(asmName),
     )
+  }
+
+  getTrackAdaptersWithAssembly(
+    asmName: string,
+    adapterConfs: AnyConfigurationModel[],
+  ) {
+    adapterConfs.forEach(t => {
+      console.log(
+        t,
+        readConfObject(t, [
+          'textSearching',
+        ]),
+      )
+    })
+    const tracksConfs = adapterConfs.filter(conf =>
+      readConfObject(conf, [
+        'textSearching',
+        'textSearchAdapter',
+        'assemblyNames',
+      ])?.includes(asmName),
+    )
+    console.log(tracksConfs)
+    const trackAdapters = tracksConfs.map(trackConf => {
+      const { textSearching } = trackConf
+      const { textSearchAdapter } = textSearching
+      return textSearchAdapter
+    })
+    console.log(trackAdapters)
+    return trackAdapters
   }
 
   /**

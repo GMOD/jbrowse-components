@@ -14,9 +14,10 @@ export async function* indexGff3(
 ) {
   const { adapter, trackId } = config
   const {
-    gffGzLocation: { uri },
+    gffGzLocation,
   } = adapter as Gff3TabixAdapter
 
+  const uri = 'uri' in gffGzLocation ? gffGzLocation.uri : gffGzLocation.localPath
   let fileDataStream
   let totalBytes = 0
   let receivedBytes = 0

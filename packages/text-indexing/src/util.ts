@@ -6,6 +6,10 @@ export interface UriLocation {
   uri: string
   locationType: 'UriLocation'
 }
+export interface LocalPathLocation {
+  localPath: string
+  locationType: 'LocalPathLocation'
+}
 export interface IndexedFastaAdapter {
   type: 'IndexedFastaAdapter'
   fastaLocation: UriLocation
@@ -65,7 +69,7 @@ export interface Sequence {
 
 export interface Gff3TabixAdapter {
   type: 'Gff3TabixAdapter'
-  gffGzLocation: UriLocation
+  gffGzLocation: UriLocation | LocalPathLocation
 }
 export interface GtfAdapter {
   type: 'GtfAdapter'
@@ -74,7 +78,7 @@ export interface GtfAdapter {
 
 export interface VcfTabixAdapter {
   type: 'VcfTabixAdapter'
-  vcfGzLocation: UriLocation
+  vcfGzLocation: UriLocation | LocalPathLocation
 }
 export interface Track {
   trackId: string

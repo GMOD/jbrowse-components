@@ -217,11 +217,15 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             sessionId: 'indexTracksSessionId',
             timeout: 1 * 60 * 60 * 1000, // 1 hours
           })
+          // console.log(assemblies)
           // should update the single track conf
-          trackIds.forEach(id =>
+          trackIds.forEach(id => {
             this.addTextSearchConf(id, assemblies, attributes, exclude),
-          )
-          self.session?.notify('Done Indexing', 'success')
+              self.session?.notify(
+                `Succesfully indexed track with trackId: ${id} `,
+                'success',
+              )
+          })
         }
         return
       },
@@ -234,8 +238,8 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         const currentTrackIdx = (self.session?.tracks as Track[]).findIndex(
           t => trackId === t.trackId,
         )
-        const currentTrack = self.session?.tracks[currentTrackIdx]
-        const { textSearching } = currentTrack
+        // const currentTrack = self.session?.tracks[currentTrackIdx]
+        // const { textSearching } = currentTrack
         // if (!currentTrack) {
         //   throw new Error(`Track not found in session for trackId ${trackId}`)
         // }
@@ -244,8 +248,8 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           0,
           self.sessionPath.lastIndexOf('/'),
         )
-        currentTrack.textSearching.set
-        console.log('currentTrack', currentTrack)
+        // console.log('assemblies', assemblies)
+        // currentTrack.textSearching.set
         const adapterConf = {
           type: 'TrixTextSearchAdapter',
           textSearchAdapterId: id,
@@ -265,23 +269,37 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           assemblyNames: assemblies,
         }
 
-        const newTrackConf = {
-          ...currentTrack,
-          textSearching: {
-            ...textSearching,
-            indexingAttributes: attributes,
-            indexingFeatureTypesToExclude: exclude,
-            textSearchAdapter: adapterConf,
-          },
-        }
-        console.log(newTrackConf)
-        // currentTrack.textSearching.textSearchAdapter.textSearchAdapterId.set(id)
-        // currentTrack.textSearching.textSearchAdapter.type.set('TrixTextSearchAdapter')
-        // currentTrack.textSearching.textSearchAdapter.type.set('TrixTextSearchAdapter')
-        // const trixAdapterConf = trixAdapter.configSchema.create(adapterConf)
-        // const indx = self.session?.tracks.findIndex((oldTrack: Track) => oldTrack.trackId == trackId)
-        // console.log(self.session?.tracks[indx])
-        // self.session?.tracks[indx] = newTrackConf
+        // console.log('adapterconf', adapterConf)
+        // const newTrackConf = {
+        //   ...currentTrack,
+        //   textSearching: {
+        //     indexingAttributes: attributes,
+        //     indexingFeatureTypesToExclude: exclude,
+        //     textSearchAdapter: adapterConf,
+        //   },
+        // }
+        // self.session?.tracks[currentTrackIdx].textSearching.setSubschema(
+        //   'indexingAttributes',
+        //   attributes,
+        // )
+        // self.session?.tracks[currentTrackIdx].textSearching.setSubschema(
+        //   'indexingFeatureTypesToExclude',
+        //   exclude,
+        // )
+        // self.session?.tracks[currentTrackIdx].textSearching.setSubschema(
+        //   'textSearchAdapter',
+        //   adapterConf,
+        // )
+        self.session?.tracks[currentTrackIdx].textSearching.setSubschema(
+          'textSearchAdapter',
+          adapterConf,
+        )
+        self.session?.tracks[
+          currentTrackIdx
+        ].textSearching.indexingAttributes.set(attributes)
+        self.session?.tracks[
+          currentTrackIdx
+        ].textSearching.indexingFeatureTypesToExclude.set(exclude)
       },
       findTrackConfigsToIndex(trackIds: string[]) {
         const configs = trackIds

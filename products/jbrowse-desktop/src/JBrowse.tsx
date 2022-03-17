@@ -1,5 +1,6 @@
 import React, { useEffect, useState, Suspense } from 'react'
 import { observer } from 'mobx-react'
+import { runInAction } from 'mobx'
 import { CssBaseline, ThemeProvider } from '@material-ui/core'
 import { getConf } from '@jbrowse/core/configuration'
 import { App, createJBrowseTheme } from '@jbrowse/core/ui'
@@ -12,6 +13,10 @@ import { RootModel } from './rootModel'
 const JBrowse = observer(
   ({ pluginManager }: { pluginManager: PluginManager }) => {
     const { rootModel } = pluginManager
+    // @ts-ignore
+    window.root = rootModel
+    // @ts-ignore
+    window.runInAction = runInAction
 
     return rootModel ? (
       <JBrowseNonNullRoot rootModel={rootModel as RootModel} />
