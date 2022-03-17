@@ -16,7 +16,6 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { UriLocation } from '@jbrowse/core/util/types'
-// import { indexTracks } from '@jbrowse/text-indexing'
 import { ipcRenderer } from 'electron'
 
 // icons
@@ -218,9 +217,71 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             sessionId: 'indexTracksSessionId',
             timeout: 1 * 60 * 60 * 1000, // 1 hours
           })
+          // should update the single track conf
+          trackIds.forEach(id =>
+            this.addTextSearchConf(id, assemblies, attributes, exclude),
+          )
           self.session?.notify('Done Indexing', 'success')
         }
         return
+      },
+      addTextSearchConf(
+        trackId: string,
+        assemblies: string[],
+        attributes: string[],
+        exclude: string[],
+      ) {
+        const currentTrackIdx = (self.session?.tracks as Track[]).findIndex(
+          t => trackId === t.trackId,
+        )
+        const currentTrack = self.session?.tracks[currentTrackIdx]
+        const { textSearching } = currentTrack
+        // if (!currentTrack) {
+        //   throw new Error(`Track not found in session for trackId ${trackId}`)
+        // }
+        const id = trackId + '-index'
+        const locationPath = self.sessionPath.substring(
+          0,
+          self.sessionPath.lastIndexOf('/'),
+        )
+        currentTrack.textSearching.set
+        console.log('currentTrack', currentTrack)
+        const adapterConf = {
+          type: 'TrixTextSearchAdapter',
+          textSearchAdapterId: id,
+          ixFilePath: {
+            localPath: locationPath + `/trix/${trackId}.ix`,
+            locationType: 'LocalPathLocation',
+          },
+          ixxFilePath: {
+            localPath: locationPath + `/trix/${trackId}.ixx`,
+            locationType: 'LocalPathLocation',
+          },
+          metaFilePath: {
+            localPath: locationPath + `/trix/${trackId}_meta.json`,
+            locationType: 'LocalPathLocation',
+          },
+          tracks: [trackId],
+          assemblyNames: assemblies,
+        }
+
+        const newTrackConf = {
+          ...currentTrack,
+          textSearching: {
+            ...textSearching,
+            indexingAttributes: attributes,
+            indexingFeatureTypesToExclude: exclude,
+            textSearchAdapter: adapterConf,
+          },
+        }
+        console.log(newTrackConf)
+        // currentTrack.textSearching.textSearchAdapter.textSearchAdapterId.set(id)
+        // currentTrack.textSearching.textSearchAdapter.type.set('TrixTextSearchAdapter')
+        // currentTrack.textSearching.textSearchAdapter.type.set('TrixTextSearchAdapter')
+        // const trixAdapterConf = trixAdapter.configSchema.create(adapterConf)
+        // const indx = self.session?.tracks.findIndex((oldTrack: Track) => oldTrack.trackId == trackId)
+        // console.log(self.session?.tracks[indx])
+        // self.session?.tracks[indx] = newTrackConf
       },
       findTrackConfigsToIndex(trackIds: string[]) {
         const configs = trackIds

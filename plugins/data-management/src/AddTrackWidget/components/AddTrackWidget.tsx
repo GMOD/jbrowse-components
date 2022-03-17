@@ -101,9 +101,10 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
         attributes: ['Name', 'ID'],
         exclude: ['CDS', 'exon'],
       }
+      const supported = ['Gff3TabixAdapter', 'VcfTabixAdapter']
       if (model.view) {
         model.view.showTrack(trackId)
-        if (textIndexTrack) {
+        if (textIndexTrack && supported.includes(trackAdapter.type)) {
           const attr = textIndexingConf || textSearchingDefault
           const indexingParams = {
             ...attr,
@@ -112,6 +113,12 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
             indexType: 'perTrack',
           }
           rootModel.queueIndexingJob(indexingParams)
+        }
+        if (textIndexTrack && !supported.includes(trackAdapter.type)) {
+          session.notify(
+            'Unable to index this track. File type not supported by indexer.',
+            'info',
+          )
         }
       } else {
         session.notify(

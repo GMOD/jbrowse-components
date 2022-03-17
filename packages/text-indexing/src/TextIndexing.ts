@@ -4,15 +4,12 @@ import path from 'path'
 import { Readable } from 'stream'
 import { indexGff3 } from './types/gff3Adapter'
 import { indexVcf } from './types/vcfAdapter'
-import { generateMeta } from './types/common'
+import { generateMeta, supported } from './types/common'
 import { ixIxxStream } from 'ixixx'
 import { Track } from './util'
 
 type indexType = 'aggregate' | 'perTrack'
 
-// function readConf(confFilePath: string) {
-//   return JSON.parse(fs.readFileSync(confFilePath, 'utf8')) as Config
-// }
 export async function indexTracks(args: {
   tracks: Track[] // array of trackIds to index
   outLocation?: string
@@ -25,7 +22,6 @@ export async function indexTracks(args: {
   const { tracks, outLocation, attributes, exclude, assemblies, indexType } =
     args
   const idxType = indexType || 'perTrack'
-  console.log(idxType)
   if (idxType === 'perTrack') {
     await perTrackIndex(tracks, outLocation, attributes, assemblies, exclude)
   }
@@ -56,8 +52,8 @@ async function perTrackIndex(
   const attrs = attributes || ['Name', 'ID']
   const excludeTypes = exclude || ['exon', 'CDS']
   const force = true
-  // check if track adapter is supported .filter(track => supported(track.adapter?.type))
-  for (const trackConfig of tracks) {
+  const supportedTracks = tracks.filter(track => supported(track.adapter?.type))
+  for (const trackConfig of supportedTracks) {
     const { textSearching, trackId, assemblyNames } = trackConfig
     if (textSearching?.textSearchAdapter && !force) {
       console.warn(
@@ -65,9 +61,6 @@ async function perTrackIndex(
       )
       continue
     }
-    // console.log('Indexing track ' + trackId + '...')
-
-    // const id = trackId + '-index'
     await indexDriver(
       [trackConfig],
       outDir,
@@ -77,35 +70,7 @@ async function perTrackIndex(
       excludeTypes,
       assemblyNames,
     )
-    console.log('Done Indexing: ' + trackId)
-    // if (!textSearching || !textSearching?.textSearchAdapter) {
-    //   const newTrackConfig = {
-    //     ...trackConfig,
-    //     textSearching: {
-    //       ...textSearching,
-    //       textSearchAdapter: {
-    //         type: 'TrixTextSearchAdapter',
-    //         textSearchAdapterId: id,
-    //         ixFilePath: {
-    //           uri: `trix/${trackId}.ix`,
-    //           locationType: 'UriLocation' as const,
-    //         },
-    //         ixxFilePath: {
-    //           uri: `trix/${trackId}.ixx`,
-    //           locationType: 'UriLocation' as const,
-    //         },
-    //         metaFilePath: {
-    //           uri: `trix/${trackId}_meta.json`,
-    //           locationType: 'UriLocation' as const,
-    //         },
-    //         assemblyNames: assemblyNames,
-    //       },
-    //     },
-    //   }
-    //   // modifies track with new text search adapter
-    //   const index = configTracks.findIndex(track => trackId === track.trackId)
-    //   configTracks[index] = newTrackConfig
-    // }
+    // console.log('Done Indexing: ' + trackId)
   }
 }
 
@@ -161,29 +126,3 @@ function runIxIxx(readStream: Readable, idxLocation: string, name: string) {
   const ixxFilename = path.join(idxLocation, 'trix', `${name}.ixx`)
   return ixIxxStream(readStream, ixFilename, ixxFilename)
 }
-
-// async function getTrackConfigs(
-//   configPath: string,
-//   trackIds?: string[],
-//   assemblyName?: string,
-// ) {
-//   const { tracks } = readConf(configPath)
-//   if (!tracks) {
-//     return []
-//   }
-//   const trackIdsToIndex = trackIds || tracks?.map(track => track.trackId)
-//   return trackIdsToIndex
-//     .map(trackId => {
-//       const currentTrack = tracks.find(t => trackId === t.trackId)
-//       if (!currentTrack) {
-//         throw new Error(
-//           `Track not found in config.json for trackId ${trackId}, please add track configuration before indexing.`,
-//         )
-//       }
-//       return currentTrack
-//     })
-//     .filter(track => supported(track.adapter?.type))
-//     .filter(track =>
-//       assemblyName ? track.assemblyNames.includes(assemblyName) : true,
-//     )
-// }
