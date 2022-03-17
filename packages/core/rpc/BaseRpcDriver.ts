@@ -3,6 +3,7 @@ import { objectFromEntries } from '../util'
 import { serializeAbortSignal } from './remoteAbortSignals'
 import PluginManager from '../PluginManager'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
+import { readConfObject } from '../configuration'
 
 export interface WorkerHandle {
   status?: string
@@ -105,8 +106,6 @@ export default abstract class BaseRpcDriver {
 
   private workerAssignments = new Map<string, number>() // sessionId -> worker number
 
-  private workerCount = 0
-
   abstract makeWorker(): Promise<WorkerHandle>
 
   private workerPool?: LazyWorker[]
@@ -169,7 +168,8 @@ export default abstract class BaseRpcDriver {
     const hardwareConcurrency = detectHardwareConcurrency()
 
     const workerCount =
-      this.workerCount || Math.max(1, Math.ceil((hardwareConcurrency - 2) / 3))
+      readConfObject(this.config, 'workerCount') ||
+      Math.max(1, Math.ceil((hardwareConcurrency - 2) / 3))
 
     return [...new Array(workerCount)].map(() => new LazyWorker(this))
   }

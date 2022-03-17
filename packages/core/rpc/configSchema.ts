@@ -1,20 +1,27 @@
 import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../configuration'
 
+const BaseRpcDriverConfigSchema = ConfigurationSchema(
+  'MainThreadRpcDriver',
+  {
+    workerCount: {
+      type: 'number',
+      description:
+        'The number of workers to use. If 0 (the default) JBrowse will decide how many workers to use.',
+      defaultValue: 0,
+    },
+  },
+  { explicitlyTyped: true },
+)
 const MainThreadRpcDriverConfigSchema = ConfigurationSchema(
   'MainThreadRpcDriver',
   {},
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, baseConfiguration: BaseRpcDriverConfigSchema },
 )
 const WebWorkerRpcDriverConfigSchema = ConfigurationSchema(
   'WebWorkerRpcDriver',
   {},
-  { explicitlyTyped: true },
-)
-const ElectronRpcDriverConfigSchema = ConfigurationSchema(
-  'ElectronRpcDriver',
-  {},
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, baseConfiguration: BaseRpcDriverConfigSchema },
 )
 
 export default ConfigurationSchema(
@@ -31,7 +38,6 @@ export default ConfigurationSchema(
         types.union(
           MainThreadRpcDriverConfigSchema,
           WebWorkerRpcDriverConfigSchema,
-          ElectronRpcDriverConfigSchema,
         ),
       ),
       { MainThreadRpcDriver: { type: 'MainThreadRpcDriver' } },
