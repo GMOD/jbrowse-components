@@ -1,18 +1,34 @@
-import { readConfObject } from '@jbrowse/core/configuration'
-import { observer } from 'mobx-react'
-import PropTypes from 'prop-types'
 import React from 'react'
-import { chooseGlyphComponent, layOut, layOutFeature } from './util'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
+import { observer } from 'mobx-react'
+import {
+  chooseGlyphComponent,
+  ExtraGlyphValidator,
+  layOut,
+  layOutFeature,
+} from './util'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { SceneGraph } from '@jbrowse/core/util/layouts'
 
-function Subfeatures(props) {
+function Subfeatures(props: {
+  feature: Feature
+  featureLayout: SceneGraph
+  selected?: boolean
+}) {
   const { feature, featureLayout, selected } = props
 
   return (
     <>
-      {feature.get('subfeatures').map(subfeature => {
+      {feature.get('subfeatures')?.map(subfeature => {
         const subfeatureId = String(subfeature.id())
         const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
-        const { GlyphComponent } = subfeatureLayout.data
+        if (!subfeatureLayout) {
+          return null
+        }
+        const { GlyphComponent } = subfeatureLayout.data || {}
         return (
           <GlyphComponent
             key={`glyph-${subfeatureId}`}
@@ -27,20 +43,6 @@ function Subfeatures(props) {
   )
 }
 
-Subfeatures.propTypes = {
-  feature: PropTypes.shape({ get: PropTypes.func.isRequired }).isRequired,
-  featureLayout: PropTypes.shape({
-    getSubRecord: PropTypes.func.isRequired,
-  }).isRequired,
-  selected: PropTypes.bool,
-  reversed: PropTypes.bool,
-}
-
-Subfeatures.defaultProps = {
-  selected: false,
-  reversed: false,
-}
-
 Subfeatures.layOut = ({
   layout,
   feature,
@@ -48,6 +50,13 @@ Subfeatures.layOut = ({
   reversed,
   config,
   extraGlyphs,
+}: {
+  layout: SceneGraph
+  feature: Feature
+  bpPerPx: number
+  reversed: boolean
+  config: AnyConfigurationModel
+  extraGlyphs: ExtraGlyphValidator[]
 }) => {
   const subLayout = layOutFeature({
     layout,
@@ -59,16 +68,15 @@ Subfeatures.layOut = ({
   })
   const displayMode = readConfObject(config, 'displayMode')
   if (displayMode !== 'reducedRepresentation') {
-    const subfeatures = feature.get('subfeatures') || []
     let topOffset = 0
-    subfeatures.forEach(subfeature => {
+    feature.get('subfeatures')?.forEach(subfeature => {
       const SubfeatureGlyphComponent = chooseGlyphComponent(
         subfeature,
         extraGlyphs,
       )
       const subfeatureHeight = readConfObject(config, 'height', {
         feature: subfeature,
-      })
+      }) as number
 
       const subSubLayout = (SubfeatureGlyphComponent.layOut || layOut)({
         layout: subLayout,
