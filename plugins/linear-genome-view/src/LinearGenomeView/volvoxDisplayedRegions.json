@@ -1,0 +1,16 @@
+[
+  {
+    "assemblyName": "volvox",
+    "start": 0,
+    "end": 50001,
+    "refName": "ctgA",
+    "reversed": false
+  },
+  {
+    "assemblyName": "volvox",
+    "start": 0,
+    "end": 6079,
+    "refName": "ctgB",
+    "reversed": false
+  }
+]

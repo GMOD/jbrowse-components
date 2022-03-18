@@ -1,10 +1,12 @@
 {
   "name": "@jbrowse/img",
-  "version": "1.6.5",
+  "version": "1.6.7",
   "main": "index.js",
   "author": "JBrowse Team",
   "license": "Apache-2.0",
-  "engines": ">=16",
+  "engines": {
+    "node": ">=14"
+  },
   "bin": {
     "jb2export": "./dist/bin.js"
   },
@@ -26,8 +28,9 @@
     "postversion": "git push --follow-tags"
   },
   "dependencies": {
-    "@jbrowse/plugin-linear-genome-view": "^1.6.5",
-    "@jbrowse/react-linear-genome-view": "^1.6.5",
+    "@jbrowse/plugin-linear-genome-view": "^1.6.7",
+    "@jbrowse/react-linear-genome-view": "^1.6.7",
+    "abortcontroller-polyfill": "^1.7.3",
     "mobx": "^5.10.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",

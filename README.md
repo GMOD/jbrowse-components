@@ -17,6 +17,16 @@ Docs http://jbrowse.org/jb2/docs/
 - [nodejs](https://nodejs.org/en/download/) (node 14 or greater)
 - [yarn](https://yarnpkg.com/en/docs/install)
 
+You may need additional pre-requisites on certain versions of nodejs.
+
+On macOS with homebrew:
+
+    brew install pkg-config cairo pango libpng jpeg giflib librsvg
+
+On Ubuntu, with apt:
+
+    sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+
 ## Install (Linux/Mac)
 
 Simply clone the git repo and run yarn in the root repository

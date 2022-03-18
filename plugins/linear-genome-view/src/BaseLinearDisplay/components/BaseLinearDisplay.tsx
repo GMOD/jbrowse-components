@@ -1,8 +1,8 @@
 import React, { useState, useRef, useMemo } from 'react'
+import { observer } from 'mobx-react'
 import { Portal, alpha, useTheme, makeStyles } from '@material-ui/core'
 import { getConf } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
-import { observer } from 'mobx-react'
 import { usePopper } from 'react-popper'
 
 // locals
@@ -31,7 +31,7 @@ const useStyles = makeStyles(theme => ({
     color: theme.palette.common.white,
     fontFamily: theme.typography.fontFamily,
     padding: '4px 8px',
-    fontSize: theme.typography.pxToRem(10),
+    fontSize: theme.typography.pxToRem(12),
     lineHeight: `${round(14 / 10)}em`,
     maxWidth: 300,
     wordWrap: 'break-word',
@@ -56,7 +56,6 @@ const Tooltip = observer(
     const classes = useStyles()
     const { featureUnderMouse } = model
     const [width, setWidth] = useState(0)
-
     const [popperElt, setPopperElt] = useState<HTMLDivElement | null>(null)
 
     // must be memoized a la https://github.com/popperjs/react-popper/issues/391
@@ -111,7 +110,7 @@ const BaseLinearDisplay = observer(
     const classes = useStyles()
     const theme = useTheme()
     const ref = useRef<HTMLDivElement>(null)
-    const [clientRect, setClientRect] = useState<ClientRect>()
+    const [clientRect, setClientRect] = useState<DOMRect>()
     const [offsetMouseCoord, setOffsetMouseCoord] = useState<Coord>([0, 0])
     const [clientMouseCoord, setClientMouseCoord] = useState<Coord>([0, 0])
     const [contextCoord, setContextCoord] = useState<Coord>()
@@ -139,17 +138,15 @@ const BaseLinearDisplay = observer(
           }
         }}
         onMouseMove={event => {
-          if (ref.current) {
-            const rect = ref.current.getBoundingClientRect()
-            setOffsetMouseCoord([
-              event.clientX - rect.left,
-              event.clientY - rect.top,
-            ])
-            setClientMouseCoord([event.clientX, event.clientY])
-            setClientRect(rect)
+          if (!ref.current) {
+            return
           }
+          const rect = ref.current.getBoundingClientRect()
+          const { left, top } = rect
+          setOffsetMouseCoord([event.clientX - left, event.clientY - top])
+          setClientMouseCoord([event.clientX, event.clientY])
+          setClientRect(rect)
         }}
-        role="presentation"
       >
         {DisplayMessageComponent ? (
           <DisplayMessageComponent model={model} />

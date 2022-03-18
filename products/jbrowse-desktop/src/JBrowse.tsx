@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Suspense } from 'react'
+import React, { Suspense } from 'react'
 import { observer } from 'mobx-react'
 import { runInAction } from 'mobx'
 import { CssBaseline, ThemeProvider } from '@material-ui/core'
@@ -26,15 +26,8 @@ const JBrowse = observer(
 
 const JBrowseNonNullRoot = observer(
   ({ rootModel }: { rootModel: RootModel }) => {
-    const [firstLoad, setFirstLoad] = useState(true)
     const { session, jbrowse, error, isAssemblyEditing, setAssemblyEditing } =
       rootModel
-
-    useEffect(() => {
-      if (firstLoad && session) {
-        setFirstLoad(false)
-      }
-    }, [firstLoad, session])
 
     if (error) {
       throw error

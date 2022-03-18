@@ -130,7 +130,7 @@ export function stateModelFactory(configSchema: any) {
           self.renderingComponent = undefined
           renderInProgress = undefined
         },
-        setRendered(args: {
+        setRendered(args?: {
           data: any
           reactElement: React.ReactElement
           renderingComponent: React.Component

@@ -10,10 +10,21 @@ export default ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
-    subadapters: {
-      type: 'frozen',
-      defaultValue: [],
+    bed1Location: {
+      type: 'fileLocation',
+      defaultValue: {
+        uri: '/path/to/file.bed',
+        locationType: 'UriLocation',
+      },
     },
+    bed2Location: {
+      type: 'fileLocation',
+      defaultValue: {
+        uri: '/path/to/file.bed',
+        locationType: 'UriLocation',
+      },
+    },
+
     assemblyNames: {
       type: 'stringArray',
       defaultValue: [],

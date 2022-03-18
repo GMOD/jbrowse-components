@@ -49,7 +49,7 @@
   "connections": [],
   "defaultSession": {
     "id": "Afiay0eI1",
-    "name": "Grape vs Peach Demo",
+    "name": "Grape vs Peach Demo 3/7/2022, 6:01:44 PM",
     "margin": 0,
     "drawerWidth": 384,
     "views": [
@@ -62,6 +62,7 @@
         "showIntraviewLinks": true,
         "linkViews": false,
         "interactToggled": false,
+        "middleComparativeHeight": 100,
         "tracks": [
           {
             "id": "J4VCa6xoWN",
@@ -81,8 +82,8 @@
           {
             "id": "test1_1",
             "type": "LinearGenomeView",
-            "offsetPx": 28249,
-            "bpPerPx": 1000,
+            "offsetPx": 9499,
+            "bpPerPx": 2864.5268987341774,
             "displayedRegions": [
               {
                 "refName": "Pp01",
@@ -92,33 +93,19 @@
                 "assemblyName": "peach"
               }
             ],
-            "tracks": [
-              {
-                "id": "1qJk7nK6P7",
-                "type": "FeatureTrack",
-                "configuration": "peach_genes",
-                "displays": [
-                  {
-                    "id": "kEG_a8qS22",
-                    "type": "LinearBasicDisplay",
-                    "height": 100,
-                    "configuration": "peach_genes_linear",
-                    "trackShowLabels": false
-                  }
-                ]
-              }
-            ],
+            "tracks": [],
             "hideHeader": true,
             "hideHeaderOverview": false,
             "trackSelectorType": "hierarchical",
             "trackLabels": "overlapping",
-            "showCenterLine": false
+            "showCenterLine": false,
+            "showCytobandsSetting": true
           },
           {
             "id": "test1_2",
             "type": "LinearGenomeView",
-            "offsetPx": 0,
-            "bpPerPx": 1000,
+            "offsetPx": -313,
+            "bpPerPx": 1964.3106540084389,
             "displayedRegions": [
               {
                 "refName": "chr1",
@@ -128,31 +115,17 @@
                 "assemblyName": "grape"
               }
             ],
-            "tracks": [
-              {
-                "id": "0VUS1Xy1vZ",
-                "type": "FeatureTrack",
-                "configuration": "grape_genes",
-                "displays": [
-                  {
-                    "id": "z-bang1CRn",
-                    "type": "LinearBasicDisplay",
-                    "height": 100,
-                    "configuration": "grape_genes_linear",
-                    "trackShowLabels": false
-                  }
-                ]
-              }
-            ],
+            "tracks": [],
             "hideHeader": true,
             "hideHeaderOverview": false,
             "trackSelectorType": "hierarchical",
             "trackLabels": "overlapping",
-            "showCenterLine": false
+            "showCenterLine": false,
+            "showCytobandsSetting": true
           }
         ],
         "viewTrackConfigs": [],
-        "viewAssemblyConfigs": []
+        "drawCurves": false
       },
       {
         "id": "d1asEMtmS",
@@ -163,6 +136,7 @@
         "showIntraviewLinks": true,
         "linkViews": false,
         "interactToggled": false,
+        "middleComparativeHeight": 100,
         "tracks": [
           {
             "id": "0JxrbvMHE0",
@@ -1528,7 +1502,8 @@
             "hideHeaderOverview": false,
             "trackSelectorType": "hierarchical",
             "trackLabels": "overlapping",
-            "showCenterLine": false
+            "showCenterLine": false,
+            "showCytobandsSetting": true
           },
           {
             "id": "yE3sMpbNtJ",
@@ -1773,287 +1748,72 @@
             "hideHeaderOverview": false,
             "trackSelectorType": "hierarchical",
             "trackLabels": "overlapping",
-            "showCenterLine": false
+            "showCenterLine": false,
+            "showCytobandsSetting": true
           }
         ],
         "viewTrackConfigs": [],
-        "viewAssemblyConfigs": []
+        "drawCurves": false
       }
     ],
     "widgets": {},
     "activeWidgets": {},
-    "connectionInstances": {},
-    "sessionTracks": [
-      {
-        "type": "SyntenyTrack",
-        "trackId": "fileName-1606318976692",
-        "name": "peach_grape.paf",
-        "assemblyNames": ["peach", "grape"],
-        "adapter": {
-          "type": "PAFAdapter",
-          "assemblyNames": ["peach", "grape"],
-          "pafLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf",
-            "locationType": "UriLocation"
-          }
-        },
-        "displays": [
-          {
-            "type": "DotplotDisplay",
-            "displayId": "fileName-1606318976692-DotplotDisplay",
-            "renderer": {
-              "type": "DotplotRenderer"
-            }
-          },
-          {
-            "type": "LinearComparativeDisplay",
-            "displayId": "fileName-1606318976692-LinearComparativeDisplay",
-            "renderer": {
-              "type": "SvgFeatureRenderer"
-            }
-          },
-          {
-            "type": "LinearSyntenyDisplay",
-            "displayId": "fileName-1606318976692-LinearSyntenyDisplay",
-            "renderer": {
-              "type": "LinearSyntenyRenderer"
-            }
-          }
-        ]
-      },
-      {
-        "type": "SyntenyTrack",
-        "trackId": "fileName-1606319049337",
-        "name": "peach_grape.paf",
-        "assemblyNames": ["peach", "grape"],
-        "adapter": {
-          "type": "PAFAdapter",
-          "assemblyNames": ["peach", "grape"],
-          "pafLocation": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf",
-            "locationType": "UriLocation"
-          }
-        },
-        "displays": [
-          {
-            "type": "DotplotDisplay",
-            "displayId": "fileName-1606319049337-DotplotDisplay",
-            "renderer": {
-              "type": "DotplotRenderer"
-            }
-          },
-          {
-            "type": "LinearComparativeDisplay",
-            "displayId": "fileName-1606319049337-LinearComparativeDisplay",
-            "renderer": {
-              "type": "SvgFeatureRenderer"
-            }
-          },
-          {
-            "type": "LinearSyntenyDisplay",
-            "displayId": "fileName-1606319049337-LinearSyntenyDisplay",
-            "renderer": {
-              "type": "LinearSyntenyRenderer"
-            }
-          }
-        ]
-      },
-      {
-        "type": "QuantitativeTrack",
-        "trackId": "gccontent_grape",
-        "name": "GCContent",
-        "assemblyNames": ["grape"],
-        "adapter": {
-          "type": "GCContentAdapter",
-          "sequenceAdapter": {
-            "type": "BgzipFastaAdapter",
-            "fastaLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/grape/Vvinifera_145_Genoscope.12X.fa.gz",
-              "locationType": "UriLocation"
-            },
-            "faiLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/grape/Vvinifera_145_Genoscope.12X.fa.gz.fai",
-              "locationType": "UriLocation"
-            },
-            "gziLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/grape/Vvinifera_145_Genoscope.12X.fa.gz.gzi",
-              "locationType": "UriLocation"
-            }
-          }
-        }
-      },
-      {
-        "type": "QuantitativeTrack",
-        "trackId": "gccontent_peach",
-        "name": "GCContent",
-        "assemblyNames": ["peach"],
-        "adapter": {
-          "type": "GCContentAdapter",
-          "sequenceAdapter": {
-            "type": "BgzipFastaAdapter",
-            "fastaLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/peach/Ppersica_298_v2.0.fa.gz",
-              "locationType": "UriLocation"
-            },
-            "faiLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/peach/Ppersica_298_v2.0.fa.gz.fai",
-              "locationType": "UriLocation"
-            },
-            "gziLocation": {
-              "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/peach/Ppersica_298_v2.0.fa.gz.gzi",
-              "locationType": "UriLocation"
-            }
-          }
-        }
-      }
-    ],
-    "sessionConnections": []
+    "connectionInstances": [],
+    "sessionTracks": [],
+    "sessionConnections": [],
+    "sessionAssemblies": [],
+    "sessionPlugins": [],
+    "minimized": false,
+    "drawerPosition": "right"
   },
+  "widgets": {},
+  "activeWidgets": {},
+  "connectionInstances": {},
   "tracks": [
     {
       "type": "SyntenyTrack",
       "trackId": "grape_peach_synteny_mcscan",
-      "name": "Grape peach synteny (MCScan)",
+      "name": "Grape peach synteny (MCScan, anchors)",
       "assemblyNames": ["peach", "grape"],
       "category": ["Annotation"],
       "adapter": {
         "type": "MCScanAnchorsAdapter",
         "mcscanAnchorsLocation": {
-          "uri": "grape.peach.anchors",
-          "locationType": "UriLocation"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape.peach.anchors.gz"
         },
-        "subadapters": [
-          {
-            "type": "NCListAdapter",
-            "rootUrlTemplate": {
-              "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json",
-              "locationType": "UriLocation"
-            }
-          },
-          {
-            "type": "NCListAdapter",
-            "rootUrlTemplate": {
-              "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json",
-              "locationType": "UriLocation"
-            }
-          }
-        ],
-        "assemblyNames": ["peach", "grape"]
-      },
-      "displays": [
-        {
-          "type": "DotplotDisplay",
-          "displayId": "grape_peach_synteny_mcscan-DotplotDisplay"
+        "bed1Location": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/grape.bed.gz"
         },
-        {
-          "type": "LinearComparativeDisplay",
-          "displayId": "grape_peach_synteny_mcscan-LinearComparativeDisplay"
+        "bed2Location": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/peach.bed.gz"
         },
-        {
-          "type": "LinearSyntenyDisplay",
-          "displayId": "grape_peach_synteny_mcscan-LinearSyntenyDisplay"
-        }
-      ]
+        "assemblyNames": ["grape", "peach"]
+      }
     },
+
     {
-      "type": "FeatureTrack",
-      "trackId": "peach_genes",
-      "name": "mcscan",
-      "assemblyNames": ["peach"],
+      "type": "SyntenyTrack",
+      "trackId": "grape_peach_synteny_mcscan_simple",
+      "name": "Grape peach synteny (MCScan, simple anchors)",
+      "assemblyNames": ["peach", "grape"],
       "category": ["Annotation"],
       "adapter": {
-        "type": "NCListAdapter",
-        "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json",
-          "locationType": "UriLocation"
-        }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "peach_genes_linear"
+        "type": "MCScanSimpleAnchorsAdapter",
+        "mcscanSimpleAnchorsLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/grape.peach.anchors.simple.gz"
         },
-        {
-          "type": "LinearLollipopDisplay",
-          "displayId": "peach_genes-LinearLollipopDisplay"
-        }
-      ]
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "peach_genes2",
-      "name": "mcscan2",
-      "assemblyNames": ["peach"],
-      "category": ["Annotation"],
-      "adapter": {
-        "type": "NCListAdapter",
-        "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json",
-          "locationType": "UriLocation"
-        }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "peach_genes2-LinearBasicDisplay"
+        "bed1Location": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/grape.bed.gz"
         },
-        {
-          "type": "LinearLollipopDisplay",
-          "displayId": "peach_genes2-LinearLollipopDisplay"
-        }
-      ]
+        "bed2Location": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/peach.bed.gz"
+        },
+        "assemblyNames": ["grape", "peach"]
+      }
     },
     {
       "type": "FeatureTrack",
       "trackId": "grape_genes",
-      "name": "mcscan",
-      "assemblyNames": ["grape"],
-      "category": ["Annotation"],
-      "adapter": {
-        "type": "NCListAdapter",
-        "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json",
-          "locationType": "UriLocation"
-        }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "grape_genes_linear"
-        },
-        {
-          "type": "LinearLollipopDisplay",
-          "displayId": "grape_genes-LinearLollipopDisplay"
-        }
-      ]
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "grape_genes2",
-      "name": "mcscan2",
-      "assemblyNames": ["grape"],
-      "category": ["Annotation"],
-      "adapter": {
-        "type": "NCListAdapter",
-        "rootUrlTemplate": {
-          "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json",
-          "locationType": "UriLocation"
-        }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "grape_genes2-LinearBasicDisplay"
-        },
-        {
-          "type": "LinearLollipopDisplay",
-          "displayId": "grape_genes2-LinearLollipopDisplay"
-        }
-      ]
-    },
-    {
-      "type": "FeatureTrack",
-      "trackId": "Vvinifera_457_v2.1.gene.sorted.gff",
       "name": "Vvinifera_457_v2.1.gene.sorted.gff",
       "adapter": {
         "type": "Gff3TabixAdapter",
@@ -2069,11 +1829,22 @@
           "indexType": "TBI"
         }
       },
-      "assemblyNames": ["grape"]
+      "assemblyNames": ["grape"],
+
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "grape_genes_linear"
+        },
+        {
+          "type": "LinearLollipopDisplay",
+          "displayId": "grape_genes-LinearLollipopDisplay"
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
-      "trackId": "Ppersica_298_v2.1.gene.sorted.gff3",
+      "trackId": "peach_genes",
       "name": "Ppersica_298_v2.1.gene.sorted.gff3",
       "adapter": {
         "type": "Gff3TabixAdapter",
@@ -2089,7 +1860,84 @@
           "indexType": "TBI"
         }
       },
-      "assemblyNames": ["peach"]
+      "assemblyNames": ["peach"],
+
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "peach_genes_linear"
+        },
+        {
+          "type": "LinearLollipopDisplay",
+          "displayId": "peach_genes-LinearLollipopDisplay"
+        }
+      ]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "fileName-1606319049337",
+      "name": "Grape vs Peach (minimap2)",
+      "assemblyNames": ["peach", "grape"],
+      "metadata": {
+        "command": "minimap2 -c  Vvinifera_145_Genoscope.12X.fa Ppersica_298_v2.0.fa > out.paf",
+        "version": "2.24-r1122"
+      },
+      "adapter": {
+        "type": "PAFAdapter",
+        "assemblyNames": ["peach", "grape"],
+        "pafLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf.gz",
+          "locationType": "UriLocation"
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "gccontent_grape",
+      "name": "GCContent",
+      "assemblyNames": ["grape"],
+      "adapter": {
+        "type": "GCContentAdapter",
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/grape/Vvinifera_145_Genoscope.12X.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/grape/Vvinifera_145_Genoscope.12X.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/grape/Vvinifera_145_Genoscope.12X.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "gccontent_peach",
+      "name": "GCContent",
+      "assemblyNames": ["peach"],
+      "adapter": {
+        "type": "GCContentAdapter",
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/peach/Ppersica_298_v2.0.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/peach/Ppersica_298_v2.0.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/peach/Ppersica_298_v2.0.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
     }
   ]
 }

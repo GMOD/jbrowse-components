@@ -1,13 +1,16 @@
 import React from 'react'
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import {
+  ConfigurationReference,
+  AnyConfigurationModel,
+  getConf,
+} from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { MenuItem } from '@jbrowse/core/ui'
-import deepEqual from 'fast-deep-equal'
 import { autorun, when } from 'mobx'
 import { addDisposer, getSnapshot, Instance, types } from 'mobx-state-tree'
 import { getContainingTrack } from '@jbrowse/core/util'
+import deepEqual from 'fast-deep-equal'
 import { AlignmentsConfigModel } from './configSchema'
 
 const minDisplayHeight = 20
@@ -222,12 +225,10 @@ const stateModelFactory = (
           <>
             <g>{await self.SNPCoverageDisplay.renderSvg(opts)}</g>
             <g transform={`translate(0 ${self.SNPCoverageDisplay.height})`}>
-              {
-                await self.PileupDisplay.renderSvg({
-                  ...opts,
-                  overrideHeight: pileupHeight,
-                })
-              }
+              {await self.PileupDisplay.renderSvg({
+                ...opts,
+                overrideHeight: pileupHeight,
+              })}
             </g>
           </>
         )

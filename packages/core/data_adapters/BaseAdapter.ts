@@ -5,9 +5,10 @@ import { ObservableCreate } from '../util/rxjs'
 import { checkAbortSignal, observeAbortSignal } from '../util'
 import { Feature } from '../util/simpleFeature'
 import {
+  readConfObject,
   AnyConfigurationModel,
   ConfigurationSchema,
-} from '../configuration/configurationSchema'
+} from '../configuration'
 import { getSubAdapterType } from './dataAdapterCache'
 import { AugmentedRegion as Region, NoAssemblyRegion } from '../util/types'
 import { blankStats, rectifyStats, scoresToStats } from '../util/stats'
@@ -111,6 +112,10 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   //   const { refNames } = this.metadata
   //   return refNames
   // }
+  //
+  getConf(arg: string | string[]) {
+    return readConfObject(this.config, arg)
+  }
 
   /**
    * Get features from the data source that overlap a region

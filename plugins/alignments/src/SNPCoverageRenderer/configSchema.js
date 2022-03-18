@@ -12,7 +12,7 @@ export default ConfigurationSchema(
       type: 'number',
       description:
         'the proportion of reads containing a insertion/clip indicator',
-      defaultValue: 0.3,
+      defaultValue: 0.4,
     },
     drawArcs: {
       type: 'boolean',

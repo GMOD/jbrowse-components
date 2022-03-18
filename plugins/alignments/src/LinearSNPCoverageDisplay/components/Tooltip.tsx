@@ -27,11 +27,11 @@ const TooltipContents = React.forwardRef(
     const start = feature.get('start')
     const end = feature.get('end')
     const name = feature.get('refName')
+    const info = feature.get('snpinfo') as SNPInfo
     const loc = [name, start === end ? en(start) : `${en(start)}..${en(end)}`]
       .filter(f => !!f)
       .join(':')
 
-    const info = feature.get('snpinfo') as SNPInfo
     const total = info?.total
 
     return (
@@ -64,7 +64,9 @@ const TooltipContents = React.forwardRef(
                     <td>
                       {base === 'total' || base === 'skip'
                         ? '---'
-                        : `${Math.floor((score.total / total) * 100)}%`}
+                        : `${Math.floor(
+                            (score.total / (total || score.total || 1)) * 100,
+                          )}%`}
                     </td>
                     <td>
                       {strands['-1'] ? `${strands['-1']}(-)` : ''}
@@ -90,7 +92,7 @@ const SNPCoverageTooltip = observer(
     height: number
     offsetMouseCoord: Coord
     clientMouseCoord: Coord
-    clientRect?: ClientRect
+    clientRect?: DOMRect
   }) => {
     const { model } = props
     const { featureUnderMouse: feat } = model

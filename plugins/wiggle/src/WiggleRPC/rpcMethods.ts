@@ -44,15 +44,8 @@ export class WiggleGetGlobalStats extends RpcMethodType {
       adapterConfig,
     )
 
-    if (dataAdapter instanceof BaseFeatureDataAdapter) {
-      // @ts-ignore
-      if (dataAdapter.capabilities.includes('hasGlobalStats')) {
-        // @ts-ignore
-        return dataAdapter.getGlobalStats(deserializedArgs)
-      }
-      throw new Error('Data adapter does not support global stats')
-    }
-    throw new Error('Data adapter not found')
+    // @ts-ignore
+    return dataAdapter.getGlobalStats(deserializedArgs)
   }
 }
 

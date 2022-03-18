@@ -24,6 +24,13 @@ export default ConfigurationSchema(
       defaultValue: '#357089',
       contextVariable: ['feature'],
     },
+
+    outline: {
+      type: 'color',
+      description: 'the outline for features',
+      defaultValue: '',
+      contextVariable: ['feature'],
+    },
     height: {
       type: 'number',
       description: 'height in pixels of the main body of each feature',

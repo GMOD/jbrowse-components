@@ -24,7 +24,6 @@ const useStyles = makeStyles(theme => ({
   },
 
   formPaper: {
-    maxWidth: 600,
     margin: '0 auto',
     padding: 12,
     marginBottom: 10,
@@ -53,6 +52,8 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   const { assemblyNames, assemblyManager } = session
   const [selected, setSelected] = useState([assemblyNames[0], assemblyNames[0]])
   const [trackData, setTrackData] = useState<FileLocation>()
+  const [bed2Location, setBed2Location] = useState<FileLocation>()
+  const [bed1Location, setBed1Location] = useState<FileLocation>()
   const [numRows] = useState(2)
   const [error, setError] = useState<unknown>()
 
@@ -76,8 +77,8 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
       }
     } else if (radioOption === '.out') {
       return {
-        type: 'PAFAdapter',
-        pafLocation: trackData,
+        type: 'MashMapAdapter',
+        outLocation: trackData,
         assemblyNames: selected,
       }
     } else if (radioOption === '.delta') {
@@ -90,6 +91,22 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
       return {
         type: 'ChainAdapter',
         chainLocation: trackData,
+        assemblyNames: selected,
+      }
+    } else if (radioOption === '.anchors') {
+      return {
+        type: 'MCScanAnchorsAdapter',
+        mcscanAnchorsLocation: trackData,
+        bed1Location,
+        bed2Location,
+        assemblyNames: selected,
+      }
+    } else if (radioOption === '.anchors.simple') {
+      return {
+        type: 'MCScanSimpleAnchorsAdapter',
+        mcscanSimpleAnchorsLocation: trackData,
+        bed1Location,
+        bed2Location,
         assemblyNames: selected,
       }
     } else {
@@ -178,11 +195,11 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
 
       <Paper className={classes.formPaper}>
         <Typography style={{ textAlign: 'center' }}>
-          <b>Optional</b>: Add a .paf, .out (MashMap), .delta (Mummer), or
-          .chain file to view in the dotplot. These file types can also be
-          gzipped. The first assembly should be the query sequence (e.g. left
-          column of the PAF) and the second assembly should be the target
-          sequence (e.g. right column of the PAF)
+          <b>Optional</b>: Add a .paf, .out (MashMap), .delta (Mummer), .chain,
+          .anchors or .anchors.simple (MCScan) file to view in the synteny view.
+          These file types can also be gzipped. The first assembly should be the
+          query sequence (e.g. left column of the PAF) and the second assembly
+          should be the target sequence (e.g. right column of the PAF)
         </Typography>
         <RadioGroup
           value={radioOption}
@@ -190,35 +207,87 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
         >
           <Grid container justifyContent="center">
             <Grid item>
-              <FormControlLabel value=".paf" control={<Radio />} label="PAF" />
+              <FormControlLabel value=".paf" control={<Radio />} label=".paf" />
             </Grid>
             <Grid item>
-              <FormControlLabel value=".out" control={<Radio />} label="Out" />
+              <FormControlLabel value=".out" control={<Radio />} label=".out" />
             </Grid>
             <Grid item>
               <FormControlLabel
                 value=".delta"
                 control={<Radio />}
-                label="Delta"
+                label=".delta"
               />
             </Grid>
             <Grid item>
               <FormControlLabel
                 value=".chain"
                 control={<Radio />}
-                label="Chain"
+                label=".chain"
+              />
+            </Grid>
+            <Grid item>
+              <FormControlLabel
+                value=".anchors"
+                control={<Radio />}
+                label=".anchors"
+              />
+            </Grid>
+            <Grid item>
+              <FormControlLabel
+                value=".anchors.simple"
+                control={<Radio />}
+                label=".anchors.simple"
               />
             </Grid>
           </Grid>
         </RadioGroup>
         <Grid container justifyContent="center">
           <Grid item>
-            <FileSelector
-              name="URL"
-              description=""
-              location={trackData}
-              setLocation={loc => setTrackData(loc)}
-            />
+            {value === '.anchors' || value === '.anchors.simple' ? (
+              <div>
+                <div style={{ margin: 20 }}>
+                  Open the {value}, and .bed files for both genome assemblies
+                  from the MCScan (Python verson) pipeline{' '}
+                  <a href="https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)">
+                    (more info)
+                  </a>
+                </div>
+                <div style={{ display: 'flex' }}>
+                  <div>
+                    <FileSelector
+                      name=".anchors file"
+                      description=""
+                      location={trackData}
+                      setLocation={loc => setTrackData(loc)}
+                    />
+                  </div>
+                  <div>
+                    <FileSelector
+                      name="genome 1 .bed (left column of anchors file)"
+                      description=""
+                      location={bed1Location}
+                      setLocation={loc => setBed1Location(loc)}
+                    />
+                  </div>
+                  <div>
+                    <FileSelector
+                      name="genome 2 .bed (right column of anchors file)"
+                      description=""
+                      location={bed2Location}
+                      setLocation={loc => setBed2Location(loc)}
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <FileSelector
+                name={value ? value + ' location' : ''}
+                description=""
+                location={trackData}
+                setLocation={loc => setTrackData(loc)}
+              />
+            )}
           </Grid>
         </Grid>
       </Paper>

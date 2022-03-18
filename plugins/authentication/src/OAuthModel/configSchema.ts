@@ -5,6 +5,11 @@ import { BaseInternetAccountConfig } from '@jbrowse/core/pluggableElementTypes/m
 const OAuthConfigSchema = ConfigurationSchema(
   'OAuthInternetAccount',
   {
+    tokenType: {
+      description: 'a custom name for a token to include in the header',
+      type: 'string',
+      defaultValue: 'Bearer',
+    },
     authEndpoint: {
       description: 'the authorization code endpoint of the internet account',
       type: 'string',
@@ -14,11 +19,6 @@ const OAuthConfigSchema = ConfigurationSchema(
       description: 'the token endpoint of the internet account',
       type: 'string',
       defaultValue: '',
-    },
-    needsAuthorization: {
-      description: 'boolean to indicate if the endpoint needs authorization',
-      type: 'boolean',
-      defaultValue: false,
     },
     needsPKCE: {
       description: 'boolean to indicate if the endpoint needs a PKCE code',
@@ -34,12 +34,6 @@ const OAuthConfigSchema = ConfigurationSchema(
       description: 'optional scopes for the authorization call',
       type: 'string',
       defaultValue: '',
-    },
-    domains: {
-      description:
-        'array of valid domains the url can contain to use this account',
-      type: 'stringArray',
-      defaultValue: [],
     },
     responseType: {
       description: 'the type of response from the authorization endpoint',

@@ -2,12 +2,11 @@ import React, { useState, useEffect, useRef } from 'react'
 import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
 import { makeStyles, LinearProgress } from '@material-ui/core'
-import { getConf } from '@jbrowse/core/configuration'
 import { Menu, ResizeHandle } from '@jbrowse/core/ui'
 import normalizeWheel from 'normalize-wheel'
 import { DotplotViewModel } from '../model'
 import ImportForm from './ImportForm'
-import Controls from './Controls'
+import Header from './Header'
 import { locstr } from './util'
 import { HorizontalAxis, VerticalAxis } from './Axes'
 
@@ -42,6 +41,7 @@ const useStyles = makeStyles(theme => ({
   },
 
   content: {
+    position: 'relative',
     gridColumn: '2/2',
     gridRow: '1/2',
   },
@@ -58,14 +58,13 @@ const useStyles = makeStyles(theme => ({
 }))
 
 type Coord = [number, number] | undefined
-type Timer = ReturnType<typeof setTimeout>
 type Rect = { left: number; top: number }
 
 const Grid = observer(
   ({
     model,
     children,
-    stroke = '#000a',
+    stroke = '#0003',
   }: {
     model: DotplotViewModel
     children: React.ReactNode
@@ -75,9 +74,10 @@ const Grid = observer(
     const hblocks = hview.dynamicBlocks.contentBlocks
     const vblocks = vview.dynamicBlocks.contentBlocks
     const htop = hview.displayedRegionsTotalPx - hview.offsetPx
-    const hbottom = hblocks[0]?.offsetPx - hview.offsetPx
     const vtop = vview.displayedRegionsTotalPx - vview.offsetPx
+    const hbottom = hblocks[0]?.offsetPx - hview.offsetPx
     const vbottom = vblocks[0]?.offsetPx - vview.offsetPx
+
     return (
       <svg
         style={{ background: 'rgba(0,0,0,0.12)' }}
@@ -138,6 +138,25 @@ function getOffset(coord: Coord, rect: Rect) {
   return coord && ([coord[0] - rect.left, coord[1] - rect.top] as Coord)
 }
 
+const RenderedComponent = observer(({ model }: { model: DotplotViewModel }) => {
+  const classes = useStyles()
+  return (
+    <div className={classes.overlay}>
+      {model.tracks.map(track => {
+        const [display] = track.displays
+        const { RenderingComponent } = display
+
+        return RenderingComponent ? (
+          <RenderingComponent
+            key={track.configuration.trackId}
+            model={display}
+          />
+        ) : null
+      })}
+    </div>
+  )
+})
+
 const DotplotViewInternal = observer(
   ({ model }: { model: DotplotViewModel }) => {
     const { hview, vview, viewHeight } = model
@@ -152,8 +171,6 @@ const DotplotViewInternal = observer(
     const distanceY = useRef(0)
     const lref = useRef<HTMLDivElement>(null)
     const rref = useRef<HTMLDivElement>(null)
-    const timeout = useRef<Timer>()
-    const delta = useRef(0)
     const scheduled = useRef(false)
     const blank = { left: 0, top: 0, width: 0, height: 0 }
     const svg = ref.current?.getBoundingClientRect() || blank
@@ -163,56 +180,40 @@ const DotplotViewInternal = observer(
     const mousecurr = getOffset(mousecurrClient, svg)
     const mouseup = getOffset(mouseupClient, svg)
     const mouserect = mouseup || mousecurr
+    let selection
+    if (mousedown && mousecurr) {
+      selection = {
+        width: Math.abs(mousedown[0] - mousecurr[0]),
+        height: Math.abs(mousedown[1] - mousecurr[1]),
+      }
+    }
+    if (mouseup && mousedown) {
+      selection = {
+        width: Math.abs(mouseup[0] - mousedown[0]),
+        height: Math.abs(mouseup[1] - mousedown[1]),
+      }
+    }
 
     // use non-React wheel handler to properly prevent body scrolling
     useEffect(() => {
       function onWheel(origEvent: WheelEvent) {
         const event = normalizeWheel(origEvent)
         origEvent.preventDefault()
-        if (origEvent.ctrlKey === true) {
-          delta.current += event.pixelY / 500
-          model.vview.setScaleFactor(
-            delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
-          )
-          model.hview.setScaleFactor(
-            delta.current < 0 ? 1 - delta.current : 1 / (1 + delta.current),
-          )
-          if (timeout.current) {
-            clearTimeout(timeout.current)
-          }
-          timeout.current = setTimeout(() => {
-            transaction(() => {
-              model.hview.setScaleFactor(1)
-              model.vview.setScaleFactor(1)
-              model.hview.zoomTo(
-                delta.current > 0
-                  ? model.hview.bpPerPx * (1 + delta.current)
-                  : model.hview.bpPerPx / (1 - delta.current),
-              )
-              model.vview.zoomTo(
-                delta.current > 0
-                  ? model.vview.bpPerPx * (1 + delta.current)
-                  : model.vview.bpPerPx / (1 - delta.current),
-              )
-            })
-            delta.current = 0
-          }, 300)
-        } else {
-          distanceX.current += event.pixelX
-          distanceY.current -= event.pixelY
-          if (!scheduled.current) {
-            scheduled.current = true
 
-            window.requestAnimationFrame(() => {
-              transaction(() => {
-                model.hview.scroll(distanceX.current)
-                model.vview.scroll(distanceY.current)
-              })
-              scheduled.current = false
-              distanceX.current = 0
-              distanceY.current = 0
+        distanceX.current += event.pixelX
+        distanceY.current -= event.pixelY
+        if (!scheduled.current) {
+          scheduled.current = true
+
+          window.requestAnimationFrame(() => {
+            transaction(() => {
+              model.hview.scroll(distanceX.current)
+              model.vview.scroll(distanceY.current)
             })
-          }
+            scheduled.current = false
+            distanceX.current = 0
+            distanceY.current = 0
+          })
         }
       }
       if (ref.current) {
@@ -265,149 +266,133 @@ const DotplotViewInternal = observer(
 
     return (
       <div>
-        <Controls model={model} />
+        <Header model={model} selection={selection} />
         <div
           ref={root}
           className={classes.root}
           onMouseLeave={() => setMouseOvered(false)}
           onMouseEnter={() => setMouseOvered(true)}
         >
-          <div className={classes.container}>
-            <div
-              style={{
-                display: 'grid',
-                transform: `scaleX(${model.hview.scaleFactor}) scaleY(${model.vview.scaleFactor})`,
-              }}
-            >
-              <VerticalAxis model={model} />
-              <HorizontalAxis model={model} />
-              <div
-                ref={ref}
-                style={{ position: 'relative' }}
-                className={classes.content}
-              >
-                {mouseOvered && mouserect ? (
-                  <div
-                    ref={lref}
-                    className={classes.popover}
-                    style={{
-                      left:
-                        mouserect[0] -
-                        (mousedown && mouserect[0] - mousedown[0] < 0
-                          ? lrect.width
-                          : 0),
-                      top:
-                        mouserect[1] -
-                        (mousedown && mouserect[1] - mousedown[1] < 0
-                          ? lrect.height
-                          : 0),
-                    }}
-                  >
-                    {`x-${locstr(mouserect[0], hview)}`}
-                    <br />
-                    {`y-${locstr(viewHeight - mouserect[1], vview)}`}
-                  </div>
-                ) : null}
-                {mousedown &&
-                mouserect &&
-                Math.abs(mousedown[0] - mouserect[0]) > 3 &&
-                Math.abs(mousedown[1] - mouserect[1]) > 3 ? (
-                  <div
-                    ref={rref}
-                    className={classes.popover}
-                    style={{
-                      left:
-                        mousedown[0] -
-                        (mouserect[0] - mousedown[0] < 0 ? 0 : rrect.width),
-                      top:
-                        mousedown[1] -
-                        (mouserect[1] - mousedown[1] < 0 ? 0 : rrect.height),
-                    }}
-                  >
-                    {`x-${locstr(mousedown[0], hview)}`}
-                    <br />
-                    {`y-${locstr(viewHeight - mousedown[1], vview)}`}
-                  </div>
-                ) : null}
-
+          <div
+            className={classes.container}
+            style={{
+              transform: `scaleX(${model.hview.scaleFactor}) scaleY(${model.vview.scaleFactor})`,
+            }}
+          >
+            <VerticalAxis model={model} />
+            <HorizontalAxis model={model} />
+            <div ref={ref} className={classes.content}>
+              {mouseOvered && mouserect ? (
                 <div
-                  role="presentation"
-                  style={{ cursor: 'crosshair' }}
-                  onMouseDown={event => {
-                    if (event.button === 0) {
-                      setMouseDownClient([event.clientX, event.clientY])
-                      setMouseCurrClient([event.clientX, event.clientY])
-                    }
+                  ref={lref}
+                  className={classes.popover}
+                  style={{
+                    left:
+                      mouserect[0] -
+                      (mousedown && mouserect[0] - mousedown[0] < 0
+                        ? lrect.width
+                        : 0),
+                    top:
+                      mouserect[1] -
+                      (mousedown && mouserect[1] - mousedown[1] < 0
+                        ? lrect.height
+                        : 0),
                   }}
                 >
-                  <Grid model={model}>
-                    {mousedown && mouserect ? (
-                      <rect
-                        fill="rgba(255,0,0,0.3)"
-                        x={Math.min(mouserect[0], mousedown[0])}
-                        y={Math.min(mouserect[1], mousedown[1])}
-                        width={Math.abs(mouserect[0] - mousedown[0])}
-                        height={Math.abs(mouserect[1] - mousedown[1])}
-                      />
-                    ) : null}
-                  </Grid>
+                  {`x - ${locstr(mouserect[0], hview)}`}
+                  <br />
+                  {`y - ${locstr(viewHeight - mouserect[1], vview)}`}
+                  <br />
                 </div>
-                <div className={classes.spacer} />
-              </div>
-              <div className={classes.overlay}>
-                {model.tracks.map(track => {
-                  const [display] = track.displays
-                  const { RenderingComponent } = display
+              ) : null}
+              {mousedown &&
+              mouserect &&
+              Math.abs(mousedown[0] - mouserect[0]) > 3 &&
+              Math.abs(mousedown[1] - mouserect[1]) > 3 ? (
+                <div
+                  ref={rref}
+                  className={classes.popover}
+                  style={{
+                    left:
+                      mousedown[0] -
+                      (mouserect[0] - mousedown[0] < 0 ? 0 : rrect.width),
+                    top:
+                      mousedown[1] -
+                      (mouserect[1] - mousedown[1] < 0 ? 0 : rrect.height),
+                  }}
+                >
+                  {`x - ${locstr(mousedown[0], hview)}`}
+                  <br />
+                  {`y - ${locstr(viewHeight - mousedown[1], vview)}`}
+                  <br />
+                </div>
+              ) : null}
 
-                  return RenderingComponent ? (
-                    <RenderingComponent
-                      key={getConf(track, 'trackId')}
-                      model={display}
+              <div
+                role="presentation"
+                style={{ cursor: 'crosshair' }}
+                onMouseDown={event => {
+                  if (event.button === 0) {
+                    setMouseDownClient([event.clientX, event.clientY])
+                    setMouseCurrClient([event.clientX, event.clientY])
+                  }
+                }}
+              >
+                <Grid model={model}>
+                  {mousedown && mouserect ? (
+                    <rect
+                      fill="rgba(255,0,0,0.3)"
+                      x={Math.min(mouserect[0], mousedown[0])}
+                      y={Math.min(mouserect[1], mousedown[1])}
+                      width={Math.abs(mouserect[0] - mousedown[0])}
+                      height={Math.abs(mouserect[1] - mousedown[1])}
                     />
-                  ) : null
-                })}
+                  ) : null}
+                </Grid>
               </div>
-              <Menu
-                open={Boolean(mouseup)}
-                onMenuItemClick={(_, callback) => {
-                  callback()
-                  setMouseUpClient(undefined)
-                  setMouseDownClient(undefined)
-                }}
-                onClose={() => {
-                  setMouseUpClient(undefined)
-                  setMouseDownClient(undefined)
-                }}
-                anchorReference="anchorPosition"
-                anchorPosition={
-                  mouseupClient
-                    ? {
-                        top: mouseupClient[1] + 30,
-                        left: mouseupClient[0] + 30,
-                      }
-                    : undefined
-                }
-                style={{ zIndex: 1000 }}
-                menuItems={[
-                  {
-                    label: 'Zoom in',
-                    onClick: () => {
-                      if (mousedown && mouseup) {
-                        model.zoomIn(mousedown, mouseup)
-                      }
-                    },
-                  },
-                  {
-                    label: 'Open linear synteny view',
-                    onClick: () => {
-                      if (mousedown && mouseup) {
-                        model.onDotplotView(mousedown, mouseup)
-                      }
-                    },
-                  },
-                ]}
-              />
+              <div className={classes.spacer} />
             </div>
+            <RenderedComponent model={model} />
+            <Menu
+              open={Boolean(mouseup)}
+              onMenuItemClick={(_, callback) => {
+                callback()
+                setMouseUpClient(undefined)
+                setMouseDownClient(undefined)
+              }}
+              onClose={() => {
+                setMouseUpClient(undefined)
+                setMouseDownClient(undefined)
+              }}
+              anchorReference="anchorPosition"
+              anchorPosition={
+                mouseupClient
+                  ? {
+                      top: mouseupClient[1] + 30,
+                      left: mouseupClient[0] + 30,
+                    }
+                  : undefined
+              }
+              style={{ zIndex: 10000 }}
+              menuItems={[
+                {
+                  label: 'Zoom in',
+                  onClick: () => {
+                    if (mousedown && mouseup) {
+                      model.zoomIn(mousedown, mouseup)
+                    }
+                  },
+                },
+                {
+                  label: 'Open linear synteny view',
+                  onClick: () => {
+                    if (mousedown && mouseup) {
+                      model.onDotplotView(mousedown, mouseup)
+                    }
+                  },
+                },
+              ]}
+            />
           </div>
           <ResizeHandle
             onDrag={n => model.setHeight(model.height + n)}

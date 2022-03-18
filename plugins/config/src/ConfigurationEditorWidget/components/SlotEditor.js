@@ -370,12 +370,9 @@ export const useSlotEditorStyles = makeStyles(theme => ({
     display: 'flex',
     marginBottom: theme.spacing(2),
     position: 'relative',
-    overflow: 'visible',
   },
   paperContent: {
-    flex: 'auto',
-    padding: theme.spacing(1),
-    overflow: 'auto',
+    width: '100%',
   },
   slotModeSwitch: {
     width: 24,

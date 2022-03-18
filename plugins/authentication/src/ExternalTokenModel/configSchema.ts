@@ -5,21 +5,10 @@ import { BaseInternetAccountConfig } from '@jbrowse/core/pluggableElementTypes/m
 const ExternalTokenConfigSchema = ConfigurationSchema(
   'ExternalTokenInternetAccount',
   {
-    domains: {
-      description:
-        'array of valid domains the url can contain to use this account',
-      type: 'stringArray',
-      defaultValue: [],
-    },
-    authHeader: {
-      description: 'custom auth header for authorization',
-      type: 'string',
-      defaultValue: 'Authorization',
-    },
-    customEndpoint: {
-      description: 'custom endpoint for the external token resource',
-      type: 'string',
-      defaultValue: '',
+    validateWithHEAD: {
+      description: 'validate the token with a HEAD request before using it',
+      type: 'boolean',
+      defaultValue: true,
     },
   },
   {

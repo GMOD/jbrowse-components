@@ -198,21 +198,9 @@ export default function CircularView(pluginManager: PluginManager) {
         },
         get initialized() {
           const { assemblyManager } = getSession(self)
-
-          // if the assemblyManager is tracking a given assembly name, wait for
-          // it to be loaded. this is done by looking in the assemblyManager's
-          // assembly list, and then waiting on it's initialized state which is
-          // updated later
-          return this.assemblyNames.every(assemblyName => {
-            if (
-              assemblyManager.assemblyList
-                ?.map(asm => asm.name)
-                .includes(assemblyName)
-            ) {
-              return assemblyManager.get(assemblyName)?.initialized
-            }
-            return true
-          })
+          return this.assemblyNames.every(
+            a => assemblyManager.get(a)?.initialized,
+          )
         },
       }))
       .volatile(() => ({

@@ -6,6 +6,10 @@ export interface Feature {
    * Get a piece of data about the feature.  All features must have
    * 'start' and 'end', but everything else is optional.
    */
+  get(name: 'refName'): string
+  get(name: 'start'): number
+  get(name: 'end'): number
+  get(name: 'subfeatures'): Feature[] | undefined
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(name: string): any
 

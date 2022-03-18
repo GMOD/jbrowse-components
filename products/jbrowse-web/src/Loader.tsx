@@ -148,6 +148,87 @@ export function Loader({
   )
 }
 
+const SessionTriaged = ({
+  loader,
+  handleClose,
+}: {
+  loader: SessionLoaderModel
+  handleClose: Function
+}) => {
+  return (
+    <Suspense fallback={<div />}>
+      <SessionWarningDialog
+        onConfirm={async () => {
+          const session = JSON.parse(JSON.stringify(loader.sessionTriaged.snap))
+
+          // second param true says we passed user confirmation
+          await loader.setSessionSnapshot({ ...session, id: shortid() }, true)
+          handleClose()
+        }}
+        onCancel={() => {
+          loader.setBlankSession(true)
+          handleClose()
+        }}
+        reason={loader.sessionTriaged.reason}
+      />
+    </Suspense>
+  )
+}
+
+const ErrMessage = ({ err }: { err: unknown }) => {
+  return (
+    <>
+      <NoConfigMessage />
+      {`${err}`.match(/HTTP 404 fetching config.json/) ? (
+        <div
+          style={{
+            margin: 8,
+            padding: 8,
+            border: '1px solid black',
+            background: '#9f9',
+          }}
+        >
+          No config.json found. If you want to learn how to complete your setup,
+          visit our{' '}
+          <a href="https://jbrowse.org/jb2/docs/quickstart_web">
+            Quick start guide
+          </a>
+        </div>
+      ) : (
+        <Suspense fallback={<div>Loading...</div>}>
+          <ErrorMessage error={err} />
+        </Suspense>
+      )}
+    </>
+  )
+}
+
+function ConfigTriaged({
+  loader,
+  handleClose,
+}: {
+  loader: SessionLoaderModel
+  handleClose: Function
+}) {
+  return (
+    <Suspense fallback={<div />}>
+      <ConfigWarningDialog
+        onConfirm={async () => {
+          const session = JSON.parse(JSON.stringify(loader.sessionTriaged.snap))
+          await loader.fetchPlugins(session)
+          loader.setConfigSnapshot({ ...session, id: shortid() })
+          handleClose()
+        }}
+        onCancel={() => {
+          factoryReset()
+          handleClose()
+        }}
+        reason={loader.sessionTriaged.reason}
+      />
+    </Suspense>
+  )
+}
+
 const Renderer = observer(
   ({
     loader,
@@ -198,14 +279,12 @@ const Renderer = observer(
             })),
           ])
           pluginManager.createPluggableElements()
+          const isAdmin = !!adminKey
 
-          const JBrowseRootModel = JBrowseRootModelFactory(
-            pluginManager,
-            !!adminKey,
-          )
+          const RootModel = JBrowseRootModelFactory(pluginManager, isAdmin)
 
           if (configSnapshot) {
-            const rootModel = JBrowseRootModel.create(
+            const rootModel = RootModel.create(
               {
                 jbrowse: configSnapshot,
                 assemblyManager: {},
@@ -214,10 +293,16 @@ const Renderer = observer(
               },
               { pluginManager },
             )
-            rootModel.jbrowse.configuration.rpc.addDriverConfig(
-              'WebWorkerRpcDriver',
-              { type: 'WebWorkerRpcDriver' },
-            )
+            if (
+              !rootModel.jbrowse.configuration.rpc.drivers.get(
+                'WebWorkerRpcDriver',
+              )
+            ) {
+              rootModel.jbrowse.configuration.rpc.addDriverConfig(
+                'WebWorkerRpcDriver',
+                { type: 'WebWorkerRpcDriver' },
+              )
+            }
             if (!loader.configSnapshot?.configuration?.rpc?.defaultDriver) {
               rootModel.jbrowse.configuration.rpc.defaultDriver.set(
                 'WebWorkerRpcDriver',
@@ -262,6 +347,7 @@ const Renderer = observer(
                     : errorMessage
                 }`,
               )
+              console.error(e)
             }
 
             // send analytics
@@ -289,77 +375,20 @@ const Renderer = observer(
     const err = configError || error
 
     if (err) {
-      return (
-        <>
-          <NoConfigMessage />
-          {`${err}`.match(/HTTP 404 fetching config.json/) ? (
-            <div
-              style={{
-                margin: 8,
-                padding: 8,
-                border: '1px solid black',
-                background: '#9f9',
-              }}
-            >
-              No config.json found. If you want to learn how to complete your
-              setup, visit our{' '}
-              <a href="https://jbrowse.org/jb2/docs/quickstart_web">
-                Quick start guide
-              </a>
-            </div>
-          ) : (
-            <Suspense fallback={<div>Loading...</div>}>
-              <ErrorMessage error={err} />
-            </Suspense>
-          )}
-        </>
-      )
+      return <ErrMessage err={err} />
     }
 
     if (loader.sessionTriaged) {
-      const handleClose = () => {
-        loader.setSessionTriaged(undefined)
-      }
       return loader.sessionTriaged.origin === 'session' ? (
-        <Suspense fallback={<div />}>
-          <SessionWarningDialog
-            onConfirm={async () => {
-              const session = JSON.parse(
-                JSON.stringify(loader.sessionTriaged.snap),
-              )
-
-              // second param true says we passed user confirmation
-              await loader.setSessionSnapshot(
-                { ...session, id: shortid() },
-                true,
-              )
-              handleClose()
-            }}
-            onCancel={() => {
-              loader.setBlankSession(true)
-              handleClose()
-            }}
-            reason={loader.sessionTriaged.reason}
-          />
-        </Suspense>
+        <SessionTriaged
+          loader={loader}
+          handleClose={() => loader.setSessionTriaged(undefined)}
+        />
       ) : (
-        <Suspense fallback={<div />}>
-          <ConfigWarningDialog
-            onConfirm={async () => {
-              const session = JSON.parse(
-                JSON.stringify(loader.sessionTriaged.snap),
-              )
-              await loader.fetchPlugins(session)
-              loader.setConfigSnapshot({ ...session, id: shortid() })
-              handleClose()
-            }}
-            onCancel={() => {
-              factoryReset()
-              handleClose()
-            }}
-            reason={loader.sessionTriaged.reason}
-          />
-        </Suspense>
+        <ConfigTriaged
+          loader={loader}
+          handleClose={() => loader.setSessionTriaged(undefined)}
+        />
       )
     }
     if (pm) {

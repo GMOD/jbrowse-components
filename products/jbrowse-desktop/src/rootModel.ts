@@ -163,12 +163,12 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       createEphemeralInternetAccount(
         internetAccountId: string,
         initialSnapshot = {},
-        location: UriLocation,
+        url: string,
       ) {
         let hostUri
 
         try {
-          hostUri = new URL(location.uri).origin
+          hostUri = new URL(url).origin
         } catch (e) {
           // ignore
         }
@@ -312,7 +312,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
 
         // if still no existing account, create ephemeral config to use
         return selectedId
-          ? this.createEphemeralInternetAccount(selectedId, {}, location)
+          ? this.createEphemeralInternetAccount(selectedId, {}, location.uri)
           : null
       },
       afterCreate() {

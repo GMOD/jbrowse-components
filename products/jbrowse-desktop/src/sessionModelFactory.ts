@@ -189,7 +189,7 @@ export default function sessionModelFactory(
         localStorage.setItem('drawerPosition', arg)
       },
       queueDialog(
-        callback: (doneCallback: Function) => [DialogComponentType, any],
+        callback: (doneCallback: () => void) => [DialogComponentType, any],
       ): void {
         const [component, props] = callback(() => {
           self.queueOfDialogs.shift()
@@ -552,7 +552,7 @@ export default function sessionModelFactory(
           {
             label: 'About track',
             onClick: () => {
-              session.queueDialog((doneCallback: Function) => [
+              session.queueDialog(doneCallback => [
                 AboutDialog,
                 { config, handleClose: doneCallback },
               ])

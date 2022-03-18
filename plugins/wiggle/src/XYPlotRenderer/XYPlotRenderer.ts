@@ -20,7 +20,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
       scaleOpts,
       height: unadjustedHeight,
       config,
-      ticks: { values },
+      ticks,
       displayCrossHatches,
     } = props
     const [region] = regions
@@ -39,6 +39,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
     const clipColor = readConfObject(config, 'clipColor')
     const highlightColor = readConfObject(config, 'highlightColor')
     const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
+
     const scale = getScale({ ...scaleOpts, range: [0, height] })
     const originY = getOrigin(scaleOpts.scaleType)
     const [niceMin, niceMax] = scale.domain()
@@ -52,11 +53,6 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
             score < pivotValue ? negColor : posColor
         : (feature: Feature, _score: number) =>
             readConfObject(config, 'color', { feature })
-
-    ctx.strokeStyle = 'grey'
-    ctx.moveTo(0, toY(0))
-    ctx.lineTo(width, toY(0))
-    ctx.stroke()
 
     const crossingOrigin = niceMin < pivotValue && niceMax > pivotValue
     for (const feature of features.values()) {
@@ -135,7 +131,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
     if (displayCrossHatches) {
       ctx.lineWidth = 1
       ctx.strokeStyle = 'rgba(200,200,200,0.8)'
-      values.forEach(tick => {
+      ticks.values.forEach(tick => {
         ctx.beginPath()
         ctx.moveTo(0, Math.round(toY(tick)))
         ctx.lineTo(width, Math.round(toY(tick)))

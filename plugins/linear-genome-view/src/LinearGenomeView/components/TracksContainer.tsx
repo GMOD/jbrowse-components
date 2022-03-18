@@ -185,7 +185,6 @@ function TracksContainer({
           />
         }
       />
-      <div className={classes.spacer} />
       {children}
     </div>
   )

@@ -4,16 +4,27 @@ import SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import Box from './Box'
-import Chevron from './Chevron'
 import ProcessedTranscript from './ProcessedTranscript'
 import Segments from './Segments'
 import Subfeatures from './Subfeatures'
+import { Region } from '@jbrowse/core/util'
 
-interface Glyph extends React.FunctionComponent {
+export interface Glyph
+  extends React.FC<{
+    children: React.ReactNode
+    feature: Feature
+    featureLayout: SceneGraph
+    selected?: boolean
+    config: AnyConfigurationModel
+    region: Region
+    bpPerPx: number
+    topLevel?: boolean
+    [key: string]: unknown
+  }> {
   layOut?: Function
 }
 
-interface ExtraGlyphValidator {
+export interface ExtraGlyphValidator {
   glyph: Glyph
   validator: (feature: Feature) => boolean
 }
@@ -23,36 +34,23 @@ export function chooseGlyphComponent(
   extraGlyphs?: ExtraGlyphValidator[],
 ): Glyph {
   const type = feature.get('type')
-  const strand = feature.get('strand')
-  const subfeatures: Feature[] = feature.get('subfeatures')
+  const subfeatures = feature.get('subfeatures')
 
   if (subfeatures) {
-    const hasSubSub = subfeatures.find(subfeature => {
-      return !!subfeature.get('subfeatures')
-    })
+    const hasSubSub = subfeatures.find(sub => !!sub.get('subfeatures'))
     if (hasSubSub) {
       return Subfeatures
-    }
-    const transcriptTypes = ['mRNA', 'transcript']
-    if (
-      transcriptTypes.includes(type) &&
+    } else if (
+      ['mRNA', 'transcript'].includes(type) &&
       subfeatures.find(f => f.get('type') === 'CDS')
     ) {
       return ProcessedTranscript
-    }
-
-    return Segments
-  }
-
-  if (extraGlyphs) {
-    for (const extraGlyph of extraGlyphs) {
-      if (extraGlyph.validator(feature) === true) {
-        return extraGlyph.glyph
-      }
+    } else {
+      return Segments
     }
   }
 
-  return [1, -1].includes(strand) ? Chevron : Box
+  return extraGlyphs?.find(f => f.validator(feature))?.glyph || Box
 }
 
 interface BaseLayOutArgs {
@@ -104,19 +102,20 @@ export function layOut({
 
 export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
   const { layout, feature, bpPerPx, reversed, config, extraGlyphs } = args
-  const displayMode = readConfObject(config, 'displayMode')
+  const displayMode = readConfObject(config, 'displayMode') as string
   const GlyphComponent =
     displayMode === 'reducedRepresentation'
-      ? Chevron
+      ? Box
       : chooseGlyphComponent(feature, extraGlyphs)
   const parentFeature = feature.parent()
   let x = 0
   if (parentFeature) {
-    x = reversed
-      ? (parentFeature.get('end') - feature.get('end')) / bpPerPx
-      : (feature.get('start') - parentFeature.get('start')) / bpPerPx
+    x =
+      (reversed
+        ? parentFeature.get('end') - feature.get('end')
+        : feature.get('start') - parentFeature.get('start')) / bpPerPx
   }
-  const height = readConfObject(config, 'height', { feature })
+  const height = readConfObject(config, 'height', { feature }) as number
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
   const layoutParent = layout.parent
   const top = layoutParent ? layoutParent.top : 0
@@ -132,22 +131,11 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
 }
 
 export function layOutSubfeatures(args: SubfeatureLayOutArgs): void {
-  const {
-    layout: subLayout,
-    subfeatures,
-    bpPerPx,
-    reversed,
-    config,
-    extraGlyphs,
-  } = args
-  subfeatures.forEach(subfeature => {
-    const SubfeatureGlyphComponent = chooseGlyphComponent(
-      subfeature,
-      extraGlyphs,
-    )
-    ;(SubfeatureGlyphComponent.layOut || layOut)({
-      layout: subLayout,
-      feature: subfeature,
+  const { layout, subfeatures, bpPerPx, reversed, config, extraGlyphs } = args
+  subfeatures.forEach(feature => {
+    ;(chooseGlyphComponent(feature, extraGlyphs).layOut || layOut)({
+      layout,
+      feature,
       bpPerPx,
       reversed,
       config,

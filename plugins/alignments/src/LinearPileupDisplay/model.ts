@@ -460,7 +460,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
                 {
                   label: 'Sort by tag...',
                   onClick: () => {
-                    getSession(self).queueDialog((doneCallback: Function) => [
+                    getSession(self).queueDialog(doneCallback => [
                       SortByTagDlg,
                       { model: self, handleClose: doneCallback },
                     ])
@@ -509,7 +509,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
                 {
                   label: 'Modifications or methylation',
                   onClick: () => {
-                    getSession(self).queueDialog((doneCallback: Function) => [
+                    getSession(self).queueDialog(doneCallback => [
                       ModificationsDlg,
                       { model: self, handleClose: doneCallback },
                     ])
@@ -530,7 +530,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
                 {
                   label: 'Color by tag...',
                   onClick: () => {
-                    getSession(self).queueDialog((doneCallback: Function) => [
+                    getSession(self).queueDialog(doneCallback => [
                       ColorByTagDlg,
                       { model: self, handleClose: doneCallback },
                     ])
@@ -542,7 +542,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
               label: 'Filter by',
               icon: FilterListIcon,
               onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
+                getSession(self).queueDialog(doneCallback => [
                   FilterByTagDlg,
                   { model: self, handleClose: doneCallback },
                 ])
@@ -551,7 +551,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             {
               label: 'Set feature height',
               onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
+                getSession(self).queueDialog(doneCallback => [
                   SetFeatureHeightDlg,
                   { model: self, handleClose: doneCallback },
                 ])
@@ -560,7 +560,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             {
               label: 'Set max height',
               onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
+                getSession(self).queueDialog(doneCallback => [
                   SetMaxHeightDlg,
                   { model: self, handleClose: doneCallback },
                 ])
