@@ -3,6 +3,7 @@ import { objectFromEntries } from '../util'
 import { serializeAbortSignal } from './remoteAbortSignals'
 import PluginManager from '../PluginManager'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
+import { readConfObject } from '../configuration'
 
 export interface WorkerHandle {
   status?: string
@@ -70,30 +71,31 @@ function detectHardwareConcurrency() {
   return 1
 }
 class LazyWorker {
-  worker?: WorkerHandle
+  workerP?: Promise<WorkerHandle> | undefined
 
   constructor(public driver: BaseRpcDriver) {}
 
-  async getWorker(pluginManager: PluginManager, rpcDriverClassName: string) {
-    if (!this.worker) {
-      const worker = await this.driver.makeWorker(pluginManager)
-      watchWorker(worker, this.driver.maxPingTime, rpcDriverClassName).catch(
-        error => {
-          if (this.worker) {
-            console.error(
-              'worker did not respond, killing and generating new one',
-            )
-            console.error(error)
-            this.worker.destroy()
-            this.worker.status = 'killed'
-            this.worker.error = error
-            this.worker = undefined
-          }
-        },
-      )
-      this.worker = worker
+  async getWorker() {
+    if (!this.workerP) {
+      this.workerP = this.driver.makeWorker().then(worker => {
+        watchWorker(worker, this.driver.maxPingTime, this.driver.name).catch(
+          error => {
+            if (worker) {
+              console.error(
+                'worker did not respond, killing and generating new one',
+              )
+              console.error(error)
+              worker.destroy()
+              worker.status = 'killed'
+              worker.error = error
+              this.workerP = undefined
+            }
+          },
+        )
+        return worker
+      })
     }
-    return this.worker
+    return this.workerP
   }
 }
 
@@ -104,9 +106,7 @@ export default abstract class BaseRpcDriver {
 
   private workerAssignments = new Map<string, number>() // sessionId -> worker number
 
-  private workerCount = 0
-
-  abstract makeWorker(pluginManager: PluginManager): Promise<WorkerHandle>
+  abstract makeWorker(): Promise<WorkerHandle>
 
   private workerPool?: LazyWorker[]
 
@@ -121,24 +121,18 @@ export default abstract class BaseRpcDriver {
   }
 
   // filter the given object and just remove any non-clonable things from it
-  filterArgs<THING_TYPE>(
-    thing: THING_TYPE,
-    pluginManager: PluginManager,
-    sessionId: string,
-  ): THING_TYPE {
+  filterArgs<THING_TYPE>(thing: THING_TYPE, sessionId: string): THING_TYPE {
     if (Array.isArray(thing)) {
       return thing
         .filter(isClonable)
-        .map(t =>
-          this.filterArgs(t, pluginManager, sessionId),
-        ) as unknown as THING_TYPE
+        .map(t => this.filterArgs(t, sessionId)) as unknown as THING_TYPE
     }
     if (typeof thing === 'object' && thing !== null) {
       // AbortSignals are specially handled
       if (thing instanceof AbortSignal) {
         return serializeAbortSignal(
           thing,
-          this.remoteAbort.bind(this, pluginManager, sessionId),
+          this.remoteAbort.bind(this, sessionId),
         ) as unknown as THING_TYPE
       }
 
@@ -155,19 +149,14 @@ export default abstract class BaseRpcDriver {
       return objectFromEntries(
         Object.entries(thing)
           .filter(e => isClonable(e[1]))
-          .map(([k, v]) => [k, this.filterArgs(v, pluginManager, sessionId)]),
+          .map(([k, v]) => [k, this.filterArgs(v, sessionId)]),
       ) as THING_TYPE
     }
     return thing
   }
 
-  async remoteAbort(
-    pluginManager: PluginManager,
-    sessionId: string,
-    functionName: string,
-    signalId: number,
-  ) {
-    const worker = await this.getWorker(sessionId, pluginManager)
+  async remoteAbort(sessionId: string, functionName: string, signalId: number) {
+    const worker = await this.getWorker(sessionId)
     worker.call(
       functionName,
       { signalId },
@@ -179,7 +168,8 @@ export default abstract class BaseRpcDriver {
     const hardwareConcurrency = detectHardwareConcurrency()
 
     const workerCount =
-      this.workerCount || Math.max(1, Math.ceil((hardwareConcurrency - 2) / 3))
+      readConfObject(this.config, 'workerCount') ||
+      Math.max(1, Math.ceil((hardwareConcurrency - 2) / 3))
 
     return [...new Array(workerCount)].map(() => new LazyWorker(this))
   }
@@ -193,10 +183,7 @@ export default abstract class BaseRpcDriver {
     return this.workerPool
   }
 
-  async getWorker(
-    sessionId: string,
-    pluginManager: PluginManager,
-  ): Promise<WorkerHandle> {
+  async getWorker(sessionId: string): Promise<WorkerHandle> {
     const workers = this.getWorkerPool()
     let workerNumber = this.workerAssignments.get(sessionId)
     if (workerNumber === undefined) {
@@ -207,7 +194,7 @@ export default abstract class BaseRpcDriver {
     }
 
     // console.log(`${sessionId} -> worker ${workerNumber}`)
-    const worker = workers[workerNumber].getWorker(pluginManager, this.name)
+    const worker = workers[workerNumber].getWorker()
     if (!worker) {
       throw new Error('no web workers registered for RPC')
     }
@@ -225,14 +212,10 @@ export default abstract class BaseRpcDriver {
       throw new TypeError('sessionId is required')
     }
     let done = false
-    const worker = await this.getWorker(sessionId, pluginManager)
+    const worker = await this.getWorker(sessionId)
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
     const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
-    const filteredAndSerializedArgs = this.filterArgs(
-      serializedArgs,
-      pluginManager,
-      sessionId,
-    )
+    const filteredAndSerializedArgs = this.filterArgs(serializedArgs, sessionId)
 
     // now actually call the worker
     const callP = worker
