@@ -9,22 +9,40 @@ export interface Mismatch {
   seq?: string
   cliplen?: number
 }
-
+const mdRegex = new RegExp(/(\d+|\^[a-z]+|[a-z])/gi)
 export function parseCigar(cigar: string) {
   return (cigar || '').split(/([MIDNSHPX=])/)
 }
 export function cigarToMismatches(
-  ops: string[],
+  cigarOps: string[],
   seq: string,
+  ref?: string,
   qual?: Buffer,
 ): Mismatch[] {
   let currOffset = 0
   let seqOffset = 0
   const mismatches: Mismatch[] = []
-  for (let i = 0; i < ops.length - 1; i += 2) {
-    const len = +ops[i]
-    const op = ops[i + 1]
+  const hasRefAndSeq = ref && seq
+  for (let i = 0; i < cigarOps.length; i += 2) {
+    const len = +cigarOps[i]
+    const op = cigarOps[i + 1]
+
     if (op === 'M' || op === '=' || op === 'E') {
+      if (hasRefAndSeq) {
+        for (let j = 0; j < len; j++) {
+          if (
+            seq[seqOffset + j].toUpperCase() !==
+            ref[currOffset + j].toUpperCase()
+          ) {
+            mismatches.push({
+              start: currOffset + j,
+              type: 'mismatch',
+              base: seq[seqOffset + j],
+              length: 1,
+            })
+          }
+        }
+      }
       seqOffset += len
     }
     if (op === 'I') {
@@ -132,8 +150,8 @@ export function mdToMismatches(
       i < cigarOps.length && refOffset <= refCoord;
       i += 2, lastCigar = i
     ) {
-      const len = +cigarOps[i]
-      const op = cigarOps[i + 1]
+      let len = +cigarOps[i]
+      let op = cigarOps[i + 1]
       if (op === 'S' || op === 'I') {
         templateOffset += len
       } else if (op === 'D' || op === 'P' || op === 'N') {
@@ -150,18 +168,14 @@ export function mdToMismatches(
   }
 
   // now actually parse the MD string
-  const md = mdstring.match(/(\d+|\^[a-z]+|[a-z])/gi) || []
+  const md = mdstring.match(mdRegex) || []
   for (let i = 0; i < md.length; i++) {
     const token = md[i]
     const num = +token
     if (!Number.isNaN(num)) {
       curr.start += num
     } else if (token.startsWith('^')) {
-      curr.length = token.length - 1
-      curr.base = '*'
-      curr.type = 'deletion'
-      curr.seq = token.substring(1)
-      nextRecord()
+      curr.start += token.length - 1
     } else {
       // mismatch
       for (let j = 0; j < token.length; j += 1) {
@@ -176,9 +190,9 @@ export function mdToMismatches(
             break
           }
         }
-        const s = cigarOps ? getTemplateCoordLocal(curr.start) : curr.start
-        curr.base = seq ? seq.substr(s, 1) : 'X'
-        const qualScore = qual?.slice(s, s + 1)[0]
+        const s = getTemplateCoordLocal(curr.start)
+        curr.base = seq[s] || 'X'
+        const qualScore = qual?.[s]
         if (qualScore) {
           curr.qual = qualScore
         }

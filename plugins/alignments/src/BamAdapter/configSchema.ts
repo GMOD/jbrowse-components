@@ -23,10 +23,6 @@ export default types.late(() =>
           },
         },
       }),
-      chunkSizeLimit: {
-        type: 'number',
-        defaultValue: 100_000_000,
-      },
       fetchSizeLimit: {
         type: 'number',
         defaultValue: 5_000_000,

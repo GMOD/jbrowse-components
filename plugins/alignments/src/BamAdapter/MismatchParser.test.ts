@@ -14,14 +14,16 @@ const seq =
 // and http://seqanswers.com/forums/showthread.php?t=8978
 
 test('cigar to mismatches', () => {
-  expect(cigarToMismatches('56M1D45M', seq)).toEqual([
+  expect(cigarToMismatches(parseCigar('56M1D45M'), seq)).toEqual([
     { start: 56, type: 'deletion', base: '*', length: 1 },
   ])
 })
 
 test('md to mismatches', () => {
-  const cigarMismatches = cigarToMismatches('56M1D45M', seq)
-  expect(mdToMismatches('10A80', '56M1D45M', cigarMismatches, seq)).toEqual([
+  const cigarMismatches = cigarToMismatches(parseCigar('56M1D45M'), seq)
+  expect(
+    mdToMismatches('10A80', parseCigar('56M1D45M'), cigarMismatches, seq),
+  ).toEqual([
     { start: 10, type: 'mismatch', base: 'C', altbase: 'A', length: 1 },
   ])
 })
