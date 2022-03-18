@@ -57,11 +57,6 @@ export default class extends BaseSequenceAdapter {
     }))
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param param -
-   * @returns Observable of Feature objects in the region
-   */
   public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {
     const { refName, start, end } = region
     return ObservableCreate<Feature>(async observer => {

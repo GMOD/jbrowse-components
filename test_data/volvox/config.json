@@ -1280,7 +1280,6 @@
         "assemblyNames": ["volvox", "volvox"]
       }
     },
-
     {
       "type": "SyntenyTrack",
       "trackId": "volvox_fake_synteny",
