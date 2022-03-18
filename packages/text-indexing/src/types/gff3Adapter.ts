@@ -13,29 +13,27 @@ export async function* indexGff3(
   quiet: boolean,
 ) {
   const { adapter, trackId } = config
-  const {
-    gffGzLocation,
-  } = adapter as Gff3TabixAdapter
+  const { gffGzLocation } = adapter as Gff3TabixAdapter
 
-  const uri = 'uri' in gffGzLocation ? gffGzLocation.uri : gffGzLocation.localPath
+  const uri =
+    'uri' in gffGzLocation ? gffGzLocation.uri : gffGzLocation.localPath
   let fileDataStream
-  let totalBytes = 0
-  let receivedBytes = 0
+  // let totalBytes = 0
+  // let receivedBytes = 0
   if (isURL(uri)) {
     fileDataStream = await createRemoteStream(uri)
-    totalBytes = +(fileDataStream.headers['content-length'] || 0)
+    // totalBytes = +(fileDataStream.headers['content-length'] || 0)
   } else {
     const filename = path.isAbsolute(uri) ? uri : path.join(outLocation, uri)
-    totalBytes = fs.statSync(filename).size
+    // totalBytes = fs.statSync(filename).size
     fileDataStream = fs.createReadStream(filename)
   }
-  console.log(`Indexing track with trackId: ${trackId}`)
-  fileDataStream.on('data', chunk => {
-    receivedBytes += chunk.length
-    // send an update?
-    // const progress = Math.round((receivedBytes / totalBytes) * 100)
-    // console.log(`${progress}%`)
-  })
+  // fileDataStream.on('data', chunk => {
+  //   receivedBytes += chunk.length
+  //   // send an update?
+  //   // const progress = Math.round((receivedBytes / totalBytes) * 100)
+  //   // console.log(`${progress}%`)
+  // })
 
   const rl = readline.createInterface({
     input: uri.endsWith('.gz')

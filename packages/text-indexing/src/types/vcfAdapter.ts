@@ -14,28 +14,28 @@ export async function* indexVcf(
   quiet: boolean,
 ) {
   const { adapter, trackId } = config
-  const {
-    vcfGzLocation: { uri },
-  } = adapter as VcfTabixAdapter
+  const { vcfGzLocation } = adapter as VcfTabixAdapter
 
+  const uri =
+    'uri' in vcfGzLocation ? vcfGzLocation.uri : vcfGzLocation.localPath
   let fileDataStream
-  let totalBytes = 0
-  let receivedBytes = 0
+  // let totalBytes = 0
+  // let receivedBytes = 0
   if (isURL(uri)) {
     fileDataStream = await createRemoteStream(uri)
-    totalBytes = +(fileDataStream.headers['content-length'] || 0)
+    // totalBytes = +(fileDataStream.headers['content-length'] || 0)
   } else {
     const filename = path.isAbsolute(uri) ? uri : path.join(outLocation, uri)
-    totalBytes = fs.statSync(filename).size
+    // totalBytes = fs.statSync(filename).size
     fileDataStream = fs.createReadStream(filename)
   }
 
   // console.log("totalBytes", totalBytes)
-  fileDataStream.on('data', chunk => {
-    receivedBytes += chunk.length
-    // progressBar.update(receivedBytes)
-    // console.log("received", receivedBytes)
-  })
+  // fileDataStream.on('data', chunk => {
+  //   receivedBytes += chunk.length
+  //   // progressBar.update(receivedBytes)
+  //   // console.log("received", receivedBytes)
+  // })
 
   const gzStream = uri.endsWith('.gz')
     ? fileDataStream.pipe(createGunzip())

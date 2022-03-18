@@ -40,7 +40,6 @@ declare interface ReferringNode {
   key: string
 }
 
-
 export default function sessionModelFactory(
   pluginManager: PluginManager,
   assemblyConfigSchemasType = types.frozen(), // if not using sessionAssemblies

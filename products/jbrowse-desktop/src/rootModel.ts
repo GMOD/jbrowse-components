@@ -47,6 +47,7 @@ interface Menu {
 }
 
 interface Track {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
 }
 interface TrackTextIndexing {
@@ -215,16 +216,15 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             assemblies,
             outLocation: self.sessionPath,
             sessionId: 'indexTracksSessionId',
-            timeout: 1 * 60 * 60 * 1000, // 1 hours
+            timeout: 1 * 60 * 60 * 1000, // 1 hour
           })
-          // console.log(assemblies)
           // should update the single track conf
           trackIds.forEach(id => {
-            this.addTextSearchConf(id, assemblies, attributes, exclude),
-              self.session?.notify(
-                `Succesfully indexed track with trackId: ${id} `,
-                'success',
-              )
+            this.addTextSearchConf(id, assemblies, attributes, exclude)
+            self.session?.notify(
+              `Succesfully indexed track with trackId: ${id} `,
+              'success',
+            )
           })
         }
         return
@@ -238,18 +238,11 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         const currentTrackIdx = (self.session?.tracks as Track[]).findIndex(
           t => trackId === t.trackId,
         )
-        // const currentTrack = self.session?.tracks[currentTrackIdx]
-        // const { textSearching } = currentTrack
-        // if (!currentTrack) {
-        //   throw new Error(`Track not found in session for trackId ${trackId}`)
-        // }
         const id = trackId + '-index'
         const locationPath = self.sessionPath.substring(
           0,
           self.sessionPath.lastIndexOf('/'),
         )
-        // console.log('assemblies', assemblies)
-        // currentTrack.textSearching.set
         const adapterConf = {
           type: 'TrixTextSearchAdapter',
           textSearchAdapterId: id,
@@ -268,28 +261,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           tracks: [trackId],
           assemblyNames: assemblies,
         }
-
-        // console.log('adapterconf', adapterConf)
-        // const newTrackConf = {
-        //   ...currentTrack,
-        //   textSearching: {
-        //     indexingAttributes: attributes,
-        //     indexingFeatureTypesToExclude: exclude,
-        //     textSearchAdapter: adapterConf,
-        //   },
-        // }
-        // self.session?.tracks[currentTrackIdx].textSearching.setSubschema(
-        //   'indexingAttributes',
-        //   attributes,
-        // )
-        // self.session?.tracks[currentTrackIdx].textSearching.setSubschema(
-        //   'indexingFeatureTypesToExclude',
-        //   exclude,
-        // )
-        // self.session?.tracks[currentTrackIdx].textSearching.setSubschema(
-        //   'textSearchAdapter',
-        //   adapterConf,
-        // )
         self.session?.tracks[currentTrackIdx].textSearching.setSubschema(
           'textSearchAdapter',
           adapterConf,
@@ -357,10 +328,8 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           self,
           autorun(async () => {
             if (self.indexingQueue.length > 0) {
-              console.time('indexing took')
               await this.runIndexingJob()
               this.dequeueIndexingJob()
-              console.timeEnd('indexing took')
             }
           }),
         )
