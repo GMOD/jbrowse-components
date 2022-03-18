@@ -79,7 +79,7 @@ applications (as demonstrated by the
 [@jbrowse/react-linear-genome-view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
 package).
 
-See the full list of our embedded components [here]().
+See the full list of our embedded components [here](https://jbrowse.org/jb2/docs/embedded_components/).
 
 ### Embedded views versus full JBrowse app
 
