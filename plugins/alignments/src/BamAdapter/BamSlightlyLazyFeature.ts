@@ -4,18 +4,11 @@ import {
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
 import { BamRecord } from '@gmod/bam'
-import {
-  parseCigar,
-  generateMD,
-  cigarToMismatches,
-  mdToMismatches,
-  Mismatch,
-} from './MismatchParser'
+import { cigarToMismatches, getMismatches, Mismatch } from './MismatchParser'
 
 import BamAdapter from './BamAdapter'
 
 export default class BamSlightlyLazyFeature implements Feature {
-  private cachedMD = ''
   constructor(
     private record: BamRecord,
     private adapter: BamAdapter,
