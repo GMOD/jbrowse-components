@@ -1,8 +1,8 @@
 import { Observable, merge } from 'rxjs'
-import { takeUntil, toArray } from 'rxjs/operators'
+import { toArray } from 'rxjs/operators'
 import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { ObservableCreate } from '../util/rxjs'
-import { checkAbortSignal, observeAbortSignal } from '../util'
+import { checkAbortSignal } from '../util'
 import { Feature } from '../util/simpleFeature'
 import {
   readConfObject,
@@ -170,9 +170,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       if (!hasData) {
         observer.complete()
       } else {
-        this.getFeatures(region, opts)
-          .pipe(takeUntil(observeAbortSignal(opts.signal)))
-          .subscribe(observer)
+        this.getFeatures(region, opts).subscribe(observer)
       }
     })
   }
@@ -196,24 +194,11 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     regions: Region[],
     opts: BaseOptions = {},
   ) {
-    const obs = merge(
+    return merge(
       ...regions.map(region => {
-        return ObservableCreate<Feature>(async observer => {
-          const hasData = await this.hasDataForRefName(region.refName, opts)
-          checkAbortSignal(opts.signal)
-          if (!hasData) {
-            observer.complete()
-          } else {
-            this.getFeatures(region, opts).subscribe(observer)
-          }
-        })
+        return this.getFeaturesInRegion(region, opts)
       }),
     )
-
-    if (opts.signal) {
-      return obs.pipe(takeUntil(observeAbortSignal(opts.signal)))
-    }
-    return obs
   }
 
   /**

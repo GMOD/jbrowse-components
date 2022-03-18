@@ -38,7 +38,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const bamLocation = readConfObject(this.config, 'bamLocation')
       const location = readConfObject(this.config, ['index', 'location'])
       const indexType = readConfObject(this.config, ['index', 'indexType'])
-      const chunkSizeLimit = readConfObject(this.config, 'chunkSizeLimit')
       const bam = new BamFile({
         bamFilehandle: openLocation(bamLocation, this.pluginManager),
         csiFilehandle:
@@ -49,8 +48,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           indexType !== 'CSI'
             ? openLocation(location, this.pluginManager)
             : undefined,
-        chunkSizeLimit,
-        fetchSizeLimit: 100_000_000,
+        chunkSizeLimit: Infinity,
+        fetchSizeLimit: Infinity,
+        yieldThreadTime: Infinity,
       })
 
       const adapterConfig = readConfObject(this.config, 'sequenceAdapter')
@@ -139,7 +139,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
     const seqChunks = await features.pipe(toArray()).toPromise()
 
-    const trimmed: string[] = []
+    let sequence = ''
     seqChunks
       .sort((a, b) => a.get('start') - b.get('start'))
       .forEach(chunk => {
@@ -149,10 +149,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         const trimEnd = Math.min(end - chunkStart, chunkEnd - chunkStart)
         const trimLength = trimEnd - trimStart
         const chunkSeq = chunk.get('seq') || chunk.get('residues')
-        trimmed.push(chunkSeq.substr(trimStart, trimLength))
+        sequence += chunkSeq.substr(trimStart, trimLength)
       })
 
-    const sequence = trimmed.join('')
     if (sequence.length !== end - start) {
       throw new Error(
         `sequence fetch failed: fetching ${refName}:${(
@@ -181,7 +180,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
       for (const record of records) {
         let ref: string | undefined
-        if (!record.get('md')) {
+        if (!record.get('MD')) {
           ref = await this.seqFetch(
             originalRefName || refName,
             record.get('start'),
