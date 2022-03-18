@@ -2,7 +2,7 @@ import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../configuration'
 
 const BaseRpcDriverConfigSchema = ConfigurationSchema(
-  'MainThreadRpcDriver',
+  'BaseRpcDriver',
   {
     workerCount: {
       type: 'number',
