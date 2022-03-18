@@ -1,9 +1,8 @@
 import { isAlive, isStateTreeNode } from 'mobx-state-tree'
-import { objectFromEntries } from '../util'
+import { clamp, objectFromEntries } from '../util'
 import { serializeAbortSignal } from './remoteAbortSignals'
 import PluginManager from '../PluginManager'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
-import { readConfObject } from '../configuration'
+import { readConfObject, AnyConfigurationModel } from '../configuration'
 
 export interface WorkerHandle {
   status?: string
@@ -169,7 +168,7 @@ export default abstract class BaseRpcDriver {
 
     const workerCount =
       readConfObject(this.config, 'workerCount') ||
-      Math.max(1, Math.ceil((hardwareConcurrency - 2) / 3))
+      clamp(1, Math.max(1, hardwareConcurrency - 1), 5)
 
     return [...new Array(workerCount)].map(() => new LazyWorker(this))
   }
