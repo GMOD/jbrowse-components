@@ -78,3 +78,27 @@ circular, tabular, etc) can be packaged to be embeddable in other web
 applications (as demonstrated by the
 [@jbrowse/react-linear-genome-view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
 package).
+
+See the full list of our embedded components [here]().
+
+### Embedded views versus full JBrowse app
+
+Embedded views are intended to facilitate genome browsing within the context of an existing webpage, however if it makes sense for a given use case, one might decide to run an instance of JBrowse on one's hosting website instead. Detailed below are the core differences between embedded components and the full JBrowse app:
+
+| Embedded components [^3]                                | JBrowse Web                                                                            |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Only has access to one view type                        | Access to all view types loaded into the JBrowse session, including those from plugins |
+| Feature details open as a dialogue                      | Feature details open as a left/right oriented drawer                                   |
+| Only has access to plugin display types and adapters    | Access to all plugin extensions (displays, views, adapters, widgets, etc.)             |
+| No built-in concept of local session, saving or loading | Save / import / export session options for any user                                    |
+| Only configured tracks available to view                | Various options to populate new tracks from local or remote sources                    |
+
+**Both can:**
+
+- enable/disable tracks through the Track interface
+- change the track's assembly based on what is available in the configuration
+- manipulate the views with zoom, horizontal flip, view all regions, track label positioning, etc.
+- change track display options
+- export the view as an SVG
+
+[^3] Note that though the embedded components lack certain functionality, they are designed for web developers to build a custom system around, so though some of these options are not available by default, the ability to design mechanics such as sessions and custom track manipulation is present for a developer seeking to do these things.

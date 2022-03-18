@@ -58,6 +58,12 @@ way to add it is to add the
 [`@fontsource/roboto`](https://www.npmjs.com/package/@fontsource/roboto) package
 to your project and import it in your root `index.js`.
 
+### Note on webpack 5
+
+There is a breaking change with webpack 5 where there is no longer auto-polyfilling for node core modules. To use this package most effectively, it is recommended to use webpack 4.
+
+[Here](https://carolinebridge-oicr.github.io/jbrowse-react-circular-genome-view-demo) is a working example of [@jbrowse/react-circular-genome-view](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view) running with create-react-app 4.
+
 ## Academic Use
 
 This package was written with funding from the [NHGRI](https://genome.gov/) as
