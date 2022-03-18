@@ -67,19 +67,7 @@ export default class BamSlightlyLazyFeature implements Feature {
   }
 
   _get_seq() {
-    return this.record.getReadBases()
-  }
-
-  _get_MD() {
-    const md = this.record.get('MD') || this.cachedMD
-    if (!md) {
-      const seq = this.get('seq')
-      if (seq && this.ref) {
-        this.cachedMD = generateMD(this.ref, this.get('seq'), this.get('CIGAR'))
-        return this.cachedMD
-      }
-    }
-    return md
+    return this.record.get('seq')
   }
 
   qualRaw() {
@@ -154,63 +142,32 @@ export default class BamSlightlyLazyFeature implements Feature {
     }
   }
 
-  _get_skips_and_dels(
-    opts: {
-      cigarAttributeName: string
-    } = {
-      cigarAttributeName: 'CIGAR',
-    },
-  ) {
-    const { cigarAttributeName } = opts
+  _get_skips_and_dels() {
     let mismatches: Mismatch[] = []
-    let cigarOps: string[] = []
 
     // parse the CIGAR tag if it has one
-    const cigarString = this.get(cigarAttributeName)
+    const cigarString = this.get('CIGAR')
     if (cigarString) {
-      cigarOps = parseCigar(cigarString)
       mismatches = mismatches.concat(
-        cigarToMismatches(cigarOps, this.get('seq'), this.qualRaw()),
+        cigarToMismatches(
+          cigarString,
+          this.get('seq'),
+          this.ref,
+          this.qualRaw(),
+        ),
       )
     }
     return mismatches
   }
 
-  _get_mismatches({
-    cigarAttributeName = 'CIGAR',
-    mdAttributeName = 'MD',
-  }: {
-    cigarAttributeName?: string
-    mdAttributeName?: string
-  } = {}) {
-    let mismatches: Mismatch[] = []
-    let cigarOps: string[] = []
-
-    // parse the CIGAR tag if it has one
-    const cigarString = this.get(cigarAttributeName)
-    const seq = this.get('seq')
-    const qual = this.qualRaw()
-    if (cigarString) {
-      cigarOps = parseCigar(cigarString)
-      mismatches = mismatches.concat(cigarToMismatches(cigarOps, seq, qual))
-    }
-
-    // now let's look for CRAM or MD mismatches
-    const mdString = this.get(mdAttributeName)
-    if (mdString) {
-      mismatches = mismatches.concat(
-        mdToMismatches(mdString, cigarOps, mismatches, seq, qual),
-      )
-    }
-
-    // uniqify the mismatches
-    const seen: { [index: string]: boolean } = {}
-    return mismatches.filter(m => {
-      const key = `${m.type},${m.start},${m.length}`
-      const s = seen[key]
-      seen[key] = true
-      return !s
-    })
+  _get_mismatches() {
+    return getMismatches(
+      this.get('CIGAR'),
+      this.get('MD'),
+      this.get('seq'),
+      this.ref,
+      this.qualRaw(),
+    )
   }
 
   _get_clipPos() {
