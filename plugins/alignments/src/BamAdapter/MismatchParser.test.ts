@@ -1,8 +1,8 @@
 import {
   getMismatches,
   cigarToMismatches,
-  parseCigar,
   mdToMismatches,
+  parseCigar,
   getNextRefPos,
   getModificationPositions,
 } from './MismatchParser'
@@ -234,16 +234,14 @@ test('clipping', () => {
 })
 
 test('getNextRefPos basic', () => {
-  const cigar = '10S10M1I4M1D15M'
-  const cigarOps = parseCigar(cigar)
-  const iter = getNextRefPos(cigarOps, [5, 10, 15, 20, 25, 30, 35])
+  const cigar = parseCigar('10S10M1I4M1D15M')
+  const iter = getNextRefPos(cigar, [5, 10, 15, 20, 25, 30, 35])
   const [...vals] = iter
   expect(vals).toEqual([-5, 0, 5, 10, 14, 20, 25])
 })
 test('getNextRefPos with many indels', () => {
-  const cigar = '10S4M1D1IM10'
-  const cigarOps = parseCigar(cigar)
-  const iter = getNextRefPos(cigarOps, [5, 10, 15])
+  const cigar = parseCigar('10S4M1D1IM10')
+  const iter = getNextRefPos(cigar, [5, 10, 15])
   const [...vals] = iter
   expect(vals).toEqual([-5, 0, 5])
 })
