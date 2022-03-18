@@ -213,7 +213,7 @@ export function getMismatches(
   qual?: Buffer,
 ): Mismatch[] {
   let mismatches: Mismatch[] = []
-  let ops = parseCigar(cigar)
+  const ops = parseCigar(cigar)
 
   // parse the CIGAR tag if it has one
   if (cigar) {
@@ -229,19 +229,18 @@ export function getMismatches(
 
   return mismatches
 }
-
 // get relative reference sequence positions for positions given relative to
 // the read sequence
-export function* getNextRefPos(ops: string[], positions: number[]) {
+export function* getNextRefPos(cigarOps: string[], positions: number[]) {
   let cigarIdx = 0
   let readPos = 0
   let refPos = 0
 
   for (let i = 0; i < positions.length; i++) {
     const pos = positions[i]
-    for (; cigarIdx < ops.length && readPos < pos; cigarIdx++) {
-      const len = +ops[i]
-      const op = ops[i + 1]
+    for (; cigarIdx < cigarOps.length && readPos < pos; cigarIdx += 2) {
+      const len = +cigarOps[cigarIdx]
+      const op = cigarOps[cigarIdx + 1]
       if (op === 'S' || op === 'I') {
         readPos += len
       } else if (op === 'D' || op === 'N') {
@@ -251,10 +250,10 @@ export function* getNextRefPos(ops: string[], positions: number[]) {
         refPos += len
       }
     }
+
     yield positions[i] - readPos + refPos
   }
 }
-
 export function getModificationPositions(
   mm: string,
   fseq: string,

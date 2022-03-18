@@ -205,9 +205,10 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
             noncov: {} as BinType,
             ref: {} as BinType,
           }
-          bin.total++
-          // bin.ref.ref.
-          // inc(bin, fstrand, 'ref', 'ref')
+          if (j !== fend) {
+            bin.total++
+            inc(bin, fstrand, 'ref', 'ref')
+          }
           bins[i] = bin
         }
       }
