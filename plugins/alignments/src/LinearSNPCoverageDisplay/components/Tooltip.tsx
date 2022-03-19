@@ -7,9 +7,7 @@ import { Tooltip } from '@jbrowse/plugin-wiggle'
 type Count = {
   [key: string]: {
     total: number
-    '-1': number
-    '0': number
-    '1': number
+    strands: { [key: string]: number }
   }
 }
 
@@ -58,6 +56,7 @@ const TooltipContents = React.forwardRef(
 
             {Object.entries(info).map(([key, entry]) => {
               return Object.entries(entry).map(([base, score]) => {
+                const { strands } = score
                 return (
                   <tr key={base}>
                     <td>{base.toUpperCase()}</td>
@@ -70,8 +69,8 @@ const TooltipContents = React.forwardRef(
                           )}%`}
                     </td>
                     <td>
-                      {score['-1'] ? `${score['-1']}(-)` : ''}
-                      {score['1'] ? `${score['1']}(+)` : ''}
+                      {strands['-1'] ? `${strands['-1']}(-)` : ''}
+                      {strands['1'] ? `${strands['1']}(+)` : ''}
                     </td>
                     <td>{key}</td>
                   </tr>

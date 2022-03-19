@@ -29,24 +29,33 @@ function isInterbase(type: string) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function inc(bin: any, strand: number, type: string, field: string) {
-  bin[type][field] = bin[type][field] || { total: 0, '-1': 0, '0': 0, '1': 0 }
+  if (!bin[type][field]) {
+    bin[type][field] = { total: 0, strands: { '-1': 0, '0': 0, '1': 0 } }
+  }
   bin[type][field].total++
-  bin[type][field][strand]++
+  bin[type][field].strands[strand]++
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function dec(bin: any, strand: number, type: string, field: string) {
-  bin[type][field] = bin[type][field] || { total: 0, '-1': 0, '0': 0, '1': 0 }
+  if (!bin[type][field]) {
+    bin[type][field] = { total: 0, strands: { '-1': 0, '0': 0, '1': 0 } }
+  }
   bin[type][field].total--
-  bin[type][field][strand]--
+  bin[type][field].strands[strand]--
 }
 
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   protected async configure() {
-    const subadapterConf = this.getConf('subadapter')
-    const seqConf = this.getConf(['subadapter', 'sequenceAdapter'])
-    const dataAdapter = await this.getSubAdapter?.(subadapterConf)
+    const subadapterConfig = readConfObject(this.config, 'subadapter')
+    const sequenceConf = readConfObject(this.config, [
+      'subadapter',
+      'sequenceAdapter',
+    ])
+    const dataAdapter = await this.getSubAdapter?.(subadapterConfig)
 
-    const seqAdapter = seqConf ? await this.getSubAdapter?.(seqConf) : undefined
+    const sequenceAdapter = sequenceConf
+      ? await this.getSubAdapter?.(sequenceConf)
+      : undefined
 
     if (!dataAdapter) {
       throw new Error('Failed to get subadapter')
@@ -54,7 +63,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
     return {
       subadapter: dataAdapter.dataAdapter as BaseFeatureDataAdapter,
-      sequenceAdapter: seqAdapter?.dataAdapter as
+      sequenceAdapter: sequenceAdapter?.dataAdapter as
         | BaseFeatureDataAdapter
         | undefined,
     }
