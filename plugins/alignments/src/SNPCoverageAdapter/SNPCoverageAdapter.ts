@@ -46,11 +46,8 @@ function dec(bin: any, strand: number, type: string, field: string) {
 
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   protected async configure() {
-    const subadapterConfig = readConfObject(this.config, 'subadapter')
-    const sequenceConf = readConfObject(this.config, [
-      'subadapter',
-      'sequenceAdapter',
-    ])
+    const subadapterConfig = this.getConf('subadapter')
+    const sequenceConf = this.getConf(['subadapter', 'sequenceAdapter'])
     const dataAdapter = await this.getSubAdapter?.(subadapterConfig)
 
     const sequenceAdapter = sequenceConf
