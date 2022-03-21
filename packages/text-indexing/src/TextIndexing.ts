@@ -94,18 +94,8 @@ async function aggregateIndex(
     )
   }
   for (const asm of assemblies) {
-    console.log('Indexing assembly ' + asm + '...')
-    const id = asm + '-index'
-    console.log('id', id)
-    // const foundIdx = aggregateAdapters.findIndex(
-    //   x => x.textSearchAdapterId === id,
-    // )
-    // if (foundIdx !== -1 && !force) {
-    //   this.log(
-    //     `Note: ${asm} has already been indexed with this configuration, use --force to overwrite this assembly. Skipping for now`,
-    //   )
-    //   continue
-    // }
+    // console.log('Indexing assembly ' + asm + '...')
+    // const id = asm + '-index'
     // default settings
     const attrs = attributes || ['Name', 'ID']
     const excludeTypes = exclude || ['exon', 'CDS']
@@ -116,7 +106,6 @@ async function aggregateIndex(
       .filter(track => supported(track.adapter?.type))
       .filter(track => (asm ? track.assemblyNames.includes(asm) : true))
 
-    console.log('supported', supportedTracks)
     await indexDriver(
       supportedTracks,
       outDir,
