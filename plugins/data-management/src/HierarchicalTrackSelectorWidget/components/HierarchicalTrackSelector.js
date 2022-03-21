@@ -316,7 +316,7 @@ const HierarchicalTrackSelectorContainer = observer(
           toolbarHeight={toolbarHeight}
           overrideDimensions={overrideDimensions}
         />
-        {!overrideDimensions && (
+        {session.addTrackConf && (
           <div>
             <Fab
               color="secondary"
@@ -368,13 +368,7 @@ const HierarchicalTrackSelectorContainer = observer(
 )
 
 const HierarchicalTrackSelectorHeader = observer(
-  ({
-    model,
-    setHeaderHeight,
-    setAssemblyIdx,
-    assemblyIdx,
-    overrideDimensions,
-  }) => {
+  ({ model, setHeaderHeight, setAssemblyIdx, assemblyIdx }) => {
     const classes = useStyles()
     const session = getSession(model)
     const [connectionAnchorEl, setConnectionAnchorEl] = useState()
@@ -453,7 +447,7 @@ const HierarchicalTrackSelectorHeader = observer(
         data-testid="hierarchical_track_selector"
       >
         <div style={{ display: 'flex' }}>
-          {!overrideDimensions && (
+          {session.addTrackConf && (
             <div style={{ display: 'flex' }}>
               <IconButton
                 className={classes.menuIcon}
@@ -492,7 +486,7 @@ const HierarchicalTrackSelectorHeader = observer(
           />
         </div>
 
-        {!overrideDimensions && (
+        {session.addTrackConf && (
           <div>
             <JBrowseMenu
               anchorEl={connectionAnchorEl}
@@ -569,30 +563,27 @@ const HierarchicalTrackSelectorHeader = observer(
     )
   },
 )
-const HierarchicalTrackSelector = observer(
-  ({ model, toolbarHeight = 0, overrideDimensions }) => {
-    const [assemblyIdx, setAssemblyIdx] = useState(0)
-    const [headerHeight, setHeaderHeight] = useState(0)
+const HierarchicalTrackSelector = observer(({ model, toolbarHeight = 0 }) => {
+  const [assemblyIdx, setAssemblyIdx] = useState(0)
+  const [headerHeight, setHeaderHeight] = useState(0)
 
-    const { assemblyNames } = model
-    const assemblyName = assemblyNames[assemblyIdx]
-    return assemblyName ? (
-      <>
-        <HierarchicalTrackSelectorHeader
-          model={model}
-          setHeaderHeight={setHeaderHeight}
-          setAssemblyIdx={setAssemblyIdx}
-          assemblyIdx={assemblyIdx}
-          overrideDimensions={overrideDimensions}
-        />
-        <AutoSizedHierarchicalTree
-          tree={model.hierarchy(assemblyName)}
-          model={model}
-          offset={toolbarHeight + headerHeight}
-        />
-      </>
-    ) : null
-  },
-)
+  const { assemblyNames } = model
+  const assemblyName = assemblyNames[assemblyIdx]
+  return assemblyName ? (
+    <>
+      <HierarchicalTrackSelectorHeader
+        model={model}
+        setHeaderHeight={setHeaderHeight}
+        setAssemblyIdx={setAssemblyIdx}
+        assemblyIdx={assemblyIdx}
+      />
+      <AutoSizedHierarchicalTree
+        tree={model.hierarchy(assemblyName)}
+        model={model}
+        offset={toolbarHeight + headerHeight}
+      />
+    </>
+  ) : null
+})
 
 export default HierarchicalTrackSelectorContainer
