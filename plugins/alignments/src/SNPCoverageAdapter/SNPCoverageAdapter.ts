@@ -233,7 +233,6 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
               .map(s => s.charCodeAt(0) - 33)
               .map(elt => Math.min(1, elt / 50))
 
-        let probIndex = 0
         getModificationPositions(mm, seq, fstrand).forEach(
           ({ type, positions }) => {
             const mod = `mod_${type}`
@@ -241,13 +240,8 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
               const epos = pos + fstart - region.start
               if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
                 const bin = bins[epos]
-                if (probabilities[probIndex] > 0.5) {
-                  inc(bin, fstrand, 'cov', mod)
-                } else {
-                  inc(bin, fstrand, 'lowqual', mod)
-                }
+                inc(bin, fstrand, 'cov', mod)
               }
-              probIndex++
             }
           },
         )
