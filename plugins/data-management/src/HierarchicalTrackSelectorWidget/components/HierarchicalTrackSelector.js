@@ -46,7 +46,7 @@ const ToggleConnectionsDialog = lazy(() => import('./ToggleConnectionsDialog'))
 
 const useStyles = makeStyles(theme => ({
   searchBox: {
-    marginBottom: theme.spacing(2),
+    margin: theme.spacing(2),
   },
   menuIcon: {
     marginRight: theme.spacing(1),
@@ -316,55 +316,65 @@ const HierarchicalTrackSelectorContainer = observer(
           toolbarHeight={toolbarHeight}
           overrideDimensions={overrideDimensions}
         />
-        <Fab
-          color="secondary"
-          className={classes.fab}
-          onClick={event => {
-            setAnchorEl(event.currentTarget)
-          }}
-        >
-          <AddIcon />
-        </Fab>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={() => setAnchorEl(null)}
-        >
-          <MenuItem
-            onClick={() => {
-              handleFabClose()
-              const widget = session.addWidget(
-                'AddConnectionWidget',
-                'addConnectionWidget',
-              )
-              session.showWidget(widget)
-            }}
-          >
-            Add connection
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              handleFabClose()
-              const widget = session.addWidget(
-                'AddTrackWidget',
-                'addTrackWidget',
-                {
-                  view: model.view.id,
-                },
-              )
-              session.showWidget(widget)
-            }}
-          >
-            Add track
-          </MenuItem>
-        </Menu>
+        {!overrideDimensions && (
+          <div>
+            <Fab
+              color="secondary"
+              className={classes.fab}
+              onClick={event => {
+                setAnchorEl(event.currentTarget)
+              }}
+            >
+              <AddIcon />
+            </Fab>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={() => setAnchorEl(null)}
+            >
+              <MenuItem
+                onClick={() => {
+                  handleFabClose()
+                  const widget = session.addWidget(
+                    'AddConnectionWidget',
+                    'addConnectionWidget',
+                  )
+                  session.showWidget(widget)
+                }}
+              >
+                Add connection
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  handleFabClose()
+                  const widget = session.addWidget(
+                    'AddTrackWidget',
+                    'addTrackWidget',
+                    {
+                      view: model.view.id,
+                    },
+                  )
+                  session.showWidget(widget)
+                }}
+              >
+                Add track
+              </MenuItem>
+            </Menu>
+          </div>
+        )}
       </Wrapper>
     )
   },
 )
 
 const HierarchicalTrackSelectorHeader = observer(
-  ({ model, setHeaderHeight, setAssemblyIdx, assemblyIdx }) => {
+  ({
+    model,
+    setHeaderHeight,
+    setAssemblyIdx,
+    assemblyIdx,
+    overrideDimensions,
+  }) => {
     const classes = useStyles()
     const session = getSession(model)
     const [connectionAnchorEl, setConnectionAnchorEl] = useState()
@@ -443,22 +453,27 @@ const HierarchicalTrackSelectorHeader = observer(
         data-testid="hierarchical_track_selector"
       >
         <div style={{ display: 'flex' }}>
-          <IconButton
-            className={classes.menuIcon}
-            onClick={event => {
-              setMenuAnchorEl(event.currentTarget)
-            }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <IconButton
-            className={classes.menuIcon}
-            onClick={event => {
-              setConnectionAnchorEl(event.currentTarget)
-            }}
-          >
-            <PowerOutlinedIcon />
-          </IconButton>
+          {!overrideDimensions && (
+            <div style={{ display: 'flex' }}>
+              <IconButton
+                className={classes.menuIcon}
+                onClick={event => {
+                  setMenuAnchorEl(event.currentTarget)
+                }}
+              >
+                <MenuIcon />
+              </IconButton>
+              <IconButton
+                className={classes.menuIcon}
+                onClick={event => {
+                  setConnectionAnchorEl(event.currentTarget)
+                }}
+              >
+                <PowerOutlinedIcon />
+              </IconButton>
+            </div>
+          )}
+
           <TextField
             className={classes.searchBox}
             label="Filter tracks"
@@ -477,102 +492,107 @@ const HierarchicalTrackSelectorHeader = observer(
           />
         </div>
 
-        <JBrowseMenu
-          anchorEl={connectionAnchorEl}
-          open={Boolean(connectionAnchorEl)}
-          onMenuItemClick={(_, callback) => {
-            callback()
-            setConnectionAnchorEl(undefined)
-          }}
-          onClose={() => {
-            setConnectionAnchorEl(undefined)
-          }}
-          menuItems={[
-            {
-              label: 'Add connection',
-              onClick: () => {
-                session.showWidget(
-                  session.addWidget(
-                    'AddConnectionWidget',
-                    'addConnectionWidget',
-                  ),
-                )
-              },
-            },
-            ...connectionMenuItems,
-          ]}
-        />
-
-        <JBrowseMenu
-          anchorEl={menuAnchorEl}
-          open={Boolean(menuAnchorEl)}
-          onMenuItemClick={(_, callback) => {
-            callback()
-            setMenuAnchorEl(undefined)
-          }}
-          onClose={() => {
-            setMenuAnchorEl(undefined)
-          }}
-          menuItems={menuItems}
-        />
-
-        <Suspense fallback={<div />}>
-          {modalInfo ? (
-            <CloseConnectionDialog
-              modalInfo={modalInfo}
-              setModalInfo={setModalInfo}
-              session={session}
-            />
-          ) : deleteDialogDetails ? (
-            <DeleteConnectionDialog
-              handleClose={() => {
-                setDeleteDialogDetails(undefined)
+        {!overrideDimensions && (
+          <div>
+            <JBrowseMenu
+              anchorEl={connectionAnchorEl}
+              open={Boolean(connectionAnchorEl)}
+              onMenuItemClick={(_, callback) => {
+                callback()
+                setConnectionAnchorEl(undefined)
               }}
-              deleteDialogDetails={deleteDialogDetails}
-              session={session}
+              onClose={() => {
+                setConnectionAnchorEl(undefined)
+              }}
+              menuItems={[
+                {
+                  label: 'Add connection',
+                  onClick: () => {
+                    session.showWidget(
+                      session.addWidget(
+                        'AddConnectionWidget',
+                        'addConnectionWidget',
+                      ),
+                    )
+                  },
+                },
+                ...connectionMenuItems,
+              ]}
             />
-          ) : null}
-          {connectionManagerOpen ? (
-            <ManageConnectionsDialog
-              handleClose={() => setConnectionManagerOpen(false)}
-              breakConnection={breakConnection}
-              session={session}
+            <JBrowseMenu
+              anchorEl={menuAnchorEl}
+              open={Boolean(menuAnchorEl)}
+              onMenuItemClick={(_, callback) => {
+                callback()
+                setMenuAnchorEl(undefined)
+              }}
+              onClose={() => {
+                setMenuAnchorEl(undefined)
+              }}
+              menuItems={menuItems}
             />
-          ) : null}
-          {connectionToggleOpen ? (
-            <ToggleConnectionsDialog
-              handleClose={() => setConnectionToggleOpen(false)}
-              session={session}
-              breakConnection={breakConnection}
-              assemblyName={assemblyName}
-            />
-          ) : null}
-        </Suspense>
+            <Suspense fallback={<div />}>
+              {modalInfo ? (
+                <CloseConnectionDialog
+                  modalInfo={modalInfo}
+                  setModalInfo={setModalInfo}
+                  session={session}
+                />
+              ) : deleteDialogDetails ? (
+                <DeleteConnectionDialog
+                  handleClose={() => {
+                    setDeleteDialogDetails(undefined)
+                  }}
+                  deleteDialogDetails={deleteDialogDetails}
+                  session={session}
+                />
+              ) : null}
+              {connectionManagerOpen ? (
+                <ManageConnectionsDialog
+                  handleClose={() => setConnectionManagerOpen(false)}
+                  breakConnection={breakConnection}
+                  session={session}
+                />
+              ) : null}
+              {connectionToggleOpen ? (
+                <ToggleConnectionsDialog
+                  handleClose={() => setConnectionToggleOpen(false)}
+                  session={session}
+                  breakConnection={breakConnection}
+                  assemblyName={assemblyName}
+                />
+              ) : null}
+            </Suspense>
+          </div>
+        )}
       </div>
     )
   },
 )
-const HierarchicalTrackSelector = observer(({ model, toolbarHeight = 0 }) => {
-  const [assemblyIdx, setAssemblyIdx] = useState(0)
-  const [headerHeight, setHeaderHeight] = useState(0)
+const HierarchicalTrackSelector = observer(
+  ({ model, toolbarHeight = 0, overrideDimensions }) => {
+    const [assemblyIdx, setAssemblyIdx] = useState(0)
+    const [headerHeight, setHeaderHeight] = useState(0)
 
-  const { assemblyNames } = model
-  const assemblyName = assemblyNames[assemblyIdx]
-  return assemblyName ? (
-    <>
-      <HierarchicalTrackSelectorHeader
-        model={model}
-        setHeaderHeight={setHeaderHeight}
-        setAssemblyIdx={setAssemblyIdx}
-        assemblyIdx={assemblyIdx}
-      />
-      <AutoSizedHierarchicalTree
-        tree={model.hierarchy(assemblyName)}
-        model={model}
-        offset={toolbarHeight + headerHeight}
-      />
-    </>
-  ) : null
-})
+    const { assemblyNames } = model
+    const assemblyName = assemblyNames[assemblyIdx]
+    return assemblyName ? (
+      <>
+        <HierarchicalTrackSelectorHeader
+          model={model}
+          setHeaderHeight={setHeaderHeight}
+          setAssemblyIdx={setAssemblyIdx}
+          assemblyIdx={assemblyIdx}
+          overrideDimensions={overrideDimensions}
+        />
+        <AutoSizedHierarchicalTree
+          tree={model.hierarchy(assemblyName)}
+          model={model}
+          offset={toolbarHeight + headerHeight}
+        />
+      </>
+    ) : null
+  },
+)
 
 export default HierarchicalTrackSelectorContainer
