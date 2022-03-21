@@ -4,18 +4,13 @@ import {
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
 import { BamRecord } from '@gmod/bam'
-import {
-  parseCigar,
-  generateMD,
-  cigarToMismatches,
-  mdToMismatches,
-  Mismatch,
-} from './MismatchParser'
+import { getMismatches } from './MismatchParser'
 
 import BamAdapter from './BamAdapter'
 
 export default class BamSlightlyLazyFeature implements Feature {
-  private cachedMD = ''
+  // uses parameter properties to automatically create fields on the class
+  // https://www.typescriptlang.org/docs/handbook/classes.html#parameter-properties
   constructor(
     private record: BamRecord,
     private adapter: BamAdapter,
@@ -70,18 +65,6 @@ export default class BamSlightlyLazyFeature implements Feature {
     return this.record.getReadBases()
   }
 
-  _get_MD() {
-    const md = this.record.get('MD') || this.cachedMD
-    if (!md) {
-      const seq = this.get('seq')
-      if (seq && this.ref) {
-        this.cachedMD = generateMD(this.ref, this.get('seq'), this.get('CIGAR'))
-        return this.cachedMD
-      }
-    }
-    return md
-  }
-
   qualRaw() {
     return this.record.qualRaw()
   }
@@ -100,8 +83,6 @@ export default class BamSlightlyLazyFeature implements Feature {
             prop =>
               prop.startsWith('_get_') &&
               prop !== '_get_mismatches' &&
-              prop !== '_get_skips_and_dels' &&
-              prop !== '_get_cram_read_features' &&
               prop !== '_get_tags' &&
               prop !== '_get_next_seq_id' &&
               prop !== '_get_seq_id',
@@ -154,63 +135,14 @@ export default class BamSlightlyLazyFeature implements Feature {
     }
   }
 
-  _get_skips_and_dels(
-    opts: {
-      cigarAttributeName: string
-    } = {
-      cigarAttributeName: 'CIGAR',
-    },
-  ) {
-    const { cigarAttributeName } = opts
-    let mismatches: Mismatch[] = []
-    let cigarOps: string[] = []
-
-    // parse the CIGAR tag if it has one
-    const cigarString = this.get(cigarAttributeName)
-    if (cigarString) {
-      cigarOps = parseCigar(cigarString)
-      mismatches = mismatches.concat(
-        cigarToMismatches(cigarOps, this.get('seq'), this.qualRaw()),
-      )
-    }
-    return mismatches
-  }
-
-  _get_mismatches({
-    cigarAttributeName = 'CIGAR',
-    mdAttributeName = 'MD',
-  }: {
-    cigarAttributeName?: string
-    mdAttributeName?: string
-  } = {}) {
-    let mismatches: Mismatch[] = []
-    let cigarOps: string[] = []
-
-    // parse the CIGAR tag if it has one
-    const cigarString = this.get(cigarAttributeName)
-    const seq = this.get('seq')
-    const qual = this.qualRaw()
-    if (cigarString) {
-      cigarOps = parseCigar(cigarString)
-      mismatches = mismatches.concat(cigarToMismatches(cigarOps, seq, qual))
-    }
-
-    // now let's look for CRAM or MD mismatches
-    const mdString = this.get(mdAttributeName)
-    if (mdString) {
-      mismatches = mismatches.concat(
-        mdToMismatches(mdString, cigarOps, mismatches, seq, qual),
-      )
-    }
-
-    // uniqify the mismatches
-    const seen: { [index: string]: boolean } = {}
-    return mismatches.filter(m => {
-      const key = `${m.type},${m.start},${m.length}`
-      const s = seen[key]
-      seen[key] = true
-      return !s
-    })
+  _get_mismatches() {
+    return getMismatches(
+      this.get('CIGAR'),
+      this.get('MD'),
+      this.get('seq'),
+      this.ref,
+      this.qualRaw(),
+    )
   }
 
   _get_clipPos() {

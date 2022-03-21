@@ -1,26 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useRef, useState } from 'react'
 import {
-  getParent,
-  isAlive,
-  IAnyStateTreeNode,
-  getSnapshot,
-  hasParent,
   addDisposer,
+  getParent,
+  getSnapshot,
+  isAlive,
   isStateTreeNode,
+  hasParent,
+  IAnyStateTreeNode,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import fromEntries from 'object.fromentries'
-import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
 import SimpleFeature, { Feature, isFeature } from './simpleFeature'
 import {
-  TypeTestedByPredicate,
   isSessionModel,
   isDisplayModel,
   isViewModel,
   isTrackModel,
-  Region,
   AssemblyManager,
+  Region,
+  TypeTestedByPredicate,
 } from './types'
 import { isAbortException, checkAbortSignal } from './aborting'
 
