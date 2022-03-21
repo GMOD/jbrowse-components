@@ -4,11 +4,13 @@ import {
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
 import { BamRecord } from '@gmod/bam'
-import { cigarToMismatches, getMismatches, Mismatch } from './MismatchParser'
+import { getMismatches } from './MismatchParser'
 
 import BamAdapter from './BamAdapter'
 
 export default class BamSlightlyLazyFeature implements Feature {
+  // uses parameter properties to automatically create fields on the class
+  // https://www.typescriptlang.org/docs/handbook/classes.html#parameter-properties
   constructor(
     private record: BamRecord,
     private adapter: BamAdapter,
@@ -60,7 +62,7 @@ export default class BamSlightlyLazyFeature implements Feature {
   }
 
   _get_seq() {
-    return this.record.get('seq')
+    return this.record.getReadBases()
   }
 
   qualRaw() {
@@ -81,8 +83,6 @@ export default class BamSlightlyLazyFeature implements Feature {
             prop =>
               prop.startsWith('_get_') &&
               prop !== '_get_mismatches' &&
-              prop !== '_get_skips_and_dels' &&
-              prop !== '_get_cram_read_features' &&
               prop !== '_get_tags' &&
               prop !== '_get_next_seq_id' &&
               prop !== '_get_seq_id',
@@ -133,24 +133,6 @@ export default class BamSlightlyLazyFeature implements Feature {
       ),
       uniqueId: this.id(),
     }
-  }
-
-  _get_skips_and_dels() {
-    let mismatches: Mismatch[] = []
-
-    // parse the CIGAR tag if it has one
-    const cigarString = this.get('CIGAR')
-    if (cigarString) {
-      mismatches = mismatches.concat(
-        cigarToMismatches(
-          cigarString,
-          this.get('seq'),
-          this.ref,
-          this.qualRaw(),
-        ),
-      )
-    }
-    return mismatches
   }
 
   _get_mismatches() {

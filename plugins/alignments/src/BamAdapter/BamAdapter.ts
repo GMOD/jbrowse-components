@@ -48,6 +48,10 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           indexType !== 'CSI'
             ? openLocation(location, this.pluginManager)
             : undefined,
+
+        // chunkSizeLimit and fetchSizeLimit are more troublesome than
+        // helpful, and have given overly large values on the ultra long
+        // nanopore reads even with 500MB limits, so disabled with infinity
         chunkSizeLimit: Infinity,
         fetchSizeLimit: Infinity,
         yieldThreadTime: Infinity,

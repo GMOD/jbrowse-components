@@ -19,8 +19,8 @@ export function cigarToMismatches(
   ref?: string,
   qual?: Buffer,
 ): Mismatch[] {
-  let currOffset = 0
-  let seqOffset = 0
+  let roffset = 0 // reference offset
+  let soffset = 0 // seq offset
   const mismatches: Mismatch[] = []
   const hasRefAndSeq = ref && seq
   for (let i = 0; i < ops.length; i += 2) {
@@ -31,59 +31,59 @@ export function cigarToMismatches(
       if (hasRefAndSeq) {
         for (let j = 0; j < len; j++) {
           if (
-            seq[seqOffset + j].toUpperCase() !==
-            ref[currOffset + j].toUpperCase()
+            // @ts-ignore in the full yarn build of the repo, this says that object is possibly undefined for some reason, ignored
+            seq[soffset + j].toUpperCase() !== ref[roffset + j].toUpperCase()
           ) {
             mismatches.push({
-              start: currOffset + j,
+              start: roffset + j,
               type: 'mismatch',
-              base: seq[seqOffset + j],
+              base: seq[soffset + j],
               length: 1,
             })
           }
         }
       }
-      seqOffset += len
+      soffset += len
     }
     if (op === 'I') {
       mismatches.push({
-        start: currOffset,
+        start: roffset,
         type: 'insertion',
         base: `${len}`,
         length: 0,
       })
-      seqOffset += len
+      soffset += len
     } else if (op === 'D') {
       mismatches.push({
-        start: currOffset,
+        start: roffset,
         type: 'deletion',
         base: '*',
         length: len,
       })
     } else if (op === 'N') {
       mismatches.push({
-        start: currOffset,
+        start: roffset,
         type: 'skip',
         base: 'N',
         length: len,
       })
     } else if (op === 'X') {
-      const r = seq.slice(seqOffset, seqOffset + len)
-      const q = qual?.slice(seqOffset, seqOffset + len) || []
+      const r = seq.slice(soffset, soffset + len)
+      const q = qual?.slice(soffset, soffset + len) || []
 
       for (let j = 0; j < len; j++) {
         mismatches.push({
-          start: currOffset + j,
+          start: roffset + j,
           type: 'mismatch',
           base: r[j],
           qual: q[j],
           length: 1,
         })
       }
-      seqOffset += len
+      soffset += len
     } else if (op === 'H') {
       mismatches.push({
-        start: currOffset,
+        start: roffset,
         type: 'hardclip',
         base: `H${len}`,
         cliplen: len,
@@ -91,17 +91,17 @@ export function cigarToMismatches(
       })
     } else if (op === 'S') {
       mismatches.push({
-        start: currOffset,
+        start: roffset,
         type: 'softclip',
         base: `S${len}`,
         cliplen: len,
         length: 1,
       })
-      seqOffset += len
+      soffset += len
     }
 
     if (op !== 'I' && op !== 'S' && op !== 'H') {
-      currOffset += len
+      roffset += len
     }
   }
   return mismatches
