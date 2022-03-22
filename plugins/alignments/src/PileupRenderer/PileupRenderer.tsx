@@ -1,4 +1,4 @@
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import Color from 'color'
 import BoxRendererType, {
   RenderArgs,
   RenderArgsSerialized,
@@ -9,14 +9,20 @@ import BoxRendererType, {
 } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { Theme } from '@material-ui/core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { bpSpanPx, iterMap, measureText } from '@jbrowse/core/util'
-import Color from 'color'
-import { Region } from '@jbrowse/core/util/types'
+import {
+  bpSpanPx,
+  iterMap,
+  measureText,
+  Region,
+  Feature,
+} from '@jbrowse/core/util'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  readConfObject,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
 
 // locals
 import {
@@ -26,7 +32,12 @@ import {
   getNextRefPos,
 } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
-import { getTagAlt, orientationTypes, fetchSequence } from '../util'
+import {
+  getTagAlt,
+  orientationTypes,
+  fetchSequence,
+  shouldFetchReferenceSequence,
+} from '../util'
 import {
   PileupLayoutSession,
   PileupLayoutSessionProps,
@@ -110,7 +121,6 @@ interface LayoutFeature {
 function shouldDrawMismatches(type?: string) {
   return !['methylation', 'modifications'].includes(type || '')
 }
-
 
 export default class PileupRenderer extends BoxRendererType {
   supportsSVG = true
@@ -981,7 +991,7 @@ export default class PileupRenderer extends BoxRendererType {
       sequenceAdapter,
     )
     const [region] = regions
-    return fetchSequence(region, dataAdapter)
+    return fetchSequence(region, dataAdapter as BaseFeatureDataAdapter)
   }
 
   async render(renderProps: RenderArgsDeserialized) {

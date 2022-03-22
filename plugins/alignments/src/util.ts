@@ -97,6 +97,7 @@ export async function fetchSequence(
   return feats[0]?.get('seq')
 }
 
+// has to check underlying C-G (aka CpG) on the reference sequence
 export function shouldFetchReferenceSequence(type?: string) {
-  return !['methylation', 'modifications'].includes(type || '')
+  return type === 'methylation'
 }
