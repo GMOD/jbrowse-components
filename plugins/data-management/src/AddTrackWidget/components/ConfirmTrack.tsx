@@ -124,143 +124,99 @@ function getAdapterTypes(pluginManager: PluginManager) {
 function getTrackTypes(pluginManager: PluginManager) {
   return pluginManager.getElementTypesInGroup('track') as { name: string }[]
 }
-interface IndexingAttr {
-  attributes: string[]
-  exclude: string[]
-}
 
 const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
   const classes = useStyles()
   const [value1, setValue1] = useState('')
   const [value2, setValue2] = useState('')
   const [attributes, setAttributes] = useState(['Name', 'ID', 'type'])
-  const [featuresExclude, setFeaturesExclude] = useState(['CDS', 'exon'])
-  const indexingAttr: IndexingAttr = {
-    attributes: attributes,
-    exclude: featuresExclude,
-  }
-  model.setTextIndexingConf(indexingAttr)
+  const [exclude, setExclude] = useState(['CDS', 'exon'])
+  const sections = [
+    {
+      label: 'Indexing attributes',
+      values: attributes,
+    },
+    {
+      label: 'Feature types to exlcude',
+      values: exclude,
+    },
+  ]
+  model.setTextIndexingConf({ attributes, exclude })
   return (
     <Paper className={classes.paper}>
-      <InputLabel>indexing parameters</InputLabel>
-      <Card raised key="indexingAttributes" className={classes.card}>
-        <CardContent>
-          <InputLabel>{'indexingAttributes'}</InputLabel>
-          <List disablePadding>
-            {attributes.map((val: string, idx: number) => (
-              <ListItem key={idx} disableGutters>
+      <InputLabel>Indexing configuration</InputLabel>
+      {sections.map((section, index) => (
+        <Card raised key={section.label} className={classes.card}>
+          <CardContent>
+            <InputLabel>{section.label}</InputLabel>
+            <List disablePadding>
+              {section.values.map((val: string, idx: number) => (
+                <ListItem key={idx} disableGutters>
+                  <TextField
+                    value={val}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            color="secondary"
+                            onClick={() => {
+                              const newAttr = section.values.filter((a, i) => {
+                                return i !== idx
+                              })
+                              index === 0
+                                ? setAttributes(newAttr)
+                                : setExclude(newAttr)
+                            }}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </ListItem>
+              ))}
+              <ListItem disableGutters>
                 <TextField
-                  value={val}
+                  value={index === 0 ? value1 : value2}
+                  placeholder="add new"
+                  onChange={event => {
+                    index === 0
+                      ? setValue1(event.target.value)
+                      : setValue2(event.target.value)
+                  }}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
-                          color="secondary"
                           onClick={() => {
-                            // console.log('I am supposed to remove', idx)
-                            const newAttr = attributes.filter((a, index) => {
-                              return index !== idx
-                            })
-                            setAttributes(newAttr)
-                            // console.log(newAttr)
+                            if (index === 0) {
+                              const newAttr: string[] = attributes
+                              newAttr.push(value1)
+                              setAttributes(newAttr)
+                              setValue1('')
+                            } else {
+                              const newFeat: string[] = exclude
+                              newFeat.push(value2)
+                              setExclude(newFeat)
+                              setValue2('')
+                            }
                           }}
+                          disabled={index === 0 ? value1 === '' : value2 === ''}
+                          color="secondary"
+                          data-testid={`stringArrayAdd-Feat`}
                         >
-                          <DeleteIcon />
+                          <AddIcon />
                         </IconButton>
                       </InputAdornment>
                     ),
                   }}
                 />
               </ListItem>
-            ))}
-            <ListItem disableGutters>
-              <TextField
-                value={value1}
-                placeholder="add new"
-                onChange={event => setValue1(event.target.value)}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => {
-                          const newAttr: string[] = attributes
-                          newAttr.push(value1)
-                          setAttributes(newAttr)
-                          setValue1('')
-                        }}
-                        disabled={value1 === ''}
-                        color="secondary"
-                        data-testid={`stringArrayAdd-`}
-                      >
-                        <AddIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </ListItem>
-          </List>
-        </CardContent>
-      </Card>
-      <Card raised key="featureTypesToExclude" className={classes.card}>
-        <CardContent>
-          <InputLabel>{'featureTypesToExclude'}</InputLabel>
-          <List disablePadding>
-            {featuresExclude.map((feature: string, i: number) => (
-              <ListItem key={i} disableGutters>
-                <TextField
-                  value={feature}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          color="secondary"
-                          onClick={() => {
-                            const newFeat = featuresExclude.filter(
-                              (a, index) => {
-                                return index !== i
-                              },
-                            )
-                            setFeaturesExclude(newFeat)
-                          }}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </ListItem>
-            ))}
-            <ListItem disableGutters>
-              <TextField
-                value={value2}
-                placeholder="add new"
-                onChange={event => setValue2(event.target.value)}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => {
-                          const newFeat: string[] = featuresExclude
-                          newFeat.push(value2)
-                          setFeaturesExclude(newFeat)
-                          setValue2('')
-                        }}
-                        disabled={value2 === ''}
-                        color="secondary"
-                        data-testid={`stringArrayAdd-Feat`}
-                      >
-                        <AddIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </ListItem>
-          </List>
-        </CardContent>
-      </Card>
+            </List>
+          </CardContent>
+        </Card>
+      ))}
     </Paper>
   )
 })
@@ -400,7 +356,7 @@ const TrackAssemblySelector = observer(
 
 function ConfirmTrack({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
-  const [check, setCheck] = useState(false)
+  const [check, setCheck] = useState(true)
   const { trackName, trackAdapter, trackType, warningMessage, adapterHint } =
     model
 
@@ -441,6 +397,9 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
     return <Typography>Could not recognize this data type.</Typography>
   }
 
+  const supportedForIndexing = ['Gff3TabixAdapter', 'VcfTabixAdapter'].includes(
+    trackAdapter?.type,
+  )
   return (
     <div>
       {trackAdapter ? (
@@ -461,21 +420,25 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
       <TrackAdapterSelector model={model} />
       <TrackTypeSelector model={model} />
       <TrackAssemblySelector model={model} />
-      <FormControl>
-        <FormControlLabel
-          label={'Index track for text searching?'}
-          control={
-            <Checkbox
-              checked={check}
-              onChange={e => {
-                setCheck(e.target.checked)
-                model.setTextIndexTrack(e.target.checked)
-              }}
-            />
-          }
-        />
-      </FormControl>
-      {check ? <TextIndexingConfig model={model} /> : null}
+      {supportedForIndexing && (
+        <FormControl>
+          <FormControlLabel
+            label={'Index track for text searching?'}
+            control={
+              <Checkbox
+                checked={check}
+                onChange={e => {
+                  setCheck(e.target.checked)
+                  model.setTextIndexTrack(e.target.checked)
+                }}
+              />
+            }
+          />
+        </FormControl>
+      )}
+      {check && supportedForIndexing ? (
+        <TextIndexingConfig model={model} />
+      ) : null}
     </div>
   )
 }

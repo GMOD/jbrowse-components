@@ -41,7 +41,7 @@ export default function f(pluginManager: PluginManager) {
       altTrackType: '',
 
       adapterHint: '',
-      textIndexTrack: false,
+      textIndexTrack: true,
       textIndexingConf: undefined as IndexingAttr | undefined,
     }))
     .actions(self => ({

@@ -210,58 +210,79 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             indexType,
           } = toJS(firstIndexingJob)
           const rpcManager = self.jbrowse.rpcManager
+          const trackConfigs = this.findTrackConfigsToIndex(trackIds)
+          await rpcManager.call('indexTracksSessionId', 'CoreIndexTracks', {
+            tracks: trackConfigs,
+            attributes,
+            exclude,
+            assemblies,
+            indexType,
+            outLocation: self.sessionPath,
+            sessionId: 'indexTracksSessionId',
+            timeout: 1 * 60 * 60 * 1000, // 1 hour
+          })
           if (indexType === 'perTrack') {
-            const trackConfigs = this.findTrackConfigsToIndex(trackIds)
-            await rpcManager.call('indexTracksSessionId', 'CoreIndexTracks', {
-              tracks: trackConfigs,
-              attributes,
-              exclude,
-              assemblies,
-              indexType,
-              outLocation: self.sessionPath,
-              sessionId: 'indexTracksSessionId',
-              timeout: 1 * 60 * 60 * 1000, // 1 hour
-            })
             // should update the single track conf
-            trackIds.forEach(id => {
-              this.addTextSearchConf(id, assemblies, attributes, exclude)
+            trackIds.forEach(trackId => {
+              this.addTrackTextSearchConf(
+                trackId,
+                assemblies,
+                attributes,
+                exclude,
+              )
               self.session?.notify(
-                `Succesfully indexed track with trackId: ${id} `,
+                `Succesfully indexed track with trackId: ${trackId} `,
                 'success',
               )
             })
           } else {
-            console.log('aggregate support...')
-            const trackConfigs = this.findTrackConfigsToIndex(trackIds)
-            await rpcManager.call('indexTracksSessionId', 'CoreIndexTracks', {
-              tracks: trackConfigs,
-              attributes,
-              exclude,
-              assemblies,
-              indexType,
-              outLocation: self.sessionPath,
-              sessionId: 'indexTracksSessionId',
-              timeout: 1 * 60 * 60 * 1000, // 1 hour
-            })
-            // should update the single track conf
-            assemblies.forEach(assembly => {
-              const trackIdsIndexed = trackConfigs
+            assemblies.forEach(assemblyName => {
+              const indexedTrackIds = trackConfigs
                 .filter(track =>
-                  assembly ? track.assemblyNames.includes(assembly) : true,
+                  assemblyName
+                    ? track.assemblyNames.includes(assemblyName)
+                    : true,
                 )
                 .map(trackConf => trackConf.trackId)
-              this.addAggregateTextSearchAdapter(trackIdsIndexed, assembly)
+              this.addAggregateTextSearchConf(indexedTrackIds, assemblyName)
               self.session?.notify(
-                `Succesfully indexed assembly: ${assembly} `,
+                `Succesfully indexed assembly: ${assemblyName} `,
                 'success',
               )
             })
-            // self.session?.notify(`Succesfully indexed assemblies `, 'success')
           }
         }
         return
       },
-      addTextSearchConf(
+      createTextSearchConf(
+        name: string,
+        trackIds: string[],
+        assemblyNames: string[],
+      ) {
+        const locationPath = self.sessionPath.substring(
+          0,
+          self.sessionPath.lastIndexOf('/'),
+        )
+        return {
+          type: 'TrixTextSearchAdapter',
+          textSearchAdapterId: name,
+          ixFilePath: {
+            localPath: locationPath + `/trix/${name}.ix`,
+            locationType: 'LocalPathLocation',
+          },
+          ixxFilePath: {
+            localPath: locationPath + `/trix/${name}.ixx`,
+            locationType: 'LocalPathLocation',
+          },
+          metaFilePath: {
+            localPath: locationPath + `/trix/${name}.json`,
+            locationType: 'LocalPathLocation',
+          },
+          tracks: trackIds,
+          assemblyNames,
+        }
+      },
+      addTrackTextSearchConf(
         trackId: string,
         assemblies: string[],
         attributes: string[],
@@ -270,29 +291,9 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         const currentTrackIdx = (self.session?.tracks as Track[]).findIndex(
           t => trackId === t.trackId,
         )
+        // name of index
         const id = trackId + '-index'
-        const locationPath = self.sessionPath.substring(
-          0,
-          self.sessionPath.lastIndexOf('/'),
-        )
-        const adapterConf = {
-          type: 'TrixTextSearchAdapter',
-          textSearchAdapterId: id,
-          ixFilePath: {
-            localPath: locationPath + `/trix/${trackId}.ix`,
-            locationType: 'LocalPathLocation',
-          },
-          ixxFilePath: {
-            localPath: locationPath + `/trix/${trackId}.ixx`,
-            locationType: 'LocalPathLocation',
-          },
-          metaFilePath: {
-            localPath: locationPath + `/trix/${trackId}_meta.json`,
-            locationType: 'LocalPathLocation',
-          },
-          tracks: [trackId],
-          assemblyNames: assemblies,
-        }
+        const adapterConf = this.createTextSearchConf(id, [trackId], assemblies)
         self.session?.tracks[currentTrackIdx].textSearching.setSubschema(
           'textSearchAdapter',
           adapterConf,
@@ -304,39 +305,18 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           currentTrackIdx
         ].textSearching.indexingFeatureTypesToExclude.set(exclude)
       },
-      addAggregateTextSearchAdapter(trackIds: string[], asm: string) {
-        const locationPath = self.sessionPath.substring(
-          0,
-          self.sessionPath.lastIndexOf('/'),
-        )
+      addAggregateTextSearchConf(trackIds: string[], asm: string) {
+        // name of index
         const id = asm + '-index'
         const foundIdx = self.jbrowse.aggregateTextSearchAdapters.findIndex(
           x => x.textSearchAdapterId === id,
         )
-        const trixConf = {
-          type: 'TrixTextSearchAdapter',
-          textSearchAdapterId: id,
-          ixFilePath: {
-            localPath: locationPath + `/trix/${id}.ix`,
-            locationType: 'LocalPathLocation',
-          },
-          ixxFilePath: {
-            localPath: locationPath + `/trix/${id}.ixx`,
-            locationType: 'LocalPathLocation',
-          },
-          metaFilePath: {
-            localPath: locationPath + `/trix/${id}_meta.json`,
-            locationType: 'LocalPathLocation',
-          },
-          tracks: trackIds,
-          assemblyNames: [asm],
-        }
+        const trixConf = this.createTextSearchConf(id, trackIds, [asm])
         if (foundIdx === -1) {
           self.jbrowse.aggregateTextSearchAdapters.push(trixConf)
         } else {
           self.jbrowse.aggregateTextSearchAdapters[foundIdx] = trixConf
         }
-        console.log(self.jbrowse.aggregateTextSearchAdapters)
       },
       findTrackConfigsToIndex(trackIds: string[], assemblyName?: string) {
         const configs = trackIds
@@ -569,6 +549,19 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                   const widget = self.session.addWidget(
                     'PluginStoreWidget',
                     'pluginStoreWidget',
+                  )
+                  self.session.showWidget(widget)
+                }
+              },
+            },
+            {
+              label: 'Jobs Manager',
+              icon: Indexing,
+              onClick: () => {
+                if (self.session) {
+                  const widget = self.session.addWidget(
+                    'JobsListWidget',
+                    'jobsListWidget-test',
                   )
                   self.session.showWidget(widget)
                 }

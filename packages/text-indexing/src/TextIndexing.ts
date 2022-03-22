@@ -54,6 +54,7 @@ async function perTrackIndex(
   const supportedTracks = tracks.filter(track => supported(track.adapter?.type))
   for (const trackConfig of supportedTracks) {
     const { textSearching, trackId, assemblyNames } = trackConfig
+    const id = trackId + '-index'
     if (textSearching?.textSearchAdapter && !force) {
       console.warn(
         `Note: ${trackId} has already been indexed with this configuration, use --force to overwrite this track. Skipping for now`,
@@ -64,7 +65,7 @@ async function perTrackIndex(
       [trackConfig],
       outDir,
       attrs,
-      trackId,
+      id,
       true,
       excludeTypes,
       assemblyNames,
@@ -106,15 +107,9 @@ async function aggregateIndex(
       .filter(track => supported(track.adapter?.type))
       .filter(track => (asm ? track.assemblyNames.includes(asm) : true))
 
-    await indexDriver(
-      supportedTracks,
-      outDir,
-      attrs,
-      id,
-      quiet,
-      excludeTypes,
-      [asm],
-    )
+    await indexDriver(supportedTracks, outDir, attrs, id, quiet, excludeTypes, [
+      asm,
+    ])
   }
 }
 
