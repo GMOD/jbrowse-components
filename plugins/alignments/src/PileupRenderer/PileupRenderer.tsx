@@ -586,6 +586,19 @@ export default class PileupRenderer extends BoxRendererType {
       case 'insertSizeAndPairOrientation':
         break
 
+      case 'modifications':
+      case 'methylation':
+        // this coloring is similar to igv.js, and is helpful to color negative
+        // strand reads differently because their c-g will be flipped (e.g. g-c
+        // read right to left)
+        const flags = feature.get('flags')
+        if (flags & 16) {
+          ctx.fillStyle = '#c8dcc8'
+        } else {
+          ctx.fillStyle = '#c8c8c8'
+        }
+        break
+
       case 'normal':
       default:
         if (defaultColor) {
