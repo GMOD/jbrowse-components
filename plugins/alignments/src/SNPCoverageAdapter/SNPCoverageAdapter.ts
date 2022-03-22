@@ -27,6 +27,10 @@ function isInterbase(type: string) {
   return type === 'softclip' || type === 'hardclip' || type === 'insertion'
 }
 
+function shouldFetchReferenceSequence(type?: string) {
+  return !['methylation', 'modifications'].includes(type || '')
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function inc(bin: any, strand: number, type: string, field: string) {
   if (!bin[type][field]) {
@@ -178,9 +182,10 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     // - delskips deletions or introns that don't contribute to coverage
     type BinType = { total: number; strands: { [key: string]: number } }
 
-    const regionSeq = features.length
-      ? await this.fetchSequence(region)
-      : undefined
+    const regionSeq =
+      features.length && shouldFetchReferenceSequence(opts.colorBy?.type)
+        ? await this.fetchSequence(region)
+        : undefined
 
     const bins = [] as {
       total: number

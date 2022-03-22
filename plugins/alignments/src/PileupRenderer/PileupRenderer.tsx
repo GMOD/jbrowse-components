@@ -112,6 +112,10 @@ function shouldDrawMismatches(type?: string) {
   return !['methylation', 'modifications'].includes(type || '')
 }
 
+function shouldFetchReferenceSequence(type?: string) {
+  return !['methylation', 'modifications'].includes(type || '')
+}
+
 export default class PileupRenderer extends BoxRendererType {
   supportsSVG = true
 
@@ -1005,9 +1009,13 @@ export default class PileupRenderer extends BoxRendererType {
       layout,
     })
     const [region] = regions
-    const regionSequence = features.size
-      ? await this.fetchSequence(renderProps)
-      : undefined
+
+    // only need reference sequence if there are features and only for some
+    // cases
+    const regionSequence =
+      features.size && shouldFetchReferenceSequence(renderProps.colorBy?.type)
+        ? await this.fetchSequence(renderProps)
+        : undefined
     const { end, start } = region
 
     const width = (end - start) / bpPerPx
