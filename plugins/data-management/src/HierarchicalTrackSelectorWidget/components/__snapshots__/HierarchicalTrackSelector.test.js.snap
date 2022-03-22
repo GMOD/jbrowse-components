@@ -133,7 +133,6 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
       </div>
     </div>
   </div>
-  <div />
 </div>
 `;
 
@@ -242,6 +241,5 @@ exports[`HierarchicalTrackSelector widget renders with a couple of uncategorized
       </div>
     </div>
   </div>
-  <div />
 </div>
 `;

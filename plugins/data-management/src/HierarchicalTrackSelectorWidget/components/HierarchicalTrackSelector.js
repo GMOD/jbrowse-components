@@ -411,6 +411,18 @@ const HierarchicalTrackSelectorHeader = observer(
         onClick: () => setConnectionManagerOpen(true),
       },
     ]
+
+    if (session.addConnectionConf) {
+      connectionMenuItems.unshift({
+        label: 'Add connection',
+        onClick: () => {
+          session.showWidget(
+            session.addWidget('AddConnectionWidget', 'addConnectionWidget'),
+          )
+        },
+      })
+    }
+
     const assemblyMenuItems =
       assemblyNames.length > 1
         ? [
@@ -447,8 +459,8 @@ const HierarchicalTrackSelectorHeader = observer(
         data-testid="hierarchical_track_selector"
       >
         <div style={{ display: 'flex' }}>
-          {session.addTrackConf && (
-            <div style={{ display: 'flex' }}>
+          <div style={{ display: 'flex' }}>
+            {session.addTrackConf && (
               <IconButton
                 className={classes.menuIcon}
                 onClick={event => {
@@ -457,6 +469,9 @@ const HierarchicalTrackSelectorHeader = observer(
               >
                 <MenuIcon />
               </IconButton>
+            )}
+
+            {session.makeConnection && (
               <IconButton
                 className={classes.menuIcon}
                 onClick={event => {
@@ -465,8 +480,8 @@ const HierarchicalTrackSelectorHeader = observer(
               >
                 <PowerOutlinedIcon />
               </IconButton>
-            </div>
-          )}
+            )}
+          </div>
 
           <TextField
             className={classes.searchBox}
@@ -485,80 +500,62 @@ const HierarchicalTrackSelectorHeader = observer(
             }}
           />
         </div>
-
-        {session.addTrackConf && (
-          <div>
-            <JBrowseMenu
-              anchorEl={connectionAnchorEl}
-              open={Boolean(connectionAnchorEl)}
-              onMenuItemClick={(_, callback) => {
-                callback()
-                setConnectionAnchorEl(undefined)
-              }}
-              onClose={() => {
-                setConnectionAnchorEl(undefined)
-              }}
-              menuItems={[
-                {
-                  label: 'Add connection',
-                  onClick: () => {
-                    session.showWidget(
-                      session.addWidget(
-                        'AddConnectionWidget',
-                        'addConnectionWidget',
-                      ),
-                    )
-                  },
-                },
-                ...connectionMenuItems,
-              ]}
+        <JBrowseMenu
+          anchorEl={connectionAnchorEl}
+          open={Boolean(connectionAnchorEl)}
+          onMenuItemClick={(_, callback) => {
+            callback()
+            setConnectionAnchorEl(undefined)
+          }}
+          onClose={() => {
+            setConnectionAnchorEl(undefined)
+          }}
+          menuItems={[...connectionMenuItems]}
+        />
+        <JBrowseMenu
+          anchorEl={menuAnchorEl}
+          open={Boolean(menuAnchorEl)}
+          onMenuItemClick={(_, callback) => {
+            callback()
+            setMenuAnchorEl(undefined)
+          }}
+          onClose={() => {
+            setMenuAnchorEl(undefined)
+          }}
+          menuItems={menuItems}
+        />
+        <Suspense fallback={<div />}>
+          {modalInfo ? (
+            <CloseConnectionDialog
+              modalInfo={modalInfo}
+              setModalInfo={setModalInfo}
+              session={session}
             />
-            <JBrowseMenu
-              anchorEl={menuAnchorEl}
-              open={Boolean(menuAnchorEl)}
-              onMenuItemClick={(_, callback) => {
-                callback()
-                setMenuAnchorEl(undefined)
+          ) : deleteDialogDetails ? (
+            <DeleteConnectionDialog
+              handleClose={() => {
+                setDeleteDialogDetails(undefined)
               }}
-              onClose={() => {
-                setMenuAnchorEl(undefined)
-              }}
-              menuItems={menuItems}
+              deleteDialogDetails={deleteDialogDetails}
+              session={session}
             />
-            <Suspense fallback={<div />}>
-              {modalInfo ? (
-                <CloseConnectionDialog
-                  modalInfo={modalInfo}
-                  setModalInfo={setModalInfo}
-                  session={session}
-                />
-              ) : deleteDialogDetails ? (
-                <DeleteConnectionDialog
-                  handleClose={() => {
-                    setDeleteDialogDetails(undefined)
-                  }}
-                  deleteDialogDetails={deleteDialogDetails}
-                  session={session}
-                />
-              ) : null}
-              {connectionManagerOpen ? (
-                <ManageConnectionsDialog
-                  handleClose={() => setConnectionManagerOpen(false)}
-                  breakConnection={breakConnection}
-                  session={session}
-                />
-              ) : null}
-              {connectionToggleOpen ? (
-                <ToggleConnectionsDialog
-                  handleClose={() => setConnectionToggleOpen(false)}
-                  session={session}
-                  breakConnection={breakConnection}
-                  assemblyName={assemblyName}
-                />
-              ) : null}
-            </Suspense>
-          </div>
-        )}
+          ) : null}
+          {connectionManagerOpen ? (
+            <ManageConnectionsDialog
+              handleClose={() => setConnectionManagerOpen(false)}
+              breakConnection={breakConnection}
+              session={session}
+            />
+          ) : null}
+          {connectionToggleOpen ? (
+            <ToggleConnectionsDialog
+              handleClose={() => setConnectionToggleOpen(false)}
+              session={session}
+              breakConnection={breakConnection}
+              assemblyName={assemblyName}
+            />
+          ) : null}
+        </Suspense>
       </div>
     )
   },
