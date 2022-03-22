@@ -1,4 +1,7 @@
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { toArray } from 'rxjs/operators'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { AugmentedRegion } from '@jbrowse/core/util'
 // get tag from BAM or CRAM feature, where CRAM uses feature.get('tags') and
 // BAM does not
 export function getTag(feature: Feature, tag: string) {
@@ -75,4 +78,25 @@ export function getColorWGBS(strand: number, base: string) {
     }
   }
   return '#888'
+}
+
+export async function fetchSequence(
+  region: AugmentedRegion,
+  adapter: BaseFeatureDataAdapter,
+) {
+  const { end, originalRefName, refName } = region
+
+  const feats = await adapter
+    .getFeatures({
+      ...region,
+      refName: originalRefName || refName,
+      end: end + 1,
+    })
+    .pipe(toArray())
+    .toPromise()
+  return feats[0]?.get('seq')
+}
+
+export function shouldFetchReferenceSequence(type?: string) {
+  return !['methylation', 'modifications'].includes(type || '')
 }

@@ -1,5 +1,4 @@
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { toArray } from 'rxjs/operators'
 import BoxRendererType, {
   RenderArgs,
   RenderArgsSerialized,
@@ -27,7 +26,7 @@ import {
   getNextRefPos,
 } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
-import { getTagAlt, orientationTypes } from '../util'
+import { getTagAlt, orientationTypes, fetchSequence } from '../util'
 import {
   PileupLayoutSession,
   PileupLayoutSessionProps,
@@ -112,9 +111,6 @@ function shouldDrawMismatches(type?: string) {
   return !['methylation', 'modifications'].includes(type || '')
 }
 
-function shouldFetchReferenceSequence(type?: string) {
-  return !['methylation', 'modifications'].includes(type || '')
-}
 
 export default class PileupRenderer extends BoxRendererType {
   supportsSVG = true
@@ -985,17 +981,7 @@ export default class PileupRenderer extends BoxRendererType {
       sequenceAdapter,
     )
     const [region] = regions
-    const { end, originalRefName, refName } = region
-
-    const feats = await (dataAdapter as BaseFeatureDataAdapter)
-      .getFeatures({
-        ...region,
-        refName: originalRefName || refName,
-        end: end + 1,
-      })
-      .pipe(toArray())
-      .toPromise()
-    return feats[0]?.get('seq')
+    return fetchSequence(region, dataAdapter)
   }
 
   async render(renderProps: RenderArgsDeserialized) {

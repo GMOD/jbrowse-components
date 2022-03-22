@@ -7,7 +7,12 @@ import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { toArray } from 'rxjs/operators'
-import { getTag, getTagAlt } from '../util'
+import {
+  getTag,
+  getTagAlt,
+  fetchSequence,
+  shouldFetchReferenceSequence,
+} from '../util'
 import {
   parseCigar,
   getNextRefPos,
@@ -25,10 +30,6 @@ function mismatchLen(mismatch: Mismatch) {
 
 function isInterbase(type: string) {
   return type === 'softclip' || type === 'hardclip' || type === 'insertion'
-}
-
-function shouldFetchReferenceSequence(type?: string) {
-  return !['methylation', 'modifications'].includes(type || '')
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -72,22 +73,11 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
   async fetchSequence(region: Region) {
     const { sequenceAdapter } = await this.configure()
-    const { originalRefName, refName, start, end } = region
     if (!sequenceAdapter) {
       return undefined
     }
 
-    const [feat] = await sequenceAdapter
-      .getFeatures({
-        refName: originalRefName || refName,
-        start,
-        // request an extra +1 on the end to get CpG crossing region boundary
-        end: end + 1,
-        assemblyName: region.assemblyName,
-      })
-      .pipe(toArray())
-      .toPromise()
-    return feat?.get('seq')
+    return fetchSequence(region, sequenceAdapter)
   }
 
   getFeatures(region: Region, opts: SNPCoverageOptions = {}) {
