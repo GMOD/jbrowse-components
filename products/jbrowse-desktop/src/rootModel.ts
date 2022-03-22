@@ -25,7 +25,7 @@ import AppsIcon from '@material-ui/icons/Apps'
 import StorageIcon from '@material-ui/icons/Storage'
 import SettingsIcon from '@material-ui/icons/Settings'
 import MeetingRoomIcon from '@material-ui/icons/MeetingRoom'
-import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
+import { Save, SaveAs, DNA, Cable, Indexing } from '@jbrowse/core/ui/Icons'
 
 // locals
 import sessionModelFactory from './sessionModelFactory'
@@ -55,6 +55,7 @@ interface TrackTextIndexing {
   exclude: string[]
   assemblies: string[]
   tracks: string[] // trackIds
+  indexType: string
 }
 
 export default function rootModelFactory(pluginManager: PluginManager) {
@@ -206,26 +207,57 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             exclude,
             attributes,
             assemblies,
+            indexType,
           } = toJS(firstIndexingJob)
           const rpcManager = self.jbrowse.rpcManager
-          const trackConfigs = this.findTrackConfigsToIndex(trackIds)
-          await rpcManager.call('indexTracksSessionId', 'CoreIndexTracks', {
-            tracks: trackConfigs,
-            attributes,
-            exclude,
-            assemblies,
-            outLocation: self.sessionPath,
-            sessionId: 'indexTracksSessionId',
-            timeout: 1 * 60 * 60 * 1000, // 1 hour
-          })
-          // should update the single track conf
-          trackIds.forEach(id => {
-            this.addTextSearchConf(id, assemblies, attributes, exclude)
-            self.session?.notify(
-              `Succesfully indexed track with trackId: ${id} `,
-              'success',
-            )
-          })
+          if (indexType === 'perTrack') {
+            const trackConfigs = this.findTrackConfigsToIndex(trackIds)
+            await rpcManager.call('indexTracksSessionId', 'CoreIndexTracks', {
+              tracks: trackConfigs,
+              attributes,
+              exclude,
+              assemblies,
+              indexType,
+              outLocation: self.sessionPath,
+              sessionId: 'indexTracksSessionId',
+              timeout: 1 * 60 * 60 * 1000, // 1 hour
+            })
+            // should update the single track conf
+            trackIds.forEach(id => {
+              this.addTextSearchConf(id, assemblies, attributes, exclude)
+              self.session?.notify(
+                `Succesfully indexed track with trackId: ${id} `,
+                'success',
+              )
+            })
+          } else {
+            console.log('aggregate support...')
+            const trackConfigs = this.findTrackConfigsToIndex(trackIds)
+            await rpcManager.call('indexTracksSessionId', 'CoreIndexTracks', {
+              tracks: trackConfigs,
+              attributes,
+              exclude,
+              assemblies,
+              indexType,
+              outLocation: self.sessionPath,
+              sessionId: 'indexTracksSessionId',
+              timeout: 1 * 60 * 60 * 1000, // 1 hour
+            })
+            // should update the single track conf
+            assemblies.forEach(assembly => {
+              const trackIdsIndexed = trackConfigs
+                .filter(track =>
+                  assembly ? track.assemblyNames.includes(assembly) : true,
+                )
+                .map(trackConf => trackConf.trackId)
+              this.addAggregateTextSearchAdapter(trackIdsIndexed, assembly)
+              self.session?.notify(
+                `Succesfully indexed assembly: ${assembly} `,
+                'success',
+              )
+            })
+            // self.session?.notify(`Succesfully indexed assemblies `, 'success')
+          }
         }
         return
       },
@@ -272,7 +304,40 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           currentTrackIdx
         ].textSearching.indexingFeatureTypesToExclude.set(exclude)
       },
-      findTrackConfigsToIndex(trackIds: string[]) {
+      addAggregateTextSearchAdapter(trackIds: string[], asm: string) {
+        const locationPath = self.sessionPath.substring(
+          0,
+          self.sessionPath.lastIndexOf('/'),
+        )
+        const id = asm + '-index'
+        const foundIdx = self.jbrowse.aggregateTextSearchAdapters.findIndex(
+          x => x.textSearchAdapterId === id,
+        )
+        const trixConf = {
+          type: 'TrixTextSearchAdapter',
+          textSearchAdapterId: id,
+          ixFilePath: {
+            localPath: locationPath + `/trix/${id}.ix`,
+            locationType: 'LocalPathLocation',
+          },
+          ixxFilePath: {
+            localPath: locationPath + `/trix/${id}.ixx`,
+            locationType: 'LocalPathLocation',
+          },
+          metaFilePath: {
+            localPath: locationPath + `/trix/${id}_meta.json`,
+            locationType: 'LocalPathLocation',
+          },
+          tracks: trackIds,
+          assemblyNames: [asm],
+        }
+        if (foundIdx === -1) {
+          self.jbrowse.aggregateTextSearchAdapters.push(trixConf)
+        } else {
+          console.log('there was one with that id already')
+        }
+      },
+      findTrackConfigsToIndex(trackIds: string[], assemblyName?: string) {
         const configs = trackIds
           .map(trackId => {
             const currentTrack = (self.session?.tracks as Track[]).find(
@@ -285,6 +350,14 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             }
             return currentTrack
           })
+          .filter(track =>
+            assemblyName ? track.assemblyNames.includes(assemblyName) : true,
+          )
+          .filter(track =>
+            ['Gff3TabixAdapter', 'VcfTabixAdapter'].includes(
+              track.adapter.type,
+            ),
+          )
           .map(conf => {
             return JSON.parse(JSON.stringify(getSnapshot(conf)))
           })
@@ -398,6 +471,31 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                     OpenSequenceDialog,
                     { model: self, onClose: doneCallback },
                   ])
+                }
+              },
+            },
+            {
+              label: 'Text Indexing...',
+              icon: Indexing,
+              onClick: () => {
+                if (self.session) {
+                  const assemblyNames = self.session?.assemblyNames
+                  const trackIds = (self.session?.tracks as Track[])
+                    .filter(track =>
+                      ['Gff3TabixAdapter', 'VcfTabixAdapter'].includes(
+                        track.adapter.type,
+                      ),
+                    )
+                    .map(supported => supported.trackId)
+                  const indexingParams = {
+                    attributes: ['Name', 'ID'],
+                    exclude: ['CDS', 'exon'],
+                    assemblies: assemblyNames,
+                    tracks: trackIds,
+                    indexType: 'aggregate',
+                  }
+                  // console.log('indexing params', indexingParams)
+                  self.queueIndexingJob(indexingParams)
                 }
               },
             },
