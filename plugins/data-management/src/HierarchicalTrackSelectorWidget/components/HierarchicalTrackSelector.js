@@ -411,10 +411,6 @@ const HierarchicalTrackSelectorHeader = observer(
         label: 'Turn on/off connections...',
         onClick: () => setConnectionToggleOpen(true),
       },
-      {
-        label: 'Delete connections...',
-        onClick: () => setConnectionManagerOpen(true),
-      },
     ]
 
     if (session.addConnectionConf) {
@@ -425,6 +421,11 @@ const HierarchicalTrackSelectorHeader = observer(
             session.addWidget('AddConnectionWidget', 'addConnectionWidget'),
           )
         },
+      })
+
+      connectionMenuItems.push({
+        label: 'Delete connections...',
+        onClick: () => setConnectionManagerOpen(true),
       })
     }
 
