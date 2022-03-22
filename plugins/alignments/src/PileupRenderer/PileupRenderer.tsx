@@ -381,8 +381,8 @@ export default class PileupRenderer extends BoxRendererType {
   }
 
   // Color by methylation is slightly modified version of color by
-  // modifications
-  //
+  // modifications that focuses on CpG sites, with non-methylated CpG colored
+  // blue
   colorByMethylation(
     ctx: CanvasRenderingContext2D,
     layoutFeature: LayoutFeature,
@@ -969,34 +969,46 @@ export default class PileupRenderer extends BoxRendererType {
     return layoutRecords
   }
 
-  async render(renderProps: RenderArgsDeserialized) {
-    const { sessionId, bpPerPx, regions, adapterConfig } = renderProps
+  async fetchSequence(renderProps: RenderArgsDeserialized) {
+    const { sessionId, regions, adapterConfig } = renderProps
     const { sequenceAdapter } = adapterConfig
+    if (!sequenceAdapter) {
+      return undefined
+    }
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      sequenceAdapter,
+    )
+    const [region] = regions
+    const { end, originalRefName, refName } = region
+
+    const feats = await (dataAdapter as BaseFeatureDataAdapter)
+      .getFeatures({
+        ...region,
+        refName: originalRefName || refName,
+        end: end + 1,
+      })
+      .pipe(toArray())
+      .toPromise()
+    return feats[0]?.get('seq')
+  }
+
+  async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
     const layout = this.createLayoutInWorker(renderProps)
+    const { regions, bpPerPx } = renderProps
 
-    const layoutRecords = this.layoutFeats({ ...renderProps, features, layout })
+    const layoutRecords = this.layoutFeats({
+      ...renderProps,
+      features,
+      layout,
+    })
     const [region] = regions
-    let regionSequence: string | undefined
-    const { end, start, originalRefName, refName } = region
-
-    if (sequenceAdapter) {
-      const { dataAdapter } = await getAdapter(
-        this.pluginManager,
-        sessionId,
-        sequenceAdapter,
-      )
-
-      const feats = await (dataAdapter as BaseFeatureDataAdapter)
-        .getFeatures({
-          ...region,
-          refName: originalRefName || refName,
-          end: region.end + 1,
-        })
-        .pipe(toArray())
-        .toPromise()
-      regionSequence = feats[0]?.get('seq')
-    }
+    const regionSequence = features.size
+      ? await this.fetchSequence(renderProps)
+      : undefined
+    const { end, start } = region
 
     const width = (end - start) / bpPerPx
     const height = Math.max(layout.getTotalHeight(), 1)
