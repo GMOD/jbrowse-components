@@ -40,7 +40,7 @@ const useStyles = makeStyles(theme => ({
     border: 'none',
     width: 1,
     height: '100%',
-    top: 0,
+    top: YSCALEBAR_LABEL_OFFSET,
     cursor: 'default',
     position: 'absolute',
     pointerEvents: 'none',
