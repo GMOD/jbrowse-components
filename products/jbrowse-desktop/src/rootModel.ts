@@ -334,8 +334,9 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         if (foundIdx === -1) {
           self.jbrowse.aggregateTextSearchAdapters.push(trixConf)
         } else {
-          console.log('there was one with that id already')
+          self.jbrowse.aggregateTextSearchAdapters[foundIdx] = trixConf
         }
+        console.log(self.jbrowse.aggregateTextSearchAdapters)
       },
       findTrackConfigsToIndex(trackIds: string[], assemblyName?: string) {
         const configs = trackIds
