@@ -316,52 +316,57 @@ const HierarchicalTrackSelectorContainer = observer(
           toolbarHeight={toolbarHeight}
           overrideDimensions={overrideDimensions}
         />
-        {session.addTrackConf && (
-          <div>
-            <Fab
-              color="secondary"
-              className={classes.fab}
-              onClick={event => {
-                setAnchorEl(event.currentTarget)
-              }}
-            >
-              <AddIcon />
-            </Fab>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={() => setAnchorEl(null)}
-            >
-              <MenuItem
-                onClick={() => {
-                  handleFabClose()
-                  const widget = session.addWidget(
-                    'AddConnectionWidget',
-                    'addConnectionWidget',
-                  )
-                  session.showWidget(widget)
+        {session.addTrackConf ||
+          (session.addConnectionConf && (
+            <div>
+              <Fab
+                color="secondary"
+                className={classes.fab}
+                onClick={event => {
+                  setAnchorEl(event.currentTarget)
                 }}
               >
-                Add connection
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  handleFabClose()
-                  const widget = session.addWidget(
-                    'AddTrackWidget',
-                    'addTrackWidget',
-                    {
-                      view: model.view.id,
-                    },
-                  )
-                  session.showWidget(widget)
-                }}
+                <AddIcon />
+              </Fab>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={() => setAnchorEl(null)}
               >
-                Add track
-              </MenuItem>
-            </Menu>
-          </div>
-        )}
+                {session.addConnectionConf && (
+                  <MenuItem
+                    onClick={() => {
+                      handleFabClose()
+                      const widget = session.addWidget(
+                        'AddConnectionWidget',
+                        'addConnectionWidget',
+                      )
+                      session.showWidget(widget)
+                    }}
+                  >
+                    Add connection
+                  </MenuItem>
+                )}
+                {session.addTrackConf && (
+                  <MenuItem
+                    onClick={() => {
+                      handleFabClose()
+                      const widget = session.addWidget(
+                        'AddTrackWidget',
+                        'addTrackWidget',
+                        {
+                          view: model.view.id,
+                        },
+                      )
+                      session.showWidget(widget)
+                    }}
+                  >
+                    Add track
+                  </MenuItem>
+                )}
+              </Menu>
+            </div>
+          ))}
       </Wrapper>
     )
   },
