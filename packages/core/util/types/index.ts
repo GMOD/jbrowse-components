@@ -344,6 +344,15 @@ export function isUriLocation(location: unknown): location is UriLocation {
   )
 }
 
+// supported adapter types by text indexer
+export function supported(type: string) {
+  return [
+    'Gff3TabixAdapter',
+    'VcfTabixAdapter',
+    'Gff3Adapter',
+    'VcfAdapter',
+  ].includes(type)
+}
 export class AuthNeededError extends Error {
   constructor(public message: string, public url: string) {
     super(message)

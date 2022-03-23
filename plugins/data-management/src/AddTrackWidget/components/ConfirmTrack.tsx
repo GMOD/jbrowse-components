@@ -29,6 +29,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { UNKNOWN } from '@jbrowse/core/util/tracks'
+import { supported } from '@jbrowse/core/util'
 
 // locals
 import { AddTrackModel } from '../model'
@@ -397,12 +398,7 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
     return <Typography>Could not recognize this data type.</Typography>
   }
 
-  const supportedForIndexing = [
-    'Gff3TabixAdapter',
-    'VcfTabixAdapter',
-    'Gff3Adapter',
-    'VcfAdapter',
-  ].includes(trackAdapter?.type)
+  const supportedForIndexing = supported(trackAdapter?.type)
   return (
     <div>
       {trackAdapter ? (
