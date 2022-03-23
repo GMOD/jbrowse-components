@@ -101,7 +101,12 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
         attributes: ['Name', 'ID'],
         exclude: ['CDS', 'exon'],
       }
-      const supported = ['Gff3TabixAdapter', 'VcfTabixAdapter']
+      const supported = [
+        'Gff3TabixAdapter',
+        'VcfTabixAdapter',
+        'Gff3Adapter',
+        'VcfAdapter',
+      ]
       if (model.view) {
         model.view.showTrack(trackId)
         if (textIndexTrack && supported.includes(trackAdapter.type)) {

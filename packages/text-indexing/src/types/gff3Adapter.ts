@@ -1,33 +1,19 @@
-import { Gff3TabixAdapter, Track } from '../util'
-import { isURL, createRemoteStream } from './common'
+import { Track, getLocalOrRemoteStream } from '../util'
 import { createGunzip } from 'zlib'
 import readline from 'readline'
-import path from 'path'
-import fs from 'fs'
 
 export async function* indexGff3(
   config: Track,
   attributes: string[],
+  inLocation: string,
   outLocation: string,
   typesToExclude: string[],
   quiet: boolean,
 ) {
-  const { adapter, trackId } = config
-  const { gffGzLocation } = adapter as Gff3TabixAdapter
-
-  const uri =
-    'uri' in gffGzLocation ? gffGzLocation.uri : gffGzLocation.localPath
-  let fileDataStream
+  const { trackId } = config
   // let totalBytes = 0
   // let receivedBytes = 0
-  if (isURL(uri)) {
-    fileDataStream = await createRemoteStream(uri)
-    // totalBytes = +(fileDataStream.headers['content-length'] || 0)
-  } else {
-    const filename = path.isAbsolute(uri) ? uri : path.join(outLocation, uri)
-    // totalBytes = fs.statSync(filename).size
-    fileDataStream = fs.createReadStream(filename)
-  }
+  const { stream } = await getLocalOrRemoteStream(inLocation, outLocation)
   // fileDataStream.on('data', chunk => {
   //   receivedBytes += chunk.length
   //   // send an update?
@@ -36,9 +22,7 @@ export async function* indexGff3(
   // })
 
   const rl = readline.createInterface({
-    input: uri.endsWith('.gz')
-      ? fileDataStream.pipe(createGunzip())
-      : fileDataStream,
+    input: inLocation.match(/.b?gz$/) ? stream.pipe(createGunzip()) : stream,
   })
 
   for await (const line of rl) {

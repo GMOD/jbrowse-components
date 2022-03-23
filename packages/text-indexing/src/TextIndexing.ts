@@ -153,11 +153,49 @@ async function* indexFiles(
     } = textSearching || {}
     // currently only supporting GFF3Tabix and VCFTabix
     if (type === 'Gff3TabixAdapter') {
-      yield* indexGff3(track, attrs, outLocation, types, quiet)
+      yield* indexGff3(
+        track,
+        attrs,
+        getLoc('gffGzLocation', track),
+        outLocation,
+        types,
+        quiet,
+      )
+    } else if (type === 'Gff3Adapter') {
+      yield* indexGff3(
+        track,
+        attrs,
+        getLoc('gffLocation', track),
+        outLocation,
+        types,
+        quiet,
+      )
     } else if (type === 'VcfTabixAdapter') {
-      yield* indexVcf(track, attrs, outLocation, types, quiet)
+      yield* indexVcf(
+        track,
+        attrs,
+        getLoc('vcfGzLocation', track),
+        outLocation,
+        types,
+        quiet,
+      )
+    } else if (type === 'VcfAdapter') {
+      yield* indexVcf(
+        track,
+        attrs,
+        getLoc('vcfLocation', track),
+        outLocation,
+        types,
+        quiet,
+      )
     }
   }
+}
+
+function getLoc(attr: string, config: Track) {
+  // @ts-ignore
+  const elt = config.adapter[attr]
+  return elt.uri || elt.localPath
 }
 
 function runIxIxx(readStream: Readable, idxLocation: string, name: string) {

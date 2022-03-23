@@ -397,7 +397,12 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
     return <Typography>Could not recognize this data type.</Typography>
   }
 
-  const supportedForIndexing = ['Gff3TabixAdapter', 'VcfTabixAdapter'].includes(
+  const supportedForIndexing = [
+    'Gff3TabixAdapter',
+    'VcfTabixAdapter',
+    'Gff3Adapter',
+    'VcfAdapter',
+  ].includes(
     trackAdapter?.type,
   )
   return (

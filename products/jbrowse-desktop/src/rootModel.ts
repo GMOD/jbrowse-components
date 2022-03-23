@@ -335,9 +335,12 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             assemblyName ? track.assemblyNames.includes(assemblyName) : true,
           )
           .filter(track =>
-            ['Gff3TabixAdapter', 'VcfTabixAdapter'].includes(
-              track.adapter.type,
-            ),
+            [
+              'Gff3TabixAdapter',
+              'VcfTabixAdapter',
+              'Gff3Adapter',
+              'VcfAdapter',
+            ].includes(track.adapter.type),
           )
           .map(conf => {
             return JSON.parse(JSON.stringify(getSnapshot(conf)))
@@ -463,9 +466,12 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                   const assemblyNames = self.session?.assemblyNames
                   const trackIds = (self.session?.tracks as Track[])
                     .filter(track =>
-                      ['Gff3TabixAdapter', 'VcfTabixAdapter'].includes(
-                        track.adapter.type,
-                      ),
+                      [
+                        'Gff3TabixAdapter',
+                        'VcfTabixAdapter',
+                        'Gff3Adapter',
+                        'VcfAdapter',
+                      ].includes(track.adapter.type),
                     )
                     .map(supported => supported.trackId)
                   const indexingParams = {

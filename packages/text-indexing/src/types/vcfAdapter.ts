@@ -1,34 +1,19 @@
-import { Track, VcfTabixAdapter } from '../util'
-import { isURL, createRemoteStream } from './common'
-// import { SingleBar, Presets } from 'cli-progress'
+import { Track, getLocalOrRemoteStream } from '../util'
 import { createGunzip } from 'zlib'
 import readline from 'readline'
-import path from 'path'
-import fs from 'fs'
 
 export async function* indexVcf(
   config: Track,
   attributesToIndex: string[],
+  inLocation: string,
   outLocation: string,
   typesToExclude: string[],
   quiet: boolean,
 ) {
-  const { adapter, trackId } = config
-  const { vcfGzLocation } = adapter as VcfTabixAdapter
-
-  const uri =
-    'uri' in vcfGzLocation ? vcfGzLocation.uri : vcfGzLocation.localPath
-  let fileDataStream
+  const { trackId } = config
   // let totalBytes = 0
   // let receivedBytes = 0
-  if (isURL(uri)) {
-    fileDataStream = await createRemoteStream(uri)
-    // totalBytes = +(fileDataStream.headers['content-length'] || 0)
-  } else {
-    const filename = path.isAbsolute(uri) ? uri : path.join(outLocation, uri)
-    // totalBytes = fs.statSync(filename).size
-    fileDataStream = fs.createReadStream(filename)
-  }
+  const { stream } = await getLocalOrRemoteStream(inLocation, outLocation)
 
   // console.log("totalBytes", totalBytes)
   // fileDataStream.on('data', chunk => {
@@ -37,9 +22,9 @@ export async function* indexVcf(
   //   // console.log("received", receivedBytes)
   // })
 
-  const gzStream = uri.endsWith('.gz')
-    ? fileDataStream.pipe(createGunzip())
-    : fileDataStream
+  const gzStream = inLocation.match(/.b?gz$/)
+    ? stream.pipe(createGunzip())
+    : stream
 
   const rl = readline.createInterface({
     input: gzStream,
