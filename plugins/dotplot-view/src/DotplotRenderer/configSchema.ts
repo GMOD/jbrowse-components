@@ -7,7 +7,7 @@ export default ConfigurationSchema(
     color: {
       type: 'color',
       description:
-        'the color of each feature in a synteny, used with colorBy:default or colorBy:callback',
+        'the color of each feature in a synteny, used with colorBy:default',
       defaultValue: 'black',
       contextVariable: ['feature'],
     },
@@ -35,9 +35,8 @@ export default ConfigurationSchema(
         'mappingQuality',
         'strand',
         'default',
-        'callback',
       ]),
-      description: `Color by. Setting "identity" (the identity of the particular hit, similar to D-GENIES, use the other config slots 'thresholds' and 'thresholdsPalette' to define colors for this setting), setting "meanQueryIdentity" (calculates the weighted mean of the identity of all the hits for the query), setting "mappingQuality" (uses mapping quality from PAF, some adapters don't have this setting), setting "strand" colors negative alignments with negColor and positive alignments with posColor, default uses the 'color' field, callback uses the 'color' field as a callback`,
+      description: `Color by options:<br/><ul><li>"identity" - the identity of the particular hit, similar to D-GENIES, use the other config slots 'thresholds' and 'thresholdsPalette' to define colors for this setting</li><li>"meanQueryIdentity" - calculates the weighted mean of the identity of all the hits for the query</li><li>"mappingQuality" - uses mapping quality from PAF, some adapters don't have this setting</li><li>"strand" - colors negative alignments with negColor and positive alignments with posColor</li><li>"default" - uses the 'color' field, </li></ul>`,
       defaultValue: 'default',
     },
     thresholdsPalette: {

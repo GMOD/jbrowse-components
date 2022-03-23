@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { getPropertyMembers, getEnv } from 'mobx-state-tree'
-import { FileSelector } from '@jbrowse/core/ui'
+import { FileSelector, SanitizedHTML } from '@jbrowse/core/ui'
 import {
   getPropertyType,
   getSubType,
@@ -40,8 +40,7 @@ import JsonEditor from './JsonEditor'
 const StringEditor = observer(({ slot }) => (
   <TextField
     label={slot.name}
-    // error={filterError}
-    helperText={slot.description}
+    helperText={<SanitizedHTML html={slot.description} />}
     fullWidth
     value={slot.value}
     onChange={evt => slot.set(evt.target.value)}
@@ -51,7 +50,7 @@ const StringEditor = observer(({ slot }) => (
 const TextEditor = observer(({ slot }) => (
   <TextField
     label={slot.name}
-    helperText={slot.description}
+    helperText={<SanitizedHTML html={slot.description} />}
     fullWidth
     multiline
     value={slot.value}
@@ -270,7 +269,7 @@ const NumberEditor = observer(({ slot }) => {
   return (
     <TextField
       label={slot.name}
-      helperText={slot.description}
+      helperText={<SanitizedHTML html={slot.description} />}
       value={val}
       type="number"
       onChange={evt => setVal(evt.target.value)}
@@ -289,7 +288,7 @@ const IntegerEditor = observer(({ slot }) => {
   return (
     <TextField
       label={slot.name}
-      helperText={slot.description}
+      helperText={<SanitizedHTML html={slot.description} />}
       value={val}
       type="number"
       onChange={evt => setVal(evt.target.value)}
@@ -297,7 +296,7 @@ const IntegerEditor = observer(({ slot }) => {
   )
 })
 
-const booleanEditor = observer(({ slot }) => (
+const BooleanEditor = observer(({ slot }) => (
   <FormControl>
     <FormControlLabel
       label={slot.name}
@@ -312,7 +311,7 @@ const booleanEditor = observer(({ slot }) => (
   </FormControl>
 ))
 
-const stringEnumEditor = observer(({ slot, slotSchema }) => {
+const StringEnumEditor = observer(({ slot, slotSchema }) => {
   const p = getPropertyMembers(getSubType(slotSchema))
   const choices = getUnionSubTypes(
     getUnionSubTypes(getSubType(getPropertyType(p, 'value')))[1],
@@ -323,8 +322,7 @@ const stringEnumEditor = observer(({ slot, slotSchema }) => {
       value={slot.value}
       label={slot.name}
       select
-      // error={filterError}
-      helperText={slot.description}
+      helperText={<SanitizedHTML html={slot.description} />}
       fullWidth
       onChange={evt => slot.set(evt.target.value)}
     >
@@ -359,8 +357,8 @@ const valueComponents = {
   number: NumberEditor,
   integer: IntegerEditor,
   color: ColorEditor,
-  stringEnum: stringEnumEditor,
-  boolean: booleanEditor,
+  stringEnum: StringEnumEditor,
+  boolean: BooleanEditor,
   frozen: JsonEditor,
   configRelationships: JsonEditor,
 }

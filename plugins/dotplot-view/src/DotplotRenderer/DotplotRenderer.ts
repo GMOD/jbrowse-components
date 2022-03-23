@@ -6,8 +6,7 @@ import {
   createCanvas,
   createImageBitmap,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { viewBpToPx, renameRegionsIfNeeded } from '@jbrowse/core/util'
-import { Region } from '@jbrowse/core/util/types'
+import { viewBpToPx, renameRegionsIfNeeded, Region } from '@jbrowse/core/util'
 import { getSnapshot } from 'mobx-state-tree'
 import ComparativeServerSideRendererType, {
   RenderArgsDeserialized as ComparativeRenderArgsDeserialized,
@@ -142,9 +141,10 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       } else if (colorBy === 'strand') {
         r = strand === -1 ? negColor : posColor
       } else if (colorBy === 'default') {
-        r = color
-      } else if (colorBy === 'callback') {
-        r = readConfObject(config, 'color', { feature })
+        r =
+          color === '#f0f'
+            ? color
+            : readConfObject(config, 'color', { feature })
       }
       ctx.fillStyle = r
       ctx.strokeStyle = r
