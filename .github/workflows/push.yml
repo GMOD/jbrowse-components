@@ -142,3 +142,57 @@ jobs:
           pwd
           aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/$(echo ${{github.ref}} | cut -d "/" -f3-)
         working-directory: products/jbrowse-react-circular-genome-view
+  lgv_cra_demo:
+    name: Build and deploy embedded lgv create react app site to AWS S3
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 14
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install deps (with cache)
+        uses: bahmutov/npm-install@v1
+      - name: Build create react app site
+        run: |
+          yarn
+          yarn build
+        working-directory: products/jbrowse-react-linear-genome-view/demo
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Deploy create react app for branch to S3
+        run: |
+          cd build && zip -r "jbrowse-react-linear-genome-view-$(echo ${{github.ref}} | cut -d '/' -f3-).zip" . && cd -
+          aws s3 sync --delete products/jbrowse-react-linear-genome-view/build s3://jbrowse.org/demos/lgv | cut -d "/" -f3-)
+        working-directory: products/jbrowse-react-linear-genome-view/demo
+  cgv_cra_demo:
+    name: Build and deploy embedded cgv create react app site to AWS S3
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 14
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install deps (with cache)
+        uses: bahmutov/npm-install@v1
+      - name: Build create react app site
+        run: |
+          yarn
+          yarn build
+        working-directory: products/jbrowse-react-circular-genome-view/demo
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Deploy create react app for branch to S3
+        run: |
+          cd build && zip -r "jbrowse-react-circular-genome-view-$(echo ${{github.ref}} | cut -d '/' -f3-).zip" . && cd -
+          aws s3 sync --delete products/jbrowse-react-circular-genome-view/build s3://jbrowse.org/demos/cgv | cut -d "/" -f3-)
+        working-directory: products/jbrowse-react-circular-genome-view/demo

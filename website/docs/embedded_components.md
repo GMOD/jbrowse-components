@@ -11,5 +11,11 @@ JBrowse 2 is a pluggable open-source platform for visualizing, integrating, and 
 This component consists of a single JBrowse 2 linear view.
 
 - [@jbrowse/react-linear-genome-view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view) - linear genome view React component on NPM
-- [@jbrowse/react-circular-genome-view](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view) - circular genome view React component on NPM
 - [Storybook](https://jbrowse.org/storybook/lgv/main/) - docs for the reusable linear genome view React component
+
+## JBrowse React Circular Genome View
+
+This component consists of a single JBrowse 2 circular view.
+
+- [@jbrowse/react-circular-genome-view](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view) - circular genome view React component on NPM
+- [Storybook](https://jbrowse.org/storybook/cgv/main/) - docs for the reusable circular genome view React component
