@@ -32,6 +32,7 @@ import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
 import InfoIcon from '@material-ui/icons/Info'
+import { Indexing } from '@jbrowse/core/ui/Icons'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -548,6 +549,7 @@ export default function sessionModelFactory(
     .views(self => ({
       getTrackActionMenuItems(config: any) {
         const session = self
+        const trackSnapshot = JSON.parse(JSON.stringify(getSnapshot(config)))
         return [
           {
             label: 'About track',
@@ -591,6 +593,38 @@ export default function sessionModelFactory(
               session.addTrackConf(trackSnapshot)
             },
             icon: CopyIcon,
+          },
+          {
+            label: trackSnapshot.textSearching
+              ? 'Re-index track'
+              : 'Index track',
+            disabled: ![
+              'Gff3TabixAdapter',
+              'VcfTabixAdapter',
+              'Gff3Adapter',
+              'VcfAdapter',
+            ].includes(trackSnapshot.adapter.type),
+            onClick: () => {
+              const { trackId, assemblyNames, textSearching } = trackSnapshot
+              const indexingParams = {
+                attributes: textSearching?.indexingAttributes || [
+                  'Name',
+                  'ID',
+                  'type',
+                ],
+                exclude: textSearching?.indexingFeatureTypesToExclude || [
+                  'CDS',
+                  'exon',
+                ],
+                assemblies: assemblyNames,
+                tracks: [trackId],
+                indexType: 'perTrack',
+              }
+              // console.log(indexingParams)
+              const rootModel = getParent(self)
+              rootModel.queueIndexingJob(indexingParams)
+            },
+            icon: Indexing,
           },
         ]
       },

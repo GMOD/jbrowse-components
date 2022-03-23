@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, isElectron } from '@jbrowse/core/util'
 import {
   Link,
   MenuItem,
@@ -423,7 +423,7 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
       <TrackAdapterSelector model={model} />
       <TrackTypeSelector model={model} />
       <TrackAssemblySelector model={model} />
-      {supportedForIndexing && (
+      {isElectron && supportedForIndexing && (
         <FormControl>
           <FormControlLabel
             label={'Index track for text searching?'}
@@ -439,7 +439,7 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
           />
         </FormControl>
       )}
-      {check && supportedForIndexing ? (
+      {isElectron && check && supportedForIndexing ? (
         <TextIndexingConfig model={model} />
       ) : null}
     </div>

@@ -8,7 +8,7 @@ import {
   Typography,
   makeStyles,
 } from '@material-ui/core'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, isElectron } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
@@ -109,21 +109,23 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
       ]
       if (model.view) {
         model.view.showTrack(trackId)
-        if (textIndexTrack && supported.includes(trackAdapter.type)) {
-          const attr = textIndexingConf || textSearchingDefault
-          const indexingParams = {
-            ...attr,
-            assemblies: [assembly],
-            tracks: [trackId],
-            indexType: 'perTrack',
+        if (isElectron) {
+          if (textIndexTrack && supported.includes(trackAdapter.type)) {
+            const attr = textIndexingConf || textSearchingDefault
+            const indexingParams = {
+              ...attr,
+              assemblies: [assembly],
+              tracks: [trackId],
+              indexType: 'perTrack',
+            }
+            rootModel.queueIndexingJob(indexingParams)
           }
-          rootModel.queueIndexingJob(indexingParams)
-        }
-        if (textIndexTrack && !supported.includes(trackAdapter.type)) {
-          session.notify(
-            'Unable to index this track. File type not supported by indexer.',
-            'info',
-          )
+          // if (textIndexTrack && !supported.includes(trackAdapter.type)) {
+          //   session.notify(
+          //     'Unable to index this track. File type not supported by indexer.',
+          //     'info',
+          //   )
+          // }
         }
       } else {
         session.notify(

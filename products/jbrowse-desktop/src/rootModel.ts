@@ -25,7 +25,7 @@ import AppsIcon from '@material-ui/icons/Apps'
 import StorageIcon from '@material-ui/icons/Storage'
 import SettingsIcon from '@material-ui/icons/Settings'
 import MeetingRoomIcon from '@material-ui/icons/MeetingRoom'
-import { Save, SaveAs, DNA, Cable, Indexing } from '@jbrowse/core/ui/Icons'
+import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 
 // locals
 import sessionModelFactory from './sessionModelFactory'
@@ -304,6 +304,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         self.session?.tracks[
           currentTrackIdx
         ].textSearching.indexingFeatureTypesToExclude.set(exclude)
+        console.log(self.session?.tracks[currentTrackIdx])
       },
       addAggregateTextSearchConf(trackIds: string[], asm: string) {
         // name of index
@@ -459,34 +460,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               },
             },
             {
-              label: 'Text Indexing...',
-              icon: Indexing,
-              onClick: () => {
-                if (self.session) {
-                  const assemblyNames = self.session?.assemblyNames
-                  const trackIds = (self.session?.tracks as Track[])
-                    .filter(track =>
-                      [
-                        'Gff3TabixAdapter',
-                        'VcfTabixAdapter',
-                        'Gff3Adapter',
-                        'VcfAdapter',
-                      ].includes(track.adapter.type),
-                    )
-                    .map(supported => supported.trackId)
-                  const indexingParams = {
-                    attributes: ['Name', 'ID'],
-                    exclude: ['CDS', 'exon'],
-                    assemblies: assemblyNames,
-                    tracks: trackIds,
-                    indexType: 'aggregate',
-                  }
-                  // console.log('indexing params', indexingParams)
-                  self.queueIndexingJob(indexingParams)
-                }
-              },
-            },
-            {
               label: 'Open track...',
               icon: StorageIcon,
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -555,19 +528,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                   const widget = self.session.addWidget(
                     'PluginStoreWidget',
                     'pluginStoreWidget',
-                  )
-                  self.session.showWidget(widget)
-                }
-              },
-            },
-            {
-              label: 'Jobs Manager',
-              icon: Indexing,
-              onClick: () => {
-                if (self.session) {
-                  const widget = self.session.addWidget(
-                    'JobsListWidget',
-                    'jobsListWidget-test',
                   )
                   self.session.showWidget(widget)
                 }
