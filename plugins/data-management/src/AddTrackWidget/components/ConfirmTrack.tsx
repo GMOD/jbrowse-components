@@ -402,9 +402,7 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
     'VcfTabixAdapter',
     'Gff3Adapter',
     'VcfAdapter',
-  ].includes(
-    trackAdapter?.type,
-  )
+  ].includes(trackAdapter?.type)
   return (
     <div>
       {trackAdapter ? (

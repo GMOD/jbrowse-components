@@ -381,7 +381,7 @@ export default class TextIndex extends JBrowseCommand {
       } = textSearching || {}
 
       function getLoc(attr: string) {
-        //@ts-ignore
+        // @ts-ignore
         const elt = config.adapter[attr]
         return elt.uri || elt.localPath
       }
