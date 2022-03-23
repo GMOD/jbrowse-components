@@ -1,5 +1,4 @@
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { toArray } from 'rxjs/operators'
+import Color from 'color'
 import BoxRendererType, {
   RenderArgs,
   RenderArgsSerialized,
@@ -10,14 +9,20 @@ import BoxRendererType, {
 } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { Theme } from '@material-ui/core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { bpSpanPx, iterMap, measureText } from '@jbrowse/core/util'
-import Color from 'color'
-import { Region } from '@jbrowse/core/util/types'
+import {
+  bpSpanPx,
+  iterMap,
+  measureText,
+  Region,
+  Feature,
+} from '@jbrowse/core/util'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  readConfObject,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
 
 // locals
 import {
@@ -27,7 +32,12 @@ import {
   getNextRefPos,
 } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
-import { getTagAlt, orientationTypes } from '../util'
+import {
+  getTagAlt,
+  orientationTypes,
+  fetchSequence,
+  shouldFetchReferenceSequence,
+} from '../util'
 import {
   PileupLayoutSession,
   PileupLayoutSessionProps,
@@ -381,8 +391,8 @@ export default class PileupRenderer extends BoxRendererType {
   }
 
   // Color by methylation is slightly modified version of color by
-  // modifications
-  //
+  // modifications that focuses on CpG sites, with non-methylated CpG colored
+  // blue
   colorByMethylation(
     ctx: CanvasRenderingContext2D,
     layoutFeature: LayoutFeature,
@@ -969,34 +979,40 @@ export default class PileupRenderer extends BoxRendererType {
     return layoutRecords
   }
 
-  async render(renderProps: RenderArgsDeserialized) {
-    const { sessionId, bpPerPx, regions, adapterConfig } = renderProps
+  async fetchSequence(renderProps: RenderArgsDeserialized) {
+    const { sessionId, regions, adapterConfig } = renderProps
     const { sequenceAdapter } = adapterConfig
+    if (!sequenceAdapter) {
+      return undefined
+    }
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      sequenceAdapter,
+    )
+    const [region] = regions
+    return fetchSequence(region, dataAdapter as BaseFeatureDataAdapter)
+  }
+
+  async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
     const layout = this.createLayoutInWorker(renderProps)
+    const { regions, bpPerPx } = renderProps
 
-    const layoutRecords = this.layoutFeats({ ...renderProps, features, layout })
+    const layoutRecords = this.layoutFeats({
+      ...renderProps,
+      features,
+      layout,
+    })
     const [region] = regions
-    let regionSequence: string | undefined
-    const { end, start, originalRefName, refName } = region
 
-    if (sequenceAdapter) {
-      const { dataAdapter } = await getAdapter(
-        this.pluginManager,
-        sessionId,
-        sequenceAdapter,
-      )
-
-      const feats = await (dataAdapter as BaseFeatureDataAdapter)
-        .getFeatures({
-          ...region,
-          refName: originalRefName || refName,
-          end: region.end + 1,
-        })
-        .pipe(toArray())
-        .toPromise()
-      regionSequence = feats[0]?.get('seq')
-    }
+    // only need reference sequence if there are features and only for some
+    // cases
+    const regionSequence =
+      features.size && shouldFetchReferenceSequence(renderProps.colorBy?.type)
+        ? await this.fetchSequence(renderProps)
+        : undefined
+    const { end, start } = region
 
     const width = (end - start) / bpPerPx
     const height = Math.max(layout.getTotalHeight(), 1)

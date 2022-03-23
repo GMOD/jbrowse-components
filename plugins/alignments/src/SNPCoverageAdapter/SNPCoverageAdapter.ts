@@ -7,7 +7,12 @@ import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { toArray } from 'rxjs/operators'
-import { getTag, getTagAlt } from '../util'
+import {
+  getTag,
+  getTagAlt,
+  fetchSequence,
+  shouldFetchReferenceSequence,
+} from '../util'
 import {
   parseCigar,
   getNextRefPos,
@@ -64,6 +69,15 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         | BaseFeatureDataAdapter
         | undefined,
     }
+  }
+
+  async fetchSequence(region: Region) {
+    const { sequenceAdapter } = await this.configure()
+    if (!sequenceAdapter) {
+      return undefined
+    }
+
+    return fetchSequence(region, sequenceAdapter)
   }
 
   getFeatures(region: Region, opts: SNPCoverageOptions = {}) {
@@ -133,22 +147,12 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
   freeResources(/* { region } */): void {}
 
-  /**
-   * Generates coverage bins from features which details
-   * the reference, mismatches, strands, and coverage info
-   * @param features - Features of region to be passed in
-   * @param region - Region
-   * @param bpPerPx - base pairs per pixel
-   * @returns Array of nested frequency tables
-   */
   async generateCoverageBins(
     features: Feature[],
     region: Region,
     opts: { bpPerPx?: number; colorBy?: { type: string; tag?: string } },
   ) {
     const { colorBy } = opts
-    const { sequenceAdapter } = await this.configure()
-    const { originalRefName, refName, start, end } = region
     const binMax = Math.ceil(region.end - region.start)
 
     const skipmap = {} as {
@@ -162,27 +166,16 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       }
     }
 
-    // bins contain cov feature if they contribute to coverage, or noncov which
-    // are interbase or other features that don't contribute to coverage.
-    // delskips are elements that don't contribute to coverage, but should be
-    // reported also (and are not interbase)
+    // bins contain:
+    // - cov feature if they contribute to coverage
+    // - noncov are insertions/clip features that don't contribute to coverage
+    // - delskips deletions or introns that don't contribute to coverage
     type BinType = { total: number; strands: { [key: string]: number } }
 
-    // request an extra +1 on the end to get CpG crossing region boundary
-    let regionSeq: string | undefined
-
-    if (sequenceAdapter) {
-      const [feat] = await sequenceAdapter
-        .getFeatures({
-          refName: originalRefName || refName,
-          start,
-          end: end + 1,
-          assemblyName: region.assemblyName,
-        })
-        .pipe(toArray())
-        .toPromise()
-      regionSeq = feat?.get('seq')
-    }
+    const regionSeq =
+      features.length && shouldFetchReferenceSequence(opts.colorBy?.type)
+        ? await this.fetchSequence(region)
+        : undefined
 
     const bins = [] as {
       total: number

@@ -24,6 +24,7 @@ import {
 } from './types'
 import { isAbortException, checkAbortSignal } from './aborting'
 
+export type { Feature }
 export * from './types'
 export * from './aborting'
 export * from './when'
