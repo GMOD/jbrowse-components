@@ -304,7 +304,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         self.session?.tracks[
           currentTrackIdx
         ].textSearching.indexingFeatureTypesToExclude.set(exclude)
-        console.log(self.session?.tracks[currentTrackIdx])
       },
       addAggregateTextSearchConf(trackIds: string[], asm: string) {
         // name of index

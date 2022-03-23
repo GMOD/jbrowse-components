@@ -115,12 +115,12 @@ export interface Track {
   trackId: string
   name: string
   assemblyNames: string[]
-  adapter: 
-  | Gff3TabixAdapter
-  | GtfAdapter
-  | VcfTabixAdapter
-  | Gff3Adapter
-  | VcfAdapter
+  adapter:
+    | Gff3TabixAdapter
+    | GtfAdapter
+    | VcfTabixAdapter
+    | Gff3Adapter
+    | VcfAdapter
   textSearching?: TextSearching
 }
 

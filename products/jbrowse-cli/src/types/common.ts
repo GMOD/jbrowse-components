@@ -3,7 +3,6 @@ import { Track, LocalPathLocation, UriLocation } from '../base'
 import fetch from 'node-fetch'
 import path from 'path'
 
-
 // Method for handing off the parsing of a gff3 file URL.
 // Calls the proper parser depending on if it is gzipped or not.
 // Returns a @gmod/gff stream.
