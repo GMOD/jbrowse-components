@@ -40,7 +40,10 @@ function Box(props: {
   const diff = leftWithinBlock - left
   const widthWithinBlock = Math.max(1, Math.min(width - diff, screenWidth))
 
-  return (
+  // if feature has parent and type is intron, then don't render the intron
+  // subfeature (if it doesn't have a parent, then maybe the introns are
+  // separately displayed features that should be displayed)
+  return feature.parent() && feature.get('type') === 'intron' ? null : (
     <>
       {topLevel ? <Arrow {...props} /> : null}
       <rect
