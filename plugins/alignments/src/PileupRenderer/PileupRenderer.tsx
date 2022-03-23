@@ -282,6 +282,64 @@ export default class PileupRenderer extends BoxRendererType {
     return strand === 1 ? 'color_fwd_strand' : 'color_rev_strand'
   }
 
+  colorByPerBaseLettering(
+    ctx: CanvasRenderingContext2D,
+    feat: LayoutFeature,
+    _config: AnyConfigurationModel,
+    region: Region,
+    bpPerPx: number,
+    props: {
+      colorForBase: Record<string, string>
+      contrastForBase: Record<string, string>
+      charWidth: number
+      charHeight: number
+    },
+  ) {
+    const { colorForBase, contrastForBase, charWidth, charHeight } = props
+    const heightLim = charHeight - 2
+    const { feature, topPx, heightPx } = feat
+    const seq = feature.get('seq') as string
+    const cigarOps = parseCigar(feature.get('CIGAR'))
+    const widthPx = 1 / bpPerPx
+    const start = feature.get('start')
+    let soffset = 0 // sequence offset
+    let roffset = 0 // reference offset
+
+    for (let i = 0; i < cigarOps.length; i += 2) {
+      const len = +cigarOps[i]
+      const op = cigarOps[i + 1]
+      if (op === 'S' || op === 'I') {
+        soffset += len
+      } else if (op === 'D' || op === 'N') {
+        roffset += len
+      } else if (op === 'M' || op === 'X' || op === '=') {
+        for (let m = 0; m < len; m++) {
+          const letter = seq[soffset + m]
+          ctx.fillStyle = colorForBase[letter]
+          const [leftPx] = bpSpanPx(
+            start + roffset + m,
+            start + roffset + m + 1,
+            region,
+            bpPerPx,
+          )
+          ctx.fillRect(leftPx, topPx, widthPx + 0.5, heightPx)
+
+          if (widthPx >= charWidth && heightPx >= heightLim) {
+            // normal SNP coloring
+            ctx.fillStyle = contrastForBase[letter]
+
+            ctx.fillText(
+              letter,
+              leftPx + (widthPx - charWidth) / 2 + 1,
+              topPx + heightPx,
+            )
+          }
+        }
+        soffset += len
+        roffset += len
+      }
+    }
+  }
   colorByPerBaseQuality(
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
@@ -295,27 +353,30 @@ export default class PileupRenderer extends BoxRendererType {
     const cigarOps = parseCigar(feature.get('CIGAR'))
     const width = 1 / bpPerPx
     const start = feature.get('start')
+    let soffset = 0 // sequence offset
+    let roffset = 0 // reference offset
 
-    for (let i = 0, j = 0, k = 0; k < scores.length; i += 2, k++) {
+    for (let i = 0; i < cigarOps.length; i += 2) {
       const len = +cigarOps[i]
       const op = cigarOps[i + 1]
       if (op === 'S' || op === 'I') {
-        k += len
+        soffset += len
       } else if (op === 'D' || op === 'N') {
-        j += len
+        roffset += len
       } else if (op === 'M' || op === 'X' || op === '=') {
         for (let m = 0; m < len; m++) {
-          const score = scores[k + m]
+          const score = scores[soffset + m]
           ctx.fillStyle = `hsl(${score === 255 ? 150 : score * 1.5},55%,50%)`
           const [leftPx] = bpSpanPx(
-            start + j + m,
-            start + j + m + 1,
+            start + roffset + m,
+            start + roffset + m + 1,
             region,
             bpPerPx,
           )
           ctx.fillRect(leftPx, topPx, width + 0.5, heightPx)
         }
-        j += len
+        soffset += len
+        roffset += len
       }
     }
   }
@@ -522,6 +583,10 @@ export default class PileupRenderer extends BoxRendererType {
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
     props: RenderArgsDeserializedWithFeaturesAndLayout & {
+      colorForBase: Record<string, string>
+      contrastForBase: Record<string, string>
+      charWidth: number
+      charHeight: number
       defaultColor: boolean
     },
   ) {
@@ -532,6 +597,10 @@ export default class PileupRenderer extends BoxRendererType {
       regions,
       colorBy,
       colorTagMap = {},
+      colorForBase,
+      contrastForBase,
+      charWidth,
+      charHeight,
     } = props
     const { tag = '', type: colorType = '' } = colorBy || {}
     const { feature } = feat
@@ -627,6 +696,15 @@ export default class PileupRenderer extends BoxRendererType {
     switch (colorType) {
       case 'perBaseQuality':
         this.colorByPerBaseQuality(ctx, feat, config, region, bpPerPx)
+        break
+
+      case 'perBaseLettering':
+        this.colorByPerBaseLettering(ctx, feat, config, region, bpPerPx, {
+          colorForBase,
+          contrastForBase,
+          charWidth,
+          charHeight,
+        })
         break
 
       case 'modifications':
@@ -742,11 +820,9 @@ export default class PileupRenderer extends BoxRendererType {
         const insW = Math.max(minSubfeatureWidth, Math.min(1.2, 1 / bpPerPx))
         if (len < 10) {
           ctx.fillRect(pos, topPx, insW, heightPx)
-          if (1 / bpPerPx >= charWidth) {
+          if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
             ctx.fillRect(pos - insW, topPx, insW * 3, 1)
             ctx.fillRect(pos - insW, topPx + heightPx - 1, insW * 3, 1)
-          }
-          if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
             ctx.fillText(`(${mismatch.base})`, pos + 3, topPx + heightPx)
           }
         }
@@ -754,11 +830,9 @@ export default class PileupRenderer extends BoxRendererType {
         ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
         const pos = leftPx + extraHorizontallyFlippedOffset
         ctx.fillRect(pos, topPx, w, heightPx)
-        if (1 / bpPerPx >= charWidth) {
+        if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
           ctx.fillRect(pos - w, topPx, w * 3, 1)
           ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
-        }
-        if (widthPx >= charWidth && heightPx >= heightLim) {
           ctx.fillText(`(${mismatch.base})`, pos + 3, topPx + heightPx)
         }
       } else if (mismatch.type === 'skip') {
@@ -917,6 +991,10 @@ export default class PileupRenderer extends BoxRendererType {
       this.drawAlignmentRect(ctx, feat, {
         ...props,
         defaultColor,
+        colorForBase,
+        contrastForBase,
+        charWidth,
+        charHeight,
       })
       this.drawMismatches(ctx, feat, props, {
         mismatchAlpha,
