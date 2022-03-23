@@ -316,8 +316,8 @@ const HierarchicalTrackSelectorContainer = observer(
           toolbarHeight={toolbarHeight}
           overrideDimensions={overrideDimensions}
         />
-        {session.addTrackConf ||
-          (session.addConnectionConf && (
+        {session.addTrackConf ? (
+          session.addConnectionConf ? (
             <div>
               <Fab
                 color="secondary"
@@ -333,7 +333,7 @@ const HierarchicalTrackSelectorContainer = observer(
                 open={Boolean(anchorEl)}
                 onClose={() => setAnchorEl(null)}
               >
-                {session.addConnectionConf && (
+                {session.addConnectionConf ? (
                   <MenuItem
                     onClick={() => {
                       handleFabClose()
@@ -346,8 +346,8 @@ const HierarchicalTrackSelectorContainer = observer(
                   >
                     Add connection
                   </MenuItem>
-                )}
-                {session.addTrackConf && (
+                ) : null}
+                {session.addTrackConf ? (
                   <MenuItem
                     onClick={() => {
                       handleFabClose()
@@ -363,10 +363,11 @@ const HierarchicalTrackSelectorContainer = observer(
                   >
                     Add track
                   </MenuItem>
-                )}
+                ) : null}
               </Menu>
             </div>
-          ))}
+          ) : null
+        ) : null}
       </Wrapper>
     )
   },
@@ -513,10 +514,8 @@ const HierarchicalTrackSelectorHeader = observer(
             callback()
             setConnectionAnchorEl(undefined)
           }}
-          onClose={() => {
-            setConnectionAnchorEl(undefined)
-          }}
-          menuItems={[...connectionMenuItems]}
+          onClose={() => setConnectionAnchorEl(undefined)}
+          menuItems={connectionMenuItems}
         />
         <JBrowseMenu
           anchorEl={menuAnchorEl}
@@ -525,9 +524,7 @@ const HierarchicalTrackSelectorHeader = observer(
             callback()
             setMenuAnchorEl(undefined)
           }}
-          onClose={() => {
-            setMenuAnchorEl(undefined)
-          }}
+          onClose={() => setMenuAnchorEl(undefined)}
           menuItems={menuItems}
         />
         <Suspense fallback={<div />}>
@@ -539,9 +536,7 @@ const HierarchicalTrackSelectorHeader = observer(
             />
           ) : deleteDialogDetails ? (
             <DeleteConnectionDialog
-              handleClose={() => {
-                setDeleteDialogDetails(undefined)
-              }}
+              handleClose={() => setDeleteDialogDetails(undefined)}
               deleteDialogDetails={deleteDialogDetails}
               session={session}
             />
