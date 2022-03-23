@@ -1,7 +1,8 @@
 import fs from 'fs'
-import { Track } from '../base'
+import { Track, LocalPathLocation, UriLocation } from '../base'
 import fetch from 'node-fetch'
 import path from 'path'
+
 
 // Method for handing off the parsing of a gff3 file URL.
 // Calls the proper parser depending on if it is gzipped or not.
@@ -30,9 +31,23 @@ export function isURL(FileName: string) {
   return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
+function makeLocation(location: string, protocol: string) {
+  if (protocol === 'uri') {
+    return { uri: location, locationType: 'UriLocation' } as UriLocation
+  }
+  if (protocol === 'localPath') {
+    return {
+      localPath: path.resolve(location),
+      locationType: 'LocalPathLocation',
+    } as LocalPathLocation
+  }
+  throw new Error(`invalid protocol ${protocol}`)
+}
+
 export function guessAdapterFromFileName(filePath: string): Track {
-  const uri = isURL(filePath) ? filePath : path.resolve(filePath)
-  const name = path.basename(uri)
+  // const uri = isURL(filePath) ? filePath : path.resolve(filePath)
+  const protocol = isURL(filePath) ? 'uri' : 'localPath'
+  const name = path.basename(filePath)
   if (/\.vcf\.b?gz$/i.test(filePath)) {
     return {
       trackId: name,
@@ -40,7 +55,7 @@ export function guessAdapterFromFileName(filePath: string): Track {
       assemblyNames: [],
       adapter: {
         type: 'VcfTabixAdapter',
-        vcfGzLocation: { uri, locationType: 'UriLocation' },
+        vcfGzLocation: makeLocation(filePath, protocol),
       },
     }
   } else if (/\.gff3?\.b?gz$/i.test(filePath)) {
@@ -50,7 +65,7 @@ export function guessAdapterFromFileName(filePath: string): Track {
       assemblyNames: [],
       adapter: {
         type: 'Gff3TabixAdapter',
-        gffGzLocation: { uri, locationType: 'UriLocation' },
+        gffGzLocation: makeLocation(filePath, protocol),
       },
     }
   } else if (/\.gtf?$/i.test(filePath)) {
@@ -60,7 +75,27 @@ export function guessAdapterFromFileName(filePath: string): Track {
       assemblyNames: [],
       adapter: {
         type: 'GtfAdapter',
-        gtfLocation: { uri, locationType: 'UriLocation' },
+        gtfLocation: makeLocation(filePath, protocol),
+      },
+    }
+  } else if (/\.vcf$/i.test(filePath)) {
+    return {
+      trackId: name,
+      name,
+      assemblyNames: [],
+      adapter: {
+        type: 'VcfAdapter',
+        vcfLocation: makeLocation(filePath, protocol),
+      },
+    }
+  } else if (/\.gff3?$/i.test(filePath)) {
+    return {
+      trackId: name,
+      name,
+      assemblyNames: [],
+      adapter: {
+        type: 'Gff3Adapter',
+        gffLocation: makeLocation(filePath, protocol),
       },
     }
   } else {

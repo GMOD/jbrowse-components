@@ -12,20 +12,32 @@ export interface UriLocation {
   uri: string
   locationType: 'UriLocation'
 }
+export interface LocalPathLocation {
+  localPath: string
+  locationType: 'LocalPathLocation'
+}
 
 export interface Gff3TabixAdapter {
   type: 'Gff3TabixAdapter'
-  gffGzLocation: UriLocation
+  gffGzLocation: UriLocation | LocalPathLocation
 }
 
+export interface Gff3Adapter {
+  type: 'Gff3Adapter'
+  gffLocation: UriLocation | LocalPathLocation
+}
 export interface GtfAdapter {
   type: 'GtfAdapter'
-  gtfLocation: UriLocation
+  gtfLocation: UriLocation | LocalPathLocation
 }
 
 export interface VcfTabixAdapter {
   type: 'VcfTabixAdapter'
-  vcfGzLocation: UriLocation
+  vcfGzLocation: UriLocation | LocalPathLocation
+}
+export interface VcfAdapter {
+  type: 'VcfAdapter'
+  vcfLocation: UriLocation | LocalPathLocation
 }
 
 export interface IndexedFastaAdapter {
@@ -103,7 +115,12 @@ export interface Track {
   trackId: string
   name: string
   assemblyNames: string[]
-  adapter: Gff3TabixAdapter | GtfAdapter | VcfTabixAdapter
+  adapter: 
+  | Gff3TabixAdapter
+  | GtfAdapter
+  | VcfTabixAdapter
+  | Gff3Adapter
+  | VcfAdapter
   textSearching?: TextSearching
 }
 
