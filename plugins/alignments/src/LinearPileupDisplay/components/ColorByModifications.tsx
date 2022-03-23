@@ -4,6 +4,7 @@ import { ObservableMap } from 'mobx'
 import {
   Button,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
@@ -14,14 +15,12 @@ import {
 import CloseIcon from '@material-ui/icons/Close'
 
 const useStyles = makeStyles(theme => ({
-  root: {},
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
-
   table: {
     border: '1px solid #888',
     margin: theme.spacing(4),
@@ -84,85 +83,82 @@ function ColorByTagDlg(props: {
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <div className={classes.root}>
-          <Typography>
-            You can choose to color the modifications in the BAM/CRAM MM/ML
-            specification using this dialog. Choosing modifications colors the
-            modified positions and can color multiple modification types.
-            Choosing the methylation setting colors methylated and unmethylated
-            CpG.
-          </Typography>
-          <Typography>
-            Note: you can revisit this dialog to see the current mapping of
-            colors to modification type for the modification coloring mode
-          </Typography>
-          <div style={{ margin: 20 }}>
-            {colorBy?.type === 'modifications' ? (
-              <div>
-                {modifications.length ? (
-                  <>
-                    Current modification-type-to-color mapping
-                    <ModificationTable
-                      modifications={[...modificationTagMap.entries()]}
-                    />
-                  </>
-                ) : (
-                  <div>
-                    <Typography>
-                      Note: color by modifications is already enabled. Loading
-                      current modifications...
-                    </Typography>
-                    <CircularProgress size={15} />
-                  </div>
-                )}
-              </div>
-            ) : null}
-            {colorBy?.type === 'methylation' ? (
-              <ModificationTable
-                modifications={[
-                  ['methylated', 'red'],
-                  ['unmethylated', 'blue'],
-                ]}
-              />
-            ) : null}
-          </div>
-          <div style={{ display: 'flex' }}>
-            <Button
-              variant="contained"
-              color="primary"
-              style={{ margin: 5 }}
-              onClick={() => {
-                model.setColorScheme({
-                  type: 'modifications',
-                })
-                handleClose()
-              }}
-            >
-              Modifications
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              style={{ margin: 5 }}
-              onClick={() => {
-                model.setColorScheme({
-                  type: 'methylation',
-                })
-                handleClose()
-              }}
-            >
-              Methylation
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              style={{ margin: 5 }}
-              onClick={() => handleClose()}
-            >
-              Cancel
-            </Button>
-          </div>
+        <Typography>
+          You can choose to color the modifications in the BAM/CRAM MM/ML
+          specification using this dialog. Choosing modifications colors the
+          modified positions and can color multiple modification types. Choosing
+          the methylation setting colors methylated and unmethylated CpG.
+        </Typography>
+        <Typography>
+          Note: you can revisit this dialog to see the current mapping of colors
+          to modification type for the modification coloring mode
+        </Typography>
+        <div style={{ margin: 20 }}>
+          {colorBy?.type === 'modifications' ? (
+            <div>
+              {modifications.length ? (
+                <>
+                  Current modification-type-to-color mapping
+                  <ModificationTable
+                    modifications={[...modificationTagMap.entries()]}
+                  />
+                </>
+              ) : (
+                <div>
+                  <Typography>
+                    Note: color by modifications is already enabled. Loading
+                    current modifications...
+                  </Typography>
+                  <CircularProgress size={15} />
+                </div>
+              )}
+            </div>
+          ) : null}
+          {colorBy?.type === 'methylation' ? (
+            <ModificationTable
+              modifications={[
+                ['methylated', 'red'],
+                ['unmethylated', 'blue'],
+              ]}
+            />
+          ) : null}
         </div>
+        <DialogActions>
+          <Button
+            variant="contained"
+            color="primary"
+            style={{ margin: 5 }}
+            onClick={() => {
+              model.setColorScheme({
+                type: 'modifications',
+              })
+              handleClose()
+            }}
+          >
+            Modifications
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            style={{ margin: 5 }}
+            onClick={() => {
+              model.setColorScheme({
+                type: 'methylation',
+              })
+              handleClose()
+            }}
+          >
+            Methylation
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            style={{ margin: 5 }}
+            onClick={() => handleClose()}
+          >
+            Cancel
+          </Button>
+        </DialogActions>
       </DialogContent>
     </Dialog>
   )

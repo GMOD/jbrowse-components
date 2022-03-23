@@ -507,6 +507,12 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
                   },
                 },
                 {
+                  label: 'Per-base lettering',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'perBaseLettering' })
+                  },
+                },
+                {
                   label: 'Modifications or methylation',
                   onClick: () => {
                     getSession(self).queueDialog(doneCallback => [
