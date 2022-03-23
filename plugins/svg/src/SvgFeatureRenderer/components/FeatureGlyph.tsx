@@ -45,7 +45,6 @@ function FeatureGlyph(props: {
   return (
     <g>
       <GlyphComponent
-        key={`glyph-${feature.id()}`}
         featureLayout={featureLayout}
         selected={selected}
         {...props}
