@@ -31,12 +31,13 @@ export default ConfigurationSchema(
       type: 'stringEnum',
       model: types.enumeration('colorBy', [
         'identity',
+        'meanQueryIdentity',
         'mappingQuality',
         'strand',
         'default',
         'callback',
       ]),
-      description: `Color by. Setting "identity" (similar to D-GENIES, use thresholds and thresholds palette to define colors for this setting), setting "mappingQuality" (uses mapping quality from PAF, some adapters don't have this setting), setting "strand" colors negative alignments with negColor and positive alignments with posColor, default uses the 'color' field, callback uses the 'color' field as a callback`,
+      description: `Color by. Setting "identity" (the identity of the particular hit, similar to D-GENIES, use the other config slots 'thresholds' and 'thresholdsPalette' to define colors for this setting), setting "meanQueryIdentity" (calculates the weighted mean of the identity of all the hits for the query), setting "mappingQuality" (uses mapping quality from PAF, some adapters don't have this setting), setting "strand" colors negative alignments with negColor and positive alignments with posColor, default uses the 'color' field, callback uses the 'color' field as a callback`,
       defaultValue: 'default',
     },
     thresholdsPalette: {

@@ -116,15 +116,12 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const refName = feature.get('refName')
       const mate = feature.get('mate')
       const mateRef = mate.refName
-      const identity = feature.get('meanScore') //feature.get('numMatches') / feature.get('blockLen')
-      ctx.fillStyle = `hsl(${identity * 200},80%,45%)`
-      ctx.strokeStyle = `hsl(${identity * 200},80%,45%)`
       if (strand === -1) {
         ;[end, start] = [start, end]
       }
 
       let r
-      if (colorBy === 'identity') {
+      if (colorBy === 'hitIdentity') {
         const numMatches = feature.get('numMatches')
         const blockLen = feature.get('blockLen')
         const identity = numMatches / blockLen
@@ -136,6 +133,9 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
             break
           }
         }
+      } else if (colorBy === 'queryIdentity') {
+        const identity = feature.get('meanScore')
+        r = `hsl(${identity * 200},50%,50%)`
       } else if (colorBy === 'mappingQuality') {
         const mq = feature.get('mappingQual')
         r = `hsl(${mq},50%,50%)`

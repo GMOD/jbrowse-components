@@ -117,7 +117,7 @@ function getWeightedMeans(ret: PAFRecord[]) {
   return ret
 }
 
-//https://gist.github.com/stekhn/a12ed417e91f90ecec14bcfa4c2ae16a
+// https://gist.github.com/stekhn/a12ed417e91f90ecec14bcfa4c2ae16a
 function weightedMean(tuples: [number, number][]) {
   const [valueSum, weightSum] = tuples.reduce(
     ([valueSum, weightSum], [value, weight]) => [
