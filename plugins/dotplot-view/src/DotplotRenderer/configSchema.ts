@@ -14,7 +14,7 @@ export default ConfigurationSchema(
     posColor: {
       type: 'color',
       description: 'the color for forward alignments, used with colorBy:strand',
-      defaultValue: 'black',
+      defaultValue: 'blue',
     },
     negColor: {
       type: 'color',
@@ -24,8 +24,7 @@ export default ConfigurationSchema(
     lineWidth: {
       type: 'number',
       description: 'width of the lines to be drawn',
-      // 2.5 is similar to D-GENIES
-      defaultValue: 2.5,
+      defaultValue: 2.5, // 2.5 is similar to D-GENIES
     },
     colorBy: {
       type: 'stringEnum',
@@ -36,7 +35,14 @@ export default ConfigurationSchema(
         'strand',
         'default',
       ]),
-      description: `Color by options:<br/><ul><li>"identity" - the identity of the particular hit, similar to D-GENIES, use the other config slots 'thresholds' and 'thresholdsPalette' to define colors for this setting</li><li>"meanQueryIdentity" - calculates the weighted mean of the identity of all the hits for the query</li><li>"mappingQuality" - uses mapping quality from PAF, some adapters don't have this setting</li><li>"strand" - colors negative alignments with negColor and positive alignments with posColor</li><li>"default" - uses the 'color' field, </li></ul>`,
+      description: `Color by options:<br/>
+<ul>
+  <li>"identity" - the identity of the particular hit, similar to D-GENIES, use the other config slots 'thresholds' and 'thresholdsPalette' to define colors for this setting</li>
+  <li>"meanQueryIdentity" - calculates the weighted mean identity (weighted by alignment length) of all the hits that the query maps to (e.g. if the query is split aligned to many target, uses their weighted mean. can help show patterns of more related and distant synteny after WGD)</li>
+  <li>"mappingQuality" - uses mapping quality from PAF, some adapters don't have this setting</li>
+  <li>"strand" - colors negative alignments with negColor and positive alignments with posColor</li>
+  <li>"default" - uses the 'color' config slot</li>
+</ul>`,
       defaultValue: 'default',
     },
     thresholdsPalette: {

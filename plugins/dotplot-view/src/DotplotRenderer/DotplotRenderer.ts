@@ -84,6 +84,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     )
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
     const color = readConfObject(config, 'color')
+    const isCallback = config.color.isCallback
     const posColor = readConfObject(config, 'posColor')
     const negColor = readConfObject(config, 'negColor')
     const colorBy = readConfObject(config, 'colorBy')
@@ -120,7 +121,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       }
 
       let r
-      if (colorBy === 'hitIdentity') {
+      if (colorBy === 'identity') {
         const numMatches = feature.get('numMatches')
         const blockLen = feature.get('blockLen')
         const identity = numMatches / blockLen
@@ -132,19 +133,16 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
             break
           }
         }
-      } else if (colorBy === 'queryIdentity') {
+      } else if (colorBy === 'meanQueryIdentity') {
         const identity = feature.get('meanScore')
-        r = `hsl(${identity * 200},50%,50%)`
+        r = `hsl(${identity * 200},100%,40%)`
       } else if (colorBy === 'mappingQuality') {
         const mq = feature.get('mappingQual')
-        r = `hsl(${mq},50%,50%)`
+        r = `hsl(${mq},100%,40%)`
       } else if (colorBy === 'strand') {
         r = strand === -1 ? negColor : posColor
       } else if (colorBy === 'default') {
-        r =
-          color === '#f0f'
-            ? color
-            : readConfObject(config, 'color', { feature })
+        r = isCallback ? readConfObject(config, 'color', { feature }) : color
       }
       ctx.fillStyle = r
       ctx.strokeStyle = r
