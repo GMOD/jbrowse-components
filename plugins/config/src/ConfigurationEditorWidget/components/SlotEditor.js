@@ -37,11 +37,23 @@ import CallbackEditor from './CallbackEditor'
 import ColorEditor from './ColorEditor'
 import JsonEditor from './JsonEditor'
 
+const MyTextField = props => {
+  return (
+    <TextField
+      {...props}
+      helperText={<SanitizedHTML html={props.helperText} />}
+      FormHelperTextProps={{
+        component: 'div',
+      }}
+      fullWidth
+    />
+  )
+}
+
 const StringEditor = observer(({ slot }) => (
-  <TextField
+  <MyTextField
     label={slot.name}
-    helperText={<SanitizedHTML html={slot.description} />}
-    fullWidth
+    helperText={slot.description}
     value={slot.value}
     onChange={evt => slot.set(evt.target.value)}
   />
@@ -50,8 +62,7 @@ const StringEditor = observer(({ slot }) => (
 const TextEditor = observer(({ slot }) => (
   <TextField
     label={slot.name}
-    helperText={<SanitizedHTML html={slot.description} />}
-    fullWidth
+    helperText={slot.description}
     multiline
     value={slot.value}
     onChange={evt => slot.set(evt.target.value)}
@@ -267,9 +278,9 @@ const NumberEditor = observer(({ slot }) => {
     }
   }, [slot, val])
   return (
-    <TextField
+    <MyTextField
       label={slot.name}
-      helperText={<SanitizedHTML html={slot.description} />}
+      helperText={slot.description}
       value={val}
       type="number"
       onChange={evt => setVal(evt.target.value)}
@@ -286,9 +297,9 @@ const IntegerEditor = observer(({ slot }) => {
     }
   }, [slot, val])
   return (
-    <TextField
+    <MyTextField
       label={slot.name}
-      helperText={<SanitizedHTML html={slot.description} />}
+      helperText={slot.description}
       value={val}
       type="number"
       onChange={evt => setVal(evt.target.value)}
@@ -318,12 +329,11 @@ const StringEnumEditor = observer(({ slot, slotSchema }) => {
   ).map(t => t.value)
 
   return (
-    <TextField
+    <MyTextField
       value={slot.value}
       label={slot.name}
       select
-      helperText={<SanitizedHTML html={slot.description} />}
-      fullWidth
+      helperText={slot.description}
       onChange={evt => slot.set(evt.target.value)}
     >
       {choices.map(str => (
@@ -331,7 +341,7 @@ const StringEnumEditor = observer(({ slot, slotSchema }) => {
           {str}
         </MenuItem>
       ))}
-    </TextField>
+    </MyTextField>
   )
 })
 
