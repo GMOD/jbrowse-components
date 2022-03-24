@@ -31,7 +31,7 @@ export function isURL(FileName: string) {
   return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
-function makeLocation(location: string, protocol: string) {
+export function makeLocation(location: string, protocol: string) {
   if (protocol === 'uri') {
     return { uri: location, locationType: 'UriLocation' } as UriLocation
   }
