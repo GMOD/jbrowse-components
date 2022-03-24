@@ -1,10 +1,17 @@
 import { lazy } from 'react'
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+import {
+  getConf,
+  ConfigurationReference,
+  AnyConfigurationSchemaType,
+} from '@jbrowse/core/configuration'
+import { getSession, getContainingView } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
-import VisibilityIcon from '@material-ui/icons/Visibility'
 import { types, getEnv, Instance } from 'mobx-state-tree'
-import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
+
+// icons
+import VisibilityIcon from '@material-ui/icons/Visibility'
+
+// locals
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
 
 const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
@@ -29,31 +36,23 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
       },
 
       get showLabels() {
-        const showLabels = getConf(self, ['renderer', 'showLabels'])
-        return self.trackShowLabels !== undefined
-          ? self.trackShowLabels
-          : showLabels
+        return self.trackShowLabels ?? getConf(self, ['renderer', 'showLabels'])
       },
 
       get showDescriptions() {
-        const showDescriptions = getConf(self, ['renderer', 'showLabels'])
-        return self.trackShowDescriptions !== undefined
-          ? self.trackShowDescriptions
-          : showDescriptions
+        return (
+          self.trackShowDescriptions ??
+          getConf(self, ['renderer', 'showLabels'])
+        )
       },
 
       get maxHeight() {
-        const maxHeight = getConf(self, ['renderer', 'maxHeight'])
-        return self.trackMaxHeight !== undefined
-          ? self.trackMaxHeight
-          : maxHeight
+        return self.trackMaxHeight ?? getConf(self, ['renderer', 'maxHeight'])
       },
 
       get displayMode() {
         const displayMode = getConf(self, ['renderer', 'displayMode'])
-        return self.trackDisplayMode !== undefined
-          ? self.trackDisplayMode
-          : displayMode
+        return self.trackDisplayMode ?? displayMode
       },
       get rendererConfig() {
         const configBlob = getConf(self, ['renderer']) || {}

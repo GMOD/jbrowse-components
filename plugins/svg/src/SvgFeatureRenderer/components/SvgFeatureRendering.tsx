@@ -4,9 +4,14 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { bpToPx, measureText } from '@jbrowse/core/util'
-import { Region } from '@jbrowse/core/util/types'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import {
+  bpToPx,
+  measureText,
+  getViewParams,
+  Region,
+  Feature,
+} from '@jbrowse/core/util'
+import { isStateTreeNode } from 'mobx-state-tree'
 import { BaseLayout, SceneGraph } from '@jbrowse/core/util/layouts'
 
 import FeatureGlyph from './FeatureGlyph'
@@ -35,6 +40,9 @@ function RenderedFeatureGlyph(props: {
   extraGlyphs: ExtraGlyphValidator[]
   displayMode: string
   displayModel: DisplayModel
+  viewStart: number
+  viewEnd: number
+  viewOffsetPx: number
   [key: string]: unknown
 }) {
   const { feature, bpPerPx, region, config, displayMode, layout, extraGlyphs } =
@@ -143,9 +151,18 @@ const RenderedFeatures = observer(
     region: Region
     extraGlyphs: ExtraGlyphValidator[]
     layout: BaseLayout<unknown>
+    viewOffsetPx?: number
+    viewStart?: number
+    viewEnd?: number
     [key: string]: unknown
   }) => {
-    const { features = new Map(), isFeatureDisplayed } = props
+    const { displayModel, features = new Map(), isFeatureDisplayed } = props
+    let { viewStart = 0, viewEnd = 0, viewOffsetPx = 0 } = props
+
+    if (isStateTreeNode(displayModel)) {
+      ;({ viewOffsetPx, viewStart, viewEnd } = getViewParams(displayModel))
+    }
+
     return (
       <>
         {[...features.values()]
@@ -154,6 +171,9 @@ const RenderedFeatures = observer(
             <RenderedFeatureGlyph
               key={feature.id()}
               feature={feature}
+              viewStart={viewStart}
+              viewEnd={viewEnd}
+              viewOffsetPx={viewOffsetPx}
               {...props}
             />
           ))}

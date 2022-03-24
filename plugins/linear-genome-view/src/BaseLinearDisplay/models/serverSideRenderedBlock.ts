@@ -1,20 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import React from 'react'
 import { types, getParent, isAlive, cast, Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import {
+  assembleLocString,
+  getSession,
+  getContainingDisplay,
+  getViewParams,
+  makeAbortableReaction,
+  Feature,
+} from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types/mst'
 import {
   AbstractDisplayModel,
   isRetryException,
 } from '@jbrowse/core/util/types'
-import React from 'react'
 
-import {
-  assembleLocString,
-  makeAbortableReaction,
-  getSession,
-  getContainingDisplay,
-} from '@jbrowse/core/util'
 import {
   getTrackAssemblyNames,
   getRpcSessionId,
@@ -296,6 +297,7 @@ async function renderBlockEffect(
     await rendererType.renderInClient(rpcManager, {
       ...renderArgs,
       ...renderProps,
+      ...getViewParams(self),
       signal,
     })
   return {

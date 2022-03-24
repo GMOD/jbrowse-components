@@ -1135,3 +1135,14 @@ export function getBpDisplayStr(totalBp: number) {
   }
   return displayBp
 }
+
+export function getViewParams(model: IAnyStateTreeNode) {
+  const view = getContainingView(model)
+  //@ts-ignore
+  const block = view.dynamicBlocks?.contentBlocks[0] || {}
+  //@ts-ignore
+  const viewOffsetPx = view.offsetPx
+  const viewStart = block.start
+  const viewEnd = block.end
+  return { viewOffsetPx, viewStart, viewEnd }
+}
