@@ -4,14 +4,7 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import {
-  bpToPx,
-  measureText,
-  getViewParams,
-  Region,
-  Feature,
-} from '@jbrowse/core/util'
-import { isStateTreeNode } from 'mobx-state-tree'
+import { bpToPx, measureText, Region, Feature } from '@jbrowse/core/util'
 import { BaseLayout, SceneGraph } from '@jbrowse/core/util/layouts'
 
 import FeatureGlyph from './FeatureGlyph'
@@ -151,18 +144,12 @@ const RenderedFeatures = observer(
     region: Region
     extraGlyphs: ExtraGlyphValidator[]
     layout: BaseLayout<unknown>
-    viewOffsetPx?: number
-    viewStart?: number
-    viewEnd?: number
+    viewOffsetPx: number
+    viewStart: number
+    viewEnd: number
     [key: string]: unknown
   }) => {
-    const { displayModel, features = new Map(), isFeatureDisplayed } = props
-    let { viewStart = 0, viewEnd = 0, viewOffsetPx = 0 } = props
-
-    if (isStateTreeNode(displayModel)) {
-      ;({ viewOffsetPx, viewStart, viewEnd } = getViewParams(displayModel))
-    }
-
+    const { features = new Map(), isFeatureDisplayed } = props
     return (
       <>
         {[...features.values()]
@@ -171,9 +158,6 @@ const RenderedFeatures = observer(
             <RenderedFeatureGlyph
               key={feature.id()}
               feature={feature}
-              viewStart={viewStart}
-              viewEnd={viewEnd}
-              viewOffsetPx={viewOffsetPx}
               {...props}
             />
           ))}
@@ -191,6 +175,9 @@ function SvgFeatureRendering(props: {
   features: Map<string, Feature>
   displayModel: DisplayModel
   exportSVG: boolean
+  viewStart: number
+  viewEnd: number
+  viewOffsetPx: number
   featureDisplayHandler: (f: Feature) => boolean
   extraGlyphs: ExtraGlyphValidator[]
   onMouseOut?: React.MouseEventHandler

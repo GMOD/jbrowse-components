@@ -7,7 +7,7 @@ import { Feature, Region } from '@jbrowse/core/util'
 import { SceneGraph } from '@jbrowse/core/util/layouts'
 import { observer } from 'mobx-react'
 
-//locals
+// locals
 import type { DisplayModel } from './util'
 import FeatureLabel from './FeatureLabel'
 
@@ -38,10 +38,6 @@ function FeatureGlyph(props: {
     description,
     shouldShowName,
     shouldShowDescription,
-    reversed,
-    viewOffsetPx,
-    viewEnd,
-    viewStart,
   } = props
 
   const featureLayout = rootLayout.getSubRecord(String(feature.id()))
@@ -50,22 +46,7 @@ function FeatureGlyph(props: {
   }
   const { GlyphComponent } = featureLayout.data || {}
 
-  let x = rootLayout.getSubRecord('nameLabel')?.absolute.left || 0
-  const viewLeft = reversed ? viewEnd : viewStart
-
-  const fstart = feature.get('start')
-  const fend = feature.get('end')
-  // const [fstart, fend] = reversed ? [end, start] : [start, end]
-  const w = featureLayout.width
-  if (reversed) {
-    if (fstart < viewLeft + w && viewLeft - w < fend) {
-      x = viewOffsetPx
-    }
-  } else {
-    if (fstart < viewLeft + w && viewLeft - w < fend) {
-      x = viewOffsetPx
-    }
-  }
+  const x = rootLayout.getSubRecord('nameLabel')?.absolute.left || 0
 
   return (
     <g>

@@ -4,7 +4,7 @@ import {
   ConfigurationReference,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
-import { getSession, getContainingView } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
 import { types, getEnv, Instance } from 'mobx-state-tree'
 

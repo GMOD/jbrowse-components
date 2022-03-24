@@ -1138,9 +1138,9 @@ export function getBpDisplayStr(totalBp: number) {
 
 export function getViewParams(model: IAnyStateTreeNode) {
   const view = getContainingView(model)
-  //@ts-ignore
+  // @ts-ignore
   const block = view.dynamicBlocks?.contentBlocks[0] || {}
-  //@ts-ignore
+  // @ts-ignore
   const viewOffsetPx = view.offsetPx
   const viewStart = block.start
   const viewEnd = block.end
