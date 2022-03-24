@@ -28,7 +28,7 @@ export interface Gff3Adapter {
 }
 export interface GtfAdapter {
   type: 'GtfAdapter'
-  gtfLocation: UriLocation | LocalPathLocation
+  gtfLocation: UriLocation
 }
 
 export interface VcfTabixAdapter {

@@ -10,7 +10,6 @@ import ServerSideRendererType, {
   RenderResults,
   ResultsSerialized,
 } from '../pluggableElementTypes/renderers/ServerSideRendererType'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { RemoteAbortSignal } from './remoteAbortSignals'
 import {
   BaseFeatureDataAdapter,
@@ -19,8 +18,6 @@ import {
 import { Region } from '../util/types'
 import { checkAbortSignal, renameRegionsIfNeeded } from '../util'
 import SimpleFeature, { SimpleFeatureSerialized } from '../util/simpleFeature'
-import { SnapshotIn } from 'mobx-state-tree'
-import { indexTracks } from '@jbrowse/text-indexing'
 
 export class CoreGetRefNames extends RpcMethodType {
   name = 'CoreGetRefNames'
@@ -47,42 +44,6 @@ export class CoreGetRefNames extends RpcMethodType {
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
       return dataAdapter.getRefNames(deserializedArgs)
     }
-    return []
-  }
-}
-
-export class CoreIndexTracks extends RpcMethodType {
-  name = 'CoreIndexTracks'
-
-  async execute(
-    args: {
-      sessionId: string
-      signal: RemoteAbortSignal
-      outLocation?: string
-      attributes?: string[]
-      exclude?: string[]
-      assemblies?: string[]
-      indexType?: string
-      tracks: AnyConfigurationModel[] | SnapshotIn<AnyConfigurationModel>[]
-    },
-    rpcDriverClassName: string,
-  ) {
-    const deserializedArgs = await this.deserializeArguments(
-      args,
-      rpcDriverClassName,
-    )
-    const { tracks, outLocation, exclude, attributes, assemblies, indexType } =
-      deserializedArgs
-
-    const indexingParams = {
-      outLocation,
-      tracks,
-      exclude,
-      attributes,
-      assemblies,
-      indexType,
-    }
-    await indexTracks(indexingParams)
     return []
   }
 }
