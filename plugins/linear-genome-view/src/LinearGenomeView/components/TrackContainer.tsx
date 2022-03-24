@@ -13,9 +13,7 @@ import { LinearGenomeViewModel, RESIZE_HANDLE_HEIGHT } from '..'
 import TrackLabel from './TrackLabel'
 
 const useStyles = makeStyles(theme => ({
-  root: {
-    margin: 2,
-  },
+  root: { marginTop: 2 },
   resizeHandle: {
     height: RESIZE_HANDLE_HEIGHT,
     boxSizing: 'border-box',
@@ -34,6 +32,16 @@ const useStyles = makeStyles(theme => ({
   trackLabel: {
     zIndex: 3,
   },
+
+  // aligns with block bounderies. check for example the breakpoint split view
+  // demo to see if features align if wanting to change things
+  renderingComponentContainer: {
+    position: 'absolute',
+    // -1 offset because of the 1px border of the Paper
+    left: -1,
+    height: '100%',
+    width: '100%',
+  },
   trackLabelInline: {
     position: 'relative',
     display: 'inline-block',
@@ -48,7 +56,6 @@ const useStyles = makeStyles(theme => ({
     position: 'relative',
     background: 'none',
     zIndex: 2,
-    boxSizing: 'content-box',
   },
 }))
 
@@ -119,7 +126,11 @@ function TrackContainer({
         data-testid={`trackRenderingContainer-${model.id}-${trackId}`}
         role="presentation"
       >
-        <div ref={ref} style={{ transform: `scaleX(${model.scaleFactor})` }}>
+        <div
+          ref={ref}
+          className={classes.renderingComponentContainer}
+          style={{ transform: `scaleX(${model.scaleFactor})` }}
+        >
           <RenderingComponent
             model={display}
             onHorizontalScroll={horizontalScroll}
