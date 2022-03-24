@@ -34,11 +34,6 @@ export default class LinePlotRenderer extends WiggleBaseRenderer {
         ? () => 'grey'
         : feature => readConfObject(config, 'color', { feature })
 
-    ctx.strokeStyle = 'grey'
-    ctx.moveTo(0, toY(0))
-    ctx.lineTo(width, toY(0))
-    ctx.stroke()
-
     let lastVal
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)

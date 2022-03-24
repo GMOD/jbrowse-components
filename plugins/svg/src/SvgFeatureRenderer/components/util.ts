@@ -137,7 +137,7 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
     String(feature.id()),
     x,
     displayMode === 'collapse' ? 0 : top,
-    width,
+    Math.max(width, 1), // has to be at least one to register in the layout
     displayMode === 'compact' ? height / 2 : height,
     { GlyphComponent },
   )

@@ -23,6 +23,10 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(4),
     margin: '0 auto',
   },
+  assemblySelector: {
+    width: '75%',
+    margin: '0 auto',
+  },
 }))
 
 function getName(
@@ -45,9 +49,11 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   const session = getSession(model)
   const { assemblyNames, assemblyManager } = session
   const [trackData, setTrackData] = useState<FileLocation>()
-  const [selected1, setSelected1] = useState(assemblyNames[0])
-  const [selected2, setSelected2] = useState(assemblyNames[0])
-  const selected = [selected1, selected2]
+  const [bed2Location, setBed2Location] = useState<FileLocation>()
+  const [bed1Location, setBed1Location] = useState<FileLocation>()
+  const [targetAssembly, setTargetAssembly] = useState(assemblyNames[0])
+  const [queryAssembly, setQueryAssembly] = useState(assemblyNames[0])
+  const selected = [queryAssembly, targetAssembly]
   const [error, setError] = useState<unknown>()
   const [value, setValue] = useState('')
   const fileName = getName(trackData)
@@ -65,25 +71,45 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
       return {
         type: 'PAFAdapter',
         pafLocation: trackData,
-        assemblyNames: selected,
+        queryAssembly,
+        targetAssembly,
       }
     } else if (radioOption === '.out') {
       return {
-        type: 'PAFAdapter',
-        pafLocation: trackData,
-        assemblyNames: selected,
+        type: 'MashMapAdapter',
+        outLocation: trackData,
+        queryAssembly,
+        targetAssembly,
       }
     } else if (radioOption === '.delta') {
       return {
         type: 'DeltaAdapter',
         deltaLocation: trackData,
-        assemblyNames: selected,
+        queryAssembly,
+        targetAssembly,
       }
     } else if (radioOption === '.chain') {
       return {
         type: 'ChainAdapter',
         chainLocation: trackData,
-        assemblyNames: selected,
+        queryAssembly,
+        targetAssembly,
+      }
+    } else if (radioOption === '.anchors') {
+      return {
+        type: 'MCScanAnchorsAdapter',
+        mcscanAnchorsLocation: trackData,
+        bed1Location,
+        bed2Location,
+        assemblyNames: [queryAssembly, targetAssembly],
+      }
+    } else if (radioOption === '.anchors.simple') {
+      return {
+        type: 'MCScanSimpleAnchorsAdapter',
+        mcscanSimpleAnchorsLocation: trackData,
+        bed1Location,
+        bed2Location,
+        assemblyNames: [queryAssembly, targetAssembly],
       }
     } else {
       throw new Error('Unknown type')
@@ -103,7 +129,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
           session.addTrackConf({
             trackId: trackId,
             name: fileName,
-            assemblyNames: selected,
+            assemblyNames: [targetAssembly, queryAssembly],
             type: 'SyntenyTrack',
             adapter: getAdapter(),
           })
@@ -113,7 +139,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
           { bpPerPx: 0.1, offsetPx: 0 },
           { bpPerPx: 0.1, offsetPx: 0 },
         ])
-        model.setAssemblyNames([selected1, selected2])
+        model.setAssemblyNames(targetAssembly, queryAssembly)
       })
     } catch (e) {
       console.error(e)
@@ -131,7 +157,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
         spacing={1}
         justifyContent="center"
         alignItems="center"
-        style={{ width: '50%', margin: '0 auto' }}
+        className={classes.assemblySelector}
       >
         <Grid item>
           <Paper style={{ padding: 12 }}>
@@ -145,18 +171,26 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
               alignItems="center"
             >
               <Grid item>
-                <Typography>Query</Typography>
+                <Typography>
+                  {value === '.anchors' || value === '.anchors.simple'
+                    ? 'Left column of anchors file'
+                    : 'Query'}
+                </Typography>
                 <AssemblySelector
-                  selected={selected1}
-                  onChange={val => setSelected1(val)}
+                  selected={queryAssembly}
+                  onChange={val => setQueryAssembly(val)}
                   session={session}
                 />
               </Grid>
               <Grid item>
-                <Typography>Target</Typography>
+                <Typography>
+                  {value === '.anchors' || value === '.anchors.simple'
+                    ? 'Right column of anchors file'
+                    : 'Target'}
+                </Typography>
                 <AssemblySelector
-                  selected={selected2}
-                  onChange={val => setSelected2(val)}
+                  selected={targetAssembly}
+                  onChange={val => setTargetAssembly(val)}
                   session={session}
                 />
               </Grid>
@@ -165,11 +199,12 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
 
           <Paper style={{ padding: 12 }}>
             <Typography style={{ textAlign: 'center' }}>
-              <b>Optional</b>: Add a .paf, .out (MashMap), .delta (Mummer), or
-              .chain file to view in the dotplot. These file types can also be
-              gzipped. The first assembly should be the query sequence (e.g.
-              left column of the PAF) and the second assembly should be the
-              target sequence (e.g. right column of the PAF)
+              <b>Optional</b>: Add a .paf, .out (MashMap), .delta (Mummer),
+              .chain, .anchors or .anchors.simple (MCScan) file to view in the
+              dotplot. These file types can also be gzipped. The first assembly
+              should be the query sequence (e.g. left column of the PAF) and the
+              second assembly should be the target sequence (e.g. right column
+              of the PAF)
             </Typography>
             <RadioGroup
               value={radioOption}
@@ -180,40 +215,92 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
                   <FormControlLabel
                     value=".paf"
                     control={<Radio />}
-                    label="PAF"
+                    label=".paf"
                   />
                 </Grid>
                 <Grid item>
                   <FormControlLabel
                     value=".out"
                     control={<Radio />}
-                    label="Out"
+                    label=".out"
                   />
                 </Grid>
                 <Grid item>
                   <FormControlLabel
                     value=".delta"
                     control={<Radio />}
-                    label="Delta"
+                    label=".delta"
                   />
                 </Grid>
                 <Grid item>
                   <FormControlLabel
                     value=".chain"
                     control={<Radio />}
-                    label="Chain"
+                    label=".chain"
+                  />
+                </Grid>
+                <Grid item>
+                  <FormControlLabel
+                    value=".anchors"
+                    control={<Radio />}
+                    label=".anchors"
+                  />
+                </Grid>
+                <Grid item>
+                  <FormControlLabel
+                    value=".anchors.simple"
+                    control={<Radio />}
+                    label=".anchors.simple"
                   />
                 </Grid>
               </Grid>
             </RadioGroup>
             <Grid container justifyContent="center">
               <Grid item>
-                <FileSelector
-                  name="URL"
-                  description=""
-                  location={trackData}
-                  setLocation={loc => setTrackData(loc)}
-                />
+                {value === '.anchors' || value === '.anchors.simple' ? (
+                  <div>
+                    <div style={{ margin: 20 }}>
+                      Open the {value} and .bed files for both genome assemblies
+                      from the MCScan (Python verson) pipeline{' '}
+                      <a href="https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)">
+                        (more info)
+                      </a>
+                    </div>
+                    <div style={{ display: 'flex' }}>
+                      <div>
+                        <FileSelector
+                          name=".anchors file"
+                          description=""
+                          location={trackData}
+                          setLocation={loc => setTrackData(loc)}
+                        />
+                      </div>
+                      <div>
+                        <FileSelector
+                          name="genome 1 .bed (left column of anchors file)"
+                          description=""
+                          location={bed1Location}
+                          setLocation={loc => setBed1Location(loc)}
+                        />
+                      </div>
+                      <div>
+                        <FileSelector
+                          name="genome 2 .bed (right column of anchors file)"
+                          description=""
+                          location={bed2Location}
+                          setLocation={loc => setBed2Location(loc)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <FileSelector
+                    name={value ? value + ' location' : ''}
+                    description=""
+                    location={trackData}
+                    setLocation={loc => setTrackData(loc)}
+                  />
+                )}
               </Grid>
             </Grid>
           </Paper>

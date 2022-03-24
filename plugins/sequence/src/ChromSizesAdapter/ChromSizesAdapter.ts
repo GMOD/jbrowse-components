@@ -63,5 +63,9 @@ export default class extends BaseAdapter implements RegionsAdapter {
     throw new Error('sequence not available')
   }
 
+  public getHeader() {
+    return {}
+  }
+
   public freeResources(/* { region } */): void {}
 }

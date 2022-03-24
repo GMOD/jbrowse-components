@@ -30,11 +30,14 @@ function FeatureGlyph(props: {
   const {
     feature,
     rootLayout,
+    selected,
     config,
     name,
     description,
     shouldShowName,
     shouldShowDescription,
+    fontHeight,
+    allowedWidthExpansion,
     reversed,
     displayModel,
     region,
@@ -80,8 +83,11 @@ function FeatureGlyph(props: {
     }
   }
   return (
-    <>
-      <GlyphComponent featureLayout={featureLayout} {...props} />
+    <g>
+      <GlyphComponent
+        featureLayout={featureLayout}
+        {...props}
+      />
       {shouldShowName ? (
         <FeatureLabel
           text={name}
@@ -104,7 +110,7 @@ function FeatureGlyph(props: {
           {...props}
         />
       ) : null}
-    </>
+    </g>
   )
 }
 

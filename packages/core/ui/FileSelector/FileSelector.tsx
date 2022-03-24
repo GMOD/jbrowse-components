@@ -142,7 +142,9 @@ const FileSelector = observer(
                   aria-label={name}
                   title={name}
                 >
-                  {shorten(toggleContents || name, 5)}
+                  {typeof toggleContents === 'string'
+                    ? shorten(toggleContents, 5)
+                    : toggleContents || shorten(name, 5)}
                 </ToggleButtonWithTooltip>
               ))}
               {hiddenAccts.length ? (

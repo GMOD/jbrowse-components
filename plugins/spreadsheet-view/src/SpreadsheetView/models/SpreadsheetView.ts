@@ -6,7 +6,6 @@ import {
   SnapshotIn,
   Instance,
 } from 'mobx-state-tree'
-import { observable } from 'mobx'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
@@ -81,7 +80,7 @@ const model = types
   })
   .volatile(() => ({
     width: 400,
-    rowMenuItems: observable(defaultRowMenuItems),
+    rowMenuItems: defaultRowMenuItems,
   }))
   .views(self => ({
     get readyToDisplay() {
@@ -114,7 +113,7 @@ const model = types
   }))
   .actions(self => ({
     setRowMenuItems(newItems: MenuItem[]) {
-      self.rowMenuItems.replace(newItems)
+      self.rowMenuItems = newItems
     },
     setWidth(newWidth: number) {
       self.width = newWidth

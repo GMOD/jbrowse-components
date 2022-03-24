@@ -1,5 +1,4 @@
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { toArray } from 'rxjs/operators'
+import Color from 'color'
 import BoxRendererType, {
   RenderArgs,
   RenderArgsSerialized,
@@ -10,14 +9,20 @@ import BoxRendererType, {
 } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { Theme } from '@material-ui/core'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { bpSpanPx, iterMap } from '@jbrowse/core/util'
-import Color from 'color'
-import { Region } from '@jbrowse/core/util/types'
+import {
+  bpSpanPx,
+  iterMap,
+  measureText,
+  Region,
+  Feature,
+} from '@jbrowse/core/util'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  readConfObject,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
 
 // locals
 import {
@@ -27,7 +32,12 @@ import {
   getNextRefPos,
 } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
-import { getTagAlt, orientationTypes } from '../util'
+import {
+  getTagAlt,
+  orientationTypes,
+  fetchSequence,
+  shouldFetchReferenceSequence,
+} from '../util'
 import {
   PileupLayoutSession,
   PileupLayoutSessionProps,
@@ -42,6 +52,15 @@ function getColorBaseMap(theme: Theme) {
     T: theme.palette.bases.T.main,
     deletion: '#808080', // gray
   }
+}
+
+function getContrastBaseMap(theme: Theme) {
+  return Object.fromEntries(
+    Object.entries(getColorBaseMap(theme)).map(([key, value]) => [
+      key,
+      theme.palette.getContrastText(value),
+    ]),
+  )
 }
 
 export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
@@ -263,6 +282,64 @@ export default class PileupRenderer extends BoxRendererType {
     return strand === 1 ? 'color_fwd_strand' : 'color_rev_strand'
   }
 
+  colorByPerBaseLettering(
+    ctx: CanvasRenderingContext2D,
+    feat: LayoutFeature,
+    _config: AnyConfigurationModel,
+    region: Region,
+    bpPerPx: number,
+    props: {
+      colorForBase: Record<string, string>
+      contrastForBase: Record<string, string>
+      charWidth: number
+      charHeight: number
+    },
+  ) {
+    const { colorForBase, contrastForBase, charWidth, charHeight } = props
+    const heightLim = charHeight - 2
+    const { feature, topPx, heightPx } = feat
+    const seq = feature.get('seq') as string
+    const cigarOps = parseCigar(feature.get('CIGAR'))
+    const widthPx = 1 / bpPerPx
+    const start = feature.get('start')
+    let soffset = 0 // sequence offset
+    let roffset = 0 // reference offset
+
+    for (let i = 0; i < cigarOps.length; i += 2) {
+      const len = +cigarOps[i]
+      const op = cigarOps[i + 1]
+      if (op === 'S' || op === 'I') {
+        soffset += len
+      } else if (op === 'D' || op === 'N') {
+        roffset += len
+      } else if (op === 'M' || op === 'X' || op === '=') {
+        for (let m = 0; m < len; m++) {
+          const letter = seq[soffset + m]
+          ctx.fillStyle = colorForBase[letter]
+          const [leftPx] = bpSpanPx(
+            start + roffset + m,
+            start + roffset + m + 1,
+            region,
+            bpPerPx,
+          )
+          ctx.fillRect(leftPx, topPx, widthPx + 0.5, heightPx)
+
+          if (widthPx >= charWidth && heightPx >= heightLim) {
+            // normal SNP coloring
+            ctx.fillStyle = contrastForBase[letter]
+
+            ctx.fillText(
+              letter,
+              leftPx + (widthPx - charWidth) / 2 + 1,
+              topPx + heightPx,
+            )
+          }
+        }
+        soffset += len
+        roffset += len
+      }
+    }
+  }
   colorByPerBaseQuality(
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
@@ -276,27 +353,30 @@ export default class PileupRenderer extends BoxRendererType {
     const cigarOps = parseCigar(feature.get('CIGAR'))
     const width = 1 / bpPerPx
     const start = feature.get('start')
+    let soffset = 0 // sequence offset
+    let roffset = 0 // reference offset
 
-    for (let i = 0, j = 0, k = 0; k < scores.length; i += 2, k++) {
+    for (let i = 0; i < cigarOps.length; i += 2) {
       const len = +cigarOps[i]
       const op = cigarOps[i + 1]
       if (op === 'S' || op === 'I') {
-        k += len
+        soffset += len
       } else if (op === 'D' || op === 'N') {
-        j += len
+        roffset += len
       } else if (op === 'M' || op === 'X' || op === '=') {
         for (let m = 0; m < len; m++) {
-          const score = scores[k + m]
+          const score = scores[soffset + m]
           ctx.fillStyle = `hsl(${score === 255 ? 150 : score * 1.5},55%,50%)`
           const [leftPx] = bpSpanPx(
-            start + j + m,
-            start + j + m + 1,
+            start + roffset + m,
+            start + roffset + m + 1,
             region,
             bpPerPx,
           )
           ctx.fillRect(leftPx, topPx, width + 0.5, heightPx)
         }
-        j += len
+        soffset += len
+        roffset += len
       }
     }
   }
@@ -372,8 +452,8 @@ export default class PileupRenderer extends BoxRendererType {
   }
 
   // Color by methylation is slightly modified version of color by
-  // modifications
-  //
+  // modifications that focuses on CpG sites, with non-methylated CpG colored
+  // blue
   colorByMethylation(
     ctx: CanvasRenderingContext2D,
     layoutFeature: LayoutFeature,
@@ -503,6 +583,10 @@ export default class PileupRenderer extends BoxRendererType {
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
     props: RenderArgsDeserializedWithFeaturesAndLayout & {
+      colorForBase: Record<string, string>
+      contrastForBase: Record<string, string>
+      charWidth: number
+      charHeight: number
       defaultColor: boolean
     },
   ) {
@@ -513,6 +597,10 @@ export default class PileupRenderer extends BoxRendererType {
       regions,
       colorBy,
       colorTagMap = {},
+      colorForBase,
+      contrastForBase,
+      charWidth,
+      charHeight,
     } = props
     const { tag = '', type: colorType = '' } = colorBy || {}
     const { feature } = feat
@@ -577,6 +665,19 @@ export default class PileupRenderer extends BoxRendererType {
       case 'insertSizeAndPairOrientation':
         break
 
+      case 'modifications':
+      case 'methylation':
+        // this coloring is similar to igv.js, and is helpful to color negative
+        // strand reads differently because their c-g will be flipped (e.g. g-c
+        // read right to left)
+        const flags = feature.get('flags')
+        if (flags & 16) {
+          ctx.fillStyle = '#c8dcc8'
+        } else {
+          ctx.fillStyle = '#c8c8c8'
+        }
+        break
+
       case 'normal':
       default:
         if (defaultColor) {
@@ -597,6 +698,15 @@ export default class PileupRenderer extends BoxRendererType {
         this.colorByPerBaseQuality(ctx, feat, config, region, bpPerPx)
         break
 
+      case 'perBaseLettering':
+        this.colorByPerBaseLettering(ctx, feat, config, region, bpPerPx, {
+          colorForBase,
+          contrastForBase,
+          charWidth,
+          charHeight,
+        })
+        break
+
       case 'modifications':
         this.colorByModifications(ctx, feat, config, region, bpPerPx, props)
         break
@@ -611,9 +721,9 @@ export default class PileupRenderer extends BoxRendererType {
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
     props: RenderArgsDeserializedWithFeaturesAndLayout,
-    theme: Theme,
-    colorForBase: { [key: string]: string },
     opts: {
+      colorForBase: { [key: string]: string }
+      contrastForBase: { [key: string]: string }
       mismatchAlpha?: boolean
       drawSNPs?: boolean
       drawIndels?: boolean
@@ -624,13 +734,15 @@ export default class PileupRenderer extends BoxRendererType {
     },
   ) {
     const {
-      minSubfeatureWidth: minWidth,
+      minSubfeatureWidth,
       largeInsertionIndicatorScale,
       mismatchAlpha,
       drawSNPs = true,
       drawIndels = true,
       charWidth,
       charHeight,
+      colorForBase,
+      contrastForBase,
     } = opts
     const { bpPerPx, regions } = props
     const { heightPx, topPx, feature } = feat
@@ -638,7 +750,7 @@ export default class PileupRenderer extends BoxRendererType {
     const start = feature.get('start')
 
     const pxPerBp = Math.min(1 / bpPerPx, 2)
-    const w = Math.max(minWidth, pxPerBp)
+    const w = Math.max(minSubfeatureWidth, pxPerBp)
     const mismatches: Mismatch[] = feature.get('mismatches')
     const heightLim = charHeight - 2
 
@@ -667,7 +779,7 @@ export default class PileupRenderer extends BoxRendererType {
       const mlen = mismatch.length
       const mbase = mismatch.base
       const [leftPx, rightPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
-      const widthPx = Math.max(minWidth, Math.abs(leftPx - rightPx))
+      const widthPx = Math.max(minSubfeatureWidth, Math.abs(leftPx - rightPx))
       if (mismatch.type === 'mismatch' && drawSNPs) {
         const baseColor = colorForBase[mismatch.base] || '#888'
 
@@ -678,7 +790,7 @@ export default class PileupRenderer extends BoxRendererType {
         if (widthPx >= charWidth && heightPx >= heightLim) {
           // normal SNP coloring
           ctx.fillStyle = getAlphaColor(
-            theme.palette.getContrastText(baseColor),
+            contrastForBase[mismatch.base],
             mismatch,
           )
           ctx.fillText(
@@ -692,12 +804,12 @@ export default class PileupRenderer extends BoxRendererType {
         ctx.fillStyle = baseColor
         ctx.fillRect(leftPx, topPx, widthPx, heightPx)
         const txt = `${mismatch.length}`
-        const rect = ctx.measureText(txt)
-        if (widthPx >= rect.width && heightPx >= heightLim) {
-          ctx.fillStyle = theme.palette.getContrastText(baseColor)
+        const rwidth = measureText(txt, 10)
+        if (widthPx >= rwidth && heightPx >= heightLim) {
+          ctx.fillStyle = contrastForBase.deletion
           ctx.fillText(
             txt,
-            leftPx + (rightPx - leftPx) / 2 - rect.width / 2,
+            (leftPx + rightPx) / 2 - rwidth / 2,
             topPx + heightPx,
           )
         }
@@ -705,14 +817,12 @@ export default class PileupRenderer extends BoxRendererType {
         ctx.fillStyle = 'purple'
         const pos = leftPx + extraHorizontallyFlippedOffset
         const len = +mismatch.base || mismatch.length
-        const insW = Math.max(minWidth, Math.min(1.2, 1 / bpPerPx))
+        const insW = Math.max(minSubfeatureWidth, Math.min(1.2, 1 / bpPerPx))
         if (len < 10) {
           ctx.fillRect(pos, topPx, insW, heightPx)
-          if (1 / bpPerPx >= charWidth) {
+          if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
             ctx.fillRect(pos - insW, topPx, insW * 3, 1)
             ctx.fillRect(pos - insW, topPx + heightPx - 1, insW * 3, 1)
-          }
-          if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
             ctx.fillText(`(${mismatch.base})`, pos + 3, topPx + heightPx)
           }
         }
@@ -720,11 +830,9 @@ export default class PileupRenderer extends BoxRendererType {
         ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
         const pos = leftPx + extraHorizontallyFlippedOffset
         ctx.fillRect(pos, topPx, w, heightPx)
-        if (1 / bpPerPx >= charWidth) {
+        if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
           ctx.fillRect(pos - w, topPx, w * 3, 1)
           ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
-        }
-        if (widthPx >= charWidth && heightPx >= heightLim) {
           ctx.fillText(`(${mismatch.base})`, pos + 3, topPx + heightPx)
         }
       } else if (mismatch.type === 'skip') {
@@ -865,6 +973,7 @@ export default class PileupRenderer extends BoxRendererType {
 
     const theme = createJBrowseTheme(configTheme)
     const colorForBase = getColorBaseMap(theme)
+    const contrastForBase = getContrastBaseMap(theme)
     if (!layout) {
       throw new Error(`layout required`)
     }
@@ -882,8 +991,12 @@ export default class PileupRenderer extends BoxRendererType {
       this.drawAlignmentRect(ctx, feat, {
         ...props,
         defaultColor,
+        colorForBase,
+        contrastForBase,
+        charWidth,
+        charHeight,
       })
-      this.drawMismatches(ctx, feat, props, theme, colorForBase, {
+      this.drawMismatches(ctx, feat, props, {
         mismatchAlpha,
         drawSNPs: shouldDrawMismatches(colorBy?.type),
         drawIndels: shouldDrawMismatches(colorBy?.type),
@@ -891,6 +1004,8 @@ export default class PileupRenderer extends BoxRendererType {
         minSubfeatureWidth,
         charWidth,
         charHeight,
+        colorForBase,
+        contrastForBase,
       })
       if (showSoftClip) {
         this.drawSoftClipping(ctx, feat, props, config, theme)
@@ -942,34 +1057,40 @@ export default class PileupRenderer extends BoxRendererType {
     return layoutRecords
   }
 
-  async render(renderProps: RenderArgsDeserialized) {
-    const { sessionId, bpPerPx, regions, adapterConfig } = renderProps
+  async fetchSequence(renderProps: RenderArgsDeserialized) {
+    const { sessionId, regions, adapterConfig } = renderProps
     const { sequenceAdapter } = adapterConfig
+    if (!sequenceAdapter) {
+      return undefined
+    }
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      sequenceAdapter,
+    )
+    const [region] = regions
+    return fetchSequence(region, dataAdapter as BaseFeatureDataAdapter)
+  }
+
+  async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
     const layout = this.createLayoutInWorker(renderProps)
+    const { regions, bpPerPx } = renderProps
 
-    const layoutRecords = this.layoutFeats({ ...renderProps, features, layout })
+    const layoutRecords = this.layoutFeats({
+      ...renderProps,
+      features,
+      layout,
+    })
     const [region] = regions
-    let regionSequence: string | undefined
-    const { end, start, originalRefName, refName } = region
 
-    if (sequenceAdapter) {
-      const { dataAdapter } = await getAdapter(
-        this.pluginManager,
-        sessionId,
-        sequenceAdapter,
-      )
-
-      const feats = await (dataAdapter as BaseFeatureDataAdapter)
-        .getFeatures({
-          ...region,
-          refName: originalRefName || refName,
-          end: region.end + 1,
-        })
-        .pipe(toArray())
-        .toPromise()
-      regionSequence = feats[0]?.get('seq')
-    }
+    // only need reference sequence if there are features and only for some
+    // cases
+    const regionSequence =
+      features.size && shouldFetchReferenceSequence(renderProps.colorBy?.type)
+        ? await this.fetchSequence(renderProps)
+        : undefined
+    const { end, start } = region
 
     const width = (end - start) / bpPerPx
     const height = Math.max(layout.getTotalHeight(), 1)

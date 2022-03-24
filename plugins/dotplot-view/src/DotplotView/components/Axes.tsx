@@ -1,7 +1,9 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/core'
 import { observer } from 'mobx-react'
-import { getBlockLabelKeysToHide, makeTicks } from './util'
+import { getSnapshot } from 'mobx-state-tree'
+import { getBlockLabelKeysToHide } from './util'
+import { viewBpToPx } from '@jbrowse/core/util'
 import { DotplotViewModel } from '../model'
 
 const useStyles = makeStyles(() => ({
@@ -31,19 +33,14 @@ const useStyles = makeStyles(() => ({
 export const HorizontalAxis = observer(
   ({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
-    const { viewWidth, borderY, hview, htextRotation } = model
-    const hide = getBlockLabelKeysToHide(
-      hview.dynamicBlocks.contentBlocks,
-      viewWidth,
-      hview.offsetPx,
-    )
-    const ticks =
-      hview.staticBlocks.contentBlocks.length > 5
-        ? []
-        : makeTicks(hview.staticBlocks.contentBlocks, hview.bpPerPx)
+    const { viewWidth, borderX, borderY, hview, htextRotation, hticks } = model
+    const { offsetPx, width, dynamicBlocks } = hview
+    const dblocks = dynamicBlocks.contentBlocks
+    const hide = getBlockLabelKeysToHide(dblocks, viewWidth, offsetPx)
+    const hviewSnap = { ...getSnapshot(hview), width }
     return (
       <svg width={viewWidth} height={borderY} className={classes.htext}>
-        {hview.dynamicBlocks.contentBlocks
+        {dblocks
           .filter(region => !hide.includes(region.key))
           .map(region => {
             const x = region.offsetPx
@@ -68,10 +65,13 @@ export const HorizontalAxis = observer(
               </text>
             )
           })}
-        {ticks.map(tick => {
+        {hticks.map(tick => {
           const x =
-            (hview.bpToPx({ refName: tick.refName, coord: tick.base }) || 0) -
-            hview.offsetPx
+            (viewBpToPx({
+              refName: tick.refName,
+              coord: tick.base,
+              self: hviewSnap,
+            })?.offsetPx || 0) - offsetPx
           return (
             <line
               key={`line-${JSON.stringify(tick)}`}
@@ -88,12 +88,15 @@ export const HorizontalAxis = observer(
             />
           )
         })}
-        {ticks
+        {hticks
           .filter(tick => tick.type === 'major')
           .map(tick => {
             const x =
-              (hview.bpToPx({ refName: tick.refName, coord: tick.base }) || 0) -
-              hview.offsetPx
+              (viewBpToPx({
+                refName: tick.refName,
+                coord: tick.base,
+                self: hviewSnap,
+              })?.offsetPx || 0) - offsetPx
             const y = 0
             return (
               <text
@@ -110,6 +113,16 @@ export const HorizontalAxis = observer(
               </text>
             )
           })}
+        {hview.assemblyNames.length === 1 ? (
+          <text
+            y={borderY - 12}
+            x={(viewWidth - borderX) / 2}
+            fill="black"
+            textAnchor="middle"
+          >
+            {hview.assemblyNames[0]}
+          </text>
+        ) : null}
       </svg>
     )
   },
@@ -117,19 +130,14 @@ export const HorizontalAxis = observer(
 export const VerticalAxis = observer(
   ({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
-    const { borderX, viewHeight, vview, vtextRotation } = model
-    const hide = getBlockLabelKeysToHide(
-      vview.dynamicBlocks.contentBlocks,
-      viewHeight,
-      vview.offsetPx,
-    )
-    const ticks =
-      vview.staticBlocks.contentBlocks.length > 5
-        ? []
-        : makeTicks(vview.staticBlocks.contentBlocks, vview.bpPerPx)
+    const { borderX, viewHeight, borderY, vview, vtextRotation, vticks } = model
+    const { offsetPx, width, dynamicBlocks } = vview
+    const dblocks = dynamicBlocks.contentBlocks
+    const hide = getBlockLabelKeysToHide(dblocks, viewHeight, offsetPx)
+    const vviewSnap = { ...getSnapshot(vview), width }
     return (
       <svg className={classes.vtext} width={borderX} height={viewHeight}>
-        {vview.dynamicBlocks.contentBlocks
+        {dblocks
           .filter(region => !hide.includes(region.key))
           .map(region => {
             const y = region.offsetPx
@@ -139,7 +147,7 @@ export const VerticalAxis = observer(
                 transform={`rotate(${vtextRotation},${x},${y})`}
                 key={JSON.stringify(region)}
                 x={x}
-                y={viewHeight - y + vview.offsetPx}
+                y={viewHeight - y + offsetPx}
                 fill="#000000"
                 textAnchor="end"
               >
@@ -152,10 +160,13 @@ export const VerticalAxis = observer(
               </text>
             )
           })}
-        {ticks.map(tick => {
+        {vticks.map(tick => {
           const y =
-            (vview.bpToPx({ refName: tick.refName, coord: tick.base }) || 0) -
-            vview.offsetPx
+            (viewBpToPx({
+              refName: tick.refName,
+              coord: tick.base,
+              self: vviewSnap,
+            })?.offsetPx || 0) - offsetPx
           return (
             <line
               key={`line-${JSON.stringify(tick)}`}
@@ -172,12 +183,15 @@ export const VerticalAxis = observer(
             />
           )
         })}
-        {ticks
+        {vticks
           .filter(tick => tick.type === 'major')
           .map(tick => {
             const y =
-              (vview.bpToPx({ refName: tick.refName, coord: tick.base }) || 0) -
-              vview.offsetPx
+              (viewBpToPx({
+                refName: tick.refName,
+                coord: tick.base,
+                self: vviewSnap,
+              })?.offsetPx || 0) - offsetPx
             return (
               <text
                 y={viewHeight - y - 3}
@@ -192,6 +206,16 @@ export const VerticalAxis = observer(
               </text>
             )
           })}
+        {vview.assemblyNames.length === 1 ? (
+          <text
+            y={(viewHeight - borderY) / 2}
+            x={12}
+            transform={`rotate(-90,12,${(viewHeight - borderY) / 2})`}
+            textAnchor="middle"
+          >
+            {vview.assemblyNames[0]}
+          </text>
+        ) : null}
       </svg>
     )
   },

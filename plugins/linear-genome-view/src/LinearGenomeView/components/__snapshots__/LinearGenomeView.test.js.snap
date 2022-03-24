@@ -449,10 +449,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       </div>
     </div>
     <div
-      class="makeStyles-spacer"
-    />
-    <div
-      class="makeStyles-root"
+      class="MuiPaper-root makeStyles-root MuiPaper-outlined MuiPaper-rounded"
     >
       <div
         class="MuiPaper-root makeStyles-trackLabel makeStyles-trackLabelOverlap makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
@@ -530,19 +527,17 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         </button>
       </div>
       <div
-        class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
+        class="makeStyles-trackRenderingContainer"
         data-testid="trackRenderingContainer-lgv-testConfig"
         role="presentation"
         style="height: 100px;"
       >
         <div
-          class="makeStyles-renderingComponentContainer"
           style="transform: scaleX(1);"
         >
           <div
             class="makeStyles-display"
             data-testid="display-testConfig-LinearBareDisplay"
-            role="presentation"
           >
             <div
               class="makeStyles-linearBlocks"
@@ -770,7 +765,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             class="MuiAutocomplete-root"
             data-testid="autocomplete"
             role="combobox"
-            style="width: 255.22500000000002px;"
+            style="width: 255.27500000000003px;"
           >
             <div
               class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
@@ -790,7 +785,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                   placeholder="Search for location"
                   spellcheck="false"
                   type="text"
-                  value="ctgA:1..100;ctgB:1,001..1,698"
+                  value="ctgA:1..100 ctgB:1,001..1,698"
                 />
                 <div
                   class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
@@ -1343,10 +1338,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       </div>
     </div>
     <div
-      class="makeStyles-spacer"
-    />
-    <div
-      class="makeStyles-root"
+      class="MuiPaper-root makeStyles-root MuiPaper-outlined MuiPaper-rounded"
     >
       <div
         class="MuiPaper-root makeStyles-trackLabel makeStyles-trackLabelOverlap makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
@@ -1424,19 +1416,17 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         </button>
       </div>
       <div
-        class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
+        class="makeStyles-trackRenderingContainer"
         data-testid="trackRenderingContainer-lgv-testConfig"
         role="presentation"
         style="height: 100px;"
       >
         <div
-          class="makeStyles-renderingComponentContainer"
           style="transform: scaleX(1);"
         >
           <div
             class="makeStyles-display"
             data-testid="display-testConfig-LinearBareDisplay"
-            role="presentation"
           >
             <div
               class="makeStyles-linearBlocks"
@@ -1492,7 +1482,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       />
     </div>
     <div
-      class="makeStyles-root"
+      class="MuiPaper-root makeStyles-root MuiPaper-outlined MuiPaper-rounded"
     >
       <div
         class="MuiPaper-root makeStyles-trackLabel makeStyles-trackLabelOverlap makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
@@ -1570,19 +1560,17 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         </button>
       </div>
       <div
-        class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
+        class="makeStyles-trackRenderingContainer"
         data-testid="trackRenderingContainer-lgv-testConfig2"
         role="presentation"
         style="height: 100px;"
       >
         <div
-          class="makeStyles-renderingComponentContainer"
           style="transform: scaleX(1);"
         >
           <div
             class="makeStyles-display"
             data-testid="display-testConfig2-LinearBareDisplay"
-            role="presentation"
           >
             <div
               class="makeStyles-linearBlocks"

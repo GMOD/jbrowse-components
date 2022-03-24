@@ -1,49 +1,62 @@
+import React from 'react'
 import {
   readConfObject,
   getTypeNamesFromExplicitlyTypedUnion,
   isConfigurationSchemaType,
   isConfigurationSlotType,
 } from '@jbrowse/core/configuration'
-
-import { iterMap } from '@jbrowse/core/util'
-import FormGroup from '@material-ui/core/FormGroup'
-import FormLabel from '@material-ui/core/FormLabel'
-import { makeStyles } from '@material-ui/core/styles'
+import {
+  FormGroup,
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 import { observer } from 'mobx-react'
 import { getMembers } from 'mobx-state-tree'
 import { singular } from 'pluralize'
-import React from 'react'
+
+// icons
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+
+// locals
 import SlotEditor from './SlotEditor'
 import TypeSelector from './TypeSelector'
 
 const useStyles = makeStyles(theme => ({
-  subSchemaContainer: {
-    marginLeft: theme.spacing(1),
-    borderLeft: `1px solid ${theme.palette.secondary.main}`,
-    paddingLeft: theme.spacing(1),
-    marginBottom: theme.spacing(1),
+  expandIcon: {
+    color: '#fff',
   },
   root: {
     padding: theme.spacing(1, 3, 1, 1),
-    background: theme.palette.background.default,
-    overflowX: 'hidden',
+  },
+  expansionPanelDetails: {
+    display: 'block',
+    padding: theme.spacing(1),
+  },
+
+  accordion: {
+    border: `1px solid ${theme.palette.text.primary}`,
   },
 }))
 
 const Member = observer(props => {
   const classes = useStyles()
-  const { slotName, slotSchema, schema, slot = schema[slotName] } = props
+  const {
+    slotName,
+    slotSchema,
+    schema,
+    slot = schema[slotName],
+    path = [],
+  } = props
   let typeSelector
   if (isConfigurationSchemaType(slotSchema)) {
     if (slot.length) {
-      return (
-        <>
-          {slot.map((subslot, slotIndex) => {
-            const key = `${singular(slotName)} ${slotIndex + 1}`
-            return <Member {...props} key={key} slot={subslot} slotName={key} />
-          })}
-        </>
-      )
+      return slot.map((subslot, slotIndex) => {
+        const key = `${singular(slotName)} ${slotIndex + 1}`
+        return <Member {...props} key={key} slot={subslot} slotName={key} />
+      })
     }
     // if this is an explicitly typed schema, make a type-selecting dropdown
     // that can be used to change its type
@@ -63,15 +76,23 @@ const Member = observer(props => {
       )
     }
     return (
-      <>
-        <FormLabel>{slotName}</FormLabel>
-        <div className={classes.subSchemaContainer}>
+      <Accordion
+        defaultExpanded
+        className={classes.accordion}
+        TransitionProps={{ unmountOnExit: true, timeout: 150 }}
+      >
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+        >
+          <Typography>{[...path, slotName].join('🡒')}</Typography>
+        </AccordionSummary>
+        <AccordionDetails className={classes.expansionPanelDetails}>
           {typeSelector}
           <FormGroup>
-            <Schema schema={slot} />
+            <Schema schema={slot} path={[...path, slotName]} />
           </FormGroup>
-        </div>
-      </>
+        </AccordionDetails>
+      </Accordion>
     )
   }
 
@@ -83,13 +104,17 @@ const Member = observer(props => {
   return null
 })
 
-const Schema = observer(({ schema }) => {
-  return iterMap(
-    Object.entries(getMembers(schema).properties),
-    ([slotName, slotSchema]) => (
-      <Member key={slotName} {...{ slotName, slotSchema, schema }} />
-    ),
-  )
+const Schema = observer(({ schema, path = [] }) => {
+  const properties = getMembers(schema).properties
+  return Object.entries(properties).map(([slotName, slotSchema]) => (
+    <Member
+      key={slotName}
+      slotName={slotName}
+      slotSchema={slotSchema}
+      path={path}
+      schema={schema}
+    />
+  ))
 })
 
 const ConfigurationEditor = observer(({ model }) => {
@@ -98,10 +123,26 @@ const ConfigurationEditor = observer(({ model }) => {
   // for different tracks since only the backing model changes for example
   // see pr #804
   const key = model.target && readConfObject(model.target, 'trackId')
+  const name = model.target && readConfObject(model.target, 'name')
   return (
-    <div className={classes.root} key={key} data-testid="configEditor">
-      {!model.target ? 'no target set' : <Schema schema={model.target} />}
-    </div>
+    <Accordion
+      key={key}
+      defaultExpanded
+      className={classes.accordion}
+      TransitionProps={{ unmountOnExit: true, timeout: 150 }}
+    >
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+      >
+        <Typography>{name ? name : 'Configuration'}</Typography>
+      </AccordionSummary>
+      <AccordionDetails
+        className={classes.expansionPanelDetails}
+        data-testid="configEditor"
+      >
+        {!model.target ? 'no target set' : <Schema schema={model.target} />}
+      </AccordionDetails>
+    </Accordion>
   )
 })
 

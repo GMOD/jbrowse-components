@@ -21,11 +21,11 @@ class DummyHandle {
 export default class MainThreadRpcDriver extends BaseRpcDriver {
   name = 'MainThreadRpcDriver'
 
-  makeWorker: () => DummyHandle
+  makeWorker: () => Promise<DummyHandle>
 
   constructor(args: RpcDriverConstructorArgs) {
     super(args)
-    this.makeWorker = (): DummyHandle => new DummyHandle()
+    this.makeWorker = async (): Promise<DummyHandle> => new DummyHandle()
   }
 
   async call(

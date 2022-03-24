@@ -88,7 +88,12 @@ const stateModelFactory = (
         scoreMin: number
         scoreMax: number
       }) {
-        self.stats = { scoreMin, scoreMax }
+        if (
+          self.stats.scoreMin !== scoreMin ||
+          self.stats.scoreMax !== scoreMax
+        ) {
+          self.stats = { scoreMin, scoreMax }
+        }
         self.statsReady = true
       },
       setColor(color: string) {
@@ -442,7 +447,7 @@ const stateModelFactory = (
             {
               label: 'Set min/max score',
               onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
+                getSession(self).queueDialog(doneCallback => [
                   SetMinMaxDlg,
                   { model: self, handleClose: doneCallback },
                 ])
@@ -451,7 +456,7 @@ const stateModelFactory = (
             {
               label: 'Set color',
               onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
+                getSession(self).queueDialog(doneCallback => [
                   SetColorDlg,
                   { model: self, handleClose: doneCallback },
                 ])

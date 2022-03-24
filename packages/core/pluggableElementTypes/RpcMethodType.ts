@@ -91,9 +91,9 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       if (isAuthNeededException(error)) {
         // @ts-ignore
         const retryAccount = rootModel?.createEphemeralInternetAccount(
-          `HTTPBasicInternetAccount-${new URL(error.location.uri).origin}`,
+          `HTTPBasicInternetAccount-${new URL(error.url).origin}`,
           {},
-          error.location,
+          error.url,
         )
         throw new RetryError(
           'Retrying with created internet account',

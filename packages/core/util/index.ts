@@ -1,29 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useRef, useState } from 'react'
 import {
-  getParent,
-  isAlive,
-  IAnyStateTreeNode,
-  getSnapshot,
-  hasParent,
   addDisposer,
+  getParent,
+  getSnapshot,
+  isAlive,
   isStateTreeNode,
+  hasParent,
+  IAnyStateTreeNode,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import fromEntries from 'object.fromentries'
-import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
 import SimpleFeature, { Feature, isFeature } from './simpleFeature'
 import {
-  TypeTestedByPredicate,
   isSessionModel,
   isDisplayModel,
   isViewModel,
   isTrackModel,
-  Region,
   AssemblyManager,
+  Region,
+  TypeTestedByPredicate,
 } from './types'
 import { isAbortException, checkAbortSignal } from './aborting'
 
+export type { Feature }
 export * from './types'
 export * from './aborting'
 export * from './when'
@@ -262,7 +263,7 @@ export function getContainingDisplay(node: IAnyStateTreeNode) {
  * ```
  */
 export function assembleLocString(region: ParsedLocString): string {
-  const { assemblyName, refName, start, end } = region
+  const { assemblyName, refName, start, end, reversed } = region
   const assemblyNameString = assemblyName ? `{${assemblyName}}` : ''
   let startString
   if (start !== undefined) {
@@ -281,7 +282,11 @@ export function assembleLocString(region: ParsedLocString): string {
   } else {
     endString = start !== undefined ? '..' : ''
   }
-  return `${assemblyNameString}${refName}${startString}${endString}`
+  let rev = ''
+  if (reversed) {
+    rev = '[rev]'
+  }
+  return `${assemblyNameString}${refName}${startString}${endString}${rev}`
 }
 
 export interface ParsedLocString {
@@ -289,6 +294,7 @@ export interface ParsedLocString {
   refName: string
   start?: number
   end?: number
+  reversed?: boolean
 }
 
 export function parseLocStringOneBased(
@@ -298,10 +304,14 @@ export function parseLocStringOneBased(
   if (!locString) {
     throw new Error('no location string provided, could not parse')
   }
+  let reversed = false
+  if (locString.endsWith('[rev]')) {
+    reversed = true
+    locString = locString.replace(/\[rev\]$/, '')
+  }
   // remove any whitespace
   locString = locString.replace(/\s/, '')
-  // refNames can have colons :(
-  // https://samtools.github.io/hts-specs/SAMv1.pdf Appendix A
+  // refNames can have colons, ref https://samtools.github.io/hts-specs/SAMv1.pdf Appendix A
   const assemblyMatch = locString.match(/(\{(.+)\})?(.+)/)
   if (!assemblyMatch) {
     throw new Error(`invalid location string: "${locString}"`)
@@ -313,7 +323,7 @@ export function parseLocStringOneBased(
   const lastColonIdx = location.lastIndexOf(':')
   if (lastColonIdx === -1) {
     if (isValidRefName(location, assemblyName)) {
-      return { assemblyName, refName: location }
+      return { assemblyName, refName: location, reversed }
     }
     throw new Error(`Unknown reference sequence "${location}"`)
   }
@@ -340,6 +350,7 @@ export function parseLocStringOneBased(
             refName: prefix,
             start: +start.replace(/,/g, ''),
             end: +end.replace(/,/g, ''),
+            reversed,
           }
         }
       } else if (singleMatch) {
@@ -351,6 +362,7 @@ export function parseLocStringOneBased(
               assemblyName,
               refName: prefix,
               start: +start.replace(/,/g, ''),
+              reversed,
             }
           }
           return {
@@ -358,6 +370,7 @@ export function parseLocStringOneBased(
             refName: prefix,
             start: +start.replace(/,/g, ''),
             end: +start.replace(/,/g, ''),
+            reversed,
           }
         }
       } else {
@@ -366,10 +379,10 @@ export function parseLocStringOneBased(
         )
       }
     } else {
-      return { assemblyName, refName: prefix }
+      return { assemblyName, refName: prefix, reversed }
     }
   } else if (isValidRefName(location, assemblyName)) {
-    return { assemblyName, refName: location }
+    return { assemblyName, refName: location, reversed }
   }
   throw new Error(`unknown reference sequence name in location "${locString}"`)
 }
@@ -1109,4 +1122,16 @@ export function viewBpToPx({
   }
 
   return undefined
+}
+
+export function getBpDisplayStr(totalBp: number) {
+  let displayBp
+  if (Math.floor(totalBp / 1000000) > 0) {
+    displayBp = `${parseFloat((totalBp / 1000000).toPrecision(3))}Mbp`
+  } else if (Math.floor(totalBp / 1000) > 0) {
+    displayBp = `${parseFloat((totalBp / 1000).toPrecision(3))}Kbp`
+  } else {
+    displayBp = `${Math.floor(totalBp)}bp`
+  }
+  return displayBp
 }

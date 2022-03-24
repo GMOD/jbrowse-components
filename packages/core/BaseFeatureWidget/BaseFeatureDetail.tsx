@@ -16,6 +16,8 @@ import { observer } from 'mobx-react'
 import clsx from 'clsx'
 import isObject from 'is-object'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
+
+// locals
 import { getConf } from '../configuration'
 import { measureText, getSession } from '../util'
 import SanitizedHTML from '../ui/SanitizedHTML'

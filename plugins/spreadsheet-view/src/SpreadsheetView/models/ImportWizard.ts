@@ -145,23 +145,19 @@ const ImportWizard = types
       }
 
       const { unzip } = await import('@gmod/bgzf-filehandle')
-
-      const filehandle = openLocation(
-        self.fileSource,
-        getEnv(self).pluginManager,
-      )
-
+      const { pluginManager } = getEnv(self)
+      const filehandle = openLocation(self.fileSource, pluginManager)
       try {
-        await filehandle.stat().then(stat => {
-          if (stat.size > IMPORT_SIZE_LIMIT) {
-            throw new Error(
-              `File is too big. Tabular files are limited to at most ${(
-                IMPORT_SIZE_LIMIT / 1000
-              ).toLocaleString()}kb.`,
-            )
-          }
-        })
+        const stat = await filehandle.stat()
+        if (stat.size > IMPORT_SIZE_LIMIT) {
+          throw new Error(
+            `File is too big. Tabular files are limited to at most ${(
+              IMPORT_SIZE_LIMIT / 1000
+            ).toLocaleString()}kb.`,
+          )
+        }
       } catch (e) {
+        // not required for stat to succeed to proceed, but it is helpful
         console.warn(e)
       }
       await filehandle
