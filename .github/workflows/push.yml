@@ -167,7 +167,7 @@ jobs:
       - name: Deploy create react app for branch to S3
         run: |
           cd build && zip -r "jbrowse-react-linear-genome-view-$(echo ${{github.ref}} | cut -d '/' -f3-).zip" . && cd -
-          aws s3 sync --delete demos/jbrowse-react-linear-genome-view/build s3://jbrowse.org/demos/lgv | cut -d "/" -f3-)
+          aws s3 sync --delete demos/jbrowse-react-linear-genome-view/build s3://jbrowse.org/demos/lgv
         working-directory: demos/jbrowse-react-linear-genome-view/
   cgv_cra_demo:
     name: Build and deploy embedded cgv create react app site to AWS S3
@@ -194,5 +194,5 @@ jobs:
       - name: Deploy create react app for branch to S3
         run: |
           cd build && zip -r "jbrowse-react-circular-genome-view-$(echo ${{github.ref}} | cut -d '/' -f3-).zip" . && cd -
-          aws s3 sync --delete demos/jbrowse-react-circular-genome-view/build s3://jbrowse.org/demos/cgv | cut -d "/" -f3-)
+          aws s3 sync --delete demos/jbrowse-react-circular-genome-view/build s3://jbrowse.org/demos/cgv
         working-directory: demos/jbrowse-react-circular-genome-view/
