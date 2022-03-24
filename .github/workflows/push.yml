@@ -157,7 +157,6 @@ jobs:
         run: |
           yarn
           CI=false yarn build
-          yarn build
         working-directory: demos/jbrowse-react-linear-genome-view/
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -185,7 +184,6 @@ jobs:
         run: |
           yarn
           CI=false yarn build
-          yarn build
         working-directory: demos/jbrowse-react-circular-genome-view/
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1

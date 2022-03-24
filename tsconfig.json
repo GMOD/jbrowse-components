@@ -24,7 +24,6 @@
     "**/lib/",
     "**/umd/",
     "**/tmp/",
-    "**/component_test/",
-    "**/demos/"
+    "**/component_test/"
   ]
 }
