@@ -4,8 +4,8 @@ import { SnapshotIn } from 'mobx-state-tree'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { indexTracks } from '@jbrowse/text-indexing'
 
-export class IndexTracksRpcMethod extends RpcMethodType {
-  name = 'IndexTracksRpcMethod'
+export class TextIndexRpcMethod extends RpcMethodType {
+  name = 'TextIndexRpcMethod'
 
   async execute(
     args: {

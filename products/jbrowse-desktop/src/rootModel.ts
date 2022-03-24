@@ -212,20 +212,16 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           } = toJS(firstIndexingJob)
           const rpcManager = self.jbrowse.rpcManager
           const trackConfigs = this.findTrackConfigsToIndex(trackIds)
-          await rpcManager.call(
-            'indexTracksSessionId',
-            'IndexTracksRpcMethod',
-            {
-              tracks: trackConfigs,
-              attributes,
-              exclude,
-              assemblies,
-              indexType,
-              outLocation: self.sessionPath,
-              sessionId: 'indexTracksSessionId',
-              timeout: 1 * 60 * 60 * 1000, // 1 hour
-            },
-          )
+          await rpcManager.call('indexTracksSessionId', 'TextIndexRpcMethod', {
+            tracks: trackConfigs,
+            attributes,
+            exclude,
+            assemblies,
+            indexType,
+            outLocation: self.sessionPath,
+            sessionId: 'indexTracksSessionId',
+            timeout: 1 * 60 * 60 * 1000, // 1 hour
+          })
           if (indexType === 'perTrack') {
             // should update the single track conf
             trackIds.forEach(trackId => {
