@@ -31,6 +31,7 @@ import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 import sessionModelFactory from './sessionModelFactory'
 import JBrowseDesktop from './jbrowseModel'
 import OpenSequenceDialog from './OpenSequenceDialog'
+// import { IndexTracksRpcMethod } from './IndexTracksRpcMethod'
 // @ts-ignore
 import RenderWorker from './rpc.worker'
 
@@ -211,16 +212,20 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           } = toJS(firstIndexingJob)
           const rpcManager = self.jbrowse.rpcManager
           const trackConfigs = this.findTrackConfigsToIndex(trackIds)
-          await rpcManager.call('indexTracksSessionId', 'CoreIndexTracks', {
-            tracks: trackConfigs,
-            attributes,
-            exclude,
-            assemblies,
-            indexType,
-            outLocation: self.sessionPath,
-            sessionId: 'indexTracksSessionId',
-            timeout: 1 * 60 * 60 * 1000, // 1 hour
-          })
+          await rpcManager.call(
+            'indexTracksSessionId',
+            'IndexTracksRpcMethod',
+            {
+              tracks: trackConfigs,
+              attributes,
+              exclude,
+              assemblies,
+              indexType,
+              outLocation: self.sessionPath,
+              sessionId: 'indexTracksSessionId',
+              timeout: 1 * 60 * 60 * 1000, // 1 hour
+            },
+          )
           if (indexType === 'perTrack') {
             // should update the single track conf
             trackIds.forEach(trackId => {
@@ -713,6 +718,14 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             { delay: 1000 },
           ),
         )
+        // addDisposer(
+        //   self,
+        //   autorun(async () => {
+        //     pluginManager.addRpcMethod(
+        //       () => new IndexTracksRpcMethod(pluginManager),
+        //     )
+        //   }),
+        // )
       },
     }))
 }
