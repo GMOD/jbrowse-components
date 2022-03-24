@@ -156,7 +156,7 @@ jobs:
       - name: Build create react app site
         run: |
           yarn
-          yarn build
+          CI=false yarn build
         working-directory: demos/jbrowse-react-linear-genome-view/
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -183,7 +183,7 @@ jobs:
       - name: Build create react app site
         run: |
           yarn
-          yarn build
+          CI=false yarn build
         working-directory: demos/jbrowse-react-circular-genome-view/
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1

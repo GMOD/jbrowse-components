@@ -41,7 +41,7 @@ function View() {
     const state = createViewState({
       assembly,
       tracks,
-      onChange: (patch) => {
+      onChange: (patch: any) => {
         setPatches((previous) => previous + JSON.stringify(patch) + '\n')
       },
       defaultSession,
