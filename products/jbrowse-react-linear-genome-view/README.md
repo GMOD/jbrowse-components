@@ -50,7 +50,8 @@ the peer dependencies not being met while installing.
 
 ## Documentation
 
-The latest Storybook documentation for the component is hosted [here](https://jbrowse.org/storybook/lgv/main).
+The latest documentation for the component is hosted at
+https://jbrowse.org/storybook/lgv/main
 
 ### Note on fonts
 
@@ -62,9 +63,17 @@ to your project and import it in your root `index.js`.
 
 ### Note on webpack 5
 
-There is a breaking change with webpack 5 where there is no longer auto-polyfilling for node core modules. To use this package most effectively, it is recommended to use webpack 4.
+There is a breaking change with webpack 5 where there is no longer
+auto-polyfilling for node core modules. To use this package most effectively,
+it is recommended to use webpack 4.
 
-[Here](https://garrettjstevens.github.io/jbrowse-react-linear-genome-view-demo/) is a working example of [@jbrowse/react-linear-genome-view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view) running with create-react-app 4.
+### Example app
+
+[Here](https://jbrowse.org/demos/lgv) is a working example of
+[@jbrowse/react-linear-genome-view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
+running with create-react-app 4. The source code is located at
+https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view
+which you can copy and use for your own projects
 
 ## Academic Use
 
