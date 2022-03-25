@@ -1,29 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useRef, useState } from 'react'
 import {
-  getParent,
-  isAlive,
-  IAnyStateTreeNode,
-  getSnapshot,
-  hasParent,
   addDisposer,
+  getParent,
+  getSnapshot,
+  isAlive,
   isStateTreeNode,
+  hasParent,
+  IAnyStateTreeNode,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import fromEntries from 'object.fromentries'
-import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
 import SimpleFeature, { Feature, isFeature } from './simpleFeature'
 import {
-  TypeTestedByPredicate,
   isSessionModel,
   isDisplayModel,
   isViewModel,
   isTrackModel,
-  Region,
   AssemblyManager,
+  Region,
+  TypeTestedByPredicate,
 } from './types'
 import { isAbortException, checkAbortSignal } from './aborting'
 
+export type { Feature }
 export * from './types'
 export * from './aborting'
 export * from './when'
@@ -1124,13 +1125,13 @@ export function viewBpToPx({
 }
 
 export function getBpDisplayStr(totalBp: number) {
-  let displayBp
+  let str
   if (Math.floor(totalBp / 1000000) > 0) {
-    displayBp = `${parseFloat((totalBp / 1000000).toPrecision(3))}Mbp`
+    str = `${parseFloat((totalBp / 1000000).toPrecision(3))}Mbp`
   } else if (Math.floor(totalBp / 1000) > 0) {
-    displayBp = `${parseFloat((totalBp / 1000).toPrecision(3))}Kbp`
+    str = `${parseFloat((totalBp / 1000).toPrecision(3))}Kbp`
   } else {
-    displayBp = `${Math.floor(totalBp)}bp`
+    str = `${Math.floor(totalBp)}bp`
   }
-  return displayBp
+  return str
 }

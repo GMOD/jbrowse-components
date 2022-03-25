@@ -1,3 +1,87 @@
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                             | Download                                                          |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                       | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/desktop                    |                                                                   |
+| @jbrowse/img                        | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view   | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                        |                                                                   |
+
+</p>
+</details>
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                             | Download                                                          |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                       | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/desktop                    |                                                                   |
+| @jbrowse/img                        | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view   | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                        |                                                                   |
+
+</p>
+</details>
+
+## 1.6.8 (2022-03-25)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                               | Download                                                          |
+| ------------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                         | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/plugin-alignments            | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-breakpoint-split-view |                                                                   |
+| @jbrowse/plugin-data-management       | https://www.npmjs.com/package/@jbrowse/plugin-data-management     |
+| @jbrowse/plugin-linear-genome-view    | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/plugin-sequence              | https://www.npmjs.com/package/@jbrowse/plugin-sequence            |
+| @jbrowse/plugin-svg                   | https://www.npmjs.com/package/@jbrowse/plugin-svg                 |
+| @jbrowse/plugin-wiggle                | https://www.npmjs.com/package/@jbrowse/plugin-wiggle              |
+| @jbrowse/desktop                      |                                                                   |
+| @jbrowse/img                          | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view   | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view     | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                          |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- Other
+  - [#2847](https://github.com/GMOD/jbrowse-components/pull/2847) Add option to color all the letters on all the reads to the pileup renderer ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2849](https://github.com/GMOD/jbrowse-components/pull/2849) Avoid drawing intron subfeatures for gene glyphs ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2835](https://github.com/GMOD/jbrowse-components/pull/2835) Hide add track and connection menu items when using embedded component ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+  - [#2836](https://github.com/GMOD/jbrowse-components/pull/2836) Display low-quality modifications in SNPCoverage renderer for MM tag ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#2809](https://github.com/GMOD/jbrowse-components/pull/2809) Optimizations for alignments tracks and BAM parsing ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2828](https://github.com/GMOD/jbrowse-components/pull/2828) Change calculation for number of webworkers for web/desktop ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2829](https://github.com/GMOD/jbrowse-components/pull/2829) Allow user to specify number of workers ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#2775](https://github.com/GMOD/jbrowse-components/pull/2775) New SVG gene glyph with directional arrows ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#2852](https://github.com/GMOD/jbrowse-components/pull/2852) Fix misaligned features under breakpoint split view ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2844](https://github.com/GMOD/jbrowse-components/pull/2844) Fix layout of small features without labels for SvgFeatureRenderer ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2839](https://github.com/GMOD/jbrowse-components/pull/2839) Fix the drawing of SNP height when the SNPCoverage track is using log scale ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2825](https://github.com/GMOD/jbrowse-components/pull/2825) Fix tracklabels positioning not updating in UI after user selection ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#2841](https://github.com/GMOD/jbrowse-components/pull/2841) Fix alignments tracks loading excessive data on chromosomes where no features exist ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2829](https://github.com/GMOD/jbrowse-components/pull/2829) Allow user to specify number of workers ([@garrettjstevens](https://github.com/garrettjstevens))
+
+#### Committers: 3
+
+- Caroline Bridge ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+
 ## 1.6.7 (2022-03-16)
 
 <details><summary>Packages in this release</summary>

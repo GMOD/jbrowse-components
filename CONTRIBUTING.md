@@ -107,6 +107,11 @@ something like `website/blog/${DATE}-${RELEASE_TAG}-release.md`), removing the
 "Downloads" section. Finally, once you have confirmed that the build artifacts
 from all four workflows have been added to the release, click "Publish release."
 
+Finally, run the update_demos.sh script from within the demos folder of the
+monorepo after the packages have been published. This will update the demos to
+use the latest version, and then publish them to our S3 bucket e.g. at
+https://jbrowse.org/demos/lgv
+
 ## Monorepo code organization
 
 JBrowse 2 code is organized as a monorepo using [lerna](https://lerna.js.org/)
