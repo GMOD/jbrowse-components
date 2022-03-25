@@ -53,5 +53,5 @@
     "eslint-plugin-prettier": "^3.4.0",
     "prettier": "^2.3.0"
   },
-  "homepage": "https://jbrowse.org/demos/lgv"
+  "homepage": "."
 }
