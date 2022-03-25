@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-grid-bookmark",
-  "version": "1.6.8",
+  "version": "1.6.9",
   "description": "JBrowse 2 grid bookmark widget",
   "keywords": [
     "jbrowse",
