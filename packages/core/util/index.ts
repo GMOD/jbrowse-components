@@ -1125,13 +1125,13 @@ export function viewBpToPx({
 }
 
 export function getBpDisplayStr(totalBp: number) {
-  let displayBp
+  let str
   if (Math.floor(totalBp / 1000000) > 0) {
-    displayBp = `${parseFloat((totalBp / 1000000).toPrecision(3))}Mbp`
+    str = `${parseFloat((totalBp / 1000000).toPrecision(3))}Mbp`
   } else if (Math.floor(totalBp / 1000) > 0) {
-    displayBp = `${parseFloat((totalBp / 1000).toPrecision(3))}Kbp`
+    str = `${parseFloat((totalBp / 1000).toPrecision(3))}Kbp`
   } else {
-    displayBp = `${Math.floor(totalBp)}bp`
+    str = `${Math.floor(totalBp)}bp`
   }
-  return displayBp
+  return str
 }
