@@ -5,7 +5,13 @@ import { ixIxxStream } from 'ixixx'
 import { flags } from '@oclif/command'
 import { indexGff3 } from '../types/gff3Adapter'
 import { indexVcf } from '../types/vcfAdapter'
-import JBrowseCommand, { Track, Config, TrixTextSearchAdapter } from '../base'
+import JBrowseCommand, {
+  Track,
+  Config,
+  TrixTextSearchAdapter,
+  UriLocation,
+  LocalPathLocation,
+} from '../base'
 import {
   generateMeta,
   supported,
@@ -365,6 +371,12 @@ export default class TextIndex extends JBrowseCommand {
     return ixIxxStream
   }
 
+  getLoc(elt: UriLocation | LocalPathLocation) {
+    if (elt.locationType === 'LocalPathLocation') {
+      return elt.localPath
+    }
+    return elt.uri
+  }
   async *indexFiles(
     trackConfigs: Track[],
     attributes: string[],
@@ -380,17 +392,11 @@ export default class TextIndex extends JBrowseCommand {
         indexingAttributes: attrs = attributes,
       } = textSearching || {}
 
-      function getLoc(attr: string) {
-        // @ts-ignore
-        const elt = config.adapter[attr]
-        return elt.uri || elt.localPath
-      }
-
       if (type === 'Gff3TabixAdapter') {
         yield* indexGff3(
           config,
           attrs,
-          getLoc('gffGzLocation'),
+          this.getLoc(adapter.gffGzLocation),
           outLocation,
           types,
           quiet,
@@ -399,7 +405,7 @@ export default class TextIndex extends JBrowseCommand {
         yield* indexGff3(
           config,
           attrs,
-          getLoc('gffLocation'),
+          this.getLoc(adapter.gffLocation),
           outLocation,
           types,
           quiet,
@@ -408,7 +414,7 @@ export default class TextIndex extends JBrowseCommand {
         yield* indexVcf(
           config,
           attrs,
-          getLoc('vcfGzLocation'),
+          this.getLoc(adapter.vcfGzLocation),
           outLocation,
           types,
           quiet,
@@ -417,7 +423,7 @@ export default class TextIndex extends JBrowseCommand {
         yield* indexVcf(
           config,
           attrs,
-          getLoc('vcfLocation'),
+          this.getLoc(adapter.vcfLocation),
           outLocation,
           types,
           quiet,

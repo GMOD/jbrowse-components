@@ -74,7 +74,7 @@ export function guessAdapterFromFileName(filePath: string): Track {
       assemblyNames: [],
       adapter: {
         type: 'GtfAdapter',
-        gtfLocation: makeLocation(filePath, protocol),
+        gtfLocation: { uri: filePath, locationType: 'UriLocation' },
       },
     }
   } else if (/\.vcf$/i.test(filePath)) {
