@@ -31,7 +31,7 @@ const assembly = {
     adapter: {
       type: 'RefNameAliasAdapter',
       location: {
-        uri: '/jbrowse-react-linear-genome-view-demo/GRCh38.aliases.txt',
+        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
       },
     },
   },
