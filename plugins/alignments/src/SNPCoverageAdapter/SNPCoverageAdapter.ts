@@ -95,7 +95,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
             data: {
               score: bin.total,
               refbase,
-              snpinfo: bin,
+              snpinfo: rest,
               start: region.start + index,
               end: region.start + index + 1,
               refName: region.refName,
@@ -168,6 +168,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         : undefined
 
     const bins = [] as {
+      refbase?: string
       total: number
       ref: number
       '-1': 0
@@ -320,6 +321,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
               bin.total--
             } else if (!interbase && colorSNPs) {
               inc(bin, fstrand, 'cov', base)
+              bin.refbase = mismatch.altbase
             }
           }
         }

@@ -56,7 +56,7 @@ const TooltipContents = React.forwardRef(
               <td>{info.total}</td>
             </tr>
             <tr>
-              <td>REF</td>
+              <td>REF {refbase ? `(${refbase.toUpperCase()})` : ''}</td>
               <td>{info.ref}</td>
               <td>
                 {info['-1'] ? `${info['-1']}(-)` : ''}
