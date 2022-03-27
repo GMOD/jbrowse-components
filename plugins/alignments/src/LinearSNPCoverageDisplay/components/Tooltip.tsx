@@ -28,12 +28,13 @@ const TooltipContents = React.forwardRef(
   ({ feature }: { feature: Feature }, ref: any) => {
     const start = feature.get('start')
     const end = feature.get('end')
+    const refbase = feature.get('refbase')
     const name = feature.get('refName')
     const info = feature.get('snpinfo') as SNPInfo
-    const loc = [name, start === end ? en(start) : `${en(start)}..${en(end)}`]
-      .filter(f => !!f)
-      .join(':')
-
+    const loc =
+      [name, start === end ? en(start) : `${en(start)}..${en(end)}`]
+        .filter(f => !!f)
+        .join(':') + (refbase ? ` (${refbase})` : '')
     const total = info?.total
 
     return (

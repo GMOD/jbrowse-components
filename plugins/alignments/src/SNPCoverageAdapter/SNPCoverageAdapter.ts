@@ -88,11 +88,13 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       )
 
       bins.forEach((bin, index) => {
+        const { refbase, ...rest } = bin
         observer.next(
           new SimpleFeature({
             id: `${this.id}-${region.start + index}`,
             data: {
               score: bin.total,
+              refbase,
               snpinfo: bin,
               start: region.start + index,
               end: region.start + index + 1,
