@@ -789,10 +789,9 @@ export default class PileupRenderer extends BoxRendererType {
 
         if (widthPx >= charWidth && heightPx >= heightLim) {
           // normal SNP coloring
-          ctx.fillStyle = getAlphaColor(
-            contrastForBase[mismatch.base],
-            mismatch,
-          )
+          const contrast = contrastForBase[mismatch.base] || 'black'
+          ctx.fillStyle = getAlphaColor(contrast, mismatch)
+          console.log({ contrast })
           ctx.fillText(
             mbase,
             leftPx + (widthPx - charWidth) / 2 + 1,
@@ -805,7 +804,9 @@ export default class PileupRenderer extends BoxRendererType {
         ctx.fillRect(leftPx, topPx, widthPx, heightPx)
         const txt = `${mismatch.length}`
         const rwidth = measureText(txt, 10)
+        console.log({ widthPx, rwidth, heightPx, heightLim, mstart, txt })
         if (widthPx >= rwidth && heightPx >= heightLim) {
+          console.log('in')
           ctx.fillStyle = contrastForBase.deletion
           ctx.fillText(
             txt,
