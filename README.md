@@ -76,8 +76,7 @@ cd products/jbrowse-react-linaer-genome-view
 yarn storybook
 ```
 
-See CONTRIBUTING.md, and documentation like the docs for more info
-https://jbrowse.org/jb2/docs/
+See CONTRIBUTING.md for more info
 
-If you are installing JBrowse on your server, see our quick start guides here
-https://jbrowse.org/jb2/docs/
+If you are installing JBrowse on your server, check out our quick start guides
+here https://jbrowse.org/jb2/docs/
