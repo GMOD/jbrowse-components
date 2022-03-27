@@ -624,7 +624,7 @@ export const BaseLinearDisplay = types
           return rendererType.renderInClient(rpcManager, {
             ...renderArgs,
             ...renderProps,
-            ...getViewParams(self),
+            ...getViewParams(self, true),
             exportSVG: opts,
           })
         }),
