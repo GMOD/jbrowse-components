@@ -50,6 +50,34 @@ cd .\jbrowse-components\
 yarn
 ```
 
-## Quick start
+## Quick start for developers
 
-Either cd to products/jbrowse-web or products/jbrowse-desktop and run `yarn start`.
+You can use these commands to help get started with your development environment
+
+For running jbrowse-web
+
+```sh
+cd products/jbrowse-web
+yarn start
+```
+
+For jbrowse-desktop
+
+```sh
+cd products/jbrowse-desktop
+yarn start
+```
+
+For running like jbrowse-react-linear-genome-view you can use
+storybook
+
+```sh
+cd products/jbrowse-react-linaer-genome-view
+yarn storybook
+```
+
+See CONTRIBUTING.md, and documentation like the docs for more info
+https://jbrowse.org/jb2/docs/
+
+If you are installing JBrowse on your server, see our quick start guides here
+https://jbrowse.org/jb2/docs/
