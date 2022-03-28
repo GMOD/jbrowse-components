@@ -56,7 +56,7 @@ export default observer(
     return (
       <text x={x} y={y + fontHeight} fill={color} fontSize={fontHeight}>
         {measuredTextWidth > totalWidth
-          ? `${text.slice(0, measuredTextWidth)}...`
+          ? `${text.slice(0, totalWidth / (fontHeight * 0.6))}...`
           : text}
       </text>
     )
