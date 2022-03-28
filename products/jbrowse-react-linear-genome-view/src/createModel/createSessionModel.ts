@@ -26,6 +26,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import InfoIcon from '@material-ui/icons/Info'
 import { ReferringNode } from '../types'
+import { version } from './package.json'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -109,7 +110,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return getParent(self).assemblyManager
       },
       get version() {
-        return ''
+        return version
       },
       get views() {
         return [self.view]

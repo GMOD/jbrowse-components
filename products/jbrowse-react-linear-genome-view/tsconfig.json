@@ -3,6 +3,7 @@
   "include": ["src", "types"],
   "compilerOptions": {
     "importHelpers": true,
+    "resolveJsonModule": false,
     "declaration": true,
     "sourceMap": true,
     "rootDir": "./src"
