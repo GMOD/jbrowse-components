@@ -293,10 +293,16 @@ const Renderer = observer(
               },
               { pluginManager },
             )
-            rootModel.jbrowse.configuration.rpc.addDriverConfig(
-              'WebWorkerRpcDriver',
-              { type: 'WebWorkerRpcDriver' },
-            )
+            if (
+              !rootModel.jbrowse.configuration.rpc.drivers.get(
+                'WebWorkerRpcDriver',
+              )
+            ) {
+              rootModel.jbrowse.configuration.rpc.addDriverConfig(
+                'WebWorkerRpcDriver',
+                { type: 'WebWorkerRpcDriver' },
+              )
+            }
             if (!loader.configSnapshot?.configuration?.rpc?.defaultDriver) {
               rootModel.jbrowse.configuration.rpc.defaultDriver.set(
                 'WebWorkerRpcDriver',

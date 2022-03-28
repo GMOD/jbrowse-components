@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 import {
   Button,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
@@ -41,7 +42,7 @@ function SetMaxHeightDlg(props: {
 
   return (
     <Dialog open onClose={handleClose}>
-      <DialogTitle id="alert-dialog-title">
+      <DialogTitle>
         Filter options
         <IconButton
           aria-label="close"
@@ -51,21 +52,24 @@ function SetMaxHeightDlg(props: {
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent>
-        <div className={classes.root}>
-          <Typography>Set max height for the track</Typography>
-          <TextField
-            value={max}
-            onChange={event => {
-              setMax(event.target.value)
-            }}
-            placeholder="Enter max height for layout"
-          />
+      <DialogContent className={classes.root}>
+        <Typography>
+          Set max height for the track. For example, you can increase this if
+          the layout says "Max height reached"
+        </Typography>
+        <TextField
+          value={max}
+          onChange={event => {
+            setMax(event.target.value)
+          }}
+          placeholder="Enter max height for layout"
+        />
+        <DialogActions>
           <Button
             variant="contained"
             color="primary"
             type="submit"
-            style={{ marginLeft: 20 }}
+            autoFocus
             onClick={() => {
               model.setMaxHeight(
                 max !== '' && !Number.isNaN(+max) ? +max : undefined,
@@ -75,7 +79,14 @@ function SetMaxHeightDlg(props: {
           >
             Submit
           </Button>
-        </div>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => handleClose()}
+          >
+            Cancel
+          </Button>
+        </DialogActions>
       </DialogContent>
     </Dialog>
   )

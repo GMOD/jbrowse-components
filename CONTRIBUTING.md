@@ -99,13 +99,25 @@ If you don't provide `versionIncreaseLevel`, it will default to "patch".
 This will trigger a GitHub workflow that will create a draft release on GitHub,
 build JBrowse Web, and upload the build to that release. It will also trigger
 workflows that will build JBrowse Desktop for Windows, Mac, and Linux and upload
-those to the release as well. Once the draft release has been created (you can
-look for it [here](https://github.com/GMOD/jbrowse-components/releases)), go to
-the release and click "Edit," then add a description to the release. Usually you
-can copy the content of the blog post that was generated (it will be named
-something like `website/blog/${DATE}-${RELEASE_TAG}-release.md`), removing the
-"Downloads" section. Finally, once you have confirmed that the build artifacts
-from all four workflows have been added to the release, click "Publish release."
+those to the release as well.
+
+Once the draft release has been created (you can look for it
+[here](https://github.com/GMOD/jbrowse-components/releases)), go to the release
+and click "Edit," then add a description to the release. Usually you can copy
+the content of the blog post that was generated (it will be named something
+like `website/blog/${DATE}-${RELEASE_TAG}-release.md`), removing the
+"Downloads" section.
+
+Important: confirm that the build artifacts from all four workflows
+(jbrowse-web, mac, windows, and linux desktop builds) have been added to the
+release, click "Publish release" (if you publish before the artifacts are
+uploaded, the workflows will refuse to add them to the published release since
+it looks for draft releases)
+
+Finally, run the update_demos.sh script from within the demos folder of the
+monorepo after the packages have been published. This will update the `demos`
+to use the latest version, and then publish them to our S3 bucket e.g. at
+https://jbrowse.org/demos/lgv
 
 ## Monorepo code organization
 

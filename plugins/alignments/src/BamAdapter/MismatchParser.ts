@@ -9,63 +9,81 @@ export interface Mismatch {
   seq?: string
   cliplen?: number
 }
-
+const mdRegex = new RegExp(/(\d+|\^[a-z]+|[a-z])/gi)
 export function parseCigar(cigar: string) {
   return (cigar || '').split(/([MIDNSHPX=])/)
 }
 export function cigarToMismatches(
   ops: string[],
   seq: string,
+  ref?: string,
   qual?: Buffer,
 ): Mismatch[] {
-  let currOffset = 0
-  let seqOffset = 0
+  let roffset = 0 // reference offset
+  let soffset = 0 // seq offset
   const mismatches: Mismatch[] = []
-  for (let i = 0; i < ops.length - 1; i += 2) {
+  const hasRefAndSeq = ref && seq
+  for (let i = 0; i < ops.length; i += 2) {
     const len = +ops[i]
     const op = ops[i + 1]
+
     if (op === 'M' || op === '=' || op === 'E') {
-      seqOffset += len
+      if (hasRefAndSeq) {
+        for (let j = 0; j < len; j++) {
+          if (
+            // @ts-ignore in the full yarn build of the repo, this says that object is possibly undefined for some reason, ignored
+            seq[soffset + j].toUpperCase() !== ref[roffset + j].toUpperCase()
+          ) {
+            mismatches.push({
+              start: roffset + j,
+              type: 'mismatch',
+              base: seq[soffset + j],
+              length: 1,
+            })
+          }
+        }
+      }
+      soffset += len
     }
     if (op === 'I') {
       mismatches.push({
-        start: currOffset,
+        start: roffset,
         type: 'insertion',
         base: `${len}`,
         length: 0,
       })
-      seqOffset += len
+      soffset += len
     } else if (op === 'D') {
       mismatches.push({
-        start: currOffset,
+        start: roffset,
         type: 'deletion',
         base: '*',
         length: len,
       })
     } else if (op === 'N') {
       mismatches.push({
-        start: currOffset,
+        start: roffset,
         type: 'skip',
         base: 'N',
         length: len,
       })
     } else if (op === 'X') {
-      const r = seq.slice(seqOffset, seqOffset + len)
-      const q = qual?.slice(seqOffset, seqOffset + len) || []
+      const r = seq.slice(soffset, soffset + len)
+      const q = qual?.slice(soffset, soffset + len) || []
 
       for (let j = 0; j < len; j++) {
         mismatches.push({
-          start: currOffset + j,
+          start: roffset + j,
           type: 'mismatch',
           base: r[j],
           qual: q[j],
           length: 1,
         })
       }
-      seqOffset += len
+      soffset += len
     } else if (op === 'H') {
       mismatches.push({
-        start: currOffset,
+        start: roffset,
         type: 'hardclip',
         base: `H${len}`,
         cliplen: len,
@@ -73,17 +91,17 @@ export function cigarToMismatches(
       })
     } else if (op === 'S') {
       mismatches.push({
-        start: currOffset,
+        start: roffset,
         type: 'softclip',
         base: `S${len}`,
         cliplen: len,
         length: 1,
       })
-      seqOffset += len
+      soffset += len
     }
 
     if (op !== 'I' && op !== 'S' && op !== 'H') {
-      currOffset += len
+      roffset += len
     }
   }
   return mismatches
@@ -95,7 +113,7 @@ export function cigarToMismatches(
  */
 export function mdToMismatches(
   mdstring: string,
-  cigarOps: string[],
+  ops: string[],
   cigarMismatches: Mismatch[],
   seq: string,
   qual?: Buffer,
@@ -129,11 +147,12 @@ export function mdToMismatches(
     let refOffset = lastRefOffset
     for (
       let i = lastCigar;
-      i < cigarOps.length && refOffset <= refCoord;
+      i < ops.length && refOffset <= refCoord;
       i += 2, lastCigar = i
     ) {
-      const len = +cigarOps[i]
-      const op = cigarOps[i + 1]
+      const len = +ops[i]
+      const op = ops[i + 1]
+
       if (op === 'S' || op === 'I') {
         templateOffset += len
       } else if (op === 'D' || op === 'P' || op === 'N') {
@@ -150,18 +169,14 @@ export function mdToMismatches(
   }
 
   // now actually parse the MD string
-  const md = mdstring.match(/(\d+|\^[a-z]+|[a-z])/gi) || []
+  const md = mdstring.match(mdRegex) || []
   for (let i = 0; i < md.length; i++) {
     const token = md[i]
     const num = +token
     if (!Number.isNaN(num)) {
       curr.start += num
     } else if (token.startsWith('^')) {
-      curr.length = token.length - 1
-      curr.base = '*'
-      curr.type = 'deletion'
-      curr.seq = token.substring(1)
-      nextRecord()
+      curr.start += token.length - 1
     } else {
       // mismatch
       for (let j = 0; j < token.length; j += 1) {
@@ -176,9 +191,9 @@ export function mdToMismatches(
             break
           }
         }
-        const s = cigarOps ? getTemplateCoordLocal(curr.start) : curr.start
-        curr.base = seq ? seq.substr(s, 1) : 'X'
-        const qualScore = qual?.slice(s, s + 1)[0]
+        const s = getTemplateCoordLocal(curr.start)
+        curr.base = seq[s] || 'X'
+        const qualScore = qual?.[s]
         if (qualScore) {
           curr.qual = qualScore
         }
@@ -190,106 +205,30 @@ export function mdToMismatches(
   return mismatchRecords
 }
 
-export function getTemplateCoord(refCoord: number, cigarOps: string[]): number {
-  let templateOffset = 0
-  let refOffset = 0
-  for (let i = 0; i < cigarOps.length && refOffset <= refCoord; i += 2) {
-    const len = +cigarOps[i]
-    const op = cigarOps[i + 1]
-    if (op === 'S' || op === 'I') {
-      templateOffset += len
-    } else if (op === 'D' || op === 'P') {
-      refOffset += len
-    } else if (op !== 'H') {
-      templateOffset += len
-      refOffset += len
-    }
-  }
-  return templateOffset - (refOffset - refCoord)
-}
-
 export function getMismatches(
-  cigarString: string,
-  mdString: string,
+  cigar: string,
+  md: string,
   seq: string,
+  ref?: string,
   qual?: Buffer,
 ): Mismatch[] {
   let mismatches: Mismatch[] = []
-  let cigarOps: string[] = []
+  const ops = parseCigar(cigar)
 
   // parse the CIGAR tag if it has one
-  if (cigarString) {
-    cigarOps = parseCigar(cigarString)
-    mismatches = mismatches.concat(cigarToMismatches(cigarOps, seq, qual))
+  if (cigar) {
+    mismatches = mismatches.concat(cigarToMismatches(ops, seq, ref, qual))
   }
 
   // now let's look for CRAM or MD mismatches
-  if (mdString) {
+  if (md) {
     mismatches = mismatches.concat(
-      mdToMismatches(mdString, cigarOps, mismatches, seq, qual),
+      mdToMismatches(md, ops, mismatches, seq, qual),
     )
   }
 
-  // uniqify the mismatches
-  const seen: { [index: string]: boolean } = {}
-  return mismatches.filter(m => {
-    const key = `${m.type},${m.start},${m.length}`
-    const s = seen[key]
-    seen[key] = true
-    return !s
-  })
+  return mismatches
 }
-
-// adapted from minimap2 code static void write_MD_core function
-export function generateMD(target: string, query: string, cigar: string) {
-  let queryOffset = 0
-  let targetOffset = 0
-  let lengthMD = 0
-  if (!target) {
-    console.warn('no ref supplied to generateMD')
-    return ''
-  }
-  const cigarOps = parseCigar(cigar)
-  let str = ''
-  for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = +cigarOps[i]
-    const op = cigarOps[i + 1]
-    if (op === 'M' || op === 'X' || op === '=') {
-      for (let j = 0; j < len; j++) {
-        if (
-          query[queryOffset + j].toLowerCase() !==
-          target[targetOffset + j].toLowerCase()
-        ) {
-          str += `${lengthMD}${target[targetOffset + j].toUpperCase()}`
-          lengthMD = 0
-        } else {
-          lengthMD++
-        }
-      }
-      queryOffset += len
-      targetOffset += len
-    } else if (op === 'I') {
-      queryOffset += len
-    } else if (op === 'D') {
-      let tmp = ''
-      for (let j = 0; j < len; j++) {
-        tmp += target[targetOffset + j].toUpperCase()
-      }
-      str += `${lengthMD}^${tmp}`
-      lengthMD = 0
-      targetOffset += len
-    } else if (op === 'N') {
-      targetOffset += len
-    } else if (op === 'S') {
-      queryOffset += len
-    }
-  }
-  if (lengthMD > 0) {
-    str += lengthMD
-  }
-  return str
-}
-
 // get relative reference sequence positions for positions given relative to
 // the read sequence
 export function* getNextRefPos(cigarOps: string[], positions: number[]) {
@@ -315,7 +254,6 @@ export function* getNextRefPos(cigarOps: string[], positions: number[]) {
     yield positions[i] - readPos + refPos
   }
 }
-
 export function getModificationPositions(
   mm: string,
   fseq: string,

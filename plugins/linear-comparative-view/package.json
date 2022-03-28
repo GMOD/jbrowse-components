@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-linear-comparative-view",
-  "version": "1.6.5",
+  "version": "1.6.9",
   "description": "JBrowse 2 linear comparative view",
   "keywords": [
     "jbrowse",
@@ -37,8 +37,8 @@
   "dependencies": {
     "@material-ui/icons": "^4.9.1",
     "abortable-promise-cache": "^1.5.0",
-    "clsx": "^1.1.0",
     "clone": "^2.1.2",
+    "clsx": "^1.1.0",
     "generic-filehandle": "^2.2.2",
     "json-stable-stringify": "^1.0.1",
     "react-sizeme": "^3.0.2"

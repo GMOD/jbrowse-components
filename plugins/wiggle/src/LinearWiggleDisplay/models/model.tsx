@@ -88,7 +88,12 @@ const stateModelFactory = (
         scoreMin: number
         scoreMax: number
       }) {
-        self.stats = { scoreMin, scoreMax }
+        if (
+          self.stats.scoreMin !== scoreMin ||
+          self.stats.scoreMax !== scoreMax
+        ) {
+          self.stats = { scoreMin, scoreMax }
+        }
         self.statsReady = true
       },
       setColor(color: string) {

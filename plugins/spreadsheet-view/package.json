@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-spreadsheet-view",
-  "version": "1.6.5",
+  "version": "1.6.9",
   "description": "JBrowse 2 spreadsheet view",
   "keywords": [
     "jbrowse",
@@ -35,9 +35,9 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@gmod/bgzf-filehandle": "^1.4.2",
+    "@gmod/bgzf-filehandle": "^1.4.3",
     "@gmod/vcf": "^5.0.5",
-    "@jbrowse/plugin-variants": "^1.6.5",
+    "@jbrowse/plugin-variants": "^1.6.9",
     "@material-ui/icons": "^4.9.1",
     "classnames": "^2.2.6",
     "csvtojson": "^2.0.10"

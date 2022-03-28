@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-comparative-adapters",
-  "version": "1.6.5",
+  "version": "1.6.9",
   "description": "JBrowse 2 comparative adapters",
   "keywords": [
     "jbrowse",
@@ -35,7 +35,7 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@gmod/bgzf-filehandle": "^1.4.2",
+    "@gmod/bgzf-filehandle": "^1.4.3",
     "generic-filehandle": "^2.0.0"
   },
   "peerDependencies": {

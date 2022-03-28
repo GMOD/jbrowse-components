@@ -4,6 +4,37 @@ title: FAQ
 toplevel: true
 ---
 
+### Developers
+
+#### How can I start the JBrowse 2 app as a developer
+
+We recommend that you have the following
+
+- Node v12+
+- Git
+- [Yarn](https://classic.yarnpkg.com/en/docs/install/#debian-stable)
+
+Then you can follow steps from our
+[README](https://github.com/gmod/jbrowse-components)
+
+It basically boils down to
+
+- `git clone https://github.com/GMOD/jbrowse-components`
+- `cd jbrowse-components`
+- `yarn`
+- `cd products/jbrowse-web`
+- `yarn start`
+
+This will boot up a development instance of `jbrowse-web` on port 3000
+
+You can use `PORT=8080 yarn start` to manually specify a different port
+
+You can also instead go to the `products/jbrowse-desktop` directory to do this
+on desktop
+
+For the embedded components e.g. `products/jbrowse-react-linear-genome-view`,
+use `yarn storybook` instead of `yarn start`
+
 ### General
 
 #### What is special about JBrowse 2
@@ -142,6 +173,32 @@ so they will not display softclipping.
 
 The soft clipping indicators on these reads will appear black.
 
+#### Do you have any tips for learning React and mobx-state-tree
+
+Here is a short guide to React and mobx-state-tree that could help get you oriented
+
+https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f
+
+#### What technologies does JBrowse 2 use
+
+We build on a lot of great open source technology, some main ones include
+
+- React
+- mobx-state-tree
+- web-workers
+- Typescript
+- Electron (for desktop specifically)
+
+#### Should I configure gzip on my web server
+
+Yes! JBrowse 2 may load ~5MB of JS resources (2.5MB for main thread bundle,
+2.5MB for worker bundle). If you have gzip enabled, the amount of data the user
+has to download though is only 1.4MB. We have worked on making bundle size
+small with lazy loading and other methods but adding gzip will help your users.
+
+It will depend on your particular server setup e.g. apache, nginx, cloudfront,
+etc. how this may be done, but it is recommended to look into this.
+
 #### How does JBrowse know when to display the "Zoom in to see more features" message
 
 The rules that JBrowse uses to determine when to display the "Zoom in to see more features" message are called stats estimation rules
@@ -262,52 +319,7 @@ Note that JBrowse creates a specialized trix index also. Instead of creating a
 ix file with just the gene names, it also provides their name and location in
 an encoded format.
 
-### Developers
-
-#### How can I start the JBrowse 2 app as a developer
-
-We recommend that you have the following
-
-- Node v12+
-- Git
-- [Yarn](https://classic.yarnpkg.com/en/docs/install/#debian-stable)
-
-Then you can follow steps from our
-[README](https://github.com/gmod/jbrowse-components)
-
-It basically boils down to git cloning our repo, and running `yarn start` which
-creates a development server on port 3000
-
-You can use `PORT=8080 yarn start` to manually specify a different port
-
-Note that this is a development server that gets started up. To install jbrowse
-2 in production on your webserver, see below
-
-#### Do you have any tips for learning React and mobx-state-tree
-
-Here is a short guide to React and mobx-state-tree that could help get you oriented
-
-https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f
-
-#### What technologies does JBrowse 2 use
-
-We build on a lot of great open source technology, some main ones include
-
-- React
-- mobx-state-tree
-- web-workers
-- Typescript
-- Electron (for desktop specifically)
-
-#### Should I configure gzip on my web server
-
-Yes! JBrowse 2 may load ~5MB of JS resources (2.5MB for main thread bundle,
-2.5MB for worker bundle). If you have gzip enabled, the amount of data the user
-has to download though is only 1.4MB. We have worked on making bundle size
-small with lazy loading and other methods but adding gzip will help your users.
-
-It will depend on your particular server setup e.g. apache, nginx, cloudfront,
-etc. how this may be done, but it is recommended to look into this.
+### URL params
 
 #### Why can't I copy and paste my URL bar to share it with another user
 
@@ -318,9 +330,13 @@ prohibitively long, and break server side navigations, intermediate caches,
 etc. Therefore, we make "sharing a session" a manual step that generates a
 shortened URL by default
 
-Note that user's of @jbrowse/react-linear-genome-view have to re-implement any
+Note 1: user's of @jbrowse/react-linear-genome-view have to re-implement any
 URL query param logic themselves, as this component makes no attempt to access
 URL query params
+
+Note 2: You can copy and paste your URL bar and put it in another tab on your
+own computer, and JBrowse will restore the session using BroadcastChannel
+(supported on Firefox and Chrome)
 
 #### How does the session sharing with shortened URLs work in JBrowse Web
 
@@ -341,6 +357,17 @@ entry, and decodes it with the DECODEKEY from the URL that you provide
 With this system, the contents of the dynamoDB are safe and unable to be read,
 even by JBrowse administrators.
 
+### Troubleshooting
+
+Doing things like:
+
+- Changing trackIds
+- Deleting tracks
+
+Can make user's saved sessions fail to load. If part of a session is
+inconsistent, currently, the entire session will fail to load. Therefore, make
+decisions to delete or change IDs carefully.
+
 #### What should I do if the Share system isn't working?
 
 If for any reason the session sharing system isn't working, e.g. you are behind
@@ -352,14 +379,3 @@ links without the central server
 Also, if you are implementing JBrowse Web on your own server and would like to
 create your own URL shortener, you can use the shareURL parameter in the
 config.json file to point at your own server instead of ours.
-
-### Troubleshooting
-
-Doing things like:
-
-- Changing trackIds
-- Deleting tracks
-
-Can make user's saved sessions fail to load. If part of a session is
-inconsistent, currently, the entire session will fail to load. Therefore, make
-decisions to delete or change IDs carefully.

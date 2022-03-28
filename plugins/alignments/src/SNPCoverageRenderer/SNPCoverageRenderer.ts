@@ -71,11 +71,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     }
     const opts = { ...scaleOpts, range: [0, height] }
     const viewScale = getScale(opts)
-    const snpViewScale = getScale({
-      ...opts,
-      range: [0, height],
-      scaleType: 'linear',
-    })
+
     // clipping and insertion indicators, uses a smaller height/2 scale
     const indicatorViewScale = getScale({
       ...opts,
@@ -83,7 +79,6 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       scaleType: 'linear',
     })
     const originY = getOrigin(scaleOpts.scaleType)
-    const snpOriginY = getOrigin('linear')
 
     const indicatorThreshold = readConfObject(cfg, 'indicatorThreshold')
     const drawInterbaseCounts = readConfObject(cfg, 'drawInterbaseCounts')
@@ -94,13 +89,10 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     const toY = (n: number) => height - (viewScale(n) || 0) + offset
     const toHeight = (n: number) => toY(originY) - toY(n)
 
-    // this is always linear scale, even when plotted on top of log scale
-    const snpToY = (n: number) => height - (snpViewScale(n) || 0) + offset
     const indicatorToY = (n: number) =>
       height - (indicatorViewScale(n) || 0) + offset
-    const snpToHeight = (n: number) => snpToY(snpOriginY) - snpToY(n)
     const indicatorToHeight = (n: number) =>
-      indicatorToY(snpOriginY) - indicatorToY(n)
+      indicatorToY(getOrigin('linear')) - indicatorToY(n)
 
     const colorForBase: { [key: string]: string } = {
       A: theme.palette.bases.A.main,
@@ -150,6 +142,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       const feature = coverage[i]
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
+      const score = feature.get('score') as number
       const snpinfo = feature.get('snpinfo') as SNPInfo
       const w = Math.max(rightPx - leftPx + 0.3, 1)
       const totalScore = snpinfo.total
@@ -163,7 +156,15 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           colorForBase[base] ||
           modificationTagMap[base.replace('mod_', '')] ||
           '#888'
-        ctx.fillRect(leftPx, snpToY(total + curr), w, snpToHeight(total))
+
+        const height = toHeight(score)
+        const bottom = toY(score) + height
+        ctx.fillRect(
+          leftPx,
+          bottom - ((total + curr) / score) * height,
+          w,
+          (total / score) * height,
+        )
         curr += total
       }
 

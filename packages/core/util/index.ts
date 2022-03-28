@@ -1,29 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useRef, useState } from 'react'
 import {
-  getParent,
-  isAlive,
-  IAnyStateTreeNode,
-  getSnapshot,
-  hasParent,
   addDisposer,
+  getParent,
+  getSnapshot,
+  isAlive,
   isStateTreeNode,
+  hasParent,
+  IAnyStateTreeNode,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import fromEntries from 'object.fromentries'
-import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
 import SimpleFeature, { Feature, isFeature } from './simpleFeature'
 import {
-  TypeTestedByPredicate,
   isSessionModel,
   isDisplayModel,
   isViewModel,
   isTrackModel,
-  Region,
   AssemblyManager,
+  Region,
+  TypeTestedByPredicate,
 } from './types'
 import { isAbortException, checkAbortSignal } from './aborting'
 
+export type { Feature }
 export * from './types'
 export * from './aborting'
 export * from './when'
@@ -504,21 +505,22 @@ function roundToNearestPointOne(num: number): number {
  */
 export function bpToPx(
   bp: number,
-  region: { start: number; end: number; reversed?: boolean },
+  {
+    reversed,
+    end = 0,
+    start = 0,
+  }: { start?: number; end?: number; reversed?: boolean },
   bpPerPx: number,
-): number {
-  if (region.reversed) {
-    return roundToNearestPointOne((region.end - bp) / bpPerPx)
-  }
-  return roundToNearestPointOne((bp - region.start) / bpPerPx)
+) {
+  return roundToNearestPointOne((reversed ? end - bp : bp - start) / bpPerPx)
 }
 
 const oneEightyOverPi = 180.0 / Math.PI
 const piOverOneEighty = Math.PI / 180.0
-export function radToDeg(radians: number): number {
+export function radToDeg(radians: number) {
   return (radians * oneEightyOverPi) % 360
 }
-export function degToRad(degrees: number): number {
+export function degToRad(degrees: number) {
   return (degrees * piOverOneEighty) % (2 * Math.PI)
 }
 
@@ -1123,13 +1125,13 @@ export function viewBpToPx({
 }
 
 export function getBpDisplayStr(totalBp: number) {
-  let displayBp
+  let str
   if (Math.floor(totalBp / 1000000) > 0) {
-    displayBp = `${parseFloat((totalBp / 1000000).toPrecision(3))}Mbp`
+    str = `${parseFloat((totalBp / 1000000).toPrecision(3))}Mbp`
   } else if (Math.floor(totalBp / 1000) > 0) {
-    displayBp = `${parseFloat((totalBp / 1000).toPrecision(3))}Kbp`
+    str = `${parseFloat((totalBp / 1000).toPrecision(3))}Kbp`
   } else {
-    displayBp = `${Math.floor(totalBp)}bp`
+    str = `${Math.floor(totalBp)}bp`
   }
-  return displayBp
+  return str
 }

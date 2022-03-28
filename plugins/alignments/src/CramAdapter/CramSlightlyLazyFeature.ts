@@ -18,12 +18,10 @@ export interface Mismatch {
 }
 
 export default class CramSlightlyLazyFeature implements Feature {
-  private _store: CramAdapter
-
+  // uses parameter properties to automatically create fields on the class
+  // https://www.typescriptlang.org/docs/handbook/classes.html#parameter-properties
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(private record: any, store: CramAdapter) {
-    this._store = store
-  }
+  constructor(private record: any, private _store: CramAdapter) {}
 
   _get_name() {
     return this.record.readName
@@ -232,7 +230,6 @@ export default class CramSlightlyLazyFeature implements Feature {
         prop =>
           prop.startsWith('_get_') &&
           prop !== '_get_mismatches' &&
-          prop !== '_get_skips_and_dels' &&
           prop !== '_get_cram_read_features',
       )
       .map(methodName => methodName.replace('_get_', ''))
@@ -396,9 +393,5 @@ export default class CramSlightlyLazyFeature implements Feature {
       },
     )
     return mismatches
-  }
-
-  _get_skips_and_dels(): Mismatch[] {
-    return this._get_mismatches()
   }
 }

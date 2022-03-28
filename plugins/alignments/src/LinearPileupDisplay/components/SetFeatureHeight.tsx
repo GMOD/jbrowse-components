@@ -6,6 +6,7 @@ import {
   Typography,
   IconButton,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   Checkbox,
@@ -15,9 +16,6 @@ import {
 import CloseIcon from '@material-ui/icons/Close'
 
 const useStyles = makeStyles(theme => ({
-  root: {
-    margin: theme.spacing(4),
-  },
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -42,7 +40,6 @@ function SetFeatureHeightDlg(props: {
   const classes = useStyles()
   const { model, handleClose } = props
   const { featureHeightSetting, noSpacing: noSpacingSetting } = model
-
   const [height, setHeight] = useState(`${featureHeightSetting}`)
   const [noSpacing, setNoSpacing] = useState(noSpacingSetting)
 
@@ -60,44 +57,49 @@ function SetFeatureHeightDlg(props: {
         <Typography>
           Adjust the feature height and whether there is any spacing between
           features. Setting feature height to 1 and removing spacing makes the
-          display very compact
+          display very compact.
         </Typography>
-        <div className={classes.root}>
-          <Typography>Enter feature height: </Typography>
-          <TextField
-            value={height}
-            onChange={event => {
-              setHeight(event.target.value)
-            }}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={!!noSpacing}
-                onChange={() => setNoSpacing(val => !val)}
-              />
-            }
-            label="Remove spacing between features in y-direction?"
-          />
-
+        <TextField
+          value={height}
+          helperText="Feature height"
+          onChange={event => {
+            setHeight(event.target.value)
+          }}
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={!!noSpacing}
+              onChange={() => setNoSpacing(val => !val)}
+            />
+          }
+          label="Remove spacing between features in y-direction?"
+        />
+        <DialogActions>
           <Button
             variant="contained"
             color="primary"
             type="submit"
-            style={{ marginLeft: 20 }}
+            autoFocus
             disabled={!ok}
             onClick={() => {
               model.setFeatureHeight(
                 height !== '' && !Number.isNaN(+height) ? +height : undefined,
               )
               model.setNoSpacing(noSpacing)
-
               handleClose()
             }}
           >
             Submit
           </Button>
-        </div>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => handleClose()}
+          >
+            Cancel
+          </Button>
+        </DialogActions>
       </DialogContent>
     </Dialog>
   )

@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 import {
   Button,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
@@ -47,29 +48,29 @@ function SortByTagDlg(props: {
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <div>
-          <Typography>Set the tag to sort by</Typography>
-          <Typography color="textSecondary">
-            Examples: HP for haplotype, RG for read group, etc.
-          </Typography>
-          <TextField
-            value={tag}
-            onChange={event => {
-              setTag(event.target.value)
-            }}
-            placeholder="Enter tag name"
-            inputProps={{
-              maxLength: 2,
-              'data-testid': 'sort-tag-name-input',
-            }}
-            error={tag.length === 2 && !validTag}
-            helperText={tag.length === 2 && !validTag ? 'Not a valid tag' : ''}
-            autoComplete="off"
-            data-testid="sort-tag-name"
-          />
+        <Typography>Set the tag to sort by</Typography>
+        <Typography color="textSecondary">
+          Examples: HP for haplotype, RG for read group, etc.
+        </Typography>
+        <TextField
+          value={tag}
+          onChange={event => setTag(event.target.value)}
+          placeholder="Enter tag name"
+          inputProps={{
+            maxLength: 2,
+            'data-testid': 'sort-tag-name-input',
+          }}
+          error={tag.length === 2 && !validTag}
+          helperText={tag.length === 2 && !validTag ? 'Not a valid tag' : ''}
+          autoComplete="off"
+          data-testid="sort-tag-name"
+        />
+        <DialogActions>
           <Button
             variant="contained"
             color="primary"
+            type="submit"
+            autoFocus
             onClick={() => {
               model.setSortedBy('tag', tag)
               handleClose()
@@ -77,7 +78,14 @@ function SortByTagDlg(props: {
           >
             Submit
           </Button>
-        </div>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => handleClose()}
+          >
+            Cancel
+          </Button>
+        </DialogActions>
       </DialogContent>
     </Dialog>
   )
