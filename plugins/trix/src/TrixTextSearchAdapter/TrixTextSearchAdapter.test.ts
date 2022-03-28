@@ -34,7 +34,12 @@ test('adapter can fetch output files', async () => {
   // check results are of type BaseResult for prefix search
   expect(results[0] instanceof BaseResult).toBeTruthy()
   expect(results[0].getLabel()).toEqual('Apple2')
-  // now there are 2 results with apple2 and 2 with apple3
+  /**
+   * Addition of plain text adapter tracks adds an additional entry to both
+   * apple2 and apple3. The results are coming from the different tracks
+   * indexed, so there's an additional apple2 and apple3 result coming from
+   * the gff3Adapter track and another one from the gff3TabixAdapter track.
+   */
   expect(results[2].getLabel()).toEqual('Apple3')
   // exact search
   const results2 = await adapter.searchIndex({
