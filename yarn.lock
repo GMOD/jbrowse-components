@@ -14647,14 +14647,6 @@ libnpmpublish@^4.0.0:
     semver "^7.1.3"
     ssri "^8.0.1"
 
-librpc-web-mod@^1.1.4:
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/librpc-web-mod/-/librpc-web-mod-1.1.4.tgz#23cf9d7b65c837871a64915281cb235c18085f8e"
-  integrity sha512-3MioyXsDrDR6YSQ6FNo5i8dyPIhEzDTlUiOKBAM9apVV15Inez+p85n30le3IfKIvgtCdLEgSf03TtkfJR0xcw==
-  dependencies:
-    "@librpc/ee" "1.0.4"
-    serialize-error "^8.1.0"
-
 lines-and-columns@^1.1.6:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/lines-and-columns/-/lines-and-columns-1.2.4.tgz#eca284f75d2965079309dc0ad9255abb2ebc1632"

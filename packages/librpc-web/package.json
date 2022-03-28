@@ -1,0 +1,46 @@
+{
+  "name": "@jbrowse/librpc-web",
+  "version": "1.2.0",
+  "description": "Promise-based RPC client and server for web workers (forked from @librpc/web)",
+  "keywords": [
+    "rpc",
+    "worker",
+    "web-worker",
+    "threads",
+    "concurrency"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Robert Buels",
+      "email": "rbuels@gmail.com"
+    },
+    {
+      "name": "Colin Diesh",
+      "email": "colin.diesh@gmail.com"
+    },
+    {
+      "name": "Vladimir Bykov",
+      "email": "broadsw.rd@yandex.ru",
+      "url": "https://github.com/broadsw0rd"
+    }
+  ],
+  "main": "src/index.js",
+  "scripts": {
+    "test": "cd ../..; jest packages/librpc-web",
+    "coverage": "yarn test --coverage",
+    "lint": "tsc --noEmit && eslint --ext .js,.ts,.jsx,.tsx .",
+    "clean": "rimraf dist",
+    "prebuild": "yarn clean",
+    "prepack": "yarn build",
+    "build": "babel src --root-mode upward --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json README.md ../../LICENSE dist/ && tsc"
+  },
+  "dependencies": {
+    "@librpc/ee": "1.0.4",
+    "serialize-error": "^8.1.0"
+  },
+  "private": true,
+  "publishConfig": {
+    "directory": "dist"
+  }
+}
