@@ -130,7 +130,7 @@ const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
   const classes = useStyles()
   const [value1, setValue1] = useState('')
   const [value2, setValue2] = useState('')
-  const [attributes, setAttributes] = useState(['Name', 'ID', 'type'])
+  const [attributes, setAttributes] = useState(['Name', 'ID'])
   const [exclude, setExclude] = useState(['CDS', 'exon'])
   const sections = [
     {
@@ -138,7 +138,7 @@ const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
       values: attributes,
     },
     {
-      label: 'Feature types to exlcude',
+      label: 'Feature types to exclude',
       values: exclude,
     },
   ]
