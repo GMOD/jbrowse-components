@@ -1,7 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { isStateTreeNode } from 'mobx-state-tree'
-import { measureText, getViewParams } from '@jbrowse/core/util'
+import { measureText, getViewParams, Feature } from '@jbrowse/core/util'
 import { DisplayModel } from './util'
 
 export default observer(
@@ -15,9 +15,7 @@ export default observer(
     featureWidth = 0,
     allowedWidthExpansion = 0,
     feature,
-    viewStart,
-    viewEnd,
-    viewOffsetPx,
+    viewParams,
     displayModel = {},
   }: {
     text: string
@@ -27,31 +25,31 @@ export default observer(
     fontHeight?: number
     featureWidth?: number
     allowedWidthExpansion?: number
+    feature: Feature
     reversed?: boolean
     displayModel: DisplayModel
+    viewParams: { start: number; end: number; offsetPx: number }
   }) => {
     const totalWidth = featureWidth + allowedWidthExpansion
     const measuredTextWidth = measureText(text, fontHeight)
+    const params = isStateTreeNode(displayModel)
+      ? getViewParams(displayModel)
+      : viewParams
 
-    if (isStateTreeNode(displayModel)) {
-      const params = getViewParams(displayModel)
-      viewStart = params.viewStart
-      viewEnd = params.viewEnd
-      viewOffsetPx = params.viewOffsetPx
-    }
-    const viewLeft = reversed ? viewEnd : viewStart
+    const viewLeft = reversed ? params.end : params.start
 
     const fstart = feature.get('start')
     const fend = feature.get('end')
+
     // const [fstart, fend] = reversed ? [end, start] : [start, end]
-    const w = featureWidth
+    const w = fend - fstart
     if (reversed) {
       if (fstart < viewLeft + w && viewLeft - w < fend) {
-        x = viewOffsetPx
+        x = params.offsetPx
       }
     } else {
-      if (fstart < viewLeft + w && viewLeft - w < fend) {
-        x = viewOffsetPx
+      if (fstart < viewLeft && viewLeft < fend) {
+        x = params.offsetPx
       }
     }
 

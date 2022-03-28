@@ -26,9 +26,7 @@ function FeatureGlyph(props: {
   reversed?: boolean
   topLevel?: boolean
   region: Region
-  viewEnd: number
-  viewStart: number
-  viewOffsetPx: number
+  viewParams: { end: number; start: number; offsetPx: number }
 }) {
   const {
     feature,

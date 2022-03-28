@@ -297,7 +297,7 @@ async function renderBlockEffect(
     await rendererType.renderInClient(rpcManager, {
       ...renderArgs,
       ...renderProps,
-      ...getViewParams(self),
+      viewParams: getViewParams(self),
       signal,
     })
   return {
