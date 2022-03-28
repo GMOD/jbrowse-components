@@ -116,7 +116,6 @@
     "eslint-plugin-react-hooks": "^4.3.0",
     "eslint-plugin-tsdoc": "^0.2.4",
     "find-yarn-workspace-root": "^1.2.1",
-    "follow-redirects": "^1.14.7",
     "husky": "^4.2.5",
     "identity-obj-proxy": "^3.0.0",
     "jest-fetch-mock": "^3.0.3",
