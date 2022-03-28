@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession, isElectron } from '@jbrowse/core/util'
 import {
@@ -142,7 +142,10 @@ const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
       values: exclude,
     },
   ]
-  model.setTextIndexingConf({ attributes, exclude })
+  useEffect(() => {
+    model.setTextIndexingConf({ attributes, exclude })
+  }, [model, attributes, exclude])
+
   return (
     <Paper className={classes.paper}>
       <InputLabel>Indexing configuration</InputLabel>
