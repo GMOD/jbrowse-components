@@ -16,6 +16,7 @@ test('no features', () => {
       height={500}
       regions={[{ refName: 'zonk', start: 0, end: 300 }]}
       layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
+      viewParams={{ offsetPx: 0, start: 0, end: 50000 }}
       config={{}}
       bpPerPx={3}
     />,
@@ -31,6 +32,7 @@ test('one feature', () => {
       height={500}
       regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
+      viewParams={{ offsetPx: 0, start: 0, end: 50000 }}
       features={
         new Map([
           ['one', new SimpleFeature({ uniqueId: 'one', start: 1, end: 3 })],
@@ -53,6 +55,7 @@ test('one feature (compact mode)', () => {
       height={500}
       regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
+      viewParams={{ offsetPx: 0, start: 0, end: 50000 }}
       features={
         new Map([
           [
@@ -214,6 +217,7 @@ test('processed transcript (reducedRepresentation mode)', () => {
       height={500}
       regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
+      viewParams={{ offsetPx: 0, start: 0, end: 50000 }}
       features={
         new Map([
           ['one', new SimpleFeature({ uniqueId: 'one', start: 1, end: 3 })],
@@ -234,6 +238,7 @@ test('processed transcript', () => {
       height={500}
       regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
+      viewParams={{ offsetPx: 0, start: 0, end: 50000 }}
       features={
         new Map([
           [
@@ -391,6 +396,7 @@ test('processed transcript (exons + impliedUTR)', () => {
       height={500}
       regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
+      viewParams={{ offsetPx: 0, start: 0, end: 50000 }}
       features={
         new Map([
           [
