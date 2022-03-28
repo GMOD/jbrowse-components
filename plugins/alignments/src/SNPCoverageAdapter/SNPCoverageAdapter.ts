@@ -34,11 +34,15 @@ function isInterbase(type: string) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function inc(bin: any, strand: number, type: string, field: string) {
-  if (!bin[type][field]) {
-    bin[type][field] = { total: 0, strands: { '-1': 0, '0': 0, '1': 0 } }
+  let thisBin = bin[type][field]
+  if (!thisBin) {
+    thisBin = bin[type][field] = {
+      total: 0,
+      strands: { '-1': 0, '0': 0, '1': 0 },
+    }
   }
-  bin[type][field].total++
-  bin[type][field].strands[strand]++
+  thisBin.total++
+  thisBin.strands[strand]++
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function dec(bin: any, strand: number, type: string, field: string) {

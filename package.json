@@ -77,6 +77,7 @@
     "@types/node-fetch": "^2.5.7",
     "@types/normalize-wheel": "^1.0.0",
     "@types/object.fromentries": "^2.0.0",
+    "@types/offscreencanvas": "^2019.6.4",
     "@types/pako": "^1.0.1",
     "@types/pluralize": "^0.0.29",
     "@types/pump": "^1.1.1",
