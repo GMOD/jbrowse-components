@@ -13,11 +13,6 @@ import { RootModel } from './rootModel'
 const JBrowse = observer(
   ({ pluginManager }: { pluginManager: PluginManager }) => {
     const { rootModel } = pluginManager
-    // @ts-ignore
-    window.root = rootModel
-    // @ts-ignore
-    window.runInAction = runInAction
-
     return rootModel ? (
       <JBrowseNonNullRoot rootModel={rootModel as RootModel} />
     ) : null
