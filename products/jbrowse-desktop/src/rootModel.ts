@@ -714,14 +714,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             { delay: 1000 },
           ),
         )
-        // addDisposer(
-        //   self,
-        //   autorun(async () => {
-        //     pluginManager.addRpcMethod(
-        //       () => new IndexTracksRpcMethod(pluginManager),
-        //     )
-        //   }),
-        // )
       },
     }))
 }
