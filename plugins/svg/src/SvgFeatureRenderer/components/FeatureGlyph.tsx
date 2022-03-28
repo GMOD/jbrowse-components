@@ -27,6 +27,7 @@ function FeatureGlyph(props: {
   topLevel?: boolean
   region: Region
   viewParams: { end: number; start: number; offsetPx: number }
+  bpPerPx: number
 }) {
   const {
     feature,

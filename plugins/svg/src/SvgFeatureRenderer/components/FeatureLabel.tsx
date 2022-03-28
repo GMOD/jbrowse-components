@@ -10,12 +10,13 @@ export default observer(
     x,
     y,
     reversed,
+    bpPerPx,
+    feature,
+    viewParams,
     color = 'black',
     fontHeight = 13,
     featureWidth = 0,
     allowedWidthExpansion = 0,
-    feature,
-    viewParams,
     displayModel = {},
   }: {
     text: string
@@ -24,6 +25,7 @@ export default observer(
     color?: string
     fontHeight?: number
     featureWidth?: number
+    bpPerPx: number
     allowedWidthExpansion?: number
     feature: Feature
     reversed?: boolean
@@ -41,14 +43,12 @@ export default observer(
     const fstart = feature.get('start')
     const fend = feature.get('end')
 
-    // const [fstart, fend] = reversed ? [end, start] : [start, end]
-    const w = fend - fstart
     if (reversed) {
-      if (fstart < viewLeft + w && viewLeft - w < fend) {
+      if (fstart < viewLeft && viewLeft < fend) {
         x = params.offsetPx
       }
     } else {
-      if (fstart < viewLeft && viewLeft < fend) {
+      if (fstart < viewLeft && viewLeft + measuredTextWidth * bpPerPx < fend) {
         x = params.offsetPx
       }
     }
