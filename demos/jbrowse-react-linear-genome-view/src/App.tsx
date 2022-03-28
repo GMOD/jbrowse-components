@@ -66,9 +66,10 @@ const defaultSession = {
   },
 }
 
+type ViewModel = ReturnType<typeof createViewState>
+
 function View() {
-  const [viewState, setViewState] =
-    useState<ReturnType<typeof createViewState>>()
+  const [viewState, setViewState] = useState<ViewModel>()
   const [patches, setPatches] = useState('')
   const [stateSnapshot, setStateSnapshot] = useState('')
 
@@ -97,11 +98,11 @@ function View() {
       <p>
         The code for this app is available at{' '}
         <a
-          href="https://github.com/GMOD/jbrowse-components/products/jbrowse-react-circular-genome-view/demo"
+          href="https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view"
           target="_blank"
           rel="noreferrer"
         >
-          https://github.com/GMOD/jbrowse-components/products/jbrowse-react-circular-genome-view/demo
+          https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view
         </a>
         .
       </p>
