@@ -130,7 +130,7 @@ export default class OffscreenCanvasRenderingContext2DShim {
       return
     }
     const nx = Math.max(x, 0)
-    const nw = nx + w > this.width ? this.width - nx : w
+    const nw = w - (nx - x)
     this.pushMethodCall('fillRect', [nx, y, nw, h])
   }
 
