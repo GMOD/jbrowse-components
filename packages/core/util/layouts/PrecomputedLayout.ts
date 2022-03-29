@@ -93,6 +93,7 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
       rectangles: objectFromEntries(this.rectangles),
       totalHeight: this.totalHeight,
       maxHeightReached: false,
+      containsNoTransferables: true,
     }
   }
 }
