@@ -35,7 +35,7 @@ const server = new WebRPC.Server({
   error() {
     // eslint-disable-next-line no-undef
     return err
-  }, // eslint-disable-line
+  },
   transfer(buffer) {
     return { buffer }
   },
