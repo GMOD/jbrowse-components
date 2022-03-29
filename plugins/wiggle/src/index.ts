@@ -103,12 +103,17 @@ export default class WigglePlugin extends Plugin {
           const regexGuess = /\.(bw|bigwig)$/i
           const adapterName = 'BigWigAdapter'
           const fileName = getFileName(file)
-          if (regexGuess.test(fileName) || adapterHint === adapterName) {
-            return {
-              type: adapterName,
-              bigWigLocation: file,
-            }
+          const obj = {
+            type: adapterName,
+            bigWigLocation: file,
           }
+
+          if (regexGuess.test(fileName) && !adapterHint) {
+            return obj
+          } else if (adapterHint === adapterName) {
+            return obj
+          }
+
           return adapterGuesser(file, index, adapterHint)
         }
       },

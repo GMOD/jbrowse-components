@@ -136,13 +136,17 @@ function SupplementaryAlignments(props: { tag: string; model: any }) {
                 <Link
                   onClick={() => {
                     const { view } = model
-                    if (view) {
-                      view.navToLocString(locString)
-                    } else {
-                      session.notify(
-                        'No view associated with this feature detail panel anymore',
-                        'warning',
-                      )
+                    try {
+                      if (view) {
+                        view.navToLocString(locString)
+                      } else {
+                        throw new Error(
+                          'No view associated with this view anymore',
+                        )
+                      }
+                    } catch (e) {
+                      console.error(e)
+                      session.notify(`${e}`)
                     }
                   }}
                   href="#"
@@ -164,13 +168,18 @@ function PairLink({ locString, model }: { locString: string; model: any }) {
     <Link
       onClick={() => {
         const { view } = model
-        if (view) {
-          view.navToLocString(locString)
-        } else {
-          session.notify(
-            'No view associated with this feature detail panel anymore',
-            'warning',
-          )
+        try {
+          if (view) {
+            view.navToLocString(locString)
+          } else {
+            session.notify(
+              'No view associated with this feature detail panel anymore',
+              'warning',
+            )
+          }
+        } catch (e) {
+          console.error(e)
+          session.notify(`${e}`)
         }
       }}
       href="#"

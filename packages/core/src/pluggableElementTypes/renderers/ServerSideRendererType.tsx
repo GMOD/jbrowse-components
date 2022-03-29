@@ -34,7 +34,7 @@ export interface RenderArgs extends BaseRenderArgs {
 }
 
 export interface RenderArgsSerialized extends BaseRenderArgs {
-  statusCallback?: Function
+  statusCallback?: (arg: string) => void
   config: SnapshotIn<AnyConfigurationModel>
   filters: SerializedFilterChain
 }
@@ -117,10 +117,9 @@ export default class ServerSideRenderer extends RendererType {
    */
   deserializeArgsInWorker(args: RenderArgsSerialized): RenderArgsDeserialized {
     const deserialized = { ...args } as unknown as RenderArgsDeserialized
-    const config = this.configSchema.create(args.config || {}, {
+    deserialized.config = this.configSchema.create(args.config || {}, {
       pluginManager: this.pluginManager,
     })
-    deserialized.config = config
     deserialized.filters = new SerializableFilterChain({
       filters: args.filters,
     })

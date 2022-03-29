@@ -1,6 +1,5 @@
 import SimpleFeature from '../util/simpleFeature'
-import { ConfigurationSchema } from '../configuration'
-import { readConfObject } from '../configuration'
+import { ConfigurationSchema, readConfObject } from '../configuration'
 import { openLocation } from '../util/io'
 import { BaseAdapter } from './BaseAdapter'
 

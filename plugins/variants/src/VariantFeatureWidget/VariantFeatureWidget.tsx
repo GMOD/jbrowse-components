@@ -146,13 +146,17 @@ function BreakendPanel(props: {
               onClick={(event: any) => {
                 event.preventDefault()
                 const { view } = model
-                if (view) {
-                  view.navToLocString?.(locString)
-                } else {
-                  session.notify(
-                    'No view associated with this feature detail panel anymore',
-                    'warning',
-                  )
+                try {
+                  if (view) {
+                    view.navToLocString?.(locString)
+                  } else {
+                    throw new Error(
+                      'No view associated with this feature detail panel anymore',
+                    )
+                  }
+                } catch (e) {
+                  console.error(e)
+                  session.notify(`${e}`)
                 }
               }}
             >

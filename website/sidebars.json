@@ -13,11 +13,13 @@
         "quickstart_desktop"
       ]
     },
-    "cli",
-    "embedded_components",
+    "user_guide",
     "config_guide",
     "developer_guide",
-    "user_guide",
+    "embedded_components",
+    "api_guide",
+    "urlparams",
+    "cli",
     {
       "type": "category",
       "label": "Developer tutorials",
@@ -47,6 +49,7 @@
           "type": "category",
           "label": "Archive",
           "items": [
+            "pag2022_synteny_tutorial",
             "bcc2020_plugin_development",
             {
               "type": "category",

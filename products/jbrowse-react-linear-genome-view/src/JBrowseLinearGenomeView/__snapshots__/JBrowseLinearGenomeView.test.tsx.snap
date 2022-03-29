@@ -339,7 +339,8 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 <p
                   class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
                 >
-                  40 bp
+                  40
+                   bp
                 </p>
                 <div
                   class="makeStyles-container"
@@ -764,10 +765,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
               </div>
             </div>
             <div
-              class="makeStyles-spacer"
-            />
-            <div
-              class="makeStyles-root"
+              class="MuiPaper-root makeStyles-root MuiPaper-outlined MuiPaper-rounded"
             >
               <div
                 class="MuiPaper-root makeStyles-trackLabel makeStyles-trackLabelOverlap makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
@@ -845,7 +843,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 </button>
               </div>
               <div
-                class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
+                class="makeStyles-trackRenderingContainer"
                 data-testid="trackRenderingContainer-test_view-volvox_refseq"
                 role="presentation"
                 style="height: 180px;"
@@ -857,7 +855,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   <div
                     class="makeStyles-display"
                     data-testid="display-volvox_refseq-LinearReferenceSequenceDisplay"
-                    role="presentation"
                   >
                     <div
                       class="makeStyles-linearBlocks"
@@ -873,6 +870,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         style="width: 1040px;"
                       >
                         <svg
+                          data-testid="sequence_track"
                           height="200"
                           style="width: 1040px; height: 200px;"
                           width="1040"

@@ -5,6 +5,8 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from '@jbrowse/core/configuration'
+import clone from 'clone'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import {
   getParentRenderProps,
   getRpcSessionId,
@@ -16,12 +18,27 @@ import {
   getSession,
   makeAbortableReaction,
 } from '@jbrowse/core/util'
+import PluginManager from '@jbrowse/core/PluginManager'
 import React from 'react'
 
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { DotplotViewModel } from '../DotplotView/model'
 
-export { default as ReactComponent } from './components/DotplotDisplay'
+import ReactComponent from './components/DotplotDisplay'
+
+export default (pluginManager: PluginManager) => {
+  pluginManager.addDisplayType(() => {
+    const configSchema = configSchemaFactory(pluginManager)
+    return new DisplayType({
+      name: 'DotplotDisplay',
+      configSchema,
+      stateModel: stateModelFactory(configSchema),
+      trackType: 'SyntenyTrack',
+      viewType: 'DotplotView',
+      ReactComponent,
+    })
+  })
+}
 
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
@@ -54,7 +71,7 @@ export function stateModelFactory(configSchema: any) {
           message: undefined as string | undefined,
           renderingComponent: undefined as any,
           ReactComponent2:
-            ServerSideRenderedBlockContent as unknown as React.FC,
+            ServerSideRenderedBlockContent as unknown as React.FC<any>,
         })),
     )
     .views(self => ({
@@ -113,7 +130,7 @@ export function stateModelFactory(configSchema: any) {
           self.renderingComponent = undefined
           renderInProgress = undefined
         },
-        setRendered(args: {
+        setRendered(args?: {
           data: any
           reactElement: React.ReactElement
           renderingComponent: React.Component
@@ -166,7 +183,7 @@ function renderBlockData(self: DotplotDisplayModel) {
       rpcManager,
       renderProps: {
         ...self.renderProps(),
-        view: getSnapshot(parent),
+        view: clone(getSnapshot(parent)),
         width: viewWidth,
         height: viewHeight,
         borderSize,

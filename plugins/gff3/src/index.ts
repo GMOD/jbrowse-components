@@ -71,11 +71,14 @@ export default class extends Plugin {
           const regexGuess = /\.gff3?$/i
           const adapterName = 'Gff3Adapter'
           const fileName = getFileName(file)
-          if (regexGuess.test(fileName) || adapterHint === adapterName) {
-            return {
-              type: adapterName,
-              gffLocation: file,
-            }
+          const obj = {
+            type: adapterName,
+            gffLocation: file,
+          }
+          if (regexGuess.test(fileName) && !adapterHint) {
+            return obj
+          } else if (adapterHint === adapterName) {
+            return obj
           }
           return adapterGuesser(file, index, adapterHint)
         }

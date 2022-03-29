@@ -1,8 +1,7 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { featureSpanPx } from '@jbrowse/core/util'
+import { featureSpanPx, bpSpanPx } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { bpSpanPx } from '@jbrowse/core/util'
 import { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import {
   getOrigin,
@@ -24,7 +23,7 @@ export interface RenderArgsDeserializedWithFeatures
   features: Map<string, Feature>
   ticks: { values: number[] }
   displayCrossHatches: boolean
-  modificationTagMap: Record<string, string>
+  modificationTagMap?: Record<string, string>
 }
 
 type Counts = {
@@ -49,12 +48,12 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       regions,
       bpPerPx,
       displayCrossHatches,
-      modificationTagMap,
+      modificationTagMap = {},
       scaleOpts,
       height: unadjustedHeight,
       theme: configTheme,
       config: cfg,
-      ticks: { values },
+      ticks,
     } = props
     const theme = createJBrowseTheme(configTheme)
     const [region] = regions
@@ -66,11 +65,20 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     const offset = YSCALEBAR_LABEL_OFFSET
     const height = unadjustedHeight - offset * 2
 
+    const { domain } = scaleOpts
+    if (!domain) {
+      return
+    }
     const opts = { ...scaleOpts, range: [0, height] }
     const viewScale = getScale(opts)
-    const snpViewScale = getScale({ ...opts, scaleType: 'linear' })
+
+    // clipping and insertion indicators, uses a smaller height/2 scale
+    const indicatorViewScale = getScale({
+      ...opts,
+      range: [0, height / 2],
+      scaleType: 'linear',
+    })
     const originY = getOrigin(scaleOpts.scaleType)
-    const snpOriginY = getOrigin('linear')
 
     const indicatorThreshold = readConfObject(cfg, 'indicatorThreshold')
     const drawInterbaseCounts = readConfObject(cfg, 'drawInterbaseCounts')
@@ -81,9 +89,10 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     const toY = (n: number) => height - (viewScale(n) || 0) + offset
     const toHeight = (n: number) => toY(originY) - toY(n)
 
-    // this is always linear scale, even when plotted on top of log scale
-    const snpToY = (n: number) => height - (snpViewScale(n) || 0) + offset
-    const snpToHeight = (n: number) => snpToY(snpOriginY) - snpToY(n)
+    const indicatorToY = (n: number) =>
+      height - (indicatorViewScale(n) || 0) + offset
+    const indicatorToHeight = (n: number) =>
+      indicatorToY(getOrigin('linear')) - indicatorToY(n)
 
     const colorForBase: { [key: string]: string } = {
       A: theme.palette.bases.A.main,
@@ -106,91 +115,113 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     // Use two pass rendering, which helps in visualizing the SNPs at higher
     // bpPerPx First pass: draw the gray background
     ctx.fillStyle = colorForBase.total
-    coverage.forEach(feature => {
+    for (let i = 0; i < coverage.length; i++) {
+      const feature = coverage[i]
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const w = rightPx - leftPx + 0.3
       const score = feature.get('score') as number
       ctx.fillRect(leftPx, toY(score), w, toHeight(score))
-    })
-    ctx.fillStyle = 'grey'
-    ctx.beginPath()
-    ctx.lineTo(0, 0)
-    ctx.moveTo(0, width)
-    ctx.stroke()
+    }
+
+    // Keep track of previous total which we will use it to draw the interbase
+    // indicator (if there is a sudden clip, there will be no read coverage but
+    // there will be "clip" coverage) at that position beyond the read. if the
+    // clip is right at a block boundary then prevTotal will not be available,
+    // so this is a best attempt to plot interbase indicator at the "cliffs"
+    let prevTotal = 0
+
+    // extraHorizontallyFlippedOffset is used to draw interbase items, which
+    // are located to the left when forward and right when reversed
+    const extraHorizontallyFlippedOffset = region.reversed ? 1 / bpPerPx : 0
 
     // Second pass: draw the SNP data, and add a minimum feature width of 1px
     // which can be wider than the actual bpPerPx This reduces overdrawing of
     // the grey background over the SNPs
-    coverage.forEach(feature => {
+
+    for (let i = 0; i < coverage.length; i++) {
+      const feature = coverage[i]
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
+      const score = feature.get('score') as number
       const snpinfo = feature.get('snpinfo') as SNPInfo
       const w = Math.max(rightPx - leftPx + 0.3, 1)
       const totalScore = snpinfo.total
+      const keys = Object.keys(snpinfo.cov).sort()
 
-      Object.entries(snpinfo.cov)
-        .sort(([a], [b]) => {
-          if (a < b) {
-            return -1
-          }
-          if (a > b) {
-            return 1
-          }
-          return 0
-        })
-        .reduce((curr, [base, { total }]) => {
-          ctx.fillStyle =
-            colorForBase[base] ||
-            modificationTagMap[base.replace('mod_', '')] ||
-            'red'
-          ctx.fillRect(leftPx, snpToY(total + curr), w, snpToHeight(total))
-          return curr + total
-        }, 0)
+      let curr = 0
+      for (let i = 0; i < keys.length; i++) {
+        const base = keys[i]
+        const { total } = snpinfo.cov[base]
+        ctx.fillStyle =
+          colorForBase[base] ||
+          modificationTagMap[base.replace('mod_', '')] ||
+          '#888'
 
-      const interbaseEvents = Object.entries(snpinfo.noncov)
+        const height = toHeight(score)
+        const bottom = toY(score) + height
+        ctx.fillRect(
+          leftPx,
+          bottom - ((total + curr) / score) * height,
+          w,
+          (total / score) * height,
+        )
+        curr += total
+      }
+
+      const interbaseEvents = Object.keys(snpinfo.noncov)
       const indicatorHeight = 4.5
       if (drawInterbaseCounts) {
-        interbaseEvents.reduce((curr, [base, { total }]) => {
+        let curr = 0
+        for (let i = 0; i < interbaseEvents.length; i++) {
+          const base = interbaseEvents[i]
+          const { total } = snpinfo.noncov[base]
           ctx.fillStyle = colorForBase[base]
           ctx.fillRect(
-            leftPx - 0.6,
-            indicatorHeight + snpToHeight(curr),
+            leftPx - 0.6 + extraHorizontallyFlippedOffset,
+            indicatorHeight + indicatorToHeight(curr),
             1.2,
-            snpToHeight(total),
+            indicatorToHeight(total),
           )
-          return curr + total
-        }, 0)
+          curr += total
+        }
       }
 
       if (drawIndicators) {
         let accum = 0
         let max = 0
         let maxBase = ''
-        interbaseEvents.forEach(([base, { total }]) => {
+        for (let i = 0; i < interbaseEvents.length; i++) {
+          const base = interbaseEvents[i]
+          const { total } = snpinfo.noncov[base]
           accum += total
           if (total > max) {
             max = total
             maxBase = base
           }
-        })
+        }
 
         // avoid drawing a bunch of indicators if coverage is very low e.g.
-        // less than 7
-        if (accum > totalScore * indicatorThreshold && totalScore > 7) {
+        // less than 7, uses the prev total in the case of the "cliff"
+        const indicatorComparatorScore = Math.max(totalScore, prevTotal)
+        if (
+          accum > indicatorComparatorScore * indicatorThreshold &&
+          indicatorComparatorScore > 7
+        ) {
           ctx.fillStyle = colorForBase[maxBase]
           ctx.beginPath()
-          ctx.moveTo(leftPx - 3, 0)
-          ctx.lineTo(leftPx + 3, 0)
-          ctx.lineTo(leftPx, indicatorHeight)
+          const l = leftPx + extraHorizontallyFlippedOffset
+          ctx.moveTo(l - 3.5, 0)
+          ctx.lineTo(l + 3.5, 0)
+          ctx.lineTo(l, indicatorHeight)
           ctx.fill()
         }
       }
-    })
-
-    ctx.globalAlpha = 0.7
+      prevTotal = totalScore
+    }
 
     if (drawArcs) {
-      skips.forEach(f => {
+      for (let i = 0; i < skips.length; i++) {
+        const f = skips[i]
         const [left, right] = bpSpanPx(
           f.get('start'),
           f.get('end'),
@@ -201,9 +232,9 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         ctx.beginPath()
         const str = f.get('strand') as number
         const xs = f.get('xs') as string
-        const pos = 'rgb(255,200,200)'
-        const neg = 'rgb(200,200,255)'
-        const neutral = 'rgb(200,200,200)'
+        const pos = 'rgba(255,200,200,0.7)'
+        const neg = 'rgba(200,200,255,0.7)'
+        const neutral = 'rgba(200,200,200,0.7)'
 
         if (xs === '+') {
           ctx.strokeStyle = pos
@@ -221,13 +252,13 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         ctx.moveTo(left, height - offset * 2)
         ctx.bezierCurveTo(left, 0, right, 0, right, height - offset * 2)
         ctx.stroke()
-      })
+      }
     }
 
     if (displayCrossHatches) {
       ctx.lineWidth = 1
       ctx.strokeStyle = 'rgba(140,140,140,0.8)'
-      values.forEach(tick => {
+      ticks.values.forEach(tick => {
         ctx.beginPath()
         ctx.moveTo(0, Math.round(toY(tick)))
         ctx.lineTo(width, Math.round(toY(tick)))

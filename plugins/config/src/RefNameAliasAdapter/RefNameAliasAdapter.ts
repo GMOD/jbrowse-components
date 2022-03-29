@@ -15,11 +15,14 @@ export default class RefNameAliasAdapter
       return []
     }
     const results = await openLocation(loc).readFile('utf8')
+    const refColumn = readConfObject(this.config, 'refNameColumn')
     return results
       .trim()
       .split('\n')
-      .map((row: string) => {
-        const [refName, ...aliases] = row.split('\t')
+      .filter(f => !!f && !f.startsWith('#'))
+      .map(row => {
+        const aliases = row.split('\t')
+        const [refName] = aliases.splice(refColumn, 1)
         return { refName, aliases }
       })
   }

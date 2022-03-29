@@ -120,7 +120,7 @@ function bpToPx(
 
 // Returns either 0 or height depending on condition
 export function interstitialYPos(cond: boolean, height: number) {
-  return cond ? 5 : height - 5
+  return cond ? 0 : height
 }
 
 export function* generateMatches(

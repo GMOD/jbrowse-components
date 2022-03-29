@@ -255,7 +255,8 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         <p
           class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
         >
-          100 bp
+          100
+           bp
         </p>
         <div
           class="makeStyles-container"
@@ -448,10 +449,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       </div>
     </div>
     <div
-      class="makeStyles-spacer"
-    />
-    <div
-      class="makeStyles-root"
+      class="MuiPaper-root makeStyles-root MuiPaper-outlined MuiPaper-rounded"
     >
       <div
         class="MuiPaper-root makeStyles-trackLabel makeStyles-trackLabelOverlap makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
@@ -504,10 +502,9 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         <button
           aria-controls="simple-menu"
           aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
           data-testid="track_menu_icon"
-          disabled=""
-          tabindex="-1"
+          tabindex="0"
           type="button"
         >
           <span
@@ -524,10 +521,13 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               />
             </svg>
           </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
         </button>
       </div>
       <div
-        class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
+        class="makeStyles-trackRenderingContainer"
         data-testid="trackRenderingContainer-lgv-testConfig"
         role="presentation"
         style="height: 100px;"
@@ -539,7 +539,6 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           <div
             class="makeStyles-display"
             data-testid="display-testConfig-LinearBareDisplay"
-            role="presentation"
           >
             <div
               class="makeStyles-linearBlocks"
@@ -555,15 +554,8 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                 style="width: 100px;"
               >
                 <div
-                  style="position: relative;"
-                >
-                  <svg
-                    class="SvgFeatureRendering"
-                    height="100"
-                    style="display: block;"
-                    width="100"
-                  />
-                </div>
+                  style="display: flex;"
+                />
               </div>
               <div
                 class="makeStyles-boundaryPaddingBlock"
@@ -774,7 +766,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             class="MuiAutocomplete-root"
             data-testid="autocomplete"
             role="combobox"
-            style="width: 255.22500000000002px;"
+            style="width: 255.27500000000003px;"
           >
             <div
               class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
@@ -794,7 +786,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                   placeholder="Search for location"
                   spellcheck="false"
                   type="text"
-                  value="ctgA:1..100;ctgB:1,001..1,698"
+                  value="ctgA:1..100 ctgB:1,001..1,698"
                 />
                 <div
                   class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
@@ -858,7 +850,8 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         <p
           class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
         >
-          798 bp
+          798
+           bp
         </p>
         <div
           class="makeStyles-container"
@@ -1346,10 +1339,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       </div>
     </div>
     <div
-      class="makeStyles-spacer"
-    />
-    <div
-      class="makeStyles-root"
+      class="MuiPaper-root makeStyles-root MuiPaper-outlined MuiPaper-rounded"
     >
       <div
         class="MuiPaper-root makeStyles-trackLabel makeStyles-trackLabelOverlap makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
@@ -1402,10 +1392,9 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         <button
           aria-controls="simple-menu"
           aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
           data-testid="track_menu_icon"
-          disabled=""
-          tabindex="-1"
+          tabindex="0"
           type="button"
         >
           <span
@@ -1422,10 +1411,13 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               />
             </svg>
           </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
         </button>
       </div>
       <div
-        class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
+        class="makeStyles-trackRenderingContainer"
         data-testid="trackRenderingContainer-lgv-testConfig"
         role="presentation"
         style="height: 100px;"
@@ -1437,7 +1429,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           <div
             class="makeStyles-display"
             data-testid="display-testConfig-LinearBareDisplay"
-            role="presentation"
           >
             <div
               class="makeStyles-linearBlocks"
@@ -1452,16 +1443,12 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 class="makeStyles-contentBlock"
                 style="width: 100px;"
               >
-                <div
-                  style="position: relative;"
-                >
-                  <svg
-                    class="SvgFeatureRendering"
-                    height="100"
-                    style="display: block;"
-                    width="100"
-                  />
-                </div>
+                <svg
+                  class="SvgFeatureRendering"
+                  data-testid="svgfeatures"
+                  height="100"
+                  width="100"
+                />
               </div>
               <div
                 class="makeStyles-interRegionPaddingBlock"
@@ -1471,16 +1458,12 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 class="makeStyles-contentBlock"
                 style="width: 1000px;"
               >
-                <div
-                  style="position: relative;"
-                >
-                  <svg
-                    class="SvgFeatureRendering"
-                    height="100"
-                    style="display: block;"
-                    width="1000"
-                  />
-                </div>
+                <svg
+                  class="SvgFeatureRendering"
+                  data-testid="svgfeatures"
+                  height="100"
+                  width="1000"
+                />
               </div>
               <div
                 class="makeStyles-boundaryPaddingBlock"
@@ -1501,7 +1484,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       />
     </div>
     <div
-      class="makeStyles-root"
+      class="MuiPaper-root makeStyles-root MuiPaper-outlined MuiPaper-rounded"
     >
       <div
         class="MuiPaper-root makeStyles-trackLabel makeStyles-trackLabelOverlap makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
@@ -1554,10 +1537,9 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         <button
           aria-controls="simple-menu"
           aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
           data-testid="track_menu_icon"
-          disabled=""
-          tabindex="-1"
+          tabindex="0"
           type="button"
         >
           <span
@@ -1574,10 +1556,13 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               />
             </svg>
           </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
         </button>
       </div>
       <div
-        class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
+        class="makeStyles-trackRenderingContainer"
         data-testid="trackRenderingContainer-lgv-testConfig2"
         role="presentation"
         style="height: 100px;"
@@ -1589,7 +1574,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           <div
             class="makeStyles-display"
             data-testid="display-testConfig2-LinearBareDisplay"
-            role="presentation"
           >
             <div
               class="makeStyles-linearBlocks"
@@ -1604,16 +1588,12 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 class="makeStyles-contentBlock"
                 style="width: 100px;"
               >
-                <div
-                  style="position: relative;"
-                >
-                  <svg
-                    class="SvgFeatureRendering"
-                    height="100"
-                    style="display: block;"
-                    width="100"
-                  />
-                </div>
+                <svg
+                  class="SvgFeatureRendering"
+                  data-testid="svgfeatures"
+                  height="100"
+                  width="100"
+                />
               </div>
               <div
                 class="makeStyles-interRegionPaddingBlock"
@@ -1623,16 +1603,12 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 class="makeStyles-contentBlock"
                 style="width: 1000px;"
               >
-                <div
-                  style="position: relative;"
-                >
-                  <svg
-                    class="SvgFeatureRendering"
-                    height="100"
-                    style="display: block;"
-                    width="1000"
-                  />
-                </div>
+                <svg
+                  class="SvgFeatureRendering"
+                  data-testid="svgfeatures"
+                  height="100"
+                  width="1000"
+                />
               </div>
               <div
                 class="makeStyles-boundaryPaddingBlock"

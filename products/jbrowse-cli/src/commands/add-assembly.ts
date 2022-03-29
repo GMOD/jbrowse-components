@@ -588,7 +588,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
               return undefined
             }
             return symlink(
-              filePath,
+              path.resolve(filePath),
               path.join(path.dirname(destination), path.basename(filePath)),
             )
           }),

@@ -17,8 +17,7 @@ module.exports = {
     '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx}',
     '<rootDir>/**/*.(spec|test).{js,jsx,ts,tsx}',
   ],
-  testPathIgnorePatterns: [
-    '/dist/',
+  testPathIgnorePatterns: ['/dist/', '/cypress/', '/demos/',
     'packages/core/ui',
     'packages/core/util',
     'packages/core/assemblyManager',
@@ -31,7 +30,7 @@ module.exports = {
     'packages/core/TextSearch',
     'packages/core/ui',
     'packages/core/util',
-  ],
+],
   collectCoverageFrom: [
     'packages/*/src/**/*.{js,jsx,ts,tsx}',
     'products/*/src/**/*.{js,jsx,ts,tsx}',
@@ -43,6 +42,7 @@ module.exports = {
     '<rootDir>/config/jest/createRange.js',
     '<rootDir>/config/jest/fetchMock.js',
     '<rootDir>/config/jest/console.js',
+    '<rootDir>/config/jest/crypto.js',
     'jest-localstorage-mock',
   ],
   testURL: 'http://localhost',

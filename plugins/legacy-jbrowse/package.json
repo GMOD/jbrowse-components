@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-legacy-jbrowse",
-  "version": "1.5.9",
+  "version": "1.6.9",
   "description": "JBrowse 2 plugin for connecting to and reading JBrowse 1 data",
   "keywords": [
     "jbrowse",
@@ -25,7 +25,7 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@gmod/nclist": "^0.1.1",
+    "@gmod/nclist": "^0.2.1",
     "buffer-crc32": "^0.2.13",
     "generic-filehandle": "^2.2.2",
     "get-value": "^3.0.1",

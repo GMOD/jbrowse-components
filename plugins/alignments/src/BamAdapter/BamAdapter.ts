@@ -4,7 +4,11 @@ import {
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { Region } from '@jbrowse/core/util/types'
-import { checkAbortSignal } from '@jbrowse/core/util'
+import {
+  checkAbortSignal,
+  bytesForRegions,
+  updateStatus,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -34,8 +38,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const bamLocation = readConfObject(this.config, 'bamLocation')
       const location = readConfObject(this.config, ['index', 'location'])
       const indexType = readConfObject(this.config, ['index', 'indexType'])
-      const chunkSizeLimit = readConfObject(this.config, 'chunkSizeLimit')
-      const fetchSizeLimit = readConfObject(this.config, 'fetchSizeLimit')
       const bam = new BamFile({
         bamFilehandle: openLocation(bamLocation, this.pluginManager),
         csiFilehandle:
@@ -46,8 +48,13 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           indexType !== 'CSI'
             ? openLocation(location, this.pluginManager)
             : undefined,
-        chunkSizeLimit,
-        fetchSizeLimit,
+
+        // chunkSizeLimit and fetchSizeLimit are more troublesome than
+        // helpful, and have given overly large values on the ultra long
+        // nanopore reads even with 500MB limits, so disabled with infinity
+        chunkSizeLimit: Infinity,
+        fetchSizeLimit: Infinity,
+        yieldThreadTime: Infinity,
       })
 
       const adapterConfig = readConfObject(this.config, 'sequenceAdapter')
@@ -70,40 +77,44 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     return bam.getHeaderText(opts)
   }
 
-  private async setup(opts?: BaseOptions) {
-    // note that derived classes may not provide a BAM directly so this is
-    // conditional
+  private async setupPre(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
-    if (!this.setupP) {
-      this.setupP = this.configure()
-        .then(async ({ bam }) => {
-          statusCallback('Downloading index')
-          const samHeader = await bam.getHeader(opts)
+    const { bam } = await this.configure()
+    this.samHeader = await updateStatus(
+      'Downloading index',
+      statusCallback,
+      async () => {
+        const samHeader = await bam.getHeader(opts)
 
-          // use the @SQ lines in the header to figure out the
-          // mapping between ref ref ID numbers and names
-          const idToName: string[] = []
-          const nameToId: Record<string, number> = {}
-          samHeader
-            .filter(l => l.tag === 'SQ')
-            .forEach((sqLine, refId) => {
-              sqLine.data.forEach(item => {
-                if (item.tag === 'SN') {
-                  // this is the ref name
-                  const refName = item.value
-                  nameToId[refName] = refId
-                  idToName[refId] = refName
-                }
-              })
+        // use the @SQ lines in the header to figure out the
+        // mapping between ref ref ID numbers and names
+        const idToName: string[] = []
+        const nameToId: Record<string, number> = {}
+        samHeader
+          .filter(l => l.tag === 'SQ')
+          .forEach((sqLine, refId) => {
+            sqLine.data.forEach(item => {
+              if (item.tag === 'SN') {
+                // this is the ref name
+                const refName = item.value
+                nameToId[refName] = refId
+                idToName[refId] = refName
+              }
             })
-          statusCallback('')
-          this.samHeader = { idToName, nameToId }
-          return this.samHeader
-        })
-        .catch(e => {
-          this.setupP = undefined
-          throw e
-        })
+          })
+
+        return { idToName, nameToId }
+      },
+    )
+    return this.samHeader
+  }
+
+  private async setup(opts?: BaseOptions) {
+    if (!this.setupP) {
+      this.setupP = this.setupPre(opts).catch(e => {
+        this.setupP = undefined
+        throw e
+      })
     }
     return this.setupP
   }
@@ -132,7 +143,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
     const seqChunks = await features.pipe(toArray()).toPromise()
 
-    const trimmed: string[] = []
+    let sequence = ''
     seqChunks
       .sort((a, b) => a.get('start') - b.get('start'))
       .forEach(chunk => {
@@ -142,10 +153,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         const trimEnd = Math.min(end - chunkStart, chunkEnd - chunkStart)
         const trimLength = trimEnd - trimStart
         const chunkSeq = chunk.get('seq') || chunk.get('residues')
-        trimmed.push(chunkSeq.substr(trimStart, trimLength))
+        sequence += chunkSeq.substr(trimStart, trimLength)
       })
 
-    const sequence = trimmed.join('')
     if (sequence.length !== end - start) {
       throw new Error(
         `sequence fetch failed: fetching ${refName}:${(
@@ -174,7 +184,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
       for (const record of records) {
         let ref: string | undefined
-        if (!record.get('md')) {
+        if (!record.get('MD')) {
           ref = await this.seqFetch(
             originalRefName || refName,
             record.get('start'),
@@ -186,6 +196,19 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       statusCallback('')
       observer.complete()
     }, signal)
+  }
+
+  async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
+    const { bam } = await this.configure()
+    // this is a method to avoid calling on htsget adapters
+    // @ts-ignore
+    if (bam.index.filehandle !== '?') {
+      const bytes = await bytesForRegions(regions, bam)
+      const fetchSizeLimit = readConfObject(this.config, 'fetchSizeLimit')
+      return { bytes, fetchSizeLimit }
+    } else {
+      return super.estimateRegionsStats(regions, opts)
+    }
   }
 
   freeResources(/* { region } */): void {}

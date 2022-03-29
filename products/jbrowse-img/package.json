@@ -1,9 +1,12 @@
 {
   "name": "@jbrowse/img",
-  "version": "1.5.9",
+  "version": "1.6.9",
   "main": "index.js",
   "author": "JBrowse Team",
   "license": "Apache-2.0",
+  "engines": {
+    "node": ">=14"
+  },
   "bin": {
     "jb2export": "./dist/bin.js"
   },
@@ -14,7 +17,7 @@
     "pretest": "cd ../jbrowse-react-linear-genome-view; yarn build; cd ../jb2export",
     "test": "jest",
     "prebuild": "rm -rf dist",
-    "build": "tsc",
+    "build": "babel --root-mode upward src -d dist",
     "preversion": "npm run build",
     "snap": "npm run build && node dist/index.js --config data/config.json --defaultSession --out out.svg",
     "snappng": "npm run build && node dist/index.js --config data/config.json --defaultSession --out out.png",
@@ -25,8 +28,9 @@
     "postversion": "git push --follow-tags"
   },
   "dependencies": {
-    "@jbrowse/plugin-linear-genome-view": "^1.5.9",
-    "@jbrowse/react-linear-genome-view": "^1.5.9",
+    "@jbrowse/plugin-linear-genome-view": "^1.6.9",
+    "@jbrowse/react-linear-genome-view": "^1.6.9",
+    "abortcontroller-polyfill": "^1.7.3",
     "mobx": "^5.10.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",

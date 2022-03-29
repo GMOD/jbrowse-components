@@ -69,7 +69,7 @@ const readBuffer = async (url: string, args: RequestInit) => {
   }
   try {
     const file = getFile(url)
-    const maxRangeRequest = 1000000 // kind of arbitrary, part of the rangeParser
+    const maxRangeRequest = 2000000 // kind of arbitrary, part of the rangeParser
     if (args.headers && 'range' in args.headers) {
       const range = rangeParser(maxRangeRequest, args.headers.range)
       if (range === -2 || range === -1) {
@@ -139,8 +139,8 @@ describe('<Loader />', () => {
       </QueryParamProvider>,
     )
 
-    await findByText('Help')
-  })
+    await findByText('Help', {}, { timeout: 20000 })
+  }, 20000)
 
   it('can use config from a url with shared session ', async () => {
     const { findByText } = render(
@@ -155,7 +155,7 @@ describe('<Loader />', () => {
       </QueryParamProvider>,
     )
 
-    await findByText('Help')
+    await findByText('Help', {}, { timeout: 20000 })
     await waitFor(
       () => {
         expect(sessionStorage.length).toBeGreaterThan(0)
@@ -201,7 +201,7 @@ describe('<Loader />', () => {
       </QueryParamProvider>,
     )
     await findByTestId('session-warning-modal')
-  }, 10000)
+  }, 20000)
 
   it('can use config from a url with nonexistent share param ', async () => {
     const { findAllByText } = render(
@@ -217,8 +217,8 @@ describe('<Loader />', () => {
         </QueryParamProvider>
       </ErrorBoundary>,
     )
-    await findAllByText(/Error/)
-  }, 10000)
+    await findAllByText(/Error/, {}, { timeout: 20000 })
+  }, 20000)
 
   it('can catch error from loading a bad config', async () => {
     const { findAllByText } = render(
@@ -235,5 +235,28 @@ describe('<Loader />', () => {
       </ErrorBoundary>,
     )
     await findAllByText(/Failed to load/)
-  }, 10000)
+  }, 20000)
+
+  it('can use a spec url', async () => {
+    const { findByText, findByPlaceholderText } = render(
+      <QueryParamProvider
+        // @ts-ignore
+        location={{
+          search:
+            '?config=test_data/volvox/config_main_thread.json&loc=ctgA:6000-7000&assembly=volvox&tracks=volvox_bam_pileup',
+        }}
+      >
+        <Loader />
+      </QueryParamProvider>,
+    )
+
+    await findByText('Help', {}, { timeout: 20000 })
+    await findByText(/volvox-sorted.bam/)
+    const elt = await findByPlaceholderText('Search for location')
+
+    // @ts-ignore
+    await waitFor(() => expect(elt.value).toBe('ctgA:5,999..6,999'), {
+      timeout: 20000,
+    })
+  }, 20000)
 })

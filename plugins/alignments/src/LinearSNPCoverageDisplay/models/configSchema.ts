@@ -39,16 +39,11 @@ export default function SNPCoverageConfigFactory(pluginManager: PluginManager) {
         description: 'draw upside down',
         defaultValue: false,
       },
-      maxDisplayedBpPerPx: {
-        type: 'number',
-        description: 'maximum bpPerPx that is displayed in the view',
-        defaultValue: 100,
-      },
-      headroom: {
-        type: 'number',
-        description:
-          'round the upper value of the domain scale to the nearest N',
-        defaultValue: 0,
+
+      multiTicks: {
+        type: 'boolean',
+        description: 'Display multiple values for the ticks',
+        defaultValue: false,
       },
 
       renderers: ConfigurationSchema('RenderersConfiguration', {

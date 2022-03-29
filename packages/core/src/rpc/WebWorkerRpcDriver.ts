@@ -56,7 +56,7 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     this.WorkerClass = args.WorkerClass
   }
 
-  makeWorker() {
+  async makeWorker() {
     // note that we are making a Rpc.Client connection with a worker pool of
     // one for each worker, because we want to do our own state-group-aware
     // load balancing rather than using librpc's builtin round-robin
@@ -64,8 +64,18 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     const worker = new WebWorkerHandle({ workers: [this.WorkerClass] })
 
     // send the worker its boot configuration using info from the pluginManager
-    worker.workers[0].postMessage(this.workerBootConfiguration)
+    const p = new Promise((resolve: (w: WebWorkerHandle) => void, reject) => {
+      worker.workers[0].onmessage = e => {
+        if (e.data === 'ready') {
+          resolve(worker)
+        } else if (e.data === 'readyForConfig') {
+          worker.workers[0].postMessage(this.workerBootConfiguration)
+        } else {
+          reject()
+        }
+      }
+    })
 
-    return worker
+    return p
   }
 }

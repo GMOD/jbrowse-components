@@ -175,7 +175,8 @@
             "uri": "volvox.2bit",
             "locationType": "UriLocation"
           }
-        }
+        },
+        "fetchSizeLimit": 1000
       },
       "displays": [
         {
@@ -1267,6 +1268,20 @@
     },
     {
       "type": "SyntenyTrack",
+      "trackId": "volvox_fake_synteny_alt",
+      "name": "volvox_fake_synteny_alt",
+      "assemblyNames": ["volvox", "volvox"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "volvox_fake_synteny_alt.paf",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["volvox", "volvox"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
       "trackId": "volvox_fake_synteny",
       "name": "volvox_fake_synteny",
       "assemblyNames": ["volvox", "volvox"],
@@ -1375,6 +1390,7 @@
         },
         {
           "type": "LinearVariantDisplay",
+          "maxFeatureScreenDensity": 0.0006,
           "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
           "renderer": {
             "type": "SvgFeatureRenderer",
@@ -1716,34 +1732,15 @@
       "type": "DropboxOAuthInternetAccount",
       "internetAccountId": "dropboxOAuth",
       "name": "Dropbox",
-      "description": "OAuth Info for Dropbox",
-      "authEndpoint": "https://www.dropbox.com/oauth2/authorize",
-      "tokenEndpoint": "https://api.dropbox.com/oauth2/token",
-      "needsAuthorization": true,
-      "needsPKCE": true,
-      "hasRefreshToken": true,
-      "clientId": "50knr6xrjfc39sk",
-      "domains": [
-        "addtodropbox.com",
-        "db.tt",
-        "dropbox.com",
-        "dropboxapi.com",
-        "dropboxbusiness.com",
-        "dropbox.tech",
-        "getdropbox.com"
-      ]
+      "description": "Account to access Dropbox files",
+      "clientId": "50knr6xrjfc39sk"
     },
     {
       "type": "GoogleDriveOAuthInternetAccount",
       "internetAccountId": "googleOAuth",
       "name": "Google Drive",
-      "description": "OAuth Info for Google Drive",
-      "authEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
-      "needsAuthorization": true,
-      "clientId": "109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com",
-      "scopes": "https://www.googleapis.com/auth/drive.readonly",
-      "responseType": "token",
-      "domains": ["drive.google.com"]
+      "description": "Account to access Google Drive files",
+      "clientId": "109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com"
     }
   ]
 }

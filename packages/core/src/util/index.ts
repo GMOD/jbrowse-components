@@ -1,29 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useRef, useState } from 'react'
 import {
-  getParent,
-  isAlive,
-  IAnyStateTreeNode,
-  getSnapshot,
-  hasParent,
   addDisposer,
+  getParent,
+  getSnapshot,
+  isAlive,
   isStateTreeNode,
+  hasParent,
+  IAnyStateTreeNode,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import fromEntries from 'object.fromentries'
-import { useEffect, useRef, useState } from 'react'
 import merge from 'deepmerge'
 import SimpleFeature, { Feature, isFeature } from './simpleFeature'
 import {
-  TypeTestedByPredicate,
   isSessionModel,
   isDisplayModel,
   isViewModel,
   isTrackModel,
-  Region,
   AssemblyManager,
+  Region,
+  TypeTestedByPredicate,
 } from './types'
 import { isAbortException, checkAbortSignal } from './aborting'
 
+export type { Feature }
 export * from './types'
 export * from './aborting'
 export * from './when'
@@ -262,7 +263,7 @@ export function getContainingDisplay(node: IAnyStateTreeNode) {
  * ```
  */
 export function assembleLocString(region: ParsedLocString): string {
-  const { assemblyName, refName, start, end } = region
+  const { assemblyName, refName, start, end, reversed } = region
   const assemblyNameString = assemblyName ? `{${assemblyName}}` : ''
   let startString
   if (start !== undefined) {
@@ -281,7 +282,11 @@ export function assembleLocString(region: ParsedLocString): string {
   } else {
     endString = start !== undefined ? '..' : ''
   }
-  return `${assemblyNameString}${refName}${startString}${endString}`
+  let rev = ''
+  if (reversed) {
+    rev = '[rev]'
+  }
+  return `${assemblyNameString}${refName}${startString}${endString}${rev}`
 }
 
 export interface ParsedLocString {
@@ -289,6 +294,7 @@ export interface ParsedLocString {
   refName: string
   start?: number
   end?: number
+  reversed?: boolean
 }
 
 export function parseLocStringOneBased(
@@ -298,10 +304,14 @@ export function parseLocStringOneBased(
   if (!locString) {
     throw new Error('no location string provided, could not parse')
   }
+  let reversed = false
+  if (locString.endsWith('[rev]')) {
+    reversed = true
+    locString = locString.replace(/\[rev\]$/, '')
+  }
   // remove any whitespace
   locString = locString.replace(/\s/, '')
-  // refNames can have colons :(
-  // https://samtools.github.io/hts-specs/SAMv1.pdf Appendix A
+  // refNames can have colons, ref https://samtools.github.io/hts-specs/SAMv1.pdf Appendix A
   const assemblyMatch = locString.match(/(\{(.+)\})?(.+)/)
   if (!assemblyMatch) {
     throw new Error(`invalid location string: "${locString}"`)
@@ -313,7 +323,7 @@ export function parseLocStringOneBased(
   const lastColonIdx = location.lastIndexOf(':')
   if (lastColonIdx === -1) {
     if (isValidRefName(location, assemblyName)) {
-      return { assemblyName, refName: location }
+      return { assemblyName, refName: location, reversed }
     }
     throw new Error(`Unknown reference sequence "${location}"`)
   }
@@ -340,6 +350,7 @@ export function parseLocStringOneBased(
             refName: prefix,
             start: +start.replace(/,/g, ''),
             end: +end.replace(/,/g, ''),
+            reversed,
           }
         }
       } else if (singleMatch) {
@@ -351,6 +362,7 @@ export function parseLocStringOneBased(
               assemblyName,
               refName: prefix,
               start: +start.replace(/,/g, ''),
+              reversed,
             }
           }
           return {
@@ -358,6 +370,7 @@ export function parseLocStringOneBased(
             refName: prefix,
             start: +start.replace(/,/g, ''),
             end: +start.replace(/,/g, ''),
+            reversed,
           }
         }
       } else {
@@ -366,10 +379,10 @@ export function parseLocStringOneBased(
         )
       }
     } else {
-      return { assemblyName, refName: prefix }
+      return { assemblyName, refName: prefix, reversed }
     }
   } else if (isValidRefName(location, assemblyName)) {
-    return { assemblyName, refName: location }
+    return { assemblyName, refName: location, reversed }
   }
   throw new Error(`unknown reference sequence name in location "${locString}"`)
 }
@@ -492,21 +505,22 @@ function roundToNearestPointOne(num: number): number {
  */
 export function bpToPx(
   bp: number,
-  region: { start: number; end: number; reversed?: boolean },
+  {
+    reversed,
+    end = 0,
+    start = 0,
+  }: { start?: number; end?: number; reversed?: boolean },
   bpPerPx: number,
-): number {
-  if (region.reversed) {
-    return roundToNearestPointOne((region.end - bp) / bpPerPx)
-  }
-  return roundToNearestPointOne((bp - region.start) / bpPerPx)
+) {
+  return roundToNearestPointOne((reversed ? end - bp : bp - start) / bpPerPx)
 }
 
 const oneEightyOverPi = 180.0 / Math.PI
 const piOverOneEighty = Math.PI / 180.0
-export function radToDeg(radians: number): number {
+export function radToDeg(radians: number) {
   return (radians * oneEightyOverPi) % 360
 }
-export function degToRad(degrees: number): number {
+export function degToRad(degrees: number) {
   return (degrees * piOverOneEighty) % (2 * Math.PI)
 }
 
@@ -763,8 +777,9 @@ export async function renameRegionsIfNeeded<
 
   return {
     ...args,
-    regions: regions.map(region =>
-      renameRegionIfNeeded(assemblyMaps[region.assemblyName], region),
+    regions: regions.map((region, i) =>
+      // note: uses assemblyNames defined above since region could be dead now
+      renameRegionIfNeeded(assemblyMaps[assemblyNames[i]], region),
     ),
   }
 }
@@ -845,12 +860,12 @@ export const complement = (() => {
   }
 })()
 
-export function blobToDataURL(blob: Blob) {
+export function blobToDataURL(blob: Blob): Promise<string> {
   const a = new FileReader()
   return new Promise((resolve, reject) => {
     a.onload = e => {
       if (e.target) {
-        resolve(e.target.result)
+        resolve(e.target.result as string)
       } else {
         reject(new Error('unknown result reading blob from canvas'))
       }
@@ -986,15 +1001,15 @@ export function generateCodonTable(table: any) {
 }
 
 // call statusCallback with current status and clear when finished
-export async function updateStatus(
-  statusMsg: string,
-  statusCallback: Function,
-  fn: Function,
+export async function updateStatus<U>(
+  msg: string,
+  cb: (arg: string) => void,
+  fn: () => U,
 ) {
-  statusCallback(statusMsg)
-  const result = await fn()
-  statusCallback('')
-  return result
+  cb(msg)
+  const res = await fn()
+  cb('')
+  return res
 }
 
 export function hashCode(str: string) {
@@ -1012,4 +1027,111 @@ export function hashCode(str: string) {
 
 export function objectHash(obj: Record<string, any>) {
   return `${hashCode(JSON.stringify(obj))}`
+}
+
+interface VirtualOffset {
+  blockPosition: number
+}
+interface Block {
+  minv: VirtualOffset
+  maxv: VirtualOffset
+}
+
+export async function bytesForRegions(
+  regions: Region[],
+  index: {
+    blocksForRange: (
+      ref: string,
+      start: number,
+      end: number,
+    ) => Promise<Block[]>
+  },
+) {
+  const blockResults = await Promise.all(
+    regions.map(r => index.blocksForRange(r.refName, r.start, r.end)),
+  )
+
+  return blockResults
+    .flat()
+    .map(block => ({
+      start: block.minv.blockPosition,
+      end: block.maxv.blockPosition + 65535,
+    }))
+    .reduce((a, b) => a + b.end - b.start, 0)
+}
+
+export type ViewSnap = {
+  bpPerPx: number
+  interRegionPaddingWidth: number
+  minimumBlockWidth: number
+  width: number
+  displayedRegions: {
+    start: number
+    end: number
+    refName: string
+    reversed: boolean
+  }[]
+}
+export function viewBpToPx({
+  refName,
+  coord,
+  regionNumber,
+  self,
+}: {
+  refName: string
+  coord: number
+  regionNumber?: number
+  self: ViewSnap
+}) {
+  let offsetBp = 0
+
+  const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
+  const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
+  const index = self.displayedRegions.findIndex((region, idx) => {
+    const len = region.end - region.start
+    if (
+      refName === region.refName &&
+      coord >= region.start &&
+      coord <= region.end
+    ) {
+      if (regionNumber ? regionNumber === idx : true) {
+        offsetBp += region.reversed ? region.end - coord : coord - region.start
+        return true
+      }
+    }
+
+    // add the interRegionPaddingWidth if the boundary is in the screen
+    // e.g. offset>=0 && offset<width
+    if (
+      len > minimumBlockBp &&
+      offsetBp / self.bpPerPx >= 0 &&
+      offsetBp / self.bpPerPx < self.width
+    ) {
+      offsetBp += len + interRegionPaddingBp
+    } else {
+      offsetBp += len
+    }
+    return false
+  })
+  const found = self.displayedRegions[index]
+  if (found) {
+    return {
+      index,
+      offsetPx: Math.round(offsetBp / self.bpPerPx),
+    }
+  }
+
+  return undefined
+}
+
+export function getBpDisplayStr(totalBp: number) {
+  let str
+  if (Math.floor(totalBp / 1000000) > 0) {
+    str = `${parseFloat((totalBp / 1000000).toPrecision(3))}Mbp`
+  } else if (Math.floor(totalBp / 1000) > 0) {
+    str = `${parseFloat((totalBp / 1000).toPrecision(3))}Kbp`
+  } else {
+    str = `${Math.floor(totalBp)}bp`
+  }
+  return str
 }

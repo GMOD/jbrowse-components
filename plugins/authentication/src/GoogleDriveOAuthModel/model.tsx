@@ -67,6 +67,29 @@ function GoogleDriveIcon(props: SvgIconProps) {
   )
 }
 
+async function getDescriptiveErrorMessage(response: Response) {
+  let errorMessage
+  try {
+    errorMessage = await response.text()
+  } catch (error) {
+    errorMessage = ''
+  }
+  if (errorMessage) {
+    let errorMessageParsed: GoogleDriveError | undefined
+    try {
+      errorMessageParsed = JSON.parse(errorMessage)
+    } catch (error) {
+      errorMessageParsed = undefined
+    }
+    if (errorMessageParsed) {
+      errorMessage = errorMessageParsed.error.message
+    }
+  }
+  return `Network response failure — ${response.status} (${
+    response.statusText
+  })${errorMessage ? ` (${errorMessage})` : ''}`
+}
+
 const stateModelFactory = (
   configSchema: GoogleDriveOAuthInternetAccountConfigModel,
 ) => {
@@ -75,15 +98,11 @@ const stateModelFactory = (
       'GoogleDriveOAuthInternetAccount',
       baseModel(OAuthConfigSchema),
       types.model({
-        id: 'GoogleDriveOAuth',
         type: types.literal('GoogleDriveOAuthInternetAccount'),
         configuration: ConfigurationReference(configSchema),
       }),
     )
     .views(() => ({
-      get internetAccountType() {
-        return 'GoogleDriveOAuthInternetAccount'
-      },
       get toggleContents() {
         return <GoogleDriveIcon />
       },
@@ -92,105 +111,61 @@ const stateModelFactory = (
       },
     }))
     .actions(self => ({
-      async processBadResponse(response: Response) {
-        let errorMessage
-        try {
-          errorMessage = await response.text()
-        } catch (error) {
-          errorMessage = ''
-        }
-        if (errorMessage) {
-          let errorMessageParsed: GoogleDriveError | undefined
-          try {
-            errorMessageParsed = JSON.parse(errorMessage)
-          } catch (error) {
-            errorMessageParsed = undefined
+      getFetcher(
+        location?: UriLocation,
+      ): (input: RequestInfo, init?: RequestInit) => Promise<Response> {
+        return async (
+          input: RequestInfo,
+          init?: RequestInitWithMetadata,
+        ): Promise<Response> => {
+          const urlId = String(input).match(/[-\w]{25,}/)
+          const driveUrl = new URL(
+            `https://www.googleapis.com/drive/v3/files/${urlId}`,
+          )
+          const searchParams = new URLSearchParams()
+          if (init?.metadataOnly) {
+            searchParams.append('fields', 'size')
+          } else {
+            searchParams.append('alt', 'media')
           }
-          if (errorMessageParsed) {
-            errorMessage = errorMessageParsed.error.message
+          driveUrl.search = searchParams.toString()
+          const authToken = await self.getToken(location)
+          const newInit = self.addAuthHeaderToInit(
+            { ...init, method: 'GET', credentials: 'same-origin' },
+            authToken,
+          )
+          const response = await fetch(driveUrl.toString(), newInit)
+          if (!response.ok) {
+            const message = await getDescriptiveErrorMessage(response)
+            throw new Error(message)
           }
+          return response
         }
-        throw new Error(
-          `Network response failure — ${response.status} (${errorMessage})`,
-        )
       },
-      // used to check if token is still valid for the file
-      async fetchFile(locationUri: string, accessToken: string) {
-        if (!locationUri || !accessToken) {
-          return
-        }
-        const urlId = locationUri.match(/[-\w]{25,}/)
-
+      openLocation(location: UriLocation) {
+        return new GoogleDriveFile(location.uri, {
+          fetch: this.getFetcher(location),
+        })
+      },
+      async validateToken(
+        token: string,
+        location: UriLocation,
+      ): Promise<string> {
+        const urlId = location.uri.match(/[-\w]{25,}/)
         const response = await fetch(
           `https://www.googleapis.com/drive/v3/files/${urlId}`,
           {
             headers: {
-              Authorization: `Bearer ${accessToken}`,
+              Authorization: `Bearer ${token}`,
               'Content-Type': 'application/x-www-form-urlencoded',
             },
           },
         )
-
         if (!response.ok) {
-          await this.processBadResponse(response)
+          const message = await getDescriptiveErrorMessage(response)
+          throw new Error(`Token could not be validated. ${message}`)
         }
-        return locationUri
-      },
-      async googleDriveFetch(url: RequestInfo, opts?: RequestInitWithMetadata) {
-        const urlId = String(url).match(/[-\w]{25,}/)
-
-        const preAuthInfo = self.uriToPreAuthInfoMap.get(url)
-        if (!preAuthInfo || !preAuthInfo.authInfo) {
-          throw new Error(
-            'Failed to obtain authorization information needed to fetch',
-          )
-        }
-
-        let foundTokens = {
-          token: '',
-          refreshToken: '',
-        }
-        try {
-          foundTokens = await self.checkToken(preAuthInfo.authInfo, {
-            uri: String(url),
-            locationType: 'UriLocation',
-          })
-        } catch (e) {
-          await self.handleError(e as string)
-        }
-
-        const newOpts: RequestInit = opts || {}
-
-        if (foundTokens.token) {
-          const tokenInfoString = self.tokenType
-            ? `${self.tokenType} ${foundTokens.token}`
-            : `${foundTokens.token}`
-          const headers = new Headers(opts?.headers)
-          headers.append(self.authHeader, tokenInfoString)
-
-          newOpts.headers = headers
-        }
-
-        const driveUrl = `https://www.googleapis.com/drive/v3/files/${urlId}?${
-          opts?.metadataOnly ? 'fields=size' : 'alt=media'
-        }`
-        const response = await fetch(driveUrl, {
-          method: 'GET',
-          credentials: 'same-origin',
-          ...newOpts,
-        })
-        if (!response.ok) {
-          await this.processBadResponse(response)
-        }
-        return response
-      },
-      openLocation(location: UriLocation) {
-        const preAuthInfo =
-          location.internetAccountPreAuthorization || self.generateAuthInfo()
-        self.uriToPreAuthInfoMap.set(location.uri, preAuthInfo)
-        return new GoogleDriveFile(location.uri, {
-          fetch: this.googleDriveFetch,
-        })
+        return token
       },
     }))
 }

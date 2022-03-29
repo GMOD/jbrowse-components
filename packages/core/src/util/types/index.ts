@@ -345,7 +345,7 @@ export function isUriLocation(location: unknown): location is UriLocation {
 }
 
 export class AuthNeededError extends Error {
-  constructor(public message: string, public location: UriLocation) {
+  constructor(public message: string, public url: string) {
     super(message)
     this.name = 'AuthNeededError'
 
@@ -360,11 +360,14 @@ export class RetryError extends Error {
   }
 }
 
-export function isAuthNeededException(exception: Error): boolean {
+export function isAuthNeededException(
+  exception: unknown,
+): exception is AuthNeededError {
   return (
+    exception instanceof Error &&
     // DOMException
-    exception.name === 'AuthNeededError' ||
-    (exception as AuthNeededError).location !== undefined
+    (exception.name === 'AuthNeededError' ||
+      (exception as AuthNeededError).url !== undefined)
   )
 }
 

@@ -4,7 +4,7 @@ module.exports = api => {
     babelrcRoots: ['.', './packages/*', './products/*', './plugins/*'],
     comments: true,
     presets: [
-      '@babel/preset-typescript',
+      '@babel/preset-react',
       [
         '@babel/preset-env',
         {
@@ -14,13 +14,21 @@ module.exports = api => {
           },
         },
       ],
-      ['react-app', { absoluteRuntime: false }],
+      '@babel/preset-typescript',
     ],
     ignore: [
       './node_modules',
       './packages/*/node_modules',
       './products/*/node_modules',
       './plugins/*/node_modules',
+      './demos/*/node_modules',
+    ],
+    plugins: [
+      '@babel/plugin-syntax-dynamic-import',
+      '@babel/plugin-proposal-class-properties',
+      '@babel/plugin-proposal-export-default-from',
+      ['@babel/transform-runtime', { useESModules: false }],
+      'inline-import-data-uri',
     ],
   }
 }

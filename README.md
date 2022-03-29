@@ -17,6 +17,16 @@ Docs http://jbrowse.org/jb2/docs/
 - [nodejs](https://nodejs.org/en/download/) (node 14 or greater)
 - [yarn](https://yarnpkg.com/en/docs/install)
 
+You may need additional pre-requisites on certain versions of nodejs.
+
+On macOS with homebrew:
+
+    brew install pkg-config cairo pango libpng jpeg giflib librsvg
+
+On Ubuntu, with apt:
+
+    sudo apt install -y python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+
 ## Install (Linux/Mac)
 
 Simply clone the git repo and run yarn in the root repository
@@ -40,6 +50,33 @@ cd .\jbrowse-components\
 yarn
 ```
 
-## Quick start
+## Quick start for developers
 
-Either cd to products/jbrowse-web or products/jbrowse-desktop and run `yarn start`.
+You can use these commands to help get started with your development environment
+
+For running jbrowse-web
+
+```sh
+cd products/jbrowse-web
+yarn start
+```
+
+For jbrowse-desktop
+
+```sh
+cd products/jbrowse-desktop
+yarn start
+```
+
+For running like jbrowse-react-linear-genome-view you can use
+storybook
+
+```sh
+cd products/jbrowse-react-linaer-genome-view
+yarn storybook
+```
+
+See CONTRIBUTING.md for more info
+
+If you are installing JBrowse on your server, check out our quick start guides
+here https://jbrowse.org/jb2/docs/

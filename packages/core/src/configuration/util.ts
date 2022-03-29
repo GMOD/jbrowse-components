@@ -93,10 +93,7 @@ export function readConfObject(
     ) {
       subConf = confObject.get(slotName)
     }
-    if (!subConf) {
-      return undefined
-    }
-    return readConfObject(subConf, newPath, args)
+    return subConf ? readConfObject(subConf, newPath, args) : undefined
   }
   return readConfObject(confObject, slotName, args)
 }

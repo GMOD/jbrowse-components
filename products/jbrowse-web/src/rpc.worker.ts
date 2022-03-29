@@ -25,13 +25,15 @@ let jbPluginManager: PluginManager | undefined
 // waits for a message from the main thread containing our configuration, which
 // must be sent on boot
 function receiveConfiguration(): Promise<WorkerConfiguration> {
-  return new Promise(resolve => {
+  const configurationP: Promise<WorkerConfiguration> = new Promise(resolve => {
     // listen for the configuration
     self.onmessage = (event: MessageEvent) => {
       resolve(event.data as WorkerConfiguration)
       self.onmessage = () => {}
     }
   })
+  postMessage('readyForConfig')
+  return configurationP
 }
 
 async function getPluginManager() {
@@ -90,6 +92,7 @@ getPluginManager()
       ...remoteAbortRpcHandler(),
       ping: () => {}, // < the ping method is required by the worker driver for checking the health of the worker
     })
+    postMessage('ready')
   })
   .catch(error => {
     // @ts-ignore

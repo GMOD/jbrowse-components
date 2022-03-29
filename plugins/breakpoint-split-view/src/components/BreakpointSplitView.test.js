@@ -1,10 +1,7 @@
 import React, { Suspense } from 'react'
 import { render } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
-import sizeMe from 'react-sizeme'
 import BreakpointSplitView from './BreakpointSplitView'
-
-sizeMe.noPlaceholders = true
 
 const assemblyConf = {
   name: 'volMyt1',

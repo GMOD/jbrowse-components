@@ -8,56 +8,59 @@ import {
   Region,
 } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
+import { bytesForRegions } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
-import { GenericFilehandle } from 'generic-filehandle'
 import VcfParser from '@gmod/vcf'
 import { Observer } from 'rxjs'
 import { readConfObject } from '@jbrowse/core/configuration'
 import VcfFeature from './VcfFeature'
+import { GenericFilehandle } from 'generic-filehandle'
 
 export default class extends BaseFeatureDataAdapter {
-  protected configured?: Promise<{
+  private configured?: Promise<{
+    filehandle: GenericFilehandle
     vcf: TabixIndexedFile
     parser: VcfParser
-    filehandle: GenericFilehandle
   }>
+
+  private async configurePre() {
+    const vcfGzLocation = readConfObject(this.config, 'vcfGzLocation')
+    const location = readConfObject(this.config, ['index', 'location'])
+    const indexType = readConfObject(this.config, ['index', 'indexType'])
+
+    const filehandle = openLocation(
+      vcfGzLocation as FileLocation,
+      this.pluginManager,
+    )
+    const isCSI = indexType === 'CSI'
+    const vcf = new TabixIndexedFile({
+      filehandle,
+      csiFilehandle: isCSI
+        ? openLocation(location, this.pluginManager)
+        : undefined,
+      tbiFilehandle: !isCSI
+        ? openLocation(location, this.pluginManager)
+        : undefined,
+      chunkCacheSize: 50 * 2 ** 20,
+      chunkSizeLimit: 1000000000,
+    })
+
+    const header = await vcf.getHeader()
+    return {
+      filehandle,
+      vcf,
+      parser: new VcfParser({ header }),
+    }
+  }
 
   protected async configure() {
     if (!this.configured) {
-      const vcfGzLocation = readConfObject(this.config, 'vcfGzLocation')
-      const location = readConfObject(this.config, ['index', 'location'])
-      const indexType = readConfObject(this.config, ['index', 'indexType'])
-
-      const filehandle = openLocation(
-        vcfGzLocation as FileLocation,
-        this.pluginManager,
-      )
-      const isCSI = indexType === 'CSI'
-      const vcf = new TabixIndexedFile({
-        filehandle,
-        csiFilehandle: isCSI
-          ? openLocation(location, this.pluginManager)
-          : undefined,
-        tbiFilehandle: !isCSI
-          ? openLocation(location, this.pluginManager)
-          : undefined,
-        chunkCacheSize: 50 * 2 ** 20,
-        chunkSizeLimit: 1000000000,
+      this.configured = this.configurePre().catch(e => {
+        this.configured = undefined
+        throw e
       })
-
-      this.configured = vcf
-        .getHeader()
-        .then(header => ({
-          filehandle,
-          vcf,
-          parser: new VcfParser({ header }),
-        }))
-        .catch(e => {
-          this.configured = undefined
-          throw e
-        })
     }
     return this.configured
   }
@@ -119,7 +122,10 @@ export default class extends BaseFeatureDataAdapter {
     // xref: https://github.com/rollup/rollup/blob/master/CHANGELOG.md#bug-fixes-45
     const superGetFeaturesInMultipleRegions = super.getFeaturesInMultipleRegions
     return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
-      const bytes = await this.bytesForRegions(regions)
+      const { vcf } = await this.configure()
+
+      // @ts-ignore
+      const bytes = await bytesForRegions(regions, vcf.index)
       const { filehandle } = await this.configure()
       const stat = await filehandle.stat()
       let pct = Math.round((bytes / stat.size) * 100)
@@ -137,53 +143,6 @@ export default class extends BaseFeatureDataAdapter {
         .subscribe(observer)
       // super.getFeaturesInMultipleRegions(regions, opts).subscribe(observer)
     })
-  }
-
-  /**
-   * get the approximate number of bytes queried from the file for the given
-   * query regions
-   * @param regions - list of query regions
-   */
-  private async bytesForRegions(regions: Region[]) {
-    const { vcf } = await this.configure()
-    const blockResults = await Promise.all(
-      regions.map(region =>
-        // @ts-ignore
-        vcf.index.blocksForRange(region.refName, region.start, region.end),
-      ),
-    )
-    interface ByteRange {
-      start: number
-      end: number
-    }
-    interface VirtualOffset {
-      blockPosition: number
-    }
-    interface Block {
-      minv: VirtualOffset
-      maxv: VirtualOffset
-    }
-    const byteRanges: ByteRange[] = []
-    blockResults.forEach((blocks: Block[]) => {
-      blocks.forEach(block => {
-        const start = block.minv.blockPosition
-        const end = block.maxv.blockPosition + 64000
-        if (
-          !byteRanges.find(range => {
-            if (range.start <= end && range.end >= start) {
-              range.start = Math.min(range.start, start)
-              range.end = Math.max(range.end, end)
-              return true
-            }
-            return false
-          })
-        ) {
-          byteRanges.push({ start, end })
-        }
-      })
-    })
-
-    return byteRanges.reduce((a, b) => a + b.end - b.start + 1, 0)
   }
 
   public freeResources(/* { region } */): void {}

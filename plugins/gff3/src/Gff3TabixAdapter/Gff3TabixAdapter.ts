@@ -4,17 +4,17 @@ import {
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
-import { NoAssemblyRegion } from '@jbrowse/core/util/types'
+import { Region } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
 import gff, { GFF3Feature, GFF3FeatureLineWithRefs } from '@gmod/gff'
 import { Observer } from 'rxjs'
-
-import { Instance } from 'mobx-state-tree'
-import { readConfObject } from '@jbrowse/core/configuration'
-import MyConfigSchema from './configSchema'
+import {
+  readConfObject,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
@@ -31,7 +31,7 @@ export default class extends BaseFeatureDataAdapter {
   protected dontRedispatch: string[]
 
   public constructor(
-    config: Instance<typeof MyConfigSchema>,
+    config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {
@@ -65,7 +65,7 @@ export default class extends BaseFeatureDataAdapter {
     return this.gff.getHeader()
   }
 
-  public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
+  public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const metadata = await this.gff.getMetadata()
       this.getFeaturesHelper(query, opts, metadata, observer, true)
@@ -73,7 +73,7 @@ export default class extends BaseFeatureDataAdapter {
   }
 
   private async getFeaturesHelper(
-    query: NoAssemblyRegion,
+    query: Region,
     opts: BaseOptions = {},
     metadata: { columnNumbers: { start: number; end: number } },
     observer: Observer<Feature>,

@@ -95,14 +95,10 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
       colorTagMap: observable.map<string, string>({}),
       modificationTagMap: observable.map<string, string>({}),
       ready: false,
-      currBpPerPx: 0,
     }))
     .actions(self => ({
       setReady(flag: boolean) {
         self.ready = flag
-      },
-      setCurrBpPerPx(n: number) {
-        self.currBpPerPx = n
       },
       setMaxHeight(n: number) {
         self.trackMaxHeight = n
@@ -404,16 +400,21 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
         renderProps() {
           const view = getContainingView(self) as LGV
           const {
-            ready,
             colorTagMap,
             modificationTagMap,
             sortedBy,
             colorBy,
             rpcDriverName,
           } = self
+
+          const superProps = superRenderProps()
+
           return {
-            ...superRenderProps(),
-            notReady: !ready || (sortedBy && self.currBpPerPx !== view.bpPerPx),
+            ...superProps,
+            notReady:
+              superProps.notReady ||
+              !self.ready ||
+              (sortedBy && self.currBpPerPx !== view.bpPerPx),
             rpcDriverName,
             displayModel: self,
             sortedBy,
@@ -459,7 +460,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
                 {
                   label: 'Sort by tag...',
                   onClick: () => {
-                    getSession(self).queueDialog((doneCallback: Function) => [
+                    getSession(self).queueDialog(doneCallback => [
                       SortByTagDlg,
                       { model: self, handleClose: doneCallback },
                     ])
@@ -506,9 +507,15 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
                   },
                 },
                 {
+                  label: 'Per-base lettering',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'perBaseLettering' })
+                  },
+                },
+                {
                   label: 'Modifications or methylation',
                   onClick: () => {
-                    getSession(self).queueDialog((doneCallback: Function) => [
+                    getSession(self).queueDialog(doneCallback => [
                       ModificationsDlg,
                       { model: self, handleClose: doneCallback },
                     ])
@@ -529,7 +536,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
                 {
                   label: 'Color by tag...',
                   onClick: () => {
-                    getSession(self).queueDialog((doneCallback: Function) => [
+                    getSession(self).queueDialog(doneCallback => [
                       ColorByTagDlg,
                       { model: self, handleClose: doneCallback },
                     ])
@@ -541,7 +548,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
               label: 'Filter by',
               icon: FilterListIcon,
               onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
+                getSession(self).queueDialog(doneCallback => [
                   FilterByTagDlg,
                   { model: self, handleClose: doneCallback },
                 ])
@@ -550,7 +557,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             {
               label: 'Set feature height',
               onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
+                getSession(self).queueDialog(doneCallback => [
                   SetFeatureHeightDlg,
                   { model: self, handleClose: doneCallback },
                 ])
@@ -559,7 +566,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             {
               label: 'Set max height',
               onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
+                getSession(self).queueDialog(doneCallback => [
                   SetMaxHeightDlg,
                   { model: self, handleClose: doneCallback },
                 ])

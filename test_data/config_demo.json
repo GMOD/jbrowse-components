@@ -95,6 +95,29 @@
           }
         }
       }
+    },
+    {
+      "name": "t2t-chm13-v1.1",
+      "displayName": "Homo sapiens (t2t-chm13-v1.1)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "t2t-chm13-v1.1-asm",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13.draft_v1.1.fasta.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13.draft_v1.1.fasta.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13.draft_v1.1.fasta.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
     }
   ],
   "tracks": [
@@ -771,15 +794,15 @@
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
             "locationType": "UriLocation"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
             "locationType": "UriLocation"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi",
             "locationType": "UriLocation"
           }
         }
@@ -3020,12 +3043,12 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG003.hs37d5.consensusalignments.bam",
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG003.SequelII.merged_15kb_20kb.pbmm2.hs37d5.haplotag.RTG.10x.trio.bam",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG003.hs37d5.consensusalignments.bam.bai",
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG003.SequelII.merged_15kb_20kb.pbmm2.hs37d5.haplotag.RTG.10x.trio.bam.bai",
             "locationType": "UriLocation"
           },
           "indexType": "BAI"
@@ -3128,12 +3151,12 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG004.hs37d5.consensusalignments.bam",
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG004.SequelII.merged_15kb_20kb.pbmm2.hs37d5.haplotag.RTG.10x.trio.bam",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG004.hs37d5.consensusalignments.bam.bai",
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG004.SequelII.merged_15kb_20kb.pbmm2.hs37d5.haplotag.RTG.10x.trio.bam.bai",
             "locationType": "UriLocation"
           },
           "indexType": "BAI"
@@ -3350,7 +3373,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw",
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw",
           "locationType": "UriLocation"
         }
       },
@@ -3804,6 +3827,41 @@
           "displayId": "LinearBasicDisplay"
         }
       ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "genes",
+      "name": "Gene annotation v4",
+      "category": ["Annotation"],
+      "assemblyNames": ["t2t-chm13-v1.1"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/genomes/CHM13/genes/chm13.draft_v1.1.gene_annotation.v4.sorted.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/CHM13/genes/chm13.draft_v1.1.gene_annotation.v4.sorted.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hg19ToHg38.over.chain.gz-1645073157673",
+      "name": "hg19ToHg38.over.chain.gz",
+      "assemblyNames": ["hg38", "hg19"],
+      "adapter": {
+        "type": "ChainAdapter",
+        "assemblyNames": ["hg38", "hg19"],
+        "chainLocation": {
+          "locationType": "UriLocation",
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/liftOver/hg19ToHg38.over.chain.gz"
+        }
+      }
     }
   ],
   "connections": [],

@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
 import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'
@@ -14,6 +14,7 @@ import {
   measureText,
   parseLocString,
   springAnimate,
+  viewBpToPx,
 } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -34,7 +35,6 @@ import {
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import PluginManager from '@jbrowse/core/PluginManager'
 import clone from 'clone'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { saveAs } from 'file-saver'
 
 // icons
@@ -50,8 +50,9 @@ import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 // locals
 import { renderToSvg } from './components/LinearGenomeViewSvg'
 import RefNameAutocomplete from './components/RefNameAutocomplete'
+import SearchBox from './components/SearchBox'
 import ExportSvgDlg from './components/ExportSvgDialog'
-import ReturnToImportFormDlg from './components/ReturnToImportFormDialog'
+import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
 
 export interface BpOffset {
   refName?: string
@@ -84,7 +85,7 @@ function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
       assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
     }),
   )
-  return locs.join(';')
+  return locs.join(' ')
 }
 
 export interface NavLocation {
@@ -99,6 +100,14 @@ export const HEADER_OVERVIEW_HEIGHT = 20
 export const SCALE_BAR_HEIGHT = 17
 export const RESIZE_HANDLE_HEIGHT = 3
 export const INTER_REGION_PADDING_WIDTH = 2
+export const WIDGET_HEIGHT = 32
+export const SPACING = 7
+
+function localStorageGetItem(item: string) {
+  return typeof localStorage !== 'undefined'
+    ? localStorage.getItem(item)
+    : undefined
+}
 
 export function stateModelFactory(pluginManager: PluginManager) {
   return types
@@ -122,9 +131,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
           types.enumeration(['hierarchical']),
           'hierarchical',
         ),
-        trackLabels: 'overlapping' as 'overlapping' | 'hidden' | 'offset',
-        showCenterLine: false,
-        showCytobandsSetting: true,
+        trackLabels: types.optional(
+          types.string,
+          () => localStorageGetItem('lgv-trackLabels') || 'overlapping',
+        ),
+        showCenterLine: types.optional(types.boolean, () => {
+          const setting = localStorageGetItem('lgv-showCenterLine')
+          return setting !== undefined && setting !== null ? !!+setting : false
+        }),
+        showCytobandsSetting: types.optional(types.boolean, () => {
+          const setting = localStorageGetItem('lgv-showCytobands')
+          return setting !== undefined && setting !== null ? !!+setting : true
+        }),
       }),
     )
     .volatile(() => ({
@@ -213,11 +231,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
       },
       get totalBp() {
-        let totalbp = 0
-        self.displayedRegions.forEach(region => {
-          totalbp += region.end - region.start
-        })
-        return totalbp
+        return self.displayedRegions.reduce((a, b) => a + b.end - b.start, 0)
       },
 
       get maxBpPerPx() {
@@ -288,47 +302,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         coord: number
         regionNumber?: number
       }) {
-        let offsetBp = 0
-
-        const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
-        const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
-        const index = self.displayedRegions.findIndex((region, idx) => {
-          const len = region.end - region.start
-          if (
-            refName === region.refName &&
-            coord >= region.start &&
-            coord <= region.end
-          ) {
-            if (regionNumber ? regionNumber === idx : true) {
-              offsetBp += region.reversed
-                ? region.end - coord
-                : coord - region.start
-              return true
-            }
-          }
-
-          // add the interRegionPaddingWidth if the boundary is in the screen
-          // e.g. offset>=0 && offset<width
-          if (
-            len > minimumBlockBp &&
-            offsetBp / self.bpPerPx >= 0 &&
-            offsetBp / self.bpPerPx < self.width
-          ) {
-            offsetBp += len + interRegionPaddingBp
-          } else {
-            offsetBp += len
-          }
-          return false
-        })
-        const foundRegion = self.displayedRegions[index]
-        if (foundRegion) {
-          return {
-            index,
-            offsetPx: Math.round(offsetBp / self.bpPerPx),
-          }
-        }
-
-        return undefined
+        return viewBpToPx({ refName, coord, regionNumber, self })
       },
       /**
        *
@@ -474,6 +448,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       setShowCytobands(flag: boolean) {
         self.showCytobandsSetting = flag
+        localStorage.setItem('lgv-showCytobands', `${+flag}`)
       },
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
@@ -566,11 +541,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
           trackId,
         )
         if (!configuration) {
-          throw new Error(`Could not resolve identifier`)
+          throw new Error(`Could not resolve identifier "${trackId}"`)
         }
         const trackType = pluginManager.getTrackType(configuration?.type)
         if (!trackType) {
-          throw new Error(`unknown track type ${configuration.type}`)
+          throw new Error(`Unknown track type ${configuration.type}`)
         }
         const viewType = pluginManager.getViewType(self.type)
         const supportedDisplays = viewType.displayTypes.map(
@@ -581,7 +556,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
         if (!displayConf) {
           throw new Error(
-            `could not find a compatible display for view type ${self.type}`,
+            `Could not find a compatible display for view type ${self.type}`,
           )
         }
 
@@ -666,10 +641,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
         self.trackLabels = setting
+        localStorage.setItem('lgv-trackLabels', setting)
       },
 
       toggleCenterLine() {
         self.showCenterLine = !self.showCenterLine
+        localStorage.setItem('lgv-showCenterLine', `${+self.showCenterLine}`)
       },
 
       setDisplayedRegions(regions: Region[]) {
@@ -694,101 +671,63 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       navToLocString(locString: string, optAssemblyName?: string) {
+        const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
-        const locStrings = locString.split(';')
-        if (self.displayedRegions.length > 1) {
-          const locations = locStrings.map(ls =>
-            parseLocString(ls, isValidRefName),
-          )
-          this.navToMultiple(locations)
-          return
-        }
-        let assemblyName = optAssemblyName
-        let defaultRefName = ''
-        if (self.displayedRegions.length !== 0) {
-          // defaults
-          assemblyName = self.displayedRegions[0].assemblyName
-          defaultRefName = self.displayedRegions[0].refName
-        }
-        let assembly = assemblyName && assemblyManager.get(assemblyName)
-        if (!assembly) {
-          throw new Error(`Could not find assembly ${assemblyName}`)
-        }
-        let { regions } = assembly
-        if (!regions) {
-          throw new Error(`Regions for assembly ${assemblyName} not yet loaded`)
-        }
-        if (locStrings.length > 1) {
-          throw new Error(
-            'Navigating to multiple locations is not allowed when viewing a whole chromosome',
-          )
-        }
-        const parsedLocString = parseLocString(locStrings[0], refName =>
-          isValidRefName(refName, assemblyName),
-        )
-        let changedAssembly = false
-        if (
-          parsedLocString.assemblyName &&
-          parsedLocString.assemblyName !== assemblyName
-        ) {
-          const newAssembly = assemblyManager.get(parsedLocString.assemblyName)
-          if (!newAssembly) {
-            throw new Error(
-              `Could not find assembly ${parsedLocString.assemblyName}`,
-            )
-          }
-          assembly = newAssembly
-          changedAssembly = true
-          const newRegions = newAssembly.regions
-          if (!newRegions) {
-            throw new Error(
-              `Regions for assembly ${parsedLocString.assemblyName} not yet loaded`,
-            )
-          }
-          regions = newRegions
-        }
-        const canonicalRefName = assembly.getCanonicalRefName(
-          parsedLocString.refName,
-        )
+        const assemblyName = optAssemblyName || assemblyNames[0]
 
-        if (!canonicalRefName) {
-          throw new Error(
-            `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
-          )
-        }
-        if (changedAssembly || canonicalRefName !== defaultRefName) {
-          const newDisplayedRegion = regions.find(
+        const parsedLocStrings = locString
+          .split(' ')
+          .filter(f => !!f.trim())
+          .map(l => parseLocString(l, ref => isValidRefName(ref, assemblyName)))
+
+        const locations = parsedLocStrings.map(region => {
+          const asmName = region.assemblyName || assemblyName
+          const asm = assemblyManager.get(asmName)
+          const { refName } = region
+          if (!asm) {
+            throw new Error(`assembly ${asmName} not found`)
+          }
+          const { regions } = asm
+          if (!regions) {
+            throw new Error(`regions not loaded yet for ${asmName}`)
+          }
+          const canonicalRefName = asm.getCanonicalRefName(region.refName)
+          if (!canonicalRefName) {
+            throw new Error(`Could not find refName ${refName} in ${asm.name}`)
+          }
+          const parentRegion = regions.find(
             region => region.refName === canonicalRefName,
           )
-          if (newDisplayedRegion) {
-            this.setDisplayedRegions([newDisplayedRegion])
-          } else {
-            throw new Error(
-              `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
-            )
+          if (!parentRegion) {
+            throw new Error(`Could not find refName ${refName} in ${asmName}`)
           }
-        }
-        const displayedRegion = regions.find(
-          region => region.refName === canonicalRefName,
-        )
-        if (displayedRegion) {
-          const start = clamp(
-            parsedLocString?.start ?? 0,
-            0,
-            displayedRegion.end,
-          )
-          const end = clamp(
-            parsedLocString?.end ?? displayedRegion.end,
-            0,
-            displayedRegion.end,
-          )
+
+          return {
+            ...region,
+            assemblyName: asmName,
+            parentRegion,
+          }
+        })
+
+        if (locations.length === 1) {
+          const loc = locations[0]
+          this.setDisplayedRegions([
+            { reversed: loc.reversed, ...loc.parentRegion },
+          ])
+          const { start, end, parentRegion } = loc
 
           this.navTo({
-            ...parsedLocString,
-            start,
-            end,
+            ...loc,
+            start: clamp(start ?? 0, 0, parentRegion.end),
+            end: clamp(end ?? parentRegion.end, 0, parentRegion.end),
           })
+        } else {
+          this.setDisplayedRegions(
+            // @ts-ignore
+            locations.map(r => (r.start === undefined ? r.parentRegion : r)),
+          )
+          this.showAllRegions()
         }
       },
 
@@ -910,43 +849,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
                     location,
                   )} does not match with displayed regions`,
                 )
-              }
-              if (locationIndex > 0) {
-                // does it reach the left side?
-                const matchesLeft = region.reversed
-                  ? locationEnd === region.end
-                  : locationStart === region.start
-                if (!matchesLeft) {
-                  throw new Error(
-                    `${
-                      region.reversed ? 'End' : 'Start'
-                    } of region ${assembleLocString(
-                      location,
-                    )} should be ${(region.reversed
-                      ? region.end
-                      : region.start + 1
-                    ).toLocaleString('en-US')}, but it is not`,
-                  )
-                }
-              }
-              const isLast = locationIndex === locations.length - 1
-              if (!isLast) {
-                // does it reach the right side?
-                const matchesRight = region.reversed
-                  ? locationStart === region.start
-                  : locationEnd === region.end
-                if (!matchesRight) {
-                  throw new Error(
-                    `${
-                      region.reversed ? 'Start' : 'End'
-                    } of region ${assembleLocString(
-                      location,
-                    )} should be ${(region.reversed
-                      ? region.start + 1
-                      : region.end
-                    ).toLocaleString('en-US')}, but it is not`,
-                  )
-                }
               }
             }
             locationIndex -= 1
@@ -1242,127 +1144,128 @@ export function stateModelFactory(pluginManager: PluginManager) {
           : 0
       },
     }))
+    .views(self => ({
+      menuItems(): MenuItem[] {
+        const { canShowCytobands, showCytobands } = self
+
+        const menuItems: MenuItem[] = [
+          {
+            label: 'Return to import form',
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                ReturnToImportFormDialog,
+                { model: self, handleClose },
+              ])
+            },
+            icon: FolderOpenIcon,
+          },
+          {
+            label: 'Export SVG',
+            icon: PhotoCameraIcon,
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                ExportSvgDlg,
+                { model: self, handleClose },
+              ])
+            },
+          },
+          {
+            label: 'Open track selector',
+            onClick: self.activateTrackSelector,
+            icon: TrackSelectorIcon,
+          },
+          {
+            label: 'Horizontally flip',
+            icon: SyncAltIcon,
+            onClick: self.horizontallyFlip,
+          },
+          { type: 'divider' },
+          {
+            label: 'Show all regions in assembly',
+            icon: VisibilityIcon,
+            onClick: self.showAllRegionsInAssembly,
+          },
+          {
+            label: 'Show center line',
+            icon: VisibilityIcon,
+            type: 'checkbox',
+            checked: self.showCenterLine,
+            onClick: self.toggleCenterLine,
+          },
+          {
+            label: 'Show header',
+            icon: VisibilityIcon,
+            type: 'checkbox',
+            checked: !self.hideHeader,
+            onClick: self.toggleHeader,
+          },
+          {
+            label: 'Show header overview',
+            icon: VisibilityIcon,
+            type: 'checkbox',
+            checked: !self.hideHeaderOverview,
+            onClick: self.toggleHeaderOverview,
+            disabled: self.hideHeader,
+          },
+          {
+            label: 'Track labels',
+            icon: LabelIcon,
+            subMenu: [
+              {
+                label: 'Overlapping',
+                icon: VisibilityIcon,
+                type: 'radio',
+                checked: self.trackLabels === 'overlapping',
+                onClick: () => self.setTrackLabels('overlapping'),
+              },
+              {
+                label: 'Offset',
+                icon: VisibilityIcon,
+                type: 'radio',
+                checked: self.trackLabels === 'offset',
+                onClick: () => self.setTrackLabels('offset'),
+              },
+              {
+                label: 'Hidden',
+                icon: VisibilityIcon,
+                type: 'radio',
+                checked: self.trackLabels === 'hidden',
+                onClick: () => self.setTrackLabels('hidden'),
+              },
+            ],
+          },
+          ...(canShowCytobands
+            ? [
+                {
+                  label: showCytobands ? 'Hide ideogram' : 'Show ideograms',
+                  onClick: () => {
+                    self.setShowCytobands(!showCytobands)
+                  },
+                },
+              ]
+            : []),
+        ]
+
+        // add track's view level menu options
+        for (const [key, value] of self.trackTypeActions.entries()) {
+          if (value.length) {
+            menuItems.push(
+              { type: 'divider' },
+              { type: 'subHeader', label: key },
+            )
+            value.forEach(action => {
+              menuItems.push(action)
+            })
+          }
+        }
+
+        return menuItems
+      },
+    }))
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
-        menuItems(): MenuItem[] {
-          const { canShowCytobands, showCytobands } = self
-
-          const menuItems: MenuItem[] = [
-            {
-              label: 'Return to import form',
-              onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
-                  ReturnToImportFormDlg,
-                  { model: self, handleClose: doneCallback },
-                ])
-              },
-              icon: FolderOpenIcon,
-            },
-            {
-              label: 'Export SVG',
-              icon: PhotoCameraIcon,
-              onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
-                  ExportSvgDlg,
-                  { model: self, handleClose: doneCallback },
-                ])
-              },
-            },
-            {
-              label: 'Open track selector',
-              onClick: self.activateTrackSelector,
-              icon: TrackSelectorIcon,
-            },
-            {
-              label: 'Horizontally flip',
-              icon: SyncAltIcon,
-              onClick: self.horizontallyFlip,
-            },
-            { type: 'divider' },
-            {
-              label: 'Show all regions in assembly',
-              icon: VisibilityIcon,
-              onClick: self.showAllRegionsInAssembly,
-            },
-            {
-              label: 'Show center line',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showCenterLine,
-              onClick: self.toggleCenterLine,
-            },
-            {
-              label: 'Show header',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: !self.hideHeader,
-              onClick: self.toggleHeader,
-            },
-            {
-              label: 'Show header overview',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: !self.hideHeaderOverview,
-              onClick: self.toggleHeaderOverview,
-              disabled: self.hideHeader,
-            },
-            {
-              label: 'Track labels',
-              icon: LabelIcon,
-              subMenu: [
-                {
-                  label: 'Overlapping',
-                  icon: VisibilityIcon,
-                  type: 'radio',
-                  checked: self.trackLabels === 'overlapping',
-                  onClick: () => self.setTrackLabels('overlapping'),
-                },
-                {
-                  label: 'Offset',
-                  icon: VisibilityIcon,
-                  type: 'radio',
-                  checked: self.trackLabels === 'offset',
-                  onClick: () => self.setTrackLabels('offset'),
-                },
-                {
-                  label: 'Hidden',
-                  icon: VisibilityIcon,
-                  type: 'radio',
-                  checked: self.trackLabels === 'hidden',
-                  onClick: () => self.setTrackLabels('hidden'),
-                },
-              ],
-            },
-            ...(canShowCytobands
-              ? [
-                  {
-                    label: showCytobands ? 'Hide ideogram' : 'Show ideograms',
-                    onClick: () => {
-                      self.setShowCytobands(!showCytobands)
-                    },
-                  },
-                ]
-              : []),
-          ]
-
-          // add track's view level menu options
-          for (const [key, value] of self.trackTypeActions.entries()) {
-            if (value.length) {
-              menuItems.push(
-                { type: 'divider' },
-                { type: 'subHeader', label: key },
-              )
-              value.forEach(action => {
-                menuItems.push(action)
-              })
-            }
-          }
-
-          return menuItems
-        },
-
         get staticBlocks() {
           const ret = calculateStaticBlocks(self)
           const sret = JSON.stringify(ret)
@@ -1456,7 +1359,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
 }
 
-export { renderToSvg, RefNameAutocomplete }
+export { renderToSvg, RefNameAutocomplete, SearchBox }
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>
 export { default as ReactComponent } from './components/LinearGenomeView'

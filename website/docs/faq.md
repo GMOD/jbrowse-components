@@ -4,6 +4,37 @@ title: FAQ
 toplevel: true
 ---
 
+### Developers
+
+#### How can I start the JBrowse 2 app as a developer
+
+We recommend that you have the following
+
+- Node v12+
+- Git
+- [Yarn](https://classic.yarnpkg.com/en/docs/install/#debian-stable)
+
+Then you can follow steps from our
+[README](https://github.com/gmod/jbrowse-components)
+
+It basically boils down to
+
+- `git clone https://github.com/GMOD/jbrowse-components`
+- `cd jbrowse-components`
+- `yarn`
+- `cd products/jbrowse-web`
+- `yarn start`
+
+This will boot up a development instance of `jbrowse-web` on port 3000
+
+You can use `PORT=8080 yarn start` to manually specify a different port
+
+You can also instead go to the `products/jbrowse-desktop` directory to do this
+on desktop
+
+For the embedded components e.g. `products/jbrowse-react-linear-genome-view`,
+use `yarn storybook` instead of `yarn start`
+
 ### General
 
 #### What is special about JBrowse 2
@@ -142,6 +173,108 @@ so they will not display softclipping.
 
 The soft clipping indicators on these reads will appear black.
 
+#### Do you have any tips for learning React and mobx-state-tree
+
+Here is a short guide to React and mobx-state-tree that could help get you oriented
+
+https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f
+
+#### What technologies does JBrowse 2 use
+
+We build on a lot of great open source technology, some main ones include
+
+- React
+- mobx-state-tree
+- web-workers
+- Typescript
+- Electron (for desktop specifically)
+
+#### Should I configure gzip on my web server
+
+Yes! JBrowse 2 may load ~5MB of JS resources (2.5MB for main thread bundle,
+2.5MB for worker bundle). If you have gzip enabled, the amount of data the user
+has to download though is only 1.4MB. We have worked on making bundle size
+small with lazy loading and other methods but adding gzip will help your users.
+
+It will depend on your particular server setup e.g. apache, nginx, cloudfront,
+etc. how this may be done, but it is recommended to look into this.
+
+#### How does JBrowse know when to display the "Zoom in to see more features" message
+
+The rules that JBrowse uses to determine when to display the "Zoom in to see more features" message are called stats estimation rules
+
+The general outline is:
+
+- It doesn't display a zoom in message if zoomed in closer than 20kb
+- It performs byte size estimation for BAM and CRAM type files (you will see a
+  byte size estimation displayed alongside the "Zoom in to see features"
+  message
+- Other data types that don't use byte size estimation use feature density
+  based calculation
+- Hi-C, BigWig, and sequence adapters are hardcoded to return `{ featureDensity:0 }` to always render
+
+If you need to customize your particular track, you can set config variables on
+the "display" section of your config
+
+- `maxFeatureScreenDensity` - number of features times bpPerPx
+- `fetchSizeLimit` - this config variable exists on the adapters (can increase size limit)
+
+Example config with a small feature screen density
+
+```json
+{
+  "type": "VariantTrack",
+  "trackId": "variant_density",
+  "name": "test variants (small featuredensity limit)",
+  "assemblyNames": ["volvox"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "vcfGzLocation": {
+      "uri": "volvox.filtered.vcf.gz"
+    },
+    "index": {
+      "location": {
+        "uri": "volvox.filtered.vcf.gz.tbi"
+      }
+    }
+  },
+  "displays": [
+    {
+      "type": "LinearVariantDisplay",
+      "maxFeatureScreenDensity": 0.0006,
+      "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay"
+    }
+  ]
+}
+```
+
+Example config for a CRAM file with a small fetchSizeLimit configured
+
+```json
+{
+  "type": "AlignmentsTrack",
+  "trackId": "volvox_cram",
+  "name": "test track (small fetch size limit)",
+  "assemblyNames": ["volvox"],
+  "adapter": {
+    "type": "CramAdapter",
+    "cramLocation": {
+      "uri": "volvox-sorted-altname.cram"
+    },
+    "craiLocation": {
+      "uri": "volvox-sorted-altname.cram.crai"
+    },
+    "sequenceAdapter": {
+      "type": "TwoBitAdapter",
+      "twoBitLocation": {
+        "uri": "volvox.2bit"
+      }
+    },
+    "fetchSizeLimit": 1000
+  }
+}
+```
+
 ### Text searching
 
 #### Why I am running out of disk space while trix is running
@@ -186,49 +319,63 @@ Note that JBrowse creates a specialized trix index also. Instead of creating a
 ix file with just the gene names, it also provides their name and location in
 an encoded format.
 
-### Developers
+### URL params
 
-#### How can I start the JBrowse 2 app as a developer
+#### Why can't I copy and paste my URL bar to share it with another user
 
-We recommend that you have the following
+In JBrowse Web, the current session can become too long to store in the URL
+bar, so instead, we store it in localStorage and only keep the key to the
+localStorage entry in the URL var. This is because otherwise URLs can get
+prohibitively long, and break server side navigations, intermediate caches,
+etc. Therefore, we make "sharing a session" a manual step that generates a
+shortened URL by default
 
-- Node v10+
-- Git
-- [Yarn](https://classic.yarnpkg.com/en/docs/install/#debian-stable)
+Note 1: user's of @jbrowse/react-linear-genome-view have to re-implement any
+URL query param logic themselves, as this component makes no attempt to access
+URL query params
 
-Then you can follow steps from our
-[README](https://github.com/gmod/jbrowse-components)
+Note 2: You can copy and paste your URL bar and put it in another tab on your
+own computer, and JBrowse will restore the session using BroadcastChannel
+(supported on Firefox and Chrome)
 
-It basically boils down to git cloning our repo, and running `yarn start` which
-creates a development server on port 3000
+#### How does the session sharing with shortened URLs work in JBrowse Web
 
-You can use `PORT=8080 yarn start` to manually specify a different port
+We have a central database hosted as a AWS dynamoDB that stores encrypted
+session snapshots that users create when they use the "Share" button. The
+"Share" button creates a random key on the client side (which becomes the
+&password= component of the share URL), encrypts the session client side, and
+sends the encrypted session without the key to the AWS dynamoDB.
 
-Note that this is a development server that gets started up. To install jbrowse
-2 in production on your webserver, see below
+This process, generates a URL with the format
 
-#### Do you have any tips for learning React and mobx-state-tree
+&session=share-&lt;DYNAMODBID&gt;&password=&lt;DECODEKEY&gt;
 
-Here is a short guide to React and mobx-state-tree that could help get you oriented
+The DECODEKEY is never transmitted to the server, but you can copy and paste
+the share URL, the person you shared automatically downloads the DynamoDB
+entry, and decodes it with the DECODEKEY from the URL that you provide
 
-https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f
+With this system, the contents of the dynamoDB are safe and unable to be read,
+even by JBrowse administrators.
 
-#### What technologies does JBrowse 2 use
+### Troubleshooting
 
-We build on a lot of great open source technology, some main ones include
+Doing things like:
 
-- React
-- mobx-state-tree
-- web-workers
-- Typescript
-- Electron (for desktop specifically)
+- Changing trackIds
+- Deleting tracks
 
-#### Should I configure gzip on my web server
+Can make user's saved sessions fail to load. If part of a session is
+inconsistent, currently, the entire session will fail to load. Therefore, make
+decisions to delete or change IDs carefully.
 
-Yes! JBrowse 2 may load ~5MB of JS resources (2.5MB for main thread bundle,
-2.5MB for worker bundle). If you have gzip enabled, the amount of data the user
-has to download though is only 1.4MB. We have worked on making bundle size
-small with lazy loading and other methods but adding gzip will help your users.
+#### What should I do if the Share system isn't working?
 
-It will depend on your particular server setup e.g. apache, nginx, cloudfront,
-etc. how this may be done, but it is recommended to look into this.
+If for any reason the session sharing system isn't working, e.g. you are behind
+a firewall or you are not able to connect to the central share server, you can
+click the "Gear" icon in the "Share" button pop-up, and it will give you the
+option to use "Long URL" instead of "Short URL" which let's you create share
+links without the central server
+
+Also, if you are implementing JBrowse Web on your own server and would like to
+create your own URL shortener, you can use the shareURL parameter in the
+config.json file to point at your own server instead of ours.
