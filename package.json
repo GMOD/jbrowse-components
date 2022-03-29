@@ -10,14 +10,14 @@
   "scripts": {
     "build": "yarn useDist && node scripts/build.js && yarn useSrc",
     "changelog": "lerna-changelog",
-    "useDist": "lerna run useDist --scope \"@jbrowse/plugin*\"",
-    "useSrc": "lerna run useSrc --scope \"@jbrowse/plugin*\"",
+    "useDist": "lerna run useDist --scope \"@jbrowse/plugin*\" --scope @jbrowse/text-indexing",
+    "useSrc": "lerna run useSrc --scope \"@jbrowse/plugin*\" --scope @jbrowse/text-indexing",
     "lerna-publish": "lerna publish",
     "lint": "eslint --report-unused-disable-directives --max-warnings 0 --ext .js,.ts,.jsx,.tsx .",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "pretest-ci": "cd products/jbrowse-react-linear-genome-view;yarn build; cd ../../;cd packages/text-indexing;yarn build; cd ../../",
+    "pretest-ci": "cd products/jbrowse-react-linear-genome-view;yarn build; cd ../../",
     "test-ci": "cross-env NODE_OPTIONS='--max-old-space-size=7000' jest --ci --coverage && jest --testMatch '**/*testmod.js'",
     "built-test-ci": "jest --ci integration.test.js",
     "test": "jest"
