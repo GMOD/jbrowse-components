@@ -34,7 +34,7 @@ export function isTransferable(object) {
 export function peekTransferables(data, result = []) {
   if (isTransferable(data)) {
     result.push(data)
-  } else if (isObject(data)) {
+  } else if (isObject(data) && !('containsNoTransferables' in data)) {
     for (const i in data) {
       peekTransferables(data[i], result)
     }
