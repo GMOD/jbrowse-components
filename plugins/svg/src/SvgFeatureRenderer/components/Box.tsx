@@ -1,17 +1,17 @@
 import React from 'react'
+import { observer } from 'mobx-react'
 import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { Region } from '@jbrowse/core/util/types'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { observer } from 'mobx-react'
-import { isUTR } from './util'
-import Arrow from './Arrow'
+import { Region, Feature } from '@jbrowse/core/util'
 import { SceneGraph } from '@jbrowse/core/util/layouts'
 
-const utrHeightFraction = 0.65
+// locals
+import { isUTR } from './util'
+import Arrow from './Arrow'
 
+const utrHeightFraction = 0.65
 function Box(props: {
   feature: Feature
   region: Region
@@ -25,7 +25,8 @@ function Box(props: {
   const { feature, region, config, featureLayout, bpPerPx, topLevel } = props
   const { start, end } = region
   const screenWidth = (end - start) / bpPerPx
-  const { left = 0, width = 0 } = featureLayout.absolute
+  const width = (feature.get('end') - feature.get('start')) / bpPerPx
+  const { left = 0 } = featureLayout.absolute
   let { top = 0, height = 0 } = featureLayout.absolute
 
   if (left + width < 0) {

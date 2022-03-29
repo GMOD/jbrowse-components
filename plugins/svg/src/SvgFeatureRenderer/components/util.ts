@@ -36,15 +36,16 @@ export function chooseGlyphComponent(
   const type = feature.get('type')
   const subfeatures = feature.get('subfeatures')
 
-  if (subfeatures) {
+  if (subfeatures && type !== 'CDS') {
     const hasSubSub = subfeatures.find(sub => !!sub.get('subfeatures'))
-    if (hasSubSub) {
-      return Subfeatures
-    } else if (
-      ['mRNA', 'transcript'].includes(type) &&
+    if (
+      ['mRNA', 'transcript', 'primary_transcript'].includes(type) &&
       subfeatures.find(f => f.get('type') === 'CDS')
     ) {
       return ProcessedTranscript
+    } else if (!feature.parent() && hasSubSub) {
+      // only do sub-sub on parent level features like gene
+      return Subfeatures
     } else {
       return Segments
     }
