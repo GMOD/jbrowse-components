@@ -8,7 +8,7 @@ import { ipcRenderer } from 'electron'
 import JBrowseRootModelFactory from '../rootModel'
 import corePlugins from '../corePlugins'
 import { version } from '../../package.json'
-import { TextIndexRpcMethod } from '../TextIndexRpcMethod'
+// import { TextIndexRpcMethod } from '../TextIndexRpcMethod'
 
 import {
   writeAWSAnalytics,
@@ -73,7 +73,7 @@ export async function createPluginManager(
       },
     })),
   ])
-  pm.addRpcMethod(() => new TextIndexRpcMethod(pm))
+  // pm.addRpcMethod(() => new TextIndexRpcMethod(pm))
   pm.createPluggableElements()
 
   const JBrowseRootModel = JBrowseRootModelFactory(pm)

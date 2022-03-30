@@ -9,7 +9,6 @@ import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { remoteAbortRpcHandler } from '@jbrowse/core/rpc/remoteAbortSignals'
 import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import corePlugins from './corePlugins'
-import { TextIndexRpcMethod } from './TextIndexRpcMethod'
 
 // prevent mobx-react from doing funny things when we render in the worker.
 // but only if we are running in the browser.  in node tests, leave it alone.
@@ -49,7 +48,7 @@ async function getPluginManager() {
   const plugins = [...corePlugins.map(p => ({ plugin: p })), ...runtimePlugins]
   const pluginManager = new PluginManager(plugins.map(P => new P.plugin()))
   // need to add to the startScreen/util as well
-  pluginManager.addRpcMethod(() => new TextIndexRpcMethod(pluginManager))
+  // pluginManager.addRpcMethod(() => new TextIndexRpcMethod(pluginManager))
   pluginManager.createPluggableElements()
   pluginManager.configure()
   jbPluginManager = pluginManager
