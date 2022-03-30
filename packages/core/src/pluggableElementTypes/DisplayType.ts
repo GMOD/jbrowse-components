@@ -16,12 +16,12 @@ export default class DisplayType extends PluggableElementBase {
   viewType: string
 
   constructor(stuff: {
-    name: string
-    stateModel: IAnyModelType
-    trackType: string
-    viewType: string
-    configSchema: AnyConfigurationSchemaType
-    ReactComponent: AnyReactComponentType
+    name: string;
+    stateModel: IAnyModelType;
+    trackType: string;
+    viewType: string;
+    configSchema: AnyConfigurationSchemaType;
+    ReactComponent: AnyReactComponentType;
   }) {
     super(stuff)
     this.stateModel = stuff.stateModel

@@ -7,16 +7,16 @@ import JBrowseCommand from '../base'
 
 interface Connection {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
+  [key: string]: any;
 }
 
 interface Config {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  assemblies?: { name: string; sequence: { [key: string]: any } }[]
-  configuration?: {}
-  connections?: Connection[]
-  defaultSession?: {}
-  tracks?: unknown[]
+  assemblies?: { name: string; sequence: { [key: string]: any } }[];
+  configuration?: {};
+  connections?: Connection[];
+  defaultSession?: {};
+  tracks?: unknown[];
 }
 
 export default class AddConnection extends JBrowseCommand {
@@ -94,7 +94,7 @@ export default class AddConnection extends JBrowseCommand {
     this.target = isDir ? `${output}/config.json` : output
 
     const { connectionUrlOrPath: argsPath } = runArgs as {
-      connectionUrlOrPath: string
+      connectionUrlOrPath: string;
     }
     const { config } = runFlags
     let { type, name, connectionId, assemblyName } = runFlags

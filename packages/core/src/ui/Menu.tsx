@@ -132,10 +132,10 @@ export interface RadioMenuItem extends BaseMenuItem {
 
 export interface SubMenuItem extends BaseMenuItem {
   type?: 'subMenu'
-  subMenu: MenuItem[]
+  subMenu: MyMenuItem[]
 }
 
-export type MenuItem =
+export type MyMenuItem =
   | MenuDivider
   | MenuSubHeader
   | NormalMenuItem
@@ -148,7 +148,7 @@ type OpenProp = MUIMenuProps['open']
 type OnCloseProp = MUIMenuProps['onClose']
 
 interface MenuPageProps {
-  menuItems: MenuItem[]
+  menuItems: MyMenuItem[]
   onMenuItemClick: (
     event: React.MouseEvent<HTMLLIElement, MouseEvent>,
     callback: Function,

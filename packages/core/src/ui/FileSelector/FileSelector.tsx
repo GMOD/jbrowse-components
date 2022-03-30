@@ -43,12 +43,12 @@ function shorten(str: string, len: number) {
 
 const FileSelector = observer(
   (props: {
-    location?: FileLocation
-    setLocation: (param: FileLocation) => void
-    setName?: (str: string) => void
-    name?: string
-    description?: string
-    rootModel?: AbstractRootModel
+    location?: FileLocation;
+    setLocation: (param: FileLocation) => void;
+    setName?: (str: string) => void;
+    name?: string;
+    description?: string;
+    rootModel?: AbstractRootModel;
   }) => {
     const { location, name, description, rootModel, setLocation } = props
     const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'

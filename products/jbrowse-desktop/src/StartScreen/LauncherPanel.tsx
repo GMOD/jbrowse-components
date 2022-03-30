@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
 export default function StartScreenOptionsPanel({
   setPluginManager,
 }: {
-  setPluginManager: (arg0: PluginManager) => void
+  setPluginManager: (arg0: PluginManager) => void;
 }) {
   const classes = useStyles()
   const [sequenceDialogOpen, setSequenceDialogOpen] = useState(false)

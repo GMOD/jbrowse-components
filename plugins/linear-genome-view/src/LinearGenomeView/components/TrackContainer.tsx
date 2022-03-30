@@ -81,8 +81,8 @@ function TrackContainer({
   model,
   track,
 }: {
-  model: LinearGenomeViewModel
-  track: BaseTrackModel
+  model: LinearGenomeViewModel;
+  track: BaseTrackModel;
 }) {
   const classes = useStyles()
   const display = track.displays[0]

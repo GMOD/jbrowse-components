@@ -12,13 +12,13 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 export interface TooManyHits {
-  name: string
-  hitLimit: number
+  name: string;
+  hitLimit: number;
 }
 
 interface SearchResults {
-  prefix: ({ name: string } | string)[]
-  exact: [string, number, string, string, number, number][]
+  prefix: ({ name: string } | string)[];
+  exact: [string, number, string, string, number, number][];
 }
 
 export type NamesIndexRecord = string | Array<string | number>

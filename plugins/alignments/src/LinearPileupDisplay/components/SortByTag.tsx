@@ -28,8 +28,8 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function SortByTagDlg(props: {
-  model: { setSortedBy: Function }
-  handleClose: () => void
+  model: { setSortedBy: Function };
+  handleClose: () => void;
 }) {
   const classes = useStyles()
   const { model, handleClose } = props

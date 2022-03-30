@@ -11,22 +11,22 @@ import { Region } from '@jbrowse/core/util'
 
 export interface Glyph
   extends React.FC<{
-    children: React.ReactNode
-    feature: Feature
-    featureLayout: SceneGraph
-    selected?: boolean
-    config: AnyConfigurationModel
-    region: Region
-    bpPerPx: number
-    topLevel?: boolean
-    [key: string]: unknown
+    children: React.ReactNode;
+    feature: Feature;
+    featureLayout: SceneGraph;
+    selected?: boolean;
+    config: AnyConfigurationModel;
+    region: Region;
+    bpPerPx: number;
+    topLevel?: boolean;
+    [key: string]: unknown;
   }> {
-  layOut?: Function
+  layOut?: Function;
 }
 
 export interface ExtraGlyphValidator {
-  glyph: Glyph
-  validator: (feature: Feature) => boolean
+  glyph: Glyph;
+  validator: (feature: Feature) => boolean;
 }
 
 export function chooseGlyphComponent(
@@ -54,20 +54,20 @@ export function chooseGlyphComponent(
 }
 
 interface BaseLayOutArgs {
-  layout: SceneGraph
-  bpPerPx: number
-  reversed: boolean
-  config: AnyConfigurationModel
+  layout: SceneGraph;
+  bpPerPx: number;
+  reversed: boolean;
+  config: AnyConfigurationModel;
 }
 
 interface FeatureLayOutArgs extends BaseLayOutArgs {
-  feature: Feature
-  extraGlyphs: ExtraGlyphValidator[]
+  feature: Feature;
+  extraGlyphs: ExtraGlyphValidator[];
 }
 
 interface SubfeatureLayOutArgs extends BaseLayOutArgs {
-  subfeatures: Feature[]
-  extraGlyphs: ExtraGlyphValidator[]
+  subfeatures: Feature[];
+  extraGlyphs: ExtraGlyphValidator[];
 }
 
 export function layOut({
@@ -133,7 +133,7 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
 export function layOutSubfeatures(args: SubfeatureLayOutArgs): void {
   const { layout, subfeatures, bpPerPx, reversed, config, extraGlyphs } = args
   subfeatures.forEach(feature => {
-    ;(chooseGlyphComponent(feature, extraGlyphs).layOut || layOut)({
+    (chooseGlyphComponent(feature, extraGlyphs).layOut || layOut)({
       layout,
       feature,
       bpPerPx,

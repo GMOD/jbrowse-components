@@ -4,9 +4,9 @@ import { observer } from 'mobx-react'
 import { FileLocation, isUriLocation } from '../../util/types'
 
 function UrlChooser(props: {
-  location?: FileLocation
-  setLocation: Function
-  label?: string
+  location?: FileLocation;
+  setLocation: Function;
+  label?: string;
 }) {
   const { location, setLocation, label } = props
 

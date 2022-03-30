@@ -46,7 +46,7 @@ const useStyles = makeStyles(theme => ({
 function QuickstartPanel({
   setPluginManager,
 }: {
-  setPluginManager: (arg0: PluginManager) => void
+  setPluginManager: (arg0: PluginManager) => void;
 }) {
   const classes = useStyles()
   const [selected, setSelected] = useState({} as Record<string, boolean>)

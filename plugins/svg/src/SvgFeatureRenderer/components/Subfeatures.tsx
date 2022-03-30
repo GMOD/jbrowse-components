@@ -14,9 +14,9 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { SceneGraph } from '@jbrowse/core/util/layouts'
 
 function Subfeatures(props: {
-  feature: Feature
-  featureLayout: SceneGraph
-  selected?: boolean
+  feature: Feature;
+  featureLayout: SceneGraph;
+  selected?: boolean;
 }) {
   const { feature, featureLayout, selected } = props
 
@@ -51,12 +51,12 @@ Subfeatures.layOut = ({
   config,
   extraGlyphs,
 }: {
-  layout: SceneGraph
-  feature: Feature
-  bpPerPx: number
-  reversed: boolean
-  config: AnyConfigurationModel
-  extraGlyphs: ExtraGlyphValidator[]
+  layout: SceneGraph;
+  feature: Feature;
+  bpPerPx: number;
+  reversed: boolean;
+  config: AnyConfigurationModel;
+  extraGlyphs: ExtraGlyphValidator[];
 }) => {
   const subLayout = layOutFeature({
     layout,

@@ -24,9 +24,9 @@ export class CoreGetRefNames extends RpcMethodType {
 
   async execute(
     args: {
-      sessionId: string
-      signal: RemoteAbortSignal
-      adapterConfig: {}
+      sessionId: string;
+      signal: RemoteAbortSignal;
+      adapterConfig: {};
     },
     rpcDriverClassName: string,
   ) {
@@ -53,9 +53,9 @@ export class CoreGetFileInfo extends RpcMethodType {
 
   async execute(
     args: {
-      sessionId: string
-      signal: RemoteAbortSignal
-      adapterConfig: {}
+      sessionId: string;
+      signal: RemoteAbortSignal;
+      adapterConfig: {};
     },
     rpcDriverClassName: string,
   ) {
@@ -80,9 +80,9 @@ export class CoreGetMetadata extends RpcMethodType {
 
   async execute(
     args: {
-      sessionId: string
-      signal: RemoteAbortSignal
-      adapterConfig: {}
+      sessionId: string;
+      signal: RemoteAbortSignal;
+      adapterConfig: {};
     },
     rpcDriverClassName: string,
   ) {
@@ -120,12 +120,12 @@ export class CoreGetFeatures extends RpcMethodType {
 
   async execute(
     args: {
-      sessionId: string
-      region: Region
-      adapterConfig: {}
-      signal?: RemoteAbortSignal
+      sessionId: string;
+      region: Region;
+      adapterConfig: {};
+      signal?: RemoteAbortSignal;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      opts?: any
+      opts?: any;
     },
     rpcDriverClassName: string,
   ) {
@@ -178,15 +178,15 @@ export class CoreFreeResources extends RpcMethodType {
 }
 
 export interface RenderArgs extends ServerSideRenderArgs {
-  adapterConfig: {}
-  rendererType: string
+  adapterConfig: {};
+  rendererType: string;
 }
 
 export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
-  assemblyName: string
-  regions: Region[]
-  adapterConfig: {}
-  rendererType: string
+  assemblyName: string;
+  regions: Region[];
+  adapterConfig: {};
+  rendererType: string;
 }
 
 export class CoreEstimateRegionStats extends RpcMethodType {
@@ -211,11 +211,11 @@ export class CoreEstimateRegionStats extends RpcMethodType {
 
   async execute(
     args: {
-      adapterConfig: {}
-      regions: Region[]
-      signal?: RemoteAbortSignal
-      headers?: Record<string, string>
-      sessionId: string
+      adapterConfig: {};
+      regions: Region[];
+      signal?: RemoteAbortSignal;
+      headers?: Record<string, string>;
+      sessionId: string;
     },
     rpcDriverClassName: string,
   ) {

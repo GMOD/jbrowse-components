@@ -16,8 +16,8 @@ function CloseConnectionDialog({
   setModalInfo,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  modalInfo: any
-  setModalInfo: Function
+  modalInfo: any;
+  setModalInfo: Function;
 }) {
   const { name, dereferenceTypeCount, safelyBreakConnection } = modalInfo
   return (

@@ -15,9 +15,9 @@ const Translocations = observer(
     trackConfigId,
     parentRef: ref,
   }: {
-    model: BreakpointViewModel
-    trackConfigId: string
-    parentRef: React.RefObject<SVGSVGElement>
+    model: BreakpointViewModel;
+    trackConfigId: string;
+    parentRef: React.RefObject<SVGSVGElement>;
   }) => {
     const { views } = model
     const session = getSession(model)

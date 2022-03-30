@@ -2,9 +2,9 @@ import { when as mobxWhen } from 'mobx'
 import { makeAbortError } from './aborting'
 
 interface WhenOpts {
-  timeout?: number
-  signal?: AbortSignal
-  name?: string
+  timeout?: number;
+  signal?: AbortSignal;
+  name?: string;
 }
 
 /**

@@ -13,14 +13,14 @@ import { SceneGraph } from '@jbrowse/core/util/layouts'
 const utrHeightFraction = 0.65
 
 function Box(props: {
-  feature: Feature
-  region: Region
-  config: AnyConfigurationModel
-  featureLayout: SceneGraph
-  bpPerPx: number
-  selected?: boolean
-  topLevel?: boolean
-  children?: React.ReactNode
+  feature: Feature;
+  region: Region;
+  config: AnyConfigurationModel;
+  featureLayout: SceneGraph;
+  bpPerPx: number;
+  selected?: boolean;
+  topLevel?: boolean;
+  children?: React.ReactNode;
 }) {
   const { feature, region, config, featureLayout, bpPerPx, topLevel } = props
   const { start, end } = region

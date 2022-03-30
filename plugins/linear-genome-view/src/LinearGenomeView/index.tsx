@@ -55,19 +55,19 @@ import ExportSvgDlg from './components/ExportSvgDialog'
 import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
 
 export interface BpOffset {
-  refName?: string
-  index: number
-  offset: number
-  start?: number
-  end?: number
-  coord?: number
-  reversed?: boolean
-  assemblyName?: string
-  oob?: boolean
+  refName?: string;
+  index: number;
+  offset: number;
+  start?: number;
+  end?: number;
+  coord?: number;
+  reversed?: boolean;
+  assemblyName?: string;
+  oob?: boolean;
 }
 
 export interface ExportSvgOptions {
-  rasterizeLayers?: boolean
+  rasterizeLayers?: boolean;
 }
 
 function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
@@ -89,10 +89,10 @@ function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
 }
 
 export interface NavLocation {
-  refName: string
-  start?: number
-  end?: number
-  assemblyName?: string
+  refName: string;
+  start?: number;
+  end?: number;
+  assemblyName?: string;
 }
 
 export const HEADER_BAR_HEIGHT = 48
@@ -298,9 +298,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         coord,
         regionNumber,
       }: {
-        refName: string
-        coord: number
-        regionNumber?: number
+        refName: string;
+        coord: number;
+        regionNumber?: number;
       }) {
         return viewBpToPx({ refName, coord, regionNumber, self })
       },
@@ -899,7 +899,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           (singleRefSeq && rightPx.offset < leftPx.offset) ||
           leftPx.index > rightPx.index
         ) {
-          ;[leftPx, rightPx] = [rightPx, leftPx]
+          [leftPx, rightPx] = [rightPx, leftPx]
         }
         const startOffset = {
           start: leftPx.start,
@@ -1056,7 +1056,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             return
           }
 
-          ;[assemblyName] = assemblyNames
+          [assemblyName] = assemblyNames
         }
         const assembly = assemblyManager.get(assemblyName)
         if (assembly) {

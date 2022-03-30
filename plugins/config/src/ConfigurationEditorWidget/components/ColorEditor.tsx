@@ -17,13 +17,13 @@ function serializeColor(color: Color) {
 }
 
 export const ColorSlot = (props: {
-  value: string
-  label: string
+  value: string;
+  label: string;
   TextFieldProps: {
-    helperText: string
-    fullWidth: boolean
-  }
-  onChange: (arg: string) => void
+    helperText: string;
+    fullWidth: boolean;
+  };
+  onChange: (arg: string) => void;
 }) => {
   const { value, label, TextFieldProps, onChange } = props
   const [displayed, setDisplayed] = useState(false)
@@ -74,11 +74,11 @@ ColorSlot.defaultProps = {
 
 function ColorEditorSlot(props: {
   slot: {
-    name: string
-    value: string
-    description: string
-    set: (arg: string) => void
-  }
+    name: string;
+    value: string;
+    description: string;
+    set: (arg: string) => void;
+  };
 }) {
   const { slot } = props
   return (

@@ -52,9 +52,9 @@ const ViewMenu = observer(
     IconButtonProps,
     IconProps,
   }: {
-    model: IBaseViewModel
-    IconButtonProps: IconButtonPropsType
-    IconProps: SvgIconProps
+    model: IBaseViewModel;
+    IconButtonProps: IconButtonPropsType;
+    IconProps: SvgIconProps;
   }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>()
 

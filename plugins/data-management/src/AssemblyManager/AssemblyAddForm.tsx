@@ -40,9 +40,9 @@ const AdapterSelector = observer(
     setAdapterSelection,
     adapterTypes,
   }: {
-    adapterSelection: string
-    setAdapterSelection: Function
-    adapterTypes: string[]
+    adapterSelection: string;
+    setAdapterSelection: Function;
+    adapterTypes: string[];
   }) => {
     return (
       <TextField
@@ -79,17 +79,17 @@ const AdapterInput = observer(
     chromSizesLocation,
     setChromSizesLocation,
   }: {
-    adapterSelection: string
-    fastaLocation: FileLocation
-    setFastaLocation: Function
-    faiLocation: FileLocation
-    setFaiLocation: Function
-    gziLocation: FileLocation
-    setGziLocation: Function
-    twoBitLocation: FileLocation
-    setTwoBitLocation: Function
-    chromSizesLocation: FileLocation
-    setChromSizesLocation: Function
+    adapterSelection: string;
+    fastaLocation: FileLocation;
+    setFastaLocation: Function;
+    faiLocation: FileLocation;
+    setFaiLocation: Function;
+    gziLocation: FileLocation;
+    setGziLocation: Function;
+    twoBitLocation: FileLocation;
+    setTwoBitLocation: Function;
+    chromSizesLocation: FileLocation;
+    setChromSizesLocation: Function;
   }) => {
     if (
       adapterSelection === 'IndexedFastaAdapter' ||
@@ -157,8 +157,8 @@ const AssemblyAddForm = observer(
     setFormOpen,
   }: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rootModel: any
-    setFormOpen: Function
+    rootModel: any;
+    setFormOpen: Function;
   }) => {
     const classes = useStyles()
 

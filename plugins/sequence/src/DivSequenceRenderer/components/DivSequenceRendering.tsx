@@ -17,28 +17,28 @@ import {
 } from '@jbrowse/core/util'
 
 interface MyProps {
-  exportSVG?: { rasterizeLayers: boolean }
-  features: Map<string, Feature>
-  regions: Region[]
-  bpPerPx: number
-  config: AnyConfigurationModel
-  highResolutionScaling: number
-  theme: any
-  showForward: boolean
-  showReverse: boolean
-  showTranslation: boolean
+  exportSVG?: { rasterizeLayers: boolean };
+  features: Map<string, Feature>;
+  regions: Region[];
+  bpPerPx: number;
+  config: AnyConfigurationModel;
+  highResolutionScaling: number;
+  theme: any;
+  showForward: boolean;
+  showReverse: boolean;
+  showTranslation: boolean;
 }
 
 function Translation(props: {
-  codonTable: any
-  seq: string
-  frame: number
-  bpPerPx: number
-  region: Region
-  reverse?: boolean
-  height: number
-  y: number
-  theme?: any
+  codonTable: any;
+  seq: string;
+  frame: number;
+  bpPerPx: number;
+  region: Region;
+  reverse?: boolean;
+  height: number;
+  y: number;
+  theme?: any;
 }) {
   const {
     codonTable,
@@ -121,13 +121,13 @@ function Translation(props: {
 }
 
 function DNA(props: {
-  seq: string
-  theme: any
-  bpPerPx: number
-  height: number
-  region: Region
-  feature: Feature
-  y: number
+  seq: string;
+  theme: any;
+  bpPerPx: number;
+  height: number;
+  region: Region;
+  feature: Feature;
+  y: number;
 }) {
   const { bpPerPx, region, feature, theme, height, seq, y } = props
   const render = 1 / bpPerPx >= 12

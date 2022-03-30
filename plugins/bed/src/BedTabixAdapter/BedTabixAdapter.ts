@@ -37,8 +37,8 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
       'bedGzLocation',
     ) as FileLocation
     const index = readConfObject(config, 'index') as {
-      indexType?: string
-      location: FileLocation
+      indexType?: string;
+      location: FileLocation;
     }
     const autoSql = readConfObject(config, 'autoSql') as string
     const { location, indexType } = index

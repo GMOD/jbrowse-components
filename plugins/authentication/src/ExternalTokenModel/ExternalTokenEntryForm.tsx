@@ -10,8 +10,8 @@ export const ExternalTokenEntryForm = ({
   internetAccountId,
   handleClose,
 }: {
-  internetAccountId: string
-  handleClose: (token?: string) => void
+  internetAccountId: string;
+  handleClose: (token?: string) => void;
 }) => {
   const [token, setToken] = useState('')
 

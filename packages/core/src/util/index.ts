@@ -117,9 +117,9 @@ export function findParentThat(
 }
 
 interface Animation {
-  lastPosition: number
-  lastTime?: number
-  lastVelocity?: number
+  lastPosition: number;
+  lastTime?: number;
+  lastVelocity?: number;
 }
 
 // based on https://github.com/react-spring/react-spring/blob/cd5548a987383b8023efd620f3726a981f9e18ea/src/animated/FrameLoop.ts
@@ -290,11 +290,11 @@ export function assembleLocString(region: ParsedLocString): string {
 }
 
 export interface ParsedLocString {
-  assemblyName?: string
-  refName: string
-  start?: number
-  end?: number
-  reversed?: boolean
+  assemblyName?: string;
+  refName: string;
+  start?: number;
+  end?: number;
+  reversed?: boolean;
 }
 
 export function parseLocStringOneBased(
@@ -579,18 +579,18 @@ export function iterMap<T, U>(
 }
 
 interface Assembly {
-  name: string
-  [key: string]: any
+  name: string;
+  [key: string]: any;
 }
 interface Track {
-  trackId: string
-  [key: string]: any
+  trackId: string;
+  [key: string]: any;
 }
 interface Config {
-  savedSessions: unknown[]
-  assemblies: Assembly[]
-  tracks: Track[]
-  defaultSession?: {}
+  savedSessions: unknown[];
+  assemblies: Assembly[];
+  tracks: Track[];
+  defaultSession?: {};
 }
 // similar to electron.js
 export function mergeConfigs(A: Config, B: Config) {
@@ -746,12 +746,12 @@ export function renameRegionIfNeeded(
 
 export async function renameRegionsIfNeeded<
   ARGTYPE extends {
-    assemblyName?: string
-    regions?: Region[]
-    signal?: AbortSignal
-    adapterConfig: unknown
-    sessionId: string
-    statusCallback?: Function
+    assemblyName?: string;
+    regions?: Region[];
+    signal?: AbortSignal;
+    adapterConfig: unknown;
+    sessionId: string;
+    statusCallback?: Function;
   },
 >(assemblyManager: AssemblyManager, args: ARGTYPE) {
   const { regions = [], adapterConfig } = args
@@ -793,9 +793,9 @@ export function stringify({
   coord,
   oob,
 }: {
-  coord: number
-  refName: string
-  oob?: boolean
+  coord: number;
+  refName: string;
+  oob?: boolean;
 }) {
   return `${refName}:${coord.toLocaleString('en-US')}${
     oob ? ' (out of bounds)' : ''
@@ -1030,11 +1030,11 @@ export function objectHash(obj: Record<string, any>) {
 }
 
 interface VirtualOffset {
-  blockPosition: number
+  blockPosition: number;
 }
 interface Block {
-  minv: VirtualOffset
-  maxv: VirtualOffset
+  minv: VirtualOffset;
+  maxv: VirtualOffset;
 }
 
 export async function bytesForRegions(
@@ -1044,7 +1044,7 @@ export async function bytesForRegions(
       ref: string,
       start: number,
       end: number,
-    ) => Promise<Block[]>
+    ) => Promise<Block[]>;
   },
 ) {
   const blockResults = await Promise.all(
@@ -1061,16 +1061,16 @@ export async function bytesForRegions(
 }
 
 export type ViewSnap = {
-  bpPerPx: number
-  interRegionPaddingWidth: number
-  minimumBlockWidth: number
-  width: number
+  bpPerPx: number;
+  interRegionPaddingWidth: number;
+  minimumBlockWidth: number;
+  width: number;
   displayedRegions: {
-    start: number
-    end: number
-    refName: string
-    reversed: boolean
-  }[]
+    start: number;
+    end: number;
+    refName: string;
+    reversed: boolean;
+  }[];
 }
 export function viewBpToPx({
   refName,
@@ -1078,10 +1078,10 @@ export function viewBpToPx({
   regionNumber,
   self,
 }: {
-  refName: string
-  coord: number
-  regionNumber?: number
-  self: ViewSnap
+  refName: string;
+  coord: number;
+  regionNumber?: number;
+  self: ViewSnap;
 }) {
   let offsetBp = 0
 

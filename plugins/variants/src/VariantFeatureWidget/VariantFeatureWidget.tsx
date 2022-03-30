@@ -118,9 +118,9 @@ function VariantSamples(props: any) {
 }
 
 function BreakendPanel(props: {
-  locStrings: string[]
-  model: any
-  feature: SimpleFeatureSerialized
+  locStrings: string[];
+  model: any;
+  feature: SimpleFeatureSerialized;
 }) {
   const { model, locStrings, feature } = props
   const session = getSession(model)

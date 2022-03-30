@@ -107,7 +107,7 @@ describe('viewportVisibleSection', () => {
 })
 
 describe('cartesian to polar', () => {
-  ;[
+  [
     [
       [-1, -1],
       [1.414, 180 + 45],
@@ -151,7 +151,7 @@ describe('cartesian to polar', () => {
 })
 
 describe('theta overlap testing', () => {
-  ;[
+  [
     [[0, 2 * Math.PI, 0, 2 * Math.PI], true],
     [[6.1, Math.PI / 2, 0, Math.PI / 2], true],
     [[6.1, Math.PI / 2, 0, 0.1], true],

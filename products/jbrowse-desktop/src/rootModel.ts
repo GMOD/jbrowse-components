@@ -40,8 +40,8 @@ function getSaveSession(model: RootModel) {
 }
 
 interface Menu {
-  label: string
-  menuItems: MenuItem[]
+  label: string;
+  menuItems: MenuItem[];
 }
 
 export default function rootModelFactory(pluginManager: PluginManager) {

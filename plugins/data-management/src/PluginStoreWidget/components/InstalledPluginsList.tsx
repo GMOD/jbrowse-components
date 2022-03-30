@@ -9,8 +9,8 @@ function InstalledPluginsList({
   pluginManager,
   model,
 }: {
-  pluginManager: PluginManager
-  model: PluginStoreModel
+  pluginManager: PluginManager;
+  model: PluginStoreModel;
 }) {
   const { plugins } = pluginManager as PluginManager
 

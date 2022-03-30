@@ -14,8 +14,8 @@ const DeleteSessionDialog = ({
   quickstartToDelete,
   onClose,
 }: {
-  quickstartToDelete: string
-  onClose: (arg0: boolean) => void
+  quickstartToDelete: string;
+  onClose: (arg0: boolean) => void;
 }) => {
   const [error, setError] = useState<unknown>()
   return (

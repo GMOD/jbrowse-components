@@ -10,8 +10,8 @@ import {
 } from '@material-ui/core'
 
 function canSetDefaultSession(obj: unknown): obj is {
-  jbrowse: { setDefaultSessionConf: Function }
-  session: unknown
+  jbrowse: { setDefaultSessionConf: Function };
+  session: unknown;
 } {
   return typeof obj === 'object' && !!obj && 'jbrowse' in obj
 }

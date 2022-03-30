@@ -17,13 +17,13 @@ export default class WidgetType extends PluggableElementBase {
   stateModel: IAnyModelType
 
   constructor(stuff: {
-    name: string
-    heading?: string
-    HeadingComponent?: ComponentType<{ model: IAnyStateTreeNode }>
-    configSchema: AnyConfigurationSchemaType
-    stateModel: IAnyModelType
+    name: string;
+    heading?: string;
+    HeadingComponent?: ComponentType<{ model: IAnyStateTreeNode }>;
+    configSchema: AnyConfigurationSchemaType;
+    stateModel: IAnyModelType;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ReactComponent: LazyExoticComponent<React.FC<any>> | React.FC<any>
+    ReactComponent: LazyExoticComponent<React.FC<any>> | React.FC<any>;
   }) {
     super(stuff)
     this.heading = stuff.heading

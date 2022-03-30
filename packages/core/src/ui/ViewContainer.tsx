@@ -71,9 +71,9 @@ const ViewMenu = observer(
     IconButtonProps,
     IconProps,
   }: {
-    model: IBaseViewModel
-    IconButtonProps: IconButtonPropsType
-    IconProps: SvgIconProps
+    model: IBaseViewModel;
+    IconButtonProps: IconButtonPropsType;
+    IconProps: SvgIconProps;
   }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>()
     const { menuItems } = model
@@ -121,11 +121,11 @@ export default withSize()(
       children,
       size: { width },
     }: {
-      view: IBaseViewModel
-      onClose: () => void
-      style: React.CSSProperties
-      children: React.ReactNode
-      size: { width: number }
+      view: IBaseViewModel;
+      onClose: () => void;
+      style: React.CSSProperties;
+      children: React.ReactNode;
+      size: { width: number };
     }) => {
       const classes = useStyles()
       const theme = useTheme()

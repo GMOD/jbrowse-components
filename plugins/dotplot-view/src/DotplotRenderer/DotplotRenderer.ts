@@ -18,22 +18,22 @@ const { parseCigar } = MismatchParser
 
 export interface DotplotRenderArgsDeserialized
   extends ComparativeRenderArgsDeserialized {
-  height: number
-  width: number
-  highResolutionScaling: number
+  height: number;
+  width: number;
+  highResolutionScaling: number;
   view: {
-    hview: Dotplot1DViewModel
-    vview: Dotplot1DViewModel
-  }
+    hview: Dotplot1DViewModel;
+    vview: Dotplot1DViewModel;
+  };
 }
 
 interface DotplotRenderArgs extends ComparativeRenderArgs {
-  adapterConfig: AnyConfigurationModel
-  sessionId: string
+  adapterConfig: AnyConfigurationModel;
+  sessionId: string;
   view: {
-    hview: { displayedRegions: Region[] }
-    vview: { displayedRegions: Region[] }
-  }
+    hview: { displayedRegions: Region[] };
+    vview: { displayedRegions: Region[] };
+  };
 }
 
 function drawCir(
@@ -116,7 +116,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const mateRef = mate.refName
 
       if (strand === -1) {
-        ;[end, start] = [start, end]
+        [end, start] = [start, end]
       }
 
       let r

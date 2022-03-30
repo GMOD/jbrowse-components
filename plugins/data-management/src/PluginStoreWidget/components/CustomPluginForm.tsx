@@ -52,9 +52,9 @@ function CustomPluginForm({
   onClose,
   model,
 }: {
-  open: boolean
-  onClose(): void
-  model: PluginStoreModel
+  open: boolean;
+  onClose(): void;
+  model: PluginStoreModel;
 }) {
   const classes = useStyles()
   const [umdPluginName, setUMDPluginName] = useState('')

@@ -3,11 +3,11 @@ import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 interface LayoutItem {
-  uniqueId: string
-  anchorLocation: number
-  width: number
-  height: number
-  data: { score: number }
+  uniqueId: string;
+  anchorLocation: number;
+  width: number;
+  height: number;
+  data: { score: number };
 }
 
 type LayoutEntry = LayoutItem & { x: number; y: number }
@@ -143,8 +143,8 @@ export class PrecomputedFloatingLayout {
     pairs,
     totalHeight,
   }: {
-    pairs: [string, LayoutEntry][]
-    totalHeight: number
+    pairs: [string, LayoutEntry][];
+    totalHeight: number;
   }) {
     this.layout = new Map(pairs)
     this.totalHeight = totalHeight

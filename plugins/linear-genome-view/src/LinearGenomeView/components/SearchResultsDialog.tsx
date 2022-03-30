@@ -39,9 +39,9 @@ export default function SearchResultsDialog({
   optAssemblyName,
   handleClose,
 }: {
-  model: LinearGenomeViewModel
-  optAssemblyName?: string
-  handleClose: () => void
+  model: LinearGenomeViewModel;
+  optAssemblyName?: string;
+  handleClose: () => void;
 }) {
   const classes = useStyles()
   const session = getSession(model)

@@ -1,6 +1,6 @@
 export interface Command {
-  name: string
-  args: unknown[]
+  name: string;
+  args: unknown[];
 }
 
 export enum CallSchemaField {
@@ -127,11 +127,11 @@ export type SetterName = keyof typeof setterDataTypes
 export type MethodName = keyof typeof methodSignatures
 
 export interface SetterCall extends Command {
-  name: SetterName
+  name: SetterName;
 }
 
 export interface MethodCall extends Command {
-  name: MethodName
+  name: MethodName;
 }
 
 export function isMethodCall(call: Command): call is MethodCall {

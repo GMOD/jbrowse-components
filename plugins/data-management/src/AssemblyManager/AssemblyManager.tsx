@@ -47,8 +47,8 @@ const AssemblyManager = observer(
     onClose,
   }: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rootModel: any
-    onClose: (arg: boolean) => void
+    rootModel: any;
+    onClose: (arg: boolean) => void;
   }) => {
     const classes = useStyles()
     const [isFormOpen, setFormOpen] = useState(false)

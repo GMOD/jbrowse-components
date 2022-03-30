@@ -7,7 +7,7 @@ const AssemblyEditor = observer(
     assembly,
   }: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    assembly: any
+    assembly: any;
   }) => {
     return <ConfigurationEditor model={{ target: assembly }} />
   },

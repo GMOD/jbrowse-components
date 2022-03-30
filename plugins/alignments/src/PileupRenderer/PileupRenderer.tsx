@@ -64,33 +64,33 @@ function getContrastBaseMap(theme: Theme) {
 }
 
 export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
-  colorBy?: { type: string; tag?: string }
-  colorTagMap?: Record<string, string>
-  modificationTagMap?: Record<string, string>
+  colorBy?: { type: string; tag?: string };
+  colorTagMap?: Record<string, string>;
+  modificationTagMap?: Record<string, string>;
   sortedBy?: {
-    type: string
-    pos: number
-    refName: string
-    assemblyName: string
-    tag?: string
-  }
-  showSoftClip: boolean
-  highResolutionScaling: number
+    type: string;
+    pos: number;
+    refName: string;
+    assemblyName: string;
+    tag?: string;
+  };
+  showSoftClip: boolean;
+  highResolutionScaling: number;
 }
 
 export interface RenderArgsDeserializedWithFeaturesAndLayout
   extends RenderArgsDeserialized {
-  features: Map<string, Feature>
-  layout: BaseLayout<Feature>
-  regionSequence?: string
+  features: Map<string, Feature>;
+  layout: BaseLayout<Feature>;
+  regionSequence?: string;
 }
 
 interface LayoutRecord {
-  feature: Feature
-  leftPx: number
-  rightPx: number
-  topPx: number
-  heightPx: number
+  feature: Feature;
+  leftPx: number;
+  rightPx: number;
+  topPx: number;
+  heightPx: number;
 }
 
 const alignmentColoring: { [key: string]: string } = {
@@ -113,9 +113,9 @@ const alignmentColoring: { [key: string]: string } = {
 }
 
 interface LayoutFeature {
-  heightPx: number
-  topPx: number
-  feature: Feature
+  heightPx: number;
+  topPx: number;
+  feature: Feature;
 }
 
 function shouldDrawMismatches(type?: string) {
@@ -142,13 +142,13 @@ export default class PileupRenderer extends BoxRendererType {
     heightPx,
     displayMode,
   }: {
-    feature: Feature
-    layout: BaseLayout<Feature>
-    bpPerPx: number
-    region: Region
-    showSoftClip?: boolean
-    heightPx: number
-    displayMode: string
+    feature: Feature;
+    layout: BaseLayout<Feature>;
+    bpPerPx: number;
+    region: Region;
+    showSoftClip?: boolean;
+    heightPx: number;
+    displayMode: string;
   }): LayoutRecord | null {
     let expansionBefore = 0
     let expansionAfter = 0
@@ -289,10 +289,10 @@ export default class PileupRenderer extends BoxRendererType {
     region: Region,
     bpPerPx: number,
     props: {
-      colorForBase: Record<string, string>
-      contrastForBase: Record<string, string>
-      charWidth: number
-      charHeight: number
+      colorForBase: Record<string, string>;
+      contrastForBase: Record<string, string>;
+      charWidth: number;
+      charHeight: number;
     },
   ) {
     const { colorForBase, contrastForBase, charWidth, charHeight } = props
@@ -583,11 +583,11 @@ export default class PileupRenderer extends BoxRendererType {
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
     props: RenderArgsDeserializedWithFeaturesAndLayout & {
-      colorForBase: Record<string, string>
-      contrastForBase: Record<string, string>
-      charWidth: number
-      charHeight: number
-      defaultColor: boolean
+      colorForBase: Record<string, string>;
+      contrastForBase: Record<string, string>;
+      charWidth: number;
+      charHeight: number;
+      defaultColor: boolean;
     },
   ) {
     const {
@@ -722,15 +722,15 @@ export default class PileupRenderer extends BoxRendererType {
     feat: LayoutFeature,
     props: RenderArgsDeserializedWithFeaturesAndLayout,
     opts: {
-      colorForBase: { [key: string]: string }
-      contrastForBase: { [key: string]: string }
-      mismatchAlpha?: boolean
-      drawSNPs?: boolean
-      drawIndels?: boolean
-      minSubfeatureWidth: number
-      largeInsertionIndicatorScale: number
-      charWidth: number
-      charHeight: number
+      colorForBase: { [key: string]: string };
+      contrastForBase: { [key: string]: string };
+      mismatchAlpha?: boolean;
+      drawSNPs?: boolean;
+      drawIndels?: boolean;
+      minSubfeatureWidth: number;
+      largeInsertionIndicatorScale: number;
+      charWidth: number;
+      charHeight: number;
     },
   ) {
     const {

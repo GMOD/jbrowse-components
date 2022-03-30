@@ -33,8 +33,8 @@ function TracksContainer({
   children,
   model,
 }: {
-  children: React.ReactNode
-  model: LGV
+  children: React.ReactNode;
+  model: LGV;
 }) {
   const classes = useStyles()
   // refs are to store these variables to avoid repeated rerenders associated

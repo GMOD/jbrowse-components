@@ -31,10 +31,10 @@ const useStyles = makeStyles(theme => ({
 
 function SetMaxHeightDlg(props: {
   model: {
-    maxHeight?: number
-    setMaxHeight: Function
-  }
-  handleClose: () => void
+    maxHeight?: number;
+    setMaxHeight: Function;
+  };
+  handleClose: () => void;
 }) {
   const { model, handleClose } = props
   const classes = useStyles()

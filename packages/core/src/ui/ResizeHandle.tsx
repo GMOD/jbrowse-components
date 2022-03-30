@@ -28,11 +28,11 @@ function ResizeHandle({
   className: originalClassName,
   ...props
 }: {
-  onDrag: (arg: number) => number
-  vertical?: boolean
-  flexbox?: boolean
-  className?: string
-  [props: string]: unknown
+  onDrag: (arg: number) => number;
+  vertical?: boolean;
+  flexbox?: boolean;
+  className?: string;
+  [props: string]: unknown;
 }) {
   const [mouseDragging, setMouseDragging] = useState(false)
   const prevPos = useRef(0)

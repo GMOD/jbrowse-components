@@ -50,8 +50,8 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
   async deserializeArguments<
     SERIALIZED extends {
-      signal?: RemoteAbortSignal
-      blobMap?: Record<string, File>
+      signal?: RemoteAbortSignal;
+      blobMap?: Record<string, File>;
     },
   >(serializedArgs: SERIALIZED, _rpcDriverClassName: string) {
     if (serializedArgs.blobMap) {

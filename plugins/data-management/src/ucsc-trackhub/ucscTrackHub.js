@@ -56,7 +56,7 @@ export function generateTracks(
     do {
       currentTrackName = trackDb.get(currentTrackName).get('parent')
       if (currentTrackName) {
-        ;[currentTrackName] = currentTrackName.split(' ')
+        [currentTrackName] = currentTrackName.split(' ')
         parentTracks.push(trackDb.get(currentTrackName))
       }
     } while (currentTrackName)

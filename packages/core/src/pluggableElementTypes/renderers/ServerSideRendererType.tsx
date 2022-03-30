@@ -20,33 +20,33 @@ import { createJBrowseTheme } from '../../ui'
 import ServerSideRenderedContent from './ServerSideRenderedContent'
 
 interface BaseRenderArgs extends RenderProps {
-  sessionId: string
+  sessionId: string;
   // Note that signal serialization happens after serializeArgsInClient and
   // deserialization happens before deserializeArgsInWorker
-  signal?: AbortSignal
-  theme: ThemeOptions
-  exportSVG: { rasterizeLayers?: boolean }
+  signal?: AbortSignal;
+  theme: ThemeOptions;
+  exportSVG: { rasterizeLayers?: boolean };
 }
 
 export interface RenderArgs extends BaseRenderArgs {
-  config: SnapshotOrInstance<AnyConfigurationModel>
-  filters: SerializableFilterChain
+  config: SnapshotOrInstance<AnyConfigurationModel>;
+  filters: SerializableFilterChain;
 }
 
 export interface RenderArgsSerialized extends BaseRenderArgs {
-  statusCallback?: (arg: string) => void
-  config: SnapshotIn<AnyConfigurationModel>
-  filters: SerializedFilterChain
+  statusCallback?: (arg: string) => void;
+  config: SnapshotIn<AnyConfigurationModel>;
+  filters: SerializedFilterChain;
 }
 export interface RenderArgsDeserialized extends BaseRenderArgs {
-  config: AnyConfigurationModel
-  filters: SerializableFilterChain
+  config: AnyConfigurationModel;
+  filters: SerializableFilterChain;
 }
 
 export type { RenderResults }
 
 export interface ResultsSerialized extends Omit<RenderResults, 'reactElement'> {
-  html: string
+  html: string;
 }
 
 export type ResultsDeserialized = RenderResults

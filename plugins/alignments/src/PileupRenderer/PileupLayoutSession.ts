@@ -7,20 +7,20 @@ import MultiLayout from '@jbrowse/core/util/layouts/MultiLayout'
 import { readConfObject } from '@jbrowse/core/configuration'
 
 export interface PileupLayoutSessionProps {
-  config: AnyConfigurationModel
-  bpPerPx: number
-  filters: SerializableFilterChain
-  sortedBy: unknown
-  showSoftClip: unknown
+  config: AnyConfigurationModel;
+  bpPerPx: number;
+  filters: SerializableFilterChain;
+  sortedBy: unknown;
+  showSoftClip: unknown;
 }
 
 type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
 interface CachedPileupLayout {
-  layout: MyMultiLayout
-  config: AnyConfigurationModel
-  filters: SerializableFilterChain
-  sortedBy: unknown
-  showSoftClip: boolean
+  layout: MyMultiLayout;
+  config: AnyConfigurationModel;
+  filters: SerializableFilterChain;
+  sortedBy: unknown;
+  showSoftClip: boolean;
 }
 // Sorting and revealing soft clip changes the layout of Pileup renderer
 // Adds extra conditions to see if cached layout is valid

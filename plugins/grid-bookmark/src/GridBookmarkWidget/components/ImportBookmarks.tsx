@@ -37,8 +37,8 @@ function ImportBookmarks({
   model,
   assemblyName,
 }: {
-  model: GridBookmarkModel
-  assemblyName: string
+  model: GridBookmarkModel;
+  assemblyName: string;
 }) {
   const classes = useStyles()
   const session = getSession(model)

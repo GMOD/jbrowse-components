@@ -17,13 +17,13 @@ export default class ConnectionType extends PluggableElementBase {
   configEditorComponent?: AnyReactComponentType
 
   constructor(stuff: {
-    name: string
-    stateModel: IAnyModelType
-    configSchema: AnyConfigurationSchemaType
-    displayName: string
-    description: string
-    configEditorComponent?: AnyReactComponentType
-    url: string
+    name: string;
+    stateModel: IAnyModelType;
+    configSchema: AnyConfigurationSchemaType;
+    displayName: string;
+    description: string;
+    configEditorComponent?: AnyReactComponentType;
+    url: string;
   }) {
     super(stuff)
     this.stateModel = stuff.stateModel

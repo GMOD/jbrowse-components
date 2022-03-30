@@ -8,17 +8,17 @@ import { SearchType, BaseTextSearchAdapter } from '../data_adapters/BaseAdapter'
 import { readConfObject } from '../configuration'
 
 export interface BaseArgs {
-  queryString: string
-  searchType?: SearchType
-  signal?: AbortSignal
-  limit?: number
-  pageNumber?: number
+  queryString: string;
+  searchType?: SearchType;
+  signal?: AbortSignal;
+  limit?: number;
+  pageNumber?: number;
 }
 
 export interface SearchScope {
-  includeAggregateIndexes: boolean
-  assemblyName: string
-  tracks?: Array<string>
+  includeAggregateIndexes: boolean;
+  assemblyName: string;
+  tracks?: Array<string>;
 }
 
 export default class TextSearchManager {
@@ -60,9 +60,9 @@ export default class TextSearchManager {
   relevantAdapters(searchScope: SearchScope) {
     const { aggregateTextSearchAdapters, tracks } = this.pluginManager.rootModel
       ?.jbrowse as {
-      tracks: AnyConfigurationModel[]
+      tracks: AnyConfigurationModel[];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      aggregateTextSearchAdapters: any
+      aggregateTextSearchAdapters: any;
     }
 
     const { assemblyName } = searchScope

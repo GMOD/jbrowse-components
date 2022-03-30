@@ -34,9 +34,9 @@ function ManageConnectionsDlg({
   handleClose,
   breakConnection,
 }: {
-  handleClose: () => void
-  session: AbstractSessionModel
-  breakConnection: Function
+  handleClose: () => void;
+  session: AbstractSessionModel;
+  breakConnection: Function;
 }) {
   const classes = useStyles()
   const { adminMode, connections, sessionConnections } = session

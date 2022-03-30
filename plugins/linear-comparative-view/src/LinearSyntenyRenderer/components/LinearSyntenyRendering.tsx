@@ -44,7 +44,7 @@ function layoutMatches(
           const f2s = f2.get('start')
           const f2e = f2.get('end')
           if (f1.get('strand') === -1) {
-            ;[f1e, f1s] = [f1s, f1e]
+            [f1e, f1s] = [f1s, f1e]
           }
           const a1 = assemblyManager?.get(f1.get('assemblyName'))
           const a2 = assemblyManager?.get(f2.get('assemblyName'))
@@ -96,12 +96,12 @@ function LinearSyntenyRendering({
   features,
   trackIds,
 }: {
-  width: number
-  height: number
-  displayModel: LinearComparativeDisplay
-  highResolutionScaling: number
-  features: SimpleFeatureSerialized[][]
-  trackIds: string[]
+  width: number;
+  height: number;
+  displayModel: LinearComparativeDisplay;
+  highResolutionScaling: number;
+  features: SimpleFeatureSerialized[][];
+  trackIds: string[];
 }) {
   const ref = useRef<HTMLCanvasElement>(null)
   const { color, assemblyManager, parentView } = getResources(displayModel)

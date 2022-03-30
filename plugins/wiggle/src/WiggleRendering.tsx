@@ -6,15 +6,15 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 
 function WiggleRendering(props: {
-  regions: Region[]
-  features: Map<string, Feature>
-  bpPerPx: number
-  width: number
-  height: number
-  onMouseLeave: Function
-  onMouseMove: Function
-  onFeatureClick: Function
-  blockKey: string
+  regions: Region[];
+  features: Map<string, Feature>;
+  bpPerPx: number;
+  width: number;
+  height: number;
+  onMouseLeave: Function;
+  onMouseMove: Function;
+  onFeatureClick: Function;
+  blockKey: string;
 }) {
   const {
     regions,

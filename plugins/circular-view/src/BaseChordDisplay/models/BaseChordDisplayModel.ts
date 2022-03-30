@@ -148,11 +148,11 @@ export const BaseChordDisplayModel = types
       reactElement,
       renderingComponent,
     }: {
-      message: string
+      message: string;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      data: any
-      reactElement: React.ReactElement
-      renderingComponent: AnyReactComponentType
+      data: any;
+      reactElement: React.ReactElement;
+      renderingComponent: AnyReactComponentType;
     }) {
       if (message) {
         self.filled = false

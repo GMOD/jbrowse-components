@@ -74,11 +74,11 @@ export async function parseBedPEBuffer(buffer: Buffer, options: ParseOptions) {
   const b = removeBedHeaders(buffer)
   const data = await parseTsvBuffer(b)
   interface BedColumn {
-    name: string
+    name: string;
     dataType: {
-      type: string
-    }
-    featureField: string[]
+      type: string;
+    };
+    featureField: string[];
   }
   const bedColumns: BedColumn[] = [
     { name: 'chrom1', dataType: { type: 'Text' }, featureField: ['refName'] },

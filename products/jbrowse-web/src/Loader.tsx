@@ -101,7 +101,7 @@ function NoConfigMessage() {
 export function Loader({
   initialTimestamp = Date.now(),
 }: {
-  initialTimestamp?: number
+  initialTimestamp?: number;
 }) {
   // return value if defined, else convert null to undefined for use with
   // types.maybe
@@ -151,8 +151,8 @@ const SessionTriaged = ({
   loader,
   handleClose,
 }: {
-  loader: SessionLoaderModel
-  handleClose: Function
+  loader: SessionLoaderModel;
+  handleClose: Function;
 }) => {
   return (
     <Suspense fallback={<div />}>
@@ -206,8 +206,8 @@ function ConfigTriaged({
   loader,
   handleClose,
 }: {
-  loader: SessionLoaderModel
-  handleClose: Function
+  loader: SessionLoaderModel;
+  handleClose: Function;
 }) {
   return (
     <Suspense fallback={<div />}>
@@ -234,9 +234,9 @@ const Renderer = observer(
     initialTimestamp,
     initialSessionQuery,
   }: {
-    loader: SessionLoaderModel
-    initialTimestamp: number
-    initialSessionQuery: string | null | undefined
+    loader: SessionLoaderModel;
+    initialTimestamp: number;
+    initialSessionQuery: string | null | undefined;
   }) => {
     const { sessionError, configError, ready, shareWarningOpen } = loader
     const [pm, setPluginManager] = useState<PluginManager>()

@@ -1,31 +1,31 @@
 {
-  "env": {
-    "browser": true
-  },
-  "extends": [
-    "plugin:@typescript-eslint/recommended",
-    "plugin:monorepo/recommended",
-    "plugin:prettier/recommended",
-    "prettier/@typescript-eslint",
-    "prettier/react",
-    "react-app"
-  ],
+  "env": { "browser": true },
+  "root": true,
   "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "react"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier",
+    "plugin:react/recommended"
+  ],
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true
-    },
-    "project": "./tsconfig.json"
+    }
   },
-  "plugins": ["@typescript-eslint", "eslint-plugin-tsdoc"],
   "rules": {
     "@typescript-eslint/explicit-function-return-type": 0,
     "@typescript-eslint/no-use-before-define": 0,
-    "@typescript-eslint/no-var-requires": 0,
+    "@typescript-eslint/camelcase": 0,
+    "@typescript-eslint/no-unused-vars": ["warn"],
     "@typescript-eslint/no-empty-function": 0,
+    "@typescript-eslint/no-var-requires": 0,
     "@typescript-eslint/ban-ts-ignore": 0,
-    "monorepo/no-internal-import": 0,
-    "no-use-before-define": 0,
-    "@typescript-eslint/no-use-before-define": ["error"]
+    "@typescript-eslint/no-unused-vars": 0,
+    "@typescript-eslint/no-redeclare": "off",
+    "no-redeclare": "off",
+    "no-undef": 0,
+    "react/display-name": "off"
   }
 }

@@ -12,8 +12,8 @@ export const HTTPBasicLoginForm = ({
   internetAccountId,
   handleClose,
 }: {
-  internetAccountId: string
-  handleClose: (arg?: string) => void
+  internetAccountId: string;
+  handleClose: (arg?: string) => void;
 }) => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')

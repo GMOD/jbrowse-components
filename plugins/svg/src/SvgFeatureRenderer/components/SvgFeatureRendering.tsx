@@ -24,14 +24,14 @@ const textPadding = 2
 const svgHeightPadding = 100
 
 function RenderedFeatureGlyph(props: {
-  feature: Feature
-  bpPerPx: number
-  region: Region
-  config: AnyConfigurationModel
-  displayMode: string
-  layout: BaseLayout<unknown>
-  extraGlyphs: ExtraGlyphValidator[]
-  [key: string]: unknown
+  feature: Feature;
+  bpPerPx: number;
+  region: Region;
+  config: AnyConfigurationModel;
+  displayMode: string;
+  layout: BaseLayout<unknown>;
+  extraGlyphs: ExtraGlyphValidator[];
+  [key: string]: unknown;
 }) {
   const { feature, bpPerPx, region, config, displayMode, layout, extraGlyphs } =
     props
@@ -130,15 +130,15 @@ function RenderedFeatureGlyph(props: {
 
 const RenderedFeatures = observer(
   (props: {
-    features: Map<string, Feature>
-    isFeatureDisplayed: (f: Feature) => boolean
-    bpPerPx: number
-    config: AnyConfigurationModel
-    displayMode: string
-    region: Region
-    extraGlyphs: ExtraGlyphValidator[]
-    layout: BaseLayout<unknown>
-    [key: string]: unknown
+    features: Map<string, Feature>;
+    isFeatureDisplayed: (f: Feature) => boolean;
+    bpPerPx: number;
+    config: AnyConfigurationModel;
+    displayMode: string;
+    region: Region;
+    extraGlyphs: ExtraGlyphValidator[];
+    layout: BaseLayout<unknown>;
+    [key: string]: unknown;
   }) => {
     const { features = new Map(), isFeatureDisplayed } = props
 
@@ -161,34 +161,34 @@ const RenderedFeatures = observer(
 type LayoutRecord = [number, number, number, number]
 
 function SvgFeatureRendering(props: {
-  layout: BaseLayout<unknown>
-  blockKey: string
-  regions: Region[]
-  bpPerPx: number
-  config: AnyConfigurationModel
-  features: Map<string, Feature>
+  layout: BaseLayout<unknown>;
+  blockKey: string;
+  regions: Region[];
+  bpPerPx: number;
+  config: AnyConfigurationModel;
+  features: Map<string, Feature>;
   displayModel: {
-    getFeatureByID?: (arg0: string, arg1: string) => LayoutRecord
+    getFeatureByID?: (arg0: string, arg1: string) => LayoutRecord;
     getFeatureOverlapping?: (
       blockKey: string,
       bp: number,
       y: number,
-    ) => string | undefined
-    selectedFeatureId?: string
-    featureIdUnderMouse?: string
-    contextMenuFeature?: Feature
-  }
-  exportSVG: boolean
-  featureDisplayHandler: (f: Feature) => boolean
-  extraGlyphs: ExtraGlyphValidator[]
-  onMouseOut?: React.MouseEventHandler
-  onMouseDown?: React.MouseEventHandler
-  onMouseLeave?: React.MouseEventHandler
-  onMouseEnter?: React.MouseEventHandler
-  onMouseOver?: React.MouseEventHandler
-  onMouseMove?: (event: React.MouseEvent, featureId?: string) => void
-  onMouseUp?: React.MouseEventHandler
-  onClick?: React.MouseEventHandler
+    ) => string | undefined;
+    selectedFeatureId?: string;
+    featureIdUnderMouse?: string;
+    contextMenuFeature?: Feature;
+  };
+  exportSVG: boolean;
+  featureDisplayHandler: (f: Feature) => boolean;
+  extraGlyphs: ExtraGlyphValidator[];
+  onMouseOut?: React.MouseEventHandler;
+  onMouseDown?: React.MouseEventHandler;
+  onMouseLeave?: React.MouseEventHandler;
+  onMouseEnter?: React.MouseEventHandler;
+  onMouseOver?: React.MouseEventHandler;
+  onMouseMove?: (event: React.MouseEvent, featureId?: string) => void;
+  onMouseUp?: React.MouseEventHandler;
+  onClick?: React.MouseEventHandler;
 }) {
   const {
     layout,

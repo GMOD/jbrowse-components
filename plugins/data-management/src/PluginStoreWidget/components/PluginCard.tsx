@@ -44,9 +44,9 @@ function PluginCard({
   model,
   adminMode,
 }: {
-  plugin: JBrowsePlugin
-  model: PluginStoreModel
-  adminMode: boolean
+  plugin: JBrowsePlugin;
+  model: PluginStoreModel;
+  adminMode: boolean;
 }) {
   const classes = useStyles()
   const session = getSession(model)

@@ -47,17 +47,17 @@ function AdapterInput({
   setTwoBitLocation,
   setChromSizesLocation,
 }: {
-  adapterSelection: string
-  fastaLocation: FileLocation
-  setFastaLocation: Function
-  faiLocation: FileLocation
-  setFaiLocation: Function
-  gziLocation: FileLocation
-  chromSizesLocation: FileLocation
-  setGziLocation: Function
-  twoBitLocation: FileLocation
-  setTwoBitLocation: Function
-  setChromSizesLocation: Function
+  adapterSelection: string;
+  fastaLocation: FileLocation;
+  setFastaLocation: Function;
+  faiLocation: FileLocation;
+  setFaiLocation: Function;
+  gziLocation: FileLocation;
+  chromSizesLocation: FileLocation;
+  setGziLocation: Function;
+  twoBitLocation: FileLocation;
+  setTwoBitLocation: Function;
+  setChromSizesLocation: Function;
 }) {
   if (adapterSelection === 'IndexedFastaAdapter') {
     return (
@@ -154,7 +154,7 @@ function isBlank(location: FileLocation) {
 const OpenSequenceDialog = ({
   onClose,
 }: {
-  onClose: (conf?: unknown) => Promise<void>
+  onClose: (conf?: unknown) => Promise<void>;
 }) => {
   const classes = useStyles()
 

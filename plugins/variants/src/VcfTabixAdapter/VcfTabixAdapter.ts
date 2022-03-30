@@ -20,9 +20,9 @@ import { GenericFilehandle } from 'generic-filehandle'
 
 export default class extends BaseFeatureDataAdapter {
   private configured?: Promise<{
-    filehandle: GenericFilehandle
-    vcf: TabixIndexedFile
-    parser: VcfParser
+    filehandle: GenericFilehandle;
+    vcf: TabixIndexedFile;
+    parser: VcfParser;
   }>
 
   private async configurePre() {

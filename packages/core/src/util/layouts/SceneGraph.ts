@@ -1,13 +1,13 @@
 import { inDevelopment } from '..'
 
 interface AbsoluteCache {
-  dirty: boolean
-  left?: number
-  right?: number
-  top?: number
-  bottom?: number
-  width?: number
-  height?: number
+  dirty: boolean;
+  left?: number;
+  right?: number;
+  top?: number;
+  bottom?: number;
+  width?: number;
+  height?: number;
 }
 
 export default class SceneGraph {

@@ -9,123 +9,123 @@ import parseJSON from 'json-parse-better-errors'
 import fetch from 'node-fetch'
 
 export interface UriLocation {
-  uri: string
-  locationType: 'UriLocation'
+  uri: string;
+  locationType: 'UriLocation';
 }
 
 export interface Gff3TabixAdapter {
-  type: 'Gff3TabixAdapter'
-  gffGzLocation: UriLocation
+  type: 'Gff3TabixAdapter';
+  gffGzLocation: UriLocation;
 }
 
 export interface GtfAdapter {
-  type: 'GtfAdapter'
-  gtfLocation: UriLocation
+  type: 'GtfAdapter';
+  gtfLocation: UriLocation;
 }
 
 export interface VcfTabixAdapter {
-  type: 'VcfTabixAdapter'
-  vcfGzLocation: UriLocation
+  type: 'VcfTabixAdapter';
+  vcfGzLocation: UriLocation;
 }
 
 export interface IndexedFastaAdapter {
-  type: 'IndexedFastaAdapter'
-  fastaLocation: UriLocation
-  faiLocation: UriLocation
+  type: 'IndexedFastaAdapter';
+  fastaLocation: UriLocation;
+  faiLocation: UriLocation;
 }
 
 export interface BgzipFastaAdapter {
-  type: 'BgzipFastaAdapter'
-  fastaLocation: UriLocation
-  faiLocation: UriLocation
-  gziLocation: UriLocation
+  type: 'BgzipFastaAdapter';
+  fastaLocation: UriLocation;
+  faiLocation: UriLocation;
+  gziLocation: UriLocation;
 }
 
 export interface TwoBitAdapter {
-  type: 'TwoBitAdapter'
-  twoBitLocation: UriLocation
+  type: 'TwoBitAdapter';
+  twoBitLocation: UriLocation;
 }
 
 export interface ChromeSizesAdapter {
-  type: 'ChromSizesAdapter'
-  chromSizesLocation: UriLocation
+  type: 'ChromSizesAdapter';
+  chromSizesLocation: UriLocation;
 }
 
 export interface CustomSequenceAdapter {
-  type: string
+  type: string;
 }
 
 export interface RefNameAliasAdapter {
-  type: 'RefNameAliasAdapter'
-  location: UriLocation
+  type: 'RefNameAliasAdapter';
+  location: UriLocation;
 }
 
 export interface CustomRefNameAliasAdapter {
-  type: string
+  type: string;
 }
 
 export interface Sequence {
-  type: 'ReferenceSequenceTrack'
-  trackId: string
+  type: 'ReferenceSequenceTrack';
+  trackId: string;
   adapter:
     | IndexedFastaAdapter
     | BgzipFastaAdapter
     | TwoBitAdapter
     | ChromeSizesAdapter
-    | CustomSequenceAdapter
+    | CustomSequenceAdapter;
 }
 
 export interface Assembly {
-  displayName?: string
-  name: string
-  aliases?: string[]
-  sequence: Sequence
+  displayName?: string;
+  name: string;
+  aliases?: string[];
+  sequence: Sequence;
   refNameAliases?: {
-    adapter: RefNameAliasAdapter | CustomRefNameAliasAdapter
-  }
-  refNameColors?: string[]
+    adapter: RefNameAliasAdapter | CustomRefNameAliasAdapter;
+  };
+  refNameColors?: string[];
 }
 
 export interface TrixTextSearchAdapter {
-  type: string
-  textSearchAdapterId: string
-  ixFilePath: UriLocation
-  ixxFilePath: UriLocation
-  metaFilePath: UriLocation
-  assemblyNames: string[]
+  type: string;
+  textSearchAdapterId: string;
+  ixFilePath: UriLocation;
+  ixxFilePath: UriLocation;
+  metaFilePath: UriLocation;
+  assemblyNames: string[];
 }
 export interface TextSearching {
-  indexingFeatureTypesToExclude?: string[]
-  indexingAttributes?: string[]
-  textSearchAdapter: TrixTextSearchAdapter
+  indexingFeatureTypesToExclude?: string[];
+  indexingAttributes?: string[];
+  textSearchAdapter: TrixTextSearchAdapter;
 }
 export interface Track {
-  trackId: string
-  name: string
-  assemblyNames: string[]
-  adapter: Gff3TabixAdapter | GtfAdapter | VcfTabixAdapter
-  textSearching?: TextSearching
+  trackId: string;
+  name: string;
+  assemblyNames: string[];
+  adapter: Gff3TabixAdapter | GtfAdapter | VcfTabixAdapter;
+  textSearching?: TextSearching;
 }
 
 export interface Config {
-  assemblies?: Assembly[]
-  assembly?: Assembly
-  configuration?: {}
-  aggregateTextSearchAdapters?: TrixTextSearchAdapter[]
-  connections?: unknown[]
-  defaultSession?: {}
-  tracks?: Track[]
+  assemblies?: Assembly[];
+  assembly?: Assembly;
+  configuration?: {};
+  aggregateTextSearchAdapters?: TrixTextSearchAdapter[];
+  connections?: unknown[];
+  defaultSession?: {};
+  tracks?: Track[];
 }
 
 interface GithubRelease {
-  tag_name: string
-  prerelease: boolean
+  tag_name: string;
+  prerelease: boolean;
   assets?: [
     {
-      browser_download_url: string
-      name: string
+      browser_download_url: string;
+      name: string;
     },
-  ]
+  ];
 }
 
 export default abstract class JBrowseCommand extends Command {

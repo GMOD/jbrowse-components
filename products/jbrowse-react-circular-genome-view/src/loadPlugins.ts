@@ -1,8 +1,8 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
 
 interface PluginDefinition {
-  name: string
-  url: string
+  name: string;
+  url: string;
 }
 
 export default async function loadPlugins(

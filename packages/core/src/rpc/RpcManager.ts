@@ -11,11 +11,11 @@ type BackendConfigurations = {
   WebWorkerRpcDriver?: Omit<
     ConstructorParameters<typeof WebWorkerRpcDriver>[0],
     'config'
-  >
+  >;
   MainThreadRpcDriver?: Omit<
     ConstructorParameters<typeof MainThreadRpcDriver>[0],
     'config'
-  >
+  >;
 }
 const DriverClasses = {
   WebWorkerRpcDriver,

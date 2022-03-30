@@ -8,10 +8,10 @@ import baseModel from '../OAuthModel/model'
 import { configSchema as OAuthConfigSchema } from '../OAuthModel'
 
 interface DropboxError {
-  error_summary: string
+  error_summary: string;
   error: {
-    '.tag': string
-  }
+    '.tag': string;
+  };
 }
 
 /** Error messages from https://www.dropbox.com/developers/documentation/http/documentation#sharing-get_shared_link_file */

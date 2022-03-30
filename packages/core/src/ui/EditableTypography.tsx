@@ -32,10 +32,10 @@ const useStyles = makeStyles(theme => ({
 }))
 
 interface EditableTypographyPropTypes {
-  value: string
-  setValue: (value: string) => void
-  variant: Variant
-  classes?: Partial<Record<EditableTypographyClassKey, string>>
+  value: string;
+  setValue: (value: string) => void;
+  variant: Variant;
+  classes?: Partial<Record<EditableTypographyClassKey, string>>;
 }
 
 // using forwardRef so that MUI Tooltip can wrap this component

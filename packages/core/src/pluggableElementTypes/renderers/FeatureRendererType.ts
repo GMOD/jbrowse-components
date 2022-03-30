@@ -18,36 +18,36 @@ import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
 export interface RenderArgs extends ServerSideRenderArgs {
-  displayModel: { id: string; selectedFeatureId?: string }
-  regions: Region[]
-  blockKey: string
+  displayModel: { id: string; selectedFeatureId?: string };
+  regions: Region[];
+  blockKey: string;
 }
 
 export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
-  displayModel: { id: string; selectedFeatureId?: string }
-  regions: Region[]
-  blockKey: string
+  displayModel: { id: string; selectedFeatureId?: string };
+  regions: Region[];
+  blockKey: string;
 }
 
 export interface RenderArgsDeserialized
   extends ServerSideRenderArgsDeserialized {
-  displayModel: { id: string; selectedFeatureId?: string }
-  regions: Region[]
-  blockKey: string
-  adapterConfig: AnyConfigurationModel
+  displayModel: { id: string; selectedFeatureId?: string };
+  regions: Region[];
+  blockKey: string;
+  adapterConfig: AnyConfigurationModel;
 }
 
 export interface RenderResults extends ServerSideRenderResults {
-  features: Map<string, Feature>
+  features: Map<string, Feature>;
 }
 
 export interface ResultsSerialized extends ServerSideResultsSerialized {
-  features: SimpleFeatureSerialized[]
+  features: SimpleFeatureSerialized[];
 }
 
 export interface ResultsDeserialized extends ServerSideResultsDeserialized {
-  features: Map<string, Feature>
-  blockKey: string
+  features: Map<string, Feature>;
+  blockKey: string;
 }
 
 export default class FeatureRendererType extends ServerSideRendererType {

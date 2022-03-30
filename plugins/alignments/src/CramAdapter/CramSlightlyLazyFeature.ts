@@ -7,14 +7,14 @@ import {
 import CramAdapter from './CramAdapter'
 
 export interface Mismatch {
-  qual?: number
-  start: number
-  length: number
-  type: string
-  base: string
-  altbase?: string
-  seq?: string
-  cliplen?: number
+  qual?: number;
+  start: number;
+  length: number;
+  type: string;
+  base: string;
+  altbase?: string;
+  seq?: string;
+  cliplen?: number;
 }
 
 export default class CramSlightlyLazyFeature implements Feature {
@@ -306,13 +306,13 @@ export default class CramSlightlyLazyFeature implements Feature {
     const mismatches: Mismatch[] = []
     readFeatures.forEach(
       (args: {
-        code: string
-        refPos: number
+        code: string;
+        refPos: number;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data: any
-        pos: number
-        sub: string
-        ref: string
+        data: any;
+        pos: number;
+        sub: string;
+        ref: string;
       }) => {
         const { code, pos, data, sub, ref } = args
         const refPos = args.refPos - 1 - start

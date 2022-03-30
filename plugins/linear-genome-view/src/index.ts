@@ -132,10 +132,10 @@ export default class LinearGenomeViewPlugin extends Plugin {
         loc,
         tracks = [],
       }: {
-        session: AbstractSessionModel
-        assembly?: string
-        loc: string
-        tracks?: string[]
+        session: AbstractSessionModel;
+        assembly?: string;
+        loc: string;
+        tracks?: string[];
       }) => {
         const { assemblyManager } = session
         const view = session.addView('LinearGenomeView', {}) as LGV

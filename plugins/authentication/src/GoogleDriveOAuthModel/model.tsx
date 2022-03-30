@@ -14,28 +14,28 @@ import baseModel from '../OAuthModel/model'
 import { configSchema as OAuthConfigSchema } from '../OAuthModel'
 
 interface RequestInitWithMetadata extends RequestInit {
-  metadataOnly?: boolean
+  metadataOnly?: boolean;
 }
 
 interface GoogleDriveFilehandleOptions extends FilehandleOptions {
   fetch(
     input: RequestInfo,
     opts?: RequestInitWithMetadata,
-  ): Promise<PolyfilledResponse>
+  ): Promise<PolyfilledResponse>;
 }
 
 interface GoogleDriveError {
   error: {
     errors: {
-      domain: string
-      reason: string
-      message: string
-      locationType?: string
-      location?: string
-    }[]
-    code: number
-    message: string
-  }
+      domain: string;
+      reason: string;
+      message: string;
+      locationType?: string;
+      location?: string;
+    }[];
+    code: number;
+    message: string;
+  };
 }
 
 class GoogleDriveFile extends RemoteFileWithRangeCache {

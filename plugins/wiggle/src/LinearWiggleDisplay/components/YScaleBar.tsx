@@ -8,8 +8,8 @@ const YScaleBar = observer(
     model,
     orientation,
   }: {
-    model: WiggleDisplayModel
-    orientation?: string
+    model: WiggleDisplayModel;
+    orientation?: string;
   }) => {
     const { ticks } = model
 

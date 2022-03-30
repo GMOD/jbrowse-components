@@ -48,9 +48,9 @@ function SVGRuler({
   fontSize,
   width,
 }: {
-  model: LGV
-  fontSize: number
-  width: number
+  model: LGV;
+  fontSize: number;
+  width: number;
 }) {
   const {
     dynamicBlocks: { contentBlocks },
@@ -107,10 +107,10 @@ const headerHeight = textHeight + 20
 const cytobandHeightIfExists = 100
 
 interface Display {
-  height: number
+  height: number;
 }
 interface Track {
-  displays: Display[]
+  displays: Display[];
 }
 
 const totalHeight = (tracks: Track[]) => {
@@ -192,8 +192,8 @@ const SVGRegionSeparators = ({
   model,
   height,
 }: {
-  height: number
-  model: LGV
+  height: number;
+  model: LGV;
 }) => {
   const { dynamicBlocks, offsetPx, interRegionPaddingWidth } = model
   return (
@@ -221,13 +221,13 @@ function SVGTracks({
 }: {
   displayResults: {
     track: {
-      configuration: AnyConfigurationModel
-      displays: { height: number }[]
-    }
-    result: string
-  }[]
-  model: LGV
-  offset: number
+      configuration: AnyConfigurationModel;
+      displays: { height: number }[];
+    };
+    result: string;
+  }[];
+  model: LGV;
+  offset: number;
 }) {
   return (
     <>

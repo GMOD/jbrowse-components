@@ -49,13 +49,13 @@ const DeleteSessionDialog = ({
   onClose,
   rootModel,
 }: {
-  sessionToDelete?: string
-  onClose: (_arg0: boolean) => void
-  rootModel: any
+  sessionToDelete?: string;
+  onClose: (_arg0: boolean) => void;
+  rootModel: any;
 }) => {
   const [deleteSession, setDeleteSession] = useState(false)
   useEffect(() => {
-    ;(async () => {
+    (async () => {
       try {
         if (deleteSession) {
           setDeleteSession(false)
@@ -101,8 +101,8 @@ export default function StartScreen({
   rootModel,
   onFactoryReset,
 }: {
-  rootModel: any
-  onFactoryReset: Function
+  rootModel: any;
+  onFactoryReset: Function;
 }) {
   const classes = useStyles()
 
@@ -115,7 +115,7 @@ export default function StartScreen({
 
   const sessionNames = sessions !== undefined ? sessions : []
   useEffect(() => {
-    ;(async () => {
+    (async () => {
       try {
         if (sessionToLoad) {
           rootModel.activateSession(sessionToLoad)
@@ -129,7 +129,7 @@ export default function StartScreen({
   }, [rootModel, sessionToLoad])
 
   useEffect(() => {
-    ;(async () => {
+    (async () => {
       try {
         if (updateSessionsList) {
           setUpdateSessionsList(false)

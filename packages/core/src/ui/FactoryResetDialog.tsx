@@ -11,9 +11,9 @@ export default ({
   open,
   onFactoryReset,
 }: {
-  onClose: Function
-  open: boolean
-  onFactoryReset: Function
+  onClose: Function;
+  open: boolean;
+  onFactoryReset: Function;
 }) => {
   function handleDialogClose(action?: string) {
     if (action === 'reset') {

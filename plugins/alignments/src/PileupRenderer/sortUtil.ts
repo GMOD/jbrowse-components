@@ -3,9 +3,9 @@ import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { Mismatch } from '../BamAdapter/MismatchParser'
 
 interface SortObject {
-  pos: number
-  type: string
-  tag?: string
+  pos: number;
+  type: string;
+  tag?: string;
 }
 export const sortFeature = (
   features: Map<string, Feature>,

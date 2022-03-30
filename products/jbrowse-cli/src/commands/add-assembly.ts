@@ -168,7 +168,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
         | 'twoBit'
         | 'chromSizes'
         | 'custom'
-        | undefined
+        | undefined;
     }
     if (type) {
       this.debug(`Type is: ${type}`)

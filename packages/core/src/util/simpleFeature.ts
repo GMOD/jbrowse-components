@@ -6,43 +6,43 @@ export interface Feature {
    * Get a piece of data about the feature.  All features must have
    * 'start' and 'end', but everything else is optional.
    */
-  get(name: 'refName'): string
-  get(name: 'start'): number
-  get(name: 'end'): number
-  get(name: 'subfeatures'): Feature[] | undefined
+  get(name: 'refName'): string;
+  get(name: 'start'): number;
+  get(name: 'end'): number;
+  get(name: 'subfeatures'): Feature[] | undefined;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  get(name: string): any
+  get(name: string): any;
 
   /**
    * Set an item of data.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  set(name: string, val: any): void
+  set(name: string, val: any): void;
 
   /**
    * Get an array listing which data keys are present in this feature.
    */
-  tags(): string[]
+  tags(): string[];
 
   /**
    * Get the unique ID of this feature.
    */
-  id(): string
+  id(): string;
 
   /**
    * Get this feature's parent feature, or undefined if none.
    */
-  parent(): Feature | undefined
+  parent(): Feature | undefined;
 
   /**
    * Get an array of child features, or undefined if none.
    */
-  children(): Feature[] | undefined
+  children(): Feature[] | undefined;
 
   /*
    * Convert to JSON
    */
-  toJSON(): SimpleFeatureSerialized
+  toJSON(): SimpleFeatureSerialized;
 }
 
 export function isFeature(thing: unknown): thing is Feature {
@@ -56,24 +56,24 @@ export function isFeature(thing: unknown): thing is Feature {
 
 export interface SimpleFeatureArgs {
   /** key-value data, must include 'start' and 'end' */
-  data: {}
+  data: {};
   /** optional parent feature */
-  parent?: Feature
+  parent?: Feature;
   /** unique identifier. can also be in data.uniqueId */
-  id: string | number // thing that can be stringified easily
+  id: string | number; // thing that can be stringified easily
 }
 
 // subfeatures do not have to have uniqueId
 interface SimpleFeatureSerializedNoId {
-  [key: string]: unknown
-  parentId?: string
-  subfeatures?: SimpleFeatureSerializedNoId[]
+  [key: string]: unknown;
+  parentId?: string;
+  subfeatures?: SimpleFeatureSerializedNoId[];
 }
 
 // base serialized feature has to have a uniqueId
 export interface SimpleFeatureSerialized extends SimpleFeatureSerializedNoId {
-  subfeatures?: SimpleFeatureSerializedNoId[]
-  uniqueId: string
+  subfeatures?: SimpleFeatureSerializedNoId[];
+  uniqueId: string;
 }
 
 function isSimpleFeatureSerialized(

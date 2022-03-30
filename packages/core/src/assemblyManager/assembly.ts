@@ -113,22 +113,22 @@ function getAdapterId(adapterConf: unknown) {
 type RefNameAliases = Record<string, string>
 
 export interface BaseOptions {
-  signal?: AbortSignal
-  sessionId: string
-  statusCallback?: Function
+  signal?: AbortSignal;
+  sessionId: string;
+  statusCallback?: Function;
 }
 interface CacheData {
-  adapterConf: unknown
-  self: Assembly
-  sessionId: string
-  options: BaseOptions
+  adapterConf: unknown;
+  self: Assembly;
+  sessionId: string;
+  options: BaseOptions;
 }
 
 export interface BasicRegion {
-  start: number
-  end: number
-  refName: string
-  assemblyName: string
+  start: number;
+  end: number;
+  refName: string;
+  assemblyName: string;
 }
 export default function assemblyFactory(
   assemblyConfigType: IAnyType,
@@ -231,9 +231,9 @@ export default function assemblyFactory(
         refNameAliases,
         cytobands,
       }: {
-        adapterRegionsWithAssembly: Region[]
-        refNameAliases: RefNameAliases
-        cytobands: Feature[]
+        adapterRegionsWithAssembly: Region[];
+        refNameAliases: RefNameAliases;
+        cytobands: Feature[];
       }) {
         this.setRegions(adapterRegionsWithAssembly)
         this.setRefNameAliases(refNameAliases)

@@ -81,9 +81,9 @@ export async function createPluginManager(
     assemblies: [],
     tracks: [],
   }) as {
-    internetAccounts: { internetAccountId: string }[]
-    assemblies: { name: string }[]
-    tracks: { trackId: string }[]
+    internetAccounts: { internetAccountId: string }[];
+    assemblies: { name: string }[];
+    tracks: { trackId: string }[];
   }
 
   jbrowse.assemblies = uniqBy(jbrowse.assemblies, asm => asm.name)

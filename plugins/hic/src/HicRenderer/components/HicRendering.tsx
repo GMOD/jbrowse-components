@@ -5,12 +5,12 @@ import React from 'react'
 import { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
 function HicRendering(props: {
-  blockKey: string
-  displayModel: BaseLinearDisplayModel
-  width: number
-  height: number
-  regions: Region[]
-  bpPerPx: number
+  blockKey: string;
+  displayModel: BaseLinearDisplayModel;
+  width: number;
+  height: number;
+  regions: Region[];
+  bpPerPx: number;
 }) {
   const { width, height } = props
   const canvasWidth = Math.ceil(width)

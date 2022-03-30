@@ -16,9 +16,9 @@ const { unlink, readFile, copyFile, readdir, writeFile } = fs.promises
 const { app, ipcMain, shell, BrowserWindow, Menu } = electron
 
 interface RecentSession {
-  path: string
-  updated: number
-  name: string
+  path: string;
+  updated: number;
+  name: string;
 }
 
 function stringify(obj: unknown) {
@@ -155,10 +155,10 @@ if (!fs.existsSync(jbrowseDocDir)) {
 
 interface SessionSnap {
   defaultSession: {
-    name: string
-  }
+    name: string;
+  };
 
-  [key: string]: unknown
+  [key: string]: unknown;
 }
 
 let mainWindow: electron.BrowserWindow | null

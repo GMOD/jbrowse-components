@@ -5,8 +5,8 @@ import { DotplotDisplayModel } from '..'
 import { DotplotViewModel } from '../../DotplotView/model'
 
 const DotplotDisplay: React.FC<{
-  model: DotplotDisplayModel
-  children?: React.ReactNode
+  model: DotplotDisplayModel;
+  children?: React.ReactNode;
 }> = props => {
   const { model, children } = props
   const { offsetX = 0, offsetY = 0 } = model.data || {}

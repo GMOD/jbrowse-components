@@ -14,28 +14,28 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 interface ContactRecord {
-  bin1: number
-  bin2: number
-  counts: number
+  bin1: number;
+  bin2: number;
+  counts: number;
 }
 
 interface HicMetadata {
   chromosomes: {
-    name: string
-    length: number
-    id: number
-  }[]
-  resolutions: number[]
+    name: string;
+    length: number;
+    id: number;
+  }[];
+  resolutions: number[];
 }
 interface Ref {
-  chr: string
-  start: number
-  end: number
+  chr: string;
+  start: number;
+  end: number;
 }
 
 interface HicOptions extends BaseOptions {
-  resolution?: number
-  bpPerPx?: number
+  resolution?: number;
+  bpPerPx?: number;
 }
 
 // wraps generic-filehandle so the read function only takes a position and length
@@ -67,8 +67,8 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       ref2: Ref,
       units: string,
       binsize: number,
-    ) => Promise<ContactRecord[]>
-    getMetaData: () => Promise<HicMetadata>
+    ) => Promise<ContactRecord[]>;
+    getMetaData: () => Promise<HicMetadata>;
   }
 
   public constructor(

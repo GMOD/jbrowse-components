@@ -15,9 +15,9 @@ const AssemblySelector = observer(
     onChange,
     selected,
   }: {
-    session: AbstractSessionModel
-    onChange: (arg: string) => void
-    selected: string | undefined
+    session: AbstractSessionModel;
+    onChange: (arg: string) => void;
+    selected: string | undefined;
   }) => {
     const classes = useStyles()
     const { assemblyNames, assemblyManager } = session

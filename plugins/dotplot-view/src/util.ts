@@ -53,8 +53,8 @@ export function getTag(f: Feature, tag: string) {
 }
 
 interface Interval {
-  start: number
-  end: number
+  start: number;
+  end: number;
 }
 
 // source https://gist.github.com/vrachieru/5649bce26004d8a4682b
@@ -96,9 +96,9 @@ export function mergeIntervals<T extends Interval>(intervals: T[], w = 5000) {
 }
 
 export interface BasicFeature {
-  end: number
-  start: number
-  refName: string
+  end: number;
+  start: number;
+  refName: string;
 }
 
 export function gatherOverlaps(regions: BasicFeature[]) {
@@ -116,9 +116,9 @@ export function gatherOverlaps(regions: BasicFeature[]) {
 }
 
 export interface ReducedFeature {
-  refName: string
-  start: number
-  clipPos: number
-  end: number
-  seqLength: number
+  refName: string;
+  start: number;
+  clipPos: number;
+  end: number;
+  seqLength: number;
 }

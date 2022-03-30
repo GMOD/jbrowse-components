@@ -29,9 +29,9 @@ import {
 } from './util'
 
 interface CoordFeat extends SimpleFeatureSerialized {
-  refName: string
-  start: number
-  end: number
+  refName: string;
+  start: number;
+  end: number;
 }
 
 const useStyles = makeStyles(theme => ({
@@ -57,9 +57,9 @@ function GeneProtein({
   sequence,
   codonTable,
 }: {
-  cds: Feat[]
-  sequence: string
-  codonTable: { [key: string]: string }
+  cds: Feat[];
+  sequence: string;
+  codonTable: { [key: string]: string };
 }) {
   const str = stitch(cds, sequence)
   let protein = ''
@@ -81,14 +81,14 @@ function GenecDNA({
   includeIntrons,
   collapseIntron,
 }: {
-  utr: Feat[]
-  cds: Feat[]
-  exons: Feat[]
-  sequence: string
-  upstream?: string
-  downstream?: string
-  includeIntrons?: boolean
-  collapseIntron?: boolean
+  utr: Feat[];
+  cds: Feat[];
+  exons: Feat[];
+  sequence: string;
+  upstream?: string;
+  downstream?: string;
+  includeIntrons?: boolean;
+  collapseIntron?: boolean;
 }) {
   const chunks = cds.length
     ? [...cds, ...utr].sort((a, b) => a.start - b.start)
@@ -133,9 +133,9 @@ function GenecDNA({
 export const SequencePanel = React.forwardRef<
   HTMLDivElement,
   {
-    sequence: SeqState
-    feature: ParentFeat
-    mode: string
+    sequence: SeqState;
+    feature: ParentFeat;
+    mode: string;
   }
 >(
   (
@@ -182,7 +182,7 @@ export const SequencePanel = React.forwardRef<
     if (feature.strand === -1) {
       // doing this in a single assignment is needed because downstream and
       // upstream are swapped so this avoids a temp variable
-      ;[sequence, upstream, downstream] = [
+      [sequence, upstream, downstream] = [
         revcom(sequence),
         revcom(downstream),
         revcom(upstream),
@@ -306,7 +306,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
       }
       return feat.get('seq') as string
     }
-    ;(async () => {
+    (async () => {
       try {
         const { start, end, refName } = feature as CoordFeat
         const seq = await fetchSeq(start, end, refName)

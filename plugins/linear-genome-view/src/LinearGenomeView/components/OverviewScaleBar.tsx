@@ -81,9 +81,9 @@ const Polygon = observer(
     overview,
     useOffset = true,
   }: {
-    model: LGV
-    overview: Instance<Base1DViewModel>
-    useOffset?: boolean
+    model: LGV;
+    overview: Instance<Base1DViewModel>;
+    useOffset?: boolean;
   }) => {
     const theme = useTheme()
     const multiplier = Number(useOffset)
@@ -138,7 +138,7 @@ type LGV = LinearGenomeViewModel
 
 // rounded rect from https://stackoverflow.com/a/45889603/2129219
 // prettier-ignore
-function rightRoundedRect(x:number, y:number, width:number, height:number, radius:number) {
+function rightRoundedRect(x: number, y: number, width: number, height: number, radius: number) {
   return "M" + x + "," + y
        + "h" + (width - radius)
        + "a" + radius + "," + radius + " 0 0 1 " + radius + "," + radius
@@ -149,7 +149,7 @@ function rightRoundedRect(x:number, y:number, width:number, height:number, radiu
 }
 
 // prettier-ignore
-function leftRoundedRect(x:number, y:number, width:number, height:number, radius:number ) {
+function leftRoundedRect(x: number, y: number, width: number, height: number, radius: number ) {
   return "M" + (x + radius) + "," + y
        + "h" + (width - radius)
        + "v" + height
@@ -177,9 +177,9 @@ const Cytobands = observer(
     block,
     assembly,
   }: {
-    overview: Base1DViewModel
-    assembly?: Assembly
-    block: ContentBlock
+    overview: Base1DViewModel;
+    assembly?: Assembly;
+    block: ContentBlock;
   }) => {
     const { offsetPx, reversed } = block
     const cytobands = assembly?.cytobands
@@ -295,10 +295,10 @@ const OverviewBox = observer(
     block,
     overview,
   }: {
-    scale: number
-    model: LGV
-    block: ContentBlock
-    overview: Base1DViewModel
+    scale: number;
+    model: LGV;
+    block: ContentBlock;
+    overview: Base1DViewModel;
   }) => {
     const classes = useStyles()
     const { cytobandOffset, showCytobands } = model
@@ -380,9 +380,9 @@ const ScaleBar = observer(
     scale,
     overview,
   }: {
-    model: LGV
-    overview: Base1DViewModel
-    scale: number
+    model: LGV;
+    overview: Base1DViewModel;
+    scale: number;
   }) => {
     const classes = useStyles()
     const theme = useTheme()
@@ -456,8 +456,8 @@ function OverviewScaleBar({
   model,
   children,
 }: {
-  model: LGV
-  children: React.ReactNode
+  model: LGV;
+  children: React.ReactNode;
 }) {
   const classes = useStyles()
   const { totalBp, width, cytobandOffset, displayedRegions } = model

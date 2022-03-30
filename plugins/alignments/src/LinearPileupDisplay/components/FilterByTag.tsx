@@ -83,14 +83,14 @@ function Bitmask(props: { flag?: number; setFlag: Function }) {
 function FilterByTagDlg(props: {
   model: {
     filterBy?: {
-      flagExclude: number
-      flagInclude: number
-      readName?: string
-      tagFilter?: { tag: string; value: string }
-    }
-    setFilterBy: Function
-  }
-  handleClose: () => void
+      flagExclude: number;
+      flagInclude: number;
+      readName?: string;
+      tagFilter?: { tag: string; value: string };
+    };
+    setFilterBy: Function;
+  };
+  handleClose: () => void;
 }) {
   const { model, handleClose } = props
   const classes = useStyles()

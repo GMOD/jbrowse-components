@@ -17,8 +17,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 
 interface Header {
-  idToName: string[]
-  nameToId: Record<string, number>
+  idToName: string[];
+  nameToId: Record<string, number>;
 }
 
 export default class BamAdapter extends BaseFeatureDataAdapter {
@@ -27,8 +27,8 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   private setupP?: Promise<Header>
 
   protected configured?: Promise<{
-    bam: BamFile
-    sequenceAdapter?: BaseFeatureDataAdapter
+    bam: BamFile;
+    sequenceAdapter?: BaseFeatureDataAdapter;
   }>
 
   // derived classes may not use the same configuration so a custom

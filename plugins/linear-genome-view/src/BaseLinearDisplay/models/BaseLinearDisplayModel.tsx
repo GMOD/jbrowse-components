@@ -32,11 +32,11 @@ import BlockState, { renderBlockData } from './serverSideRenderedBlock'
 type LGV = LinearGenomeViewModel
 
 export interface Layout {
-  minX: number
-  minY: number
-  maxX: number
-  maxY: number
-  name: string
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+  name: string;
 }
 
 // stabilize clipid under test for snapshot
@@ -235,9 +235,9 @@ export const BaseLinearDisplay = types
     estimateRegionsStats(
       regions: Region[],
       opts: {
-        headers?: Record<string, string>
-        signal?: AbortSignal
-        filters?: string[]
+        headers?: Record<string, string>;
+        signal?: AbortSignal;
+        filters?: string[];
       },
     ) {
       if (self.estimatedRegionStatsP) {
@@ -343,7 +343,7 @@ export const BaseLinearDisplay = types
       self.featureIdUnderMouse = feature
     },
     reload() {
-      ;[...self.blockState.values()].map(val => val.doReload())
+      [...self.blockState.values()].map(val => val.doReload())
     },
     setContextMenuFeature(feature?: Feature) {
       self.contextMenuFeature = feature

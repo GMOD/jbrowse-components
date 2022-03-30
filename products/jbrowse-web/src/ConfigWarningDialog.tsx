@@ -27,9 +27,9 @@ export default function ConfigWarningModal({
   onCancel,
   reason,
 }: {
-  onConfirm: () => void
-  onCancel: () => void
-  reason: { url: string }[]
+  onConfirm: () => void;
+  onCancel: () => void;
+  reason: { url: string }[];
 }) {
   const classes = useStyles()
   return (

@@ -58,10 +58,10 @@ const stateModelFactory = (
         self.configuration = configuration
       },
       setFilterBy(filter: {
-        flagInclude: number
-        flagExclude: number
-        readName?: string
-        tagFilter?: { tag: string; value: string }
+        flagInclude: number;
+        flagExclude: number;
+        readName?: string;
+        tagFilter?: { tag: string; value: string };
       }) {
         self.filterBy = cast(filter)
       },

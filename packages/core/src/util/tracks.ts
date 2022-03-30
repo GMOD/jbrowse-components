@@ -27,7 +27,7 @@ export function getTrackAssemblyNames(
 
 export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
   interface NodeWithRpcSessionId extends IAnyStateTreeNode {
-    rpcSessionId: string
+    rpcSessionId: string;
   }
   let highestRpcSessionId
   for (let node = thisNode; !isRoot(node); node = getParent(node)) {
@@ -133,8 +133,8 @@ export function makeIndexType(
 }
 
 export interface AdapterConfig {
-  type: string
-  [key: string]: unknown
+  type: string;
+  [key: string]: unknown;
 }
 
 export type AdapterGuesser = (

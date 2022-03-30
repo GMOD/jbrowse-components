@@ -50,9 +50,9 @@ function InterRegionPaddingBlock({
   width,
   style = {},
 }: {
-  boundary: boolean
-  width: number
-  style?: React.CSSProperties
+  boundary: boolean;
+  width: number;
+  style?: React.CSSProperties;
 }) {
   const classes = useStyles()
   return (

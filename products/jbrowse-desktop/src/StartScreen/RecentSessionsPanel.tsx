@@ -53,10 +53,10 @@ const useStyles = makeStyles(theme => ({
 }))
 
 interface RecentSessionData {
-  path: string
-  name: string
-  screenshot?: string
-  updated: number
+  path: string;
+  name: string;
+  screenshot?: string;
+  updated: number;
 }
 
 type RecentSessions = RecentSessionData[]
@@ -68,11 +68,11 @@ function RecentSessionsList({
   setSessionToRename,
   setPluginManager,
 }: {
-  setError: (e: unknown) => void
-  setSessionToRename: (arg: RecentSessionData) => void
-  setPluginManager: (pm: PluginManager) => void
-  setSelectedSessions: (arg: RecentSessionData[]) => void
-  sessions: RecentSessionData[]
+  setError: (e: unknown) => void;
+  setSessionToRename: (arg: RecentSessionData) => void;
+  setPluginManager: (pm: PluginManager) => void;
+  setSelectedSessions: (arg: RecentSessionData[]) => void;
+  sessions: RecentSessionData[];
 }) {
   const classes = useStyles()
   const columns = [
@@ -188,12 +188,12 @@ function RecentSessionsCards({
   setPluginManager,
   addToQuickstartList,
 }: {
-  setError: (e: unknown) => void
-  setSessionsToDelete: (e: RecentSessionData[]) => void
-  setSessionToRename: (arg: RecentSessionData) => void
-  setPluginManager: (pm: PluginManager) => void
-  sessions: RecentSessionData[]
-  addToQuickstartList: (arg: RecentSessionData) => void
+  setError: (e: unknown) => void;
+  setSessionsToDelete: (e: RecentSessionData[]) => void;
+  setSessionToRename: (arg: RecentSessionData) => void;
+  setPluginManager: (pm: PluginManager) => void;
+  sessions: RecentSessionData[];
+  addToQuickstartList: (arg: RecentSessionData) => void;
 }) {
   return (
     <Grid container spacing={4}>
@@ -247,8 +247,8 @@ export default function RecentSessionPanel({
   setError,
   setPluginManager,
 }: {
-  setError: (e: unknown) => void
-  setPluginManager: (pm: PluginManager) => void
+  setError: (e: unknown) => void;
+  setPluginManager: (pm: PluginManager) => void;
 }) {
   const classes = useStyles()
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
@@ -268,7 +268,7 @@ export default function RecentSessionPanel({
   )
 
   useEffect(() => {
-    ;(async () => {
+    (async () => {
       try {
         const sessions = await ipcRenderer.invoke(
           'listSessions',

@@ -13,9 +13,9 @@ const Arrow = ({
   featureLayout,
   config,
 }: {
-  feature: Feature
-  featureLayout: SceneGraph
-  config: AnyConfigurationModel
+  feature: Feature;
+  featureLayout: SceneGraph;
+  config: AnyConfigurationModel;
 }) => {
   const strand = feature.get('strand')
   const size = 5

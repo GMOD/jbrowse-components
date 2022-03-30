@@ -28,10 +28,10 @@ function DropDownMenu({
   session,
   menuItems,
 }: {
-  menuTitle: string
+  menuTitle: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  session: any
-  menuItems: MenuItem[]
+  session: any;
+  menuItems: MenuItem[];
 }) {
   const [open, setOpen] = useState(false)
   const anchorEl = useRef(null)

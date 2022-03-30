@@ -4,8 +4,8 @@ import React from 'react'
 import { LinearComparativeDisplay as LCD } from '..'
 
 const LinearComparativeDisplay: React.FC<{
-  model: LCD
-  children?: React.ReactNode
+  model: LCD;
+  children?: React.ReactNode;
 }> = props => {
   const { model, children } = props
   return (

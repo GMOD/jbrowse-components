@@ -33,9 +33,9 @@ function DeleteBookmarkDialog({
   model,
   onClose,
 }: {
-  rowNumber: number | undefined
-  model: GridBookmarkModel
-  onClose: () => void
+  rowNumber: number | undefined;
+  model: GridBookmarkModel;
+  onClose: () => void;
 }) {
   const classes = useStyles()
 

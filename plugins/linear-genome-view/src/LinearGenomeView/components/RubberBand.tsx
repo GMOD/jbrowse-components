@@ -81,8 +81,8 @@ function RubberBand({
   model,
   ControlComponent = <div />,
 }: {
-  model: LGV
-  ControlComponent?: React.ReactElement
+  model: LGV;
+  ControlComponent?: React.ReactElement;
 }) {
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
@@ -90,9 +90,9 @@ function RubberBand({
   // clientX and clientY used for anchorPosition for menu
   // offsetX used for calculations about width of selection
   const [anchorPosition, setAnchorPosition] = useState<{
-    offsetX: number
-    clientX: number
-    clientY: number
+    offsetX: number;
+    clientX: number;
+    clientY: number;
   }>()
   const [guideX, setGuideX] = useState<number | undefined>()
   const controlsRef = useRef<HTMLDivElement>(null)
@@ -111,7 +111,7 @@ function RubberBand({
       let rightPx = offsetX
       // handles clicking and draging to the left
       if (rightPx < leftPx) {
-        ;[leftPx, rightPx] = [rightPx, leftPx]
+        [leftPx, rightPx] = [rightPx, leftPx]
       }
       const leftOffset = pxToBp(leftPx)
       const rightOffset = pxToBp(rightPx)
@@ -140,8 +140,8 @@ function RubberBand({
           clientY,
         })
         const { leftOffset, rightOffset } = computeOffsets(offsetX) as {
-          leftOffset: BpOffset
-          rightOffset: BpOffset
+          leftOffset: BpOffset;
+          rightOffset: BpOffset;
         }
         setOffsets(leftOffset, rightOffset)
         setGuideX(undefined)

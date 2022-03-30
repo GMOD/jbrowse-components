@@ -46,9 +46,9 @@ const useStyles = makeStyles(theme => {
 
 const Overlay = observer(
   (props: {
-    parentRef: React.RefObject<SVGSVGElement>
-    model: BreakpointViewModel
-    trackConfigId: string
+    parentRef: React.RefObject<SVGSVGElement>;
+    model: BreakpointViewModel;
+    trackConfigId: string;
   }) => {
     const { model, trackConfigId } = props
     const tracks = model.getMatchedTracks(trackConfigId)

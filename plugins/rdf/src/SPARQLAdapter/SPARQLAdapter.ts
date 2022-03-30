@@ -14,40 +14,40 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 interface SPARQLEntry {
-  type: string
-  value: string
-  dataTypes?: string
+  type: string;
+  value: string;
+  dataTypes?: string;
 }
 
 interface SPARQLBinding {
-  [key: string]: SPARQLEntry
+  [key: string]: SPARQLEntry;
 }
 
 interface SPARQLResponseHead {
-  vars: string[]
+  vars: string[];
 }
 
 interface SPARQLResponseResults {
-  bindings: SPARQLBinding[]
+  bindings: SPARQLBinding[];
 }
 
 interface SPARQLResponse {
-  head: SPARQLResponseHead
-  results: SPARQLResponseResults
+  head: SPARQLResponseHead;
+  results: SPARQLResponseResults;
 }
 
 interface SPARQLFeatureData {
-  start: number
-  end: number
-  strand: number
-  subfeatures?: SPARQLFeatureData[]
-  uniqueId: string
+  start: number;
+  end: number;
+  strand: number;
+  subfeatures?: SPARQLFeatureData[];
+  uniqueId: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [propName: string]: any
+  [propName: string]: any;
 }
 
 interface SPARQLFeature {
-  data: SPARQLFeatureData
+  data: SPARQLFeatureData;
 }
 
 export default class SPARQLAdapter extends BaseFeatureDataAdapter {

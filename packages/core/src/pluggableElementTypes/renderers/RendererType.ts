@@ -8,8 +8,8 @@ import PluginManager from '../../PluginManager'
 export type RenderProps = Record<string, unknown>
 
 export interface RenderResults {
-  reactElement?: ReactElement
-  html?: string
+  reactElement?: ReactElement;
+  html?: string;
 }
 
 export default class RendererType extends PluggableElementBase {
@@ -22,10 +22,10 @@ export default class RendererType extends PluggableElementBase {
   pluginManager: PluginManager
 
   constructor(stuff: {
-    name: string
-    ReactComponent: AnyReactComponentType
-    configSchema: AnyConfigurationSchemaType
-    pluginManager: PluginManager
+    name: string;
+    ReactComponent: AnyReactComponentType;
+    configSchema: AnyConfigurationSchemaType;
+    pluginManager: PluginManager;
   }) {
     super(stuff)
     this.ReactComponent = stuff.ReactComponent

@@ -34,12 +34,12 @@ export function yPos(
   tracks: {
     displays: [
       {
-        height: number
-        scrollTop: number
-        SNPCoverageDisplay?: { height: number }
-        showCoverage?: boolean
+        height: number;
+        scrollTop: number;
+        SNPCoverageDisplay?: { height: number };
+        showCoverage?: boolean;
       },
-    ]
+    ];
   }[], // basic track requirements
   c: LayoutRecord,
 ) {

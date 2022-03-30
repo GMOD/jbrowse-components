@@ -4,13 +4,13 @@ import React, { useRef, useEffect } from 'react'
 import { drawImageOntoCanvasContext } from '../util/offscreenCanvasPonyfill'
 
 function PrerenderedCanvas(props: {
-  width: number
-  height: number
-  highResolutionScaling: number
-  style: any
-  imageData: any
-  showSoftClip?: boolean
-  blockKey?: string
+  width: number;
+  height: number;
+  highResolutionScaling: number;
+  style: any;
+  imageData: any;
+  showSoftClip?: boolean;
+  blockKey?: string;
 }) {
   const {
     width,

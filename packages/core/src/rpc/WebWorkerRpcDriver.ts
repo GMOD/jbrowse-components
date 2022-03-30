@@ -4,7 +4,7 @@ import BaseRpcDriver, { RpcDriverConstructorArgs } from './BaseRpcDriver'
 import { PluginDefinition } from '../PluginLoader'
 
 interface WebWorkerRpcDriverConstructorArgs extends RpcDriverConstructorArgs {
-  makeWorkerInstance: () => Worker
+  makeWorkerInstance: () => Worker;
 }
 
 class WebWorkerHandle extends Rpc.Client {
@@ -16,8 +16,8 @@ class WebWorkerHandle extends Rpc.Client {
     functionName: string,
     args: Record<string, unknown>,
     opts: {
-      statusCallback?: (arg0: string) => void
-      rpcDriverClassName: string
+      statusCallback?: (arg0: string) => void;
+      rpcDriverClassName: string;
     },
   ) {
     const { statusCallback, rpcDriverClassName } = opts

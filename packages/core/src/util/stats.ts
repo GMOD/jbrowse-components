@@ -4,17 +4,17 @@ import { NoAssemblyRegion } from './types'
 import { Feature } from './simpleFeature'
 
 export interface UnrectifiedFeatureStats {
-  scoreMin: number
-  scoreMax: number
-  scoreSum: number
-  scoreSumSquares: number
-  featureCount: number
-  basesCovered: number
+  scoreMin: number;
+  scoreMax: number;
+  scoreSum: number;
+  scoreSumSquares: number;
+  featureCount: number;
+  basesCovered: number;
 }
 export interface FeatureStats extends UnrectifiedFeatureStats {
-  featureDensity: number
-  scoreMean: number
-  scoreStdDev: number
+  featureDensity: number;
+  scoreMean: number;
+  scoreStdDev: number;
 }
 
 /*
@@ -121,11 +121,11 @@ export async function scoresToStats(
         reduce(
           (
             seed: {
-              scoreMin: number
-              scoreMax: number
-              scoreSum: number
-              scoreSumSquares: number
-              featureCount: number
+              scoreMin: number;
+              scoreMax: number;
+              scoreSum: number;
+              scoreSumSquares: number;
+              featureCount: number;
             },
             f: Feature,
           ) => {

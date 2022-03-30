@@ -9,18 +9,18 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { SceneGraph } from '@jbrowse/core/util/layouts'
 
 function FeatureGlyph(props: {
-  feature: Feature
-  rootLayout: SceneGraph
-  config: AnyConfigurationModel
-  name: string
-  description: string
-  shouldShowName: boolean
-  shouldShowDescription: boolean
-  fontHeight: number
-  allowedWidthExpansion: number
-  selected?: boolean
-  reversed?: boolean
-  topLevel?: boolean
+  feature: Feature;
+  rootLayout: SceneGraph;
+  config: AnyConfigurationModel;
+  name: string;
+  description: string;
+  shouldShowName: boolean;
+  shouldShowDescription: boolean;
+  fontHeight: number;
+  allowedWidthExpansion: number;
+  selected?: boolean;
+  reversed?: boolean;
+  topLevel?: boolean;
 }) {
   const {
     feature,

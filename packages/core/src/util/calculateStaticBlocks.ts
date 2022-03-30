@@ -8,12 +8,12 @@ import {
 import { Region } from './types'
 
 export interface Base1DViewModel {
-  offsetPx: number
-  width: number
-  displayedRegions: Region[]
-  bpPerPx: number
-  minimumBlockWidth: number
-  interRegionPaddingWidth: number
+  offsetPx: number;
+  width: number;
+  displayedRegions: Region[];
+  bpPerPx: number;
+  minimumBlockWidth: number;
+  interRegionPaddingWidth: number;
 }
 
 export default function calculateStaticBlocks(

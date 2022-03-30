@@ -18,8 +18,8 @@ const useStyles = makeStyles({
 })
 
 export function ColorPicker(props: {
-  color: Color
-  onChange: (color: ColorResult) => void
+  color: Color;
+  onChange: (color: ColorResult) => void;
 }) {
   const { color, onChange } = props
   const classes = useStyles()

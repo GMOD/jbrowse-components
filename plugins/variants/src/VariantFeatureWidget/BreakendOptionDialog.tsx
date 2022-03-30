@@ -36,10 +36,10 @@ function BreakendOptionDialog({
   feature,
   viewType,
 }: {
-  model: any
-  handleClose: () => void
-  feature: Feature
-  viewType: any
+  model: any;
+  handleClose: () => void;
+  feature: Feature;
+  viewType: any;
 }) {
   const classes = useStyles()
   const [copyTracks, setCopyTracks] = useState(true)

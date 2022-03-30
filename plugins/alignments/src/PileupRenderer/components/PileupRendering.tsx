@@ -9,15 +9,15 @@ import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 // (issue #1248)
 const canvasPadding = 100
 function PileupRendering(props: {
-  blockKey: string
-  displayModel: BaseLinearDisplayModel
-  width: number
-  height: number
-  regions: Region[]
-  bpPerPx: number
-  sortedBy?: { type: string; pos: number; refName: string }
-  colorBy?: { type: string; tag?: string }
-  onMouseMove?: (event: React.MouseEvent, featureId: string | undefined) => void
+  blockKey: string;
+  displayModel: BaseLinearDisplayModel;
+  width: number;
+  height: number;
+  regions: Region[];
+  bpPerPx: number;
+  sortedBy?: { type: string; pos: number; refName: string };
+  colorBy?: { type: string; tag?: string };
+  onMouseMove?: (event: React.MouseEvent, featureId: string | undefined) => void;
 }) {
   const {
     onMouseMove,

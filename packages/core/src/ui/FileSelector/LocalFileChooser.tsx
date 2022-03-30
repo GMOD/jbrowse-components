@@ -27,8 +27,8 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function LocalFileChooser(props: {
-  location?: FileLocation
-  setLocation: Function
+  location?: FileLocation;
+  setLocation: Function;
 }) {
   const classes = useStyles()
   const { location, setLocation } = props

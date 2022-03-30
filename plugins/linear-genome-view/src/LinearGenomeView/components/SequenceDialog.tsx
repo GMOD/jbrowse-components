@@ -97,8 +97,8 @@ function SequenceDialog({
   model,
   handleClose,
 }: {
-  model: LinearGenomeViewModel
-  handleClose: () => void
+  model: LinearGenomeViewModel;
+  handleClose: () => void;
 }) {
   const classes = useStyles()
   const session = getSession(model)

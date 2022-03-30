@@ -9,8 +9,8 @@ export async function renderToAbstractCanvas(
   width: number,
   height: number,
   opts: {
-    exportSVG?: { rasterizeLayers?: boolean }
-    highResolutionScaling: number
+    exportSVG?: { rasterizeLayers?: boolean };
+    highResolutionScaling: number;
   },
   cb: Function,
 ) {

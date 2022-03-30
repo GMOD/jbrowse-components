@@ -13,23 +13,23 @@ import { toArray } from 'rxjs/operators'
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 
 interface HeaderLine {
-  tag: string
-  value: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  data: HeaderLine[]
+  tag: string;
+  value: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  data: HeaderLine[];
 }
 interface Header {
-  idToName?: string[]
-  nameToId?: Record<string, number>
-  readGroups?: number[]
+  idToName?: string[];
+  nameToId?: Record<string, number>;
+  readGroups?: number[];
 }
 
 export default class CramAdapter extends BaseFeatureDataAdapter {
   samHeader: Header = {}
 
   private setupP?: Promise<{
-    samHeader: Header
-    cram: any // eslint-disable-line @typescript-eslint/no-explicit-any
-    sequenceAdapter: any // eslint-disable-line @typescript-eslint/no-explicit-any
+    samHeader: Header;
+    cram: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    sequenceAdapter: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   }>
 
   // maps a refname to an id

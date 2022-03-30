@@ -50,8 +50,8 @@ const Tooltip = observer(
     model,
     clientMouseCoord,
   }: {
-    model: BaseLinearDisplayModel
-    clientMouseCoord: Coord
+    model: BaseLinearDisplayModel;
+    clientMouseCoord: Coord;
   }) => {
     const classes = useStyles()
     const { featureUnderMouse } = model

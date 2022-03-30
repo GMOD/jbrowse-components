@@ -12,33 +12,33 @@ async function parseWith(buffer: Buffer, options = {}) {
 }
 
 export interface Row {
-  id: string
+  id: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  extendedData?: any
+  extendedData?: any;
   cells: {
-    text: string
+    text: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    extendedData?: any
-  }[]
+    extendedData?: any;
+  }[];
 }
 
 export interface RowSet {
-  isLoaded: boolean
-  rows: Row[]
+  isLoaded: boolean;
+  rows: Row[];
 }
 
 export interface ParseOptions {
-  hasColumnNameLine?: boolean
-  columnNameLineNumber?: number
-  selectedAssemblyName?: string
-  isValidRefName: (refName: string, assemblyName?: string) => boolean
+  hasColumnNameLine?: boolean;
+  columnNameLineNumber?: number;
+  selectedAssemblyName?: string;
+  isValidRefName: (refName: string, assemblyName?: string) => boolean;
 }
 
 export interface Column {
-  name: string
-  dataType: { type: string }
-  isDerived?: boolean
-  derivationFunctionText?: string
+  name: string;
+  dataType: { type: string };
+  isDerived?: boolean;
+  derivationFunctionText?: string;
 }
 
 function guessColumnType(

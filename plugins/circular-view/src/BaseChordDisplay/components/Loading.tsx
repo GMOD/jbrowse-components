@@ -58,7 +58,7 @@ export default (pluginManager: PluginManager) => {
         renderProps: { radius },
       },
     }: {
-      model: { renderProps: { radius: number } }
+      model: { renderProps: { radius: number } };
     }) => {
       const classes = useStyles()
 

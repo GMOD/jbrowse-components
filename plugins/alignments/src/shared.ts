@@ -10,9 +10,9 @@ export async function getUniqueTagValues(
   colorScheme: { type: string; tag?: string },
   blocks: BlockSet,
   opts?: {
-    headers?: Record<string, string>
-    signal?: AbortSignal
-    filters?: string[]
+    headers?: Record<string, string>;
+    signal?: AbortSignal;
+    filters?: string[];
   },
 ) {
   const { rpcManager } = getSession(self)
@@ -34,15 +34,15 @@ export async function getUniqueTagValues(
 
 export async function getUniqueModificationValues(
   self: IAnyStateTreeNode & {
-    parentTrack: IAnyStateTreeNode & { configuration: AnyConfigurationModel }
+    parentTrack: IAnyStateTreeNode & { configuration: AnyConfigurationModel };
   },
   adapterConfig: AnyConfigurationModel,
   colorScheme: { type: string; tag?: string },
   blocks: BlockSet,
   opts?: {
-    headers?: Record<string, string>
-    signal?: AbortSignal
-    filters?: string[]
+    headers?: Record<string, string>;
+    signal?: AbortSignal;
+    filters?: string[];
   },
 ) {
   const { rpcManager } = getSession(self)

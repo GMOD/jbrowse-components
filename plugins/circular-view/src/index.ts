@@ -35,10 +35,10 @@ export default class CircularViewPlugin extends Plugin {
         loc,
         tracks = [],
       }: {
-        session: AbstractSessionModel
-        assembly?: string
-        loc: string
-        tracks?: string[]
+        session: AbstractSessionModel;
+        assembly?: string;
+        loc: string;
+        tracks?: string[];
       }) => {
         const { assemblyManager } = session
         const view = session.addView('CircularView', {}) as CGV

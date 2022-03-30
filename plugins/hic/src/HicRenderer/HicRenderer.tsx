@@ -17,32 +17,32 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 interface HicFeature {
-  bin1: number
-  bin2: number
-  counts: number
+  bin1: number;
+  bin2: number;
+  counts: number;
 }
 
 interface HicDataAdapter extends BaseFeatureDataAdapter {
-  getResolution: (bp: number) => Promise<number>
+  getResolution: (bp: number) => Promise<number>;
 }
 
 export interface RenderArgs extends ServerSideRenderArgs {
-  regions: Region[]
+  regions: Region[];
 }
 
 export interface RenderArgsDeserialized
   extends ServerSideRenderArgsDeserialized {
-  regions: Region[]
-  dataAdapter: HicDataAdapter
-  bpPerPx: number
-  highResolutionScaling: number
-  resolution: number
-  adapterConfig: AnyConfigurationModel
+  regions: Region[];
+  dataAdapter: HicDataAdapter;
+  bpPerPx: number;
+  highResolutionScaling: number;
+  resolution: number;
+  adapterConfig: AnyConfigurationModel;
 }
 
 export interface RenderArgsDeserializedWithFeatures
   extends RenderArgsDeserialized {
-  features: HicFeature[]
+  features: HicFeature[];
 }
 
 export type { RenderArgsSerialized, RenderResults }

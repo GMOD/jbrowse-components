@@ -150,8 +150,8 @@ const Header = observer(
     model,
     selection,
   }: {
-    model: DotplotViewModel
-    selection?: { width: number; height: number }
+    model: DotplotViewModel;
+    selection?: { width: number; height: number };
   }) => {
     const classes = useStyles()
     const { hview, vview } = model

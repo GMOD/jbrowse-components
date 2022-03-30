@@ -33,19 +33,19 @@ export interface ConfigurationSchemaDefinition {
     | ConfigurationSchemaDefinition
     | string
     | number
-    | IAnyType
+    | IAnyType;
 }
 
 interface ConfigurationSchemaOptions {
-  explicitlyTyped?: boolean
-  explicitIdentifier?: string
-  implicitIdentifier?: string | boolean
-  baseConfiguration?: AnyConfigurationSchemaType
+  explicitlyTyped?: boolean;
+  explicitIdentifier?: string;
+  implicitIdentifier?: string | boolean;
+  baseConfiguration?: AnyConfigurationSchemaType;
 
-  actions?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  views?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  extend?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  preProcessSnapshot?: (snapshot: {}) => {}
+  actions?: (self: unknown) => any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  views?: (self: unknown) => any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  extend?: (self: unknown) => any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  preProcessSnapshot?: (snapshot: {}) => {};
 }
 
 function preprocessConfigurationSchemaArguments(
@@ -233,10 +233,10 @@ function makeConfigurationSchemaModel<
 
 export interface AnyConfigurationSchemaType
   extends ReturnType<typeof makeConfigurationSchemaModel> {
-  isJBrowseConfigurationSchema: boolean
-  jbrowseSchemaDefinition: ConfigurationSchemaDefinition
-  jbrowseSchemaOptions: ConfigurationSchemaOptions
-  type: string
+  isJBrowseConfigurationSchema: boolean;
+  jbrowseSchemaDefinition: ConfigurationSchemaDefinition;
+  jbrowseSchemaOptions: ConfigurationSchemaOptions;
+  type: string;
 }
 
 export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>

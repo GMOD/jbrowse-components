@@ -18,10 +18,10 @@ import { safePackageName, external, writeIndex, omitUnresolved } from './util'
 import nodeBuiltins from 'builtin-modules'
 
 interface JBrowseRollupConfigOptions {
-  includeUMD?: boolean
-  includeCJS?: boolean
-  includeESMBundle?: boolean
-  includeNPM?: boolean
+  includeUMD?: boolean;
+  includeCJS?: boolean;
+  includeESMBundle?: boolean;
+  includeNPM?: boolean;
 }
 
 const appPath = fs.realpathSync(process.cwd())

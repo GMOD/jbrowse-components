@@ -19,24 +19,24 @@ import deepmerge from 'deepmerge'
 
 declare module '@material-ui/core/styles/createPalette' {
   interface Palette {
-    tertiary: Palette['primary']
-    quaternary: Palette['primary']
+    tertiary: Palette['primary'];
+    quaternary: Palette['primary'];
     bases: {
-      A: Palette['primary']
-      C: Palette['primary']
-      G: Palette['primary']
-      T: Palette['primary']
-    }
+      A: Palette['primary'];
+      C: Palette['primary'];
+      G: Palette['primary'];
+      T: Palette['primary'];
+    };
   }
   interface PaletteOptions {
-    tertiary?: PaletteOptions['primary']
-    quaternary?: PaletteOptions['primary']
+    tertiary?: PaletteOptions['primary'];
+    quaternary?: PaletteOptions['primary'];
     bases?: {
-      A?: PaletteOptions['primary']
-      C?: PaletteOptions['primary']
-      G?: PaletteOptions['primary']
-      T?: PaletteOptions['primary']
-    }
+      A?: PaletteOptions['primary'];
+      C?: PaletteOptions['primary'];
+      G?: PaletteOptions['primary'];
+      T?: PaletteOptions['primary'];
+    };
   }
 }
 
