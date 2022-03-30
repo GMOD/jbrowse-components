@@ -369,7 +369,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         self.jbrowse.configuration.rpc,
         {
           WebWorkerRpcDriver: {
-            //@ts-ignore
+            // @ts-ignore
             WorkerClass: new Worker(
               new URL('./rpc.worker.ts', import.meta.url),
             ),

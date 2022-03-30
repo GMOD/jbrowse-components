@@ -17,7 +17,10 @@ module.exports = {
     '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx}',
     '<rootDir>/**/*.(spec|test).{js,jsx,ts,tsx}',
   ],
-  testPathIgnorePatterns: ['/dist/', '/cypress/', '/demos/',
+  testPathIgnorePatterns: [
+    '/dist/',
+    '/cypress/',
+    '/demos/',
     'packages/core/ui',
     'packages/core/util',
     'packages/core/assemblyManager',
@@ -30,7 +33,7 @@ module.exports = {
     'packages/core/TextSearch',
     'packages/core/ui',
     'packages/core/util',
-],
+  ],
   collectCoverageFrom: [
     'packages/*/src/**/*.{js,jsx,ts,tsx}',
     'products/*/src/**/*.{js,jsx,ts,tsx}',

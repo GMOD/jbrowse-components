@@ -134,7 +134,7 @@ export default function RootModel(
         self.jbrowse.configuration.rpc,
         {
           WebWorkerRpcDriver: {
-            //@ts-ignore
+            // @ts-ignore
             WorkerClass: new Worker(
               new URL('./rpc.worker.ts', import.meta.url),
             ),
