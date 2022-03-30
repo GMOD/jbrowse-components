@@ -233,6 +233,7 @@ function FallbackComponent({ error }) {
 }
 
 describe('test sharing', () => {
+  // eslint-disable-next-line no-import-assign
   sessionSharing.shareSessionToDynamo = jest.fn().mockReturnValue({
     encryptedSession: 'A',
     json: {

@@ -19,24 +19,24 @@ import deepmerge from 'deepmerge'
 
 declare module '@material-ui/core/styles/createPalette' {
   interface Palette {
-    tertiary: Palette['primary'];
-    quaternary: Palette['primary'];
+    tertiary: Palette['primary']
+    quaternary: Palette['primary']
     bases: {
-      A: Palette['primary'];
-      C: Palette['primary'];
-      G: Palette['primary'];
-      T: Palette['primary'];
-    };
+      A: Palette['primary']
+      C: Palette['primary']
+      G: Palette['primary']
+      T: Palette['primary']
+    }
   }
   interface PaletteOptions {
-    tertiary?: PaletteOptions['primary'];
-    quaternary?: PaletteOptions['primary'];
+    tertiary?: PaletteOptions['primary']
+    quaternary?: PaletteOptions['primary']
     bases?: {
-      A?: PaletteOptions['primary'];
-      C?: PaletteOptions['primary'];
-      G?: PaletteOptions['primary'];
-      T?: PaletteOptions['primary'];
-    };
+      A?: PaletteOptions['primary']
+      C?: PaletteOptions['primary']
+      G?: PaletteOptions['primary']
+      T?: PaletteOptions['primary']
+    }
   }
 }
 
@@ -66,22 +66,22 @@ export const jbrowseDefaultPalette = {
 export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
   return {
     MuiButton: {
-      size: 'small' as 'small',
+      size: 'small' as const,
     },
     MuiFilledInput: {
-      margin: 'dense' as 'dense',
+      margin: 'dense' as const,
     },
     MuiFormControl: {
-      margin: 'dense' as 'dense',
+      margin: 'dense' as const,
     },
     MuiFormHelperText: {
-      margin: 'dense' as 'dense',
+      margin: 'dense' as const,
     },
     MuiIconButton: {
-      size: 'small' as 'small',
+      size: 'small' as const,
     },
     MuiInputBase: {
-      margin: 'dense' as 'dense',
+      margin: 'dense' as const,
     },
     MuiList: {
       dense: true,
@@ -90,32 +90,32 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
       dense: true,
     },
     MuiOutlinedInput: {
-      margin: 'dense' as 'dense',
+      margin: 'dense' as const,
     },
     MuiFab: {
-      size: 'small' as 'small',
+      size: 'small' as const,
     },
     MuiTable: {
-      size: 'small' as 'small',
+      size: 'small' as const,
     },
     MuiTextField: {
-      margin: 'dense' as 'dense',
-      size: 'small' as 'small',
+      margin: 'dense' as const,
+      size: 'small' as const,
     },
     MuiToolbar: {
-      variant: 'dense' as 'dense',
+      variant: 'dense' as const,
     },
     MuiSvgIcon: {
-      fontSize: 'small' as 'small',
+      fontSize: 'small' as const,
     },
     MuiToggleButtonGroup: {
-      size: 'small' as 'small',
+      size: 'small' as const,
     },
     MuiCheckbox: {
-      size: 'small' as 'small',
+      size: 'small' as const,
     },
     MuiLink: {
-      underline: 'always' as 'always',
+      underline: 'always' as const,
     },
   }
 }

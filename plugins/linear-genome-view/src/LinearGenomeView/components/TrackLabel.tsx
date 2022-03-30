@@ -103,7 +103,7 @@ const TrackLabel = React.forwardRef(
     }
 
     const items = [
-      ...session.getTrackActionMenuItems?.(trackConf),
+      ...(session.getTrackActionMenuItems?.(trackConf) || []),
       ...track.trackMenuItems(),
     ].sort((a, b) => (b.priority || 0) - (a.priority || 0))
 
