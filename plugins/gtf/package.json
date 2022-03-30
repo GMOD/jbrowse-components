@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@flatten-js/interval-tree": "^1.0.15",
-    "@gmod/bgzf-filehandle": "^1.4.3",
+    "@gmod/bgzf-filehandle": "^1.4.4",
     "@gmod/gtf": "^0.0.6"
   },
   "peerDependencies": {

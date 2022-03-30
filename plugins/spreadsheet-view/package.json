@@ -25,8 +25,8 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@gmod/bgzf-filehandle": "^1.4.3",
-    "@gmod/vcf": "^5.0.5",
+    "@gmod/bgzf-filehandle": "^1.4.4",
+    "@gmod/vcf": "^5.0.6",
     "@jbrowse/plugin-variants": "^1.6.9",
     "@material-ui/icons": "^4.9.1",
     "classnames": "^2.2.6",

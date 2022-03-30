@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@gmod/bbi": "^1.0.32",
-    "@gmod/bed": "^2.0.6",
+    "@gmod/bed": "^2.0.8",
     "@gmod/tabix": "^1.5.2"
   },
   "peerDependencies": {
