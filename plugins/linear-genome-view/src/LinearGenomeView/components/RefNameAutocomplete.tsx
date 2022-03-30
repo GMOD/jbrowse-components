@@ -97,6 +97,7 @@ function RefNameAutocomplete({
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const regions = assembly?.regions || []
 
   const options = useMemo(

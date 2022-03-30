@@ -31,7 +31,7 @@ function JsonEditor({ slot }) {
     } catch (e) {
       setError(e.message)
     }
-  }, [debouncedJson])
+  }, [debouncedJson, slot])
 
   return (
     <>

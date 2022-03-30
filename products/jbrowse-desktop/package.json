@@ -95,7 +95,6 @@
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
     "react-error-boundary": "^3.0.0",
-    "react-sizeme": "^3.0.2",
     "rxjs": "^6.5.2",
     "split2": "^4.1.0",
     "timeago.js": "^4.0.2",

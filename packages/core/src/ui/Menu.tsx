@@ -6,7 +6,7 @@ import {
   ListItemText,
   ListSubheader,
   MenuProps as MUIMenuProps,
-  MenuItem,
+  MenuItem as MUIMenuItem,
   MenuItemProps,
   MenuList,
   Paper,
@@ -132,10 +132,10 @@ export interface RadioMenuItem extends BaseMenuItem {
 
 export interface SubMenuItem extends BaseMenuItem {
   type?: 'subMenu'
-  subMenu: MyMenuItem[]
+  subMenu: MenuItem[]
 }
 
-export type MyMenuItem =
+export type MenuItem =
   | MenuDivider
   | MenuSubHeader
   | NormalMenuItem
@@ -148,7 +148,7 @@ type OpenProp = MUIMenuProps['open']
 type OnCloseProp = MUIMenuProps['onClose']
 
 interface MenuPageProps {
-  menuItems: MyMenuItem[]
+  menuItems: MenuItem[]
   onMenuItemClick: (
     event: React.MouseEvent<HTMLLIElement, MouseEvent>,
     callback: Function,
@@ -312,7 +312,7 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
             const onClick =
               'onClick' in menuItem ? handleClick(menuItem.onClick) : undefined
             return (
-              <MenuItem
+              <MUIMenuItem
                 key={menuItem.label}
                 style={menuItemStyle}
                 selected={idx === selectedMenuItemIdx}
@@ -357,7 +357,7 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
                   inset={hasIcon && !menuItem.icon}
                 />
                 {endDecoration}
-              </MenuItem>
+              </MUIMenuItem>
             )
           })}
       </MenuList>

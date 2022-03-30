@@ -34,8 +34,7 @@
     "is-object": "^1.0.1",
     "json-stable-stringify": "^1.0.1",
     "normalize-wheel": "^1.0.1",
-    "react-popper": "^2.0.0",
-    "react-sizeme": "^3.0.2"
+    "react-popper": "^2.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",

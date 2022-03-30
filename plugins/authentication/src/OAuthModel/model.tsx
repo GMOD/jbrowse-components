@@ -26,6 +26,7 @@ function getGlobalObject(): Window {
   // Based on window-or-global
   // https://github.com/purposeindustries/window-or-global/blob/322abc71de0010c9e5d9d0729df40959e1ef8775/lib/index.js
   return (
+    // eslint-disable-next-line no-restricted-globals
     (typeof self === 'object' && self.self === self && self) ||
     (typeof global === 'object' && global.global === global && global) ||
     // @ts-ignore

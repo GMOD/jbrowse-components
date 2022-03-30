@@ -20,6 +20,7 @@ const SvInspectorComponentF = pluginManager => {
     boxSizing: 'border-box',
     borderTop: '1px solid #fafafa',
   }
+
   const useStyles = makeStyles(theme => {
     return {
       root: {
@@ -53,6 +54,7 @@ const SvInspectorComponentF = pluginManager => {
   })
 
   const ViewControls = observer(({ model }) => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const classes = useStyles()
     return (
       <Grid
@@ -78,6 +80,7 @@ const SvInspectorComponentF = pluginManager => {
   })
 
   const CircularViewOptions = observer(({ svInspector }) => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const classes = useStyles()
 
     return (

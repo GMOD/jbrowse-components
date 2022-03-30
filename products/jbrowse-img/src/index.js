@@ -16,6 +16,7 @@ console.error = (...args) => {
   }
 }
 
+// eslint-disable-next-line no-unused-expressions
 yargs
   .command('jb2export', 'Creates a jbrowse 2 image snapshot')
   .option('config', {
