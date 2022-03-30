@@ -64,6 +64,7 @@
     "mobx": "^5.10.1",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
+    "node-polyfill-webpack-plugin": "^1.1.4",
     "pako": "^1.0.10",
     "prop-types": "^15.7.2",
     "query-string": "^6.9.0",
@@ -75,7 +76,8 @@
     "requestidlecallback-polyfill": "^1.0.2",
     "rxjs": "^6.5.2",
     "shortid": "^2.2.15",
-    "use-query-params": "1.2.3"
+    "use-query-params": "1.2.3",
+    "webpack": "^5.66.0"
   },
   "devDependencies": {
     "jest": "26.6.0"

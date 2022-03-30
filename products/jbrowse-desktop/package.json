@@ -88,6 +88,7 @@
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
     "node-fetch": "^2.6.0",
+    "node-polyfill-webpack-plugin": "^1.1.4",
     "prop-types": "^15.7.2",
     "pump": "^3.0.0",
     "raf": "^3.4.1",
@@ -98,7 +99,8 @@
     "rxjs": "^6.5.2",
     "split2": "^4.1.0",
     "timeago.js": "^4.0.2",
-    "use-query-params": "1.2.3"
+    "use-query-params": "1.2.3",
+    "webpack": "^5.66.0"
   },
   "devDependencies": {
     "electron": "17.1.2"
