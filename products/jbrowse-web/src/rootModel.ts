@@ -135,9 +135,8 @@ export default function RootModel(
         {
           WebWorkerRpcDriver: {
             // @ts-ignore
-            WorkerClass: new Worker(
-              new URL('./rpc.worker.ts', import.meta.url),
-            ),
+            makeWorkerInstance: () =>
+              new Worker(new URL('./rpc.worker.ts', import.meta.url)),
           },
           MainThreadRpcDriver: {},
         },

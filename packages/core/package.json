@@ -23,6 +23,7 @@
     "test": "cd ../..; jest packages/core",
     "coverage": "yarn test --coverage",
     "clean": "git clean -fdx",
+    "build:only": "tsc",
     "prebuild": "yarn clean",
     "prepack": "yarn build",
     "build": "tsc"

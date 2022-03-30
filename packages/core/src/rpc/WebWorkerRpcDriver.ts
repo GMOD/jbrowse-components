@@ -3,13 +3,8 @@ import shortid from 'shortid'
 import BaseRpcDriver, { RpcDriverConstructorArgs } from './BaseRpcDriver'
 import { PluginDefinition } from '../PluginLoader'
 
-interface WebpackWorker {
-  new (): Worker
-  prototype: Worker
-}
-
 interface WebWorkerRpcDriverConstructorArgs extends RpcDriverConstructorArgs {
-  WorkerClass: WebpackWorker
+  makeWorkerInstance: () => Worker
 }
 
 class WebWorkerHandle extends Rpc.Client {
@@ -46,22 +41,27 @@ class WebWorkerHandle extends Rpc.Client {
 export default class WebWorkerRpcDriver extends BaseRpcDriver {
   name = 'WebWorkerRpcDriver'
 
-  WorkerClass: WebpackWorker
+  makeWorkerInstance: () => Worker
 
   constructor(
     args: WebWorkerRpcDriverConstructorArgs,
     public workerBootConfiguration: { plugins: PluginDefinition[] },
   ) {
     super(args)
-    this.WorkerClass = args.WorkerClass
+    console.log({ args })
+    this.makeWorkerInstance = args.makeWorkerInstance
   }
 
   async makeWorker() {
+    console.log('wow')
     // note that we are making a Rpc.Client connection with a worker pool of
     // one for each worker, because we want to do our own state-group-aware
     // load balancing rather than using librpc's builtin round-robin
-    // @ts-ignore
-    const worker = new WebWorkerHandle({ workers: [this.WorkerClass] })
+    const instance = this.makeWorkerInstance()
+
+    console.log({ instance })
+
+    const worker = new WebWorkerHandle({ workers: [instance] })
 
     // send the worker its boot configuration using info from the pluginManager
     const p = new Promise((resolve: (w: WebWorkerHandle) => void, reject) => {
