@@ -1,9 +1,5 @@
-import {
-  guessAdapterFromFileName,
-  isURL,
-  makeLocation,
-  supported,
-} from './common'
+import { guessAdapterFromFileName, isURL, makeLocation } from './common'
+import { supportedIndexingAdapters } from '../util'
 
 describe('utils for text indexing', () => {
   const local = './volvox.sort.gff3.gz'
@@ -30,7 +26,7 @@ describe('utils for text indexing', () => {
   it('test guess adapter from file name', () => {
     const conf1 = guessAdapterFromFileName(gff3)
     expect(conf1.adapter.type).toBe('Gff3TabixAdapter')
-    expect(supported(conf1.adapter.type)).toBe(true)
+    expect(supportedIndexingAdapters(conf1.adapter.type)).toBe(true)
     const conf2 = guessAdapterFromFileName(gff)
     expect(conf2.adapter.type).toBe('Gff3TabixAdapter')
     const conf3 = guessAdapterFromFileName(vcf)

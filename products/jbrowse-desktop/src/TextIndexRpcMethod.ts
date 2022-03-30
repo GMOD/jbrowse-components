@@ -1,8 +1,6 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
-import { SnapshotIn } from 'mobx-state-tree'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { indexTracks } from '@jbrowse/text-indexing'
+import { indexTracks, indexType, Track } from '@jbrowse/text-indexing'
 
 export class TextIndexRpcMethod extends RpcMethodType {
   name = 'TextIndexRpcMethod'
@@ -10,13 +8,13 @@ export class TextIndexRpcMethod extends RpcMethodType {
   async execute(
     args: {
       sessionId: string
-      signal: RemoteAbortSignal
+      signal?: RemoteAbortSignal
       outLocation?: string
       attributes?: string[]
       exclude?: string[]
       assemblies?: string[]
-      indexType?: string
-      tracks: AnyConfigurationModel[] | SnapshotIn<AnyConfigurationModel>[]
+      indexType?: indexType
+      tracks: Track[]
     },
     rpcDriverClassName: string,
   ) {
@@ -24,8 +22,15 @@ export class TextIndexRpcMethod extends RpcMethodType {
       args,
       rpcDriverClassName,
     )
-    const { tracks, outLocation, exclude, attributes, assemblies, indexType } =
-      deserializedArgs
+    const {
+      tracks,
+      outLocation,
+      exclude,
+      attributes,
+      assemblies,
+      indexType,
+      signal,
+    } = deserializedArgs
 
     const indexingParams = {
       outLocation,
@@ -34,6 +39,7 @@ export class TextIndexRpcMethod extends RpcMethodType {
       attributes,
       assemblies,
       indexType,
+      signal,
     }
     await indexTracks(indexingParams)
     return []

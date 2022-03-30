@@ -1,6 +1,7 @@
-import { Track, getLocalOrRemoteStream } from '../util'
 import { createGunzip } from 'zlib'
 import readline from 'readline'
+import { Track } from '../util'
+import { getLocalOrRemoteStream } from './common'
 
 export async function* indexVcf(
   config: Track,
