@@ -27,9 +27,9 @@ export default function ConfigWarningModal({
   onCancel,
   reason,
 }: {
-  onConfirm: () => void;
-  onCancel: () => void;
-  reason: { url: string }[];
+  onConfirm: () => void
+  onCancel: () => void
+  reason: { url: string }[]
 }) {
   const classes = useStyles()
   return (
@@ -50,7 +50,7 @@ export default function ConfigWarningModal({
             unknown plugins:
             <ul>
               {reason.map(r => (
-                <li>URL: {r.url}</li>
+                <li key={JSON.stringify(r)}>URL: {r.url}</li>
               ))}
             </ul>
             Please ensure you trust the source of this link.

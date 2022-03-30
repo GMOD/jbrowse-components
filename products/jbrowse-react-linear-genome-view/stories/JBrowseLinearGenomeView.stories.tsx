@@ -99,8 +99,8 @@ export const WithOutsideStyling = () => {
   return (
     <div style={{ textAlign: 'center', fontFamily: 'monospace' }}>
       <h2>
-        This parent container has textAlign:'center' and a monospace font, but
-        these attributes are not affecting the internal LGV
+        This parent container has textAlign:&apos;center&apos; and a monospace
+        font, but these attributes are not affecting the internal LGV
       </h2>
       <JBrowseLinearGenomeView viewState={state} />
     </div>

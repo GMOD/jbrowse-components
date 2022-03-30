@@ -27,9 +27,9 @@ export default function SessionWarningModal({
   onCancel,
   reason,
 }: {
-  onConfirm: () => void;
-  onCancel: () => void;
-  reason: { url: string }[];
+  onConfirm: () => void
+  onCancel: () => void
+  reason: { url: string }[]
 }) {
   const classes = useStyles()
   return (
@@ -48,7 +48,7 @@ export default function SessionWarningModal({
             This link contains a session that has the following unknown plugins:
             <ul>
               {reason.map(r => (
-                <li>URL: {r.url}</li>
+                <li key={JSON.stringify(r)}>URL: {r.url}</li>
               ))}
             </ul>
             Please ensure you trust the source of this session.

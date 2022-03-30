@@ -36,7 +36,7 @@ function Home() {
               </Typography>
               <Typography variant="body1">
                 The mission of the JBrowse Consortium is to develop a
-                comprehensive, pluggable, open-source computational platform for
+                comprehensive, pluggable, open-source computational platform for
                 visualizing and integrating biological data.
               </Typography>
             </Box>

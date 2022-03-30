@@ -137,7 +137,7 @@ export const InternetAccount = types
           tokenPromise = Promise.resolve(token)
           return tokenPromise
         }
-        tokenPromise = new Promise(async (r, x) => {
+        tokenPromise = new Promise((r, x) => {
           function resolve(token: string) {
             self.storeToken(token)
             r(token)

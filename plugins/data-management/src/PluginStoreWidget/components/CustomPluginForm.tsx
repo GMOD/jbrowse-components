@@ -52,9 +52,9 @@ function CustomPluginForm({
   onClose,
   model,
 }: {
-  open: boolean;
-  onClose(): void;
-  model: PluginStoreModel;
+  open: boolean
+  onClose(): void
+  model: PluginStoreModel
 }) {
   const classes = useStyles()
   const [umdPluginName, setUMDPluginName] = useState('')
@@ -132,7 +132,7 @@ function CustomPluginForm({
         <DialogContent className={classes.dialogContent}>
           <DialogContentText>
             Enter the name of the plugin and its URL. The name should match what
-            is defined in the plugin's build.
+            is defined in the plugin&apos;s build.
           </DialogContentText>
           <TextField
             id="umd-name-input"

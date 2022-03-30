@@ -10,8 +10,8 @@ import {
 } from '@material-ui/core'
 
 function canSetDefaultSession(obj: unknown): obj is {
-  jbrowse: { setDefaultSessionConf: Function };
-  session: unknown;
+  jbrowse: { setDefaultSessionConf: Function }
+  session: unknown
 } {
   return typeof obj === 'object' && !!obj && 'jbrowse' in obj
 }
@@ -32,9 +32,10 @@ const SetDefaultSession = observer(
         <DialogTitle>Set default session</DialogTitle>
         <DialogContent>
           <Typography>
-            Select "Set current session as default" to make your current session
-            saved to the config file. You can also hit "Clear default session",
-            which would remove the default session from the config.
+            Select &quot;Set current session as default&quot; to make your
+            current session saved to the config file. You can also hit
+            &quot;Clear default session&quot;, which would remove the default
+            session from the config.
           </Typography>
         </DialogContent>
         <DialogActions>
