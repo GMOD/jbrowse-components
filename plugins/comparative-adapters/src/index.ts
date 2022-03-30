@@ -16,8 +16,10 @@ import {
 } from '@jbrowse/core/util/tracks'
 
 export default class ComparativeAdaptersPlugin extends Plugin {
-  name = 'ComparativeAdaptersPlugin'
-
+  constructor() {
+    super()
+    this.name = 'ComparativeAdaptersPlugin'
+  }
   install(pluginManager: PluginManager) {
     PAFAdapterF(pluginManager)
     DeltaAdapterF(pluginManager)
