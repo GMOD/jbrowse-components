@@ -24,6 +24,7 @@ import Wiggle from '@jbrowse/plugin-wiggle'
 import SpreadsheetViewPlugin from '@jbrowse/plugin-spreadsheet-view'
 import SvInspectorPlugin from '@jbrowse/plugin-sv-inspector'
 import HicPlugin from '@jbrowse/plugin-hic'
+import TextIndex from '@jbrowse/plugin-text-indexing'
 import TrixPlugin from '@jbrowse/plugin-trix'
 import GridBookmarkPlugin from '@jbrowse/plugin-grid-bookmark'
 
@@ -47,6 +48,7 @@ const corePlugins = [
   RDF,
   Sequence,
   TrackHubRegistry,
+  TextIndex,
   Variants,
   Wiggle,
   SpreadsheetViewPlugin,

@@ -69,6 +69,7 @@
     "@jbrowse/plugin-sv-inspector": "^1.6.9",
     "@jbrowse/plugin-svg": "^1.6.9",
     "@jbrowse/plugin-trackhub-registry": "^1.6.9",
+    "@jbrowse/plugin-text-indexing": "^1.6.9",
     "@jbrowse/plugin-trix": "^1.6.9",
     "@jbrowse/plugin-variants": "^1.6.9",
     "@jbrowse/plugin-wiggle": "^1.6.9",
