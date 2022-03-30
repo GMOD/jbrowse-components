@@ -79,9 +79,6 @@
     "use-query-params": "1.2.3",
     "webpack": "^5.66.0"
   },
-  "devDependencies": {
-    "jest": "26.6.0"
-  },
   "browserslist": {
     "production": [
       ">0.2%",
