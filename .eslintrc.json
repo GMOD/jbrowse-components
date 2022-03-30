@@ -19,106 +19,13 @@
   },
   "plugins": ["@typescript-eslint", "eslint-plugin-tsdoc"],
   "rules": {
-    "prettier/prettier": "warn",
-    "@typescript-eslint/ban-ts-ignore": "off",
-    "@typescript-eslint/ban-ts-comment": "off",
-    "@typescript-eslint/ban-types": "off",
-    "@typescript-eslint/camelcase": "off",
-    "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/explicit-module-boundary-types": "off",
-    "@typescript-eslint/no-empty-function": "off",
-    "@typescript-eslint/no-unused-vars": ["warn"],
-    "@typescript-eslint/no-unused-expressions": "off",
-    "@typescript-eslint/no-use-before-define": "off",
-    "@typescript-eslint/no-var-requires": "off",
-    "@typescript-eslint/no-redeclare": "off",
-
-    "no-use-before-define": "off",
-    "curly": "error",
-    "no-global-assign": "warn",
-    "no-console": [
-      "warn",
-      {
-        "allow": ["error", "warn"]
-      }
-    ],
-    "no-debugger": "warn",
-    "no-undef": "error",
-    "no-underscore-dangle": "warn",
-
-    "import/no-extraneous-dependencies": "error",
-    "import/no-anonymous-default-export": "off",
-    "monorepo/no-internal-import": "off",
-
-    "react/no-danger": "warn",
-    "react/destructuring-assignment": "error",
-    "react/no-unused-prop-types": "error",
-    "react/no-unused-state": "error",
-    "react/prefer-stateless-function": "error",
-    "react/prop-types": "error",
-    "spaced-comment": [
-      "error",
-      "always",
-      {
-        "markers": ["/"]
-      }
-    ]
-  },
-  "overrides": [
-    {
-      "files": ["**/*.ts", "**/*.tsx"],
-      "rules": {
-        "tsdoc/syntax": "warn"
-      }
-    },
-    {
-      "files": ["**/jbrowse-cli/**/*.test.ts", "**/jbrowse-cli/**/*.test.tsx"],
-      "rules": {
-        "tsdoc/syntax": "off"
-      }
-    },
-    {
-      "files": [
-        "**/test/**",
-        "**/*.test.[t,j]s",
-        "**/*.test.[t,j]sx",
-        "**/rescripts/*",
-        "**/tests/util.js",
-        "**/webpack.config.js",
-        "**/scripts/notarize.js",
-        "**/src/testUtil.ts"
-      ],
-      "env": {
-        "jest": true
-      },
-      "globals": {
-        "document": true,
-        "it": true,
-        "describe": true,
-        "test": true
-      },
-      "rules": {
-        "import/no-extraneous-dependencies": "off"
-      }
-    },
-    {
-      "files": ["**/component_test/**"],
-      "parserOptions": {
-        "ecmaFeatures": {
-          "jsx": true
-        },
-        "project": "./component_test/tsconfig.json"
-      }
-    },
-    {
-      "files": ["**/component_test/cypress/**"],
-      "extends": ["plugin:cypress/recommended"],
-      "parserOptions": {
-        "ecmaFeatures": {
-          "jsx": true
-        },
-        "project": "./component_test/cypress/tsconfig.json"
-      }
-    }
-  ]
+    "@typescript-eslint/explicit-function-return-type": 0,
+    "@typescript-eslint/no-use-before-define": 0,
+    "@typescript-eslint/no-var-requires": 0,
+    "@typescript-eslint/no-empty-function": 0,
+    "@typescript-eslint/ban-ts-ignore": 0,
+    "monorepo/no-internal-import": 0,
+    "no-use-before-define": 0,
+    "@typescript-eslint/no-use-before-define": ["error"]
+  }
 }
