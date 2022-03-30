@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const spawn = require('cross-spawn')
-const { getLevels, getPackages, getDependencyGraph } = require('./util')
+const { getDependencyGraph } = require('./util')
 
 // Get packages in all workspaces
 const packages = getPackages()
@@ -17,16 +17,14 @@ levels.forEach(level => {
   })
   const { signal, status } = spawn.sync(
     'yarn',
-    ['lerna', 'exec', 'yarn', 'build', ...scopes],
+    ['lerna', 'exec', 'yarn', 'pack', ...scopes],
     { stdio: 'inherit' },
   )
   if (signal || (status !== null && status > 0)) {
     process.exit(status || 1)
   }
 })
-
 fs.mkdirSync(path.join('component_test', 'packed'), { recursive: true })
-
 Object.values(packages).forEach(packageInfo => {
   let { location } = packageInfo
   if (location === 'packages/core') {
@@ -36,7 +34,7 @@ Object.values(packages).forEach(packageInfo => {
     location = path.join(location, 'dist')
     const { signal, status } = spawn.sync(
       'yarn',
-      ['build', '--ignore-scripts'],
+      ['pack', '--ignore-scripts'],
       { stdio: 'inherit', cwd: location },
     )
     if (signal || (status !== null && status > 0)) {
