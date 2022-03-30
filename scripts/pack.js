@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const spawn = require('cross-spawn')
-const { getDependencyGraph } = require('./util')
+const { getDependencyGraph, getPackages, getLevels } = require('./util')
 
 // Get packages in all workspaces
 const packages = getPackages()

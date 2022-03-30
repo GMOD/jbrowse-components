@@ -13,3 +13,15 @@ products/jbrowse-web/scripts/**
 products/jbrowse-desktop/public/electron.js
 products/jbrowse-desktop/public/generateFastaIndex.js
 /demos/
+packages/core/ui/
+packages/core/util/
+packages/core/assemblyManager/
+packages/core/BaseFeatureWidget/
+packages/core/configuration/
+packages/core/data_adapters/
+packages/core/pluggableElementTypes/
+packages/core/ReExports/
+packages/core/rpc/
+packages/core/TextSearch/
+packages/core/ui/
+packages/core/util/
