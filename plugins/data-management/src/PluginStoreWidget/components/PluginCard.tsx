@@ -3,8 +3,10 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
 import { getEnv, getParent } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
-import { JBrowsePlugin } from '@jbrowse/core/util/types'
-import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
+import {
+  JBrowsePlugin,
+  isSessionWithSessionPlugins,
+} from '@jbrowse/core/util/types'
 import {
   Card,
   CardActions,
@@ -44,9 +46,9 @@ function PluginCard({
   model,
   adminMode,
 }: {
-  plugin: JBrowsePlugin;
-  model: PluginStoreModel;
-  adminMode: boolean;
+  plugin: JBrowsePlugin
+  model: PluginStoreModel
+  adminMode: boolean
 }) {
   const classes = useStyles()
   const session = getSession(model)

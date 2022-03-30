@@ -10,10 +10,10 @@ type BinaryRangeFetch = (
 ) => Promise<BinaryRangeResponse>
 
 interface BinaryRangeResponse {
-  headers: Record<string, string>;
-  requestDate: Date;
-  responseDate: Date;
-  buffer: Buffer;
+  headers: Record<string, string>
+  requestDate: Date
+  responseDate: Date
+  buffer: Buffer
 }
 
 const fetchers: Record<string, BinaryRangeFetch> = {}
@@ -58,7 +58,7 @@ export class RemoteFileWithRangeCache extends RemoteFile {
       if (requestHeaders instanceof Headers) {
         range = requestHeaders.get('range')
       } else if (Array.isArray(requestHeaders)) {
-        [, range] = requestHeaders.find(([key]) => key === 'range') || [
+        ;[, range] = requestHeaders.find(([key]) => key === 'range') || [
           undefined,
           undefined,
         ]

@@ -14,9 +14,9 @@ const AlignmentConnections = observer(
     trackConfigId,
     parentRef,
   }: {
-    model: BreakpointViewModel;
-    trackConfigId: string;
-    parentRef: React.RefObject<SVGSVGElement>;
+    model: BreakpointViewModel
+    trackConfigId: string
+    parentRef: React.RefObject<SVGSVGElement>
   }) => {
     const { views, showIntraviewLinks } = model
     const { assemblyManager } = getSession(model)

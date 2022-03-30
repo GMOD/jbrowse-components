@@ -5,11 +5,11 @@ import Typography from '@material-ui/core/Typography'
 export interface LinearPileupDisplayBlurbProps {
   model: {
     sortedBy?: {
-      pos: number;
-      refName: number;
-      type: string;
-    };
-  };
+      pos: number
+      refName: number
+      type: string
+    }
+  }
 }
 
 function LinearPileupDisplayBlurb(props: LinearPileupDisplayBlurbProps) {

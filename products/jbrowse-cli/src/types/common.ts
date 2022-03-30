@@ -87,12 +87,12 @@ export async function generateMeta({
   exclude,
   assemblyNames,
 }: {
-  configs: Track[];
-  attributes: string[];
-  outDir: string;
-  name: string;
-  exclude: string[];
-  assemblyNames: string[];
+  configs: Track[]
+  attributes: string[]
+  outDir: string
+  name: string
+  exclude: string[]
+  assemblyNames: string[]
 }) {
   const tracks = configs.map(config => {
     const { trackId, textSearching, adapter } = config

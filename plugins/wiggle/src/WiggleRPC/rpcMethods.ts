@@ -26,10 +26,10 @@ export class WiggleGetGlobalStats extends RpcMethodType {
 
   async execute(
     args: {
-      adapterConfig: {};
-      signal?: RemoteAbortSignal;
-      headers?: Record<string, string>;
-      sessionId: string;
+      adapterConfig: {}
+      signal?: RemoteAbortSignal
+      headers?: Record<string, string>
+      sessionId: string
     },
     rpcDriverClassName: string,
   ): Promise<FeatureStats> {
@@ -85,12 +85,12 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
 
   async execute(
     args: {
-      adapterConfig: {};
-      signal?: RemoteAbortSignal;
-      sessionId: string;
-      headers?: Record<string, string>;
-      regions: Region[];
-      bpPerPx: number;
+      adapterConfig: {}
+      signal?: RemoteAbortSignal
+      sessionId: string
+      headers?: Record<string, string>
+      regions: Region[]
+      bpPerPx: number
     },
     rpcDriverClassName: string,
   ) {

@@ -8,20 +8,20 @@ import { parseBreakend } from '@gmod/vcf'
  */
 interface Samples {
   [key: string]: {
-    [key: string]: { values: string[] | number[] | null };
-  };
+    [key: string]: { values: string[] | number[] | null }
+  }
 }
 
 interface FeatureData {
-  [key: string]: unknown;
-  refName: string;
-  start: number;
-  end: number;
-  description?: string;
-  type?: string;
-  name?: string;
-  aliases?: string[];
-  samples?: Samples;
+  [key: string]: unknown
+  refName: string
+  start: number
+  end: number
+  description?: string
+  type?: string
+  name?: string
+  aliases?: string[]
+  samples?: Samples
 }
 
 export default class VCFFeature implements Feature {
@@ -74,12 +74,12 @@ export default class VCFFeature implements Feature {
   }
 
   dataFromVariant(variant: {
-    REF: string;
-    POS: number;
-    ALT: string[];
-    CHROM: string;
-    INFO: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-    ID: string[];
+    REF: string
+    POS: number
+    ALT: string[]
+    CHROM: string
+    INFO: any // eslint-disable-line @typescript-eslint/no-explicit-any
+    ID: string[]
   }): FeatureData {
     const { REF, ALT, POS, CHROM, INFO, ID } = variant
     const start = POS - 1
@@ -116,7 +116,7 @@ export default class VCFFeature implements Feature {
       let [soTerm, description] = this._getSOAndDescFromAltDefs(ref, a)
 
       if (!soTerm) {
-        [soTerm, description] = this._getSOAndDescByExamination(ref, a)
+        ;[soTerm, description] = this._getSOAndDescByExamination(ref, a)
       }
       if (soTerm && description) {
         soTerms.add(soTerm)

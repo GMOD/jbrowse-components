@@ -28,8 +28,8 @@ import { dedupe } from './util'
 const HelpDialog = lazy(() => import('./HelpDialog'))
 
 export interface Option {
-  group?: string;
-  result: BaseResult;
+  group?: string
+  result: BaseResult
 }
 
 // the logic of this method is to only apply a filter to RefSequenceResults
@@ -75,15 +75,15 @@ function RefNameAutocomplete({
   minWidth = 200,
   TextFieldProps = {},
 }: {
-  model: LinearGenomeViewModel;
-  onSelect: (region: BaseResult) => void;
-  assemblyName?: string;
-  value?: string;
-  fetchResults: (query: string) => Promise<BaseResult[]>;
-  style?: React.CSSProperties;
-  minWidth?: number;
-  showHelp?: boolean;
-  TextFieldProps?: TFP;
+  model: LinearGenomeViewModel
+  onSelect: (region: BaseResult) => void
+  assemblyName?: string
+  value?: string
+  fetchResults: (query: string) => Promise<BaseResult[]>
+  style?: React.CSSProperties
+  minWidth?: number
+  showHelp?: boolean
+  TextFieldProps?: TFP
 }) {
   const session = getSession(model)
   const { assemblyManager } = session
@@ -97,7 +97,6 @@ function RefNameAutocomplete({
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const regions = assembly?.regions || []
 
   const options = useMemo(

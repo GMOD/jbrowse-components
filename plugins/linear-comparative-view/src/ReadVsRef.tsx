@@ -70,21 +70,21 @@ function getClip(cigar: string, strand: number) {
 }
 
 interface ReducedFeature {
-  refName: string;
-  start: number;
-  clipPos: number;
-  end: number;
-  strand: number;
-  seqLength: number;
-  syntenyId?: number;
-  uniqueId: string;
+  refName: string
+  start: number
+  clipPos: number
+  end: number
+  strand: number
+  seqLength: number
+  syntenyId?: number
+  uniqueId: string
   mate: {
-    refName: string;
-    start: number;
-    end: number;
-    syntenyId?: number;
-    uniqueId?: string;
-  };
+    refName: string
+    start: number
+    end: number
+    syntenyId?: number
+    uniqueId?: string
+  }
 }
 
 const useStyles = makeStyles(theme => ({
@@ -145,9 +145,9 @@ function mergeIntervals<T extends { start: number; end: number }>(
 }
 
 interface BasicFeature {
-  end: number;
-  start: number;
-  refName: string;
+  end: number
+  start: number
+  refName: string
 }
 
 // hashmap of refName->array of features
@@ -168,9 +168,9 @@ function gatherOverlaps(regions: BasicFeature[]) {
 }
 
 export function WindowSizeDlg(props: {
-  feature: Feature;
-  handleClose: () => void;
-  track: any;
+  feature: Feature
+  handleClose: () => void
+  track: any
 }) {
   const classes = useStyles()
   const { track, feature: preFeature, handleClose } = props

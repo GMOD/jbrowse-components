@@ -6,18 +6,18 @@ import { Tooltip } from '@jbrowse/plugin-wiggle'
 
 type Count = {
   [key: string]: {
-    total: number;
-    strands: { [key: string]: number };
-  };
+    total: number
+    strands: { [key: string]: number }
+  }
 }
 
 type SNPInfo = {
-  ref: Count;
-  cov: Count;
-  lowqual: Count;
-  noncov: Count;
-  delskips: Count;
-  total: number;
+  ref: Count
+  cov: Count
+  lowqual: Count
+  noncov: Count
+  delskips: Count
+  total: number
 }
 
 const en = (n: number) => n.toLocaleString('en-US')
@@ -88,11 +88,11 @@ type Coord = [number, number]
 
 const SNPCoverageTooltip = observer(
   (props: {
-    model: any;
-    height: number;
-    offsetMouseCoord: Coord;
-    clientMouseCoord: Coord;
-    clientRect?: DOMRect;
+    model: any
+    height: number
+    offsetMouseCoord: Coord
+    clientMouseCoord: Coord
+    clientRect?: DOMRect
   }) => {
     const { model } = props
     const { featureUnderMouse: feat } = model

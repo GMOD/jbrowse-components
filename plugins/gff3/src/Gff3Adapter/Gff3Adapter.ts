@@ -18,8 +18,8 @@ function isGzip(buf: Buffer) {
 
 export default class extends BaseFeatureDataAdapter {
   protected gffFeatures?: Promise<{
-    header: string;
-    intervalTree: Record<string, IntervalTree>;
+    header: string
+    intervalTree: Record<string, IntervalTree>
   }>
 
   private async loadDataP() {
@@ -145,7 +145,7 @@ export default class extends BaseFeatureDataAdapter {
       if (dataAttributes[a] !== null) {
         let attr: string | string[] | undefined = dataAttributes[a]
         if (Array.isArray(attr) && attr.length === 1) {
-          [attr] = attr
+          ;[attr] = attr
         }
         f[b] = attr
       }

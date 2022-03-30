@@ -23,7 +23,7 @@ export const useStyles = makeStyles(theme => ({
 export default function HelpDialog({
   handleClose,
 }: {
-  handleClose: () => void;
+  handleClose: () => void
 }) {
   const classes = useStyles()
   return (

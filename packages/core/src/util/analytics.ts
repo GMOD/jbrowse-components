@@ -3,11 +3,11 @@ import { readConfObject } from '../configuration'
 import { isElectron } from '../util'
 
 interface AnalyticsObj {
-  [key: string]: any;
+  [key: string]: any
 }
 
 interface Track {
-  [key: string]: any;
+  [key: string]: any
 }
 
 export async function writeAWSAnalytics(

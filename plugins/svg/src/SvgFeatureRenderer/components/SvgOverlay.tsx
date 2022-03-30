@@ -6,63 +6,63 @@ import { observer } from 'mobx-react'
 
 type LayoutRecord = [number, number, number, number]
 interface SvgOverlayProps {
-  region: Region;
+  region: Region
   displayModel: {
-    getFeatureByID?: (arg0: string, arg1: string) => LayoutRecord;
-    selectedFeatureId?: string;
-    featureIdUnderMouse?: string;
-    contextMenuFeature?: Feature;
-  };
-  bpPerPx: number;
-  blockKey: string;
-  movedDuringLastMouseDown: boolean;
+    getFeatureByID?: (arg0: string, arg1: string) => LayoutRecord
+    selectedFeatureId?: string
+    featureIdUnderMouse?: string
+    contextMenuFeature?: Feature
+  }
+  bpPerPx: number
+  blockKey: string
+  movedDuringLastMouseDown: boolean
   onFeatureMouseDown?(
     event: React.MouseEvent<SVGRectElement, MouseEvent>,
     featureId: string,
-  ): {};
+  ): {}
   onFeatureMouseEnter?(
     event: React.MouseEvent<SVGRectElement, MouseEvent>,
     featureId: string,
-  ): {};
+  ): {}
   onFeatureMouseOut?(
     event:
       | React.MouseEvent<SVGRectElement, MouseEvent>
       | React.FocusEvent<SVGRectElement>,
     featureId: string,
-  ): {};
+  ): {}
   onFeatureMouseOver?(
     event:
       | React.MouseEvent<SVGRectElement, MouseEvent>
       | React.FocusEvent<SVGRectElement>,
     featureId: string,
-  ): {};
+  ): {}
   onFeatureMouseUp?(
     event: React.MouseEvent<SVGRectElement, MouseEvent>,
     featureId: string,
-  ): {};
+  ): {}
   onFeatureMouseLeave?(
     event: React.MouseEvent<SVGRectElement, MouseEvent>,
     featureId: string,
-  ): {};
+  ): {}
   onFeatureMouseMove?(
     event: React.MouseEvent<SVGRectElement, MouseEvent>,
     featureId: string,
-  ): {};
+  ): {}
   // synthesized from mouseup and mousedown
   onFeatureClick?(
     event: React.MouseEvent<SVGRectElement, MouseEvent>,
     featureId: string,
-  ): {};
+  ): {}
   onFeatureContextMenu?(
     event: React.MouseEvent<SVGRectElement, MouseEvent>,
     featureId: string,
-  ): {};
+  ): {}
 }
 
 interface OverlayRectProps extends React.SVGProps<SVGRectElement> {
-  rect?: LayoutRecord;
-  region: Region;
-  bpPerPx: number;
+  rect?: LayoutRecord
+  region: Region
+  bpPerPx: number
 }
 
 function OverlayRect({

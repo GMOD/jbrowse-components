@@ -3,27 +3,27 @@ import TextSearchAdapterType from '../pluggableElementTypes/TextSearchAdapterTyp
 import { SearchType } from '../data_adapters/BaseAdapter'
 
 export interface BaseResultArgs {
-  label: string;
+  label: string
 
-  displayString?: string;
+  displayString?: string
 
-  renderingComponent?: React.ReactElement;
+  renderingComponent?: React.ReactElement
 
-  matchedAttribute?: string;
+  matchedAttribute?: string
 
-  matchedObject?: object;
+  matchedObject?: object
 
-  textSearchAdapter?: TextSearchAdapterType;
+  textSearchAdapter?: TextSearchAdapterType
 
-  relevance?: SearchType;
+  relevance?: SearchType
 
-  locString?: string;
+  locString?: string
 
-  refName?: string;
+  refName?: string
 
-  trackId?: string;
+  trackId?: string
 
-  score?: number;
+  score?: number
 }
 export default class BaseResult {
   label: string

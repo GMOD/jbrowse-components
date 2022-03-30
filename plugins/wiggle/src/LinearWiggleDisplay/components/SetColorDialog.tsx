@@ -38,12 +38,12 @@ export default function SetColorDialog({
   handleClose,
 }: {
   model: {
-    color: number;
-    setColor: (arg?: string) => void;
-    setPosColor: (arg?: string) => void;
-    setNegColor: (arg?: string) => void;
-  };
-  handleClose: () => void;
+    color: number
+    setColor: (arg?: string) => void
+    setPosColor: (arg?: string) => void
+    setNegColor: (arg?: string) => void
+  }
+  handleClose: () => void
 }) {
   const classes = useStyles()
   const [posneg, setPosNeg] = useState(false)

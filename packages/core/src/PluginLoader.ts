@@ -23,13 +23,13 @@ export const PluginSourceConfigurationSchema = ConfigurationSchema(
 )
 
 export interface UMDPluginDefinition {
-  umdUrl: string;
-  name: string;
+  umdUrl: string
+  name: string
 }
 
 export interface LegacyUMDPluginDefinition {
-  url: string;
-  name: string;
+  url: string
+  name: string
 }
 
 export function isUMDPluginDefinition(
@@ -44,7 +44,7 @@ export function isUMDPluginDefinition(
 }
 
 export interface ESMPluginDefinition {
-  esmUrl: string;
+  esmUrl: string
 }
 
 export function isESMPluginDefinition(
@@ -54,7 +54,7 @@ export function isESMPluginDefinition(
 }
 
 export interface CJSPluginDefinition {
-  cjsUrl: string;
+  cjsUrl: string
 }
 
 export function isCJSPluginDefinition(
@@ -70,19 +70,18 @@ export interface PluginDefinition
     Partial<CJSPluginDefinition> {}
 
 export interface PluginRecord {
-  plugin: PluginConstructor;
-  definition: PluginDefinition;
+  plugin: PluginConstructor
+  definition: PluginDefinition
 }
 
 export interface LoadedPlugin {
-  default: PluginConstructor;
+  default: PluginConstructor
 }
 
 function getGlobalObject(): Window {
   // Based on window-or-global
   // https://github.com/purposeindustries/window-or-global/blob/322abc71de0010c9e5d9d0729df40959e1ef8775/lib/index.js
   return (
-    /* eslint-disable-next-line no-restricted-globals */
     (typeof self === 'object' && self.self === self && self) ||
     (typeof global === 'object' && global.global === global && global) ||
     // @ts-ignore

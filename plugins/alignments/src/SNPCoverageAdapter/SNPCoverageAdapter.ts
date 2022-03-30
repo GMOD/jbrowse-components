@@ -21,7 +21,7 @@ import {
 } from '../BamAdapter/MismatchParser'
 
 interface SNPCoverageOptions extends BaseOptions {
-  filters?: SerializableFilterChain;
+  filters?: SerializableFilterChain
 }
 
 function mismatchLen(mismatch: Mismatch) {
@@ -161,13 +161,13 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
     const skipmap = {} as {
       [key: string]: {
-        score: number;
-        feature: unknown;
-        start: number;
-        end: number;
-        strand: number;
-        xs: string;
-      };
+        score: number
+        feature: unknown
+        start: number
+        end: number
+        strand: number
+        xs: string
+      }
     }
 
     // bins contain:
@@ -182,12 +182,12 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         : undefined
 
     const bins = [] as {
-      total: number;
-      lowqual: BinType;
-      cov: BinType;
-      delskips: BinType;
-      noncov: BinType;
-      ref: BinType;
+      total: number
+      lowqual: BinType
+      cov: BinType
+      delskips: BinType
+      noncov: BinType
+      ref: BinType
     }[]
 
     for (let i = 0; i < features.length; i++) {

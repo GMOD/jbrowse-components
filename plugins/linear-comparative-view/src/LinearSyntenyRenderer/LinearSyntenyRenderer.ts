@@ -30,9 +30,9 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
     return args
   }
   async render(renderProps: {
-    height: number;
-    width: number;
-    view: { views: Base1DViewModel[] };
+    height: number
+    width: number
+    view: { views: Base1DViewModel[] }
   }) {
     const {
       width,

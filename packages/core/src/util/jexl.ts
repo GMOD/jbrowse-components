@@ -2,7 +2,7 @@ import jexl from 'jexl'
 import { Feature } from './simpleFeature'
 
 type JexlWithAddFunction = typeof jexl & {
-  addFunction(name: string, func: Function): void;
+  addFunction(name: string, func: Function): void
 }
 type JexlNonBuildable = Omit<typeof jexl, 'Jexl'>
 

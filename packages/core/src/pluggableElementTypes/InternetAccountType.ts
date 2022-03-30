@@ -9,9 +9,9 @@ export default class InternetAccountType extends PluggableElementBase {
   configSchema: AnyConfigurationSchemaType
 
   constructor(stuff: {
-    name: string;
-    stateModel: IAnyModelType;
-    configSchema: AnyConfigurationSchemaType;
+    name: string
+    stateModel: IAnyModelType
+    configSchema: AnyConfigurationSchemaType
   }) {
     super(stuff)
     this.stateModel = stuff.stateModel

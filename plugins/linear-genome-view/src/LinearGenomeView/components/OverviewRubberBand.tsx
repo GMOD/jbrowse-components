@@ -61,10 +61,10 @@ const HoverTooltip = observer(
     guideX,
     overview,
   }: {
-    model: LGV;
-    open: boolean;
-    guideX: number;
-    overview: Base1DViewModel;
+    model: LGV
+    open: boolean
+    guideX: number
+    overview: Base1DViewModel
   }) => {
     const classes = useStyles()
     const { cytobandOffset } = model
@@ -102,9 +102,9 @@ function OverviewRubberBand({
   overview,
   ControlComponent = <div />,
 }: {
-  model: LGV;
-  overview: Base1DViewModel;
-  ControlComponent?: React.ReactElement;
+  model: LGV
+  overview: Base1DViewModel
+  ControlComponent?: React.ReactElement
 }) {
   const { cytobandOffset } = model
   const [startX, setStartX] = useState<number>()
@@ -238,7 +238,7 @@ function OverviewRubberBand({
     leftBpOffset = overview.pxToBp(startX - cytobandOffset)
     rightBpOffset = overview.pxToBp(startX + width - cytobandOffset)
     if (currentX && currentX < startX) {
-      [leftBpOffset, rightBpOffset] = [rightBpOffset, leftBpOffset]
+      ;[leftBpOffset, rightBpOffset] = [rightBpOffset, leftBpOffset]
     }
   }
 

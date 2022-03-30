@@ -17,8 +17,8 @@ const RenameSessionDialog = ({
   sessionToRename,
   onClose,
 }: {
-  sessionToRename?: { path: string; name: string };
-  onClose: (arg0: boolean) => void;
+  sessionToRename?: { path: string; name: string }
+  onClose: (arg0: boolean) => void
 }) => {
   const [newSessionName, setNewSessionName] = useState('')
   const [error, setError] = useState<unknown>()

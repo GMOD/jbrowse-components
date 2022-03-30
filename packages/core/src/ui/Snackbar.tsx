@@ -9,14 +9,14 @@ import { AbstractSessionModel, NotificationLevel } from '../util'
 type SnackbarMessage = [string, NotificationLevel]
 
 interface SnackbarSession extends AbstractSessionModel {
-  snackbarMessages: SnackbarMessage[];
-  popSnackbarMessage: () => unknown;
+  snackbarMessages: SnackbarMessage[]
+  popSnackbarMessage: () => unknown
 }
 
 function MessageSnackbar({
   session,
 }: {
-  session: SnackbarSession & IAnyStateTreeNode;
+  session: SnackbarSession & IAnyStateTreeNode
 }) {
   const [open, setOpen] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState<SnackbarMessage>()

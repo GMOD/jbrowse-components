@@ -10,18 +10,18 @@ import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { unzip } from '@gmod/bgzf-filehandle'
 
 export interface PAFRecord {
-  qname: string;
-  qstart: number;
-  qend: number;
-  tname: string;
-  tstart: number;
-  tend: number;
-  strand: number;
+  qname: string
+  qstart: number
+  qend: number
+  tname: string
+  tstart: number
+  tend: number
+  strand: number
   extra: {
-    blockLen?: number;
-    mappingQual: number;
-    numMatches?: number;
-  };
+    blockLen?: number
+    mappingQual: number
+    numMatches?: number
+  }
 }
 
 function isGzip(buf: Buffer) {

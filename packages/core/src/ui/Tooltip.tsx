@@ -21,11 +21,11 @@ const Tooltip = ({
   feature,
   timeout = 300,
 }: {
-  offsetX: number;
-  offsetY: number;
-  configuration: AnyConfigurationModel;
-  feature?: Feature;
-  timeout?: number;
+  offsetX: number
+  offsetY: number
+  configuration: AnyConfigurationModel
+  feature?: Feature
+  timeout?: number
 }) => {
   const classes = useStyles()
   const [shown, setShown] = useState(false)

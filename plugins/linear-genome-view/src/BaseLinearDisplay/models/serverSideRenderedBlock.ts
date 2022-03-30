@@ -103,11 +103,11 @@ const blockState = types
       setRendered(
         props:
           | {
-              reactElement: React.ReactElement;
-              features: Map<string, Feature>;
-              layout: any;
-              maxHeightReached: boolean;
-              renderProps: any;
+              reactElement: React.ReactElement
+              features: Map<string, Feature>
+              layout: any
+              maxHeightReached: boolean
+              renderProps: any
             }
           | undefined,
       ) {
@@ -250,16 +250,16 @@ export function renderBlockData(
 }
 
 interface RenderProps {
-  displayError: Error;
-  rendererType: any;
-  renderProps: { [key: string]: any };
-  rpcManager: { call: Function };
-  cannotBeRenderedReason: string;
-  renderArgs: { [key: string]: any };
+  displayError: Error
+  rendererType: any
+  renderProps: { [key: string]: any }
+  rpcManager: { call: Function }
+  cannotBeRenderedReason: string
+  renderArgs: { [key: string]: any }
 }
 
 interface ErrorProps {
-  displayError: string;
+  displayError: string
 }
 
 async function renderBlockEffect(

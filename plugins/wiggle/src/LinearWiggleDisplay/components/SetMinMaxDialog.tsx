@@ -21,13 +21,13 @@ const useStyles = makeStyles(theme => ({
 
 export default function SetMinMaxDlg(props: {
   model: {
-    minScore: number;
-    maxScore: number;
-    scaleType: string;
-    setMinScore: Function;
-    setMaxScore: Function;
-  };
-  handleClose: () => void;
+    minScore: number
+    maxScore: number
+    scaleType: string
+    setMinScore: Function
+    setMaxScore: Function
+  }
+  handleClose: () => void
 }) {
   const classes = useStyles()
   const { model, handleClose } = props

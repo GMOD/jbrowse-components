@@ -28,8 +28,8 @@ export default function ExportSvgDlg({
   model,
   handleClose,
 }: {
-  model: LGV;
-  handleClose: () => void;
+  model: LGV
+  handleClose: () => void
 }) {
   // @ts-ignore
   const offscreenCanvas = typeof OffscreenCanvas !== 'undefined'

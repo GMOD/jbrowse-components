@@ -28,10 +28,10 @@ function segmentsIntersect(
 }
 
 interface RowState<T> {
-  min: number;
-  max: number;
-  offset: number;
-  bits: (Record<string, T> | string | undefined)[];
+  min: number
+  max: number
+  offset: number
+  bits: (Record<string, T> | string | undefined)[]
 }
 // a single row in the layout
 class LayoutRow<T> {
@@ -341,11 +341,11 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     hardRowLimit = 10000,
     displayMode = 'normal',
   }: {
-    pitchX?: number;
-    pitchY?: number;
-    maxHeight?: number;
-    displayMode?: string;
-    hardRowLimit?: number;
+    pitchX?: number
+    pitchY?: number
+    maxHeight?: number
+    displayMode?: string
+    hardRowLimit?: number
   } = {}) {
     this.pitchX = pitchX
     this.pitchY = pitchY

@@ -8,11 +8,11 @@ import {
 import RBush from 'rbush'
 
 export interface Layout {
-  minX: number;
-  minY: number;
-  maxX: number;
-  maxY: number;
-  name: string;
+  minX: number
+  minY: number
+  maxX: number
+  maxY: number
+  name: string
 }
 
 export default class PrecomputedLayout<T> implements BaseLayout<T> {

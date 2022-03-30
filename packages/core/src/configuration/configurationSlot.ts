@@ -142,15 +142,15 @@ const JexlStringType = types.refinement('JexlString', types.string, str =>
 )
 
 export interface ConfigSlotDefinition {
-  description?: string;
+  description?: string
   /** custom base MST model for the slot's value */
-  model?: IAnyModelType | IAnyComplexType;
+  model?: IAnyModelType | IAnyComplexType
   /** name of the type of slot, e.g. "string", "number", "stringArray" */
-  type: string;
+  type: string
   /** default value of the slot */
-  defaultValue: any;
+  defaultValue: any
   /** parameter names of the function callback */
-  contextVariable?: string[];
+  contextVariable?: string[]
 }
 
 /**

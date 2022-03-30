@@ -21,9 +21,9 @@ class MockWorkerHandle implements WorkerHandle {
     name: string,
     _args = [],
     opts: {
-      timeout: number;
-      signal?: AbortSignal;
-      rpcDriverClassName: string;
+      timeout: number
+      signal?: AbortSignal
+      rpcDriverClassName: string
     } = {
       timeout: 3000,
       rpcDriverClassName: 'MockRpcDriver',

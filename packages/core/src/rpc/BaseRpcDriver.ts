@@ -5,24 +5,24 @@ import PluginManager from '../PluginManager'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
 
 export interface WorkerHandle {
-  status?: string;
-  error?: Error;
-  on?: (channel: string, callback: (message: string) => void) => void;
-  off?: (channel: string, callback: (message: string) => void) => void;
-  destroy(): void;
+  status?: string
+  error?: Error
+  on?: (channel: string, callback: (message: string) => void) => void
+  off?: (channel: string, callback: (message: string) => void) => void
+  destroy(): void
   call(
     functionName: string,
     args?: unknown,
     options?: {
-      statusCallback?(message: string): void;
-      timeout?: number;
-      rpcDriverClassName: string;
+      statusCallback?(message: string): void
+      timeout?: number
+      rpcDriverClassName: string
     },
-  ): Promise<unknown>;
+  ): Promise<unknown>
 }
 
 export interface RpcDriverConstructorArgs {
-  config: AnyConfigurationModel;
+  config: AnyConfigurationModel
 }
 
 function isClonable(thing: unknown): boolean {

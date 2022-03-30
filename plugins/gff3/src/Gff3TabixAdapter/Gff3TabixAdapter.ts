@@ -19,10 +19,10 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 interface LineFeature {
-  start: number;
-  end: number;
-  lineHash: number;
-  fields: string[];
+  start: number
+  end: number
+  lineHash: number
+  fields: string[]
 }
 
 export default class extends BaseFeatureDataAdapter {
@@ -231,7 +231,7 @@ export default class extends BaseFeatureDataAdapter {
       if (dataAttributes[a] !== null) {
         let attr: string | string[] | undefined = dataAttributes[a]
         if (Array.isArray(attr) && attr.length === 1) {
-          [attr] = attr
+          ;[attr] = attr
         }
         f[b] = attr
       }

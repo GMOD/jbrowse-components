@@ -19,8 +19,10 @@ import LockIcon from '@material-ui/icons/Lock'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSession } from '@jbrowse/core/util'
-import { BasePlugin } from '@jbrowse/core/util/types'
-import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
+import {
+  BasePlugin,
+  isSessionWithSessionPlugins,
+} from '@jbrowse/core/util/types'
 import { PluginStoreModel } from '../model'
 
 const useStyles = makeStyles(() => ({
@@ -53,8 +55,8 @@ function PluginDialog({
   onClose,
   plugin,
 }: {
-  plugin: string;
-  onClose: (s?: string) => void;
+  plugin: string
+  onClose: (s?: string) => void
 }) {
   const classes = useStyles()
   return (
@@ -107,15 +109,15 @@ function InstalledPlugin({
   model,
   pluginManager,
 }: {
-  plugin: BasePlugin;
-  model: PluginStoreModel;
-  pluginManager: PluginManager;
+  plugin: BasePlugin
+  model: PluginStoreModel
+  pluginManager: PluginManager
 }) {
   const [dialogPlugin, setDialogPlugin] = useState<string>()
 
   const session = getSession(model)
   const { sessionPlugins } = session as unknown as {
-    sessionPlugins: BasePlugin[];
+    sessionPlugins: BasePlugin[]
   }
   const isSessionPlugin = sessionPlugins?.some(
     p => pluginManager.pluginMetadata[plugin.name].url === p.url,

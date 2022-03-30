@@ -30,7 +30,7 @@ const Chord = observer(function Chord({
   }
   let svType
   if (feature.get('INFO')) {
-    [svType] = feature.get('INFO').SVTYPE || []
+    ;[svType] = feature.get('INFO').SVTYPE || []
   } else if (feature.get('mate')) {
     svType = 'mate'
   }

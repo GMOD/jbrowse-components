@@ -18,7 +18,7 @@ function isGzip(buf: Buffer) {
 
 export default class extends BaseFeatureDataAdapter {
   protected gtfFeatures?: Promise<{
-    intervalTree: Record<string, IntervalTree>;
+    intervalTree: Record<string, IntervalTree>
   }>
 
   private async loadDataP() {

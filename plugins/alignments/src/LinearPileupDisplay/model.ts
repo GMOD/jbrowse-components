@@ -277,10 +277,10 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
         self.ready = false
       },
       setFilterBy(filter: {
-        flagInclude: number;
-        flagExclude: number;
-        readName?: string;
-        tagFilter?: { tag: string; value: string };
+        flagInclude: number
+        flagExclude: number
+        readName?: string
+        tagFilter?: { tag: string; value: string }
       }) {
         self.filterBy = cast(filter)
       },

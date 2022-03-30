@@ -9,13 +9,13 @@ import { Instance, types } from 'mobx-state-tree'
 import { OAuthInternetAccountConfigModel } from './configSchema'
 
 interface OAuthData {
-  client_id: string;
-  redirect_uri: string;
-  response_type: 'token' | 'code';
-  scope?: string;
-  code_challenge?: string;
-  code_challenge_method?: string;
-  token_access_type?: string;
+  client_id: string
+  redirect_uri: string
+  response_type: 'token' | 'code'
+  scope?: string
+  code_challenge?: string
+  code_challenge_method?: string
+  token_access_type?: string
 }
 
 function fixup(buf: string) {
@@ -26,7 +26,6 @@ function getGlobalObject(): Window {
   // Based on window-or-global
   // https://github.com/purposeindustries/window-or-global/blob/322abc71de0010c9e5d9d0729df40959e1ef8775/lib/index.js
   return (
-    /* eslint-disable-next-line no-restricted-globals */
     (typeof self === 'object' && self.self === self && self) ||
     (typeof global === 'object' && global.global === global && global) ||
     // @ts-ignore

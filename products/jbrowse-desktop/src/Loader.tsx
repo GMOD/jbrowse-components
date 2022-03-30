@@ -32,7 +32,7 @@ const Loader = observer(() => {
   )
 
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       if (config) {
         try {
           handleSetPluginManager(await loadPluginManager(config))

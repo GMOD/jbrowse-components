@@ -3,7 +3,12 @@ import { observer } from 'mobx-react'
 import { types, getType, getParent } from 'mobx-state-tree'
 import { doesIntersect2, isContainedWithin } from '@jbrowse/core/util/range'
 import ClearIcon from '@material-ui/icons/Clear'
-import { when } from '@jbrowse/core/util'
+import {
+  when,
+  compareLocs,
+  getSession,
+  parseLocString,
+} from '@jbrowse/core/util'
 import MakeSpreadsheetColumnType from './MakeSpreadsheetColumnType'
 
 import {
@@ -20,8 +25,6 @@ import {
   Select,
   makeStyles,
 } from '@material-ui/core'
-
-import { compareLocs, getSession, parseLocString } from '@jbrowse/core/util'
 
 const useStyles = makeStyles((/* theme */) => {
   return {

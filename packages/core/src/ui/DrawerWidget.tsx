@@ -63,8 +63,8 @@ const DrawerHeader = observer(
     session,
     setToolbarHeight,
   }: {
-    session: SessionWithDrawerWidgets;
-    setToolbarHeight: (arg: number) => void;
+    session: SessionWithDrawerWidgets
+    setToolbarHeight: (arg: number) => void
   }) => {
     const { pluginManager } = getEnv(session)
     const { visibleWidget, activeWidgets, drawerPosition } = session

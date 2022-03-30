@@ -3,7 +3,7 @@ import React from 'react'
 type LogoVariant = 'color' | 'black' | 'white'
 
 interface LogoProps {
-  variant?: LogoVariant;
+  variant?: LogoVariant
 }
 
 function getColors(variant?: LogoVariant) {

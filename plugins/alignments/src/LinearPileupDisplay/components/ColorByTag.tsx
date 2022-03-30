@@ -26,8 +26,8 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function ColorByTagDlg(props: {
-  model: { setColorScheme: Function };
-  handleClose: () => void;
+  model: { setColorScheme: Function }
+  handleClose: () => void
 }) {
   const classes = useStyles()
   const { model, handleClose } = props

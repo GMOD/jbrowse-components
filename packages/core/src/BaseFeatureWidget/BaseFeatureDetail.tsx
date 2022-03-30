@@ -124,10 +124,10 @@ export const FieldName = ({
   prefix = [],
   width,
 }: {
-  description?: React.ReactNode;
-  name: string;
-  prefix?: string[];
-  width?: number;
+  description?: React.ReactNode
+  name: string
+  prefix?: string[]
+  width?: number
 }) => {
   const classes = useStyles()
   const val = [...prefix, name].join('.')
@@ -166,11 +166,11 @@ export const SimpleValue = ({
   prefix,
   width,
 }: {
-  description?: React.ReactNode;
-  name: string;
-  value: any;
-  prefix?: string[];
-  width?: number;
+  description?: React.ReactNode
+  name: string
+  value: any
+  prefix?: string[]
+  width?: number
 }) => {
   const classes = useStyles()
   return value !== null && value !== undefined ? (
@@ -192,10 +192,10 @@ const ArrayValue = ({
   description,
   prefix = [],
 }: {
-  description?: React.ReactNode;
-  name: string;
-  value: any[];
-  prefix?: string[];
+  description?: React.ReactNode
+  name: string
+  value: any[]
+  prefix?: string[]
 }) => {
   const classes = useStyles()
   return (
@@ -237,10 +237,10 @@ const ArrayValue = ({
 function CoreDetails(props: BaseProps) {
   const { feature } = props
   const { refName, start, end, strand } = feature as SimpleFeatureSerialized & {
-    start: number;
-    end: number;
-    strand: number;
-    refName: string;
+    start: number
+    end: number
+    strand: number
+    refName: string
   }
   const strandMap: Record<string, string> = {
     '-1': '-',
@@ -285,11 +285,11 @@ export const BaseCoreDetails = (props: BaseProps) => {
 }
 
 interface AttributeProps {
-  attributes: Record<string, any>;
-  omit?: string[];
-  formatter?: (val: unknown, key: string) => React.ReactElement;
-  descriptions?: Record<string, React.ReactNode>;
-  prefix?: string[];
+  attributes: Record<string, any>
+  omit?: string[]
+  formatter?: (val: unknown, key: string) => React.ReactElement
+  descriptions?: Record<string, React.ReactNode>
+  prefix?: string[]
 }
 
 const DataGridDetails = ({
@@ -297,9 +297,9 @@ const DataGridDetails = ({
   prefix,
   name,
 }: {
-  name: string;
-  prefix?: string[];
-  value: Record<string, any>;
+  name: string
+  prefix?: string[]
+  value: Record<string, any>
 }) => {
   const keys = Object.keys(value[0]).sort()
   const unionKeys = new Set(keys)
@@ -483,10 +483,10 @@ export const BaseAttributes = (props: BaseProps) => {
 }
 
 export interface BaseInputProps extends BaseCardProps {
-  omit?: string[];
-  model: any;
-  descriptions?: Record<string, React.ReactNode>;
-  formatter?: (val: unknown, key: string) => React.ReactElement;
+  omit?: string[]
+  model: any
+  descriptions?: Record<string, React.ReactNode>
+  formatter?: (val: unknown, key: string) => React.ReactElement
 }
 
 function isEmpty(obj: Record<string, unknown>) {
@@ -494,11 +494,11 @@ function isEmpty(obj: Record<string, unknown>) {
 }
 
 export const FeatureDetails = (props: {
-  model: IAnyStateTreeNode;
-  feature: SimpleFeatureSerialized & { name?: string; id?: string };
-  depth?: number;
-  omit?: string[];
-  formatter?: (val: unknown, key: string) => React.ReactElement;
+  model: IAnyStateTreeNode
+  feature: SimpleFeatureSerialized & { name?: string; id?: string }
+  depth?: number
+  omit?: string[]
+  formatter?: (val: unknown, key: string) => React.ReactElement
 }) => {
   const { omit = [], model, feature, depth = 0 } = props
   const { name = '', id = '', type = '', subfeatures } = feature

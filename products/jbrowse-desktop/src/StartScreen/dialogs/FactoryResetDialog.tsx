@@ -13,9 +13,9 @@ export default ({
   onClose,
   onFactoryReset,
 }: {
-  open: boolean;
-  onClose: Function;
-  onFactoryReset: Function;
+  open: boolean
+  onClose: Function
+  onFactoryReset: Function
 }) => {
   return (
     <Dialog open={open} onClose={() => onClose()}>

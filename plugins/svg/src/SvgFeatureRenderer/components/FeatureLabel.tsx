@@ -2,15 +2,15 @@ import React from 'react'
 import { measureText } from '@jbrowse/core/util'
 
 export default function Label(props: {
-  text: string;
-  x: number;
-  y: number;
-  color?: string;
-  fontHeight?: number;
-  featureWidth?: number;
-  allowedWidthExpansion?: number;
-  reversed?: boolean;
-  fontWidthScaleFactor?: number;
+  text: string
+  x: number
+  y: number
+  color?: string
+  fontHeight?: number
+  featureWidth?: number
+  allowedWidthExpansion?: number
+  reversed?: boolean
+  fontWidthScaleFactor?: number
 }) {
   const {
     text,

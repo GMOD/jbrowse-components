@@ -56,7 +56,7 @@ export function makeTicks(
   }
 
   if (bpPerPx < 0) {
-    [minBase, maxBase] = [maxBase, minBase]
+    ;[minBase, maxBase] = [maxBase, minBase]
   }
 
   // add 20px additional on the right and left to allow us to draw the ends

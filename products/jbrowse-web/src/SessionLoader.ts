@@ -196,9 +196,9 @@ const SessionLoader = types
       self.blankSession = flag
     },
     setSessionTriaged(args?: {
-      snap: unknown;
-      origin: string;
-      reason: { url?: string }[];
+      snap: unknown
+      origin: string
+      reason: { url?: string }[]
     }) {
       self.sessionTriaged = args
     },
@@ -457,10 +457,10 @@ export type SessionLoaderModel = Instance<typeof SessionLoader>
 export default SessionLoader
 
 interface ViewSpec {
-  type: string;
-  tracks?: string[];
-  assembly: string;
-  loc: string;
+  type: string
+  tracks?: string[]
+  assembly: string
+  loc: string
 }
 
 // use extension point named e.g. LaunchView-LinearGenomeView to initialize an
@@ -470,8 +470,8 @@ export function loadSessionSpec(
     views,
     sessionTracks,
   }: {
-    views: ViewSpec[];
-    sessionTracks: unknown[];
+    views: ViewSpec[]
+    sessionTracks: unknown[]
   },
   pluginManager: PluginManager,
 ) {

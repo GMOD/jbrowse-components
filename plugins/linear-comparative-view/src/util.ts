@@ -5,21 +5,21 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 export type LayoutRecord = [number, number, number, number]
 
 export interface ReducedLinearGenomeView {
-  bpPerPx: number;
-  offsetPx: number;
-  staticBlocks: Region[];
-  dynamicBlocks: Region[];
-  displayedRegions: Region[];
-  headerHeight: number;
-  scaleBarHeight: number;
-  height: number;
-  features: Feature[];
+  bpPerPx: number
+  offsetPx: number
+  staticBlocks: Region[]
+  dynamicBlocks: Region[]
+  displayedRegions: Region[]
+  headerHeight: number
+  scaleBarHeight: number
+  height: number
+  features: Feature[]
   tracks: {
-    scrollTop: number;
-    height: number;
-    configuration: string;
-    skip: number;
-  }[];
+    scrollTop: number
+    height: number
+    configuration: string
+    skip: number
+  }[]
 }
 
 const [, TOP, , BOTTOM] = [0, 1, 2, 3]

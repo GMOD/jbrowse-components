@@ -106,7 +106,7 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
 function BlockMessage({
   messageContent,
 }: {
-  messageContent: string | React.ReactNode;
+  messageContent: string | React.ReactNode
 }) {
   const classes = useStyles()
 
@@ -124,9 +124,9 @@ function BlockError({
   reload,
   displayHeight,
 }: {
-  error: Error;
-  reload: () => void;
-  displayHeight: number;
+  error: Error
+  reload: () => void
+  displayHeight: number
 }) {
   const classes = useStyles()
   return (
@@ -152,7 +152,7 @@ const ServerSideRenderedBlockContent = observer(
     model,
   }: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    model: any;
+    model: any
   }) => {
     if (model.error) {
       return (

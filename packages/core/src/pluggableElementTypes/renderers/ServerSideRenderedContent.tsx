@@ -7,7 +7,7 @@ import { ResultsSerialized, RenderArgs } from './ServerSideRendererType'
 
 interface ServerSideRenderedContentProps extends ResultsSerialized, RenderArgs {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  RenderingComponent: React.ComponentType<any>;
+  RenderingComponent: React.ComponentType<any>
 }
 
 export default function ServerSideRenderedContent(

@@ -87,14 +87,14 @@ const Tooltip = observer(
     clientRect,
     TooltipContents,
   }: {
-    model: { featureUnderMouse: Feature };
-    height: number;
-    clientMouseCoord: Coord;
-    offsetMouseCoord: Coord;
-    clientRect?: DOMRect;
+    model: { featureUnderMouse: Feature }
+    height: number
+    clientMouseCoord: Coord
+    offsetMouseCoord: Coord
+    clientRect?: DOMRect
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    TooltipContents: React.FC<any>;
+    TooltipContents: React.FC<any>
   }) => {
     const { featureUnderMouse } = model
     const [width, setWidth] = useState(0)
@@ -157,11 +157,11 @@ const Tooltip = observer(
 
 const WiggleTooltip = observer(
   (props: {
-    model: { featureUnderMouse: Feature };
-    height: number;
-    offsetMouseCoord: Coord;
-    clientMouseCoord: Coord;
-    clientRect?: DOMRect;
+    model: { featureUnderMouse: Feature }
+    height: number
+    offsetMouseCoord: Coord
+    clientMouseCoord: Coord
+    clientRect?: DOMRect
   }) => {
     return <Tooltip TooltipContents={TooltipContents} {...props} />
   },

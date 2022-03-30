@@ -4,8 +4,8 @@ import { stringToJexlExpression } from '../../../util/jexlStrings'
 type FilterExpression = (...args: Record<string, any>[] | any[]) => boolean
 
 interface Filter {
-  string: string;
-  expr: FilterExpression;
+  string: string
+  expr: FilterExpression
 }
 
 export type SerializedFilterChain = string[]

@@ -17,22 +17,22 @@ import idMaker from '../util/idMaker'
 import PluginManager from '../PluginManager'
 
 export interface BaseOptions {
-  signal?: AbortSignal;
-  bpPerPx?: number;
-  sessionId?: string;
-  statusCallback?: (message: string) => void;
-  headers?: Record<string, string>;
-  [key: string]: unknown;
+  signal?: AbortSignal
+  bpPerPx?: number
+  sessionId?: string
+  statusCallback?: (message: string) => void
+  headers?: Record<string, string>
+  [key: string]: unknown
 }
 
 export type SearchType = 'full' | 'prefix' | 'exact'
 
 export interface BaseArgs {
-  searchType?: SearchType;
-  queryString: string;
-  signal?: AbortSignal;
-  limit?: number;
-  pageNumber?: number;
+  searchType?: SearchType
+  queryString: string
+  signal?: AbortSignal
+  limit?: number
+  pageNumber?: number
 }
 // see
 // https://www.typescriptlang.org/docs/handbook/2/classes.html#abstract-construct-signatures
@@ -42,7 +42,7 @@ export interface AnyAdapter {
     config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager | undefined,
-  ): AnyDataAdapter;
+  ): AnyDataAdapter
 }
 
 export type AnyDataAdapter =
@@ -89,9 +89,9 @@ export abstract class BaseAdapter {
 }
 
 export interface Stats {
-  featureDensity?: number;
-  fetchSizeLimit?: number;
-  bytes?: number;
+  featureDensity?: number
+  fetchSizeLimit?: number
+  bytes?: number
 }
 
 /**
@@ -295,7 +295,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
 }
 
 export interface RegionsAdapter extends BaseAdapter {
-  getRegions(opts: BaseOptions): Promise<NoAssemblyRegion[]>;
+  getRegions(opts: BaseOptions): Promise<NoAssemblyRegion[]>
 }
 
 export abstract class BaseSequenceAdapter
@@ -328,11 +328,11 @@ export function isFeatureAdapter(
 }
 
 export interface Alias {
-  refName: string;
-  aliases: string[];
+  refName: string
+  aliases: string[]
 }
 export interface BaseRefNameAliasAdapter extends BaseAdapter {
-  getRefNameAliases(opts: BaseOptions): Promise<Alias[]>;
+  getRefNameAliases(opts: BaseOptions): Promise<Alias[]>
 }
 export function isRefNameAliasAdapter(
   thing: object,
@@ -340,7 +340,7 @@ export function isRefNameAliasAdapter(
   return 'getRefNameAliases' in thing
 }
 export interface BaseTextSearchAdapter extends BaseAdapter {
-  searchIndex(args: BaseArgs): Promise<BaseResult[]>;
+  searchIndex(args: BaseArgs): Promise<BaseResult[]>
 }
 export function isTextSearchAdapter(
   thing: AnyDataAdapter,

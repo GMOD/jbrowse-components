@@ -12,8 +12,8 @@ function adapterConfigCacheKey(
 }
 
 interface AdapterCacheEntry {
-  dataAdapter: AnyDataAdapter;
-  sessionIds: Set<string>;
+  dataAdapter: AnyDataAdapter
+  sessionIds: Set<string>
 }
 
 let adapterCache: Record<string, AdapterCacheEntry> = {}

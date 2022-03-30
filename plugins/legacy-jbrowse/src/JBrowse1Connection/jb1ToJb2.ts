@@ -11,47 +11,47 @@ import {
 import { Track, RefSeqs, RefSeq } from './types'
 
 interface Jb2Track {
-  trackId: string;
-  name: string;
-  description?: string;
-  category?: string[];
-  adapter?: Jb2Adapter;
-  type?: string;
-  defaultRendering?: string;
+  trackId: string
+  name: string
+  description?: string
+  category?: string[]
+  adapter?: Jb2Adapter
+  type?: string
+  defaultRendering?: string
 }
 
 interface Jb2Adapter {
-  type: string;
-  features?: Jb2Feature[];
-  bamLocation?: Jb2Location;
-  cramLocation?: Jb2Location;
-  craiLocation?: Jb2Location;
-  fastaLocation?: Jb2Location;
-  faiLocation?: Jb2Location;
-  gziLocation?: Jb2Location;
-  twoBitLocation?: Jb2Location;
-  bigWigLocation?: Jb2Location;
-  bigBedLocation?: Jb2Location;
-  vcfGzLocation?: Jb2Location;
-  gffGzLocation?: Jb2Location;
-  bedGzLocation?: Jb2Location;
-  index?: { location: Jb2Location; indexType?: string };
-  rootUrlTemplate?: Jb2Location;
-  sequenceAdapter?: Jb2Adapter;
+  type: string
+  features?: Jb2Feature[]
+  bamLocation?: Jb2Location
+  cramLocation?: Jb2Location
+  craiLocation?: Jb2Location
+  fastaLocation?: Jb2Location
+  faiLocation?: Jb2Location
+  gziLocation?: Jb2Location
+  twoBitLocation?: Jb2Location
+  bigWigLocation?: Jb2Location
+  bigBedLocation?: Jb2Location
+  vcfGzLocation?: Jb2Location
+  gffGzLocation?: Jb2Location
+  bedGzLocation?: Jb2Location
+  index?: { location: Jb2Location; indexType?: string }
+  rootUrlTemplate?: Jb2Location
+  sequenceAdapter?: Jb2Adapter
 }
 
 interface Jb2Feature {
-  refName: string;
-  uniqueId: string;
-  start: number;
-  end: number;
+  refName: string
+  uniqueId: string
+  start: number
+  end: number
 }
 
 interface Jb2Location {
-  uri?: string;
-  localPath?: string;
-  blobId?: string;
-  locationType?: string;
+  uri?: string
+  localPath?: string
+  blobId?: string
+  locationType?: string
 }
 
 export function convertTrackConfig(

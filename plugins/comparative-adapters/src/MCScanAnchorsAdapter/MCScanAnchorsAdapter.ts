@@ -10,19 +10,19 @@ import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readFile, parseBed } from '../util'
 
 interface BareFeature {
-  refName: string;
-  start: number;
-  end: number;
-  score: number;
-  name: string;
+  refName: string
+  start: number
+  end: number
+  score: number
+  name: string
 }
 
 type Row = [BareFeature, BareFeature, number, number]
 
 export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
   private setupP?: Promise<{
-    assemblyNames: string[];
-    feats: Row[];
+    assemblyNames: string[]
+    feats: Row[]
   }>
 
   public static capabilities = ['getFeatures', 'getRefNames']

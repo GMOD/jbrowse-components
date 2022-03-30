@@ -37,8 +37,8 @@ import InfoIcon from '@material-ui/icons/Info'
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
 declare interface ReferringNode {
-  node: IAnyStateTreeNode;
-  key: string;
+  node: IAnyStateTreeNode
+  key: string
 }
 
 export default function sessionModelFactory(

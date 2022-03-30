@@ -29,12 +29,12 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
 
   async execute(
     args: {
-      adapterConfig: {};
-      signal?: RemoteAbortSignal;
-      headers?: Record<string, string>;
-      regions: Region[];
-      sessionId: string;
-      tag: string;
+      adapterConfig: {}
+      signal?: RemoteAbortSignal
+      headers?: Record<string, string>
+      regions: Region[]
+      sessionId: string
+      tag: string
     },
     rpcDriverClassName: string,
   ) {
@@ -81,12 +81,12 @@ export class PileupGetVisibleModifications extends RpcMethodType {
 
   async execute(
     args: {
-      adapterConfig: {};
-      signal?: RemoteAbortSignal;
-      headers?: Record<string, string>;
-      regions: Region[];
-      sessionId: string;
-      tag: string;
+      adapterConfig: {}
+      signal?: RemoteAbortSignal
+      headers?: Record<string, string>
+      regions: Region[]
+      sessionId: string
+      tag: string
     },
     rpcDriverClassName: string,
   ) {

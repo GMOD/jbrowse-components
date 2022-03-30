@@ -85,7 +85,7 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
     | { new (...args: any[]): ElementClass }
       // covers abstract class case
       | (Function & {
-          prototype: ElementClass;
+          prototype: ElementClass
         }),
   ) {}
 
@@ -124,11 +124,11 @@ type AnyFunction = (...args: any) => any
 export type PluginMetadata = Record<string, unknown>
 
 export interface PluginLoadRecord {
-  metadata?: PluginMetadata;
-  plugin: Plugin;
+  metadata?: PluginMetadata
+  plugin: Plugin
 }
 export interface RuntimePluginLoadRecord extends PluginLoadRecord {
-  definition: PluginDefinition;
+  definition: PluginDefinition
 }
 
 export default class PluginManager {

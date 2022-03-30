@@ -34,12 +34,12 @@ function Ruler({
   major,
   minor,
 }: {
-  start: number;
-  end: number;
-  bpPerPx: number;
-  reversed?: boolean;
-  major: boolean;
-  minor: boolean;
+  start: number
+  end: number
+  bpPerPx: number
+  reversed?: boolean
+  major: boolean
+  minor: boolean
 }) {
   const classes = useStyles()
   const ticks = makeTicks(start, end, bpPerPx, major, minor)

@@ -13,21 +13,21 @@ type Tracks = ConfigSnapshot['tracks']
 type AggregateTextSearchAdapters = ConfigSnapshot['aggregateTextSearchAdapters']
 
 interface Location {
-  refName: string;
-  start?: number;
-  end?: number;
-  assemblyName?: string;
+  refName: string
+  start?: number
+  end?: number
+  assemblyName?: string
 }
 
 interface ViewStateOptions {
-  assembly: Assembly;
-  tracks: Tracks;
-  aggregateTextSearchAdapters?: AggregateTextSearchAdapters;
-  configuration?: Record<string, unknown>;
-  plugins?: PluginConstructor[];
-  location?: string | Location;
-  defaultSession?: SessionSnapshot;
-  onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void;
+  assembly: Assembly
+  tracks: Tracks
+  aggregateTextSearchAdapters?: AggregateTextSearchAdapters
+  configuration?: Record<string, unknown>
+  plugins?: PluginConstructor[]
+  location?: string | Location
+  defaultSession?: SessionSnapshot
+  onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
 }
 
 export default function createViewState(opts: ViewStateOptions) {

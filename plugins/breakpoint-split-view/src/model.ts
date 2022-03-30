@@ -31,10 +31,10 @@ function intersect<T>(a1: T[] = [], a2: T[] = [], ...rest: T[]): T[] {
 export const VIEW_DIVIDER_HEIGHT = 3
 
 export interface Breakend {
-  MateDirection: string;
-  Join: string;
-  Replacement: string;
-  MatePosition: string;
+  MateDirection: string
+  Join: string
+  Replacement: string
+  MatePosition: string
 }
 
 export type LayoutRecord = [number, number, number, number]
@@ -252,9 +252,9 @@ export default function stateModelFactory(pluginManager: any) {
               path,
               args,
             }: {
-              name: string;
-              path?: string;
-              args?: any[];
+              name: string
+              path?: string
+              args?: any[]
             }) => {
               if (self.linkViews) {
                 const actions = [

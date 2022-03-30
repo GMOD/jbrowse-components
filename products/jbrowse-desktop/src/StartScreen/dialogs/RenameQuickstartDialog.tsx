@@ -18,9 +18,9 @@ const RenameQuickstartDialog = ({
   quickstartToRename,
   onClose,
 }: {
-  quickstartNames: string[];
-  quickstartToRename?: string;
-  onClose: (arg0: boolean) => void;
+  quickstartNames: string[]
+  quickstartToRename?: string
+  onClose: (arg0: boolean) => void
 }) => {
   const [newQuickstartName, setNewQuickstartName] = useState('')
   const [error, setError] = useState<unknown>()

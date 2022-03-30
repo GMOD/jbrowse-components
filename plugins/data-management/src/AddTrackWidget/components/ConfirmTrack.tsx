@@ -28,8 +28,8 @@ function StatusMessage({
   trackAdapter,
   trackType,
 }: {
-  trackAdapter: { type: string; subadapter?: { type: string } };
-  trackType: string;
+  trackAdapter: { type: string; subadapter?: { type: string } }
+  trackType: string
 }) {
   const classes = useStyles()
   return trackAdapter.type === 'SNPCoverageAdapter' ? (
@@ -89,8 +89,8 @@ function categorizeAdapters(
 
 function getAdapterTypes(pluginManager: PluginManager) {
   return pluginManager.getElementTypesInGroup('adapter') as {
-    name: string;
-    adapterMetadata: AdapterMetadata;
+    name: string
+    adapterMetadata: AdapterMetadata
   }[]
 }
 

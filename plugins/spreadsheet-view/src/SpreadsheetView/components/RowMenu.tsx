@@ -7,8 +7,8 @@ import SpreadsheetModel from '../models/Spreadsheet'
 import ViewModel from '../models/SpreadsheetView'
 
 export interface Props {
-  viewModel: Instance<typeof ViewModel>;
-  spreadsheetModel: Instance<typeof SpreadsheetModel>;
+  viewModel: Instance<typeof ViewModel>
+  spreadsheetModel: Instance<typeof SpreadsheetModel>
 }
 
 const RowMenu = observer(({ viewModel, spreadsheetModel }: Props) => {

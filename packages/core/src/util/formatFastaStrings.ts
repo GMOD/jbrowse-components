@@ -1,6 +1,6 @@
 export interface SeqChunk {
-  header: string;
-  seq: string;
+  header: string
+  seq: string
 }
 /**
  * Returns sequence with new line every 80 characters

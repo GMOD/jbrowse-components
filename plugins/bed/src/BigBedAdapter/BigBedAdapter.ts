@@ -18,15 +18,15 @@ function isUCSC(f: Feature) {
 }
 
 interface BEDFeature {
-  chrom: string;
-  chromStart: number;
-  chromEnd: number;
-  [key: string]: any;
+  chrom: string
+  chromStart: number
+  chromEnd: number
+  [key: string]: any
 }
 
 interface Parser {
-  parseLine: (line: string, opts: { uniqueId: string | number }) => BEDFeature;
-  autoSql: { fields: { name: string; comment: string }[] };
+  parseLine: (line: string, opts: { uniqueId: string | number }) => BEDFeature
+  autoSql: { fields: { name: string; comment: string }[] }
 }
 
 export default class BigBedAdapter extends BaseFeatureDataAdapter {

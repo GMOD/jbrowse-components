@@ -26,8 +26,8 @@ function ReturnToImportFormDialog({
   model,
   handleClose,
 }: {
-  model: { clearView: Function };
-  handleClose: () => void;
+  model: { clearView: Function }
+  handleClose: () => void
 }) {
   const classes = useStyles()
   return (

@@ -12,9 +12,9 @@ export default class TrackType extends PluggableElementBase {
   displayTypes: DisplayType[] = []
 
   constructor(stuff: {
-    name: string;
-    stateModel: IAnyModelType;
-    configSchema: AnyConfigurationSchemaType;
+    name: string
+    stateModel: IAnyModelType
+    configSchema: AnyConfigurationSchemaType
   }) {
     super(stuff)
     this.stateModel = stuff.stateModel

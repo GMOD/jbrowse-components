@@ -1,5 +1,3 @@
-/* eslint-disable no-restricted-globals */
-
 // This file is a ponyfill for the HTML5 OffscreenCanvas API.
 
 import isNode from 'detect-node'

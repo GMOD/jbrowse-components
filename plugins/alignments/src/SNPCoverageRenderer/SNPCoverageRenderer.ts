@@ -12,28 +12,28 @@ import {
 } from '@jbrowse/plugin-wiggle'
 
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
-  bpPerPx: number;
-  height: number;
-  highResolutionScaling: number;
-  scaleOpts: ScaleOpts;
+  bpPerPx: number
+  height: number
+  highResolutionScaling: number
+  scaleOpts: ScaleOpts
 }
 
 export interface RenderArgsDeserializedWithFeatures
   extends RenderArgsDeserialized {
-  features: Map<string, Feature>;
-  ticks: { values: number[] };
-  displayCrossHatches: boolean;
-  modificationTagMap?: Record<string, string>;
+  features: Map<string, Feature>
+  ticks: { values: number[] }
+  displayCrossHatches: boolean
+  modificationTagMap?: Record<string, string>
 }
 
 type Counts = {
-  [key: string]: { total: number; strands: { [key: string]: number } };
+  [key: string]: { total: number; strands: { [key: string]: number } }
 }
 
 interface SNPInfo {
-  cov: Counts;
-  noncov: Counts;
-  total: number;
+  cov: Counts
+  noncov: Counts
+  total: number
 }
 
 export default class SNPCoverageRenderer extends WiggleBaseRenderer {

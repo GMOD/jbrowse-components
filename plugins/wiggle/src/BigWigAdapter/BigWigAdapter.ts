@@ -17,7 +17,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 interface WiggleOptions extends BaseOptions {
-  resolution?: number;
+  resolution?: number
 }
 
 export default class BigWigAdapter extends BaseFeatureDataAdapter {

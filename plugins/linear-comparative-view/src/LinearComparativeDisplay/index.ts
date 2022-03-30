@@ -119,9 +119,9 @@ export function stateModelFactory(configSchema: any) {
           renderInProgress = undefined
         },
         setRendered(args: {
-          data: any;
-          reactElement: React.ReactElement;
-          renderingComponent: React.Component;
+          data: any
+          reactElement: React.ReactElement
+          renderingComponent: React.Component
         }) {
           const { data, reactElement, renderingComponent } = args
           self.filled = true

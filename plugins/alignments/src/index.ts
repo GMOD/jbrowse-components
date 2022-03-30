@@ -35,7 +35,7 @@ export default class AlignmentsPlugin extends Plugin {
   name = 'AlignmentsPlugin'
 
   install(pluginManager: PluginManager) {
-    [
+    ;[
       CramAdapterF,
       BamAdapterF,
       LinearPileupDisplayF,

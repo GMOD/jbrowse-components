@@ -9,26 +9,26 @@ const { COPYFILE_EXCL } = fs.constants
 
 interface Track {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
+  [key: string]: any
 }
 
 interface Config {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  assemblies?: { name: string; sequence: { [key: string]: any } }[];
-  configuration?: {};
-  connections?: unknown[];
-  defaultSession?: {};
-  tracks?: Track[];
+  assemblies?: { name: string; sequence: { [key: string]: any } }[]
+  configuration?: {}
+  connections?: unknown[]
+  defaultSession?: {}
+  tracks?: Track[]
 }
 
 interface UriLocation {
-  uri: string;
-  locationType: 'UriLocation';
+  uri: string
+  locationType: 'UriLocation'
 }
 
 interface LocalPathLocation {
-  localPath: string;
-  locationType: 'LocalPathLocation';
+  localPath: string
+  locationType: 'LocalPathLocation'
 }
 
 const isUrl = (loc?: string) => loc?.match(/^https?:\/\//)

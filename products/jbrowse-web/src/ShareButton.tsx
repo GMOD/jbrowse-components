@@ -63,9 +63,9 @@ const useStyles = makeStyles(theme => ({
 const SHARE_URL_LOCALSTORAGE_KEY = 'jbrowse-shareURL'
 
 function SettingsDialog(props: {
-  open: boolean;
-  onClose: Function;
-  currentSetting: string;
+  open: boolean
+  onClose: Function
+  currentSetting: string
 }) {
   const classes = useStyles()
   const { onClose, open, currentSetting } = props
@@ -175,8 +175,8 @@ const ShareDialog = observer(
     handleClose,
     session,
   }: {
-    handleClose: () => void;
-    session: AbstractSessionModel & { shareURL: string };
+    handleClose: () => void
+    session: AbstractSessionModel & { shareURL: string }
   }) => {
     const classes = useStyles()
     const [shortUrl, setShortUrl] = useState('')

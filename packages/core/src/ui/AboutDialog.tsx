@@ -28,8 +28,8 @@ export default function AboutDialog({
   config,
   handleClose,
 }: {
-  config: AnyConfigurationModel;
-  handleClose: () => void;
+  config: AnyConfigurationModel
+  handleClose: () => void
 }) {
   const classes = useStyles()
   const [info, setInfo] = useState<FileInfo>()

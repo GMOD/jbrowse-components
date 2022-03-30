@@ -6,8 +6,8 @@ import DisplayType from './DisplayType'
 type BasicView = React.ComponentType<{
   // TODO: can we use AbstractViewModel here?
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  model: any;
-  session?: IAnyStateTreeNode;
+  model: any
+  session?: IAnyStateTreeNode
 }>
 type ViewReactComponent = React.LazyExoticComponent<BasicView> | BasicView
 
@@ -19,9 +19,9 @@ export default class ViewType extends PluggableElementBase {
   displayTypes: DisplayType[] = []
 
   constructor(stuff: {
-    name: string;
-    ReactComponent: ViewReactComponent;
-    stateModel: IAnyModelType;
+    name: string
+    ReactComponent: ViewReactComponent
+    stateModel: IAnyModelType
   }) {
     super(stuff)
     this.ReactComponent = stuff.ReactComponent

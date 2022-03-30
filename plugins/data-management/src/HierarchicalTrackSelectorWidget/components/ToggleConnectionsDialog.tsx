@@ -36,10 +36,10 @@ function ToggleConnectionDialog({
   assemblyName,
   breakConnection,
 }: {
-  handleClose: () => void;
-  session: AbstractSessionModel;
-  assemblyName: string;
-  breakConnection: Function;
+  handleClose: () => void
+  session: AbstractSessionModel
+  assemblyName: string
+  breakConnection: Function
 }) {
   const classes = useStyles()
   const { connections, connectionInstances } = session

@@ -122,14 +122,14 @@ const App = observer(
     session,
     HeaderButtons = <div />,
   }: {
-    HeaderButtons?: React.ReactElement;
+    HeaderButtons?: React.ReactElement
     session: SessionWithDrawerWidgets & {
-      savedSessionNames: string[];
-      menus: { label: string; menuItems: JBMenuItem[] }[];
-      renameCurrentSession: (arg: string) => void;
-      snackbarMessages: SnackbarMessage[];
-      popSnackbarMessage: () => unknown;
-    };
+      savedSessionNames: string[]
+      menus: { label: string; menuItems: JBMenuItem[] }[]
+      renameCurrentSession: (arg: string) => void
+      snackbarMessages: SnackbarMessage[]
+      popSnackbarMessage: () => unknown
+    }
   }) => {
     const classes = useStyles()
     const { pluginManager } = getEnv(session)

@@ -7,11 +7,11 @@ import calculateDynamicBlocks from './calculateDynamicBlocks'
 import calculateStaticBlocks from './calculateStaticBlocks'
 
 export interface BpOffset {
-  refName?: string;
-  index: number;
-  offset: number;
-  start?: number;
-  end?: number;
+  refName?: string
+  index: number
+  offset: number
+  start?: number
+  end?: number
 }
 
 const Base1DView = types
@@ -170,9 +170,9 @@ const Base1DView = types
       coord,
       regionNumber,
     }: {
-      refName: string;
-      coord: number;
-      regionNumber?: number;
+      refName: string
+      coord: number
+      regionNumber?: number
     }) {
       return viewBpToPx({ refName, coord, regionNumber, self })?.offsetPx
     },
@@ -197,7 +197,7 @@ const Base1DView = types
         (singleRefSeq && rightPx.offset < leftPx.offset) ||
         leftPx.index > rightPx.index
       ) {
-        [leftPx, rightPx] = [rightPx, leftPx]
+        ;[leftPx, rightPx] = [rightPx, leftPx]
       }
       const startOffset = {
         start: leftPx.start,

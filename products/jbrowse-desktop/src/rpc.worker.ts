@@ -1,4 +1,4 @@
-/* eslint-disable no-restricted-globals, react-hooks/rules-of-hooks */
+/* eslint-disable no-restricted-globals */
 import './workerPolyfill'
 
 import RpcServer from 'librpc-web-mod'
@@ -17,7 +17,7 @@ if (typeof __webpack_require__ === 'function') {
 }
 
 interface WorkerConfiguration {
-  plugins: PluginDefinition[];
+  plugins: PluginDefinition[]
 }
 
 let jbPluginManager: PluginManager | undefined
@@ -54,9 +54,9 @@ async function getPluginManager() {
 }
 
 interface WrappedFuncArgs {
-  rpcDriverClassName: string;
-  channel: string;
-  [key: string]: unknown;
+  rpcDriverClassName: string
+  channel: string
+  [key: string]: unknown
 }
 
 type RpcFunc = (args: unknown, rpcDriverClassName: string) => unknown

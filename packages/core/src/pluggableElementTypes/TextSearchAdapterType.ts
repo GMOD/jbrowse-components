@@ -10,10 +10,10 @@ export default class TextSearchAdapterType extends PluggableElementBase {
   description?: string
 
   constructor(stuff: {
-    name: string;
-    description?: string;
-    configSchema: AnyConfigurationSchemaType;
-    AdapterClass: AnyAdapter;
+    name: string
+    description?: string
+    configSchema: AnyConfigurationSchemaType
+    AdapterClass: AnyAdapter
   }) {
     super(stuff)
     this.description = stuff.description

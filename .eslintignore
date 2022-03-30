@@ -27,3 +27,5 @@ packages/core/ui/
 packages/core/util/
 packages/core/*.js
 packages/core/*.d.ts
+website/
+scripts/

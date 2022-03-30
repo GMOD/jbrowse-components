@@ -30,10 +30,10 @@ const useStyles = makeStyles({
 })
 
 interface RecentSessionData {
-  path: string;
-  name: string;
-  updated: number;
-  screenshotPath?: string;
+  path: string
+  name: string
+  updated: number
+  screenshotPath?: string
 }
 
 function RecentSessionCard({
@@ -43,11 +43,11 @@ function RecentSessionCard({
   onRename,
   onAddToQuickstartList,
 }: {
-  sessionData: RecentSessionData;
-  onClick: (arg: RecentSessionData) => void;
-  onDelete: (arg: RecentSessionData) => void;
-  onRename: (arg: RecentSessionData) => void;
-  onAddToQuickstartList: (arg: RecentSessionData) => void;
+  sessionData: RecentSessionData
+  onClick: (arg: RecentSessionData) => void
+  onDelete: (arg: RecentSessionData) => void
+  onRename: (arg: RecentSessionData) => void
+  onAddToQuickstartList: (arg: RecentSessionData) => void
 }) {
   const classes = useStyles()
   const [hovered, setHovered] = useState(false)
@@ -56,7 +56,7 @@ function RecentSessionCard({
   const { name, path } = sessionData
 
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       try {
         const data = await ipcRenderer.invoke('loadThumbnail', path)
         if (data) {

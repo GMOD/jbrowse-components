@@ -12,22 +12,22 @@ import { ThemeOptions } from '@material-ui/core'
 import { ScaleOpts } from './util'
 
 export interface RenderArgs extends FeatureRenderArgs {
-  scaleOpts: ScaleOpts;
+  scaleOpts: ScaleOpts
 }
 
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
-  bpPerPx: number;
-  height: number;
-  highResolutionScaling: number;
-  scaleOpts: ScaleOpts;
-  displayCrossHatches: boolean;
-  ticks: { values: number[] };
-  theme: ThemeOptions;
+  bpPerPx: number
+  height: number
+  highResolutionScaling: number
+  scaleOpts: ScaleOpts
+  displayCrossHatches: boolean
+  ticks: { values: number[] }
+  theme: ThemeOptions
 }
 
 export interface RenderArgsDeserializedWithFeatures
   extends RenderArgsDeserialized {
-  features: Map<string, Feature>;
+  features: Map<string, Feature>
 }
 
 export type {

@@ -14,8 +14,8 @@ export function ThemeProvider({
   _theme,
   children,
 }: {
-  _theme: Theme;
-  children: ReactNode;
+  _theme: Theme
+  children: ReactNode
 }) {
   console.warn(
     'Deprecation warning: `ThemeProvider` is no longer supported as a way to ' +

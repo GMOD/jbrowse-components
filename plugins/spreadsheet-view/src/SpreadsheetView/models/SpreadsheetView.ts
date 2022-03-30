@@ -28,7 +28,7 @@ export type MenuItemWithDisabledCallback = MenuItem & {
         spreadsheetModel: Spreadsheet,
         rowNumber: number,
         row: Spreadsheet['rowSet']['rows'][0],
-      ) => boolean);
+      ) => boolean)
 }
 
 const defaultRowMenuItems: MenuItemWithDisabledCallback[] = [

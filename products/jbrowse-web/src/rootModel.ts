@@ -100,8 +100,8 @@ function filterSessionInPlace(node: IAnyStateTreeNode, nodeType: IAnyType) {
 }
 
 interface Menu {
-  label: string;
-  menuItems: MenuItem[];
+  label: string
+  menuItems: MenuItem[]
 }
 
 export default function RootModel(

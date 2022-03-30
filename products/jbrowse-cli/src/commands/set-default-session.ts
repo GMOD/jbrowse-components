@@ -8,21 +8,21 @@ const fsPromises = fs.promises
 
 interface DefaultSession {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
+  [key: string]: any
 }
 
 interface Track {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
+  [key: string]: any
 }
 
 interface Config {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  assemblies?: { name: string; sequence: { [key: string]: any } }[];
-  configuration?: {};
-  connections?: unknown[];
-  defaultSession?: DefaultSession;
-  tracks: Track[];
+  assemblies?: { name: string; sequence: { [key: string]: any } }[]
+  configuration?: {}
+  connections?: unknown[]
+  defaultSession?: DefaultSession
+  tracks: Track[]
 }
 
 export default class SetDefaultSession extends JBrowseCommand {

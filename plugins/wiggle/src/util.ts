@@ -1,11 +1,11 @@
 import { scaleLinear, scaleLog, scaleQuantize } from 'd3-scale'
 
 export interface ScaleOpts {
-  domain: number[];
-  range: number[];
-  scaleType: string;
-  pivotValue?: number;
-  inverted: boolean;
+  domain: number[]
+  range: number[]
+  scaleType: string
+  pivotValue?: number
+  inverted: boolean
 }
 /**
  * produces a d3-scale from arguments. applies a "nice domain" adjustment
@@ -90,9 +90,9 @@ export function getNiceDomain({
   domain,
   bounds,
 }: {
-  scaleType: string;
-  domain: number[];
-  bounds: number[];
+  scaleType: string
+  domain: number[]
+  bounds: number[]
 }) {
   const [minScore, maxScore] = bounds
   let [min, max] = domain

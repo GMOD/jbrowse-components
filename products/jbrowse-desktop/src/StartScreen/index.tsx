@@ -50,8 +50,8 @@ export default function StartScreen({
   setPluginManager,
   setError,
 }: {
-  setPluginManager: (arg: PluginManager) => void;
-  setError: (arg: unknown) => void;
+  setPluginManager: (arg: PluginManager) => void
+  setError: (arg: unknown) => void
 }) {
   const classes = useStyles()
 

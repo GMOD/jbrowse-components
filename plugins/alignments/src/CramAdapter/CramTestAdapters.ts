@@ -65,9 +65,9 @@ export class SequenceAdapter extends BaseFeatureDataAdapter {
     start,
     end,
   }: {
-    refName: string;
-    start: number;
-    end: number;
+    refName: string
+    start: number
+    end: number
   }): Observable<SimpleFeature> {
     return new Observable(observer => {
       this.fasta

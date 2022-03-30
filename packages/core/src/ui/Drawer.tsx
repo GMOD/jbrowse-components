@@ -25,8 +25,8 @@ function Drawer({
   children,
   session,
 }: {
-  children: React.ReactNode;
-  session: SessionWithDrawerWidgets;
+  children: React.ReactNode
+  session: SessionWithDrawerWidgets
 }) {
   const { drawerPosition, drawerWidth } = session
   const classes = useStyles()

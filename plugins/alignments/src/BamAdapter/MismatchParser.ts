@@ -1,13 +1,13 @@
 import { revcom } from '@jbrowse/core/util'
 export interface Mismatch {
-  qual?: number;
-  start: number;
-  length: number;
-  type: string;
-  base: string;
-  altbase?: string;
-  seq?: string;
-  cliplen?: number;
+  qual?: number
+  start: number
+  length: number
+  type: string
+  base: string
+  altbase?: string
+  seq?: string
+  cliplen?: number
 }
 const mdRegex = new RegExp(/(\d+|\^[a-z]+|[a-z])/gi)
 export function parseCigar(cigar: string) {

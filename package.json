@@ -11,7 +11,7 @@
     "build": "node scripts/build.js",
     "changelog": "lerna-changelog",
     "lerna-publish": "lerna publish",
-    "lint": "eslint --max-warnings 0 --ext .js,.ts,.jsx,.tsx .",
+    "lint": "eslint --report-unused-disable-directives --max-warnings 0 --ext .js,.ts,.jsx,.tsx .",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
     "typecheck": "tsc --noEmit",

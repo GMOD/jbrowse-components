@@ -11,8 +11,8 @@ const ResetComponent = ({
   onFactoryReset,
   resetButtonText,
 }: {
-  onFactoryReset: Function;
-  resetButtonText: string;
+  onFactoryReset: Function
+  resetButtonText: string
 }) => {
   const [dialogOpen, setDialogOpen] = useState(false)
 
@@ -45,10 +45,10 @@ const FatalErrorDialog = ({
   onFactoryReset,
   resetButtonText,
 }: {
-  componentStack: string;
-  error: Error;
-  onFactoryReset: Function;
-  resetButtonText: string;
+  componentStack: string
+  error: Error
+  onFactoryReset: Function
+  resetButtonText: string
 }) => {
   return (
     <Dialog open>

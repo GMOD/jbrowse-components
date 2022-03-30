@@ -20,8 +20,8 @@ function SearchBox({
   model,
   showHelp,
 }: {
-  showHelp?: boolean;
-  model: LinearGenomeViewModel;
+  showHelp?: boolean
+  model: LinearGenomeViewModel
 }) {
   const classes = useStyles()
   const theme = useTheme()

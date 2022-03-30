@@ -26,16 +26,16 @@ const useStyles = makeStyles(theme => ({
 
 function SetFeatureHeightDlg(props: {
   model: {
-    minScore: number;
-    maxScore: number;
-    setMinScore: Function;
-    setMaxScore: Function;
-    setFeatureHeight: Function;
-    setNoSpacing: Function;
-    featureHeightSetting: number;
-    noSpacing: boolean;
-  };
-  handleClose: () => void;
+    minScore: number
+    maxScore: number
+    setMinScore: Function
+    setMaxScore: Function
+    setFeatureHeight: Function
+    setNoSpacing: Function
+    featureHeightSetting: number
+    noSpacing: boolean
+  }
+  handleClose: () => void
 }) {
   const classes = useStyles()
   const { model, handleClose } = props

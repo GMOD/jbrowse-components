@@ -11,12 +11,12 @@ import { ExtraGlyphValidator, layOutFeature, layOutSubfeatures } from './util'
 import { SceneGraph } from '@jbrowse/core/util/layouts'
 
 function ProcessedTranscript(props: {
-  feature: Feature;
-  config: AnyConfigurationModel;
-  featureLayout: SceneGraph;
-  selected?: boolean;
-  reversed?: boolean;
-  [key: string]: unknown;
+  feature: Feature
+  config: AnyConfigurationModel
+  featureLayout: SceneGraph
+  selected?: boolean
+  reversed?: boolean
+  [key: string]: unknown
 }) {
   const { feature, config } = props
   const subfeatures = getSubparts(feature, config)
@@ -163,12 +163,12 @@ ProcessedTranscript.layOut = ({
   config,
   extraGlyphs,
 }: {
-  layout: SceneGraph;
-  feature: Feature;
-  bpPerPx: number;
-  reversed: boolean;
-  config: AnyConfigurationModel;
-  extraGlyphs: ExtraGlyphValidator[];
+  layout: SceneGraph
+  feature: Feature
+  bpPerPx: number
+  reversed: boolean
+  config: AnyConfigurationModel
+  extraGlyphs: ExtraGlyphValidator[]
 }) => {
   const subLayout = layOutFeature({
     layout,

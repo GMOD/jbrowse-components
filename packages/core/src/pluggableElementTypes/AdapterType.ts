@@ -4,10 +4,10 @@ import { AnyConfigurationSchemaType } from '../configuration/configurationSchema
 import { AnyAdapter } from '../data_adapters/BaseAdapter'
 
 export type AdapterMetadata = {
-  category: string | null;
-  hiddenFromGUI: boolean | null;
-  displayName: string | null;
-  description: string | null;
+  category: string | null
+  hiddenFromGUI: boolean | null
+  displayName: string | null
+  description: string | null
 }
 
 export default class AdapterType extends PluggableElementBase {
@@ -23,10 +23,10 @@ export default class AdapterType extends PluggableElementBase {
 
   constructor(
     stuff: {
-      name: string;
-      configSchema: AnyConfigurationSchemaType;
-      adapterCapabilities?: string[];
-      adapterMetadata?: AdapterMetadata;
+      name: string
+      configSchema: AnyConfigurationSchemaType
+      adapterCapabilities?: string[]
+      adapterMetadata?: AdapterMetadata
     } & (
       | { AdapterClass: AnyAdapter }
       | { getAdapterClass: () => Promise<AnyAdapter> }

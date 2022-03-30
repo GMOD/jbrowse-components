@@ -33,7 +33,7 @@ const useStyles = makeStyles(theme => ({
 function ModificationTable({
   modifications,
 }: {
-  modifications: [string, string][];
+  modifications: [string, string][]
 }) {
   const classes = useStyles()
   return (
@@ -58,11 +58,11 @@ function ModificationTable({
 
 function ColorByTagDlg(props: {
   model: {
-    setColorScheme: Function;
-    modificationTagMap: ObservableMap<string, string>;
-    colorBy?: { type: string };
-  };
-  handleClose: () => void;
+    setColorScheme: Function
+    modificationTagMap: ObservableMap<string, string>
+    colorBy?: { type: string }
+  }
+  handleClose: () => void
 }) {
   const classes = useStyles()
   const { model, handleClose } = props

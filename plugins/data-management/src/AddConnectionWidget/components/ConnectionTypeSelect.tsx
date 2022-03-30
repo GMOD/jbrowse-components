@@ -7,9 +7,9 @@ import OpenInNewIcon from '@material-ui/icons/OpenInNew'
 import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
 
 function ConnectionTypeSelect(props: {
-  connectionTypeChoices: ConnectionType[];
-  connectionType: ConnectionType;
-  setConnectionType: Function;
+  connectionTypeChoices: ConnectionType[]
+  connectionType: ConnectionType
+  setConnectionType: Function
 }) {
   const { connectionTypeChoices, connectionType, setConnectionType } = props
 

@@ -19,16 +19,16 @@ import SerializableFilterChain from './util/serializableFilterChain'
 import RpcManager from '../../rpc/RpcManager'
 
 export interface LayoutSessionProps {
-  config: AnyConfigurationModel;
-  bpPerPx: number;
-  filters: SerializableFilterChain;
+  config: AnyConfigurationModel
+  bpPerPx: number
+  filters: SerializableFilterChain
 }
 
 export type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
 export interface CachedLayout {
-  layout: MyMultiLayout;
-  config: AnyConfigurationModel;
-  filters: SerializableFilterChain;
+  layout: MyMultiLayout
+  config: AnyConfigurationModel
+  filters: SerializableFilterChain
 }
 
 export class LayoutSession implements LayoutSessionProps {
@@ -88,29 +88,29 @@ export class LayoutSession implements LayoutSessionProps {
   }
 }
 export interface RenderArgs extends FeatureRenderArgs {
-  bpPerPx: number;
+  bpPerPx: number
 }
 
 export interface RenderArgsSerialized extends FeatureRenderArgsSerialized {
-  bpPerPx: number;
+  bpPerPx: number
 }
 
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
-  bpPerPx: number;
+  bpPerPx: number
 }
 
 export interface RenderResults extends FeatureRenderResults {
-  layout: BaseLayout<Feature>;
+  layout: BaseLayout<Feature>
 }
 
 export interface ResultsSerialized extends FeatureResultsSerialized {
-  maxHeightReached: boolean;
-  layout: SerializedLayout;
+  maxHeightReached: boolean
+  layout: SerializedLayout
 }
 
 export interface ResultsDeserialized extends FeatureResultsDeserialized {
-  maxHeightReached: boolean;
-  layout: PrecomputedLayout<string>;
+  maxHeightReached: boolean
+  layout: PrecomputedLayout<string>
 }
 
 export default class BoxRendererType extends FeatureRendererType {

@@ -33,9 +33,9 @@ function NewSessionCard({
   onClick = () => {},
   image,
 }: {
-  name: string;
-  onClick: () => void;
-  image?: string;
+  name: string
+  onClick: () => void
+  image?: string
 }) {
   const classes = useStyles()
   const [hovered, setHovered] = useState(false)
@@ -63,7 +63,7 @@ function NewSessionCard({
 }
 
 interface RootModel {
-  setSession: Function;
+  setSession: Function
 }
 
 export function NewEmptySession({ rootModel }: { rootModel: RootModel }) {
@@ -80,7 +80,7 @@ export function NewEmptySession({ rootModel }: { rootModel: RootModel }) {
 export function NewLinearGenomeViewSession({
   rootModel,
 }: {
-  rootModel: RootModel;
+  rootModel: RootModel
 }) {
   return (
     <NewSessionCard

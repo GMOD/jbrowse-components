@@ -15,19 +15,19 @@ import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 
 export interface RenderArgs extends ServerSideRenderArgs {
-  displayModel: {};
-  blockKey: string;
+  displayModel: {}
+  blockKey: string
 }
 
 export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
-  displayModel: {};
-  blockKey: string;
+  displayModel: {}
+  blockKey: string
 }
 
 export interface RenderArgsDeserialized
   extends ServerSideRenderArgsDeserialized {
-  displayModel: {};
-  blockKey: string;
+  displayModel: {}
+  blockKey: string
 }
 
 export type { RenderResults }
@@ -35,7 +35,7 @@ export type { RenderResults }
 export type ResultsSerialized = ServerSideResultsSerialized
 
 export interface ResultsDeserialized extends ServerSideResultsDeserialized {
-  blockKey: string;
+  blockKey: string
 }
 
 export default class ComparativeServerSideRenderer extends ServerSideRenderer {

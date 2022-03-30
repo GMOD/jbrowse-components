@@ -66,9 +66,9 @@ const Grid = observer(
     children,
     stroke = '#0003',
   }: {
-    model: DotplotViewModel;
-    children: React.ReactNode;
-    stroke?: string;
+    model: DotplotViewModel
+    children: React.ReactNode
+    stroke?: string
   }) => {
     const { viewWidth, viewHeight, hview, vview } = model
     const hblocks = hview.dynamicBlocks.contentBlocks

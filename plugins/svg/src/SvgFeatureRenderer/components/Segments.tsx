@@ -9,13 +9,13 @@ import Arrow from './Arrow'
 import { SceneGraph } from '@jbrowse/core/util/layouts'
 
 function Segments(props: {
-  feature: Feature;
-  featureLayout: SceneGraph;
-  config: AnyConfigurationModel;
-  selected?: boolean;
-  reversed?: boolean;
-  subfeatures?: Feature[];
-  children?: React.ReactNode;
+  feature: Feature
+  featureLayout: SceneGraph
+  config: AnyConfigurationModel
+  selected?: boolean
+  reversed?: boolean
+  subfeatures?: Feature[]
+  children?: React.ReactNode
 }) {
   const {
     feature,

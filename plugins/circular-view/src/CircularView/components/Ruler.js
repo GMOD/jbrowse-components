@@ -21,7 +21,7 @@ const useStyles = makeStyles({
 function sliceArcPath(slice, radiusPx, startBase, endBase) {
   // A rx ry x-axis-rotation large-arc-flag sweep-flag x y
   if (slice.flipped) {
-    [startBase, endBase] = [endBase, startBase]
+    ;[startBase, endBase] = [endBase, startBase]
   }
   const startXY = slice.bpToXY(startBase, radiusPx)
   const endXY = slice.bpToXY(endBase, radiusPx)

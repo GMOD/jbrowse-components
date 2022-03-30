@@ -1,34 +1,122 @@
 {
-  "env": { "browser": true },
-  "root": true,
-  "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint", "react", "react-hooks"],
+  "env": {
+    "browser": true
+  },
   "extends": [
-    "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
+    "plugin:monorepo/recommended",
+    "plugin:prettier/recommended",
     "prettier",
-    "plugin:react/recommended"
+    "react-app"
   ],
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true
-    }
+    },
+    "project": "./tsconfig.json"
   },
+  "plugins": ["@typescript-eslint", "eslint-plugin-tsdoc"],
   "rules": {
-    "@typescript-eslint/explicit-function-return-type": 0,
-    "@typescript-eslint/no-use-before-define": 0,
-    "@typescript-eslint/camelcase": 0,
+    "@typescript-eslint/ban-ts-ignore": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/camelcase": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-unused-vars": ["warn"],
-    "@typescript-eslint/no-empty-function": 0,
-    "@typescript-eslint/no-var-requires": 0,
-    "@typescript-eslint/ban-ts-comment": 0,
-    "@typescript-eslint/ban-types": 0,
-    "@typescript-eslint/no-unused-vars": 0,
+    "@typescript-eslint/no-unused-expressions": "off",
+    "@typescript-eslint/no-use-before-define": "off",
+    "@typescript-eslint/no-var-requires": "off",
     "@typescript-eslint/no-redeclare": "off",
-    "no-redeclare": "off",
-    "no-undef": 0,
-    "react/display-name": "off",
-    "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn"
-  }
+
+    "no-use-before-define": "off",
+    "curly": "error",
+    "no-global-assign": "warn",
+    "no-console": [
+      "warn",
+      {
+        "allow": ["error", "warn"]
+      }
+    ],
+    "no-debugger": "warn",
+    "no-undef": "error",
+    "no-underscore-dangle": "warn",
+
+    "import/no-extraneous-dependencies": "error",
+    "import/no-anonymous-default-export": "off",
+    "monorepo/no-internal-import": "off",
+
+    "react/no-danger": "warn",
+    "react/destructuring-assignment": "error",
+    "react/no-unused-prop-types": "error",
+    "react/no-unused-state": "error",
+    "react/prefer-stateless-function": "error",
+    "react/prop-types": "error",
+    "spaced-comment": [
+      "error",
+      "always",
+      {
+        "markers": ["/"]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["**/*.ts", "**/*.tsx"],
+      "rules": {
+        "tsdoc/syntax": "warn"
+      }
+    },
+    {
+      "files": ["**/jbrowse-cli/**/*.test.ts", "**/jbrowse-cli/**/*.test.tsx"],
+      "rules": {
+        "tsdoc/syntax": "off"
+      }
+    },
+    {
+      "files": [
+        "**/test/**",
+        "**/*.test.[t,j]s",
+        "**/*.test.[t,j]sx",
+        "**/rescripts/*",
+        "**/tests/util.js",
+        "**/webpack.config.js",
+        "**/scripts/notarize.js",
+        "**/src/testUtil.ts"
+      ],
+      "env": {
+        "jest": true
+      },
+      "globals": {
+        "document": true,
+        "it": true,
+        "describe": true,
+        "test": true
+      },
+      "rules": {
+        "import/no-extraneous-dependencies": "off"
+      }
+    },
+    {
+      "files": ["**/component_test/**"],
+      "parserOptions": {
+        "ecmaFeatures": {
+          "jsx": true
+        },
+        "project": "./component_test/tsconfig.json"
+      }
+    },
+    {
+      "files": ["**/component_test/cypress/**"],
+      "extends": ["plugin:cypress/recommended"],
+      "parserOptions": {
+        "ecmaFeatures": {
+          "jsx": true
+        },
+        "project": "./component_test/cypress/tsconfig.json"
+      }
+    }
+  ]
 }

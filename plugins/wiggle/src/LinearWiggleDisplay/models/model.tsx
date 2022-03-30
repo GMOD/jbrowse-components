@@ -85,8 +85,8 @@ const stateModelFactory = (
         scoreMin,
         scoreMax,
       }: {
-        scoreMin: number;
-        scoreMax: number;
+        scoreMin: number
+        scoreMax: number
       }) {
         if (
           self.stats.scoreMin !== scoreMin ||
@@ -472,9 +472,9 @@ const stateModelFactory = (
       type ExportSvgOpts = Parameters<typeof superRenderSvg>[0]
 
       async function getStats(opts: {
-        headers?: Record<string, string>;
-        signal?: AbortSignal;
-        filters?: string[];
+        headers?: Record<string, string>
+        signal?: AbortSignal
+        filters?: string[]
       }): Promise<FeatureStats> {
         const { rpcManager } = getSession(self)
         const nd = getConf(self, 'numStdDev') || 3

@@ -44,12 +44,12 @@ const AssemblyTable = observer(
   }: {
     rootModel: {
       jbrowse: {
-        removeAssemblyConf: (arg: string) => void;
-        assemblies: AnyConfigurationModel[];
-      };
-    };
-    setIsAssemblyBeingEdited(arg: boolean): void;
-    setAssemblyBeingEdited(arg: AnyConfigurationModel): void;
+        removeAssemblyConf: (arg: string) => void
+        assemblies: AnyConfigurationModel[]
+      }
+    }
+    setIsAssemblyBeingEdited(arg: boolean): void
+    setAssemblyBeingEdited(arg: AnyConfigurationModel): void
   }) => {
     const classes = useStyles()
 
