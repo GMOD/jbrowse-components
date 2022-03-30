@@ -17,7 +17,7 @@
     "format": "prettier --write .",
     "check-format": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "pretest-ci": "cd products/jbrowse-react-linear-genome-view;yarn build; cd ../../",
+    "pretest-ci": "cd products/jbrowse-react-linear-genome-view;yarn build;cd ../../",
     "test-ci": "cross-env NODE_OPTIONS='--max-old-space-size=7000' jest --ci --coverage && jest --testMatch '**/*testmod.js'",
     "built-test-ci": "jest --ci integration.test.js",
     "test": "jest"
@@ -63,7 +63,6 @@
     "@types/escape-html": "^0.0.20",
     "@types/express": "^4.17.8",
     "@types/file-saver": "^2.0.1",
-    "@types/follow-redirects": "^1.13.1",
     "@types/get-value": "^3.0.1",
     "@types/is-object": "^1.0.0",
     "@types/jest": "^25.2.1",

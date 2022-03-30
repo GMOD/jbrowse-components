@@ -11,7 +11,8 @@ import {
   DialogComponentType,
 } from '@jbrowse/core/util/types'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
-import { getContainingView, supported } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
+import { supportedIndexingAdapters } from '@jbrowse/text-indexing'
 import { observable } from 'mobx'
 import {
   getMembers,
@@ -598,7 +599,7 @@ export default function sessionModelFactory(
             label: trackSnapshot.textSearching
               ? 'Re-index track'
               : 'Index track',
-            disabled: !supported(trackSnapshot.adapter.type),
+            disabled: !supportedIndexingAdapters(trackSnapshot.adapter.type),
             onClick: () => {
               const { trackId, assemblyNames, textSearching } = trackSnapshot
               const indexingParams = {
