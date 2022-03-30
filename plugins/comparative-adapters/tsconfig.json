@@ -1,7 +1,9 @@
 {
   "extends": "../../tsconfig.json",
   "include": ["src", "types"],
+  "exclude": ["/**/*.test.*"],
   "compilerOptions": {
+    "outDir": "dist",
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,

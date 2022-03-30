@@ -21,7 +21,6 @@ import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
-import { version } from '../package.json'
 import factoryReset from './factoryReset'
 import SessionLoader, {
   SessionLoaderModel,
@@ -288,7 +287,7 @@ const Renderer = observer(
               {
                 jbrowse: configSnapshot,
                 assemblyManager: {},
-                version,
+                version: '',
                 configPath,
               },
               { pluginManager },

@@ -31,7 +31,8 @@
     "node": ">=10.4.0"
   },
   "scripts": {
-    "build": "oclif-dev pack",
+    "build": "echo nothing",
+    "pack": "oclif-dev pack",
     "build:typescript": "tsc --build",
     "postpack": "rimraf oclif.manifest.json",
     "clean": "rimraf lib",
