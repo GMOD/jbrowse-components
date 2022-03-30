@@ -25,8 +25,8 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@gmod/bam": "^1.1.15",
-    "@gmod/cram": "^1.6.1",
+    "@gmod/bam": "^1.1.16",
+    "@gmod/cram": "^1.6.2",
     "@material-ui/icons": "^4.9.1",
     "abortable-promise-cache": "^1.5.0",
     "color": "^3.1.2",
