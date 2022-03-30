@@ -48,7 +48,6 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     public workerBootConfiguration: { plugins: PluginDefinition[] },
   ) {
     super(args)
-    console.log({ args })
     this.makeWorkerInstance = args.makeWorkerInstance
   }
 
