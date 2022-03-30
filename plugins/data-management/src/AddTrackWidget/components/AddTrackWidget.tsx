@@ -10,6 +10,7 @@ import {
 } from '@material-ui/core'
 import { getSession, isElectron } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
+import { supportedIndexingAdapters } from '@jbrowse/text-indexing'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { Alert } from '@material-ui/lab'
@@ -101,16 +102,10 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
         attributes: ['Name', 'ID'],
         exclude: ['CDS', 'exon'],
       }
-      const supported = [
-        'Gff3TabixAdapter',
-        'VcfTabixAdapter',
-        'Gff3Adapter',
-        'VcfAdapter',
-      ]
       if (model.view) {
         model.view.showTrack(trackId)
         if (isElectron) {
-          if (textIndexTrack && supported.includes(trackAdapter.type)) {
+          if (textIndexTrack && supportedIndexingAdapters(trackAdapter.type)) {
             const attr = textIndexingConf || textSearchingDefault
             const indexingParams = {
               ...attr,

@@ -1,9 +1,6 @@
 /*
  Util functions for text indexing
 */
-import { isURL, createRemoteStream } from './types/common'
-import fs from 'fs'
-import path from 'path'
 export interface UriLocation {
   uri: string
   locationType: 'UriLocation'
@@ -91,19 +88,23 @@ export interface VcfAdapter {
   type: 'VcfAdapter'
   vcfLocation: UriLocation | LocalPathLocation
 }
-export interface Track {
-  trackId: string
-  name: string
-  assemblyNames: string[]
-  adapter:
-    | Gff3TabixAdapter
-    | GtfAdapter
-    | VcfTabixAdapter
-    | Gff3Adapter
-    | VcfAdapter
-  textSearching?: TextSearching
-}
+// export interface Track {
+//   trackId: string
+//   name: string
+//   assemblyNames: string[]
+//   adapter:
+//     | Gff3TabixAdapter
+//     | GtfAdapter
+//     | VcfTabixAdapter
+//     | Gff3Adapter
+//     | VcfAdapter
+//   textSearching?: TextSearching
+// }
 
+export interface Track {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any
+}
 export interface TextSearching {
   indexingFeatureTypesToExclude?: string[]
   indexingAttributes?: string[]
@@ -129,17 +130,14 @@ export interface Config {
   tracks?: Track[]
 }
 
-export async function getLocalOrRemoteStream(uri: string, out: string) {
-  let stream
-  let totalBytes = 0
-  if (isURL(uri)) {
-    const result = await createRemoteStream(uri)
-    totalBytes = +(result.headers?.get('Content-Length') || 0)
-    stream = result.body
-  } else {
-    const filename = path.isAbsolute(uri) ? uri : path.join(out, uri)
-    totalBytes = fs.statSync(filename).size
-    stream = fs.createReadStream(filename)
-  }
-  return { totalBytes, stream }
+export type indexType = 'aggregate' | 'perTrack'
+
+// supported adapter types by text indexer
+export function supportedIndexingAdapters(type: string) {
+  return [
+    'Gff3TabixAdapter',
+    'VcfTabixAdapter',
+    'Gff3Adapter',
+    'VcfAdapter',
+  ].includes(type)
 }

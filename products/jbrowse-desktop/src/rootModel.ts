@@ -16,6 +16,7 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { UriLocation } from '@jbrowse/core/util/types'
+import { supportedIndexingAdapters } from '@jbrowse/text-indexing'
 import { ipcRenderer } from 'electron'
 
 // icons
@@ -335,14 +336,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           .filter(track =>
             assemblyName ? track.assemblyNames.includes(assemblyName) : true,
           )
-          .filter(track =>
-            [
-              'Gff3TabixAdapter',
-              'VcfTabixAdapter',
-              'Gff3Adapter',
-              'VcfAdapter',
-            ].includes(track.adapter.type),
-          )
+          .filter(track => supportedIndexingAdapters(track.adapter.type))
           .map(conf => {
             return JSON.parse(JSON.stringify(getSnapshot(conf)))
           })

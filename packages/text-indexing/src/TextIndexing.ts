@@ -4,14 +4,12 @@ import path from 'path'
 import { Readable } from 'stream'
 import { indexGff3 } from './types/gff3Adapter'
 import { indexVcf } from './types/vcfAdapter'
-import { generateMeta, supported } from './types/common'
+import { generateMeta } from './types/common'
 import { ixIxxStream } from 'ixixx'
-import { Track } from './util'
-
-type indexType = 'aggregate' | 'perTrack'
+import { Track, indexType, supportedIndexingAdapters } from './util'
 
 export async function indexTracks(args: {
-  tracks: Track[] // array of trackIds to index
+  tracks: Track[]
   outLocation?: string
   signal?: AbortSignal
   attributes?: string[]
@@ -51,7 +49,9 @@ async function perTrackIndex(
   const attrs = attributes || ['Name', 'ID']
   const excludeTypes = exclude || ['exon', 'CDS']
   const force = true
-  const supportedTracks = tracks.filter(track => supported(track.adapter?.type))
+  const supportedTracks = tracks.filter(track =>
+    supportedIndexingAdapters(track.adapter?.type),
+  )
   for (const trackConfig of supportedTracks) {
     const { textSearching, trackId, assemblyNames } = trackConfig
     const id = trackId + '-index'
@@ -104,7 +104,7 @@ async function aggregateIndex(
     const quiet = true
     // supported tracks for given assembly
     const supportedTracks = tracks
-      .filter(track => supported(track.adapter?.type))
+      .filter(track => supportedIndexingAdapters(track.adapter?.type))
       .filter(track => (asm ? track.assemblyNames.includes(asm) : true))
 
     await indexDriver(supportedTracks, outDir, attrs, id, quiet, excludeTypes, [
