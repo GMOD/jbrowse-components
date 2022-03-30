@@ -4,5 +4,6 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "noEmit": true
-  }
+  },
+  "references": [{ "path": "../../plugins/linear-genome-view" }]
 }
