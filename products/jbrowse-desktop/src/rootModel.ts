@@ -213,45 +213,56 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           } = toJS(firstIndexingJob)
           const rpcManager = self.jbrowse.rpcManager
           const trackConfigs = this.findTrackConfigsToIndex(trackIds)
-          await rpcManager.call('indexTracksSessionId', 'TextIndexRpcMethod', {
-            tracks: trackConfigs,
-            attributes,
-            exclude,
-            assemblies,
-            indexType,
-            outLocation: self.sessionPath,
-            sessionId: 'indexTracksSessionId',
-            timeout: 1 * 60 * 60 * 1000, // 1 hour
-          })
-          if (indexType === 'perTrack') {
-            // should update the single track conf
-            trackIds.forEach(trackId => {
-              this.addTrackTextSearchConf(
-                trackId,
-                assemblies,
+          try {
+            await rpcManager.call(
+              'indexTracksSessionId',
+              'TextIndexRpcMethod',
+              {
+                tracks: trackConfigs,
                 attributes,
                 exclude,
-              )
-              self.session?.notify(
-                `Succesfully indexed track with trackId: ${trackId} `,
-                'success',
-              )
-            })
-          } else {
-            assemblies.forEach(assemblyName => {
-              const indexedTrackIds = trackConfigs
-                .filter(track =>
-                  assemblyName
-                    ? track.assemblyNames.includes(assemblyName)
-                    : true,
+                assemblies,
+                indexType,
+                outLocation: self.sessionPath,
+                sessionId: 'indexTracksSessionId',
+                timeout: 1 * 60 * 60 * 1000, // 1 hour
+              },
+            )
+            if (indexType === 'perTrack') {
+              // should update the single track conf
+              trackIds.forEach(trackId => {
+                this.addTrackTextSearchConf(
+                  trackId,
+                  assemblies,
+                  attributes,
+                  exclude,
                 )
-                .map(trackConf => trackConf.trackId)
-              this.addAggregateTextSearchConf(indexedTrackIds, assemblyName)
-              self.session?.notify(
-                `Succesfully indexed assembly: ${assemblyName} `,
-                'success',
-              )
-            })
+                self.session?.notify(
+                  `Succesfully indexed track with trackId: ${trackId} `,
+                  'success',
+                )
+              })
+            } else {
+              assemblies.forEach(assemblyName => {
+                const indexedTrackIds = trackConfigs
+                  .filter(track =>
+                    assemblyName
+                      ? track.assemblyNames.includes(assemblyName)
+                      : true,
+                  )
+                  .map(trackConf => trackConf.trackId)
+                this.addAggregateTextSearchConf(indexedTrackIds, assemblyName)
+                self.session?.notify(
+                  `Succesfully indexed assembly: ${assemblyName} `,
+                  'success',
+                )
+              })
+            }
+          } catch (e) {
+            self.session?.notify(
+              `An error occurred while indexing: ${e}`,
+              'error',
+            )
           }
         }
         return
