@@ -47,8 +47,6 @@ async function getPluginManager() {
   const runtimePlugins = await pluginLoader.load()
   const plugins = [...corePlugins.map(p => ({ plugin: p })), ...runtimePlugins]
   const pluginManager = new PluginManager(plugins.map(P => new P.plugin()))
-  // need to add to the startScreen/util as well
-  // pluginManager.addRpcMethod(() => new TextIndexRpcMethod(pluginManager))
   pluginManager.createPluggableElements()
   pluginManager.configure()
   jbPluginManager = pluginManager
