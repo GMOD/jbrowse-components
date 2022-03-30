@@ -120,6 +120,7 @@ export interface Config {
 export type indexType = 'aggregate' | 'perTrack'
 
 // supported adapter types by text indexer
+//  ensure that this matches the method found in @jbrowse/core/util
 export function supportedIndexingAdapters(type: string) {
   return [
     'Gff3TabixAdapter',

@@ -8,9 +8,12 @@ import {
   Typography,
   makeStyles,
 } from '@material-ui/core'
-import { getSession, isElectron } from '@jbrowse/core/util'
+import {
+  getSession,
+  isElectron,
+  supportedIndexingAdapters,
+} from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
-import { supportedIndexingAdapters } from '@jbrowse/text-indexing'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { Alert } from '@material-ui/lab'

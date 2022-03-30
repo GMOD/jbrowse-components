@@ -29,7 +29,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { UNKNOWN } from '@jbrowse/core/util/tracks'
-import { supportedIndexingAdapters } from '@jbrowse/text-indexing'
+import { supportedIndexingAdapters } from '@jbrowse/core/util/'
 
 // locals
 import { AddTrackModel } from '../model'

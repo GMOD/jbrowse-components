@@ -1135,3 +1135,14 @@ export function getBpDisplayStr(totalBp: number) {
   }
   return str
 }
+
+// supported adapter types by text indexer
+//  ensure that this matches the method found in @jbrowse/text-indexing/util
+export function supportedIndexingAdapters(type: string) {
+  return [
+    'Gff3TabixAdapter',
+    'VcfTabixAdapter',
+    'Gff3Adapter',
+    'VcfAdapter',
+  ].includes(type)
+}
