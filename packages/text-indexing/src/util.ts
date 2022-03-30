@@ -88,19 +88,6 @@ export interface VcfAdapter {
   type: 'VcfAdapter'
   vcfLocation: UriLocation | LocalPathLocation
 }
-// export interface Track {
-//   trackId: string
-//   name: string
-//   assemblyNames: string[]
-//   adapter:
-//     | Gff3TabixAdapter
-//     | GtfAdapter
-//     | VcfTabixAdapter
-//     | Gff3Adapter
-//     | VcfAdapter
-//   textSearching?: TextSearching
-// }
-
 export interface Track {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any

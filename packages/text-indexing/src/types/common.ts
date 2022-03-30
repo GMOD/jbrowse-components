@@ -1,8 +1,7 @@
 import fs from 'fs'
-import { Track } from '../util'
 import fetch from 'node-fetch'
 import path from 'path'
-import { LocalPathLocation, UriLocation } from '../util'
+import { LocalPathLocation, UriLocation, Track } from '../util'
 
 // Method for handing off the parsing of a gff3 file URL.
 // Calls the proper parser depending on if it is gzipped or not.
@@ -29,6 +28,21 @@ export function isURL(FileName: string) {
   }
 
   return url.protocol === 'http:' || url.protocol === 'https:'
+}
+
+export async function getLocalOrRemoteStream(uri: string, out: string) {
+  let stream
+  let totalBytes = 0
+  if (isURL(uri)) {
+    const result = await createRemoteStream(uri)
+    totalBytes = +(result.headers?.get('Content-Length') || 0)
+    stream = result.body
+  } else {
+    const filename = path.isAbsolute(uri) ? uri : path.join(out, uri)
+    totalBytes = fs.statSync(filename).size
+    stream = fs.createReadStream(filename)
+  }
+  return { totalBytes, stream }
 }
 
 export function makeLocation(location: string, protocol: string) {
@@ -103,14 +117,6 @@ export function guessAdapterFromFileName(filePath: string): Track {
   }
 }
 
-export function supported(type: string) {
-  return [
-    'Gff3TabixAdapter',
-    'VcfTabixAdapter',
-    'Gff3Adapter',
-    'VcfAdapter',
-  ].includes(type)
-}
 /**
  * Generates metadata of index given a filename (trackId or assembly)
  * @param name -  assembly name or trackId
