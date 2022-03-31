@@ -21,3 +21,4 @@ lerna-debug.log
 packages/core/BaseFeatureWidget/
 packages/core/util/
 *.tgz
+*.tsbuildinfo
