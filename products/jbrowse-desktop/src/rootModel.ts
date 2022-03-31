@@ -80,6 +80,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       sessionPath: types.optional(types.string, ''),
     })
     .volatile(() => ({
+      indexingStatus: '',
       error: undefined as unknown,
       textSearchManager: new TextSearchManager(pluginManager),
       openNewSessionCallback: async (path: string) => {
@@ -203,6 +204,9 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         const entry = self.indexingQueue.splice(0, 1)
         self.finishedJobs.push(...entry)
       },
+      setIndexingStatus(arg: string) {
+        self.indexingStatus = arg
+      },
       async runIndexingJob() {
         if (self.indexingQueue.length) {
           const firstIndexingJob = self.indexingQueue[0] as TrackTextIndexing
@@ -227,7 +231,10 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                 indexType,
                 outLocation: self.sessionPath,
                 sessionId: 'indexTracksSessionId',
-                timeout: 1 * 60 * 60 * 1000, // 1 hour
+                statusCallback: (msg: string) => {
+                  this.setIndexingStatus(msg)
+                },
+                timeout: 1000 * 60 * 60 * 1000, // 1000 hours, avoid user ever running into this
               },
             )
             if (indexType === 'perTrack') {

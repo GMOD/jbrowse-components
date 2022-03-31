@@ -7,7 +7,6 @@ import {
   TextField,
   ListSubheader,
   Typography,
-  makeStyles,
   FormControl,
   FormControlLabel,
   Checkbox,
@@ -19,6 +18,7 @@ import {
   IconButton,
   InputLabel,
   InputAdornment,
+  makeStyles,
 } from '@material-ui/core'
 
 // icons

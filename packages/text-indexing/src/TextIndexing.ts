@@ -1,4 +1,3 @@
-// import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import fs from 'fs'
 import path from 'path'
 import { Readable } from 'stream'
@@ -21,7 +20,7 @@ export async function indexTracks(args: {
     args
   const idxType = indexType || 'perTrack'
   if (idxType === 'perTrack') {
-    await perTrackIndex(tracks, outLocation, attributes, assemblies, exclude)
+    await perTrackIndex(tracks, outLocation, attributes, exclude)
   } else {
     await aggregateIndex(tracks, outLocation, attributes, assemblies, exclude)
   }
@@ -32,7 +31,6 @@ async function perTrackIndex(
   tracks: Track[],
   outLocation?: string,
   attributes?: string[],
-  assemblies?: string[],
   exclude?: string[],
 ) {
   const outFlag = outLocation || '.'

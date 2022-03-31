@@ -55,7 +55,7 @@ function JobsListWidget({ model }: { model: JobsListModel }) {
   const classes = useStyles()
   const session = getSession(model)
   const rootModel = getParent(model, 3)
-  const { indexingQueue, finishedJobs } = rootModel
+  const { indexingQueue, finishedJobs, indexingStatus } = rootModel
   return (
     <div className={classes.root}>
       <Typography>Queued jobs</Typography>
@@ -69,6 +69,7 @@ function JobsListWidget({ model }: { model: JobsListModel }) {
           {indexingQueue[0].name}
         </div>
       ) : null}
+      <Typography>Current status: {indexingStatus}</Typography>
 
       <Typography>Finished jobs</Typography>
       {finishedJobs.map((job: TrackTextIndexing) => (
