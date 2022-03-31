@@ -9,7 +9,7 @@ import {
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
 
-//locals
+// locals
 import JBrowseRootModelFactory from '../rootModel'
 import corePlugins from '../corePlugins'
 import packageJSON from '../../package.json'

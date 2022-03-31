@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Button, Typography, makeStyles } from '@material-ui/core'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-//locals
+// locals
 import QuickstartPanel from './QuickstartPanel'
 import OpenSequenceDialog from '../OpenSequenceDialog'
 import { loadPluginManager } from './util'
