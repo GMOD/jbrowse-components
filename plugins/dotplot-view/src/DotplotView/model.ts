@@ -110,7 +110,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       }),
     )
     .volatile(() => ({
-      volatileWidth: 800 as number | undefined,
+      volatileWidth: undefined as number | undefined,
       volatileError: undefined as Error | undefined,
       borderX: 100,
       borderY: 100,

@@ -106,9 +106,9 @@ export default function StartScreen({
 }) {
   const classes = useStyles()
 
-  const [sessions, setSessions] = useState<Record<string, any> | undefined>()
-  const [sessionToDelete, setSessionToDelete] = useState<string | undefined>()
-  const [sessionToLoad, setSessionToLoad] = useState<string | undefined>()
+  const [sessions, setSessions] = useState<Record<string, any>>()
+  const [sessionToDelete, setSessionToDelete] = useState<string>()
+  const [sessionToLoad, setSessionToLoad] = useState<string>()
   const [updateSessionsList, setUpdateSessionsList] = useState(true)
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
   const [reset, setReset] = useState(false)

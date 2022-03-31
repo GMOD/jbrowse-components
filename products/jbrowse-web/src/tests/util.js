@@ -1,4 +1,3 @@
-jest.mock('../makeWorkerInstance', () => () => {})
 import React from 'react'
 
 import rangeParser from 'range-parser'
@@ -9,6 +8,7 @@ import JBrowseWithoutQueryParamProvider from '../JBrowse'
 import JBrowseRootModelFactory from '../rootModel'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
+jest.mock('../makeWorkerInstance', () => () => {})
 
 configSnapshot.configuration = {
   rpc: {
