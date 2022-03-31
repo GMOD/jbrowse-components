@@ -57,23 +57,22 @@ function MessageSnackbar({
     popSnackbarMessage()
     setOpen(false)
   }
-  const [message, level, retry] = snackbarMessage || []
+  const [message, level, action] = snackbarMessage || []
   return (
     <Snackbar open={open && !!message} onClose={handleClose}>
       <Alert
         onClose={handleClose}
         action={
-          retry ? (
+          action ? (
             <>
               <Button
                 color="inherit"
-                variant="contained"
                 onClick={e => {
-                  retry.onClick()
+                  action.onClick()
                   handleClose(e)
                 }}
               >
-                {retry.name}
+                {action.name}
               </Button>
               <IconButton
                 aria-label="close"

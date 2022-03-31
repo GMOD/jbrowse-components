@@ -11,8 +11,8 @@ function makeExtension(snackbarMessages: IObservableArray<any>) {
       },
     },
     actions: {
-      notify(message: string, level?: NotificationLevel, retry?: SnackAction) {
-        this.pushSnackbarMessage(message, level, retry)
+      notify(message: string, level?: NotificationLevel, action?: SnackAction) {
+        this.pushSnackbarMessage(message, level, action)
         if (level === 'info' || level === 'success') {
           setTimeout(() => {
             this.removeSnackbarMessage(message)
@@ -23,9 +23,9 @@ function makeExtension(snackbarMessages: IObservableArray<any>) {
       pushSnackbarMessage(
         message: string,
         level?: NotificationLevel,
-        retry?: SnackAction,
+        action?: SnackAction,
       ) {
-        return snackbarMessages.push([message, level, retry])
+        return snackbarMessages.push([message, level, action])
       },
 
       popSnackbarMessage() {
