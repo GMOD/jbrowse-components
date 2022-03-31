@@ -1,3 +1,6 @@
+// we use mainthread rpc so we mock the makeWorkerInstance to an empty file
+jest.mock('../makeWorkerInstance', () => () => {})
+
 import React from 'react'
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
 import { render, waitFor } from '@testing-library/react'

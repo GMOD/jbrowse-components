@@ -1,4 +1,6 @@
+jest.mock('../makeWorkerInstance', () => () => {})
 import React from 'react'
+
 import rangeParser from 'range-parser'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { QueryParamProvider } from 'use-query-params'

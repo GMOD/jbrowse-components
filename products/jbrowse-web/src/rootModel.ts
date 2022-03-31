@@ -18,6 +18,8 @@ import {
   SnapshotIn,
 } from 'mobx-state-tree'
 
+import makeWorkerInstance from './makeWorkerInstance'
+
 import { saveAs } from 'file-saver'
 import { observable, autorun } from 'mobx'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
@@ -134,9 +136,7 @@ export default function RootModel(
         self.jbrowse.configuration.rpc,
         {
           WebWorkerRpcDriver: {
-            // @ts-ignore
-            makeWorkerInstance: () =>
-              new Worker(new URL('./rpc.worker.ts', import.meta.url)),
+            makeWorkerInstance,
           },
           MainThreadRpcDriver: {},
         },
