@@ -107,7 +107,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
           location = results[0].getLocation()
           trackId = results[0].getTrackId()
         }
-
         model.navToLocString(location, selectedAsm)
         if (trackId) {
           model.showTrack(trackId)
@@ -179,6 +178,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                 className={classes.button}
                 onClick={() => {
                   model.setError(undefined)
+                  console.log(selectedRegion)
                   if (selectedRegion) {
                     handleSelectedRegion(selectedRegion)
                   }

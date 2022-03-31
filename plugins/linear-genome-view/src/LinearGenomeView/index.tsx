@@ -126,6 +126,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           pluginManager.pluggableMstType('track', 'stateModel'),
         ),
         hideHeader: false,
+        hasCustomMiniControls: false,
         hideHeaderOverview: false,
         trackSelectorType: types.optional(
           types.enumeration(['hierarchical']),
@@ -456,7 +457,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setError(error: Error | undefined) {
         self.volatileError = error
       },
-
+      setCustomMiniControls(flag: boolean) {
+        self.hasCustomMiniControls = flag
+      },
       toggleHeader() {
         self.hideHeader = !self.hideHeader
       },

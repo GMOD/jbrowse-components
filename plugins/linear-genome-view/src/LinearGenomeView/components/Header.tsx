@@ -22,6 +22,7 @@ import {
   HEADER_BAR_HEIGHT,
 } from '..'
 import OverviewScaleBar from './OverviewScaleBar'
+// import OverviewScaleBar from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/components/OverviewScaleBar'
 import ZoomControls from './ZoomControls'
 
 type LGV = LinearGenomeViewModel
