@@ -86,7 +86,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   assemblies: AnyConfigurationModel[]
   selection?: unknown
   duplicateCurrentSession?(): void
-  notify(message: string, level?: NotificationLevel, retry?: SnackAction): void
+  notify(message: string, level?: NotificationLevel, action?: SnackAction): void
   assemblyManager: AssemblyManager
   version: string
   getTrackActionMenuItems?: Function
