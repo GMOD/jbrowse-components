@@ -117,14 +117,17 @@ const ViewContainer = observer(
     onClose,
     style,
     children,
-    size: { width },
+    contentRect,
+    measureRef,
   }: {
     view: IBaseViewModel
     onClose: () => void
     style: React.CSSProperties
     children: React.ReactNode
-    size: { width: number }
+    contentRect: { bounds: { width: number } }
+    measureRef: any // eslint-disable-line @typescript-eslint/no-explicit-any
   }) => {
+    const width = contentRect.bounds.width
     const classes = useStyles()
     const theme = useTheme()
     const padWidth = theme.spacing(1)
@@ -145,6 +148,7 @@ const ViewContainer = observer(
 
     return (
       <Paper
+        ref={measureRef}
         elevation={12}
         className={classes.viewContainer}
         style={{ ...style, padding: `0px ${padWidth}px ${padWidth}px` }}
