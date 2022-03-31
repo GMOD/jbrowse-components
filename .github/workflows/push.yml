@@ -15,7 +15,9 @@ jobs:
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Test codebase
-        run: yarn test-ci
+        run: |
+          yarn build
+          yarn test-ci
       - name: Upload coverage
         uses: codecov/codecov-action@v2
       - name: Typecheck codebase
