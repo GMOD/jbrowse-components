@@ -22,6 +22,7 @@
   "scripts": {
     "build": "tsc",
     "prebuild": "npm run clean",
+    "build:only": "tsc",
     "clean": "rimraf dist"
   },
   "dependencies": {
