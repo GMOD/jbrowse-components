@@ -60,7 +60,7 @@ jobs:
         # Warning is: "Critical dependency: the request of a dependency is an expression"
         run: |
           yarn
-          CI=false yarn build
+          CI=false yarn run pack
           yarn test:e2e
         working-directory: component_test
 
