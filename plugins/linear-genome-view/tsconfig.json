@@ -11,5 +11,6 @@
     "composite": true,
     "incremental": true,
     "tsBuildInfoFile": "./dist/tsconfg.tsbuildinfo"
-  }
+  },
+  "references": [{ "path": "../../packages/core" }]
 }
