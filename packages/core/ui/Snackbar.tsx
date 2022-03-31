@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { IconButton, Snackbar } from '@material-ui/core'
+import { Button, IconButton, Snackbar } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 import Alert from '@material-ui/lab/Alert'
 import { observer } from 'mobx-react'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
-import { AbstractSessionModel, NotificationLevel } from '../util'
+import { AbstractSessionModel, NotificationLevel, SnackAction } from '../util'
 
-type SnackbarMessage = [string, NotificationLevel]
+type SnackbarMessage = [string, NotificationLevel, SnackAction]
 
 interface SnackbarSession extends AbstractSessionModel {
   snackbarMessages: SnackbarMessage[]
@@ -57,19 +57,36 @@ function MessageSnackbar({
     popSnackbarMessage()
     setOpen(false)
   }
-
-  const [message, level] = snackbarMessage || []
+  const [message, level, retry] = snackbarMessage || []
   return (
-    <Snackbar
-      open={open && !!message}
-      onClose={handleClose}
-      action={
-        <IconButton aria-label="close" color="inherit" onClick={handleClose}>
-          <CloseIcon />
-        </IconButton>
-      }
-    >
-      <Alert onClose={handleClose} severity={level || 'warning'}>
+    <Snackbar open={open && !!message} onClose={handleClose}>
+      <Alert
+        onClose={handleClose}
+        action={
+          retry ? (
+            <>
+              <Button
+                color="inherit"
+                variant="contained"
+                onClick={e => {
+                  retry.onClick()
+                  handleClose(e)
+                }}
+              >
+                {retry.name}
+              </Button>
+              <IconButton
+                aria-label="close"
+                color="inherit"
+                onClick={handleClose}
+              >
+                <CloseIcon />
+              </IconButton>
+            </>
+          ) : null
+        }
+        severity={level || 'warning'}
+      >
         {message}
       </Alert>
     </Snackbar>
