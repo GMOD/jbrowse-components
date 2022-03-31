@@ -10,8 +10,5 @@
     "composite": true,
     "rootDir": "./src"
   },
-  "references": [
-    { "path": "../../plugins/wiggle" },
-    { "path": "../../plugins/linear-genome-view" }
-  ]
+  "references": [{ "path": "../wiggle" }, { "path": "../linear-genome-view" }]
 }

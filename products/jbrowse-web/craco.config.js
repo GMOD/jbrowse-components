@@ -30,6 +30,8 @@ module.exports = {
         },
         output: {
           ...webpackConfig.output,
+          // the 'auto' setting is important for properly resolving the loading
+          // of worker chunks
           publicPath: 'auto',
         },
       }

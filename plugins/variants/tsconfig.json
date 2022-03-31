@@ -11,5 +11,5 @@
     "composite": true,
     "incremental": true
   },
-  "references": [{ "path": "../../plugins/linear-genome-view" }]
+  "references": [{ "path": "../linear-genome-view" }]
 }

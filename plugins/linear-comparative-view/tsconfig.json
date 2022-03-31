@@ -7,6 +7,12 @@
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,
-    "rootDir": "./src"
-  }
+    "rootDir": "./src",
+    "composite": true,
+    "incremental": true
+  },
+  "references": [
+    { "path": "../linear-genome-view" },
+    { "path": "../alignments" }
+  ]
 }
