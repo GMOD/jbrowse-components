@@ -579,9 +579,6 @@ export default function sessionModelFactory(
           {
             label: 'Copy track',
             onClick: () => {
-              const trackSnapshot = JSON.parse(
-                JSON.stringify(getSnapshot(config)),
-              )
               const now = Date.now()
               trackSnapshot.trackId += `-${now}`
               trackSnapshot.displays.forEach(
@@ -601,7 +598,8 @@ export default function sessionModelFactory(
               : 'Index track',
             disabled: !supportedIndexingAdapters(trackSnapshot.adapter.type),
             onClick: () => {
-              const { trackId, assemblyNames, textSearching } = trackSnapshot
+              const { trackId, assemblyNames, textSearching, name } =
+                trackSnapshot
               const indexingParams = {
                 attributes: textSearching?.indexingAttributes || [
                   'Name',
@@ -615,8 +613,9 @@ export default function sessionModelFactory(
                 assemblies: assemblyNames,
                 tracks: [trackId],
                 indexType: 'perTrack',
+                timestamp: +Date.now(),
+                name: 'Indexing track: ' + name,
               }
-              // console.log(indexingParams)
               const rootModel = getParent(self)
               rootModel.queueIndexingJob(indexingParams)
             },

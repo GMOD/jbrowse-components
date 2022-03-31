@@ -87,6 +87,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       },
       pluginManager,
       indexingQueue: observable.array([] as TrackTextIndexing[]),
+      finishedJobs: observable.array([] as TrackTextIndexing[]),
     }))
     .actions(self => ({
       async saveSession(val: unknown) {
@@ -199,7 +200,8 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         self.indexingQueue.push(props)
       },
       dequeueIndexingJob() {
-        self.indexingQueue.splice(0, 1)
+        const entry = self.indexingQueue.splice(0, 1)
+        self.finishedJobs.push(...entry)
       },
       async runIndexingJob() {
         if (self.indexingQueue.length) {
@@ -543,6 +545,18 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               icon: SettingsIcon,
               onClick: () => {
                 self.setAssemblyEditing(true)
+              },
+            },
+            {
+              label: 'Jobs list widget',
+              onClick: () => {
+                if (self.session) {
+                  const widget = self.session.addWidget(
+                    'JobsListWidget',
+                    'jobsListWidget',
+                  )
+                  self.session.showWidget(widget)
+                }
               },
             },
           ],

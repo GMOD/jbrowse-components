@@ -115,6 +115,8 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
               assemblies: [assembly],
               tracks: [trackId],
               indexType: 'perTrack',
+              name: 'Indexing track: ' + trackName,
+              timestamp: +Date.now(),
             }
             rootModel.queueIndexingJob(indexingParams)
           }

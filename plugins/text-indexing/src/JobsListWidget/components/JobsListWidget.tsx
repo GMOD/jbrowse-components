@@ -40,6 +40,8 @@ interface TrackTextIndexing {
   assemblies: string[]
   tracks: string[] // trackIds
   indexType: string
+  timestamp: number
+  name: string
 }
 
 type jobsEntry = {
@@ -52,18 +54,27 @@ type jobsEntry = {
 function JobsListWidget({ model }: { model: JobsListModel }) {
   const classes = useStyles()
   const session = getSession(model)
-  const { adminMode } = session
   const rootModel = getParent(model, 3)
-  const { indexingQueue } = rootModel
-  console.log(indexingQueue)
-  //   const { jbrowse, adminMode } = rootModel
-  if (indexingQueue.length) {
-    indexingQueue.forEach((job: TrackTextIndexing) => {
-      console.log(job)
-    })
-  }
+  const { indexingQueue, finishedJobs } = rootModel
   return (
     <div className={classes.root}>
+      <Typography>Queued jobs</Typography>
+      {indexingQueue.slice(1).map((job: TrackTextIndexing) => (
+        <div key={JSON.stringify(job)}>{job.name}</div>
+      ))}
+
+      <Typography>Currently running job</Typography>
+      {indexingQueue.length > 0 ? (
+        <div key={JSON.stringify(indexingQueue[0])}>
+          {indexingQueue[0].name}
+        </div>
+      ) : null}
+
+      <Typography>Finished jobs</Typography>
+      {finishedJobs.map((job: TrackTextIndexing) => (
+        <div key={JSON.stringify(job)}>{job.name}</div>
+      ))}
+
       <Button
         onClick={() => {
           //   model.clearData()
