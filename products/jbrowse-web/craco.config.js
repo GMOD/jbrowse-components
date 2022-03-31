@@ -15,11 +15,24 @@ module.exports = {
       }),
       new webpack.ContextReplacementPlugin(/any-promise/),
     ],
-    configure: {
-      resolve: { fallback: { fs: false } },
-      output: {
-        publicPath: 'auto',
-      },
+    configure: webpackConfig => {
+      const { plugins } = webpackConfig
+
+      // we add build:true to use the project references that help build all of
+      // our dependencies, the last element in the array is the fork ts loader
+      plugins[plugins.length - 1].options.typescript.build = true
+
+      return {
+        ...webpackConfig,
+        resolve: {
+          ...webpackConfig.resolve,
+          fallback: { fs: false },
+        },
+        output: {
+          ...webpackConfig.output,
+          publicPath: 'auto',
+        },
+      }
     },
   },
 }

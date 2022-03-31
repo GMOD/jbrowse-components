@@ -7,6 +7,11 @@
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,
+    "composite": true,
     "rootDir": "./src"
-  }
+  },
+  "references": [
+    { "path": "../../plugins/wiggle" },
+    { "path": "../../plugins/linear-genome-view" }
+  ]
 }
