@@ -8,13 +8,13 @@ import {
   Instance,
 } from 'mobx-state-tree'
 import { autorun } from 'mobx'
-
+import makeWorkerInstance from './makeWorkerInstance'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { MenuItem } from '@jbrowse/core/ui'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import { MenuItem } from '@jbrowse/core/ui'
 import { UriLocation } from '@jbrowse/core/util/types'
 
 // icons
@@ -370,10 +370,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         self.jbrowse.configuration.rpc,
         {
           WebWorkerRpcDriver: {
-            // @ts-ignore
-            WorkerClass: new Worker(
-              new URL('./rpc.worker.ts', import.meta.url),
-            ),
+            makeWorkerInstance,
           },
           MainThreadRpcDriver: {},
         },
