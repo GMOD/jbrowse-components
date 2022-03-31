@@ -4,5 +4,37 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "noEmit": true
-  }
+  },
+  "references": [
+    { "path": "../../plugins/alignments" },
+    { "path": "../../plugins/arc" },
+    { "path": "../../plugins/authentication" },
+    { "path": "../../plugins/bed" },
+    { "path": "../../plugins/breakpoint-split-view" },
+    { "path": "../../plugins/circular-view" },
+    { "path": "../../plugins/comparative-adapters" },
+    { "path": "../../plugins/config" },
+    { "path": "../../plugins/data-management" },
+    { "path": "../../plugins/dotplot-view" },
+    { "path": "../../plugins/gff3" },
+    { "path": "../../plugins/grid-bookmark" },
+    { "path": "../../plugins/gtf" },
+    { "path": "../../plugins/hic" },
+    { "path": "../../plugins/legacy-jbrowse" },
+    { "path": "../../plugins/linear-comparative-view" },
+    { "path": "../../plugins/linear-genome-view" },
+    { "path": "../../plugins/lollipop" },
+    { "path": "../../plugins/menus" },
+    { "path": "../../plugins/protein" },
+    { "path": "../../plugins/rdf" },
+    { "path": "../../plugins/sequence" },
+    { "path": "../../plugins/spreadsheet-view" },
+    { "path": "../../plugins/svg" },
+    { "path": "../../plugins/sv-inspector" },
+    { "path": "../../plugins/trackhub-registry" },
+    { "path": "../../plugins/trix" },
+    { "path": "../../plugins/variants" },
+    { "path": "../../plugins/wiggle" },
+    { "path": "../../packages/core" }
+  ]
 }
