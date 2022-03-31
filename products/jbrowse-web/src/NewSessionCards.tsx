@@ -7,6 +7,10 @@ import {
   makeStyles,
 } from '@material-ui/core'
 
+import emptyIcon from './img/emptyIcon.png'
+import linearGenomeViewIcon from './img/linearGenomeViewIcon.png'
+import svInspectorIcon from './img/svInspectorIcon.png'
+
 const useStyles = makeStyles(theme => ({
   card: {
     width: 200,
@@ -70,6 +74,7 @@ export function NewEmptySession({ rootModel }: { rootModel: RootModel }) {
   return (
     <NewSessionCard
       name="Empty"
+      image={emptyIcon}
       onClick={() => {
         rootModel.setSession(emptySessionSnapshot)
       }}
@@ -85,6 +90,7 @@ export function NewLinearGenomeViewSession({
   return (
     <NewSessionCard
       name="Linear Genome View"
+      image={linearGenomeViewIcon}
       onClick={() => {
         rootModel.setSession({
           ...emptySessionSnapshot,
@@ -100,6 +106,7 @@ export function NewSVInspectorSession({ rootModel }: { rootModel: RootModel }) {
   return (
     <NewSessionCard
       name="Structural Variant Inspector"
+      image={svInspectorIcon}
       onClick={() => {
         rootModel.setSession({
           ...emptySessionSnapshot,
