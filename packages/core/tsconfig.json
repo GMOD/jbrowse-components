@@ -1,8 +1,13 @@
 {
   "extends": "../../tsconfig.json",
   "include": ["src"],
+  "exclude": ["/**/*.test.*"],
   "compilerOptions": {
     "outDir": "./",
+    "importHelpers": true,
+    "declaration": true,
+    "sourceMap": true,
+    "rootDir": "./src",
     "composite": true,
     "incremental": true
   }

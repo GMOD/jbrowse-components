@@ -6,3 +6,14 @@ dist
 *.swp
 *.js
 *.d.ts
+*.js.map
+BaseFeatureWidget
+ReExports
+TextSearch
+assemblyManager
+configuration
+data_adapterts
+pluggableElementTypes
+rpc
+ui
+util

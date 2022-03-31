@@ -17,8 +17,5 @@ yalc.lock
 lerna-debug.log
 .yarn
 .yarnrc
-
-packages/core/BaseFeatureWidget/
-packages/core/util/
 *.tgz
 *.tsbuildinfo
