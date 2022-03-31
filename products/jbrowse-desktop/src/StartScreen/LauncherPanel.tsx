@@ -1,10 +1,13 @@
 import React, { useState } from 'react'
 import { Button, Typography, makeStyles } from '@material-ui/core'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { ipcRenderer } from 'electron'
+
+//locals
 import QuickstartPanel from './QuickstartPanel'
 import OpenSequenceDialog from '../OpenSequenceDialog'
 import { loadPluginManager } from './util'
+
+const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles(theme => ({
   form: {

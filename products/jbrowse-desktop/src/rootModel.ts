@@ -16,7 +16,6 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { UriLocation } from '@jbrowse/core/util/types'
-import { ipcRenderer } from 'electron'
 
 // icons
 import OpenIcon from '@material-ui/icons/FolderOpen'
@@ -31,6 +30,8 @@ import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 import sessionModelFactory from './sessionModelFactory'
 import JBrowseDesktop from './jbrowseModel'
 import OpenSequenceDialog from './OpenSequenceDialog'
+
+const { ipcRenderer } = window.require('electron')
 
 function getSaveSession(model: RootModel) {
   return {

@@ -3,16 +3,18 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import { readConfObject } from '@jbrowse/core/configuration'
 import deepmerge from 'deepmerge'
-import { ipcRenderer } from 'electron'
-
-import JBrowseRootModelFactory from '../rootModel'
-import corePlugins from '../corePlugins'
-import packageJSON from '../../package.json'
 
 import {
   writeAWSAnalytics,
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
+
+//locals
+import JBrowseRootModelFactory from '../rootModel'
+import corePlugins from '../corePlugins'
+import packageJSON from '../../package.json'
+
+const { ipcRenderer } = window.require('electron')
 
 function uniqBy<T>(a: T[], key: (arg: T) => string) {
   const seen = new Set()
