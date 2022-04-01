@@ -9,8 +9,6 @@
     "sourceMap": true,
     "rootDir": "./src",
     "composite": true,
-    "incremental": true,
-    "tsBuildInfoFile": "./dist/tsconfg.tsbuildinfo"
-  },
-  "references": [{ "path": "../../packages/core" }]
+    "incremental": true
+  }
 }

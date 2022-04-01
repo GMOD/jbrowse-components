@@ -34,7 +34,6 @@
     { "path": "../../plugins/trackhub-registry" },
     { "path": "../../plugins/trix" },
     { "path": "../../plugins/variants" },
-    { "path": "../../plugins/wiggle" },
-    { "path": "../../packages/core" }
+    { "path": "../../plugins/wiggle" }
   ]
 }
