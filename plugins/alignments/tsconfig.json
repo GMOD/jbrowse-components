@@ -10,6 +10,5 @@
     "composite": true,
     "rootDir": "./src",
     "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
-  },
-  "references": [{ "path": "../wiggle" }, { "path": "../linear-genome-view" }]
+  }
 }
