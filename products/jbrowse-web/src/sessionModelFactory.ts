@@ -45,12 +45,12 @@ import shortid from 'shortid'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
-declare interface ReferringNode {
+export declare interface ReferringNode {
   node: IAnyStateTreeNode
   key: string
 }
 
-declare interface ReactProps {
+export declare interface ReactProps {
   [key: string]: any
 }
 

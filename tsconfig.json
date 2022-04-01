@@ -25,6 +25,7 @@
     "**/lib/",
     "**/umd/",
     "**/tmp/",
-    "**/component_test/"
+    "**/component_test/",
+    "**/webpack.config.js"
   ]
 }
