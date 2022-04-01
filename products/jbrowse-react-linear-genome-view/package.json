@@ -24,17 +24,18 @@
     "docs"
   ],
   "scripts": {
-    "start": "echo watch",
+    "watch": "tsc --watch",
     "start:umd": "cross-env NODE_ENV=development webpack-dev-server",
-    "build": "npm-run-all clean build:*",
-    "build:echo": "echo build",
+    "prebuild": "npm run clean",
+    "build": "npm-run-all build:*",
+    "build:tsc": "tsc",
     "build:webpack": "npm-run-all build:webpack:*",
     "build:webpack:dev": "cross-env NODE_ENV=development webpack",
     "build:webpack:prod": "cross-env NODE_ENV=production webpack",
     "clean": "rimraf dist",
     "test": "cd ../..; jest plugins/linear-genome-view --passWithNoTests",
     "prepublishOnly": "yarn test",
-    "prepack": "npm run clean && npm run build:echo && npm run build:webpack:dev && npm run build:webpack:prod",
+    "prepack": "npm run build",
     "storybook": "start-storybook --static-dir public --port 6006",
     "storybook:build": "build-storybook --quiet --static-dir public"
   },

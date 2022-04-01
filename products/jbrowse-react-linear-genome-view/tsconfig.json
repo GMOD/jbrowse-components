@@ -5,6 +5,7 @@
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "outDir": "./dist"
   }
 }
