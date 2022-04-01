@@ -99,7 +99,7 @@
     "split2": "^4.1.0",
     "timeago.js": "^4.0.2",
     "use-query-params": "1.2.3",
-    "webpack": "^5.66.0"
+    "webpack": "^5.71.0"
   },
   "devDependencies": {
     "electron": "17.1.2"

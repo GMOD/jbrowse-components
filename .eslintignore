@@ -6,6 +6,7 @@
 **/umd/**
 **/lib/**
 **/tmp/**
+**/esm/**
 # TODO: decide whether or not to bring these up to eslint standards
 products/jbrowse-web/scripts/**
 /config/
@@ -29,3 +30,4 @@ packages/core/*.js
 packages/core/*.d.ts
 website/
 scripts/
+webpack.config.js

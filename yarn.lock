@@ -11555,10 +11555,10 @@ http-proxy@^1.18.1:
     follow-redirects "^1.0.0"
     requires-port "^1.0.0"
 
-http-range-fetcher@^1.2.2:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/http-range-fetcher/-/http-range-fetcher-1.3.0.tgz#b81e5e745bd112e89ed03389ba03b74181d170ca"
-  integrity sha512-Yl5OmfaUdb4I1uCg2+0y2qlOhF0Pa7R7E+Fvtl6lXNiKFegBVvHQm+MvRDgND2pVohRo0P7Kw40dYofSaE+XFg==
+http-range-fetcher@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/http-range-fetcher/-/http-range-fetcher-1.4.0.tgz#259681232b4d9b5dc715742bcab071d90b52f504"
+  integrity sha512-uuK7W/V84E7pv4nmCe4M/6CWsmLLbgoU4wmvRtsV6xMQmpkqaO5zJEgQ+VO6EbDP2v9nSxlib3z78sJHsxh0gA==
   dependencies:
     abortcontroller-polyfill "^1.2.9"
     cross-fetch "^2.2.2"
@@ -16992,10 +16992,10 @@ react-error-boundary@^3.0.0:
   dependencies:
     "@babel/runtime" "^7.12.5"
 
-react-error-overlay@6.0.9, react-error-overlay@^6.0.10:
-  version "6.0.9"
-  resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-6.0.9.tgz#3c743010c9359608c375ecd6bc76f35d93995b0a"
-  integrity sha512-nQTTcUu+ATDbrSD1BZHr5kgSD4oF8OFjxun8uAaL8RwPBacGBNPf/yAuVVdx17N8XNzRDMrZ9XcKZHCjPW+9ew==
+react-error-overlay@^6.0.10:
+  version "6.0.10"
+  resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-6.0.10.tgz#0fe26db4fa85d9dbb8624729580e90e7159a59a6"
+  integrity sha512-mKR90fX7Pm5seCOfz8q9F+66VCc1PGsWSBxKbITjfKVQHMNF2zudxHnMdJiB1fRCb+XsbQV9sO9DCkgsMQgBIA==
 
 react-fast-compare@^3.0.1, react-fast-compare@^3.2.0:
   version "3.2.0"
@@ -20628,7 +20628,7 @@ webpack@4:
     watchpack "^1.7.4"
     webpack-sources "^1.4.1"
 
-webpack@^5.64.4, webpack@^5.66.0:
+webpack@^5.64.4:
   version "5.70.0"
   resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.70.0.tgz#3461e6287a72b5e6e2f4872700bc8de0d7500e6d"
   integrity sha512-ZMWWy8CeuTTjCxbeaQI21xSswseF2oNOwc70QSKNePvmxE7XW36i7vpBMYZFAUHPwQiEbNGCEYIOOlyRbdGmxw==
@@ -20658,7 +20658,7 @@ webpack@^5.64.4, webpack@^5.66.0:
     watchpack "^2.3.1"
     webpack-sources "^3.2.3"
 
-webpack@^5.9.0:
+webpack@^5.71.0, webpack@^5.9.0:
   version "5.71.0"
   resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.71.0.tgz#b01fcf379570b8c5ee06ca06c829ca168c951884"
   integrity sha512-g4dFT7CFG8LY0iU5G8nBL6VlkT21Z7dcYDpJAEJV5Q1WLb9UwnFbrem1k7K52ILqEmomN7pnzWFxxE6SlDY56A==
