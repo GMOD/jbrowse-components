@@ -246,7 +246,7 @@ export const BaseLinearDisplay = types
 
       const { rpcManager } = getSession(self)
       const { adapterConfig } = self
-      if (!Object.keys(adapterConfig).length) {
+      if (!adapterConfig) {
         return Promise.resolve({})
       }
       const sessionId = getRpcSessionId(self)
