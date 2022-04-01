@@ -3,12 +3,10 @@
   "include": ["src"],
   "exclude": ["/**/*.test.*"],
   "compilerOptions": {
-    "outDir": "./",
+    "outDir": "../core",
+    "rootDir": "./src",
     "importHelpers": true,
     "declaration": true,
-    "sourceMap": true,
-    "rootDir": "./src",
-    "composite": true,
-    "incremental": true
+    "sourceMap": true
   }
 }

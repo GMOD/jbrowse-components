@@ -22,7 +22,7 @@
   "scripts": {
     "test": "cd ../..; jest packages/core",
     "coverage": "yarn test --coverage",
-    "clean": "git clean -fdx",
+    "clean": "git clean -fdx --exclude node_modules",
     "build:only": "tsc",
     "prebuild": "yarn clean",
     "prepack": "yarn build",
