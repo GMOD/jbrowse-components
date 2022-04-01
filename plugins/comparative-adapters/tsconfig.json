@@ -9,6 +9,7 @@
     "sourceMap": true,
     "rootDir": "./src",
     "composite": true,
-    "incremental": true
+    "incremental": true,
+    "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
   }
 }

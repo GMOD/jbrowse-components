@@ -8,7 +8,8 @@
     "declaration": true,
     "sourceMap": true,
     "composite": true,
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "tsBuildInfoFile": "./dist/tsconfig.tsbuildinfo"
   },
   "references": [{ "path": "../wiggle" }, { "path": "../linear-genome-view" }]
 }
