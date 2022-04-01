@@ -22,7 +22,7 @@
   "scripts": {
     "test": "cd ../..; jest packages/core",
     "coverage": "yarn test --coverage",
-    "clean": "git clean -fdx --exclude node_modules",
+    "clean": "rimraf BaseFeatureWidget ReExports TextSearch assemblyManager configuration data_adapters pluggableElementTypes rpc ui util *.d.ts *.js *.js.map",
     "build:only": "tsc",
     "prebuild": "yarn clean",
     "prepack": "yarn build",
