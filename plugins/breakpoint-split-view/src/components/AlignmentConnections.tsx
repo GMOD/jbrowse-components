@@ -26,16 +26,19 @@ const AlignmentConnections = observer(
     useNextFrame(snap)
     const assembly = assemblyManager.get(views[0].assemblyNames[0])
     const totalFeatures = model.getTrackFeatures(trackConfigId)
-    const features = model.hasPairedReads(trackConfigId)
+    const hasPaired = model.hasPairedReads(trackConfigId)
+    const features = hasPaired
       ? model.getBadlyPairedAlignments(trackConfigId)
       : model.getMatchedAlignmentFeatures(trackConfigId)
     const layoutMatches = model.getMatchedFeaturesInLayout(
       trackConfigId,
       features,
     )
-    layoutMatches.forEach(m => {
-      m.sort((a, b) => a.feature.get('clipPos') - b.feature.get('clipPos'))
-    })
+    if (!hasPaired) {
+      layoutMatches.forEach(m => {
+        m.sort((a, b) => a.feature.get('clipPos') - b.feature.get('clipPos'))
+      })
+    }
     const [mouseoverElt, setMouseoverElt] = useState<string>()
 
     let yOffset = 0
@@ -80,16 +83,17 @@ const AlignmentConnections = observer(
             if (!f1ref || !f2ref) {
               throw new Error(`unable to find ref for ${f1ref || f2ref}`)
             }
-            const x1 = getPxFromCoordinate(
-              views[level1],
-              f1ref,
-              c1[f1.get('strand') === -1 ? LEFT : RIGHT],
-            )
-            const x2 = getPxFromCoordinate(
-              views[level2],
-              f2ref,
-              c2[f2.get('strand') === -1 ? RIGHT : LEFT],
-            )
+
+            const s1 = f1.get('strand')
+            const s2 = f2.get('strand')
+            const p1 = hasPaired
+              ? c1[s1 === -1 ? LEFT : RIGHT]
+              : c1[s1 === -1 ? LEFT : RIGHT]
+            const p2 = hasPaired
+              ? c2[s2 === -1 ? LEFT : RIGHT]
+              : c2[s2 === -1 ? RIGHT : LEFT]
+            const x1 = getPxFromCoordinate(views[level1], f1ref, p1)
+            const x2 = getPxFromCoordinate(views[level2], f2ref, p2)
             const reversed1 = views[level1].pxToBp(x1).reversed
             const reversed2 = views[level2].pxToBp(x2).reversed
 
@@ -105,7 +109,11 @@ const AlignmentConnections = observer(
               .curveTo(
                 x1 + 200 * f1.get('strand') * (reversed1 ? -1 : 1),
                 y1,
-                x2 - 200 * f2.get('strand') * (reversed2 ? -1 : 1),
+                x2 -
+                  200 *
+                    f2.get('strand') *
+                    (reversed2 ? -1 : 1) *
+                    (hasPaired ? -1 : 1),
                 y2,
                 x2,
                 y2,
