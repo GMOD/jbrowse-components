@@ -144,7 +144,8 @@ function LinearSyntenyRendering({
       minimumBlockWidth: view.minimumBlockWidth,
     }))
 
-    matches.forEach(m => {
+    for (let j = 0; j < matches.length; j++) {
+      const m = matches[j]
       // we follow a path in the list of chunks, not from top to bottom, just
       // in series following x1,y1 -> x2,y2
       for (let i = 0; i < m.length - 1; i += 1) {
@@ -236,8 +237,13 @@ function LinearSyntenyRendering({
                 cx2 += (val / viewSnaps[1].bpPerPx) * rev2
               }
 
-              // only draw cigar entries that are larger than a pixel wide!
-              if (Math.abs(px1 - cx1) > 0.5 || Math.abs(px2 - cx2) > 0.5) {
+              // check that we are even drawing in view here
+              if (
+                !(
+                  (px1 < 0 && px2 < 0 && cx1 < 0 && cx2 < 0) ||
+                  (px1 > width && px2 > width && cx1 > width && cx2 > width)
+                )
+              ) {
                 ctx.beginPath()
                 ctx.moveTo(px1, y1)
                 ctx.lineTo(cx1, y1)
@@ -276,7 +282,7 @@ function LinearSyntenyRendering({
           }
         }
       }
-    })
+    }
   }, [
     displayModel,
     highResolutionScaling,
