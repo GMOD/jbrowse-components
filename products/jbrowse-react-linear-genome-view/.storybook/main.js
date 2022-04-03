@@ -10,7 +10,6 @@ module.exports = {
   ],
 
   webpackFinal: async config => {
-    console.log(config.module.rules)
     config.plugins.push(
       new NodePolyfillPlugin({
         excludeAliases: ['console'],
