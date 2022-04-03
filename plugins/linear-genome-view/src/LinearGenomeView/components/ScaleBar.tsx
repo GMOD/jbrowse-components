@@ -1,16 +1,13 @@
+import { Paper, Typography, makeStyles } from '@material-ui/core'
 import {
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
 } from '@jbrowse/core/util/blockTypes'
-import Paper from '@material-ui/core/Paper'
-import Typography from '@material-ui/core/Typography'
-import { makeStyles } from '@material-ui/core/styles'
 import clsx from 'clsx'
 import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
 import React from 'react'
-import { LinearGenomeViewStateModel } from '..'
+import { LinearGenomeViewModel } from '..'
 import {
   ContentBlock as ContentBlockComponent,
   ElidedBlock as ElidedBlockComponent,
@@ -18,7 +15,7 @@ import {
 } from '../../BaseLinearDisplay/components/Block'
 import { makeTicks } from '../util'
 
-type LGV = Instance<LinearGenomeViewStateModel>
+type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles(theme => ({
   scaleBarContainer: {
