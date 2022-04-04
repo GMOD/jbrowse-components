@@ -26,7 +26,7 @@ import AppsIcon from '@material-ui/icons/Apps'
 import StorageIcon from '@material-ui/icons/Storage'
 import SettingsIcon from '@material-ui/icons/Settings'
 import MeetingRoomIcon from '@material-ui/icons/MeetingRoom'
-import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
+import { Save, SaveAs, DNA, Cable, Indexing } from '@jbrowse/core/ui/Icons'
 
 // locals
 import sessionModelFactory from './sessionModelFactory'
@@ -579,6 +579,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             },
             {
               label: 'Jobs list widget',
+              icon: Indexing,
               onClick: () => {
                 if (self.session) {
                   const widget = self.session.addWidget(
