@@ -9,7 +9,7 @@ import Figure from './figure'
 JBrowse Web features the ability to automatically provide URL parameters to
 setup a session
 
-Note that the embedded components like @jbrowse/react-linaer-genome-view make
+Note that the embedded components like @jbrowse/react-linear-genome-view make
 no assumptions on how URL params are used, so would have to be implemented by
 the consumer of the library
 

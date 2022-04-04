@@ -76,11 +76,13 @@ if (weHave.realOffscreenCanvas) {
   }
   createImageBitmap = async canvas => {
     const ctx = (canvas as OffscreenCanvasShim).getContext('2d')
-    return {
+    const d: CanvasImageDataShim = {
       height: ctx.height,
       width: ctx.width,
       serializedCommands: ctx.getSerializedCommands(),
-    } as CanvasImageDataShim
+      containsNoTransferables: true,
+    }
+    return d
   }
   ImageBitmapType = String
 }
