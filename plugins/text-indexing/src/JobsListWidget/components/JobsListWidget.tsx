@@ -2,9 +2,21 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 
-import { Button, Typography, makeStyles } from '@material-ui/core'
+import {
+  Accordion,
+  AccordionSummary,
+  Card,
+  CardContent,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 
-import { getSession, isElectron } from '@jbrowse/core/util'
+// icons
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+
+// import { getSession } from '@jbrowse/core/util'
+import JobCard from './JobCard'
+import CurrentJobCard from './CurrentJobCard'
 import { JobsListModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
@@ -27,11 +39,6 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     alignContent: 'center',
   },
-  customPluginButton: {
-    margin: '0.5em',
-    display: 'flex',
-    justifyContent: 'center',
-  },
 }))
 
 interface TrackTextIndexing {
@@ -44,48 +51,76 @@ interface TrackTextIndexing {
   name: string
 }
 
-type jobsEntry = {
-  progressPct?: number // if defined, gives the current pct progress expressed between 0 and 100. if undefined, renders an "indefinite" progress bar or spinner or something like that
-  cancelCallback?: () => void // if defined, drawer widget will show a cancel button that calls this callback to cancel it. does not remove from the state tree though, the calling code needs to explicitly do that when the cancellation succeeds. it might throw an exception as well, remember
-  name: string // displayed to user, required to be unique
-  statusMessage?: string // displayed to user, smaller message about what the job is doing right now
-}
+// type jobsEntry = {
+//   progressPct?: number // if defined, gives the current pct progress expressed between 0 and 100. if undefined, renders an "indefinite" progress bar or spinner or something like that
+//   cancelCallback?: () => void // if defined, drawer widget will show a cancel button that calls this callback to cancel it. does not remove from the state tree though, the calling code needs to explicitly do that when the cancellation succeeds. it might throw an exception as well, remember
+//   name: string // displayed to user, required to be unique
+//   statusMessage?: string // displayed to user, smaller message about what the job is doing right now
+// }
 
 function JobsListWidget({ model }: { model: JobsListModel }) {
   const classes = useStyles()
-  const session = getSession(model)
+  // const session = getSession(model)
   const rootModel = getParent(model, 3)
-  const { indexingQueue, finishedJobs, indexingStatus } = rootModel
+  const { indexingQueue, finishedJobs } = rootModel
   return (
     <div className={classes.root}>
-      <Typography>Queued jobs</Typography>
-      {indexingQueue.slice(1).map((job: TrackTextIndexing) => (
-        <div key={JSON.stringify(job)}>{job.name}</div>
-      ))}
-
-      <Typography>Currently running job</Typography>
+      <Typography variant="h5">Currently running job</Typography>
       {indexingQueue.length > 0 ? (
-        <div key={JSON.stringify(indexingQueue[0])}>
-          {indexingQueue[0].name}
-        </div>
-      ) : null}
-      <Typography>Current status: {indexingStatus}</Typography>
-
-      <Typography>Finished jobs</Typography>
-      {finishedJobs.map((job: TrackTextIndexing) => (
-        <div key={JSON.stringify(job)}>{job.name}</div>
-      ))}
-
-      <Button
-        onClick={() => {
-          //   model.clearData()
-          // @ts-ignore
-          session.hideWidget(model)
-        }}
-        className={classes.button}
-      >
-        Close
-      </Button>
+        <CurrentJobCard
+          key={JSON.stringify(indexingQueue[0])}
+          job={indexingQueue[0]}
+          model={model}
+        />
+      ) : (
+        <Card variant="outlined">
+          <CardContent>
+            <Typography variant="body1">
+              No indexing currently running
+            </Typography>
+          </CardContent>
+        </Card>
+      )}
+      <Accordion defaultExpanded>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+        >
+          <Typography variant="h5">Queued indexing jobs</Typography>
+        </AccordionSummary>
+        {indexingQueue.length > 1 ? (
+          indexingQueue
+            .slice(1)
+            .map((job: TrackTextIndexing) => (
+              <JobCard key={JSON.stringify(job)} job={job} />
+            ))
+        ) : (
+          <Card variant="outlined">
+            <CardContent>
+              <Typography variant="body1">No queued indexing jobs</Typography>
+            </CardContent>
+          </Card>
+        )}
+      </Accordion>
+      <Accordion defaultExpanded>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+        >
+          <Typography variant="h5">Indexing jobs completed</Typography>
+        </AccordionSummary>
+        {finishedJobs.length ? (
+          finishedJobs.map((job: TrackTextIndexing) => (
+            <JobCard key={JSON.stringify(job)} job={job} />
+          ))
+        ) : (
+          <Card variant="outlined">
+            <CardContent>
+              <Typography variant="body1">
+                No indexing jobs completed
+              </Typography>
+            </CardContent>
+          </Card>
+        )}
+      </Accordion>
     </div>
   )
 }
