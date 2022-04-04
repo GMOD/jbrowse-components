@@ -15,20 +15,42 @@ export async function indexTracks(args: {
   assemblies?: string[]
   exclude?: string[]
   indexType?: indexType
+  statusCallback: (message: string) => void
 }) {
-  const { tracks, outLocation, attributes, exclude, assemblies, indexType } =
-    args
+  const {
+    tracks,
+    outLocation,
+    attributes,
+    exclude,
+    assemblies,
+    indexType,
+    statusCallback,
+  } = args
   const idxType = indexType || 'perTrack'
   if (idxType === 'perTrack') {
-    await perTrackIndex(tracks, outLocation, attributes, exclude)
+    await perTrackIndex(
+      tracks,
+      statusCallback,
+      outLocation,
+      attributes,
+      exclude,
+    )
   } else {
-    await aggregateIndex(tracks, outLocation, attributes, assemblies, exclude)
+    await aggregateIndex(
+      tracks,
+      statusCallback,
+      outLocation,
+      attributes,
+      assemblies,
+      exclude,
+    )
   }
   return []
 }
 
 async function perTrackIndex(
   tracks: Track[],
+  statusCallback: (message: string) => void,
   outLocation?: string,
   attributes?: string[],
   exclude?: string[],
@@ -67,12 +89,14 @@ async function perTrackIndex(
       true,
       excludeTypes,
       assemblyNames,
+      statusCallback,
     )
   }
 }
 
 async function aggregateIndex(
   tracks: Track[],
+  statusCallback: (message: string) => void,
   outLocation?: string,
   attributes?: string[],
   assemblies?: string[],
@@ -105,9 +129,16 @@ async function aggregateIndex(
       .filter(track => supportedIndexingAdapters(track.adapter?.type))
       .filter(track => (asm ? track.assemblyNames.includes(asm) : true))
 
-    await indexDriver(supportedTracks, outDir, attrs, id, quiet, excludeTypes, [
-      asm,
-    ])
+    await indexDriver(
+      supportedTracks,
+      outDir,
+      attrs,
+      id,
+      quiet,
+      excludeTypes,
+      [asm],
+      statusCallback,
+    )
   }
 }
 
@@ -119,9 +150,10 @@ async function indexDriver(
   quiet: boolean,
   exclude: string[],
   assemblyNames: string[],
+  statusCallback: (message: string) => void,
 ) {
   const readable = Readable.from(
-    indexFiles(tracks, attributes, idxLocation, quiet, exclude),
+    indexFiles(tracks, attributes, idxLocation, quiet, exclude, statusCallback),
   )
   const ixIxxStream = await runIxIxx(readable, idxLocation, name)
   await generateMeta({
@@ -141,6 +173,7 @@ async function* indexFiles(
   outLocation: string,
   quiet: boolean,
   typesToExclude: string[],
+  statusCallback: (message: string) => void,
 ) {
   for (const track of tracks) {
     const { adapter, textSearching } = track
@@ -158,6 +191,7 @@ async function* indexFiles(
         outLocation,
         types,
         quiet,
+        statusCallback,
       )
     } else if (type === 'Gff3Adapter') {
       yield* indexGff3(
@@ -167,6 +201,7 @@ async function* indexFiles(
         outLocation,
         types,
         quiet,
+        statusCallback,
       )
     } else if (type === 'VcfTabixAdapter') {
       yield* indexVcf(
@@ -176,6 +211,7 @@ async function* indexFiles(
         outLocation,
         types,
         quiet,
+        statusCallback,
       )
     } else if (type === 'VcfAdapter') {
       yield* indexVcf(
@@ -185,6 +221,7 @@ async function* indexFiles(
         outLocation,
         types,
         quiet,
+        statusCallback,
       )
     }
   }

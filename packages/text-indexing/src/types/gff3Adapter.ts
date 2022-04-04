@@ -10,17 +10,20 @@ export async function* indexGff3(
   outLocation: string,
   typesToExclude: string[],
   quiet: boolean,
+  statusCallback: (message: string) => void,
 ) {
   const { trackId } = config
-  // let totalBytes = 0
-  // let receivedBytes = 0
-  const { stream } = await getLocalOrRemoteStream(inLocation, outLocation)
-  // fileDataStream.on('data', chunk => {
-  //   receivedBytes += chunk.length
-  //   // send an update?
-  //   // const progress = Math.round((receivedBytes / totalBytes) * 100)
-  //   // console.log(`${progress}%`)
-  // })
+  let receivedBytes = 0
+  const { totalBytes, stream } = await getLocalOrRemoteStream(
+    inLocation,
+    outLocation,
+  )
+  stream.on('data', chunk => {
+    receivedBytes += chunk.length
+    // send an update?
+    const progress = Math.round((receivedBytes / totalBytes) * 100)
+    statusCallback(`${progress}`)
+  })
 
   const rl = readline.createInterface({
     input: inLocation.match(/.b?gz$/) ? stream.pipe(createGunzip()) : stream,
