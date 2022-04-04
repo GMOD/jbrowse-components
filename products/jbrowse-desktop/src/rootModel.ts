@@ -280,6 +280,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             )
           }
           this.setRunning(false)
+          this.setIndexingStatus('0')
           this.dequeueIndexingJob()
         }
         return

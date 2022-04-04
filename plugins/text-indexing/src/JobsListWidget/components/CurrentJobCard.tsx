@@ -4,9 +4,12 @@ import { getParent } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import {
   Button,
+  Box,
   Card,
   CardActions,
   CardContent,
+  LinearProgress,
+  CircularProgress,
   Typography,
 } from '@material-ui/core'
 import { JobsListModel } from '../model'
@@ -31,6 +34,7 @@ function CurrentJobCard({
   const session = getSession(model)
   const rootModel = getParent(model, 3)
   const { indexingStatus, running } = rootModel
+  const indexingDone = Math.round(indexingStatus) === 100
   return (
     <Card variant="outlined">
       <CardContent>
@@ -39,8 +43,45 @@ function CurrentJobCard({
           {job.name}
         </Typography>
       </CardContent>
-      <Typography>{`${indexingStatus}%`}</Typography>
-      <CardActions>
+      {running ? (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            marginBottom: 10,
+            marginLeft: 10,
+          }}
+        >
+          <Box sx={{ width: '80%', m: 1 }}>
+            <LinearProgress variant="determinate" value={indexingStatus} />
+          </Box>
+          <Box sx={{ minWidth: 35 }}>
+            <Typography variant="body2">{`${Math.round(
+              indexingStatus,
+            )}%`}</Typography>
+          </Box>
+        </Box>
+      ) : null}
+      {running && indexingDone ? (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            marginBottom: 10,
+            marginLeft: 10,
+          }}
+        >
+          <Typography variant="body2">Generating metadata</Typography>
+          <CircularProgress
+            style={{
+              marginLeft: 10,
+            }}
+            size={20}
+            disableShrink
+          />
+        </Box>
+      ) : null}
+      {/* <CardActions>
         <Button
           variant="contained"
           color="inherit"
@@ -50,7 +91,7 @@ function CurrentJobCard({
         >
           Cancel
         </Button>
-      </CardActions>
+      </CardActions> */}
     </Card>
   )
 }
