@@ -15,7 +15,7 @@ export class TextIndexRpcMethod extends RpcMethodType {
       assemblies?: string[]
       indexType?: indexType
       tracks: Track[]
-      statusCallback: (arg: string) => void
+      statusCallback: (message: string) => void
     },
     rpcDriverClassName: string,
   ) {
@@ -33,8 +33,6 @@ export class TextIndexRpcMethod extends RpcMethodType {
       signal,
       statusCallback,
     } = deserializedArgs
-
-    statusCallback('Indexing track now')
 
     const indexingParams = {
       outLocation,

@@ -80,7 +80,8 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       sessionPath: types.optional(types.string, ''),
     })
     .volatile(() => ({
-      indexingStatus: '',
+      indexingStatus: 0 as number,
+      running: false,
       error: undefined as unknown,
       textSearchManager: new TextSearchManager(pluginManager),
       openNewSessionCallback: async (path: string) => {
@@ -110,6 +111,9 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       },
       setError(error: unknown) {
         self.error = error
+      },
+      setRunning(running: boolean) {
+        self.running = running
       },
       setDefaultSession() {
         this.setSession(self.jbrowse.defaultSession)
@@ -205,7 +209,8 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         self.finishedJobs.push(...entry)
       },
       setIndexingStatus(arg: string) {
-        self.indexingStatus = arg
+        const progress = arg ? +arg : 0
+        self.indexingStatus = progress
       },
       async runIndexingJob() {
         if (self.indexingQueue.length) {
@@ -220,6 +225,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           const rpcManager = self.jbrowse.rpcManager
           const trackConfigs = this.findTrackConfigsToIndex(trackIds)
           try {
+            this.setRunning(true)
             await rpcManager.call(
               'indexTracksSessionId',
               'TextIndexRpcMethod',
@@ -231,8 +237,8 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                 indexType,
                 outLocation: self.sessionPath,
                 sessionId: 'indexTracksSessionId',
-                statusCallback: (msg: string) => {
-                  this.setIndexingStatus(msg)
+                statusCallback: (message: string) => {
+                  this.setIndexingStatus(message)
                 },
                 timeout: 1000 * 60 * 60 * 1000, // 1000 hours, avoid user ever running into this
               },
@@ -273,6 +279,8 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               'error',
             )
           }
+          this.setRunning(false)
+          this.dequeueIndexingJob()
         }
         return
       },
@@ -398,12 +406,14 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         )
         addDisposer(
           self,
-          autorun(async () => {
-            if (self.indexingQueue.length > 0) {
-              await this.runIndexingJob()
-              this.dequeueIndexingJob()
-            }
-          }),
+          autorun(
+            async () => {
+              if (self.indexingQueue.length > 0 && self.running === false) {
+                await this.runIndexingJob()
+              }
+            },
+            { delay: 1000 },
+          ),
         )
       },
     }))

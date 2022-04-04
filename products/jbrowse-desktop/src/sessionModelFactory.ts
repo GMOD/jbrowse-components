@@ -613,8 +613,8 @@ export default function sessionModelFactory(
                 assemblies: assemblyNames,
                 tracks: [trackId],
                 indexType: 'perTrack',
-                timestamp: +Date.now(),
-                name: 'Indexing track: ' + name,
+                timestamp: new Date().toISOString(),
+                name: name + '-index',
               }
               const rootModel = getParent(self)
               rootModel.queueIndexingJob(indexingParams)
