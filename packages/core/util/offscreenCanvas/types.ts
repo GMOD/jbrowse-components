@@ -18,6 +18,7 @@ export type AbstractImageBitmap = Pick<ImageBitmap, 'height' | 'width'>
 /** a plain-object (JSON) serialization of a OffscreenCanvasRenderingContext2DShim */
 export interface CanvasImageDataShim {
   serializedCommands: Command[]
+  containsNoTransferables: true
   height: number
   width: number
 }

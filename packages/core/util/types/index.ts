@@ -44,6 +44,10 @@ export function isViewContainer(
 }
 
 export type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
+export interface SnackAction {
+  name: string
+  onClick: () => void
+}
 
 export type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
 export type { TextSearchManager }
@@ -82,7 +86,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   assemblies: AnyConfigurationModel[]
   selection?: unknown
   duplicateCurrentSession?(): void
-  notify(message: string, level?: NotificationLevel): void
+  notify(message: string, level?: NotificationLevel, action?: SnackAction): void
   assemblyManager: AssemblyManager
   version: string
   getTrackActionMenuItems?: Function
