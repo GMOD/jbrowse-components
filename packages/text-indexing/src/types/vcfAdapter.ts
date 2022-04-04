@@ -10,18 +10,19 @@ export async function* indexVcf(
   outLocation: string,
   typesToExclude: string[],
   quiet: boolean,
+  statusCallback: (message: string) => void,
 ) {
   const { trackId } = config
-  // let totalBytes = 0
-  // let receivedBytes = 0
-  const { stream } = await getLocalOrRemoteStream(inLocation, outLocation)
-
-  // console.log("totalBytes", totalBytes)
-  // fileDataStream.on('data', chunk => {
-  //   receivedBytes += chunk.length
-  //   // progressBar.update(receivedBytes)
-  //   // console.log("received", receivedBytes)
-  // })
+  let receivedBytes = 0
+  const { totalBytes, stream } = await getLocalOrRemoteStream(
+    inLocation,
+    outLocation,
+  )
+  stream.on('data', chunk => {
+    receivedBytes += chunk.length
+    const progress = Math.round((receivedBytes / totalBytes) * 100)
+    statusCallback(`${progress}`)
+  })
 
   const gzStream = inLocation.match(/.b?gz$/)
     ? stream.pipe(createGunzip())

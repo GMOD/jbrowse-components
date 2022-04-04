@@ -24,7 +24,11 @@ import EditableTypography from './EditableTypography'
 import { LogoFull } from './Logo'
 import Snackbar from './Snackbar'
 import ViewContainer from './ViewContainer'
-import { NotificationLevel, SessionWithDrawerWidgets } from '../util'
+import {
+  NotificationLevel,
+  SessionWithDrawerWidgets,
+  SnackAction,
+} from '../util'
 import { MenuItem as JBMenuItem } from './index'
 
 const useStyles = makeStyles(theme => ({
@@ -115,7 +119,7 @@ const Logo = observer(
   },
 )
 
-type SnackbarMessage = [string, NotificationLevel]
+type SnackbarMessage = [string, NotificationLevel, SnackAction]
 
 const App = observer(
   ({

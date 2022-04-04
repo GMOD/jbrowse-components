@@ -26,7 +26,7 @@ import AppsIcon from '@material-ui/icons/Apps'
 import StorageIcon from '@material-ui/icons/Storage'
 import SettingsIcon from '@material-ui/icons/Settings'
 import MeetingRoomIcon from '@material-ui/icons/MeetingRoom'
-import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
+import { Save, SaveAs, DNA, Cable, Indexing } from '@jbrowse/core/ui/Icons'
 
 // locals
 import sessionModelFactory from './sessionModelFactory'
@@ -80,6 +80,8 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       sessionPath: types.optional(types.string, ''),
     })
     .volatile(() => ({
+      indexingStatus: 0 as number,
+      running: false,
       error: undefined as unknown,
       textSearchManager: new TextSearchManager(pluginManager),
       openNewSessionCallback: async (path: string) => {
@@ -87,6 +89,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       },
       pluginManager,
       indexingQueue: observable.array([] as TrackTextIndexing[]),
+      finishedJobs: observable.array([] as TrackTextIndexing[]),
     }))
     .actions(self => ({
       async saveSession(val: unknown) {
@@ -108,6 +111,9 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       },
       setError(error: unknown) {
         self.error = error
+      },
+      setRunning(running: boolean) {
+        self.running = running
       },
       setDefaultSession() {
         this.setSession(self.jbrowse.defaultSession)
@@ -199,7 +205,16 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         self.indexingQueue.push(props)
       },
       dequeueIndexingJob() {
-        self.indexingQueue.splice(0, 1)
+        const entry = self.indexingQueue.splice(0, 1)[0]
+        // self.finishedJobs.push(...entry)
+        return entry
+      },
+      addFinishedJob(entry: TrackTextIndexing) {
+        self.finishedJobs.push(entry)
+      },
+      setIndexingStatus(arg: string) {
+        const progress = arg ? +arg : 0
+        self.indexingStatus = progress
       },
       async runIndexingJob() {
         if (self.indexingQueue.length) {
@@ -214,6 +229,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           const rpcManager = self.jbrowse.rpcManager
           const trackConfigs = this.findTrackConfigsToIndex(trackIds)
           try {
+            this.setRunning(true)
             await rpcManager.call(
               'indexTracksSessionId',
               'TextIndexRpcMethod',
@@ -225,7 +241,10 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                 indexType,
                 outLocation: self.sessionPath,
                 sessionId: 'indexTracksSessionId',
-                timeout: 1 * 60 * 60 * 1000, // 1 hour
+                statusCallback: (message: string) => {
+                  this.setIndexingStatus(message)
+                },
+                timeout: 1000 * 60 * 60 * 1000, // 1000 hours, avoid user ever running into this
               },
             )
             if (indexType === 'perTrack') {
@@ -258,12 +277,23 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                 )
               })
             }
+            const current = this.dequeueIndexingJob()
+            this.addFinishedJob(current)
           } catch (e) {
             self.session?.notify(
               `An error occurred while indexing: ${e}`,
               'error',
+              {
+                name: 'Retry',
+                onClick: () => {
+                  this.queueIndexingJob(firstIndexingJob)
+                },
+              },
             )
+            this.dequeueIndexingJob()
           }
+          this.setRunning(false)
+          this.setIndexingStatus('0')
         }
         return
       },
@@ -389,12 +419,14 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         )
         addDisposer(
           self,
-          autorun(async () => {
-            if (self.indexingQueue.length > 0) {
-              await this.runIndexingJob()
-              this.dequeueIndexingJob()
-            }
-          }),
+          autorun(
+            async () => {
+              if (self.indexingQueue.length > 0 && self.running === false) {
+                await this.runIndexingJob()
+              }
+            },
+            { delay: 1000 },
+          ),
         )
       },
     }))
@@ -543,6 +575,19 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               icon: SettingsIcon,
               onClick: () => {
                 self.setAssemblyEditing(true)
+              },
+            },
+            {
+              label: 'Jobs list widget',
+              icon: Indexing,
+              onClick: () => {
+                if (self.session) {
+                  const widget = self.session.addWidget(
+                    'JobsListWidget',
+                    'jobsListWidget',
+                  )
+                  self.session.showWidget(widget)
+                }
               },
             },
           ],
