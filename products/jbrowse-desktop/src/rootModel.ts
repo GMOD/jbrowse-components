@@ -205,8 +205,12 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         self.indexingQueue.push(props)
       },
       dequeueIndexingJob() {
-        const entry = self.indexingQueue.splice(0, 1)
-        self.finishedJobs.push(...entry)
+        const entry = self.indexingQueue.splice(0, 1)[0]
+        // self.finishedJobs.push(...entry)
+        return entry
+      },
+      addFinishedJob(entry: TrackTextIndexing) {
+        self.finishedJobs.push(entry)
       },
       setIndexingStatus(arg: string) {
         const progress = arg ? +arg : 0
@@ -273,15 +277,23 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                 )
               })
             }
+            const current = this.dequeueIndexingJob()
+            this.addFinishedJob(current)
           } catch (e) {
             self.session?.notify(
               `An error occurred while indexing: ${e}`,
               'error',
+              {
+                name: 'Retry',
+                onClick: () => {
+                  this.queueIndexingJob(firstIndexingJob)
+                },
+              },
             )
+            this.dequeueIndexingJob()
           }
           this.setRunning(false)
           this.setIndexingStatus('0')
-          this.dequeueIndexingJob()
         }
         return
       },
