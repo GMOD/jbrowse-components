@@ -1,12 +1,10 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
-import { getSession } from '@jbrowse/core/util'
+// import { getSession } from '@jbrowse/core/util'
 import {
-  Button,
   Box,
   Card,
-  CardActions,
   CardContent,
   LinearProgress,
   CircularProgress,
@@ -31,7 +29,7 @@ function CurrentJobCard({
   job: TrackTextIndexing
   model: JobsListModel
 }) {
-  const session = getSession(model)
+  // const session = getSession(model)
   const rootModel = getParent(model, 3)
   const { indexingStatus, running } = rootModel
   const indexingDone = Math.round(indexingStatus) === 100
