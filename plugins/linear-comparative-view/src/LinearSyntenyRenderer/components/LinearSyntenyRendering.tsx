@@ -218,8 +218,7 @@ function LinearSyntenyRendering({
           if (cigar) {
             let len = ''
             for (let j = 0; j < cigar.length; j++) {
-              // this method for parsing CIGAR cna be significantly faster on
-              // chrome
+              // parsing CIGAR this way is significantly faster on chrome
               // https://gist.github.com/cmdcolin/ef57d2783e47b16aa07a03967fd870d8#cigar-strings
               if (cigar[j] >= '0' && cigar[j] <= '9') {
                 len += cigar[j]
@@ -231,10 +230,7 @@ function LinearSyntenyRendering({
                 const px1 = cx1
                 const px2 = cx2
 
-                if (op === 'M' || op === '=') {
-                  cx1 += (val / viewSnaps[0].bpPerPx) * rev1
-                  cx2 += (val / viewSnaps[1].bpPerPx) * rev2
-                } else if (op === 'X') {
+                if (op === 'M' || op === '=' || op === 'X') {
                   cx1 += (val / viewSnaps[0].bpPerPx) * rev1
                   cx2 += (val / viewSnaps[1].bpPerPx) * rev2
                 } else if (op === 'D') {

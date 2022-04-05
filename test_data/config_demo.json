@@ -3870,6 +3870,26 @@
         "assemblyNames": ["chm13v2.0", "hg38"]
       },
       "assemblyNames": ["chm13v2.0", "hg38"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "chm13v2.0.gff",
+      "name": "chm13v2.0.gff",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/genomes/CHM13/gff/chm13v2.0.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/CHM13/gff/chm13v2.0.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["chm13v2.0"]
     }
   ],
   "connections": [],
