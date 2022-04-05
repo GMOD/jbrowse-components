@@ -52,23 +52,22 @@ export default observer(
     const fstart = feature.get('start')
     const fend = feature.get('end')
 
-    if (reversed) {
-      if (fstart < viewLeft && viewLeft < fend) {
-        x = params.offsetPx
-      }
-    } else {
-      // this tricky bit of code helps smooth over block boundaries
+    const featureWidthBp = measuredTextWidth * bpPerPx
+
+    // this tricky bit of code helps smooth over block boundaries
+    // not supported for reverse mode currently
+    // reason: reverse mode allocates space for the label in the "normal
+    // forward orientation" making it hard to slide. The reverse mode should
+    // allocate the label space in the reverse orientation to slide it
+    if (!reversed) {
       if (
         viewLeft < rend &&
         viewLeft > rstart &&
         fstart < viewLeft &&
-        viewLeft + measuredTextWidth * bpPerPx < fend
+        viewLeft + featureWidthBp < fend
       ) {
         x = params.offsetPx
-      } else if (
-        fstart < viewLeft &&
-        viewLeft + measuredTextWidth * bpPerPx < fend
-      ) {
+      } else if (fstart < viewLeft && viewLeft + featureWidthBp < fend) {
         x = params.offsetPx1
       }
     }
