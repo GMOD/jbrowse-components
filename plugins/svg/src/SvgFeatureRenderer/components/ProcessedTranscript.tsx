@@ -1,6 +1,5 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import {
   AnyConfigurationModel,
   readConfObject,
@@ -9,9 +8,11 @@ import {
 import Segments from './Segments'
 import { ExtraGlyphValidator, layOutFeature, layOutSubfeatures } from './util'
 import { SceneGraph } from '@jbrowse/core/util/layouts'
+import { Region, Feature, SimpleFeature } from '@jbrowse/core/util'
 
 function ProcessedTranscript(props: {
   feature: Feature
+  region: Region
   config: AnyConfigurationModel
   featureLayout: SceneGraph
   selected?: boolean
