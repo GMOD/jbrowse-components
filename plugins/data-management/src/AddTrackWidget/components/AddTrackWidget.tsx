@@ -53,7 +53,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
   const { rootModel } = pluginManager
-  const { JobsManager } = rootModel
+  const { jobsManager } = rootModel
   const {
     assembly,
     trackAdapter,
@@ -119,7 +119,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
               name: trackName + '-index',
               timestamp: new Date().toISOString(),
             }
-            JobsManager.queueIndexingJob(indexingParams)
+            jobsManager.queueIndexingJob(indexingParams)
           }
         }
       } else {

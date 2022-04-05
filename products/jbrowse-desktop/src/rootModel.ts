@@ -7,7 +7,7 @@ import {
   SnapshotIn,
   Instance,
 } from 'mobx-state-tree'
-import { autorun, observable, toJS } from 'mobx'
+import { autorun } from 'mobx'
 
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
@@ -16,10 +16,6 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { UriLocation } from '@jbrowse/core/util/types'
-import {
-  createTextSearchConf,
-  findTrackConfigsToIndex,
-} from '@jbrowse/text-indexing'
 import { ipcRenderer } from 'electron'
 
 // icons
@@ -51,27 +47,6 @@ interface Menu {
   menuItems: MenuItem[]
 }
 
-interface Track {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
-}
-interface TrackTextIndexing {
-  attributes: string[]
-  exclude: string[]
-  assemblies: string[]
-  tracks: string[] // trackIds
-  indexType: string
-}
-
-// export interface TrackTextIndexing extends JobsEntry {
-//   attributes: string[]
-//   exclude: string[]
-//   assemblies: string[]
-//   tracks: string[] // trackIds
-//   indexType: string
-//   timestamp: number
-// }
-
 export default function rootModelFactory(pluginManager: PluginManager) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
@@ -80,7 +55,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
     .model('Root', {
       jbrowse: JBrowseDesktop(pluginManager, Session, assemblyConfigSchema),
       session: types.maybe(Session),
-      JobsManager: types.maybe(JobsManager),
+      jobsManager: types.maybe(JobsManager),
       assemblyManager: assemblyManagerFactory(
         assemblyConfigSchema,
         pluginManager,
@@ -211,160 +186,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         self.internetAccounts.push(internetAccount)
         return internetAccount
       },
-      // queueIndexingJob(props: TrackTextIndexing) {
-      //   self.JobsManager?.indexingQueue.push(props)
-      // },
-      // dequeueIndexingJob() {
-      //   const entry = self.JobsManager?.indexingQueue.splice(0, 1)[0]
-      //   return entry
-      // },
-      // addFinishedJob(entry: TrackTextIndexing) {
-      //   self.JobsManager?.finishedJobs.push(entry)
-      // },
-      // setIndexingStatus(arg: string) {
-      //   const progress = arg ? +arg : 0
-      //   self.indexingStatus = progress
-      // },
-      async runIndexingJob() {
-        if (self.JobsManager?.indexingQueue.length) {
-          const firstIndexingJob = self.JobsManager
-            ?.indexingQueue[0] as TrackTextIndexing
-          const {
-            tracks: trackIds,
-            exclude,
-            attributes,
-            assemblies,
-            indexType,
-          } = toJS(firstIndexingJob)
-          const rpcManager = self.jbrowse.rpcManager
-          const trackConfigs = findTrackConfigsToIndex(
-            self.jbrowse?.tracks,
-            trackIds,
-          ).map(conf => {
-            return JSON.parse(JSON.stringify(getSnapshot(conf)))
-          })
-          try {
-            self.JobsManager?.setRunning(true)
-            await rpcManager.call(
-              'indexTracksSessionId',
-              'TextIndexRpcMethod',
-              {
-                tracks: trackConfigs,
-                attributes,
-                exclude,
-                assemblies,
-                indexType,
-                outLocation: self.sessionPath,
-                sessionId: 'indexTracksSessionId',
-                statusCallback: (message: string) => {
-                  self.JobsManager?.setIndexingStatus(message)
-                },
-                timeout: 1000 * 60 * 60 * 1000, // 1000 hours, avoid user ever running into this
-              },
-            )
-            if (indexType === 'perTrack') {
-              // should update the single track conf
-              trackIds.forEach(trackId => {
-                this.addTrackTextSearchConf(
-                  trackId,
-                  assemblies,
-                  attributes,
-                  exclude,
-                )
-                self.session?.notify(
-                  `Succesfully indexed track with trackId: ${trackId} `,
-                  'success',
-                )
-              })
-            } else {
-              assemblies.forEach(assemblyName => {
-                const indexedTrackIds = trackConfigs
-                  .filter(track =>
-                    assemblyName
-                      ? track.assemblyNames.includes(assemblyName)
-                      : true,
-                  )
-                  .map(trackConf => trackConf.trackId)
-                this.addAggregateTextSearchConf(indexedTrackIds, assemblyName)
-                self.session?.notify(
-                  `Succesfully indexed assembly: ${assemblyName} `,
-                  'success',
-                )
-              })
-            }
-            const current = self.JobsManager?.dequeueIndexingJob()
-            current && self.JobsManager?.addFinishedJob(current)
-          } catch (e) {
-            self.session?.notify(
-              `An error occurred while indexing: ${e}`,
-              'error',
-              {
-                name: 'Retry',
-                onClick: () => {
-                  self.JobsManager?.queueIndexingJob(firstIndexingJob)
-                },
-              },
-            )
-            self.JobsManager?.dequeueIndexingJob()
-          }
-          self.JobsManager?.setRunning(false)
-          self.JobsManager?.setIndexingStatus('0')
-        }
-        return
-      },
-      addTrackTextSearchConf(
-        trackId: string,
-        assemblies: string[],
-        attributes: string[],
-        exclude: string[],
-      ) {
-        const currentTrackIdx = (self.session?.tracks as Track[]).findIndex(
-          t => trackId === t.trackId,
-        )
-        // name of index
-        const id = trackId + '-index'
-        const adapterConf = createTextSearchConf(
-          id,
-          [trackId],
-          assemblies,
-          this.formatLocation(),
-        )
-        self.session?.tracks[currentTrackIdx].textSearching.setSubschema(
-          'textSearchAdapter',
-          adapterConf,
-        )
-        self.session?.tracks[
-          currentTrackIdx
-        ].textSearching.indexingAttributes.set(attributes)
-        self.session?.tracks[
-          currentTrackIdx
-        ].textSearching.indexingFeatureTypesToExclude.set(exclude)
-      },
-      addAggregateTextSearchConf(trackIds: string[], asm: string) {
-        // name of index
-        const id = asm + '-index'
-        const foundIdx = self.jbrowse.aggregateTextSearchAdapters.findIndex(
-          x => x.textSearchAdapterId === id,
-        )
-        const trixConf = createTextSearchConf(
-          id,
-          trackIds,
-          [asm],
-          this.formatLocation(),
-        )
-        if (foundIdx === -1) {
-          self.jbrowse.aggregateTextSearchAdapters.push(trixConf)
-        } else {
-          self.jbrowse.aggregateTextSearchAdapters[foundIdx] = trixConf
-        }
-      },
-      formatLocation() {
-        const locationPath = self.sessionPath.substring(
-          0,
-          self.sessionPath.lastIndexOf('/'),
-        )
-        return locationPath
-      },
       findAppropriateInternetAccount(location: UriLocation) {
         // find the existing account selected from menu
         const selectedId = location.internetAccountId
@@ -398,21 +219,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               this.initializeInternetAccount(account.internetAccountId)
             })
           }),
-        )
-        addDisposer(
-          self,
-          autorun(
-            async () => {
-              if (
-                self.JobsManager?.indexingQueue &&
-                self.JobsManager?.indexingQueue?.length > 0 &&
-                self.JobsManager?.running === false
-              ) {
-                await this.runIndexingJob()
-              }
-            },
-            { delay: 1000 },
-          ),
         )
       },
     }))

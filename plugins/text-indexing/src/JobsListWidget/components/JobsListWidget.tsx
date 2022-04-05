@@ -50,8 +50,8 @@ export interface JobsEntry {
 function JobsListWidget({ model }: { model: JobsListModel }) {
   const classes = useStyles()
   const rootModel = getParent(model, 3)
-  const { JobsManager } = rootModel
-  const { indexingQueue, finishedJobs } = JobsManager
+  const { jobsManager } = rootModel
+  const { indexingQueue, finishedJobs } = jobsManager
   return (
     <div className={classes.root}>
       <Typography variant="h5">Currently running job</Typography>
