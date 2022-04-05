@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import Path from 'svg-path-generator'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { getSession } from '@jbrowse/core/util'
+import CompositeMap from '@jbrowse/core/util/compositeMap'
+import { getSession, Feature } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { parseBreakend, Breakend } from '@gmod/vcf'
@@ -11,6 +11,35 @@ import { yPos, getPxFromCoordinate, useNextFrame } from '../util'
 import { BreakpointViewModel } from '../model'
 
 const [LEFT] = [0, 1, 2, 3]
+
+// Returns paired BND features across multiple views by inspecting
+// the ALT field to get exact coordinate matches
+function getMatchedBreakendFeatures(features: CompositeMap<string, Feature>) {
+  const candidates: Record<string, Feature[]> = {}
+  const alreadySeen = new Set<string>()
+
+  for (const f of features.values()) {
+    if (!alreadySeen.has(f.id())) {
+      if (f.get('type') === 'breakend') {
+        const alts = f.get('ALT') as string[] | undefined
+        alts?.forEach(a => {
+          const cur = `${f.get('refName')}:${f.get('start') + 1}`
+          const bnd = parseBreakend(a)
+          if (bnd) {
+            if (!candidates[cur]) {
+              candidates[bnd.MatePosition] = [f]
+            } else {
+              candidates[cur].push(f)
+            }
+          }
+        })
+      }
+    }
+    alreadySeen.add(f.id())
+  }
+
+  return Object.values(candidates).filter(v => v.length > 1)
+}
 
 function findMatchingAlt(feat1: Feature, feat2: Feature) {
   const candidates: Record<string, Breakend> = {}
@@ -38,11 +67,18 @@ const Breakends = observer(
     const { assemblyManager } = session
 
     const totalFeatures = model.getTrackFeatures(trackConfigId)
-    const features = model.getMatchedBreakendFeatures(trackConfigId)
-    const layoutMatches = model.getMatchedFeaturesInLayout(
-      trackConfigId,
-      features,
-    )
+
+    const layoutMatches = useMemo(() => {
+      const features = getMatchedBreakendFeatures(totalFeatures)
+
+      const layoutMatches = model.getMatchedFeaturesInLayout(
+        trackConfigId,
+        features,
+      )
+
+      return layoutMatches
+    }, [totalFeatures, trackConfigId])
+
     const [mouseoverElt, setMouseoverElt] = useState<string>()
     const snap = getSnapshot(model)
     useNextFrame(snap)
