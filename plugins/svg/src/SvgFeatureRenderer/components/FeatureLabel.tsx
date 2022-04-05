@@ -59,17 +59,15 @@ export default observer(
     // reason: reverse mode allocates space for the label in the "normal
     // forward orientation" making it hard to slide. The reverse mode should
     // allocate the label space in the reverse orientation to slide it
-    if (!reversed) {
-      if (
-        viewLeft < rend &&
-        viewLeft > rstart &&
-        fstart < viewLeft &&
-        viewLeft + featureWidthBp < fend
-      ) {
-        x = params.offsetPx
-      } else if (fstart < viewLeft && viewLeft + featureWidthBp < fend) {
-        x = params.offsetPx1
-      }
+    if (
+      viewLeft < rend &&
+      viewLeft > rstart &&
+      fstart < viewLeft &&
+      viewLeft + featureWidthBp < fend
+    ) {
+      x = params.offsetPx
+    } else if (fstart < viewLeft && viewLeft + featureWidthBp < fend) {
+      x = params.offsetPx1
     }
 
     return (
