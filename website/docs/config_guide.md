@@ -348,7 +348,6 @@ parsing time.
 
 Optionally you can specify a .chrom.sizes file which will speed up loading the 2bit especially if it has many chromosomes in it
 
-
 ```json
 {
   "type": "TwoBitAdapter",
