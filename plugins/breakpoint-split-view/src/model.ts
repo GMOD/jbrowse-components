@@ -193,6 +193,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.views.forEach(view => {
           const ret = getPath(view)
           if (ret.lastIndexOf(path) !== ret.length - path.length) {
+            // @ts-ignore
             view[actionName](args?.[0])
           }
         })
