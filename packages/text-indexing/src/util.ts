@@ -129,3 +129,53 @@ export function supportedIndexingAdapters(type: string) {
     'VcfAdapter',
   ].includes(type)
 }
+
+export function createTextSearchConf(
+  name: string,
+  trackIds: string[],
+  assemblyNames: string[],
+  locationPath: string,
+) {
+  // const locationPath = self.sessionPath.substring(
+  //   0,
+  //   self.sessionPath.lastIndexOf('/'),
+  // )
+  return {
+    type: 'TrixTextSearchAdapter',
+    textSearchAdapterId: name,
+    ixFilePath: {
+      localPath: locationPath + `/trix/${name}.ix`,
+      locationType: 'LocalPathLocation',
+    },
+    ixxFilePath: {
+      localPath: locationPath + `/trix/${name}.ixx`,
+      locationType: 'LocalPathLocation',
+    },
+    metaFilePath: {
+      localPath: locationPath + `/trix/${name}.json`,
+      locationType: 'LocalPathLocation',
+    },
+    tracks: trackIds,
+    assemblyNames,
+  }
+}
+
+export function findTrackConfigsToIndex(
+  tracks: Track[],
+  trackIds: string[],
+  assemblyName?: string,
+) {
+  const configs = trackIds
+    .map(trackId => {
+      const currentTrack = tracks.find(t => trackId === t.trackId)
+      if (!currentTrack) {
+        throw new Error(`Track not found in session for trackId ${trackId}`)
+      }
+      return currentTrack
+    })
+    .filter(track =>
+      assemblyName ? track.assemblyNames.includes(assemblyName) : true,
+    )
+    .filter(track => supportedIndexingAdapters(track.adapter.type))
+  return configs
+}

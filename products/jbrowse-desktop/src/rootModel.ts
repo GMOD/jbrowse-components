@@ -16,7 +16,10 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { UriLocation } from '@jbrowse/core/util/types'
-import { supportedIndexingAdapters } from '@jbrowse/text-indexing'
+import {
+  createTextSearchConf,
+  findTrackConfigsToIndex,
+} from '@jbrowse/text-indexing'
 import { ipcRenderer } from 'electron'
 
 // icons
@@ -32,7 +35,6 @@ import { Save, SaveAs, DNA, Cable, Indexing } from '@jbrowse/core/ui/Icons'
 import sessionModelFactory from './sessionModelFactory'
 import JBrowseDesktop from './jbrowseModel'
 import OpenSequenceDialog from './OpenSequenceDialog'
-// import { IndexTracksRpcMethod } from './IndexTracksRpcMethod'
 // @ts-ignore
 import RenderWorker from './rpc.worker'
 
@@ -59,6 +61,15 @@ interface TrackTextIndexing {
   tracks: string[] // trackIds
   indexType: string
 }
+
+// export interface TrackTextIndexing extends JobsEntry {
+//   attributes: string[]
+//   exclude: string[]
+//   assemblies: string[]
+//   tracks: string[] // trackIds
+//   indexType: string
+//   timestamp: number
+// }
 
 export default function rootModelFactory(pluginManager: PluginManager) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
@@ -206,7 +217,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       },
       dequeueIndexingJob() {
         const entry = self.indexingQueue.splice(0, 1)[0]
-        // self.finishedJobs.push(...entry)
         return entry
       },
       addFinishedJob(entry: TrackTextIndexing) {
@@ -227,7 +237,12 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             indexType,
           } = toJS(firstIndexingJob)
           const rpcManager = self.jbrowse.rpcManager
-          const trackConfigs = this.findTrackConfigsToIndex(trackIds)
+          const trackConfigs = findTrackConfigsToIndex(
+            self.jbrowse?.tracks,
+            trackIds,
+          ).map(conf => {
+            return JSON.parse(JSON.stringify(getSnapshot(conf)))
+          })
           try {
             this.setRunning(true)
             await rpcManager.call(
@@ -297,34 +312,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         }
         return
       },
-      createTextSearchConf(
-        name: string,
-        trackIds: string[],
-        assemblyNames: string[],
-      ) {
-        const locationPath = self.sessionPath.substring(
-          0,
-          self.sessionPath.lastIndexOf('/'),
-        )
-        return {
-          type: 'TrixTextSearchAdapter',
-          textSearchAdapterId: name,
-          ixFilePath: {
-            localPath: locationPath + `/trix/${name}.ix`,
-            locationType: 'LocalPathLocation',
-          },
-          ixxFilePath: {
-            localPath: locationPath + `/trix/${name}.ixx`,
-            locationType: 'LocalPathLocation',
-          },
-          metaFilePath: {
-            localPath: locationPath + `/trix/${name}.json`,
-            locationType: 'LocalPathLocation',
-          },
-          tracks: trackIds,
-          assemblyNames,
-        }
-      },
       addTrackTextSearchConf(
         trackId: string,
         assemblies: string[],
@@ -336,7 +323,12 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         )
         // name of index
         const id = trackId + '-index'
-        const adapterConf = this.createTextSearchConf(id, [trackId], assemblies)
+        const adapterConf = createTextSearchConf(
+          id,
+          [trackId],
+          assemblies,
+          this.formatLocation(),
+        )
         self.session?.tracks[currentTrackIdx].textSearching.setSubschema(
           'textSearchAdapter',
           adapterConf,
@@ -354,34 +346,24 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         const foundIdx = self.jbrowse.aggregateTextSearchAdapters.findIndex(
           x => x.textSearchAdapterId === id,
         )
-        const trixConf = this.createTextSearchConf(id, trackIds, [asm])
+        const trixConf = createTextSearchConf(
+          id,
+          trackIds,
+          [asm],
+          this.formatLocation(),
+        )
         if (foundIdx === -1) {
           self.jbrowse.aggregateTextSearchAdapters.push(trixConf)
         } else {
           self.jbrowse.aggregateTextSearchAdapters[foundIdx] = trixConf
         }
       },
-      findTrackConfigsToIndex(trackIds: string[], assemblyName?: string) {
-        const configs = trackIds
-          .map(trackId => {
-            const currentTrack = (self.session?.tracks as Track[]).find(
-              t => trackId === t.trackId,
-            )
-            if (!currentTrack) {
-              throw new Error(
-                `Track not found in session for trackId ${trackId}`,
-              )
-            }
-            return currentTrack
-          })
-          .filter(track =>
-            assemblyName ? track.assemblyNames.includes(assemblyName) : true,
-          )
-          .filter(track => supportedIndexingAdapters(track.adapter.type))
-          .map(conf => {
-            return JSON.parse(JSON.stringify(getSnapshot(conf)))
-          })
-        return configs
+      formatLocation() {
+        const locationPath = self.sessionPath.substring(
+          0,
+          self.sessionPath.lastIndexOf('/'),
+        )
+        return locationPath
       },
       findAppropriateInternetAccount(location: UriLocation) {
         // find the existing account selected from menu
