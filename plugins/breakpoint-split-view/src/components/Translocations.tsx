@@ -1,13 +1,34 @@
-import Path from 'svg-path-generator'
-import { getSession } from '@jbrowse/core/util'
-
+import React, { useState, useMemo } from 'react'
+import { getSession, Feature } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import React, { useState } from 'react'
 import { getSnapshot } from 'mobx-state-tree'
+import CompositeMap from '@jbrowse/core/util/compositeMap'
+import Path from 'svg-path-generator'
+
+// locals
 import { yPos, getPxFromCoordinate, useNextFrame } from '../util'
 import { BreakpointViewModel, LayoutRecord } from '../model'
 
 const [LEFT] = [0, 1, 2, 3]
+
+// Getting "matched" TRA means just return all TRA
+function getMatchedTranslocationFeatures(
+  features: CompositeMap<string, Feature>,
+) {
+  const feats: Feature[][] = []
+  const alreadySeen = new Set<string>()
+
+  for (const f of features.values()) {
+    if (!alreadySeen.has(f.id())) {
+      if (f.get('ALT')[0] === '<TRA>') {
+        feats.push([f])
+      }
+    }
+    alreadySeen.add(f.id())
+  }
+
+  return feats
+}
 
 const Translocations = observer(
   ({
@@ -21,18 +42,28 @@ const Translocations = observer(
   }) => {
     const { views } = model
     const session = getSession(model)
-    const features = model.getMatchedTranslocationFeatures(trackConfigId)
+    const { assemblyManager } = session
+    const assembly = assemblyManager.get(views[0].assemblyNames[0])
+
     const totalFeatures = model.getTrackFeatures(trackConfigId)
-    const layoutMatches = model.getMatchedFeaturesInLayout(
-      trackConfigId,
-      features,
-    )
+
+    const layoutMatches = useMemo(() => {
+      const features = getMatchedTranslocationFeatures(totalFeatures)
+
+      const layoutMatches = model.getMatchedFeaturesInLayout(
+        trackConfigId,
+        features,
+      )
+
+      return layoutMatches
+    }, [totalFeatures, trackConfigId, model])
+
     const [mouseoverElt, setMouseoverElt] = useState<string>()
     const snap = getSnapshot(model)
     useNextFrame(snap)
-    const { assemblyManager } = session
-    const assembly = assemblyManager.get(views[0].assemblyNames[0])
+
     if (!assembly) {
+      console.warn('Unable to read assembly')
       return null
     }
 
