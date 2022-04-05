@@ -1,14 +1,16 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { isStateTreeNode } from 'mobx-state-tree'
-import { measureText, getViewParams, Feature } from '@jbrowse/core/util'
+import { measureText, getViewParams, Feature, Region } from '@jbrowse/core/util'
 import { DisplayModel } from './util'
 
 export default observer(
   ({
+    blockKey,
     text,
     x,
     y,
+    region,
     reversed,
     bpPerPx,
     feature,
@@ -19,6 +21,7 @@ export default observer(
     allowedWidthExpansion = 0,
     displayModel = {},
   }: {
+    blockKey: string
     text: string
     x: number
     y: number
@@ -30,7 +33,13 @@ export default observer(
     feature: Feature
     reversed?: boolean
     displayModel: DisplayModel
-    viewParams: { start: number; end: number; offsetPx: number }
+    region: Region
+    viewParams: {
+      start: number
+      end: number
+      offsetPx: number
+      offsetPx1: number
+    }
   }) => {
     const totalWidth = featureWidth + allowedWidthExpansion
     const measuredTextWidth = measureText(text, fontHeight)
@@ -40,6 +49,8 @@ export default observer(
 
     const viewLeft = reversed ? params.end : params.start
 
+    const rstart = region.start
+    const rend = region.end
     const fstart = feature.get('start')
     const fend = feature.get('end')
 
@@ -48,8 +59,19 @@ export default observer(
         x = params.offsetPx
       }
     } else {
-      if (fstart < viewLeft && viewLeft + measuredTextWidth * bpPerPx < fend) {
+      // this tricky bit of code helps smooth over block boundaries
+      if (
+        viewLeft < rend &&
+        viewLeft > rstart &&
+        fstart < viewLeft &&
+        viewLeft + measuredTextWidth * bpPerPx < fend
+      ) {
         x = params.offsetPx
+      } else if (
+        fstart < viewLeft &&
+        viewLeft + measuredTextWidth * bpPerPx < fend
+      ) {
+        x = params.offsetPx1
       }
     }
 
