@@ -13,7 +13,6 @@ import {
   ViewSnap,
   AssemblyManager,
 } from '@jbrowse/core/util'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { interstitialYPos, overlayYPos, generateMatches } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import { LinearComparativeDisplay } from '../../LinearComparativeDisplay'
@@ -22,7 +21,14 @@ const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
 type RectTuple = [number, number, number, number]
 
-const { parseCigar } = MismatchParser
+const colorMap = {
+  I: '#ff03',
+  N: '#0a03',
+  D: '#00f3',
+  X: 'brown',
+  M: '#f003',
+  '=': '#f003',
+}
 
 function px(view: ViewSnap, arg: { refName: string; coord: number }) {
   return viewBpToPx({ ...arg, self: view })?.offsetPx || 0
@@ -210,56 +216,60 @@ function LinearSyntenyRendering({
 
           const cigar = f1.get('cg') || f1.get('CIGAR')
           if (cigar) {
-            const cigarOps = parseCigar(cigar)
-            for (let j = 0; j < cigarOps.length; j += 2) {
-              const val = +cigarOps[j]
-              const op = cigarOps[j + 1]
+            let len = ''
+            for (let j = 0; j < cigar.length; j++) {
+              // this method for parsing CIGAR cna be significantly faster on
+              // chrome
+              // https://gist.github.com/cmdcolin/ef57d2783e47b16aa07a03967fd870d8#cigar-strings
+              if (cigar[j] >= '0' && cigar[j] <= '9') {
+                len += cigar[j]
+              } else {
+                const op = cigar[j]
+                const val = +len
+                len = ''
 
-              const px1 = cx1
-              const px2 = cx2
+                const px1 = cx1
+                const px2 = cx2
 
-              if (op === 'M' || op === '=') {
-                ctx.fillStyle = '#f003'
-                cx1 += (val / viewSnaps[0].bpPerPx) * rev1
-                cx2 += (val / viewSnaps[1].bpPerPx) * rev2
-              } else if (op === 'X') {
-                ctx.fillStyle = 'brown'
-                cx1 += (val / viewSnaps[0].bpPerPx) * rev1
-                cx2 += (val / viewSnaps[1].bpPerPx) * rev2
-              } else if (op === 'D') {
-                ctx.fillStyle = '#00f3'
-                cx1 += (val / viewSnaps[0].bpPerPx) * rev1
-              } else if (op === 'N') {
-                ctx.fillStyle = '#0a03'
-                cx1 += (val / viewSnaps[0].bpPerPx) * rev1
-              } else if (op === 'I') {
-                ctx.fillStyle = '#ff03'
-                cx2 += (val / viewSnaps[1].bpPerPx) * rev2
-              }
-
-              // check that we are even drawing in view here
-              if (
-                !(
-                  (px1 < 0 && px2 < 0 && cx1 < 0 && cx2 < 0) ||
-                  (px1 > width && px2 > width && cx1 > width && cx2 > width)
-                )
-              ) {
-                ctx.beginPath()
-                ctx.moveTo(px1, y1)
-                ctx.lineTo(cx1, y1)
-                if (drawCurves) {
-                  ctx.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
-                } else {
-                  ctx.lineTo(cx2, y2)
+                if (op === 'M' || op === '=') {
+                  cx1 += (val / viewSnaps[0].bpPerPx) * rev1
+                  cx2 += (val / viewSnaps[1].bpPerPx) * rev2
+                } else if (op === 'X') {
+                  cx1 += (val / viewSnaps[0].bpPerPx) * rev1
+                  cx2 += (val / viewSnaps[1].bpPerPx) * rev2
+                } else if (op === 'D') {
+                  cx1 += (val / viewSnaps[0].bpPerPx) * rev1
+                } else if (op === 'N') {
+                  cx1 += (val / viewSnaps[0].bpPerPx) * rev1
+                } else if (op === 'I') {
+                  cx2 += (val / viewSnaps[1].bpPerPx) * rev2
                 }
-                ctx.lineTo(px2, y2)
-                if (drawCurves) {
-                  ctx.bezierCurveTo(px2, mid, px1, mid, px1, y1)
-                } else {
-                  ctx.lineTo(px1, y1)
+
+                // check that we are even drawing in view here
+                if (
+                  !(
+                    (px1 < 0 && px2 < 0 && cx1 < 0 && cx2 < 0) ||
+                    (px1 > width && px2 > width && cx1 > width && cx2 > width)
+                  )
+                ) {
+                  ctx.fillStyle = colorMap[op as keyof typeof colorMap]
+                  ctx.beginPath()
+                  ctx.moveTo(px1, y1)
+                  ctx.lineTo(cx1, y1)
+                  if (drawCurves) {
+                    ctx.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
+                  } else {
+                    ctx.lineTo(cx2, y2)
+                  }
+                  ctx.lineTo(px2, y2)
+                  if (drawCurves) {
+                    ctx.bezierCurveTo(px2, mid, px1, mid, px1, y1)
+                  } else {
+                    ctx.lineTo(px1, y1)
+                  }
+                  ctx.closePath()
+                  ctx.fill()
                 }
-                ctx.closePath()
-                ctx.fill()
               }
             }
           } else {

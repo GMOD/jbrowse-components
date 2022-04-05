@@ -46,7 +46,6 @@
           }
         }
       },
-
       "cytobands": {
         "adapter": {
           "type": "CytobandAdapter",
@@ -292,7 +291,6 @@
         "track": "genomicSuperDups"
       }
     },
-
     {
       "type": "GDCTrack",
       "trackId": "gdc_plugin_track",
@@ -3858,6 +3856,20 @@
           "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/liftOver/hg19ToHg38.over.chain.gz"
         }
       }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "grch38-chm13v2.paf",
+      "name": "grch38-chm13v2.paf",
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "https://jbrowse.org/genomes/CHM13/synteny/grch38-chm13v2.paf.gz",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["chm13v2.0", "hg38"]
+      },
+      "assemblyNames": ["chm13v2.0", "hg38"]
     }
   ],
   "connections": [],
