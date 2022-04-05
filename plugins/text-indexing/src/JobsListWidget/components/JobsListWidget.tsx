@@ -41,22 +41,12 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-interface TrackTextIndexing {
-  attributes: string[]
-  exclude: string[]
-  assemblies: string[]
-  tracks: string[] // trackIds
-  indexType: string
-  timestamp: number
-  name: string
+export interface JobsEntry {
+  progressPct?: number // if defined, gives the current pct progress expressed between 0 and 100. if undefined, renders an "indefinite" progress bar or spinner or something like that
+  cancelCallback?: () => void // if defined, drawer widget will show a cancel button that calls this callback to cancel it. does not remove from the state tree though, the calling code needs to explicitly do that when the cancellation succeeds. it might throw an exception as well, remember
+  name: string // displayed to user, required to be unique
+  statusMessage?: string // displayed to user, smaller message about what the job is doing right now
 }
-
-// type jobsEntry = {
-//   progressPct?: number // if defined, gives the current pct progress expressed between 0 and 100. if undefined, renders an "indefinite" progress bar or spinner or something like that
-//   cancelCallback?: () => void // if defined, drawer widget will show a cancel button that calls this callback to cancel it. does not remove from the state tree though, the calling code needs to explicitly do that when the cancellation succeeds. it might throw an exception as well, remember
-//   name: string // displayed to user, required to be unique
-//   statusMessage?: string // displayed to user, smaller message about what the job is doing right now
-// }
 
 function JobsListWidget({ model }: { model: JobsListModel }) {
   const classes = useStyles()
@@ -75,9 +65,7 @@ function JobsListWidget({ model }: { model: JobsListModel }) {
       ) : (
         <Card variant="outlined">
           <CardContent>
-            <Typography variant="body1">
-              No indexing currently running
-            </Typography>
+            <Typography variant="body1">No job currently running</Typography>
           </CardContent>
         </Card>
       )}
@@ -85,18 +73,18 @@ function JobsListWidget({ model }: { model: JobsListModel }) {
         <AccordionSummary
           expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
         >
-          <Typography variant="h5">Queued indexing jobs</Typography>
+          <Typography variant="h5">Queued jobs</Typography>
         </AccordionSummary>
         {indexingQueue.length > 1 ? (
           indexingQueue
             .slice(1)
-            .map((job: TrackTextIndexing) => (
+            .map((job: JobsEntry) => (
               <JobCard key={JSON.stringify(job)} job={job} />
             ))
         ) : (
           <Card variant="outlined">
             <CardContent>
-              <Typography variant="body1">No queued indexing jobs</Typography>
+              <Typography variant="body1">No queued jobs</Typography>
             </CardContent>
           </Card>
         )}
@@ -105,18 +93,16 @@ function JobsListWidget({ model }: { model: JobsListModel }) {
         <AccordionSummary
           expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
         >
-          <Typography variant="h5">Indexing jobs completed</Typography>
+          <Typography variant="h5">Jobs completed</Typography>
         </AccordionSummary>
         {finishedJobs.length ? (
-          finishedJobs.map((job: TrackTextIndexing) => (
+          finishedJobs.map((job: JobsEntry) => (
             <JobCard key={JSON.stringify(job)} job={job} />
           ))
         ) : (
           <Card variant="outlined">
             <CardContent>
-              <Typography variant="body1">
-                No indexing jobs completed
-              </Typography>
+              <Typography variant="body1">No jobs completed</Typography>
             </CardContent>
           </Card>
         )}

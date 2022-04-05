@@ -1,18 +1,19 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { Card, CardContent, Typography } from '@material-ui/core'
+import { JobsEntry } from './JobsListWidget'
 
-interface TrackTextIndexing {
-  attributes: string[]
-  exclude: string[]
-  assemblies: string[]
-  tracks: string[] // trackIds
-  indexType: string
-  timestamp: number
-  name: string
-}
+// interface TrackTextIndexing {
+//   attributes: string[]
+//   exclude: string[]
+//   assemblies: string[]
+//   tracks: string[] // trackIds
+//   indexType: string
+//   timestamp: number
+//   name: string
+// }
 
-function JobCard({ job }: { job: TrackTextIndexing }) {
+function JobCard({ job }: { job: JobsEntry }) {
   return (
     <Card variant="outlined">
       <CardContent>

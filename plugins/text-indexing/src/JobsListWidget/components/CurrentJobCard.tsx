@@ -1,10 +1,13 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
+import { JobsEntry } from './JobsListWidget'
 // import { getSession } from '@jbrowse/core/util'
 import {
   Box,
+  Button,
   Card,
+  CardActions,
   CardContent,
   LinearProgress,
   CircularProgress,
@@ -12,21 +15,11 @@ import {
 } from '@material-ui/core'
 import { JobsListModel } from '../model'
 
-interface TrackTextIndexing {
-  attributes: string[]
-  exclude: string[]
-  assemblies: string[]
-  tracks: string[] // trackIds
-  indexType: string
-  timestamp: number
-  name: string
-}
-
 function CurrentJobCard({
   job,
   model,
 }: {
-  job: TrackTextIndexing
+  job: JobsEntry
   model: JobsListModel
 }) {
   // const session = getSession(model)
@@ -79,17 +72,19 @@ function CurrentJobCard({
           />
         </Box>
       ) : null}
-      {/* <CardActions>
-        <Button
-          variant="contained"
-          color="inherit"
-          onClick={() => {
-            console.log('this should cancel the job')
-          }}
-        >
-          Cancel
-        </Button>
-      </CardActions> */}
+      {job.cancelCallback ? (
+        <CardActions>
+          <Button
+            variant="contained"
+            color="inherit"
+            onClick={() => {
+              job.cancelCallback && job.cancelCallback()
+            }}
+          >
+            Cancel
+          </Button>
+        </CardActions>
+      ) : null}
     </Card>
   )
 }
