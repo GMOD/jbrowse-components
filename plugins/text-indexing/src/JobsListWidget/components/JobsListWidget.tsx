@@ -14,7 +14,6 @@ import {
 // icons
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 
-// import { getSession } from '@jbrowse/core/util'
 import JobCard from './JobCard'
 import CurrentJobCard from './CurrentJobCard'
 import { JobsListModel } from '../model'
@@ -50,7 +49,6 @@ export interface JobsEntry {
 
 function JobsListWidget({ model }: { model: JobsListModel }) {
   const classes = useStyles()
-  // const session = getSession(model)
   const rootModel = getParent(model, 3)
   const { indexingQueue, finishedJobs } = rootModel
   return (

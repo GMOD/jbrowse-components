@@ -15,7 +15,7 @@ export default class extends Plugin {
     pluginManager.addWidgetType(() => {
       return new WidgetType({
         name: 'JobsListWidget',
-        heading: 'Indexing Jobs',
+        heading: 'Running jobs',
         configSchema: JobsListConfigSchema,
         stateModel: JobsListStateModelFactory(pluginManager),
         ReactComponent: lazy(
