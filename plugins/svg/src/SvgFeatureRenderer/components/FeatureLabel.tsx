@@ -6,7 +6,6 @@ import { DisplayModel } from './util'
 
 export default observer(
   ({
-    blockKey,
     text,
     x,
     y,
@@ -21,7 +20,6 @@ export default observer(
     allowedWidthExpansion = 0,
     displayModel = {},
   }: {
-    blockKey: string
     text: string
     x: number
     y: number

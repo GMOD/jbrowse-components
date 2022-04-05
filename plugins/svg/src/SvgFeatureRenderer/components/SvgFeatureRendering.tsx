@@ -33,7 +33,12 @@ function RenderedFeatureGlyph(props: {
   extraGlyphs: ExtraGlyphValidator[]
   displayMode: string
   displayModel: DisplayModel
-  viewParams: { start: number; end: number; offsetPx: number }
+  viewParams: {
+    start: number
+    end: number
+    offsetPx: number
+    offsetPx1: number
+  }
   [key: string]: unknown
 }) {
   const { feature, bpPerPx, region, config, displayMode, layout, extraGlyphs } =
@@ -142,7 +147,12 @@ const RenderedFeatures = observer(
     region: Region
     extraGlyphs: ExtraGlyphValidator[]
     layout: BaseLayout<unknown>
-    viewParams: { start: number; end: number; offsetPx: number }
+    viewParams: {
+      start: number
+      end: number
+      offsetPx: number
+      offsetPx1: number
+    }
     [key: string]: unknown
   }) => {
     const { features = new Map(), isFeatureDisplayed } = props
@@ -171,7 +181,12 @@ function SvgFeatureRendering(props: {
   features: Map<string, Feature>
   displayModel: DisplayModel
   exportSVG: boolean
-  viewParams: { start: number; end: number; offsetPx: number }
+  viewParams: {
+    start: number
+    end: number
+    offsetPx: number
+    offsetPx1: number
+  }
   featureDisplayHandler: (f: Feature) => boolean
   extraGlyphs: ExtraGlyphValidator[]
   onMouseOut?: React.MouseEventHandler
