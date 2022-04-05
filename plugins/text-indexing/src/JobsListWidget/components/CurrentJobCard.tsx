@@ -22,7 +22,8 @@ function CurrentJobCard({
   model: JobsListModel
 }) {
   const rootModel = getParent(model, 3)
-  const { indexingStatus, running } = rootModel
+  const { JobsManager } = rootModel
+  const { indexingStatus, running } = JobsManager
   const indexingDone = Math.round(indexingStatus) === 100
   return (
     <Card variant="outlined">

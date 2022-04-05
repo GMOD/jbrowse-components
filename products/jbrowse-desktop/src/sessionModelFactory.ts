@@ -617,7 +617,8 @@ export default function sessionModelFactory(
                 name: name + '-index',
               }
               const rootModel = getParent(self)
-              rootModel.queueIndexingJob(indexingParams)
+              const { JobsManager } = rootModel
+              JobsManager.queueIndexingJob(indexingParams)
             },
             icon: Indexing,
           },

@@ -53,6 +53,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
   const { rootModel } = pluginManager
+  const { JobsManager } = rootModel
   const {
     assembly,
     trackAdapter,
@@ -118,14 +119,8 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
               name: trackName + '-index',
               timestamp: new Date().toISOString(),
             }
-            rootModel.queueIndexingJob(indexingParams)
+            JobsManager.queueIndexingJob(indexingParams)
           }
-          // if (textIndexTrack && !supported.includes(trackAdapter.type)) {
-          //   session.notify(
-          //     'Unable to index this track. File type not supported by indexer.',
-          //     'info',
-          //   )
-          // }
         }
       } else {
         session.notify(

@@ -33,6 +33,7 @@ import { Save, SaveAs, DNA, Cable, Indexing } from '@jbrowse/core/ui/Icons'
 
 // locals
 import sessionModelFactory from './sessionModelFactory'
+import jobsModelFactory from './jobsModelFactory'
 import JBrowseDesktop from './jbrowseModel'
 import OpenSequenceDialog from './OpenSequenceDialog'
 // @ts-ignore
@@ -74,10 +75,12 @@ interface TrackTextIndexing {
 export default function rootModelFactory(pluginManager: PluginManager) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
+  const JobsManager = jobsModelFactory(pluginManager)
   return types
     .model('Root', {
       jbrowse: JBrowseDesktop(pluginManager, Session, assemblyConfigSchema),
       session: types.maybe(Session),
+      JobsManager: types.maybe(JobsManager),
       assemblyManager: assemblyManagerFactory(
         assemblyConfigSchema,
         pluginManager,
@@ -91,16 +94,12 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       sessionPath: types.optional(types.string, ''),
     })
     .volatile(() => ({
-      indexingStatus: 0 as number,
-      running: false,
       error: undefined as unknown,
       textSearchManager: new TextSearchManager(pluginManager),
       openNewSessionCallback: async (path: string) => {
         console.error('openNewSessionCallback unimplemented')
       },
       pluginManager,
-      indexingQueue: observable.array([] as TrackTextIndexing[]),
-      finishedJobs: observable.array([] as TrackTextIndexing[]),
     }))
     .actions(self => ({
       async saveSession(val: unknown) {
@@ -123,9 +122,9 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       setError(error: unknown) {
         self.error = error
       },
-      setRunning(running: boolean) {
-        self.running = running
-      },
+      // setRunning(running: boolean) {
+      //   self.running = running
+      // },
       setDefaultSession() {
         this.setSession(self.jbrowse.defaultSession)
       },
@@ -212,23 +211,24 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         self.internetAccounts.push(internetAccount)
         return internetAccount
       },
-      queueIndexingJob(props: TrackTextIndexing) {
-        self.indexingQueue.push(props)
-      },
-      dequeueIndexingJob() {
-        const entry = self.indexingQueue.splice(0, 1)[0]
-        return entry
-      },
-      addFinishedJob(entry: TrackTextIndexing) {
-        self.finishedJobs.push(entry)
-      },
-      setIndexingStatus(arg: string) {
-        const progress = arg ? +arg : 0
-        self.indexingStatus = progress
-      },
+      // queueIndexingJob(props: TrackTextIndexing) {
+      //   self.JobsManager?.indexingQueue.push(props)
+      // },
+      // dequeueIndexingJob() {
+      //   const entry = self.JobsManager?.indexingQueue.splice(0, 1)[0]
+      //   return entry
+      // },
+      // addFinishedJob(entry: TrackTextIndexing) {
+      //   self.JobsManager?.finishedJobs.push(entry)
+      // },
+      // setIndexingStatus(arg: string) {
+      //   const progress = arg ? +arg : 0
+      //   self.indexingStatus = progress
+      // },
       async runIndexingJob() {
-        if (self.indexingQueue.length) {
-          const firstIndexingJob = self.indexingQueue[0] as TrackTextIndexing
+        if (self.JobsManager?.indexingQueue.length) {
+          const firstIndexingJob = self.JobsManager
+            ?.indexingQueue[0] as TrackTextIndexing
           const {
             tracks: trackIds,
             exclude,
@@ -244,7 +244,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             return JSON.parse(JSON.stringify(getSnapshot(conf)))
           })
           try {
-            this.setRunning(true)
+            self.JobsManager?.setRunning(true)
             await rpcManager.call(
               'indexTracksSessionId',
               'TextIndexRpcMethod',
@@ -257,7 +257,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                 outLocation: self.sessionPath,
                 sessionId: 'indexTracksSessionId',
                 statusCallback: (message: string) => {
-                  this.setIndexingStatus(message)
+                  self.JobsManager?.setIndexingStatus(message)
                 },
                 timeout: 1000 * 60 * 60 * 1000, // 1000 hours, avoid user ever running into this
               },
@@ -292,8 +292,8 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                 )
               })
             }
-            const current = this.dequeueIndexingJob()
-            this.addFinishedJob(current)
+            const current = self.JobsManager?.dequeueIndexingJob()
+            current && self.JobsManager?.addFinishedJob(current)
           } catch (e) {
             self.session?.notify(
               `An error occurred while indexing: ${e}`,
@@ -301,14 +301,14 @@ export default function rootModelFactory(pluginManager: PluginManager) {
               {
                 name: 'Retry',
                 onClick: () => {
-                  this.queueIndexingJob(firstIndexingJob)
+                  self.JobsManager?.queueIndexingJob(firstIndexingJob)
                 },
               },
             )
-            this.dequeueIndexingJob()
+            self.JobsManager?.dequeueIndexingJob()
           }
-          this.setRunning(false)
-          this.setIndexingStatus('0')
+          self.JobsManager?.setRunning(false)
+          self.JobsManager?.setIndexingStatus('0')
         }
         return
       },
@@ -403,7 +403,11 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           self,
           autorun(
             async () => {
-              if (self.indexingQueue.length > 0 && self.running === false) {
+              if (
+                self.JobsManager?.indexingQueue &&
+                self.JobsManager?.indexingQueue?.length > 0 &&
+                self.JobsManager?.running === false
+              ) {
                 await this.runIndexingJob()
               }
             },
