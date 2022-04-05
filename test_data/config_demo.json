@@ -97,24 +97,20 @@
       }
     },
     {
-      "name": "t2t-chm13-v1.1",
-      "displayName": "Homo sapiens (t2t-chm13-v1.1)",
+      "name": "chm13v2.0",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "t2t-chm13-v1.1-asm",
+        "trackId": "chm13v2.0-asm",
         "adapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13.draft_v1.1.fasta.gz",
-            "locationType": "UriLocation"
+            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13v2.0.fa.gz"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13.draft_v1.1.fasta.gz.fai",
-            "locationType": "UriLocation"
+            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13v2.0.fa.gz.fai"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13.draft_v1.1.fasta.gz.gzi",
-            "locationType": "UriLocation"
+            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13v2.0.fa.gz.gzi"
           }
         }
       }
