@@ -133,54 +133,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return this.matchedTrackFeatures[trackConfigId]
       },
 
-      // Getting "matched" TRA means just return all TRA
-      getMatchedTranslocationFeatures(trackId: string) {
-        const features = this.getTrackFeatures(trackId)
-        const feats: Feature[][] = []
-        const alreadySeen = new Set<string>()
-
-        for (const f of features.values()) {
-          if (!alreadySeen.has(f.id())) {
-            if (f.get('ALT')[0] === '<TRA>') {
-              feats.push([f])
-            }
-          }
-          alreadySeen.add(f.id())
-        }
-
-        return feats
-      },
-
-      // Returns paired BND features across multiple views by inspecting
-      // the ALT field to get exact coordinate matches
-      getMatchedBreakendFeatures(trackId: string) {
-        const features = this.getTrackFeatures(trackId)
-        const candidates: Record<string, Feature[]> = {}
-        const alreadySeen = new Set<string>()
-
-        for (const f of features.values()) {
-          if (!alreadySeen.has(f.id())) {
-            if (f.get('type') === 'breakend') {
-              const alts = f.get('ALT') as string[] | undefined
-              alts?.forEach(a => {
-                const cur = `${f.get('refName')}:${f.get('start') + 1}`
-                const bnd = parseBreakend(a)
-                if (bnd) {
-                  if (!candidates[cur]) {
-                    candidates[bnd.MatePosition] = [f]
-                  } else {
-                    candidates[cur].push(f)
-                  }
-                }
-              })
-            }
-          }
-          alreadySeen.add(f.id())
-        }
-
-        return Object.values(candidates).filter(v => v.length > 1)
-      },
-
       getMatchedFeaturesInLayout(trackConfigId: string, features: Feature[][]) {
         // use reverse to search the second track first
         const tracks = this.getMatchedTracks(trackConfigId)

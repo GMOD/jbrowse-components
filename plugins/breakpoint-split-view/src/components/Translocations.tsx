@@ -43,25 +43,22 @@ const Translocations = observer(
     const { views } = model
     const session = getSession(model)
     const { assemblyManager } = session
-    const assembly = assemblyManager.get(views[0].assemblyNames[0])
-
     const totalFeatures = model.getTrackFeatures(trackConfigId)
+    const layoutMatches = useMemo(
+      () =>
+        model.getMatchedFeaturesInLayout(
+          trackConfigId,
+          getMatchedTranslocationFeatures(totalFeatures),
+        ),
 
-    const layoutMatches = useMemo(() => {
-      const features = getMatchedTranslocationFeatures(totalFeatures)
-
-      const layoutMatches = model.getMatchedFeaturesInLayout(
-        trackConfigId,
-        features,
-      )
-
-      return layoutMatches
-    }, [totalFeatures, trackConfigId, model])
+      [totalFeatures, trackConfigId, model],
+    )
 
     const [mouseoverElt, setMouseoverElt] = useState<string>()
     const snap = getSnapshot(model)
     useNextFrame(snap)
 
+    const assembly = assemblyManager.get(views[0].assemblyNames[0])
     if (!assembly) {
       console.warn('Unable to read assembly')
       return null
