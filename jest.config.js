@@ -17,7 +17,7 @@ module.exports = {
     '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx}',
     '<rootDir>/**/*.(spec|test).{js,jsx,ts,tsx}',
   ],
-  testPathIgnorePatterns: ['/dist/', '/cypress/'],
+  testPathIgnorePatterns: ['/dist/', '/cypress/', '/demos/'],
   collectCoverageFrom: [
     'packages/*/src/**/*.{js,jsx,ts,tsx}',
     'products/*/src/**/*.{js,jsx,ts,tsx}',

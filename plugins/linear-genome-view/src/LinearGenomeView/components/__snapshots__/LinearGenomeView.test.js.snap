@@ -533,6 +533,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         style="height: 100px;"
       >
         <div
+          class="makeStyles-renderingComponentContainer"
           style="transform: scaleX(1);"
         >
           <div
@@ -1422,6 +1423,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         style="height: 100px;"
       >
         <div
+          class="makeStyles-renderingComponentContainer"
           style="transform: scaleX(1);"
         >
           <div
@@ -1564,6 +1566,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         style="height: 100px;"
       >
         <div
+          class="makeStyles-renderingComponentContainer"
           style="transform: scaleX(1);"
         >
           <div

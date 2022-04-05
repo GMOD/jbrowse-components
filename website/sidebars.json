@@ -13,13 +13,13 @@
         "quickstart_desktop"
       ]
     },
-    "cli",
-    "embedded_components",
+    "user_guide",
     "config_guide",
     "developer_guide",
+    "embedded_components",
     "api_guide",
-    "user_guide",
     "urlparams",
+    "cli",
     {
       "type": "category",
       "label": "Developer tutorials",

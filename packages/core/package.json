@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/core",
-  "version": "1.6.7",
+  "version": "1.6.9",
   "description": "JBrowse 2 core libraries used by plugins",
   "keywords": [
     "jbrowse",
@@ -48,7 +48,7 @@
     "is-object": "^1.0.1",
     "jexl": "^2.3.0",
     "json-stable-stringify": "^1.0.1",
-    "librpc-web-mod": "^1.1.4",
+    "librpc-web-mod": "^1.1.5",
     "load-script2": "^2.0.5",
     "object.fromentries": "^2.0.0",
     "rbush": "^3.0.1",
