@@ -16,9 +16,7 @@
   },
   "author": "JBrowse Team",
   "main": "dist/index.js",
-  "module": "esm/index.js",
   "files": [
-    "esm",
     "dist",
     "src",
     "docs"
@@ -27,11 +25,11 @@
     "start:umd": "cross-env NODE_ENV=development webpack-dev-server",
     "prebuild": "npm run clean",
     "build": "npm-run-all build:*",
-    "build:esm": "babel src --root-mode upward --out-dir dist --extensions .ts,.js,.tsx,.jsx",
+    "build:babel": "babel src --root-mode upward --out-dir dist --extensions .ts,.js,.tsx,.jsx",
     "build:webpack": "npm-run-all build:webpack:*",
     "build:webpack:dev": "cross-env NODE_ENV=development webpack",
     "build:webpack:prod": "cross-env NODE_ENV=production webpack",
-    "clean": "rimraf dist esm",
+    "clean": "rimraf dist",
     "prepack": "npm run build",
     "storybook": "start-storybook --static-dir public --port 6006",
     "storybook:build": "build-storybook --quiet --static-dir public"
