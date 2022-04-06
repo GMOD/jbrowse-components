@@ -15,18 +15,26 @@
     "directory": "plugins/dotplot-view"
   },
   "author": "JBrowse Team",
-  "main": "dist/index.js",
+  "distMain": "dist/index.js",
+  "srcMain": "src/index.ts",
+  "main": "src/index.ts",
+  "distModule": "dist/plugin-dotplot-view.esm.js",
+  "module": "",
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "build": "tsc",
-    "prebuild": "npm run clean",
-    "build:only": "tsc",
-    "clean": "rimraf dist"
+    "test": "cd ../..; jest plugins/dotplot-view",
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build; yarn useDist",
+    "postpack": "yarn useSrc",
+    "useDist": "node ../../scripts/useDist.js",
+    "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@gmod/bgzf-filehandle": "^1.4.4",
+    "@gmod/bgzf-filehandle": "^1.4.3",
     "@material-ui/icons": "^4.9.1",
     "clone": "^2.1.2",
     "normalize-wheel": "^1.0.1"

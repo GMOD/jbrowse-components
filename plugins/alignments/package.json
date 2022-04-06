@@ -15,18 +15,27 @@
     "directory": "plugins/alignments"
   },
   "author": "JBrowse Team",
-  "main": "dist/index.js",
+  "distMain": "dist/index.js",
+  "srcMain": "src/index.ts",
+  "main": "src/index.ts",
+  "distModule": "dist/plugin-alignments.esm.js",
+  "module": "",
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "build": "tsc",
-    "prebuild": "npm run clean",
-    "clean": "rimraf dist"
+    "test": "cd ../..; jest plugins/alignments",
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build; yarn useDist",
+    "postpack": "yarn useSrc",
+    "useDist": "node ../../scripts/useDist.js",
+    "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@gmod/bam": "^1.1.16",
-    "@gmod/cram": "^1.6.2",
+    "@gmod/bam": "^1.1.15",
+    "@gmod/cram": "^1.6.1",
     "@material-ui/icons": "^4.9.1",
     "abortable-promise-cache": "^1.5.0",
     "color": "^3.1.2",

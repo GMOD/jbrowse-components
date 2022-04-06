@@ -15,15 +15,23 @@
     "directory": "plugins/linear-genome-view"
   },
   "author": "JBrowse Team",
-  "main": "dist/index.js",
+  "distMain": "dist/index.js",
+  "srcMain": "src/index.ts",
+  "main": "src/index.ts",
+  "distModule": "dist/plugin-linear-genome-view.esm.js",
+  "module": "",
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "build": "tsc",
-    "build:only": "tsc",
-    "prebuild": "npm run clean",
-    "clean": "rimraf dist"
+    "test": "cd ../..; jest plugins/linear-genome-view",
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build; yarn useDist",
+    "postpack": "yarn useSrc",
+    "useDist": "node ../../scripts/useDist.js",
+    "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
     "@material-ui/icons": "^4.9.1",
@@ -35,7 +43,8 @@
     "is-object": "^1.0.1",
     "json-stable-stringify": "^1.0.1",
     "normalize-wheel": "^1.0.1",
-    "react-popper": "^2.0.0"
+    "react-popper": "^2.0.0",
+    "react-sizeme": "^3.0.2"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",

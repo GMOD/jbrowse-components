@@ -15,14 +15,23 @@
     "directory": "plugins/hic"
   },
   "author": "JBrowse Team",
-  "main": "dist/index.js",
+  "distMain": "dist/index.js",
+  "srcMain": "src/index.ts",
+  "main": "src/index.ts",
+  "distModule": "dist/plugin-hic.esm.js",
+  "module": "",
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "build": "tsc",
-    "prebuild": "npm run clean",
-    "clean": "rimraf dist"
+    "test": "cd ../..; jest plugins/hic",
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build; yarn useDist",
+    "postpack": "yarn useSrc",
+    "useDist": "node ../../scripts/useDist.js",
+    "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
     "abortable-promise-cache": "^1.5.0",

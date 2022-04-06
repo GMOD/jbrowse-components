@@ -1,13 +1,8 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src"],
-  "exclude": ["/**/*.test.*"],
   "compilerOptions": {
-    "outDir": "../core",
-    "rootDir": "./src",
-    "importHelpers": true,
+    "noEmit": false,
     "declaration": true,
-    "sourceMap": true,
-    "checkJs": false
+    "outDir": "dist/"
   }
 }

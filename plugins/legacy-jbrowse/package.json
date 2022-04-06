@@ -15,17 +15,26 @@
     "directory": "plugins/legacy-jbrowse"
   },
   "author": "JBrowse Team",
-  "main": "dist/index.js",
+  "distMain": "dist/index.js",
+  "srcMain": "src/index.ts",
+  "main": "src/index.ts",
+  "distModule": "dist/plugin-legacy-jbrowse.esm.js",
+  "module": "",
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "build": "tsc",
-    "prebuild": "npm run clean",
-    "clean": "rimraf dist"
+    "test": "cd ../..; jest plugins/legacy-jbrowse",
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build; yarn useDist",
+    "postpack": "yarn useSrc",
+    "useDist": "node ../../scripts/useDist.js",
+    "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@gmod/nclist": "^0.2.2",
+    "@gmod/nclist": "^0.2.1",
     "buffer-crc32": "^0.2.13",
     "generic-filehandle": "^2.2.2",
     "get-value": "^3.0.1",

@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build:only": "yarn useDist && node scripts/build.js",
-    "build": "yarn useDist && node scripts/build.js && yarn useSrc",
+    "build": "tsc",
     "pack": "yarn useDist && node scripts/pack.js && yarn useSrc",
     "useDist": "lerna run useDist --scope \"@jbrowse/plugin*\"",
     "useSrc": "lerna run useSrc --scope \"@jbrowse/plugin*\"",
