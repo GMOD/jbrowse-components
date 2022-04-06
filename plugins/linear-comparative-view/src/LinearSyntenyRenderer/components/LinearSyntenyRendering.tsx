@@ -6,6 +6,7 @@ import SimpleFeature, {
   Feature,
 } from '@jbrowse/core/util/simpleFeature'
 import { getConf } from '@jbrowse/core/configuration'
+import { MismatchParser } from '@jbrowse/plugin-alignments'
 import {
   getContainingView,
   viewBpToPx,
@@ -111,17 +112,29 @@ function LinearSyntenyRendering({
 }) {
   const ref = useRef<HTMLCanvasElement>(null)
   const { color, assemblyManager, parentView } = getResources(displayModel)
-  const matches = useMemo(
+  const hydratedFeatures = useMemo(
     () =>
-      layoutMatches(
-        features.map(level =>
-          level
-            .map(f => new SimpleFeature(f))
-            .sort((a, b) => a.get('syntenyId') - b.get('syntenyId')),
-        ),
-        assemblyManager,
+      features.map(level =>
+        level
+          .map(f => new SimpleFeature(f))
+          .sort((a, b) => a.get('syntenyId') - b.get('syntenyId')),
       ),
-    [features, assemblyManager],
+    [features],
+  )
+  const matches = useMemo(
+    () => layoutMatches(hydratedFeatures, assemblyManager),
+    [hydratedFeatures, assemblyManager],
+  )
+
+  const parsedCIGARs = useMemo(
+    () =>
+      new Map(
+        hydratedFeatures.flat().map(f => {
+          const cigar = f.get('cg') || f.get('CIGAR')
+          return [f.id(), cigar ? MismatchParser.parseCigar(cigar) : undefined]
+        }),
+      ),
+    [hydratedFeatures],
   )
   const drawCurves = parentView?.drawCurves
   const views = parentView?.views
@@ -214,58 +227,50 @@ function LinearSyntenyRendering({
           const rev1 = x11 < x12 ? 1 : -1
           const rev2 = x21 < x22 ? 1 : -1
 
-          const cigar = f1.get('cg') || f1.get('CIGAR')
+          const cigar = parsedCIGARs.get(f1.id())
           if (cigar) {
-            let len = ''
-            for (let j = 0; j < cigar.length; j++) {
-              // parsing CIGAR this way is significantly faster on chrome
-              // https://gist.github.com/cmdcolin/ef57d2783e47b16aa07a03967fd870d8#cigar-strings
-              if (cigar[j] >= '0' && cigar[j] <= '9') {
-                len += cigar[j]
-              } else {
-                const op = cigar[j]
-                const val = +len
-                len = ''
+            for (let j = 0; j < cigar.length; j += 2) {
+              const len = +cigar[j]
+              const op = cigar[j + 1]
 
-                const px1 = cx1
-                const px2 = cx2
+              const px1 = cx1
+              const px2 = cx2
 
-                if (op === 'M' || op === '=' || op === 'X') {
-                  cx1 += (val / viewSnaps[0].bpPerPx) * rev1
-                  cx2 += (val / viewSnaps[1].bpPerPx) * rev2
-                } else if (op === 'D') {
-                  cx1 += (val / viewSnaps[0].bpPerPx) * rev1
-                } else if (op === 'N') {
-                  cx1 += (val / viewSnaps[0].bpPerPx) * rev1
-                } else if (op === 'I') {
-                  cx2 += (val / viewSnaps[1].bpPerPx) * rev2
+              if (op === 'M' || op === '=' || op === 'X') {
+                cx1 += (len / viewSnaps[0].bpPerPx) * rev1
+                cx2 += (len / viewSnaps[1].bpPerPx) * rev2
+              } else if (op === 'D') {
+                cx1 += (len / viewSnaps[0].bpPerPx) * rev1
+              } else if (op === 'N') {
+                cx1 += (len / viewSnaps[0].bpPerPx) * rev1
+              } else if (op === 'I') {
+                cx2 += (len / viewSnaps[1].bpPerPx) * rev2
+              }
+
+              // check that we are even drawing in view here
+              if (
+                !(
+                  (px1 < 0 && px2 < 0 && cx1 < 0 && cx2 < 0) ||
+                  (px1 > width && px2 > width && cx1 > width && cx2 > width)
+                )
+              ) {
+                ctx.fillStyle = colorMap[op as keyof typeof colorMap]
+                ctx.beginPath()
+                ctx.moveTo(px1, y1)
+                ctx.lineTo(cx1, y1)
+                if (drawCurves) {
+                  ctx.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
+                } else {
+                  ctx.lineTo(cx2, y2)
                 }
-
-                // check that we are even drawing in view here
-                if (
-                  !(
-                    (px1 < 0 && px2 < 0 && cx1 < 0 && cx2 < 0) ||
-                    (px1 > width && px2 > width && cx1 > width && cx2 > width)
-                  )
-                ) {
-                  ctx.fillStyle = colorMap[op as keyof typeof colorMap]
-                  ctx.beginPath()
-                  ctx.moveTo(px1, y1)
-                  ctx.lineTo(cx1, y1)
-                  if (drawCurves) {
-                    ctx.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
-                  } else {
-                    ctx.lineTo(cx2, y2)
-                  }
-                  ctx.lineTo(px2, y2)
-                  if (drawCurves) {
-                    ctx.bezierCurveTo(px2, mid, px1, mid, px1, y1)
-                  } else {
-                    ctx.lineTo(px1, y1)
-                  }
-                  ctx.closePath()
-                  ctx.fill()
+                ctx.lineTo(px2, y2)
+                if (drawCurves) {
+                  ctx.bezierCurveTo(px2, mid, px1, mid, px1, y1)
+                } else {
+                  ctx.lineTo(px1, y1)
                 }
+                ctx.closePath()
+                ctx.fill()
               }
             }
           } else {
