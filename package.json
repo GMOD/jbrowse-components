@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build:only": "yarn useDist && node scripts/build.js",
-    "build": "tsc",
+    "build": "yarn useDist && node scripts/build.js && yarn useSrc",
     "pack": "yarn useDist && node scripts/pack.js && yarn useSrc",
     "useDist": "lerna run useDist --scope \"@jbrowse/plugin*\"",
     "useSrc": "lerna run useSrc --scope \"@jbrowse/plugin*\"",
@@ -123,6 +123,7 @@
     "eslint-plugin-tsdoc": "^0.2.4",
     "file-loader": "^6.2.0",
     "find-yarn-workspace-root": "^1.2.1",
+    "get-yarn-workspaces": "^1.0.2",
     "husky": "^4.2.5",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^27.0.0",

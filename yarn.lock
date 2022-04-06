@@ -1470,7 +1470,7 @@
   resolved "https://registry.yarnpkg.com/@gar/promisify/-/promisify-1.1.3.tgz#555193ab2e3bb3b6adc3d551c9c030d9e860daf6"
   integrity sha512-k2Ty1JcVojjJFwrg/ThKi2ujJ7XNLYaFGNB/bWT9wGR+oSMJHMa5w+CUq6p/pVrKeNNgA7pCqEcjSnHVoqJQFw==
 
-"@gmod/bam@^1.1.16":
+"@gmod/bam@^1.1.15":
   version "1.1.16"
   resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.1.16.tgz#31ee1e887245d2bfcbc30bcd7aa6deb6f5b96100"
   integrity sha512-nLAKCeUyxOu7fai96GOKnsaMMZKCJBle1LkF1v2D5BR0/BTuqiuCs35ADo2AOduwF/AD3sDRL/kEESLzsTyWYg==
@@ -1498,12 +1498,12 @@
     quick-lru "^4.0.0"
     rxjs "^6.5.2"
 
-"@gmod/bed@^2.0.8":
+"@gmod/bed@^2.0.6":
   version "2.0.8"
   resolved "https://registry.yarnpkg.com/@gmod/bed/-/bed-2.0.8.tgz#883928505bd27f868fb3cfb8cd1c6ea0a1ec6ab7"
   integrity sha512-aSMpHRcJaJ19dA5pzOlVykr3cNthBAR5JFiLUtWik1/+RqsO3co8V/34C4EegBJ+77IjW7AcnOYJJuBPSjQddg==
 
-"@gmod/bgzf-filehandle@^1.3.3", "@gmod/bgzf-filehandle@^1.4.0", "@gmod/bgzf-filehandle@^1.4.4":
+"@gmod/bgzf-filehandle@^1.3.3", "@gmod/bgzf-filehandle@^1.4.0", "@gmod/bgzf-filehandle@^1.4.3":
   version "1.4.4"
   resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-1.4.4.tgz#dd7e8169c039a93a719d927ed0692a0f2ddf265e"
   integrity sha512-E477y9Mg6zKvH6k5rXa2OjuOKAZ0XgcwP6IYDP3OfqnaUntPLUP59I/VxdRV3jEMsFUgbmoPjNW0IX11q18t1A==
@@ -1520,7 +1520,7 @@
   dependencies:
     long "^4.0.0"
 
-"@gmod/cram@^1.6.2":
+"@gmod/cram@^1.6.1":
   version "1.6.2"
   resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-1.6.2.tgz#58153b305398f98c813cd3826b9f58898b950d89"
   integrity sha512-hlMrvuiyYJgpiQBB/BZBeqIHI38VTDHNKTT/UJPDJgWroYHG3q9RLy6RQfKvqde7flRL1lnlHPtOGoHqx4inPg==
@@ -1545,7 +1545,7 @@
     pump "^3.0.0"
     split2 "^4.1.0"
 
-"@gmod/gff@^1.2.1":
+"@gmod/gff@^1.2.0", "@gmod/gff@^1.2.1":
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/@gmod/gff/-/gff-1.2.1.tgz#4d1e3694f2268215aa6c7bad366be84a1449034d"
   integrity sha512-YUqPOfoaSfVVXs3Unwph4Ap3NxQIghNtNm+57DEhf+cMeUloFU6v44dKwSUcZZ+PBgAop1BD11QUVSVzmSqNgQ==
@@ -1566,7 +1566,7 @@
     generic-filehandle "^2.2.1"
     object.fromentries "^2.0.4"
 
-"@gmod/nclist@^0.2.2":
+"@gmod/nclist@^0.2.1":
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/@gmod/nclist/-/nclist-0.2.2.tgz#c550efae85f61b4c42abfe92f07ae74db27e66ba"
   integrity sha512-LzIYvOSul9rl4y9eGIZx2ltTpTsXVWlEbW/rkauKSLjge6Pnv9XgkT43fCalYMi9Bzniwm5eF59JPi2eM5pcMg==
@@ -1586,12 +1586,12 @@
     long "^4.0.0"
     quick-lru "^4.0.0"
 
-"@gmod/trix@^2.0.2":
+"@gmod/trix@^2.0.1":
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-2.0.2.tgz#08697ad68799cc94e3325729bf75dc685f667d19"
   integrity sha512-c4Nvp5BqO2aUxRm0xLhn+qe/vzKZ0P0WXVMcxnSzIEC2az3FyRF9wTLPta3RBYTBpmQp2kdyXfJxWeeKQkl1Ig==
 
-"@gmod/twobit@^1.1.13":
+"@gmod/twobit@^1.1.12":
   version "1.1.13"
   resolved "https://registry.yarnpkg.com/@gmod/twobit/-/twobit-1.1.13.tgz#9716d0bddc48acd389ca557953b5b3e8261b16f9"
   integrity sha512-tvR80gpQT3mOQpC4XCDj5SBpeVMlgtgrJUTNK5JxPJ+5ZldkFcX5ft+Q8KeyE0ZV+Vg15vHaPcDdTQ7KyOgpVw==
@@ -1605,7 +1605,7 @@
   resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-0.1.3.tgz#37d20b59be9e5153d68a529407237782ed15562d"
   integrity sha512-F60rkM5AdcOXiOqmiNG5ZdoMCwbAQAU6oGBs5UMFCE0vIX7X8i2Mv4X9HrQbmJupZJvyQRuXQNW6SEaUVa+KsQ==
 
-"@gmod/vcf@^5.0.6":
+"@gmod/vcf@^5.0.5":
   version "5.0.6"
   resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-5.0.6.tgz#dc3cc165bea5a7d534477264a686f83bddb18945"
   integrity sha512-PNUGXBLJEaLzLn+AYmr3SUi+DnA+QIWz0mrT83d81tg/g3w9MVTYG33UNUtJcIFV9K/eV1C1WHo3Y0AI+R+fsg==
@@ -10352,6 +10352,11 @@ flatted@^3.1.0:
   resolved "https://registry.yarnpkg.com/flatted/-/flatted-3.2.5.tgz#76c8584f4fc843db64702a6bd04ab7a8bd666da3"
   integrity sha512-WIWGi2L3DyTUvUrwRKgGi9TwxQMUEqPOPQBVi71R96jZXJdFskXEmf54BoZaS1kknGODoIGASGEzBUYdyMCBJg==
 
+flatten@^1.0.2:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/flatten/-/flatten-1.0.3.tgz#c1283ac9f27b368abc1e36d1ff7b04501a30356b"
+  integrity sha512-dVsPA/UwQ8+2uoFe5GHtiBMu48dWLTdsuEd7CKGlZlD78r1TTWBvDuFaFGKCo/ZfEr95Uk56vZoX86OsHkUeIg==
+
 flush-write-stream@^1.0.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/flush-write-stream/-/flush-write-stream-1.1.1.tgz#8dd7d873a1babc207d94ead0c2e0e44276ebf2e8"
@@ -10818,6 +10823,15 @@ get-value@^3.0.1:
   integrity sha512-mKZj9JLQrwMBtj5wxi6MH8Z5eSKaERpAwjg43dPtlGI1ZVEgH/qC7T8/6R2OBSUA+zzHBZgICsVJaEIV2tKTDA==
   dependencies:
     isobject "^3.0.1"
+
+get-yarn-workspaces@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/get-yarn-workspaces/-/get-yarn-workspaces-1.0.2.tgz#81591bdb392f1c6bac09cdc8491a6d275781aa44"
+  integrity sha512-Auel048Uclfgr74oNXKZWH30UgKDZXQdfUfgD9iWXdoUGJpeWg9lSuX/FZkQ6RB3KnBfAaf70xQXfwOjiE9rPw==
+  dependencies:
+    find-root "^1.1.0"
+    flatten "^1.0.2"
+    glob "^7.1.2"
 
 getpass@^0.1.1:
   version "0.1.7"
@@ -17149,7 +17163,7 @@ react-simple-code-editor@0.9.3:
   resolved "https://registry.yarnpkg.com/react-simple-code-editor/-/react-simple-code-editor-0.9.3.tgz#12af0f85455eb1be1a86f15e325ec7861bc0db75"
   integrity sha512-JexTKcpcOjArsXUDCWNoXgIdshoacJVSuf3LbdKG0tHw5ISREoh7wvNZlRRk2gncFRSixkkTI5E18svC966rYQ==
 
-react-sizeme@^3.0.1:
+react-sizeme@^3.0.1, react-sizeme@^3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/react-sizeme/-/react-sizeme-3.0.2.tgz#4a2f167905ba8f8b8d932a9e35164e459f9020e4"
   integrity sha512-xOIAOqqSSmKlKFJLO3inBQBdymzDuXx4iuwkNcJmC96jeiOg5ojByvL+g3MW9LPEsojLbC6pf68zOfobK8IPlw==
