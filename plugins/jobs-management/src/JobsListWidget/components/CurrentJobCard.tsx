@@ -23,7 +23,7 @@ function CurrentJobCard({
 }) {
   const rootModel = getParent(model, 3)
   const { jobsManager } = rootModel
-  const { status, running, statusMessage, controller } = jobsManager
+  const { status, running, statusMessage } = jobsManager
   const indexingDone = Math.round(status) === 100
   return (
     <Card variant="outlined">
@@ -79,8 +79,6 @@ function CurrentJobCard({
             color="inherit"
             onClick={() => {
               job.cancelCallback && job.cancelCallback()
-              console.log('CANCEL')
-              console.log(controller)
             }}
           >
             Cancel

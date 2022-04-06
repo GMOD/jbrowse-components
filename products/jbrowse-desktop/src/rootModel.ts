@@ -369,19 +369,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                 self.setAssemblyEditing(true)
               },
             },
-            {
-              label: 'Jobs list widget',
-              icon: Indexing,
-              onClick: () => {
-                if (self.session) {
-                  const widget = self.session.addWidget(
-                    'JobsListWidget',
-                    'jobsListWidget',
-                  )
-                  self.session.showWidget(widget)
-                }
-              },
-            },
           ],
         },
       ] as Menu[],
