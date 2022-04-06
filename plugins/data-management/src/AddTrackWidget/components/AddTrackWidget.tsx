@@ -54,6 +54,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
   const { pluginManager } = getEnv(session)
   const { rootModel } = pluginManager
   const { jobsManager } = rootModel
+  const { controller } = jobsManager
   const {
     assembly,
     trackAdapter,
@@ -111,15 +112,24 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
         if (isElectron) {
           if (textIndexTrack && supportedIndexingAdapters(trackAdapter.type)) {
             const attr = textIndexingConf || textSearchingDefault
+            const indexName = trackName + '-index'
             const indexingParams = {
               ...attr,
               assemblies: [assembly],
               tracks: [trackId],
               indexType: 'perTrack',
-              name: trackName + '-index',
+              name: indexName,
               timestamp: new Date().toISOString(),
             }
-            jobsManager.queueIndexingJob(indexingParams)
+            const newEntry = {
+              params: indexingParams,
+              jobType: 'indexing',
+              name: indexName,
+              cancelCallback: () => {
+                controller.abort()
+              },
+            }
+            jobsManager.queueJob(newEntry)
           }
         }
       } else {

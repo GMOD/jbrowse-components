@@ -23,8 +23,8 @@ function CurrentJobCard({
 }) {
   const rootModel = getParent(model, 3)
   const { jobsManager } = rootModel
-  const { indexingStatus, running } = jobsManager
-  const indexingDone = Math.round(indexingStatus) === 100
+  const { status, running, statusMessage, controller } = jobsManager
+  const indexingDone = Math.round(status) === 100
   return (
     <Card variant="outlined">
       <CardContent>
@@ -32,45 +32,46 @@ function CurrentJobCard({
           <strong>{'Name: '}</strong>
           {job.name}
         </Typography>
-      </CardContent>
-      {running ? (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            marginBottom: 10,
-            marginLeft: 10,
-          }}
-        >
-          <Box sx={{ width: '80%', m: 1 }}>
-            <LinearProgress variant="determinate" value={indexingStatus} />
-          </Box>
-          <Box sx={{ minWidth: 35 }}>
-            <Typography variant="body2">{`${Math.round(
-              indexingStatus,
-            )}%`}</Typography>
-          </Box>
-        </Box>
-      ) : null}
-      {running && indexingDone ? (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            marginBottom: 10,
-            marginLeft: 10,
-          }}
-        >
-          <Typography variant="body2">Generating metadata</Typography>
-          <CircularProgress
-            style={{
+        {running ? (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: 10,
               marginLeft: 10,
             }}
-            size={20}
-            disableShrink
-          />
-        </Box>
-      ) : null}
+          >
+            <Box sx={{ width: '40%' }}>
+              <Typography variant="body2">Indexing files</Typography>
+            </Box>
+            <Box sx={{ width: '100%' }}>
+              <LinearProgress variant="determinate" value={status} />
+            </Box>
+            <Box sx={{ m: 1 }}>
+              <Typography>{`${Math.round(status)}%`}</Typography>
+            </Box>
+          </Box>
+        ) : null}
+
+        {running && indexingDone ? (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: 10,
+              marginLeft: 10,
+              marginRight: 10,
+            }}
+          >
+            <Box sx={{ width: '100%' }}>
+              <Typography variant="body2">{statusMessage}</Typography>
+            </Box>
+            <Box sx={{ m: 1 }}>
+              <CircularProgress size={10} disableShrink />
+            </Box>
+          </Box>
+        ) : null}
+      </CardContent>
       {job.cancelCallback ? (
         <CardActions>
           <Button
@@ -78,6 +79,8 @@ function CurrentJobCard({
             color="inherit"
             onClick={() => {
               job.cancelCallback && job.cancelCallback()
+              console.log('CANCEL')
+              console.log(controller)
             }}
           >
             Cancel

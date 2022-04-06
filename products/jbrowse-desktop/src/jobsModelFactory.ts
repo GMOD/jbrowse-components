@@ -23,14 +23,28 @@ interface TrackTextIndexing {
   tracks: string[] // trackIds
   indexType: string
 }
-export default function jobsModelFactory(pluginMnager: PluginManager) {
+
+type jobType = 'indexing' | 'test'
+export interface JobsEntry {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  params: any
+  progressPct?: number
+  name: string
+  statusMessage?: string
+  cancelCallback?: () => void
+  jobType?: jobType
+}
+export default function jobsModelFactory(pluginManager: PluginManager) {
   return types
     .model('JobsManager', {})
     .volatile(() => ({
-      indexingStatus: 0 as number,
+      status: 0 as number,
       running: false,
-      indexingQueue: observable.array([] as TrackTextIndexing[]),
-      finishedJobs: observable.array([] as TrackTextIndexing[]),
+      statusMessage: '',
+      abort: false,
+      jobsQueue: observable.array([] as JobsEntry[]),
+      finishedJobs: observable.array([] as JobsEntry[]),
+      controller: new AbortController(),
     }))
     .views(self => ({
       get rpcManager() {
@@ -41,6 +55,9 @@ export default function jobsModelFactory(pluginMnager: PluginManager) {
       },
       get sessionPath() {
         return getParent(self).sessionPath
+      },
+      get signal() {
+        return self.controller.signal
       },
       get session() {
         return getParent(self).session
@@ -53,103 +70,119 @@ export default function jobsModelFactory(pluginMnager: PluginManager) {
       setRunning(running: boolean) {
         self.running = running
       },
-      setIndexingStatus(arg: string) {
-        const progress = arg ? +arg : 0
-        self.indexingStatus = progress
+      setStatus(arg: string) {
+        const progress = +arg
+        if (isNaN(progress)) {
+          this.setStatusMessage(arg)
+        } else {
+          self.status = progress
+        }
       },
-      addFinishedJob(entry: TrackTextIndexing) {
+      setStatusMessage(arg: string) {
+        self.statusMessage = arg
+      },
+      addFinishedJob(entry: JobsEntry) {
         self.finishedJobs.push(entry)
       },
-      queueIndexingJob(props: TrackTextIndexing) {
-        self.indexingQueue.push(props)
+      queueJob(props: JobsEntry) {
+        self.jobsQueue.push(props)
       },
-      dequeueIndexingJob() {
-        const entry = self.indexingQueue.splice(0, 1)[0]
+      dequeueJob() {
+        const entry = self.jobsQueue.splice(0, 1)[0]
         return entry
       },
-      async runIndexingJob() {
-        if (self.indexingQueue.length) {
-          const firstIndexingJob = self.indexingQueue[0] as TrackTextIndexing
-          const {
-            tracks: trackIds,
-            exclude,
-            attributes,
-            assemblies,
-            indexType,
-          } = toJS(firstIndexingJob)
-          const rpcManager = self.rpcManager
-          const trackConfigs = findTrackConfigsToIndex(
-            self.tracks,
-            trackIds,
-          ).map(conf => {
+      async runIndexingJob(entry: JobsEntry) {
+        const {
+          tracks: trackIds,
+          exclude,
+          attributes,
+          assemblies,
+          indexType,
+        } = toJS(entry.params as TrackTextIndexing)
+        const rpcManager = self.rpcManager
+        const trackConfigs = findTrackConfigsToIndex(self.tracks, trackIds).map(
+          conf => {
             return JSON.parse(JSON.stringify(getSnapshot(conf)))
-          })
-          try {
-            this.setRunning(true)
-            await rpcManager.call(
-              'indexTracksSessionId',
-              'TextIndexRpcMethod',
-              {
-                tracks: trackConfigs,
+          },
+        )
+        try {
+          this.setRunning(true)
+          const result = rpcManager.call(
+            'indexTracksSessionId',
+            'TextIndexRpcMethod',
+            {
+              tracks: trackConfigs,
+              attributes,
+              exclude,
+              assemblies,
+              indexType,
+              outLocation: self.sessionPath,
+              sessionId: 'indexTracksSessionId',
+              statusCallback: (message: string) => {
+                this.setStatus(message)
+              },
+              signal: self.signal,
+              timeout: 1000 * 60 * 60 * 1000, // 1000 hours, avoid user ever running into this
+            },
+          )
+          await result
+          if (indexType === 'perTrack') {
+            // should update the single track conf
+            trackIds.forEach(trackId => {
+              this.addTrackTextSearchConf(
+                trackId,
+                assemblies,
                 attributes,
                 exclude,
-                assemblies,
-                indexType,
-                outLocation: self.sessionPath,
-                sessionId: 'indexTracksSessionId',
-                statusCallback: (message: string) => {
-                  this.setIndexingStatus(message)
-                },
-                timeout: 1000 * 60 * 60 * 1000, // 1000 hours, avoid user ever running into this
-              },
-            )
-            if (indexType === 'perTrack') {
-              // should update the single track conf
-              trackIds.forEach(trackId => {
-                this.addTrackTextSearchConf(
-                  trackId,
-                  assemblies,
-                  attributes,
-                  exclude,
+              )
+              self.session?.notify(
+                `Succesfully indexed track with trackId: ${trackId} `,
+                'success',
+              )
+            })
+          } else {
+            assemblies.forEach(assemblyName => {
+              const indexedTrackIds = trackConfigs
+                .filter(track =>
+                  assemblyName
+                    ? track.assemblyNames.includes(assemblyName)
+                    : true,
                 )
-                self.session?.notify(
-                  `Succesfully indexed track with trackId: ${trackId} `,
-                  'success',
-                )
-              })
-            } else {
-              assemblies.forEach(assemblyName => {
-                const indexedTrackIds = trackConfigs
-                  .filter(track =>
-                    assemblyName
-                      ? track.assemblyNames.includes(assemblyName)
-                      : true,
-                  )
-                  .map(trackConf => trackConf.trackId)
-                this.addAggregateTextSearchConf(indexedTrackIds, assemblyName)
-                self.session?.notify(
-                  `Succesfully indexed assembly: ${assemblyName} `,
-                  'success',
-                )
-              })
-            }
-            const current = this.dequeueIndexingJob()
-            current && this.addFinishedJob(current)
-          } catch (e) {
-            self.session?.notify(
-              `An error occurred while indexing: ${e}`,
-              'error',
-              {
-                name: 'Retry',
-                onClick: () => {
-                  this.queueIndexingJob(firstIndexingJob)
-                },
-              },
-            )
-            this.dequeueIndexingJob()
+                .map(trackConf => trackConf.trackId)
+              this.addAggregateTextSearchConf(indexedTrackIds, assemblyName)
+              self.session?.notify(
+                `Succesfully indexed assembly: ${assemblyName} `,
+                'success',
+              )
+            })
           }
-          this.setRunning(false)
-          this.setIndexingStatus('0')
+          const current = this.dequeueJob()
+          current && this.addFinishedJob(current)
+        } catch (e) {
+          self.session?.notify(
+            `An error occurred while indexing: ${e}`,
+            'error',
+            {
+              name: 'Retry',
+              onClick: () => {
+                this.queueJob(entry)
+              },
+            },
+          )
+          this.dequeueJob()
+        }
+        this.setRunning(false)
+        this.setStatus('')
+        this.setStatusMessage('')
+        return
+      },
+      async runJob() {
+        if (self.jobsQueue.length) {
+          const firstIndexingJob = self.jobsQueue[0] as JobsEntry
+          const { jobType } = firstIndexingJob
+          jobType &&
+            jobType === 'indexing' &&
+            this.runIndexingJob(firstIndexingJob)
         }
         return
       },
@@ -212,8 +245,8 @@ export default function jobsModelFactory(pluginMnager: PluginManager) {
           self,
           autorun(
             async () => {
-              if (self.indexingQueue?.length > 0 && self.running === false) {
-                await this.runIndexingJob()
+              if (self.jobsQueue?.length > 0 && self.running === false) {
+                await this.runJob()
               }
             },
             { delay: 1000 },
@@ -223,4 +256,4 @@ export default function jobsModelFactory(pluginMnager: PluginManager) {
     }))
 }
 
-export type JobsStateModel2 = Instance<ReturnType<typeof jobsModelFactory>>
+export type JobsStateModel = Instance<ReturnType<typeof jobsModelFactory>>

@@ -34,6 +34,7 @@ import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
 import InfoIcon from '@material-ui/icons/Info'
 import { Indexing } from '@jbrowse/core/ui/Icons'
+import { JobsEntry } from './jobsModelFactory'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -598,14 +599,15 @@ export default function sessionModelFactory(
               : 'Index track',
             disabled: !supportedIndexingAdapters(trackSnapshot.adapter.type),
             onClick: () => {
+              const rootModel = getParent(self)
+              const { jobsManager } = rootModel
+              const { controller } = jobsManager
               const { trackId, assemblyNames, textSearching, name } =
                 trackSnapshot
+              // create text indexing parameters
+              const indexName = name + '-index'
               const indexingParams = {
-                attributes: textSearching?.indexingAttributes || [
-                  'Name',
-                  'ID',
-                  'type',
-                ],
+                attributes: textSearching?.indexingAttributes || ['Name', 'ID'],
                 exclude: textSearching?.indexingFeatureTypesToExclude || [
                   'CDS',
                   'exon',
@@ -614,11 +616,19 @@ export default function sessionModelFactory(
                 tracks: [trackId],
                 indexType: 'perTrack',
                 timestamp: new Date().toISOString(),
-                name: name + '-index',
+                name: indexName, // trackName
               }
-              const rootModel = getParent(self)
-              const { jobsManager } = rootModel
-              jobsManager.queueIndexingJob(indexingParams)
+              // create job entry for queue of long running jobs
+              const newEntry = {
+                params: indexingParams,
+                jobType: 'indexing',
+                name: indexName,
+                cancelCallback: () => {
+                  controller.abort()
+                },
+              } as JobsEntry
+              jobsManager.queueJob(newEntry)
+              // TODO: open jobs list widget
             },
             icon: Indexing,
           },

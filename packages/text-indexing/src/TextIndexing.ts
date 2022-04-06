@@ -155,6 +155,7 @@ async function indexDriver(
   const readable = Readable.from(
     indexFiles(tracks, attributes, idxLocation, quiet, exclude, statusCallback),
   )
+  statusCallback('Generating trix files.')
   const ixIxxStream = await runIxIxx(readable, idxLocation, name)
   await generateMeta({
     configs: tracks,

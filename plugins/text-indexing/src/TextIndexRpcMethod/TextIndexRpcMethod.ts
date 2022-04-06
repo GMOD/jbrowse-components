@@ -34,6 +34,7 @@ export class TextIndexRpcMethod extends RpcMethodType {
       statusCallback,
     } = deserializedArgs
 
+    console.log('RPC', signal)
     const indexingParams = {
       outLocation,
       tracks,
@@ -45,6 +46,7 @@ export class TextIndexRpcMethod extends RpcMethodType {
       signal,
     }
     await indexTracks(indexingParams)
+    statusCallback('')
     return []
   }
 }

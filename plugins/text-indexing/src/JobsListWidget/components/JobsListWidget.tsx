@@ -40,25 +40,35 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+type jobType = 'indexing' | 'test'
 export interface JobsEntry {
-  progressPct?: number // if defined, gives the current pct progress expressed between 0 and 100. if undefined, renders an "indefinite" progress bar or spinner or something like that
-  cancelCallback?: () => void // if defined, drawer widget will show a cancel button that calls this callback to cancel it. does not remove from the state tree though, the calling code needs to explicitly do that when the cancellation succeeds. it might throw an exception as well, remember
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  params: any
+  progressPct?: number
+  /* if defined, gives the current pct progress expressed between 0 and 100.
+  if undefined, renders an "indefinite" progress bar or spinner */
   name: string // displayed to user, required to be unique
-  statusMessage?: string // displayed to user, smaller message about what the job is doing right now
+  statusMessage?: string
+  cancelCallback?: () => void
+  /* if defined, drawer widget will show a cancel button that calls this callback
+  to cancel it. does not remove from the state tree though, the calling code needs
+  to explicitly do that when the cancellation succeeds. it might throw an exception
+  as well, remember */
+  jobType?: jobType
 }
 
 function JobsListWidget({ model }: { model: JobsListModel }) {
   const classes = useStyles()
   const rootModel = getParent(model, 3)
   const { jobsManager } = rootModel
-  const { indexingQueue, finishedJobs } = jobsManager
+  const { jobsQueue, finishedJobs } = jobsManager
   return (
     <div className={classes.root}>
       <Typography variant="h5">Currently running job</Typography>
-      {indexingQueue.length > 0 ? (
+      {jobsQueue.length > 0 ? (
         <CurrentJobCard
-          key={JSON.stringify(indexingQueue[0])}
-          job={indexingQueue[0]}
+          key={JSON.stringify(jobsQueue[0])}
+          job={jobsQueue[0]}
           model={model}
         />
       ) : (
@@ -74,8 +84,8 @@ function JobsListWidget({ model }: { model: JobsListModel }) {
         >
           <Typography variant="h5">Queued jobs</Typography>
         </AccordionSummary>
-        {indexingQueue.length > 1 ? (
-          indexingQueue
+        {jobsQueue.length > 1 ? (
+          jobsQueue
             .slice(1)
             .map((job: JobsEntry) => (
               <JobCard key={JSON.stringify(job)} job={job} />
