@@ -99,9 +99,9 @@ function LinearSyntenyRendering({
   height,
   width,
   displayModel,
-  highResolutionScaling = 1,
   features,
   trackIds,
+  highResolutionScaling = 1,
 }: {
   width: number
   height: number
@@ -305,6 +305,7 @@ function LinearSyntenyRendering({
     color,
     height,
     matches,
+    parsedCIGARs,
   ])
 
   return (
