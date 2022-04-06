@@ -256,14 +256,18 @@ function LinearSyntenyRendering({
                 cx2 += d2 * rev2
               }
 
-              // check that we are even drawing in view here
+              // check that we are even drawing in view here, e.g. that all
+              // points are not all less than 0 or greater than width
               if (
                 !(
-                  (px1 < 0 && px2 < 0 && cx1 < 0 && cx2 < 0) ||
-                  (px1 > width && px2 > width && cx1 > width && cx2 > width)
+                  Math.max(px1, px2, cx1, cx2) < 0 ||
+                  Math.min(px1, px2, cx1, cx2) > width
                 )
               ) {
-                if (cx1 - px1 < 1 && cx2 - px2 < 1) {
+                // if it is a small feature and not the last element of the
+                // CIGAR (which could skip rendering it entire if we did turn
+                // it on), then turn on continuing flag
+                if (cx1 - px1 < 1 && cx2 - px2 < 1 && j < cigar.length - 2) {
                   continuingFlag = true
                 } else {
                   continuingFlag = false
