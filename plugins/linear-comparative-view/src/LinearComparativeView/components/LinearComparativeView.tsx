@@ -70,9 +70,7 @@ const MiddleComparativeView = observer(
         <Header ExtraButtons={ExtraButtons} model={model} />
         <RubberBand
           model={model}
-          ControlComponent={
-            <div style={{ background: '#ccc', width: '100%', height: 20 }} />
-          }
+          ControlComponent={<div style={{ width: '100%', height: 15 }} />}
         />
         <div className={classes.container}>
           <ReactComponent model={views[0]} />
@@ -106,9 +104,7 @@ const OverlayComparativeView = observer(
         <Header model={model} ExtraButtons={ExtraButtons} />
         <RubberBand
           model={model}
-          ControlComponent={
-            <div style={{ background: '#ccc', width: '100%', height: 20 }} />
-          }
+          ControlComponent={<div style={{ width: '100%', height: 15 }} />}
         />
 
         <div className={classes.container}>

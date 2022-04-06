@@ -9,7 +9,7 @@ import {
 } from '@material-ui/core'
 import { stringify } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
-import { LinearGenomeViewModel, BpOffset } from '..'
+import { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
 
