@@ -22,11 +22,10 @@
   "scripts": {
     "test": "cd ../..; jest packages/core",
     "coverage": "yarn test --coverage",
-    "build:only": "tsc",
     "clean": "rimraf dist",
     "prebuild": "yarn clean",
     "prepack": "yarn build",
-    "build": "tsc && cp package.json README.md ../../LICENSE dist",
+    "build": "tsc && cp package.json README.md ../../LICENSE dist/",
     "build:only": "tsc"
   },
   "dependencies": {

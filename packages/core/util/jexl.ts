@@ -1,8 +1,13 @@
 import jexl from 'jexl'
 import { Feature } from './simpleFeature'
 
-export default function (/* config?: any*/) {
-  const j = new jexl.Jexl()
+type JexlWithAddFunction = typeof jexl & {
+  addFunction(name: string, func: Function): void
+}
+type JexlNonBuildable = Omit<typeof jexl, 'Jexl'>
+
+export default function (/* config?: any*/): JexlNonBuildable {
+  const j = new jexl.Jexl() as JexlWithAddFunction
   // someday will make sure all of configs callbacks are added in, including
   // ones passed in
 
