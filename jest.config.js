@@ -22,6 +22,8 @@ module.exports = {
     'packages/*/src/**/*.{js,jsx,ts,tsx}',
     'products/*/src/**/*.{js,jsx,ts,tsx}',
     'plugins/*/src/**/*.{js,jsx,ts,tsx}',
+    // most packages have their src in src/, except for jbrowse-core
+    'packages/core/**/*.{js,jsx,ts,tsx}',
   ],
   setupFiles: [
     '<rootDir>/config/jest/createRange.js',

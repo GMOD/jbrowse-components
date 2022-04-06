@@ -8,8 +8,11 @@
     "plugins/*"
   ],
   "scripts": {
-    "build": "node scripts/build.js",
-    "pack": "node scripts/pack.js",
+    "build:only": "yarn useDist && node scripts/build.js",
+    "build": "yarn useDist && node scripts/build.js && yarn useSrc",
+    "pack": "yarn useDist && node scripts/pack.js && yarn useSrc",
+    "useDist": "lerna run useDist --scope \"@jbrowse/plugin*\"",
+    "useSrc": "lerna run useSrc --scope \"@jbrowse/plugin*\"",
     "changelog": "lerna-changelog",
     "lerna-publish": "lerna publish",
     "lint": "eslint --report-unused-disable-directives --max-warnings 0 --ext .js,.ts,.jsx,.tsx .",
