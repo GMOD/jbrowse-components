@@ -55,11 +55,15 @@ const AssemblySelector = observer(
       selected,
     )
 
+    const selection = assemblyNames.includes(lastSelected || '')
+      ? lastSelected
+      : selected
+
     useEffect(() => {
-      if (lastSelected) {
-        onChange(lastSelected)
+      if (selection) {
+        onChange(selection)
       }
-    }, [lastSelected, onChange])
+    }, [selection, onChange])
 
     const error = assemblyNames.length ? '' : 'No configured assemblies'
     return (
@@ -69,7 +73,7 @@ const AssemblySelector = observer(
         variant="outlined"
         margin="normal"
         helperText={error || 'Select assembly to view'}
-        value={error ? '' : lastSelected}
+        value={error ? '' : selection}
         inputProps={{ 'data-testid': 'assembly-selector' }}
         onChange={event => setLastSelected(event.target.value)}
         error={!!error}
