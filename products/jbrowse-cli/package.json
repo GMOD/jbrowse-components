@@ -31,8 +31,7 @@
     "node": ">=10.4.0"
   },
   "scripts": {
-    "build": "echo nothing",
-    "pack": "oclif-dev pack",
+    "build": "oclif-dev pack",
     "build:typescript": "tsc --build",
     "postpack": "rimraf oclif.manifest.json",
     "clean": "rimraf lib",
@@ -45,7 +44,7 @@
     "docs:version:add": "git add README.md"
   },
   "dependencies": {
-    "@gmod/gff": "^1.2.1",
+    "@gmod/gff": "^1.2.0",
     "@oclif/command": "^1.8.11",
     "@oclif/config": "^1.18.2",
     "@oclif/errors": "^1",
