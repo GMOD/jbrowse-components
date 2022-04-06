@@ -220,10 +220,10 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     })
     if (unableToDraw.length) {
       console.warn(
-        unableToDraw.length > 5
-          ? 'Many features fell outside the boundaries of the contigs...sample'
-          : unableToDraw,
-        unableToDraw.join('\n'),
+        (unableToDraw.length > 5
+          ? 'Many features fell outside the boundaries of the contigs.....sample of features: '
+          : 'Some features fell outside the boundaries of the contigs: ') +
+          unableToDraw.slice(0, 5).join('\n'),
       )
     }
     return createImageBitmap(canvas)

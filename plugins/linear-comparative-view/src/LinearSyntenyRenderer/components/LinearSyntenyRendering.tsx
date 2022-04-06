@@ -6,6 +6,7 @@ import SimpleFeature, {
   Feature,
 } from '@jbrowse/core/util/simpleFeature'
 import { getConf } from '@jbrowse/core/configuration'
+import { MismatchParser } from '@jbrowse/plugin-alignments'
 import {
   getContainingView,
   viewBpToPx,
@@ -13,7 +14,6 @@ import {
   ViewSnap,
   AssemblyManager,
 } from '@jbrowse/core/util'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { interstitialYPos, overlayYPos, generateMatches } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import { LinearComparativeDisplay } from '../../LinearComparativeDisplay'
@@ -22,7 +22,14 @@ const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
 type RectTuple = [number, number, number, number]
 
-const { parseCigar } = MismatchParser
+const colorMap = {
+  I: '#ff03',
+  N: '#0a03',
+  D: '#00f3',
+  X: 'brown',
+  M: '#f003',
+  '=': '#f003',
+}
 
 function px(view: ViewSnap, arg: { refName: string; coord: number }) {
   return viewBpToPx({ ...arg, self: view })?.offsetPx || 0
@@ -92,9 +99,9 @@ function LinearSyntenyRendering({
   height,
   width,
   displayModel,
-  highResolutionScaling = 1,
   features,
   trackIds,
+  highResolutionScaling = 1,
 }: {
   width: number
   height: number
@@ -105,17 +112,29 @@ function LinearSyntenyRendering({
 }) {
   const ref = useRef<HTMLCanvasElement>(null)
   const { color, assemblyManager, parentView } = getResources(displayModel)
-  const matches = useMemo(
+  const hydratedFeatures = useMemo(
     () =>
-      layoutMatches(
-        features.map(level =>
-          level
-            .map(f => new SimpleFeature(f))
-            .sort((a, b) => a.get('syntenyId') - b.get('syntenyId')),
-        ),
-        assemblyManager,
+      features.map(level =>
+        level
+          .map(f => new SimpleFeature(f))
+          .sort((a, b) => a.get('syntenyId') - b.get('syntenyId')),
       ),
-    [features, assemblyManager],
+    [features],
+  )
+  const matches = useMemo(
+    () => layoutMatches(hydratedFeatures, assemblyManager),
+    [hydratedFeatures, assemblyManager],
+  )
+
+  const parsedCIGARs = useMemo(
+    () =>
+      new Map(
+        hydratedFeatures.flat().map(f => {
+          const cigar = f.get('cg') || f.get('CIGAR')
+          return [f.id(), cigar ? MismatchParser.parseCigar(cigar) : undefined]
+        }),
+      ),
+    [hydratedFeatures],
   )
   const drawCurves = parentView?.drawCurves
   const views = parentView?.views
@@ -144,7 +163,8 @@ function LinearSyntenyRendering({
       minimumBlockWidth: view.minimumBlockWidth,
     }))
 
-    matches.forEach(m => {
+    for (let j = 0; j < matches.length; j++) {
+      const m = matches[j]
       // we follow a path in the list of chunks, not from top to bottom, just
       // in series following x1,y1 -> x2,y2
       for (let i = 0; i < m.length - 1; i += 1) {
@@ -207,53 +227,77 @@ function LinearSyntenyRendering({
           const rev1 = x11 < x12 ? 1 : -1
           const rev2 = x21 < x22 ? 1 : -1
 
-          const cigar = f1.get('cg') || f1.get('CIGAR')
+          const cigar = parsedCIGARs.get(f1.id())
           if (cigar) {
-            const cigarOps = parseCigar(cigar)
-            for (let j = 0; j < cigarOps.length; j += 2) {
-              const val = +cigarOps[j]
-              const op = cigarOps[j + 1]
+            // continuingFlag helps speed up zoomed out by skipping draw
+            // commands on very small CIGAR features
+            let continuingFlag = false
+            let px1 = 0
+            let px2 = 0
+            for (let j = 0; j < cigar.length; j += 2) {
+              const len = +cigar[j]
+              const op = cigar[j + 1]
 
-              const px1 = cx1
-              const px2 = cx2
-
-              if (op === 'M' || op === '=') {
-                ctx.fillStyle = '#f003'
-                cx1 += (val / viewSnaps[0].bpPerPx) * rev1
-                cx2 += (val / viewSnaps[1].bpPerPx) * rev2
-              } else if (op === 'X') {
-                ctx.fillStyle = 'brown'
-                cx1 += (val / viewSnaps[0].bpPerPx) * rev1
-                cx2 += (val / viewSnaps[1].bpPerPx) * rev2
-              } else if (op === 'D') {
-                ctx.fillStyle = '#00f3'
-                cx1 += (val / viewSnaps[0].bpPerPx) * rev1
-              } else if (op === 'N') {
-                ctx.fillStyle = '#0a03'
-                cx1 += (val / viewSnaps[0].bpPerPx) * rev1
-              } else if (op === 'I') {
-                ctx.fillStyle = '#ff03'
-                cx2 += (val / viewSnaps[1].bpPerPx) * rev2
+              if (!continuingFlag) {
+                px1 = cx1
+                px2 = cx2
               }
 
-              // only draw cigar entries that are larger than a pixel wide!
-              if (Math.abs(px1 - cx1) > 0.5 || Math.abs(px2 - cx2) > 0.5) {
-                ctx.beginPath()
-                ctx.moveTo(px1, y1)
-                ctx.lineTo(cx1, y1)
-                if (drawCurves) {
-                  ctx.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
+              const d1 = len / viewSnaps[0].bpPerPx
+              const d2 = len / viewSnaps[1].bpPerPx
+              if (op === 'M' || op === '=' || op === 'X') {
+                cx1 += d1 * rev1
+                cx2 += d2 * rev2
+              } else if (op === 'D') {
+                cx1 += d1 * rev1
+              } else if (op === 'N') {
+                cx1 += d1 * rev1
+              } else if (op === 'I') {
+                cx2 += d2 * rev2
+              }
+
+              // check that we are even drawing in view here, e.g. that all
+              // points are not all less than 0 or greater than width
+              if (
+                !(
+                  Math.max(px1, px2, cx1, cx2) < 0 ||
+                  Math.min(px1, px2, cx1, cx2) > width
+                )
+              ) {
+                // if it is a small feature and not the last element of the
+                // CIGAR (which could skip rendering it entire if we did turn
+                // it on), then turn on continuing flag
+                if (cx1 - px1 < 1 && cx2 - px2 < 1 && j < cigar.length - 2) {
+                  continuingFlag = true
                 } else {
-                  ctx.lineTo(cx2, y2)
+                  continuingFlag = false
+
+                  // allow rendering the dominant color when using continuing
+                  // flag if the last element of continuing was a large
+                  // feature, else just use match
+                  ctx.fillStyle =
+                    colorMap[
+                      (continuingFlag && d1 > 1) || d2 > 1
+                        ? (op as keyof typeof colorMap)
+                        : 'M'
+                    ]
+                  ctx.beginPath()
+                  ctx.moveTo(px1, y1)
+                  ctx.lineTo(cx1, y1)
+                  if (drawCurves) {
+                    ctx.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
+                  } else {
+                    ctx.lineTo(cx2, y2)
+                  }
+                  ctx.lineTo(px2, y2)
+                  if (drawCurves) {
+                    ctx.bezierCurveTo(px2, mid, px1, mid, px1, y1)
+                  } else {
+                    ctx.lineTo(px1, y1)
+                  }
+                  ctx.closePath()
+                  ctx.fill()
                 }
-                ctx.lineTo(px2, y2)
-                if (drawCurves) {
-                  ctx.bezierCurveTo(px2, mid, px1, mid, px1, y1)
-                } else {
-                  ctx.lineTo(px1, y1)
-                }
-                ctx.closePath()
-                ctx.fill()
               }
             }
           } else {
@@ -276,7 +320,7 @@ function LinearSyntenyRendering({
           }
         }
       }
-    })
+    }
   }, [
     displayModel,
     highResolutionScaling,
@@ -288,6 +332,7 @@ function LinearSyntenyRendering({
     color,
     height,
     matches,
+    parsedCIGARs,
   ])
 
   return (

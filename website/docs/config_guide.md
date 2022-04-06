@@ -346,6 +346,22 @@ parsing time.
 }
 ```
 
+Optionally you can specify a .chrom.sizes file which will speed up loading the 2bit especially if it has many chromosomes in it
+
+```json
+{
+  "type": "TwoBitAdapter",
+  "twoBitLocation": {
+    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.2bit",
+    "locationType": "UriLocation"
+  },
+  "chromSizesLocation": {
+    "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.chrom.sizes",
+    "locationType": "UriLocation"
+  }
+}
+```
+
 ## Track configurations
 
 All tracks can contain

@@ -46,7 +46,6 @@
           }
         }
       },
-
       "cytobands": {
         "adapter": {
           "type": "CytobandAdapter",
@@ -97,24 +96,20 @@
       }
     },
     {
-      "name": "t2t-chm13-v1.1",
-      "displayName": "Homo sapiens (t2t-chm13-v1.1)",
+      "name": "chm13v2.0",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "t2t-chm13-v1.1-asm",
+        "trackId": "chm13v2.0-asm",
         "adapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13.draft_v1.1.fasta.gz",
-            "locationType": "UriLocation"
+            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13v2.0.fa.gz"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13.draft_v1.1.fasta.gz.fai",
-            "locationType": "UriLocation"
+            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13v2.0.fa.gz.fai"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13.draft_v1.1.fasta.gz.gzi",
-            "locationType": "UriLocation"
+            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13v2.0.fa.gz.gzi"
           }
         }
       }
@@ -296,7 +291,6 @@
         "track": "genomicSuperDups"
       }
     },
-
     {
       "type": "GDCTrack",
       "trackId": "gdc_plugin_track",
@@ -3862,6 +3856,40 @@
           "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/liftOver/hg19ToHg38.over.chain.gz"
         }
       }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "grch38-chm13v2.paf",
+      "name": "grch38-chm13v2.paf",
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "https://jbrowse.org/genomes/CHM13/synteny/grch38-chm13v2.paf.gz",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["chm13v2.0", "hg38"]
+      },
+      "assemblyNames": ["chm13v2.0", "hg38"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "chm13v2.0.gff",
+      "name": "chm13v2.0.gff",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/genomes/CHM13/gff/chm13v2.0.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/CHM13/gff/chm13v2.0.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["chm13v2.0"]
     }
   ],
   "connections": [],
