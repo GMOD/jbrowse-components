@@ -229,22 +229,31 @@ function LinearSyntenyRendering({
 
           const cigar = parsedCIGARs.get(f1.id())
           if (cigar) {
+            // continuingFlag helps speed up zoomed out by skipping draw
+            // commands on very small CIGAR features
+            let continuingFlag = false
+            let px1 = 0
+            let px2 = 0
             for (let j = 0; j < cigar.length; j += 2) {
               const len = +cigar[j]
               const op = cigar[j + 1]
 
-              const px1 = cx1
-              const px2 = cx2
+              if (!continuingFlag) {
+                px1 = cx1
+                px2 = cx2
+              }
 
+              const d1 = len / viewSnaps[0].bpPerPx
+              const d2 = len / viewSnaps[1].bpPerPx
               if (op === 'M' || op === '=' || op === 'X') {
-                cx1 += (len / viewSnaps[0].bpPerPx) * rev1
-                cx2 += (len / viewSnaps[1].bpPerPx) * rev2
+                cx1 += d1 * rev1
+                cx2 += d2 * rev2
               } else if (op === 'D') {
-                cx1 += (len / viewSnaps[0].bpPerPx) * rev1
+                cx1 += d1 * rev1
               } else if (op === 'N') {
-                cx1 += (len / viewSnaps[0].bpPerPx) * rev1
+                cx1 += d1 * rev1
               } else if (op === 'I') {
-                cx2 += (len / viewSnaps[1].bpPerPx) * rev2
+                cx2 += d2 * rev2
               }
 
               // check that we are even drawing in view here
@@ -254,23 +263,37 @@ function LinearSyntenyRendering({
                   (px1 > width && px2 > width && cx1 > width && cx2 > width)
                 )
               ) {
-                ctx.fillStyle = colorMap[op as keyof typeof colorMap]
-                ctx.beginPath()
-                ctx.moveTo(px1, y1)
-                ctx.lineTo(cx1, y1)
-                if (drawCurves) {
-                  ctx.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
+                if (cx1 - px1 < 1 && cx2 - px2 < 1) {
+                  continuingFlag = true
                 } else {
-                  ctx.lineTo(cx2, y2)
+                  continuingFlag = false
+
+                  // allow rendering the dominant color when using continuing
+                  // flag if the last element of continuing was a large
+                  // feature, else just use match
+                  ctx.fillStyle =
+                    colorMap[
+                      (continuingFlag && d1 > 1) || d2 > 1
+                        ? (op as keyof typeof colorMap)
+                        : 'M'
+                    ]
+                  ctx.beginPath()
+                  ctx.moveTo(px1, y1)
+                  ctx.lineTo(cx1, y1)
+                  if (drawCurves) {
+                    ctx.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
+                  } else {
+                    ctx.lineTo(cx2, y2)
+                  }
+                  ctx.lineTo(px2, y2)
+                  if (drawCurves) {
+                    ctx.bezierCurveTo(px2, mid, px1, mid, px1, y1)
+                  } else {
+                    ctx.lineTo(px1, y1)
+                  }
+                  ctx.closePath()
+                  ctx.fill()
                 }
-                ctx.lineTo(px2, y2)
-                if (drawCurves) {
-                  ctx.bezierCurveTo(px2, mid, px1, mid, px1, y1)
-                } else {
-                  ctx.lineTo(px1, y1)
-                }
-                ctx.closePath()
-                ctx.fill()
               }
             }
           } else {
