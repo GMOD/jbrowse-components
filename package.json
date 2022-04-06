@@ -69,6 +69,7 @@
     "@types/is-object": "^1.0.0",
     "@types/jest": "^25.2.1",
     "@types/jest-image-snapshot": "^2.12.0",
+    "@types/jexl": "^2.3.0",
     "@types/json-parse-better-errors": "^1.0.0",
     "@types/json-stable-stringify": "^1.0.32",
     "@types/lodash.merge": "^4.6.6",

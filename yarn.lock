@@ -4645,6 +4645,11 @@
     jest-diff "^25.2.1"
     pretty-format "^25.2.1"
 
+"@types/jexl@^2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@types/jexl/-/jexl-2.3.0.tgz#f818f5ea12a5cf5954ca5261c946d720f2e52fd7"
+  integrity sha512-KfkvTtUqxl6UvdFB/RMPEQ8+X99+s3BTKR5SlTkpZ3bDiJiAAkBEg1b88+YAatiaxR3TAmQuyZOeW05eAyag+g==
+
 "@types/json-parse-better-errors@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@types/json-parse-better-errors/-/json-parse-better-errors-1.0.0.tgz#ef8ab2a2270c5da1efb989be175ff27a5fb0b37e"
