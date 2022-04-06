@@ -1,8 +1,9 @@
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
+// eslint-disable-next-line import/no-extraneous-dependencies
 const { getLoader, loaderByName } = require('@craco/craco')
+// eslint-disable-next-line import/no-extraneous-dependencies
 const getYarnWorkspaces = require('get-yarn-workspaces')
 const webpack = require('webpack')
-const path = require('path')
 
 module.exports = {
   devServer: config => {
