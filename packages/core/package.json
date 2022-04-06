@@ -9,7 +9,6 @@
     "biojs",
     "genomics"
   ],
-  "main": "index.js",
   "license": "Apache-2.0",
   "homepage": "https://jbrowse.org",
   "bugs": "https://github.com/GMOD/jbrowse-components/issues",
@@ -22,11 +21,12 @@
   "scripts": {
     "test": "cd ../..; jest packages/core",
     "coverage": "yarn test --coverage",
-    "clean": "rimraf BaseFeatureWidget ReExports TextSearch assemblyManager configuration data_adapters pluggableElementTypes rpc ui util *.d.ts *.js *.js.map",
     "build:only": "tsc",
+    "clean": "rimraf dist",
     "prebuild": "yarn clean",
     "prepack": "yarn build",
-    "build": "tsc"
+    "build": "tsc",
+    "build:only": "tsc",
   },
   "dependencies": {
     "@material-ui/icons": "^4.0.1",
