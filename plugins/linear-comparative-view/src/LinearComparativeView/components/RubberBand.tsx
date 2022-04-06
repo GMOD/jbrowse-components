@@ -9,9 +9,11 @@ import {
 } from '@material-ui/core'
 import { stringify } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
-import { LinearComparativeViewModel, BpOffset } from '../model'
+import { LinearComparativeViewModel } from '../model'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LCV = LinearComparativeViewModel
+type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles(theme => {
   const background = theme.palette.tertiary
@@ -57,9 +59,15 @@ const useStyles = makeStyles(theme => {
 const VerticalGuide = observer(
   ({ model, coordX }: { model: LCV; coordX: number }) => {
     const classes = useStyles()
-    //stringify(model.pxToBp(coordX))}
     return (
-      <Tooltip open placement="top" title={''} arrow>
+      <Tooltip
+        open
+        placement="top"
+        title={model.views.map(view => (
+          <Typography>{stringify(view.pxToBp(coordX))}</Typography>
+        ))}
+        arrow
+      >
         <div
           className={classes.guide}
           style={{
@@ -79,7 +87,6 @@ function RubberBand({
   model: LCV
   ControlComponent?: React.ReactElement
 }) {
-  console.log('here')
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
 
@@ -224,8 +231,8 @@ function RubberBand({
   const left = right < startX ? right : startX
   const width = Math.abs(right - startX)
   const { views } = model
-  const leftBpOffsets = views.map(view => view.pxToBp(left))
-  const rightBpOffsets = views.map(view => view.pxToBp(left + width))
+  const leftBpOffset = views.map(view => view.pxToBp(left))
+  const rightBpOffset = views.map(view => view.pxToBp(left + width))
   const numOfBpSelected = views.map(view => Math.ceil(width * view.bpPerPx))
   return (
     <>
@@ -249,7 +256,9 @@ function RubberBand({
             keepMounted
             disableRestoreFocus
           >
-            <Typography>{leftBpOffsets.map(stringify).join(',')}</Typography>
+            {leftBpOffset.map(l => (
+              <Typography>{stringify(l)}</Typography>
+            ))}
           </Popover>
           <Popover
             className={classes.popover}
@@ -269,7 +278,9 @@ function RubberBand({
             keepMounted
             disableRestoreFocus
           >
-            <Typography>{rightBpOffsets.map(stringify).join(',')}</Typography>
+            {rightBpOffset.map(l => (
+              <Typography>{stringify(l)}</Typography>
+            ))}
           </Popover>
         </>
       ) : null}
@@ -279,7 +290,9 @@ function RubberBand({
         style={{ left, width }}
       >
         <Typography variant="h6" className={classes.rubberBandText}>
-          {numOfBpSelected.map(n => `${n.toLocaleString('en-US')}bp`).join(',')}
+          {numOfBpSelected.map(n => (
+            <Typography>{`${n.toLocaleString('en-US')}bp`}</Typography>
+          ))}
         </Typography>
       </div>
       <div
