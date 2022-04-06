@@ -257,21 +257,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         })
         return menuItems
       },
-      rubberBandMenuItems() {
-        return [
-          {
-            label: 'Zoom to region(s)',
-            onClick: () => {
-              self.views.forEach(view => {
-                const { leftOffset, rightOffset } = view
-                if (leftOffset && rightOffset) {
-                  view.moveTo(leftOffset, rightOffset)
-                }
-              })
-            },
-          },
-        ]
-      },
     }))
 }
 
