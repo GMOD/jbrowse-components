@@ -18,8 +18,6 @@
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/plugin-grid-bookmark.esm.js",
-  "module": "",
   "files": [
     "dist",
     "src"
