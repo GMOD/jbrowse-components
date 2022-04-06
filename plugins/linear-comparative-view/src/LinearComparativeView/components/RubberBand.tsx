@@ -53,6 +53,9 @@ const useStyles = makeStyles(theme => {
       position: 'absolute',
       zIndex: 10,
     },
+    sm: {
+      fontSize: 10,
+    },
   }
 })
 
@@ -63,9 +66,13 @@ const VerticalGuide = observer(
       <Tooltip
         open
         placement="top"
-        title={model.views.map(view => (
-          <Typography>{stringify(view.pxToBp(coordX))}</Typography>
-        ))}
+        title={model.views
+          .map(view => view.pxToBp(coordX))
+          .map(elt => (
+            <Typography className={classes.sm} key={JSON.stringify(elt)}>
+              {stringify(elt)}
+            </Typography>
+          ))}
         arrow
       >
         <div
