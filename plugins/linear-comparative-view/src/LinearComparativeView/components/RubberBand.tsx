@@ -141,11 +141,11 @@ function RubberBand({
           clientY,
         })
         model.views.forEach(view => {
-          const { leftOffset, rightOffset } = computeOffsets(offsetX, view) as {
-            leftOffset: BpOffset
-            rightOffset: BpOffset
+          const args = computeOffsets(offsetX, view)
+          if (args) {
+            const { leftOffset, rightOffset } = args
+            view.setOffsets(leftOffset, rightOffset)
           }
-          view.setOffsets(leftOffset, rightOffset)
         })
         setGuideX(undefined)
       }
@@ -257,7 +257,7 @@ function RubberBand({
             disableRestoreFocus
           >
             {leftBpOffset.map(l => (
-              <Typography>{stringify(l)}</Typography>
+              <Typography key={JSON.stringify(l)}>{stringify(l)}</Typography>
             ))}
           </Popover>
           <Popover
@@ -279,7 +279,7 @@ function RubberBand({
             disableRestoreFocus
           >
             {rightBpOffset.map(l => (
-              <Typography>{stringify(l)}</Typography>
+              <Typography key={JSON.stringify(l)}>{stringify(l)}</Typography>
             ))}
           </Popover>
         </>
@@ -290,8 +290,10 @@ function RubberBand({
         style={{ left, width }}
       >
         <Typography variant="h6" className={classes.rubberBandText}>
-          {numOfBpSelected.map(n => (
-            <Typography>{`${n.toLocaleString('en-US')}bp`}</Typography>
+          {numOfBpSelected.map((n, i) => (
+            <Typography key={`${n}_${i}`}>{`${n.toLocaleString(
+              'en-US',
+            )}bp`}</Typography>
           ))}
         </Typography>
       </div>

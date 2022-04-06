@@ -71,7 +71,7 @@ const MiddleComparativeView = observer(
         <RubberBand
           model={model}
           ControlComponent={
-            <div style={{ background: 'red', width: '100%', height: 50 }} />
+            <div style={{ background: '#ccc', width: '100%', height: 20 }} />
           }
         />
         <div className={classes.container}>
@@ -107,7 +107,7 @@ const OverlayComparativeView = observer(
         <RubberBand
           model={model}
           ControlComponent={
-            <div style={{ background: 'red', width: '100%', height: 50 }} />
+            <div style={{ background: '#ccc', width: '100%', height: 20 }} />
           }
         />
 

@@ -138,11 +138,11 @@ function RubberBand({
           clientX,
           clientY,
         })
-        const { leftOffset, rightOffset } = computeOffsets(offsetX) as {
-          leftOffset: BpOffset
-          rightOffset: BpOffset
+        const args = computeOffsets(offsetX)
+        if (args) {
+          const { leftOffset, rightOffset } = args
+          setOffsets(leftOffset, rightOffset)
         }
-        setOffsets(leftOffset, rightOffset)
         setGuideX(undefined)
       }
     }
