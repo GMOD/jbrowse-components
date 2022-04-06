@@ -1,5 +1,4 @@
 declare module '@gmod/cram'
 declare module 'http-range-fetcher'
-declare module 'react-d3-axis'
 declare module '@jbrowse/core/util/offscreenCanvasPonyfill'
 declare module '@jbrowse/core/util/QuickLRU'
