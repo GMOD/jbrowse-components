@@ -22,7 +22,6 @@
     "pretest-ci": "cd products/jbrowse-react-linear-genome-view;yarn run pack;cd ../../",
     "test-ci": "cross-env NODE_OPTIONS='--max-old-space-size=7000' jest --ci --coverage && jest --testMatch '**/*testmod.js'",
     "built-test-ci": "jest --ci integration.test.js",
-    "pretest": "yarn build",
     "test": "jest"
   },
   "husky": {
