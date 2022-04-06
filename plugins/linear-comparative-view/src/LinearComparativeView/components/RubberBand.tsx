@@ -9,8 +9,10 @@ import {
 } from '@material-ui/core'
 import { stringify } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
-import { LinearGenomeViewModel, BpOffset } from '..'
+import { LinearComparativeViewModel } from '../model'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
+type LCV = LinearComparativeViewModel
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles(theme => {
@@ -51,17 +53,26 @@ const useStyles = makeStyles(theme => {
       position: 'absolute',
       zIndex: 10,
     },
+    sm: {
+      fontSize: 10,
+    },
   }
 })
 
 const VerticalGuide = observer(
-  ({ model, coordX }: { model: LGV; coordX: number }) => {
+  ({ model, coordX }: { model: LCV; coordX: number }) => {
     const classes = useStyles()
     return (
       <Tooltip
         open
         placement="top"
-        title={stringify(model.pxToBp(coordX))}
+        title={model.views
+          .map(view => view.pxToBp(coordX))
+          .map(elt => (
+            <Typography className={classes.sm} key={JSON.stringify(elt)}>
+              {stringify(elt)}
+            </Typography>
+          ))}
         arrow
       >
         <div
@@ -80,7 +91,7 @@ function RubberBand({
   model,
   ControlComponent = <div />,
 }: {
-  model: LGV
+  model: LCV
   ControlComponent?: React.ReactElement
 }) {
   const [startX, setStartX] = useState<number>()
@@ -99,10 +110,8 @@ function RubberBand({
   const classes = useStyles()
   const mouseDragging = startX !== undefined && anchorPosition === undefined
 
-  const { setOffsets, pxToBp } = model
-
   useEffect(() => {
-    function computeOffsets(offsetX: number) {
+    function computeOffsets(offsetX: number, view: LGV) {
       if (startX === undefined) {
         return
       }
@@ -112,8 +121,8 @@ function RubberBand({
       if (rightPx < leftPx) {
         ;[leftPx, rightPx] = [rightPx, leftPx]
       }
-      const leftOffset = pxToBp(leftPx)
-      const rightOffset = pxToBp(rightPx)
+      const leftOffset = view.pxToBp(leftPx)
+      const rightOffset = view.pxToBp(rightPx)
 
       return { leftOffset, rightOffset }
     }
@@ -138,11 +147,13 @@ function RubberBand({
           clientX,
           clientY,
         })
-        const args = computeOffsets(offsetX)
-        if (args) {
-          const { leftOffset, rightOffset } = args
-          setOffsets(leftOffset, rightOffset)
-        }
+        model.views.forEach(view => {
+          const args = computeOffsets(offsetX, view)
+          if (args) {
+            const { leftOffset, rightOffset } = args
+            view.setOffsets(leftOffset, rightOffset)
+          }
+        })
         setGuideX(undefined)
       }
     }
@@ -155,7 +166,7 @@ function RubberBand({
       }
     }
     return () => {}
-  }, [startX, mouseDragging, anchorPosition, setOffsets, pxToBp])
+  }, [startX, mouseDragging, anchorPosition, model])
 
   useEffect(() => {
     if (
@@ -166,7 +177,7 @@ function RubberBand({
     ) {
       handleClose()
     }
-  }, [mouseDragging, currentX, startX, model.bpPerPx])
+  }, [mouseDragging, currentX, startX])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
@@ -185,7 +196,7 @@ function RubberBand({
 
   function mouseOut() {
     setGuideX(undefined)
-    model.setOffsets(undefined, undefined)
+    model.views.forEach(view => view.setOffsets(undefined, undefined))
   }
 
   function handleClose() {
@@ -226,9 +237,10 @@ function RubberBand({
   const right = anchorPosition ? anchorPosition.offsetX : currentX || 0
   const left = right < startX ? right : startX
   const width = Math.abs(right - startX)
-  const leftBpOffset = model.pxToBp(left)
-  const rightBpOffset = model.pxToBp(left + width)
-  const numOfBpSelected = Math.ceil(width * model.bpPerPx)
+  const { views } = model
+  const leftBpOffset = views.map(view => view.pxToBp(left))
+  const rightBpOffset = views.map(view => view.pxToBp(left + width))
+  const numOfBpSelected = views.map(view => Math.ceil(width * view.bpPerPx))
   return (
     <>
       {rubberBandRef.current ? (
@@ -251,7 +263,9 @@ function RubberBand({
             keepMounted
             disableRestoreFocus
           >
-            <Typography>{stringify(leftBpOffset)}</Typography>
+            {leftBpOffset.map(l => (
+              <Typography key={JSON.stringify(l)}>{stringify(l)}</Typography>
+            ))}
           </Popover>
           <Popover
             className={classes.popover}
@@ -271,7 +285,9 @@ function RubberBand({
             keepMounted
             disableRestoreFocus
           >
-            <Typography>{stringify(rightBpOffset)}</Typography>
+            {rightBpOffset.map(l => (
+              <Typography key={JSON.stringify(l)}>{stringify(l)}</Typography>
+            ))}
           </Popover>
         </>
       ) : null}
@@ -281,7 +297,11 @@ function RubberBand({
         style={{ left, width }}
       >
         <Typography variant="h6" className={classes.rubberBandText}>
-          {numOfBpSelected.toLocaleString('en-US')} bp
+          {numOfBpSelected.map((n, i) => (
+            <Typography key={`${n}_${i}`}>{`${n.toLocaleString(
+              'en-US',
+            )}bp`}</Typography>
+          ))}
         </Typography>
       </div>
       <div
