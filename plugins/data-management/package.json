@@ -25,7 +25,7 @@
     "src"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "babel src --root-mode upward --out-dir dist --extensions .ts,.js,.tsx,.jsx",
     "test": "cd ../..; jest plugins/data-management",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
