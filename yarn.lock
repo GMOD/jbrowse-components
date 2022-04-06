@@ -1531,7 +1531,7 @@
     pump "^3.0.0"
     split2 "^4.1.0"
 
-"@gmod/gff@^1.2.0", "@gmod/gff@^1.2.1":
+"@gmod/gff@^1.2.0":
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/@gmod/gff/-/gff-1.2.1.tgz#4d1e3694f2268215aa6c7bad366be84a1449034d"
   integrity sha512-YUqPOfoaSfVVXs3Unwph4Ap3NxQIghNtNm+57DEhf+cMeUloFU6v44dKwSUcZZ+PBgAop1BD11QUVSVzmSqNgQ==
