@@ -26,25 +26,24 @@ interface TrackTextIndexing {
 
 type jobType = 'indexing' | 'test'
 export interface JobsEntry {
+  name: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params: any
-  progressPct?: number
-  name: string
-  statusMessage?: string
   cancelCallback?: () => void
+  progressPct?: number
+  statusMessage?: string
   jobType?: jobType
 }
 export default function jobsModelFactory(pluginManager: PluginManager) {
   return types
     .model('JobsManager', {})
     .volatile(() => ({
-      status: 0 as number,
+      status: 0,
       running: false,
       statusMessage: '',
       abort: false,
       jobsQueue: observable.array([] as JobsEntry[]),
       finishedJobs: observable.array([] as JobsEntry[]),
-      controller: new AbortController(),
     }))
     .views(self => ({
       get rpcManager() {
@@ -56,14 +55,17 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
       get sessionPath() {
         return getParent(self).sessionPath
       },
-      get signal() {
-        return self.controller.signal
-      },
       get session() {
         return getParent(self).session
       },
       get aggregateTextSearchAdapters() {
         return getParent(self).jbrowse.aggregateTextSearchAdapters
+      },
+      get location() {
+        return getParent(self).sessionPath.substring(
+          0,
+          getParent(self).sessionPath.lastIndexOf('/'),
+        )
       },
     }))
     .actions(self => ({
@@ -81,6 +83,9 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
       setStatusMessage(arg: string) {
         self.statusMessage = arg
       },
+      setAbort(abort: boolean) {
+        self.abort = abort
+      },
       addFinishedJob(entry: JobsEntry) {
         self.finishedJobs.push(entry)
       },
@@ -90,6 +95,12 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
       dequeueJob() {
         const entry = self.jobsQueue.splice(0, 1)[0]
         return entry
+      },
+      clear() {
+        this.setRunning(false)
+        this.setStatus('')
+        this.setStatusMessage('')
+        this.setAbort(false)
       },
       async runIndexingJob(entry: JobsEntry) {
         const {
@@ -107,6 +118,7 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
         )
         try {
           this.setRunning(true)
+          const controller = new AbortController()
           const result = rpcManager.call(
             'indexTracksSessionId',
             'TextIndexRpcMethod',
@@ -121,7 +133,7 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
               statusCallback: (message: string) => {
                 this.setStatus(message)
               },
-              signal: self.signal,
+              signal: controller.signal,
               timeout: 1000 * 60 * 60 * 1000, // 1000 hours, avoid user ever running into this
             },
           )
@@ -156,6 +168,7 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
               )
             })
           }
+          // remove from the queue and add to finished/completed jobs
           const current = this.dequeueJob()
           current && this.addFinishedJob(current)
         } catch (e) {
@@ -169,20 +182,20 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
               },
             },
           )
+          // remove job from queue but since it was not successful
+          // do not add to finished list
           this.dequeueJob()
         }
-        this.setRunning(false)
-        this.setStatus('')
-        this.setStatusMessage('')
+        // clear
+        this.clear()
         return
       },
       async runJob() {
         if (self.jobsQueue.length) {
           const firstIndexingJob = self.jobsQueue[0] as JobsEntry
-          const { jobType } = firstIndexingJob
-          jobType &&
-            jobType === 'indexing' &&
-            this.runIndexingJob(firstIndexingJob)
+          // TODO: decide how to run that type of job
+          // For now only running indexing jobs
+          await this.runIndexingJob(firstIndexingJob)
         }
         return
       },
@@ -201,7 +214,7 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
           id,
           [trackId],
           assemblies,
-          this.formatLocation(),
+          self.location,
         )
         self.session?.tracks[currentTrackIdx].textSearching.setSubschema(
           'textSearchAdapter',
@@ -225,20 +238,13 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
           id,
           trackIds,
           [asm],
-          this.formatLocation(),
+          self.location,
         )
         if (foundIdx === -1) {
           self.aggregateTextSearchAdapters.push(trixConf)
         } else {
           self.aggregateTextSearchAdapters[foundIdx] = trixConf
         }
-      },
-      formatLocation() {
-        const locationPath = self.sessionPath.substring(
-          0,
-          self.sessionPath.lastIndexOf('/'),
-        )
-        return locationPath
       },
       afterCreate() {
         addDisposer(

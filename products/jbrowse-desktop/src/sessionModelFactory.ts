@@ -601,7 +601,6 @@ export default function sessionModelFactory(
             onClick: () => {
               const rootModel = getParent(self)
               const { jobsManager } = rootModel
-              const { controller } = jobsManager
               const { trackId, assemblyNames, textSearching, name } =
                 trackSnapshot
               // create text indexing parameters
@@ -621,10 +620,9 @@ export default function sessionModelFactory(
               // create job entry for queue of long running jobs
               const newEntry = {
                 params: indexingParams,
-                jobType: 'indexing',
                 name: indexName,
                 cancelCallback: () => {
-                  controller.abort()
+                  jobsManager.setAbort(true)
                 },
               } as JobsEntry
               jobsManager.queueJob(newEntry)

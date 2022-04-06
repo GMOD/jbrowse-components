@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 
@@ -41,13 +41,14 @@ const useStyles = makeStyles(theme => ({
 }))
 
 type jobType = 'indexing' | 'test'
+
 export interface JobsEntry {
+  name: string // displayed to user, required to be unique
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params: any
   progressPct?: number
   /* if defined, gives the current pct progress expressed between 0 and 100.
   if undefined, renders an "indefinite" progress bar or spinner */
-  name: string // displayed to user, required to be unique
   statusMessage?: string
   cancelCallback?: () => void
   /* if defined, drawer widget will show a cancel button that calls this callback
@@ -60,8 +61,36 @@ export interface JobsEntry {
 function JobsListWidget({ model }: { model: JobsListModel }) {
   const classes = useStyles()
   const rootModel = getParent(model, 3)
+  // const [error, setError] = useState<unknown>()
   const { jobsManager } = rootModel
   const { jobsQueue, finishedJobs } = jobsManager
+  // useEffect(() => {
+  //   let active = true
+  //   const controller = new AbortController()
+
+  //   ;(async () => {
+  //     try {
+  //       if (jobsQueue.length > 0 && running === false) {
+  //         await jobsManager.runJob()
+  //         // if (active) {
+
+  //         // }
+  //       } else {
+  //         throw new Error('err')
+  //       }
+  //     } catch (e) {
+  //       console.error(e)
+  //       if (active) {
+  //         setError(e)
+  //       }
+  //     }
+  //   })()
+
+  //   return () => {
+  //     controller.abort()
+  //     active = false
+  //   }
+  // }, [model])
   return (
     <div className={classes.root}>
       <Typography variant="h5">Currently running job</Typography>

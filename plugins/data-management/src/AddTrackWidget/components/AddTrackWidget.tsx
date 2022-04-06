@@ -54,7 +54,6 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
   const { pluginManager } = getEnv(session)
   const { rootModel } = pluginManager
   const { jobsManager } = rootModel
-  const { controller } = jobsManager
   const {
     assembly,
     trackAdapter,
@@ -123,10 +122,9 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
             }
             const newEntry = {
               params: indexingParams,
-              jobType: 'indexing',
               name: indexName,
               cancelCallback: () => {
-                controller.abort()
+                jobsManager.setAbort(true)
               },
             }
             jobsManager.queueJob(newEntry)
