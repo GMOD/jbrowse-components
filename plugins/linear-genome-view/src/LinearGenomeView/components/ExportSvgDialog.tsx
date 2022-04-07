@@ -1,30 +1,17 @@
 import React, { useState } from 'react'
-import { makeStyles } from 'tss-react/mui'
 import {
   Button,
   Checkbox,
   CircularProgress,
-  Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
   FormControlLabel,
-  IconButton,
   TextField,
   Typography,
 } from '@mui/material'
-import { ErrorMessage } from '@jbrowse/core/ui'
-import CloseIcon from '@mui/icons-material/Close'
+import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { ExportSvgOptions } from '..'
 
-const useStyles = makeStyles()(theme => ({
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
-}))
 
 function LoadingMessage() {
   return (
@@ -48,15 +35,8 @@ export default function ExportSvgDlg({
   const [loading, setLoading] = useState(false)
   const [filename, setFilename] = useState('jbrowse.svg')
   const [error, setError] = useState<unknown>()
-  const { classes } = useStyles()
   return (
-    <Dialog open onClose={handleClose}>
-      <DialogTitle>
-        Export SVG
-        <IconButton className={classes.closeButton} onClick={handleClose}>
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+    <Dialog open onClose={handleClose} title="Export SVG">
       <DialogContent>
         {error ? (
           <ErrorMessage error={error} />

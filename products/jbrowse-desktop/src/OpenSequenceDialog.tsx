@@ -1,10 +1,8 @@
 import React, { useState } from 'react'
 import {
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
   Grid,
   MenuItem,
   Paper,
@@ -12,7 +10,7 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { FileSelector, ErrorMessage } from '@jbrowse/core/ui'
+import { FileSelector, Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { FileLocation } from '@jbrowse/core/util/types'
 
 const { ipcRenderer } = window.require('electron')
@@ -272,8 +270,7 @@ const OpenSequenceDialog = ({
     }
   }
   return (
-    <Dialog open onClose={() => onClose()}>
-      <DialogTitle>Open sequence(s)</DialogTitle>
+    <Dialog open onClose={() => onClose()} title="Open sequence(s)">
       <DialogContent>
         <Typography>
           Use this dialog to open one or more indexed FASTA files,

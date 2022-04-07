@@ -4,10 +4,8 @@ import {
   Button,
   CircularProgress,
   Container,
-  Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
   Divider,
   IconButton,
   TextField,
@@ -17,6 +15,7 @@ import { observer } from 'mobx-react'
 import { saveAs } from 'file-saver'
 import { getConf } from '@jbrowse/core/configuration'
 import copy from 'copy-to-clipboard'
+import { Dialog } from '@jbrowse/core/ui'
 import { getSession, Feature, Region } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 
@@ -29,12 +28,6 @@ import GetAppIcon from '@mui/icons-material/GetApp'
 import { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles()(theme => ({
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
   dialogContent: {
     width: '80em',
   },
@@ -158,23 +151,10 @@ function SequenceDialog({
   const sequenceTooLarge = sequence ? sequence.length > 1_000_000 : false
 
   return (
-    <Dialog maxWidth="xl" open onClose={handleClose}>
-      <DialogTitle>
-        Reference sequence
-        {handleClose ? (
-          <IconButton
-            className={classes.closeButton}
-            onClick={() => {
+    <Dialog maxWidth="xl" open onClose={() => {
               handleClose()
               model.setOffsets(undefined, undefined)
-            }}
-            size="large"
-          >
-            <CloseIcon />
-          </IconButton>
-        ) : null}
-      </DialogTitle>
-      <Divider />
+            }}       title="Reference sequence">
 
       <DialogContent>
         {error ? <Typography color="error">{`${error}`}</Typography> : null}
