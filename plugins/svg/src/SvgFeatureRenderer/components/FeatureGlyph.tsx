@@ -50,15 +50,13 @@ function FeatureGlyph(props: {
   }
   const { GlyphComponent } = featureLayout.data || {}
 
-  const x = rootLayout.getSubRecord('nameLabel')?.absolute.left || 0
-
   return (
     <g>
       <GlyphComponent featureLayout={featureLayout} {...props} />
       {shouldShowName ? (
         <FeatureLabel
           text={name}
-          x={x}
+          x={rootLayout.getSubRecord('nameLabel')?.absolute.left || 0}
           y={rootLayout.getSubRecord('nameLabel')?.absolute.top || 0}
           color={readConfObject(config, ['labels', 'nameColor'], { feature })}
           featureWidth={featureLayout.width}
@@ -68,7 +66,7 @@ function FeatureGlyph(props: {
       {shouldShowDescription ? (
         <FeatureLabel
           text={description}
-          x={x}
+          x={rootLayout.getSubRecord('descriptionLabel')?.absolute.left || 0}
           y={rootLayout.getSubRecord('descriptionLabel')?.absolute.top || 0}
           color={readConfObject(config, ['labels', 'descriptionColor'], {
             feature,
