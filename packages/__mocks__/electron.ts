@@ -1,12 +1,13 @@
 import createIPCMock from 'electron-mock-ipc'
+const { ipcMain, ipcRenderer } = createIPCMock()
 
-const mocked = createIPCMock()
-const ipcMain = mocked.ipcMain
-const ipcRenderer = mocked.ipcRenderer
-const mockedElectron = {
-  ...jest.requireActual('electron'),
-  ipcRenderer,
-  ipcMain,
+// @ts-ignore
+window.require = () => {
+  return {
+    ...jest.requireActual('electron'),
+    ipcRenderer,
+    ipcMain,
+  }
 }
 
-export default mockedElectron
+export { ipcMain, ipcRenderer }
