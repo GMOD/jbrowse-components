@@ -1444,7 +1444,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="width: 100px;"
               >
                 <svg
-                  class="SvgFeatureRendering"
                   data-testid="svgfeatures"
                   height="100"
                   width="100"
@@ -1459,7 +1458,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="width: 1000px;"
               >
                 <svg
-                  class="SvgFeatureRendering"
                   data-testid="svgfeatures"
                   height="100"
                   width="1000"
@@ -1589,7 +1587,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="width: 100px;"
               >
                 <svg
-                  class="SvgFeatureRendering"
                   data-testid="svgfeatures"
                   height="100"
                   width="100"
@@ -1604,7 +1601,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="width: 1000px;"
               >
                 <svg
-                  class="SvgFeatureRendering"
                   data-testid="svgfeatures"
                   height="100"
                   width="1000"

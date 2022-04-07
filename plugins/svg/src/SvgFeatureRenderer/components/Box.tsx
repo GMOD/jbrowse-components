@@ -38,7 +38,7 @@ function Box(props: {
   }
   const leftWithinBlock = Math.max(left, 0)
   const diff = leftWithinBlock - left
-  const widthWithinBlock = Math.max(1, Math.min(width - diff, screenWidth))
+  const widthWithinBlock = Math.max(2, Math.min(width - diff, screenWidth))
 
   // if feature has parent and type is intron, then don't render the intron
   // subfeature (if it doesn't have a parent, then maybe the introns are

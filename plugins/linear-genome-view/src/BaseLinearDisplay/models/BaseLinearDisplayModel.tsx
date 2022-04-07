@@ -8,6 +8,7 @@ import {
   isAbortException,
   getContainingView,
   getSession,
+  getViewParams,
   isSelectionContainer,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
@@ -623,6 +624,7 @@ export const BaseLinearDisplay = types
           return rendererType.renderInClient(rpcManager, {
             ...renderArgs,
             ...renderProps,
+            viewParams: getViewParams(self, true),
             exportSVG: opts,
           })
         }),
