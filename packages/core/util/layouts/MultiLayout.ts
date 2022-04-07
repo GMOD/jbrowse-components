@@ -19,6 +19,17 @@ export default class MultiLayout<SUB_LAYOUT_CLASS extends BaseLayout<T>, T> {
     this.subLayoutConstructorArgs = layoutArgs
   }
 
+  getDataByID(id: string): unknown {
+    for (const layout of this.subLayouts.values()) {
+      // @ts-ignore
+      const r = layout.getDataByID(id)
+      if (r) {
+        return r
+      }
+    }
+    return undefined
+  }
+
   getSublayout(layoutName: string): SUB_LAYOUT_CLASS {
     let subLayout = this.subLayouts.get(layoutName)
     if (subLayout === undefined) {

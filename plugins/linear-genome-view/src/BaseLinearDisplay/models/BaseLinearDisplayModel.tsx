@@ -414,6 +414,7 @@ export const BaseLinearDisplay = types
             return
           }
         } catch (e) {
+          console.error(e)
           self.setError(e)
         }
       },

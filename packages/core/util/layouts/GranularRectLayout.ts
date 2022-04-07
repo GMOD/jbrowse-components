@@ -524,6 +524,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     return undefined
   }
 
+  getDataByID(id: string): unknown {
+    return this.rectangles.get(id)?.data
+  }
+
   cleanup(): void {}
 
   getTotalHeight(): number {

@@ -104,7 +104,7 @@ export default class FeatureRendererType extends ServerSideRendererType {
   /**
    * Adds feature serialization to base server-side result serialization
    *
-   * @param results - object containing the results of calling the `render`
+   * @param result - object containing the results of calling the `render`
    * method
    * @param args - deserialized render args
    */

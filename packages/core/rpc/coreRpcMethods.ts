@@ -326,6 +326,69 @@ export class CoreRender extends RpcMethodType {
   }
 }
 
+/**
+ * fetches features from an adapter and call a renderer with them
+ */
+export class CoreGetFeatureDetails extends RpcMethodType {
+  name = 'CoreGetFeatureDetails'
+
+  async serializeArguments(args: RenderArgs, rpcDriverClassName: string) {
+    const assemblyManager =
+      this.pluginManager.rootModel?.session?.assemblyManager
+    const renamedArgs = assemblyManager
+      ? await renameRegionsIfNeeded(assemblyManager, args)
+      : args
+
+    const superArgs = (await super.serializeArguments(
+      renamedArgs,
+      rpcDriverClassName,
+    )) as RenderArgs
+    if (rpcDriverClassName === 'MainThreadRpcDriver') {
+      return superArgs
+    }
+
+    const { rendererType } = args
+
+    const RendererType = validateRendererType(
+      rendererType,
+      this.pluginManager.getRendererType(rendererType),
+    )
+
+    return RendererType.serializeArgsInClient(superArgs)
+  }
+
+  async execute(
+    args: RenderArgsSerialized & { signal?: RemoteAbortSignal },
+    rpcDriverClassName: string,
+  ) {
+    let deserializedArgs = args
+    if (rpcDriverClassName !== 'MainThreadRpcDriver') {
+      deserializedArgs = await this.deserializeArguments(
+        args,
+        rpcDriverClassName,
+      )
+    }
+    const { sessionId, rendererType, signal, featureId } = deserializedArgs
+    if (!sessionId) {
+      throw new Error('must pass a unique session id')
+    }
+
+    checkAbortSignal(signal)
+
+    const RendererType = validateRendererType(
+      rendererType,
+      this.pluginManager.getRendererType(rendererType),
+    )
+
+    // @ts-ignore
+    const sess = RendererType.sessions[sessionId]
+    const { layout } = sess.cachedLayout
+    const xref = layout.getDataByID(featureId)
+
+    return { feature: xref.toJSON() }
+  }
+}
+
 function validateRendererType<T>(rendererType: string, RendererType: T) {
   if (!RendererType) {
     throw new Error(`renderer "${rendererType}" not found`)

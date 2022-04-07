@@ -191,6 +191,8 @@ export default class PileupRenderer extends BoxRendererType {
       feature.get('start') - expansionBefore,
       feature.get('end') + expansionAfter,
       heightPx,
+      // @ts-ignore
+      feature,
     )
     if (topPx === null) {
       return null
@@ -1117,7 +1119,7 @@ export default class PileupRenderer extends BoxRendererType {
     return {
       ...results,
       ...res,
-      features,
+      features: new Map(),
       layout,
       height,
       width,

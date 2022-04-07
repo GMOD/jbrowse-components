@@ -9,6 +9,8 @@ import {
   getSession,
   isSessionModelWithWidgets,
   getContainingView,
+  SimpleFeature,
+  Feature,
 } from '@jbrowse/core/util'
 
 import VisibilityIcon from '@material-ui/icons/Visibility'
@@ -19,7 +21,6 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { cast, types, addDisposer, getEnv, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import SortIcon from '@material-ui/icons/Sort'
 import PaletteIcon from '@material-ui/icons/Palette'
@@ -404,6 +405,71 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             modificationTagMap: JSON.parse(JSON.stringify(modificationTagMap)),
             showSoftClip: self.showSoftClipping,
             config: self.rendererConfig,
+            async onFeatureClick(_: unknown, featureId: string | undefined) {
+              const session = getSession(self)
+              const { rpcManager } = session
+              try {
+                const f = featureId || self.featureIdUnderMouse
+                if (!f) {
+                  self.clearFeatureSelection()
+                } else {
+                  const sessionId = getRpcSessionId(self)
+                  const { feature } = (await rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatureDetails',
+                    {
+                      featureId: f,
+                      sessionId,
+                      rendererType: 'PileupRenderer',
+                    },
+                  )) as { feature: unknown }
+
+                  if (feature) {
+                    // @ts-ignore
+                    self.selectFeature(new SimpleFeature(feature))
+                  }
+                }
+              } catch (e) {
+                console.error(e)
+                session.notify(`${e}`)
+              }
+            },
+            onClick() {
+              self.clearFeatureSelection()
+            },
+            // similar to click but opens a menu with further options
+            async onFeatureContextMenu(
+              _: unknown,
+              featureId: string | undefined,
+            ) {
+              const session = getSession(self)
+              const { rpcManager } = session
+              try {
+                const f = featureId || self.featureIdUnderMouse
+                if (!f) {
+                  self.clearFeatureSelection()
+                } else {
+                  const sessionId = getRpcSessionId(self)
+                  const { feature } = (await rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatureDetails',
+                    {
+                      featureId: f,
+                      sessionId,
+                      rendererType: 'PileupRenderer',
+                    },
+                  )) as { feature: unknown }
+
+                  if (feature) {
+                    // @ts-ignore
+                    self.setContextMenuFeature(new SimpleFeature(feature))
+                  }
+                }
+              } catch (e) {
+                console.error(e)
+                session.notify(`${e}`)
+              }
+            },
           }
         },
 
