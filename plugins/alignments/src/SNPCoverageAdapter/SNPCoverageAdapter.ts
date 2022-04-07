@@ -82,7 +82,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { subadapter } = await this.configure()
-      let feats = await subadapter
+      const feats = await subadapter
         .getFeatures(region, opts)
         .pipe(toArray())
         .toPromise()

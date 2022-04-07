@@ -1,13 +1,14 @@
 import { addDisposer, types, cast, getEnv, getSnapshot } from 'mobx-state-tree'
 import { observable, autorun } from 'mobx'
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import {
+  getConf,
+  readConfObject,
   AnyConfigurationSchemaType,
   AnyConfigurationModel,
-} from '@jbrowse/core/configuration/configurationSchema'
+} from '@jbrowse/core/configuration'
+import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
+
 import PluginManager from '@jbrowse/core/PluginManager'
-import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { getContainingView } from '@jbrowse/core/util'
 import Tooltip from '../components/Tooltip'
 import { getUniqueModificationValues } from '../../shared'

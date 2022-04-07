@@ -253,11 +253,10 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
         if (name) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          filtered = filtered.filter((record: any) => {
-            record.name === name
-          })
+          filtered = filtered.filter((record: any) => record.name === name)
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         filtered.forEach((record: any) => {
           observer.next(this.cramRecordToFeature(record))
         })

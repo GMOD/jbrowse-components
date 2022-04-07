@@ -4,11 +4,7 @@ import {
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { Region } from '@jbrowse/core/util/types'
-import {
-  checkAbortSignal,
-  bytesForRegions,
-  updateStatus,
-} from '@jbrowse/core/util'
+import { bytesForRegions, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -204,19 +200,21 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           )
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const flags = record.get('flags')
-        if ((flags & flagInclude) === flagInclude && !(flags & flagExclude)) {
+        const flags = record.flags
+        if (
+          !((flags & flagInclude) === flagInclude && !(flags & flagExclude))
+        ) {
           continue
         }
 
         if (tagFilter) {
           const val = record.get(tagFilter.tag)
-          if (val === '*' ? val !== undefined : val === tagFilter.value)
+          if (!(val === '*' ? val !== undefined : val === tagFilter.value)) {
             continue
+          }
         }
 
-        if (name && record.get('name') === name) {
+        if (name && record.get('name') !== name) {
           continue
         }
 
