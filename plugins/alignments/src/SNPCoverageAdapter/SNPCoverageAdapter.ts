@@ -4,7 +4,6 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
-import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { toArray } from 'rxjs/operators'
 import {
@@ -19,10 +18,6 @@ import {
   getModificationPositions,
   Mismatch,
 } from '../BamAdapter/MismatchParser'
-
-interface SNPCoverageOptions extends BaseOptions {
-  filters?: SerializableFilterChain
-}
 
 function mismatchLen(mismatch: Mismatch) {
   return !isInterbase(mismatch.type) ? mismatch.length : 1
@@ -84,18 +79,13 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     return fetchSequence(region, sequenceAdapter)
   }
 
-  getFeatures(region: Region, opts: SNPCoverageOptions = {}) {
+  getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { subadapter } = await this.configure()
       let feats = await subadapter
         .getFeatures(region, opts)
         .pipe(toArray())
         .toPromise()
-
-      if (opts.filters) {
-        const { filters } = opts
-        feats = feats.filter(f => filters.passes(f, opts))
-      }
 
       const { bins, skipmap } = await this.generateCoverageBins(
         feats,
@@ -106,7 +96,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       bins.forEach((bin, index) => {
         observer.next(
           new SimpleFeature({
-            id: `${this.id}-${region.start}-${index}`,
+            id: `${this.id}-${region.start + index}`,
             data: {
               score: bin.total,
               snpinfo: bin,

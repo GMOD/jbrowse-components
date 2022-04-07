@@ -135,7 +135,6 @@ const stateModelFactory = (
           return {
             ...superProps,
             notReady: superProps.notReady || !this.modificationsReady,
-            filters: self.filters,
             modificationTagMap: JSON.parse(
               JSON.stringify(self.modificationTagMap),
             ),
@@ -143,6 +142,7 @@ const stateModelFactory = (
             // must use getSnapshot because otherwise changes to e.g. just the
             // colorBy.type are not read
             colorBy: self.colorBy ? getSnapshot(self.colorBy) : undefined,
+            filterBy: self.filterBy,
           }
         },
       }
@@ -240,37 +240,6 @@ const stateModelFactory = (
               },
             },
           ]
-        },
-        // The SNPCoverage filters are called twice because the BAM/CRAM
-        // features pass filters and then the SNPCoverage score features pass
-        // through here, and are already have 'snpinfo' are passed through
-        get filters() {
-          let filters: string[] = []
-          if (self.filterBy) {
-            const { flagInclude, flagExclude, tagFilter, readName } =
-              self.filterBy
-            filters = [
-              `jexl:get(feature,'snpinfo') != undefined ? true : ` +
-                `((get(feature,'flags')&${flagInclude})==${flagInclude}) && ` +
-                `!((get(feature,'flags')&${flagExclude}))`,
-            ]
-
-            if (tagFilter) {
-              const { tag, value } = tagFilter
-              filters.push(
-                `jexl:get(feature,'snpinfo') != undefined ? true : ` +
-                  `"${value}" =='*' ? getTag(feature,"${tag}") != undefined : ` +
-                  `getTag(feature,"${tag}") == "${value}"`,
-              )
-            }
-            if (readName) {
-              filters.push(
-                `jexl:get(feature,'snpinfo') != undefined ? true : ` +
-                  `get(feature,'name') == "${readName}"`,
-              )
-            }
-          }
-          return new SerializableFilterChain({ filters })
         },
       }
     })

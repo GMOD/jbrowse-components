@@ -377,26 +377,6 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
           return LinearPileupDisplayBlurb
         },
 
-        get filters() {
-          let filters: string[] = []
-          const { flagInclude, flagExclude, tagFilter, readName } =
-            self.filterBy
-
-          filters = [
-            `jexl:((get(feature,'flags')&${flagInclude})==${flagInclude}) && !(get(feature,'flags')&${flagExclude})`,
-          ]
-          if (tagFilter) {
-            const { tag, value } = tagFilter
-            filters.push(
-              `jexl:"${value}" =='*' ? getTag(feature,"${tag}") != undefined : getTag(feature,"${tag}") == "${value}"`,
-            )
-          }
-          if (readName) {
-            filters.push(`jexl:get(feature,'name') == "${readName}"`)
-          }
-          return new SerializableFilterChain({ filters })
-        },
-
         renderProps() {
           const view = getContainingView(self) as LGV
           const {
@@ -404,6 +384,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             modificationTagMap,
             sortedBy,
             colorBy,
+            filterBy,
             rpcDriverName,
           } = self
 
@@ -419,9 +400,9 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             displayModel: self,
             sortedBy,
             colorBy,
+            filterBy,
             colorTagMap: JSON.parse(JSON.stringify(colorTagMap)),
             modificationTagMap: JSON.parse(JSON.stringify(modificationTagMap)),
-            filters: this.filters,
             showSoftClip: self.showSoftClipping,
             config: self.rendererConfig,
           }

@@ -3,12 +3,9 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region } from '@jbrowse/core/util/types'
-import { checkAbortSignal } from '@jbrowse/core/util'
+import { checkAbortSignal, Region, Feature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 
@@ -39,8 +36,8 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   private seqIdToOriginalRefName: string[] = []
 
   public async configure() {
-    const cramLocation = readConfObject(this.config, 'cramLocation')
-    const craiLocation = readConfObject(this.config, 'craiLocation')
+    const cramLocation = this.getConf('cramLocation')
+    const craiLocation = this.getConf('craiLocation')
     if (!cramLocation) {
       throw new Error('missing cramLocation argument')
     }
@@ -59,16 +56,13 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       fetchSizeLimit: 200_000_000, // just make this a large size to avoid hitting it
     })
     // instantiate the sequence adapter
-    const sequenceAdapterType = readConfObject(this.config, [
-      'sequenceAdapter',
-      'type',
-    ])
+    const sequenceAdapterType = this.getConf(['sequenceAdapter', 'type'])
 
     if (!this.getSubAdapter) {
       throw new Error('Error getting subadapter')
     }
 
-    const seqConf = readConfObject(this.config, 'sequenceAdapter')
+    const seqConf = this.getConf('sequenceAdapter')
     const { dataAdapter: sequenceAdapter } = await this.getSubAdapter(seqConf)
 
     if (!(sequenceAdapter instanceof BaseFeatureDataAdapter)) {
@@ -211,9 +205,16 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   getFeatures(
     region: Region & { originalRefName?: string },
-    opts?: BaseOptions,
+    opts?: BaseOptions & {
+      filterBy: {
+        flagInclude: number
+        flagExclude: number
+        tagFilter: { tag: string; value: unknown }
+        name: string
+      }
+    },
   ) {
-    const { signal, statusCallback = () => {} } = opts || {}
+    const { signal, filterBy, statusCallback = () => {} } = opts || {}
     const { refName, start, end, originalRefName } = region
 
     return ObservableCreate<Feature>(async observer => {
@@ -229,8 +230,35 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
         }
         const records = await cram.getRecordsForRange(refId, start, end, opts)
         checkAbortSignal(signal)
+        const {
+          flagInclude = 0,
+          flagExclude = 0,
+          tagFilter,
+          name,
+        } = filterBy || {}
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        records.forEach((record: any) => {
+        let filtered = records.filter((record: any) => {
+          const flags = record.flags
+          return (flags & flagInclude) === flagInclude && !(flags & flagExclude)
+        })
+
+        if (tagFilter) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          filtered = filtered.filter((record: any) => {
+            const val = record[tagFilter.tag]
+            return val === '*' ? val !== undefined : val === tagFilter.value
+          })
+        }
+
+        if (name) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          filtered = filtered.filter((record: any) => {
+            record.name === name
+          })
+        }
+
+        filtered.forEach((record: any) => {
           observer.next(this.cramRecordToFeature(record))
         })
       } else {
@@ -250,7 +278,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   // we return the configured fetchSizeLimit, and the bytes for the region
   async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
     const bytes = await this.bytesForRegions(regions, opts)
-    const fetchSizeLimit = readConfObject(this.config, 'fetchSizeLimit')
+    const fetchSizeLimit = this.getConf('fetchSizeLimit')
     return {
       bytes,
       fetchSizeLimit,
