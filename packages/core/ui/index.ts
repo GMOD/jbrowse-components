@@ -1,5 +1,6 @@
 export * from './theme'
 export { LogoFull, Logomark } from './Logo'
+export { default as Dialog } from './Dialog'
 export { default as App } from './App'
 export { default as ReturnToImportFormDialog } from './ReturnToImportFormDialog'
 export { default as ErrorMessage } from './ErrorMessage'
