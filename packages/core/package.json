@@ -22,14 +22,13 @@
   "scripts": {
     "test": "cd ../..; jest packages/core",
     "coverage": "yarn test --coverage",
-    "lint": "tsc --noEmit && eslint --ext .js,.ts,.jsx,.tsx .",
     "clean": "rimraf dist",
     "prebuild": "yarn clean",
     "prepack": "yarn build",
-    "build": "babel . --root-mode upward --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json README.md ../../LICENSE dist/ && tsc"
+    "build": "tsc && cp package.json README.md ../../LICENSE dist/",
+    "build:only": "tsc"
   },
   "dependencies": {
-    "@babel/runtime": "^7.16.3",
     "@material-ui/icons": "^4.0.1",
     "abortable-promise-cache": "^1.5.0",
     "base64-js": "^1.3.0",
@@ -44,7 +43,7 @@
     "fast-deep-equal": "^3.1.3",
     "file-uri-to-path": "^1.0.0",
     "generic-filehandle": "^2.2.2",
-    "http-range-fetcher": "^1.2.2",
+    "http-range-fetcher": "^1.4.0",
     "is-object": "^1.0.1",
     "jexl": "^2.3.0",
     "json-stable-stringify": "^1.0.1",
@@ -54,7 +53,7 @@
     "rbush": "^3.0.1",
     "react-error-boundary": "^3.0.0",
     "react-intersection-observer": "^8.32.5",
-    "react-sizeme": "^3.0.2",
+    "react-measure": "^2.3.0",
     "sanitize-filename": "^1.6.3",
     "shortid": "^2.2.13",
     "svg-path-generator": "^1.1.0",

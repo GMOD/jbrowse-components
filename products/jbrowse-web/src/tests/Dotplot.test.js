@@ -28,7 +28,7 @@ dotplotConfig.configuration = {
   },
 }
 
-const delay = { timeout: 15000 }
+const delay = { timeout: 25000 }
 
 expect.extend({ toMatchImageSnapshot })
 setup()
@@ -76,4 +76,4 @@ test('open a dotplot view with import form', async () => {
   fireEvent.click(await findByTestId('submitDotplot'))
 
   expectCanvasMatch(await findByTestId('prerendered_canvas', {}, delay))
-}, 20000)
+}, 30000)

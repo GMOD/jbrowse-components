@@ -127,7 +127,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
               throw new Error(`Assembly ${selection} failed to load`)
             }
             return {
-              type: 'LinearGenomeView' as 'LinearGenomeView',
+              type: 'LinearGenomeView' as const,
               bpPerPx: 1,
               offsetPx: 0,
               hideHeader: true,

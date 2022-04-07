@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, no-undef */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getSerializedSvg } from './svg'
 import { Command, isMethodCall, MethodName, SetterName } from './types'
 

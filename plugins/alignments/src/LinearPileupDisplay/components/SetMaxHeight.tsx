@@ -55,7 +55,7 @@ function SetMaxHeightDlg(props: {
       <DialogContent className={classes.root}>
         <Typography>
           Set max height for the track. For example, you can increase this if
-          the layout says "Max height reached"
+          the layout says &quot;Max height reached&quot;
         </Typography>
         <TextField
           value={max}

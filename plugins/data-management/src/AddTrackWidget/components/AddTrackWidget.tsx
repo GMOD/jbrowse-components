@@ -47,7 +47,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
   const session = getSession(model)
   const { assembly, trackAdapter, trackData, trackName, trackType } = model
-  const [trackErrorMessage, setTrackErrorMessage] = useState<String>()
+  const [trackErrorMessage, setTrackErrorMessage] = useState<string>()
 
   function getStepContent(step: number) {
     switch (step) {

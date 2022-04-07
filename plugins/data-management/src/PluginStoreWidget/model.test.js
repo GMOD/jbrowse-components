@@ -1,4 +1,5 @@
 import { createTestSession } from '@jbrowse/web/src/rootModel'
+jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
 describe('PluginStoreModel', () => {
   it('filters plugins correctly', () => {

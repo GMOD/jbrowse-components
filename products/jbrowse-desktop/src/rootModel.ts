@@ -8,15 +8,14 @@ import {
   Instance,
 } from 'mobx-state-tree'
 import { autorun } from 'mobx'
-
+import makeWorkerInstance from './makeWorkerInstance'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { MenuItem } from '@jbrowse/core/ui'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import { MenuItem } from '@jbrowse/core/ui'
 import { UriLocation } from '@jbrowse/core/util/types'
-import { ipcRenderer } from 'electron'
 
 // icons
 import OpenIcon from '@material-ui/icons/FolderOpen'
@@ -31,8 +30,8 @@ import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 import sessionModelFactory from './sessionModelFactory'
 import JBrowseDesktop from './jbrowseModel'
 import OpenSequenceDialog from './OpenSequenceDialog'
-// @ts-ignore
-import RenderWorker from './rpc.worker'
+
+const { ipcRenderer } = window.require('electron')
 
 function getSaveSession(model: RootModel) {
   return {
@@ -370,7 +369,9 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         pluginManager,
         self.jbrowse.configuration.rpc,
         {
-          WebWorkerRpcDriver: { WorkerClass: RenderWorker },
+          WebWorkerRpcDriver: {
+            makeWorkerInstance,
+          },
           MainThreadRpcDriver: {},
         },
       ),

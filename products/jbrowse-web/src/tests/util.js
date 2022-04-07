@@ -1,4 +1,5 @@
 import React from 'react'
+
 import rangeParser from 'range-parser'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { QueryParamProvider } from 'use-query-params'
@@ -7,6 +8,7 @@ import JBrowseWithoutQueryParamProvider from '../JBrowse'
 import JBrowseRootModelFactory from '../rootModel'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
+jest.mock('../makeWorkerInstance', () => () => {})
 
 configSnapshot.configuration = {
   rpc: {

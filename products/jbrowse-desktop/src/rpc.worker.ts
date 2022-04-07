@@ -1,4 +1,4 @@
-/* eslint-disable no-restricted-globals, react-hooks/rules-of-hooks */
+/* eslint-disable no-restricted-globals,react-hooks/rules-of-hooks */
 import './workerPolyfill'
 
 import RpcServer from 'librpc-web-mod'

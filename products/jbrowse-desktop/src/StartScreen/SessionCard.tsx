@@ -11,12 +11,13 @@ import {
   Typography,
   makeStyles,
 } from '@material-ui/core'
-import { ipcRenderer } from 'electron'
 
 import PlaylistAddIcon from '@material-ui/icons/PlaylistAdd'
 import DeleteIcon from '@material-ui/icons/Delete'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import TextFieldsIcon from '@material-ui/icons/TextFields'
+
+const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles({
   card: {

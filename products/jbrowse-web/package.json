@@ -6,11 +6,11 @@
   "main": "build",
   "dir": "src",
   "scripts": {
-    "start": "rescripts --max-http-header-size=100000 start",
-    "build": "cross-env NODE_OPTIONS='--max-old-space-size=7000' rescripts build",
+    "start": "craco --max-http-header-size=100000 start",
+    "build": "cross-env NODE_OPTIONS='--max-old-space-size=7000' craco build",
     "postbuild": "node -e \"fs.writeFileSync('build/version.txt',JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version)\"",
-    "test": "rescripts test",
-    "eject": "rescripts eject",
+    "test": "craco test",
+    "eject": "craco eject",
     "checktypes": "tsc --noEmit",
     "jtest": "jest --config ../../jest.config.js --roots products/jbrowse-web/",
     "lint": "eslint --ext .js,.ts,.jsx,.tsx src",
@@ -64,6 +64,7 @@
     "mobx": "^5.10.1",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
+    "node-polyfill-webpack-plugin": "^1.1.4",
     "pako": "^1.0.10",
     "prop-types": "^15.7.2",
     "query-string": "^6.9.0",
@@ -71,14 +72,11 @@
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
     "react-error-boundary": "^3.0.0",
-    "react-sizeme": "^3.0.2",
     "requestidlecallback-polyfill": "^1.0.2",
     "rxjs": "^6.5.2",
     "shortid": "^2.2.15",
-    "use-query-params": "1.2.3"
-  },
-  "devDependencies": {
-    "jest": "26.6.0"
+    "use-query-params": "1.2.3",
+    "webpack": "^5.71.0"
   },
   "browserslist": {
     "production": [

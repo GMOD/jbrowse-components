@@ -33,8 +33,5 @@ module.exports = {
     'jest-localstorage-mock',
   ],
   testURL: 'http://localhost',
-  moduleNameMapper: {
-    '^react-native$': 'react-native-web',
-    '^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy',
-  },
+  testEnvironment: 'jsdom',
 }

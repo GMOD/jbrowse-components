@@ -4,6 +4,7 @@ import { render, cleanup, fireEvent, waitFor } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 
 import PluginStoreWidget from './PluginStoreWidget'
+jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
 const plugins = {
   plugins: [

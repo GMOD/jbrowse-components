@@ -7,9 +7,9 @@ import {
   makeStyles,
 } from '@material-ui/core'
 
-import emptyIcon from './emptyIcon.png'
-import linearGenomeViewIcon from './linearGenomeViewIcon.png'
-import svInspectorIcon from './svInspectorIcon.png'
+import emptyIcon from './img/emptyIcon.png'
+import linearGenomeViewIcon from './img/linearGenomeViewIcon.png'
+import svInspectorIcon from './img/svInspectorIcon.png'
 
 const useStyles = makeStyles(theme => ({
   card: {
@@ -39,7 +39,7 @@ function NewSessionCard({
 }: {
   name: string
   onClick: () => void
-  image: string
+  image?: string
 }) {
   const classes = useStyles()
   const [hovered, setHovered] = useState(false)
@@ -74,10 +74,10 @@ export function NewEmptySession({ rootModel }: { rootModel: RootModel }) {
   return (
     <NewSessionCard
       name="Empty"
+      image={emptyIcon}
       onClick={() => {
         rootModel.setSession(emptySessionSnapshot)
       }}
-      image={emptyIcon}
     />
   )
 }
@@ -90,6 +90,7 @@ export function NewLinearGenomeViewSession({
   return (
     <NewSessionCard
       name="Linear Genome View"
+      image={linearGenomeViewIcon}
       onClick={() => {
         rootModel.setSession({
           ...emptySessionSnapshot,
@@ -97,7 +98,6 @@ export function NewLinearGenomeViewSession({
           views: [{ type: 'LinearGenomeView' }],
         })
       }}
-      image={linearGenomeViewIcon}
     />
   )
 }
@@ -106,6 +106,7 @@ export function NewSVInspectorSession({ rootModel }: { rootModel: RootModel }) {
   return (
     <NewSessionCard
       name="Structural Variant Inspector"
+      image={svInspectorIcon}
       onClick={() => {
         rootModel.setSession({
           ...emptySessionSnapshot,
@@ -113,7 +114,6 @@ export function NewSVInspectorSession({ rootModel }: { rootModel: RootModel }) {
           views: [{ type: 'SvInspectorView' }],
         })
       }}
-      image={svInspectorIcon}
     />
   )
 }

@@ -10,8 +10,8 @@ export type AbstractCanvas =
   | NodeCanvas.Canvas
 
 export type Abstract2DCanvasContext =
-  /* eslint-disable-next-line no-undef */
-  OffscreenCanvasRenderingContext2D | OffscreenCanvasRenderingContext2DShim
+  | OffscreenCanvasRenderingContext2D
+  | OffscreenCanvasRenderingContext2DShim
 
 export type AbstractImageBitmap = Pick<ImageBitmap, 'height' | 'width'>
 

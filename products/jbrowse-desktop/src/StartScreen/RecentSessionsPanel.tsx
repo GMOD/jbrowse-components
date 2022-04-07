@@ -19,7 +19,6 @@ import {
 } from '@material-ui/lab'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { format } from 'timeago.js'
-import { ipcRenderer } from 'electron'
 
 // icons
 import DeleteIcon from '@material-ui/icons/Delete'
@@ -33,6 +32,8 @@ import RenameSessionDialog from './dialogs/RenameSessionDialog'
 import DeleteSessionDialog from './dialogs/DeleteSessionDialog'
 import { useLocalStorage, loadPluginManager } from './util'
 import SessionCard from './SessionCard'
+
+const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles(theme => ({
   pointer: {

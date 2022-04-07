@@ -5,9 +5,7 @@
   "extends": [
     "plugin:@typescript-eslint/recommended",
     "plugin:monorepo/recommended",
-    "plugin:prettier/recommended",
-    "prettier/@typescript-eslint",
-    "prettier/react",
+    "prettier",
     "react-app"
   ],
   "parser": "@typescript-eslint/parser",

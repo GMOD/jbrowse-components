@@ -18,6 +18,8 @@ import {
   SnapshotIn,
 } from 'mobx-state-tree'
 
+import makeWorkerInstance from './makeWorkerInstance'
+
 import { saveAs } from 'file-saver'
 import { observable, autorun } from 'mobx'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
@@ -45,8 +47,6 @@ import { Cable } from '@jbrowse/core/ui/Icons'
 // other
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
-// @ts-ignore
-import RenderWorker from './rpc.worker'
 import sessionModelFactory from './sessionModelFactory'
 
 // attempts to remove undefined references from the given MST model. can only actually
@@ -135,7 +135,9 @@ export default function RootModel(
         pluginManager,
         self.jbrowse.configuration.rpc,
         {
-          WebWorkerRpcDriver: { WorkerClass: RenderWorker },
+          WebWorkerRpcDriver: {
+            makeWorkerInstance,
+          },
           MainThreadRpcDriver: {},
         },
       ),

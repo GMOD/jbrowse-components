@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../tsconfig.json",
   "compilerOptions": {
     "noEmit": false,
     "declaration": true,
@@ -9,5 +9,6 @@
     "module": "commonjs",
     "target": "ES2019"
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": []
 }

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import { MenuItem } from '@jbrowse/core/ui'
+import { MenuItem, ReturnToImportFormDialog } from '@jbrowse/core/ui'
 import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import {
   LinearGenomeViewModel,
@@ -9,7 +9,6 @@ import {
 import { transaction } from 'mobx'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
 import {
   addDisposer,
   cast,

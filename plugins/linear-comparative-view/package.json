@@ -18,15 +18,12 @@
   "distMain": "dist/index.js",
   "srcMain": "src/index.tsx",
   "main": "src/index.tsx",
-  "distModule": "dist/plugin-linear-comparative-view.esm.js",
-  "module": "",
   "files": [
     "dist",
     "src"
   ],
   "scripts": {
-    "start": "tsdx watch --verbose --noClean",
-    "build": "tsdx build",
+    "build": "babel src --root-mode upward --out-dir dist --extensions .ts,.js,.tsx,.jsx",
     "test": "cd ../..; jest plugins/linear-comparative-view",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",

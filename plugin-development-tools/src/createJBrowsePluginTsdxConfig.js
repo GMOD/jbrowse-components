@@ -11,7 +11,9 @@ function createJBrowsePluginTsdxConfig(config, options, globals) {
           try {
             require.resolve(id)
             return false
-          } catch {}
+          } catch {
+            /* ignore */
+          }
         }
       }
       return isExternal

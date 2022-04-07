@@ -1,3 +1,4 @@
+// we use mainthread rpc so we mock the makeWorkerInstance to an empty file
 import React from 'react'
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
 import { render, waitFor } from '@testing-library/react'
@@ -8,6 +9,10 @@ import rangeParser from 'range-parser'
 import { QueryParamProvider } from 'use-query-params'
 
 import { Loader } from '../Loader'
+
+jest.mock('../makeWorkerInstance', () => () => {})
+
+const delay = { timeout: 20000 }
 
 if (!window.TextEncoder) {
   window.TextEncoder = TextEncoder
@@ -139,7 +144,7 @@ describe('<Loader />', () => {
       </QueryParamProvider>,
     )
 
-    await findByText('Help', {}, { timeout: 20000 })
+    await findByText('Help', {}, delay)
   }, 20000)
 
   it('can use config from a url with shared session ', async () => {
@@ -155,13 +160,8 @@ describe('<Loader />', () => {
       </QueryParamProvider>,
     )
 
-    await findByText('Help', {}, { timeout: 20000 })
-    await waitFor(
-      () => {
-        expect(sessionStorage.length).toBeGreaterThan(0)
-      },
-      { timeout: 20000 },
-    )
+    await findByText('Help', {}, delay)
+    await waitFor(() => expect(sessionStorage.length).toBeGreaterThan(0), delay)
   }, 20000)
 
   // minimal session with plugin in our plugins.json
@@ -178,12 +178,9 @@ describe('<Loader />', () => {
         <Loader />
       </QueryParamProvider>,
     )
-    await waitFor(
-      () => {
-        expect(sessionStorage.length).toBeGreaterThan(0)
-      },
-      { timeout: 20000 },
-    )
+    await waitFor(() => {
+      expect(sessionStorage.length).toBeGreaterThan(0)
+    }, delay)
   }, 20000)
 
   // minimal session,
@@ -217,7 +214,7 @@ describe('<Loader />', () => {
         </QueryParamProvider>
       </ErrorBoundary>,
     )
-    await findAllByText(/Error/, {}, { timeout: 20000 })
+    await findAllByText(/Error/, {}, delay)
   }, 20000)
 
   it('can catch error from loading a bad config', async () => {
@@ -250,13 +247,12 @@ describe('<Loader />', () => {
       </QueryParamProvider>,
     )
 
-    await findByText('Help', {}, { timeout: 20000 })
-    await findByText(/volvox-sorted.bam/)
-    const elt = await findByPlaceholderText('Search for location')
+    await findByText('Help', {}, delay)
+
+    await findByText(/volvox-sorted.bam/, {}, delay)
+    const elt = await findByPlaceholderText('Search for location', {}, delay)
 
     // @ts-ignore
-    await waitFor(() => expect(elt.value).toBe('ctgA:5,999..6,999'), {
-      timeout: 20000,
-    })
-  }, 20000)
+    await waitFor(() => expect(elt.value).toBe('ctgA:5,999..6,999'), delay)
+  }, 40000)
 })

@@ -2,7 +2,7 @@ import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
 import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'
-import { MenuItem } from '@jbrowse/core/ui'
+import { MenuItem, ReturnToImportFormDialog } from '@jbrowse/core/ui'
 import {
   assembleLocString,
   clamp,
@@ -52,7 +52,6 @@ import { renderToSvg } from './components/LinearGenomeViewSvg'
 import RefNameAutocomplete from './components/RefNameAutocomplete'
 import SearchBox from './components/SearchBox'
 import ExportSvgDlg from './components/ExportSvgDialog'
-import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
 
 export interface BpOffset {
   refName?: string

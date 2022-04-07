@@ -1,10 +1,12 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  readConfObject,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
 import {
   createCanvas,
   createImageBitmap,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { viewBpToPx, renameRegionsIfNeeded } from '@jbrowse/core/util'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { Region } from '@jbrowse/core/util/types'
 import { getSnapshot } from 'mobx-state-tree'
 import ComparativeServerSideRendererType, {

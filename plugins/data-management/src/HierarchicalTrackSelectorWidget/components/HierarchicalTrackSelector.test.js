@@ -3,6 +3,7 @@ import { createTheme, ThemeProvider } from '@material-ui/core/styles'
 import { cleanup, render } from '@testing-library/react'
 import React from 'react'
 import HierarchicalTrackSelector from './HierarchicalTrackSelector'
+jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
 window.requestIdleCallback = cb => cb()
 window.cancelIdleCallback = () => {}
