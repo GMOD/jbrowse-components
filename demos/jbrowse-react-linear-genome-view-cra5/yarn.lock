@@ -1175,6 +1175,11 @@
   resolved "https://registry.yarnpkg.com/@flatten-js/interval-tree/-/interval-tree-1.0.18.tgz#285c6d491e838ed0c60b7a4f143a5d20b7f41947"
   integrity sha512-o72sZErW0Y1C82Cg7nk82ojJ/22EtmKyp5I3eNqgcOKFp/VCzetATYYjJIqOBBaR7FQ/MFj/ZpsmP38mL4TkYA==
 
+"@fontsource/roboto@^4.5.5":
+  version "4.5.5"
+  resolved "https://registry.yarnpkg.com/@fontsource/roboto/-/roboto-4.5.5.tgz#4ecc38e690469378e2ec2a97f9c12282c654cc93"
+  integrity sha512-Pe1p+gAO6K0aLxBXlLoJRHVx352tVc/v/7DOnvM3t+FYXb+KUga9aCD1NpnDfd0kKnWXqrZyAXguyyFWDDuphw==
+
 "@gmod/bam@^1.1.15":
   version "1.1.16"
   resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.1.16.tgz#31ee1e887245d2bfcbc30bcd7aa6deb6f5b96100"
