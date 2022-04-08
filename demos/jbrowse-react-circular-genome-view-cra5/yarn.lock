@@ -1355,6 +1355,23 @@
     react-vtree "^3.0.0-beta.1"
     react-window "^1.8.6"
 
+"@jbrowse/plugin-linear-genome-view@^1.6.9":
+  version "1.6.9"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-linear-genome-view/-/plugin-linear-genome-view-1.6.9.tgz#f904d1362f5f4fba86bb5774abcfd31eb2f0056a"
+  integrity sha512-PxzlLS8ZV5Bdk57xPNeeYgCoVHP58jFXkV1O1pc5Y3FEFfvriRTX+u5Q8nur3l6F0jsU+qmCDRpOSeSZRlqQDQ==
+  dependencies:
+    "@material-ui/icons" "^4.9.1"
+    "@popperjs/core" "^2.11.0"
+    clone "^2.1.2"
+    clsx "^1.0.4"
+    copy-to-clipboard "^3.3.1"
+    file-saver "^2.0.0"
+    is-object "^1.0.1"
+    json-stable-stringify "^1.0.1"
+    normalize-wheel "^1.0.1"
+    react-popper "^2.0.0"
+    react-sizeme "^3.0.2"
+
 "@jbrowse/plugin-sequence@^1.6.9":
   version "1.6.9"
   resolved "https://registry.yarnpkg.com/@jbrowse/plugin-sequence/-/plugin-sequence-1.6.9.tgz#ab69c46b27f81624ec1f047963bc830b82740c8f"
@@ -3511,6 +3528,11 @@ cliui@^7.0.2:
     strip-ansi "^6.0.0"
     wrap-ansi "^7.0.0"
 
+clone@^2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/clone/-/clone-2.1.2.tgz#1b7f4b9f591f1e8f83670401600345a02887435f"
+  integrity sha1-G39Ln1kfHo+DZwQBYANFoCiHQ18=
+
 clsx@^1.0.4, clsx@^1.1.0, clsx@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/clsx/-/clsx-1.1.1.tgz#98b3134f9abbdf23b2663491ace13c5c03a73188"
@@ -5019,6 +5041,11 @@ file-loader@^6.2.0:
   dependencies:
     loader-utils "^2.0.0"
     schema-utils "^3.0.0"
+
+file-saver@^2.0.0:
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/file-saver/-/file-saver-2.0.5.tgz#d61cfe2ce059f414d899e9dd6d4107ee25670c38"
+  integrity sha512-P9bmyZ3h/PRG+Nzga+rbdI4OEpNDzAVyy74uVO9ATgzLK6VtAsYybF/+TOCvrc0MO793d6+42lLyZTw7/ArVzA==
 
 file-uri-to-path@^1.0.0:
   version "1.0.0"
@@ -7278,6 +7305,11 @@ normalize-url@^6.0.1:
   version "6.1.0"
   resolved "https://registry.yarnpkg.com/normalize-url/-/normalize-url-6.1.0.tgz#40d0885b535deffe3f3147bec877d05fe4c5668a"
   integrity sha512-DlL+XwOy3NxAQ8xuC0okPgK46iuVNAK01YN7RueYBqqFeGsBjV9XmCAzAdgt+667bCl5kPh9EqKKDwnaPG1I7A==
+
+normalize-wheel@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/normalize-wheel/-/normalize-wheel-1.0.1.tgz#aec886affdb045070d856447df62ecf86146ec45"
+  integrity sha1-rsiGr/2wRQcNhWRH32Ls+GFG7EU=
 
 npm-run-path@^4.0.1:
   version "4.0.1"
