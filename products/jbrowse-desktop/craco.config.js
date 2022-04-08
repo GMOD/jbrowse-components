@@ -11,20 +11,14 @@ module.exports = {
     return config
   },
   webpack: {
-    target: 'node',
-
     plugins: [
       new NodePolyfillPlugin({
         excludeAliases: ['console'],
       }),
       new webpack.ContextReplacementPlugin(/any-promise/),
     ],
-    configure: webpackConfig => {
-      webpackConfig.target = 'electron-renderer'
-      const { isFound, match } = getLoader(
-        webpackConfig,
-        loaderByName('babel-loader'),
-      )
+    configure: config => {
+      const { isFound, match } = getLoader(config, loaderByName('babel-loader'))
 
       // technique here similar to
       // https://github.com/brammitch/monorepo/blob/main/packages/app-one/craco.config.js
@@ -35,19 +29,14 @@ module.exports = {
           : [match.loader.include]
         match.loader.include = include.concat(getYarnWorkspaces())
       }
-      return {
-        ...webpackConfig,
-        resolve: {
-          ...webpackConfig.resolve,
-          fallback: { fs: false },
-        },
-        output: {
-          ...webpackConfig.output,
-          // the 'auto' setting is important for properly resolving the loading
-          // of worker chunks xref https://github.com/webpack/webpack/issues/13791#issuecomment-897579223
-          publicPath: 'auto',
-        },
-      }
+
+      // similar to our webpack 4 rescript, helps load 'fs' module for local
+      // file access and avoid browser:{} field from package.json being used
+      // (which sometimes kicks out fs access e.g. in generic-filehandle)
+      config.target = 'electron-renderer'
+      config.resolve.aliasFields = []
+      config.resolve.mainFields = ['module', 'main']
+      return config
     },
   },
 }

@@ -1,7 +1,7 @@
 import {
   BlobFile,
-  LocalFile,
   GenericFilehandle,
+  LocalFile,
   Fetcher,
 } from 'generic-filehandle'
 import { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache'
