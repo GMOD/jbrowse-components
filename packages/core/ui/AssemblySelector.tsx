@@ -43,15 +43,25 @@ const AssemblySelector = observer(
     session,
     onChange,
     selected,
+    extra = 0,
   }: {
     session: AbstractSessionModel
     onChange: (arg: string) => void
     selected: string | undefined
+    extra?: unknown
   }) => {
     const classes = useStyles()
     const { assemblyNames, assemblyManager } = session
+
+    // constructs a localstorage key based on host/path/config to help
+    // remember. non-config assists usage with e.g. embedded apps
+    const config = new URLSearchParams(window.location.search).get('config')
     const [lastSelected, setLastSelected] = useLocalStorage(
-      'lastSelectedAsm',
+      `lastAssembly-${[
+        window.location.host + window.location.pathname,
+        config,
+        extra,
+      ].join('-')}`,
       selected,
     )
 
@@ -60,7 +70,7 @@ const AssemblySelector = observer(
       : selected
 
     useEffect(() => {
-      if (selection) {
+      if (selection && selection !== selected) {
         onChange(selection)
       }
     }, [selection, onChange])
