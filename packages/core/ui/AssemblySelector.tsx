@@ -73,7 +73,7 @@ const AssemblySelector = observer(
       if (selection && selection !== selected) {
         onChange(selection)
       }
-    }, [selection, onChange])
+    }, [selection, onChange, selected])
 
     const error = assemblyNames.length ? '' : 'No configured assemblies'
     return (
