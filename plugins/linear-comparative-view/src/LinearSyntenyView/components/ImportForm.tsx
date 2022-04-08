@@ -180,6 +180,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
               <AssemblySelector
                 key={`row_${index}_${selected[index]}`}
                 selected={selected[index]}
+                extra={index}
                 onChange={val => {
                   // splice the value into the current array
                   const copy = selected.slice(0)
