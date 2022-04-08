@@ -6,10 +6,6 @@
       "url": "https://unpkg.com/jbrowse-plugin-biothings@^1/dist/jbrowse-plugin-biothings.umd.production.min.js"
     },
     {
-      "name": "GDC",
-      "url": "https://unpkg.com/jbrowse-plugin-gdc@^1/dist/jbrowse-plugin-gdc.umd.production.min.js"
-    },
-    {
       "name": "UCSC",
       "url": "https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js"
     }
@@ -291,29 +287,7 @@
         "track": "genomicSuperDups"
       }
     },
-    {
-      "type": "GDCTrack",
-      "trackId": "gdc_plugin_track",
-      "name": "GDC cancer variants (GraphQL plugin)",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation"],
-      "adapter": {
-        "type": "GDCAdapter"
-      },
-      "displays": [
-        {
-          "type": "LinearGDCDisplay",
-          "displayId": "gdc_plugin_track_linear",
-          "renderer": {
-            "color1": "jexl:cast({LOW: 'blue', MODIFIER: 'goldenrod', MODERATE: 'orange', HIGH: 'red'})[get(feature,'consequence').hits.edges[.node.transcript.is_canonical == true][0].node.transcript.annotation.vep_impact] || 'lightgray'",
-            "labels": {
-              "name": "jexl:get(feature,'genomicDnaChange')"
-            },
-            "type": "SvgFeatureRenderer"
-          }
-        }
-      ]
-    },
+
     {
       "type": "FeatureTrack",
       "trackId": "clinvar_hg19",
