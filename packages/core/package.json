@@ -25,8 +25,7 @@
     "clean": "rimraf dist",
     "prebuild": "yarn clean",
     "prepack": "yarn build",
-    "build": "tsc && cp package.json README.md ../../LICENSE dist/",
-    "build:only": "tsc"
+    "build": "babel . --root-mode upward --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json README.md ../../LICENSE dist/ && tsc"
   },
   "dependencies": {
     "@material-ui/icons": "^4.0.1",
