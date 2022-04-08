@@ -42,7 +42,9 @@ async function getPluginManager() {
   }
   // Load runtime plugins
   const config = await receiveConfiguration()
-  const pluginLoader = new PluginLoader(config.plugins)
+  const pluginLoader = new PluginLoader(config.plugins, {
+    fetchESM: url => import(url),
+  })
   pluginLoader.installGlobalReExports(self)
   const runtimePlugins = await pluginLoader.load()
   const plugins = [...corePlugins.map(p => ({ plugin: p })), ...runtimePlugins]
