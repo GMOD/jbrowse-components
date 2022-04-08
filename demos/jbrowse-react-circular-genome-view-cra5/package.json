@@ -1,10 +1,10 @@
 {
-  "name": "jbrowse-react-linear-genome-view-cra5",
+  "name": "jbrowse-react-circular-genome-view-cra5",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
     "@craco/craco": "^6.4.3",
-    "@jbrowse/react-linear-genome-view": "^1.6.9",
+    "@jbrowse/react-circular-genome-view": "^1.6.9",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^12.1.4",
     "@testing-library/user-event": "^13.5.0",
@@ -23,8 +23,8 @@
     "build": "craco build",
     "test": "craco test",
     "eject": "craco eject",
-    "deploy": "aws s3 sync --delete build s3://jbrowse.org/demos/lgv-cra5/",
-    "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/demos/lgv-cra5/*\""
+    "deploy": "aws s3 sync --delete build s3://jbrowse.org/demos/cgv-cra5/",
+    "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/demos/cgv-cra5/*\""
   },
   "eslintConfig": {
     "extends": [
