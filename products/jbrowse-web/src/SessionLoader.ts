@@ -210,7 +210,7 @@ const SessionLoader = types
     async fetchPlugins(config: { plugins: PluginDefinition[] }) {
       try {
         const pluginLoader = new PluginLoader(config.plugins, {
-          fetchESM: url => import(url),
+          fetchESM: url => import(/* webpackIgnore:true */ url),
         })
         pluginLoader.installGlobalReExports(window)
         const runtimePlugins = await pluginLoader.load()
@@ -223,7 +223,7 @@ const SessionLoader = types
     async fetchSessionPlugins(snap: { sessionPlugins?: PluginDefinition[] }) {
       try {
         const pluginLoader = new PluginLoader(snap.sessionPlugins || [], {
-          fetchESM: url => import(url),
+          fetchESM: url => import(/* webpackIgnore:true */ url),
         })
         pluginLoader.installGlobalReExports(window)
         const plugins = await pluginLoader.load()

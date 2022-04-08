@@ -101,9 +101,9 @@ export default class PluginLoader {
 
   constructor(
     pluginDefinitions: PluginDefinition[] = [],
-    { fetchESM }: { fetchESM: (url: string) => Promise<unknown> },
+    args?: { fetchESM: (url: string) => Promise<unknown> },
   ) {
-    this.fetchESM = fetchESM
+    this.fetchESM = args?.fetchESM
     this.definitions = JSON.parse(JSON.stringify(pluginDefinitions))
   }
 

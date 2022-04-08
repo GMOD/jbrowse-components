@@ -56,7 +56,7 @@ export async function createPluginManager(
   initialTimestamp = +Date.now(),
 ) {
   const pluginLoader = new PluginLoader(configSnapshot.plugins, {
-    fetchESM: url => import(url),
+    fetchESM: url => import(/* webpackIgnore:true */ url),
   })
   pluginLoader.installGlobalReExports(window)
   const runtimePlugins = await pluginLoader.load()
