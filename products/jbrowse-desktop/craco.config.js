@@ -20,6 +20,7 @@ module.exports = {
       new webpack.ContextReplacementPlugin(/any-promise/),
     ],
     configure: webpackConfig => {
+      webpackConfig.target = 'electron-renderer'
       const { isFound, match } = getLoader(
         webpackConfig,
         loaderByName('babel-loader'),
