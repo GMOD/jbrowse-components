@@ -25,11 +25,8 @@ module.exports = {
         'process.env.ENABLE_TYPE_CHECK': '"true"',
       }),
     ],
-    configure: webpackConfig => {
-      const { isFound, match } = getLoader(
-        webpackConfig,
-        loaderByName('babel-loader'),
-      )
+    configure: config => {
+      const { isFound, match } = getLoader(config, loaderByName('babel-loader'))
 
       // technique here similar to
       // https://github.com/brammitch/monorepo/blob/main/packages/app-one/craco.config.js
@@ -40,19 +37,13 @@ module.exports = {
           : [match.loader.include]
         match.loader.include = include.concat(getYarnWorkspaces())
       }
-      return {
-        ...webpackConfig,
-        resolve: {
-          ...webpackConfig.resolve,
-          fallback: { fs: false },
-        },
-        output: {
-          ...webpackConfig.output,
-          // the 'auto' setting is important for properly resolving the loading
-          // of worker chunks xref https://github.com/webpack/webpack/issues/13791#issuecomment-897579223
-          publicPath: 'auto',
-        },
-      }
+
+      config.resolve.fallback = { fs: false }
+      // the 'auto' setting is important for properly resolving the loading of
+      // worker chunks xref
+      // https://github.com/webpack/webpack/issues/13791#issuecomment-897579223
+      config.output.publicPath = 'auto'
+      return config
     },
   },
 }
