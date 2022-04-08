@@ -30,6 +30,7 @@ import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 import sessionModelFactory from './sessionModelFactory'
 import JBrowseDesktop from './jbrowseModel'
 import OpenSequenceDialog from './OpenSequenceDialog'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -276,7 +277,20 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                 if (self.session) {
                   self.session.queueDialog(doneCallback => [
                     OpenSequenceDialog,
-                    { model: self, onClose: doneCallback },
+                    {
+                      model: self,
+                      onClose: (confs: AnyConfigurationModel[]) => {
+                        try {
+                          confs?.forEach(conf => {
+                            self.jbrowse.addAssemblyConf(conf)
+                          })
+                        } catch (e) {
+                          console.error(e)
+                          self.session?.notify(`${e}`)
+                        }
+                        doneCallback()
+                      },
+                    },
                   ])
                 }
               },
