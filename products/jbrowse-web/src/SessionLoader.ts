@@ -209,7 +209,9 @@ const SessionLoader = types
   .actions(self => ({
     async fetchPlugins(config: { plugins: PluginDefinition[] }) {
       try {
-        const pluginLoader = new PluginLoader(config.plugins)
+        const pluginLoader = new PluginLoader(config.plugins, {
+          fetchESM: url => import(url),
+        })
         pluginLoader.installGlobalReExports(window)
         const runtimePlugins = await pluginLoader.load()
         self.setRuntimePlugins([...runtimePlugins])
@@ -220,7 +222,9 @@ const SessionLoader = types
     },
     async fetchSessionPlugins(snap: { sessionPlugins?: PluginDefinition[] }) {
       try {
-        const pluginLoader = new PluginLoader(snap.sessionPlugins || [])
+        const pluginLoader = new PluginLoader(snap.sessionPlugins || [], {
+          fetchESM: url => import(url),
+        })
         pluginLoader.installGlobalReExports(window)
         const plugins = await pluginLoader.load()
         self.setSessionPlugins([...plugins])
