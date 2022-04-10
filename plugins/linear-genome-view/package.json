@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
-    "@material-ui/icons": "^4.9.1",
+    "@mui/icons-material": "^5.0.1",
     "@popperjs/core": "^2.11.0",
     "clone": "^2.1.2",
     "clsx": "^1.0.4",
@@ -45,8 +45,8 @@
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",
-    "@material-ui/core": "^4.12.2",
-    "@material-ui/lab": "^4.0.0-alpha.45",
+    "@mui/material": "^5.0.0",
+    "@mui/lab": "^5.0.0-alpha.45",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",

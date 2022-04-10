@@ -7,7 +7,7 @@ import {
   Stepper,
   Typography,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 import {
   getSession,
   isElectron,
@@ -16,7 +16,7 @@ import {
 import { getConf } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import { Alert } from '@material-ui/lab'
+import { Alert } from '@mui/lab'
 
 // locals
 import ConfirmTrack from './ConfirmTrack'

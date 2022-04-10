@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button, Typography, makeStyles } from '@material-ui/core'
+import { Button, Typography, makeStyles } from '@mui/material'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals

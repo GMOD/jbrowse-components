@@ -23,7 +23,7 @@ import {
 } from 'mobx-state-tree'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import FolderOpenIcon from '@material-ui/icons/FolderOpen'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 export default function stateModelFactory(pluginManager: PluginManager) {
   const defaultHeight = 400

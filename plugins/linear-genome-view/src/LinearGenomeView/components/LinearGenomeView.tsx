@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Paper, Typography, makeStyles } from '@material-ui/core'
+import { Button, Paper, Typography, makeStyles } from '@mui/material'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { observer } from 'mobx-react'
 

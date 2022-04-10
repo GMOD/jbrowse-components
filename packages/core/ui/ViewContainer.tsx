@@ -8,15 +8,15 @@ import {
   makeStyles,
   useTheme,
   alpha,
-} from '@material-ui/core'
+} from '@mui/material'
 
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import useMeasure from 'react-use-measure'
 
 // icons
-import CloseIcon from '@material-ui/icons/Close'
-import MenuIcon from '@material-ui/icons/Menu'
+import CloseIcon from '@mui/icons-material/Close'
+import MenuIcon from '@mui/icons-material/Menu'
 
 // locals
 import { IBaseViewModel } from '../pluggableElementTypes/models'

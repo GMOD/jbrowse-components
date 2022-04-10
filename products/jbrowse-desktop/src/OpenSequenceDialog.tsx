@@ -11,7 +11,7 @@ import {
   TextField,
   Typography,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 import FileSelector from '@jbrowse/core/ui/FileSelector'
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import { FileLocation } from '@jbrowse/core/util/types'

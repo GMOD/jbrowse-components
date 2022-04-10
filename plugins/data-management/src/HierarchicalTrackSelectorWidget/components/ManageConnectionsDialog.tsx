@@ -9,8 +9,8 @@ import {
   Tooltip,
   Typography,
   makeStyles,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+} from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
 import { observer } from 'mobx-react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AbstractSessionModel } from '@jbrowse/core/util'

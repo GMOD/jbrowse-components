@@ -5,7 +5,7 @@ import {
   Typography,
   makeStyles,
   alpha,
-} from '@material-ui/core'
+} from '@mui/material'
 import { getSession, stringify } from '@jbrowse/core/util'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'

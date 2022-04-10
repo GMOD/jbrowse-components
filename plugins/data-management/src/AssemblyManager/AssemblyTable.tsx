@@ -11,10 +11,10 @@ import {
   Paper,
   Typography,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 
-import CreateIcon from '@material-ui/icons/Create'
-import DeleteIcon from '@material-ui/icons/Delete'
+import CreateIcon from '@mui/icons-material/Create'
+import DeleteIcon from '@mui/icons-material/Delete'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 // local

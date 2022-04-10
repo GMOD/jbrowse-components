@@ -7,7 +7,7 @@ import {
   assembleLocString,
 } from '@jbrowse/core/util'
 import { makeContrasting } from '@jbrowse/core/util/color'
-import { makeStyles, useTheme } from '@material-ui/core/styles'
+import { makeStyles, useTheme } from '@mui/material/styles'
 
 const useStyles = makeStyles({
   rulerLabel: {

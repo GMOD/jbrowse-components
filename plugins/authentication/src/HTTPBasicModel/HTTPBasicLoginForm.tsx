@@ -6,7 +6,7 @@ import {
   DialogTitle,
   DialogActions,
   TextField,
-} from '@material-ui/core'
+} from '@mui/material'
 
 export const HTTPBasicLoginForm = ({
   internetAccountId,

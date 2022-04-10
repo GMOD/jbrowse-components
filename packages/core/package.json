@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
-    "@material-ui/icons": "^4.0.1",
+    "@mui/icons-material": "^5.0.1",
     "abortable-promise-cache": "^1.5.0",
     "canvas": "^2.8.0",
     "clsx": "^1.0.4",
@@ -57,9 +57,9 @@
     "svg-path-generator": "^1.1.0"
   },
   "peerDependencies": {
-    "@material-ui/core": "^4.12.2",
-    "@material-ui/lab": "^4.0.0-alpha.45",
-    "@mui/x-data-grid": "^4.0.0",
+    "@mui/material": "^5.0.0",
+    "@mui/lab": "^5.0.0-alpha.45",
+    "@mui/x-data-grid": "^5.0.0",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "^3.14.1",

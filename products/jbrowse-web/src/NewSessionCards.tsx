@@ -5,7 +5,7 @@ import {
   Container,
   Typography,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 
 import emptyIcon from './img/emptyIcon.png'
 import linearGenomeViewIcon from './img/linearGenomeViewIcon.png'

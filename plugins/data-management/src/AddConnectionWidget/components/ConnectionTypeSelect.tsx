@@ -1,8 +1,8 @@
-import IconButton from '@material-ui/core/IconButton'
-import MenuItem from '@material-ui/core/MenuItem'
-import TextField from '@material-ui/core/TextField'
+import IconButton from '@mui/material/IconButton'
+import MenuItem from '@mui/material/MenuItem'
+import TextField from '@mui/material/TextField'
 import React, { useEffect } from 'react'
-import OpenInNewIcon from '@material-ui/icons/OpenInNew'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 
 import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
 

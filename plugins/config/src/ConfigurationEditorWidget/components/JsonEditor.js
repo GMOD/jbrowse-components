@@ -5,7 +5,7 @@ import {
   FormHelperText,
   InputLabel,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 import { observer, PropTypes } from 'mobx-react'
 const useStyles = makeStyles({
   error: {

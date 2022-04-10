@@ -7,12 +7,12 @@ import {
   Container,
   Grid,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
-import CloseIcon from '@material-ui/icons/Close'
+import CloseIcon from '@mui/icons-material/Close'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'

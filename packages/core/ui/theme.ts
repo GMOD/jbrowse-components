@@ -1,10 +1,10 @@
-import { blue, green, red, amber } from '@material-ui/core/colors'
-import { ThemeOptions, createTheme } from '@material-ui/core/styles'
-import { PaletteOptions } from '@material-ui/core/styles/createPalette'
+import { blue, green, red, amber } from '@mui/material/colors'
+import { ThemeOptions, createTheme } from '@mui/material/styles'
+import { PaletteOptions } from '@mui/material/styles/createPalette'
 import deepmerge from 'deepmerge'
 
 // use this if we ever want to add some top-level thing to the theme
-// declare module '@material-ui/core/styles/createMuiTheme' {
+// declare module '@mui/material/styles/createMuiTheme' {
 //   interface Theme {
 //     status: {
 //       topLevelThing: string
@@ -17,7 +17,7 @@ import deepmerge from 'deepmerge'
 //   }
 // }
 
-declare module '@material-ui/core/styles/createPalette' {
+declare module '@mui/material/styles/createPalette' {
   interface Palette {
     tertiary: Palette['primary']
     quaternary: Palette['primary']
@@ -155,11 +155,11 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
     MuiAccordionSummary: {
       root: {
         // !important needed to combat the MuiButton being applied to
-        // accordions in mui4.12.2 having a background:'transparent' that
+        // accordions in mui5.0.0 having a background:'transparent' that
         // otherwise overrides this other
         backgroundColor: generatedPalette.tertiary.main + ' !important',
 
-        // width:100% added in 4.12.2 also
+        // width:100% added in 5.0.0 also
         width: '100%',
         '&$expanded': {
           // overrides the subclass e.g. .MuiAccordionSummary-root-311.MuiAccordionSummary-expanded-312

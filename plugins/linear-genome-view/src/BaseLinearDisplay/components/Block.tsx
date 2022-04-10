@@ -1,6 +1,6 @@
 import React from 'react'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
 const useStyles = makeStyles(theme => ({

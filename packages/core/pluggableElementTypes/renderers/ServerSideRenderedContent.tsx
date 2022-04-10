@@ -1,4 +1,4 @@
-import { ThemeProvider } from '@material-ui/core/styles'
+import { ThemeProvider } from '@mui/material/styles'
 import React, { useEffect, useRef } from 'react'
 import { hydrate, unmountComponentAtNode } from 'react-dom'
 import { createJBrowseTheme } from '../../ui'

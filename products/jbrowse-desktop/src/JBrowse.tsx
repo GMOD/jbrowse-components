@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react'
 import { observer } from 'mobx-react'
-import { CssBaseline, ThemeProvider } from '@material-ui/core'
+import { CssBaseline, ThemeProvider } from '@mui/material'
 import { getConf } from '@jbrowse/core/configuration'
 import { App, createJBrowseTheme } from '@jbrowse/core/ui'
 import PluginManager from '@jbrowse/core/PluginManager'

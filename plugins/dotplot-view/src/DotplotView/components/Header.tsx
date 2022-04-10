@@ -1,17 +1,17 @@
 import React, { useState } from 'react'
 
-import { IconButton, Typography, makeStyles } from '@material-ui/core'
+import { IconButton, Typography, makeStyles } from '@mui/material'
 import { getBpDisplayStr } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 
 // icons
-import ZoomOut from '@material-ui/icons/ZoomOut'
-import ZoomIn from '@material-ui/icons/ZoomIn'
-import ArrowUp from '@material-ui/icons/KeyboardArrowUp'
-import ArrowDown from '@material-ui/icons/KeyboardArrowDown'
-import ArrowLeft from '@material-ui/icons/KeyboardArrowLeft'
-import ArrowRight from '@material-ui/icons/KeyboardArrowRight'
-import CropFreeIcon from '@material-ui/icons/CropFree'
+import ZoomOut from '@mui/icons-material/ZoomOut'
+import ZoomIn from '@mui/icons-material/ZoomIn'
+import ArrowUp from '@mui/icons-material/KeyboardArrowUp'
+import ArrowDown from '@mui/icons-material/KeyboardArrowDown'
+import ArrowLeft from '@mui/icons-material/KeyboardArrowLeft'
+import ArrowRight from '@mui/icons-material/KeyboardArrowRight'
+import CropFreeIcon from '@mui/icons-material/CropFree'
 
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 

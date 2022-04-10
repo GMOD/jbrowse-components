@@ -8,9 +8,9 @@ import {
   Typography,
   Divider,
   Tooltip,
-  makeStyles,
-} from '@material-ui/core'
-import ExpandMore from '@material-ui/icons/ExpandMore'
+} from '@mui/material'
+import { makeStyles } from '@mui/styles'
+import ExpandMore from '@mui/icons-material/ExpandMore'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 import clsx from 'clsx'

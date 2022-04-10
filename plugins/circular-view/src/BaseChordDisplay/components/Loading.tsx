@@ -4,7 +4,7 @@ export default (pluginManager: PluginManager) => {
   const { lib } = pluginManager
   const React = lib.react
   const { useState, useEffect } = React
-  const { makeStyles } = lib['@material-ui/core/styles']
+  const { makeStyles } = lib['@mui/material/styles']
   const { observer } = lib['mobx-react']
 
   const useStyles = makeStyles(theme => {

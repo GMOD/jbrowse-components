@@ -12,7 +12,7 @@ import { MenuItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 
 // icons
-import DoneIcon from '@material-ui/icons/Done'
+import DoneIcon from '@mui/icons-material/Done'
 
 import SpreadsheetModel from './Spreadsheet'
 import ImportWizardModel from './ImportWizard'

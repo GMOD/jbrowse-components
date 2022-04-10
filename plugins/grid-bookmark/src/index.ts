@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
-import BookmarkIcon from '@material-ui/icons/Bookmark'
-import BookmarksIcon from '@material-ui/icons/Bookmarks'
+import BookmarkIcon from '@mui/icons-material/Bookmark'
+import BookmarksIcon from '@mui/icons-material/Bookmarks'
 
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'

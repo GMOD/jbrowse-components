@@ -2,7 +2,7 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { types, getType, getParent } from 'mobx-state-tree'
 import { doesIntersect2, isContainedWithin } from '@jbrowse/core/util/range'
-import ClearIcon from '@material-ui/icons/Clear'
+import ClearIcon from '@mui/icons-material/Clear'
 import {
   when,
   compareLocs,
@@ -24,7 +24,7 @@ import {
   InputAdornment,
   Select,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 
 const useStyles = makeStyles((/* theme */) => {
   return {

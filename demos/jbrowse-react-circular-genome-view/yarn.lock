@@ -1277,8 +1277,16 @@
   resolved "https://registry.yarnpkg.com/@jbrowse/core/-/core-1.7.7.tgz#4c1661ac42b3cc317f464a1406d6862cce7fa6fd"
   integrity sha512-YBhUMbTqYHZ7LRtq9PWzC50Y/B9q3HlhzQ05XbRQJ2q7Y20mgR6GPmmf3bllFmbEe/iFUoe6TrezHi8hNUN3KQ==
   dependencies:
+<<<<<<< HEAD
     "@babel/runtime" "^7.17.9"
+=======
+<<<<<<< HEAD
+>>>>>>> 6fb38249e (T1)
     "@material-ui/icons" "^4.0.1"
+=======
+    "@babel/runtime" "^7.16.3"
+    "@mui/icons-material" "^4.0.1"
+>>>>>>> a93afda9e (T1)
     abortable-promise-cache "^1.5.0"
     canvas "^2.8.0"
     clsx "^1.0.4"
@@ -1304,6 +1312,7 @@
     shortid "^2.2.13"
     svg-path-generator "^1.1.0"
 
+<<<<<<< HEAD
 "@jbrowse/plugin-circular-view@^1.7.7":
   version "1.7.7"
   resolved "https://registry.yarnpkg.com/@jbrowse/plugin-circular-view/-/plugin-circular-view-1.7.7.tgz#afb9aa48d69255efb67f712072543a029ec165e7"
@@ -1311,14 +1320,59 @@
   dependencies:
     "@babel/runtime" "^7.17.9"
     "@material-ui/icons" "^4.9.1"
+=======
+<<<<<<< HEAD
+"@jbrowse/plugin-circular-view@^1.7.3":
+  version "1.7.3"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-circular-view/-/plugin-circular-view-1.7.3.tgz#d4ed8ec348af132316f644adab193d43d145f6f9"
+  integrity sha512-m6rF7pLamIPXfWYazFe7k3jSaFgaAFvMXokwm3AqkXhMMZiul+DtBUHEmh3vrIitCJTvzfaGRLjddCGpCzdBCQ==
+=======
+"@jbrowse/plugin-alignments@^1.6.9":
+  version "1.6.9"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-alignments/-/plugin-alignments-1.6.9.tgz#0938fc94289656b4779d6e02d2edc5b40f8c3bbc"
+  integrity sha512-YIiH2IBprZ5STIRvDpJZf7N/5z/GwbR6t6nMKqsy6BXfwTPmLqSozvvUo1+fId6dQuHICDtKBdRYvngwFF8A5Q==
+  dependencies:
+    "@gmod/bam" "^1.1.15"
+    "@gmod/cram" "^1.6.1"
+    "@mui/icons-material" "^4.9.1"
+    abortable-promise-cache "^1.5.0"
+    color "^3.1.2"
+    copy-to-clipboard "^3.3.1"
+    fast-deep-equal "^3.1.3"
+    generic-filehandle "^2.2.2"
+    json-stable-stringify "^1.0.1"
+    react-d3-axis-mod "^0.1.3"
+
+"@jbrowse/plugin-bed@^1.6.9":
+  version "1.6.9"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-bed/-/plugin-bed-1.6.9.tgz#fa96ebbba905da25e51685453bd20dd59eaa51e5"
+  integrity sha512-ZzUFiBNHLdVDZcnH9Nj6cXiW7V+Af0CTl761VbjTlyryS/rKJqf2BnE7ekuKoVmTqPpLqDVAR0A6kvh6i+8Ufw==
+  dependencies:
+    "@gmod/bbi" "^1.0.32"
+    "@gmod/bed" "^2.0.6"
+    "@gmod/tabix" "^1.5.2"
+
+"@jbrowse/plugin-circular-view@^1.6.9":
+  version "1.6.9"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-circular-view/-/plugin-circular-view-1.6.9.tgz#851843f25e030aef70dfcf6e634002547e12fa40"
+  integrity sha512-zEMQn6QPOGhb40fzBrZ1bxnouvHsiZ6Oz+Z5tZYdZ79TqMNeYGzs3GyKiotZwYy54gFkFY4P+ZUFqJIABp3ZaA==
+>>>>>>> a93afda9e (T1)
+  dependencies:
+    "@mui/icons-material" "^4.9.1"
+>>>>>>> 6fb38249e (T1)
 
 "@jbrowse/plugin-config@^1.7.7":
   version "1.7.7"
   resolved "https://registry.yarnpkg.com/@jbrowse/plugin-config/-/plugin-config-1.7.7.tgz#3b8109a2439fc4b1f236cb08c3f78330433c9019"
   integrity sha512-nInDs5cWqO4gZ/BAgzcLnA+NBl0wIxYyHYlNhE8bgiaFjYa2lpBLEDmKeqeSSZNbqJQKJW4McYOczg+y9VO88Q==
   dependencies:
+<<<<<<< HEAD
     "@babel/runtime" "^7.17.9"
     "@material-ui/icons" "^4.9.1"
+=======
+    "@mui/icons-material" "^4.9.1"
+    generic-filehandle "^2.2.2"
+>>>>>>> 6fb38249e (T1)
     pluralize "^8.0.0"
     react-color "^2.19.3"
     react-simple-code-editor "0.9.3"
@@ -1331,7 +1385,7 @@
   dependencies:
     "@babel/runtime" "^7.17.9"
     "@gmod/ucsc-hub" "^0.1.3"
-    "@material-ui/icons" "^4.9.1"
+    "@mui/icons-material" "^4.9.1"
     clsx "^1.1.0"
     react-virtualized-auto-sizer "^1.0.2"
     react-vtree "^3.0.0-beta.1"
@@ -1342,8 +1396,12 @@
   resolved "https://registry.yarnpkg.com/@jbrowse/plugin-linear-genome-view/-/plugin-linear-genome-view-1.7.7.tgz#3055c9162d614d8a791b9c992e9f28961626b315"
   integrity sha512-sZyH/CF3+MvbZn37A1ogz7ql9SANkwNYH4ep1NqGAmNZA/yOMdBOKiuelcBTalvmc8FWHn38HQkXlNjHU5XTPA==
   dependencies:
+<<<<<<< HEAD
     "@babel/runtime" "^7.17.9"
     "@material-ui/icons" "^4.9.1"
+=======
+    "@mui/icons-material" "^4.9.1"
+>>>>>>> 6fb38249e (T1)
     "@popperjs/core" "^2.11.0"
     clone "^2.1.2"
     clsx "^1.0.4"
@@ -1373,7 +1431,7 @@
     "@gmod/bgzf-filehandle" "^1.4.3"
     "@gmod/tabix" "^1.5.2"
     "@gmod/vcf" "^5.0.5"
-    "@material-ui/icons" "^4.11.2"
+    "@mui/icons-material" "^4.11.2"
     "@mui/x-data-grid" "^4.0.1"
     generic-filehandle "^2.2.2"
 
@@ -1382,9 +1440,14 @@
   resolved "https://registry.yarnpkg.com/@jbrowse/plugin-wiggle/-/plugin-wiggle-1.7.7.tgz#72a1c629f21267772bcce5824e8c21a2a41062d2"
   integrity sha512-552/N53yd1EqGDyCbP1v1WW/UD6TCiucEPSIPgCHUxK4oQbN9jMHTlT7d5PmfgOlT/bKc0KJrQ0MEvl8wi6M3w==
   dependencies:
+<<<<<<< HEAD
     "@babel/runtime" "^7.17.9"
     "@gmod/bbi" "^1.0.35"
     "@material-ui/icons" "^4.11.2"
+=======
+    "@gmod/bbi" "^1.0.32"
+    "@mui/icons-material" "^4.11.2"
+>>>>>>> 6fb38249e (T1)
     "@popperjs/core" "^2.11.0"
     color "^3.1.1"
     d3-scale "^3.2.3"
@@ -1397,6 +1460,7 @@
   resolved "https://registry.yarnpkg.com/@jbrowse/react-circular-genome-view/-/react-circular-genome-view-1.7.7.tgz#2a42252a580d57e544c9c542cdf456b2a4ed1a08"
   integrity sha512-j7NHqDei+gCI5r7r4zBnZAayPT0FIvdpsFq7blAy4X8WxpMrJ/NOsX90pFeJ30gKp78YeU98N9MA33fWH/M77A==
   dependencies:
+<<<<<<< HEAD
     "@babel/runtime" "^7.17.9"
     "@jbrowse/core" "^1.7.7"
     "@jbrowse/plugin-circular-view" "^1.7.7"
@@ -1405,14 +1469,68 @@
     "@jbrowse/plugin-sequence" "^1.7.7"
     "@jbrowse/plugin-variants" "^1.7.7"
     "@jbrowse/plugin-wiggle" "^1.7.7"
+=======
+<<<<<<< HEAD
+    "@jbrowse/core" "^1.7.3"
+    "@jbrowse/plugin-circular-view" "^1.7.3"
+    "@jbrowse/plugin-config" "^1.7.3"
+    "@jbrowse/plugin-data-management" "^1.7.3"
+    "@jbrowse/plugin-sequence" "^1.7.3"
+    "@jbrowse/plugin-variants" "^1.7.3"
+    "@jbrowse/plugin-wiggle" "^1.7.3"
+>>>>>>> 6fb38249e (T1)
     "@material-ui/core" "^4.12.2"
     "@material-ui/icons" "^4.0.0"
     "@material-ui/lab" "^4.0.0-alpha.45"
+=======
+    "@jbrowse/core" "^1.6.9"
+    "@jbrowse/plugin-circular-view" "^1.6.9"
+    "@jbrowse/plugin-config" "^1.6.9"
+    "@jbrowse/plugin-data-management" "^1.6.9"
+    "@jbrowse/plugin-sequence" "^1.6.9"
+    "@jbrowse/plugin-variants" "^1.6.9"
+    "@jbrowse/plugin-wiggle" "^1.6.9"
+    "@mui/material" "^5.0.0"
+    "@mui/icons-material" "^4.0.0"
+    "@mui/lab" "^5.0.0-alpha.45"
+>>>>>>> a93afda9e (T1)
     mobx "^5.10.1"
     mobx-react "^6.0.3"
     mobx-state-tree "3.14.1"
     prop-types "^15.0.0"
+<<<<<<< HEAD
     react-use-measure "^2.1.1"
+=======
+    react-use-dimensions "^1.2.1"
+    rxjs "^6.0.0"
+
+"@jbrowse/react-linear-genome-view@^1.6.7":
+  version "1.6.9"
+  resolved "https://registry.yarnpkg.com/@jbrowse/react-linear-genome-view/-/react-linear-genome-view-1.6.9.tgz#07044204d4b5c3d13d42da9b45991ceb7a445e6d"
+  integrity sha512-n9uA7KdIbk6LgGmqSbIJhR16/2nJzmKBeMBwRCQ4xF37jTplJ9MokMzBtHzVad4VzoS2fLgHb0Bz+2GDVW5cnQ==
+  dependencies:
+    "@jbrowse/core" "^1.6.9"
+    "@jbrowse/plugin-alignments" "^1.6.9"
+    "@jbrowse/plugin-bed" "^1.6.9"
+    "@jbrowse/plugin-circular-view" "^1.6.9"
+    "@jbrowse/plugin-config" "^1.6.9"
+    "@jbrowse/plugin-data-management" "^1.6.9"
+    "@jbrowse/plugin-gff3" "^1.6.9"
+    "@jbrowse/plugin-linear-genome-view" "^1.6.9"
+    "@jbrowse/plugin-sequence" "^1.6.9"
+    "@jbrowse/plugin-svg" "^1.6.9"
+    "@jbrowse/plugin-trix" "^1.6.9"
+    "@jbrowse/plugin-variants" "^1.6.9"
+    "@jbrowse/plugin-wiggle" "^1.6.9"
+    "@mui/material" "^5.0.0"
+    "@mui/icons-material" "^4.0.0"
+    "@mui/lab" "^5.0.0-alpha.45"
+    mobx "^5.10.1"
+    mobx-react "^6.0.3"
+    mobx-state-tree "3.14.1"
+    prop-types "^15.0.0"
+    react-use-dimensions "^1.2.1"
+>>>>>>> a93afda9e (T1)
     rxjs "^6.0.0"
 
 "@jest/console@^26.6.2":
@@ -1637,10 +1755,17 @@
     semver "^7.3.5"
     tar "^6.1.11"
 
+<<<<<<< HEAD
 "@material-ui/core@^4.12.2":
   version "4.12.4"
   resolved "https://registry.yarnpkg.com/@material-ui/core/-/core-4.12.4.tgz#4ac17488e8fcaf55eb6a7f5efb2a131e10138a73"
   integrity sha512-tr7xekNlM9LjA6pagJmL8QCgZXaubWUwkJnoYcMKd4gw/t4XiyvnTkjdGrUVicyB2BsdaAv1tvow45bPM4sSwQ==
+=======
+"@mui/material@^5.0.0":
+  version "4.12.3"
+  resolved "https://registry.yarnpkg.com/@mui/material/-/core-4.12.3.tgz#80d665caf0f1f034e52355c5450c0e38b099d3ca"
+  integrity sha512-sdpgI/PL56QVsEJldwEe4FFaFTLUqN+rd7sSZiRCdx2E/C7z5yK0y/khAWVBH24tXwto7I1hCzNWfJGZIYJKnw==
+>>>>>>> a93afda9e (T1)
   dependencies:
     "@babel/runtime" "^7.4.4"
     "@material-ui/styles" "^4.11.5"
@@ -1655,6 +1780,7 @@
     react-is "^16.8.0 || ^17.0.0"
     react-transition-group "^4.4.0"
 
+<<<<<<< HEAD
 "@material-ui/icons@^4.0.0", "@material-ui/icons@^4.0.1", "@material-ui/icons@^4.11.2", "@material-ui/icons@^4.9.1":
   version "4.11.3"
   resolved "https://registry.yarnpkg.com/@material-ui/icons/-/icons-4.11.3.tgz#b0693709f9b161ce9ccde276a770d968484ecff1"
@@ -1666,6 +1792,19 @@
   version "4.0.0-alpha.61"
   resolved "https://registry.yarnpkg.com/@material-ui/lab/-/lab-4.0.0-alpha.61.tgz#9bf8eb389c0c26c15e40933cc114d4ad85e3d978"
   integrity sha512-rSzm+XKiNUjKegj8bzt5+pygZeckNLOr+IjykH8sYdVk7dE9y2ZuUSofiMV2bJk3qU+JHwexmw+q0RyNZB9ugg==
+=======
+"@mui/icons-material@^4.0.0", "@mui/icons-material@^4.0.1", "@mui/icons-material@^4.11.2", "@mui/icons-material@^4.9.1":
+  version "4.11.2"
+  resolved "https://registry.yarnpkg.com/@mui/icons-material/-/icons-4.11.2.tgz#b3a7353266519cd743b6461ae9fdfcb1b25eb4c5"
+  integrity sha512-fQNsKX2TxBmqIGJCSi3tGTO/gZ+eJgWmMJkgDiOfyNaunNaxcklJQFaFogYcFl0qFuaEz1qaXYXboa/bUXVSOQ==
+  dependencies:
+    "@babel/runtime" "^7.4.4"
+
+"@mui/lab@^5.0.0-alpha.45":
+  version "5.0.0-alpha.60"
+  resolved "https://registry.yarnpkg.com/@mui/lab/-/lab-5.0.0-alpha.60.tgz#5ad203aed5a8569b0f1753945a21a05efa2234d2"
+  integrity sha512-fadlYsPJF+0fx2lRuyqAuJj7hAS1tLDdIEEdov5jlrpb5pp4b+mRDUqQTUxi4inRZHS1bEXpU8QWUhO6xX88aA==
+>>>>>>> a93afda9e (T1)
   dependencies:
     "@babel/runtime" "^7.4.4"
     "@material-ui/utils" "^4.11.3"

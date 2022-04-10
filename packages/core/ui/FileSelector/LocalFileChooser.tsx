@@ -5,7 +5,7 @@ import {
   Typography,
   FormControl,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 import { isElectron } from '../../util'
 import { LocalPathLocation, FileLocation, BlobLocation } from '../../util/types'
 import { getBlob, storeBlobLocation } from '../../util/tracks'

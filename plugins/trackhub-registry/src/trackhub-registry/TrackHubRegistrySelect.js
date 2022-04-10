@@ -11,7 +11,7 @@ import {
   Tooltip,
   Typography,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 import { isAbortException } from '@jbrowse/core/util'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import PropTypes from 'prop-types'

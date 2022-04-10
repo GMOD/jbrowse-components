@@ -11,15 +11,15 @@ import {
   IconButton,
   Typography,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 
 import { JBrowsePlugin } from '@jbrowse/core/util/types'
 import { getSession, isElectron } from '@jbrowse/core/util'
 
 // icons
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
-import ClearIcon from '@material-ui/icons/Clear'
-import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import ClearIcon from '@mui/icons-material/Clear'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 
 // locals
 import InstalledPluginsList from './InstalledPluginsList'

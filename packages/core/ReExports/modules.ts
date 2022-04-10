@@ -6,47 +6,47 @@ import * as mst from 'mobx-state-tree'
 import * as mxreact from 'mobx-react'
 import PropTypes from 'prop-types'
 
-import * as MUIStyles from '@material-ui/core/styles'
+import * as MUIStyles from '@mui/material/styles'
 
 // @material-ui components
-import * as MUICore from '@material-ui/core'
-import * as MUIUtils from '@material-ui/core/utils'
-import MUISvgIcon from '@material-ui/core/SvgIcon'
-import * as MUILab from '@material-ui/lab'
+import * as MUICore from '@mui/material'
+import * as MUIUtils from '@mui/material/utils'
+import MUISvgIcon from '@mui/material/SvgIcon'
+import * as MUILab from '@mui/lab'
 import * as MUIDataGrid from '@mui/x-data-grid'
-import MUIBox from '@material-ui/core/Box'
-import MUIButton from '@material-ui/core/Button'
-import MUIButtonGroup from '@material-ui/core/ButtonGroup'
-import MUICard from '@material-ui/core/Card'
-import MUICardContent from '@material-ui/core/CardContent'
-import MUICheckbox from '@material-ui/core/Checkbox'
-import MUIContainer from '@material-ui/core/Container'
-import MUIDialog from '@material-ui/core/Dialog'
-import MUIFormLabel from '@material-ui/core/FormLabel'
-import MUIFormControl from '@material-ui/core/FormControl'
-import MUIFormControlLabel from '@material-ui/core/FormControlLabel'
-import MUIFormGroup from '@material-ui/core/FormGroup'
-import MUIGrid from '@material-ui/core/Grid'
-import MUIIcon from '@material-ui/core/Icon'
-import MUIIconButton from '@material-ui/core/IconButton'
-import MUIInputAdornment from '@material-ui/core/InputAdornment'
-import MUILinearProgress from '@material-ui/core/LinearProgress'
-import MUIListItemIcon from '@material-ui/core/ListItemIcon'
-import MUIListItemText from '@material-ui/core/ListItemText'
-import MUIMenu from '@material-ui/core/Menu'
-import MUIMenuItem from '@material-ui/core/MenuItem'
-import MUIRadio from '@material-ui/core/Radio'
-import MUIRadioGroup from '@material-ui/core/RadioGroup'
-import MUISelect from '@material-ui/core/Select'
-import MUISnackbar from '@material-ui/core/Snackbar'
-import MUISnackbarContent from '@material-ui/core/SnackbarContent'
-import MUITextField from '@material-ui/core/TextField'
-import MUITooltip from '@material-ui/core/Tooltip'
-import MUITypography from '@material-ui/core/Typography'
+import MUIBox from '@mui/material/Box'
+import MUIButton from '@mui/material/Button'
+import MUIButtonGroup from '@mui/material/ButtonGroup'
+import MUICard from '@mui/material/Card'
+import MUICardContent from '@mui/material/CardContent'
+import MUICheckbox from '@mui/material/Checkbox'
+import MUIContainer from '@mui/material/Container'
+import MUIDialog from '@mui/material/Dialog'
+import MUIFormLabel from '@mui/material/FormLabel'
+import MUIFormControl from '@mui/material/FormControl'
+import MUIFormControlLabel from '@mui/material/FormControlLabel'
+import MUIFormGroup from '@mui/material/FormGroup'
+import MUIGrid from '@mui/material/Grid'
+import MUIIcon from '@mui/material/Icon'
+import MUIIconButton from '@mui/material/IconButton'
+import MUIInputAdornment from '@mui/material/InputAdornment'
+import MUILinearProgress from '@mui/material/LinearProgress'
+import MUIListItemIcon from '@mui/material/ListItemIcon'
+import MUIListItemText from '@mui/material/ListItemText'
+import MUIMenu from '@mui/material/Menu'
+import MUIMenuItem from '@mui/material/MenuItem'
+import MUIRadio from '@mui/material/Radio'
+import MUIRadioGroup from '@mui/material/RadioGroup'
+import MUISelect from '@mui/material/Select'
+import MUISnackbar from '@mui/material/Snackbar'
+import MUISnackbarContent from '@mui/material/SnackbarContent'
+import MUITextField from '@mui/material/TextField'
+import MUITooltip from '@mui/material/Tooltip'
+import MUITypography from '@mui/material/Typography'
 
 // material-ui lab
-import ToggleButton from '@material-ui/lab/ToggleButton'
-import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
+import ToggleButton from '@mui/lab/ToggleButton'
+import ToggleButtonGroup from '@mui/lab/ToggleButtonGroup'
 
 import * as BaseAdapterExports from '../data_adapters/BaseAdapter'
 
@@ -91,51 +91,51 @@ const libs = {
   'prop-types': PropTypes,
 
   // material-ui 1st-level components
-  '@material-ui/core': MUICore,
-  // special case so plugins can easily use @material-ui/icons; don't remove
-  '@material-ui/core/SvgIcon': MUISvgIcon,
-  '@material-ui/core/utils': MUIUtils,
+  '@mui/material': MUICore,
+  // special case so plugins can easily use @mui/icons-material; don't remove
+  '@mui/material/SvgIcon': MUISvgIcon,
+  '@mui/material/utils': MUIUtils,
   // end special case
-  '@material-ui/lab': MUILab,
+  '@mui/lab': MUILab,
   '@mui/x-data-grid': MUIDataGrid,
   '@material-ui/data-grid': MUIDataGrid,
 
   // material-ui subcomponents, should get rid of these
-  '@material-ui/core/colors': MUIColors,
-  '@material-ui/core/styles': MUIStyles,
-  '@material-ui/core/Box': MUIBox,
-  '@material-ui/core/Button': MUIButton,
-  '@material-ui/core/ButtonGroup': MUIButtonGroup,
-  '@material-ui/core/Card': MUICard,
-  '@material-ui/core/CardContent': MUICardContent,
-  '@material-ui/core/Container': MUIContainer,
-  '@material-ui/core/Checkbox': MUICheckbox,
-  '@material-ui/core/Dialog': MUIDialog,
-  '@material-ui/core/FormGroup': MUIFormGroup,
-  '@material-ui/core/FormLabel': MUIFormLabel,
-  '@material-ui/core/FormControl': MUIFormControl,
-  '@material-ui/core/FormControlLabel': MUIFormControlLabel,
-  '@material-ui/core/Grid': MUIGrid,
-  '@material-ui/core/Icon': MUIIcon,
-  '@material-ui/core/IconButton': MUIIconButton,
-  '@material-ui/core/InputAdornment': MUIInputAdornment,
-  '@material-ui/core/LinearProgress': MUILinearProgress,
-  '@material-ui/core/ListItemIcon': MUIListItemIcon,
-  '@material-ui/core/ListItemText': MUIListItemText,
-  '@material-ui/core/Menu': MUIMenu,
-  '@material-ui/core/MenuItem': MUIMenuItem,
-  '@material-ui/core/RadioGroup': MUIRadioGroup,
-  '@material-ui/core/Radio': MUIRadio,
-  '@material-ui/core/Select': MUISelect,
-  '@material-ui/core/Snackbar': MUISnackbar,
-  '@material-ui/core/SnackbarContent': MUISnackbarContent,
-  '@material-ui/core/TextField': MUITextField,
-  '@material-ui/core/Tooltip': MUITooltip,
-  '@material-ui/core/Typography': MUITypography,
+  '@mui/material/colors': MUIColors,
+  '@mui/material/styles': MUIStyles,
+  '@mui/material/Box': MUIBox,
+  '@mui/material/Button': MUIButton,
+  '@mui/material/ButtonGroup': MUIButtonGroup,
+  '@mui/material/Card': MUICard,
+  '@mui/material/CardContent': MUICardContent,
+  '@mui/material/Container': MUIContainer,
+  '@mui/material/Checkbox': MUICheckbox,
+  '@mui/material/Dialog': MUIDialog,
+  '@mui/material/FormGroup': MUIFormGroup,
+  '@mui/material/FormLabel': MUIFormLabel,
+  '@mui/material/FormControl': MUIFormControl,
+  '@mui/material/FormControlLabel': MUIFormControlLabel,
+  '@mui/material/Grid': MUIGrid,
+  '@mui/material/Icon': MUIIcon,
+  '@mui/material/IconButton': MUIIconButton,
+  '@mui/material/InputAdornment': MUIInputAdornment,
+  '@mui/material/LinearProgress': MUILinearProgress,
+  '@mui/material/ListItemIcon': MUIListItemIcon,
+  '@mui/material/ListItemText': MUIListItemText,
+  '@mui/material/Menu': MUIMenu,
+  '@mui/material/MenuItem': MUIMenuItem,
+  '@mui/material/RadioGroup': MUIRadioGroup,
+  '@mui/material/Radio': MUIRadio,
+  '@mui/material/Select': MUISelect,
+  '@mui/material/Snackbar': MUISnackbar,
+  '@mui/material/SnackbarContent': MUISnackbarContent,
+  '@mui/material/TextField': MUITextField,
+  '@mui/material/Tooltip': MUITooltip,
+  '@mui/material/Typography': MUITypography,
 
   // @material-ui lab
-  '@material-ui/lab/ToggleButton': ToggleButton,
-  '@material-ui/lab/ToggleButtonGroup': ToggleButtonGroup,
+  '@mui/lab/ToggleButton': ToggleButton,
+  '@mui/lab/ToggleButtonGroup': ToggleButtonGroup,
 
   '@jbrowse/core/Plugin': Plugin,
   '@jbrowse/core/pluggableElementTypes': pluggableElementTypes,

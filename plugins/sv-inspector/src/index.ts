@@ -4,7 +4,7 @@ import {
   AbstractSessionModel,
   isAbstractMenuManager,
 } from '@jbrowse/core/util/types'
-import TableChartIcon from '@material-ui/icons/TableChart'
+import TableChartIcon from '@mui/icons-material/TableChart'
 import SvInspectorViewTypeFactory from './SvInspectorView/SvInspectorViewType'
 
 export default class SvInspectorViewPlugin extends Plugin {

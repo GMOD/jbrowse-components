@@ -10,8 +10,8 @@ import {
   FormControlLabel,
   Radio,
   makeStyles,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+} from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
 import { CompactPicker, Color, RGBColor } from 'react-color'
 
 const useStyles = makeStyles(theme => ({

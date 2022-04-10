@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import Typography from '@material-ui/core/Typography'
-import { makeStyles } from '@material-ui/core/styles'
+import Typography from '@mui/material/Typography'
+import { makeStyles } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import Button from '@material-ui/core/Button'
-import RefreshIcon from '@material-ui/icons/Refresh'
+import Button from '@mui/material/Button'
+import RefreshIcon from '@mui/icons-material/Refresh'
 
 const useStyles = makeStyles(theme => ({
   loading: {

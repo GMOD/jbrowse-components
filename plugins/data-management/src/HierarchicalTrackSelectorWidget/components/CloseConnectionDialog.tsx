@@ -8,7 +8,7 @@ import {
   List,
   ListItem,
   DialogActions,
-} from '@material-ui/core'
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 function CloseConnectionDialog({

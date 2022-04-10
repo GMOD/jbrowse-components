@@ -12,9 +12,9 @@ import {
   TextField,
   Typography,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 
-import CloseIcon from '@material-ui/icons/Close'
+import CloseIcon from '@mui/icons-material/Close'
 
 const useStyles = makeStyles(theme => ({
   paper: {

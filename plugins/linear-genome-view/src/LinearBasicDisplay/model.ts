@@ -9,7 +9,7 @@ import { MenuItem } from '@jbrowse/core/ui'
 import { types, getEnv, Instance } from 'mobx-state-tree'
 
 // icons
-import VisibilityIcon from '@material-ui/icons/Visibility'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 
 // locals
 import { BaseLinearDisplay } from '../BaseLinearDisplay'

@@ -25,12 +25,12 @@ import {
   SvgIcon,
   TextField,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 
 // icons
-import DeleteIcon from '@material-ui/icons/Delete'
-import AddIcon from '@material-ui/icons/Add'
-import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked'
+import DeleteIcon from '@mui/icons-material/Delete'
+import AddIcon from '@mui/icons-material/Add'
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
 
 // locals
 import CallbackEditor from './CallbackEditor'

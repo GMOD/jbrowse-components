@@ -9,12 +9,12 @@ import {
   Typography,
   alpha,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 
 // icons
-import MoreVertIcon from '@material-ui/icons/MoreVert'
-import DragIcon from '@material-ui/icons/DragIndicator'
-import CloseIcon from '@material-ui/icons/Close'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import DragIcon from '@mui/icons-material/DragIndicator'
+import CloseIcon from '@mui/icons-material/Close'
 
 import clsx from 'clsx'
 import { observer } from 'mobx-react'

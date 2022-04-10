@@ -1,6 +1,6 @@
 import React from 'react'
-import { ThemeOptions } from '@material-ui/core'
-import { ThemeProvider } from '@material-ui/core/styles'
+import { ThemeOptions } from '@mui/material'
+import { ThemeProvider } from '@mui/material/styles'
 import { renderToString } from 'react-dom/server'
 
 import {

@@ -6,11 +6,11 @@ import {
   Typography,
   Button,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import { getSession, assembleLocString, measureText } from '@jbrowse/core/util'
-import DeleteIcon from '@material-ui/icons/Delete'
-import ViewCompactIcon from '@material-ui/icons/ViewCompact'
+import DeleteIcon from '@mui/icons-material/Delete'
+import ViewCompactIcon from '@mui/icons-material/ViewCompact'
 
 import AssemblySelector from './AssemblySelector'
 import DeleteBookmarkDialog from './DeleteBookmark'

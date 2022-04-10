@@ -20,15 +20,15 @@ import {
   Tooltip,
   Typography,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 
 // icons
-import ClearIcon from '@material-ui/icons/Clear'
-import AddIcon from '@material-ui/icons/Add'
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
-import ArrowRightIcon from '@material-ui/icons/ArrowRight'
-import MenuIcon from '@material-ui/icons/Menu'
-import MoreIcon from '@material-ui/icons/MoreHoriz'
+import ClearIcon from '@mui/icons-material/Clear'
+import AddIcon from '@mui/icons-material/Add'
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
+import ArrowRightIcon from '@mui/icons-material/ArrowRight'
+import MenuIcon from '@mui/icons-material/Menu'
+import MoreIcon from '@mui/icons-material/MoreHoriz'
 import { Cable } from '@jbrowse/core/ui/Icons'
 
 // other

@@ -16,9 +16,9 @@ import {
   Paper,
   Typography,
   makeStyles,
-} from '@material-ui/core'
-import DeleteIcon from '@material-ui/icons/Delete'
-import ViewListIcon from '@material-ui/icons/ViewList'
+} from '@mui/material'
+import DeleteIcon from '@mui/icons-material/Delete'
+import ViewListIcon from '@mui/icons-material/ViewList'
 
 import { observer } from 'mobx-react'
 import pluralize from 'pluralize'

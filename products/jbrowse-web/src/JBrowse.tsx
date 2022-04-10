@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
 import { useQueryParam, StringParam } from 'use-query-params'
-import { CssBaseline, ThemeProvider } from '@material-ui/core'
+import { CssBaseline, ThemeProvider } from '@mui/material'
 
 // core
 import { getConf } from '@jbrowse/core/configuration'

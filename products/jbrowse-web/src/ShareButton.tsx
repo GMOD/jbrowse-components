@@ -17,16 +17,17 @@ import {
   RadioGroup,
   TextField,
   Typography,
-  alpha,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+
+import { alpha } from '@mui/material/styles'
+import { makeStyles } from '@mui/styles'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 
 // icons
-import ShareIcon from '@material-ui/icons/Share'
-import HelpOutlineIcon from '@material-ui/icons/HelpOutline'
-import SettingsIcon from '@material-ui/icons/Settings'
-import CloseIcon from '@material-ui/icons/Close'
+import ShareIcon from '@mui/icons-material/Share'
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
+import SettingsIcon from '@mui/icons-material/Settings'
+import CloseIcon from '@mui/icons-material/Close'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
@@ -39,11 +40,11 @@ const useStyles = makeStyles(theme => ({
     paddingLeft: '2px',
   },
   shareButton: {
+    backgroundColor: alpha(
+      theme.palette.primary.contrastText,
+      theme.palette.action.hoverOpacity,
+    ),
     '&:hover': {
-      backgroundColor: alpha(
-        theme.palette.primary.contrastText,
-        theme.palette.action.hoverOpacity,
-      ),
       '@media (hover: none)': {
         backgroundColor: 'transparent',
       },

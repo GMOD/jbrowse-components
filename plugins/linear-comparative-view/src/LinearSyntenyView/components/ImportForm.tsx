@@ -13,7 +13,7 @@ import {
   Paper,
   Typography,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import { LinearSyntenyViewModel } from '../model'

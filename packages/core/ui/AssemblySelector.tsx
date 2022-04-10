@@ -6,7 +6,7 @@ import {
   TextField,
   MenuItem,
   InputProps as IIP,
-} from '@material-ui/core'
+} from '@mui/material'
 import { AbstractSessionModel } from '../util'
 const useStyles = makeStyles(() => ({
   importFormEntry: {

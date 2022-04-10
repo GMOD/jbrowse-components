@@ -2,7 +2,7 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { IAnyStateTreeNode, getEnv } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
-import { makeStyles, Typography, Link } from '@material-ui/core'
+import { makeStyles, Typography, Link } from '@mui/material'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles(theme => ({

@@ -1,4 +1,4 @@
-import { StylesProvider } from '@material-ui/core/styles'
+import { StylesProvider } from '@mui/material/styles'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import React from 'react'
 

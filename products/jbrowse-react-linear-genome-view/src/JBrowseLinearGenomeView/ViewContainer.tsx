@@ -7,9 +7,9 @@ import {
   Typography,
   makeStyles,
   useTheme,
-  alpha,
-} from '@material-ui/core'
-import MenuIcon from '@material-ui/icons/Menu'
+} from '@mui/material'
+import { alpha } from '@mui/material/styles'
+import MenuIcon from '@mui/icons-material/Menu'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import useMeasure from 'react-use-measure'

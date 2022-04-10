@@ -15,12 +15,12 @@ import {
   Link,
   Typography,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 
 // icons
-import PersonIcon from '@material-ui/icons/Person'
-import AddIcon from '@material-ui/icons/Add'
-import CheckIcon from '@material-ui/icons/Check'
+import PersonIcon from '@mui/icons-material/Person'
+import AddIcon from '@mui/icons-material/Add'
+import CheckIcon from '@mui/icons-material/Check'
 import { PluginStoreModel } from '../model'
 
 const useStyles = makeStyles(() => ({

@@ -17,10 +17,10 @@ import {
   Menu,
   MenuItem,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
-import WarningIcon from '@material-ui/icons/Warning'
-import SettingsIcon from '@material-ui/icons/Settings'
+} from '@mui/material'
+import { makeStyles } from '@mui/styles'
+import WarningIcon from '@mui/icons-material/Warning'
+import SettingsIcon from '@mui/icons-material/Settings'
 
 import { LogoFull, FactoryResetDialog } from '@jbrowse/core/ui'
 import {

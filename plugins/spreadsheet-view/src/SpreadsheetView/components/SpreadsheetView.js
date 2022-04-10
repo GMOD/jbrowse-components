@@ -5,10 +5,10 @@ import {
   IconButton,
   TablePagination,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 import { observer } from 'mobx-react'
 import { ResizeHandle } from '@jbrowse/core/ui'
-import FolderOpenIcon from '@material-ui/icons/FolderOpen'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 import ImportWizard from './ImportWizard'
 import Spreadsheet from './Spreadsheet'

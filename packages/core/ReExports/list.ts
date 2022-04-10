@@ -6,10 +6,10 @@ export default [
   'mobx-react',
   'prop-types',
 
-  '@material-ui/core',
-  '@material-ui/core/SvgIcon',
-  '@material-ui/core/utils',
-  '@material-ui/lab',
+  '@mui/material',
+  '@mui/material/SvgIcon',
+  '@mui/material/utils',
+  '@mui/lab',
   '@mui/x-data-grid',
 
   '@jbrowse/core/Plugin',

@@ -13,12 +13,12 @@ import {
   TextField,
   TextFieldProps as TFP,
   Typography,
-} from '@material-ui/core'
+} from '@mui/material'
 
 // icons
-import SearchIcon from '@material-ui/icons/Search'
-import Autocomplete from '@material-ui/lab/Autocomplete'
-import HelpIcon from '@material-ui/icons/Help'
+import SearchIcon from '@mui/icons-material/Search'
+import Autocomplete from '@mui/lab/Autocomplete'
+import HelpIcon from '@mui/icons-material/Help'
 
 // locals
 import { LinearGenomeViewModel } from '..'

@@ -14,9 +14,9 @@ import {
   DialogActions,
   makeStyles,
   Typography,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
-import ImportIcon from '@material-ui/icons/Publish'
+} from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
+import ImportIcon from '@mui/icons-material/Publish'
 import { GridBookmarkModel } from '../model'
 
 const useStyles = makeStyles(() => ({

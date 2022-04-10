@@ -1,6 +1,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/material/styles'
 import {
   Button,
   Dialog,
@@ -10,8 +10,8 @@ import {
   Divider,
   IconButton,
   Typography,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+} from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
 
 const useStyles = makeStyles(theme => ({
   closeButton: {

@@ -25,7 +25,7 @@ import {
   readConfObject,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import InfoIcon from '@material-ui/icons/Info'
+import InfoIcon from '@mui/icons-material/Info'
 import AboutDialog from '@jbrowse/core/ui/AboutDialog'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { ReferringNode } from '../types'

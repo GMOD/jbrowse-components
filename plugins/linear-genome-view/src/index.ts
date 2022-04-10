@@ -11,7 +11,7 @@ import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
-import LineStyleIcon from '@material-ui/icons/LineStyle'
+import LineStyleIcon from '@mui/icons-material/LineStyle'
 import {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,

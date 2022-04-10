@@ -2,14 +2,14 @@ import React, { useState } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { storeBlobLocation } from '@jbrowse/core/util/tracks'
-import { Button, Paper, Typography, makeStyles } from '@material-ui/core'
-import { alpha } from '@material-ui/core/styles'
+import { Button, Paper, Typography, makeStyles } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { useDropzone } from 'react-dropzone'
 
 // icons
-import CloudUploadIcon from '@material-ui/icons/CloudUpload'
-import ErrorIcon from '@material-ui/icons/Error'
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+import ErrorIcon from '@mui/icons-material/Error'
 
 const MAX_FILE_SIZE = 512 * 1024 ** 2 // 512 MiB
 

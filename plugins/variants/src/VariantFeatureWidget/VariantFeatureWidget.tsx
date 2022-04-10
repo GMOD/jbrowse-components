@@ -8,7 +8,7 @@ import {
   Checkbox,
   TextField,
   Typography,
-} from '@material-ui/core'
+} from '@mui/material'
 import SimpleFeature, {
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'

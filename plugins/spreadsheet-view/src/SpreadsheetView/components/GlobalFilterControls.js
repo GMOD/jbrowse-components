@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
 
-import { IconButton, InputAdornment, TextField } from '@material-ui/core'
-import ClearIcon from '@material-ui/icons/Clear'
-import FilterIcon from '@material-ui/icons/FilterList'
+import { IconButton, InputAdornment, TextField } from '@mui/material'
+import ClearIcon from '@mui/icons-material/Clear'
+import FilterIcon from '@mui/icons-material/FilterList'
 
 import { observer } from 'mobx-react'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/material/styles'
 import { useDebounce } from '@jbrowse/core/util'
 
 const useStyles = makeStyles((/* theme */) => {

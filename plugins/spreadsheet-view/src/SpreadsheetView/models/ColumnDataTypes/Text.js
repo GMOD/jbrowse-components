@@ -1,4 +1,4 @@
-import ClearIcon from '@material-ui/icons/Clear'
+import ClearIcon from '@mui/icons-material/Clear'
 import MakeSpreadsheetColumnType from './MakeSpreadsheetColumnType'
 import { types, getType } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
@@ -16,7 +16,7 @@ import {
   InputAdornment,
   Select,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 
 const OPERATIONS = [
   'equals',

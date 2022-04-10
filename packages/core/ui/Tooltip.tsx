@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles } from '@mui/material'
 import { observer } from 'mobx-react'
 import { Feature } from '../util/simpleFeature'
 import { readConfObject, AnyConfigurationModel } from '../configuration'

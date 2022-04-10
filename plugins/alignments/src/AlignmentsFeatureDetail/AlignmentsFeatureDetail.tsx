@@ -7,7 +7,7 @@ import {
   FormControlLabel,
   FormGroup,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import copy from 'copy-to-clipboard'

@@ -14,7 +14,7 @@ import {
   Typography,
   TextField,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 
 import { observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'

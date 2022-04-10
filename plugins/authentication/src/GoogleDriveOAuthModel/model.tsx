@@ -3,7 +3,7 @@ import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { Instance, types } from 'mobx-state-tree'
 import { RemoteFileWithRangeCache } from '@jbrowse/core/util/io'
 import { UriLocation } from '@jbrowse/core/util/types'
-import { SvgIconProps, SvgIcon } from '@material-ui/core'
+import { SvgIconProps, SvgIcon } from '@mui/material'
 import {
   FilehandleOptions,
   Stats,

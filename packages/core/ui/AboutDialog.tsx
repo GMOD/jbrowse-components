@@ -6,8 +6,8 @@ import {
   IconButton,
   Typography,
   makeStyles,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+} from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
 import { readConfObject } from '../configuration'
 import { getSession } from '../util'
 import { BaseCard, Attributes } from '../BaseFeatureWidget/BaseFeatureDetail'

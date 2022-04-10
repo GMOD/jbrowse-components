@@ -7,7 +7,7 @@ import {
   Select,
   MenuItem,
   FormControl,
-} from '@material-ui/core'
+} from '@mui/material'
 
 import { GridBookmarkModel } from '../model'
 

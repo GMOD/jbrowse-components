@@ -1,14 +1,14 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { IconButton, makeStyles } from '@material-ui/core'
+import { IconButton, makeStyles } from '@mui/material'
 
 // icons
-import LocationSearching from '@material-ui/icons/LocationSearching'
-import LocationDisabled from '@material-ui/icons/LocationDisabled'
-import LeakAdd from '@material-ui/icons/LeakAdd'
-import LeakRemove from '@material-ui/icons/LeakRemove'
-import LinkIcon from '@material-ui/icons/Link'
-import LinkOffIcon from '@material-ui/icons/LinkOff'
+import LocationSearching from '@mui/icons-material/LocationSearching'
+import LocationDisabled from '@mui/icons-material/LocationDisabled'
+import LeakAdd from '@mui/icons-material/LeakAdd'
+import LeakRemove from '@mui/icons-material/LeakRemove'
+import LinkIcon from '@mui/icons-material/Link'
+import LinkOffIcon from '@mui/icons-material/LinkOff'
 
 import { BreakpointViewModel } from '../model'
 

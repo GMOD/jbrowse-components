@@ -1,6 +1,6 @@
 import React from 'react'
 import { FileSelector } from '@jbrowse/core/ui'
-import { Paper, makeStyles } from '@material-ui/core'
+import { Paper, makeStyles } from '@mui/material'
 import { AddTrackModel } from '../model'
 import { getRoot } from 'mobx-state-tree'
 import { observer } from 'mobx-react'

@@ -13,7 +13,7 @@ import {
   IconButton,
   TextField,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 import { observer } from 'mobx-react'
 import { saveAs } from 'file-saver'
 import { Region } from '@jbrowse/core/util/types'
@@ -25,8 +25,8 @@ import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 
 // icons
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import CloseIcon from '@material-ui/icons/Close'
-import GetAppIcon from '@material-ui/icons/GetApp'
+import CloseIcon from '@mui/icons-material/Close'
+import GetAppIcon from '@mui/icons-material/GetApp'
 
 // locals
 import { LinearGenomeViewModel } from '..'

@@ -13,7 +13,7 @@ import {
   Feature,
 } from '@jbrowse/core/util'
 
-import VisibilityIcon from '@material-ui/icons/Visibility'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import {
   LinearGenomeViewModel,
@@ -21,10 +21,10 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { cast, types, addDisposer, getEnv, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
-import MenuOpenIcon from '@material-ui/icons/MenuOpen'
-import SortIcon from '@material-ui/icons/Sort'
-import PaletteIcon from '@material-ui/icons/Palette'
-import FilterListIcon from '@material-ui/icons/ClearAll'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import SortIcon from '@mui/icons-material/Sort'
+import PaletteIcon from '@mui/icons-material/Palette'
+import FilterListIcon from '@mui/icons-material/ClearAll'
 
 import { autorun, observable } from 'mobx'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'

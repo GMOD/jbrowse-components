@@ -6,11 +6,11 @@ import {
   Toolbar,
   Typography,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { SessionModel } from '../createModel/createSessionModel'
-import ScopedCssBaseline from '@material-ui/core/ScopedCssBaseline'
+import ScopedCssBaseline from '@mui/material/ScopedCssBaseline'
 
 const useStyles = makeStyles({
   paper: {

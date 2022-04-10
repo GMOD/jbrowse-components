@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button, Container, Grid, makeStyles } from '@material-ui/core'
+import { Button, Container, Grid, makeStyles } from '@mui/material'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'

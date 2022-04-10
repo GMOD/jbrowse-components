@@ -10,22 +10,22 @@ import {
   Tooltip,
   Typography,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import {
   ToggleButtonGroup,
   ToggleButton,
   ToggleButtonProps,
-} from '@material-ui/lab'
+} from '@mui/lab'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { format } from 'timeago.js'
 
 // icons
-import DeleteIcon from '@material-ui/icons/Delete'
-import EditIcon from '@material-ui/icons/Edit'
-import ViewComfyIcon from '@material-ui/icons/ViewComfy'
-import ListIcon from '@material-ui/icons/List'
-import PlaylistAddIcon from '@material-ui/icons/PlaylistAdd'
+import DeleteIcon from '@mui/icons-material/Delete'
+import EditIcon from '@mui/icons-material/Edit'
+import ViewComfyIcon from '@mui/icons-material/ViewComfy'
+import ListIcon from '@mui/icons-material/List'
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 
 // locals
 import RenameSessionDialog from './dialogs/RenameSessionDialog'

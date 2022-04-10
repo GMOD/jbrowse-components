@@ -6,7 +6,7 @@ import {
   DialogContentText,
   DialogActions,
   Button,
-} from '@material-ui/core'
+} from '@mui/material'
 import { observer } from 'mobx-react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { AbstractSessionModel } from '@jbrowse/core/util'

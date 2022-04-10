@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/material/styles'
 import {
   Button,
   Dialog,
@@ -11,8 +11,8 @@ import {
   FormControlLabel,
   CircularProgress,
   Typography,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+} from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
 import { LinearGenomeViewModel as LGV } from '..'
 
 const useStyles = makeStyles(theme => ({

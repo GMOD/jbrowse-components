@@ -12,13 +12,13 @@ import {
   AccordionSummary,
   Typography,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 import { observer } from 'mobx-react'
 import { getMembers } from 'mobx-state-tree'
 import { singular } from 'pluralize'
 
 // icons
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 // locals
 import SlotEditor from './SlotEditor'

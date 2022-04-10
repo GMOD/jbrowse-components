@@ -18,12 +18,12 @@ import { MenuItem } from '@jbrowse/core/ui'
 import { UriLocation } from '@jbrowse/core/util/types'
 
 // icons
-import OpenIcon from '@material-ui/icons/FolderOpen'
-import ExtensionIcon from '@material-ui/icons/Extension'
-import AppsIcon from '@material-ui/icons/Apps'
-import StorageIcon from '@material-ui/icons/Storage'
-import SettingsIcon from '@material-ui/icons/Settings'
-import MeetingRoomIcon from '@material-ui/icons/MeetingRoom'
+import OpenIcon from '@mui/icons-material/FolderOpen'
+import ExtensionIcon from '@mui/icons-material/Extension'
+import AppsIcon from '@mui/icons-material/Apps'
+import StorageIcon from '@mui/icons-material/Storage'
+import SettingsIcon from '@mui/icons-material/Settings'
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
 import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 
 // locals

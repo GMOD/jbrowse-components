@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react'
 import { createJBrowseTheme as coreCreateJBrowseTheme } from '@jbrowse/core/ui'
-import { Theme, ThemeOptions } from '@material-ui/core/styles'
+import { Theme, ThemeOptions } from '@mui/material/styles'
 
 export function createJBrowseTheme(theme?: ThemeOptions) {
   console.warn(

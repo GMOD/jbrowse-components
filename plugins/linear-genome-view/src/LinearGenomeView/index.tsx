@@ -39,13 +39,13 @@ import { saveAs } from 'file-saver'
 
 // icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import SyncAltIcon from '@material-ui/icons/SyncAlt'
-import VisibilityIcon from '@material-ui/icons/Visibility'
-import LabelIcon from '@material-ui/icons/Label'
-import FolderOpenIcon from '@material-ui/icons/FolderOpen'
-import PhotoCameraIcon from '@material-ui/icons/PhotoCamera'
-import ZoomInIcon from '@material-ui/icons/ZoomIn'
-import MenuOpenIcon from '@material-ui/icons/MenuOpen'
+import SyncAltIcon from '@mui/icons-material/SyncAlt'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import LabelIcon from '@mui/icons-material/Label'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
+import ZoomInIcon from '@mui/icons-material/ZoomIn'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 // locals
 import { renderToSvg } from './components/LinearGenomeViewSvg'

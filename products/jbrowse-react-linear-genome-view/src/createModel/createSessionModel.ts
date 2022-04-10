@@ -28,7 +28,7 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 import AboutDialog from '@jbrowse/core/ui/AboutDialog'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import InfoIcon from '@material-ui/icons/Info'
+import InfoIcon from '@mui/icons-material/Info'
 import { ReferringNode } from '../types'
 
 export default function sessionModelFactory(pluginManager: PluginManager) {

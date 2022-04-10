@@ -6,13 +6,13 @@ import {
   Typography,
   makeStyles,
   alpha,
-} from '@material-ui/core'
+} from '@mui/material'
 import SearchBox from './SearchBox'
 
 // icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
-import ArrowBackIcon from '@material-ui/icons/ArrowBack'
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 
 // locals
 import {

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
-import IconButton from '@material-ui/core/IconButton'
-import Slider from '@material-ui/core/Slider'
-import { makeStyles } from '@material-ui/core/styles'
-import ZoomIn from '@material-ui/icons/ZoomIn'
-import ZoomOut from '@material-ui/icons/ZoomOut'
+import IconButton from '@mui/material/IconButton'
+import Slider from '@mui/material/Slider'
+import { makeStyles } from '@mui/material/styles'
+import ZoomIn from '@mui/icons-material/ZoomIn'
+import ZoomOut from '@mui/icons-material/ZoomOut'
 import { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles({

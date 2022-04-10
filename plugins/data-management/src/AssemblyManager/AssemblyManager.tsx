@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/material/styles'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import {
   Button,
@@ -9,10 +9,10 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-} from '@material-ui/core'
-import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos'
-import CloseIcon from '@material-ui/icons/Close'
-import AddIcon from '@material-ui/icons/Add'
+} from '@mui/material'
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
+import CloseIcon from '@mui/icons-material/Close'
+import AddIcon from '@mui/icons-material/Add'
 
 import AssemblyTable from './AssemblyTable'
 import AssemblyAddForm from './AssemblyAddForm'

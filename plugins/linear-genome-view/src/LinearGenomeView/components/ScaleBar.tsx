@@ -1,4 +1,4 @@
-import { Paper, Typography, makeStyles } from '@material-ui/core'
+import { Paper, Typography, makeStyles } from '@mui/material'
 import {
   ContentBlock,
   ElidedBlock,

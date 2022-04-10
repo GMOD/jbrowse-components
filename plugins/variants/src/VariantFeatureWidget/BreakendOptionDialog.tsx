@@ -12,8 +12,8 @@ import {
   FormControlLabel,
   Checkbox,
   makeStyles,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+} from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
 import { getSnapshot } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'

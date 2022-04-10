@@ -10,9 +10,9 @@ import {
   DialogActions,
   Typography,
   makeStyles,
-} from '@material-ui/core'
-import ClearAllIcon from '@material-ui/icons/ClearAll'
-import CloseIcon from '@material-ui/icons/Close'
+} from '@mui/material'
+import ClearAllIcon from '@mui/icons-material/ClearAll'
+import CloseIcon from '@mui/icons-material/Close'
 
 import { GridBookmarkModel } from '../model'
 

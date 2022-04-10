@@ -12,9 +12,9 @@ import {
   Select,
   Typography,
   makeStyles,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
-import GetAppIcon from '@material-ui/icons/GetApp'
+} from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
+import GetAppIcon from '@mui/icons-material/GetApp'
 
 import { GridBookmarkModel } from '../model'
 import { downloadBookmarkFile } from '../utils'

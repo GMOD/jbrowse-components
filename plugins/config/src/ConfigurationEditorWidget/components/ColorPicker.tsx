@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/material/styles'
 import ReactPropTypes from 'prop-types'
 import { ChromePicker, Color, ColorResult } from 'react-color'
 

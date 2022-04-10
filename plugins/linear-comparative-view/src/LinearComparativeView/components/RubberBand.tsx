@@ -6,7 +6,7 @@ import {
   Typography,
   makeStyles,
   alpha,
-} from '@material-ui/core'
+} from '@mui/material'
 import { stringify } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 import { LinearComparativeViewModel } from '../model'

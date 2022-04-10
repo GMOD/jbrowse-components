@@ -7,7 +7,7 @@ import BoxRendererType, {
   ResultsSerialized,
   ResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
-import { Theme } from '@material-ui/core'
+import { Theme } from '@mui/material'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
   bpSpanPx,

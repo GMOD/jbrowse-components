@@ -1,4 +1,4 @@
-import OpenInNewIcon from '@material-ui/icons/OpenInNew'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 
 import { autorun, reaction } from 'mobx'

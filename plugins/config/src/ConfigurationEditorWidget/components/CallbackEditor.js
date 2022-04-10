@@ -8,8 +8,8 @@ import {
   Tooltip,
   IconButton,
   makeStyles,
-} from '@material-ui/core'
-import HelpIcon from '@material-ui/icons/Help'
+} from '@mui/material'
+import HelpIcon from '@mui/icons-material/Help'
 import { getEnv } from 'mobx-state-tree'
 import { observer, PropTypes } from 'mobx-react'
 import Editor from 'react-simple-code-editor'

@@ -3,7 +3,7 @@ import {
   ElidedBlock,
   InterRegionPaddingBlock,
 } from '@jbrowse/core/util/blockTypes'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@mui/material/styles'
 import clsx from 'clsx'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'

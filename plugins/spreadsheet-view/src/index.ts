@@ -2,7 +2,7 @@ import { lazy } from 'react'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
-import ViewComfyIcon from '@material-ui/icons/ViewComfy'
+import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import SpreadsheetViewModel from './SpreadsheetView/models/SpreadsheetView'
 

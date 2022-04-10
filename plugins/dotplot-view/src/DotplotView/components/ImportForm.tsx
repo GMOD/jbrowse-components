@@ -10,7 +10,7 @@ import {
   Grid,
   Typography,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'

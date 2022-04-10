@@ -1,16 +1,16 @@
-import FolderOpenIcon from '@material-ui/icons/FolderOpen'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 const SvInspectorComponentF = pluginManager => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const IconButton = jbrequire('@material-ui/core/IconButton')
-  const { makeStyles } = jbrequire('@material-ui/core/styles')
-  const Grid = jbrequire('@material-ui/core/Grid')
-  const FormControlLabel = jbrequire('@material-ui/core/FormControlLabel')
-  const Checkbox = jbrequire('@material-ui/core/Checkbox')
+  const IconButton = jbrequire('@mui/material/IconButton')
+  const { makeStyles } = jbrequire('@mui/material/styles')
+  const Grid = jbrequire('@mui/material/Grid')
+  const FormControlLabel = jbrequire('@mui/material/FormControlLabel')
+  const Checkbox = jbrequire('@mui/material/Checkbox')
   const { ResizeHandle } = jbrequire('@jbrowse/core/ui')
-  const { grey } = jbrequire('@material-ui/core/colors')
+  const { grey } = jbrequire('@mui/material/colors')
 
   const headerHeight = 52
 

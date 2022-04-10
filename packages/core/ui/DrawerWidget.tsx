@@ -11,16 +11,16 @@ import {
   Typography,
   makeStyles,
   alpha,
-} from '@material-ui/core'
+} from '@mui/material'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { SessionWithDrawerWidgets } from '../util/types'
 
 // icons
-import DeleteIcon from '@material-ui/icons/Delete'
-import CloseIcon from '@material-ui/icons/Close'
-import MinimizeIcon from '@material-ui/icons/Minimize'
-import MoreVertIcon from '@material-ui/icons/MoreVert'
+import DeleteIcon from '@mui/icons-material/Delete'
+import CloseIcon from '@mui/icons-material/Close'
+import MinimizeIcon from '@mui/icons-material/Minimize'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 
 // locals
 import Drawer from './Drawer'

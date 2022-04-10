@@ -1,5 +1,5 @@
 import React from 'react'
-import { Grid, Paper, Typography, makeStyles } from '@material-ui/core'
+import { Grid, Paper, Typography, makeStyles } from '@mui/material'
 
 import { LogoFull } from '@jbrowse/core/ui/Logo'
 import PluginManager from '@jbrowse/core/PluginManager'

@@ -1,10 +1,10 @@
-import FilterIcon from '@material-ui/icons/FilterList'
-import CloseIcon from '@material-ui/icons/Close'
+import FilterIcon from '@mui/icons-material/FilterList'
+import CloseIcon from '@mui/icons-material/Close'
 /* eslint-disable react/prop-types */
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import React from 'react'
-import { Grid, IconButton, Typography, makeStyles } from '@material-ui/core'
+import { Grid, IconButton, Typography, makeStyles } from '@mui/material'
 
 const useStyles = makeStyles(theme => {
   return {

@@ -13,12 +13,12 @@ import {
   DialogContentText,
   TextField,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 
 // icons
-import IconButton from '@material-ui/core/IconButton'
-import CloseIcon from '@material-ui/icons/Close'
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+import IconButton from '@mui/material/IconButton'
+import CloseIcon from '@mui/icons-material/Close'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 

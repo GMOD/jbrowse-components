@@ -10,10 +10,10 @@ import {
   Tooltip,
   Typography,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 import PluginManager from '@jbrowse/core/PluginManager'
-import SearchIcon from '@material-ui/icons/Search'
-import MoreIcon from '@material-ui/icons/MoreHoriz'
+import SearchIcon from '@mui/icons-material/Search'
+import MoreIcon from '@mui/icons-material/MoreHoriz'
 import deepmerge from 'deepmerge'
 
 // locals

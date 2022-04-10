@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
-import { Button, Typography } from '@material-ui/core'
+import { Button, Typography } from '@mui/material'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
@@ -24,7 +24,7 @@ import {
 import { autorun } from 'mobx'
 import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
 // icons
-import MenuOpenIcon from '@material-ui/icons/MenuOpen'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
 import { Tooltip } from '../components/BaseLinearDisplay'

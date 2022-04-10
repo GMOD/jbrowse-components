@@ -37,10 +37,10 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import SettingsIcon from '@material-ui/icons/Settings'
-import CopyIcon from '@material-ui/icons/FileCopy'
-import DeleteIcon from '@material-ui/icons/Delete'
-import InfoIcon from '@material-ui/icons/Info'
+import SettingsIcon from '@mui/icons-material/Settings'
+import CopyIcon from '@mui/icons-material/FileCopy'
+import DeleteIcon from '@mui/icons-material/Delete'
+import InfoIcon from '@mui/icons-material/Info'
 import shortid from 'shortid'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))

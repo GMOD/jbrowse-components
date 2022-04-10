@@ -1,18 +1,18 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
-import { grey, indigo } from '@material-ui/core/colors'
+import { grey, indigo } from '@mui/material/colors'
 import {
   Checkbox,
   IconButton,
   Tooltip,
   FormControlLabel,
   makeStyles,
-} from '@material-ui/core'
-import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp'
-import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown'
-import CropFreeIcon from '@material-ui/icons/CropFree'
-import ArrowDropDown from '@material-ui/icons/ArrowDropDown'
+} from '@mui/material'
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import CropFreeIcon from '@mui/icons-material/CropFree'
+import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 import ColumnMenu from './ColumnMenu'
 import RowMenu from './RowMenu'
 

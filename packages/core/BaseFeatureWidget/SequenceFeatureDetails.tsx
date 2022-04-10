@@ -1,12 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react'
-import {
-  Button,
-  Select,
-  MenuItem,
-  Typography,
-  Tooltip,
-  makeStyles,
-} from '@material-ui/core'
+import { Button, Select, MenuItem, Typography, Tooltip } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { useInView } from 'react-intersection-observer'
 import copy from 'copy-to-clipboard'
 import {

@@ -6,13 +6,13 @@ import {
   MenuItem,
   Tooltip,
   Menu,
-} from '@material-ui/core'
+} from '@mui/material'
 
 import {
   ToggleButtonGroup,
   ToggleButton,
   ToggleButtonProps,
-} from '@material-ui/lab'
+} from '@mui/lab'
 import { observer } from 'mobx-react'
 import {
   FileLocation,
@@ -21,7 +21,7 @@ import {
   AbstractRootModel,
   isAppRootModel,
 } from '../../util/types'
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import LocalFileChooser from './LocalFileChooser'
 import UrlChooser from './UrlChooser'
 

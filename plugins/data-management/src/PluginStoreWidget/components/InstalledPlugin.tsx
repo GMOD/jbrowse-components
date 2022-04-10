@@ -12,10 +12,10 @@ import {
   Tooltip,
   Typography,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 
-import CloseIcon from '@material-ui/icons/Close'
-import LockIcon from '@material-ui/icons/Lock'
+import CloseIcon from '@mui/icons-material/Close'
+import LockIcon from '@mui/icons-material/Lock'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSession } from '@jbrowse/core/util'

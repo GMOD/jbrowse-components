@@ -13,13 +13,13 @@ import {
   DialogTitle,
   IconButton,
   makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 // icons
-import CloseIcon from '@material-ui/icons/Close'
+import CloseIcon from '@mui/icons-material/Close'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 
