@@ -1,6 +1,6 @@
 import React from 'react'
 import { DeprecatedThemeOptions } from '@mui/material'
-import { ThemeProvider, Theme, StyledEngineProvider } from '@mui/material/styles';
+import { ThemeProvider, Theme } from '@mui/material/styles'
 import { renderToString } from 'react-dom/server'
 
 import {
@@ -19,12 +19,10 @@ import RpcManager from '../../rpc/RpcManager'
 import { createJBrowseTheme } from '../../ui'
 import ServerSideRenderedContent from './ServerSideRenderedContent'
 
-
 declare module '@mui/styles/defaultTheme' {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface DefaultTheme extends Theme {}
 }
-
 
 interface BaseRenderArgs extends RenderProps {
   sessionId: string
@@ -147,11 +145,9 @@ export default class ServerSideRenderer extends RendererType {
     args: RenderArgsDeserialized,
   ): ResultsSerialized {
     const html = renderToString(
-      <StyledEngineProvider injectFirst>
-        <ThemeProvider theme={createJBrowseTheme(args.theme)}>
-          {results.reactElement}
-        </ThemeProvider>
-      </StyledEngineProvider>,
+      <ThemeProvider theme={createJBrowseTheme(args.theme)}>
+        {results.reactElement}
+      </ThemeProvider>,
     )
     delete results.reactElement
     return { ...results, html }
