@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { getConf } from '../configuration'
 import {
-  makeStyles,
   TextField,
   MenuItem,
   InputProps as IIP,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { AbstractSessionModel } from '../util'
 const useStyles = makeStyles(() => ({
   importFormEntry: {

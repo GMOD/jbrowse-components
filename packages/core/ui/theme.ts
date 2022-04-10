@@ -1,7 +1,12 @@
 import { blue, green, red, amber } from '@mui/material/colors'
-import { ThemeOptions, createTheme } from '@mui/material/styles'
+import { Theme, ThemeOptions, createTheme } from '@mui/material/styles'
 import { PaletteOptions } from '@mui/material/styles/createPalette'
 import deepmerge from 'deepmerge'
+
+declare module '@mui/styles/defaultTheme' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface (remove this line if you don't have the rule enabled)
+  interface DefaultTheme extends Theme {}
+}
 
 // use this if we ever want to add some top-level thing to the theme
 // declare module '@mui/material/styles/createMuiTheme' {
@@ -16,7 +21,7 @@ import deepmerge from 'deepmerge'
 //     }
 //   }
 // }
-
+console.log({ blue, green, red, amber })
 declare module '@mui/material/styles/createPalette' {
   interface Palette {
     tertiary: Palette['primary']
@@ -51,15 +56,15 @@ export const jbrowseDefaultPalette = {
   // type: 'dark',
   primary: { main: midnight },
   secondary: { main: grape },
-  tertiary: refTheme.palette.augmentColor({ main: forest }),
-  quaternary: refTheme.palette.augmentColor({ main: mandarin }),
+  tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
+  quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
   stopCodon: '#e22',
   startCodon: '#3e3',
   bases: {
-    A: refTheme.palette.augmentColor(green),
-    C: refTheme.palette.augmentColor(blue),
-    G: refTheme.palette.augmentColor(amber),
-    T: refTheme.palette.augmentColor(red),
+    A: refTheme.palette.augmentColor({ color: green }),
+    C: refTheme.palette.augmentColor({ color: blue }),
+    G: refTheme.palette.augmentColor({ color: amber }),
+    T: refTheme.palette.augmentColor({ color: red }),
   },
 }
 

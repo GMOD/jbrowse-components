@@ -13,8 +13,8 @@ import {
   Popover,
   PopoverProps,
   SvgIconProps,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 // icons
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'

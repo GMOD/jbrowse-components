@@ -5,10 +5,10 @@ import {
   IconButtonProps as IconButtonPropsType,
   Paper,
   Tooltip,
-  makeStyles,
   useTheme,
-  alpha,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
+import { alpha } from '@mui/material/styles'
 
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'

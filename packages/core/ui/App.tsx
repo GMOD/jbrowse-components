@@ -9,15 +9,14 @@ import {
   Toolbar,
   Tooltip,
   Typography,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import LaunchIcon from '@mui/icons-material/Launch'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 
 // locals
-import { readConfObject } from '../configuration'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
+import { readConfObject, AnyConfigurationModel } from '../configuration'
 import DrawerWidget from './DrawerWidget'
 import DropDownMenu from './DropDownMenu'
 import EditableTypography from './EditableTypography'

@@ -9,9 +9,9 @@ import {
   Toolbar,
   Tooltip,
   Typography,
-  makeStyles,
-  alpha,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
+import { alpha } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { SessionWithDrawerWidgets } from '../util/types'

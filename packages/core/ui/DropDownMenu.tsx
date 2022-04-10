@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react'
 import { Button } from '@mui/material'
-import { alpha, makeStyles } from '@mui/material/styles'
+import { alpha } from '@mui/material/styles'
+import { makeStyles } from '@mui/styles'
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'

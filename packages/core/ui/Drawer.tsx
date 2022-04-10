@@ -1,6 +1,6 @@
 import React from 'react'
-import Paper from '@mui/material/Paper'
-import { makeStyles } from '@mui/material/styles'
+import { Paper } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { observer } from 'mobx-react'
 import ResizeHandle from './ResizeHandle'
 import { SessionWithDrawerWidgets } from '../util/types'

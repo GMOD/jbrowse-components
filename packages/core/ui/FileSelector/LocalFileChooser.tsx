@@ -1,11 +1,6 @@
 import React from 'react'
-import {
-  Box,
-  Button,
-  Typography,
-  FormControl,
-  makeStyles,
-} from '@mui/material'
+import { Box, Button, Typography, FormControl } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { isElectron } from '../../util'
 import { LocalPathLocation, FileLocation, BlobLocation } from '../../util/types'
 import { getBlob, storeBlobLocation } from '../../util/tracks'

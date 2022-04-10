@@ -417,6 +417,7 @@ const PlatformSpecificFatalErrorDialog = (props: unknown) => {
 }
 const LoaderWrapper = ({ initialTimestamp }: { initialTimestamp: number }) => {
   return (
+    //@ts-ignore
     <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
       <QueryParamProvider>
         <Loader initialTimestamp={initialTimestamp} />

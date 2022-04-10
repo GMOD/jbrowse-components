@@ -1,11 +1,6 @@
 import React, { useState } from 'react'
-import {
-  Card,
-  CardMedia,
-  Container,
-  Typography,
-  makeStyles,
-} from '@mui/material'
+import { Card, CardMedia, Container, Typography } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 import emptyIcon from './img/emptyIcon.png'
 import linearGenomeViewIcon from './img/linearGenomeViewIcon.png'

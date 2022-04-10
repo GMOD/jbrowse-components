@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@mui/material/styles'
+import { makeStyles } from '@mui/styles'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import {

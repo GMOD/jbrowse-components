@@ -1,6 +1,5 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@mui/material/styles'
 import {
   Button,
   Dialog,
@@ -11,6 +10,7 @@ import {
   IconButton,
   Typography,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import CloseIcon from '@mui/icons-material/Close'
 
 const useStyles = makeStyles(theme => ({
