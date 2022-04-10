@@ -1,12 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import {
-  Button,
-  FormGroup,
-  Typography,
-  makeStyles,
-  alpha,
-} from '@mui/material'
+import { Button, FormGroup, Typography, alpha } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import SearchBox from './SearchBox'
 
 // icons

@@ -38,7 +38,7 @@ function ReturnToImportFormDialog({
           <IconButton
             className={classes.closeButton}
             onClick={() => handleClose()}
-          >
+            size="large">
             <CloseIcon />
           </IconButton>
         ) : null}
@@ -72,7 +72,7 @@ function ReturnToImportFormDialog({
         </Button>
       </DialogActions>
     </Dialog>
-  )
+  );
 }
 
 export default observer(ReturnToImportFormDialog)

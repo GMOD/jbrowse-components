@@ -1,14 +1,13 @@
+import React from 'react'
 import {
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
 } from '@jbrowse/core/util/blockTypes'
-import { makeStyles } from '@mui/material/styles'
+import { makeStyles } from '@mui/styles'
 import clsx from 'clsx'
 import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
-import React from 'react'
-import { LinearGenomeViewStateModel } from '..'
+import { LinearGenomeViewModel } from '..'
 import {
   ContentBlock as ContentBlockComponent,
   ElidedBlock as ElidedBlockComponent,
@@ -17,7 +16,7 @@ import {
 
 import { makeTicks } from '../util'
 
-type LGV = Instance<LinearGenomeViewStateModel>
+type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles(theme => ({
   verticalGuidesZoomContainer: {

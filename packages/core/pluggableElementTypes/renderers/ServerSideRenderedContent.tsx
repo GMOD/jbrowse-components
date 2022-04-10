@@ -1,9 +1,16 @@
-import { ThemeProvider } from '@mui/material/styles'
+import { ThemeProvider, Theme, StyledEngineProvider } from '@mui/material/styles';
 import React, { useEffect, useRef } from 'react'
 import { hydrate, unmountComponentAtNode } from 'react-dom'
 import { createJBrowseTheme } from '../../ui'
 import { rIC } from '../../util'
 import { ResultsSerialized, RenderArgs } from './ServerSideRendererType'
+
+
+declare module '@mui/styles/defaultTheme' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface DefaultTheme extends Theme {}
+}
+
 
 interface ServerSideRenderedContentProps extends ResultsSerialized, RenderArgs {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,9 +45,11 @@ export default function ServerSideRenderedContent(
         rIC(
           () => {
             hydrate(
-              <ThemeProvider theme={jbrowseTheme}>
-                <RenderingComponent {...rest} />
-              </ThemeProvider>,
+              <StyledEngineProvider injectFirst>
+                <ThemeProvider theme={jbrowseTheme}>
+                  <RenderingComponent {...rest} />
+                </ThemeProvider>
+              </StyledEngineProvider>,
               domNode,
             )
           },

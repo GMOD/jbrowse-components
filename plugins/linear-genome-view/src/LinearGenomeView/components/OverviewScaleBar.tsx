@@ -1,5 +1,6 @@
 import React from 'react'
-import { Typography, makeStyles, useTheme, alpha } from '@mui/material'
+import { Typography, useTheme, alpha } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import clsx from 'clsx'

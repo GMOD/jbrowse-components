@@ -12,8 +12,8 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'

@@ -91,7 +91,7 @@ export default function AboutDialog({
         <IconButton
           className={classes.closeButton}
           onClick={() => handleClose()}
-        >
+          size="large">
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -115,5 +115,5 @@ export default function AboutDialog({
         ) : null}
       </DialogContent>
     </Dialog>
-  )
+  );
 }

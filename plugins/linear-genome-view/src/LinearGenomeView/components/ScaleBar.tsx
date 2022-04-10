@@ -1,4 +1,5 @@
-import { Paper, Typography, makeStyles } from '@mui/material'
+import { Paper, Typography } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import {
   ContentBlock,
   ElidedBlock,

@@ -10,7 +10,7 @@ export interface SeqChunk {
  * @returns formated sequence string
  */
 export function formatFastaLines(seqString: string) {
-  return seqString.replace(/(.{1,80})/g, '$1\n').trimEnd()
+  return seqString.replace(/(.{1,80})/g, '$1\n').trimEnd();
 }
 /**
  * Formats the sequences chunks into Fasta format

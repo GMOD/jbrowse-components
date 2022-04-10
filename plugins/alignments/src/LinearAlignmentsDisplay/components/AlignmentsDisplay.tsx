@@ -2,7 +2,7 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
-import { makeStyles } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { AlignmentsDisplayModel } from '../models/model'
 
 const useStyles = makeStyles(() => ({

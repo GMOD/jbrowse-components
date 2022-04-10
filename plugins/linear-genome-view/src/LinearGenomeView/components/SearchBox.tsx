@@ -1,6 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles, useTheme, alpha } from '@mui/material'
+import { useTheme, alpha } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { getSession } from '@jbrowse/core/util'
 import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'

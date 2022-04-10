@@ -1,6 +1,6 @@
 import React from 'react'
-import { ThemeOptions } from '@mui/material'
-import { ThemeProvider } from '@mui/material/styles'
+import { DeprecatedThemeOptions } from '@mui/material'
+import { ThemeProvider, Theme, StyledEngineProvider } from '@mui/material/styles';
 import { renderToString } from 'react-dom/server'
 
 import {
@@ -19,12 +19,19 @@ import RpcManager from '../../rpc/RpcManager'
 import { createJBrowseTheme } from '../../ui'
 import ServerSideRenderedContent from './ServerSideRenderedContent'
 
+
+declare module '@mui/styles/defaultTheme' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface DefaultTheme extends Theme {}
+}
+
+
 interface BaseRenderArgs extends RenderProps {
   sessionId: string
   // Note that signal serialization happens after serializeArgsInClient and
   // deserialization happens before deserializeArgsInWorker
   signal?: AbortSignal
-  theme: ThemeOptions
+  theme: DeprecatedThemeOptions
   exportSVG: { rasterizeLayers?: boolean }
 }
 
@@ -140,9 +147,11 @@ export default class ServerSideRenderer extends RendererType {
     args: RenderArgsDeserialized,
   ): ResultsSerialized {
     const html = renderToString(
-      <ThemeProvider theme={createJBrowseTheme(args.theme)}>
-        {results.reactElement}
-      </ThemeProvider>,
+      <StyledEngineProvider injectFirst>
+        <ThemeProvider theme={createJBrowseTheme(args.theme)}>
+          {results.reactElement}
+        </ThemeProvider>
+      </StyledEngineProvider>,
     )
     delete results.reactElement
     return { ...results, html }

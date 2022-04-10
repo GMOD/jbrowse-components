@@ -113,7 +113,7 @@ describe('<Loader />', () => {
   it('errors with config in URL that does not exist', async () => {
     console.error = jest.fn()
     const { findByText } = render(
-      //@ts-ignore
+      // @ts-ignore
       <ErrorBoundary FallbackComponent={FallbackComponent}>
         {/* @ts-ignore */}
         <QueryParamProvider location={{ search: '?config=doesNotExist.json' }}>
@@ -203,7 +203,7 @@ describe('<Loader />', () => {
 
   it('can use config from a url with nonexistent share param ', async () => {
     const { findAllByText } = render(
-      //@ts-ignore
+      // @ts-ignore
       <ErrorBoundary FallbackComponent={({ error }) => <div>{`${error}`}</div>}>
         <QueryParamProvider
           // @ts-ignore
@@ -221,7 +221,7 @@ describe('<Loader />', () => {
 
   it('can catch error from loading a bad config', async () => {
     const { findAllByText } = render(
-      //@ts-ignore
+      // @ts-ignore
       <ErrorBoundary FallbackComponent={({ error }) => <div>{`${error}`}</div>}>
         <QueryParamProvider
           // @ts-ignore

@@ -15,8 +15,8 @@ import {
   MenuItem,
   InputAdornment,
   Select,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 const OPERATIONS = [
   'equals',

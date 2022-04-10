@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { makeStyles } from '@mui/material/styles'
+import { makeStyles } from '@mui/styles'
 import {
   Button,
   Dialog,
@@ -41,7 +41,11 @@ export default function ExportSvgDlg({
     <Dialog open onClose={handleClose}>
       <DialogTitle>
         Export SVG
-        <IconButton className={classes.closeButton} onClick={handleClose}>
+        <IconButton
+          className={classes.closeButton}
+          onClick={handleClose}
+          size="large"
+        >
           <CloseIcon />
         </IconButton>
       </DialogTitle>

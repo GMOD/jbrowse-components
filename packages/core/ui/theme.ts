@@ -1,11 +1,16 @@
 import { blue, green, red, amber } from '@mui/material/colors'
-import { Theme, ThemeOptions, createTheme } from '@mui/material/styles'
+import {
+  Theme,
+  DeprecatedThemeOptions,
+  createTheme,
+  adaptV4Theme,
+} from '@mui/material/styles'
 import { PaletteOptions } from '@mui/material/styles/createPalette'
 import deepmerge from 'deepmerge'
 
 declare module '@mui/styles/defaultTheme' {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface (remove this line if you don't have the rule enabled)
-  interface DefaultTheme extends Theme {}
+  type DefaultTheme = Theme
 }
 
 // use this if we ever want to add some top-level thing to the theme
@@ -15,13 +20,12 @@ declare module '@mui/styles/defaultTheme' {
 //       topLevelThing: string
 //     }
 //   }
-//   interface ThemeOptions {
+//   interface DeprecatedThemeOptions {
 //     status?: {
 //       topLevelThing?: string
 //     }
 //   }
 // }
-console.log({ blue, green, red, amber })
 declare module '@mui/material/styles/createPalette' {
   interface Palette {
     tertiary: Palette['primary']
@@ -204,7 +208,7 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
   }
 }
 
-export const jbrowseBaseTheme: ThemeOptions = {
+export const jbrowseBaseTheme: DeprecatedThemeOptions = {
   palette: jbrowseDefaultPalette,
   typography: { fontSize: 12 },
   spacing: 4,
@@ -212,9 +216,9 @@ export const jbrowseBaseTheme: ThemeOptions = {
   overrides: createJBrowseDefaultOverrides(),
 }
 
-export function createJBrowseTheme(theme?: ThemeOptions) {
+export function createJBrowseTheme(theme?: DeprecatedThemeOptions) {
   if (!theme) {
-    return createTheme(jbrowseBaseTheme)
+    return createTheme(adaptV4Theme(jbrowseBaseTheme))
   }
   if (theme.palette?.tertiary) {
     theme = {
@@ -242,5 +246,5 @@ export function createJBrowseTheme(theme?: ThemeOptions) {
       theme.overrides || {},
     ),
   }
-  return createTheme(deepmerge(jbrowseBaseTheme, theme))
+  return createTheme(adaptV4Theme(deepmerge(jbrowseBaseTheme, theme)))
 }

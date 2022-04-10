@@ -11,13 +11,13 @@ import WarningIcon from '@mui/icons-material/Warning'
 const useStyles = makeStyles(theme => ({
   main: {
     textAlign: 'center',
-    margin: theme.spacing(2),
-    padding: theme.spacing(2),
+    margin: 8, //theme.spacing(2),
+    padding: 8, //theme.spacing(2),
     borderWidth: 2,
     borderRadius: 2,
   },
   buttons: {
-    margin: theme.spacing(2),
+    margin: 8, //theme.spacing(2),
     color: theme.palette.text.primary,
   },
 }))

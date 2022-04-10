@@ -1,12 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react'
+import { makeStyles } from '@mui/styles'
 import { observer } from 'mobx-react'
-import {
-  Popover,
-  Tooltip,
-  Typography,
-  makeStyles,
-  alpha,
-} from '@mui/material'
+import { Popover, Tooltip, Typography, alpha } from '@mui/material'
 import { stringify } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 import { LinearGenomeViewModel } from '..'

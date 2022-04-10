@@ -37,7 +37,7 @@ export default function HelpDialog({
             onClick={() => {
               handleClose()
             }}
-          >
+            size="large">
             <CloseIcon />
           </IconButton>
         ) : null}
@@ -90,5 +90,5 @@ export default function HelpDialog({
         </Button>
       </DialogActions>
     </Dialog>
-  )
+  );
 }

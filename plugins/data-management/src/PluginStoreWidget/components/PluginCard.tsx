@@ -14,8 +14,8 @@ import {
   Button,
   Link,
   Typography,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 // icons
 import PersonIcon from '@mui/icons-material/Person'

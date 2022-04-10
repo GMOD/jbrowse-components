@@ -19,8 +19,8 @@ import {
   TextField,
   Tooltip,
   Typography,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 // icons
 import ClearIcon from '@mui/icons-material/Clear'

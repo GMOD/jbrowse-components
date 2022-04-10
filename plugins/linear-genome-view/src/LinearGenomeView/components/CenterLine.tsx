@@ -1,10 +1,9 @@
-import { makeStyles } from '@mui/material/styles'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useRef } from 'react'
-import { Instance } from 'mobx-state-tree'
-import { LinearGenomeViewStateModel } from '..'
+import { makeStyles } from '@mui/styles'
+import { observer } from 'mobx-react'
+import { LinearGenomeViewModel } from '..'
 
-type LGV = Instance<LinearGenomeViewStateModel>
+type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles(() => ({
   centerLineContainer: {
@@ -61,10 +60,6 @@ function CenterLine({ model }: { model: LGV }) {
       )}
     </div>
   ) : null
-}
-
-CenterLine.propTypes = {
-  model: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
 export default observer(CenterLine)

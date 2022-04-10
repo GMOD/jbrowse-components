@@ -1,4 +1,5 @@
 import React from 'react'
+import { makeStyles } from '@mui/styles'
 import { getEnv, resolveIdentifier, getRoot } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import {
@@ -17,7 +18,6 @@ import {
   TableRow,
   Typography,
   Paper,
-  makeStyles,
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { LinearGenomeViewModel } from '../..'
@@ -108,6 +108,7 @@ export default function SearchResultsDialog({
             onClick={() => {
               handleClose()
             }}
+            size="large"
           >
             <CloseIcon />
           </IconButton>

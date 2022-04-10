@@ -1,13 +1,8 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 
-import {
-  Typography,
-  makeStyles,
-  Select,
-  MenuItem,
-  FormControl,
-} from '@mui/material'
+import { Typography, Select, MenuItem, FormControl } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 import { GridBookmarkModel } from '../model'
 

@@ -351,7 +351,7 @@ export function parseLocStringOneBased(
             start: +start.replace(/,/g, ''),
             end: +end.replace(/,/g, ''),
             reversed,
-          }
+          };
         }
       } else if (singleMatch) {
         const [, start, , , separator] = singleMatch
@@ -363,7 +363,7 @@ export function parseLocStringOneBased(
               refName: prefix,
               start: +start.replace(/,/g, ''),
               reversed,
-            }
+            };
           }
           return {
             assemblyName,
@@ -371,7 +371,7 @@ export function parseLocStringOneBased(
             start: +start.replace(/,/g, ''),
             end: +start.replace(/,/g, ''),
             reversed,
-          }
+          };
         }
       } else {
         throw new Error(

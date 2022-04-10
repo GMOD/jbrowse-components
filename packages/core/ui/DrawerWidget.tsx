@@ -137,12 +137,12 @@ const DrawerHeader = observer(
                       onClick={() => {
                         session.hideWidget(widget)
                       }}
-                    >
+                      size="large">
                       <DeleteIcon />
                     </IconButton>
                   </ListItemSecondaryAction>
                 </MenuItem>
-              )
+              );
             })}
           </Select>
           <div className={classes.spacer} />
@@ -151,7 +151,7 @@ const DrawerHeader = observer(
               data-testid="drawer-close"
               color="inherit"
               onClick={event => setAnchorEl(event.currentTarget)}
-            >
+              size="large">
               <MoreVertIcon />
             </IconButton>
             <Tooltip title="Minimize drawer">
@@ -165,7 +165,7 @@ const DrawerHeader = observer(
                   )
                   session.minimizeWidgetDrawer()
                 }}
-              >
+                size="large">
                 <MinimizeIcon />
               </IconButton>
             </Tooltip>
@@ -176,7 +176,7 @@ const DrawerHeader = observer(
                 onClick={() => {
                   session.hideWidget(visibleWidget)
                 }}
-              >
+                size="large">
                 <CloseIcon />
               </IconButton>
             </Tooltip>
@@ -201,7 +201,7 @@ const DrawerHeader = observer(
           ))}
         </Menu>
       </AppBar>
-    )
+    );
   },
 )
 

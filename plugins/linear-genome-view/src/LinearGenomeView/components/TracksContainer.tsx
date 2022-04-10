@@ -1,4 +1,4 @@
-import { makeStyles } from '@mui/material/styles'
+import { makeStyles } from '@mui/styles'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React, { useEffect, useRef, useState } from 'react'

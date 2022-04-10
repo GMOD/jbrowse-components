@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { makeStyles } from '@mui/material/styles'
+import { makeStyles } from '@mui/styles'
 import { Typography, LinearProgress } from '@mui/material'
 import { observer } from 'mobx-react'
 

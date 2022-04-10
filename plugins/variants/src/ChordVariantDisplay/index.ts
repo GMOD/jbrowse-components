@@ -1,5 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { BaseChordDisplayComponentFactory } from '@jbrowse/plugin-circular-view'
+import { BaseChordDisplayComponent } from '@jbrowse/plugin-circular-view'
 import ChordVariantDisplay from './models/ChordVariantDisplay'
 
 export default (pluginManager: PluginManager) => {
@@ -14,6 +14,6 @@ export default (pluginManager: PluginManager) => {
     stateModel,
     trackType: 'VariantTrack',
     viewType: 'CircularView',
-    ReactComponent: BaseChordDisplayComponentFactory(pluginManager),
+    ReactComponent: BaseChordDisplayComponent,
   })
 }

@@ -1,11 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react'
-import {
-  Popover,
-  Tooltip,
-  Typography,
-  makeStyles,
-  alpha,
-} from '@mui/material'
+import { Popover, Tooltip, Typography, alpha } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { getSession, stringify } from '@jbrowse/core/util'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'

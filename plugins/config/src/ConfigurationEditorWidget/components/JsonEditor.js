@@ -1,11 +1,7 @@
 import React, { lazy, useEffect, useState } from 'react'
 import { useDebounce } from '@jbrowse/core/util'
-import {
-  FormControl,
-  FormHelperText,
-  InputLabel,
-  makeStyles,
-} from '@mui/material'
+import { FormControl, FormHelperText, InputLabel } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { observer, PropTypes } from 'mobx-react'
 const useStyles = makeStyles({
   error: {

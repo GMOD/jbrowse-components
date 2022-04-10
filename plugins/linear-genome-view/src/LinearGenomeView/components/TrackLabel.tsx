@@ -3,13 +3,8 @@ import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
-import {
-  IconButton,
-  Paper,
-  Typography,
-  alpha,
-  makeStyles,
-} from '@mui/material'
+import { IconButton, Paper, Typography, alpha } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 // icons
 import MoreVertIcon from '@mui/icons-material/MoreVert'
@@ -124,6 +119,7 @@ const TrackLabel = React.forwardRef(
             className={classes.iconButton}
             title="close this track"
             color="secondary"
+            size="large"
           >
             <CloseIcon />
           </IconButton>
@@ -142,6 +138,7 @@ const TrackLabel = React.forwardRef(
             color="secondary"
             data-testid="track_menu_icon"
             disabled={!items.length}
+            size="large"
           >
             <MoreVertIcon />
           </IconButton>

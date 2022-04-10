@@ -1,6 +1,7 @@
 import React, { useState, useRef, useMemo } from 'react'
 import { observer } from 'mobx-react'
-import { Portal, alpha, useTheme, makeStyles } from '@mui/material'
+import { Portal, alpha, useTheme } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { getConf } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
 import { usePopper } from 'react-popper'

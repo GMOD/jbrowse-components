@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-
+import { makeStyles } from '@mui/styles'
 import {
   Button,
   CircularProgress,
@@ -12,7 +12,6 @@ import {
   Divider,
   IconButton,
   TextField,
-  makeStyles,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { saveAs } from 'file-saver'
@@ -181,6 +180,7 @@ function SequenceDialog({
               handleClose()
               model.setOffsets(undefined, undefined)
             }}
+            size="large"
           >
             <CloseIcon />
           </IconButton>

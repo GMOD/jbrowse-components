@@ -12,8 +12,8 @@ import {
   DialogContent,
   DialogContentText,
   TextField,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 // icons
 import IconButton from '@mui/material/IconButton'

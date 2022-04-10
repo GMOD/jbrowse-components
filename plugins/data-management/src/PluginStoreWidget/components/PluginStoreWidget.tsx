@@ -10,8 +10,8 @@ import {
   Button,
   IconButton,
   Typography,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 import { JBrowsePlugin } from '@jbrowse/core/util/types'
 import { getSession, isElectron } from '@jbrowse/core/util'

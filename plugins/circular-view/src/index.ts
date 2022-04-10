@@ -81,5 +81,5 @@ export default class CircularViewPlugin extends Plugin {
 export {
   BaseChordDisplayModel,
   baseChordDisplayConfig,
-  BaseChordDisplayComponentFactory,
+  BaseChordDisplayComponent,
 } from './BaseChordDisplay'

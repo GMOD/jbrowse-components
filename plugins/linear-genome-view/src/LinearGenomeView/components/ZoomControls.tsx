@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
-import IconButton from '@mui/material/IconButton'
-import Slider from '@mui/material/Slider'
-import { makeStyles } from '@mui/material/styles'
+import { Slider, IconButton } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
 import { LinearGenomeViewModel } from '..'
@@ -25,6 +24,8 @@ function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
   useEffect(() => {
     setValue(-Math.log2(bpPerPx) * 100)
   }, [setValue, bpPerPx])
+
+  console.log({ value, maxBpPerPx })
   return (
     <div className={classes.container}>
       <IconButton
@@ -34,6 +35,7 @@ function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
         }}
         disabled={bpPerPx >= maxBpPerPx - 0.0001 || scaleFactor !== 1}
         color="secondary"
+        size="large"
       >
         <ZoomOut />
       </IconButton>
@@ -54,6 +56,7 @@ function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
         }}
         disabled={bpPerPx <= minBpPerPx + 0.0001 || scaleFactor !== 1}
         color="secondary"
+        size="large"
       >
         <ZoomIn />
       </IconButton>

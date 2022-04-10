@@ -13,7 +13,7 @@ const useStyles = makeStyles(theme => ({
     cursor: 'pointer',
   },
   name: {
-    marginTop: theme.spacing(),
+    marginTop: 4, //theme.spacing(),
     textAlign: 'center',
     maxWidth: 200,
   },

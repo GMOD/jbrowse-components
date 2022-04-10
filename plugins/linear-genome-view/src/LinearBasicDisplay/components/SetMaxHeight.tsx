@@ -54,7 +54,7 @@ function SetMaxHeightDlg(props: {
           aria-label="close"
           className={classes.closeButton}
           onClick={handleClose}
-        >
+          size="large">
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -93,7 +93,7 @@ function SetMaxHeightDlg(props: {
         </DialogActions>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 export default observer(SetMaxHeightDlg)

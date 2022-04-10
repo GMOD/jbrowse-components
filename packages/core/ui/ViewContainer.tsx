@@ -92,6 +92,7 @@ const ViewMenu = observer(
             setAnchorEl(event.currentTarget)
           }}
           data-testid="view_menu_icon"
+          size="large"
         >
           <MenuIcon {...IconProps} />
         </IconButton>
@@ -125,7 +126,7 @@ const ViewContainer = observer(
   }) => {
     const classes = useStyles()
     const theme = useTheme()
-    const padWidth = theme.spacing(1)
+    const padWidth = parseInt(theme.spacing(1), 10)
 
     const [ref, { width }] = useMeasure()
 
@@ -188,6 +189,7 @@ const ViewContainer = observer(
             classes={{ root: classes.iconRoot }}
             edge="end"
             onClick={onClose}
+            size="large"
           >
             <CloseIcon className={classes.icon} />
           </IconButton>
