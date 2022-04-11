@@ -14,6 +14,3 @@ export { default as FatalErrorDialog } from './FatalErrorDialog'
 export { default as Menu } from './Menu'
 export { default as SanitizedHTML } from './SanitizedHTML'
 export * from './Menu'
-
-const WIDGET_HEIGHT = 32
-export { WIDGET_HEIGHT }

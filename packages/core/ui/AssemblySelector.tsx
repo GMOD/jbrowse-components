@@ -44,11 +44,13 @@ const AssemblySelector = observer(
     onChange,
     selected,
     extra = 0,
+    InputProps,
   }: {
     session: AbstractSessionModel
     onChange: (arg: string) => void
     selected: string | undefined
     extra?: unknown
+    InputProps?: any
   }) => {
     const classes = useStyles()
     const { assemblyNames, assemblyManager } = session
@@ -83,10 +85,10 @@ const AssemblySelector = observer(
         variant="outlined"
         helperText={error || 'Select assembly to view'}
         value={error ? '' : selection}
-        InputProps={{ style: { height: 32 } }}
         inputProps={{ 'data-testid': 'assembly-selector' }}
         onChange={event => setLastSelected(event.target.value)}
         error={!!error}
+        InputProps={InputProps}
         disabled={!!error}
         className={classes.importFormEntry}
       >

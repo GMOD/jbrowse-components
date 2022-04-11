@@ -15,8 +15,12 @@ import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 
 // locals
-import { LinearGenomeViewModel, SPACING, HEADER_BAR_HEIGHT } from '..'
-import { WIDGET_HEIGHT } from '@jbrowse/core/ui'
+import {
+  LinearGenomeViewModel,
+  WIDGET_HEIGHT,
+  SPACING,
+  HEADER_BAR_HEIGHT,
+} from '..'
 import OverviewScaleBar from './OverviewScaleBar'
 import ZoomControls from './ZoomControls'
 
