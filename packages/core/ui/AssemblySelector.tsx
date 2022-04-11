@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { getConf } from '../configuration'
-import { makeStyles, TextField, MenuItem } from '@material-ui/core'
+import {
+  makeStyles,
+  TextField,
+  MenuItem,
+  InputProps as IIP,
+} from '@material-ui/core'
 import { AbstractSessionModel } from '../util'
 const useStyles = makeStyles(() => ({
   importFormEntry: {
@@ -43,14 +48,14 @@ const AssemblySelector = observer(
     session,
     onChange,
     selected,
-    extra = 0,
     InputProps,
+    extra = 0,
   }: {
     session: AbstractSessionModel
     onChange: (arg: string) => void
     selected: string | undefined
+    InputProps?: IIP
     extra?: unknown
-    InputProps?: any
   }) => {
     const classes = useStyles()
     const { assemblyNames, assemblyManager } = session
