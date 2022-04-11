@@ -58,6 +58,7 @@
     "@jbrowse/plugin-grid-bookmark": "^1.6.9",
     "@jbrowse/plugin-gtf": "^1.6.9",
     "@jbrowse/plugin-hic": "^1.6.9",
+    "@jbrowse/plugin-jobs-management": "^1.6.9",
     "@jbrowse/plugin-legacy-jbrowse": "^1.6.9",
     "@jbrowse/plugin-linear-comparative-view": "^1.6.9",
     "@jbrowse/plugin-linear-genome-view": "^1.6.9",

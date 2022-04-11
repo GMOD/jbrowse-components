@@ -11,7 +11,6 @@ import {
   createTextSearchConf,
   findTrackConfigsToIndex,
 } from '@jbrowse/text-indexing'
-import { checkAbortSignal } from '@jbrowse/core/util'
 
 interface Track {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

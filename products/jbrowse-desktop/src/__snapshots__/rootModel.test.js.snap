@@ -112,11 +112,6 @@ Array [
         "label": "Open assembly manager",
         "onClick": [Function],
       },
-      Object {
-        "icon": [Function],
-        "label": "Jobs list widget",
-        "onClick": [Function],
-      },
     ],
   },
 ]
@@ -232,11 +227,6 @@ Array [
           },
         },
         "label": "Open assembly manager",
-        "onClick": [Function],
-      },
-      Object {
-        "icon": [Function],
-        "label": "Jobs list widget",
         "onClick": [Function],
       },
     ],
