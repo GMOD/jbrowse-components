@@ -81,9 +81,9 @@ const AssemblySelector = observer(
         select
         label="Assembly"
         variant="outlined"
-        margin="normal"
         helperText={error || 'Select assembly to view'}
         value={error ? '' : selection}
+        InputProps={{ style: { height: 32 } }}
         inputProps={{ 'data-testid': 'assembly-selector' }}
         onChange={event => setLastSelected(event.target.value)}
         error={!!error}
