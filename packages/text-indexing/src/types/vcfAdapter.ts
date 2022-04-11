@@ -2,6 +2,7 @@ import { createGunzip } from 'zlib'
 import readline from 'readline'
 import { Track } from '../util'
 import { getLocalOrRemoteStream } from './common'
+import { checkAbortSignal } from '@jbrowse/core/util'
 
 export async function* indexVcf(
   config: Track,
@@ -11,6 +12,7 @@ export async function* indexVcf(
   typesToExclude: string[],
   quiet: boolean,
   statusCallback: (message: string) => void,
+  signal?: AbortSignal,
 ) {
   const { trackId } = config
   let receivedBytes = 0
@@ -75,6 +77,9 @@ export async function* indexVcf(
         encodeURIComponent(id || ''),
         ...infoAttrs.map(a => encodeURIComponent(a || '')),
       ]).replace(/,/g, '|')
+
+      // Check abort signal
+      checkAbortSignal(signal)
       yield `${record} ${[...new Set(attrs)].join(' ')}\n`
     }
   }

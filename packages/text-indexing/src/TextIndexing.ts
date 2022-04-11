@@ -25,6 +25,7 @@ export async function indexTracks(args: {
     assemblies,
     indexType,
     statusCallback,
+    signal,
   } = args
   const idxType = indexType || 'perTrack'
   if (idxType === 'perTrack') {
@@ -34,6 +35,7 @@ export async function indexTracks(args: {
       outLocation,
       attributes,
       exclude,
+      signal,
     )
   } else {
     await aggregateIndex(
@@ -43,8 +45,10 @@ export async function indexTracks(args: {
       attributes,
       assemblies,
       exclude,
+      signal,
     )
   }
+
   return []
 }
 
@@ -54,6 +58,7 @@ async function perTrackIndex(
   outLocation?: string,
   attributes?: string[],
   exclude?: string[],
+  signal?: AbortSignal,
 ) {
   const outFlag = outLocation || '.'
 
@@ -90,6 +95,7 @@ async function perTrackIndex(
       excludeTypes,
       assemblyNames,
       statusCallback,
+      signal,
     )
   }
 }
@@ -101,6 +107,7 @@ async function aggregateIndex(
   attributes?: string[],
   assemblies?: string[],
   exclude?: string[],
+  signal?: AbortSignal,
 ) {
   const outFlag = outLocation || '.'
 
@@ -138,6 +145,7 @@ async function aggregateIndex(
       excludeTypes,
       [asm],
       statusCallback,
+      signal,
     )
   }
 }
@@ -151,9 +159,18 @@ async function indexDriver(
   exclude: string[],
   assemblyNames: string[],
   statusCallback: (message: string) => void,
+  signal?: AbortSignal,
 ) {
   const readable = Readable.from(
-    indexFiles(tracks, attributes, idxLocation, quiet, exclude, statusCallback),
+    indexFiles(
+      tracks,
+      attributes,
+      idxLocation,
+      quiet,
+      exclude,
+      statusCallback,
+      signal,
+    ),
   )
   statusCallback('Generating trix files.')
   const ixIxxStream = await runIxIxx(readable, idxLocation, name)
@@ -175,6 +192,7 @@ async function* indexFiles(
   quiet: boolean,
   typesToExclude: string[],
   statusCallback: (message: string) => void,
+  signal?: AbortSignal,
 ) {
   for (const track of tracks) {
     const { adapter, textSearching } = track
@@ -193,6 +211,7 @@ async function* indexFiles(
         types,
         quiet,
         statusCallback,
+        signal,
       )
     } else if (type === 'Gff3Adapter') {
       yield* indexGff3(
@@ -203,6 +222,7 @@ async function* indexFiles(
         types,
         quiet,
         statusCallback,
+        signal,
       )
     } else if (type === 'VcfTabixAdapter') {
       yield* indexVcf(
@@ -213,6 +233,7 @@ async function* indexFiles(
         types,
         quiet,
         statusCallback,
+        signal,
       )
     } else if (type === 'VcfAdapter') {
       yield* indexVcf(
@@ -223,9 +244,11 @@ async function* indexFiles(
         types,
         quiet,
         statusCallback,
+        signal,
       )
     }
   }
+  return
 }
 
 function getLoc(attr: string, config: Track) {
