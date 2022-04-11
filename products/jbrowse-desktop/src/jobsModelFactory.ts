@@ -11,6 +11,7 @@ import {
   createTextSearchConf,
   findTrackConfigsToIndex,
 } from '@jbrowse/text-indexing'
+import { checkAbortSignal } from '@jbrowse/core/util'
 
 interface Track {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,7 +42,7 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
       status: 0,
       running: false,
       statusMessage: '',
-      abort: false,
+      controller: new AbortController(),
       jobsQueue: observable.array([] as JobsEntry[]),
       finishedJobs: observable.array([] as JobsEntry[]),
     }))
@@ -83,8 +84,8 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
       setStatusMessage(arg: string) {
         self.statusMessage = arg
       },
-      setAbort(abort: boolean) {
-        self.abort = abort
+      setAbort() {
+        self.controller.abort()
       },
       addFinishedJob(entry: JobsEntry) {
         self.finishedJobs.push(entry)
@@ -100,7 +101,7 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
         this.setRunning(false)
         this.setStatus('')
         this.setStatusMessage('')
-        this.setAbort(false)
+        self.controller = new AbortController()
       },
       async runIndexingJob(entry: JobsEntry) {
         const {
@@ -118,7 +119,7 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
         )
         try {
           this.setRunning(true)
-          const controller = new AbortController()
+          const { signal } = self.controller
           const result = rpcManager.call(
             'indexTracksSessionId',
             'TextIndexRpcMethod',
@@ -133,7 +134,7 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
               statusCallback: (message: string) => {
                 this.setStatus(message)
               },
-              signal: controller.signal,
+              signal: signal,
               timeout: 1000 * 60 * 60 * 1000, // 1000 hours, avoid user ever running into this
             },
           )
@@ -172,16 +173,20 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
           const current = this.dequeueJob()
           current && this.addFinishedJob(current)
         } catch (e) {
-          self.session?.notify(
-            `An error occurred while indexing: ${e}`,
-            'error',
-            {
-              name: 'Retry',
-              onClick: () => {
-                this.queueJob(entry)
+          if (e instanceof Error && e.message === 'aborted') {
+            self.session?.notify(`Cancelled job`, 'info')
+          } else {
+            self.session?.notify(
+              `An error occurred while indexing: ${e}`,
+              'error',
+              {
+                name: 'Retry',
+                onClick: () => {
+                  this.queueJob(entry)
+                },
               },
-            },
-          )
+            )
+          }
           // remove job from queue but since it was not successful
           // do not add to finished list
           this.dequeueJob()
@@ -193,8 +198,6 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
       async runJob() {
         if (self.jobsQueue.length) {
           const firstIndexingJob = self.jobsQueue[0] as JobsEntry
-          // TODO: decide how to run that type of job
-          // For now only running indexing jobs
           await this.runIndexingJob(firstIndexingJob)
         }
         return

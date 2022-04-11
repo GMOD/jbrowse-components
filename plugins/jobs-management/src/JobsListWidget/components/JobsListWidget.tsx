@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'
+// import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 
@@ -61,36 +62,9 @@ export interface JobsEntry {
 function JobsListWidget({ model }: { model: JobsListModel }) {
   const classes = useStyles()
   const rootModel = getParent(model, 3)
-  // const [error, setError] = useState<unknown>()
   const { jobsManager } = rootModel
   const { jobsQueue, finishedJobs } = jobsManager
-  // useEffect(() => {
-  //   let active = true
-  //   const controller = new AbortController()
 
-  //   ;(async () => {
-  //     try {
-  //       if (jobsQueue.length > 0 && running === false) {
-  //         await jobsManager.runJob()
-  //         // if (active) {
-
-  //         // }
-  //       } else {
-  //         throw new Error('err')
-  //       }
-  //     } catch (e) {
-  //       console.error(e)
-  //       if (active) {
-  //         setError(e)
-  //       }
-  //     }
-  //   })()
-
-  //   return () => {
-  //     controller.abort()
-  //     active = false
-  //   }
-  // }, [model])
   return (
     <div className={classes.root}>
       <Typography variant="h5">Currently running job</Typography>
