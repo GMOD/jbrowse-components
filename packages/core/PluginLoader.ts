@@ -97,7 +97,13 @@ function isInWebWorker(globalObject: ReturnType<typeof getGlobalObject>) {
 export default class PluginLoader {
   definitions: PluginDefinition[] = []
 
-  constructor(pluginDefinitions: PluginDefinition[] = []) {
+  fetchESM?: (url: string) => Promise<unknown>
+
+  constructor(
+    pluginDefinitions: PluginDefinition[] = [],
+    args?: { fetchESM: (url: string) => Promise<unknown> },
+  ) {
+    this.fetchESM = args?.fetchESM
     this.definitions = JSON.parse(JSON.stringify(pluginDefinitions))
   }
 
@@ -203,7 +209,7 @@ export default class PluginLoader {
         `cannot load plugins using protocol "${parsedUrl.protocol}"`,
       )
     }
-    const plugin = (await import(/* webpackIgnore: true */ parsedUrl.href)) as
+    const plugin = (await this.fetchESM?.(parsedUrl.href)) as
       | LoadedPlugin
       | undefined
     if (!plugin) {
@@ -278,13 +284,10 @@ export default class PluginLoader {
 
   async load() {
     return Promise.all(
-      this.definitions.map(
-        async definition =>
-          ({
-            plugin: await this.loadPlugin(definition),
-            definition,
-          } as PluginRecord),
-      ),
+      this.definitions.map(async definition => ({
+        plugin: await this.loadPlugin(definition),
+        definition,
+      })),
     )
   }
 }

@@ -279,9 +279,7 @@ const Renderer = observer(
             })),
           ])
           pluginManager.createPluggableElements()
-          const isAdmin = !!adminKey
-
-          const RootModel = JBrowseRootModelFactory(pluginManager, isAdmin)
+          const RootModel = JBrowseRootModelFactory(pluginManager, !!adminKey)
 
           if (configSnapshot) {
             const rootModel = RootModel.create(
