@@ -16,7 +16,7 @@ import CloseIcon from '@material-ui/icons/Close'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
-import { LinearGenomeViewModel } from '..'
+import { LinearGenomeViewModel, WIDGET_HEIGHT } from '..'
 const SearchResultsDialog = lazy(() => import('./SearchResultsDialog'))
 
 const useStyles = makeStyles(theme => ({
@@ -156,10 +156,15 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                     minWidth={270}
                     onSelect={option => setOption(option)}
                     TextFieldProps={{
-                      margin: 'normal',
                       variant: 'outlined',
                       helperText:
                         'Enter sequence name, feature name, or location',
+                      style: { minWidth: '175px' },
+                      InputProps: {
+                        style: {
+                          height: WIDGET_HEIGHT,
+                        },
+                      },
                     }}
                   />
                 ) : (
@@ -171,7 +176,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                 )
               ) : null}
             </Grid>
-            <Grid item></Grid>
             <Grid item>
               <Button
                 type="submit"
