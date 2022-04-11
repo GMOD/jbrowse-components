@@ -1,6 +1,7 @@
 import React, { useState, lazy } from 'react'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
+import { WIDGET_HEIGHT } from '@jbrowse/core/ui'
 import {
   Button,
   CircularProgress,
@@ -16,7 +17,7 @@ import CloseIcon from '@material-ui/icons/Close'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
-import { LinearGenomeViewModel, WIDGET_HEIGHT } from '..'
+import { LinearGenomeViewModel } from '..'
 const SearchResultsDialog = lazy(() => import('./SearchResultsDialog'))
 
 const useStyles = makeStyles(theme => ({

@@ -3,12 +3,13 @@ import { observer } from 'mobx-react'
 import { makeStyles, useTheme, alpha } from '@material-ui/core'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { getSession } from '@jbrowse/core/util'
+import { WIDGET_HEIGHT } from '@jbrowse/core/ui'
 import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
 import { dedupe } from './util'
-import { LinearGenomeViewModel, SPACING, WIDGET_HEIGHT } from '..'
+import { LinearGenomeViewModel, SPACING } from '..'
 
 const useStyles = makeStyles(() => ({
   headerRefName: {
