@@ -1,7 +1,9 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
-import { JobsEntry } from './JobsListWidget'
+
+// import { SnapshotIn } from 'mobx-state-tree'
+// import { JobsEntry } from './JobsListWidget'
 import {
   Box,
   Button,
@@ -9,22 +11,13 @@ import {
   CardActions,
   CardContent,
   LinearProgress,
-  CircularProgress,
   Typography,
 } from '@material-ui/core'
-import { JobsListModel } from '../model'
+import { JobsListModel, NewJob } from '../model'
 
-function CurrentJobCard({
-  job,
-  model,
-}: {
-  job: JobsEntry
-  model: JobsListModel
-}) {
+function CurrentJobCard({ job, model }: { job: NewJob; model: JobsListModel }) {
   const rootModel = getParent(model, 3)
   const { jobsManager } = rootModel
-  const { status, running, statusMessage } = jobsManager
-  const indexingDone = Math.round(status) === 100
   return (
     <Card variant="outlined">
       <CardContent>
@@ -32,59 +25,67 @@ function CurrentJobCard({
           <strong>{'Name: '}</strong>
           {job.name}
         </Typography>
-        {running ? (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: 10,
-              marginLeft: 10,
-            }}
-          >
-            <Box sx={{ width: '40%' }}>
-              <Typography variant="body2">Indexing files</Typography>
-            </Box>
+        <Typography variant="body1">
+          <strong>{'Message: '}</strong>
+          {job.statusMessage ? job.statusMessage : 'Indexing files'}
+        </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            marginTop: 10,
+            marginBottom: 10,
+            marginLeft: 10,
+          }}
+        >
+          {job.progressPct === 0 || job.progressPct === 100 ? (
             <Box sx={{ width: '100%' }}>
-              <LinearProgress variant="determinate" value={status} />
+              <LinearProgress variant="indeterminate" />
             </Box>
-            <Box sx={{ m: 1 }}>
-              <Typography>{`${Math.round(status)}%`}</Typography>
-            </Box>
-          </Box>
-        ) : null}
-
-        {running && indexingDone ? (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: 10,
-              marginLeft: 10,
-              marginRight: 10,
-            }}
-          >
-            <Box sx={{ width: '100%' }}>
-              <Typography variant="body2">{statusMessage}</Typography>
-            </Box>
-            <Box sx={{ m: 1 }}>
-              <CircularProgress size={10} disableShrink />
-            </Box>
-          </Box>
-        ) : null}
+          ) : (
+            <>
+              <Box sx={{ width: '100%' }}>
+                <LinearProgress variant="determinate" value={job.progressPct} />
+              </Box>
+              <Box sx={{ m: 1 }}>
+                <Typography>{`${Math.round(
+                  job.progressPct || 0,
+                )}%`}</Typography>
+              </Box>
+            </>
+          )}
+        </Box>
       </CardContent>
-      {job.cancelCallback ? (
+      <CardActions>
+        <Button
+          variant="contained"
+          color="inherit"
+          onClick={() => {
+            console.log('Hello?')
+            jobsManager.abortJob()
+            // job.cancelCallback && job.cancelCallback()
+            // model.removeJob(job.name)
+          }}
+        >
+          Cancel
+        </Button>
+      </CardActions>
+      {/* {job.cancelCallback() ? (
         <CardActions>
           <Button
             variant="contained"
             color="inherit"
             onClick={() => {
-              job.cancelCallback && job.cancelCallback()
+              console.log("Hello?")
+              jobsManager.abortJob()
+              // job.cancelCallback && job.cancelCallback()
+              // model.removeJob(job.name)
             }}
           >
             Cancel
           </Button>
         </CardActions>
-      ) : null}
+      ) : null} */}
     </Card>
   )
 }

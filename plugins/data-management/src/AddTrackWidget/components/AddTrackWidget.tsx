@@ -121,10 +121,10 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
               timestamp: new Date().toISOString(),
             }
             const newEntry = {
-              params: indexingParams,
+              indexingParams: indexingParams,
               name: indexName,
               cancelCallback: () => {
-                jobsManager.setAbort(true)
+                jobsManager.abortJob()
               },
             }
             jobsManager.queueJob(newEntry)

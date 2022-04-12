@@ -1,9 +1,9 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { Card, CardContent, Typography } from '@material-ui/core'
-import { JobsEntry } from './JobsListWidget'
+import { NewJob } from '../model'
 
-function JobCard({ job }: { job: JobsEntry }) {
+function JobCard({ job }: { job: NewJob }) {
   return (
     <Card variant="outlined">
       <CardContent>

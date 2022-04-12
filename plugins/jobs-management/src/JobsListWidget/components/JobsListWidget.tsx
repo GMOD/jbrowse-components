@@ -1,7 +1,7 @@
 // import React, { useEffect, useState } from 'react'
 import React from 'react'
 import { observer } from 'mobx-react'
-import { getParent } from 'mobx-state-tree'
+// import { getParent } from 'mobx-state-tree'
 
 import {
   Accordion,
@@ -17,7 +17,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 
 import JobCard from './JobCard'
 import CurrentJobCard from './CurrentJobCard'
-import { JobsListModel } from '../model'
+import { JobsListModel, NewJob } from '../model'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -61,14 +61,14 @@ export interface JobsEntry {
 
 function JobsListWidget({ model }: { model: JobsListModel }) {
   const classes = useStyles()
-  const rootModel = getParent(model, 3)
-  const { jobsManager } = rootModel
-  const { jobsQueue, finishedJobs } = jobsManager
-
+  const { jobs, finished } = model
+  // const rootModel = getParent(model, 3)
+  // const { jobsManager } = rootModel
+  // const { jobsQueue, finishedJobs } = jobsManager
   return (
     <div className={classes.root}>
-      <Typography variant="h5">Currently running job</Typography>
-      {jobsQueue.length > 0 ? (
+      {/* <Typography variant="h5">Currently running job</Typography> */}
+      {/* {jobs.length > 0 ? (
         <CurrentJobCard
           key={JSON.stringify(jobsQueue[0])}
           job={jobsQueue[0]}
@@ -80,23 +80,21 @@ function JobsListWidget({ model }: { model: JobsListModel }) {
             <Typography variant="body1">No job currently running</Typography>
           </CardContent>
         </Card>
-      )}
+      )} */}
       <Accordion defaultExpanded>
         <AccordionSummary
           expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
         >
-          <Typography variant="h5">Queued jobs</Typography>
+          <Typography variant="h5">Jobs</Typography>
         </AccordionSummary>
-        {jobsQueue.length > 1 ? (
-          jobsQueue
-            .slice(1)
-            .map((job: JobsEntry) => (
-              <JobCard key={JSON.stringify(job)} job={job} />
-            ))
+        {jobs.length ? (
+          jobs.map((job: NewJob) => (
+            <CurrentJobCard model={model} job={job} key={JSON.stringify(job)} />
+          ))
         ) : (
           <Card variant="outlined">
             <CardContent>
-              <Typography variant="body1">No queued jobs</Typography>
+              <Typography variant="body1">No jobs</Typography>
             </CardContent>
           </Card>
         )}
@@ -107,8 +105,8 @@ function JobsListWidget({ model }: { model: JobsListModel }) {
         >
           <Typography variant="h5">Jobs completed</Typography>
         </AccordionSummary>
-        {finishedJobs.length ? (
-          finishedJobs.map((job: JobsEntry) => (
+        {finished.length ? (
+          finished.map((job: NewJob) => (
             <JobCard key={JSON.stringify(job)} job={job} />
           ))
         ) : (

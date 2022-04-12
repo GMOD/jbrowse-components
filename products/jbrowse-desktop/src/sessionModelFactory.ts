@@ -34,7 +34,7 @@ import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
 import InfoIcon from '@material-ui/icons/Info'
 import { Indexing } from '@jbrowse/core/ui/Icons'
-import { JobsEntry } from './jobsModelFactory'
+import { TextJobsEntry } from './jobsModelFactory'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -619,12 +619,12 @@ export default function sessionModelFactory(
               }
               // create job entry for queue of long running jobs
               const newEntry = {
-                params: indexingParams,
+                indexingParams,
                 name: indexName,
                 cancelCallback: () => {
-                  jobsManager.setAbort(true)
+                  jobsManager.abortJob()
                 },
-              } as JobsEntry
+              } as TextJobsEntry
               jobsManager.queueJob(newEntry)
               // TODO: open jobs list widget
             },
