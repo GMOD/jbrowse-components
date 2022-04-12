@@ -45,7 +45,7 @@ export class TextIndexRpcMethod extends RpcMethodType {
       signal,
     }
     await indexTracks(indexingParams)
-    statusCallback('')
+    statusCallback('Indexing Complete.')
     return []
   }
 }

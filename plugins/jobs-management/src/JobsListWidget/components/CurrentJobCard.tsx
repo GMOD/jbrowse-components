@@ -21,7 +21,7 @@ function CurrentJobCard({ job }: { job: NewJob }) {
         </Typography>
         <Typography variant="body1">
           <strong>{'Message: '}</strong>
-          {job.statusMessage ? job.statusMessage : 'Indexing files'}
+          {job.statusMessage || 'No message provided'}
         </Typography>
         <Box
           sx={{

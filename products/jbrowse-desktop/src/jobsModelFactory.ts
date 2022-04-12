@@ -97,6 +97,7 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
         if (isNaN(progress)) {
           this.setStatusMessage(arg)
         } else {
+          progress === 100 && this.setStatusMessage('Generating ixIxx files.')
           self.progressPct = progress
         }
         this.setWidgetStatus()

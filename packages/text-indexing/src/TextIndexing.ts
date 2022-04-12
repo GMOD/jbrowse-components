@@ -172,7 +172,7 @@ async function indexDriver(
       signal,
     ),
   )
-  statusCallback('Generating trix files.')
+  statusCallback('Indexing files.')
   const ixIxxStream = await runIxIxx(readable, idxLocation, name)
   await generateMeta({
     configs: tracks,
