@@ -11,7 +11,7 @@ import {
   createTextSearchConf,
   findTrackConfigsToIndex,
 } from '@jbrowse/text-indexing'
-import { isSessionModelWithWidgets } from '@jbrowse/core/util'
+import { isAbortException, isSessionModelWithWidgets } from '@jbrowse/core/util'
 
 interface Track {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -154,25 +154,21 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
           this.setRunning(true)
           this.setJobName(entry.name)
           const { signal } = self.controller
-          const result = rpcManager.call(
-            'indexTracksSessionId',
-            'TextIndexRpcMethod',
-            {
-              tracks: trackConfigs,
-              attributes,
-              exclude,
-              assemblies,
-              indexType,
-              outLocation: self.sessionPath,
-              sessionId: 'indexTracksSessionId',
-              statusCallback: (message: string) => {
-                this.setProgressPct(message)
-              },
-              signal: signal,
-              timeout: 1000 * 60 * 60 * 1000, // 1000 hours, avoid user ever running into this
+          await rpcManager.call('indexTracksSessionId', 'TextIndexRpcMethod', {
+            tracks: trackConfigs,
+            attributes,
+            exclude,
+            assemblies,
+            indexType,
+            outLocation: self.sessionPath,
+            sessionId: 'indexTracksSessionId',
+            statusCallback: (message: string) => {
+              this.setProgressPct(message)
             },
-          )
-          await result
+            signal: signal,
+            timeout: 1000 * 60 * 60 * 1000, // 1000 hours, avoid user ever running into this
+          })
+          // await result
           if (indexType === 'perTrack') {
             // should update the single track conf
             trackIds.forEach(trackId => {
@@ -218,7 +214,7 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
             })
           }
         } catch (e) {
-          if (e instanceof Error && e.message === 'aborted') {
+          if (isAbortException(e)) {
             self.session?.notify(`Cancelled job`, 'info')
           } else {
             self.session?.notify(
